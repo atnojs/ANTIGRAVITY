@@ -1,0 +1,319 @@
+/* === TEMA "GLASS + GRADIENT" === */
+:root {
+    --bg1: #0c1445;
+    --bg2: #1e3a8a;
+    --acc: #22d3ee;
+    --acc2: #a78bfa;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: #1e40af;
+    --card-bg: rgba(15, 23, 42, 0.75);
+    --shadow-color: rgba(0, 0, 0, 0.35);
+    --shadow-light: rgba(34, 211, 238, 0.2);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text);
+    background: linear-gradient(160deg, #0c1445 0%, #1e3a8a 25%, #0891b2 50%, #0c4a6e 75%, #1e293b 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 2rem 1rem;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 1rem;
+}
+
+header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 4px 15px var(--shadow-color);
+}
+
+header p {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+.app-card {
+    position: relative;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 0px solid var(--border);
+    box-shadow: 0 10px 30px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text);
+    transform: translateZ(0); 
+}
+
+.app-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px var(--shadow-color), 0 0 20px var(--shadow-light);
+}
+
+.app-card-overlay {
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0) 100%);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.app-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--acc);
+}
+
+.app-card h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    color: #00FFFF;
+}
+
+.app-card p {
+    font-size: 0.95rem;
+    color: #00ffff;
+    line-height: 1.5;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); 
+}
+
+footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+}
+
+/* --- ESTILOS DE EDICIÓN --- */
+#edit-mode-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    color: transparent;
+    box-shadow: none;
+    border-radius: 50%;
+    font-size: 1.5rem; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+#edit-mode-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+
+#edit-mode-btn.active {
+    background-color: transparent;
+    border: none;
+    color: transparent;
+}
+
+.edit-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.edit-buttons button {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: background-color 0.2s ease;
+}
+
+.edit-buttons button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    /* Removemos overflow-y: auto de aquí, ya que lo manejaremos en el content */
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px var(--shadow-color);
+    margin: 2rem 0;
+    /* Nuevas propiedades para scroll interno */
+    max-height: calc(100vh - 4rem); /* Limita la altura al viewport menos márgenes top/bottom */
+    overflow-y: auto; /* Activa scroll vertical solo si es necesario */
+    overflow-x: hidden; /* Evita scroll horizontal accidental */
+}
+
+.modal-content h2 {
+    font-family: 'Montserrat', sans-serif;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: rgba(12, 20, 69, 0.55);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-group input[type="file"] {
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--acc2);
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.form-buttons button {
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.form-buttons button:hover {
+    opacity: 0.9;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, var(--acc), var(--acc2));
+    color: white;
+}
+
+.btn-cancel {
+    background: #4a5568;
+    color: white;
+}
+
+#add-new-app-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    min-height: 220px;
+    color: var(--muted);
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+#add-new-app-btn:hover {
+    color: var(--text);
+    border-color: var(--acc);
+}
+
+.add-app-content {
+    text-align: center;
+}
+
+.add-app-content i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.draggable-ghost {
+    opacity: 0.4;
+    background: var(--acc2);
+}
+
+#bg-preview {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: none; 
+}

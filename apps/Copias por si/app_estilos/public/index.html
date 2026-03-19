@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfiere Estilos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f0f0f;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .upload-box {
+            background: #1a1a1a;
+            border: 1px dashed #444;
+            padding: 20px;
+            border-radius: 12px;
+            width: 300px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: #00bcd4;
+        }
+
+        img.preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00bcd4, #2196f3);
+            border: none;
+            padding: 15px 40px;
+            color: white;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #resultArea {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 600px;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 12px;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #333;
+        }
+
+        .loading {
+            color: #00bcd4;
+            font-style: italic;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>TRANSFIERE EL ESTILO</h1>
+
+    <div class="container">
+        <div class="upload-box">
+            <h3>Imagen de Referencia</h3>
+            <p style="font-size: 0.8rem; color: #888;"></p> <!-- Iluminación, colores, texturas... -->
+            <input type="file" id="styleInput" accept="image/*">
+            <img id="stylePreview" class="preview">
+        </div>
+
+        <div class="upload-box">
+            <h3>Imagen a Asaptar</h3>
+            <p style="font-size: 0.8rem; color: #888;"></p> <!-- Persona, objeto o animal -->
+            <input type="file" id="subjectInput" accept="image/*">
+            <img id="subjectPreview" class="preview">
+        </div>
+    </div>
+
+    <button id="generateBtn" onclick="generateImage()">Generar Fusión</button>
+
+    <div id="resultArea">
+        <span class="placeholder">El resultado aparecerá aquí</span>
+        <div class="loading" id="loadingText">Gemini está analizando y renderizando...</div>
+        <img id="resultImage" class="preview" style="display:none; max-height: 400px;">
+        <div id="resultText" style="white-space: pre-wrap; text-align: left;"></div>
+    </div>
+
+    <script>
+        // Función auxiliar para convertir File a Base64 (sin prefijo data:xxx)
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const result = reader.result;
+                    // Remover 'data:image/xxx;base64,' para enviar solo los datos crudos
+                    const base64Data = result.split(',')[1];
+                    const mimeType = result.split(';')[0].split(':')[1];
+                    resolve({ data: base64Data, mimeType: mimeType });
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Lógica de previsualización simple
+        function setupPreview(inputId, imgId) {
+            document.getElementById(inputId).addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.getElementById(imgId);
+                        img.src = e.target.result;
+                        img.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        setupPreview('styleInput', 'stylePreview');
+        setupPreview('subjectInput', 'subjectPreview');
+
+        async function generateImage() {
+            const styleFile = document.getElementById('styleInput').files[0];
+            const subjectFile = document.getElementById('subjectInput').files[0];
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loadingText');
+            const placeholder = document.querySelector('.placeholder');
+            const resultImg = document.getElementById('resultImage');
+            const resultTxt = document.getElementById('resultText');
+
+            if (!styleFile || !subjectFile) {
+                alert("Por favor sube ambas imágenes.");
+                return;
+            }
+
+            // UI Updates
+            btn.disabled = true;
+            placeholder.style.display = 'none';
+            resultImg.style.display = 'none';
+            resultTxt.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                // Convertir imágenes a Base64
+                const styleData = await fileToBase64(styleFile);
+                const subjectData = await fileToBase64(subjectFile);
+
+                // Construir el prompt
+                const promptText = `
+                    
+                    *** INSTRUCCIÓN DEL SISTEMA: ROL DE EXPERTO EN FACE-SWAP Y TRANSFERENCIA DE ESTILO ***
+
+Actúa como un motor de edición fotográfica de alta gama. Tu tarea no es solo mezclar, sino REEMPLAZAR elementos específicos quirúrgicamente.
+
+DEFINICIÓN ESTRICTA DE ROLES:
+- Input A [REFERENCIA_ESCENA]: Provee el ESCENARIO, la ILUMINACIÓN, la POSE del cuerpo y el ÁNGULO de cámara. (Es el "contenedor").
+- Input B [REFERENCIA_ACTIVO]: Provee la IDENTIDAD FACIAL (Rasgos, ojos, nariz, boca) y el TEXTIL DEL VESTUARIO. (Es el "contenido").
+
+MISIÓN CRÍTICA (LEA CON ATENCIÓN):
+Debes tomar la estructura de la imagen A, y **SOBRESCRIBIR** la cara y la ropa del sujeto A utilizando los datos del sujeto B.
+El resultado debe ser: El Sujeto B (con su cara y su ropa) posando EXACTAMENTE igual que el Sujeto A, en el lugar del Sujeto A.
+
+DIRECTRICES DE EJECUCIÓN (PRIORIDAD MÁXIMA):
+
+1. **REEMPLAZO DE IDENTIDAD (FACE SWAP OBLIGATORIO):**
+   * **Acción:** Ignora y descarta completamente la cara del sujeto del Input A.
+   * **Ejecución:** Inserta la cara del Input B sobre el cuello del Input A.
+   * **Detalle:** Debes clonar los rasgos biométricos del Input B (ojos, nariz, boca, estructura ósea facial). La expresión facial debe adaptarse a la pose, pero la IDENTIDAD debe ser 100% reconocible como la persona del Input B.
+
+2. **ADAPTACIÓN DE VESTUARIO (WARPING):**
+   * Toma la ropa del Input B (textura, color, tejido).
+   * "Viste" al cuerpo del Input A con esa ropa.
+   * **Importante:** La ropa debe deformarse y arrugarse para coincidir con la POSE del Input A. Si el Input A tiene una mano levantada o está sentado, la ropa del Input B debe arrugarse físicamente acorde a esa postura.
+
+3. **HERENCIA DE ATMÓSFERA (DEL INPUT A):**
+   * Una vez insertados la cara y ropa de B en la pose de A, aplica la iluminación del Input A.
+   * Las sombras de la nariz, ojos y cuello del "nuevo" sujeto deben coincidir con la dirección de luz del Input A.
+   * Mantén el fondo original del Input A intacto.
+
+RESUMEN DE LA OPERACIÓN:
+Sujeto B (Cara + Ropa) + Pose y Entorno de A + Iluminación de A = IMAGEN FINAL.
+Si el sujeto final se parece al sujeto de la foto oscura (A), LA TAREA HA FALLADO. Debe parecerse al sujeto del chaleco amarillo (B).
+                  `;
+
+                // Construir payload estilo Gemini
+                const payload = {
+                    model: "gemini-3.1-flash-image-preview",
+                    contents: [
+                        {
+                            parts: [
+                                { text: promptText },
+                                {
+                                    inlineData: {
+                                        mimeType: styleData.mimeType,
+                                        data: styleData.data
+                                    }
+                                },
+                                {
+                                    inlineData: {
+                                        mimeType: subjectData.mimeType,
+                                        data: subjectData.data
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        responseModalities: ["IMAGE"]
+                    },
+                    safetySettings: [
+                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+                    ]
+                };
+
+                const response = await fetch('proxy.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                loading.style.display = 'none';
+                btn.disabled = false;
+
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    // Procesar respuesta de Gemini
+                    const content = data.candidates[0].content;
+                    let foundImage = false;
+
+                    if (content.parts) {
+                        for (const part of content.parts) {
+                            if (part.inlineData) {
+                                // Es una imagen/blob
+                                resultImg.src = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                                resultImg.style.display = 'block';
+                                foundImage = true;
+                            } else if (part.text) {
+                                // Si es texto, lo agregamos
+                                resultTxt.innerHTML += part.text + '<br>';
+                            }
+                        }
+                    }
+
+                    if (!foundImage && resultTxt.innerHTML === '') {
+                        resultTxt.innerHTML = "Respuesta recibida pero no se encontró imagen/texto claro: " + JSON.stringify(data);
+                    }
+
+                } else if (data.error) {
+                    resultTxt.innerHTML = "Error de API: " + (data.error.message || JSON.stringify(data.error));
+                } else {
+                    resultTxt.innerHTML = "Respuesta cruda: " + JSON.stringify(data, null, 2);
+                }
+
+            } catch (error) {
+                console.error(error);
+                loading.style.display = 'none';
+                btn.disabled = false;
+                resultTxt.innerHTML = "Error de conexión o procesamiento: " + error.message;
+            }
+        }
+    </script>
+</body>
+
+</html>

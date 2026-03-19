@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Diseñador de Productos Personalizados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com/3.4.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Amatic+SC&family=Anton&family=Archivo+Black&family=Audiowide&family=Bangers&family=Bebas+Neue&family=Black+Ops+One&family=Bodoni+Moda:wght@700&family=Bungee&family=Bungee+Inline&family=Bungee+Shade&family=Caveat&family=Cinzel&family=Cookie&family=Cormorant+Garamond&family=Creepster&family=Dancing+Script&family=EB+Garamond&family=Eater&family=Electrolize&family=Exo+2&family=Fascinate&family=Fredericka+the+Great&family=Fredoka+One&family=Great+Vibes&family=Indie+Flower&family=Josefin+Sans&family=Kalam&family=Kaushan+Script&family=Lakki+Reddy&family=Lobster&family=Lora&family=Merriweather&family=Modak&family=Monoton&family=Montserrat:wght@400;500;600;700&family=Nosifer&family=Orbitron&family=Oswald&family=Pacifico&family=Permanent+Marker&family=Playfair+Display&family=Poppins:wght@300;400;500;600;700&family=Press+Start+2P&family=Righteous&family=Roboto:wght@900&family=Rock+Salt&family=Russo+One&family=Sacramento&family=Satisfy&family=Shadows+Into+Light&family=Alfa+Slab+One&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FF6B6B',
+            secondary: '#4ECDC4',
+            darkBg: '#0f172a',
+            darkText: '#e5e7eb'
+          },
+          borderRadius: { 'button': '14px' },
+          fontFamily: {
+            'pacifico': ['Pacifico', 'cursive'],
+            'roboto': ['Roboto', 'sans-serif'],
+            'lobster': ['Lobster', 'cursive'],
+            'playfair': ['Playfair Display', 'serif'],
+            'montserrat': ['Montserrat', 'sans-serif'],
+            'poppins': ['Poppins', 'sans-serif'],
+            'dancing-script': ['"Dancing Script"', 'cursive'],
+            'caveat': ['Caveat', 'cursive'],
+            'sacramento': ['Sacramento', 'cursive'],
+            'anton': ['Anton', 'sans-serif'],
+            'oswald': ['Oswald', 'sans-serif'],
+            'bebas-neue': ['"Bebas Neue"', 'sans-serif'],
+            'cinzel': ['Cinzel', 'serif'],
+            'cormorant-garamond': ['"Cormorant Garamond"', 'serif'],
+            'josefin-sans': ['"Josefin Sans"', 'sans-serif'],
+            'permanent-marker': ['"Permanent Marker"', 'cursive'],
+            'rock-salt': ['"Rock Salt"', 'cursive'],
+            'bangers': ['Bangers', 'cursive'],
+            'monoton': ['Monoton', 'cursive'],
+            'bungee': ['Bungee', 'cursive'],
+            'audiowide': ['Audiowide', 'cursive'],
+            'nosifer': ['Nosifer', 'cursive'],
+            'eater': ['Eater', 'cursive'],
+            'creepster': ['Creepster', 'cursive']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-darkBg text-darkText">
+  <header class="sticky top-0 z-50 w-full sticky-header">
+    <div class="container mx-auto px-4 py-2">
+      <div class="flex justify-between items-center">
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html" class="text-3xl font-pacifico text-white">Tu Diseño en Todo</a>
+        <nav class="hidden md:flex space-x-6 items-center">
+          <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/Paginas/pagina_camisetas/camisetas.html" class="hover:text-white font-medium transition-colors">Inicio</a>
+          <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/Paginas/pagina_camisetas/camisetas.html#servicios" class="hover:text-white font-medium transition-colors">Servicios</a>
+          <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/Paginas/pagina_camisetas/camisetas.html#galeria" class="hover:text-white font-medium transition-colors">Galería</a>
+          <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/Paginas/pagina_camisetas/camisetas.html#proceso" class="hover:text-white font-medium transition-colors">Proceso</a>
+          <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/Paginas/pagina_camisetas/camisetas.html#faq" class="hover:text-white font-medium transition-colors">FAQ</a>
+          <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/Paginas/pagina_camisetas/camisetas.html#contacto" class="hover:text-white font-medium transition-colors">Contacto</a>
+          <a target="_blank" rel="noopener noreferrer" href="#cotizador-pedido" class="bg-secondary text-white px-5 py-2 rounded-button font-medium hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 shadow-md whitespace-nowrap">Presupuesto</a>
+          <a target="_blank" rel="noopener noreferrer" href="#cotizador-pedido" class="bg-primary text-white px-6 py-2 rounded-button font-medium hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 shadow-md whitespace-nowrap">Haz tu pedido</a>
+        </nav>
+        <div class="md:hidden flex items-center space-x-4">
+          <button id="mobile-menu-button" class="w-10 h-10 flex items-center justify-center text-white"><i class="ri-menu-line ri-lg"></i></button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden absolute w-full" style="background:var(--card); border-bottom:1px solid var(--border); backdrop-filter:blur(8px);">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html#inicio" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Inicio</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html#servicios" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Servicios</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html#galeria" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Galería</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html#proceso" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Proceso</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html#faq" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">FAQ</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html#contacto" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Contacto</a>
+        <a target="_blank" rel="noopener noreferrer" href="#cotizador-pedido" class="bg-secondary text-white px-6 py-2 rounded-button font-medium hover:bg-opacity-90 transition-colors shadow-md text-center whitespace-nowrap hover:scale-105">Presupuesto</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://atnojs.es/camisetas.html#contacto" class="bg-primary text-white px-6 py-2 rounded-button font-medium hover:bg-opacity-90 transition-colors shadow-md text-center whitespace-nowrap hover:scale-105">Haz tu pedido</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="section-card max-w-7xl mx-auto my-10 rounded-card lg:px-0">
+    <h1 class="text-3xl md:text-4xl font-extrabold mb-8 text-center text-white lg:px-10">¡Diseña tu idea!</h1>
+
+    <form id="pedido-form" action="https://formsubmit.co/atnojs+1@gmail.com" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_next" value="https://atnojs.es/Paginas/paginas_camisetas/gracias1.html">
+      <input type="hidden" name="_subject" value="Nuevo Pedido - Diseña tu idea">
+      <div id="hidden-inputs-container"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <!-- Tu Producto -->
+        <div class="p-6 designer-card lg:col-span-3">
+          <h2 class="text-2xl text-center font-bold text-white mb-4" style="color: var(--acc2);">Tu Producto</h2>
+
+          <div class="flex flex-wrap md:flex-nowrap gap-4 mb-4">
+            <div class="w-full md:w-1/2">
+              <label class="block text-sm text-gray-600 mb-2">Producto</label>
+              <div class="relative" id="custom-product-select">
+                <input type="hidden" name="Producto" id="product-hidden-input" value="Camiseta Hombre Cuello Redondo">
+                <button type="button" id="product-select-button" class="custom-select-button w-full flex items-center justify-between text-left px-3 py-2">
+                  <span id="product-select-value">Camiseta Hombre Cuello Redondo</span>
+                  <i class="ri-arrow-down-s-line text-gray-400"></i>
+                </button>
+                <div id="product-select-options" class="custom-select-options absolute z-10 w-full mt-1 rounded-lg shadow-lg hidden opacity-0 -translate-y-2"></div>
+              </div>
+            </div>
+            <div id="size-selector-container" class="w-full md:w-1/2 hidden">
+              <label class="block text-sm text-gray-600 mb-2">Tallaje</label>
+              <div class="relative" id="custom-size-select">
+                <input type="hidden" name="Tallaje" id="size-hidden-input" value="M">
+                <button type="button" id="size-select-button" class="custom-select-button w-full flex items-center justify-between text-left px-3 py-2">
+                  <span id="size-select-value">M</span>
+                  <i class="ri-arrow-down-s-line text-gray-400"></i>
+                </button>
+                <div id="size-select-options" class="custom-select-options absolute z-10 w-full mt-1 rounded-lg shadow-lg hidden opacity-0 -translate-y-2"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm text-gray-600 mb-2">Color del producto</label>
+            <div id="color-swatches" class="flex flex-wrap gap-3">
+              <div class="color-swatch w-9 h-9 rounded-full selected cursor-pointer" style="background-color: #FFFFFF;" data-file="blanca.webp" data-label="Blanca" title="Blanca"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #19190D;" data-file="negra.webp" data-label="Negra" title="Negra"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #25A20C;" data-file="verde.webp" data-label="Verde" title="Verde"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #04FDE3;" data-file="turquesa.webp" data-label="Turquesa" title="Turquesa"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #04FD3F;" data-file="lima.webp" data-label="Lima" title="Lima"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #FBCD04;" data-file="amarilla.webp" data-label="Amarilla" title="Amarilla"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #0404FD;" data-file="azul.webp" data-label="Azul" title="Azul"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #04A8FD;" data-file="celeste.webp" data-label="Celeste" title="Celeste"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #FD0404;" data-file="roja.webp" data-label="Roja" title="Roja"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #FD04D1;" data-file="fuxia.webp" data-label="Fuxia" title="Fuxia"></div>
+              <div class="color-swatch w-9 h-9 rounded-full cursor-pointer" style="background-color: #9C04FD;" data-file="lila.webp" data-label="Lila" title="Lila"></div>
+            </div>
+          </div>
+
+          <div id="preview-container" class="relative w-full max-w-[720px] mx-auto h-[400px] rounded-lg overflow-hidden">
+            <img id="mockup-img" src="/Paginas/pagina_camisetas/mockups/camisetas/camisetas_hombre/blanca.webp" alt="Mockup de producto" class="absolute inset-0 w-full h-full object-contain select-none pointer-events-none">
+          </div>
+          <button type="button" id="zoom-mockup-btn" class="w-1/2 mx-auto bg-primary text-white font-bold py-2 rounded-button mt-4 mb-4 transition-transform transform hover:scale-105 flex items-center justify-center gap-2">
+              <i class="ri-zoom-in-line"></i> Ver Diseño Ampliado
+          </button>
+        </div>
+        
+        <!-- Contenido Personalizado -->
+        <div class="p-6 designer-card lg:col-start-4 lg:col-span-2 lg:row-start-1 lg:row-span-2">
+          <h2 class="text-2xl text-center font-bold text-white mb-4" style="color: var(--acc2);">Contenido Personalizado</h2>
+          <div class="flex flex-col space-y-4 mt-4">
+            <div class="flex justify-center space-x-8">
+              <label class="flex items-center"><input type="checkbox" id="toggle-text" class="checkbox-styled mr-2">
+<span class="text-base font-medium text-darkText">Añadir texto</span></label>
+              <label class="flex items-center"><input type="checkbox" id="toggle-image" class="checkbox-styled mr-2">
+<span class="text-base font-medium text-darkText">Añadir imagen</span></label>
+            </div>
+            <div class="pt-2">
+              <h3 class="text-lg font-bold text-darkText">Capas</h3>
+              <div id="layers-panel" class="mt-2 space-y-2"></div>
+            </div>
+            <div id="text-controls-container" class="space-y-6 hidden"></div>
+            <button type="button" id="add-text-btn" class="w-full bg-secondary hover:bg-opacity-90 text-white font-bold py-2 rounded-button hidden transition-transform transform hover:scale-105">+ Añadir otro texto (máx. 4)</button>
+            <div id="image-controls-container" class="space-y-6 hidden"></div>
+            <button type="button" id="add-image-btn" class="w-full bg-secondary hover:bg-opacity-90 text-white font-bold py-2 rounded-button hidden transition-transform transform hover:scale-105">+ Añadir otra imagen (máx. 4)</button>
+          </div>
+        </div>
+
+        <!-- Presupuesto / Datos del pedido -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:col-span-3">
+          <!-- Presupuesto -->
+          <div class="p-6 designer-card">
+            <h2 class="text-2xl text-center font-bold text-white mb-4" style="color: var(--acc2);">Presupuesto</h2>
+            <div id="presupuesto-items-container" class="space-y-4 mt-4">
+              <!-- Los items del presupuesto se añadirán dinámicamente aquí -->
+            </div>
+            <div id="resultado" class="text-center text-3xl font-bold mt-6 pt-4 border-t border-gray-600 text-white">0,00 €</div>
+            <div id="descuento" class="text-center text-sm hidden" style="color: var(--acc);"></div>
+          </div>
+
+          <!-- Datos del pedido -->
+          <div class="p-6 designer-card">
+            <h2 class="text-2xl text-center font-bold text-white mb-4" style="color: var(--acc2);">Datos del pedido</h2>
+            <h3 class="text-1xl text-center font-bold text-white mb-4" style="color: red;">(IMPORTANTE) Enviar imágenes y captura de pantalla del mockup</h3>
+            <div class="space-y-4 mt-4">
+              <div><label for="telefono" class="block text-sm text-gray-600 mb-1">Teléfono</label><input type="tel" id="telefono" name="Telefono" class="w-full px-3 py-2" required pattern="[0-9]{9}" title="Introduce 9 números sin espacios ni guiones."></div>
+              <div><label for="mensaje" class="block text-sm text-gray-600 mb-1">Mensaje adicional</label><textarea id="mensaje" name="Mensaje" rows="4" required class="w-full px-3 py-2" placeholder="Describe tu idea, tallas, detalles..."></textarea></div>
+              <div>
+                <label for="adjunto" class="w-full text-center bg-gray-700/60 hover:bg-gray-700 px-4 py-2 rounded-button cursor-pointer block text-darkText transition-colors">Adjuntar imágenes a estampar</label>
+                <input type="file" id="adjunto" name="attachments[]" class="hidden" accept="image/*" multiple>
+                <div id="adjunto-nombre" class="text-center text-gray-400 text-sm mt-2"></div>
+                <div id="adjunto-preview" class="flex flex-wrap gap-4 justify-center mt-2"></div>
+              </div>
+              <button type="submit" class="w-full bg-secondary hover:bg-opacity-90 text-white font-bold py-3 rounded-button !mt-6 transition-transform transform hover:scale-105">Enviar pedido</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+
+<div id="image-modal" class="fixed inset-0 z-[100] bg-black bg-opacity-80 flex items-center justify-center hidden p-4">
+  <div id="modal-content-wrapper" class="relative shadow-2xl">
+    <div id="modal-preview-content" class="relative overflow-hidden">
+        <!-- Contenido clonado dinámicamente -->
+    </div>
+    <button id="close-modal-btn" class="absolute -top-4 -right-4 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center text-3xl font-bold leading-none hover:bg-gray-200 transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white">×</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

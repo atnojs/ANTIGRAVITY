@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Directorio de Herramientas IA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="imagenes/favicon2.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    /* ===== RESET O AJUSTES BÁSICOS ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ===== FUENTES ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+    /* ===== VARIABLES CSS (Temas) ===== */
+    :root {
+      --bg-color: #f0f2f5; --card-bg-color: #ffffff; --text-color: #333333;
+      --primary-color: #007bff; --accent-color: #00bcd4; --heading-color: #2c3e50;
+      --border-color: #e0e0e0; --shadow-color: rgba(0,0,0,0.1);
+      --column-bg: rgba(230,230,250,0.05); --column-backdrop: blur(8px);
+      --column-header-color: var(--accent-color); --placeholder-text-color: #7f8c8d;
+      --button-edit-bg: rgba(0,0,0,0.05); --button-edit-hover-bg: rgba(0,0,0,0.1);
+      --font-primary: 'Inter', sans-serif; --font-secondary: 'Roboto', sans-serif;
+    }
+    body.dark-theme {
+      --bg-color: #1a1a2e; --card-bg-color: #2c3e50; --text-color: #e0e0e0;
+      --primary-color: #00aeff; --accent-color: #00e5ff; --heading-color: #ffffff;
+      --border-color: #4f5b6a; --shadow-color: rgba(0,0,0,0.3);
+      --column-bg: rgba(44,62,80,0.2); --column-header-color: var(--accent-color);
+      --placeholder-text-color: #95a5a6; --button-edit-bg: rgba(255,255,255,0.1);
+      --button-edit-hover-bg: rgba(255,255,255,0.2);
+    }
+    body { font-family:var(--font-secondary); min-height:100vh; background-color:var(--bg-color); background-size:cover; background-position:center; background-attachment:fixed; color:var(--text-color); transition:background-color .3s,color .3s; touch-action:manipulation; padding-top:80px; }
+    .container { max-width:100%; margin:0 auto; padding:20px; }
+    .filters-search-bar { position:fixed; top:0; left:0; width:100%; background-color:var(--card-bg-color); padding:15px 20px; box-shadow:0 2px 10px var(--shadow-color); z-index:1001; display:flex; flex-wrap:wrap; gap:15px; align-items:center; }
+    .filters-search-bar input[type="search"], .filters-search-bar select { padding:10px; border:1px solid var(--border-color); border-radius:6px; background-color:var(--bg-color); color:var(--text-color); font-family:var(--font-secondary); }
+    .filters-search-bar input[type="search"] { flex-grow:1; min-width:200px; }
+    .filters-search-bar label { margin-right:5px; font-weight:600; color:var(--text-color); }
+    .theme-switcher { padding:10px 15px; background-color:var(--primary-color); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
+    .theme-switcher:hover { opacity:.9; }
+    .columns-container { display:flex; flex-wrap:wrap; gap:20px; position:relative; }
+    .columns-container .initial-load-message { width:100%; text-align:center; font-size:1.2em; color:var(--placeholder-text-color); margin-top:30px; padding:20px; }
+    .column { flex:1 1 100%; min-width:300px; background:var(--column-bg); backdrop-filter:var(--column-backdrop); border:1px solid var(--border-color); border-radius:15px; padding:20px; box-shadow:0 4px 12px var(--shadow-color); height:fit-content; margin-bottom:20px; position:relative; }
+    .category-title-container { display:flex; align-items:center; justify-content:center; margin-bottom:20px; border-bottom:2px solid var(--accent-color); padding-bottom:10px; position:relative; }
+    .column h2 { color:var(--column-header-color); font-family:var(--font-primary); font-size:24px; font-weight:700; text-align:center; margin:0 10px; flex-grow:1; border-bottom:none; padding-bottom:0; }
+    .ai-tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }
+    .ai-tools-grid .no-tools-message { grid-column:1 / -1; text-align:center; color:var(--placeholder-text-color); padding:20px; }
+    .ai-tool-card { background-color:var(--card-bg-color); border-radius:10px; padding:15px; box-shadow:0 2px 8px var(--shadow-color); display:flex; flex-direction:column; gap:10px; transition:transform .2s ease,box-shadow .2s ease; position:relative; }
+    .ai-tool-card:hover { transform:translateY(-5px); box-shadow:0 6px 15px var(--shadow-color); }
+    .ai-tool-card .tool-header { display:flex; align-items:center; gap:10px; }
+    .ai-tool-card .tool-logo { width:50px; height:50px; object-fit:contain; border-radius:8px; background-color:#f0f0f0; }
+    .ai-tool-card .tool-name { font-family:var(--font-primary); font-size:18px; font-weight:600; color:var(--heading-color); }
+    .ai-tool-card .tool-brief-description { font-size:14px; line-height:1.4; color:var(--text-color); flex-grow:1; min-height:40px; }
+    .ai-tool-card .tool-tags-pricing { display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:10px; }
+    .ai-tool-card .tool-tags span, .ai-tool-card .tool-pricing span { background-color:var(--accent-color); color:white; padding:3px 8px; border-radius:12px; opacity:.85; }
+    .ai-tool-card .tool-tags { display:flex; flex-wrap:wrap; gap:5px; }
+    .ai-tool-card .tool-tags .tag { background-color:var(--primary-color); opacity:.7; }
+    .ai-tool-card .tool-actions { display:flex; gap:10px; margin-top:auto; }
+    .ai-tool-card .tool-actions button { flex-grow:1; padding:8px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:600; transition:background-color .2s,opacity .2s; color:white; }
+    .ai-tool-card .tool-actions .visit-site-btn { background-color:var(--primary-color); }
+    .ai-tool-card .tool-actions .visit-site-btn:hover { opacity:.85; }
+    .ai-tool-card .tool-actions .more-info-btn { background-color:var(--accent-color); }
+    .ai-tool-card .tool-actions .more-info-btn:hover { opacity:.85; }
+    .ai-tool-card .tool-actions button:disabled { background-color:#ccc; cursor:not-allowed; opacity:.7; }
+    body.dark-theme .ai-tool-card .tool-actions button:disabled { background-color:#555; color:#aaa; }
+    .new-badge { position:absolute; top:-5px; right:-5px; background-color:#ff4757; color:white; padding:3px 8px; font-size:10px; font-weight:bold; border-radius:5px; transform:rotate(10deg); z-index:1; }
+    .tool-order-buttons { display:none; justify-content:center; gap:10px; margin-top:10px; }
+    body.edit-mode .tool-order-buttons { display:flex; }
+    .tool-order-buttons button { background:var(--button-edit-bg); color:var(--text-color); border:1px solid var(--border-color); padding:5px 10px; border-radius:4px; cursor:pointer; font-size:1em; }
+    .tool-order-buttons button:hover { background:var(--button-edit-hover-bg); }
+    .tool-order-buttons button:disabled { opacity:.5; cursor:not-allowed; }
+    @media (max-width:768px) { body{padding-top:150px;} .filters-search-bar{flex-direction:column;align-items:stretch;} .column h2{font-size:20px;} .ai-tools-grid{grid-template-columns:1fr;} }
+    .column-controls { position:fixed; bottom:20px; right:20px; display:none; flex-direction:column; gap:10px; z-index:1000; }
+    .column-controls button { background:var(--primary-color); color:white; border:none; padding:12px 20px; border-radius:25px; cursor:pointer; font-weight:bold; box-shadow:0 2px 10px var(--shadow-color); transition:background .3s ease,opacity .3s ease; margin-bottom: 5px; /* Añadido para separar un poco */ }
+    .column-controls button:last-child { margin-bottom: 0; }
+    .column-controls button:hover { opacity:.85; }
+    #edit-mode-btn { position:fixed; bottom:0px; left:50%; transform:translateX(-50%); z-index:999; padding:5px 20px; font-size:30px; background-color:transparent; color:transparent; border:none; border-radius:10px; cursor:pointer; font-weight:bold; box-shadow:0 2px 40px var(--shadow-color); transition:background-color .3s ease,opacity .3s ease; }
+    #edit-mode-btn:hover { background-color:transparent; }
+    #edit-mode-btn.active { background-color:rgba(255,0,0,1); }
+    #edit-mode-btn.active:hover { background-color:#000000; }
+    .add-link-btn { background:rgba(0,123,255,.7); color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; width:100%; margin-top:15px; display:none; font-weight:600; }
+    .add-link-btn:hover { background:rgba(0,123,255,1); }
+    .remove-column-btn { background:rgba(255,0,0,.7); color:#fff; border:none; padding:8px 12px; border-radius:6px; margin-top:10px; cursor:pointer; font-weight:bold; display:none; }
+    .remove-column-btn:hover { background:rgba(255,0,0,1); }
+    .tool-edit-buttons { display:none; position:absolute; top:5px; right:5px; background:rgba(255,255,255,.8); padding:5px; border-radius:5px; z-index:10; }
+    body.dark-theme .tool-edit-buttons { background:rgba(44,62,80,.9); }
+    .tool-edit-buttons button { background:transparent; border:none; color:var(--text-color); cursor:pointer; font-size:14px; margin:0 2px; }
+    .tool-edit-buttons button:hover { color:var(--primary-color); }
+    #bgInput { display:none; }
+    .tooltip { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--card-bg-color); color:var(--text-color); padding:25px; border-radius:12px; font-size:15px; font-family:var(--font-secondary); max-width:700px; width:90vw; max-height:85vh; overflow-y:auto; z-index:9999; box-shadow:0 5px 20px rgba(0,0,0,.25); line-height:1.6; }
+    .popup-description { margin:0 0 20px 0; padding:0; color:var(--text-color); }
+    .popup-description p { margin:0 0 10px 0; text-align:left; }
+    .popup-description strong, .popup-description b { color:var(--heading-color); } 
+    .images-container { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:15px 0; padding:0; width:100%; }
+    .popup-description img, .description-preview img { max-width:100%; height:auto; border-radius:6px; display:block; object-fit:contain; }
+    .popup-description .resizable-img-container { border:none; max-width:calc(50% - 5px); margin:0; }
+    @media (max-width:576px) { .popup-description .resizable-img-container{max-width:100%;} }
+    .popup-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--border-color); padding-top:15px; }
+    .popup-buttons button { background:var(--primary-color); color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; transition:opacity .2s; }
+    .popup-buttons button:hover { opacity:.85; }
+    .popup-buttons button.secondary { background-color:var(--accent-color); }
+    .add-link-form-container { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--card-bg-color); color:var(--text-color); border-radius:12px; padding:25px; max-width:700px; width:90vw; z-index:10000; box-shadow:0 5px 20px rgba(0,0,0,.3); font-family:var(--font-secondary); max-height:90vh; overflow-y:auto; }
+    .add-link-form-container h3 { margin-bottom:20px; text-align:center; font-size:20px; color:var(--heading-color); font-family:var(--font-primary); }
+    .form-group { margin-bottom:15px; }
+    .form-group label { display:block; margin-bottom:6px; font-weight:600; color:var(--text-color); }
+    .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background-color:var(--bg-color); color:var(--text-color); font-family:var(--font-secondary); }
+    .form-group textarea { resize:vertical; min-height:80px; }
+    .form-group input[type="file"] { padding:5px; } 
+    .form-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+    .form-buttons button { padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; border:none; transition:opacity .2s; }
+    .form-buttons button#saveLinkBtn { background-color:var(--primary-color); color:white;}
+    .form-buttons button#cancelLinkBtn { background-color:#6c757d; color:white; } 
+    .form-buttons button:hover { opacity:.85; }
+    .checkbox-group { display:flex; align-items:center; margin-bottom:15px; }
+    .checkbox-group input[type="checkbox"] { width:auto; margin-right:10px; }
+    .checkbox-group label { display:inline; margin-bottom:0; font-weight:normal; color:var(--text-color); }
+    .card-preview-area { margin-top:20px; padding:15px; border:1px dashed var(--border-color); border-radius:8px; background-color:var(--bg-color); }
+    .card-preview-area h4 { margin-bottom:10px; font-family:var(--font-primary); color:var(--heading-color); }
+    .card-preview-area .ai-tool-card { background-color:var(--card-bg-color); pointer-events:none; box-shadow:none; }
+    .password-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,.6); z-index:10001; justify-content:center; align-items:center; }
+    .password-modal-content { background-color:var(--card-bg-color); color:var(--text-color); padding:25px; border-radius:12px; max-width:250px; width:90%; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,.3); }
+    #categoryOrderModal .modal-content { max-height: 70vh; overflow-y: auto; } /* Específico para el modal de categorías */
+    .password-modal h3 { margin-top:0; margin-bottom:15px; font-size:18px; color:var(--heading-color); }
+    .password-modal input[type="password"] { width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:15px; background-color:var(--bg-color); color:var(--text-color); }
+    .password-modal-buttons, #categoryOrderModal .modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+    #categoryOrderModal .modal-actions { justify-content: center; } /* Centrar botón de cerrar en modal de categorías */
+    .password-modal-buttons button, #categoryOrderModal .modal-actions button { padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; border:none; transition:opacity .2s; color:white; }
+    #submitAdminPasswordBtn { background-color:var(--primary-color); }
+    #cancelAdminPasswordBtn, #closeCategoryOrderModalBtn { background-color:#6c757d; } /* Unificar estilo de cerrar/cancelar */
+    .password-modal-buttons button:hover, #categoryOrderModal .modal-actions button:hover { opacity:.85; }
+    .image-tools { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .image-tools button { background:var(--accent-color); color:white; border:none; border-radius:4px; padding:8px 12px; cursor:pointer; font-size:13px; transition:opacity .2s; }
+    .image-tools button:hover { opacity:.85; }
+    .image-upload-input { display:none; }
+    .description-preview { margin-top:15px; padding:15px; border:1px dashed var(--border-color); border-radius:8px; min-height:100px; max-height:300px; overflow-y:auto; background-color:var(--bg-color); color:var(--text-color); }
+    .paste-area { width:100%; height:50px; border:2px dashed var(--border-color); border-radius:8px; background-color:var(--bg-color); display:flex; align-items:center; justify-content:center; margin-top:10px; cursor:pointer; font-size:14px; color:#666; }
+    body.dark-theme .paste-area { color:#bbb; }
+    .paste-area:hover { border-color:var(--accent-color); }
+    .resizable-img-container { position:relative; display:inline-block; margin:5px; border:2px dashed transparent; overflow:visible; vertical-align:middle; line-height:0; }
+    body.edit-mode .description-preview .resizable-img-container { border:2px dashed var(--accent-color); max-width:none!important; }
+    .resizable-img-container img { display:block; max-width:100%; margin:0; padding:0; vertical-align:bottom; line-height:0; }
+    .resize-handle, .delete-image-btn { display:none; } 
+    body.edit-mode .resize-handle, body.edit-mode .delete-image-btn { display:block; position:absolute; background:var(--accent-color); color:white; border-radius:50%; z-index:100; cursor:pointer; border:2px solid var(--card-bg-color); box-shadow:0 0 5px rgba(0,0,0,.3); }
+    body.edit-mode .resize-handle { width:16px; height:16px; right:-8px; bottom:-8px; cursor:se-resize; }
+    body.edit-mode .delete-image-btn { width:22px; height:22px; top:-10px; right:-10px; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; }
+    body.edit-mode .description-preview img:not(.resizable-img-container img) { border:2px dashed var(--accent-color); }
+    #categoryOrderModal ul { list-style:none; padding:0; margin:0; }
+    #categoryOrderModal li { display:flex; justify-content:space-between; align-items:center; padding:10px 5px; border-bottom:1px solid var(--border-color); }
+    #categoryOrderModal li:last-child { border-bottom:none; }
+    #categoryOrderModal .category-name { flex-grow:1; margin-right:10px; }
+    #categoryOrderModal .order-buttons button { background:var(--button-edit-bg); color:var(--text-color); border:1px solid var(--border-color); margin-left:5px; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:1.1em; line-height:1; }
+    #categoryOrderModal .order-buttons button:hover { background:var(--button-edit-hover-bg); }
+    #categoryOrderModal .order-buttons button:disabled { opacity:.4; cursor:not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="filters-search-bar">
+    <input type="search" id="searchInput" placeholder="Buscar herramienta por nombre, descripción, tags...">
+    <div>
+      <label for="categoryFilter">Categoría:</label>
+      <select id="categoryFilter">
+        <option value="" selected>¿Qué categoría quieres ver?</option> 
+        <option value="_all_">Todas las Categorías</option>
+        </select>
+    </div>
+    <div>
+      <label for="pricingFilter">Precio:</label>
+      <select id="pricingFilter">
+        <option value="">Todos</option>
+        <option value="Gratis">Gratis</option>
+        <option value="Freemium">Por Créditos</option>
+        <option value="De Pago">Prueba Gratuita</option>
+        <option value="Prueba Gratuita">De Pago</option>
+        <option value="Freemium">Freemium</option>
+      </select>
+    </div>
+    
+        
+        
+        <div>
+        <label for="sortOrder">Ordenar por:</label>
+        <select id="sortOrder">
+            <option value="default">Por defecto</option>
+            <option value="newest">Más nuevos primero</option>
+            <option value="oldest">Más antiguos primero</option>
+            <option value="nameAsc">Nombre (A-Z)</option>
+            <option value="nameDesc">Nombre (Z-A)</option>
+        </select>
+    </div>
+    
+    
+    
+    
+    
+    <button id="themeSwitcher" class="theme-switcher">Tema Oscuro</button>
+  </div>
+
+  <div class="container">
+    <div class="columns-container" id="columnsContainer">
+      </div>
+  </div>
+
+  <input type="file" id="bgInput" accept="image/*">
+
+  <div class="column-controls">
+    <button class="change-bg-btn" onclick="document.getElementById('bgInput').click()">Cambiar Fondo</button>
+    <button class="add-column-btn" onclick="addColumn()">Añadir Categoría</button>
+    <button id="orderCategoriesBtn">Ordenar Categorías</button>
+  </div>
+
+  <button id="edit-mode-btn" class="edit-mode-btn">ACTIVAR</button>
+
+  <div id="adminPasswordModal" class="password-modal">
+    <div class="password-modal-content">
+      <h3>Activar Modo Edición</h3>
+      <input type="password" id="adminPasswordInput" placeholder="Introduce la contraseña">
+      <div class="password-modal-buttons">
+        <button id="submitAdminPasswordBtn">Activar</button>
+        <button id="cancelAdminPasswordBtn">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="categoryOrderModal" class="password-modal" style="display: none;">
+      <div class="modal-content">
+          <h3>Ordenar Categorías</h3>
+          <ul id="categoryOrderList"></ul>
+          <div class="modal-actions">
+              <button id="closeCategoryOrderModalBtn">Hecho</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="linkFormContainer" class="add-link-form-container" style="display: none;">
+    </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let isEditable = false;
+      let activeResizeContainer = null;
+      let initialWidth, initialX; 
+      let websiteData = { columns: [], background: '' };
+      
+      const NOMBRE_CATEGORIA_POR_DEFECTO = "Apps Recomendadas"; 
+
+      const columnsContainer = document.getElementById('columnsContainer');
+      const columnControls = document.querySelector('.column-controls');
+      const editModeBtn = document.getElementById('edit-mode-btn');
+      const adminPasswordModal = document.getElementById('adminPasswordModal');
+      const adminPasswordInput = document.getElementById('adminPasswordInput');
+      const submitAdminPasswordBtn = document.getElementById('submitAdminPasswordBtn');
+      const cancelAdminPasswordBtn = document.getElementById('cancelAdminPasswordBtn');
+      
+      const categoryOrderModal = document.getElementById('categoryOrderModal');
+      const categoryOrderList = document.getElementById('categoryOrderList');
+      const closeCategoryOrderModalBtn = document.getElementById('closeCategoryOrderModalBtn');
+      const orderCategoriesBtn = document.getElementById('orderCategoriesBtn'); 
+
+      let linkFormContainer = document.getElementById('linkFormContainer');
+      let linkFormTitle, toolNameInput, toolUrlInput, toolLogoUrlInput, toolBriefDescriptionInput,
+          toolTagsInput, toolPricingModelSelect, toolTutorialUrlInput,
+          toolPrivateCheckbox, 
+          editingToolIdInput, editingCategoryIndexInput, saveLinkBtn, cancelLinkBtn,
+          cardPreviewName, cardPreviewLogo, cardPreviewDescription, cardPreviewPricing;
+      let _descriptionPreviewForm, _insertImageBtnForm, _uploadImageBtnForm, 
+          _imageUploadInputForm, _pasteAreaForm, _previewDescriptionBtnForm, 
+          _toolDetailedDescriptionInput;
+
+      function createOrUpdateLinkForm() {
+        if (!linkFormContainer) {
+          linkFormContainer = document.createElement('div');
+          linkFormContainer.id = 'linkFormContainer';
+          linkFormContainer.className = 'add-link-form-container';
+          document.body.appendChild(linkFormContainer);
+        }
+        linkFormContainer.innerHTML = `
+          <h3 id="linkFormTitle">Añadir Nueva Herramienta IA</h3>
+          <input type="hidden" id="editingToolId" value=""><input type="hidden" id="editingCategoryIndex" value="-1">
+          <div class="form-group"><label for="toolName">Nombre:</label><input type="text" id="toolName"></div>
+          <div class="form-group"><label for="toolUrl">URL Sitio Web:</label><input type="url" id="toolUrl"></div>
+          <div class="form-group"><label for="toolLogoUrl">URL Logo:</label><input type="url" id="toolLogoUrl"></div>
+          <div class="form-group"><label for="toolBriefDescription">Desc. Breve:</label><textarea id="toolBriefDescription" rows="2"></textarea></div>
+          <div class="form-group"><label for="toolDetailedDescription">Desc. Detallada (HTML):</label><textarea id="toolDetailedDescription" rows="5"></textarea>
+            <div class="image-tools"><button id="insertImageBtnForm">URL Imagen</button><button id="uploadImageBtnForm">Subir Imagen</button><input type="file" id="imageUploadInputForm" class="image-upload-input" accept="image/*"><button id="previewDescriptionBtnForm">Vista Previa</button></div>
+            <div class="paste-area" id="pasteAreaForm" tabindex="0">Pega imagen (Ctrl+V)</div><div id="descriptionPreviewForm" class="description-preview" style="display: none;"></div></div>
+          <div class="form-group"><label for="toolTags">Tags (coma):</label><input type="text" id="toolTags"></div>
+          <div class="form-group"><label for="toolPricingModel">Precio:</label><select id="toolPricingModel"><option>Gratis</option><option>Por Créditos</option><option>Prueba Gratuita</option><option>De Pago</option><option>Freemium</option></select></div>
+          <div class="form-group"><label for="toolTutorialUrl">URL Tutorial:</label><input type="url" id="toolTutorialUrl"></div>
+          <div class="checkbox-group"><input type="checkbox" id="toolPrivateCheckbox"><label for="toolPrivateCheckbox">Info detallada privada</label></div>
+          <div class="card-preview-area"><h4>Previsualización:</h4><div class="ai-tool-card"><div class="tool-header"><img id="cardPreviewLogo" src="https://via.placeholder.com/50" class="tool-logo"><span id="cardPreviewName" class="tool-name">Nombre</span></div><p id="cardPreviewDescription" class="tool-brief-description">Desc. breve...</p><div class="tool-tags-pricing"><div id="cardPreviewTagsContainer" class="tool-tags"></div><span id="cardPreviewPricing" class="tool-pricing"><span>Precio</span></span></div><div class="tool-actions"><button disabled>Visitar</button><button disabled>Más Info</button></div></div></div>
+          <div class="form-buttons"><button id="saveLinkBtn">GUARDAR</button><button id="cancelLinkBtn">CANCELAR</button></div>`;
+        setupFormReferencesAndEvents();
+        setupImageTools('Form');
+      }
+      
+      function setupFormReferencesAndEvents() {
+        linkFormTitle = document.getElementById('linkFormTitle');
+        toolNameInput = document.getElementById('toolName');
+        toolUrlInput = document.getElementById('toolUrl');
+        toolLogoUrlInput = document.getElementById('toolLogoUrl');
+        toolBriefDescriptionInput = document.getElementById('toolBriefDescription');
+        _toolDetailedDescriptionInput = document.getElementById('toolDetailedDescription');
+        toolTagsInput = document.getElementById('toolTags');
+        toolPricingModelSelect = document.getElementById('toolPricingModel');
+        toolTutorialUrlInput = document.getElementById('toolTutorialUrl');
+        toolPrivateCheckbox = document.getElementById('toolPrivateCheckbox');
+        editingToolIdInput = document.getElementById('editingToolId');
+        editingCategoryIndexInput = document.getElementById('editingCategoryIndex');
+        saveLinkBtn = document.getElementById('saveLinkBtn');
+        cancelLinkBtn = document.getElementById('cancelLinkBtn');
+        cardPreviewName = document.getElementById('cardPreviewName');
+        cardPreviewLogo = document.getElementById('cardPreviewLogo');
+        cardPreviewDescription = document.getElementById('cardPreviewDescription');
+        cardPreviewPricing = document.getElementById('cardPreviewPricing').firstElementChild;
+        const cardPreviewTagsContainer = document.getElementById('cardPreviewTagsContainer');
+
+        const updatePreview = () => {
+            if(cardPreviewName) cardPreviewName.textContent = toolNameInput.value || "Nombre";
+            if(cardPreviewLogo) cardPreviewLogo.src = toolLogoUrlInput.value || "https://via.placeholder.com/50";
+            if(cardPreviewDescription) cardPreviewDescription.textContent = toolBriefDescriptionInput.value || "Desc. breve...";
+            if(cardPreviewPricing && toolPricingModelSelect) cardPreviewPricing.textContent = toolPricingModelSelect.value;
+            if(cardPreviewTagsContainer && toolTagsInput) {
+                cardPreviewTagsContainer.innerHTML = toolTagsInput.value.split(',').map(t => t.trim()).filter(Boolean).map(t => `<span class="tag">${t}</span>`).join('');
+            }
+        };
+        [toolNameInput, toolLogoUrlInput, toolBriefDescriptionInput, toolTagsInput].forEach(i => i && i.addEventListener('input', updatePreview));
+        if(toolPricingModelSelect) toolPricingModelSelect.addEventListener('change', updatePreview);
+        saveLinkBtn.removeEventListener('click', saveToolHandler); saveLinkBtn.addEventListener('click', saveToolHandler);
+        cancelLinkBtn.removeEventListener('click', closeLinkForm); cancelLinkBtn.addEventListener('click', closeLinkForm);
+      }
+
+      function closeLinkForm() {
+        if (linkFormContainer) linkFormContainer.style.display = 'none';
+        if (_descriptionPreviewForm) _descriptionPreviewForm.style.display = 'none';
+        if (_previewDescriptionBtnForm) _previewDescriptionBtnForm.textContent = 'Vista Previa Detallada';
+      }
+
+      function setupImageTools(suffix = '') {
+          _descriptionPreviewForm = document.getElementById('descriptionPreview' + suffix);
+          _insertImageBtnForm = document.getElementById('insertImageBtn' + suffix);
+          _uploadImageBtnForm = document.getElementById('uploadImageBtn' + suffix);
+          _imageUploadInputForm = document.getElementById('imageUploadInput' + suffix);
+          _pasteAreaForm = document.getElementById('pasteArea' + suffix);
+          _previewDescriptionBtnForm = document.getElementById('previewDescriptionBtn' + suffix);
+
+          const setupListener = (element, event, handler, options = false) => {
+            if (element) { element.removeEventListener(event, handler, options); element.addEventListener(event, handler, options); }
+          };
+          setupListener(_insertImageBtnForm, 'click', handleInsertImageViaButton);
+          if (_uploadImageBtnForm && _imageUploadInputForm) {
+            setupListener(_uploadImageBtnForm, 'click', () => _imageUploadInputForm.click());
+            setupListener(_imageUploadInputForm, 'change', handleImageUploadViaInput);
+          }
+          if (_previewDescriptionBtnForm && _descriptionPreviewForm) {
+            setupListener(_previewDescriptionBtnForm, 'click', () => toggleDescriptionPreview(_descriptionPreviewForm, _toolDetailedDescriptionInput, _previewDescriptionBtnForm));
+          }
+          if (_pasteAreaForm) {
+            setupListener(_pasteAreaForm, 'click', () => _pasteAreaForm.focus());
+            setupListener(_pasteAreaForm, 'paste', handlePasteIntoTextarea);
+          }
+          if (_toolDetailedDescriptionInput) {
+            setupListener(_toolDetailedDescriptionInput, 'paste', handlePasteIntoTextarea);
+          }
+      }
+      
+      function handleInsertImageViaButton() {
+        const imageUrl = prompt('Introduce la URL de la imagen:');
+        if (imageUrl?.trim() && _toolDetailedDescriptionInput && _descriptionPreviewForm) {
+          insertResizableImage(imageUrl, _toolDetailedDescriptionInput, _descriptionPreviewForm);
+        }
+      }
+      function handleImageUploadViaInput(e) {
+        if (e.target.files?.[0] && _toolDetailedDescriptionInput && _descriptionPreviewForm) {
+          const reader = new FileReader();
+          reader.onload = (event) => insertResizableImage(event.target.result, _toolDetailedDescriptionInput, _descriptionPreviewForm);
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      }
+      function toggleDescriptionPreview(previewEl, detailedInputEl, previewBtnEl) {
+          if (previewEl.style.display === 'none') {
+              previewEl.innerHTML = detailedInputEl.value;
+              previewEl.style.display = 'block';
+              if(previewBtnEl) previewBtnEl.textContent = 'Ocultar Vista';
+              processLegacyImages(previewEl); organizeImages(previewEl);     
+              if (isEditable) previewEl.querySelectorAll('.resizable-img-container').forEach(c => c.style.maxWidth = 'none');
+          } else {
+              previewEl.style.display = 'none';
+              if(previewBtnEl) previewBtnEl.textContent = 'Vista Previa';
+          }
+      }
+      function processLegacyImages(containerEl) { 
+        Array.from(containerEl.querySelectorAll('img:not(.resizable-img-container img)')).forEach(img => {
+          const newC = document.createElement('div'); newC.className = 'resizable-img-container';
+          newC.style.width = (img.style.width || img.width || 300) + 'px';
+          if (isEditable) newC.style.maxWidth = 'none';
+          const newImg = img.cloneNode(true); Object.assign(newImg.style, {width:'',height:'',maxWidth:'',margin:'0',padding:'0'});
+          newC.append(newImg, Object.assign(document.createElement('div'),{className:'resize-handle'}), Object.assign(document.createElement('div'),{className:'delete-image-btn',textContent:'×'}));
+          img.parentNode.replaceChild(newC, img);
+        });
+        setupResizableImages(containerEl); 
+      }
+      function organizeImages(containerEl) { 
+        const imgContainers = containerEl.querySelectorAll('.resizable-img-container');
+        if (imgContainers.length > 1) {
+          let flexCont = containerEl.querySelector('.images-container');
+          if (!flexCont) { 
+            flexCont = Object.assign(document.createElement('div'),{className:'images-container'});
+            imgContainers.forEach(ic => { if (ic.parentNode === containerEl) flexCont.appendChild(ic); });
+            if (flexCont.childNodes.length > 0) containerEl.appendChild(flexCont);
+          } else { 
+              imgContainers.forEach(ic => { if(ic.parentNode !== flexCont && ic.parentNode === containerEl) flexCont.appendChild(ic); });
+          }
+        }
+      }
+      function insertResizableImage(imgUrl, textarea, preview) {
+        const html = `<div class="resizable-img-container" style="width:300px;max-width:none;"><img src="${imgUrl}" alt="Imagen"><div class="resize-handle"></div><div class="delete-image-btn">×</div></div>`;
+        const start = textarea.selectionStart, end = textarea.selectionEnd;
+        textarea.value = textarea.value.substring(0,start) + html + textarea.value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + html.length;
+        preview.innerHTML = textarea.value;
+        if (preview.style.display === 'none') {
+            preview.style.display = 'block';
+            if(_previewDescriptionBtnForm) _previewDescriptionBtnForm.textContent = 'Ocultar Vista';
+        }
+        processLegacyImages(preview); organizeImages(preview);
+        if (isEditable) preview.querySelectorAll('.resizable-img-container').forEach(c => c.style.maxWidth = 'none');
+      }
+      function setupResizableImages(containerEl) {
+        containerEl.querySelectorAll('.resizable-img-container').forEach(rc => {
+          if (isEditable) rc.style.maxWidth = 'none';
+          const handle = rc.querySelector('.resize-handle'), delBtn = rc.querySelector('.delete-image-btn');
+          const addSafeListener = (el, ev, fn, opt=false) => { if(el){ if(el._listener) el.removeEventListener(ev, el._listener, opt); el.addEventListener(ev, fn, opt); el._listener = fn; }};
+          addSafeListener(handle, 'mousedown', startResize); addSafeListener(handle, 'touchstart', startResize, {passive:false});
+          addSafeListener(delBtn, 'click', handleDeleteImage);
+        });
+      }
+      function handleDeleteImage() { 
+          const container = this.closest('.resizable-img-container');
+          if (confirm('¿Eliminar imagen?')) { container.remove(); updateTextareaFromPreview(_toolDetailedDescriptionInput, _descriptionPreviewForm); }
+      }
+      function startResize(e) {
+        e.preventDefault(); activeResizeContainer = this.closest('.resizable-img-container');
+        activeResizeContainer.style.maxWidth='none'; initialWidth=activeResizeContainer.offsetWidth; initialX=(e.touches?e.touches[0]:e).clientX;
+        document.addEventListener('mousemove',resizeMove); document.addEventListener('touchmove',resizeMove,{passive:false});
+        document.addEventListener('mouseup',stopResize); document.addEventListener('touchend',stopResize);
+      }
+      function resizeMove(e) {
+        if(!activeResizeContainer)return; e.preventDefault(); activeResizeContainer.style.maxWidth='none';
+        const newW=Math.max(50,initialWidth+((e.touches?e.touches[0]:e).clientX-initialX)); activeResizeContainer.style.width=newW+'px';
+        updateTextareaFromPreview(_toolDetailedDescriptionInput,_descriptionPreviewForm);
+      }
+      function stopResize() {
+        if(!activeResizeContainer)return; if(isEditable)activeResizeContainer.style.maxWidth='none';
+        document.removeEventListener('mousemove',resizeMove); document.removeEventListener('touchmove',resizeMove);
+        document.removeEventListener('mouseup',stopResize); document.removeEventListener('touchend',stopResize);
+        updateTextareaFromPreview(_toolDetailedDescriptionInput,_descriptionPreviewForm); activeResizeContainer=null;
+      }
+      function updateTextareaFromPreview(textarea, preview) { if(preview&&textarea)textarea.value=preview.innerHTML; }
+      function handlePasteIntoTextarea(e) { 
+        const items=(e.clipboardData||e.originalEvent.clipboardData).items;
+        for(let i=0;i<items.length;i++){if(items[i].type.indexOf('image')!==-1){e.preventDefault();
+          const blob=items[i].getAsFile(),reader=new FileReader();
+          reader.onload=(ev)=>insertResizableImage(ev.target.result,_toolDetailedDescriptionInput,_descriptionPreviewForm);
+          reader.readAsDataURL(blob); break;}}
+      }
+      function saveToolHandler() {
+        if (!isEditable){closeLinkForm();return;}
+        const toolData={id:editingToolIdInput.value||`tool_${Date.now()}_${Math.random().toString(36).substr(2,9)}`,
+          name:toolNameInput.value.trim(),websiteUrl:toolUrlInput.value.trim(),logoUrl:toolLogoUrlInput.value.trim(),
+          briefDescription:toolBriefDescriptionInput.value.trim(),detailedDescription:_toolDetailedDescriptionInput.value.trim(),
+          tags:toolTagsInput.value.split(',').map(t=>t.trim()).filter(Boolean),pricingModel:toolPricingModelSelect.value,
+          tutorialUrl:toolTutorialUrlInput.value.trim(),isPrivate:toolPrivateCheckbox.checked,
+          timestampAdded:editingToolIdInput.value?(findToolById(editingToolIdInput.value)?.tool.timestampAdded||Date.now()):Date.now(),
+          timestampUpdated:Date.now()};
+        if(!toolData.name){alert("Nombre requerido.");return;}
+        if(toolData.websiteUrl&&!/^https?:\/\//i.test(toolData.websiteUrl))toolData.websiteUrl='https://'+toolData.websiteUrl;
+        const catIdx=parseInt(editingCategoryIndexInput.value,10);
+        if(catIdx<0||catIdx>=websiteData.columns.length){alert("Categoría inválida.");return;}
+        const cat=websiteData.columns[catIdx]; if(!cat.tools)cat.tools=[];
+        const toolIdx=cat.tools.findIndex(t=>t.id===toolData.id);
+        if(toolIdx>-1)cat.tools[toolIdx]=toolData; else cat.tools.push(toolData);
+        closeLinkForm(); renderAllContent(document.getElementById('categoryFilter').value); saveWebsiteState();
+      }
+      function findToolById(toolId){for(const c of websiteData.columns){if(c.tools){const t=c.tools.find(x=>x.id===toolId);if(t)return{tool:t,category:c};}} return null;}
+
+      function renderAllContent(categoryToMakeSelected = null) {
+        columnsContainer.innerHTML = ''; 
+        const catFilter = document.getElementById('categoryFilter');
+        let effectiveCategoryToSelect = categoryToMakeSelected;
+
+        if (effectiveCategoryToSelect === null) {
+            effectiveCategoryToSelect = catFilter.value || localStorage.getItem('lastCategoryFilter');
+            // Si después de esto sigue siendo null/undefined, el fallback a "" ocurrirá más adelante
+        }
+        
+        catFilter.innerHTML = `<option value="">¿Qué categoría quieres ver?</option><option value="_all_">Todas las Categorías</option>`;
+        websiteData.columns.forEach(c => {
+          const opt=document.createElement('option'); opt.value=c.title; opt.textContent=c.title;
+          catFilter.appendChild(opt);
+        });
+
+        // Intentar establecer la selección efectiva (default, localStorage, o "" si no hay nada más)
+        if (effectiveCategoryToSelect && Array.from(catFilter.options).some(opt => opt.value === effectiveCategoryToSelect)) {
+            catFilter.value = effectiveCategoryToSelect;
+        } else {
+            catFilter.value = ""; // Fallback al placeholder
+        }
+        
+        filterAndSortTools(); setupEditModeUI();
+      }
+
+      function createCategoryElement(categoryData, categoryIndex) {
+        const columnDiv = document.createElement('div');
+        columnDiv.className = 'column';
+        columnDiv.dataset.categoryIndex = categoryIndex;
+        columnDiv.dataset.categoryTitle = categoryData.title;
+        const titleContainer = document.createElement('div');
+        titleContainer.className = 'category-title-container';
+        const titleH2 = document.createElement('h2');
+        titleH2.textContent = categoryData.title;
+        if (isEditable) {
+          titleH2.setAttribute('contenteditable', 'true');
+          titleH2.addEventListener('blur', (e) => {
+            const newTitle = e.target.textContent.trim();
+            const oldTitle = websiteData.columns[categoryIndex].title;
+            if (newTitle && oldTitle !== newTitle) {
+                websiteData.columns[categoryIndex].title = newTitle;
+                const catFilterSelect = document.getElementById('categoryFilter');
+                let currentFilterValue = catFilterSelect.value;
+                if (currentFilterValue === oldTitle) currentFilterValue = newTitle;
+                saveWebsiteState(); renderAllContent(currentFilterValue); 
+            } else { e.target.textContent = oldTitle; }
+          });
+        }
+        titleContainer.appendChild(titleH2);
+        columnDiv.appendChild(titleContainer); // Contenedor de título (sin botones de orden aquí)
+
+        const toolsGridDiv = document.createElement('div');
+        toolsGridDiv.className = 'ai-tools-grid';
+        columnDiv.appendChild(toolsGridDiv);
+        
+        if (isEditable) {
+          const addToolBtn = document.createElement('button');
+          addToolBtn.className = 'add-link-btn'; addToolBtn.textContent = '+ Añadir Herramienta IA';
+          addToolBtn.onclick = () => openToolFormForAdd(categoryIndex);
+          columnDiv.appendChild(addToolBtn);
+          const removeCategoryBtn = document.createElement('button');
+          removeCategoryBtn.className = 'remove-column-btn'; removeCategoryBtn.textContent = 'Eliminar Categoría';
+          removeCategoryBtn.onclick = () => removeCategory(categoryIndex);
+          columnDiv.appendChild(removeCategoryBtn);
+        }
+        return columnDiv;
+      }
+      
+      function createToolCardElement(toolData, categoryIndex, toolIndex, totalToolsInCategory) {
+        const card = document.createElement('div');
+        card.className = 'ai-tool-card';
+        card.dataset.toolId = toolData.id;
+        card.dataset.name = toolData.name.toLowerCase();
+        card.dataset.briefDescription = toolData.briefDescription.toLowerCase();
+        card.dataset.tags = toolData.tags.join(',').toLowerCase();
+        card.dataset.pricingModel = toolData.pricingModel;
+        card.dataset.timestampAdded = toolData.timestampAdded;
+
+        if ((Date.now() - toolData.timestampAdded) < (7*24*60*60*1000)) {
+            card.appendChild(Object.assign(document.createElement('span'),{className:'new-badge',textContent:'NUEVO'}));
+        }
+
+        let toolOrderButtonsHTML = '';
+        if (isEditable) {
+            toolOrderButtonsHTML = `
+            <div class="tool-order-buttons">
+                <button title="Mover herramienta izquierda/arriba" ${toolIndex === 0 ? 'disabled' : ''} onclick="moveTool(${categoryIndex}, '${toolData.id}', -1)">←</button>
+                <button title="Mover herramienta derecha/abajo" ${toolIndex === totalToolsInCategory - 1 ? 'disabled' : ''} onclick="moveTool(${categoryIndex}, '${toolData.id}', 1)">→</button>
+            </div>`;
+        }
+
+        card.innerHTML = `
+          <div class="tool-header"><img src="${toolData.logoUrl||'https://via.placeholder.com/50'}" alt="${toolData.name} logo" class="tool-logo"><span class="tool-name">${toolData.name}</span></div>
+          <p class="tool-brief-description">${toolData.briefDescription}</p>
+          <div class="tool-tags-pricing"><div class="tool-tags">${toolData.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><span class="tool-pricing"><span>${toolData.pricingModel}</span></span></div>
+          ${toolOrderButtonsHTML}
+          <div class="tool-actions"><button class="visit-site-btn" data-url="${toolData.websiteUrl}">Visitar</button><button class="more-info-btn">Más Info</button></div>`;
+
+        card.querySelector('.visit-site-btn').onclick=(e)=>{e.stopPropagation(); const url=e.currentTarget.dataset.url; if(url)window.open(url,'_blank');};
+        const moreInfoBtn = card.querySelector('.more-info-btn');
+        if (toolData.isPrivate && !isEditable) { moreInfoBtn.textContent="Info Restringida"; moreInfoBtn.disabled=true; }
+        else { moreInfoBtn.onclick=(e)=>{e.stopPropagation(); displayToolDetailsInPopup(toolData);};}
+
+        if (isEditable) {
+          const editBtns=document.createElement('div');editBtns.className='tool-edit-buttons';
+          editBtns.innerHTML=`<button title="Editar"><i class="fas fa-edit"></i></button><button title="Eliminar"><i class="fas fa-trash-alt"></i></button>`;
+          editBtns.querySelector('button[title="Editar"]').onclick=(e)=>{e.stopPropagation();openToolFormForEdit(toolData,categoryIndex);};
+          editBtns.querySelector('button[title="Eliminar"]').onclick=(e)=>{e.stopPropagation();removeTool(toolData.id,categoryIndex);};
+          card.appendChild(editBtns);
+        }
+        return card;
+      }
+
+      function displayToolDetailsInPopup(toolData) {
+        document.querySelectorAll('.tooltip.popup').forEach(p=>p.remove());
+        const popup=document.createElement('div');popup.className='tooltip popup';
+        let tutBtnHTML = toolData.tutorialUrl ? `<button id="popupGoToTutorialBtn" class="secondary">Tutorial</button>` : '';
+        let finalDesc = toolData.detailedDescription; const tempDiv=document.createElement('div');tempDiv.innerHTML=finalDesc;
+        const imgsInPopup=tempDiv.querySelectorAll('.resizable-img-container');
+        imgsInPopup.forEach(ic=>{ic.querySelector('.resize-handle')?.remove(); ic.querySelector('.delete-image-btn')?.remove(); ic.style.border='none';});
+        if(imgsInPopup.length>1&&!tempDiv.querySelector('.images-container')){
+            const imgCont=document.createElement('div');imgCont.className='images-container';
+            imgsInPopup.forEach(iC=>imgCont.appendChild(iC.cloneNode(true)));
+            let otherC=Array.from(tempDiv.childNodes).filter(n=>!n.classList||!n.classList.contains('resizable-img-container'));
+            tempDiv.innerHTML=''; otherC.forEach(n=>tempDiv.appendChild(n)); tempDiv.appendChild(imgCont);
+        } else if(imgsInPopup.length===1&&!tempDiv.querySelector('.images-container')) imgsInPopup[0].style.maxWidth='100%';
+        finalDesc=tempDiv.innerHTML; 
+        popup.innerHTML=`<div class="popup-description">${finalDesc}</div><div class="popup-buttons"><button id="popupGoToLinkBtn">Web</button>${tutBtnHTML}<button id="popupCloseBtn">Cerrar</button></div>`;
+        document.body.appendChild(popup);
+        popup.querySelector('#popupGoToLinkBtn').onclick=()=>{if(toolData.websiteUrl)window.open(toolData.websiteUrl,'_blank');popup.remove();};
+        if(toolData.tutorialUrl)popup.querySelector('#popupGoToTutorialBtn').onclick=()=>{window.open(toolData.tutorialUrl,'_blank');popup.remove();};
+        popup.querySelector('#popupCloseBtn').onclick=()=>popup.remove();
+      }
+
+      function setupEditModeUI() {
+        document.body.classList.toggle('edit-mode',isEditable);
+        if(columnControls)columnControls.style.display=isEditable?'flex':'none';
+        if(orderCategoriesBtn) orderCategoriesBtn.style.display = isEditable ? 'block' : 'none';
+        editModeBtn.classList.toggle('active',isEditable);
+        document.querySelectorAll('.column h2').forEach(t=>isEditable?t.setAttribute('contenteditable','true'):t.removeAttribute('contenteditable'));
+        document.querySelectorAll('.add-link-btn,.remove-column-btn').forEach(b=>b.style.display=isEditable?'block':'none');
+        document.querySelectorAll('.tool-edit-buttons').forEach(g=>g.style.display=isEditable?'inline-flex':'none');
+        if(!isEditable&&linkFormContainer&&linkFormContainer.style.display==='block')closeLinkForm();
+      }
+      
+      function openCategoryOrderModal() {
+          if (!isEditable) return;
+          renderCategoryOrderModal();
+          categoryOrderModal.style.display = 'flex';
+      }
+
+      function renderCategoryOrderModal() {
+          categoryOrderList.innerHTML = '';
+          websiteData.columns.forEach((category, index) => {
+              const li = document.createElement('li');
+              // **AÑADIDO event.stopPropagation() a los botones de ordenación**
+              li.innerHTML = `
+                  <span class="category-name">${category.title}</span>
+                  <span class="order-buttons">
+                      <button title="Mover arriba" ${index === 0 ? 'disabled' : ''} onclick="event.stopPropagation(); moveCategory(${index}, -1)">↑</button>
+                      <button title="Mover abajo" ${index === websiteData.columns.length - 1 ? 'disabled' : ''} onclick="event.stopPropagation(); moveCategory(${index}, 1)">↓</button>
+                  </span>
+              `;
+              categoryOrderList.appendChild(li);
+          });
+      }
+
+      if(closeCategoryOrderModalBtn) { 
+          closeCategoryOrderModalBtn.addEventListener('click', () => {
+              categoryOrderModal.style.display = 'none';
+              renderAllContent(document.getElementById('categoryFilter').value); 
+          });
+      }
+      if(orderCategoriesBtn){ 
+          orderCategoriesBtn.addEventListener('click', openCategoryOrderModal); // Asignar handler al botón
+      }
+
+
+      function activateEditMode() { adminPasswordModal.style.display='flex'; adminPasswordInput.value=''; adminPasswordInput.focus(); }
+      submitAdminPasswordBtn.addEventListener('click',async()=>{
+        const pass=adminPasswordInput.value; if(!pass){alert("Introduce contraseña.");return;}
+        try{const isValid=await window.checkPassword(pass);
+            if(isValid){isEditable=true;editModeBtn.textContent='Desactivar';adminPasswordModal.style.display='none';renderAllContent(document.getElementById('categoryFilter').value);}
+            else{alert('Contraseña incorrecta.');adminPasswordInput.value='';adminPasswordInput.focus();}}
+        catch(e){alert('Error verificando.');console.error("Admin pass err:",e);}});
+      adminPasswordInput.addEventListener('keypress',function(e){if(e.key==='Enter'){e.preventDefault();submitAdminPasswordBtn.click();}});
+      cancelAdminPasswordBtn.addEventListener('click',()=>{adminPasswordModal.style.display='none';});
+      function deactivateEditMode(){isEditable=false;editModeBtn.textContent='Activar Modo Edición';renderAllContent(document.getElementById('categoryFilter').value);}
+      editModeBtn.addEventListener('click',()=>isEditable?deactivateEditMode():activateEditMode());
+
+      window.addColumn=()=>{if(!isEditable)return;const name=prompt("Nombre nueva categoría:","Nueva");if(name?.trim()){websiteData.columns.push({title:name.trim(),tools:[]});renderAllContent(name.trim());saveWebsiteState();}};
+     function removeCategory(idx){
+    if(!isEditable)return;
+    // Guardamos el título de la categoría ANTES de que cualquier cosa pueda salir mal o se borre.
+    const categoriaQueSeVaAEliminar = websiteData.columns[idx];
+    if (!categoriaQueSeVaAEliminar) { // Comprobación extra por si acaso
+        console.error("Error: Se intentó eliminar una categoría que no existe en el índice:", idx);
+        return;
+    }
+
+    if(confirm(`Eliminar "${categoriaQueSeVaAEliminar.title}"?`)){
+        const catVal = document.getElementById('categoryFilter').value;
+        // Guardamos el título específico para la comparación DESPUÉS de la eliminación.
+        const tituloDeCategoriaEliminada = categoriaQueSeVaAEliminar.title; 
+        
+        websiteData.columns.splice(idx,1); // Ahora sí, eliminamos la categoría de la lista local
+
+        // Usamos el título que guardamos para la comparación
+        renderAllContent(catVal === tituloDeCategoriaEliminada ? "" : catVal); 
+        
+        saveWebsiteState(); // Con el error anterior arreglado, ahora SÍ debería llamarse a esta función
+    }
+}
+      
+      window.moveCategory = function(index, direction) { 
+        if (!isEditable) return;
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= websiteData.columns.length) return; 
+        const categoryToMove = websiteData.columns.splice(index, 1)[0];
+        websiteData.columns.splice(newIndex, 0, categoryToMove);
+        saveWebsiteState();
+        renderCategoryOrderModal(); 
+      }
+
+      window.moveTool = function(categoryIndex, toolId, direction) { 
+          if (!isEditable) return;
+          const category = websiteData.columns[categoryIndex];
+          if (!category || !category.tools) return;
+          const toolIndex = category.tools.findIndex(t => t.id === toolId);
+          if (toolIndex === -1) return;
+          const newToolIndex = toolIndex + direction;
+          if (newToolIndex < 0 || newToolIndex >= category.tools.length) return; 
+          const toolToMove = category.tools.splice(toolIndex, 1)[0];
+          category.tools.splice(newToolIndex, 0, toolToMove);
+          saveWebsiteState();
+          filterAndSortTools(); 
+      }
+
+      function openToolFormForAdd(catIdx){if(!isEditable)return;createOrUpdateLinkForm();linkFormTitle.textContent=`Añadir a "${websiteData.columns[catIdx].title}"`;
+        editingToolIdInput.value="";editingCategoryIndexInput.value=catIdx;
+        toolNameInput.value="";toolUrlInput.value="";toolLogoUrlInput.value="";toolBriefDescriptionInput.value="";
+        _toolDetailedDescriptionInput.value="";toolTagsInput.value="";toolPricingModelSelect.value="Gratis";
+        toolTutorialUrlInput.value="";toolPrivateCheckbox.checked=false;
+        const tagsC=document.getElementById('cardPreviewTagsContainer');
+        if(cardPreviewName)cardPreviewName.textContent="Nombre";if(cardPreviewLogo)cardPreviewLogo.src="https://via.placeholder.com/50";
+        if(cardPreviewDescription)cardPreviewDescription.textContent="Desc. breve...";if(cardPreviewPricing&&toolPricingModelSelect)cardPreviewPricing.textContent=toolPricingModelSelect.value;
+        if(tagsC)tagsC.innerHTML='';
+        if(_descriptionPreviewForm){_descriptionPreviewForm.innerHTML="";_descriptionPreviewForm.style.display='none';}
+        if(_previewDescriptionBtnForm)_previewDescriptionBtnForm.textContent='Vista Previa';
+        linkFormContainer.style.display='block';toolNameInput.focus();}
+
+      function openToolFormForEdit(tool,catIdx){if(!isEditable)return;createOrUpdateLinkForm();linkFormTitle.textContent=`Editar: ${tool.name}`;
+        editingToolIdInput.value=tool.id;editingCategoryIndexInput.value=catIdx;
+        toolNameInput.value=tool.name;toolUrlInput.value=tool.websiteUrl;toolLogoUrlInput.value=tool.logoUrl;
+        toolBriefDescriptionInput.value=tool.briefDescription;_toolDetailedDescriptionInput.value=tool.detailedDescription;
+        toolTagsInput.value=tool.tags.join(', ');toolPricingModelSelect.value=tool.pricingModel;
+        toolTutorialUrlInput.value=tool.tutorialUrl||"";toolPrivateCheckbox.checked=tool.isPrivate||false;
+        const tagsC=document.getElementById('cardPreviewTagsContainer');
+        if(cardPreviewName)cardPreviewName.textContent=tool.name;if(cardPreviewLogo)cardPreviewLogo.src=tool.logoUrl||"https://via.placeholder.com/50";
+        if(cardPreviewDescription)cardPreviewDescription.textContent=tool.briefDescription;if(cardPreviewPricing&&toolPricingModelSelect)cardPreviewPricing.textContent=tool.pricingModel;
+        if(tagsC)tagsC.innerHTML=tool.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+        if(_descriptionPreviewForm){_descriptionPreviewForm.innerHTML="";_descriptionPreviewForm.style.display='none';}
+        if(_previewDescriptionBtnForm)_previewDescriptionBtnForm.textContent='Vista Previa';
+        linkFormContainer.style.display='block';}
+
+      function removeTool(id,catIdx){if(!isEditable)return;const cat=websiteData.columns[catIdx],tool=cat.tools.find(t=>t.id===id);
+        if(confirm(`Eliminar "${tool.name}"?`)){cat.tools=cat.tools.filter(t=>t.id!==id);renderAllContent(document.getElementById('categoryFilter').value);saveWebsiteState();}}
+      
+      async function saveWebsiteState(){if(!isEditable)return;console.log("Guardando...");
+        try{const r=await fetch('guardar_cambios.php',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({password:'0',background:websiteData.background||document.body.style.backgroundImage,columns:websiteData.columns})});
+            if(!r.ok){console.error('Err server save:',r.status,await r.text());alert('Err guardando server.');return;}
+            const res=await r.json();
+            if(!res.success)console.error('Err server save:',res.error);else console.log('Guardado OK.');}
+        catch(e){console.error('Err red save:',e);alert('Err red guardando.');}}
+
+      async function loadInitialData() {
+        try {
+          const response = await fetch('load_state.php?t=' + Date.now());
+          if (!response.ok) throw new Error(`Fallo carga: ${response.status}`);
+          const loadedData = await response.json();
+          
+          if (loadedData && loadedData.error) { 
+             console.error("PHP Error:", loadedData.error, loadedData.detalles||"");
+             websiteData = { columns: [{ title: "General", tools: [] }], background: '' };
+          } else if (loadedData && loadedData.columns) { 
+            loadedData.columns.forEach(c => { c.tools = c.tools || [];
+                c.tools.forEach(t => {
+                    Object.assign(t, { id: t.id || `tool_${Date.now()}_${Math.random().toString(36).substr(2,9)}`, name: t.name || "Sin Nombre", websiteUrl: t.websiteUrl || "#", logoUrl: t.logoUrl || "", briefDescription: t.briefDescription || "", detailedDescription: t.description || t.detailedDescription || "", tags: Array.isArray(t.tags)?t.tags:(typeof t.tags==='string'?t.tags.split(',').map(x=>x.trim()).filter(Boolean):[]), pricingModel: t.pricingModel || "Gratis", tutorialUrl: t.tutorialUrl || "", isPrivate: t.private ?? t.isPrivate ?? false, timestampAdded: t.timestampAdded || Date.now(), timestampUpdated: t.timestampUpdated || t.timestampAdded });
+                    if(t.hasOwnProperty('description')) delete t.description; if(t.hasOwnProperty('private')) delete t.private;
+                });});
+            websiteData = loadedData;
+            if (websiteData.background) document.body.style.backgroundImage = websiteData.background;
+          } else { 
+            websiteData = { columns: [{ title: "General", tools: [] }], background: '' };
+          }
+        } catch (error) { 
+          console.error('Error crítico carga:', error);
+          websiteData = { columns: [{ title: "General", tools: [] }], background: '' };
+        }
+        createOrUpdateLinkForm(); // Crear el formulario una vez
+        
+        // Determinar la categoría a seleccionar inicialmente
+        let categoryToSelectInitially = ""; // Default to placeholder
+        const defaultCategoryExists = NOMBRE_CATEGORIA_POR_DEFECTO && websiteData.columns.some(c => c.title === NOMBRE_CATEGORIA_POR_DEFECTO);
+
+        if (defaultCategoryExists) {
+            categoryToSelectInitially = NOMBRE_CATEGORIA_POR_DEFECTO;
+        } else {
+            const savedCatFilter = localStorage.getItem('lastCategoryFilter');
+            // Verificar si la categoría guardada es válida (existe o es "_all_" o "")
+            if (savedCatFilter && 
+                (websiteData.columns.some(c => c.title === savedCatFilter) || 
+                 savedCatFilter === "_all_" || 
+                 savedCatFilter === "")) {
+                categoryToSelectInitially = savedCatFilter;
+            }
+        }
+        // Llamar a renderAllContent una vez, pasando la categoría que debe estar seleccionada.
+        // renderAllContent se encargará de popular el select y luego llamar a filterAndSortTools.
+        renderAllContent(categoryToSelectInitially); 
+      }
+      
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const pricingFilter = document.getElementById('pricingFilter');
+      const sortOrderSelect = document.getElementById('sortOrder');
+
+      function filterAndSortTools() {
+          const searchTerm = searchInput.value.toLowerCase().trim();
+          const selectedCategoryTitle = categoryFilter.value; 
+          const selectedPricing = pricingFilter.value;
+          const sortOrder = sortOrderSelect.value;
+          localStorage.setItem('lastCategoryFilter', selectedCategoryTitle);
+
+          if (selectedCategoryTitle === "") { 
+              columnsContainer.innerHTML = '<p class="initial-load-message">Por favor, selecciona una categoría para ver las herramientas.</p>';
+              return; 
+          }
+          let hasVisibleContent = false;
+          columnsContainer.innerHTML = ''; 
+
+          websiteData.columns.forEach((category, catIndex) => {
+              let renderThisCategory = (selectedCategoryTitle === "_all_") || (category.title === selectedCategoryTitle);
+              if (!renderThisCategory) return;
+              
+              const categoryElement = createCategoryElement(category, catIndex);
+              const toolsGrid = categoryElement.querySelector('.ai-tools-grid');
+              toolsGrid.innerHTML = ''; 
+
+              let toolsToDisplay = category.tools ? [...category.tools] : [];
+              toolsToDisplay = toolsToDisplay.filter(t => 
+                  (searchTerm ? [t.name,t.briefDescription,...(t.tags||[])].join(' ').toLowerCase().includes(searchTerm) : true) &&
+                  (!selectedPricing || t.pricingModel === selectedPricing)
+              );
+             
+              toolsToDisplay.sort((a,b) => {
+                  switch(sortOrder){
+                      case 'newest': return b.timestampAdded-a.timestampAdded; case 'oldest': return a.timestampAdded-b.timestampAdded;
+                      case 'nameAsc': return a.name.localeCompare(b.name); case 'nameDesc': return b.name.localeCompare(a.name);
+                      default: const oTools=(websiteData.columns[catIndex].tools||[]); return oTools.indexOf(a)-oTools.indexOf(b);
+                  }});
+
+              if (toolsToDisplay.length > 0) {
+                  toolsToDisplay.forEach((tool, toolIdx) => { 
+                      toolsGrid.appendChild(createToolCardElement(tool, catIndex, toolIdx, toolsToDisplay.length));
+                  });
+                  columnsContainer.appendChild(categoryElement); 
+                  hasVisibleContent = true;
+              } else if (category.title === selectedCategoryTitle) { 
+                  toolsGrid.innerHTML = '<p class="no-tools-message">No hay herramientas que coincidan en esta categoría.</p>';
+                  columnsContainer.appendChild(categoryElement);
+                  hasVisibleContent = true; 
+              } else if (selectedCategoryTitle === "_all_") { 
+                  if (!searchTerm && !selectedPricing && (!category.tools || category.tools.length === 0)) {
+                     toolsGrid.innerHTML = '<p class="no-tools-message">No hay herramientas aquí aún.</p>';
+                     columnsContainer.appendChild(categoryElement);
+                  }
+              }
+          });
+
+          if (!hasVisibleContent && selectedCategoryTitle !== "") { 
+              columnsContainer.innerHTML = '<p class="initial-load-message">No se encontraron herramientas para los filtros actuales.</p>';
+          }
+          setupEditModeUI();
+      }
+
+      searchInput.addEventListener('input', filterAndSortTools);
+      categoryFilter.addEventListener('change', filterAndSortTools);
+      pricingFilter.addEventListener('change', filterAndSortTools);
+      sortOrderSelect.addEventListener('change', filterAndSortTools);
+      
+      const themeSwitcher = document.getElementById('themeSwitcher');
+      themeSwitcher.addEventListener('click', () => {
+          document.body.classList.toggle('dark-theme');
+          const isDark = document.body.classList.contains('dark-theme');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          themeSwitcher.textContent = isDark ? 'Tema Claro' : 'Tema Oscuro';
+      });
+      function applyInitialTheme() {
+          const isDark = localStorage.getItem('theme') === 'dark';
+          if (isDark) document.body.classList.add('dark-theme');
+          themeSwitcher.textContent = isDark ? 'Tema Claro' : 'Tema Oscuro';
+      }
+      applyInitialTheme();
+
+      document.getElementById('bgInput').addEventListener('change', function(e) {
+        if(!isEditable)return; const file=e.target.files[0]; if(!file)return;
+        const reader=new FileReader(); reader.onload=(ev)=>{document.body.style.backgroundImage=`url(${ev.target.result})`; websiteData.background=`url(${ev.target.result})`; saveWebsiteState();};
+        reader.readAsDataURL(file);});
+      
+      loadInitialData();
+
+      document.addEventListener('click',function(e){
+        const p=document.querySelector('.tooltip.popup'); if(p&&!e.target.closest('.tooltip.popup')&&!e.target.closest('.more-info-btn'))p.remove();
+        if(adminPasswordModal.style.display==='flex'&&!e.target.closest('.password-modal-content')&&e.target!==adminPasswordModal&&e.target!==editModeBtn&&!editModeBtn.contains(e.target))adminPasswordModal.style.display='none';
+        if(categoryOrderModal.style.display === 'flex' && !e.target.closest('#categoryOrderModal .modal-content') && e.target !== categoryOrderModal && e.target !== orderCategoriesBtn && (orderCategoriesBtn && !orderCategoriesBtn.contains(e.target))){
+            categoryOrderModal.style.display = 'none';
+        }
+      });
+
+      window.checkPassword=async(pass)=>{const fd=new FormData();fd.append('password',pass);
+        try{const r=await fetch('validar_password.php',{method:'POST',body:fd});
+            if(!r.ok){console.error("Err server pass val:",r.status);const errTxt=await r.text();console.error("Server err detail:",errTxt);alert(`Server Err (${r.status}). Console.`);return false;}
+            const ct=r.headers.get("content-type");
+            if(ct&&ct.includes("application/json")){const res=await r.json();return res&&typeof res.success==='boolean'?res.success:(console.error("Unexpected JSON:",res),alert("Unexpected JSON. No validation."),false);}
+            else{const errTxt=await r.text();console.error("Non-JSON resp:",errTxt);alert("Unexpected server resp (non-JSON). Console & PHP script: validar_password.php");return false;}}
+        catch(e){console.error("Net/parse err pass val:",e);alert("Net/parse err. Connection & PHP script.");return false;}};
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+
+/* === TEMA "GLASS + GRADIENT" (como la página de agradecimiento) === */
+:root{
+  --bg1:#0c1445;        /* azul oscuro */
+  --bg2:#1e3a8a;        /* azul medio */
+  --acc:#22d3ee;        /* cyan-400 */
+  --acc2:#a78bfa;       /* violet-400 */
+  --text:#e5e7eb;       /* gray-200 */
+  --muted:#94a3b8;      /* slate-400 */
+  --card:#0f172a33;     /* glass card con más transparencia */
+  --border:#1e40af;     /* borde azul */
+  --card-bg:#0f172abb;  /* fondo de tarjetas */
+}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;
+  color:var(--text);
+  background: linear-gradient(160deg, #0c1445 0%, #1e3a8a 25%, #0891b2 50%, #0c4a6e 75%, #1e293b 100%);
+  overflow-x:hidden;
+}
+/* Cabecera pegajosa en vidrio */
+.sticky-header{
+  background: var(--card) !important;
+  border-bottom:1px solid var(--border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.sticky-header a{ color:#cbd5e1; }
+.sticky-header a:hover{ color:#ffffff; }
+/* Botones con gradiente del tema (sin tocar tu HTML) */
+.bg-primary{
+  background:linear-gradient(135deg,var(--acc),var(--acc2)) !important;
+  box-shadow:0 10px 20px rgba(34,211,238,.25), 0 6px 14px rgba(167,139,250,.18);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.bg-primary:hover{ transform:translateY(-1px); }
+.bg-secondary{
+  background:linear-gradient(135deg,var(--acc2),var(--acc)) !important;
+  box-shadow:0 10px 20px rgba(167,139,250,.25), 0 6px 14px rgba(34,211,238,.18);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.bg-secondary:hover{ transform:translateY(-1px); }
+/* Secciones como "tarjetas" de vidrio */
+.section-card{
+  position:relative;
+  background: var(--card-bg) !important;
+  border:1px solid var(--border);
+  border-radius:24px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin:40px auto;
+  width:clamp(280px, 96%, 1300px);
+  padding: 2rem 0;
+}
+/* Hero: video + overlay con el mismo aura de color */
+.hero-section{
+  position:relative;
+  min-height:80vh;
+  display:flex; align-items:flex-start;
+  color:#fff; overflow:hidden;
+  background:transparent;
+}
+.hero-section video{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:.35; z-index:0;
+}
+.hero-section::after{
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(1000px 650px at 15% 10%, var(--acc2) 0%, transparent 60%),
+    radial-gradient(800px 500px at 85% 90%, var(--acc) 0%, transparent 55%);
+  mix-blend-mode:screen; opacity:.5;
+}
+.hero-section .content-overlay{ position:relative; z-index:2; }
+.hero-section h1{ text-shadow:0 6px 28px rgba(0,0,0,.45); }
+/* Tarjetas de servicios y galería con look glass */
+.service-card, .gallery-item, .testimonial-card{
+  background:rgba(12,20,69,.6) !important;
+  border:1px solid var(--border);
+  border-radius:20px !important;
+  box-shadow:0 12px 26px rgba(0,0,0,.35);
+}
+/* FAQ y pasos con el mismo marco */
+.bg-white.dark\:bg-gray-700, .bg-gray-50.dark\:bg-gray-700{
+  background:rgba(12,20,69,.55) !important;
+  border:1px solid var(--border) !important;
+}
+.timeline-number{
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  color:#0b1022;
+  box-shadow:0 8px 18px rgba(34,211,238,.25);
+}
+/* Inputs/Selects en vidrio */
+input:not([type="checkbox"]), select, textarea{
+  background:rgba(12,20,69,.55) !important;
+  border:1px solid var(--border) !important;
+  color:#e5e7eb !important;
+  border-radius:12px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 1rem !important;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+input::placeholder, textarea::placeholder{ color:#94a3b8 !important; }
+input:focus, select:focus, textarea:focus{
+  outline:none; border-color: var(--acc2) !important;
+  box-shadow:0 0 0 3px rgba(167,139,250,.25) !important;
+}
+
+/* Custom Select - Nuevo estilo */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select {
+  position: relative;
+  background: rgba(12,20,69,.55) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 1rem !important;
+  width: 100%;
+  color: #e5e7eb !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-select:hover {
+  border-color: var(--acc2) !important;
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: var(--acc2) !important;
+  box-shadow: 0 0 0 3px rgba(167,139,250,.25) !important;
+}
+
+.custom-select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(12,20,69,.9) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  margin-top: 5px;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+}
+
+.custom-select-option {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #e5e7eb !important;
+}
+
+.custom-select-option:hover {
+  background: rgba(167,139,250,.15) !important;
+}
+
+.custom-select-option.selected {
+  background: rgba(34,211,238,.15) !important;
+  color: var(--acc) !important;
+}
+
+.select-arrow {
+  transition: transform 0.3s ease;
+  color: var(--acc2);
+}
+
+.select-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Footer en vidrio */
+footer.section-card{
+  padding-top: 3rem; padding-bottom:1.5rem;
+}
+/* WhatsApp flotante */
+.whatsapp-button{ box-shadow:0 12px 26px rgba(0,0,0,.35); }
+/* Swiper slides overlay coherente */
+.swiper{ width:100%; height:450px; }
+.swiper-slide{
+  background-position:center; background-size:cover;
+  display:flex; align-items:center; justify-content:flex-start;
+  padding-left:40px; position:relative; overflow:hidden;
+}
+.swiper-slide::before{
+  content:""; position:absolute; inset:0; z-index:1;
+  background:linear-gradient(rgba(12,20,69,.55), rgba(12,20,69,.55));
+}
+.swiper-slide .slide-content{ position:relative; z-index:2; color:#fff; max-width:80%; padding:1rem 1rem 1.5rem; text-align:left; }
+/* Pequeños refinamientos */
+.shadow-md{ box-shadow:0 10px 24px rgba(0,0,0,.25) !important; }
+.rounded-button{ border-radius:14px !important; }
+.text-gray-600{ color:#b6c2d2 !important; }
+.text-gray-800{ color:#e5e7eb !important; }
+.contact-section-title{ font-size:clamp(1.6rem, 1.2rem + 2vw, 2.2rem); font-weight:800; letter-spacing:.2px; }
+.contact-section-subtitle{ color:var(--muted); }
+@media (prefers-reduced-motion: reduce){
+  .bg-primary, .bg-secondary{ transition:none; }
+}
+/* ==== TUS ESTILOS ORIGINALES (conservados y compatibles) ==== */
+h1,h2,h3,h4,h5,h6{ font-family:'Montserrat',sans-serif; }
+.service-card:hover, .gallery-item:hover, .testimonial-card:hover{
+  transform: translateY(-10px);
+  transition: all .3s ease;
+}
+.timeline-item::before{ content:''; position:absolute; top:24px; left:0; width:100%; height:2px; background-color:var(--border); z-index:-1; }
+.timeline-item:last-child::before{ width:0; }
+input[type="file"]{ display:none; }
+.custom-file-upload{
+  border:1px dashed var(--border); display:inline-block; padding:1rem; cursor:pointer;
+  border-radius:12px; width:100%; text-align:center; transition:.3s;
+  background:rgba(12,20,69,.5);
+}
+.custom-file-upload:hover{ border-color:var(--acc2); background:rgba(167,139,250,.06); }
+.gallery-item{ transition: all .3s ease; overflow:hidden; }
+.gallery-item:hover{ transform:translateY(-5px); box-shadow:0 10px 18px rgba(0,0,0,.28); }
+.gallery-overlay{ opacity:0; transition: all .3s ease; background:linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,.7)); }
+.gallery-item:hover .gallery-overlay{ opacity:1; }
+.whatsapp-button{ position:fixed; bottom:30px; right:30px; z-index:100; display:flex; align-items:center; justify-content:center; transition: background-color .3s ease; }
+/* Forzado de textos blancos donde lo pedías */
+#contacto input, #contacto select, #contacto textarea { color:#fff !important; }
+#cotizador-pedido .pedido-section input[type="tel"]{ color:#fff !important; }

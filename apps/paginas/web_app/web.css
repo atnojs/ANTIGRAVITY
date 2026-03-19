@@ -1,0 +1,676 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #0a0a0c;
+    --bg-secondary: #141418;
+    --cyan: #00d9ff;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --border: rgba(255, 255, 255, 0.1);
+    --hover-bg: rgba(255, 255, 255, 0.05);
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* Header */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 10, 12, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--cyan);
+}
+
+.logo i {
+    font-size: 1.5rem;
+}
+
+nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+nav a, nav button {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+nav a:hover, nav button:hover {
+    color: var(--cyan);
+}
+
+.credits-badge {
+    background: var(--bg-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--cyan);
+    font-weight: 500;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+}
+
+/* Container */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Apps Grid */
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+/* App Card */
+.app-card {
+    position: relative;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 280px;
+}
+
+.app-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0, 217, 255, 0.5);
+    box-shadow: 0 20px 40px rgba(0, 217, 255, 0.15);
+}
+
+.app-card-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+}
+
+.app-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(10, 10, 12, 0.6), rgba(10, 10, 12, 0.9));
+}
+
+.app-card-content {
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.app-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.app-card h3 {
+    font-size: 1.5rem;
+    color: var(--cyan);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.app-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.app-card-credits {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 217, 255, 0.2);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    z-index: 3;
+}
+
+/* Edit Mode */
+.edit-mode .app-card {
+    border: 2px dashed rgba(255, 193, 7, 0.5);
+}
+
+.app-card-actions {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: none;
+    gap: 0.5rem;
+    z-index: 3;
+}
+
+.edit-mode .app-card-actions {
+    display: flex;
+}
+
+.app-card-actions button {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--border);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.app-card-actions button:hover {
+    background: var(--cyan);
+    border-color: var(--cyan);
+}
+
+.drag-handle {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    cursor: move;
+    color: var(--cyan);
+    font-size: 1.5rem;
+    display: none;
+    z-index: 3;
+}
+
+.edit-mode .drag-handle {
+    display: block;
+}
+
+.app-card.dragging {
+    opacity: 0.5;
+}
+
+/* Editable Text */
+.editable-text {
+    position: relative;
+}
+
+.edit-mode .editable-text {
+    border: 2px dashed rgba(255, 193, 7, 0.5);
+    padding: 0.5rem;
+    cursor: text;
+}
+
+.editable-text.editing {
+    border-color: var(--cyan);
+}
+
+/* Buttons */
+.edit-mode-btn {
+    position: fixed;
+    top: 5rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.edit-mode-btn:hover {
+    background: var(--cyan);
+    color: var(--bg-primary);
+    border-color: var(--cyan);
+}
+
+.edit-mode-btn.active {
+    background: #ffc107;
+    color: var(--bg-primary);
+    border-color: #ffc107;
+}
+
+.add-app-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--cyan);
+    border: none;
+    color: var(--bg-primary);
+    cursor: pointer;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 217, 255, 0.4);
+    transition: all 0.3s;
+    z-index: 98;
+}
+
+.add-app-btn:hover {
+    transform: scale(1.1);
+}
+
+.save-all-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 6rem;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    background: #4caf50;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+    transition: all 0.3s;
+    z-index: 98;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.save-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(76, 175, 80, 0.6);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-large {
+    max-width: 700px;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+}
+
+.modal h2 {
+    color: var(--cyan);
+    margin-bottom: 1.5rem;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="number"],
+input[type="file"],
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--cyan);
+}
+
+textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--cyan);
+    color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+    background: #00b8d4;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.auth-toggle {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.auth-toggle a {
+    color: var(--cyan);
+    text-decoration: none;
+}
+
+.auth-toggle a:hover {
+    text-decoration: underline;
+}
+
+/* Plans Grid */
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.plan-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.plan-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-5px);
+}
+
+.plan-card.active {
+    border-color: var(--cyan);
+    background: rgba(0, 217, 255, 0.05);
+}
+
+.plan-card h3 {
+    color: var(--cyan);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.plan-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0;
+}
+
+.plan-price span {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.plan-credits {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.plan-card button {
+    width: 100%;
+}
+
+/* Profile Info */
+.profile-info {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.profile-info p {
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.profile-info strong {
+    color: var(--text-primary);
+}
+
+/* Toast */
+#toast-container {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.toast {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    min-width: 300px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast.success {
+    border-left: 4px solid #4caf50;
+}
+
+.toast.error {
+    border-left: 4px solid #f44336;
+}
+
+.toast.info {
+    border-left: 4px solid var(--cyan);
+}
+
+.toast i {
+    font-size: 1.25rem;
+}
+
+.toast.success i {
+    color: #4caf50;
+}
+
+.toast.error i {
+    color: #f44336;
+}
+
+.toast.info i {
+    color: var(--cyan);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+/* Utility */
+.hidden {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .apps-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .save-all-btn {
+        bottom: 6rem;
+        right: 2rem;
+    }
+}

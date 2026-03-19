@@ -1,0 +1,241 @@
+/* ============================================
+   💳 CURSO STRIPE & FIREBASE - STYLES
+   Based on Neon Glassmorphism Style Guide
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --bg1: #020617;
+    --bg2: #0f172a;
+    --acc: #22d3ee;
+    --acc2: #818cf8;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: rgba(34, 211, 238, 0.2);
+    --card-bg: rgba(30, 41, 59, 0.5);
+    --shadow-color: rgba(0, 0, 0, 0.6);
+    --neon-cyan: #06b6d4;
+    --neon-purple: #8b5cf6;
+    --glow-strong: rgba(6, 182, 212, 0.4);
+
+    --main-bg-gradient: radial-gradient(circle at top left, #0f172a 0%, #020617 100%);
+    --gradient-text: linear-gradient(90deg, #22d3ee, #818cf8, #c084fc);
+
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-width: 300px;
+}
+
+/* Base Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--main-bg-gradient);
+    background-attachment: fixed;
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+}
+
+.gradient-text {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glassmorphism */
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px 0 var(--shadow-color);
+}
+
+/* Layout */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 2.5rem 1.5rem;
+    overflow-y: auto;
+    z-index: 1000;
+    border-right: 1px solid var(--border);
+    background: rgba(2, 6, 23, 0.8);
+}
+
+.sidebar h2 {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 2.5rem;
+    color: var(--acc);
+}
+
+.sidebar nav ul {
+    list-style: none;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 0.8rem;
+}
+
+.sidebar nav ul li a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: block;
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition-main);
+    border: 1px solid transparent;
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li a.active {
+    background: rgba(34, 211, 238, 0.05);
+    color: var(--acc);
+    border-color: var(--border);
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 5rem 3rem;
+    max-width: 1100px;
+}
+
+.content-section {
+    margin-bottom: 8rem;
+    scroll-margin-top: 5rem;
+}
+
+.content-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 2rem;
+    color: var(--acc);
+    text-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+.card {
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    line-height: 1.7;
+}
+
+/* Elements */
+.tip-box {
+    background: rgba(16, 185, 129, 0.05);
+    border-left: 4px solid #10b981;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    font-size: 0.95rem;
+}
+
+.warning-box {
+    background: rgba(244, 63, 94, 0.05);
+    border-left: 4px solid #f43f5e;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    font-size: 0.95rem;
+}
+
+.step-list {
+    list-style: none;
+    counter-reset: stripe-step;
+}
+
+.step-list li {
+    position: relative;
+    padding-left: 3.5rem;
+    margin-bottom: 2rem;
+}
+
+.step-list li::before {
+    content: counter(stripe-step);
+    counter-increment: stripe-step;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, var(--acc), var(--acc2));
+    color: var(--bg1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    box-shadow: 0 4px 15px rgba(34, 211, 238, 0.3);
+}
+
+code {
+    background: rgba(2, 6, 23, 0.6);
+    color: #38bdf8;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9em;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+pre {
+    background: rgba(2, 6, 23, 0.8);
+    padding: 1.5rem;
+    border-radius: 12px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    margin: 1.5rem 0;
+}
+
+pre code {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1.5rem;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 3rem 1.5rem;
+    }
+}

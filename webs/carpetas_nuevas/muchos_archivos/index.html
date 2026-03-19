@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Tutorials Link Manager</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Roboto', 'system-ui', 'sans-serif'],
+              inter: ['Inter', 'sans-serif'],
+            },
+            animation: {
+              spin: 'spin 6s linear infinite',
+            },
+            colors: {
+              'custom-bg1-dark': '#0b1020',
+              'custom-bg2-dark': '#151a33',
+              'custom-card-dark': '#131a2f',
+              'custom-text-dark': '#e9ecf5',
+              'custom-muted-dark': '#a0a8c0',
+              'custom-border-dark': '#263052',
+              'custom-accent': '#7aa2ff',
+              'custom-accent-2': '#50e6ff',
+              'custom-accent-3': '#ff7ad9',
+
+              'custom-bg1-light': '#f3f6ff',
+              'custom-bg2-light': '#eaf0ff',
+              'custom-card-light': '#ffffff',
+              'custom-text-light': '#222',
+              'custom-muted-light': '#5b6275',
+              'custom-border-light': '#e6e8f3',
+              'custom-accent-light': '#3b5cff',
+            }
+          },
+        },
+      }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="dark">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

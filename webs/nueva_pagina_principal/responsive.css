@@ -1,0 +1,73 @@
+/* ==========================
+   Ajustes generales móviles
+   ========================== */
+
+/* Para pantallas ≤ 768px */
+@media (max-width: 768px) {
+  /* 1) Forzar que las columnas ocupen 100% de ancho en lugar del min-width:300px */
+  .columns-container {
+    flex-direction: column !important;
+  }
+  .columns-container .column {
+    flex: 1 1 100% !important;
+    min-width: auto !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* 2) Que el grid de tarjetas sea siempre de 1 columna en móviles */
+  .ai-tools-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 3) Ajustes en la barra fija superior para que no tapone el contenido:
+       - Quitar padding-top extra (si lo hubiera duplicado) y hacerla estática opcional */
+  .filters-search-bar {
+    position: static !important;
+    box-shadow: none !important;
+    padding: 10px 15px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  body {
+    padding-top: 0 !important;
+  }
+
+  /* 4) Reducir márgenes/paddings de títulos y botones para que no queden tan grandes */
+  .column h2 {
+    font-size: 1.2rem !important; /* antes era 20px */
+  }
+  .filters-search-bar input[type="search"],
+  .filters-search-bar select,
+  .theme-switcher {
+    font-size: 0.9rem !important;
+  }
+
+  /* 5) Que el contenedor principal no tenga padding excesivo */
+  .container {
+    padding: 10px !important;
+  }
+}
+
+/* Para pantallas ≤ 576px (ajustes extra en móviles muy pequeños) */
+@media (max-width: 576px) {
+  /* 1) Colapsar aún más la tipografía y botones */
+  .column h2 {
+    font-size: 1rem !important;
+  }
+  .filters-search-bar input[type="search"],
+  .filters-search-bar select {
+    font-size: 0.85rem !important;
+    padding: 8px !important;
+  }
+  .theme-switcher {
+    font-size: 0.85rem !important;
+    padding: 8px 12px !important;
+  }
+
+  /* 2) Que las tarjetas de herramientas ocupen todo el ancho sin espacios laterales */
+  .ai-tool-card {
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+}

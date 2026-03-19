@@ -1,0 +1,743 @@
+0:00
+If you think you need hundreds of dollars to launch a successful SAS business, that's because you have no idea just how powerful AI has become.
+0:07
+I've just built this fully monetizable YouTube learner app in Google AI Studio. Users can sign up and get 10 free
+0:13
+credits, but once they run out, they'll need to upgrade their plan to plus or premium. And in this case, the system
+0:20
+will safely redirect them to PayPal where they can complete their purchase. Now, if it's successful, they'll get 100
+0:26
+credits on the plus plan and unlimited access on the premium one. Now, all this backend was built only using free no
+0:33
+code tools Firebase and make.com. So, by the end of this video, you'll know exactly how to connect payments to your
+0:39
+apps so you can turn your ideas into profit. So, without further ado, let's get right into the video. Before
+Step 01: Basic App Setup (Google AI Studio x Firebase)
+0:45
+connecting payments, you'll first need to design the front end of your app in Google AI Studio build section. Then
+0:51
+you're just going to connect Firebase authentication so users can sign in and sign up. And you're also going to link
+0:57
+your Fire Store database so you can save user information. Now, we're not going to go through these steps today because
+1:02
+I taught you exactly how to do it in my last video. So, make sure to watch that step-by-step tutorial if you don't know
+1:08
+how to do this. In this video, I'd like to focus solely on payments. You can also go ahead and get my free guide I
+1:14
+made for this video where I'll be sharing with you the specific setup steps for this app. And you'll also find
+1:20
+a template there that you can just copy to your Google AI studio to use for this tutorial. Now, let me quickly show you
+1:25
+how app works right now without payments. You just can go ahead and sign in or sign up and then just upload any
+1:31
+YouTube video link and hit to generate insights. Now, when they do it, two make.com scenarios will activate. One of
+1:37
+them will fetch insights from the Gemini API and give us this detailed summary
+1:42
+and another one will fetch the transcript with timestamps for this video. Now once the video is processed
+1:48
+everything is saved in history. Users can also go ahead and create folders and organize their videos by just dragging
+1:54
+and dropping them. As for our backend setup in the fire store database you'll see that in the users collection we have
+2:00
+the user I've just created. And inside it we have a subolction called folders. Now this is where all of our videos will
+2:07
+be stored. We've got the main default folder which is basically representing the history field of unorganized videos.
+2:14
+You'll see that it's empty right now because our history is empty. So, let's go ahead and just drag and drop any
+2:19
+video here. And you'll see that a videos subolction was just added in the default folder. And if we go ahead and open it,
+2:26
+you'll see the video that I've just dragged and dropped. And we're saving everything, the insights, the
+2:31
+timestamps. Now, if we go back to the folders subolction, we'll see other folders. So, let's go ahead and open one
+2:38
+of them. And you'll see that the name of this one is Firebase Fire Store. And aside, we've got more videos. Now, if we
+2:45
+head back to the users collection and press on our UID, you'll see that the only profile information we save right
+2:51
+now is the email and name. Now, here's where we're going to put all profile information like the plan or the
+2:57
+expiration date. So, let's go ahead and configure our payments. Now, for our first step, we're going to add the base
+Step 02: Adding Free User Logic (Credit System)
+3:03
+of our payment system, which are the free users. So, anytime a user signs up, they should automatically be set to free
+3:09
+user and have 10 free credits. So in Google AI Studio, I'm just going to say above user profile, display a plan box.
+3:16
+For now, all users are automatically set to free users. The box should display free plan, credits, aka videos analyzed.
+3:24
+Each user gets 10 a month and an upgrade button. Now, when a user registers for
+3:30
+the first time, their account should be set to free automatically with the following fields under their UID that we
+3:36
+are going to write in Fire Store. I'm going to say plan free videos used zero
+3:41
+current month for example 112025. Now for the users that I have registered
+3:47
+before implementing this payment system I'm going to say if a user is registered and doesn't have these parameters in
+3:54
+fire store add them there when they sign in automatically set the videos used
+3:59
+parameter to the current amount of video documents in their profile. So for example, if I registered before
+4:05
+implementing the system and added four videos, this parameter should be set to four. Every time a user adds a new
+4:11
+video, raise the videos used parameter by one point. And once it's set to 10, we're going to disable access and
+4:17
+display that user should upgrade to use the system. Now our free users get 10 credits a month. So I'm going to say
+4:24
+each new month reset the value current month when a user logs in to a new value
+4:29
+1225. reset the videos use parameter to zero. And I'm just going to send this prompt
+4:35
+in. Now, once it's done, I'm just going to go ahead and sign in with the user I previously created. And if we go to Fire
+4:41
+Store, you'll see that the few parameters were just added under my UID. We've got videos used four because I
+4:47
+already put in four videos. We've got plan free and current month, which is 11205.
+4:53
+Now, let's go ahead and put in another YouTube video link and hit generate insights. Now, as you can see, it
+4:59
+appears in history, and in F store, the videos used is now set to five from
+5:04
+four. Now, I just went ahead and added four more videos. Let's go ahead and insert the last one. As you can see,
+5:10
+it's already telling me you have no credits left. But this video is still going to process. But now, when I click
+5:17
+new session, you'll see that I can't use the system anymore. It's disabled. I
+5:22
+can't put any more links here. So, it's working great. Now, the only thing AI didn't add the plan box in the menu. It
+5:30
+somehow only added it in settings. You see your plan 10 out of 10 videos used. Let's go ahead and fix that. I'm going
+5:36
+to say the plan box should appear above profile in the menu UI with plan information, credits, and upgrade
+5:42
+button, not only in settings. I'm going to send this in. And here it is. Now, I had to adjust the design a little bit,
+5:48
+but now I'm pretty happy with how it looks. And our base free user system is ready. Now, once a user presses upgrade
+Step 03: Designing the Upgrade & Pricing Pages
+5:55
+plan, let's create an our plans page where users can view our pricing and click to choose a plan. And once they do
+6:01
+it, we'll display some plan information and a continue to payment button that will lead them directly to PayPal. So,
+6:08
+in Google AR studio, I'm just going to say when a user presses upgrade that plan from anywhere, display a page with
+6:14
+our plans free plus and premium. uplands free, which is 10 credits a month, plus 100 credits a month, which is going to
+6:20
+be $20, and premium unlimited, which is going to be $40. Now, once a user
+6:26
+presses to choose one of the plans, send them to the payments confirmation page, display the plan they chose, and a
+6:33
+continue to payments button. Now, you're just going to go ahead and send that in. And here it is. We've got a free, a
+6:40
+plus, and a premium plan. Let's go ahead and choose plan in the plus plan. And as you can see, we've got some plan information right here. and a continue
+6:46
+to payments button. Let's go ahead and do the same in the premium plan. I'm going to hit choose plan. And as you can
+6:52
+see, we now have premium plan information and also continue to payments button. Now our front end is
+6:57
+ready. Let's go ahead and set up actual back end that is going to redirect our user to a PayPal payment link when they
+7:03
+click continue to payments. So the first thing you're going to do is head over to PayPal developer dashboard. And at the
+Step 04: PayPal Sandbox Walkthrough (Testing Environment)
+7:08
+top you'll see this switch to go from sandbox mode into live mode. Now, a sandbox mode is basically a testing
+7:14
+environment PayPal created. I absolutely love it. You can fully learn how the API works and test out your app properly
+7:21
+before it goes live without any major security risk. It is also super convenient. If you head over to testing
+7:27
+tools and sandbox accounts, you'll see that we get two demo credentials, a business one and a personal one. So, if
+7:33
+you need to use a business dashboard in your app, you don't actually have to use your PayPal business account, you can
+7:39
+use this demo one. And when you need to click to pay, you can use this personal account credentials to make a payment
+7:45
+without using any of your actual money. In testing tools, we also have something called web hook simulator that can
+7:51
+simulate any action coming from PayPal like a user subscribing to your plan or canceling their subscription so you can
+7:57
+properly test out how it works. Now, once you've mastered the sandbox environment and you fully understand the
+8:03
+API, you can go ahead and just switch to live mode, change your credentials, and your users will be able to pay with the
+8:09
+actual accounts. Now, make sure you have the sandbox mode on, and then you're just going to head over to apps and
+Step 05: Creating Your PayPal App Credentials
+8:14
+credentials, and click to create a new app. You're going to give it a name. Choose merchant. And as you can see, it
+8:20
+already shows up the business dashboard account it created for us. I'm just going to leave the default one. You can
+8:26
+go ahead and create another one. I'll click to create an app. And you'll see that our YouTube Learner is showing up
+8:32
+right here. I'm going to go ahead and open it. And if you scroll down, you'll see the API credentials that we're going
+8:37
+to use in the future. Client ID and secret ID. Now, with your app created, you're just going to head over to
+Step 06: Creating Subscription Plans & Products
+8:43
+Sandbox accounts. And we're going to have to login into our demo business dashboard. To do this, just click on the
+8:50
+name right here. And you'll see here that to login into our business dashboard, you're going to have to go to this URL sandbox. com. Now, this sandbox
+8:58
+subdomain is going to be used for all actions performed inside the sandbox mode. Now, here you're just going to
+9:04
+copy this email and this password and paste them in and log in. And as you can
+9:09
+see, you're now logged in into this test store. I'm all rich now. Now, we don't have any product or plans created just
+9:15
+yet. So, you're going to head over to sales subscriptions. And in subscription plans, you're going to click to create a
+9:22
+plan at the top. Now, we don't have a product yet. So go ahead and click create a subscription product. You're
+9:28
+going to give it a name and ID. You don't need to fill out any of those fields because we're just testing things
+9:33
+out. You can fill all of them out once your app actually goes live. So you're going to go ahead and press next. And
+9:39
+now, as you can see, your product is created. Let's head over to create a plan. I'm going to choose fixed pricing.
+9:46
+And this is very important. You're going to go ahead and type out your plan name, which is going to be plus first. And
+9:51
+we're going to say 100 credits a month. and click next. Now, this is very important. You're going to choose your
+9:57
+currency and scroll down to find the price field. I'm going to say $20 a
+10:03
+month and click next. Now, here's your plan confirmation page. Again, it doesn't have to be perfect because
+10:08
+you're just testing things out. Go ahead and turn the plan on. And now, in subscriptions, your plus plan for
+10:14
+YouTube Learner will appear. Above plus, you'll see something called the plan ID. This is how we're going to identify this
+10:21
+plan in the future. So you can go and save it to your notes somewhere. Now here let's go ahead and click to create
+10:26
+a new plan. I'm going to choose the same product. Fix pricing. But this time in the plan name I'm going to say premium
+10:32
+and continue. Now in the price field I'm going to say that it's now $40 a month. Next. And now on our plans dashboard
+10:40
+you're going to see this as well. Now at the top you're going to see the plan ID. Go ahead and copy and paste it somewhere
+10:46
+as well. to process actual payments in our app. We're going to create a make.com scenario that is going to call
+Step 07: Scenario 1 - Generating Secure Checkout Links with Make.com
+10:52
+the PayPal API to subscribe this specific user and generate a payment link for them. Now, before the link is
+10:59
+generated, we need to tell our back end who the user is that's subscribing. But we don't want to send any sensitive
+11:04
+information like their email or unique user ID. So, instead, we're going to send something called ID token that is
+11:10
+generated by Firebase every time a user starts a new session. So I just ask Google I studio to console log all of
+11:16
+the responses we receive from Firebase authentication and you can see here that it returns this temporary ID token. So
+11:23
+as a first step in our wake.com scenario you're going to go ahead and add a custom web hook and in advanced settings
+11:29
+in data structure you're going to request this ID token from our front end and set it to required and we're also
+11:35
+going to request a plan name so we know which plan the user is subscribing to to the plus or the premium one. Now, we're
+11:41
+going to add a second module straight away. It's going to be an HTTP request to our Fire Store database to identify
+11:48
+this user and then return the unique user ID. So, it's not passed through the front end. Here, you're just going to
+11:54
+add this exact URL, but you'll need to add your own API key. To find it, you
+11:59
+can head over to your project settings and in the SDK you used for authentication, you can find it and
+12:05
+paste it right here. Now, this is going to be a post request. You'll find all of the headers and the body set up in my
+12:11
+free guide. No need to go through this right now. We're just going to request the content by the users ID token. And
+12:18
+this is going to return all the user information we need. Going to go ahead and save it. And now in Google AI
+12:23
+Studio, we're going to connect our web hook before we test it. I'm going to say when a user presses continue to payment,
+12:28
+activate this web hook and paste in the link we copied from the first step. I'm going to say send it two parameters. ID
+12:35
+token from sign in and plan which is plus for plus plan and premium for the premium plan. Going to go ahead and send
+12:41
+that in. Now once it's done, you're gonna head over to make again and go ahead and hit run once and you're going
+12:48
+to continue to payment for one of the plans and you'll see that it worked successfully. Now you can go ahead and
+12:54
+open the HTTP model output and in the data you'll see that it return uh one
+13:00
+user right here in collection. Go ahead and open it and you'll see that it pretends something called a local ID
+13:05
+which is the user unique ID that we actually need. Now for the next step we're going to add something called a
+13:11
+router to split our scenario into two path. Now in filters I'm going to say if the local ID which is a unique user ID
+13:19
+does not exist we're just going to send an error back to our front end which is going to be invalid or expired ID token.
+13:26
+And if that user ID in fact exists, we're going to continue to the next step. Now, this step is basically an
+13:32
+authentication request to the PayPal API. We're going to send every time we use it, think of it as kind of logging
+13:38
+into your business dashboard and then creating a payment link. So, you're just going to copy and paste this exact link
+13:44
+right here. And as you can see, it's in sandbox mode as well. Now, for the rest of the setup, you're just going to copy
+13:50
+all of the steps from my guide. And once you scroll down to the username and password here, you'll need to add your
+13:56
+actual app credentials from PayPal. So you're going to go back to your app and credentials in the PayPal sandbox mode.
+14:02
+And you're going to go ahead and paste in your client ID as username and your secret name as the password. Let's make
+14:08
+sure our authorization step is working correctly. So you're going to go ahead and click run once right here. And in
+14:14
+your Google AI Studio app, you're just going to press to continue to payment again. And as you can see, it works
+14:19
+successfully. Let's go ahead and open the output. And here in data, you'll see something called access token that
+14:25
+PayPal returns when we authenticate successfully. Now, for our next module, we're going to add yet another fork in
+14:31
+the road because the links that PayPal generates are going to be different for different types of plans. So, here I'm
+14:38
+just going to add a filter on the first road, which is going to be the plan plus, and on the other one is going to
+14:44
+be the plan, which is the premium. Now, the setup is going to be identical except for the plan ID. So, let me go
+14:50
+ahead and walk you through the first one. This module is going to be another request to the PayPal API, but this time
+14:55
+to subscribe our user. You'll see here that it says / billing/subscriptions. It's going to be a post method. And in
+15:02
+the headers, you're going to have to send the authorization header showing it that you basically signed in
+15:08
+successfully with your access token. So, in the barrow, you're going to go ahead and map out the access token you
+15:14
+received from authentication. You're going to copy the rest of the setup. Now in request content you're going to copy
+15:20
+this JSON format and you're going to change a couple of things. So the first thing is the plan ID. Remember that when
+15:25
+we went to the business dashboard we created several plans and on the top of them you saw this ID that I asked you to
+15:31
+save. So for the plus plan I have this ID. Going to go ahead and paste it right here. You'll see that the user action is
+15:38
+subscribe now. And you also see something called return URL and cancel URL. This is basically where PayPal is
+15:45
+going to direct our user if the payment is successful or is failed. I'm just going to deploy my app in Google Studio
+15:52
+and paste in the default link for both because we're going to be using a different method to identify if the
+15:57
+payment was successful. Now, the last value is extremely important because we need to tell PayPal which user it is
+16:03
+that is actually making the payment. So, in custom ID, we're going to go ahead and map out our local ID, which is the
+16:09
+UID we received from Fire Store. You're going to go ahead and just save it. Before we continue, let's go ahead and
+16:14
+run our scenario again and click to continue to payment. And as you can see, everything went well. We subscribed to
+16:21
+the plus plan. So, you're going to see the filter that says one. And if we open the output, you see that in data, three
+16:28
+links just generated. Now, these are the links that PayPal sends automatically. And we only need the first one, which is
+16:34
+the approve URL. So, what we're going to do next is we're actually going to add an iterator that is going to go through
+16:40
+all of those links and extract only the approved one. So, in the iterator step,
+16:45
+you're going to go ahead and map out the links we received from a PayPal subscription request and save it. And
+16:51
+after our iterator, you're just going to add a filter saying that basically if the type of the link is approved, which
+16:58
+is real going to save it and return only the approved URL, which is this href
+17:04
+value to a front end. So you're going to go ahead and save it. Now let's tell our
+17:09
+front end what to do with this. So I'm going to say when a user presses continue to payment, the web hook will
+17:15
+return an approval URL. And I'm going to paste in the exact structure that it's going to receive. pass a response to
+17:21
+extract the URL. Redirect the user to that URL specifically. If there is no
+17:27
+URL, display payment fail and don't redirect the user to any other link. So sometimes you might get an error message
+17:33
+and it just goes in and just redirects you to the PayPal homepage. We don't want this. We only want the specific
+17:38
+subscription link. Once that's done, you're just going to go ahead and run your scenario once. Continue to payment.
+17:45
+And as you can see now, a PayPal lock appears right here. Now, you won't be able to actually make a payment in the
+17:51
+preview mode. So, go ahead and deploy your app. Now, once your app is deployed, you're going to go ahead and
+17:56
+continue to payment. And this time, you are actually redirected to PayPal. You just saw how a bunch of free AI tools
+18:03
+can replace the developer. So, if you're worried AI might replace you, honestly, you should be, but instead of being
+18:09
+scared of it, I want you to master it. And this is why for this video, I've teamed up with Outskll to give 1,000
+18:15
+free seats to you guys for the 2-day live AI mastermind workshop happening next weekend. Now, this paid training is
+18:22
+usually worth $400 and gets you AI certified, but you can attend it completely for free as part of their
+18:29
+Black Friday sale. In just 16 hours, you learn 10 plus AI powered tools, master
+18:34
+AI and Excel sheets and presentations. Start building your own AI agents and
+18:39
+workflows and join an AI builder community to share your AI journey with. So if you'd like to get trained by
+18:45
+expert mentors from companies like Microsoft, OpenAI, Nvidia, Google, and more people who have actually shaped the
+18:52
+AI industry, join us next Saturday and Sunday from 10:00 a.m. to 7:00 p.m. EST.
+18:57
+You can secure your free spot with my link in the description or by scanning this QR code. And let's get back to the
+19:04
+video. Now remember I told you that we have test personal credentials that we can pay with. So you can go ahead and
+19:10
+just paste them in right here. So just copy the email and password and sign in.
+19:16
+As you can see it says John do at the top. So you can go ahead and agree and subscribe. Now you'll see in your
+19:21
+make.com scenario that everything went well and the link was generated and we were able to pay. But we aren't going to
+19:27
+see anything in the front end yet because our database doesn't know that the user has subscribed yet. Let's go
+19:33
+ahead and fix that. Our next scenario is going to catch everything happening on PayPal's side and write it into our fire
+Step 08: Scenario 2 - Syncing PayPal Subscriptions to Firestore
+19:38
+store database. So say user just went in and subscribed to our service. It's going to add a field called status under
+19:45
+the UID and put it to active and add more fields like the expiration date and
+19:50
+the plan. Now if the user goes in and cancels their subscription, it's going to change the status to cancelled and
+19:56
+change the fields. So the first step in our scenario is going to be a web hook that is going to catch everything
+20:02
+happening from the PayPal's site. You're just going to go ahead and create a custom web hook and then just copy this
+20:08
+URL from the first step. Now in PayPal, you're just going to go back to your API and credentials, find your app, and then
+20:15
+you're just going to scroll down to find the sandbox web hooks here. Click to add a new web hook and paste in this exact
+20:22
+make URL. Then we're going to hook that web hook to everything happening under billing and subscription. So just go
+20:28
+ahead and choose this. So if subscription was activated, canceled, created, expired, payment failed, we want to know all about it. So go ahead
+20:36
+and hit save it. Now let's go ahead and test it out. You got to head over to testing tools and the web hook
+20:41
+simulator. And here just going to paste in the same URL in event type. Let's go ahead and choose something like billing
+20:48
+subscription was activated. and come back to make first and hit run once and
+20:53
+here you're just going to send that test and in a moment you'll see that everything went successfully and in the
+21:00
+output we just saw that a billing subscription was activated now this event type field is extremely important
+21:06
+this is going to tell you what happened so it says activated that means a subscription was activated if it was
+21:12
+canceled it's canled and if it's expired that means that the user cancelled before and now they finally got to the
+21:19
+end date of their subscription. Now, although we've tested this flow with our web host simulator, it's not going to be
+21:24
+the same because we can't really see the user UID and then write information in the database. So, let's go ahead and hit
+21:31
+run once again. And now in your deployed app, you got to go ahead and choose a plan and just continue to payment and
+21:38
+pay again with your credentials. Now, once that's done, let's go ahead and open the output. And you'll see that
+21:44
+right now it's a little bit different. Now first of all when you open the resource right here you'll see something
+21:50
+called custom ID which is our user UID will use to identify who they are and
+21:55
+write that information in the database. And you'll also see something called a plan ID which now actually correlates to
+22:03
+our plus plan. This is the exact ID I copied in my PayPal business dashboard.
+22:08
+Now this web hook is going to listen to all actions happening in PayPal. For now, let's just go ahead and handle the
+22:14
+activated parts when the user hits subscribe. So here, you're just going to add another fork in the road. And I'm
+22:20
+going to add a couple of uh filters right here. So on the first path, I'm going to add a plus filter, which
+22:26
+basically means that the plan ID equals to the plus plan ID I set. So I'm going
+22:32
+to choose the plan ID from the web hook URL. And then I'm just going to manually enter this number I got from my business
+22:39
+dashboard. And I'm going to do the same for the premium plan. If you open the filter right here, I've just changed the
+22:45
+plan ID. And that's all. Now, the other steps are going to be very similar. But
+22:50
+for the plus plan, I'm just going to add Google Cloud Fire Store update at document. You're going to have to add a
+22:57
+connection here. If you don't know how to do this, I made a very detailed tutorial in one of my last videos. So,
+23:02
+I'm going to link the video with the timestamp in my free guide. Now once you've configured your connection in
+23:07
+project, you're just going to choose your app you got from Firebase and you're going to map out the document
+23:13
+path which is going to be slash users slash the unique user ID we've got from PayPal. Now here you can decide what
+23:20
+information to write in your database. For me I would just like to add the plan ID the user subscribed to plan which is
+23:27
+going to be plus in this fork. Credits or remaining which is going to be 100.
+23:32
+So for the plus plan we have limited credits. So, I'm going to go ahead and add that. Now, period start when the
+23:37
+user subscribed and period end, which I'm going to map to the billing next
+23:43
+billing time right here, so we know when the subscription expires. Next up, we've got two fields that are extremely
+23:48
+important, so don't skip them. One of them is the subscription ID, which I'm going to map to resource ID. Now,
+23:55
+without this field, your users won't be able to cancel their subscription because this is how PayPal identifies
+24:01
+subscribed users. So, make sure to include it. And the last one is probably the most important one, which is going
+24:07
+to be the status. And we're going to map it to the resource status. Now, if this field is going to be active, our users
+24:14
+will be able to use our system. If it's expired, they won't be able to use the system. If it's canceled, something else
+24:19
+will appear. So, this value is very important. So, go ahead and save it. Now, since we already tested it out, I'm
+24:25
+going to go ahead and click to run the scenario with existing data and just choose our latest run we did when we
+24:31
+subscribe again through our app. And as you can see, everything worked successfully. You got the filter, which
+24:37
+was the plus plan. And in the output, you're going to see that everything went successfully. When we go back to our
+24:44
+fire store collection users and find that user, you'll see that all of the fields were just added. We've got
+24:49
+credits remaining 100. And we also got the period start, period end, the plus
+24:54
+plan, plan ID, status is active. Now, for a premium plan, we're going to do exactly the same thing, but we're just
+25:01
+going to change up a couple of fields. So, in plan ID, you're going to map up the plan ID. And in plan, you're going
+25:07
+to say premium. This time, we don't need the credits remaining because the premium plan is unlimited. You're going
+25:13
+to add the period start, period end. Of course, don't forget to add your resource ID and status and just go ahead
+25:21
+and save it. Now, let's go ahead and test out how it works. I'm going to go ahead and run the scenario once. Click
+25:27
+to upgrade to the premium plan. I'm going to go ahead and pay right here. And once it's finished, you'll see that
+25:33
+it now caught that it was the premium plan. And in our Fire Store database, the information was just updated. So, I
+25:40
+am now a premium user and my subscription is active. Now once you're happy with how your scenario works, go
+25:45
+ahead and save it and put it to active. Make sure you did that with our previous processing scenario as well. And now we
+25:52
+just need to tell a Google AI Studio app to listen for changes in our Fire Store document. So if a user goes ahead and
+Step 09: Adding Real-Time Subscription Status Listeners in AI Studio
+25:58
+hit subscribe, the status is now set to active. So our front end now needs to
+26:03
+unlock all of the features. So in AI studio I'm just going to same when a
+26:08
+user is in our app listen to fire store for changes in the user/ UID document in
+26:13
+status field. If the field doesn't exist user remains free if the field status
+26:19
+turns active user is now a subscriber. Check the following fields in the document to determine the type and
+26:25
+display the correct elements in the UI. Now plus plan will have the following values. Plan ID and I'm just going to
+26:32
+put the plan ID right here. we copied from our business dashboard. Plan is going to be plus a credits remaining is
+26:39
+going to be 100. Unlock the new session button and update the plan box in the
+26:44
+menu to 100 credits. So it says 10 out of 10. I wanted to say 100. Change free
+26:49
+to plus and leave the upgrade plan intact. So if they decide to upgrade to premium now every time a user goes ahead
+26:55
+and adds a new video, subtract one credits from the credits remaining field and display credits used in the UI. Now
+27:03
+the premium plan will have the following values. Plan ID and I just put in the different plan ID we got from the
+27:08
+business dashboard. Premium unlock new session button and update the plan box in the menu. Change plan name to
+27:16
+premium. This users have unlimited access. So you're going to remove the upgrade plan for both plans. Use the
+27:22
+period end value to display expiration date in the plan box and settings. So
+27:27
+you're going to go ahead and send this prompt in. Now to test these changes properly, you're going to go ahead and deploy your app. And once it's
+27:33
+deploying, let's also go to our Fire Store database and clean our record. So I'm just going to delete all of the plan
+27:38
+subscription fields from my record in Fire Store. So everything is clean and works as if I've never subscribed. Now
+27:46
+I'm just going to open our deployed app URL. And as you can see, I just had the 10 credits that I've already used. So
+27:52
+I'm going to go ahead and hit subscribe. And this time, I'm just going to subscribe to the Plus plan. And as you
+27:57
+can see, I've just paid, but the box is still remaining free. We're going to fix that in a moment. And in just a moment,
+28:04
+you'll see that it now turned plus. Now, the user didn't see a payment verification loader, which we're going
+28:10
+to add in a minute. Now, let's go ahead and actually upgrade our plan to premium and see how that works. So, I've just
+28:16
+gone ahead and paid with the same credentials right here. And as you can see, the system has now reloaded. And
+28:22
+now it says I'm a free user. This is the bug we're going to fix in a moment. And in just a minute, you'll see that it was
+28:28
+updated to premium and it says unlimited right here and the expiration date. Now, the only thing left for us to fix is
+28:35
+when a user goes ahead and pays with PayPal and then they come back, it shows that they're a free user once the
+Step 10: Adding a 'Verifying Payment' Loader for Better UX
+28:40
+payment is processing. We don't want this. So, in Google Studio, you're going to insert this prompt. If status filled
+28:47
+in the user document is set to approval pending or active pending in the plan
+28:53
+box display verifying your payment loader. Now those basically are the statuses PayPal sends through the web
+28:59
+hook once the payment is processing. So you're going to go ahead and send this prompt in. Now I just went in and
+29:04
+redeployed the app and cleaned up my files to a record. So now when I go ahead and press to upgrade and choose
+29:10
+one of the plans going to pay. And as you can see when we're coming back now, it says verifying your payment. And once
+29:18
+it's done, I now can see that I'm on a plus plan. So it never shows that I'm actually free user. Are you just going
+Step 11: Building the Cancel Subscription UI
+29:23
+to upgrade the subscription to plus and premium? But if you head over to settings, you'll see that they can't
+29:29
+cancel it yet. So let's go ahead and add it. Are you trying to build a custom app for your work or business, but
+29:35
+struggling to automate the back end? Well, building these apps is my absolute passion, and I've built hundreds of
+29:40
+these for my clients. So, if you want to learn how to do it, feel free to book a personalized session with me where I'll
+29:46
+teach you how to build the apps you need or shoot me an email if you want me to do it for you and I'll give you a quote.
+29:53
+You'll find all the links in the description. And let's get back to the video. First of all, let's just add it
+29:58
+on the front end. So, I'm just going to say add a cancel subscription button in user settings in your plan box. When it
+30:04
+is clicked, display a pop-up form. We're sorry to see you go and if we were to choose the reason why they cancelled.
+30:10
+Now once the reason is chosen, users can confirm cancellation. If they choose other, add a field to enter the reason
+Step 12: Scenario 3 - Automating Cancellations via PayPal API
+30:18
+why, which is optional. Now once that's done, you can now see that I have the cancel subscription button right here.
+30:23
+I'm going to go ahead and click it. And here I can go ahead and choose any reason. If I choose other, this form
+30:29
+field pops up and I can go ahead and click to yes, cancel. Now this works on the front end, but there's no back end
+30:36
+yet. So let's go ahead to make and add the scenario to cancel subscriptions. Our first module in our cancellation
+30:42
+scenario is going to be a custom webc. And in data structure, we're just going to catch the ID token we got from
+30:49
+Firebase. And for the next step, we're going to repeat the second step from our PayPal processing scenario. We're just
+30:56
+going to send a request to our Firebase to check if this user exists with this ID token. Now let's go ahead and add
+31:02
+this scenario into our Google AI studio. I'm just going to say when a user presses yes cancel activate this web
+31:08
+hook send it these parameters ID token from the current session reason select
+31:13
+the value from the dropdown explanation in case the user entered Y after choosing other value I'm going to go
+31:20
+ahead and send this in now click to run your scenario once and you're going to go ahead and click to cancel a
+31:25
+subscription I'm going to choose other and say I hate you and in make.com you'll see that everything went
+31:31
+correctly and we've just found our user in Firebase now we have just identified the user by their ID token and that
+31:37
+returned a unique user ID. But you'll see here in output, it didn't actually return important fields like the
+31:44
+subscription ID. We need to cancel the subscription. So for this, we're going to have to send another request to
+31:49
+Firebase to access those fields. So I'm going to add a step cloud fire store get
+31:55
+a document. Now here you're just going to add your connection, choose your project, and then you're going to go
+32:00
+ahead and map out the full path. So, it's going to be projects, the name of your app, databases, default documents,
+32:08
+users, and here you're just going to map out the local ID we got from the second request. You're going to go ahead and
+32:14
+save it and run the automation again with existing data. And you'll see here in the output, we found the user. We
+32:21
+have the name and in fields, it has just returned the subscription ID we were looking for. Now, let's send a request
+32:28
+to the PayPal API to cancel the subscription for this subscription ID. But before we do this, remember that we
+32:34
+have to sign in first. So, the first request you're going to send is the authorization request. So, we get the
+32:40
+access token just like we did in our first scenario. And for the second PayPal API request, you're now going to
+32:47
+send it to this URL/ billing/subscriptions slashmap out the subscription ID field
+32:53
+we found from Firebase/cancel. They're going to repeat the rest of the steps. In the authorization header,
+32:59
+don't forget to map out the access token you got from the first step. And now in PayPal request ID, you're going to say
+33:06
+value cancel. And then you're just going to map out the subscription ID again and
+33:12
+say now. Now you're just going to save it. And for our last module in this scenario, let's send a 200 response,
+33:18
+meaning that the subscription was cancelled successfully. Now let's tell our app what to do once it receives the
+33:23
+response. So, I'm just going to say once the cancellation web hook is activated, display a loadup cancelling
+33:29
+subscription. When you receive a 200 response, display subscription canceled. You're going to send this prompt in. And
+33:35
+now, let's run once and cancel a subscription. I'm going to choose a different reason and say yes, cancel.
+33:42
+And as you can see, it now shows subscription canceled in the UI. And you'll see that everything worked
+33:47
+successfully in the back end as well. So, go ahead and save and activate this scenario. So it now runs in the
+33:53
+background. Now you'll see in Fire Store once you actually cancel the subscription, our scenario caught this
+33:58
+and the status is now cancelled. But there are a couple of things that are wrong with this. Like for example, the
+34:03
+period end is now set to null, which is not good. So we're going to fix our PayPal status updator scenario by just
+Step 13: Updating Scenario 2 to Handle Cancellation Events
+34:11
+adding another module. I'm just going to copy our update document step, but this time I'm going to change the filter. I'm
+34:17
+going to say if the event type is equal to billing subscription cancelled and
+34:23
+then in the actual document fields we're going to leave everything the same but I'll remove all of the fields here and
+34:29
+just leave the status that is now going to change to cancel. So this way the rest of the fields stay the same. Now I
+34:36
+want this to be the only path that tracks the subscription cancellation. So in our premium and plus filters I'm
+34:41
+going to add another and condition. I'm going to say if event type does not equal to billing subscription cancelled
+34:49
+and save it. Going to do the same for the premium plan and save it. Then you're just going to go ahead and save
+34:54
+the changes in this scenario. You can test it out again to make sure everything's working correctly. And now
+35:00
+we're just going to go back to our front end and tell it what to do when the status cancelled or expired. So I'm just
+Step 14: Handling Expired & Suspended Subscriptions
+35:06
+going to say if a user cancellation is processed successfully, do not revoke access. Keep the user active. If a
+35:12
+status in the UID states cancelled, the user is still a subscriber. Now, if the plan field is premium, the user should
+35:19
+still have unlimited access to the platform and paste in as many links as they want. And if the plan is plus, they
+35:26
+should still be able to use up the credits in the credits remaining field. In both cases, the plan should indicate
+35:32
+the period end as the active until value. Now if the status turns expired,
+35:38
+indicate it in the UI and revoke all access. The user is back to the free status. Now if it turns failed, also
+35:45
+indicate it in the UI and say we failed to process your payment. Try again and revoke access. And now I'm just going to
+35:51
+go ahead and press cancel. And now you'll see that in the box it says plus canled and active until period. And if I
+35:59
+go to start a new session, I can still use up my credits which is perfect. Now after user cancels their subscription
+36:06
+it's going to expire say a couple of weeks from now. So when that happens our PayPal web hook is going to update the
+36:12
+status value in our five star database to expired. So let's go ahead and change it manually for now. And you'll see that
+36:18
+in the UI it now states subscription expired. Your plan has expired. Now
+36:24
+let's change it to payment failed. And it now also shows it in the UI. Now, we
+36:29
+just created a successful payment system where users can subscribe to the plus and premium plan and also cancel their
+36:34
+subscription. But right now, all of this is happening in sandbox environment. So, once your app actually goes live, you're
+Step 15: The Checklist: Going Live with PayPal Production
+36:41
+going to have to switch from the sandbox mode to live mode and replace all of your credentials at glance. Now, you'll
+36:46
+find a detailed checklist in my free guide so you don't forget anything. And that's it. You're going to make money
+36:52
+with your apps. So, that's it for this video. I hope you found it useful. Now, I'm also planning to make a video on how

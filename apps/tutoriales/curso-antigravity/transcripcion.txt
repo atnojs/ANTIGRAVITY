@@ -1,0 +1,765 @@
+Introducción: El cambio de paradigma (De Copiloto a Agente)
+0:08
+Google Antigravity es un entorno diseñado para trabajar con agentes de IA. Es un fork de Visual Studio Code y
+0:15
+tiene un funcionamiento similar a Cursor. Para instalarlo debes ir a antigravity.google.
+0:22
+En su pantalla principal simplemente elige la descarga correspondiente. Es multiplataforma y cuenta con versiones
+0:28
+para Mac, Windows y Linux. La instalación es estándar, pero ten en cuenta que debes vincularlo a una cuenta
+0:35
+de Google para su funcionamiento. Una vez instalado, al abrirlo por primera vez, te pedirá ese enlace a la cuenta.
+0:42
+Aquí en la barra superior puedes verlo conectado a mi perfil, que usa como sistema de autenticación, además de
+0:48
+mostrar una serie de ajustes rápidos quick settings que veremos enseguida. Antigravity se presenta como una IA con
+0:56
+agentes y es totalmente cierto, pero también es muy flexible. Puedes decidir usarlo como un simple asistente, como un
+1:02
+agente rápido o como un agente planificador, como veremos más adelante. De momento, este es el panel
+1:08
+predeterminado que se abre al entrar. Es muy similar a Visual Studio Code, casi
+1:13
+idéntico a sus últimas versiones. A la izquierda, el panel para archivos y extensiones. En el centro el editor
+1:19
+donde se abren los archivos del proyecto y a la derecha el agente antigravity. Desde el panel central puedes abrir un
+1:26
+directorio concreto, clonar cualquier repositorio desde GitHub o abrir el Open
+1:31
+Agent Manager, que si te fijas no es más que una versión ampliada del panel de la derecha. En el panel de la derecha, el
+1:38
+de la gente, observa que aparece un signo más que permite añadir imágenes, menciones o flujos de trabajo. Al lado
+1:46
+hay dos menús desplegables clave. El primero permite elegir entre el modo fast o planning, según lo estemos usando
+1:52
+para tareas simples o complejas. El otro menú permite elegir el modelo o motor de razonamiento. Cuenta con modelos
+1:59
+potentes de Gemini Cloud y opciones abiertas como GPT OSS. Respecto a la
+2:05
+suscripción y el uso, hay algo muy importante. De momento, Google Antigravity no puede usarse a través de
+2:11
+una API Key externa. solo funciona vinculándolo a una cuenta de Google con un nivel de uso que varía según tu
+Acceso e Interfaz: Entendiendo el entorno (Project IDX/Antigravity)
+2:18
+cuenta sea free, pro o ultra. Los niveles son muy generosos y esto es
+2:24
+clave. Google te permite usar con tu cuenta los otros modelos avanzados que aparecen como los de Cloud, sin
+2:30
+configuración adicional, sin coste extra y sin necesitar siquiera tener una cuenta en esos servicios. Para los que
+2:38
+siguen esto de cerca, saben que estamos hablando de una preview que probablemente cambiará pronto. Es una
+2:44
+prueba más de lo importante que es mantenerse bien informados, algo que nunca antes había sido tan crucial con
+2:51
+IA o sin ella. Tras el primer contacto con la interfaz, el siguiente paso es la configuración rápida, Quick Settings
+2:58
+Panel, que puede variar según cada proyecto. Pulsando en settings, puedes ver qué hace cada opción gracias a los
+3:05
+tips. Por ejemplo, para el agente puedes determinar si debe estar pendiente de lo que escribimos para corregirlo. Hay
+3:12
+gente a la que no le gusta y además aumenta el consumo de recursos al estar comprobando constantemente nuestro
+3:18
+trabajo. El desarrollador decide. Lo mismo ocurre con el nivel de autonomía.
+3:24
+Podemos elegir entre que solicite confirmación o que proceda siempre. Observa que incluso cuenta con la opción
+3:30
+de permitir o bloquear acciones específicas mediante una allow list y una deny list. Y es que en contra de lo
+3:38
+que se dice esto de la IA y los agentes no es pulsar un botón y ya. La
+3:43
+configuración de una app compleja como Antigravity requiere conocimientos. No hay otra forma. Además de la
+3:50
+configuración rápida, desde aquí podemos acceder a la configuración avanzada. En el apartado Agent tenemos la opción de
+3:57
+añadir comandos a esas listas de permitidos o denegados para afinar el
+4:02
+comportamiento. Son herramientas muy poderosas y mal configuradas pueden ser
+4:08
+peligrosas. Ya se empieza a leer gente quejándose de que la herramienta le estropeó esto o lo otro, como si la
+4:14
+culpa fuera del software y no del que la usa sin saber. Es como si yo me pusiera a pilotar un Fórmula 1 y cuando me
+4:22
+estrelle le echara la culpa al coche. Fíjate en estas dos opciones del Quick Settings, Auto Execution y Review
+4:29
+Policy. Observa el nivel de detalle de los permisos de modo rápido. Autoe
+4:34
+Execution hace referencia a los comandos de terminal, cuáles puede y no puede autoejecutar sus manos.
+4:42
+Mientras que en Review Policy definimos si el agente tiene permiso para alterar tus archivos o definir la estrategia del
+4:49
+proyecto, su cerebro. Son matices clave que demuestran una vez más que para usar
+4:55
+estas herramientas hay que saber lo que estamos haciendo. Y lo digo porque si no iría en contra de lo que siempre he
+5:01
+defendido, el acceso al conocimiento. Hoy ese acceso pasa por el uso de estas
+5:06
+IAS. Antes, para aprender a usar antigravity tendría que usar solo la documentación. Ahora, usando la
+5:12
+documentación con el apoyo de la IA, el aprendizaje es mucho más rápido y a meno. Por ejemplo, ante esta duda sobre
+5:20
+las diferencias entre esos dos apartados, aquí puedes ver la respuesta excelente de la IA. Puede que algo así
+5:26
+convierta en obsoleto lo que he hecho durante décadas. No lo creo y el hecho de que esté haciendo este vídeo
+Modos de Trabajo: Diferencia entre Fast Mode y Planning Mode
+5:33
+demuestra que no lo creo. Pero aunque así fuera, no reconocer la tremenda ayuda que suponen estas herramientas
+5:40
+para el conocimiento es simplemente mezquino. Son una maravilla para
+5:45
+aprender, no solo para que nos hagan el trabajo. Y si además nos hacen las tareas más monótonas y aburridas, mejor.
+5:53
+En resumen, primero, Google Antigravity es poderoso y complejo. Segundo, los
+5:58
+quick settings son clave, aunque puede que el mejor modo de conocerlos sea practicando con proyectos donde no
+6:05
+importe equivocarse. No vamos a ver todo en este vídeo, aunque con las prácticas
+6:10
+veremos muchas opciones. Y no dudes en preguntarle a tu asistente de IA favorito en cuanto tengas dudas. Vamos
+6:18
+con una primera práctica similar a un holaundo agéntico donde le pedimos a la
+6:23
+gente un resultado y no escribimos el código nosotros. Pero antes destaco un principio de seguridad fundamental, el
+6:31
+sandbox o jaula lógica. Cuando inicias un proyecto, el agente solo puede acceder a la carpeta en la que te
+6:37
+encuentras. Si abrimos C Proyectos Mi App para el agente, el universo empieza
+6:43
+y acaba en esa carpeta. No puede subir niveles y borrar archivos de otro
+6:48
+proyecto. Eso sí puede acceder a herramientas globales como node.js,
+6:55
+Python o Git. Incluso puedes afinar los permisos para que use tu punto git config y haga commits automáticos, pero
+7:02
+nunca modificará nada fuera de la carpeta de trabajo. Esto es muy importante. Así que dentro de una
+7:08
+carpeta vacía y con el ID en su estado predeterminado, escribimos en el panel de chat de la gente lo siguiente:
+7:21
+crea una aplicación web sencilla en Python usando Flask. La página debe
+7:26
+mostrar un título grande que diga hola antigravity y un botón. Al hacer clic en el botón debe mostrar la fecha y hora
+7:33
+actual dinámicamente en la pantalla. Por favor, crea el archivo, instala las
+7:39
+dependencias necesarias, arranca el servidor y abre automáticamente el navegador para que pueda verla
+7:44
+funcionando. Observa que le pido el proceso completo.
+7:51
+Al haber indicado antes el modo planning en lugar de fast. nos mostrará los artefactos de planificación antes de
+7:58
+llevar a cabo las tareas, pero a partir de ahí inicia el proceso independientemente. De nuevo, nos pedirá
+8:05
+permisos según la configuración que le estemos aplicando y vemos cómo crea esta app web sencilla en unos minutos.
+8:38
+Pero recuerda que antigravity puede usarse para muchas tareas diferentes, ya sean simples o complejas. En muchas
+8:46
+ocasiones puede que queramos que la gente corrija trozos de código, no que planifique un proyecto entero. Podemos
+8:53
+usarlo con un flujo de trabajo síncrono que nos ayuda al tiempo que vamos escribiendo o modificando código. Aquí
+9:00
+no actúa como un agente en el que delegamos todo el trabajo, sino como un asistente que colabora en la edición.
+9:07
+Ahora bien, no sería correcto decir que es un asistente tradicional como lo era Copilot hace uno o 2 años. La diferencia
+9:15
+fundamental es que ahora, aunque lo usemos para autocompletado, Gemini no solo accede al contenido del archivo
+9:21
+actual, sino que tiene contexto de todo el proyecto. Y esto lo haremos con los comandos inline, desde dentro de partes
+9:28
+concretas del código y no desde el panel de agentes lateral. Partimos de un archivo que contiene una función de
+9:35
+JavaScript mal escrita y sin tipos. He creado para el ejemplo este archivo calculadora.js JS. Para usar antigravity
+9:43
+en el denominado comando inline debemos pulsar las teclas control + I, mientras
+Primera Práctica: Creando una aplicación web desde cero
+9:49
+que para abrir el panel de agente usaríamos control + L. Al pulsar control
+9:54
++ I vemos que aparece el editor flotante. Vamos a escribir. Refactoriza
+10:00
+esto para que sea más legible. usa nombres de variables descriptivos y switch case. Observa como antigravity en
+10:07
+modo inline lleva a cabo los cambios que le indicamos directamente sobre este código, pero también podemos llevar a
+10:14
+cabo refactorizaciones sobre trozos de código concretos. De nuevo, podemos
+10:19
+evolucionar este código a type script con el modo inline. Pulsamos otra vez
+10:25
+control + I y escribimos en el prompt. Convierte esto a type script. define una
+10:30
+interfaz para los argumentos y maneja errores si el tipo de operación no es válido. Vemos como resultado que añade
+10:38
+automáticamente las interfaces, los tipos number y las validaciones necesarias.
+10:55
+Hay otra posibilidad que para los que llevamos escribiendo código muchos años nos parece una maravilla. Eliminar el
+11:01
+tedio terrible de tener que documentar el código, algo que es aburrido pero vital. Pues bien, colocamos el cursor
+11:08
+sobre la nueva función, volvemos a pulsar control + i y escribimos genera
+11:13
+documentación JS doc explicativa. El resultado es que en un momento tenemos
+11:18
+un bloque de comentarios perfecto explicando parámetros y retornos.
+11:29
+Existe una versión intermedia entre el inline y el planning. Es el modo fast.
+11:35
+Si por ejemplo queremos cambios para un archivo concreto o hacer preguntas rápidas sobre el código, no necesitamos
+11:41
+el modo planning, que es más lento y reflexivo. Así que podemos cambiar en el panel de agente al modo fast, que es
+11:49
+algo similar al chat estándar de los llms. Le podemos hacer una pregunta como, ¿cómo funciona el método reduce en
+11:56
+JS? Tendremos una respuesta rápida y muy completa, sin necesidad de generar
+12:01
+artefactos ni planes complejos. En resumen, con Antigravity podemos editar
+12:07
+código a gran velocidad sin salir del editor. Un tema muy diferente es si lo que queremos es crear todo el backend de
+12:14
+una aplicación desde cero. Ahí no podemos ir función por función, eso es cosa del pasado. Ahora lo que hacemos es
+12:21
+utilizar el modo planning y dejar que Antigravity se ponga a trabajar mientras
+12:26
+nosotros nos vamos a tomar un café.
+12:36
+Vamos a profundizar ahora en el modo planning de antigravity. Aquí el modelo
+12:42
+deja de responder al instante y se detiene a pensar. Es el gran cambio para los desarrolladores. Pasamos de ser
+12:49
+escritores de código a arquitectos de software que supervisan el trabajo de los agentes de IA. Es además un ejemplo
+12:57
+claro de la diferencia entre una inferencia rápida dialogando con un chat y un razonamiento estructurado mediante
+13:03
+el uso de una planificación muy pensada. Ya sabemos cómo cambiar de modo fast a
+13:09
+planning. Pasamos de priorizar la velocidad a priorizar la estructura y la seguridad. Como norma general, para
+13:15
+cualquier tarea que implique crear más de un archivo, deberíamos usar siempre planning. Comprobamos también que tanto
+13:22
+en Auto Execution como en Review Policy tenemos seleccionado request review. Así
+13:28
+nos aseguramos de poder ver el plan antes de que empiece a ejecutarlo. Si en
+13:33
+Review Policy eligiéramos Always Proceed, el agente llevaría a cabo igualmente la planificación al estar en
+13:40
+modo planning, pero empezaría a trabajar inmediatamente sin pedir permiso. Y para aprender queremos tener control total
+13:46
+sobre lo que va haciendo. La clave en el modo planning de antigravity son los denominados artefactos.
+14:01
+Cuando el agente planifica un proyecto a partir de nuestras indicaciones iniciales, no nos responde con código,
+14:07
+lo hace con un artefacto. Podemos considerarlo como un contrato o un plano de la obra que se dispone a emprender.
+14:13
+Antes de poner un solo ladrillo, el agente te dice, "Esto es lo que voy a hacer." Y hasta que no le demos la
+El Agente con "Ojos": Uso del Navegador y Vista Previa
+14:20
+aprobación, hasta que no firmemos el contrato, no empieza. Estos son los elementos a destacar de un artefacto.
+14:27
+Primero, el propose plan. Plan propuesto. Son pasos lógicos en lenguaje
+14:32
+natural. Por ejemplo, uno, configurar entorno, dos, crear base de datos, tres,
+14:38
+definir rutas. Segundo, file structure, estructura de archivos, un árbol visual
+14:44
+de las carpetas y ficheros que va a crear. Esto es vital para ver si la arquitectura es correcta. Tercero, shell
+14:51
+commands, los comandos de terminal que quiere ejecutar, npm, install, MK ir,
+14:57
+etcétera. Vamos con una nueva demo práctica. Crearemos un backend desde cero y modificaremos el plan sobre la
+15:04
+marcha. Para ello, usaremos una API Rest con Express. El primer paso es el
+15:09
+prompt, el encargo. En el panel de agente y con el modo planning activado escribimos, quiero crear una API Rest
+15:16
+básica usando node.js y express. Para gestionar una lista de tareas to do list. Necesito endpints para crear,
+15:24
+listar y borrar tareas. Usa un archivo JSON local db.jonjon
+15:29
+como base de datos por ahora. Configura el servidor en el puerto 3000. El segundo paso es el thinking process.
+15:37
+Observad el proceso de pensamiento. Es más lento que en el modo fast, ya que está analizando en profundidad el
+15:43
+contexto y elaborando todo el diseño.
+16:06
+Ah. El tercer paso es el momento clave para el desarrollador, revisar en detalle el
+16:13
+artefacto. En el análisis vemos que propone crear un archivo server.jsgigante
+16:19
+con todo el código dentro. Vamos a aprovechar esto para ver en acción el bucle de feedback. Escribimos en el
+16:26
+chat, "El plan está bien, pero prefiero una arquitectura más limpia. Separa las rutas, los controladores y el modelo en
+16:33
+carpetas distintas. MVC. Paso cuatro, el refinamiento. El agente genera un nuevo
+16:39
+artefacto.
+16:51
+Podemos ver como ahora la sección file structure ha cambiado. Ahora sí vemos carpetas, roots, controllers, etcétera.
+17:00
+Ahora sí pulsamos el botón appr plan. Aprobar plan. Una vez aprobado, Antigravity toma el control. Dejamos en
+17:07
+pantalla a la gente realizando el trabajo de modo autónomo. La terminal se abre sola, se ejecuta npm init y npm
+17:16
+install express. En el explorador de archivos de la izquierda empiezan a aparecer las carpetas y archivos uno a
+17:23
+uno en tiempo real. El agente va marcando los pasos del plan como completados con un check verde. Observa
+17:30
+también como esta tarea es asíncrona. Mientras este agente trabaja instalando dependencias, podríamos estar editando
+17:37
+otros archivos, leyendo documentación, instruyendo a otro agente o jugando al
+17:43
+Fallout. Su trabajo no bloquea el tuyo. Cuando el agente diga tarea completada, abre la terminal o deja que el agente lo
+17:50
+haga si le diste permiso y ejecuta nodeserver.jcs o npm Start. Muestra el mensaje en
+17:57
+consola. Server running on port 3000. Esto es delegar en agentes, pasar de
+18:03
+pedir líneas de código a pedir proyectos enteros. Debe quedar clara la importancia de los artefactos en
+18:10
+antigravity, ya que son lo que el desarrollador debe revisar en profundidad antes de empezar a construir
+18:16
+la app. Para cerrar, tenemos el servidor corriendo. La consola dice que va bien,
+18:21
+pero funciona de verdad. Los endpints responden. Podría abrir Postman y probarlo a mano, pero ¿y si le pido a la
+18:28
+gente que lo compruebe él mismo? Antigravity añade otra característica impresionante que es la verificación
+18:34
+visual autónoma. Aunque ya hemos visto un anticipo, vamos a profundizar ahora en ella. Veremos cómo el agente puede
+18:42
+abrir de modo autónomo el navegador, usar la app que acaba de crear, comprobar que funciona y mostránoslo
+18:49
+todo sin tocar nosotros el teclado.
+18:56
+Acabamos de ver cómo crear una API completa y cómo el propio agente se encargó de comprobar que no hubiera
+19:02
+errores. Sin embargo, de ahí a estar seguros de que todo funciona correctamente, hay un gran paso. En el
+Debugging Autónomo: Cómo el agente detecta y arregla sus propios errores
+19:10
+desarrollo clásico de una app web tendríamos que lanzar los servidores, abrir el navegador y realizar
+19:16
+manualmente las actividades esperadas. Tener que hacer esto decenas o cientos de veces durante el desarrollo es el
+19:23
+ejemplo perfecto de un trabajo tan necesario como repetitivo y aburrido. Por eso resulta tan interesante una de
+19:30
+las características más futuristas de Antigravity, la browser Surface o
+19:35
+superficie del navegador. Aquí el agente cuenta con sus propias manos y ojos para
+19:41
+usar la aplicación como si fuera un usuario real. Esa es la idea detrás del
+19:46
+término browser surface. Un concepto muy ligado a los agentes autónomos. Antigravity ya no solo crea código
+19:53
+complejo. Además, gracias a su integración profunda con Chrome, puede lanzar una instancia real del navegador,
+20:00
+pero atención, no lo abre para que nosotros lo usemos. El agente puede ver la pantalla usando la visión
+20:07
+computacional de Gemini 3 e interactuar con todos sus componentes. Puede hacer clic en botones, escribir en campos de
+20:14
+texto y hacer scroll. es la denominada verificación autónoma. Aplicamos el
+20:20
+principio de confiar, pero verificar, dejando que la parte tediosa la haga la
+20:25
+máquina y no nosotros. Para probar esto, necesitamos algo visual. Vamos a crear rápidamente una lista de tareas. To do
+20:33
+list.
+20:42
+Nos vamos al panel de la gente. Nos aseguramos de estar en modo planning. y lanzamos un prompt sencillo. Crea una
+20:49
+aplicación web simple en un solo archivo index.html. Quiero una lista de tareas que permita
+20:55
+añadir items escribiendo en un input y pulsando enter. Dale un estilo moderno.
+21:02
+Vemos cómo genera el archivo.
+21:14
+Y ahora atención. Pulsamos el botón de preview o le pedimos que abra el navegador. Ahí la tenemos, una lista de
+21:20
+tareas básicas, funcional y con diseño.
+21:35
+Ahora viene la magia. Vamos a pedirle una nueva función, pero le exigiremos que nos demuestre con pruebas que
+21:40
+funciona. Fijaos bien en el prompt porque es prácticamente un guion de pruebas en lenguaje natural. Añade un
+21:48
+botón rojo que diga borrar todo al final de la lista. Importante, una vez
+21:53
+implementado, quiero que verifiques autónomamente qué funciona. Para ello, uno. Abre la app dos. Añade tres tareas
+22:01
+de prueba, tres. Pulsa el botón de borrar y cuatro. confirma que la lista queda vacía. Observad que no le estoy
+22:08
+diciendo cómo programar el test unitario, le estoy diciendo qué debe probar, como si le hablara a un tester
+22:14
+humano. Este es el momento clave. Soltamos el ratón y observamos el navegador controlado por el agente. En
+22:21
+el ID ya ha modificado el código y aparece el botón rojo. Pero lo impresionante es que tal como lo haría
+22:27
+una persona en el navegador, se empieza a escribir texto, tarea uno, enter.
+22:33
+Tarea dos, enter. El agente está interactuando en tiempo real. Ahora mueve el foco al botón rojo de borrar
+22:40
+todo. Click y las tareas desaparecen. Acabamos de presenciar un test end to end completo, verificando que el código
+22:47
+hace exactamente lo que se supone que debe hacer. ¿Y qué nos devuelve el agente? Volvamos al chat. No se limita a
+22:53
+decir hecho. Fijaos en el informe. Normalmente nos adjunta evidencias. Capturas de pantalla del antes con la
+23:00
+lista llena y del después con la lista vacía. También revisa loss de la consola
+23:06
+para asegurarse de que no hubo errores ocultos de JavaScript. Su conclusión es clara. He verificado la funcionalidad.
+23:12
+El botón elimina los elementos del DOM correctamente. Esto cambia las reglas del juego una vez más. Ya son muchos
+23:19
+cambios que han redefinido totalmente el trabajo del desarrollador. Ya no tenemos que testear cada pequeño cambio. Podemos
+23:26
+delegar la comprobación visual y centrarnos en la arquitectura. Hemos visto cómo crear, cómo planificar y
+23:33
+ahora cómo verificar. Pero incluso con IA las cosas no siempre funcionan a la
+23:38
+primera. La pantalla de pronto se pone roja, surgen errores y todo falla. Por
+23:44
+suerte, Antigravity cuenta también con capacidades para autodiagnosticar y arreglar box complejos, leyendo y
+23:51
+aprendiendo de sus propios errores. Eso es justo lo que vamos a ver ahora.
+24:02
+Uno de los usos más potentes de Antigravity ataca directamente el gran problema de todo desarrollo, los
+24:08
+errores. Antigravity no solo escribe bien, también arregla bien. Se comporta
+24:14
+como un compañero que nos ayuda a investigar el delito, un auténtico Sherlock Holmes digital capaz de llevar
+24:20
+a cabo un debugging en profundidad de modo totalmente autónomo. La realidad del desarrollador está plagada de
+24:27
+constantes errores en rojo, pantallas en blanco y las famosas excepciones de
+Seguridad: Bucles de iteración y supervisión humana
+24:32
+undefined is not a function. Cuando el código falla, empieza la parte más
+24:37
+dolorosa de este trabajo, la depuración. Leer locks, rastrear variables y buscar
+24:43
+una aguja en un pájar. Pero antigravity cambia esto con el debuging autónomo.
+24:49
+Veremos como el agente no solo sabe escribir código, sino que sabe leer sus propios errores, formular hipótesis,
+24:56
+investigar y solucionar el problema por sí mismo. Para ver esto en acción, necesitamos romper algo. No vamos a usar
+25:03
+un error de sintaxis porque eso ya nos lo marca el editor con una línea roja
+25:09
+antes de ejecutar. Queremos un error de lógica, uno que explote justo cuando el
+25:14
+programa está corriendo. He preparado este script sencillo en Python calculadora.pi.
+25:20
+Fijaos en la lista llamada carrito. Tenemos un número 100, luego un 20, pero
+25:26
+como texto un string y luego un 50. Y en la función de suma no estamos validando
+25:31
+los tipos de datos. Abrimos la terminal integrada y ejecutamos Pythoncalculadora.pi.
+25:38
+Ahí está. Type error. Python no puede sumar un entero con un texto. En el
+25:43
+mundo clásico pre tocaría leer la línea del error, ir al código, buscar la
+25:49
+definición de la lista y entender qué ha pasado, muchas veces lidiando con mensajes nada claros. Pero esto ya es
+25:56
+cosa del pasado. Hoy no vas a hacer nada de eso. Ya ni siquiera se trata de copiar el error, pegarlo en un chat y
+26:02
+pedir ayuda, como hacíamos en los inicios de la IA. Ahora, el agente Antigravity cuenta con una integración
+26:09
+contextual completa. Podríamos hacerlo inline, pero vamos a usar la interfaz de
+26:14
+la gente para ver su potencia. Recordemos que esto es muy diferente a un chat normal, ya que tiene una
+26:20
+perspectiva total del proyecto. Escribimos @terminal. El último comando
+26:25
+ha fallado. Investiga por qué y arréglo. Fijaos en el uso de @terminal. Con esto
+26:31
+le estoy diciendo, no solo leas mi código, lee también la salida de la consola, el estado de la memoria y el
+26:37
+error exacto que acaba de ocurrir. Observa el símbolo de la a enigravity,
+26:43
+que activa lo que llamamos menciones de contexto. Es algo similar a etiquetar a
+26:49
+una persona en apps de redes sociales para fijar el foco. Aquí no etiquetamos personas, sino partes vivas del entorno
+26:56
+de desarrollo con el que estamos trabajando. Al usar la desplegamos un menú donde
+27:01
+podemos elegir @file para centrarnos en un archivo concreto, un git para revisar
+27:07
+los últimos cambios pendientes o docs para que la gente consulte documentación
+27:12
+oficial externa. Es la forma más precisa de decirle a la IA. Ignora el ruido del
+Orquestación Multi-Agente: Trabajando en paralelo (Manager View)
+27:18
+resto del proyecto y centra toda tu potencia de razonamiento exclusivamente en esto que te señalo, que en este caso
+27:25
+concreto es la salida que muestra la terminal. Ahora viene lo interesante. Observad el panel de pensamiento de la
+27:32
+gente. No se limita a adivinar y decir, "Creo que es un string." No, está investigando. Mirad lo que acaba de
+27:39
+hacer en el código. Ha inyectado un print, un log dentro del bucle para ver qué tipo de dato tiene cada variable. Y
+27:45
+ahora él mismo vuelve a ejecutar el script. Para alguien que haya dedicado tiempo a la depuración, esto es
+27:52
+simplemente impresionante. Aunque este ejemplo es sencillo, demuestra que la gente no se limita a apretar tornillos
+27:58
+al azar. Sabe exactamente qué tornillo de los miles que puede haber en un
+28:03
+proyecto es el que debe ajustar. El agente ha formulado una hipótesis, quizás hay un string colado. Ha
+28:10
+modificado el código para depurar, ha ejecutado el programa para confirmar su teoría y ha leído el resultado. Ha
+28:17
+actuado exactamente igual que lo haría un desarrollador senior. Una vez confirmado el problema, el agente
+28:23
+propone la solución. Nos dice, "El error se debe a que el segundo elemento es un
+28:28
+string. Voy a convertir todos los inputs a números flotantes antes de sumar para evitar fallos. Le damos permiso y ahí
+28:37
+está. Aplica el float. Pero fijaos además en un detalle. Ha borrado los
+28:42
+print de depuración que puso antes. Limpia su propio rastro. Para terminar, ejecuta el script final por tercera vez.
+28:50
+Resultado, el total es 170.0. Sin errores. El agente marca la tarea
+28:56
+como resuelta. Esto ha salido a la primera, pero imaginad que al arreglar lo del string salta otro error diferente
+29:04
+y entra en un bucle de fallos. Aquí es donde entra la seguridad interna del
+29:09
+sistema. Antigravity tiene configurados unos límites internos para no gastar recursos infinitamente. Si tras varios
+29:16
+intentos, normalmente tres o cinco no lo consigue, se detendrá y nos pedirá ayuda. Y aquí viene un matiz importante.
+29:23
+No busquéis un botón de número de reintentos en los ajustes porque no existe. Como el propio agente nos
+29:29
+explica, la configuración es el chat. Si estamos ante un bug muy rebelde, somos
+29:35
+nosotros los que tenemos que darle la orden explícita. Sigue intentando arreglar esto hasta que funcione. O por
+29:41
+el contrario, si fallas a la primera, detente y avísame. Nosotros marcamos el
+29:46
+ritmo con nuestras palabras, no con interruptores. Sirve también de ejemplo práctico de cómo ha cambiado nuestro
+29:52
+trabajo. Desde luego, para crear este vídeo he usado distintas herramientas de IA. Para mí tener que decir esto es como
+29:59
+si hace años cuando trabajabas con imágenes tuvieras que estar diciendo que habías usado Photoshop o GIMP. Pues
+30:06
+claro, pero estamos ante un terreno cambiante que evoluciona constantemente.
+30:11
+En una primera versión de este apartado, Gemini me había dicho que en la configuración existía la opción de
+30:18
+autofix, que permite determinar el número de intentos en los bucles de interacción que si existen otras
+30:24
+herramientas. Por ejemplo, lo he usado en Visual Studio Code, pero no lo encontraba por ningún lado. Solución:
+30:31
+Preguntarle al propio Antigravity en lenguaje natural. Oye, ¿dónde puedo fijar el número de intentos si inicias
+30:38
+un bucle de interacción? Y ahí tienes la respuesta muy clara. Al menos de momento es una configuración interna no
+30:44
+accesible, pero si queremos determinarlo, que se lo digamos en lenguaje natural, sin cambiar ninguna
+30:51
+configuración. Lo que acabamos de ver es el fin del debogging desesperante. Tener
+30:56
+a una IA que puede reproducir, investigar y arreglar books leyendo las trazas de error es un acelerador de
+31:02
+productividad masivo. Quizás la característica más destacada por los desarrolladores que han dado el salto a
+31:08
+estos agentes. Hasta ahora hemos trabajado con un solo agente, un compañero fiel. Pero en el mundo real,
+31:16
+los proyectos grandes no los hace una sola persona. Hay un equipo, uno hace el frontend, otro los tests, otro la
+31:23
+documentación. Vamos ahora a subir de nivel. Vamos a entrar en la Manager View
+31:28
+y aprenderemos a orquestar un equipo completo de agentes trabajando en paralelo. El desarrollador convertido en
+31:35
+director de una orquesta de agentes.
+Gestión de Workspaces: Supervisando múltiples proyectos a la vez
+31:55
+El gran salto de antigravity en este terreno que cambia día a día es la redefinición de la relación humano y a
+32:04
+esto es lo que permite un aumento real de la productividad. Hasta ahora la relación humano agente era lineal. Ya no
+32:11
+se limitaba solo a responder, sino a realizar tareas, pero seguían siendo una a una. Le pedíamos una cosa, esperábamos
+32:19
+a que terminara, revisábamos y le pedíamos la siguiente. Fue un gran avance respecto a la IA, puramente
+32:26
+conversacional, pero seguía siendo un cuello de botella al limitarnos a una única tarea a la vez. Pero ahora el
+32:33
+trabajo del desarrollador se plantea como el de un auténtico director de proyectos, alguien que tiene a un grupo
+32:40
+de expertos trabajando en un sistema complejo y supervisa sus avances. Imaginad la escena. El director le pide
+32:47
+al encargado del frontend que compile para ver la salida. Mientras tanto, revisa en su pantalla el trabajo del
+32:53
+back end y al mismo tiempo llama al encargado de los tests para que se coordine con quien está documentando la
+33:01
+API. Este es el trabajo real de gestión de equipos complejos y eso es exactamente lo que la Manager View nos
+33:08
+permite hacer con agentes de IA. La Manager View permite al desarrollador
+33:13
+humano coordinar a múltiples agentes trabajando simultáneamente. Pero empecemos diciendo la verdad, este
+33:19
+trabajo de sencillo no tiene nada, es tremendamente complejo. El humano debe
+33:24
+saber qué tiene que hacer cada agente, mantener una visión panorámica del conjunto y ser capaz de supervisarlos a
+33:31
+todos. Para acceder a esta vista, pulsamos en el icono de Agent Manager. Entramos en la sala de control de
+33:37
+nuestros proyectos que Antigravity denomina Workspaces. De entrada, en el panel central aparece una vista de chat.
+33:45
+Esto mantiene una idea exitosa, que las interfaces deben ser lo más sencillas posible, pero también puede llevar a
+33:52
+confusión. Alguien podría pensar, "Vaya, otra ventana de chat más como chat GPT."
+33:58
+Se parece, sí, pero la gran diferencia está en el motor de razonamiento. Nos estamos comunicando con algo muy
+34:04
+distinto a los charts conversacionales clásicos, aunque estos apenas acaben de cumplir 3 años. Así que aunque lo
+34:11
+parezca, olvídate de la vista de chat tradicional y fíjate en la columna de la izquierda. Aquí no vemos una lista plana
+34:17
+de chats, vemos nuestros workspaces o proyectos independientes como data
+34:22
+commons, 2 o weather mood. Quiero señalar algo muy importante aquí,
+34:27
+siempre con los pies en la tierra. A medida que aumentamos el número de agentes, la capacidad de control se hace
+34:33
+más compleja. Sin embargo, nada impide tener agentes trabajando no solo en un proyecto, sino en proyectos distintos a
+34:40
+la vez. Ya sabemos que cada agente está confinado a su carpeta por seguridad. Un
+34:46
+agente de data commons no puede tocar archivos de weather mood, eso debe quedar claro. Pero el Agent Manager nos
+34:53
+permite supervisar a distintos agentes de distintos proyectos trabajando al mismo tiempo. Todo desde esta única
+35:00
+interfaz. Es una idea muy poderosa, aunque incipiente, y un síntoma claro de hacia dónde se dirige el futuro. El
+35:07
+desarrollador tiene la visión global, las llaves de todos los despachos y, por supuesto, la responsabilidad última. Y
+35:13
+permitidme un inciso sobre esto. A veces es frustrante ver a la víctima de turno
+35:19
+quejándose de que la IA le ha borrado una base de datos o le ha destrozado el
+Contexto Avanzado: Personalizando la IA con reglas de negocio
+35:24
+trabajo. Realmente no entienden que están manejando herramientas potentes sin la debida supervisión.
+35:31
+Con esto no digo que mañana no pueda pasarme a mí. Todos cometemos errores. Lo que digo es que nunca se me ocurriría
+35:37
+echarle la culpa a la herramienta. Lo que me preguntaría es, ¿en qué me he equivocado yo y qué debo hacer para que
+35:43
+no vuelva a ocurrir. Si queremos ser directores, debemos asumir la responsabilidad del cargo. Volvamos a la
+35:51
+interfaz. Si desplegamos uno de estos proyectos, vemos varias entradas debajo, aunque se llamen conversaciones, en la
+35:57
+práctica, cada una es un agente independiente o un hilo de trabajo distinto. Antigravity no nos muestra
+36:04
+agente uno o agente dos, sino que los organiza por la tarea específica que
+36:09
+realizan. Vamos a ver cómo trabajar en paralelo dentro de un mismo proyecto. En el panel central, en el lanzador Start
+36:17
+New Conversation In, nos aseguramos de estar en el proyecto correcto y escribimos el prompt para la primera
+36:24
+tarea, el frontend. Crea la estructura HTML básica para el dashboard de
+36:29
+usuario. Al lanzarlo, veremos una nueva entrada en la lista de la izquierda. Ese
+36:35
+es nuestro agente de frontend trabajando. Antes de lanzar al segundo debemos entender algo fundamental.
+36:42
+¿Saben estos agentes lo que hacen sus compañeros? La respuesta corta es, comparten el escenario, pero no se leen
+36:48
+la mente. Imaginad dos desarrolladores en la misma oficina. Ambos ven la misma pizarra y pueden editar los mismos
+36:54
+archivos. Si el agente uno crea un archivo, el agente 2 lo ve, pero llevan auriculares con cancelación de ruido. El
+37:02
+agente 2 no tiene acceso al chat ni a los pensamientos del agente uno. No sabe por qué ha tomado esas decisiones. Solo
+37:09
+ve el resultado en el disco. Por eso, tú eres el director de orquesta. Tu trabajo
+37:14
+es hacer de puente. No basta con decirle al segundo agente, "Haz tests, tienes
+37:20
+que darle el contexto tú mismo. Queda claro que el trabajo del desarrollador no desaparece, sino que cambia y se
+37:26
+potencia enormemente. Sabiendo esto, lanzamos al segundo agente mientras el primero sigue escribiendo. Vamos a la
+37:33
+columna izquierda, pulsamos el botón más y abrimos un lienzo limpio. En el prompt le decimos, tu compañero está creando el
+37:41
+archivo index.htm html. Quiero que tú revises ese archivo y
+37:46
+configures los tests unitarios conest para asegurar que se carga correctamente.
+37:52
+Al darle esa instrucción explícita, forzamos al agente dos a mirar el trabajo del agente uno. Así creamos la
+37:59
+coordinación. Ahora, si miramos la columna izquierda, tenemos dos conversaciones activas simultáneamente.
+38:06
+Podemos saltar de una a otra para ver el diseño y la instalación de tests en tiempo real.
+La Estrategia del Markdown: Creando la "Constitución" del proyecto
+38:12
+El Agent Manager deja de ser un historial de chats para convertirse en un tablero de control de productividad.
+38:40
+Resumiendo el ciclo técnico que hemos visto, la instalación, los modos, la planificación, la navegación, la
+38:47
+depuración y ahora la orquestación multiagente. La herramienta es poderosa,
+38:53
+pero como siempre e incluso más que antes, la calidad de la sinfonía depende de la calidad de las instrucciones que
+39:00
+este nuevo tipo de desarrolladores sepa darle a su orquesta de IAS.
+39:20
+Llegamos a la última pieza del puzzle y quizás la más importante para el mundo empresarial, el contexto avanzado. Los
+39:27
+modelos de IA actuales son genios generalistas, saben muchísimo sobre programación estándar, pero no saben
+39:34
+absolutamente nada de tu empresa. No saben cuál es vuestro color corporativo ni la nomenclatura de vuestras bases de
+39:40
+datos. De entrada para Antigravity sois unos desconocidos. El objetivo es
+39:46
+inyectar ese conocimiento específico en el cerebro de la gente. Queremos que deje de ser una IA genérica y empiece a
+39:54
+programar siguiendo estrictamente vuestras reglas. En las empresas estas reglas suelen estar en PDFs visuales,
+Demo Final: Invocando la Guía de Estilo con menciones (@)
+40:01
+pero intentar que una IA lea un PDF complejo a veces da problemas técnicos o
+40:06
+de conversión. Así que una buena alternativa es convertir antes el PDF al formato nativo de la documentación, el
+40:13
+markdown.md es el mismo formato que usamos para los archivos lemreadme.
+40:20
+En Githope y que han estandarizado todos los botones de razonamiento para indicarle las reglas que deben seguir.
+40:27
+Es texto plano ligero y la IA lo entiende a la perfección. Vamos a verlo en la práctica. Imaginad que entra un
+40:34
+diseñador nuevo, le daríamos el manual de identidad. Para nuestro agente hemos
+40:39
+resumido esas reglas, colores, fuentes y tamaños en un archivo llamado guíaestilo. Mmd. Lo subimos a la raíz de
+40:47
+nuestro proyecto junto al código. Fijaos en el contenido. Define claramente que nuestro color primario es el naranja
+40:53
+número FF5733 y que los bordes deben ser de 12 píxeles. Al estar en Mark Down, la
+41:00
+estructura de títulos y negritas ayuda a Antigravity a entender que es importante sin margen de error. Ahora vamos a
+41:08
+pedirle que trabaje. El truco de productividad definitivo aquí es el uso de la araba para invocar este
+41:14
+conocimiento. Abrimos el chat y le decimos, crea el código CSS para un botón de llamada a la acción.
+41:21
+Importante, basa tu diseño estrictamente en las reglas definidas en el archivo
+41:26
+guía estilo. Fijaos que al escribirla @ y seleccionar el archivo le estamos
+41:32
+diciendo al cerebro de la IA, ignora tu entrenamiento generalista y céntrate
+41:37
+exclusivamente en este documento. Le damos a enviar. Ahí está. Mirad, el
+41:43
+código generado. Ha aplicado el background color, número FF5733
+41:49
+y el border radius. 12 píxeles exactos. El agente ha actuado como un empleado
+41:55
+diligente que consulta la documentación interna antes de ejecutar la tarea. Esto tiene una ventaja enorme, el control. Si
+42:02
+mañana la empresa decide cambiar el color naranja por verde, solo tenéis que editar el archivo Mark Down. Al instante
+42:09
+todos los agentes del proyecto empezarán a usar el nuevo color sin reconfigurar nada. Es una constitución viva para
+Conclusión: El nacimiento del Desarrollador Híbrido
+42:16
+vuestro código y con esto cerramos el círculo. Ha sido un viaje intenso. Empezamos instalando una extensión
+42:23
+desconocida. Aprendimos a diferenciar entre el modo rápido y el modo planificación. Le dimos ojos a la gente
+42:28
+para usar el navegador, le enseñamos a depurar sus propios errores. Aprendimos a orquestar múltiples agentes y
+42:35
+finalmente le hemos enseñado nuestra cultura de empresa. La conclusión es clara, antigravity no viene a quitarte
+42:42
+el trabajo, viene a quitarte la parte aburrida. Estamos ante el nacimiento del
+42:47
+desarrollador híbrido, donde vuestra dirección estratégica se ve potenciada por la ejecución incansable de la
+42:54
+máquina. Espero que este curso os haya dado las herramientas para liderar este cambio. Gracias por acompañarme y ahora

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Identity Architect - Director de Arte</title>
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="app.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="chat-mode">
+    <div class="container glass-main">
+        <aside class="sidebar glass">
+            <div class="sidebar-header">
+                <h2 class="neon-text">VIA</h2>
+                <p>Architect</p>
+            </div>
+            <nav class="conversations-list" id="conversations-list">
+                <!-- Se cargará dinámicamente -->
+            </nav>
+            <div class="sidebar-footer">
+                <button id="btn-new-chat" class="btn-3d btn-primary">Nuevo Proyecto</button>
+                <a href="admin.html" class="btn-secondary"
+                    style="margin-top: 10px; display: block; text-align: center; text-decoration: none; font-size: 0.8rem; opacity: 0.7;">Configurar
+                    Referencias</a>
+            </div>
+        </aside>
+
+        <main class="chat-viewport">
+            <header class="chat-header glass">
+                <div class="agent-info">
+                    <div class="agent-avatar pulse"></div>
+                    <div>
+                        <h3>Director de Arte</h3>
+                        <span class="status-online">Online</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" title="Referencias Visuales">🖼️</button>
+                    <button class="icon-btn" title="Ajustes">⚙️</button>
+                </div>
+            </header>
+
+            <div class="messages-container" id="messages-container">
+                <div class="welcome-screen">
+                    <h1 class="gradient-text">Visual Identity Architect</h1>
+                    <p>Bienvenido. Soy tu Director de Arte. ¿Qué visión técnica tenemos para Antonio hoy?</p>
+                </div>
+            </div>
+
+            <footer class="chat-input-area glass">
+                <form id="chat-form">
+                    <div class="input-wrapper">
+                        <textarea id="user-input" placeholder="Describe tu visión técnica..." rows="1"></textarea>
+                        <button type="submit" id="btn-send" class="btn-send">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Loader Premium -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-triple">
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+        </div>
+        <p class="loading-text">Procesando Visión Técnica...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

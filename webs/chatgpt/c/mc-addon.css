@@ -1,0 +1,63 @@
+/* ===== Minicampus Addon v7 =====
+   - Tema azul (hereda --primary si existe)
+   - Anillo pequeño, sin overflow
+   - Botones Importar/Exportar visibles
+================================================ */
+:root{ --primary: var(--primary, #2da8ff); }
+
+.mc-muted{opacity:.85}
+
+.mc-progress-card{ --mc-accent: var(--primary, #2da8ff); }
+
+/* Botones */
+.mc-btn{display:inline-block;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:transparent;color:inherit;cursor:pointer;text-decoration:none;transition:transform .15s ease, filter .2s ease}
+.mc-btn:hover{filter:brightness(1.08)}
+.mc-btn.primary{background:linear-gradient(90deg,#2b6cb0,#2da8ff);color:#fff;border-color:rgba(255,255,255,.2)}
+.mc-btn.outline{background:transparent;border:1px solid var(--mc-accent);color:var(--mc-accent)}
+.mc-btn.outline:hover{background:rgba(45,168,255,.12)}
+.mc-btn.is-disabled, .mc-btn[disabled]{opacity:.5;cursor:not-allowed;filter:grayscale(.2)}
+
+/* Card progreso */
+.mc-progress-card{
+  position:relative;
+  background:linear-gradient(180deg, rgba(35,44,87,.6), rgba(20,26,54,.6));
+  border:1px solid rgba(122,162,255,.25);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(6px);
+}
+.mc-pc-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px}
+.mc-pc-title{font-weight:800;letter-spacing:.3px}
+
+/* Anillo pequeño */
+.mc-pc-ring{position:relative;width:42px;height:42px;flex:0 0 auto}
+svg.mc-ring{width:42px;height:42px;display:block;transform:rotate(-90deg)}
+.mc-ring-bg{fill:none !important;stroke:rgba(255,255,255,.18);stroke-width:10}
+.mc-ring-fg{fill:none !important;stroke:var(--mc-accent);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .4s ease, stroke .2s ease}
+.mc-pc-ring .mc-pc-pct{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:.9rem;color:#cfe9ff}
+
+/* Barra inferior */
+.mc-pc-bar{position:relative;height:10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);overflow:hidden}
+.mc-pc-bar-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--mc-accent), #9bd0ff);transition:width .4s ease, background .2s ease}
+
+.mc-pc-meta{display:flex;gap:12px;flex-wrap:wrap;opacity:.9;margin:10px 0 6px}
+.mc-pc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+/* Modal (Plantillas) */
+.mc-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5)}
+.mc-overlay.show{display:flex}
+.mc-modal{width:min(900px,90vw);max-height:85vh;overflow:auto;background:rgba(0,0,0,.92);border:1px solid rgba(255,255,255,.15);border-radius:14px}
+.mc-modal-hd,.mc-modal-ft{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+.mc-modal-ft{border-top:1px solid rgba(255,255,255,.12);border-bottom:none;justify-content:flex-end}
+.mc-md{padding:14px}
+.mc-md pre,.mc-md code{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px;display:block;overflow:auto}
+
+button.next-module:is([disabled], .is-disabled),
+button[data-action="next-module"]:is([disabled], .is-disabled),
+a.next-module:is([disabled], .is-disabled),
+a[data-action="next-module"]:is([disabled], .is-disabled){
+  opacity:.5;
+  cursor:not-allowed;
+  filter:grayscale(.2);
+}

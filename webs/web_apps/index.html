@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suite Creativa de IA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="web.css">
+    <style>
+      /* Estilos rápidos para la barra superior y modales */
+      header.site-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#0d0d0f;border-bottom:1px solid #222;position:sticky;top:0;z-index:50}
+      .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem}
+      .auth-actions, .user-menu{display:flex;gap:10px;align-items:center}
+      .user-menu{display:none} /* Oculto por defecto hasta hacer login */
+      .btn-outline{background:transparent;border:1px solid #444;color:#fff;padding:8px 12px;border-radius:6px;cursor:pointer}
+      .btn-primary{background:#00aaff;border:none;color:#fff;padding:8px 12px;border-radius:6px;font-weight:600;cursor:pointer}
+      .apps-guard.locked{position:relative;opacity:0.5;pointer-events:none} /* Bloquea el grid si no hay login */
+      .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:100}
+      .modal-content{background:#1a1a2e;padding:30px;border-radius:12px;width:90%;max-width:400px;position:relative;border:1px solid #333}
+      .form-group{margin-bottom:15px}
+      .form-group label{display:block;margin-bottom:5px;color:#aaa;font-size:0.9em}
+      .form-group input{width:100%;padding:10px;background:#0c1445;border:1px solid #1e40af;border-radius:6px;color:#fff}
+      .btn-save{background:linear-gradient(135deg, #22d3ee, #a78bfa);border:none;padding:10px;border-radius:6px;color:#fff;font-weight:700;cursor:pointer}
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+      <div class="brand">
+        <img src="https://atnojs.es/iconos/favicon1.ico" alt="logo" width="24">
+        <span>Suite IA</span>
+      </div>
+      <div class="auth-actions" id="auth-actions">
+        <button class="btn-outline" id="btn-open-login">Iniciar sesión</button>
+        <button class="btn-primary" id="btn-open-register">Registrarse</button>
+      </div>
+      <div class="user-menu" id="user-menu">
+        <span id="user-email" style="opacity:0.7;font-size:0.9em"></span>
+        <button class="btn-outline" id="btn-portal">Mi suscripción</button>
+        <button class="btn-primary" id="btn-logout" style="background:#d32f2f">Salir</button>
+      </div>
+    </header>
+
+    <div class="container">
+        <header style="margin-top:2rem; text-align:center">
+            <h1 id="header-title">Apps para Crear Imágenes</h1>
+            <p id="header-subtitle">Selecciona una aplicación para comenzar a crear.</p>
+        </header>
+
+        <main id="apps-grid" class="apps-grid apps-guard locked"></main>
+
+        <section id="pricing" style="max-width:800px;margin:60px auto;text-align:center">
+            <h2 style="font-size:2rem;margin-bottom:2rem">Planes de Suscripción</h2>
+            <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap">
+                <div style="flex:1;min-width:250px;max-width:300px;background:rgba(15,23,42,0.6);padding:2rem;border-radius:16px;border:1px solid #1e40af">
+                    <h3>Mensual</h3>
+                    <p style="font-size:2rem;margin:1rem 0;color:#22d3ee">9,99€ <span style="font-size:1rem;color:#94a3b8">/mes</span></p>
+                    <ul style="text-align:left;margin-bottom:2rem;color:#ccc;list-style:none;padding:0">
+                        <li>✅ Acceso ilimitado a todas las apps</li>
+                        <li>✅ Soporte prioritario</li>
+                        <li>✅ Cancela cuando quieras</li>
+                    </ul>
+                    <button id="subscribe-monthly" style="width:100%;padding:12px;border:none;border-radius:8px;background:#22d3ee;color:#09090b;font-weight:700;cursor:pointer;font-size:1rem">
+                        Elegir Mensual
+                    </button>
+                </div>
+
+                <div style="flex:1;min-width:250px;max-width:300px;background:rgba(15,23,42,0.8);padding:2rem;border-radius:16px;border:2px solid #a78bfa;transform:scale(1.05)">
+                    <div style="background:#a78bfa;color:#000;font-weight:700;font-size:0.8rem;display:inline-block;padding:4px 12px;border-radius:20px;margin-bottom:1rem">AHORRA 2 MESES</div>
+                    <h3>Anual</h3>
+                    <p style="font-size:2rem;margin:1rem 0;color:#a78bfa">79,00€ <span style="font-size:1rem;color:#94a3b8">/año</span></p>
+                    <ul style="text-align:left;margin-bottom:2rem;color:#ccc;list-style:none;padding:0">
+                        <li>✅ Todo lo del plan mensual</li>
+                        <li>✅ 2 meses GRATIS</li>
+                        <li>✅ Pago único anual</li>
+                    </ul>
+                    <button id="subscribe-yearly" style="width:100%;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg, #22d3ee, #a78bfa);color:#fff;font-weight:700;cursor:pointer;font-size:1rem">
+                        Elegir Anual
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p id="footer-text">&copy; 2025 Atnojs. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    <div id="edit-modals-container"></div>
+    <button id="edit-mode-btn" style="display:none"><i class="fa-solid fa-pencil"></i></button>
+
+    <script src="web.js"></script>
+</body>
+</html>

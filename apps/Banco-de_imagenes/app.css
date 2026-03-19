@@ -1,0 +1,304 @@
+/* ============================================
+   🎨 NEON GLASSMORPHISM - APP STYLES
+   Basado en style_guide/base.css y style_guide/components.css
+   ============================================ */
+
+/* 1. VARIABLES BASE (style_guide/base.css) */
+:root {
+    --bg1: #041847;
+    --bg2: #0c1445;
+    --acc: #22d3ee;
+    --acc2: #a78bfa;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: rgba(34, 211, 238, 0.2);
+    --card-bg: rgba(15, 23, 42, 0.4);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+
+    --neon-cyan: #2ee8ff;
+    --neon-pink: #ff4ecd;
+    --glow-strong: rgba(46, 232, 255, 0.4);
+
+    --main-bg-gradient: linear-gradient(135deg, #041847 0%, #0c1445 35%, #1e3a8a 75%, #00bcd4 100%);
+    --gradient-text: linear-gradient(90deg, var(--neon-cyan), var(--acc2), var(--neon-pink));
+
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+
+    --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2. RESET Y GLOBAL */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--main-bg-gradient);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+.font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* 3. UTILIDADES GLASS & COMPONENTES */
+.glass-panel {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px 0 var(--shadow-color);
+}
+
+/* IMPORTANTE: Sin hover transform para imágenes */
+.glass-hover {
+    transition: var(--transition-main);
+}
+
+.glass-hover:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--acc);
+}
+
+/* Botones */
+.btn-primary {
+    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    color: white;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+    border: none;
+    transition: var(--transition-main);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #22d3ee, #60a5fa);
+    box-shadow: 0 0 20px var(--neon-cyan);
+    transform: translateY(-1px);
+}
+
+/* Inputs */
+input[type="text"],
+textarea {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(148, 197, 255, 0.2) !important;
+    color: white !important;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+}
+
+input:focus,
+textarea:focus {
+    border-color: var(--acc) !important;
+    outline: none;
+    box-shadow: 0 0 0 1px var(--acc);
+}
+
+/* 4. ESPECÍFICOS DE LA APP */
+
+/* Thinking Overlay (Triple Ring) */
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    border-radius: var(--radius-lg);
+}
+
+.spinner-triple {
+    width: 60px;
+    height: 60px;
+    position: relative;
+}
+
+.spinner-triple .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid transparent;
+}
+
+.spinner-triple .ring-1 {
+    inset: 0;
+    border-top-color: var(--neon-cyan);
+    animation: spin 1.2s linear infinite;
+}
+
+.spinner-triple .ring-2 {
+    inset: 8px;
+    border-right-color: var(--acc2);
+    animation: spin 1.5s linear infinite reverse;
+}
+
+.spinner-triple .ring-3 {
+    inset: 16px;
+    border-bottom-color: var(--neon-pink);
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Grid de Imágenes (JS usa generated-grid-3) */
+.generated-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.result-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    /* Sin transform */
+}
+
+.result-card img {
+    cursor: zoom-in;
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Botones sobre imagen (Historial) */
+.image-actions {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.result-card:hover .image-actions {
+    opacity: 1;
+}
+
+.action-btn-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s;
+}
+
+.action-btn-circle:hover {
+    background: var(--acc);
+    color: black;
+    transform: scale(1.1);
+}
+
+/* Prompts sugeridos UI específica */
+.prompt-btn {
+    text-align: left;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    transition: var(--transition-main);
+    color: var(--text);
+    font-size: 0.85rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.prompt-btn:hover {
+    background: rgba(34, 211, 238, 0.1);
+    border-color: var(--acc);
+    color: white;
+}
+
+.prompt-btn::before {
+    content: 'Click para usar';
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    font-size: 8px;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: var(--acc);
+}
+
+.prompt-btn:hover::before {
+    opacity: 1;
+}
+
+/* Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* Animaciones Utilitarias Recuperadas */
+.animate-fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-shimmer {
+    animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}

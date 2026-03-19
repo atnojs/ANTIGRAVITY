@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Promts</title>
+
+  <!-- Importar la fuente Rubik Doodle Shadow -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&display=swap');
+
+    /* ===== RESET O AJUSTES BÁSICOS ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* ===== BODY ===== */
+    body {
+      font-family: 'Rubik Doodle Shadow', cursive;
+      min-height: 100vh;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      position: relative;
+      color: #000000;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+
+ .columns-container {
+      width: 100%;
+      padding: 5px;
+      position: relative;
+    }
+
+    .column {
+      width: calc(12.5% - 11px); /* El 11px define el espacio de separación horizontal entre las columnas */
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      padding: 15px;
+      box-sizing: border-box;
+      height: fit-content;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+
+
+
+
+    /* ===== TÍTULOS ===== */
+    .column h2 {
+      color: #ff6fdb;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    /* ===== LISTAS DE ENLACES ===== */
+    .links-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .links-list li {
+      margin-bottom: -4px;
+      text-align: center;
+    }
+
+    /* ===== ENLACES ===== */
+    .links-list a {
+      color: #99ff00;
+      font-size: 16px;
+      font-weight: 600;
+      font-style: italic;
+      text-decoration: none;
+      display: block;
+      padding: 5px 10px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .links-list a:hover {
+      color: #ff00ff;
+    }
+
+    /* ===== BOTONES DE EDICIÓN ===== */
+    .column-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 120px;
+      display: none; /* Oculto por defecto, se muestra en modo edición */
+      z-index: 1000;
+    }
+
+    .add-column-btn, .change-bg-btn {
+      background: #ffffff;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-left: 10px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .add-column-btn:hover, .change-bg-btn:hover {
+      background: #ff00ff;
+      color: #ffffff;
+    }
+
+    /* ===== BOTÓN DE MODO EDICIÓN ===== */
+    .edit-mode-btn {
+      background: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background 0.3s ease, color 0.3s ease;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      opacity: 0.8;
+    }
+
+    .edit-mode-btn:hover {
+      background: #ff00ff;
+      color: #ffffff;
+      opacity: 1;
+    }
+
+    /* ===== BOTÓN OCULTO DE AÑADIR ENLACE ===== */
+    .add-link-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: #000;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      display: none; /* Se muestra solo en modo edición */
+      font-weight: 600;
+    }
+
+
+    /* Botón para eliminar columna */
+    .remove-column-btn {
+      background: rgba(255, 0, 0, 0.7);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      display: none; /* Solo se ve en modo edición */
+    }
+    
+    
+    <div class="column-controls">
+  <button class="remove-column-btn" onclick="removeThisColumn(this)" style="display: block;">Eliminar Columna</button>
+  <!-- Botones para mover la columna -->
+  <button class="move-column-up-btn" onclick="moveColumnUp(this)" title="Mover arriba">↑</button>
+  <button class="move-column-down-btn" onclick="moveColumnDown(this)" title="Mover abajo">↓</button>
+  <button class="move-column-left-btn" onclick="moveColumnLeft(this)" title="Mover izquierda">←</button>
+  <button class="move-column-right-btn" onclick="moveColumnRight(this)" title="Mover derecha">→</button>
+</div>
+
+    
+    
+    
+
+    /* ===== BOTONES PARA GESTIONAR ENLACES (Eliminar/Reordenar) ===== */
+    .link-edit-buttons {
+      display: none; 
+      margin-top: 5px;
+    }
+    .link-edit-buttons button {
+      background: #ffffff;
+      border: none;
+      padding: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      margin: 0 3px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .link-edit-buttons button:hover {
+      background: #ff00ff;
+      color: #fff;
+    }
+
+    /* ===== COLUMNAS ESPACIO (SPACER) ===== */
+    .spacer-column {
+      background: transparent;
+      backdrop-filter: none;
+      height: 100px;
+      width: calc(12.5% - 20px);
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .spacer-controls {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 5px;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+
+    .spacer-column:hover .spacer-controls {
+      opacity: 1;
+    }
+
+    .spacer-controls button {
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Input de imagen para el fondo (oculto) */
+    #bgInput {
+      display: none;
+    }
+    
+/* ===== CORRECCIÓN DEFINITIVA DE TOOLTIPS ===== */
+
+/* Ajuste de posición para evitar parpadeo */
+.links-list li {
+  position: relative;
+}
+
+    .tooltip {
+  position: absolute;
+  background: rgba(251, 251, 251, 0.9);
+  color: #000;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  white-space: pre-wrap;
+  max-width: 550px;
+  z-index: 9999; /* Muy alto para que esté en primer plano */
+  pointer-events: none;
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="columns-container" id="columnsContainer">
+      <!-- Se rellenará dinámicamente (o con contenido cargado desde localStorage). -->
+    </div>
+  </div>
+
+  <!-- Input para cargar la imagen de fondo -->
+  <input type="file" id="bgInput" accept="image/*">
+
+  <!-- Contenedor de botones (modo edición) -->
+  <div class="column-controls">
+    <button class="change-bg-btn" onclick="document.getElementById('bgInput').click()">Cambiar Fondo</button>
+    <button class="add-column-btn" onclick="addColumn()">Añadir Columna</button>
+  </div>
+
+ 
+  <!-- Botón para Activar/Desactivar Modo Edición -->
+  <button id="edit-mode-btn" class="edit-mode-btn">Activar Modo Edición</button>
+
+  <!-- Librerías para layout tipo Masonry -->
+  <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+
+<script src="script.js"></script>
+
+
+ <script>
+document.addEventListener('DOMContentLoaded', function() {
+  let isEditable = false;
+
+  const grid = document.querySelector('.columns-container');
+  const columnControls = document.querySelector('.column-controls');
+  const editModeBtn = document.getElementById('edit-mode-btn');
+
+  // Contraseña para el modo edición
+  // const editPassword = '0';
+
+  // Función para ajustar el tamaño de los títulos
+  function autoScaleHeadings() {
+    const headings = document.querySelectorAll('.column h2');
+    headings.forEach(h2 => {
+      // Reiniciamos estilos para partir desde el tamaño original
+      h2.style.fontSize = '';
+      h2.style.whiteSpace = '';
+      h2.style.overflow = '';
+      h2.style.wordBreak = '';
+      h2.style.overflowWrap = '';
+
+      const texto = h2.textContent.trim();
+      const words = texto.split(/\s+/);
+
+      if (words.length === 1) {
+        // Para títulos de una sola palabra: forzamos que se muestren en una sola línea
+        h2.style.whiteSpace = 'nowrap';
+        h2.style.overflow = 'hidden';
+        h2.style.wordBreak = 'keep-all';
+        // Forzamos reflujo para asegurar medidas actualizadas
+        h2.offsetWidth;
+        // Usamos el ancho efectivo del contenedor
+        const parentStyle = window.getComputedStyle(h2.parentElement);
+        const parentWidth = parseFloat(parentStyle.width);
+        let fs = parseFloat(window.getComputedStyle(h2).fontSize);
+        // Reducimos progresivamente el tamaño de fuente hasta que el título quepa o se alcance el mínimo (5px)
+        while (h2.scrollWidth > parentWidth && fs > 5) {
+          fs -= 0.5;
+          h2.style.fontSize = fs + 'px';
+          h2.offsetWidth;
+        }
+      } else {
+        // Para títulos con dos o más palabras se permite el ajuste normal de líneas
+        h2.style.whiteSpace = 'normal';
+        h2.style.wordBreak = 'keep-all';
+        h2.style.overflowWrap = 'normal';
+      }
+    });
+  }
+
+  // Función para validar la contraseña
+
+
+ // Función para activar modo edición (actualizada)
+async function activateEditMode() {
+  const password = prompt('Introduce la contraseña para activar el modo de edición:');
+  if (password === null) return;
+  
+  try {
+    const isValid = await checkPassword(password);
+    if (isValid) {
+      isEditable = true;
+      setupMode(isEditable);
+      editModeBtn.textContent = 'Desactivar Modo Edición';
+    } else {
+      alert('Contraseña incorrecta.');
+      isEditable = false; // Asegurar que permanece en modo visión
+      setupMode(false); // Forzar modo visión
+    }
+  } catch (error) {
+    console.error('Error al validar contraseña:', error);
+    alert('Error de conexión. Intenta nuevamente.');
+  }
+}
+
+  // Desactivar modo edición
+  function deactivateEditMode() {
+    const confirmSave = confirm("¿Deseas guardar los cambios antes de salir?");
+    if (confirmSave) {
+      saveLinks();
+    }
+    isEditable = false;
+    setupMode(isEditable);
+    editModeBtn.textContent = 'Activar Modo Edición';
+  }
+
+  // Botón de modo edición
+  editModeBtn.addEventListener('click', async function() {
+  if (!isEditable) {
+    await activateEditMode();
+  } else {
+    deactivateEditMode();
+  }
+});
+
+  // Cargar datos iniciales desde el servidor
+async function initialLoad() {
+  const serverData = await loadFromServer();
+  if (serverData) {
+    loadWebsiteState(serverData);
+  }
+}
+initialLoad();
+
+  // Configurar Masonry
+  let msnry = new Masonry(grid, {
+    itemSelector: '.column',
+    columnWidth: '.column',
+    percentPosition: true,
+    gutter: 10
+  });
+
+  imagesLoaded(grid, function() {
+    msnry.layout();
+    autoScaleHeadings();
+  });
+
+  // Añadir botones de eliminar a columnas
+  function addRemoveButtonsToAllColumns() {
+    const normalColumns = document.querySelectorAll('.column:not(.spacer-column)');
+    normalColumns.forEach(col => {
+      if (!col.querySelector('.remove-column-btn')) {
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-column-btn';
+        removeBtn.textContent = 'Eliminar Columna';
+        removeBtn.style.display = 'none';
+        removeBtn.onclick = function() {
+          removeThisColumn(removeBtn);
+        };
+        col.appendChild(removeBtn);
+      }
+    });
+  }
+  addRemoveButtonsToAllColumns();
+
+  // Añadir botones de edición a enlaces existentes
+  function addEditButtonsToExistingLinks() {
+    const allListItems = document.querySelectorAll('.links-list li');
+    allListItems.forEach(li => {
+      if (!li.querySelector('.link-edit-buttons')) {
+        const span = document.createElement('span');
+        span.className = 'link-edit-buttons';
+        span.innerHTML = ''
+          + '<button onclick="moveLinkUp(this)">&#9650;</button>'
+          + '<button onclick="moveLinkDown(this)">&#9660;</button>'
+          + '<button onclick="removeThisLink(this)">X</button>';
+        li.appendChild(span);
+      }
+    });
+    msnry.layout();
+  }
+  addEditButtonsToExistingLinks();
+  
+  
+  
+  // Función para mover la columna hacia arriba
+function moveColumnUp(button) {
+  const column = button.closest('.column');
+  const currentRect = column.getBoundingClientRect();
+  const container = document.getElementById('columnsContainer');
+  const columns = Array.from(container.querySelectorAll('.column'));
+  let candidate = null;
+  let candidateDistance = Infinity;
+  
+  columns.forEach(col => {
+    if(col === column) return;
+    const rect = col.getBoundingClientRect();
+    // Consideramos candidato si su parte inferior está por encima de la parte superior de la columna actual
+    if(rect.bottom <= currentRect.top) {
+      const distance = currentRect.top - rect.bottom;
+      if(distance < candidateDistance) {
+        candidateDistance = distance;
+        candidate = col;
+      }
+    }
+  });
+  
+  if(candidate) {
+    // Insertamos la columna actual antes de la candidata para intercambiar posiciones
+    candidate.parentNode.insertBefore(column, candidate);
+    msnry.reloadItems();
+    msnry.layout();
+    saveLinks();
+  }
+}
+
+// Función para mover la columna hacia abajo
+function moveColumnDown(button) {
+  const column = button.closest('.column');
+  const currentRect = column.getBoundingClientRect();
+  const container = document.getElementById('columnsContainer');
+  const columns = Array.from(container.querySelectorAll('.column'));
+  let candidate = null;
+  let candidateDistance = Infinity;
+  
+  columns.forEach(col => {
+    if(col === column) return;
+    const rect = col.getBoundingClientRect();
+    // Consideramos candidato si su parte superior está por debajo de la parte inferior de la columna actual
+    if(rect.top >= currentRect.bottom) {
+      const distance = rect.top - currentRect.bottom;
+      if(distance < candidateDistance) {
+        candidateDistance = distance;
+        candidate = col;
+      }
+    }
+  });
+  
+  if(candidate) {
+    // Insertamos la columna actual después de la candidata
+    candidate.parentNode.insertBefore(column, candidate.nextSibling);
+    msnry.reloadItems();
+    msnry.layout();
+    saveLinks();
+  }
+}
+
+// Función para mover la columna hacia la izquierda
+function moveColumnLeft(button) {
+  const column = button.closest('.column');
+  const currentRect = column.getBoundingClientRect();
+  const container = document.getElementById('columnsContainer');
+  const columns = Array.from(container.querySelectorAll('.column'));
+  let candidate = null;
+  let candidateDistance = Infinity;
+  
+  columns.forEach(col => {
+    if(col === column) return;
+    const rect = col.getBoundingClientRect();
+    // Candidato: cuya parte derecha esté a la izquierda de la columna actual
+    if(rect.right <= currentRect.left) {
+      const distance = currentRect.left - rect.right;
+      if(distance < candidateDistance) {
+        candidateDistance = distance;
+        candidate = col;
+      }
+    }
+  });
+  
+  if(candidate) {
+    candidate.parentNode.insertBefore(column, candidate);
+    msnry.reloadItems();
+    msnry.layout();
+    saveLinks();
+  }
+}
+
+// Función para mover la columna hacia la derecha
+function moveColumnRight(button) {
+  const column = button.closest('.column');
+  const currentRect = column.getBoundingClientRect();
+  const container = document.getElementById('columnsContainer');
+  const columns = Array.from(container.querySelectorAll('.column'));
+  let candidate = null;
+  let candidateDistance = Infinity;
+  
+  columns.forEach(col => {
+    if(col === column) return;
+    const rect = col.getBoundingClientRect();
+    // Candidato: cuya parte izquierda esté a la derecha de la columna actual
+    if(rect.left >= currentRect.right) {
+      const distance = rect.left - currentRect.right;
+      if(distance < candidateDistance) {
+        candidateDistance = distance;
+        candidate = col;
+      }
+    }
+  });
+  
+  if(candidate) {
+    candidate.parentNode.insertBefore(column, candidate.nextSibling);
+    msnry.reloadItems();
+    msnry.layout();
+    saveLinks();
+  }
+}
+
+  
+  
+  
+
+  // Configurar el modo (edición/visión)
+  function setupMode(editMode) {
+      function setupMode(editMode) {
+  // Si no está en modo edición, forzar salida
+  if (!isEditable) {
+    editMode = false;
+  }
+  // Resto de la lógica...
+}
+    const titles = document.querySelectorAll('.column h2');
+    const links = document.querySelectorAll('.links-list a');
+    const addLinkButtons = document.querySelectorAll('.add-link-btn');
+    const removeColumnButtons = document.querySelectorAll('.remove-column-btn');
+    const linkEditButtonsGroups = document.querySelectorAll('.link-edit-buttons');
+
+    if (editMode) {
+      columnControls.style.display = 'block';
+      titles.forEach(title => {
+        title.setAttribute('contenteditable', 'true');
+      });
+      addLinkButtons.forEach(btn => {
+        btn.style.display = 'block';
+      });
+      removeColumnButtons.forEach(btn => {
+        btn.style.display = 'block';
+      });
+      links.forEach(link => {
+        link.onclick = function(e) {
+          e.preventDefault();
+          editLink(link);
+        };
+        link.style.pointerEvents = 'auto';
+      });
+      linkEditButtonsGroups.forEach(group => {
+        group.style.display = 'block';
+      });
+    } else {
+      columnControls.style.display = 'none';
+      titles.forEach(title => {
+        title.removeAttribute('contenteditable');
+      });
+      addLinkButtons.forEach(btn => {
+        btn.style.display = 'none';
+      });
+      removeColumnButtons.forEach(btn => {
+        btn.style.display = 'none';
+      });
+      links.forEach(link => {
+        const url = link.getAttribute('data-url');
+        if (url) {
+          link.setAttribute('href', url);
+        }
+        link.onclick = null;
+        link.style.pointerEvents = 'auto';
+      });
+      linkEditButtonsGroups.forEach(group => {
+        group.style.display = 'none';
+      });
+    }
+    msnry.layout();
+    autoScaleHeadings();
+  }
+  setupMode(isEditable);
+
+  // Función para guardar enlaces en localStorage y en el servidor
+  function saveLinks() {
+    const columnsContainer = document.getElementById('columnsContainer');
+    const data = {
+      columns: [],
+      background: document.body.style.backgroundImage
+    };
+
+    const columns = columnsContainer.querySelectorAll('.column');
+    columns.forEach(column => {
+      const columnData = {
+        title: column.querySelector('h2').textContent,
+        links: []
+      };
+
+      const links = column.querySelectorAll('.links-list a');
+      links.forEach(link => {
+        columnData.links.push({
+          name: link.textContent,
+          url: link.getAttribute('data-url'),
+          description: link.getAttribute('data-description') || ''
+        });
+      });
+
+      data.columns.push(columnData);
+    });
+
+        saveToServer(data);
+  }
+
+  // Función para guardar en el servidor
+  async function saveToServer(data) {
+    try {
+      const response = await fetch('guardar_cambios.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: '0',
+          background: data.background,
+          columns: data.columns,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Error al guardar en el servidor:', response.status);
+        return;
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        console.log('Guardado exitosamente en el servidor');
+      } else {
+        console.error('Error del servidor:', result.error);
+      }
+    } catch (error) {
+      console.error('Error al intentar guardar en el servidor:', error);
+    }
+  }
+
+  // Función para cargar desde el servidor
+  async function loadFromServer() {
+    try {
+      const response = await fetch('load_state.php');
+      if (!response.ok) {
+        throw new Error('Failed to load from server');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error loading from server:', error);
+      return null;
+    }
+  }
+
+  // Al cargar la página, intentar cargar el estado desde el servidor
+  window.addEventListener('load', async function() {
+  // Forzar recarga sin caché
+  const serverData = await fetch('load_state.php?t=' + Date.now())
+    .then(res => res.json())
+    .catch(err => {
+      console.error('Error cargando datos:', err);
+      return null;
+    });
+  
+  if (serverData) {
+    loadWebsiteState(serverData);
+  }
+});
+
+  // Función para cargar el estado del sitio
+  function loadWebsiteState(data) {
+      // Limpiar caché forzadamente
+  document.body.style.backgroundImage = 'none';
+  if (data.background) {
+    document.body.style.backgroundImage = data.background + '?t=' + Date.now();
+  }
+    if (data.background) {
+      document.body.style.backgroundImage = data.background;
+    }
+    const columnsContainer = document.getElementById('columnsContainer');
+    columnsContainer.innerHTML = '';
+
+    data.columns.forEach(columnData => {
+      const newColumn = document.createElement('div');
+      newColumn.className = 'column';
+      newColumn.innerHTML = `
+        <h2 contenteditable="true">${columnData.title}</h2>
+        <ul class="links-list">
+          ${columnData.links.map(link => `
+            <li>
+              <a href="#" data-url="${link.url}" data-description="${link.description || ''}" onclick="editLink(this); return false;">${link.name}</a>
+              <span class="link-edit-buttons">
+                <button onclick="moveLinkUp(this)">&#9650;</button>
+                <button onclick="moveLinkDown(this)">&#9660;</button>
+                <button onclick="removeThisLink(this)">X</button>
+              </span>
+            </li>
+          `).join('')}
+        </ul>
+        <button class="add-link-btn" onclick="addLink(this)" style="display: block;">+ Añadir Enlace</button>
+        <button class="remove-column-btn" onclick="removeThisColumn(this)" style="display: block;">Eliminar Columna</button>
+      `;
+
+      columnsContainer.appendChild(newColumn);
+    });
+
+    imagesLoaded(columnsContainer, function() {
+      msnry.reloadItems();
+      msnry.layout();
+      autoScaleHeadings();
+    });
+
+    setupMode(isEditable);
+  }
+
+  // Función para añadir una nueva columna
+  window.addColumn = function() {
+    if (!isEditable) return;
+    const newColumn = document.createElement('div');
+    newColumn.className = 'column';
+    newColumn.innerHTML = `
+      <h2 contenteditable="true">Nueva Columna</h2>
+      <ul class="links-list">
+        <li>
+          <a href="#" data-url="" onclick="editLink(this); return false;">Nuevo Enlace</a>
+          <span class="link-edit-buttons">
+            <button onclick="moveLinkUp(this)">&#9650;</button>
+            <button onclick="moveLinkDown(this)">&#9660;</button>
+            <button onclick="removeThisLink(this)">X</button>
+          </span>
+        </li>
+      </ul>
+      <button class="add-link-btn" onclick="addLink(this)" style="display: block;">+ Añadir Enlace</button>
+      <button class="remove-column-btn" onclick="removeThisColumn(this)" style="display: block;">Eliminar Columna</button>
+    `;
+    grid.appendChild(newColumn);
+
+    // Agregar event listener para que, al perder el foco en el título, se ajuste su tamaño
+    const nuevoTitulo = newColumn.querySelector('h2');
+    if (nuevoTitulo) {
+      nuevoTitulo.addEventListener('blur', function() {
+        setTimeout(autoScaleHeadings, 50);
+      });
+    }
+
+    imagesLoaded(newColumn, function() {
+      msnry.appended(newColumn);
+      msnry.layout();
+      saveLinks();
+      autoScaleHeadings();
+    });
+  };
+
+  // Función para añadir un enlace
+  window.addLink = function(button) {
+    if (!isEditable) return;
+    const linksList = button.previousElementSibling;
+    const newLi = document.createElement('li');
+    newLi.innerHTML = `
+      <a href="#" data-url="" onclick="editLink(this); return false;">Nuevo Enlace</a>
+      <span class="link-edit-buttons">
+        <button onclick="moveLinkUp(this)">&#9650;</button>
+        <button onclick="moveLinkDown(this)">&#9660;</button>
+        <button onclick="removeThisLink(this)">X</button>
+      </span>
+    `;
+    linksList.appendChild(newLi);
+    editLink(newLi.querySelector('a'));
+    if (isEditable) {
+      const newSpan = newLi.querySelector('.link-edit-buttons');
+      if (newSpan) newSpan.style.display = 'block';
+    }
+    msnry.layout();
+    saveLinks();
+  };
+
+  // Función para eliminar una columna
+  window.removeThisColumn = function(button) {
+    if (!isEditable) return;
+    if (!confirm('¿Seguro que quieres eliminar esta columna entera?')) return;
+    const col = button.closest('.column');
+    if (col) {
+      col.remove();
+      msnry.layout();
+      saveLinks();
+      autoScaleHeadings();
+    }
+  };
+
+  // Función para editar un enlace
+  window.editLink = function(link) {
+    if (!isEditable) return;
+    const currentName = link.textContent;
+    const currentUrl = link.getAttribute('data-url');
+    
+    const newName = prompt('Introduce el nombre del enlace:', currentName);
+    if (newName === null) return;
+
+    const newUrl = prompt('Introduce la URL completa (http:// o https://):', currentUrl);
+    if (newUrl === null) return;
+    
+        const currentDescription = link.getAttribute('data-description') || '';
+  const newDescription = prompt('Descripción del enlace (opcional):', currentDescription);
+
+    let finalUrl = newUrl;
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      finalUrl = 'https://' + finalUrl;
+    }
+
+    link.textContent = newName;
+    link.setAttribute('data-url', finalUrl);
+    link.setAttribute('href', finalUrl);
+    link.setAttribute('data-description', newDescription);
+
+    link.onclick = function(e) {
+      if (isEditable) {
+        e.preventDefault();
+        editLink(link);
+      }
+    };
+
+    msnry.layout();
+    saveLinks();
+  };
+
+  // Función para eliminar un enlace
+  window.removeThisLink = function(button) {
+    if (!isEditable) return;
+    if (!confirm('¿Seguro que quieres eliminar este enlace?')) return;
+    const li = button.closest('li');
+    if (li) {
+      li.remove();
+      msnry.layout();
+      saveLinks();
+    }
+  };
+
+  // Función para mover un enlace hacia arriba
+  window.moveLinkUp = function(button) {
+    if (!isEditable) return;
+    const li = button.closest('li');
+    const prev = li.previousElementSibling;
+    if (prev) {
+      li.parentNode.insertBefore(li, prev);
+      msnry.layout();
+      saveLinks();
+    }
+  };
+
+  // Función para mover un enlace hacia abajo
+  window.moveLinkDown = function(button) {
+    if (!isEditable) return;
+    const li = button.closest('li');
+    const next = li.nextElementSibling;
+    if (next) {
+      li.parentNode.insertBefore(next, li);
+      msnry.layout();
+      saveLinks();
+    }
+  };
+
+  // Función para añadir un espaciador
+  window.addSpacer = function() {
+    if (!isEditable) return;
+    const spacer = document.createElement('div');
+    spacer.className = 'column spacer-column';
+    spacer.style.height = '100px';
+    spacer.innerHTML = `
+      <div class="spacer-controls">
+        <button onclick="adjustSpacerHeight(this, -50)">-</button>
+        <button onclick="adjustSpacerHeight(this, 50)">+</button>
+        <button onclick="this.closest('.spacer-column').remove(); msnry.layout(); saveLinks();">×</button>
+      </div>
+    `;
+    grid.appendChild(spacer);
+    imagesLoaded(spacer, function() {
+      msnry.appended(spacer);
+      msnry.layout();
+      saveLinks();
+    });
+  };
+
+  // Función para ajustar la altura del espaciador
+  window.adjustSpacerHeight = function(button, change) {
+    if (!isEditable) return;
+    const spacer = button.closest('.spacer-column');
+    const currentHeight = parseInt(spacer.style.height || '100');
+    const newHeight = Math.max(50, currentHeight + change);
+    spacer.style.height = newHeight + 'px';
+    msnry.layout();
+    saveLinks();
+  };
+
+  // Evento para cambiar la imagen de fondo
+  document.getElementById('bgInput').addEventListener('change', function(e) {
+    if (!isEditable) return;
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const imageData = evt.target.result;
+        document.body.style.backgroundImage = 'url(' + imageData + ')';
+                saveLinks();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Agregar event listener para todos los títulos existentes para que, al perder el foco, se ajuste su tamaño
+  document.querySelectorAll('.column h2').forEach(function(h2) {
+    h2.addEventListener('blur', function() {
+      setTimeout(autoScaleHeadings, 50);
+    });
+  });
+
+});
+
+  </script>
+  <script src="script.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Delegación de eventos para los tooltips
+  document.body.addEventListener('mouseover', function(e) {
+    const target = e.target;
+    if (target.matches('.links-list a')) {
+      const desc = target.dataset.description;
+      if (!desc) return;
+      
+      const tooltip = document.createElement('div');
+      tooltip.className = 'tooltip';
+      tooltip.textContent = desc;
+      // Forzamos la tipografía Arial y el ancho máximo de 550px
+      tooltip.style.fontFamily = 'Arial, sans-serif';
+      tooltip.style.maxWidth = '550px';
+      
+      document.body.appendChild(tooltip);
+      
+      const rect = target.getBoundingClientRect();
+      
+      // Cálculo horizontal (centrado y evitando bordes laterales)
+      const tooltipWidth = tooltip.offsetWidth;
+      let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+      const margin = 10; // margen mínimo en píxeles
+      if (left < margin) {
+        left = margin;
+      }
+      if (left + tooltipWidth > window.innerWidth - margin) {
+        left = window.innerWidth - tooltipWidth - margin;
+      }
+      
+      // Cálculo vertical (para que no se salga por abajo)
+      let top = rect.bottom + window.scrollY + 10;
+      const tooltipHeight = tooltip.offsetHeight;
+      const viewportBottom = window.scrollY + window.innerHeight - margin;
+      if (top + tooltipHeight > viewportBottom) {
+        top = viewportBottom - tooltipHeight;
+      }
+      
+      tooltip.style.left = `${left + window.scrollX}px`;
+      tooltip.style.top = `${top}px`;
+    }
+  });
+  
+  document.body.addEventListener('mouseout', function(e) {
+    const target = e.target;
+    if (target.matches('.links-list a')) {
+      document.querySelectorAll('.tooltip').forEach(t => t.remove());
+    }
+  });
+});
+</script>
+
+
+</body>
+</html>

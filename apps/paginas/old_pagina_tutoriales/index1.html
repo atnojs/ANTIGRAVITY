@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vídeos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="imagenes/favicon_integrado.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+  /* ===== CORRECCIONES DE VISIBILIDAD ===== */
+.prompts-section {
+    display: block;
+}
+
+.prompts-section #promptsListContainer {
+    display: none;  /* Oculto por defecto */
+}
+
+body.edit-mode .prompts-section #promptsListContainer {
+    display: grid;  /* Visible solo en modo edición */
+}
+
+.prompts-section #activePromptDisplayArea {
+    display: none;  /* Oculto por defecto */
+}
+
+body:not(.edit-mode) .prompts-section #activePromptDisplayArea:not(:empty) {
+    display: block; /* Visible solo en modo visión cuando tiene contenido */
+}
+
+/* ===== CORRECCIONES FINALES ===== */
+.form-modal-overlay {
+    display: none; /* Asegura que se muestre correctamente solo cuando se necesita */
+    z-index: 10000;
+    /* display: flex; Ya no es necesario aquí, se controla por JS */
+}
+
+.folder-prompts-menu {
+    z-index: 1010;
+}
+  
+    /* ===== RESET O AJUSTES BÁSICOS ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ===== FUENTES (Primarias del DHI) ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+    /* ===== VARIABLES CSS (Temas - Base DHI) ===== */
+    :root {
+      --bg-color: #f0f2f5; --card-bg-color: #ffffff; --text-color: #333333;
+      --primary-color: #007bff; --accent-color: #00bcd4; --heading-color: #2c3e50;
+      --border-color: #e0e0e0; --shadow-color: rgba(0,0,0,0.1);
+      --column-bg: rgba(230,230,250,0.05); --column-backdrop: blur(8px);
+      --column-header-color: var(--accent-color); --placeholder-text-color: #7f8c8d;
+      --button-edit-bg: rgba(0,0,0,0.05); --button-edit-hover-bg: rgba(0,0,0,0.1);
+      --font-primary: 'Inter', sans-serif; --font-secondary: 'Roboto', sans-serif;
+      
+      /* Variables RGB para opacidad */
+      --card-bg-color-rgb: 255,255,255;
+      --text-color-rgb: 51,51,51;
+
+      --prompt-block-bg: var(--card-bg-color);
+      --folder-button-bg: var(--card-bg-color);
+    }
+    body.dark-theme {
+      --bg-color: #1a1a2e; --card-bg-color: #2c3e50; --text-color: #e0e0e0;
+      --primary-color: #00aeff; --accent-color: #00e5ff; --heading-color: #ffffff;
+      --border-color: #4f5b6a; --shadow-color: rgba(0,0,0,0.3);
+      --column-bg: rgba(44,62,80,0.2); --column-header-color: var(--accent-color);
+      --placeholder-text-color: #95a5a6; --button-edit-bg: rgba(255,255,255,0.1);
+      --button-edit-hover-bg: rgba(255,255,255,0.2);
+      
+      /* Variables RGB para opacidad en tema oscuro */
+      --card-bg-color-rgb: 44,62,80;
+      --text-color-rgb: 224,224,224;
+    }
+    body { font-family:var(--font-secondary); min-height:100vh; background-color:var(--bg-color); background-size:cover; background-position:center; background-attachment:fixed; color:var(--text-color); transition:background-color .3s,color .3s; touch-action:manipulation; padding-top:80px; }
+    
+    .main-app-container { max-width:100%; margin:0 auto; padding:20px; }
+    
+    .filters-search-bar { position:fixed; top:0; left:0; width:100%; background-color:var(--card-bg-color); padding:15px 20px; box-shadow:0 2px 10px var(--shadow-color); z-index:1001; display:flex; flex-wrap:wrap; gap:15px; align-items:center; }
+    .filters-search-bar input[type="search"], .filters-search-bar select { padding:10px; border:1px solid var(--border-color); border-radius:6px; background-color:var(--bg-color); color:var(--text-color); font-family:var(--font-secondary); }
+    .filters-search-bar input[type="search"] { flex-grow:1; min-width:200px; }
+    .filters-search-bar label { margin-right:5px; font-weight:600; color:var(--text-color); }
+    .filters-search-bar .theme-switcher-btn { padding:10px 15px; background-color:var(--primary-color); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
+    .filters-search-bar .theme-switcher-btn:hover { opacity:.9; }
+
+    .section-title-wrapper {
+        text-align: center;
+        margin: 40px 0 25px 0; 
+        width: 100%;
+    }
+    .section-title { 
+        font-family: var(--font-primary); 
+        color: var(--heading-color); 
+        font-size: 28px; 
+        border-bottom: none; 
+        padding: 12px 30px; 
+        display: inline-block; 
+        background-color: rgba(var(--card-bg-color-rgb), 0.75); 
+        border-radius: 10px;
+        box-shadow: 0 3px 7px var(--shadow-color);
+    }
+    .add-item-btn {
+        display: none; margin: 0 auto 25px auto; padding: 10px 20px;
+        background-color: var(--primary-color); color: white; border: none;
+        border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center;
+    }
+    .add-item-btn:hover { opacity: 0.85; }
+    body.edit-mode .add-item-btn { display: block; width: fit-content; }
+
+    /* === ESTILOS SECCIÓN APPS IA === */
+    .apps-ia-section .category-container {
+      flex:1 1 100%; min-width:300px; background:var(--column-bg); backdrop-filter:var(--column-backdrop); 
+      border:1px solid var(--border-color); border-radius:15px; padding:20px; 
+      box-shadow:0 4px 12px var(--shadow-color); height:fit-content; margin-bottom:20px; position:relative;
+    }
+    .apps-ia-section .category-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; border-bottom:2px solid var(--accent-color); padding-bottom:10px; }
+    .apps-ia-section .category-header h3 { color:var(--column-header-color); font-family:var(--font-primary); font-size:24px; font-weight:700; margin:0; flex-grow:1; text-align: center;}
+    .apps-ia-section .apps-grid { display:flex; flex-wrap:wrap; justify-content: center; gap:20px; } /* Cambio a flex para mejor centrado */
+    .apps-ia-section .app-card {
+      background-color:var(--card-bg-color); border-radius:10px; padding:15px; 
+      box-shadow:0 2px 8px var(--shadow-color); display:flex; flex-direction:column; 
+      gap:10px; transition:transform .2s ease,box-shadow .2s ease; position:relative;
+      width: 300px; /* Ancho fijo para las tarjetas para mejor control de centrado */
+    }
+    .apps-ia-section .app-card:hover { transform:translateY(-5px); box-shadow:0 6px 15px var(--shadow-color); }
+    .apps-ia-section .app-card .app-header { display:flex; align-items:center; gap:10px; }
+    .apps-ia-section .app-card .app-logo { width:50px; height:50px; object-fit:contain; border-radius:8px; background-color:var(--bg-color); cursor:pointer; } /* cursor pointer para zoom */
+     .apps-ia-section .app-card .app-logo.interactive-image-thumbnail:hover { transform:scale(1.2); z-index: 10; transition: transform .2s ease; }
+
+    .apps-ia-section .app-card .app-name { font-family:var(--font-primary); font-size:18px; font-weight:600; color:var(--heading-color); }
+    .apps-ia-section .app-card .app-brief-description { font-size:14px; line-height:1.4; color:var(--text-color); flex-grow:1; min-height:40px; }
+    .apps-ia-section .app-card .app-tags-pricing { display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:10px; }
+    .apps-ia-section .app-card .app-tags span, .apps-ia-section .app-card .app-pricing span { background-color:var(--accent-color); color:white; padding:3px 8px; border-radius:12px; opacity:.85; }
+    .apps-ia-section .app-card .app-tags { display:flex; flex-wrap:wrap; gap:5px; }
+    .apps-ia-section .app-card .app-tags .tag { background-color:var(--primary-color); opacity:.7; }
+    .apps-ia-section .app-card .app-actions { display:flex; gap:10px; margin-top:auto; }
+    .apps-ia-section .app-card .app-actions button { flex-grow:1; padding:8px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:600; transition:background-color .2s,opacity .2s; color:white; }
+    .apps-ia-section .app-card .app-actions .visit-site-btn { background-color:var(--primary-color); }
+    .apps-ia-section .app-card .app-actions .more-info-btn { background-color:var(--accent-color); }
+    .apps-ia-section .app-card .app-actions button:hover { opacity:.85; }
+    .apps-ia-section .app-card .app-actions button:disabled { background-color:#ccc; cursor:not-allowed; opacity:.7; }
+    body.dark-theme .apps-ia-section .app-card .app-actions button:disabled { background-color:#555; color:#aaa; }
+    .apps-ia-section .app-card .new-badge { position:absolute; top:-5px; right:-5px; background-color:#ff4757; color:white; padding:3px 8px; font-size:10px; font-weight:bold; border-radius:5px; transform:rotate(10deg); z-index:1; }
+    .apps-ia-section .app-card .item-edit-buttons { display:none; position:absolute; top:5px; right:5px; background:rgba(var(--card-bg-color-rgb),.9); padding:5px; border-radius:5px; z-index:10; }
+    .apps-ia-section .app-card .item-edit-buttons button { background:transparent; border:none; color:var(--text-color); cursor:pointer; font-size:14px; margin:0 2px; }
+    .apps-ia-section .app-card .item-edit-buttons button:hover { color:var(--primary-color); }
+    .apps-ia-section .app-card .item-order-buttons { display:none; justify-content:center; gap:10px; margin-top:10px; }
+    body.edit-mode .apps-ia-section .app-card .item-edit-buttons,
+    body.edit-mode .apps-ia-section .app-card .item-order-buttons { display:flex; }
+    .apps-ia-section .app-card .item-order-buttons button { background:var(--button-edit-bg); color:var(--text-color); border:1px solid var(--border-color); padding:5px 10px; border-radius:4px; cursor:pointer; font-size:1em; }
+    .apps-ia-section .app-card .item-order-buttons button:hover { background:var(--button-edit-hover-bg); }
+    .apps-ia-section .app-card .item-order-buttons button:disabled { opacity:.5; cursor:not-allowed; }
+    .apps-ia-section .initial-load-message, .apps-ia-section .no-items-message { width:100%; text-align:center; font-size:1.2em; color:var(--placeholder-text-color); margin-top:30px; padding:20px; }
+    .apps-ia-section .category-header .category-controls button { background:transparent; border:none; color:var(--text-color); cursor:pointer; font-size:1em; margin-left: 5px; display:none;}
+    body.edit-mode .apps-ia-section .category-header .category-controls button { display: inline-block !important; }
+    #priceFilteredAppsContainer { display: none; /* Oculto hasta que se filtre por precio */ }
+
+
+    /* === ESTILOS SECCIÓN CARPETAS (para Prompts) === */
+    /* === ESTILOS SECCIÓN CARPETAS (para Prompts) - Actualizado === */
+.prompt-folders-section .folders-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* Para centrar items si no llenan la fila */
+}
+
+.prompt-folders-section .folder-item {
+    background-color: var(--card-bg-color); /* Como app-card */
+    border: 1px solid var(--border-color);
+    border-radius: 10px; /* Como app-card */
+    padding: 15px; /* Como app-card */
+    box-shadow: 0 2px 8px var(--shadow-color); /* Como app-card */
+    width: 300px; /* Como app-card, para consistencia */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espacio entre header, descripción, etc. */
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Como app-card */
+    /* min-height: 180px;  Ajusta según necesites o déjalo flexible */
+}
+
+.prompt-folders-section .folder-item:hover {
+    transform: translateY(-5px); /* Como app-card */
+    box-shadow: 0 6px 15px var(--shadow-color); /* Como app-card */
+}
+
+.prompt-folders-section .folder-item .folder-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 5px; /* Pequeño espacio antes de la descripción */
+}
+
+.prompt-folders-section .folder-item .folder-icon {
+    width: 50px; /* Como app-logo */
+    height: 50px; /* Como app-logo */
+    object-fit: contain;
+    border-radius: 8px; /* Como app-logo */
+    background-color: var(--bg-color); /* Opcional, como app-logo */
+    /* margin-bottom: 0; ya no es necesario con el header */
+}
+/* El .interactive-image-thumbnail:hover ya se encarga del zoom del icono */
+
+.prompt-folders-section .folder-item .folder-name {
+    font-family: var(--font-primary); /* Como app-name */
+    font-size: 18px; /* Como app-name */
+    font-weight: 600; /* Como app-name */
+    color: var(--heading-color); /* Como app-name */
+    text-align: left; 
+    flex-grow: 1;
+}
+
+.prompt-folders-section .folder-item .folder-description {
+    font-size: 14px; /* Como app-brief-description */
+    line-height: 1.4; /* Como app-brief-description */
+    color: var(--text-color); /* Como app-brief-description */
+    flex-grow: 1; /* Para que ocupe el espacio disponible y empuje botones (si estuvieran en flujo) */
+    min-height: 40px; /* Para dar algo de cuerpo, similar a app-brief-description */
+    text-align: left;
+    width: 100%;
+    word-wrap: break-word; /* Para descripciones largas */
+    margin-bottom: 10px; /* Espacio antes de los botones de edición si estuvieran al final */
+}
+.prompt-folders-section .folder-item .folder-description em { /* Para "Sin descripción" */
+    color: var(--placeholder-text-color);
+}
+
+
+/* Botones de edición y orden para carpetas (ya los tenías, solo verificar posición) */
+.prompt-folders-section .folder-item .item-edit-buttons,
+.prompt-folders-section .folder-item .item-order-buttons {
+    display: none; /* Se muestran con body.edit-mode */
+    position: absolute;
+    top: 5px; /* Mantenerlos arriba por ahora para simplicidad */
+    gap: 5px;
+}
+.prompt-folders-section .folder-item .item-edit-buttons { right: 5px; }
+.prompt-folders-section .folder-item .item-order-buttons { left: 5px; }
+
+body.edit-mode .prompt-folders-section .folder-item .item-edit-buttons,
+body.edit-mode .prompt-folders-section .folder-item .item-order-buttons { display: flex; }
+
+.prompt-folders-section .folder-item .item-edit-buttons button,
+.prompt-folders-section .folder-item .item-order-buttons button {
+    background: var(--button-edit-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 3px 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.prompt-folders-section .folder-item .item-edit-buttons button:hover,
+.prompt-folders-section .folder-item .item-order-buttons button:hover {
+    background: var(--button-edit-hover-bg);
+}
+
+.prompt-folders-section .no-items-message { /* Ya lo tenías */
+    text-align:center;
+    font-size:1.2em;
+    color:var(--placeholder-text-color);
+    margin-top:30px;
+    padding:20px;
+}
+
+    .folder-prompts-menu { /* Popup que muestra los prompts de una carpeta */
+        display: none; position: absolute; background-color: var(--card-bg-color);
+        border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px var(--shadow-color);
+        padding: 10px; z-index: 1010; width: 300px; max-height: 350px; overflow-y: auto;
+    }
+    .folder-prompts-menu ul { list-style: none; padding: 0; margin: 0; }
+    .folder-prompts-menu li a { display: block; padding: 8px 5px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color); position:relative; }
+    .folder-prompts-menu li a:hover { background-color: var(--bg-color); }
+    .folder-prompts-menu li:last-child a { border-bottom: none; }
+    
+    .prompt-link-description-popup { /* Popup para descripción de prompt al hacer hover en el menú de carpeta */
+        display: none; position: absolute; /* Posicionamiento por JS */
+        background-color: var(--card-bg-color); padding: 10px; border-radius: 6px;
+        border: 1px solid var(--border-color); box-shadow: 0 2px 5px var(--shadow-color);
+        width: 280px; z-index: 1012; pointer-events: none; /* Para no interferir */
+        font-size: 0.9em; line-height: 1.4;
+    }
+
+
+    /* === ESTILOS SECCIÓN PROMPTS === */
+    /* Modo Edición: Vista de lista de títulos */
+    .prompts-section .prompts-title-list.edit-mode-title-view {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Dos columnas para optimizar espacio */
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .prompts-section .prompt-title-item { /* Cada item en la lista de títulos */
+        background-color: var(--prompt-block-bg); border: 1px solid var(--border-color);
+        border-radius: 8px; padding: 10px 15px; display: flex;
+        justify-content: space-between; align-items: center;
+    }
+    .prompts-section .prompt-title-item .prompt-title-text { font-weight: 600; cursor: pointer; flex-grow:1; }
+    .prompts-section .prompt-title-item .item-controls { display: flex; gap: 8px; }
+    .prompts-section .prompt-title-item .item-controls button {
+         background: var(--button-edit-bg); color: var(--text-color); border: 1px solid var(--border-color);
+        padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.9em;
+    }
+     .prompts-section .prompt-title-item .item-controls button:hover { background: var(--button-edit-hover-bg); }
+
+    /* Modo Visión: Área para mostrar el prompt activo */
+    .prompts-section #activePromptDisplayArea {
+        background-color:  var(--card-bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 3px 10px var(--shadow-color);
+        margin: 20px auto; /* Centrado */
+        max-width: 1300px; /* Ancho máximo del prompt visible */
+    }
+    .prompts-section #activePromptDisplayArea .prompt-title { font-family: var(--font-primary); font-size: 24px; font-weight: 600; color: var(--heading-color); margin-bottom:15px; text-align: center; }
+    .prompts-section #activePromptDisplayArea .prompt-description { margin-bottom: 20px; line-height: 1.6; font-size: 1.05em; }
+    .prompts-section #activePromptDisplayArea .prompt-example-images { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+    .prompts-section #activePromptDisplayArea .prompt-example-images img {
+        max-width: 300px; /* Más grandes en la vista activa */
+        max-height: 200px; height: auto; border-radius: 8px; cursor: pointer;
+        border: 2px solid black;
+        transition: transform 0.2s ease;
+    }
+    .prompts-section #activePromptDisplayArea .prompt-example-images img.interactive-image-thumbnail:hover { transform: scale(1.35); z-index: 10; }
+    .prompts-section #activePromptDisplayArea .prompt-text-display {
+        background-color: var(--card-bg-color); padding: 20px; border-radius: 8px;
+        font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word;
+        margin-bottom: 20px; font-size: 1.1em;
+    }
+    .prompts-section #activePromptDisplayArea .prompt-actions { display: flex; justify-content: center; align-items: center; }
+    .prompts-section #activePromptDisplayArea .prompt-actions .copy-prompt-btn {
+        padding: 10px 20px; background-color: black; color: white;
+        border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.1em;
+    }
+    .prompts-section #activePromptDisplayArea .prompt-actions .copy-prompt-btn:hover { opacity: 0.85; }
+    .prompts-section .no-items-message { text-align:center; font-size:1.2em; color:var(--card-bg-color); margin-top:30px; padding:20px; }
+    /* Para modo edición en el formulario de prompt (dentro del modal) */
+    .form-modal-content .prompt-block .item-edit-buttons, 
+    .form-modal-content .prompt-block .item-order-buttons { display: flex !important; } /* Asegurar visibilidad en form */
+    .form-modal-content .delete-prompt-image-btn { 
+        position: absolute; top: -5px; right: -5px; background-color: #ff4757; color: white;
+        border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 11;
+    }
+    .form-modal-content .image-preview-container .img-preview-wrapper { position: relative; display: inline-block; margin: 5px;}
+    
+    
+    
+    
+    
+    /* En la sección de estilos CSS, añade esto: */
+.prompts-section #promptsListContainer {
+    display: none; /* Oculto por defecto */
+}
+
+body.edit-mode .prompts-section #promptsListContainer {
+    display: grid; /* Visible en modo edición */
+}
+
+.prompts-section #activePromptDisplayArea {
+    display: none; /* Oculto por defecto */
+}
+
+/* Mostrar activePromptDisplayArea solo cuando tenga contenido y NO estemos en modo edición */
+body:not(.edit-mode) .prompts-section #activePromptDisplayArea:not(:empty) {
+    display: block;
+}
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    /* === ESTILOS PARA MODALES Y FORMULARIOS (Base DHI, adaptado) === */
+    .form-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
+    .form-modal-content {
+        background-color: var(--card-bg-color); color: var(--text-color);
+        border-radius: 12px; padding: 25px; max-width: 750px; width: 90vw;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3); font-family: var(--font-secondary);
+        max-height: 90vh; overflow-y: auto;
+    }
+    .form-modal-content h3 { margin-bottom:20px; text-align:center; font-size:20px; color:var(--heading-color); font-family:var(--font-primary); }
+    .form-modal-content .form-group { margin-bottom:15px; }
+    .form-modal-content .form-group label { display:block; margin-bottom:6px; font-weight:600; color:var(--text-color); }
+    .form-modal-content .form-group input[type="text"],
+    .form-modal-content .form-group input[type="url"],
+    .form-modal-content .form-group input[type="file"],
+    .form-modal-content .form-group textarea,
+    .form-modal-content .form-group select { width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background-color:var(--bg-color); color:var(--text-color); font-family:var(--font-secondary); }
+    .form-modal-content .form-group textarea { resize:vertical; min-height:80px; }
+    .form-modal-content .form-group input[type="file"] { padding:5px; }
+    .form-modal-content .form-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+    .form-modal-content .form-buttons button { padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; border:none; transition:opacity .2s; }
+    .form-modal-content .form-buttons .save-btn { background-color:var(--primary-color); color:white;}
+    .form-modal-content .form-buttons .cancel-btn { background-color:#6c757d; color:white; }
+    .form-modal-content .form-buttons button:hover { opacity:.85; }
+    .form-modal-content .card-preview-area { margin-top:20px; padding:15px; border:1px dashed var(--border-color); border-radius:8px; background-color:var(--bg-color); }
+    .form-modal-content .card-preview-area h4 { margin-bottom:10px; font-family:var(--font-primary); color:var(--heading-color); }
+    .form-modal-content .card-preview-area .app-card { background-color:var(--card-bg-color); pointer-events:none; box-shadow:none; }
+    .form-modal-content .image-preview-container { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; min-height: 50px;}
+    .form-modal-content .image-preview-container img { max-width: 100px; max-height: 100px; border-radius: 4px; border: 1px solid var(--border-color); }
+    .form-modal-content .description-preview {
+        margin-top:15px; padding:15px; border:1px dashed var(--border-color); border-radius:8px; 
+        min-height:100px; max-height:300px; overflow-y:auto; background-color:var(--bg-color); color:var(--text-color);
+    }
+    .form-modal-content .description-preview img.interactive-image-thumbnail { max-width: 100%; cursor: pointer; } /* Para imágenes en descripciones detalladas */
+    .form-modal-content .description-preview img.interactive-image-thumbnail:hover { transform:scale(1.05); } /* Zoom más sutil en descripción */
+
+    .form-modal-content .image-tools { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .form-modal-content .image-tools button { background:var(--accent-color); color:white; border:none; border-radius:4px; padding:8px 12px; cursor:pointer; font-size:13px; transition:opacity .2s; }
+    .form-modal-content .image-tools button:hover { opacity:.85; }
+    .form-modal-content .image-upload-input { display:none; }
+    .form-modal-content .paste-area { width:100%; height:50px; border:2px dashed var(--border-color); border-radius:8px; background-color:var(--bg-color); display:flex; align-items:center; justify-content:center; margin-top:10px; cursor:pointer; font-size:14px; color:#666; }
+    body.dark-theme .form-modal-content .paste-area { color:#bbb; }
+    .form-modal-content .paste-area:hover { border-color:var(--accent-color); }
+    .form-modal-content .resizable-img-container { position:relative; display:inline-block; margin:5px; border:2px dashed transparent; overflow:visible; vertical-align:middle; line-height:0; }
+    body.edit-mode .form-modal-content .description-preview .resizable-img-container { border:2px dashed var(--accent-color); max-width:none!important; }
+    .form-modal-content .resizable-img-container img { display:block; max-width:100%; margin:0; padding:0; vertical-align:bottom; line-height:0; }
+    .form-modal-content .resize-handle, .form-modal-content .delete-image-btn { display:none; }
+    body.edit-mode .form-modal-content .resize-handle, body.edit-mode .form-modal-content .delete-image-btn { display:block; position:absolute; background:var(--accent-color); color:white; border-radius:50%; z-index:100; cursor:pointer; border:2px solid var(--card-bg-color); box-shadow:0 0 5px rgba(0,0,0,.3); }
+    body.edit-mode .form-modal-content .resize-handle { width:16px; height:16px; right:-8px; bottom:-8px; cursor:se-resize; }
+    body.edit-mode .form-modal-content .delete-image-btn { width:22px; height:22px; top:-10px; right:-10px; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; }
+
+    .global-controls { position:fixed; bottom:20px; display:flex; flex-direction:column; gap:10px; z-index:1000; }
+    .global-controls.left { left: 20px; }
+    .global-controls.right { right: 20px; }
+    .global-controls button { background:var(--primary-color); color:white; border:none; padding:10px 15px; border-radius:25px; cursor:pointer; font-weight:bold; box-shadow:0 2px 10px var(--shadow-color); transition:background .3s ease,opacity .3s ease; }
+    .global-controls button:hover { opacity:.85; }
+    #edit-mode-toggle-btn { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:999; padding:15px 100px; font-size:16px; background-color:transparent; color:white; border:none; border-radius:25px; cursor:pointer; font-weight:bold; box-shadow:0 2px 10px var(--shadow-color); }
+    #edit-mode-toggle-btn.active { background-color: #dc3545; }
+    #edit-mode-toggle-btn:hover { opacity: 0.85; }
+    #hiddenBgInput { display:none; }
+
+    .password-modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,.6); z-index:10001; justify-content:center; align-items:center; }
+    .password-modal-overlay .password-modal-content { background-color:var(--card-bg-color); color:var(--text-color); padding:25px; border-radius:12px; max-width:300px; width:90%; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,.3); }
+    .password-modal-overlay h3 { margin-top:0; margin-bottom:15px; font-size:18px; color:var(--heading-color); }
+    .password-modal-overlay input[type="password"] { width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:15px; background-color:var(--bg-color); color:var(--text-color); }
+    .password-modal-overlay .password-modal-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+    .password-modal-overlay .password-modal-buttons button { padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; border:none; transition:opacity .2s; color:white; }
+    .password-modal-overlay #submitAdminPasswordBtn { background-color:var(--primary-color); }
+    .password-modal-overlay #cancelAdminPasswordBtn { background-color:#6c757d; }
+    .password-modal-overlay .password-modal-buttons button:hover { opacity:.85; }
+    
+    #appCategoryOrderModal { display: none; }
+    #appCategoryOrderModal .modal-content { max-height: 70vh; overflow-y: auto; }
+    #appCategoryOrderModal ul { list-style:none; padding:0; margin:0; }
+    #appCategoryOrderModal li { display:flex; justify-content:space-between; align-items:center; padding:10px 5px; border-bottom:1px solid var(--border-color); }
+    #appCategoryOrderModal li:last-child { border-bottom:none; }
+    #appCategoryOrderModal .category-name { flex-grow:1; margin-right:10px; }
+    #appCategoryOrderModal .order-buttons button { background:var(--button-edit-bg); color:var(--text-color); border:1px solid var(--border-color); margin-left:5px; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:1.1em; line-height:1; }
+    #appCategoryOrderModal .order-buttons button:hover { background:var(--button-edit-hover-bg); }
+    #appCategoryOrderModal .order-buttons button:disabled { opacity:.4; cursor:not-allowed; }
+    #appCategoryOrderModal .modal-actions { display:flex; justify-content: center; margin-top:20px; }
+    #appCategoryOrderModal .modal-actions button { padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; border:none; transition:opacity .2s; color:white; background-color:#6c757d;}
+
+    .fullscreen-image-viewer {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.85); z-index: 10050;
+        justify-content: center; align-items: center; cursor: zoom-out;
+    }
+    .fullscreen-image-viewer img {
+        max-width: 90%; max-height: 90%; object-fit: contain;
+        border: 3px solid white; border-radius: 5px;
+    }
+    .fullscreen-image-viewer .close-fullscreen-btn {
+        position: absolute; top: 20px; right: 30px; font-size: 30px;
+        color: white; background: none; border: none; cursor: pointer;
+    }
+    
+    /* Pie de Página */
+    .site-footer {
+        margin-top: 60px;
+        margin-bottom: 0px; /* Espacio para que no choque con el botón de modo edición */
+        padding-bottom: 20px;
+        /* Hereda .section-title-wrapper para el centrado */
+    }
+    .site-footer .section-title { /* Reutiliza .section-title pero lo personaliza */
+        font-size: 1em; /* Más pequeño */
+        padding: 8px 20px;
+        background-color: rgba(var(--card-bg-color-rgb), 0.6); /* Más sutil */
+        color: var(--text-color); /* Para que sea legible en ambos temas */
+        box-shadow: 0 1px 3px var(--shadow-color);
+    }
+
+
+    /* Responsive adjustments */
+    @media (max-width:768px) { 
+        body{padding-top:120px;}
+        .filters-search-bar{flex-direction:column;align-items:stretch;} 
+        .apps-ia-section .category-header h3{font-size:20px;} 
+        /* .apps-ia-section .apps-grid{grid-template-columns:1fr;} No es grid ahora */
+        .apps-ia-section .app-card { width: calc(50% - 10px); } /* 2 por fila si hay espacio */
+        .prompts-section #activePromptDisplayArea .prompt-example-images img { max-width: 150px; max-height: 150px; }
+        .prompt-folders-section .folder-item { width: calc(50% - 10px); }
+        .prompts-section .prompts-title-list.edit-mode-title-view { grid-template-columns: 1fr; } /* 1 columna en móvil para lista de prompts */
+
+    }
+    @media (max-width:480px) {
+        .apps-ia-section .app-card { width: 100%; } /* 1 por fila */
+        .prompt-folders-section .folder-item { width: 100%; }
+        .prompts-section #activePromptDisplayArea .prompt-example-images img { max-width: 120px; max-height: 120px; }
+
+    }
+    .interactive-image-thumbnail:hover { /* Estilo genérico para hover zoom */
+      transform: scale(1.35); 
+      z-index: 10; 
+      transition: transform 0.2s ease-out;
+    }
+
+  </style>
+</head>
+<body class="dark-theme">
+
+  <div class="filters-search-bar">
+    <input type="search" id="globalSearchInput" placeholder="Buscar en Apps, Prompts, Carpetas...">
+    <div>
+      <label for="appPricingFilter">Filtrar Apps por Precio:</label>
+      <select id="appPricingFilter">
+        <option value="_all_">Todos los Precios</option>
+        <option value="Gratis">Gratis</option>
+        <option value="Freemium">Freemium</option>
+        <option value="Por Créditos">Por Créditos</option>
+        <option value="De Pago">De Pago</option>
+        <option value="Prueba Gratuita">Prueba Gratuita</option>
+      </select>
+    </div>
+    <div>
+      <label for="globalSortOrder">Ordenar por:</label>
+      <select id="globalSortOrder">
+        <option value="default">Por defecto</option>
+        <option value="newest">Más nuevos primero</option>
+        <option value="oldest">Más antiguos primero</option>
+        <option value="nameAsc">Nombre (A-Z)</option>
+        <option value="nameDesc">Nombre (Z-A)</option>
+      </select>
+    </div>
+    <button id="themeSwitcherBtn" class="theme-switcher-btn">Tema Claro</button>
+  </div>
+
+  <div class="main-app-container">
+
+    <section id="aiAppsSection" class="apps-ia-section">
+      <div class="section-title-wrapper"><h2 class="section-title">VÍDEOS</h2></div>
+      <button id="addAppCategoryBtn" class="add-item-btn">Añadir Categoría de Apps</button>
+      <div id="aiAppsCategoriesContainer">
+        </div>
+      <p id="noAppCategoriesMessage" class="initial-load-message" style="display: none;">No hay categorías de apps. ¡Añade una para empezar!</p>
+    </section>
+
+    <section id="promptFoldersSection" class="prompt-folders-section">
+      <div class="section-title-wrapper"><h2 class="section-title">CARPETAS DE VÍDEOS</h2></div>
+      <button id="addPromptFolderBtn" class="add-item-btn">Añadir Nueva Carpeta</button>
+      <div id="promptFoldersGridContainer" class="folders-grid"></div>
+      <p id="noPromptFoldersMessage" class="no-items-message" style="display: none;">No hay carpetas de prompts. ¡Crea una para organizar tus prompts!</p>
+    </section>
+
+    <section id="promptsSection" class="prompts-section">
+      <div class="section-title-wrapper"><h2 class="section-title">Prompts</h2></div>
+      <button id="addPromptBtn" class="add-item-btn">Añadir Nuevo Prompt</button>
+      
+      <div id="promptsListContainer" class="prompts-title-list"></div>
+      <p id="noPromptsMessage" class="no-items-message" style="display: none;">No hay prompts todavía. ¡Añade uno!</p>
+
+      <div id="activePromptDisplayArea" class="prompt-block-display" style="display:none;">
+        </div>
+    </section>
+
+  </div>
+
+  <input type="file" id="hiddenBgInput" accept="image/*">
+  <div class="global-controls right">
+    <button id="changeBgBtn" title="Cambiar Imagen de Fondo"><i class="fas fa-image"></i></button>
+    <button id="orderAppCategoriesBtn" title="Ordenar Categorías de Apps IA"><i class="fas fa-sort-alpha-down"></i></button>
+  </div>
+  <button id="edit-mode-toggle-btn"></button> <!-- Antes ponía Activar Modo Edición entre los dos <> -->
+
+  <div id="adminPasswordModal" class="password-modal-overlay">
+    <div class="password-modal-content">
+      <h3></h3> <!-- Antes ponía Activar Modo Edición -->
+      <input type="password" id="adminPasswordInput" placeholder="Introduce la contraseña">
+      <div class="password-modal-buttons">
+        <button id="submitAdminPasswordBtn">Activar</button>
+        <button id="cancelAdminPasswordBtn">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appCategoryOrderModal" class="password-modal-overlay">
+    <div class="modal-content">
+        <h3>Ordenar Categorías de Apps IA</h3>
+        <ul id="appCategoryOrderList"></ul>
+        <div class="modal-actions">
+            <button id="closeAppCategoryOrderModalBtn">Hecho</button>
+        </div>
+    </div>
+  </div>
+  
+  <div id="formModal" class="form-modal-overlay">
+    <div class="form-modal-content" id="genericFormContainer"></div>
+  </div>
+
+  <div id="fullscreenImageViewer" class="fullscreen-image-viewer">
+    <button class="close-fullscreen-btn">&times;</button>
+    <img src="" alt="Imagen ampliada">
+  </div>
+
+  <footer class="site-footer section-title-wrapper">
+    <p class="section-title">Antonio Jiménez - 2025</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM completamente cargado. Iniciando App Centro de Comandos IA...");
+
+        let appData = {
+            settings: { background: '', theme: 'dark', lastAppPricingFilter: '_all_', lastGlobalSortOrder: 'default' },
+            aiAppsCategories: [], 
+            prompts: [],
+            promptFolders: []
+        };
+
+        let isEditable = false;
+        let currentPassword = ""; 
+        let activePopups = { folderMenu: null, promptDescription: null }; // Para manejar popups
+        
+        // editModeToggleBtn.addEventListener('click', toggleEditMode); // Se asigna más abajo
+        // submitAdminPasswordBtn.addEventListener('click', handlePasswordSubmit); // Se asigna más abajo
+
+        // --- DOM Elements ---
+        const globalSearchInput = document.getElementById('globalSearchInput');
+        const appPricingFilter = document.getElementById('appPricingFilter');
+        const globalSortOrder = document.getElementById('globalSortOrder');
+        const themeSwitcherBtn = document.getElementById('themeSwitcherBtn');
+
+        const aiAppsCategoriesContainer = document.getElementById('aiAppsCategoriesContainer');
+        const noAppCategoriesMessage = document.getElementById('noAppCategoriesMessage');
+        const addAppCategoryBtn = document.getElementById('addAppCategoryBtn');
+        
+        const promptFoldersGridContainer = document.getElementById('promptFoldersGridContainer');
+        const noPromptFoldersMessage = document.getElementById('noPromptFoldersMessage');
+        const addPromptFolderBtn = document.getElementById('addPromptFolderBtn');
+
+        const promptsListContainer = document.getElementById('promptsListContainer'); // Para lista de títulos en edit mode
+        const activePromptDisplayArea = document.getElementById('activePromptDisplayArea'); // Para prompt activo en vision mode
+        const noPromptsMessage = document.getElementById('noPromptsMessage');
+        const addPromptBtn = document.getElementById('addPromptBtn');
+        
+        const hiddenBgInput = document.getElementById('hiddenBgInput');
+        const changeBgBtn = document.getElementById('changeBgBtn');
+        const orderAppCategoriesBtn = document.getElementById('orderAppCategoriesBtn');
+        const editModeToggleBtn = document.getElementById('edit-mode-toggle-btn');
+
+        const adminPasswordModal = document.getElementById('adminPasswordModal');
+        const adminPasswordInput = document.getElementById('adminPasswordInput');
+        const submitAdminPasswordBtn = document.getElementById('submitAdminPasswordBtn');
+        const cancelAdminPasswordBtn = document.getElementById('cancelAdminPasswordBtn');
+
+        const appCategoryOrderModal = document.getElementById('appCategoryOrderModal');
+        const appCategoryOrderList = document.getElementById('appCategoryOrderList');
+        const closeAppCategoryOrderModalBtn = document.getElementById('closeAppCategoryOrderModalBtn');
+        
+        const formModal = document.getElementById('formModal');
+        const genericFormContainer = document.getElementById('genericFormContainer');
+
+        const fullscreenImageViewer = document.getElementById('fullscreenImageViewer');
+        const fullscreenImage = fullscreenImageViewer.querySelector('img');
+        const closeFullscreenBtn = fullscreenImageViewer.querySelector('.close-fullscreen-btn');
+
+        // Variable temporal para almacenar archivos de imagen de prompt antes de guardarlos
+        let tempPromptImageFiles = []; // Array de {file: File, previewUrl: string, id: tempId}
+        let currentEditingPromptImages = []; // Array de URLs de imágenes existentes al abrir el form de prompt
+        
+        function closeFormModal() { // Esta función es utilizada por varios formularios
+            if (formModal) formModal.style.display = 'none';
+            if (genericFormContainer) genericFormContainer.innerHTML = ''; // Limpiar contenido
+        }
+
+        // --- INITIALIZATION ---
+        async function loadInitialData() {
+            showLoadingMessage("Cargando datos...");
+            try {
+                const response = await fetch('load_state.php?t=' + Date.now());
+                if (!response.ok) throw new Error(`Error al cargar: ${response.status}`);
+                const loadedData = await response.json();
+
+                if (loadedData && !loadedData.error) {
+                    appData.settings = { ...appData.settings, ...(loadedData.settings || {}) };
+                    appData.aiAppsCategories = normalizeAppCategoriesData(loadedData.aiAppsCategories || []);
+                    appData.prompts = normalizePromptsData(loadedData.prompts || []);
+                    appData.promptFolders = normalizePromptFoldersData(loadedData.promptFolders || []);
+                } else {
+                     console.warn("No se cargaron datos o formato incorrecto. Usando defaults.");
+                    initializeDefaultData();
+                }
+            } catch (error) {
+                console.error('Error crítico en loadInitialData:', error);
+                showPersistentMessage(`Error crítico: ${error.message}. Usando defaults.`, "error");
+                initializeDefaultData();
+            }
+            applyInitialSettings();
+            updateEditModeUI(); // Llama a renderAll internamente
+            clearLoadingMessage();
+        }
+        
+        function initializeDefaultData() {
+            appData.settings = { background: '', theme: 'dark', lastAppPricingFilter: '_all_', lastGlobalSortOrder: 'default' };
+            appData.aiAppsCategories = [];
+            appData.prompts = [];
+            appData.promptFolders = [];
+        }
+
+        function normalizeAppCategoriesData(categories) { /* ... (como antes) ... */ 
+             return categories.map(cat => ({
+                id: cat.id || `catApp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                title: cat.title || "Categoría Sin Título",
+                apps: (cat.apps || []).map(app => ({
+                    id: app.id || `app_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    name: app.name || "App Sin Nombre",
+                    websiteUrl: app.websiteUrl || "",
+                    logoUrl: app.logoUrl || "", 
+                    briefDescription: app.briefDescription || "",
+                    detailedDescription: app.detailedDescription || "", 
+                    tags: Array.isArray(app.tags) ? app.tags : (typeof app.tags === 'string' ? app.tags.split(',').map(t => t.trim()).filter(Boolean) : []),
+                    pricingModel: app.pricingModel || "Gratis",
+                    tutorialUrl: app.tutorialUrl || "",
+                    isPrivate: !!app.isPrivate,
+                    timestampAdded: app.timestampAdded || Date.now(),
+                    timestampUpdated: app.timestampUpdated || Date.now(),
+                }))
+            }));
+        }
+        function normalizePromptsData(prompts) { /* ... (como antes) ... */
+             return prompts.map(p => ({
+                id: p.id || `prompt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                title: p.title || "Prompt Sin Título",
+                descriptionHTML: p.descriptionHTML || "",
+                exampleImageUrls: Array.isArray(p.exampleImageUrls) ? p.exampleImageUrls.filter(url => typeof url === 'string') : [],
+                promptText: p.promptText || "",
+                folderId: p.folderId || null,
+                timestampAdded: p.timestampAdded || Date.now(),
+                timestampUpdated: p.timestampUpdated || Date.now(),
+            }));
+        }
+        function normalizePromptFoldersData(folders) { /* ... (como antes) ... */
+             return folders.map(f => ({
+                id: f.id || `folder_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                name: f.name || "Carpeta Sin Nombre",
+                iconUrl: f.iconUrl || "", 
+                description: f.description || "",
+                timestampAdded: f.timestampAdded || Date.now(),
+                timestampUpdated: f.timestampUpdated || Date.now(),
+            }));
+        }
+
+        function showLoadingMessage(message) { /* ... (como antes) ... */
+            let loadingDiv = document.getElementById('loadingOverlay');
+            if (!loadingDiv) {
+                loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loadingOverlay';
+                Object.assign(loadingDiv.style, { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.7)', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: '20000', fontSize: '2em', textAlign: 'center' });
+                document.body.appendChild(loadingDiv);
+            }
+            loadingDiv.textContent = message;
+            loadingDiv.style.display = 'flex';
+        }
+        function clearLoadingMessage() { /* ... (como antes) ... */
+            const loadingDiv = document.getElementById('loadingOverlay');
+            if (loadingDiv) loadingDiv.style.display = 'none';
+        }
+        function showPersistentMessage(message, type = "info") { /* ... (como antes) ... */
+             if (type === "error") alert(`Error: ${message}`);
+             else if (type === "success") alert(`Éxito: ${message}`);
+             console.log(`${type.toUpperCase()}: ${message}`);
+        }
+
+        // --- SAVING ---
+        async function saveDataToBackend() {
+            if (!isEditable) return false;
+            showLoadingMessage("Guardando cambios...");
+            
+            const formData = new FormData();
+            formData.append('password', currentPassword); // Importante para la validación en el backend
+
+            const mainData = {
+        settings: appData.settings,
+        aiAppsCategories: appData.aiAppsCategories.map(category => ({
+            ...category,
+            apps: category.apps.map(app => ({
+                ...app,
+                // Si logoUrl es un File object, envía null en jsonData (se enviará por FormData)
+                // Si es una string (URL existente), envíala.
+                logoUrl: (app.logoUrl instanceof File) ? null : app.logoUrl 
+            }))
+        })),
+        prompts: appData.prompts.map(p => ({
+            ...p,
+            // Para exampleImageUrls, enviar solo URLs string que ya existen y se quieren conservar.
+            // Los File objects (nuevas imágenes) se envían por separado en FormData.
+            exampleImageUrls: (p.exampleImageUrls || [])
+                                .map((item, index) => ({ item, originalIndex: index })) // Conservar índice para ordenar
+                                .filter(entry => typeof entry.item === 'string') // Solo URLs string (imágenes ya guardadas)
+                                .sort((a, b) => a.originalIndex - b.originalIndex) // Intentar mantener orden de URLs existentes
+                                .map(entry => entry.item) // Extraer solo la URL
+                                .slice(0, 3) // Asegurar que no enviamos más de 3 pre-existentes
+        })),
+        promptFolders: appData.promptFolders.map(f => ({
+            ...f,
+            // Si iconUrl es un File object, envía null en jsonData
+            iconUrl: (f.iconUrl instanceof File) ? null : f.iconUrl 
+        }))
+    };
+    formData.append('jsonData', JSON.stringify(mainData));
+
+    // Adjuntar archivos (File objects) al FormData
+    // Imágenes de Prompts
+    appData.prompts.forEach(prompt => {
+        (prompt.exampleImageUrls || []).forEach((item, index) => { // 'index' aquí es el originalPlaceholderIndex
+            if (item instanceof File) {
+                formData.append(`prompt_image_${prompt.id}_${index}`, item, item.name);
+            }
+        });
+    });
+
+    // Iconos de Carpetas
+    appData.promptFolders.forEach(folder => {
+        if (folder.iconUrl instanceof File) {
+            formData.append(`folder_icon_${folder.id}`, folder.iconUrl, folder.iconUrl.name);
+        }
+    });
+
+    // Logos de Apps
+    appData.aiAppsCategories.forEach(category => {
+        category.apps.forEach(app => {
+            if (app.logoUrl instanceof File) {
+                formData.append(`app_logo_${app.id}`, app.logoUrl, app.logoUrl.name);
+            }
+        });
+    });
+            
+            try {
+                const response = await fetch('guardar_cambios.php', { method: 'POST', body: formData });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error del servidor: ${response.status}. ${errorText}`);
+                }
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Datos guardados.', result);
+                    if (result.filePaths) {
+                        (result.filePaths.prompts || []).forEach(fp => {
+                            const prompt = appData.prompts.find(p => p.id === fp.promptId);
+                            if (prompt) {
+                                // El backend debería devolver el índice original o una forma de mapear
+                                // el archivo subido al placeholder correcto en exampleImageUrls.
+                                // Aquí se asume que el backend puede devolver el nuevo path y el índice original.
+                                const placeholderIndex = fp.originalPlaceholderIndex; // Necesitas que el backend devuelva esto.
+                                if (typeof placeholderIndex !== 'undefined' && prompt.exampleImageUrls[placeholderIndex] instanceof File) {
+                                     prompt.exampleImageUrls[placeholderIndex] = fp.newPath;
+                                } else { // Fallback o lógica más robusta si el índice no es fiable
+                                    // Buscar el File object por nombre (menos fiable si hay nombres duplicados)
+                                    const fileIdx = prompt.exampleImageUrls.findIndex(item => item instanceof File && item.name === fp.originalName);
+                                    if (fileIdx !== -1) {
+                                        prompt.exampleImageUrls[fileIdx] = fp.newPath;
+                                    } else {
+                                        // Si no se puede mapear, al menos intentar añadirlo si hay espacio
+                                        if (!Array.isArray(prompt.exampleImageUrls)) prompt.exampleImageUrls = [];
+                                        if (prompt.exampleImageUrls.filter(item => typeof item === 'string').length < 3) {
+                                             // Solo añadir si no hemos alcanzado el límite de URLs
+                                             prompt.exampleImageUrls.push(fp.newPath);
+                                             // Limpiar File objects que ya no están (si es necesario)
+                                             prompt.exampleImageUrls = prompt.exampleImageUrls.filter(item => typeof item === 'string' || item.name !== fp.originalName);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        (result.filePaths.folders || []).forEach(fp => {
+                            const folder = appData.promptFolders.find(f => f.id === fp.folderId);
+                            if (folder && folder.iconUrl instanceof File && folder.iconUrl.name === fp.originalName) {
+                                folder.iconUrl = fp.newPath;
+                            }
+                        });
+                    }
+                    showPersistentMessage("Cambios guardados.", "success");
+                    return true;
+                } else { throw new Error(result.error || 'Error desconocido al guardar.'); }
+            } catch (error) {
+                console.error('Error en saveDataToBackend:', error);
+                showPersistentMessage(`Error guardando: ${error.message}`, "error");
+                return false;
+            } finally { clearLoadingMessage(); }
+        }
+
+        // --- RENDERING ---
+        function renderAll() {
+            console.log("Renderizando todo con datos:", JSON.parse(JSON.stringify(appData)));
+            renderFilteredApps(); 
+            renderPromptFolders();
+            renderPrompts(); 
+            updateFilterUIDefaults();
+        }
+
+        function updateFilterUIDefaults() {
+            if (appPricingFilter) appPricingFilter.value = appData.settings.lastAppPricingFilter || '_all_';
+            if (globalSortOrder) globalSortOrder.value = appData.settings.lastGlobalSortOrder || 'default';
+        }
+        
+        function renderFilteredApps() {
+            aiAppsCategoriesContainer.innerHTML = ''; 
+            const priceFilterValue = appPricingFilter.value;
+            const searchTerm = globalSearchInput.value.toLowerCase().trim();
+            const sortVal = globalSortOrder.value;
+
+            let itemsToShow = [];
+            let isPriceFilteredResult = false;
+
+            if (priceFilterValue && priceFilterValue !== '_all_') {
+                isPriceFilteredResult = true;
+                appData.aiAppsCategories.forEach(category => {
+                    category.apps.forEach(app => {
+                        if (app.pricingModel === priceFilterValue) {
+                            itemsToShow.push({...app, originalCategoryId: category.id, originalCategoryTitle: category.title });
+                        }
+                    });
+                });
+                if (searchTerm) {
+                    itemsToShow = itemsToShow.filter(app => 
+                        app.name.toLowerCase().includes(searchTerm) || 
+                        app.briefDescription.toLowerCase().includes(searchTerm) ||
+                        (app.tags && app.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+                    );
+                }
+                sortItems(itemsToShow, 'apps', sortVal); 
+
+            } else {
+                itemsToShow = JSON.parse(JSON.stringify(appData.aiAppsCategories)); 
+                if (searchTerm) {
+                    itemsToShow = itemsToShow.map(category => {
+                        const filteredApps = category.apps.filter(app => 
+                            app.name.toLowerCase().includes(searchTerm) || 
+                            app.briefDescription.toLowerCase().includes(searchTerm) ||
+                            (app.tags && app.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+                        );
+                        return {...category, apps: filteredApps};
+                    }).filter(category => category.apps.length > 0);
+                }
+                sortItems(itemsToShow, 'aiAppsCategories', sortVal);
+                itemsToShow.forEach(category => sortItems(category.apps, 'apps', sortVal));
+            }
+
+
+            if (itemsToShow.length === 0) {
+                noAppCategoriesMessage.style.display = 'block';
+                noAppCategoriesMessage.textContent = "No hay apps que coincidan con los filtros actuales.";
+                return;
+            }
+            noAppCategoriesMessage.style.display = 'none';
+
+            if (isPriceFilteredResult) {
+                const appsGrid = document.createElement('div');
+                appsGrid.className = 'apps-grid';
+                itemsToShow.forEach((app, index) => {
+                    appsGrid.appendChild(createAppCardElement(app, app.originalCategoryId, index, itemsToShow.length));
+                });
+                aiAppsCategoriesContainer.appendChild(appsGrid);
+            } else {
+                itemsToShow.forEach(category => { 
+                   renderSingleAppCategory(category, aiAppsCategoriesContainer); 
+                });
+            }
+             attachGenericImageEventListeners(aiAppsCategoriesContainer);
+        }
+        
+        function renderSingleAppCategory(category, container) { 
+            const categoryEl = document.createElement('div');
+            categoryEl.className = 'category-container';
+            categoryEl.dataset.categoryId = category.id;
+
+            let categoryControlsHTML = '';
+            if (isEditable) {
+                categoryControlsHTML = `
+                    <div class="category-controls">
+                        <button class="edit-app-category-btn" title="Editar Nombre Categoría"><i class="fas fa-edit"></i></button>
+                        <button class="delete-app-category-btn" title="Eliminar Categoría"><i class="fas fa-trash-alt"></i></button>
+                    </div>`;
+            }
+            
+            let addAppToCategoryBtnHTML = '';
+            if (isEditable) {
+                addAppToCategoryBtnHTML = `<button class="add-item-btn add-app-to-category-btn" style="display:block; width:fit-content; margin: 10px auto;">Añadir App a "${category.title}"</button>`;
+            }
+
+            categoryEl.innerHTML = `
+                <div class="category-header">
+                    <h3 ${isEditable ? 'contenteditable="false"' : ''}>${category.title}</h3> 
+                    ${categoryControlsHTML}
+                </div>
+                ${addAppToCategoryBtnHTML}
+                <div class="apps-grid">
+                    ${category.apps.length === 0 ? '<p class="no-items-message">No hay apps en esta categoría.</p>' : ''}
+                </div>
+            `;
+            const appsGrid = categoryEl.querySelector('.apps-grid');
+            category.apps.forEach((app, appIndex) => {
+                appsGrid.appendChild(createAppCardElement(app, category.id, appIndex, category.apps.length));
+            });
+            container.appendChild(categoryEl);
+
+            if (isEditable) {
+                const titleH3 = categoryEl.querySelector('h3'); // No hacer editable directamente, usar botón
+                // if(titleH3) { // Ya no es contenteditable
+                //     titleH3.addEventListener('blur', (e) => handleAppCategoryTitleChange(e, category.id));
+                //     titleH3.addEventListener('keypress', (e) => { if(e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+                // }
+                categoryEl.querySelector('.edit-app-category-btn')?.addEventListener('click', () => {
+                    const newTitle = prompt("Nuevo nombre para la categoría:", category.title);
+                    if (newTitle && newTitle.trim() !== category.title) {
+                        const catToUpdate = appData.aiAppsCategories.find(c => c.id === category.id);
+                        if (catToUpdate) catToUpdate.title = newTitle.trim();
+                        saveDataToBackend().then(renderFilteredApps);
+                    }
+                });
+                categoryEl.querySelector('.delete-app-category-btn')?.addEventListener('click', () => deleteAppCategory(category.id));
+                categoryEl.querySelector('.add-app-to-category-btn')?.addEventListener('click', () => openAppForm(null, category.id));
+            }
+        }
+
+    function createAppCardElement(app, categoryId, appIndex, totalAppsInCategory) {
+        const card = document.createElement('div');
+        card.className = 'app-card';
+        card.dataset.appId = app.id;
+
+        let editButtonsHTML = '';
+        let orderButtonsHTML = '';
+        let newBadgeHTML = '';
+        
+        if (isEditable) {
+            editButtonsHTML = `
+                <div class="item-edit-buttons">
+                    <button class="edit-app-btn" title="Editar App">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-app-btn" title="Eliminar App">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>`;
+            
+            orderButtonsHTML = `
+                <div class="item-order-buttons">
+                    <button class="move-app-left-btn" title="Mover Izquierda/Arriba" 
+                        ${appIndex === 0 ? 'disabled' : ''}>
+                        ←
+                    </button>
+                    <button class="move-app-right-btn" title="Mover Derecha/Abajo" 
+                        ${appIndex === totalAppsInCategory - 1 ? 'disabled' : ''}>
+                        →
+                    </button>
+                </div>`;
+        }
+        
+        if ((Date.now() - (app.timestampAdded || 0)) < (7 * 24 * 60 * 60 * 1000)) { // Añadido || 0 por seguridad
+            newBadgeHTML = '<span class="new-badge">NUEVO</span>';
+        }
+
+        card.innerHTML = `
+            ${newBadgeHTML}
+            ${editButtonsHTML}
+            <div class="app-header">
+                <img src="${app.logoUrl || 'https://via.placeholder.com/50?text=App'}" 
+                     alt="${app.name} logo" 
+                     class="app-logo interactive-image-thumbnail">
+                <span class="app-name">${app.name}</span>
+            </div>
+            <p class="app-brief-description">${app.briefDescription}</p>
+            <div class="app-tags-pricing">
+                <div class="app-tags">
+                    ${(app.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+                </div>
+                <span class="app-pricing"><span>${app.pricingModel}</span></span>
+            </div>
+            ${orderButtonsHTML}
+            <div class="app-actions">
+                <button class="visit-site-btn" 
+                        data-url="${app.websiteUrl}" 
+                        ${!app.websiteUrl ? 'disabled' : ''}>
+                    Visitar
+                </button>
+                <button class="more-info-btn" 
+                        ${!app.detailedDescription && !app.tutorialUrl && !(app.isPrivate && isEditable) ? 'disabled' : ''}>
+                    Más Info
+                </button>
+            </div>`;
+        
+        if (isEditable) {
+            card.querySelector('.edit-app-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openAppForm(app.id, categoryId);
+            });
+            
+            card.querySelector('.delete-app-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteApp(app.id, categoryId);
+            });
+            
+            card.querySelector('.move-app-left-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                moveApp(app.id, categoryId, -1);
+            });
+            
+            card.querySelector('.move-app-right-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                moveApp(app.id, categoryId, 1);
+            });
+        }
+        
+        card.querySelector('.visit-site-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (app.websiteUrl) {
+                window.open(app.websiteUrl, '_blank');
+            }
+        });
+        
+        card.querySelector('.more-info-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openAppDetailsPopup(app);
+        });
+        
+        return card;
+    }
+        function handleAppCategoryTitleChange(event, categoryId) { /* ... (como antes) ... */
+            const category = appData.aiAppsCategories.find(c => c.id === categoryId);
+            const newTitle = event.target.textContent.trim();
+            if (category && newTitle && category.title !== newTitle) {
+                category.title = newTitle;
+                category.timestampUpdated = Date.now();
+                saveDataToBackend();
+            } else if (category) {
+                event.target.textContent = category.title; 
+            }
+        }
+        function handleAddAppCategory() { /* ... (como antes, llama a renderFilteredApps) ... */
+             if (!isEditable) return;
+            const title = prompt("Nombre para la nueva categoría de Apps:", "Nueva Categoría");
+            if (title && title.trim()) {
+                const newCategory = { id: `catApp_${Date.now()}_${Math.random().toString(36).substr(2,9)}`, title: title.trim(), apps: [], timestampAdded: Date.now(), timestampUpdated: Date.now() };
+                appData.aiAppsCategories.push(newCategory);
+                saveDataToBackend().then(renderFilteredApps);
+            }
+        }
+        function deleteAppCategory(categoryId) { /* ... (como antes, llama a renderFilteredApps) ... */
+            if (!isEditable) return;
+            const category = appData.aiAppsCategories.find(c => c.id === categoryId);
+            if (!category) return;
+            if (confirm(`¿Eliminar la categoría "${category.title}" y todas sus apps?`)) {
+                appData.aiAppsCategories = appData.aiAppsCategories.filter(c => c.id !== categoryId);
+                saveDataToBackend().then(renderFilteredApps);
+            }
+        }
+        function moveApp(appId, categoryId, direction) { /* ... (como antes, llama a renderFilteredApps) ... */
+            const category = appData.aiAppsCategories.find(c => c.id === categoryId);
+            if (!category) return;
+            const appIndex = category.apps.findIndex(a => a.id === appId);
+            if (appIndex === -1) return;
+            const newIndex = appIndex + direction;
+            if (newIndex < 0 || newIndex >= category.apps.length) return;
+            const [movedApp] = category.apps.splice(appIndex, 1);
+            category.apps.splice(newIndex, 0, movedApp);
+            saveDataToBackend().then(renderFilteredApps);
+        }
+        function deleteApp(appId, categoryId) { /* ... (como antes, llama a renderFilteredApps) ... */
+             if (!isEditable) return;
+            const category = appData.aiAppsCategories.find(c => c.id === categoryId);
+            if (!category || !category.apps) return;
+            const app = category.apps.find(a => a.id === appId);
+            if (!app) return;
+            if (confirm(`¿Eliminar la app "${app.name}"?`)) {
+                category.apps = category.apps.filter(a => a.id !== appId);
+                saveDataToBackend().then(renderFilteredApps);
+            }
+        }
+        function openAppDetailsPopup(app) { // CORREGIDO
+            let tutorialButtonHTML = app.tutorialUrl ? `<button class="popup-tutorial-btn" data-url="${app.tutorialUrl}">Ver Tutorial</button>` : '';
+            let content = `<h3>${app.name}</h3>
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
+                <img src="${app.logoUrl || 'https://via.placeholder.com/80?text=App'}" alt="${app.name}" class="interactive-image-thumbnail" style="max-width:80px; height:80px; object-fit:contain; border-radius:8px;">
+                <div>
+                    <p><strong>Precio:</strong> ${app.pricingModel}</p>
+                    ${(app.tags || []).length > 0 ? `<p><strong>Tags:</strong> ${(app.tags || []).join(', ')}</p>` : ''}
+                    <p><strong>Desc. Breve:</strong> ${app.briefDescription}</p>
+                </div>
+            </div>
+            <hr style="margin:15px 0; border-color: var(--border-color);">
+            <h4>Descripción Detallada:</h4>`;
+
+            if (app.isPrivate && !isEditable) {
+                content += `<p><i>Información detallada privada.</i></p>`;
+            } else {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = app.detailedDescription;
+                tempDiv.querySelectorAll('.resize-handle, .delete-image-btn').forEach(el => el.remove());
+                tempDiv.querySelectorAll('.resizable-img-container').forEach(c => { c.style.border = 'none'; });
+                tempDiv.querySelectorAll('img').forEach(img => img.classList.add('interactive-image-thumbnail'));
+                content += `<div>${tempDiv.innerHTML || "N/A"}</div>`;
+            }
+
+            content += `<div class="form-buttons" style="margin-top:20px; justify-content:space-between;"> <div> ${app.websiteUrl ? `<button class="popup-visit-site-btn" data-url="${app.websiteUrl}">Visitar Sitio</button>` : ''} ${tutorialButtonHTML} </div> <button class="close-app-details-btn cancel-btn">Cerrar</button></div>`;
+
+            genericFormContainer.innerHTML = content;
+            formModal.style.display = 'flex';
+
+            // Listeners deben estar aquí, después de que el contenido HTML es insertado:
+            genericFormContainer.querySelector('.close-app-details-btn')?.addEventListener('click', closeFormModal);
+
+            genericFormContainer.querySelector('.popup-visit-site-btn')?.addEventListener('click', (e) => {
+                window.open(e.currentTarget.dataset.url, '_blank');
+            });
+
+            genericFormContainer.querySelector('.popup-tutorial-btn')?.addEventListener('click', (e) => {
+                window.open(e.currentTarget.dataset.url, '_blank');
+            });
+
+            attachGenericImageEventListeners(genericFormContainer); // Para las imágenes dentro de la descripción detallada
+        } // Fin de openAppDetailsPopup
+        // Asegúrate de que NO haya una '}' extra después de esta función en tu código.
+        
+        // --- RENDERIZADO CARPETAS ---
+       // Reemplaza tu función renderPromptFolders existente con esta:
+function renderPromptFolders() {
+    promptFoldersGridContainer.innerHTML = '';
+    const filteredAndSortedFolders = sortItems(appData.promptFolders.filter(folder => {
+        const searchTerm = globalSearchInput.value.toLowerCase().trim();
+        if (!searchTerm) return true;
+        return folder.name.toLowerCase().includes(searchTerm) || 
+               (folder.description || '').toLowerCase().includes(searchTerm);
+    }), 'promptFolders', globalSortOrder.value);
+
+    if (filteredAndSortedFolders.length === 0) {
+        noPromptFoldersMessage.textContent = globalSearchInput.value.trim() ? "No hay carpetas que coincidan con la búsqueda." : "No hay carpetas. ¡Crea una!";
+        noPromptFoldersMessage.style.display = 'block';
+        return;
+    }
+    noPromptFoldersMessage.style.display = 'none';
+
+    filteredAndSortedFolders.forEach((folder) => {
+        const originalOverallIndex = appData.promptFolders.findIndex(f => f.id === folder.id);
+        const folderEl = document.createElement('div');
+        folderEl.className = 'folder-item';
+        folderEl.dataset.folderId = folder.id;
+        // folderEl.title = folder.description || folder.name; // Ya no es tan necesario si la descripción se muestra
+
+        let orderButtonsHTML = '', editButtonsHTML = '';
+        if (isEditable) {
+            orderButtonsHTML = `<div class="item-order-buttons"><button class="move-folder-left-btn" title="Mover Izquierda" ${originalOverallIndex === 0 ? 'disabled' : ''}>←</button><button class="move-folder-right-btn" title="Mover Derecha" ${originalOverallIndex === appData.promptFolders.length - 1 ? 'disabled' : ''}>→</button></div>`;
+            editButtonsHTML = `<div class="item-edit-buttons"><button class="edit-folder-btn" title="Editar Carpeta"><i class="fas fa-edit"></i></button><button class="delete-folder-btn" title="Eliminar Carpeta"><i class="fas fa-trash-alt"></i></button></div>`;
+        }
+        
+        // Nueva estructura HTML para la carpeta
+        folderEl.innerHTML = `
+            ${orderButtonsHTML} 
+            ${editButtonsHTML}
+            <div class="folder-header">
+                <img src="${folder.iconUrl || 'https://via.placeholder.com/50/cccccc/888888?text=F'}" alt="${folder.name} Icon" class="folder-icon interactive-image-thumbnail">
+                <div class="folder-name">${folder.name}</div>
+            </div>
+            <p class="folder-description">${folder.description || "<em>Sin descripción</em>"}</p>
+            `;
+        // Nota: Los botones de orden y edición (orderButtonsHTML, editButtonsHTML) permanecen con posicionamiento absoluto
+        // según el CSS. Si quisieras que estuvieran en el flujo normal (ej. al final de la tarjeta),
+        // deberías moverlos dentro del innerHTML después de la descripción y quitar 'position: absolute' del CSS.
+        
+        promptFoldersGridContainer.appendChild(folderEl);
+        
+        folderEl.addEventListener('click', (e) => {
+            if (e.target.closest('.item-edit-buttons') || e.target.closest('.item-order-buttons') || e.target.classList.contains('folder-icon')) {
+                // Si se hace clic en el icono (que tiene su propio zoom), no abrir el menú de la carpeta inmediatamente,
+                // permitir que el efecto de zoom del icono ocurra.
+                // Si quieres que el icono también abra la carpeta, quita "|| e.target.classList.contains('folder-icon')"
+                if (e.target.classList.contains('folder-icon')) { // Solo si es el icono, prevenir apertura de menú
+                     e.stopPropagation(); // Evitar que el click en el icono propague al folder-item inmediatamente si no se quiere
+                     return;
+                }
+                return; // Para botones de edición/orden
+            }
+            handleFolderClick(folder.id, folderEl);
+        });
+        
+        // Listeners para los botones de edición/orden (ya los tenías, no cambian)
+        if(isEditable) {
+            folderEl.querySelector('.edit-folder-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation(); e.preventDefault(); openPromptFolderForm(folder.id);
+            });
+            folderEl.querySelector('.delete-folder-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation(); deletePromptFolder(folder.id);
+            });
+            folderEl.querySelector('.move-folder-left-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation(); movePromptFolder(folder.id, -1);
+            });
+            folderEl.querySelector('.move-folder-right-btn')?.addEventListener('click', (e) => {
+                e.stopPropagation(); movePromptFolder(folder.id, 1);
+            });
+        }
+        // El listener para el zoom del icono ya está cubierto por la clase .interactive-image-thumbnail
+    });
+    attachGenericImageEventListeners(promptFoldersGridContainer); // Asegura que los nuevos iconos tengan el listener de zoom
+}
+
+        function handleFolderClick(folderId, folderElement) { // CORREGIDO: Eliminada función anidada
+            closeActivePopups();
+            const folder = appData.promptFolders.find(f => f.id === folderId);
+            if (!folder) return;
+
+            const promptsInFolder = appData.prompts.filter(p => p.folderId === folderId);
+
+            if (promptsInFolder.length === 0 && !isEditable) {
+                showPersistentMessage(`La carpeta "${folder.name}" está vacía.`, "info");
+                return;
+            }
+
+            const menu = document.createElement('div');
+            menu.className = 'folder-prompts-menu';
+            const ul = document.createElement('ul');
+
+            if (promptsInFolder.length === 0 && isEditable) {
+                ul.innerHTML = '<li><em style="color: var(--placeholder-text-color);">Esta carpeta está vacía. Puedes añadir prompts desde la sección de Prompts.</em></li>';
+            } else {
+                promptsInFolder.forEach(promptItem => { // Usar promptItem para evitar conflicto con variable 'prompt' externa si existiera
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `#prompt_${promptItem.id}`;
+                    a.textContent = promptItem.title;
+                    a.dataset.promptId = promptItem.id;
+
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        closeActivePopups();
+                        renderActivePrompt(promptItem.id); // Usar promptItem.id
+
+                        setTimeout(() => {
+                            const targetPromptElement = document.getElementById('activePromptDisplayArea');
+                            if (targetPromptElement) {
+                                targetPromptElement.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                            }
+                        }, 100);
+                    });
+
+                    if (promptItem.descriptionHTML) {
+                        a.addEventListener('mouseenter', (e) => showPromptLinkDescription(e, promptItem.descriptionHTML, a));
+                        a.addEventListener('mouseleave', hidePromptLinkDescription);
+                    }
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                });
+            }
+            menu.appendChild(ul);
+            document.body.appendChild(menu);
+            activePopups.folderMenu = menu;
+
+            const folderRect = folderElement.getBoundingClientRect();
+            const menuHeight = menu.offsetHeight;
+            const menuWidth = menu.offsetWidth;
+            let top = folderRect.bottom + 5 + window.scrollY;
+            let left = folderRect.left + window.scrollX;
+            if (top + menuHeight > window.innerHeight + window.scrollY) top = folderRect.top - menuHeight - 5 + window.scrollY;
+            if (left + menuWidth > window.innerWidth + window.scrollX) left = window.innerWidth - menuWidth - 5 + window.scrollX;
+            if (left < 0) left = 5;
+
+            menu.style.left = `${left}px`;
+            menu.style.top = `${top}px`;
+            menu.style.display = 'block';
+
+            setTimeout(() => { 
+                document.addEventListener('click', function closeMenuHandlerOuter(e) {
+                    if (activePopups.folderMenu && !activePopups.folderMenu.contains(e.target) && e.target !== folderElement && !folderElement.contains(e.target)) {
+                        closeActivePopups();
+                        document.removeEventListener('click', closeMenuHandlerOuter);
+                    }
+                }, { capture: true, once: true });
+            },0);
+        }
+        
+        function showPromptLinkDescription(event, descriptionHTML, anchorElement) {
+            hidePromptLinkDescription(); 
+            const descPopup = document.createElement('div');
+            descPopup.className = 'prompt-link-description-popup';
+            const tempDiv = document.createElement('div'); tempDiv.innerHTML = descriptionHTML; 
+            descPopup.textContent = tempDiv.textContent.substring(0, 200) + (tempDiv.textContent.length > 200 ? '...' : '');
+            
+            document.body.appendChild(descPopup);
+            activePopups.promptDescription = descPopup;
+
+            const anchorRect = anchorElement.getBoundingClientRect();
+            const descPopupHeight = descPopup.offsetHeight;
+            const descPopupWidth = descPopup.offsetWidth;
+
+            let top = anchorRect.top + window.scrollY;
+            let left = anchorRect.right + 5 + window.scrollX;
+
+            if (left + descPopupWidth > window.innerWidth + window.scrollX) left = anchorRect.left - descPopupWidth - 5 + window.scrollX;
+            if (top + descPopupHeight > window.innerHeight + window.scrollY) top = window.innerHeight + window.scrollY - descPopupHeight - 5;
+            if (top < window.scrollY) top = window.scrollY + 5;
+
+
+            descPopup.style.left = `${left}px`;
+            descPopup.style.top = `${top}px`;
+            descPopup.style.display = 'block';
+        }
+
+        function hidePromptLinkDescription() {
+            if (activePopups.promptDescription) {
+                activePopups.promptDescription.remove();
+                activePopups.promptDescription = null;
+            }
+        }
+        
+        function closeActivePopups() {
+            hidePromptLinkDescription();
+            if (activePopups.folderMenu) {
+                activePopups.folderMenu.remove();
+                activePopups.folderMenu = null;
+            }
+        }
+        
+        // --- RENDERIZADO PROMPTS ---
+       // Reemplaza la función renderPrompts existente con esta:
+function renderPrompts() {
+    const promptsSectionEl = document.getElementById('promptsSection');
+    const promptsSectionTitle = promptsSectionEl.querySelector('.section-title-wrapper');
+
+    if (isEditable) {
+        if (promptsSectionTitle) promptsSectionTitle.style.display = 'block'; 
+        if (promptsListContainer) {
+            promptsListContainer.style.display = 'grid';
+            promptsListContainer.classList.add('edit-mode-title-view');
+        }
+        if (activePromptDisplayArea) activePromptDisplayArea.style.display = 'none';
+        
+        const searchTerm = globalSearchInput.value.toLowerCase().trim();
+        const filteredAndSortedPrompts = sortItems(appData.prompts.filter(prompt => {
+            if (!searchTerm) return true;
+            return prompt.title.toLowerCase().includes(searchTerm) || 
+                   (prompt.descriptionHTML || '').toLowerCase().includes(searchTerm) || 
+                   prompt.promptText.toLowerCase().includes(searchTerm);
+        }), 'prompts', globalSortOrder.value);
+
+        if (promptsListContainer) promptsListContainer.innerHTML = ''; 
+        
+        if (filteredAndSortedPrompts.length === 0) {
+            if (noPromptsMessage) {
+                noPromptsMessage.style.display = 'block';
+                noPromptsMessage.textContent = searchTerm ? "No hay prompts que coincidan con la búsqueda." : "No hay prompts. ¡Añade uno!";
+            }
+        } else {
+            if (noPromptsMessage) noPromptsMessage.style.display = 'none';
+            filteredAndSortedPrompts.forEach((prompt) => {
+                const originalIndex = appData.prompts.findIndex(p => p.id === prompt.id);
+                const itemEl = document.createElement('div');
+                itemEl.className = 'prompt-title-item';
+                itemEl.dataset.promptId = prompt.id;
+                itemEl.innerHTML = `
+                    <span class="prompt-title-text">${prompt.title}</span>
+                    <div class="item-controls">
+                        <button class="edit-prompt-btn" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button class="move-prompt-up-btn" title="Subir" ${originalIndex === 0 ? 'disabled' : ''}>↑</button>
+                        <button class="move-prompt-down-btn" title="Bajar" ${originalIndex === appData.prompts.length - 1 ? 'disabled' : ''}>↓</button>
+                        <button class="delete-prompt-btn" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                    </div>`;
+                if (promptsListContainer) promptsListContainer.appendChild(itemEl);
+                
+                itemEl.querySelector('.edit-prompt-btn').addEventListener('click', (e) => { /* ... (sin cambios) ... */
+                    e.stopPropagation(); openPromptForm(prompt.id);
+                });
+                itemEl.querySelector('.delete-prompt-btn').addEventListener('click', (e) => { /* ... (sin cambios) ... */
+                    e.stopPropagation(); deletePrompt(prompt.id);
+                });
+                itemEl.querySelector('.move-prompt-up-btn').addEventListener('click', (e) => { /* ... (sin cambios) ... */
+                    e.stopPropagation(); movePrompt(prompt.id, -1);
+                });
+                itemEl.querySelector('.move-prompt-down-btn').addEventListener('click', (e) => { /* ... (sin cambios) ... */
+                    e.stopPropagation(); movePrompt(prompt.id, 1);
+                });
+            });
+        }
+        if (promptsListContainer) attachGenericImageEventListeners(promptsListContainer);
+
+    } else { // Modo Visión
+        if (promptsListContainer) promptsListContainer.style.display = 'none';
+        
+        if (activePromptDisplayArea && activePromptDisplayArea.innerHTML.trim() !== '') {
+            // Si hay un prompt activo mostrándose
+            if (promptsSectionTitle) promptsSectionTitle.style.display = 'block';
+            if (activePromptDisplayArea) activePromptDisplayArea.style.display = 'block';
+            if (noPromptsMessage) noPromptsMessage.style.display = 'none';
+        } else {
+            // Si NO hay un prompt activo (o se acaba de cerrar)
+            if (promptsSectionTitle) promptsSectionTitle.style.display = 'none'; 
+            if (activePromptDisplayArea) activePromptDisplayArea.style.display = 'none';
+            if (noPromptsMessage) noPromptsMessage.style.display = 'none'; // No mostrar "Selecciona..." si toda la sección está oculta
+        }
+    }
+}
+
+      // Reemplaza la función renderActivePrompt existente con esta versión:
+function renderActivePrompt(promptId) {
+    const prompt = appData.prompts.find(p => p.id === promptId);
+    if (!prompt) {
+        activePromptDisplayArea.innerHTML = '<p>Prompt no encontrado.</p>';
+        if (activePromptDisplayArea) activePromptDisplayArea.style.display = 'block';
+        const promptsSectionTitle = document.getElementById('promptsSection').querySelector('.section-title-wrapper');
+        if (promptsSectionTitle && !isEditable) promptsSectionTitle.style.display = 'block';
+        return;
+    }
+    
+    activePromptDisplayArea.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 class="prompt-title" style="margin-bottom:0; margin-right: 10px; text-align: left; flex-grow: 1;">${prompt.title}</h3>
+            <button id="closeActivePromptBtn" title="Cerrar Vista de Prompt" class="item-controls-btn" style="padding: 6px 10px; background-color: black; color: white; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-times"></i> Cerrar
+            </button>
+        </div>
+        <hr style="margin:10px 0;">
+        <div class="prompt-description">${prompt.descriptionHTML}</div>
+        <div class="prompt-example-images">
+            ${(prompt.exampleImageUrls || []).filter(url => typeof url === 'string').map((imgUrl, imgIdx) => `
+                <div class="img-container">
+                    <img src="${imgUrl}" alt="Ejemplo ${imgIdx + 1}" class="interactive-image-thumbnail">
+                </div>
+            `).join('')}
+        </div>
+        <div class="prompt-text-display">${prompt.promptText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        <div class="prompt-actions">
+            <button class="copy-prompt-btn">Copiar Url</button> <!--Copiar Prompt-->
+        </div>`;
+    
+    if (activePromptDisplayArea) activePromptDisplayArea.style.display = 'block';
+    if (noPromptsMessage) noPromptsMessage.style.display = 'none';
+
+    activePromptDisplayArea.querySelector('.copy-prompt-btn').addEventListener('click', () => {
+        copyToClipboard(prompt.promptText, "Texto del prompt copiado.");
+    });
+
+    activePromptDisplayArea.querySelector('#closeActivePromptBtn').addEventListener('click', () => {
+        if (activePromptDisplayArea) {
+            activePromptDisplayArea.innerHTML = '';
+            activePromptDisplayArea.style.display = 'none';
+        }
+        renderPrompts(); 
+    });
+
+    attachGenericImageEventListeners(activePromptDisplayArea);
+
+    if (!isEditable) {
+        if (promptsListContainer) promptsListContainer.style.display = 'none';
+        const promptsSectionTitle = document.getElementById('promptsSection').querySelector('.section-title-wrapper');
+        if (promptsSectionTitle) promptsSectionTitle.style.display = 'block';
+    }
+}
+
+
+        
+        // --- MANEJO DE FORMULARIOS ---
+        function openAppForm(appId = null, categoryId = null) { // CORREGIDO
+            if (!isEditable) return;
+            const appToEdit = appId ? appData.aiAppsCategories.flatMap(c => c.apps).find(a => a.id === appId) : null;
+            let targetCategoryId = categoryId;
+            if (appToEdit && !targetCategoryId) {
+                const catContainingApp = appData.aiAppsCategories.find(c => c.apps.some(a => a.id === appId));
+                if (catContainingApp) targetCategoryId = catContainingApp.id;
+            }
+            
+            if (!targetCategoryId) {
+                const categories = appData.aiAppsCategories;
+                if (categories.length > 0) targetCategoryId = categories[0].id;
+                else { alert("No hay categorías de Apps. Crea una primero."); return; }
+            }
+
+            const formTitle = appToEdit ? `Editar App: ${appToEdit.name}` : "Añadir Nueva App";
+            
+            genericFormContainer.innerHTML = `
+                <h3>${formTitle}</h3>
+                <input type="hidden" id="editingAppId" value="${appId || ''}">
+                <input type="hidden" id="targetAppCategoryId" value="${targetCategoryId}">
+                <div class="form-group"><label for="appNameInput">Nombre:</label><input type="text" id="appNameInput" value="${appToEdit?.name || ''}"></div>
+                <div class="form-group"><label for="appWebsiteUrlInput">URL Sitio Web:</label><input type="url" id="appWebsiteUrlInput" value="${appToEdit?.websiteUrl || ''}"></div>
+                <div class="form-group"><label for="appLogoUrlInput">URL Logo (o subir):</label>
+                    <input type="url" id="appLogoUrlInput" value="${(appToEdit?.logoUrl && typeof appToEdit.logoUrl === 'string') ? appToEdit.logoUrl : ''}" placeholder="http://...">
+                    <input type="file" id="appLogoFileInput" accept="image/*" style="margin-top: 5px;">
+                    <div id="appLogoPreviewContainer" style="margin-top:5px;">
+                        ${(appToEdit?.logoUrl && typeof appToEdit.logoUrl === 'string') ? `<img src="${appToEdit.logoUrl}" style="max-width:50px; max-height:50px;">` : ''}
+                    </div>
+                </div>
+                <div class="form-group"><label for="appBriefDescriptionInput">Desc. Breve:</label><textarea id="appBriefDescriptionInput" rows="2">${appToEdit?.briefDescription || ''}</textarea></div>
+                <div class="form-group">
+                    <label for="appDetailedDescriptionInput">Desc. Detallada (HTML):</label>
+                    <textarea id="appDetailedDescriptionInput" rows="5">${appToEdit?.detailedDescription || ''}</textarea>
+                    <div class="image-tools">
+                        <button id="formInsertImageBtn" type="button">Insertar URL Imagen</button> 
+                        <button id="formUploadImageBtn" type="button">Subir Imagen</button>
+                        <input type="file" id="formImageUploadInput" class="image-upload-input" accept="image/*">
+                        <button id="formPreviewDescriptionBtn" type="button">Vista Previa Detallada</button>
+                    </div>
+                    <div class="paste-area" id="formPasteArea" tabindex="0">Pega imagen (Ctrl+V)</div>
+                    <div id="formDescriptionPreview" class="description-preview" style="display: none;"></div>
+                </div>
+                <div class="form-group"><label for="appTagsInput">Tags (coma):</label><input type="text" id="appTagsInput" value="${(appToEdit?.tags || []).join(', ')}"></div>
+                <div class="form-group"><label for="appPricingModelSelect">Precio:</label>
+                    <select id="appPricingModelSelect">
+                        ${['Gratis', 'Freemium', 'Por Créditos', 'De Pago', 'Prueba Gratuita'].map(p => `<option value="${p}" ${appToEdit?.pricingModel === p ? 'selected' : ''}>${p}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group"><label for="appTutorialUrlInput">URL Tutorial:</label><input type="url" id="appTutorialUrlInput" value="${appToEdit?.tutorialUrl || ''}"></div>
+                <div class="form-group"><label><input type="checkbox" id="appIsPrivateCheckbox" ${appToEdit?.isPrivate ? 'checked' : ''}> Info detallada privada</label></div>
+                <div class="card-preview-area"><h4>Previsualización:</h4><div class="app-card"><div class="app-header"><img id="formCardPreviewLogo" src="${(appToEdit?.logoUrl && typeof appToEdit.logoUrl === 'string') ? appToEdit.logoUrl : 'https://via.placeholder.com/50'}" class="app-logo"><span id="formCardPreviewName" class="app-name">${appToEdit?.name || "Nombre"}</span></div><p id="formCardPreviewDescription" class="app-brief-description">${appToEdit?.briefDescription || "Desc. breve..."}</p><div class="app-tags-pricing"><div id="formCardPreviewTagsContainer" class="app-tags"></div><span id="formCardPreviewPricing" class="app-pricing"><span>${appToEdit?.pricingModel || "Gratis"}</span></span></div><div class="app-actions"><button disabled>Visitar</button><button disabled>Más Info</button></div></div></div>
+                <div class="form-buttons"><button id="saveAppBtn" class="save-btn">GUARDAR</button><button id="cancelFormBtn" type="button" class="cancel-btn">CANCELAR</button></div>`;
+            
+            // Obtener elementos del DOM del formulario recién creado
+            const appNameInputEl = document.getElementById('appNameInput');
+            const appLogoUrlInputEl = document.getElementById('appLogoUrlInput');
+            const appLogoFileInputEl = document.getElementById('appLogoFileInput');
+            const appLogoPreviewContainerEl = document.getElementById('appLogoPreviewContainer');
+            const appBriefDescriptionInputEl = document.getElementById('appBriefDescriptionInput');
+            const appTagsInputEl = document.getElementById('appTagsInput');
+            const appPricingModelSelectEl = document.getElementById('appPricingModelSelect');
+
+            // Elementos de la preview
+            const formCardPreviewNameEl = document.getElementById('formCardPreviewName');
+            const formCardPreviewLogoEl = document.getElementById('formCardPreviewLogo');
+            const formCardPreviewDescriptionEl = document.getElementById('formCardPreviewDescription');
+            const formCardPreviewTagsContainerEl = document.getElementById('formCardPreviewTagsContainer');
+            const formCardPreviewPricingEl = document.getElementById('formCardPreviewPricing');
+
+            appLogoFileInputEl.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        if (appLogoPreviewContainerEl) appLogoPreviewContainerEl.innerHTML = `<img src="${re.target.result}" style="max-width:50px; max-height:50px;">`;
+                        if (formCardPreviewLogoEl) formCardPreviewLogoEl.src = re.target.result;
+                        if (appLogoUrlInputEl) appLogoUrlInputEl.value = ''; // Limpiar URL si se sube archivo
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            appLogoUrlInputEl.addEventListener('input', () => {
+                 if (formCardPreviewLogoEl) formCardPreviewLogoEl.src = appLogoUrlInputEl.value || 'https://via.placeholder.com/50';
+                 if (appLogoPreviewContainerEl) appLogoPreviewContainerEl.innerHTML = appLogoUrlInputEl.value ? `<img src="${appLogoUrlInputEl.value}" style="max-width:50px; max-height:50px;">` : '';
+                 if (appLogoFileInputEl) appLogoFileInputEl.value = ''; // Limpiar file si se escribe URL
+            });
+
+
+            function updateAppPreviewInternal() {
+                if (formCardPreviewNameEl) formCardPreviewNameEl.textContent = appNameInputEl.value || "Nombre";
+                // El logo se actualiza por sus propios listeners (file y url input)
+                if (formCardPreviewDescriptionEl) formCardPreviewDescriptionEl.textContent = appBriefDescriptionInputEl.value || "Desc. breve...";
+                if (formCardPreviewPricingEl && formCardPreviewPricingEl.firstElementChild) formCardPreviewPricingEl.firstElementChild.textContent = appPricingModelSelectEl.value;
+                if (formCardPreviewTagsContainerEl) {
+                    formCardPreviewTagsContainerEl.innerHTML = appTagsInputEl.value.split(',').map(t => t.trim()).filter(Boolean).map(t => `<span class="tag">${t}</span>`).join('');
+                }
+            }
+
+            [appNameInputEl, appBriefDescriptionInputEl, appTagsInputEl].forEach(input => {
+                if (input) input.addEventListener('input', updateAppPreviewInternal);
+            });
+            if (appPricingModelSelectEl) appPricingModelSelectEl.addEventListener('change', updateAppPreviewInternal);
+            
+            // Para desc. detallada (si tienes funciones específicas, llámalas aquí)
+            // setupDetailedDescriptionImageTools('appDetailedDescriptionInput', 'formDescriptionPreview', 'formInsertImageBtn', 'formUploadImageBtn', 'formImageUploadInput', 'formPasteArea', 'formPreviewDescriptionBtn');
+
+
+            updateAppPreviewInternal(); // Llamada inicial
+
+            document.getElementById('saveAppBtn').onclick = saveAppHandler;
+            document.getElementById('cancelFormBtn').onclick = closeFormModal;
+            formModal.style.display = 'flex';
+        }
+        
+        function saveAppHandler() { /* ... (como antes, pero llama a renderFilteredApps) ... */
+            const editingAppId = document.getElementById('editingAppId').value;
+            const targetCategoryId = document.getElementById('targetAppCategoryId').value;
+            const category = appData.aiAppsCategories.find(c => c.id === targetCategoryId);
+            if (!category) { alert("Categoría no encontrada."); return; }
+
+            const logoFile = document.getElementById('appLogoFileInput').files[0];
+            let logoValue = document.getElementById('appLogoUrlInput').value.trim();
+            if (logoFile) {
+                logoValue = logoFile; // Será un File object
+            }
+
+            const appDataObj = { /* ... (obtener datos del form como antes) ... */
+                id: editingAppId || `app_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                name: document.getElementById('appNameInput').value.trim(),
+                websiteUrl: document.getElementById('appWebsiteUrlInput').value.trim(),
+                logoUrl: logoValue, // Puede ser URL (string) o File object
+                briefDescription: document.getElementById('appBriefDescriptionInput').value.trim(),
+                detailedDescription: document.getElementById('appDetailedDescriptionInput').value.trim(),
+                tags: document.getElementById('appTagsInput').value.split(',').map(t => t.trim()).filter(Boolean),
+                pricingModel: document.getElementById('appPricingModelSelect').value,
+                tutorialUrl: document.getElementById('appTutorialUrlInput').value.trim(),
+                isPrivate: document.getElementById('appIsPrivateCheckbox').checked,
+                timestampUpdated: Date.now(),
+                timestampAdded: editingAppId ? (category.apps.find(a=>a.id===editingAppId)?.timestampAdded || Date.now()) : Date.now()
+            };
+            if (!appDataObj.name) { alert("Nombre de App requerido."); return; }
+
+            if (editingAppId) {
+                const appIndex = category.apps.findIndex(a => a.id === editingAppId);
+                if (appIndex > -1) category.apps[appIndex] = appDataObj;
+            } else { category.apps.push(appDataObj); }
+            
+            saveDataToBackend().then(success => { if(success) { closeFormModal(); renderFilteredApps(); } });
+        }
+        
+        function openPromptForm(promptId = null) { /* ... (adaptar para preview de imágenes) ... */
+            if (!isEditable) return;
+            const promptToEdit = promptId ? appData.prompts.find(p => p.id === promptId) : null;
+            const formTitle = promptToEdit ? `Editar Prompt: ${promptToEdit.title}` : "Añadir Nuevo Prompt";
+            
+            tempPromptImageFiles = []; 
+            currentEditingPromptImages = promptToEdit ? [...(promptToEdit.exampleImageUrls || []).filter(url => typeof url === 'string')] : [];
+
+            genericFormContainer.innerHTML = `
+                <h3>${formTitle}</h3>
+                <input type="hidden" id="editingPromptId" value="${promptId || ''}">
+                <div class="form-group"><label for="promptTitleInput">Título:</label><input type="text" id="promptTitleInput" value="${promptToEdit?.title || ''}"></div>
+                <div class="form-group"><label for="promptDescriptionHTMLInput">Descripción (HTML):</label><textarea id="promptDescriptionHTMLInput" rows="4">${promptToEdit?.descriptionHTML || ''}</textarea>
+                    <button id="formPreviewPromptDescBtn" type="button" class="boton-estilo" style="margin-top:5px;">Vista Previa Desc.</button><div id="formPromptDescPreview" class="description-preview" style="display:none;"></div></div>
+                <div class="form-group"><label for="promptFolderSelect">Carpeta:</label>
+                    <select id="promptFolderSelect">
+                        <option value="">(Sin carpeta)</option>
+                        ${appData.promptFolders.map(folder => `<option value="${folder.id}" ${promptToEdit?.folderId === folder.id ? 'selected' : ''}>${folder.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group"><label for="promptExampleImageFilesInput">Imágenes Ejemplo (hasta 3):</label>
+                    <input type="file" id="promptExampleImageFilesInput" multiple accept="image/*" style="margin-bottom:10px;">
+                    <div id="promptImagePreviewContainer" class="image-preview-container"></div></div>
+                <div class="form-group"><label for="promptTextInput">Texto del Prompt:</label><textarea id="promptTextInput" rows="6">${promptToEdit?.promptText || ''}</textarea></div>
+                <div class="form-buttons"><button id="savePromptBtn" class="save-btn">Guardar</button><button id="cancelFormBtn" type="button" class="cancel-btn">Cancelar</button></div>`;
+            
+            renderPromptFormImagePreviews(); 
+
+            document.getElementById('promptExampleImageFilesInput').addEventListener('change', handlePromptFormImageSelection);
+            document.getElementById('formPreviewPromptDescBtn')?.addEventListener('click', () => {
+                const previewDiv = document.getElementById('formPromptDescPreview');
+                const textarea = document.getElementById('promptDescriptionHTMLInput');
+                if (previewDiv.style.display === 'none') { previewDiv.innerHTML = textarea.value; previewDiv.style.display = 'block'; } 
+                else { previewDiv.style.display = 'none';}
+            });
+            
+            document.getElementById('savePromptBtn').onclick = savePromptHandler;
+            document.getElementById('cancelFormBtn').onclick = closeFormModal;
+            formModal.style.display = 'flex';
+        }
+
+        function handlePromptFormImageSelection(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                if ((currentEditingPromptImages.length + tempPromptImageFiles.length) < 3) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        tempPromptImageFiles.push({ file: file, previewUrl: e.target.result, id: `temp_${Date.now()}_${Math.random()}` });
+                        renderPromptFormImagePreviews();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert("Solo puedes tener hasta 3 imágenes en total.");
+                }
+            });
+            event.target.value = ""; 
+        }
+
+        function renderPromptFormImagePreviews() {
+            const container = document.getElementById('promptImagePreviewContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            currentEditingPromptImages.forEach((url, index) => {
+                const prevWrapper = document.createElement('div');
+                prevWrapper.className = 'img-preview-wrapper';
+                prevWrapper.innerHTML = `<img src="${url}" alt="Imagen existente ${index + 1}">
+                                         <button class="delete-prompt-image-btn" data-type="existing" data-index="${index}" title="Eliminar esta imagen existente">×</button>`;
+                container.appendChild(prevWrapper);
+            });
+
+            tempPromptImageFiles.forEach((item, index) => {
+                const prevWrapper = document.createElement('div');
+                prevWrapper.className = 'img-preview-wrapper';
+                prevWrapper.innerHTML = `<img src="${item.previewUrl}" alt="Nueva imagen ${index + 1}">
+                                         <button class="delete-prompt-image-btn" data-type="temp" data-id="${item.id}" title="Eliminar esta nueva imagen">×</button>`;
+                container.appendChild(prevWrapper);
+            });
+            
+            container.querySelectorAll('.delete-prompt-image-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const type = e.currentTarget.dataset.type;
+                    if (type === 'existing') {
+                        const index = parseInt(e.currentTarget.dataset.index);
+                        currentEditingPromptImages.splice(index, 1);
+                    } else if (type === 'temp') {
+                        const id = e.currentTarget.dataset.id;
+                        tempPromptImageFiles = tempPromptImageFiles.filter(f => f.id !== id);
+                    }
+                    renderPromptFormImagePreviews(); 
+                };
+            });
+        }
+        
+        function savePromptHandler() { /* ... (usar currentEditingPromptImages y tempPromptImageFiles para construir exampleImageUrls) ... */
+            const editingPromptId = document.getElementById('editingPromptId').value;
+            let existingPrompt = editingPromptId ? appData.prompts.find(p => p.id === editingPromptId) : null;
+            
+            let finalImageItems = [...currentEditingPromptImages]; 
+            tempPromptImageFiles.forEach(item => {
+                if (finalImageItems.length < 3) finalImageItems.push(item.file); 
+            });
+
+            const selectedFolderId = document.getElementById('promptFolderSelect').value;
+
+            const promptDataObj = {
+                id: editingPromptId || `prompt_${Date.now()}_${Math.random().toString(36).substr(2,9)}`,
+                title: document.getElementById('promptTitleInput').value.trim(),
+                descriptionHTML: document.getElementById('promptDescriptionHTMLInput').value.trim(),
+                exampleImageUrls: finalImageItems, 
+                promptText: document.getElementById('promptTextInput').value.trim(),
+                folderId: selectedFolderId || null,
+                timestampUpdated: Date.now(),
+                timestampAdded: editingPromptId ? (existingPrompt?.timestampAdded || Date.now()) : Date.now()
+            };
+            if (!promptDataObj.title || !promptDataObj.promptText) { alert("Título y Texto del Prompt son obligatorios."); return; }
+
+            if (editingPromptId) {
+                const promptIndex = appData.prompts.findIndex(p => p.id === editingPromptId);
+                if (promptIndex > -1) appData.prompts[promptIndex] = promptDataObj;
+            } else { appData.prompts.push(promptDataObj); }
+            
+            saveDataToBackend().then(success => { if(success) { closeFormModal(); renderPrompts(); renderPromptFolders(); /* Re-render carpetas por si el prompt cambia de carpeta */ }});
+        }
+        
+        function deletePrompt(promptId) { /* ... (llama a renderPrompts) ... */
+            if (!isEditable) return;
+            const prompt = appData.prompts.find(p => p.id === promptId);
+            if (!prompt) return;
+            if (confirm(`Eliminar prompt "${prompt.title}"?`)) {
+                appData.prompts = appData.prompts.filter(p => p.id !== promptId);
+                // No es necesario modificar folder.promptIds si folderId está en el prompt
+                saveDataToBackend().then(() => { renderPrompts(); renderPromptFolders(); }); // Re-render carpetas por si cambia contenido
+            }
+        }
+        function movePrompt(promptId, direction) { /* ... (llama a renderPrompts) ... */
+            const index = appData.prompts.findIndex(p => p.id === promptId);
+            if (index === -1) return;
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= appData.prompts.length) return;
+            const [movedPrompt] = appData.prompts.splice(index, 1);
+            appData.prompts.splice(newIndex, 0, movedPrompt);
+            saveDataToBackend().then(renderPrompts);
+        }
+        function openPromptFolderForm(folderId = null) { /* ... (adaptar para preview de icono si es File) ... */
+            if (!isEditable) return;
+            const folderToEdit = folderId ? appData.promptFolders.find(f => f.id === folderId) : null;
+            const formTitle = folderToEdit ? `Editar Carpeta: ${folderToEdit.name}` : "Añadir Carpeta";
+            
+            genericFormContainer.innerHTML = `
+                <h3>${formTitle}</h3> <input type="hidden" id="editingFolderId" value="${folderId || ''}">
+                <div class="form-group"><label for="folderNameInput">Nombre:</label><input type="text" id="folderNameInput" value="${folderToEdit?.name || ''}"></div>
+                <div class="form-group"><label for="folderIconFileInput">Icono (URL o subir):</label>
+                    <input type="url" id="folderIconUrlInput" value="${(folderToEdit?.iconUrl && typeof folderToEdit.iconUrl === 'string') ? folderToEdit.iconUrl : ''}" placeholder="http://..." style="margin-bottom:5px;">
+                    <input type="file" id="folderIconFileInput" accept="image/*" style="margin-bottom:5px;">
+                    <div id="folderIconPreviewContainer" class="image-preview-container" style="min-height:30px; justify-content:start; align-items:center;">
+                        ${(folderToEdit?.iconUrl && typeof folderToEdit.iconUrl === 'string') ? `<div class="img-preview-wrapper" style="border:1px solid var(--border-color); padding:5px; display:inline-block;"><img src="${folderToEdit.iconUrl}" alt="Icono" style="max-width:50px; max-height:50px; vertical-align:middle;"><button type="button" class="delete-prompt-image-btn" id="deleteExistingFolderIconBtn" title="Eliminar icono" style="position:relative; top:auto; right:auto; margin-left:5px;">×</button></div>` : ''}
+                    </div>
+                </div>
+                <div class="form-group"><label for="folderDescriptionInput">Descripción:</label><textarea id="folderDescriptionInput" rows="3">${folderToEdit?.description || ''}</textarea></div>
+                <div class="form-buttons"><button id="saveFolderBtn" class="save-btn">Guardar</button><button id="cancelFormBtn" type="button" class="cancel-btn">Cancelar</button></div>`;
+
+            const iconUrlInput = document.getElementById('folderIconUrlInput');
+            const iconFileInput = document.getElementById('folderIconFileInput');
+            const iconPreviewContainer = document.getElementById('folderIconPreviewContainer');
+            let iconToDelete = false; // Flag para saber si el icono existente debe borrarse
+
+            function updateIconPreview(src = null) {
+                iconPreviewContainer.innerHTML = '';
+                if (src) {
+                     iconPreviewContainer.innerHTML = `<div class="img-preview-wrapper" style="border:1px solid var(--border-color); padding:5px; display:inline-block;"><img src="${src}" alt="Icono" style="max-width:50px; max-height:50px; vertical-align:middle;"><button type="button" class="delete-prompt-image-btn" id="deleteNewFolderIconBtn" title="Quitar nuevo icono" style="position:relative; top:auto; right:auto; margin-left:5px;">×</button></div>`;
+                     iconPreviewContainer.querySelector('#deleteNewFolderIconBtn').onclick = () => {
+                        iconFileInput.value = ''; iconUrlInput.value = ''; updateIconPreview();
+                     };
+                }
+            }
+            
+            iconFileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    iconUrlInput.value = ''; // Limpiar URL si se sube archivo
+                    iconToDelete = false;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => updateIconPreview(ev.target.result);
+                    reader.readAsDataURL(file);
+                } else { updateIconPreview(); }
+            };
+
+            iconUrlInput.onchange = () => {
+                const url = iconUrlInput.value.trim();
+                if (url) {
+                    iconFileInput.value = ''; // Limpiar file si se pone URL
+                    iconToDelete = false;
+                    updateIconPreview(url);
+                } else { updateIconPreview(); }
+            };
+
+            const deleteExistingBtn = document.getElementById('deleteExistingFolderIconBtn');
+            if(deleteExistingBtn) {
+                deleteExistingBtn.onclick = () => {
+                    if (confirm("¿Eliminar el icono actual?")) {
+                        iconUrlInput.value = ''; iconFileInput.value = ''; iconToDelete = true;
+                        updateIconPreview();
+                        iconPreviewContainer.innerHTML = '<p style="font-size:0.9em; color:grey;">Icono actual marcado para eliminar.</p>';
+                    }
+                };
+            }
+
+            document.getElementById('saveFolderBtn').onclick = () => savePromptFolderHandler(iconToDelete);
+            document.getElementById('cancelFormBtn').onclick = closeFormModal;
+            formModal.style.display = 'flex';
+        }
+        
+        function savePromptFolderHandler(iconMarkedForDelete = false) { 
+            const editingFolderId = document.getElementById('editingFolderId').value;
+            const iconFile = document.getElementById('folderIconFileInput').files[0];
+            const iconUrl = document.getElementById('folderIconUrlInput').value.trim();
+            let existingFolder = editingFolderId ? appData.promptFolders.find(f => f.id === editingFolderId) : null;
+            
+            let finalIconValue = "";
+            if (iconFile) { // Nuevo archivo tiene prioridad
+                finalIconValue = iconFile;
+            } else if (iconUrl) { // Luego URL si existe
+                finalIconValue = iconUrl;
+            } else if (existingFolder && !iconMarkedForDelete) { // Conservar existente si no se borró
+                finalIconValue = existingFolder.iconUrl;
+            } // Si iconMarkedForDelete es true, finalIconValue queda "" (se borra)
+
+            const folderDataObj = {
+                id: editingFolderId || `folder_${Date.now()}_${Math.random().toString(36).substr(2,9)}`,
+                name: document.getElementById('folderNameInput').value.trim(),
+                iconUrl: finalIconValue, 
+                description: document.getElementById('folderDescriptionInput').value.trim(),
+                timestampUpdated: Date.now(),
+                timestampAdded: editingFolderId ? (existingFolder?.timestampAdded || Date.now()) : Date.now()
+            };
+            if (!folderDataObj.name) { alert("Nombre de carpeta requerido."); return; }
+
+            if (editingFolderId) {
+                const idx = appData.promptFolders.findIndex(f => f.id === editingFolderId);
+                if (idx > -1) appData.promptFolders[idx] = folderDataObj;
+            } else { appData.promptFolders.push(folderDataObj); }
+            saveDataToBackend().then(success => { if(success) { closeFormModal(); renderPromptFolders(); }});
+        }
+        function deletePromptFolder(folderId) { /* ... (llama a renderPromptFolders y renderPrompts) ... */
+            if (!isEditable) return;
+            const folder = appData.promptFolders.find(f => f.id === folderId);
+            if (!folder) return;
+            if (confirm(`Eliminar carpeta "${folder.name}"? Los prompts asignados se desvincularán.`)) {
+                appData.promptFolders = appData.promptFolders.filter(f => f.id !== folderId);
+                appData.prompts.forEach(p => { if (p.folderId === folderId) p.folderId = null; });
+                saveDataToBackend().then(() => { renderPromptFolders(); renderPrompts(); });
+            }
+        }
+        function movePromptFolder(folderId, direction) { /* ... (llama a renderPromptFolders) ... */
+            const index = appData.promptFolders.findIndex(f => f.id === folderId);
+            if (index === -1) return;
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= appData.promptFolders.length) return;
+            const [movedFolder] = appData.promptFolders.splice(index, 1);
+            appData.promptFolders.splice(newIndex, 0, movedFolder);
+            saveDataToBackend().then(renderPromptFolders);
+        }
+        // assignPromptToFolder no es necesaria si se gestiona desde el form de Prompt.
+        // function assignPromptToFolder(promptId) { ... }
+
+        // --- FILTRADO Y ORDENACIÓN ---
+        function sortItems(items, itemType, sortValue) {
+            items.sort((a, b) => {
+                let valA, valB;
+                const nameField = (itemType === 'aiAppsCategories' || itemType === 'prompts') ? 'title' : 'name';
+                switch (sortValue) {
+                    case 'newest': return (b.timestampUpdated || b.timestampAdded || 0) - (a.timestampUpdated || a.timestampAdded || 0);
+                    case 'oldest': return (a.timestampUpdated || a.timestampAdded || 0) - (b.timestampUpdated || b.timestampAdded || 0);
+                    case 'nameAsc':
+                        valA = (a[nameField] || '').toLowerCase(); valB = (b[nameField] || '').toLowerCase();
+                        return valA.localeCompare(valB);
+                    case 'nameDesc':
+                        valA = (a[nameField] || '').toLowerCase(); valB = (b[nameField] || '').toLowerCase();
+                        return valB.localeCompare(valA);
+                    default: 
+                        return 0; 
+                }
+            });
+            return items; 
+        }
+        
+        function applyFiltersAndSort() {
+            appData.settings.lastAppPricingFilter = appPricingFilter.value;
+            appData.settings.lastGlobalSortOrder = globalSortOrder.value;
+            renderAll();
+        }
+        
+        // --- MODO EDICIÓN UI ---
+        window.checkPassword = async (password) => { 
+            const formData = new FormData(); formData.append('password', password);
+            try {
+                const r = await fetch('validar_password.php', { method: 'POST', body: formData });
+                if (!r.ok) { console.error("Server err pass val:", r.status); const errTxt = await r.text(); console.error("Server err detail:", errTxt); alert(`Error del servidor (${r.status}). Revisa la consola.`); return false; }
+                const ct = r.headers.get("content-type");
+                if (ct && ct.includes("application/json")) { const res = await r.json(); return res && typeof res.success === 'boolean' ? res.success : (console.error("Respuesta JSON inesperada:", res), alert("Respuesta JSON inesperada. Validación fallida."), false); }
+                else { const errTxt = await r.text(); console.error("Respuesta no JSON:", errTxt); alert("Respuesta inesperada del servidor. Revisa la consola y el script PHP."); return false; }
+            } catch (e) { console.error("Error de red/parse en validación de contraseña:", e); alert("Error de red/parse. Revisa la conexión y el script PHP."); return false; }
+        };
+        function toggleEditMode() {
+            if (isEditable) {
+                saveDataToBackend().then(success => {
+                    isEditable = false;
+                    currentPassword = "";
+                    updateEditModeUI();
+                    
+                    if (success) {
+                        alert("Modo edición desactivado. Cambios guardados.");
+                    } else {
+                        alert("Modo edición desactivado. Hubo problemas al guardar los cambios.");
+                    }
+                });
+            } else {
+                adminPasswordModal.style.display = 'flex';
+                adminPasswordInput.value = '';
+                adminPasswordInput.focus();
+            }
+        }
+        async function handlePasswordSubmit() { // CORREGIDO: usa checkPassword
+            const pass = adminPasswordInput.value;
+            if (!pass) {
+                alert("Introduce contraseña.");
+                return;
+            }
+            
+            showLoadingMessage("Verificando contraseña...");
+            try {
+                const isValid = await window.checkPassword(pass);
+                clearLoadingMessage();
+
+                if (isValid) {
+                    isEditable = true;
+                    currentPassword = pass; // Guardar para uso en saveDataToBackend
+                    adminPasswordModal.style.display = 'none';
+                    alert("Modo edición activado.");
+                    updateEditModeUI();
+                } else {
+                    alert('Contraseña incorrecta.');
+                    adminPasswordInput.value = '';
+                    adminPasswordInput.focus();
+                }
+            } catch (error) {
+                clearLoadingMessage();
+                alert("Error al verificar la contraseña. Inténtalo de nuevo.");
+                console.error("Error en handlePasswordSubmit:", error);
+            }
+        }
+        function updateEditModeUI() { /* ... (como antes, pero llama a renderAll al final) ... */
+            document.body.classList.toggle('edit-mode', isEditable);
+            editModeToggleBtn.textContent = isEditable ? 'Guardar y Salir Modo Edición' : ''; // Antes ponía Activar Modo Edición en medio de esas dos comillas del final //
+            editModeToggleBtn.classList.toggle('active', isEditable);
+            [addAppCategoryBtn, addPromptBtn, addPromptFolderBtn, changeBgBtn, orderAppCategoriesBtn].forEach(btn => { if (btn) btn.style.display = isEditable ? 'block' : 'none'; });
+            
+            // Si salimos del modo edición, limpiar el prompt activo si no hay nada que mostrar
+            if (!isEditable && activePromptDisplayArea.innerHTML.trim() === '') {
+                noPromptsMessage.style.display = 'block';
+                noPromptsMessage.textContent = "Selecciona un prompt desde una carpeta para verlo aquí.";
+            } else if (!isEditable && activePromptDisplayArea.innerHTML.trim() !== '') {
+                noPromptsMessage.style.display = 'none';
+            }
+            
+            renderAll(); // Re-renderizar todo
+        }
+
+        // --- TEMA Y FONDO ---
+        function applyInitialSettings() { /* ... (como antes) ... */
+            if (appData.settings.theme === 'light') { document.body.classList.remove('dark-theme'); themeSwitcherBtn.textContent = 'Tema Oscuro'; }
+            else { document.body.classList.add('dark-theme'); themeSwitcherBtn.textContent = 'Tema Claro'; appData.settings.theme = 'dark';} // Asegurar que 'dark' es el default si no hay setting
+            if (appData.settings.background) document.body.style.backgroundImage = appData.settings.background;
+        }
+        function toggleTheme() { /* ... (como antes, pero guarda settings con saveDataToBackend) ... */
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            appData.settings.theme = isDark ? 'dark' : 'light';
+            themeSwitcherBtn.textContent = isDark ? 'Tema Claro' : 'Tema Oscuro';
+            if (isEditable) saveDataToBackend(); // Guardar solo si estamos en modo edición
+            else { // Si no estamos en modo edición, solo guardar la preferencia de tema localmente o hacer un guardado especial solo para settings
+                localStorage.setItem('centroComandosAI_theme', appData.settings.theme); // Opcional: guardar en localStorage para persistencia sin modo edición
+            }
+        }
+        function handleBackgroundChange(event) { /* ... (como antes, llama a saveDataToBackend) ... */
+            if (!isEditable) return; const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; appData.settings.background = `url(${e.target.result})`; saveDataToBackend(); };
+            reader.readAsDataURL(file); hiddenBgInput.value = '';
+        }
+        
+        // --- ORDEN CATEGORÍAS APPS ---
+        function openAppCategoryOrderModal() { /* ... (como antes) ... */
+            if (!isEditable) return; appCategoryOrderList.innerHTML = '';
+            appData.aiAppsCategories.forEach((category, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="category-name">${category.title}</span><span class="order-buttons"><button title="Mover arriba" ${index === 0 ? 'disabled' : ''} data-direction="-1" data-cat-id="${category.id}">↑</button><button title="Mover abajo" ${index === appData.aiAppsCategories.length - 1 ? 'disabled' : ''} data-direction="1" data-cat-id="${category.id}">↓</button></span>`;
+                appCategoryOrderList.appendChild(li);
+            });
+            appCategoryOrderModal.style.display = 'flex';
+        }
+        function handleAppCategoryOrderChange(event) { /* ... (como antes) ... */
+            if (!event.target.matches('#appCategoryOrderList button')) return;
+            const categoryId = event.target.dataset.catId; const direction = parseInt(event.target.dataset.direction);
+            const index = appData.aiAppsCategories.findIndex(cat => cat.id === categoryId);
+            if (index === -1) return; const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= appData.aiAppsCategories.length) return;
+            const [movedCategory] = appData.aiAppsCategories.splice(index, 1);
+            appData.aiAppsCategories.splice(newIndex, 0, movedCategory);
+            openAppCategoryOrderModal(); // Re-render modal
+        }
+        function closeAndSaveAppCategoryOrder() { /* ... (llama a renderFilteredApps) ... */
+            appCategoryOrderModal.style.display = 'none';
+            saveDataToBackend().then(renderFilteredApps);
+        }
+
+        // --- FULLSCREEN IMAGE & GENERIC LISTENERS ---
+        function openFullscreenImage(src) { fullscreenImage.src = src; fullscreenImageViewer.style.display = 'flex'; }
+        function closeFullscreenImage() { fullscreenImageViewer.style.display = 'none'; fullscreenImage.src = ''; }
+        
+        function attachGenericImageEventListeners(containerElement) {
+            containerElement.querySelectorAll('.interactive-image-thumbnail').forEach(img => {
+                // Remover listener anterior para evitar duplicados si se re-renderiza
+                img.removeEventListener('click', handleImageClickForFullscreen); // Evita duplicados
+                img.addEventListener('click', handleImageClickForFullscreen);
+            });
+        }
+        function handleImageClickForFullscreen(event) {
+            if (event.currentTarget.src && !event.currentTarget.src.endsWith('?text=App') && !event.currentTarget.src.endsWith('?text=F')) { // No ampliar placeholders
+                 openFullscreenImage(event.currentTarget.src);
+            }
+        }
+
+
+        // --- UTILIDADES ---
+        function copyToClipboard(text, message = "Copiado.") { /* ... (como antes) ... */
+            navigator.clipboard.writeText(text).then(() => alert(message)).catch(err => { console.error('Error copiando:', err); alert('Error al copiar.');});
+        }
+        // Funciones de Detailed Description Image Tools (si las tienes, defínelas o impórtalas aquí)
+
+
+        // --- EVENT LISTENERS GLOBALES ---
+        editModeToggleBtn.addEventListener('click', toggleEditMode);
+        submitAdminPasswordBtn.addEventListener('click', handlePasswordSubmit);
+        adminPasswordInput.addEventListener('keypress', (e) => { 
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handlePasswordSubmit();
+            } 
+        });
+        cancelAdminPasswordBtn.addEventListener('click', () => adminPasswordModal.style.display = 'none');
+
+        themeSwitcherBtn.addEventListener('click', toggleTheme);
+        changeBgBtn.addEventListener('click', () => { if(isEditable) hiddenBgInput.click() });
+        hiddenBgInput.addEventListener('change', handleBackgroundChange);
+
+        orderAppCategoriesBtn.addEventListener('click', openAppCategoryOrderModal);
+        appCategoryOrderList.addEventListener('click', handleAppCategoryOrderChange);
+        closeAppCategoryOrderModalBtn.addEventListener('click', closeAndSaveAppCategoryOrder);
+
+        addAppCategoryBtn.addEventListener('click', handleAddAppCategory);
+        addPromptBtn.addEventListener('click', () => openPromptForm());
+        addPromptFolderBtn.addEventListener('click', () => openPromptFolderForm());
+
+        globalSearchInput.addEventListener('input', applyFiltersAndSort);
+        appPricingFilter.addEventListener('change', applyFiltersAndSort);
+        globalSortOrder.addEventListener('change', applyFiltersAndSort);
+
+        closeFullscreenBtn.addEventListener('click', closeFullscreenImage);
+        fullscreenImageViewer.addEventListener('click', (e) => { 
+            if (e.target === fullscreenImageViewer) closeFullscreenImage(); 
+        });
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === "Escape" && fullscreenImageViewer.style.display === 'flex') closeFullscreenImage(); 
+            if (e.key === "Escape" && formModal.style.display === 'flex') closeFormModal();
+            if (e.key === "Escape" && adminPasswordModal.style.display === 'flex') adminPasswordModal.style.display = 'none';
+            if (e.key === "Escape" && appCategoryOrderModal.style.display === 'flex') appCategoryOrderModal.style.display = 'none';
+
+        });
+
+        document.addEventListener('click', (e) => {
+            if (activePopups.folderMenu && !activePopups.folderMenu.contains(e.target) && !e.target.closest('.folder-item')) {
+                closeActivePopups();
+            }
+            // El cierre de formModal y otros modales se maneja con sus botones de cancelar/cerrar o la tecla Esc.
+        });
+
+
+        // --- INICIALIZACIÓN ---
+        loadInitialData();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Sistema de Historial</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .test { background: white; padding: 20px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .success { border-left: 5px solid #4CAF50; }
+    .error { border-left: 5px solid #f44336; }
+    .warning { border-left: 5px solid #ff9800; }
+    button { padding: 10px 15px; margin: 5px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0b7dda; }
+    pre { background: #f8f8f8; padding: 10px; border-radius: 4px; overflow: auto; max-height: 300px; }
+  </style>
+</head>
+<body>
+  <h1>Test del Sistema de Historial</h1>
+  
+  <div class="test">
+    <h3>1. Estado del localStorage</h3>
+    <button onclick="testLocalStorage()">Verificar localStorage</button>
+    <div id="localStorageResult"></div>
+  </div>
+  
+  <div class="test">
+    <h3>2. Simular Guardado de Producto</h3>
+    <button onclick="simulateSave()">Simular guardado de producto</button>
+    <div id="simulateResult"></div>
+  </div>
+  
+  <div class="test">
+    <h3>3. Cargar y Mostrar Historial</h3>
+    <button onclick="loadAndShowHistory()">Cargar historial</button>
+    <div id="historyResult"></div>
+  </div>
+  
+  <div class="test">
+    <h3>4. Limpiar Historial</h3>
+    <button onclick="clearHistory()">Limpiar todo el historial</button>
+    <div id="clearResult"></div>
+  </div>
+  
+  <script>
+    const HISTORY_KEY = 'productHistory';
+    
+    function testLocalStorage() {
+      const resultDiv = document.getElementById('localStorageResult');
+      try {
+        const available = typeof localStorage !== 'undefined';
+        const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        
+        let html = `
+          <p><strong>localStorage disponible:</strong> ${available ? '✅ Sí' : '❌ No'}</p>
+          <p><strong>Items en historial:</strong> ${history.length}</p>
+        `;
+        
+        if (history.length > 0) {
+          html += `<p><strong>Estructura del primer item:</strong></p><pre>${JSON.stringify(history[0], null, 2)}</pre>`;
+        }
+        
+        resultDiv.innerHTML = html;
+        resultDiv.className = 'success';
+      } catch (error) {
+        resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        resultDiv.className = 'error';
+      }
+    }
+    
+    function simulateSave() {
+      const resultDiv = document.getElementById('simulateResult');
+      try {
+        // Simular un producto guardado
+        const mockProduct = {
+          name: 'Producto de Test ' + new Date().toLocaleTimeString(),
+          price: '99.99',
+          description: 'Este es un producto de prueba generado automáticamente',
+          preserveLogo: true,
+          sourceCode: '<!DOCTYPE html>\n<html>\n<head>\n  <title>Producto Test</title>\n</head>\n<body>\n  <h1>Producto de Prueba</h1>\n</body>\n</html>',
+          timestamp: Date.now(),
+          imagesCount: 0
+        };
+        
+        // Cargar historial existente
+        const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        
+        // Añadir al principio (más reciente primero)
+        history.unshift(mockProduct);
+        
+        // Limitar a 5 items para test
+        const limitedHistory = history.slice(0, 5);
+        
+        // Guardar
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(limitedHistory));
+        
+        resultDiv.innerHTML = `
+          <p>✅ Producto simulado guardado correctamente</p>
+          <p><strong>Nombre:</strong> ${mockProduct.name}</p>
+          <p><strong>Items totales:</strong> ${limitedHistory.length}</p>
+          <p><strong>SourceCode length:</strong> ${mockProduct.sourceCode.length} caracteres</p>
+        `;
+        resultDiv.className = 'success';
+        
+      } catch (error) {
+        resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        resultDiv.className = 'error';
+      }
+    }
+    
+    function loadAndShowHistory() {
+      const resultDiv = document.getElementById('historyResult');
+      try {
+        const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        
+        if (history.length === 0) {
+          resultDiv.innerHTML = '<p>No hay items en el historial</p>';
+          resultDiv.className = 'warning';
+          return;
+        }
+        
+        let html = `<p><strong>Total items:</strong> ${history.length}</p>`;
+        html += '<ul>';
+        
+        history.forEach((item, index) => {
+          const date = new Date(item.timestamp || Date.now()).toLocaleString();
+          const hasSourceCode = !!item.sourceCode;
+          const sourceCodeSize = item.sourceCode ? item.sourceCode.length : 0;
+          
+          html += `
+            <li>
+              <strong>${index + 1}. ${item.name || 'Sin nombre'}</strong><br>
+              <small>Fecha: ${date} | SourceCode: ${hasSourceCode ? '✅ ' + sourceCodeSize + ' chars' : '❌ No'}</small>
+            </li>
+          `;
+        });
+        
+        html += '</ul>';
+        resultDiv.innerHTML = html;
+        resultDiv.className = 'success';
+        
+      } catch (error) {
+        resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        resultDiv.className = 'error';
+      }
+    }
+    
+    function clearHistory() {
+      const resultDiv = document.getElementById('clearResult');
+      try {
+        localStorage.removeItem(HISTORY_KEY);
+        resultDiv.innerHTML = '<p>✅ Historial limpiado correctamente</p>';
+        resultDiv.className = 'success';
+      } catch (error) {
+        resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        resultDiv.className = 'error';
+      }
+    }
+    
+    // Ejecutar test inicial al cargar
+    window.onload = testLocalStorage;
+  </script>
+</body>
+</html>

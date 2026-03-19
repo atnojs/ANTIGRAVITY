@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Drive: Firebase Auth & Storage - Tutorial</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Meta SEO -->
+    <meta name="description"
+        content="Máster en Firebase: Aprende a implementar Autenticación, Firestore y Storage para crear un Gemini Drive profesional.">
+</head>
+
+<body>
+
+    <aside class="sidebar glass">
+        <h2 class="gradient-text">Firebase Master</h2>
+        <nav id="sidebar-nav">
+            <ul>
+                <li><a href="#introduccion">1. Introducción</a></li>
+                <li><a href="#logica">2. Lógica Backend</a></li>
+                <li><a href="#setup">3. Setup Inicial</a></li>
+                <li><a href="#sdk">4. SDK & Web App</a></li>
+                <li><a href="#metodos">5. Métodos de Acceso</a></li>
+                <li><a href="#plantillas">6. Personalización</a></li>
+                <li><a href="#prompt">7. Prompt Maestro</a></li>
+                <li><a href="#verificacion">8. Verificación y PWD</a></li>
+                <li><a href="#firestore">9. Firestore DB</a></li>
+                <li><a href="#seguridad">10. Seguridad DB</a></li>
+                <li><a href="#storage">11. Firebase Storage</a></li>
+                <li><a href="#reglas-storage">12. Reglas Storage</a></li>
+                <li><a href="#downloads">13. Descargas & Sinc</a></li>
+                <li><a href="#bonus">14. Bonus: Quota</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header id="header-main">
+            <h1 class="gradient-text">Gemini Drive: Backend con Firebase</h1>
+            <section class="card glass">
+                <p><strong>De una app estática a una nube personal persistente.</strong></p>
+                <p>Aprende a dotar a tus aplicaciones de "memoria" y "seguridad" mediante la integración de Firebase
+                    Authentication, Firestore y Cloud Storage. Convierte tu front-end en un <em>Gemini Drive</em> real.
+                </p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="https://youtu.be/Xl271wWblkY" target="_blank"
+                        style="text-decoration: none; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #a78bfa, #22d3ee); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                        </svg>
+                        Ver Tutorial en YouTube
+                    </a>
+                </div>
+            </section>
+        </header>
+
+        <section id="introduccion" class="content-section">
+            <h2>1. El poder del Backend No-Code</h2>
+            <div class="card glass">
+                <p>Firebase es la herramienta definitiva para desarrolladores que quieren centrarse en el producto y no
+                    en la infraestructura. Con una sola herramienta gratuita, gestionamos usuarios, base de datos y
+                    almacenamiento masivo de archivos.</p>
+            </div>
+        </section>
+
+        <section id="logica" class="content-section">
+            <h2>2. La Lógica del Casillero</h2>
+            <div class="card glass">
+                <p>Imagina tu backend como un sistema de casilleros:</p>
+                <ul>
+                    <li><strong>Authentication</strong> es el sistema de llaves (quién puede entrar).</li>
+                    <li><strong>Firestore</strong> es el inventario (una lista de qué hay en cada casillero).</li>
+                    <li><strong>Storage</strong> es el casillero físico (donde guardas los objetos pesados/archivos).
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="setup" class="content-section">
+            <h2>3. Setup en la Consola</h2>
+            <div class="card glass">
+                <p>Crea un proyecto llamado <strong>Gemini Drive</strong> en Firebase Console. No es necesario activar
+                    Google Analytics para este tutorial.</p>
+                <ol class="step-list">
+                    <li>Entra en <a href="https://console.firebase.google.com/" target="_blank"
+                            style="color:var(--acc)">Firebase Console</a>.</li>
+                    <li>Crea un proyecto nuevo.</li>
+                    <li>Acepta los términos y condiciones.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="sdk" class="content-section">
+            <h2>4. Registro de Web App & SDK</h2>
+            <div class="card glass">
+                <p>Para conectar Google AI Studio con Firebase, necesitamos el **SDK Configuration Code**. Este bloque
+                    de código contiene las llaves maestras de conexión.</p>
+                <div class="warning-box">
+                    <strong>¡Ojo!</strong> Copia y guarda este código; lo inyectaremos en el prompt del agente más
+                    adelante.
+                </div>
+            </div>
+        </section>
+
+        <section id="metodos" class="content-section">
+            <h2>5. Métodos de Acceso</h2>
+            <div class="card glass">
+                <p>Habilita las puertas de entrada en la pestaña de <strong>Authentication</strong>:</p>
+                <ul>
+                    <li><strong>Email/Password</strong>: El método clásico y obligatorio para control total.</li>
+                    <li><strong>Google Sign-in</strong>: La forma más rápida de convertir visitas en usuarios
+                        registrados.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="plantillas" class="content-section">
+            <h2>6. Personalización de Correos</h2>
+            <div class="card glass">
+                <p>Configura los emails de bienvenida y recuperación. Si no vinculas un dominio profesional, llegarán a
+                    la carpeta de <strong>SPAM</strong>, pero funcionarán perfectamente para tests.</p>
+            </div>
+        </section>
+
+        <section id="prompt" class="content-section">
+            <h2>7. El Prompt Maestro de Auth</h2>
+            <div class="card glass">
+                <p>Inyecta esta lógica en Google AI Studio para crear el sistema de login automáticamente:</p>
+                <pre><code>"Antes de usar el Drive, el usuario debe registrarse o loguearse con Firebase.
+Usa este SDK: [TUPUM_SDK_AQUÍ].
+Campos: Foto de perfil, Nombre, Email, Password. 
+Si ya existe, muéstrale 'User already exists, sign in instead'."</code></pre>
+            </div>
+        </section>
+
+        <section id="verificacion" class="content-section">
+            <h2>8. Verificación de Email y Password Reset</h2>
+            <div class="card glass">
+                <p>No permitas el acceso sin validación. Implementa un flujo que detenga al usuario hasta que haga clic
+                    en el link de confirmación enviado a su correo.</p>
+                <div class="tip-box">
+                    <strong>Tip:</strong> Usa el comando <code>Firebase.auth.currentUser.sendEmailVerification()</code>
+                    para automatizarlo.
+                </div>
+            </div>
+        </section>
+
+        <section id="firestore" class="content-section">
+            <h2>9. Firestore Database: El Inventario</h2>
+            <div class="card glass">
+                <p>Configura una colección <code>/users</code>. Cada documento debe tener el nombre del
+                    <strong>UID</strong>
+                    (User ID) único para asegurar que un usuario nunca vea los datos de otro.
+                </p>
+            </div>
+        </section>
+
+        <section id="seguridad" class="content-section">
+            <h2>10. Reglas de Seguridad Pro</h2>
+            <div class="card glass">
+                <p>Las reglas de Firebase son las que realmente cierran el casillero. Usa:</p>
+                <pre><code>match /users/{userId} {
+  allow read, write: if request.auth.uid == userId;
+}</code></pre>
+            </div>
+        </section>
+
+        <section id="storage" class="content-section">
+            <h2>11. Firebase Storage: La Nube Real</h2>
+            <div class="card glass">
+                <p>Storage guarda los archivos pesados (PDFs, Imágenes, Audios). Por cada archivo guardado, el sistema
+                    debe salvar el <strong>Storage Path</strong> en Firestore para que el UI pueda localizarlo más
+                    tarde.</p>
+            </div>
+        </section>
+
+        <section id="reglas-storage" class="content-section">
+            <h2>12. Reglas de Acceso a Archivos</h2>
+            <div class="card glass">
+                <p>Al igual que en la DB, Storage debe restringir el acceso. Crea una carpeta
+                    <code>/user_uploads/{uid}/</code>
+                    donde solo el dueño tenga permisos de lectura y escritura.
+                </p>
+            </div>
+        </section>
+
+        <section id="downloads" class="content-section">
+            <h2>13. Descargas y Sincronización</h2>
+            <div class="card glass">
+                <p>Para descargar, la app solicita un <strong>Download URL</strong> temporal basado en el path guardado.
+                    Esto abre el archivo en una pestaña nueva para que el usuario pueda guardarlo en su disco local.</p>
+            </div>
+        </section>
+
+        <section id="bonus" class="content-section">
+            <h2>14. Bonus: Cálculo de Quota (5GB)</h2>
+            <div class="card glass">
+                <p>Firebase te da 5GB gratis. Tutorial avanzado: Suma el campo <code>size</code> de todos los documentos
+                    en <code>/users/{uid}/files/</code> para mostrar una barra de progreso real en el dashboard.</p>
+                <div class="tip-box">
+                    <strong>Fórmula:</strong> (Total Bytes Sumados / 5 * 1024^3) * 100
+                </div>
+            </div>
+        </section>
+
+        <footer class="glass"
+            style="padding: 2rem; text-align: center; border-radius: var(--radius-md); margin-top: 4rem;">
+            <p>&copy; 2025 Master Firebase & Gemini. Neon Glassmorphism Edition.</p>
+        </footer>
+    </main>
+
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.sidebar nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                targetSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer to highlight active section in sidebar
+        const sections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

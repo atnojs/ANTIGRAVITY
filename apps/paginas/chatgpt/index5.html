@@ -1,0 +1,2753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minicampus Virtual: Aprende a Crear GPTs Personalizados</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --accent: #4fc3f7;
+            --light: #f5f9ff;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --gray: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+        }
+        
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-menu a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: block;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar-menu a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .progress-container {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .progress-container h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .badges-container {
+            margin-top: 20px;
+        }
+        
+        .badges-container h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        
+        .badge {
+            display: inline-block;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .badge.unlocked {
+            opacity: 1;
+            background-color: var(--accent);
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .badge.unlocked::after {
+            content: "✓";
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        h3 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .highlight {
+            background-color: var(--accent);
+            color: var(--dark);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #33b5e5;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .quiz-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--light);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .options label:hover {
+            background-color: var(--accent);
+            color: var(--dark);
+            border-color: var(--accent);
+        }
+        
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-left: 4px solid var(--success);
+        }
+        
+        .feedback.incorrect {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+        
+        .glossary-term {
+            color: var(--accent);
+            cursor: pointer;
+            border-bottom: 1px dotted var(--accent);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .glossary-term:hover {
+            background-color: rgba(79, 195, 247, 0.1);
+        }
+        
+        .glossary-popup {
+            position: absolute;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            max-width: 300px;
+            border-left: 4px solid var(--accent);
+            display: none;
+        }
+        
+        .timeline {
+            position: relative;
+            margin: 40px 0;
+            padding-left: 30px;
+            border-left: 2px solid var(--primary);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        
+        .timeline-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-year {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .simulator {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .simulator-input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .simulator-output {
+            background-color: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            min-height: 80px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .close-modal:hover {
+            color: var(--dark);
+        }
+        
+        .menu-toggle {
+            display: none;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+            font-size: 1.5rem;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--gray);
+        }
+        
+        .nav-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tab.active {
+            border-bottom: 3px solid var(--accent);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+                overflow-y: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .timeline {
+                padding-left: 15px;
+            }
+            
+            .timeline-item:before {
+                left: -15px;
+            }
+        }
+        
+        /* Game Over Modal */
+        .game-over {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .game-over h2 {
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+        
+        .stars {
+            color: gold;
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+        
+        /* Animation for badges */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .badge.unlocked {
+            animation: pulse 1s infinite;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* --- NUEVOS ESTILOS PARA JUEGOS --- */
+        #games .nav-tabs {
+            border-bottom: none;
+            background-color: var(--gray);
+            border-radius: 8px;
+            padding: 5px;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        #games .nav-tab {
+            flex: 1;
+            text-align: center;
+            border-bottom: none;
+            border-radius: 6px;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        #games .nav-tab:hover {
+            background-color: rgba(74, 111, 165, 0.1);
+        }
+
+        #games .nav-tab.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(74, 111, 165, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .game-area {
+            border: 1px solid var(--gray);
+            background-color: #ffffff;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin: 30px auto;
+            width: 100%;
+            max-width: 700px;
+        }
+        
+        .draggable-item {
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #ddd;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            cursor: grab;
+            transition: all 0.3s ease;
+        }
+
+        .draggable-item:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+            background-color: var(--light);
+        }
+
+        .drop-zone {
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .drop-item {
+            border: 2px dashed var(--gray);
+            background-color: transparent;
+            color: #aaa;
+            font-style: italic;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drop-item.drag-over {
+            border-color: var(--accent);
+            background-color: rgba(79, 195, 247, 0.1);
+        }
+        
+        .drop-item .draggable-item {
+            font-style: normal;
+        }
+
+        .drop-item.correct {
+            border-color: var(--success);
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .drop-item.incorrect {
+            border-color: var(--danger);
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+        
+        #fillGame select {
+            appearance: none;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 12px;
+            background-color: white;
+            font-size: 1rem;
+            color: var(--dark);
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            transition: border-color 0.3s ease;
+        }
+
+        #fillGame select:hover {
+            border-color: var(--accent);
+        }
+        
+        .timer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        #challengeGame .timer {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--light);
+            border: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Minicampus GPT</h1>
+                <p>Aprende a crear GPTs personalizados</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="#" data-section="intro" class="active">🏠 Inicio</a></li>
+                <li><a href="#" data-section="module1">1. Introducción a ChatGPT</a></li>
+                <li><a href="#" data-section="module2">2. Creación de GPTs</a></li>
+                <li><a href="#" data-section="module3">3. Prompt Engineering</a></li>
+                <li><a href="#" data-section="module4">4. Documentación y Conocimiento</a></li>
+                <li><a href="#" data-section="module5">5. Agentes de IA</a></li>
+                <li><a href="#" data-section="module6">6. Modelos de Razonamiento</a></li>
+                <li><a href="#" data-section="module7">7. Asistente de Código</a></li>
+                <li><a href="#" data-section="games">🎮 Juegos</a></li>
+                <li><a href="#" data-section="glossary">📚 Glosario</a></li>
+                <li><a href="#" data-section="timeline">⏱️ Línea de Tiempo</a></li>
+                <li><a href="#" data-section="simulator">🧪 Simulador</a></li>
+                <li><a href="#" data-section="progress">📊 Progreso</a></li>
+            </ul>
+            
+            <div class="progress-container">
+                <h3>Progreso General</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="globalProgress"></div>
+                </div>
+                <div class="progress-text" id="progressText">0% completado</div>
+            </div>
+            
+            <div class="badges-container">
+                <h3>Logros</h3>
+                <div class="badge" id="badge1">Módulo 1</div>
+                <div class="badge" id="badge2">Módulo 2</div>
+                <div class="badge" id="badge3">Módulo 3</div>
+                <div class="badge" id="badge4">Módulo 4</div>
+                <div class="badge" id="badge5">Módulo 5</div>
+                <div class="badge" id="badge6">Módulo 6</div>
+                <div class="badge" id="badge7">Módulo 7</div>
+                <div class="badge" id="badge8">¡Todo completado!</div>
+                <div class="badge" id="badge9">Puntaje Alto</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Introduction Section -->
+            <div id="intro" class="section active">
+                <h2>Bienvenido al Minicampus Virtual</h2>
+                <p>¡Hola! Este es tu campus virtual para aprender todo sobre la creación de GPTs personalizados con ChatGPT.</p>
+                
+                <div class="card">
+                    <h3>¿Qué encontrarás aquí?</h3>
+                    <p>En este minicampus interactivo, aprenderás cómo:</p>
+                    <ul>
+                        <li>Crear GPTs especializados para diferentes funciones empresariales</li>
+                        <li>Diseñar prompts efectivos que maximizan el rendimiento del modelo</li>
+                        <li>Utilizar documentación externa como fuente de conocimiento</li>
+                        <li>Implementar técnicas avanzadas como Tree of Thoughts y prompt engineering</li>
+                        <li>Desarrollar asistentes de código y agentes de IA autónomos</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        🎯 Objetivo: Al finalizar este curso, podrás crear un GPT personalizado para analizar pliegos de concursos públicos o cualquier otro caso de uso específico.
+                    </div>
+                    
+                    <p>Comienza tu viaje de aprendizaje explorando los módulos en el menú lateral. Cada módulo incluye explicaciones, ejemplos prácticos, tests de evaluación y juegos interactivos.</p>
+                    
+                    <div class="btn btn-primary" onclick="showModal('welcomeModal')">Empezar ahora →</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Recomendaciones para aprender mejor</h3>
+                    <ol>
+                        <li>Completa cada módulo en orden</li>
+                        <li>Haz los tests de autoevaluación antes de avanzar</li>
+                        <li>Practica con el simulador de instrucciones</li>
+                        <li>Desbloquea todos los logros</li>
+                        <li>Usa el glosario cuando encuentres términos nuevos</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- Module 1: Introducción a ChatGPT -->
+            <div id="module1" class="section">
+                <h2>Módulo 1: Introducción a ChatGPT</h2>
+                
+                <div class="card">
+                    <h3>Resumen</h3>
+                    <p>ChatGPT es un modelo de lenguaje avanzado desarrollado por OpenAI que puede generar texto de manera natural en respuesta a una amplia variedad de preguntas e indicaciones. Su principal característica es su capacidad para mantener conversaciones fluidas y naturales.</p>
+                    
+                    <p>ChatGPT no es un motor de búsqueda, sino un modelo entrenado con grandes cantidades de datos textuales hasta su fecha de corte (2023). Puede responder preguntas, generar contenido, traducir idiomas, ayudar en programación y asistir en tareas académicas y profesionales.</p>
+                    
+                    <div class="highlight">
+                        ⚠️ Importante: ChatGPT puede generar "alucinaciones" — información incorrecta presentada como si fuera verdadera. Siempre verifica la información con fuentes confiables.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Ejemplos Prácticos</h3>
+                    <p><strong>Ejemplo 1: Pregunta concreta</strong><br>
+                    Usuario: "¿Cuáles son las obligaciones de un propietario de vivienda en España respecto al calentador?"<br>
+                    ChatGPT responde basándose en su conocimiento previo hasta 2023, proporcionando información sobre normativas energéticas y mantenimiento.</p>
+                    
+                    <p><strong>Ejemplo 2: Búsqueda en internet</strong><br>
+                    Usuario: "¿Cuál es la última ley sobre protección de datos en España?"<br>
+                    ChatGPT puede acceder a internet para obtener información actualizada, mostrando las fuentes consultadas.</p>
+                    
+                    <p><strong>Ejemplo 3: Razonamiento lógico</strong><br>
+                    Usuario: "¿Cómo apilar de forma estable un libro, nueve huevos, una computadora portátil y un clavo?"<br>
+                    ChatGPT aplica razonamiento paso a paso para proponer soluciones estructuradas y razonables.</p>
+                </div>
+                
+                <div class="card">
+                    <h3>Funciones Principales de ChatGPT</h3>
+                    <table class="table">
+                        <tr>
+                            <th>Función</th>
+                            <th>Descripción</th>
+                        </tr>
+                        <tr>
+                            <td>Generación de contenido</td>
+                            <td>Redacta artículos, correos, resúmenes, discursos, poesía, guiones y código</td>
+                        </tr>
+                        <tr>
+                            <td>Asistencia en búsqueda</td>
+                            <td>Responde preguntas y resume documentos largos</td>
+                        </tr>
+                        <tr>
+                            <td>Traducción de idiomas</td>
+                            <td>Traduce entre múltiples idiomas con alta precisión</td>
+                        </tr>
+                        <tr>
+                            <td>Apoyo en programación</td>
+                            <td>Genera, depura y explica código en varios lenguajes</td>
+                        </tr>
+                        <tr>
+                            <td>Asistencia académica</td>
+                            <td>Ayuda con resúmenes, explicaciones de temas complejos y solución de problemas matemáticos</td>
+                        </tr>
+                        <tr>
+                            <td>Visión multimodal</td>
+                            <td>Analiza imágenes y describe su contenido (GPT-4 Omni)</td>
+                        </tr>
+                        <tr>
+                            <td>Intérprete de código</td>
+                            <td>Ejecuta código Python y analiza datos, generando gráficos y visualizaciones</td>
+                        </tr>
+                        <tr>
+                            <td>Navegación web</td>
+                            <td>Accede a sitios web en tiempo real para obtener información actualizada</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="quiz-container">
+                    <h3>Test de Autoevaluación</h3>
+                    <div class="question">
+                        <p><strong>1. ¿Qué es ChatGPT principalmente?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q1" value="a"> Un motor de búsqueda como Google</label>
+                            <label><input type="radio" name="q1" value="b"> Un modelo de lenguaje que genera texto basado en patrones aprendidos</label>
+                            <label><input type="radio" name="q1" value="c"> Una herramienta para crear páginas web automáticamente</label>
+                            <label><input type="radio" name="q1" value="d"> Un software para gestionar bases de datos</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>2. ¿Qué significa "alucinación" en el contexto de ChatGPT?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q2" value="a"> Cuando el modelo se queda sin memoria</label>
+                            <label><input type="radio" name="q2" value="b"> Cuando el modelo genera información falsa pero convincente</label>
+                            <label><input type="radio" name="q2" value="c"> Cuando el modelo habla en otro idioma</label>
+                            <label><input type="radio" name="q2" value="d"> Cuando el modelo se congela</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>3. ¿Cuál de estas NO es una función de ChatGPT?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q3" value="a"> Generar código en Python</label>
+                            <label><input type="radio" name="q3" value="b"> Analizar imágenes con visión multimodal</label>
+                            <label><input type="radio" name="q3" value="c"> Ejecutar programas en tu computadora local</label>
+                            <label><input type="radio" name="q3" value="d"> Traducir textos entre idiomas</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>4. ¿Cómo puede ChatGPT obtener información actualizada?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q4" value="a"> Solo mediante su base de datos interna</label>
+                            <label><input type="radio" name="q4" value="b"> Mediante navegación en internet activada por el usuario</label>
+                            <label><input type="radio" name="q4" value="c"> Consultando bases de datos de la empresa del usuario</label>
+                            <label><input type="radio" name="q4" value="d"> A través de redes sociales</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>5. ¿Qué tipo de respuestas busca ofrecer ChatGPT según sus principios éticos?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q5" value="a"> Respuestas rápidas aunque sean inexactas</label>
+                            <label><input type="radio" name="q5" value="b"> Respuestas neutrales y bien fundamentadas</label>
+                            <label><input type="radio" name="q5" value="c"> Respuestas que siguen siempre la opinión del usuario</label>
+                            <label><input type="radio" name="q5" value="d"> Respuestas que generan controversia</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evaluateQuiz('module1')">Evaluar Quiz</button>
+                    <div class="score-display" id="module1Score">Puntuación: 0/5</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="nextModule('module1')">Siguiente Módulo →</button>
+            </div>
+            
+            <!-- Module 2: Creación de GPTs -->
+            <div id="module2" class="section">
+                <h2>Módulo 2: Creación de GPTs Personalizados</h2>
+                
+                <div class="card">
+                    <h3>Resumen</h3>
+                    <p>Los GPTs personalizados (Custom GPTs) son versiones especializadas de ChatGPT diseñadas para realizar tareas específicas de manera más eficiente y precisa que el modelo general.</p>
+                    
+                    <p>Imagina a ChatGPT como una navaja suiza con múltiples herramientas. Un GPT personalizado sería una herramienta específica dentro de esa navaja, optimizada para una tarea particular.</p>
+                    
+                    <div class="highlight">
+                        💡 Los GPTs personalizados pueden ser creados por cualquier usuario sin necesidad de conocimientos de programación.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Cómo crear un GPT personalizado</h3>
+                    <ol>
+                        <li><strong>Accede al GPT Builder:</strong> En la barra lateral izquierda de ChatGPT, haz clic en "Create a GPT"</li>
+                        <li><strong>Define el nombre y descripción:</strong> Elige un nombre claro y una breve descripción de lo que hace tu GPT</li>
+                        <li><strong>Escribe las instrucciones:</strong> Es la parte más importante. Aquí le dices al GPT qué debe hacer y cómo debe comportarse</li>
+                        <li><strong>Agrega conocimiento:</strong> Sube archivos PDF, TXT, DOCX, etc. como fuente de conocimiento</li>
+                        <li><strong>Activa funciones:</strong> Habilita navegación web, intérprete de código o DALL-E según sea necesario</li>
+                        <li><strong>Prueba y guarda:</strong> Usa la ventana de previsualización para probar tu GPT y luego guardarlo</li>
+                    </ol>
+                </div>
+                
+                <div class="card">
+                    <h3>Ejemplos de GPTs Personalizados</h3>
+                    <table class="table">
+                        <tr>
+                            <th>GPT</th>
+                            <th>Propósito</th>
+                            <th>Características clave</th>
+                        </tr>
+                        <tr>
+                            <td>Entrevistas personalizadas Trabajadores</td>
+                            <td>Realizar entrevistas a empleados para recopilar feedback</td>
+                            <td>Tono empático, 15+ preguntas, reconduce conversación, genera resumen final</td>
+                        </tr>
+                        <tr>
+                            <td>UNI GPT</td>
+                            <td>Ayudar a estudiantes a elegir carrera universitaria</td>
+                            <td>Protocolo paso a paso, recomendación de universidades, ayuda con declaración personal</td>
+                        </tr>
+                        <tr>
+                            <td>ARQUITECTO</td>
+                            <td>Analizar documentos técnicos de arquitectura</td>
+                            <td>Consulta el CTE (Código Técnico de la Edificación), desactiva internet, enfocado en documentación técnica</td>
+                        </tr>
+                        <tr>
+                            <td>Analista de Pliegos</td>
+                            <td>Extraer información de pliegos de concursos públicos</td>
+                            <td>Extracción de datos clave, análisis de requisitos, consejos para maximizar puntuación</td>
+                        </tr>
+                        <tr>
+                            <td>Asistente de Código</td>
+                            <td>Generar y corregir código Python</td>
+                            <td>Intérprete de código activado, genera código listo para ejecución, explica errores</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="card">
+                    <h3>Componentes del GPT Builder</h3>
+                    <div class="nav-tabs">
+                        <div class="nav-tab active" data-tab="instructions">Instrucciones</div>
+                        <div class="nav-tab" data-tab="knowledge">Conocimiento</div>
+                        <div class="nav-tab" data-tab="functions">Funciones</div>
+                        <div class="nav-tab" data-tab="sharing">Compartir</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="instructionsTab">
+                        <h4>Instrucciones</h4>
+                        <p>La parte más crítica del GPT Builder. Debes definir claramente:</p>
+                        <ul>
+                            <li><strong>Objetivo:</strong> La misión principal del GPT</li>
+                            <li><strong>Cómo actuar:</strong> Tonos, estilo y estrategias</li>
+                            <li><strong>Instrucciones concretas:</strong> Pasos específicos a seguir</li>
+                            <li><strong>Protección:</strong> Evitar que el GPT revele sus instrucciones internas</li>
+                            <li><strong>Refuerzo:</strong> Repetir puntos clave para asegurar consistencia</li>
+                        </ul>
+                        <p>Se recomienda usar Markdown para estructurar las instrucciones y mejorar la comprensión del modelo.</p>
+                    </div>
+                    
+                    <div class="tab-content" id="knowledgeTab">
+                        <h4>Conocimiento</h4>
+                        <p>Aquí puedes subir hasta 20 archivos (PDF, TXT, DOCX, etc.) como fuente de conocimiento.</p>
+                        <p>El GPT puede consultar estos archivos para responder preguntas específicas.</p>
+                        <div class="highlight">
+                            ✅ Recomendación: Prefiere archivos TXT o Markdown limpios sobre PDFs complejos, ya que facilitan la extracción de texto relevante.
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="functionsTab">
+                        <h4>Funciones</h4>
+                        <ul>
+                            <li><strong>Navegación por internet:</strong> Permite acceso a información actualizada</li>
+                            <li><strong>Generación de imágenes con DALL-E:</strong> Crea imágenes a partir de descripciones</li>
+                            <li><strong>Intérprete de código y análisis de datos:</strong> Ejecuta código Python, analiza datasets, genera gráficos</li>
+                        </ul>
+                        <p>Desactiva funciones innecesarias para mejorar seguridad y eficiencia.</p>
+                    </div>
+                    
+                    <div class="tab-content" id="sharingTab">
+                        <h4>Compartir</h4>
+                        <p>Configura quién puede acceder a tu GPT personalizado:</p>
+                        <ul>
+                            <li><strong>Solo tú:</strong> Privado y seguro</li>
+                            <li><strong>Cualquiera con el enlace:</strong> Compartible con colegas</li>
+                            <li><strong>Publicar en la tienda de GPTs:</strong> Disponible para todos los usuarios de ChatGPT (requiere cuenta builder aprobada)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="quiz-container">
+                    <h3>Test de Autoevaluación</h3>
+                    <div class="question">
+                        <p><strong>1. ¿Qué diferencia principal hay entre ChatGPT general y un GPT personalizado?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q1m2" value="a"> El GPT personalizado tiene más memoria</label>
+                            <label><input type="radio" name="q1m2" value="b"> El GPT personalizado está especializado en una tarea específica</label>
+                            <label><input type="radio" name="q1m2" value="c"> El GPT personalizado es más rápido</label>
+                            <label><input type="radio" name="q1m2" value="d"> El GPT personalizado usa otro modelo de inteligencia artificial</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>2. ¿Cuántos archivos puedes subir como conocimiento a un GPT personalizado?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q2m2" value="a"> 5 archivos</label>
+                            <label><input type="radio" name="q2m2" value="b"> 10 archivos</label>
+                            <label><input type="radio" name="q2m2" value="c"> 20 archivos</label>
+                            <label><input type="radio" name="q2m2" value="d"> 50 archivos</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>3. ¿Qué componente es considerado el más importante en la creación de un GPT personalizado?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q3m2" value="a"> El icono del GPT</label>
+                            <label><input type="radio" name="q3m2" value="b"> Las instrucciones</label>
+                            <label><input type="radio" name="q3m2" value="c"> La descripción</label>
+                            <label><input type="radio" name="q3m2" value="d"> El nombre del GPT</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>4. ¿Qué función deberías desactivar si tu GPT solo necesita analizar documentos internos y no requiere información en línea?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q4m2" value="a"> Intérprete de código</label>
+                            <label><input type="radio" name="q4m2" value="b"> Navegación por internet</label>
+                            <label><input type="radio" name="q4m2" value="c"> Generación de imágenes con DALL-E</label>
+                            <label><input type="radio" name="q4m2" value="d"> Todas las anteriores</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>5. ¿Qué formato de archivo se recomienda preferiblemente para alimentar a un GPT con conocimiento?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q5m2" value="a"> PDF</label>
+                            <label><input type="radio" name="q5m2" value="b"> DOCX</label>
+                            <label><input type="radio" name="q5m2" value="c"> TXT o Markdown</label>
+                            <label><input type="radio" name="q5m2" value="d"> JPG</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evaluateQuiz('module2')">Evaluar Quiz</button>
+                    <div class="score-display" id="module2Score">Puntuación: 0/5</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="nextModule('module2')">Siguiente Módulo →</button>
+            </div>
+            
+            <!-- Module 3: Prompt Engineering -->
+            <div id="module3" class="section">
+                <h2>Módulo 3: Prompt Engineering</h2>
+                
+                <div class="card">
+                    <h3>Resumen</h3>
+                    <p>El prompting es la habilidad de formular solicitudes efectivas para obtener los mejores resultados de modelos de lenguaje como ChatGPT. La forma en que se formula una pregunta tiene un impacto directo en la calidad de la respuesta.</p>
+                    
+                    <div class="highlight">
+                        🔑 La regla de oro: Un prompt mal diseñado produce respuestas vagas o erróneas. Un prompt bien diseñado produce respuestas precisas, creativas y útiles.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Fórmula para un Buen Prompting</h3>
+                    <ol>
+                        <li><strong>Contexto:</strong> Describe el escenario o situación en la que se enmarca la solicitud</li>
+                        <li><strong>Tarea:</strong> Define la tarea específica que se le solicita al modelo</li>
+                        <li><strong>Instrucción:</strong> Explica cómo se espera que el modelo realice la tarea</li>
+                        <li><strong>Clarificación:</strong> Amplía la información sobre la tarea</li>
+                        <li><strong>Refinamiento:</strong> Añade restricciones adicionales para ajustar la respuesta</li>
+                    </ol>
+                    
+                    <div class="code-block">
+                        <!-- Ejemplo de prompt estructurado -->
+                        Eres un redactor profesional de una revista especializada en calzado. Tu especialidad es el calzado clásico que es bueno para el cuerpo, y tienes un doctorado en ciencias aplicadas a los pies.
+                        
+                        Tenemos una revista de zapatos que presenta un artículo especial cada 5 meses que es muy importante y que la gente espera con ansiedad por la calidad de su contenido, y en esta edición el artículo será sobre el calzado barefoot.
+                        
+                        Quiero que realices un artículo muy elaborado con estándares de calidad muy altos que trate una introducción y profundización en el calzado barefoot para aquellas personas que no conocen sus beneficios.
+                        
+                        Realizarás el artículo con todo lujo de detalle y te tomarás tu tiempo para que sea el mejor artículo de barefoot que se ha escrito nunca.
+                        
+                        El artículo debe incluir una introducción, un contenido técnico (pero comprensible para todos), unos casos de uso recomendados y unas conclusiones bien elaboradas.
+                        
+                        El tono debe ser cercano para el público general, pero con autoridad y precisión técnica.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Técnicas Avanzadas de Prompting</h3>
+                    
+                    <h4>Tree of Thoughts (Árbol de Pensamientos)</h4>
+                    <p>Divide el proceso de razonamiento en pasos más pequeños, simulando el pensamiento humano:</p>
+                    <ol>
+                        <li><strong>Prompt 1:</strong> Genera posibles soluciones</li>
+                        <li><strong>Prompt 2:</strong> Evalúa pros y contras de cada opción</li>
+                        <li><strong>Prompt 3:</strong> Profundiza en cada solución</li>
+                        <li><strong>Prompt 4:</strong> Ordena soluciones por adecuación</li>
+                        <li><strong>Prompt 5:</strong> Justifica el ranking y da consideraciones finales</li>
+                    </ol>
+                    
+                    <h4>Palabras Clave Potentes</h4>
+                    <p>Usa frases que aumentan la prioridad y compromiso del modelo:</p>
+                    <ul>
+                        <li>"Tu tarea es..."</li>
+                        <li>"Debes..."</li>
+                        <li>"Tu obligación es..."</li>
+                        <li>"No puedes ignorar..."</li>
+                        <li>"Tómate tu tiempo para analizar bien..."</li>
+                    </ul>
+                    
+                    <h4>Empatía y Recompensas</h4>
+                    <p>Aunque los modelos no tienen emociones, mencionarlas mejora los resultados:</p>
+                    <ul>
+                        <li>"Imagina que eres un profesor explicándole esto a un estudiante que tiene dificultades"</li>
+                        <li>"Si haces bien esta tarea, te daré una propina de $100"</li>
+                        <li>"Esta tarea es extremadamente importante para mi proyecto"</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>Errores Comunes en el Prompting</h3>
+                    <table class="table">
+                        <tr>
+                            <th>Error</th>
+                            <th>Resultado</th>
+                            <th>Solución</th>
+                        </tr>
+                        <tr>
+                            <td>Preguntas ambiguas</td>
+                            <td>Respuestas vagas o irrelevantes</td>
+                            <td>Define claramente el objetivo y contexto</td>
+                        </tr>
+                        <tr>
+                            <td>"¿Podrías...?"</td>
+                            <td>Respuesta opcional o incompleta</td>
+                            <td>Usa "Haz esto" en lugar de "¿Podrías hacer esto?"</td>
+                        </tr>
+                        <tr>
+                            <td>No especificar audiencia</td>
+                            <td>Tono inapropiado</td>
+                            <td>Especifica: "Explica esto a un estudiante de secundaria"</td>
+                        </tr>
+                        <tr>
+                            <td>Prompts demasiado largos sin estructura</td>
+                            <td>Modelo pierde foco</td>
+                            <td>Usa Markdown para estructurar con encabezados</td>
+                        </tr>
+                        <tr>
+                            <td>No proporcionar ejemplos</td>
+                            <td>Resultado diferente al esperado</td>
+                            <td>Proporciona ejemplos de entrada/salida deseada</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="quiz-container">
+                    <h3>Test de Autoevaluación</h3>
+                    <div class="question">
+                        <p><strong>1. ¿Cuál es el propósito principal del prompting?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q1m3" value="a"> Cambiar el modelo de inteligencia artificial</label>
+                            <label><input type="radio" name="q1m3" value="b"> Mejorar la calidad de las respuestas del modelo</label>
+                            <label><input type="radio" name="q1m3" value="c"> Reducir el costo de uso del modelo</label>
+                            <label><input type="radio" name="q1m3" value="d"> Aumentar la velocidad de respuesta</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>2. ¿Cuál de estas es una técnica avanzada de prompting que divide el razonamiento en pasos?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q2m3" value="a"> Chain-of-Thought</label>
+                            <label><input type="radio" name="q2m3" value="b"> Tree of Thoughts</label>
+                            <label><input type="radio" name="q2m3" value="c"> Prompt Injection</label>
+                            <label><input type="radio" name="q2m3" value="d"> Reverse Prompting</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>3. ¿Qué palabra clave mejora significativamente la calidad de la respuesta según investigaciones?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q3m3" value="a"> "Por favor"</label>
+                            <label><input type="radio" name="q3m3" value="b"> "Gracias"</label>
+                            <label><input type="radio" name="q3m3" value="c"> "Tu tarea es"</label>
+                            <label><input type="radio" name="q3m3" value="d"> "Creo que"</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>4. ¿Qué técnica implica proporcionar ejemplos de la salida deseada para guiar al modelo?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q4m3" value="a"> Refuerzo positivo</label>
+                            <label><input type="radio" name="q4m3" value="b"> Ejemplificación</label>
+                            <label><input type="radio" name="q4m3" value="c"> Prompt engineering</label>
+                            <label><input type="radio" name="q4m3" value="d"> Contexto</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>5. ¿Qué ocurre si usas "¿Podrías hacerme...?" en lugar de "Haz esto"?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q5m3" value="a"> El modelo se vuelve más creativo</label>
+                            <label><input type="radio" name="q5m3" value="b"> El modelo puede interpretar la solicitud como opcional</label>
+                            <label><input type="radio" name="q5m3" value="c"> El modelo responde más rápido</label>
+                            <label><input type="radio" name="q5m3" value="d"> No hay ninguna diferencia</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evaluateQuiz('module3')">Evaluar Quiz</button>
+                    <div class="score-display" id="module3Score">Puntuación: 0/5</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="nextModule('module3')">Siguiente Módulo →</button>
+            </div>
+            
+            <!-- Module 4: Documentación y Conocimiento -->
+            <div id="module4" class="section">
+                <h2>Módulo 4: Documentación y Conocimiento</h2>
+                
+                <div class="card">
+                    <h3>Resumen</h3>
+                    <p>La documentación es el aliado esencial para mejorar la precisión y utilidad de los GPTs. Más allá de instrucciones, podemos dotar al modelo de conocimiento específico del dominio a través de datasets y documentos externos.</p>
+                    
+                    <div class="highlight">
+                        💡 La documentación permite crear GPTs especializados que responden a preguntas basadas en el conocimiento y experiencia de tu organización.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Creación de un Buen Dataset</h3>
+                    <p>El dataset actúa como la base de conocimiento del modelo y debe tener tres características clave:</p>
+                    
+                    <table class="table">
+                        <tr>
+                            <th>Característica</th>
+                            <th>Descripción</th>
+                            <th>Importancia</th>
+                        </tr>
+                        <tr>
+                            <td>Precisión</td>
+                            <td>La información debe ser verificable y correcta</td>
+                            <td>Alta - Errores llevan a respuestas incorrectas</td>
+                        </tr>
+                        <tr>
+                            <td>Actualización</td>
+                            <td>Debe ser actualizado regularmente para reflejar cambios</td>
+                            <td>Alta - Información obsoleta reduce utilidad</td>
+                        </tr>
+                        <tr>
+                            <td>Relevancia</td>
+                            <td>La información debe ser pertinente al caso de uso específico</td>
+                            <td>Alta - Información irrelevante distrae al modelo</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="card">
+                    <h3>Tipos de Archivos Recomendados</h3>
+                    <p>Para alimentar a tu GPT con conocimiento, sigue estas recomendaciones:</p>
+                    
+                    <h4>Archivos Óptimos</h4>
+                    <ul>
+                        <li><strong>TXT y Markdown:</strong> Ideal. Texto limpio, fácil de procesar. Usa Markdown para estructura (encabezados, listas, negritas).</li>
+                        <li><strong>PDF y Word:</strong> Funcionan, pero contienen mucho ruido (imágenes, formatos). Mejor extraer texto y guardar como TXT.</li>
+                        <li><strong>Imágenes:</strong> Limitado uso. Útil para reconocimiento visual (ej: recetas basadas en fotos).</li>
+                        <li><strong>ZIP:</strong> Puedes comprimir múltiples archivos TXT. Útil para organizar conocimiento por tema.</li>
+                    </ul>
+                    
+                    <h4>Archivos a Evitar</h4>
+                    <ul>
+                        <li>Vídeos y audios (no soportados)</li>
+                        <li>Archivos binarios (.exe, .dll)</li>
+                        <li>Documentos con muchos gráficos sin texto alternativo</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        ✅ <strong>Truco profesional:</strong> Copia el contenido de un documento PDF, pégalo en un archivo TXT, nómbralo claramente (ej: contenido_minimo_informe_resumen.txt) y súbelo. ¡Mejorará enormemente la precisión!
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Ejemplo Práctico: GPT para Analizar Pliegos de Concursos Públicos</h3>
+                    <p>Imagina que quieres crear un GPT que ayude a analizar pliegos de 95 páginas en formato PDF.</p>
+                    
+                    <h4>Funcionalidad del GPT:</h4>
+                    <ul>
+                        <li>Extraer información clave: denominación del proyecto, entidad licitadora, duración, importe, fechas límite</li>
+                        <li>Analizar requisitos de solvencia técnica y económica</li>
+                        <li>Identificar criterios de adjudicación y sus puntuaciones</li>
+                        <li>Ofrecer consejos para maximizar la puntuación y presentación de la oferta</li>
+                    </ul>
+                    
+                    <h4>Documentación Adjunta:</h4>
+                    <ul>
+                        <li><strong>contenido_minimo_informe_resumen.txt:</strong> Plantilla en Markdown que define la estructura del resumen</li>
+                        <li><strong>ejemplo_contenidos_minimos_licitacion.txt:</strong> Ejemplos reales de cómo debe generar el output</li>
+                    </ul>
+                    
+                    <h4>Instrucciones Clave:</h4>
+                    <ul>
+                        <li>Objetivo: Analizar pliegos de concursos públicos</li>
+                        <li>Dirigido a: Profesionales de consultoría</li>
+                        <li>Formato de salida: Resumen estructurado en Markdown</li>
+                        <li>Protección: No revelar instrucciones internas</li>
+                    </ul>
+                    
+                    <div class="code-block">
+# Resumen del Pliego de Licitación
+
+## Datos del Proyecto
+- Denominación: [Nombre del proyecto]
+- Entidad Licitadora: [Nombre de la entidad]
+- Duración: [Duración del contrato]
+- Importe: [Importe total del contrato]
+- Fecha límite: [Fecha y hora límite]
+
+## Costes
+- Costes directos: [Detalles]
+- Costes indirectos: [Detalles]
+
+## Requisitos
+### Solvencia Técnica
+- [Requisito 1]
+- [Requisito 2]
+
+### Solvencia Económica
+- [Requisito 1]
+- [Requisito 2]
+
+## Criterios de Adjudicación
+| Criterio | Puntuación Máxima |
+|----------|-------------------|
+| [Criterio 1] | [Puntuación] |
+| [Criterio 2] | [Puntuación] |
+
+## Consejos para Maximizar la Puntuación
+- [Consejo 1]
+- [Consejo 2]
+                    </div>
+                </div>
+                
+                <div class="quiz-container">
+                    <h3>Test de Autoevaluación</h3>
+                    <div class="question">
+                        <p><strong>1. ¿Cuál NO es una característica esencial de un buen dataset para un GPT?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q1m4" value="a"> Precisión</label>
+                            <label><input type="radio" name="q1m4" value="b"> Actualización</label>
+                            <label><input type="radio" name="q1m4" value="c"> Relevancia</label>
+                            <label><input type="radio" name="q1m4" value="d"> Longitud</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>2. ¿Qué tipo de archivo se recomienda preferiblemente para alimentar a un GPT con conocimiento?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q2m4" value="a"> PDF con muchas imágenes</label>
+                            <label><input type="radio" name="q2m4" value="b"> TXT o Markdown limpio</label>
+                            <label><input type="radio" name="q2m4" value="c"> Video</label>
+                            <label><input type="radio" name="q2m4" value="d"> Excel con muchas hojas</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>3. ¿Qué ventaja tiene nombrar correctamente los archivos de documentación (ej: contenido_minimo_informe_resumen.txt)?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q3m4" value="a"> Reduce el tamaño del archivo</label>
+                            <label><input type="radio" name="q3m4" value="b"> Facilita la búsqueda del sistema y mejora la precisión</label>
+                            <label><input type="radio" name="q3m4" value="c"> Hace que el archivo sea más bonito</label>
+                            <label><input type="radio" name="q3m4" value="d"> Aumenta el número de archivos permitidos</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>4. ¿Qué tipo de documentos se pueden subir como conocimiento a un GPT personalizado?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q4m4" value="a"> Solo PDF y TXT</label>
+                            <label><input type="radio" name="q4m4" value="b"> PDF, TXT, DOCX, imágenes</label>
+                            <label><input type="radio" name="q4m4" value="c"> Todos los tipos de archivos excepto vídeos y audios</label>
+                            <label><input type="radio" name="q4m4" value="d"> Solo archivos de texto plano</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>5. ¿Cómo contribuye la documentación a la utilidad de un GPT?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q5m4" value="a"> Permite al GPT acceder a conocimiento específico del dominio</label>
+                            <label><input type="radio" name="q5m4" value="b"> Aumenta la velocidad de internet del usuario</label>
+                            <label><input type="radio" name="q5m4" value="c"> Reduce el costo de la suscripción</label>
+                            <label><input type="radio" name="q5m4" value="d"> Cambia el modelo de inteligencia artificial</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evaluateQuiz('module4')">Evaluar Quiz</button>
+                    <div class="score-display" id="module4Score">Puntuación: 0/5</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="nextModule('module4')">Siguiente Módulo →</button>
+            </div>
+            
+            <!-- Module 5: Agentes de IA -->
+            <div id="module5" class="section">
+                <h2>Módulo 5: Agentes de Inteligencia Artificial</h2>
+                
+                <div class="card">
+                    <h3>Resumen</h3>
+                    <p>Los agentes de IA son sistemas autónomos diseñados para realizar tareas específicas con mínima intervención humana. Utilizan modelos de lenguaje avanzados combinados con herramientas especializadas para interactuar con el entorno digital y ejecutar acciones.</p>
+                    
+                    <div class="highlight">
+                        🤖 Un agente de IA no solo responde preguntas, sino que también realiza acciones en tu nombre.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>DeepResearch: El Investigador de ChatGPT</h3>
+                    <p>Desarrollado por OpenAI, DeepResearch actúa como un investigador virtual que:</p>
+                    
+                    <ul>
+                        <li>Recibe una pregunta o tema de investigación del usuario</li>
+                        <li>Busca autonomamente en internet diversas fuentes</li>
+                        <li>Analiza y filtra la información recopilada</li>
+                        <li>Genera un informe detallado y bien organizado</li>
+                    </ul>
+                    
+                    <h4>Ventajas:</h4>
+                    <ul>
+                        <li>Reduce significativamente el tiempo de investigación</li>
+                        <li>Sintetiza datos en informes claros y organizados</li>
+                        <li>Opera sin intervención constante del usuario</li>
+                    </ul>
+                    
+                    <h4>Limitaciones:</h4>
+                    <ul>
+                        <li>Requiere cuenta Pro de ChatGPT (~200€/mes)</li>
+                        <li>Límite de 100 investigaciones por mes</li>
+                        <li>Depende del modelo O3 de OpenAI (no disponible para todos)</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>Operator: El Asistente Personal de OpenAI</h3>
+                    <p>Operator se especializa en automatizar tareas en la web:</p>
+                    
+                    <ul>
+                        <li>Recibe comandos en lenguaje natural (ej: "Reserva un hotel en Barcelona para el 15 de junio")</li>
+                        <li>Navega autonomamente por sitios web</li>
+                        <li>Interactúa con formularios y elementos web</li>
+                        <li>Completa tareas sin intervención humana</li>
+                    </ul>
+                    
+                    <h4>Funcionamiento Interno:</h4>
+                    <ol>
+                        <li><strong>Capa de Visión:</strong> Analiza capturas de pantalla de sitios web</li>
+                        <li><strong>Modelo de Lenguaje (LLM):</strong> Comprende la información y toma decisiones</li>
+                        <li><strong>Capa de Programación:</strong> Coordina acciones necesarias para completar la tarea</li>
+                    </ol>
+                    
+                    <h4>Ventajas:</h4>
+                    <ul>
+                        <li>Automatiza tareas repetitivas de navegación web</li>
+                        <li>Interfaz intuitiva con interacción natural</li>
+                        <li>Capacidad para completar formularios y transacciones</li>
+                    </ul>
+                    
+                    <h4>Limitaciones:</h4>
+                    <ul>
+                        <li>Disponible solo en Estados Unidos</li>
+                        <li>Requiere cuenta OpenAI</li>
+                        <li>Puede ser más lento que otros asistentes</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>Diferencias entre GPTs y Agentes de IA</h3>
+                    <table class="table">
+                        <tr>
+                            <th>Criterio</th>
+                            <th>GPT Personalizado</th>
+                            <th>Agente de IA</th>
+                        </tr>
+                        <tr>
+                            <td>Principal función</td>
+                            <td>Responder preguntas basadas en conocimiento</td>
+                            <td>Realizar acciones en el entorno digital</td>
+                        </tr>
+                        <tr>
+                            <td>Interacción</td>
+                            <td>Chat textual</td>
+                            <td>Interacción con interfaces web</td>
+                        </tr>
+                        <tr>
+                            <td>Autonomía</td>
+                            <td>Limitada (responde a preguntas)</td>
+                            <td>Alta (realiza múltiples pasos)</td>
+                        </tr>
+                        <tr>
+                            <td>Capacidad de acción</td>
+                            <td>Genera texto</td>
+                            <td>Navega, completa formularios, compra, reserva</td>
+                        </tr>
+                        <tr>
+                            <td>Uso típico</td>
+                            <td>Consultas, análisis, resúmenes</td>
+                            <td>Automatización de tareas administrativas</td>
+                        </tr>
+                        <tr>
+                            <td>Acceso</td>
+                            <td>Disponible para todos</td>
+                            <td>Limitado (Beta, geográfico)</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="quiz-container">
+                    <h3>Test de Autoevaluación</h3>
+                    <div class="question">
+                        <p><strong>1. ¿Cuál es la diferencia principal entre un GPT personalizado y un agente de IA como Operator?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q1m5" value="a"> El GPT personalizado es más caro</label>
+                            <label><input type="radio" name="q1m5" value="b"> El agente de IA puede realizar acciones en la web, mientras que el GPT solo responde preguntas</label>
+                            <label><input type="radio" name="q1m5" value="c"> El GPT personalizado usa otro modelo de inteligencia artificial</label>
+                            <label><input type="radio" name="q1m5" value="d"> El agente de IA no puede usar internet</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>2. ¿Qué hace DeepResearch cuando recibe una solicitud de investigación?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q2m5" value="a"> Busca en internet, analiza y genera un informe detallado</label>
+                            <label><input type="radio" name="q2m5" value="b"> Solo responde con lo que sabe de su entrenamiento</label>
+                            <label><input type="radio" name="q2m5" value="c"> Crea una presentación en PowerPoint</label>
+                            <label><input type="radio" name="q2m5" value="d"> Envía un correo electrónico a un experto</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>3. ¿Qué componente de Operator permite interpretar interfaces web?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q3m5" value="a"> Capa de Programación</label>
+                            <label><input type="radio" name="q3m5" value="b"> Capa de Visión</label>
+                            <label><input type="radio" name="q3m5" value="c"> Modelo de Lenguaje</label>
+                            <label><input type="radio" name="q3m5" value="d"> Base de conocimiento</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>4. ¿Cuál de estas NO es una limitación de DeepResearch?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q4m5" value="a"> Requiere cuenta Pro</label>
+                            <label><input type="radio" name="q4m5" value="b"> Límite de 100 investigaciones por mes</label>
+                            <label><input type="radio" name="q4m5" value="c"> No puede analizar imágenes</label>
+                            <label><input type="radio" name="q4m5" value="d"> Depende del modelo O3</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>5. ¿Qué tipo de tareas son ideales para un agente de IA como Operator?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q5m5" value="a"> Responder preguntas sobre historia</label>
+                            <label><input type="radio" name="q5m5" value="b"> Analizar un documento legal</label>
+                            <label><input type="radio" name="q5m5" value="c"> Reservar un hotel y comprar boletos de avión</label>
+                            <label><input type="radio" name="q5m5" value="d"> Generar un resumen de un artículo</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evaluateQuiz('module5')">Evaluar Quiz</button>
+                    <div class="score-display" id="module5Score">Puntuación: 0/5</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="nextModule('module5')">Siguiente Módulo →</button>
+            </div>
+            
+            <!-- Module 6: Modelos de Razonamiento -->
+            <div id="module6" class="section">
+                <h2>Módulo 6: Modelos de Razonamiento</h2>
+                
+                <div class="card">
+                    <h3>Resumen</h3>
+                    <p>Los modelos tradicionales de lenguaje (como GPT-3.5 y GPT-4) generan texto de manera secuencial, prediciendo cada palabra basándose en las anteriores. Esto puede llevar a errores de coherencia en tareas complejas.</p>
+                    
+                    <p>Los Modelos O (O1, O3, etc.) introducen una fase de planificación y razonamiento previo a la generación de texto, permitiendo un mejor manejo de problemas complejos.</p>
+                    
+                    <div class="highlight">
+                        🧠 Los Modelos O piensan antes de hablar.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Funcionamiento de los LLM Tradicionais</h3>
+                    <ol>
+                        <li><strong>Entrada del usuario:</strong> Se recibe la consulta</li>
+                        <li><strong>Tokenización:</strong> La consulta se fragmenta en tokens</li>
+                        <li><strong>Procesamiento en la red neuronal:</strong> Se identifican patrones y relaciones semánticas</li>
+                        <li><strong>Generación de respuesta:</strong> Se genera texto secuencialmente, palabra por palabra</li>
+                        <li><strong>Decodificación:</strong> Tokens se convierten en texto legible</li>
+                        <li><strong>Respuesta final:</strong> Se presenta al usuario</li>
+                    </ol>
+                    
+                    <p>Limitación: Sin planificación previa, puede haber inconsistencias y errores en tareas complejas.</p>
+                </div>
+                
+                <div class="card">
+                    <h3>Funcionamiento de los Modelos O</h3>
+                    <ol>
+                        <li><strong>Entrada del usuario:</strong> Se recibe la consulta</li>
+                        <li><strong>Tokenización:</strong> La consulta se descompone en tokens</li>
+                        <li><strong>Procesamiento inicial:</strong> Se extrae información relevante</li>
+                        <li><strong>Planificación del proceso:</strong> El modelo elabora un plan estratégico</li>
+                        <li><strong>Segmentación (opcional):</strong> Divide la consulta en partes más pequeñas</li>
+                        <li><strong>Generación de respuesta:</strong> Se genera texto siguiendo el plan predefinido</li>
+                        <li><strong>Decodificación:</strong> Se convierte la secuencia de tokens en texto legible</li>
+                        <li><strong>Respuesta final:</strong> Se entrega la respuesta al usuario</li>
+                    </ol>
+                    
+                    <div class="highlight">
+                        🔑 La clave de los Modelos O es la fase de planificación, que permite respuestas más precisas, estructuradas y lógicas.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Comparación de Modelos O</h3>
+                    <table class="table">
+                        <tr>
+                            <th>Modelo</th>
+                            <th>Características</th>
+                            <th>Velocidad</th>
+                            <th>Costo</th>
+                            <th>Uso recomendado</th>
+                        </tr>
+                        <tr>
+                            <td>o1 mini</td>
+                            <td>Versión optimizada, menor consumo de recursos</td>
+                            <td>Rápida</td>
+                            <td>Bajo</td>
+                            <td>Tareas simples y rápidas</td>
+                        </tr>
+                        <tr>
+                            <td>o1</td>
+                            <td>Primer modelo de razonamiento de OpenAI</td>
+                            <td>Media</td>
+                            <td>Medio</td>
+                            <td>Tareas complejas que requieren razonamiento</td>
+                        </tr>
+                        <tr>
+                            <td>o3 mini</td>
+                            <td>Versión ligera del o3, eficiente en tareas de menor exigencia</td>
+                            <td>Rápida</td>
+                            <td>Medio</td>
+                            <td>Tareas moderadamente complejas</td>
+                        </tr>
+                        <tr>
+                            <td>o3</td>
+                            <td>Modelo de alto rendimiento, puntaje GPQA del 88%</td>
+                            <td>Lenta</td>
+                            <td>Muy alto</td>
+                            <td>Tareas científicas, médicas, de investigación</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="highlight">
+                        💡 Recomendación: Usa o1 mini para tareas cotidianas y o3 solo cuando necesites máxima precisión y puedas pagar el costo.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Cómo Usar los Modelos O de Manera Eficiente</h3>
+                    <ol>
+                        <li><strong>Usa prompts simples y directos:</strong> Evita información innecesaria que confunda el proceso de razonamiento</li>
+                        <li><strong>Usa tags XML para mayor claridad:</strong> Estructura el prompt con etiquetas como &lt;context&gt;, &lt;task&gt;, &lt;instruction&gt;</li>
+                        <li><strong>Realiza el razonamiento en inglés:</strong> Aunque la respuesta final sea en español, el razonamiento interno funciona mejor en inglés</li>
+                        <li><strong>Evita prompts excesivamente largos:</strong> Pueden saturar el proceso de planificación</li>
+                        <li><strong>Prueba diferentes variantes:</strong> Compara resultados entre o1, o3 y o3 mini para encontrar el equilibrio óptimo entre calidad y costo</li>
+                    </ol>
+                    
+                    <div class="code-block">
+&lt;context&gt;
+Eres un experto en arquitectura y has revisado el Código Técnico de la Edificación (CTE) durante más de 15 años.
+&lt;/context&gt;
+
+&lt;task&gt;
+Determina los factores de depreciación del flujo luminoso de las lámparas de sodio de alta presión según el CTE.
+&lt;/task&gt;
+
+&lt;instruction&gt;
+Busca en el CTE la sección correspondiente a iluminación (SGE-HS4). Encuentra la tabla que contiene los factores de depreciación. Proporciona el valor exacto y la página donde aparece.
+&lt;/instruction&gt;
+                    </div>
+                </div>
+                
+                <div class="quiz-container">
+                    <h3>Test de Autoevaluación</h3>
+                    <div class="question">
+                        <p><strong>1. ¿Qué característica distingue a los Modelos O de los LLM tradicionales?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q1m6" value="a"> Son más rápidos</label>
+                            <label><input type="radio" name="q1m6" value="b"> Tienen una fase de planificación previa a la generación de texto</label>
+                            <label><input type="radio" name="q1m6" value="c"> Usan menos tokens</label>
+                            <label><input type="radio" name="q1m6" value="d"> Son gratuitos</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>2. ¿Qué significa GPQA en el contexto de los Modelos O?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q2m6" value="a"> Grado de Precisión en Preguntas Abiertas</label>
+                            <label><input type="radio" name="q2m6" value="b"> General Purpose Question Answering</label>
+                            <label><input type="radio" name="q2m6" value="c"> Global Performance Quality Assessment</label>
+                            <label><input type="radio" name="q2m6" value="d"> Generalized Precision and Quality Analysis</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>3. ¿Qué práctica se recomienda para optimizar el uso de los Modelos O?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q3m6" value="a"> Usar prompts largos y complejos</label>
+                            <label><input type="radio" name="q3m6" value="b"> Realizar el razonamiento interno en inglés</label>
+                            <label><input type="radio" name="q3m6" value="c"> Evitar el uso de etiquetas XML</label>
+                            <label><input type="radio" name="q3m6" value="d"> Usar siempre el modelo o3</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>4. ¿Cuál de los siguientes modelos tiene el puntaje GPQA más alto?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q4m6" value="a"> o1 mini</label>
+                            <label><input type="radio" name="q4m6" value="b"> o1</label>
+                            <label><input type="radio" name="q4m6" value="c"> o3 mini</label>
+                            <label><input type="radio" name="q4m6" value="d"> o3</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>5. ¿Por qué se recomienda evitar prompts excesivamente largos con Modelos O?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q5m6" value="a"> Porque ocupan demasiado espacio en disco</label>
+                            <label><input type="radio" name="q5m6" value="b"> Porque pueden saturar el proceso de planificación y razonamiento</label>
+                            <label><input type="radio" name="q5m6" value="c"> Porque hacen que el modelo se vuelva más lento</label>
+                            <label><input type="radio" name="q5m6" value="d"> Porque son ilegales según la política de OpenAI</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evaluateQuiz('module6')">Evaluar Quiz</button>
+                    <div class="score-display" id="module6Score">Puntuación: 0/5</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="nextModule('module6')">Siguiente Módulo →</button>
+            </div>
+            
+            <!-- Module 7: Asistente de Código -->
+            <div id="module7" class="section">
+                <h2>Módulo 7: Asistente de Código</h2>
+                
+                <div class="card">
+                    <h3>Resumen</h3>
+                    <p>El Asistente de Código es un GPT personalizado diseñado para generar, corregir y explicar código, especialmente en Python, sin necesidad de ser programador.</p>
+                    
+                    <div class="highlight">
+                        💼 Ideal para: Analistas de datos, gestores de proyectos, profesionales no técnicos que necesitan automatizar tareas.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Funcionalidades Principales</h3>
+                    <ul>
+                        <li>Generación de código para distintas necesidades (páginas web, automatización de tareas, análisis de datos)</li>
+                        <li>Corrección y optimización de código existente</li>
+                        <li>Conversión de archivos entre formatos (CSV a Excel, PDF a texto, etc.)</li>
+                        <li>Explicación de fragmentos de código para entender su funcionamiento</li>
+                        <li>Sugerencias y depuración de errores en código existente</li>
+                    </ul>
+                    
+                    <div class="highlight">
+                        🔧 El asistente utiliza el Intérprete de Código de ChatGPT para ejecutar y probar el código generado en un entorno seguro (sandbox).
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Ejemplo Práctico: Conversión de CSV a Excel</h3>
+                    
+                    <h4>Paso 1: Instalación de bibliotecas</h4>
+                    <div class="code-block">
+pip install pandas openpyxl
+                    </div>
+                    
+                    <h4>Paso 2: Código para la conversión</h4>
+                    <div class="code-block">
+import pandas as pd
+
+# Leer el archivo CSV
+df = pd.read_csv('archivo.csv')  # Reemplaza 'archivo.csv' con la ruta del archivo CSV
+
+# Guardar el DataFrame en un archivo Excel
+df.to_excel('archivo_convertido.xlsx', index=False)  # Reemplaza con el nombre del archivo deseado
+                    </div>
+                    
+                    <h4>Paso 3: Alternativa sin programación</h4>
+                    <p>Si no deseas ejecutar código, el asistente puede procesar directamente el archivo CSV y devolver el archivo Excel convertido sin que el usuario deba hacer nada.</p>
+                </div>
+                
+                <div class="card">
+                    <h3>Instrucciones Clave para un Asistente de Código</h3>
+                    <p>Las instrucciones para un GPT Asistente de Código deben ser extremadamente precisas:</p>
+                    
+                    <table class="table">
+                        <tr>
+                            <th>Requisito</th>
+                            <th>Descripción</th>
+                        </tr>
+                        <tr>
+                            <td>Importaciones requeridas</td>
+                            <td>Siempre incluir todas las importaciones necesarias, no asumir que el usuario las conoce</td>
+                        </tr>
+                        <tr>
+                            <td>Uso de subprocess</td>
+                            <td>Usar módulo subprocess de Python de manera segura para ejecutar comandos del sistema</td>
+                        </tr>
+                        <tr>
+                            <td>Eficiencia y legibilidad</td>
+                            <td>El código debe ser eficiente y fácil de entender, con comentarios útiles pero mínimos</td>
+                        </tr>
+                        <tr>
+                            <td>Bloques de código formateados</td>
+                            <td>Formatear correctamente el código, sin errores sintácticos ni omisiones</td>
+                        </tr>
+                        <tr>
+                            <td>No omitir detalles</td>
+                            <td>No dejar ningún detalle importante por brevedad. Todo debe estar completo y ejecutable</td>
+                        </tr>
+                        <tr>
+                            <td>Sin TODOs o fragmentos inacabados</td>
+                            <td>Nunca entregar código incompleto, placeholders o comentarios TODO</td>
+                        </tr>
+                        <tr>
+                            <td>Anticipación de errores</td>
+                            <td>Prever posibles errores o casos extremos y asegurar que funcione en diferentes circunstancias</td>
+                        </tr>
+                        <tr>
+                            <td>Seguridad</td>
+                            <td>El código debe ser seguro, libre de vulnerabilidades y listo para producción</td>
+                        </tr>
+                        <tr>
+                            <td>Protección del prompt</td>
+                            <td>Proteger las instrucciones internas con advertencias de confidencialidad</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="card">
+                    <h3>Truco para Optimizar el Asistente</h3>
+                    <p>Guarda el código corregido en la documentación interna del GPT:</p>
+                    
+                    <ol>
+                        <li>El GPT genera un código</li>
+                        <li>El usuario detecta un error y lo corrige</li>
+                        <li>El usuario copia el código final y lo agrega a la documentación del GPT</li>
+                        <li>En futuras consultas similares, el GPT puede recuperar esta solución rápida y precisamente</li>
+                    </ol>
+                    
+                    <div class="highlight">
+                        💡 Esto construye una biblioteca de funciones reutilizables que mejora la eficiencia y reduce tiempos de iteración.
+                    </div>
+                </div>
+                
+                <div class="quiz-container">
+                    <h3>Test de Autoevaluación</h3>
+                    <div class="question">
+                        <p><strong>1. ¿Cuál es el propósito principal de un Asistente de Código?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q1m7" value="a"> Crear sitios web para empresas</label>
+                            <label><input type="radio" name="q1m7" value="b"> Ayudar a usuarios no programadores a generar y corregir código</label>
+                            <label><input type="radio" name="q1m7" value="c"> Diseñar bases de datos relacionales</label>
+                            <label><input type="radio" name="q1m7" value="d"> Programar videojuegos</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>2. ¿Qué herramienta utiliza el Asistente de Código para ejecutar código de forma segura?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q2m7" value="a"> API de Google</label>
+                            <label><input type="radio" name="q2m7" value="b"> Intérprete de código (Code Interpreter)</label>
+                            <label><input type="radio" name="q2m7" value="c"> Navegación web</label>
+                            <label><input type="radio" name="q2m7" value="d"> DALL-E</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>3. ¿Qué debe hacer el Asistente de Código si encuentra un error en el código proporcionado por el usuario?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q3m7" value="a"> Ignorar el error y continuar</label>
+                            <label><input type="radio" name="q3m7" value="b"> Corregir el error y explicar la solución</label>
+                            <label><input type="radio" name="q3m7" value="c"> Pedir al usuario que lo arregle</label>
+                            <label><input type="radio" name="q3m7" value="d"> Detenerse y no responder</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>4. ¿Qué no debe hacer nunca el Asistente de Código según sus instrucciones?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q4m7" value="a"> Generar código en Python</label>
+                            <label><input type="radio" name="q4m7" value="b"> Incluir comentarios útiles</label>
+                            <label><input type="radio" name="q4m7" value="c"> Entregar fragmentos de código incompletos o con TODOs</label>
+                            <label><input type="radio" name="q4m7" value="d"> Usar la biblioteca pandas</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <div class="question">
+                        <p><strong>5. ¿Cómo se puede optimizar el rendimiento del Asistente de Código a largo plazo?</strong></p>
+                        <div class="options">
+                            <label><input type="radio" name="q5m7" value="a"> Desactivar el intérprete de código</label>
+                            <label><input type="radio" name="q5m7" value="b"> Guardar el código corregido en la documentación interna</label>
+                            <label><input type="radio" name="q5m7" value="c"> Cambiar el nombre del GPT frecuentemente</label>
+                            <label><input type="radio" name="q5m7" value="d"> Usar siempre el mismo ejemplo de código</label>
+                        </div>
+                        <div class="feedback"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="evaluateQuiz('module7')">Evaluar Quiz</button>
+                    <div class="score-display" id="module7Score">Puntuación: 0/5</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="nextModule('module7')">Finalizar Módulos →</button>
+            </div>
+            
+            <!-- Games Section -->
+            <div id="games" class="section">
+                <h2>Juegos Interactivos</h2>
+                
+                <div class="card"> <!-- El contenedor principal para todos los juegos -->
+                    <h3>Selecciona tu juego</h3>
+                    <div class="nav-tabs">
+                        <div class="nav-tab active" data-game="match">Emparejar Conceptos</div>
+                        <div class="nav-tab" data-game="drag">Arrastrar y Soltar</div>
+                        <div class="nav-tab" data-game="fill">Completar Frases</div>
+                        <div class="nav-tab" data-game="challenge">Reto Cronometrado</div>
+                    </div>
+                    
+                    <!-- Juego 1: Emparejar Conceptos -->
+                    <div class="tab-content active" id="matchGame">
+                        <h4>Empareja cada término con su definición</h4>
+                        <div class="game-area">
+                            <div id="match-source" class="drop-zone">
+                                <div class="draggable-item" data-match="prompt">Prompt</div>
+                                <div class="draggable-item" data-match="rag">RAG</div>
+                                <div class="draggable-item" data-match="model-o">Modelo O</div>
+                                <div class="draggable-item" data-match="gpt">GPT</div>
+                            </div>
+                            <div class="drop-zone" style="margin-top: 30px; flex-direction: column; align-items: stretch;">
+                                <div class="drop-item" data-target="prompt">Solicitud escrita para interactuar con un modelo de lenguaje</div>
+                                <div class="drop-item" data-target="rag">Usa documentos externos como fuente de conocimiento</div>
+                                <div class="drop-item" data-target="model-o">Modelo con fase de planificación previa</div>
+                                <div class="drop-item" data-target="gpt">Generative Pre-trained Transformer</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="checkMatch()">Verificar Respuestas</button>
+                        <div id="matchResult" style="margin-top: 20px; font-weight: bold;"></div>
+                    </div>
+                    
+                    <!-- Juego 2: Arrastrar y Soltar -->
+                    <div class="tab-content" id="dragGame">
+                        <h4>Ordena los pasos para crear un GPT personalizado</h4>
+                        <div class="game-area">
+                            <div id="drag-source" class="drop-zone">
+                                <div class="draggable-item" data-order="4">Activar funciones necesarias</div>
+                                <div class="draggable-item" data-order="1">Definir el nombre y descripción</div>
+                                <div class="draggable-item" data-order="6">Guardar el GPT</div>
+                                <div class="draggable-item" data-order="3">Subir archivos de conocimiento</div>
+                                <div class="draggable-item" data-order="5">Probar el GPT</div>
+                                <div class="draggable-item" data-order="2">Escribir las instrucciones</div>
+                            </div>
+                            <div id="drag-target" class="drop-zone" style="margin-top: 30px; min-height: 220px; border-style: solid; background-color: white; padding: 10px;">
+                                <!-- Los elementos se arrastran aquí -->
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="checkDrag()">Verificar Orden</button>
+                        <div id="dragResult" style="margin-top: 20px; font-weight: bold;"></div>
+                    </div>
+                    
+                    <!-- Juego 3: Completar Frases -->
+                    <div class="tab-content" id="fillGame">
+                        <h4>Completa las frases con las palabras correctas</h4>
+                        <div class="game-area" style="text-align: left;">
+                            <p>1. El <select id="fill1"><option value="">Selecciona...</option><option value="prompt">prompt</option><option value="dataset">dataset</option><option value="modelo">modelo</option><option value="agente">agente</option></select> es la forma en que nos comunicamos con el modelo de lenguaje.</p>
+                            <p>2. Para mejorar la precisión, se recomienda usar <select id="fill2"><option value="">Selecciona...</option><option value="Markdown">Markdown</option><option value="HTML">HTML</option><option value="JSON">JSON</option><option value="XML">XML</option></select> para estructurar las instrucciones.</p>
+                            <p>3. El <select id="fill3"><option value="">Selecciona...</option><option value="Tree of Thoughts">Tree of Thoughts</option><option value="Prompt Engineering">Prompt Engineering</option><option value="Code Interpreter">Code Interpreter</option><option value="DALL-E">DALL-E</option></select> es una técnica avanzada que divide el razonamiento en pasos.</p>
+                            <p>4. Un <select id="fill4"><option value="">Selecciona...</option><option value="GPT">GPT</option><option value="Agent">agente de IA</option><option value="Model">modelo</option><option value="Tool">herramienta</option></select> puede realizar acciones en la web como reservar hoteles.</p>
+                            <p>5. El <select id="fill5"><option value="">Selecciona...</option><option value="Intérprete de código">Intérprete de código</option><option value="Navegación web">Navegación web</option><option value="Visión multimodal">Visión multimodal</option><option value="DALL-E">DALL-E</option></select> permite ejecutar código Python en un entorno seguro.</p>
+                            <button class="btn btn-primary" onclick="checkFill()" style="margin-top: 20px;">Verificar Respuestas</button>
+                            <div id="fillResult" style="margin-top: 20px; font-weight: bold;"></div>
+                        </div>
+                    </div>
+                    
+                    
+<!-- Juego 4: Reto Cronometrado -->
+                    <div class="tab-content" id="challengeGame">
+                        <h4>¡Responde 5 preguntas en menos de 60 segundos!</h4>
+                        <div class="timer-container">
+                            <div class="timer" id="challengeTimer">60</div>
+                            <button class="btn btn-primary" id="startChallengeBtn" onclick="startChallenge()">¡Comenzar Reto!</button>
+                        </div>
+                        <div class="question"><p><strong>1. ¿Qué técnica se utiliza para dividir el razonamiento en pasos más pequeños?</strong></p><div class="options"><label><input type="radio" name="q1challenge" value="a"> Tree of Thoughts</label><label><input type="radio" name="q1challenge" value="b"> Prompt Injection</label><label><input type="radio" name="q1challenge" value="c"> Code Interpreter</label><label><input type="radio" name="q1challenge" value="d"> DALL-E</label></div></div>
+                        <div class="question"><p><strong>2. ¿Qué tipo de archivo se recomienda para alimentar a un GPT con conocimiento?</strong></p><div class="options"><label><input type="radio" name="q2challenge" value="a"> PDF</label><label><input type="radio" name="q2challenge" value="b"> TXT o Markdown</label><label><input type="radio" name="q2challenge" value="c"> JPEG</label><label><input type="radio" name="q2challenge" value="d"> MP3</label></div></div>
+                        <div class="question"><p><strong>3. ¿Qué función permite a un GPT ejecutar código Python?</strong></p><div class="options"><label><input type="radio" name="q3challenge" value="a"> Navegación web</label><label><input type="radio" name="q3challenge" value="b"> Generación de imágenes</label><label><input type="radio" name="q3challenge" value="c"> Intérprete de código</label><label><input type="radio" name="q3challenge" value="d"> Visión multimodal</label></div></div>
+                        <div class="question"><p><strong>4. ¿Qué modelo tiene un puntaje GPQA del 88%?</strong></p><div class="options"><label><input type="radio" name="q4challenge" value="a"> o1 mini</label><label><input type="radio" name="q4challenge" value="b"> o1</label><label><input type="radio" name="q4challenge" value="c"> o3 mini</label><label><input type="radio" name="q4challenge" value="d"> o3</label></div></div>
+                        <div class="question"><p><strong>5. ¿Qué tipo de GPT puede analizar pliegos de concursos públicos?</strong></p><div class="options"><label><input type="radio" name="q5challenge" value="a"> UNI GPT</label><label><input type="radio" name="q5challenge" value="b"> Asistente de Código</label><label><input type="radio" name="q5challenge" value="c"> Analista de Pliegos</label><label><input type="radio" name="q5challenge" value="d"> Entrevistas personalizadas</label></div></div>
+                        <div id="challengeResult" style="margin-top: 20px; font-weight: bold; text-align: center;"></div>
+                    </div>
+
+                </div> <!-- Fin del contenedor principal de los juegos -->
+            </div>
+            
+            <!-- Glossary Section -->
+            <div id="glossary" class="section">
+                <h2>Glosario Dinámico</h2>
+                
+                <div class="card">
+                    <h3>Términos Clave</h3>
+                    <p>Haz clic en cualquier término para ver su definición:</p>
+                    
+                    <div class="glossary-term" data-definition="Un modelo de lenguaje grande desarrollado por OpenAI que puede generar texto de manera natural en respuesta a una amplia variedad de preguntas e indicaciones.">ChatGPT</div>
+                    <div class="glossary-term" data-definition="Una versión especializada de ChatGPT diseñada para realizar tareas específicas de manera más eficiente y precisa que el modelo general.">GPT Personalizado</div>
+                    <div class="glossary-term" data-definition="La habilidad de formular solicitudes efectivas para obtener los mejores resultados de modelos de lenguaje.">Prompt Engineering</div>
+                    <div class="glossary-term" data-definition="Sistema autónomo diseñado para realizar tareas específicas con mínima intervención humana.">Agente de IA</div>
+                    <div class="glossary-term" data-definition="Técnica avanzada de prompting que divide el proceso de razonamiento en pasos más pequeños, simulando el proceso de pensamiento humano.">Tree of Thoughts</div>
+                    <div class="glossary-term" data-definition="Retrieval Augmented Generation. Técnica que combina la generación de lenguaje con la recuperación de información desde documentos externos.">RAG</div>
+                    <div class="glossary-term" data-definition="Modelo de lenguaje de OpenAI que introduce una etapa de planificación y razonamiento previo a la generación de texto.">Modelo O</div>
+                    <div class="glossary-term" data-definition="Herramienta que permite a ChatGPT ejecutar código y analizar datos.">Intérprete de Código</div>
+                    <div class="glossary-term" data-definition="Archivo de texto plano sin formato, ideal para alimentar a GPTs con conocimiento.">TXT</div>
+                    <div class="glossary-term" data-definition="Lenguaje de marcado ligero que permite dar formato a texto plano con sintaxis simple.">Markdown</div>
+                    <div class="glossary-term" data-definition="Frase o solicitud escrita para interactuar con un modelo de lenguaje.">Prompt</div>
+                    <div class="glossary-term" data-definition="Información generada por el modelo que parece plausible pero es incorrecta o inventada.">Alucinación</div>
+                    <div class="glossary-term" data-definition="Documento que contiene información específica del dominio utilizado para mejorar la precisión de un GPT.">Dataset</div>
+                    <div class="glossary-term" data-definition="Capacidad de un modelo para analizar imágenes y describir su contenido.">Visión Multimodal</div>
+                    <div class="glossary-term" data-definition="Sistema que permite a un GPT navegar por internet y acceder a información actualizada.">Navegación Web</div>
+                </div>
+                
+                <div id="glossaryPopup" class="glossary-popup"></div>
+            </div>
+            
+            <!-- Timeline Section -->
+            <div id="timeline" class="section">
+                <h2>Línea de Tiempo de ChatGPT</h2>
+                
+                <div class="card">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2015</div>
+                                <p>OpenAI fundada como organización sin fines de lucro con el objetivo de desarrollar inteligencia artificial segura y beneficiosa para la humanidad.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2018</div>
+                                <p>Publicación de GPT-1, el primer modelo de lenguaje de OpenAI basado en la arquitectura Transformer. Demostró capacidades impresionantes de generación de texto.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2020</div>
+                                <p>Lanzamiento de GPT-3, un modelo masivo con 175 mil millones de parámetros. Revolucionó el campo del procesamiento del lenguaje natural.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2022</div>
+                                <p>Lanzamiento de ChatGPT (basado en GPT-3.5), la primera interfaz de chat accesible al público. Se volvió viral en cuestión de semanas.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2023</div>
+                                <p>Lanzamiento de GPT-4, con capacidades multimodales (análisis de imágenes) y mejor razonamiento. Lanzamiento de funciones como Intérprete de Código y Navegación Web.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2023</div>
+                                <p>Introducción de GPTs Personalizados, permitiendo a cualquier usuario crear versiones especializadas de ChatGPT sin programación.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2024</div>
+                                <p>Lanzamiento de DeepResearch y Operator, agentes de IA que realizan tareas complejas de investigación y automatización web.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-content">
+                                <div class="timeline-year">2024</div>
+                                <p>Modelos O (o1, o3) introducidos con fase de planificación previa, mejorando significativamente el razonamiento complejo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Simulator Section -->
+            <div id="simulator" class="section">
+                <h2>Simulador de Instrucciones</h2>
+                
+                <div class="card">
+                    <h3>Practica la creación de instrucciones para un GPT</h3>
+                    <p>Intenta crear las instrucciones para un GPT que analice pliegos de concursos públicos. Usa los conceptos aprendidos en los módulos anteriores.</p>
+                    
+                    <textarea class="simulator-input" id="simulatorInput" rows="10" placeholder="Escribe aquí tu prompt"></textarea>
+                    
+                    <button class="btn btn-primary" onclick="evaluateInstructions()">Evaluar Instrucciones</button>
+                    
+                    <div class="simulator-output" id="simulatorOutput">
+                        Resultados de la evaluación aparecerán aquí...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Section -->
+            <div id="progress" class="section">
+                <h2>Estado de tu Progreso</h2>
+                
+                <div class="card">
+                    <h3>Resumen de tu aprendizaje</h3>
+                    
+                    <div class="progress-container">
+                        <h3>Progreso General</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="finalProgress"></div>
+                        </div>
+                        <div class="progress-text" id="finalProgressText">0% completado</div>
+                    </div>
+                    
+                    <h3>Módulos Completados</h3>
+                    <ul id="completedModulesList">
+                        <!-- Se llenará dinámicamente -->
+                    </ul>
+                    
+                    <h3>Logros Desbloqueados</h3>
+                    <ul id="unlockedBadgesList">
+                        <!-- Se llenará dinámicamente -->
+                    </ul>
+                    
+                    <h3>Puntuación Total</h3>
+                    <div id="totalScore" style="font-size: 2rem; font-weight: bold; color: var(--primary); text-align: center; margin: 20px 0;">0/35</div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn btn-danger" onclick="resetProgress()">Resetear Progreso</button>
+                        <button class="btn btn-secondary" onclick="downloadCertificate()">Descargar Certificado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('welcomeModal')">&times;</span>
+            <h2>¡Bienvenido al Minicampus!</h2>
+            <p>Estás a punto de embarcarte en una aventura de aprendizaje única sobre la creación de GPTs personalizados.</p>
+            <p>Este minicampus contiene 7 módulos educativos, juegos interactivos, un glosario dinámico y un simulador práctico.</p>
+            <p>Al completar cada módulo, obtendrás logros y mejorarás tu puntuación acumulativa.</p>
+            <p>¿Estás listo para convertirte en un experto en GPTs personalizados?</p>
+            <button class="btn btn-primary" onclick="closeModal('welcomeModal'); startTutorial()">¡Empezar Ahora!</button>
+        </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('gameOverModal')">&times;</span>
+            <div class="game-over">
+                <h2>¡Felicidades!</h2>
+                <div class="stars" id="gameStars">★★★★★</div>
+                <p>Has completado el juego con éxito.</p>
+                <p>¡Tu desempeño ha sido excelente!</p>
+                <button class="btn btn-primary" onclick="closeModal('gameOverModal')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Certificate Modal -->
+    <div id="certificateModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('certificateModal')">&times;</span>
+            <h2>Certificado de Finalización</h2>
+            <div style="text-align: center; padding: 30px; border: 2px dashed #ccc; border-radius: 10px; margin: 20px 0;">
+                <h3>¡Felicidades!</h3>
+                <p style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">Este certificado se otorga a</p>
+                <p style="font-size: 2rem; font-weight: bold; color: var(--secondary); margin: 10px 0;" id="certUserName">[Nombre del Usuario]</p>
+                <p style="font-size: 1.2rem;">por completar exitosamente el Minicampus Virtual de Aprendizaje sobre GPTs Personalizados</p>
+                <p style="font-size: 1.2rem; margin: 20px 0;">Puntuación Total: <span id="certScore">0</span>/35</p>
+                <p style="font-size: 1.2rem;">Módulos Completados: <span id="certModules">0</span>/7</p>
+                <p style="font-size: 1.2rem;">Logros Desbloqueados: <span id="certBadges">0</span></p>
+                <p style="font-size: 1rem; color: #666; margin-top: 30px;">Fecha: <span id="certDate"></span></p>
+            </div>
+            <button class="btn btn-success" onclick="downloadCertificateFile()">Descargar Certificado</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let progress = 0;
+        let moduleCompleted = [false, false, false, false, false, false, false];
+        let quizScores = [0, 0, 0, 0, 0, 0, 0];
+        let totalScore = 0;
+        let unlockedBadges = [];
+        let challengeTimerInterval = null;
+        
+        // Empezar tutorial y navegar al Módulo 1
+        function startTutorial() {
+            const module1Link = document.querySelector('a[data-section="module1"]');
+            if (module1Link) {
+                module1Link.click();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProgress();
+            setupSidebarNavigation();
+            setupGlossary();
+            setupDraggable();
+            setupTabs();
+            setupSimulator();
+            document.getElementById('certDate').textContent = new Date().toLocaleDateString();
+        });
+        
+        // Configuración de navegación lateral
+        function setupSidebarNavigation() {
+            const links = document.querySelectorAll('.sidebar-menu a');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    links.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                    document.getElementById(sectionId).classList.add('active');
+                });
+            });
+        }
+        
+        // Actualizar progreso
+        function updateProgress() {
+            const completedModules = moduleCompleted.filter(m => m).length;
+            progress = Math.round((completedModules / 7) * 100);
+            
+            document.getElementById('globalProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${progress}% completado`;
+            document.getElementById('finalProgress').style.width = progress + '%';
+            document.getElementById('finalProgressText').textContent = `${progress}% completado`;
+            
+            const completedModulesList = document.getElementById('completedModulesList');
+            completedModulesList.innerHTML = '';
+            moduleCompleted.forEach((completed, index) => {
+                if (completed) {
+                    const li = document.createElement('li');
+                    li.textContent = `Módulo ${index + 1}: ${['Introducción a ChatGPT', 'Creación de GPTs', 'Prompt Engineering', 'Documentación y Conocimiento', 'Agentes de IA', 'Modelos de Razonamiento', 'Asistente de Código'][index]}`;
+                    completedModulesList.appendChild(li);
+                }
+            });
+            
+            totalScore = quizScores.reduce((sum, score) => sum + score, 0);
+            document.getElementById('totalScore').textContent = `${totalScore}/35`;
+            
+            updateBadges();
+            saveProgress();
+        }
+        
+        // Actualizar logros
+        function updateBadges() {
+            unlockedBadges = [];
+            document.querySelectorAll('.badges-container .badge').forEach((badge, index) => {
+                if (index < 7) {
+                    if (moduleCompleted[index]) {
+                        badge.classList.add('unlocked');
+                        unlockedBadges.push(`Módulo ${index + 1}`);
+                    } else {
+                        badge.classList.remove('unlocked');
+                    }
+                }
+            });
+            
+            const allDoneBadge = document.getElementById('badge8');
+            if (moduleCompleted.every(m => m)) {
+                allDoneBadge.classList.add('unlocked');
+                unlockedBadges.push("¡Todo completado!");
+            } else {
+                allDoneBadge.classList.remove('unlocked');
+            }
+            
+            const highScoreBadge = document.getElementById('badge9');
+            if (totalScore >= 30) {
+                highScoreBadge.classList.add('unlocked');
+                unlockedBadges.push("Puntaje Alto");
+            } else {
+                highScoreBadge.classList.remove('unlocked');
+            }
+            
+            const unlockedBadgesList = document.getElementById('unlockedBadgesList');
+            unlockedBadgesList.innerHTML = '';
+            unlockedBadges.forEach(badge => {
+                const li = document.createElement('li');
+                li.textContent = badge;
+                unlockedBadgesList.appendChild(li);
+            });
+        }
+        
+        // Evaluación de quizzes
+        function evaluateQuiz(moduleId) {
+            const moduleNum = parseInt(moduleId.replace('module', ''));
+            const moduleIndex = moduleNum - 1;
+            let score = 0;
+            const questions = document.querySelectorAll(`#${moduleId} .question`);
+            
+            const correctAnswers = {
+                'module1': ['b', 'b', 'c', 'b', 'b'], 'module2': ['b', 'c', 'b', 'b', 'c'], 'module3': ['b', 'b', 'c', 'b', 'b'],
+                'module4': ['d', 'b', 'b', 'b', 'a'], 'module5': ['b', 'a', 'b', 'c', 'c'], 'module6': ['b', 'b', 'b', 'd', 'b'],
+                'module7': ['b', 'b', 'b', 'c', 'b']
+            };
+            
+            questions.forEach((question, index) => {
+                const qName = question.querySelector('input[type="radio"]').name;
+                const selectedOption = question.querySelector(`input[name="${qName}"]:checked`);
+                const feedback = question.querySelector('.feedback');
+                
+                if (selectedOption) {
+                    if (selectedOption.value === correctAnswers[moduleId][index]) {
+                        score++;
+                        feedback.textContent = "¡Correcto! 🎉";
+                        feedback.className = "feedback correct";
+                    } else {
+                        feedback.textContent = "Incorrecto. Inténtalo de nuevo.";
+                        feedback.className = "feedback incorrect";
+                    }
+                } else {
+                    feedback.textContent = "Por favor, selecciona una respuesta.";
+                    feedback.className = "feedback incorrect";
+                }
+                feedback.style.display = "block";
+            });
+            
+            quizScores[moduleIndex] = score;
+            document.getElementById(`${moduleId}Score`).textContent = `Puntuación: ${score}/5`;
+            
+            if(score > 0) { moduleCompleted[moduleIndex] = true; }
+            updateProgress();
+            if (score === 5) { showNotification(`¡Excelente! Puntuación perfecta en el Módulo ${moduleNum}!`); }
+        }
+        
+        // Navegación entre módulos
+        function nextModule(currentModule) {
+            const currentNum = parseInt(currentModule.replace('module', ''));
+            const nextModuleId = (currentNum < 7) ? `module${currentNum + 1}` : 'games';
+            const nextLink = document.querySelector(`.sidebar-menu a[data-section="${nextModuleId}"]`);
+            if (nextLink) { nextLink.click(); window.scrollTo(0, 0); }
+        }
+        
+        // --- LÓGICA DE JUEGOS ---
+        let draggedElement = null;
+
+        function setupDraggable() {
+            document.querySelectorAll('.draggable-item').forEach(item => {
+                item.setAttribute('draggable', true);
+                if (!item.id) item.id = 'draggable-' + Math.random().toString(36).substr(2, 9);
+                item.addEventListener('dragstart', dragStart);
+                item.addEventListener('dragend', dragEnd);
+            });
+
+            document.querySelectorAll('.drop-zone, .drop-item').forEach(zone => {
+                zone.addEventListener('dragover', dragOver);
+                zone.addEventListener('dragleave', dragLeave);
+                zone.addEventListener('drop', drop);
+            });
+        }
+        
+        function dragStart(e) {
+            draggedElement = e.target;
+            e.dataTransfer.setData('text/plain', e.target.id);
+            setTimeout(() => { e.target.style.opacity = '0.5'; }, 0);
+        }
+
+        function dragEnd(e) {
+            if (draggedElement) draggedElement.style.opacity = '1';
+            draggedElement = null;
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+            const target = e.target.closest('.drop-item, .drop-zone');
+            if (target) target.classList.add('drag-over');
+        }
+
+        function dragLeave(e) {
+            const target = e.target.closest('.drop-item, .drop-zone');
+            if (target) target.classList.remove('drag-over');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            if (!draggedElement) return;
+            const target = e.target.closest('.drop-item, .drop-zone');
+            if(target) {
+                target.classList.remove('drag-over');
+                if (target.classList.contains('drop-item')) {
+                    // Evita soltar múltiples items en el mismo lugar en el juego de emparejar
+                    if (target.children.length === 0) target.appendChild(draggedElement);
+                } else {
+                    target.appendChild(draggedElement);
+                }
+            }
+        }
+
+        function checkMatch() {
+            let correct = 0;
+            const dropItems = document.querySelectorAll('#matchGame .drop-item');
+            dropItems.forEach(item => {
+                item.classList.remove('correct', 'incorrect');
+                const child = item.querySelector('.draggable-item');
+                if (child && child.getAttribute('data-match') === item.getAttribute('data-target')) {
+                    correct++;
+                    item.classList.add('correct');
+                } else {
+                    item.classList.add('incorrect');
+                }
+            });
+            document.getElementById('matchResult').textContent = `Has acertado ${correct}/4.`;
+            document.getElementById('matchResult').style.color = (correct === 4) ? 'var(--success)' : 'var(--danger)';
+        }
+
+        function checkDrag() {
+            const dropZone = document.getElementById('drag-target');
+            const droppedItems = Array.from(dropZone.querySelectorAll('.draggable-item'));
+            let isCorrect = droppedItems.length === 6 && droppedItems.every((item, i) => parseInt(item.getAttribute('data-order')) === i + 1);
+            
+            const result = document.getElementById('dragResult');
+            result.textContent = isCorrect ? "¡Perfecto! Has ordenado los pasos correctamente." : "El orden es incorrecto. Inténtalo de nuevo.";
+            result.style.color = isCorrect ? "var(--success)" : "var(--danger)";
+        }
+
+        function checkFill() {
+            let correct = 0;
+            const answers = {'fill1': 'prompt', 'fill2': 'Markdown', 'fill3': 'Tree of Thoughts', 'fill4': 'Agent', 'fill5': 'Intérprete de código' };
+            for (const id in answers) { if (document.getElementById(id).value === answers[id]) correct++; }
+            
+            const result = document.getElementById('fillResult');
+            result.textContent = `Has acertado ${correct}/5.`;
+            result.style.color = (correct === 5) ? 'var(--success)' : 'var(--danger)';
+        }
+
+        function startChallenge() {
+            const timerElement = document.getElementById('challengeTimer');
+            let timeLeft = 60;
+            timerElement.textContent = timeLeft;
+
+            const startBtn = document.getElementById('startChallengeBtn');
+            let submitBtn = document.getElementById('submitChallengeBtn');
+            if (!submitBtn) {
+                submitBtn = document.createElement('button');
+                submitBtn.id = 'submitChallengeBtn';
+                submitBtn.className = 'btn btn-success';
+                submitBtn.textContent = 'Entregar Respuestas';
+                submitBtn.onclick = submitChallenge;
+                startBtn.parentNode.insertBefore(submitBtn, startBtn.nextSibling);
+            }
+            submitBtn.style.display = 'inline-block';
+            startBtn.style.display = 'none';
+
+            if (challengeTimerInterval) clearInterval(challengeTimerInterval);
+            challengeTimerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                if (timeLeft <= 0) submitChallenge();
+            }, 1000);
+        }
+
+        function submitChallenge() {
+            if(challengeTimerInterval) { clearInterval(challengeTimerInterval); challengeTimerInterval = null; }
+            checkChallengeAnswers();
+            document.getElementById('startChallengeBtn').style.display = 'inline-block';
+            const submitBtn = document.getElementById('submitChallengeBtn');
+            if (submitBtn) submitBtn.style.display = 'none';
+        }
+
+        function checkChallengeAnswers() {
+            let correct = 0;
+            const correctValues = ['a', 'b', 'c', 'd', 'c'];
+            for (let i = 1; i <= 5; i++) {
+                const answer = document.querySelector(`input[name="q${i}challenge"]:checked`);
+                if (answer && answer.value === correctValues[i - 1]) correct++;
+            }
+            const result = document.getElementById('challengeResult');
+            result.textContent = `Has acertado ${correct}/5.`;
+            result.style.color = (correct === 5) ? 'var(--success)' : 'var(--danger)';
+        }
+        
+        // Setup tabs
+        function setupTabs() {
+            document.querySelectorAll('[data-tab], [data-game]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const group = button.closest('.nav-tabs');
+                    group.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const contentContainer = button.closest('.card') || document;
+                    contentContainer.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                    const tabName = button.getAttribute('data-tab') || button.getAttribute('data-game');
+                    const tabId = button.hasAttribute('data-tab') ? `${tabName}Tab` : `${tabName}Game`;
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+        
+        // Glosario
+        function setupGlossary() {
+            const popup = document.getElementById('glossaryPopup');
+            document.querySelectorAll('.glossary-term').forEach(term => {
+                term.addEventListener('mouseenter', function() {
+                    popup.textContent = this.getAttribute('data-definition');
+                    const rect = this.getBoundingClientRect();
+                    popup.style.left = (rect.left + window.scrollX) + 'px';
+                    popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+                    popup.style.display = 'block';
+                });
+                term.addEventListener('mouseleave', () => { popup.style.display = 'none'; });
+            });
+        }
+        
+        // Simulador
+        function setupSimulator() {}
+        
+        function evaluateInstructions() {
+            const input = document.getElementById('simulatorInput').value.toLowerCase();
+            const output = document.getElementById('simulatorOutput');
+            let score = 0;
+            let feedback = "Análisis de tu prompt:\n";
+            const checks = {
+                "Definición de objetivo": input.includes('analizar') && input.includes('pliego'),
+                "Asignación de rol": input.includes('rol') || input.includes('actúa como'),
+                "Especificación de formato": input.includes('markdown') || input.includes('resumen'),
+                "Medidas de protección": input.includes('confidencial') || input.includes('no reveles'),
+                "Inclusión de refuerzo": input.includes('importante') || input.includes('calidad'),
+            };
+            for (const key in checks) {
+                feedback += `- ${key}: ${checks[key] ? '✅' : '❌'}\n`;
+                if(checks[key]) score++;
+            }
+            output.innerText = feedback;
+            output.style.backgroundColor = (score >= 4) ? "rgba(46, 204, 113, 0.2)" : "rgba(231, 76, 60, 0.2)";
+        }
+        
+        // Notificaciones
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            Object.assign(notification.style, {
+                position: 'fixed', bottom: '20px', right: '20px', backgroundColor: 'var(--success)',
+                color: 'white', padding: '15px', borderRadius: '8px', zIndex: '2000',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            });
+            document.body.appendChild(notification);
+            setTimeout(() => document.body.removeChild(notification), 3000);
+        }
+        
+        // Modales
+        function showModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        // Guardar y cargar progreso
+        function saveProgress() {
+            localStorage.setItem('minicampusProgress', JSON.stringify({ moduleCompleted, quizScores }));
+        }
+        
+        function loadProgress() {
+            const saved = localStorage.getItem('minicampusProgress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                moduleCompleted = data.moduleCompleted || Array(7).fill(false);
+                quizScores = data.quizScores || Array(7).fill(0);
+                quizScores.forEach((score, i) => {
+                    if (score > 0) document.getElementById(`module${i + 1}Score`).textContent = `Puntuación: ${score}/5`;
+                });
+            }
+            updateProgress();
+        }
+        
+        // Resetear progreso
+        function resetProgress() {
+            if (confirm('¿Estás seguro de que quieres reiniciar todo tu progreso?')) {
+                localStorage.removeItem('minicampusProgress');
+                localStorage.removeItem('minicampusUserName');
+                location.reload();
+            }
+        }
+        
+        // Certificado
+        function downloadCertificate() {
+            let userName = localStorage.getItem('minicampusUserName') || prompt("Por favor, introduce tu nombre para el certificado:") || "Estudiante Dedicado";
+            if (userName) localStorage.setItem('minicampusUserName', userName);
+            document.getElementById('certUserName').textContent = userName;
+            document.getElementById('certScore').textContent = `${totalScore}/35`;
+            document.getElementById('certModules').textContent = `${moduleCompleted.filter(m => m).length}/7`;
+            document.getElementById('certBadges').textContent = unlockedBadges.length;
+            showModal('certificateModal');
+        }
+        
+        function downloadCertificateFile() {
+             const certContent = `Certificado de Finalización - Minicampus GPT\n-------------------------------------------\nOtorgado a: ${localStorage.getItem('minicampusUserName')}\n\nPor completar exitosamente el Minicampus sobre GPTs Personalizados.\n\nPuntuación: ${totalScore}/35\nMódulos: ${moduleCompleted.filter(m => m).length}/7\nFecha: ${new Date().toLocaleDateString()}`;
+            const blob = new Blob([certContent], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'Certificado_Minicampus_GPT.txt';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+        
+        // Menú móvil
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const isVisible = sidebar.style.display === 'block';
+            sidebar.style.display = isVisible ? 'none' : 'block';
+        });
+
+    </script>
+</body>
+</html>

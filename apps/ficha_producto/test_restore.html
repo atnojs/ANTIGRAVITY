@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Restauración Historial</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .test-result {
+      background: white;
+      padding: 20px;
+      margin: 10px 0;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .success { border-left: 5px solid green; }
+    .error { border-left: 5px solid red; }
+    .warning { border-left: 5px solid orange; }
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test de Restauración desde Historial</h1>
+  
+  <div class="test-result warning">
+    <h3>⚠️ Nota importante</h3>
+    <p>Para probar la restauración desde el historial:</p>
+    <ol>
+      <li>Abre la aplicación principal en <a href="index.html" target="_blank">index.html</a></li>
+      <li>Genera al menos un producto para que quede en el historial</li>
+      <li>Vuelve a esta página y haz clic en "Probar Restauración"</li>
+    </ol>
+  </div>
+  
+  <div class="test-result">
+    <h3>Test 1: Verificar localStorage</h3>
+    <button onclick="testLocalStorage()">Verificar localStorage</button>
+    <div id="localStorageResult"></div>
+  </div>
+  
+  <div class="test-result">
+    <h3>Test 2: Probar Restauración</h3>
+    <button onclick="testRestore()">Probar Restauración</button>
+    <div id="restoreResult"></div>
+  </div>
+  
+  <script>
+    function testLocalStorage() {
+      const resultDiv = document.getElementById('localStorageResult');
+      try {
+        const history = JSON.parse(localStorage.getItem('productHistory') || '[]');
+        resultDiv.innerHTML = `
+          <p><strong>Estado:</strong> ✅ localStorage accesible</p>
+          <p><strong>Items en historial:</strong> ${history.length}</p>
+          ${history.length > 0 ? 
+            `<p><strong>Primer item:</strong> ${history[0].name || 'Sin nombre'}</p>
+             <p><strong>Imágenes:</strong> ${history[0].imagesCount || 0}</p>
+             <p><strong>Tiene sourceCode:</strong> ${!!history[0].sourceCode}</p>
+             <p><strong>Tiene productData:</strong> ${!!history[0].productData}</p>
+             <p><strong>Tiene generatedImages:</strong> ${history[0].productData?.generatedImages?.length || 0}</p>` 
+            : '<p>No hay items en el historial</p>'}
+        `;
+        resultDiv.className = 'success';
+      } catch (error) {
+        resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        resultDiv.className = 'error';
+      }
+    }
+    
+    function testRestore() {
+      const resultDiv = document.getElementById('restoreResult');
+      try {
+        const history = JSON.parse(localStorage.getItem('productHistory') || '[]');
+        if (history.length === 0) {
+          resultDiv.innerHTML = '<p>No hay items en el historial para restaurar</p>';
+          resultDiv.className = 'warning';
+          return;
+        }
+        
+        const item = history[0];
+        resultDiv.innerHTML = `
+          <p><strong>Item a restaurar:</strong> ${item.name || 'Sin nombre'}</p>
+          <p><strong>Estructura del item:</strong></p>
+          <pre>${JSON.stringify(item, null, 2)}</pre>
+        `;
+        resultDiv.className = 'success';
+        
+      } catch (error) {
+        resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        resultDiv.className = 'error';
+      }
+    }
+  </script>
+</body>
+</html>

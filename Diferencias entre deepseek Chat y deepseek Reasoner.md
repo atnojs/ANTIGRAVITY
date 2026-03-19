@@ -1,0 +1,58 @@
+**Dirección donde comprar más toquens en DeepSeek**
+
+https://platform.deepseek.com/api\_keys
+
+
+
+¡Perfecto! Con esos 2€ tienes saldo para muchísimo tiempo. En la imagen que compartes, tienes las dos caras de la moneda de DeepSeek.
+
+
+
+**Para tu flujo de trabajo en OpenCode, aquí tienes la distinción clara:**
+
+
+
+1\. DeepSeek Chat (El que debes elegir ahora)
+
+Este es el modelo V3 / V3.2. Es el "todoterreno" y el que mejor se integra con la filosofía de OpenCode.
+
+
+
+Para qué sirve: Escribir funciones, crear componentes de Node.js, generar archivos Docker y realizar cambios rápidos en tu repositorio google\_ai\_studio\_1.
+
+
+
+Por qué es "el bueno": Es muy rápido, consume menos tokens (tus 2€ durarán más) y sigue las instrucciones de forma directa sin dar demasiadas vueltas.
+
+
+
+2\. DeepSeek Reasoner
+
+Este es el modelo R1. Es el "pensador".
+
+
+
+Para qué sirve: Si tienes un error de lógica que no entiendes, o si necesitas que la IA diseñe una estructura de base de datos compleja desde cero.
+
+
+
+Advertencia: Es más lento y más caro. Solo úsalo cuando te sientas "atascado".
+
+
+
+Revisión de Arquitectura (Protocolo Google Antigravity)
+
+Siguiendo nuestras reglas de trabajo, he revisado tu elección y debo realizar un cuestionamiento técnico:
+
+
+
+\[!IMPORTANT]
+
+Cuestionamiento Técnico: > ¿Es óptimo usar DeepSeek Chat para todas las tareas de tu sitio?
+
+Análisis: Para la mayoría de las ediciones en tus archivos existentes, sí. Sin embargo, si vas a realizar cambios estructurales en la comunicación entre tus contenedores Docker y el servidor de Hostinger, el modelo Chat podría ignorar dependencias críticas de red.
+
+
+
+Recomendación: Mantén DeepSeek Chat por defecto para programar, pero si vas a modificar archivos de configuración de sistema (package.json, docker-compose.yml), considera activar el Reasoner solo para esa tarea específica para asegurar la integridad de la arquitectura.
+

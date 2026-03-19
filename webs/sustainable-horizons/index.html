@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <base href="/">
+    <link href="https://activetheory.net" rel="canonical">
+    <title>Sustainable Horizons · Active Theory</title>
+    <meta name="description" content="Explore a vision of the future created with AI. Concept, script, prompt engineering, sound, and visuals were created in a suite of generative AI tools.">
+    <meta property="og:url" content="https://activetheory.net">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Sustainable Horizons · Active Theory">
+    <meta property="og:description" content="Explore a vision of the future created with AI.">
+    <meta property="og:image" content="https://storage.googleapis.com/activetheory-v6.appspot.com/media/social.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#000000">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cyan: #00ffff;
+            --cyan-dim: #9ca5ff;
+            --text: #c6c6c6;
+            --text-light: #eeeeee;
+            --bg: #000000;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background: var(--bg);
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--text);
+        }
+
+        #Stage {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .nav {
+            position: fixed;
+            top: 70px;
+            right: 32px;
+            z-index: 100;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.17, 0.4, 0.02, 0.99);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav a:hover {
+            color: var(--cyan);
+            text-shadow: 0 0 10px var(--cyan);
+        }
+
+        .logo {
+            position: fixed;
+            top: 70px;
+            left: 32px;
+            z-index: 100;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-decoration: none;
+            letter-spacing: 2px;
+        }
+
+        .scroll-content {
+            height: 500vh;
+            position: relative;
+        }
+
+        .section {
+            position: absolute;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            pointer-events: none;
+        }
+
+        .section.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .section-content {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .section-title {
+            font-size: clamp(40px, 10vw, 120px);
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .section-year {
+            font-size: 18px;
+            color: var(--cyan-dim);
+            margin-bottom: 10px;
+        }
+
+        .section-awards {
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 30px;
+        }
+
+        .section-tags {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text);
+            text-transform: uppercase;
+        }
+
+        .chat-widget {
+            position: fixed;
+            bottom: 40px;
+            right: 32px;
+            z-index: 50;
+            width: 350px;
+            max-width: calc(100vw - 64px);
+        }
+
+        .chat-wrapper {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .chat-message {
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chat-message.project-title {
+            color: var(--text-light);
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .chat-message.project-meta {
+            color: var(--cyan-dim);
+            font-size: 12px;
+        }
+
+        .chat-message.description {
+            color: var(--text);
+        }
+
+        .chat-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .chat-link {
+            color: var(--cyan);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-link:hover {
+            color: var(--text-light);
+            transform: translateX(5px);
+        }
+
+        .chat-input-wrapper {
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            color: var(--text-light);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .chat-input:focus {
+            background: rgba(0,0,0,0.5);
+            border-color: var(--cyan);
+        }
+
+        .music-player {
+            position: fixed;
+            bottom: 40px;
+            left: 32px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+        }
+
+        .music-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .music-btn:hover {
+            color: var(--cyan);
+        }
+
+        .music-title {
+            font-size: 12px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 150px;
+        }
+
+        .audio-indicator {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            height: 16px;
+        }
+
+        .audio-bar {
+            width: 3px;
+            background: var(--cyan);
+            border-radius: 2px;
+            animation: audioWave 1s ease-in-out infinite;
+        }
+
+        .audio-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .audio-bar:nth-child(2) { height: 12px; animation-delay: 0.2s; }
+        .audio-bar:nth-child(3) { height: 6px; animation-delay: 0.4s; }
+        .audio-bar:nth-child(4) { height: 14px; animation-delay: 0.1s; }
+
+        @keyframes audioWave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            color: var(--text);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.6;
+        }
+
+        .scroll-arrow {
+            animation: scrollBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hero-title {
+            font-size: clamp(60px, 15vw, 200px);
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: -4px;
+            line-height: 0.9;
+            text-transform: uppercase;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--cyan-dim);
+            margin-top: 30px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px 32px;
+            z-index: 200;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+
+        .cookie-banner.show {
+            transform: translateY(0);
+        }
+
+        .cookie-text {
+            font-size: 13px;
+            color: var(--text);
+            max-width: 600px;
+        }
+
+        .cookie-text a {
+            color: var(--cyan);
+            text-decoration: none;
+        }
+
+        .cookie-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .cookie-btn {
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cookie-btn.accept {
+            background: var(--cyan-dim);
+            border: none;
+            color: var(--bg);
+        }
+
+        .cookie-btn.reject {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            color: var(--text);
+        }
+
+        .cookie-btn:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                top: 30px;
+                right: 20px;
+            }
+
+            .logo {
+                top: 30px;
+                left: 20px;
+            }
+
+            .chat-widget {
+                bottom: 20px;
+                right: 20px;
+                left: 20px;
+                width: auto;
+            }
+
+            .music-player {
+                bottom: auto;
+                top: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .scroll-indicator {
+                display: none;
+            }
+
+            .hero-title {
+                letter-spacing: -2px;
+            }
+
+            .cookie-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="Stage">
+        <div class="canvas-container">
+            <canvas id="bgCanvas"></canvas>
+        </div>
+
+        <div class="content">
+            <a href="https://activetheory.net" class="logo">ACTIVE THEORY</a>
+            
+            <nav class="nav">
+                <a href="#" id="toggleAudio">Audio</a>
+                <a href="https://activetheory.net/work">Work</a>
+                <a href="https://activetheory.net/contact">Contact</a>
+            </nav>
+
+            <div class="scroll-content">
+                <section class="section visible" data-section="0">
+                    <div class="hero-section">
+                        <h1 class="hero-title">Sustainable<br>Horizons</h1>
+                        <p class="hero-subtitle">A vision of the future created with AI</p>
+                    </div>
+                </section>
+
+                <section class="section" data-section="1">
+                    <div class="section-content">
+                        <div class="section-year">2023</div>
+                        <h2 class="section-title">WSJ</h2>
+                        <div class="section-awards">Award Winning Experience</div>
+                        <div class="section-tags">
+                            <span class="tag">XR</span>
+                            <span class="tag">AI</span>
+                            <span class="tag">Generative</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section" data-section="2">
+                    <div class="section-content">
+                        <h2 class="section-title">Explore<br>Tomorrow</h2>
+                        <p style="color: var(--text); max-width: 500px; margin: 0 auto; line-height: 1.8;">
+                            Concept, script, prompt engineering, sound, and visuals were created 
+                            in a suite of generative AI tools. A groundbreaking exploration of 
+                            AI's potential in creative storytelling.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="section" data-section="3">
+                    <div class="section-content">
+                        <h2 class="section-title">The<br>Future</h2>
+                        <p style="color: var(--text); max-width: 500px; margin: 0 auto; line-height: 1.8;">
+                            Pushing the boundaries of what's possible with artificial intelligence 
+                            in digital experiences.
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <div class="scroll-indicator">
+                <span>Scroll to explore</span>
+                <div class="scroll-arrow">↓</div>
+            </div>
+
+            <div class="chat-widget">
+                <div class="chat-wrapper">
+                    <div class="chat-messages">
+                        <div class="chat-message project-title">Sustainable Horizons</div>
+                        <div class="chat-message project-meta">2023 / WSJ / xr</div>
+                        <div class="chat-message description">
+                            Explore a vision of the future created with AI. Concept, script, 
+                            prompt engineering, sound, and visuals were created in a suite 
+                            of generative AI tools.
+                        </div>
+                        <div class="chat-links">
+                            <a href="https://sustainablehorizons.ai/" target="_blank" class="chat-link">→ Project Link</a>
+                            <a href="#" class="chat-link" id="closeChat">← Close</a>
+                        </div>
+                    </div>
+                    <div class="chat-input-wrapper">
+                        <input type="text" class="chat-input" placeholder="Ask me anything...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="music-player">
+                <button class="music-btn" id="prevBtn">«</button>
+                <div class="audio-indicator">
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                </div>
+                <div class="music-title">nuer self - Dusk</div>
+                <button class="music-btn" id="nextBtn">»</button>
+            </div>
+
+            <div class="cookie-banner" id="cookieBanner">
+                <p class="cookie-text">
+                    Our site uses essential cookies and, with your consent, analytics cookies. 
+                    Details in <a href="#">Privacy Notice.</a>
+                </p>
+                <div class="cookie-buttons">
+                    <button class="cookie-btn reject" id="rejectCookies">Reject</button>
+                    <button class="cookie-btn accept" id="acceptCookies">Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas animation
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        let mouseX = 0, mouseY = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Mouse interaction
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 150) {
+                    this.x -= dx * 0.01;
+                    this.y -= dy * 0.01;
+                }
+
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(100, (width * height) / 10000);
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        resize();
+        initParticles();
+        animate();
+
+        window.addEventListener('resize', () => {
+            resize();
+            initParticles();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Scroll sections
+        const sections = document.querySelectorAll('.section');
+        const scrollContent = document.querySelector('.scroll-content');
+
+        function handleScroll() {
+            const scrollY = window.scrollY;
+            const contentHeight = scrollContent.offsetHeight - window.innerHeight;
+            const scrollProgress = Math.min(scrollY / contentHeight, 1);
+
+            sections.forEach((section, index) => {
+                const sectionStart = index / sections.length;
+                const sectionEnd = (index + 1) / sections.length;
+                
+                if (scrollProgress >= sectionStart && scrollProgress < sectionEnd) {
+                    section.classList.add('visible');
+                } else {
+                    section.classList.remove('visible');
+                }
+            });
+
+            // Hide scroll indicator after scrolling
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            if (scrollY > 100) {
+                scrollIndicator.style.opacity = '0';
+            } else {
+                scrollIndicator.style.opacity = '0.6';
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+
+        // Cookie banner
+        setTimeout(() => {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                document.getElementById('cookieBanner').classList.add('show');
+            }
+        }, 2000);
+
+        document.getElementById('acceptCookies').addEventListener('click', () => {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookieBanner').classList.remove('show');
+        });
+
+        document.getElementById('rejectCookies').addEventListener('click', () => {
+            localStorage.setItem('cookiesRejected', 'true');
+            document.getElementById('cookieBanner').classList.remove('show');
+        });
+
+        // Chat toggle
+        let chatVisible = true;
+        document.getElementById('closeChat').addEventListener('click', (e) => {
+            e.preventDefault();
+            const chatWidget = document.querySelector('.chat-widget');
+            chatWidget.style.opacity = '0';
+            chatWidget.style.pointerEvents = 'none';
+            chatVisible = false;
+        });
+
+        // Audio toggle
+        let audioPlaying = true;
+        document.getElementById('toggleAudio').addEventListener('click', (e) => {
+            e.preventDefault();
+            audioPlaying = !audioPlaying;
+            const bars = document.querySelectorAll('.audio-bar');
+            bars.forEach(bar => {
+                bar.style.animationPlayState = audioPlaying ? 'running' : 'paused';
+            });
+        });
+
+        // Music player buttons
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            console.log('Previous track');
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            console.log('Next track');
+        });
+
+        // Chat input
+        const chatInput = document.querySelector('.chat-input');
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && chatInput.value.trim()) {
+                console.log('Message:', chatInput.value);
+                chatInput.value = '';
+            }
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>

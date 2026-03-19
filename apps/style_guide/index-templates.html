@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi App | atnojs.es</title>
+    <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon">
+
+    <!-- ═══════════════════════════════════════
+         FUENTES (Montserrat + Poppins)
+         ═══════════════════════════════════════ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- ═══════════════════════════════════════
+         TAILWIND CSS (opcional pero recomendado)
+         ═══════════════════════════════════════ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ═══════════════════════════════════════
+         REACT 18 + Babel (para JSX)
+         ═══════════════════════════════════════ -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- ═══════════════════════════════════════
+         LUCIDE ICONS
+         Uso: <i data-lucide="icon-name"></i>
+         ═══════════════════════════════════════ -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- ═══════════════════════════════════════
+         FIREBASE (opcional - para auth/db)
+         ═══════════════════════════════════════ -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- ═══════════════════════════════════════
+         ESTILOS DEL SISTEMA DE DISEÑO
+         ═══════════════════════════════════════ -->
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="components.css">
+
+    <!-- Tu CSS adicional específico de la app -->
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <!-- ═══════════════════════════════════════
+         TU APLICACIÓN REACT
+         ═══════════════════════════════════════ -->
+    <script type="text/babel" src="app.js"></script>
+</body>
+
+</html>

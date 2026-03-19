@@ -1,0 +1,29 @@
+skill: gws_advanced_assistant
+description: Herramientas avanzadas para Google Workspace (Drive, Gmail, Calendar, Sheets y Docs).
+tools:
+  # --- DRIVE & GMAIL ---
+  - name: search_drive_content
+    description: Busca archivos por nombre o contenido.
+    command: gws drive files list --params '{"q": "name contains \"{{query}}\" or fullText contains \"{{query}}\""}'
+  
+  - name: summarize_recent_emails
+    description: Obtiene los últimos N correos.
+    command: gws gmail users messages list --params '{"userId": "me", "maxResults": {{limit}}}' --format json
+
+  # --- GOOGLE SHEETS ---
+  - name: read_spreadsheet
+    description: Lee los datos de una hoja de cálculo.
+    command: gws sheets spreadsheets values get --params '{"spreadsheetId": "{{id}}", "range": "{{range}}"}'
+
+  - name: update_spreadsheet_row
+    description: Añade o actualiza una fila en un Sheet.
+    command: gws sheets spreadsheets values append --params '{"spreadsheetId": "{{id}}", "range": "A1", "valueInputOption": "USER_ENTERED"}' --json '{"values": [{{data_array}}]}'
+
+  # --- GOOGLE DOCS ---
+  - name: create_and_write_doc
+    description: Crea un documento nuevo con un título y contenido inicial.
+    command: gws docs documents create --json '{"title": "{{title}}"}'
+    
+  - name: get_doc_content
+    description: Lee el texto completo de un documento de Google Docs.
+    command: gws docs documents get --params '{"documentId": "{{id}}"}' --format json

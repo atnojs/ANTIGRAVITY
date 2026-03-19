@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Prompts Avanzado v3.5.0</title> <!-- Versión Actualizada -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --bg-primary: #121212; /* Fondo principal muy oscuro */
+            --bg-secondary: #1E1E1E; /* Fondo para contenedores/tarjetas */
+            --bg-tertiary: #282828; /* Fondo para inputs, elementos sutiles */
+            
+            --text-primary: #EAEAEA;
+            --text-secondary: #A0A0A0;
+            --text-disabled: #505050;
+            --text-on-accent: #FFFFFF;
+
+            --accent-primary-start: #007BFF; /* Azul vibrante */
+            --accent-primary-end: #0056b3;   /* Azul más oscuro para degradado sutil */
+            --accent-gradient: linear-gradient(135deg, var(--accent-primary-start) 0%, var(--accent-primary-end) 100%);
+            --accent-gradient-hover: linear-gradient(135deg, #0069D9 0%, #004085 100%);
+            
+            --accent-secondary: #6C757D; /* Gris para botones secundarios */
+            --accent-secondary-hover: #5A6268;
+
+            --warning-bg-start: #dc3545; /* Rojo para advertencias */
+            --warning-bg-end: #c82333;
+            --warning-gradient: linear-gradient(135deg, var(--warning-bg-start), var(--warning-bg-end));
+            --warning-gradient-hover: linear-gradient(135deg, #c82333, #bd2130);
+
+            --border-color: #3A3A3A;
+            --border-color-focus: var(--accent-primary-start);
+            
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.3);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.3);
+
+            --border-radius-sm: 6px;
+            --border-radius-md: 10px;
+            --border-radius-lg: 16px;
+            --border-radius-pill: 999px;
+
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+
+            --tooltip-bg: #333333;
+            --tooltip-text: var(--text-primary);
+        }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.7; /* Aumentado para mejor legibilidad */
+            padding-top: 70px; /* Espacio para sticky bar */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 900px; /* Ligeramente más estrecho para sensación minimalista */
+            margin: 30px auto; 
+            padding: 35px; /* Más padding interno */
+            background: var(--bg-secondary); 
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        * { box-sizing: border-box; }
+        *:focus { 
+            outline-style: solid;
+            outline-color: transparent;
+            box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--border-color-focus);
+        }
+
+        h1, h2, h3, legend { 
+            font-family: var(--font-body); 
+            font-weight: 600; /* Inter SemiBold */
+            color: var(--text-primary);
+            margin-top: 0;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 45px;
+            font-size: 2.1rem; /* Ligeramente más pequeño */
+            font-weight: 700; /* Inter Bold */
+        }
+        h2 { 
+            font-size: 1.45rem; 
+            font-weight: 600; 
+            border-bottom: 1px solid var(--border-color);
+            /* border-image-source: linear-gradient(to right, var(--accent-primary-start), var(--accent-primary-end));  */
+            /* border-image-slice: 1; */
+            /* border-width: 0 0 2px 0; */
+            padding-bottom: 15px;
+            margin-top: 45px; /* Más espacio antes de H2 */
+            margin-bottom: 30px;
+        }
+         h3 { 
+            font-size: 1.05rem; 
+            color: var(--text-secondary);
+            margin-bottom: 18px;
+            font-weight: 500; 
+            text-transform: uppercase; 
+            letter-spacing: 0.8px;
+        }
+
+        fieldset {
+            border: none; /* Quitar borde por defecto de fieldset */
+            /* border-top: 1px solid var(--border-color); */ /* Línea divisoria sutil */
+            padding: 0; /* Quitar padding por defecto */
+            margin-bottom: 40px; /* Espacio entre secciones */
+            /* background: transparent; */
+            /* box-shadow: none; */
+        }
+        
+        legend { /* Estilo de legend como encabezado de sección */
+            font-weight: 600;
+            color: var(--text-primary); 
+            font-size: 1.3rem; /* Más grande que H3 */
+            padding: 0;
+            margin-bottom: 25px; 
+            width: 100%;
+            /* border-bottom: 1px solid var(--border-color); */
+            /* padding-bottom: 10px; */
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 400; 
+            color: var(--text-secondary);
+            font-size: 0.9rem; /* Ligeramente más pequeño */
+        }
+        .checkbox-group-item label, .checkbox-item-label {
+            font-weight: 400; 
+            color: var(--text-primary); 
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 16px; /* Ajuste de padding */
+            margin-bottom: 22px;
+            border: 1px solid var(--border-color); 
+            border-radius: var(--border-radius-md);
+            background-color: var(--bg-tertiary); 
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: var(--font-body); 
+            box-shadow: none; /* Quitar sombra inset neumórfica */
+            transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+        }
+        input[type="text"]::placeholder,
+        textarea::placeholder {
+            color: var(--text-disabled);
+            opacity: 0.7;
+        }
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--border-color-focus); 
+            box-shadow: 0 0 0 1px var(--border-color-focus); /* Sombra de foco sutil */
+        }
+        textarea { min-height: 100px; } /* Reducir altura mínima */
+        select {
+            appearance: none; 
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23A0A0A0'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E"); 
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 1.1em;
+            padding-right: 38px; 
+        }
+
+        .checkbox-group > div {
+            display: flex;
+            align-items: center; 
+            margin-bottom: 10px;
+        }
+        .checkbox-group input[type="checkbox"], .radio-group input[type="radio"] {
+            margin-right: 10px;
+            accent-color: var(--accent-primary-start); 
+            transform: scale(1.1); 
+            flex-shrink: 0; 
+        }
+
+        /* Botones */
+        button, input[type="file"]::-webkit-file-upload-button {
+            font-family: var(--font-body); 
+            font-weight: 500; 
+            background: var(--accent-gradient); 
+            color: var(--text-on-accent);
+            padding: 10px 22px; /* Ajustar padding */
+            border: none;
+            border-radius: var(--border-radius-pill); 
+            cursor: pointer;
+            font-size: 0.9rem; 
+            text-decoration: none;
+            display: inline-flex; /* Para alinear iconos y texto */
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease-out;
+            margin-right: 8px; margin-top: 8px;
+            letter-spacing: 0.3px; 
+        }
+        button .emoji, button .fa { /* Estilo para iconos dentro de botones */
+            margin-right: 8px;
+            font-size: 1em; /* Ajustar tamaño si es necesario */
+        }
+
+        button:hover, input[type="file"]::-webkit-file-upload-button:hover {
+            background: var(--accent-gradient-hover); 
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+        button:active, input[type="file"]::-webkit-file-upload-button:active {
+            box-shadow: none; 
+            transform: translateY(0px);
+        }
+        button:disabled {
+            background: var(--bg-tertiary);
+            color: var(--text-disabled);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: translateY(0px);
+        }
+        button.secondary {
+            background: var(--accent-secondary); 
+            color: var(--text-on-accent);
+            box-shadow: var(--shadow-sm);
+        }
+        button.secondary:hover {
+            background: var(--accent-secondary-hover);
+            color: var(--text-on-accent);
+            box-shadow: var(--shadow-md); 
+        }
+        button.warning { 
+            background: var(--warning-gradient); 
+            color: var(--text-on-accent); 
+            box-shadow: var(--shadow-sm);
+        }
+        button.warning:hover {
+            background: var(--warning-gradient-hover); 
+            box-shadow: var(--shadow-md);
+        }
+        
+        .sticky-bar {
+            position: fixed; top: 0; left: 0; width: 100%; 
+            background-color: rgba(30, 30, 30, 0.85); /* var(--bg-secondary) con alpha */
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
+            padding: 8px 20px; /* Más delgada */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3); 
+            z-index: 1000; display: flex; align-items: center; gap: 10px; box-sizing: border-box;
+        }
+        .sticky-bar button {
+            padding: 8px 16px; 
+            font-size: 0.85rem;
+        }
+        .sticky-bar .config-save-options { display: flex; align-items: center; margin-left: auto; gap: 8px;}
+        .sticky-bar .config-save-options label { margin-bottom: 0; font-size: 0.85rem; color: var(--text-secondary); }
+        .sticky-bar .config-save-options input[type="checkbox"] { accent-color: var(--accent-primary-start); transform: scale(1); }
+
+        .date-display { text-align: right; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 25px; }
+        #loadedConfigNameDisplay {
+            text-align: center; margin-bottom: 20px; padding: 10px 15px; 
+            background-color: rgba(0, 123, 255, 0.1); /* Usar accent color con alpha */
+            border-radius: var(--border-radius-md); 
+            color: var(--accent-primary-start); 
+            font-weight: 500; display: none; 
+            border: 1px solid var(--accent-primary-start);
+            font-size: 0.85rem;
+        }
+        
+        #scrollToTopBtn {
+            /* Mismos estilos, ya eran bastante modernos */
+            display: none; position: fixed; bottom: 25px; right: 25px; z-index: 999;
+            border: none; outline: none; 
+            background: var(--accent-gradient); 
+            color: var(--text-on-accent);
+            cursor: pointer; width: 45px; height: 45px; 
+            border-radius: 50%; font-size: 1.2rem; 
+            box-shadow: var(--shadow-md);
+            display: flex; align-items: center; justify-content: center; 
+            transition: all 0.2s ease-out;
+        }
+        #scrollToTopBtn:hover {
+            background: var(--accent-gradient-hover);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px) scale(1.05);
+        }
+        
+        #outputPromptContainer { margin-top: 40px; }
+        #outputPromptContainer textarea {
+            min-height: 180px;
+            background-color: var(--bg-primary); /* Fondo más oscuro para contraste */
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+            color: #C5D1DE; /* Un color de texto ligeramente azulado para código */
+            padding: 18px;
+            font-family: var(--font-mono); /* Usar la fuente mono definida */
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .checkbox-group { margin-bottom: 18px; }
+        .style-columns-container { display: flex; flex-wrap: wrap; gap: 25px; margin-bottom: 20px; } /* Permitir wrap en móviles */
+        .style-column { flex: 1; min-width: 250px; } /* Min-width para responsiveness */
+        
+        .personal-info-section {
+            text-align: center; padding: 35px 0; 
+            border-top: 1px solid var(--border-color); 
+            margin-top: 50px;
+        }
+        .personal-info-section legend {
+            font-weight: 600;
+            color: var(--text-primary); 
+            font-size: 1.3rem;
+            margin-bottom: 30px; 
+        }
+        .personal-info-section p { margin-bottom: 20px; font-size: 0.95rem; color: var(--text-secondary); }
+        .personal-info-section a { color: var(--accent-primary-start); text-decoration: none; font-weight: 500; }
+        .personal-info-section a:hover { text-decoration: underline; color: var(--accent-primary-end); }
+        .social-icons { margin-bottom: 25px; }
+        .social-icons a {
+            margin: 0 10px; font-size: 1.8rem; color: var(--text-secondary); 
+            transition: color 0.2s ease, transform 0.2s ease-out;
+        }
+        .social-icons a:hover { transform: translateY(-2px); }
+        /* Mantener colores de marca para redes sociales */
+        .social-icons a:hover.fa-youtube { color: #FF0000; }
+        .social-icons a:hover.fa-linkedin { color: #0A66C2; }
+        .social-icons a:hover.fa-instagram { color: #E4405F; }
+        .social-icons a:hover.fa-facebook { color: #1877F2; }
+        .social-icons a:hover.fa-tiktok { color: var(--text-primary); } 
+        .donation-text { font-size: 0.9rem; max-width: 600px; margin: 0 auto 25px auto; line-height: 1.7; }
+        #donate-button-container { margin-top: 20px; margin-bottom: 20px; display: flex; justify-content: center; }
+
+        .tooltip { 
+            position: relative; display: inline-flex; align-items: center; cursor: help;
+            margin-left: 5px; vertical-align: middle;
+            color: var(--text-secondary);
+        }
+        .tooltip .fa-info-circle { font-size: 0.9em; }
+        .tooltip .tooltiptext { 
+            visibility: hidden; width: 260px; background-color: var(--tooltip-bg);
+            color: var(--tooltip-text); text-align: left; 
+            border-radius: var(--border-radius-md); padding: 12px 15px; 
+            position: absolute; z-index: 1001; bottom: 135%; 
+            left: 50%; margin-left: -130px; opacity: 0;
+            transition: opacity 0.25s ease, transform 0.25s ease; 
+            font-size: 0.85rem;
+            border: 1px solid #444;
+            box-shadow: var(--shadow-md); 
+            transform: translateY(5px);
+        }
+        .tooltip .tooltiptext::after { 
+            content: ""; position: absolute; top: 100%; left: 50%;
+            margin-left: -5px; border-width: 5px; border-style: solid;
+            border-color: var(--tooltip-bg) transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; transform: translateY(0); }
+
+        /* Nueva sección para plantillas */
+        .template-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--bg-tertiary);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+        }
+        .template-section label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        #templateSelector {
+            margin-top: 10px;
+        }
+
+        /* Modal de Guía Rápida */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1001; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6); 
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: var(--bg-secondary);
+            margin: 10% auto; 
+            padding: 25px 30px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            width: 80%;
+            max-width: 600px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+        .modal-content h2 {
+            margin-top:0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-content ul {
+            list-style: none; padding-left: 0;
+        }
+        .modal-content ul li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .modal-content ul li::before {
+            content: "💡"; /* O un icono de FontAwesome */
+            position: absolute;
+            left: 0;
+            color: var(--accent-primary-start);
+        }
+        .close-modal-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: var(--text-secondary);
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .close-modal-btn:hover,
+        .close-modal-btn:focus {
+            color: var(--text-primary);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="sticky-bar">
+        <button id="btnOpenConfig"><i class="fas fa-folder-open emoji"></i> Abrir</button>
+        <input type="file" id="fileOpenConfig" accept=".json" style="display: none;">
+        <button id="btnUndo" title="Deshacer (Ctrl+Z)" disabled><i class="fas fa-undo emoji"></i> Deshacer</button>
+        <button id="btnRedo" title="Rehacer (Ctrl+Shift+Z)" disabled><i class="fas fa-redo emoji"></i> Rehacer</button>
+        <button id="btnQuickGuide"><i class="fas fa-question-circle emoji"></i> Guía Rápida</button>
+        <div class="config-save-options">
+            <label for="chkIncludePromptInSave"><i class="fas fa-save emoji" style="margin-right: 4px;"></i> Prompt:</label>
+            <input type="checkbox" id="chkIncludePromptInSave">
+            <button id="btnSaveConfig"><i class="fas fa-download emoji"></i> Guardar</button>
+            <button type="button" id="btnClearForm" class="warning"><i class="fas fa-broom emoji"></i> Limpiar</button> <!-- Movido Limpiar aquí -->
+        </div>
+    </div>
+
+    <div id="quickGuideModal" class="modal">
+        <div class="modal-content">
+            <span id="closeQuickGuideModal" class="close-modal-btn">×</span>
+            <h2><i class="fas fa-rocket" style="color: var(--accent-primary-start); margin-right:10px;"></i> Guía Rápida para Prompts Efectivos</h2>
+            <ul>
+                <li><strong>Claridad ante todo:</strong> Define tu objetivo de forma precisa. ¿Qué quieres exactamente que haga la IA?</li>
+                <li><strong>Contexto es rey:</strong> Proporciona suficiente información de fondo para que la IA entienda el escenario.</li>
+                <li><strong>Especifica el formato:</strong> Indica cómo quieres la respuesta (lista, párrafo, tabla, código, etc.).</li>
+                <li><strong>Usa el "Rol":</strong> Decirle a la IA "Actúa como un experto en X" puede mejorar mucho los resultados.</li>
+                <li><strong>Itera y refina:</strong> No esperes la perfección al primer intento. Ajusta tu prompt basándote en las respuestas.</li>
+                <li><strong>Prueba el "Prompt Negativo":</strong> Especificar qué NO hacer puede ser tan útil como decir qué hacer.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1><i class="fas fa-lightbulb" style="color: var(--accent-primary-start); margin-right:10px;"></i> Generador de Prompts Avanzado</h1>
+        <div class="date-display" id="currentDate"></div>
+
+        <form id="promptForm">
+            <div class="template-section">
+                <label for="templateSelector"><i class="fas fa-wand-magic-sparkles" style="margin-right: 8px;"></i>Usar una Plantilla (Opcional):</label>
+                <select id="templateSelector" name="templateSelector">
+                    <option value="">-- Selecciona una plantilla --</option>
+                    <option value="blogPostIdea">Idea para Artículo de Blog</option>
+                    <option value="socialMediaPost">Publicación para Redes Sociales</option>
+                    <option value="emailDraft">Borrador de Email Persuasivo</option>
+                    <option value="codeHelper">Ayudante de Código (Explicar/Depurar)</option>
+                </select>
+            </div>
+
+            <div id="loadedConfigNameDisplay"></div>
+            
+            <fieldset>
+                <legend><i class="fas fa-user-astronaut" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Rol de la IA</legend>
+                <label for="rol">Actúa como si fueras:
+                    <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Define el área de especialización que la IA debe adoptar. Ej: "un experto en Marketing Digital", "un historiador de la Antigua Roma".</span>
+                    </span>
+                </label>
+                <input type="text" id="rol" name="rol" value="un experto en temas generales">
+            </fieldset>
+
+            <fieldset>
+                <legend><i class="fas fa-bullseye" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Tarea Principal</legend>
+                <label for="tareaTitulo">Título de la tarea (Verbo + Qué + Para qué):
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Resume la acción, el objeto y el propósito de la tarea. Ej: "Crear un plan de contenidos para aumentar engagement".</span>
+                    </span>
+                </label>
+                <input type="text" id="tareaTitulo" name="tareaTitulo" placeholder="Ej: Crear un plan de contenidos para aumentar engagement">
+            </fieldset>
+            
+            <!-- ... (resto de los fieldsets y campos como en v3.4.3, pero con los nuevos estilos aplicados) ... -->
+            <!-- Ejemplo de un fieldset adaptado: -->
+            <fieldset>
+                <legend><i class="fas fa-lightbulb-on" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Aportes del Usuario</legend>
+                <label for="userIdeas">Ideas que se me ocurren:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Anota aquí tus ideas iniciales, puntos de partida o conceptos que quieres que la IA considere.</span>
+                    </span>
+                </label>
+                <textarea id="userIdeas" name="userIdeas" placeholder="Ej: Podríamos enfocarlo desde la perspectiva del usuario final, usar un tono más cercano..."></textarea>
+                <label for="userQuestionRequest">Pregunta / Solicitud principal:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Formula la pregunta o solicitud central que la IA debe abordar. Sé claro y conciso.</span>
+                    </span>
+                </label>
+                <textarea id="userQuestionRequest" name="userQuestionRequest" placeholder="Ej: ¿Cuáles son las estrategias más efectivas para X en el año actual? o Desarrolla un borrador para Y."></textarea>
+                <label for="userExpectation">Expectativa del resultado:
+                      <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Describe cómo te imaginas la respuesta ideal o qué tipo de información/formato esperas recibir.</span>
+                    </span>
+                </label>
+                <textarea id="userExpectation" name="userExpectation" placeholder="Ej: Espero una lista de 5 estrategias con pros y contras, un texto de aproximadamente 300 palabras..."></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend><i class="fas fa-ban" style="margin-right: 10px; color: var(--warning-bg-start);"></i> Prompt Negativo (Opcional)</legend>
+                <label for="negativePrompt">Cosas a evitar o excluir:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Especifica aquí conceptos, temas, palabras clave o estilos que la IA NO debe incluir en su respuesta. Ayuda a refinar el resultado evitando contenido no deseado. Ej: "No usar jerga técnica", "Evitar mencionar a la competencia X", "No escribir en un tono demasiado formal".</span>
+                    </span>
+                </label>
+                <textarea id="negativePrompt" name="negativePrompt" placeholder="Ej: No mencionar temas políticos, evitar el uso de un lenguaje demasiado complejo, no incluir ejemplos sobre finanzas..."></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend><i class="fas fa-file-alt" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Descripción Detallada</legend>
+                <label for="taskDescriptionContextoGeneral">Contexto general adicional y detalles:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Proporciona cualquier otra información de fondo o detalle específico sobre la tarea que no se haya cubierto.</span>
+                    </span>
+                </label>
+                <textarea id="taskDescriptionContextoGeneral" name="taskDescriptionContextoGeneral" placeholder="Explica aquí más detalles del objetivo, información de fondo necesaria..."></textarea>
+                
+                <h2><i class="fas fa-cogs" style="margin-right: 10px;"></i> Consideraciones de Contexto</h2>
+                <div class="checkbox-group">
+                    <div> <input type="checkbox" id="ctx_especificidad" name="contextoConsideracion" value="especificidad"> <label for="ctx_especificidad" class="checkbox-item-label">Especificidad y Claridad</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Asegúrate de definir con precisión lo que necesitas, evitando ambigüedades o términos vagos.</span></span></div>
+                    <div> <input type="checkbox" id="ctx_estructuraLogica" name="contextoConsideracion" value="estructuraLogica"> <label for="ctx_estructuraLogica" class="checkbox-item-label">Estructura Lógica</label><span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Organiza la información de manera coherente, priorizando los elementos más importantes.</span></span> </div>
+                    <div> <input type="checkbox" id="ctx_parametrosRestricciones" name="contextoConsideracion" value="parametrosRestricciones"> <label for="ctx_parametrosRestricciones" class="checkbox-item-label">Parámetros y Restricciones</label><span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Establece límites claros (extensión, formato, etc.) y define el tono o estilo deseado.</span></span> </div>
+                    <div> <input type="checkbox" id="ctx_ejemplosIlustrativos" name="contextoConsideracion" value="ejemplosIlustrativos"> <label for="ctx_ejemplosIlustrativos" class="checkbox-item-label">Ejemplos Ilustrativos</label><span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Considera incluir muestras de lo que esperas o contraejemplos si es necesario.</span></span> </div>
+                    <div> <input type="checkbox" id="ctx_pasosSecuenciales" name="contextoConsideracion" value="pasosSecuenciales"> <label for="ctx_pasosSecuenciales" class="checkbox-item-label">Instrucciones Paso a Paso</label><span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Desglosa solicitudes complejas en pasos secuenciales si aplica.</span></span> </div>
+                    <div> <input type="checkbox" id="ctx_conocimientoPrevio" name="contextoConsideracion" value="conocimientoPrevio"> <label for="ctx_conocimientoPrevio" class="checkbox-item-label">Conocimiento Previo y Suposiciones</label><span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Aclara qué conocimiento previo asumes que tiene la IA y fuentes relevantes.</span></span> </div>
+                    <div> <input type="checkbox" id="ctx_iteracionRefinamiento" name="contextoConsideracion" value="iteracionRefinamiento"> <label for="ctx_iteracionRefinamiento" class="checkbox-item-label">Iteración y Refinamiento</label><span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Indica si esperas un proceso iterativo o si la IA debe pedir aclaraciones.</span></span> </div>
+                    <div> <input type="checkbox" id="ctx_consideracionesEticas" name="contextoConsideracion" value="consideracionesEticas"> <label for="ctx_consideracionesEticas" class="checkbox-item-label">Consideraciones Éticas y Sesgos</label><span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Menciona si hay consideraciones éticas o de sesgo a tener en cuenta.</span></span> </div>
+                </div>
+
+                <label for="temas"><i class="fas fa-book-open" style="margin-right: 8px;"></i> Temas a cubrir (adicionales):
+                    <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Lista temas o subtemas secundarios que el contenido debe abordar.</span>
+                    </span>
+                </label>
+                <textarea id="temas" name="temas" placeholder="Ej: Beneficios del producto, Casos de uso, Comparativa con competencia..."></textarea>
+                <label for="formatoDescripcion"><i class="fas fa-ruler-combined" style="margin-right: 8px;"></i> Formato del contenido:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Describe la estructura o tipo de contenido. Ej: "Artículo de blog", "Guion para video", "Respuesta a correo".</span>
+                    </span>
+                </label>
+                <textarea id="formatoDescripcion" name="formatoDescripcion" placeholder="Ej: Un ensayo argumentativo de 5 párrafos, una lista con viñetas..."></textarea>
+                
+                <h2><i class="fas fa-paint-brush" style="margin-right: 10px;"></i> Estilo de Escritura</h2>
+                <div class="style-columns-container">
+                    <div class="style-column">
+                        <h3>Vocabulario:</h3>
+                        <div class="checkbox-group">
+                            <div> <input type="checkbox" id="vocab_simple" name="vocabulario" value="simple"> <label for="vocab_simple" class="checkbox-item-label">Simple</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA hablará con palabras fáciles de entender, como en un cuento.</span></span> </div>
+                            <div> <input type="checkbox" id="vocab_complejo" name="vocabulario" value="complejo"> <label for="vocab_complejo" class="checkbox-item-label">Complejo</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA usará palabras más difíciles y elaboradas, como un profesor explicando algo importante.</span></span> </div>
+                            <div> <input type="checkbox" id="vocab_tecnico" name="vocabulario" value="tecnico"> <label for="vocab_tecnico" class="checkbox-item-label">Técnico</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA hablará como un experto en un tema específico, usando palabras de esa profesión (ej. un doctor o un ingeniero).</span></span> </div>
+                            <div> <input type="checkbox" id="vocab_coloquial" name="vocabulario" value="coloquial"> <label for="vocab_coloquial" class="checkbox-item-label">Coloquial</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA hablará de forma relajada y casual, como cuando charlas con un amigo.</span></span> </div>
+                        </div>
+                    </div>
+                    <div class="style-column">
+                        <h3>Figuras Retóricas:</h3>
+                        <div class="checkbox-group">
+                            <div> <input type="checkbox" id="fig_metafora" name="figurasRetoricas" value="metafora"> <label for="fig_metafora" class="checkbox-item-label">Metáfora</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA dirá que algo *es* otra cosa para explicarlo mejor. Ejemplo: 'Tus ojos son estrellas'.</span></span> </div>
+                            <div> <input type="checkbox" id="fig_simil" name="figurasRetoricas" value="simil"> <label for="fig_simil" class="checkbox-item-label">Símil</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA dirá que algo es *como* otra cosa para compararlo. Ejemplo: 'Corre rápido *como* el viento'.</span></span> </div>
+                            <div> <input type="checkbox" id="fig_personificacion" name="figurasRetoricas" value="personificacion"> <label for="fig_personificacion" class="checkbox-item-label">Personificación</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA le dará cualidades de persona a cosas que no lo son. Ejemplo: 'El viento susurraba secretos'.</span></span> </div>
+                            <div> <input type="checkbox" id="fig_hiperbole" name="figurasRetoricas" value="hiperbole"> <label for="fig_hiperbole" class="checkbox-item-label">Hipérbole</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA exagerará mucho algo para hacerlo más divertido o impactante. Ejemplo: 'Te esperé mil años'.</span></span> </div>
+                            <div> <input type="checkbox" id="fig_ironia" name="figurasRetoricas" value="ironia"> <label for="fig_ironia" class="checkbox-item-label">Ironía</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA dirá lo contrario de lo que quiere decir, a veces para ser gracioso. Ejemplo: (Si llueve mucho) '¡Qué día tan soleado!'</span></span> </div>
+                            <div> <input type="checkbox" id="fig_aliteracion" name="figurasRetoricas" value="aliteracion"> <label for="fig_aliteracion" class="checkbox-item-label">Aliteración</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA repetirá sonidos al principio de las palabras cercanas. Ejemplo: 'Tres tristes tigres'.</span></span> </div>
+                            <div> <input type="checkbox" id="fig_paradoja" name="figurasRetoricas" value="paradoja"> <label for="fig_paradoja" class="checkbox-item-label">Paradoja</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA dirá algo que parece no tener sentido, pero te hace pensar. Ejemplo: 'Solo sé que no sé nada'.</span></span> </div>
+                            <div> <input type="checkbox" id="fig_antitesis" name="figurasRetoricas" value="antitesis"> <label for="fig_antitesis" class="checkbox-item-label">Antítesis</label> <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">La IA pondrá dos ideas opuestas juntas para destacar la diferencia. Ejemplo: 'Es tan corto el amor, y es tan largo el olvido'.</span></span> </div>
+                        </div>
+                    </div>
+                </div>
+                <label for="estructuraOraciones">Estructura de las oraciones:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Define si prefieres frases cortas y directas, o más largas y elaboradas.</span>
+                    </span>
+                </label>
+                <select id="estructuraOraciones" name="estructuraOraciones"> <option value="neutro" selected>Neutro / Equilibrado</option> <option value="cortasDirectas">Cortas y directas</option> <option value="largasElaboradas">Largas y elaboradas</option> </select>
+                <label for="nivelDetalle">Nivel de detalle:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">¿Qué tan profundo debe ser el contenido?</span>
+                    </span>
+                </label>
+                <select id="nivelDetalle" name="nivelDetalle"> <option value="conciso" selected>Conciso</option> <option value="descriptivo">Descriptivo</option> <option value="narrativo">Narrativo</option> <option value="muyDetallado">Muy detallado</option> </select>
+                <label for="perspectiva">Perspectiva:
+                    <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Punto de vista desde el que se escribirá el texto.</span>
+                    </span>
+                </label>
+                <select id="perspectiva" name="perspectiva"> <option value="tercera" selected>Tercera persona (él/ella/ellos)</option> <option value="primera">Primera persona (yo/nosotros)</option> <option value="segunda">Segunda persona (tú/ustedes)</option> <option value="impersonal">Impersonal / Voz pasiva</option> </select>
+                <label for="tono">Tono:
+                    <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">La actitud general del texto.</span>
+                    </span>
+                </label>
+                <select id="tono" name="tono"> <option value="neutro" selected>Neutro</option> <option value="formal">Formal</option> <option value="informal">Informal</option> <option value="persuasivo">Persuasivo</option> <option value="serio">Serio</option> <option value="humoristico">Humorístico</option> <option value="inspirador">Inspirador</option> <option value="empatico">Empático</option> </select>
+            </fieldset>
+
+            <fieldset>
+                <legend><i class="fas fa-users" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Audiencia</legend>
+                <label for="audiencia">Describe al público objetivo:
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">¿A quién va dirigido el contenido? Nivel de conocimiento, intereses, etc.</span>
+                    </span>
+                </label>
+                <textarea id="audiencia" name="audiencia" placeholder="Ej: Jóvenes adultos interesados en tecnología, con conocimientos básicos de programación..."></textarea>
+            </fieldset>
+
+            <fieldset>
+                <legend><i class="fas fa-file-export" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Formato de Salida y Extras</legend>
+                <label for="formatoSalida">Describe el formato de salida deseado:
+                      <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">¿Cómo debe entregar la IA el resultado? Ej: "Texto plano", "JSON", "Markdown con encabezados".</span>
+                    </span>
+                </label>
+                <textarea id="formatoSalida" name="formatoSalida" placeholder="Ej: Un documento de texto, un email, una lista de puntos clave en formato Markdown..."></textarea>
+                <label for="instruccionesArchivos">Instrucciones sobre archivos adjuntos (si aplica):
+                     <span class="tooltip"><i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Si vas a adjuntar archivos en la plataforma de IA, describe aquí qué debe hacer la IA con ellos.</span>
+                    </span>
+                </label>
+                <textarea id="instruccionesArchivos" name="instruccionesArchivos" placeholder="Ej: 'Analiza el documento .txt adjunto para extraer los puntos clave.' o 'Usa la imagen .jpg adjunta como inspiración visual.'"></textarea>
+                <p style="font-size: 0.85em; color: var(--text-secondary); font-style: italic; margin-top: -10px; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle" style="color: var(--warning-bg-start); margin-right: 5px;"></i>Recordatorio: Deberás adjuntar los archivos manualmente en la plataforma de IA.</p>
+                <div class="checkbox-group checkbox-links-request"> <label for="textualLinksRequest" class="checkbox-item-label"> <input type="checkbox" id="textualLinksRequest" name="textualLinksRequest" value="true"> Incluir links externos de forma textual y clara <span class="tooltip"><i class="fas fa-info-circle"></i> <span class="tooltiptext">Algunas IAs ocultan links en números o texto. Esta opción pide que los muestre completos (ej: https://www.ejemplo.com) para copiarlos fácil.</span></span></label> </div>
+                <div class="checkbox-group checkbox-quality-request"> <label for="qualityRequest" class="checkbox-item-label"> <input type="checkbox" id="qualityRequest" name="qualityRequest" value="true"> Solicitud de Calidad y Precisión <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">"Antes de darme una respuesta, si todavía te hace falta información, o si luego de investigar en Internet, ves que: IMPORTANTE: Mis conceptos están errados o desactualizados a la fecha de hoy [fecha dinámica], hazme preguntas de calidad, para que puedas encontrar la respuesta perfecta y 100% efectiva a mis necesidades, y ofrecerme mejores alternativas que yo no haya encontrado hasta éste instante."</span></span></label> </div>
+            </fieldset>
+
+            <div id="actionButtons" style="text-align: center; margin-top: 40px; margin-bottom: 20px; display: flex; justify-content: center; flex-wrap: wrap; gap:15px;">
+                <button type="button" id="btnGeneratePrompt"><i class="fas fa-rocket emoji"></i> Generar Prompt</button>
+                <button type="button" id="btnCopyPrompt" class="secondary"><i class="fas fa-copy emoji"></i> Copiar Prompt</button>
+            </div>
+
+            <div id="outputPromptContainer">
+                <h2><i class="fas fa-code" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Prompt Generado</h2>
+                <textarea id="outputPrompt" readonly placeholder="Aquí aparecerá el prompt JSON generado..."></textarea>
+            </div>
+
+            <div class="personal-info-section">
+                <legend><i class="fas fa-user-circle" style="margin-right: 10px; color: var(--accent-primary-start);"></i> Sobre el Creador & Ayuda</legend>
+                <p>
+                    <i class="fas fa-heart" style="color: #e4405f; margin-right: 5px;"></i>Gracias por usar esta app gratuita offline. Aprende más en
+                    <a href="https://www.youtube.com/c/CamiloMonsalve" target="_blank" rel="noopener noreferrer">mi canal de YouTube</a>.
+                </p>
+                <div class="social-icons">
+                    <a href="https://www.youtube.com/c/CamiloMonsalve" target="_blank" rel="noopener noreferrer" title="YouTube" class="fab fa-youtube"></a>
+                    <a href="https://www.linkedin.com/feed/" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="fab fa-linkedin"></a>
+                    <a href="https://www.instagram.com/camimonsa3d/" target="_blank" rel="noopener noreferrer" title="Instagram" class="fab fa-instagram"></a>
+                    <a href="https://www.facebook.com/camilomonsalve3D" target="_blank" rel="noopener noreferrer" title="Facebook" class="fab fa-facebook"></a>
+                    <a href="https://www.tiktok.com/@cami3d" target="_blank" rel="noopener noreferrer" title="TikTok" class="fab fa-tiktok"></a>
+                </div>
+                <p class="donation-text">
+                    Si esta herramienta te ha sido útil, considera apoyarme con una pequeña donación para seguir creando y mejorando proyectos. ¡Cada aporte cuenta!
+                </p>
+                <div id="donate-button-container">
+                    <div id="donate-button"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <a href="#" id="scrollToTopBtn" title="Ir arriba"><i class="fas fa-arrow-up"></i></a>
+
+    <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+    <script>
+        // --- START OF JavaScript (v3.5.0) ---
+        const neutralConfig = { rol: "un experto en temas generales", tareaTitulo: "", userIdeas: "", userQuestionRequest: "", userExpectation: "", negativePrompt: "",  taskDescriptionContextoGeneral: "", contextoConsideracion: [], temas: "", formatoDescripcion: "", vocabulario: [],  figurasRetoricas: [], estructuraOraciones: "neutro", nivelDetalle: "conciso", perspectiva: "tercera", tono: "neutro", audiencia: "", formatoSalida: "Texto plano bien estructurado.", instruccionesArchivos: "", textualLinksRequest: false, qualityRequest: false, templateSelector: "" };
+        
+        // Plantillas predefinidas
+        const templates = {
+            blogPostIdea: {
+                rol: "un estratega de contenidos experto en SEO",
+                tareaTitulo: "Generar 5 ideas para artículos de blog sobre [TEMA PRINCIPAL]",
+                userQuestionRequest: "Necesito 5 ideas originales y atractivas para artículos de blog sobre [TEMA PRINCIPAL]. Cada idea debe incluir un posible título, una breve descripción del enfoque y 2-3 palabras clave principales.",
+                userExpectation: "Una lista numerada con las 5 ideas, cada una con título, descripción y palabras clave. Enfócate en ángulos que no sean los típicos.",
+                formatoDescripcion: "Lista numerada. Para cada idea: Título (H3), Descripción (párrafo), Palabras Clave (lista).",
+                audiencia: "[TU AUDIENCIA OBJETIVO]",
+                formatoSalida: "Markdown con encabezados para los títulos de las ideas."
+            },
+            socialMediaPost: {
+                rol: "un community manager creativo y conciso",
+                tareaTitulo: "Crear 3 borradores de posts para [RED SOCIAL] sobre [EVENTO/PRODUCTO/TEMA]",
+                userQuestionRequest: "Elabora 3 opciones de posts para [RED SOCIAL] promocionando/informando sobre [EVENTO/PRODUCTO/TEMA]. Deben ser breves, llamativos e incluir un llamado a la acción y 2-3 hashtags relevantes.",
+                userExpectation: "Tres borradores de texto, cada uno de no más de 280 caracteres (si es para X/Twitter) o 150 palabras (para otras redes). Incluir emojis si es apropiado para el tono.",
+                tono: "informal", // o el que se ajuste
+                formatoSalida: "Texto plano, un post tras otro, separados por '---'."
+            },
+            emailDraft: {
+                rol: "un copywriter experto en email marketing",
+                tareaTitulo: "Redactar un borrador de email persuasivo para [PROPÓSITO DEL EMAIL]",
+                userQuestionRequest: "Necesito un borrador de email para [PROPÓSITO DEL EMAIL, ej: anunciar un nuevo producto, invitar a un webinar, recuperar un carrito abandonado]. El email debe tener un asunto atractivo, un cuerpo claro y conciso, y un llamado a la acción fuerte.",
+                userExpectation: "Un email completo con: Asunto, Cuerpo del email (dividido en 2-3 párrafos cortos), Llamado a la acción (CTA).",
+                audiencia: "[CLIENTES/SUSCRIPTORES/LEADS]",
+                tono: "persuasivo",
+                formatoSalida: "Texto plano."
+            },
+            codeHelper: {
+                rol: "un programador senior experto y paciente, especializado en [LENGUAJE/TECNOLOGÍA]",
+                tareaTitulo: "Explicar o depurar un fragmento de código en [LENGUAJE]",
+                userQuestionRequest: "Por favor, revisa el siguiente fragmento de código en [LENGUAJE] y [EXPLICA QUÉ HACE / AYÚDAME A ENCONTRAR EL ERROR / SUGIERE MEJORAS]:\n\n[PEGAR CÓDIGO AQUÍ]\n\n",
+                userExpectation: "Una explicación clara y paso a paso, o una identificación del error con sugerencia de corrección, o alternativas más eficientes/idiomáticas. Si es depuración, indica la línea problemática si es posible.",
+                taskDescriptionContextoGeneral: "Asume que tengo un nivel [PRINCIPIANTE/INTERMEDIO/AVANZADO] de conocimiento en [LENGUAJE].",
+                formatoSalida: "Respuesta en Markdown, usando bloques de código para el código."
+            }
+        };
+
+        const FIXED_PROMPT_PARAMS = { promptHeader: "NO ejecutes el modo canva o lienzo. Tu tarea es crear un contenido alineado con las necesidades individuales del usuario. Inicia la interacción con el usuario para obtener detalles esenciales y resolver cualquier ambigüedad. Perfecciona iterativamente tu respuesta a través de evaluaciones consistentes utilizando la evaluationRubric dada y recopila comentarios de los usuarios para garantizar que el producto final se alinee con las expectativas de los usuarios. DEBES SEGUIR LAS REGLAS EN ORDEN.", REGLAS: { "REGLA_1": "Mensaje inicial: 👋 Soy tu asistente IA. Mi objetivo es {tarea}. Para brindar un trabajo de la más alta calidad, necesito hacerle algunas preguntas.", "REGLA_2": "Haga hasta 5 preguntas pertinentes diseñadas para obtener todos los detalles necesarios para crear un resultado personalizado de la más alta calidad que logre el objetivo del usuario. Luego, espera una respuesta.", "REGLA_3": "Respira profundamente. Piensa en tu tarea paso a paso. Considere los factores de éxito, los criterios y el objetivo. Imagínese cuál sería el resultado óptimo. Apunte a la perfección en cada intento.", "REGLA_4": "Utilice los detalles que proporcionó el usuario y las mejores prácticas de la industria para crear el contenido óptimo.", "REGLA_5": "CONCLUYA cada finalización de trabajo con \"🤖 ¿Le gustaría que evaluara este trabajo ☝ y le brindara opciones para mejorarlo? ¿Sí o no?\"", "REGLA_6": "SIEMPRE DEBES evaluar tu trabajo usando un formato de tabla. NO añadas comentarios sugeridos en áreas donde podría incluir datos adicionales. Limítate a evaluar tu trabajo en formato de tabla, Cada evaluación DEBE incluir: Criteria, Rating (out of 10 based on evaluationRubric), Reasons for Rating, and Detailed Feedback for Improvement.", "REGLA_7": "La evaluationRubric, detallada en la sección 'criteria' de este prompt, es la guía definitiva para calificar el trabajo. Haga una referencia cruzada rigurosa del contenido con la descripción de cada criterio allí presente. Haga coincidir los atributos del trabajo con los detalles de la rúbrica. Después de cada evaluación proporcione una confirmación honesta si la evaluationRubric (sección 'criteria') se utilizó con un ✅ o ❌", "REGLA_8": "DEBE SIEMPRE mostrar las opciones de post-evaluation DESPUÉS DE CADA evaluación. Post-evaluation, mostrará las opciones: \"Opciones\": [\"1: 👍 Mejorar según los comentarios\", \"2: 👀 Proporcionar una evaluación más estricta\", \"3: 🙋‍♂️ Responder más preguntas para personalización\", \"4: 🧑‍🤝‍🧑 Emule los comentarios detallados de un grupo enfocado en ese tema\", \"5: 👑 Emule los comentarios detallados de un grupo de expertos,\", \"6: ✨ Seamos creativos y probemos un enfoque diferente\", \"8: 💡 Solicite modificación de formato, estilo o longitud\", \"9: 🤖 ¡Haz de esto un 10/10 automáticamente! \"] ", "rule_9": "Para cada revisión, agregue una sección \\REGISTRO DE CAMBIOS 📝\\ al final del contenido. Esta sección debe documentar de manera concisa las modificaciones y actualizaciones específicas realizadas." }, criteria: { "criteria_1": {"name": "Relevancia", "description": "El texto resultado debe demostrar un profundo conocimiento de las necesidades, intereses y puntos débiles del público objetivo. Debe abordar temas relevantes y proporcionar información valiosa que resuene en los lectores."}, "criteria_2": {"name": "Originalidad", "description": "El texto resultado debe ofrecer perspectivas únicas e ideas nuevas que lo distingan de otros contenidos de la industria. Debe evitar regurgitar información comúnmente conocida y, en su lugar, proporcionar conocimientos nuevos e innovadores que capten la atención de los lectores."}, "criteria_3": {"name": "Conexión", "description": "El texto resultado debe estar escrito de un modo cautivador. y convincente que mantiene a los lectores interesados en todo momento. Debe utilizar técnicas narrativas, titulares convincentes, y un tono conversacional para crear una conexión con la audiencia y alentarlos a continuar leyendo y tomar medidas."}, "criteria_4": {"name": "Análisis Crítico Experto", "description": "Un análisis altamente crítico. Evaluación del trabajo desde la perspectiva de un experto de la industria, es decir, de un experto experimentado en el campo o industria relevante. Requiere la demostración de conocimientos y experiencia profundos que se alineen con las mejores prácticas, estándares y expectativas de la industria."}, "criteria_5": {"name": "Calificación general", "description": "Una evaluación global que considere todos los criterios juntos."}} };
+        let history = []; let historyIndex = -1; const MAX_HISTORY_STATES = 20; let lastLoadedConfigFilename = null; let promptHasUnsavedChanges = false;
+        
+        const promptForm = document.getElementById('promptForm'); const outputPromptTextarea = document.getElementById('outputPrompt'); const currentDateEl = document.getElementById('currentDate'); const btnGeneratePrompt = document.getElementById('btnGeneratePrompt'); const btnCopyPrompt = document.getElementById('btnCopyPrompt'); const btnClearForm = document.getElementById('btnClearForm');  const btnOpenConfig = document.getElementById('btnOpenConfig'); const fileOpenConfigInput = document.getElementById('fileOpenConfig'); const btnSaveConfig = document.getElementById('btnSaveConfig'); const btnUndo = document.getElementById('btnUndo'); const btnRedo = document.getElementById('btnRedo'); const chkIncludePromptInSave = document.getElementById('chkIncludePromptInSave'); const loadedConfigNameDisplay = document.getElementById('loadedConfigNameDisplay'); const scrollToTopBtn = document.getElementById('scrollToTopBtn'); 
+        const templateSelector = document.getElementById('templateSelector');
+        const quickGuideModal = document.getElementById('quickGuideModal');
+        const btnQuickGuide = document.getElementById('btnQuickGuide');
+        const closeQuickGuideModal = document.getElementById('closeQuickGuideModal');
+
+        function setUnsavedChanges(status) { promptHasUnsavedChanges = status; }
+        
+        function getFormValues() { const formData = new FormData(promptForm); const values = {}; for (const element of promptForm.elements) { if (!element.name) continue;  if (element.type === 'checkbox') { if (element.name.endsWith('[]') || ['contextoConsideracion', 'vocabulario', 'figurasRetoricas'].includes(element.name)) {  if (!values[element.name]) values[element.name] = []; if (element.checked) values[element.name].push(element.value); } else { values[element.name] = element.checked; } } else if (element.type === 'radio') { if (element.checked) values[element.name] = element.value; } else if (element.tagName === 'SELECT' && element.multiple) {  values[element.name] = Array.from(element.selectedOptions).map(opt => opt.value); } else { values[element.name] = element.value; } } ['contextoConsideracion', 'vocabulario', 'figurasRetoricas'].forEach(chkGroup => { if (!values[chkGroup]) values[chkGroup] = []; }); ['qualityRequest', 'textualLinksRequest'].forEach(chkName => { if (typeof values[chkName] === 'undefined') values[chkName] = false; }); if (typeof values['negativePrompt'] === 'undefined') values['negativePrompt'] = ""; values.chkIncludePromptInSave = chkIncludePromptInSave.checked;  return values; }
+        
+        function setFormValues(config, calledFromHistory = false) { 
+            Object.keys(neutralConfig).forEach(key => { // Iterar sobre las claves de neutralConfig para asegurar que todos los campos se resetean
+                const elements = promptForm.elements[key];
+                if (elements) {
+                    if (elements.length && typeof elements.forEach === 'function' && elements[0].type === 'checkbox' ) {
+                         elements.forEach(chk => { chk.checked = Array.isArray(config[key]) && config[key].includes(chk.value); });
+                    } else if (elements.type === 'checkbox') {
+                        elements.checked = config[key] || false; // Asegurar que los checkboxes se desmarquen si no están en config
+                    } else if (elements.type === 'radio') { 
+                        let radioSelected = false;
+                        for (const radio of elements) { 
+                            if (radio.value === config[key]) { radio.checked = true; radioSelected = true; break; }
+                        }
+                        if(!radioSelected && elements.length > 0) elements[0].checked = true; // Default si no hay match
+                    } else {
+                        if(elements.value !== undefined) elements.value = config[key] || (elements.tagName === 'SELECT' ? elements.options[0].value : ""); // Default para select o string vacío
+                    }
+                }
+            });
+
+            if (config.hasOwnProperty('chkIncludePromptInSave')) chkIncludePromptInSave.checked = config.chkIncludePromptInSave; 
+            // if (promptForm.elements.negativePrompt) promptForm.elements.negativePrompt.value = config.negativePrompt || ""; 
+            if (templateSelector) templateSelector.value = config.templateSelector || ""; // Restaurar selector de plantilla
+
+            if (!calledFromHistory) { setUnsavedChanges(false); } 
+            updateUndoRedoButtons(); 
+        }
+
+        function applyTemplate(templateKey) {
+            if (templateKey && templates[templateKey]) {
+                const templateConf = templates[templateKey];
+                // Crear una copia de neutralConfig y sobreescribir con la plantilla
+                let fullConfigForTemplate = { ...neutralConfig }; 
+                for (const key in templateConf) {
+                    if (templateConf.hasOwnProperty(key)) {
+                        fullConfigForTemplate[key] = templateConf[key];
+                    }
+                }
+                // Asegurarse de que los campos no en la plantilla pero sí en neutralConfig se mantengan neutrales
+                // (esto ya lo hace el spread operator y el loop de setFormValues)
+                fullConfigForTemplate.templateSelector = templateKey; // Guardar la plantilla seleccionada
+
+                setFormValues(fullConfigForTemplate);
+                outputPromptTextarea.value = "Plantilla aplicada. Ajusta los campos [ENTRE CORCHETES] y genera el prompt.";
+                alert("Plantilla '" + templateSelector.options[templateSelector.selectedIndex].text + "' aplicada. \nRecuerda reemplazar los textos entre [CORCHETES] con tu información específica.");
+                saveStateToHistory();
+            } else if (templateKey === "") { // Si selecciona "-- Selecciona una plantilla --"
+                // resetFormToNeutral(); // Opcional: decidir si limpiar todo o solo deseleccionar
+            }
+        }
+
+        function clearLoadedConfigName() { loadedConfigNameDisplay.textContent = ''; loadedConfigNameDisplay.style.display = 'none'; lastLoadedConfigFilename = null; }
+        
+        function resetFormToNeutral() { if (promptHasUnsavedChanges) { if (!window.confirm("Hay cambios sin guardar. ¿Estás seguro de que quieres limpiar el formulario y perder esos cambios?")) { return;  } } setFormValues(neutralConfig, false);  outputPromptTextarea.value = "Aquí aparecerá el prompt JSON generado..."; clearLoadedConfigName(); history = []; historyIndex = -1; const neutralStateValues = getFormValues(); history.push(neutralStateValues); historyIndex = 0; updateUndoRedoButtons(); setUnsavedChanges(false); if(templateSelector) templateSelector.value = ""; }
+        
+        function generatePrompt() { const userValues = getFormValues(); const currentDateFormatted = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }); clearLoadedConfigName();  let taskDescriptionParts = []; taskDescriptionParts.push(`[[[descripción de tarea:\n`); taskDescriptionParts.push(`FECHA_ACTUALIZACION: ${currentDateFormatted}\n`); if(userValues.userIdeas) taskDescriptionParts.push(`\n== IDEAS DEL USUARIO ==\n${userValues.userIdeas}\n`); if(userValues.userQuestionRequest) taskDescriptionParts.push(`\n== PREGUNTA / SOLICITUD PRINCIPAL ==\n${userValues.userQuestionRequest}\n`); if(userValues.userExpectation) taskDescriptionParts.push(`\n== EXPECTATIVA DEL USUARIO ==\n${userValues.userExpectation}\n`); if(userValues.negativePrompt) taskDescriptionParts.push(`\n== PROMPT NEGATIVO (QUÉ EVITAR) ==\n${userValues.negativePrompt}\n`); if(userValues.taskDescriptionContextoGeneral) taskDescriptionParts.push(`\n== CONTEXTO GENERAL ADICIONAL Y DETALLES DE LA TAREA ==\n${userValues.taskDescriptionContextoGeneral}\n`); if (userValues.contextoConsideracion && userValues.contextoConsideracion.length > 0) { let contextoStr = "\n== CONSIDERACIONES DE CONTEXTO ADICIONALES (marcadas por el usuario) ==\n"; userValues.contextoConsideracion.forEach(item => { const formattedItem = item.replace(/([A-Z])/g, ' $1').trim().toLowerCase().replace(/\b\w/g, char => char.toUpperCase()); contextoStr += `- ${formattedItem}\n`;  }); taskDescriptionParts.push(contextoStr); } if(userValues.temas) taskDescriptionParts.push(`\n== TEMAS ADICIONALES A CUBRIR ==\n${userValues.temas}\n`); if(userValues.formatoDescripcion) taskDescriptionParts.push(`\n== FORMATO DEL CONTENIDO DESCRITO POR EL USUARIO ==\n${userValues.formatoDescripcion}\n`); let estiloStr = "\n== ESTILO DE ESCRITURA ==\n"; let estiloAdded = false; if (userValues.vocabulario && userValues.vocabulario.length > 0) { estiloStr += `  Vocabulario: ${userValues.vocabulario.join(', ')}. (Se busca equilibrio si hay múltiples selecciones)\n`; estiloAdded = true; } if(userValues.estructuraOraciones !== "neutro") { estiloStr += `  Estructura de las oraciones: ${userValues.estructuraOraciones}\n`; estiloAdded = true; } if (userValues.figurasRetoricas && userValues.figurasRetoricas.length > 0) { estiloStr += `  Uso de figuras retóricas: ${userValues.figurasRetoricas.join(', ')}. (Se busca equilibrio si hay múltiples selecciones)\n`; estiloAdded = true; } if(userValues.nivelDetalle !== "conciso") { estiloStr += `  Nivel de detalle: ${userValues.nivelDetalle}\n`; estiloAdded = true; } if(userValues.perspectiva !== "tercera") { estiloStr += `  Perspectiva: ${userValues.perspectiva}\n`; estiloAdded = true; } if(estiloAdded) taskDescriptionParts.push(estiloStr); if(userValues.tono !== "neutro") { taskDescriptionParts.push(`\n== TONO ==\n${userValues.tono}\n`); } if(userValues.audiencia) taskDescriptionParts.push(`\n== AUDIENCIA OBJETIVO ==\n${userValues.audiencia}\n`); taskDescriptionParts.push(`\n== FORMATO DE SALIDA DESEADO POR EL USUARIO ==\n${userValues.formatoSalida || "Texto plano bien estructurado."}\n`); if (userValues.instruccionesArchivos) { taskDescriptionParts.push(`\n== INSTRUCCIONES SOBRE ARCHIVOS ADJUNTOS ==\n${userValues.instruccionesArchivos}\n`); } if (userValues.textualLinksRequest) { taskDescriptionParts.push(`\n== SOLICITUD EXPRESA DE LINKS TEXTUALES ==\nPor favor, incluye todos los links externos de forma textual y completa (ej. https://www.ejemplo.com) en lugar de ocultarlos en hipervínculos numerados o acortados.\n`); } if (userValues.qualityRequest) { taskDescriptionParts.push(`\n== SOLICITUD ADICIONAL DE CALIDAD Y PRECISIÓN ==\nAntes de darme una respuesta, si todavía te hace falta información, o si luego de investigar en Internet, ves que: IMPORTANTE: Mis conceptos están errados o desactualizados a la fecha de hoy ${currentDateFormatted}, hazme preguntas de calidad, para que puedas encontrar la respuesta perfecta y 100% efectiva a mis necesidades, y ofrecerme mejores alternativas que yo no haya encontrado hasta éste instante.\n`); } taskDescriptionParts.push("\n]]]");  const taskDescription = taskDescriptionParts.join(''); const fullPrompt = { prompt: FIXED_PROMPT_PARAMS.promptHeader, rol: `[[[rol Actúa como si fueras ${userValues.rol}]]]`, tarea: `[[[título tarea ${userValues.tareaTitulo || "No especificada"}]]]`, task_description: taskDescription, REGLAS: FIXED_PROMPT_PARAMS.REGLAS, criteria: FIXED_PROMPT_PARAMS.criteria }; let tareaParaRegla1 = userValues.tareaTitulo || userValues.userQuestionRequest || "ayudarte con tu solicitud"; const reglasCopiadas = JSON.parse(JSON.stringify(FIXED_PROMPT_PARAMS.REGLAS)); reglasCopiadas.REGLA_1 = `Mensaje inicial: 👋 Soy tu asistente IA. Mi objetivo es ${tareaParaRegla1}. Para brindar un trabajo de la más alta calidad, necesito hacerle algunas preguntas.`; fullPrompt.REGLAS = reglasCopiadas; outputPromptTextarea.value = JSON.stringify(fullPrompt, null, 2); setUnsavedChanges(true);  }
+        
+        function copyPromptToClipboard() { if (!outputPromptTextarea.value || outputPromptTextarea.value === "Aquí aparecerá el prompt JSON generado...") { alert("Primero genera un prompt para copiar."); return; } navigator.clipboard.writeText(outputPromptTextarea.value).then(() => { alert("¡Prompt copiado al portapapeles!"); }).catch(err => { console.error('Error al copiar el prompt: ', err); try { outputPromptTextarea.select(); document.execCommand('copy'); alert("¡Prompt copiado al portapapeles! (fallback)"); } catch (e) { alert("No se pudo copiar el prompt. Por favor, cópialo manualmente."); } }); }
+        
+        function saveConfiguration() { const currentConfig = getFormValues(); let dataToSave = { formConfiguration: currentConfig, savedAt: new Date().toISOString() }; if (chkIncludePromptInSave.checked && outputPromptTextarea.value && outputPromptTextarea.value !== "Aquí aparecerá el prompt JSON generado...") { try { dataToSave.generatedPrompt = JSON.parse(outputPromptTextarea.value); } catch (e) { dataToSave.generatedPrompt = outputPromptTextarea.value; } } let finalFilename; if (lastLoadedConfigFilename) { finalFilename = lastLoadedConfigFilename; } else { let rolPart = (promptForm.elements.rol.value || "SinRol").substring(0, 25).replace(/\s+/g, '_').replace(/[^\w-]/g, ''); let tareaPart = (promptForm.elements.tareaTitulo.value || "SinTarea").substring(0, 35).replace(/\s+/g, '_').replace(/[^\w-]/g, ''); finalFilename = `prompt_${rolPart}_${tareaPart}.json`; if (rolPart === "SinRol" && tareaPart === "SinTarea") { finalFilename = `prompt_config_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.json`; } } if (!finalFilename.toLowerCase().endsWith('.json')) finalFilename += '.json'; finalFilename = finalFilename.replace(/[<>:"/\\|?*]+/g, '_'); const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = finalFilename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); setUnsavedChanges(false); if (!lastLoadedConfigFilename || lastLoadedConfigFilename !== finalFilename) { if (finalFilename !== `prompt_config_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.json`) { lastLoadedConfigFilename = finalFilename; loadedConfigNameDisplay.textContent = `Configuración guardada como: ${finalFilename}`; loadedConfigNameDisplay.style.display = 'block'; } } }
+        
+        function openConfiguration(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { try { const loadedData = JSON.parse(e.target.result); if (loadedData.formConfiguration) { setFormValues(loadedData.formConfiguration, false); if (loadedData.generatedPrompt) { outputPromptTextarea.value = typeof loadedData.generatedPrompt === 'string' ? loadedData.generatedPrompt : JSON.stringify(loadedData.generatedPrompt, null, 2); } else { outputPromptTextarea.value = "Configuración cargada. Genera un nuevo prompt si es necesario."; } loadedConfigNameDisplay.textContent = `Configuración cargada: ${file.name}`; loadedConfigNameDisplay.style.display = 'block'; lastLoadedConfigFilename = file.name; history = []; const loadedState = getFormValues(); history.push(loadedState); historyIndex = 0; updateUndoRedoButtons(); setUnsavedChanges(false); } else { alert("El archivo de configuración no tiene el formato esperado (falta 'formConfiguration')."); clearLoadedConfigName(); } } catch (error) { console.error("Error al parsear JSON:", error, "Contenido:", e.target.result); alert("Error al leer o parsear el archivo de configuración: " + error.message + ". Revisa la consola (F12) para más detalles."); clearLoadedConfigName(); } }; reader.readAsText(file); } fileOpenConfigInput.value = ""; }
+        
+        function saveStateToHistory(stateToSave = null) { const currentState = stateToSave || getFormValues(); if (history.length > 0 && historyIndex >=0 && historyIndex < history.length && JSON.stringify(currentState) === JSON.stringify(history[historyIndex])) { return;  } let isNeutralEquivalent = JSON.stringify(currentState) === JSON.stringify(neutralConfig); history = history.slice(0, historyIndex + 1);  history.push(currentState); if (history.length > MAX_HISTORY_STATES) { history.shift(); } historyIndex = history.length - 1; updateUndoRedoButtons(); if (!isNeutralEquivalent) { setUnsavedChanges(true); } else { if (history.length > 1) { setUnsavedChanges(true); } else { setUnsavedChanges(false); } } }
+        
+        function undo() { if (historyIndex > 0) { historyIndex--; setFormValues(history[historyIndex], true); if (outputPromptTextarea.value && outputPromptTextarea.value !== "Aquí aparecerá el prompt JSON generado...") { outputPromptTextarea.value = "Estado anterior restaurado. Genera el prompt si es necesario para reflejar estos valores."; } else { outputPromptTextarea.value = "Estado anterior restaurado."; } setUnsavedChanges(true); updateUndoRedoButtons(); } }
+        
+        function redo() { if (historyIndex < history.length - 1) { historyIndex++; setFormValues(history[historyIndex], true); if (outputPromptTextarea.value && outputPromptTextarea.value !== "Aquí aparecerá el prompt JSON generado...") { outputPromptTextarea.value = "Estado posterior restaurado. Genera el prompt si es necesario para reflejar estos valores."; } else { outputPromptTextarea.value = "Estado posterior restaurado."; } setUnsavedChanges(true); updateUndoRedoButtons(); } }
+        
+        function updateUndoRedoButtons() { btnUndo.disabled = historyIndex <= 0; btnRedo.disabled = historyIndex >= history.length - 1; }
+        
+        window.onscroll = function() {scrollFunction()}; function scrollFunction() { if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) { scrollToTopBtn.style.display = "flex"; setTimeout(() => scrollToTopBtn.style.opacity = "1", 10); } else { scrollToTopBtn.style.opacity = "0"; setTimeout(() => scrollToTopBtn.style.display = "none", 300); } }
+        
+        document.addEventListener('DOMContentLoaded', () => {  currentDateEl.textContent = `Fecha actual: ${new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`; resetFormToNeutral();  PayPal.Donation.Button({ env:'production', hosted_button_id:'HSKS65HNDHDCW', image: { src:'https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif', alt:'Donate with PayPal button', title:'PayPal - The safer, easier way to pay online!',} }).render('#donate-button'); });
+        
+        promptForm.addEventListener('input', (event) => { if (event.target.id !== 'outputPrompt' && event.target.id !== 'chkIncludePromptInSave' && event.target.id !== 'templateSelector') { saveStateToHistory(getFormValues()); } }); 
+        if (templateSelector) {
+            templateSelector.addEventListener('change', (event) => {
+                applyTemplate(event.target.value);
+            });
+        }
+
+        btnQuickGuide.addEventListener('click', () => { quickGuideModal.style.display = "block"; });
+        closeQuickGuideModal.addEventListener('click', () => { quickGuideModal.style.display = "none"; });
+        window.addEventListener('click', (event) => {
+            if (event.target == quickGuideModal) {
+                quickGuideModal.style.display = "none";
+            }
+        });
+
+
+        btnGeneratePrompt.addEventListener('click', () => { generatePrompt(); });
+        btnCopyPrompt.addEventListener('click', copyPromptToClipboard); btnClearForm.addEventListener('click', resetFormToNeutral);  btnSaveConfig.addEventListener('click', saveConfiguration);  btnOpenConfig.addEventListener('click', () => fileOpenConfigInput.click()); fileOpenConfigInput.addEventListener('change', openConfiguration);  btnUndo.addEventListener('click', undo); btnRedo.addEventListener('click', redo);
+        
+        document.addEventListener('keydown', (event) => { const activeElement = document.activeElement; if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT') { if (event.ctrlKey && (event.key === 'z' || event.key === 'Z')) { /* Allow native */ } } else { if (event.ctrlKey && (event.key === 'z' || event.key === 'Z') && !event.shiftKey) { event.preventDefault(); undo(); } if (event.ctrlKey && event.shiftKey && (event.key === 'Z' || event.key === 'z')) { event.preventDefault(); redo(); } } });
+        
+        window.addEventListener('beforeunload', (event) => {
+            if (promptHasUnsavedChanges) {
+                event.preventDefault(); 
+                event.returnValue = ''; 
+                return ''; 
+            }
+        });
+        // --- END OF JavaScript (v3.5.0) ---
+    </script>
+</body>
+</html>

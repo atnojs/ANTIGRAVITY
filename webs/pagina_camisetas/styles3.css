@@ -1,0 +1,71 @@
+/* =========================================
+   6. MOTOR DE FONDO ANIMADO (AURA VIVA)
+   ========================================= */
+
+/* El contenedor que va detrás de todo */
+.ambient-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -10; /* Para que quede detrás del contenido */
+  background: var(--bg-dark); /* Color base seguro */
+  pointer-events: none;
+}
+
+/* Animación de flotación suave */
+@keyframes float-ambient {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+/* Animación de rotación lenta para variedad */
+@keyframes rotate-ambient {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Definición de las "Manchas" de luz (Blobs) */
+.aura-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px); /* Este es el secreto del efecto "glow" */
+  opacity: 0.6;
+  animation: float-ambient 10s infinite ease-in-out;
+}
+
+/* Blob 1: Violeta (Arriba derecha) */
+.blob-1 {
+  background: var(--accent-secondary); /* Purple */
+  width: 600px;
+  height: 600px;
+  top: -150px;
+  right: -100px;
+  animation-duration: 15s;
+}
+
+/* Blob 2: Índigo (Abajo izquierda) */
+.blob-2 {
+  background: var(--accent-primary); /* Indigo */
+  width: 500px;
+  height: 500px;
+  bottom: -100px;
+  left: -100px;
+  animation-duration: 12s;
+  animation-delay: -2s;
+}
+
+/* Blob 3: Cian/Turquesa (Centro flotante) */
+.blob-3 {
+  background: rgba(45, 212, 191, 0.4); /* Cyan con transparencia */
+  width: 400px;
+  height: 400px;
+  top: 40%;
+  left: 40%;
+  animation-duration: 20s;
+  animation-delay: -5s;
+}

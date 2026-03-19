@@ -1,0 +1,1 @@
+const editPassword = "1"; // Cambia "0" por tu contraseña

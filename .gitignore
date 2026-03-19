@@ -1,0 +1,38 @@
+# Basura de Google Drive
+.tmp.drivedownload/
+.tmp.driveupload/
+tmp.driveupload/
+
+# Basura de Windows/Sistema
+$null
+Thumbs.db
+Desktop.ini
+
+# Carpetas temporales que vimos en tu captura
+Copy-Item/
+-Force/
+temp_clone/
+
+# Node (por si acaso tienes apps de Node)
+node_modules/
+.npm/
+
+# Bloquear archivos pesados detectados
+*.zip
+*.pdf
+*.json
+_Paginas.zip
+*.pdf
+estado_sitio.json
+inicio.md
+Instrucciones para que un modelo se conecte a GitHub..txt
+
+# Archivos de configuración y claves (SEGURIDAD)
+.env
+config.php
+secreto.json
+auth_zoer.php
+
+# Basura de la descarga
+_public_html.zip
+.htaccess

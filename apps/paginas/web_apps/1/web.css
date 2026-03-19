@@ -1,0 +1,216 @@
+/* === TEMA NEON 3D (MODO AGRESIVO) === */
+:root {
+    --bg-dark: #000000;
+    --acc: #00f3ff; /* Cyan */
+    --acc2: #ff00ff; /* Magenta */
+    --text: #ffffff;
+    --card-bg: rgba(10, 10, 15, 0.6); /* Transparencia para el cristal */
+    --glow-intensity: 30px; /* Controla la intensidad del glow */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* FONDO 3D DETRÁS DE TODO */
+#canvas-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -9999;
+    background: radial-gradient(circle, #1a1a2e 0%, #000000 100%);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text);
+    background: transparent !important; /* CRUCIAL: Para ver el fondo 3D */
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 2rem 1rem;
+}
+
+.container { max-width: 1400px; margin: 0 auto; }
+
+header { text-align: center; margin-bottom: 4rem; }
+header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    text-shadow: 0 0 20px var(--acc), 0 2px 4px rgba(0,0,0,0.5); /* Añadido emboss 3D */
+    margin-bottom: 0.5rem;
+    transform: translateZ(20px); /* Le da profundidad al header */
+}
+header p { color: var(--acc2); font-size: 1.2rem; font-weight: bold; text-shadow: 0 0 10px var(--acc2); }
+
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding-bottom: 5rem;
+    /* Perspectiva más profunda para el contenedor 3D */
+    perspective: 2000px; /* Aumentado para más profundidad */
+    transform-style: preserve-3d;
+}
+
+.app-card {
+    position: relative;
+    border-radius: 20px;
+    min-height: 380px; /* Más altas */
+    background-size: cover;
+    background-position: center;
+    text-decoration: none;
+    color: white;
+    background-color: var(--card-bg);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    
+    /* IMPORTANTE: Esto permite que los hijos floten en 3D */
+    transform-style: preserve-3d;
+    transform: perspective(2000px); /* Perspectiva más profunda */
+    
+    /* Transición para glow y shadow */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Efectos hover: Mantén el encendido de borde, pero añade pulse y shadow 3D */
+.app-card:hover {
+    box-shadow: 0 0 var(--glow-intensity) var(--acc), 0 0 calc(var(--glow-intensity) * 2) rgba(0, 243, 255, 0.4),
+                0 10px 20px rgba(0,0,0,0.7); /* Sombra 3D para "extrusión" */
+    border-color: var(--acc);
+    animation: neon-pulse 1.5s infinite alternate; /* Pulso neon */
+    z-index: 10;
+    transform: translateZ(50px); /* Flota hacia adelante en hover */
+}
+
+@keyframes neon-pulse {
+    0% { box-shadow: 0 0 10px var(--acc), 0 0 20px rgba(0, 243, 255, 0.4); }
+    100% { box-shadow: 0 0 40px var(--acc), 0 0 80px rgba(0, 243, 255, 0.6); }
+}
+
+/* Capa oscura con gradiente más dramático */
+.app-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.2) 100%);
+    border-radius: 20px;
+    transform: translateZ(0px); 
+}
+
+.app-card-overlay {
+    position: relative;
+    height: 100%; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    /* EFECTO 3D: El texto flota FUERTE */
+    transform: translateZ(60px); /* Aumentado */
+    transform-style: preserve-3d;
+}
+
+.app-icon {
+    font-size: 3.5rem; margin-bottom: 1rem; color: var(--acc);
+    text-shadow: 0 0 15px var(--acc), 0 2px 4px rgba(0,0,0,0.5); /* Emboss 3D */
+    /* EFECTO 3D: Icono flota MÁS y rota independiente */
+    transform: translateZ(80px) rotateY(10deg); /* Rotación sutil para profundidad */
+    transition: transform 0.3s ease;
+}
+
+.app-card:hover .app-icon {
+    transform: translateZ(100px) rotateY(0deg); /* Animación en hover */
+}
+
+.app-card h3 {
+    font-family: 'Montserrat', sans-serif; font-size: 1.8rem;
+    margin-bottom: 0.5rem; color: #fff;
+    text-shadow: 0 0 10px var(--acc2), 0 2px 4px rgba(0,0,0,0.5); /* Emboss 3D */
+    transform: translateZ(70px);
+}
+
+.app-card p {
+    font-size: 1rem; color: #ddd;
+    text-shadow: 0 0 5px var(--acc), 0 1px 2px rgba(0,0,0,0.5);
+    transform: translateZ(50px);
+}
+
+/* Botones de edición (con glow neon) */
+#edit-mode-btn {
+    position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px;
+    border-radius: 50%; background: var(--acc); color: #000; border: none;
+    font-size: 1.8rem; cursor: pointer; z-index: 1000;
+    box-shadow: 0 0 20px var(--acc), 0 4px 8px rgba(0,0,0,0.5); /* Sombra 3D */
+    transform: translateZ(100px);
+}
+
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center; z-index: 2000;
+    perspective: 1000px; /* Perspectiva para modales */
+}
+
+.modal-content {
+    background: #111; border: 2px solid var(--acc); padding: 2rem;
+    border-radius: 15px; width: 90%; max-width: 500px; color: white;
+    box-shadow: 0 0 50px rgba(0, 243, 255, 0.2), 0 10px 20px rgba(0,0,0,0.7); /* Sombra 3D */
+    transform: translateZ(50px); /* Modal flota */
+}
+
+.form-group input, .form-group textarea {
+    width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; margin-top:5px; margin-bottom:15px;
+}
+
+.form-buttons { display: flex; justify-content: flex-end; gap: 10px; }
+.btn-save { background: var(--acc); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px var(--acc); }
+.btn-cancel { background: transparent; border: 1px solid #666; color: white; padding: 10px 20px; cursor: pointer; }
+
+/* Add button con 3D */
+#add-new-app-btn {
+    border: 3px dashed var(--acc2); border-radius: 20px; min-height: 380px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: var(--acc2); background: rgba(20,20,20,0.5);
+    transform-style: preserve-3d;
+    transform: translateZ(20px);
+}
+
+.add-app-content i { font-size: 4rem; margin-bottom: 1rem; display:block; text-shadow: 0 0 15px var(--acc2); }
+
+.edit-buttons { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; gap: 10px; transform: translateZ(100px); }
+.edit-buttons button { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border:none; background:white; color:black; box-shadow: 0 0 10px var(--acc); }
+
+.draggable-ghost { opacity: 0.5; border: 2px dashed var(--acc); }
+
+
+/* ========= EFECTOS 3D PUROS CON CSS (sin Three.js ni VanillaTilt) ========= */
+.apps-grid {
+    perspective: 2000px;
+    perspective-origin: 50% 50%;
+}
+.app-card {
+    transition: all 0.4s cubic-bezier(0.03,0.98,0.52,0.99);
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+.app-card:hover {
+    transform: translateZ(80px) rotateX(12deg) rotateY(-12deg) scale(1.12);
+    box-shadow: 
+        0 0 60px #00f3ff,
+        0 0 120px rgba(0,243,255,0.6),
+        0 30px 60px rgba(0,0,0,0.9);
+    z-index: 999;
+}
+.app-card:active {
+    transform: translateZ(40px) scale(1.05);
+}
+
+/* Capas flotantes reales */
+.app-card-overlay { transform: translateZ(60px); }
+.app-icon { transform: translateZ(100px) scale(1.2); }
+.app-icon:hover { transform: translateZ(140px) scale(1.4); }
+h3 { transform: translateZ(70px); }
+p { transform: translateZ(50px); }
+
+/* Fondo animado simple pero brutal (sin Three.js) */
+#canvas-container {
+    background: 
+        radial-gradient(circle at 20% 80%, #00f3ff 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, #ff00ff 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, #000 50%, #111 100%);
+    background-size: 200% 200%;
+    animation: bg 20s ease infinite;
+}
+@keyframes bg {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}

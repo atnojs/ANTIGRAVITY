@@ -1,0 +1,152 @@
+<!-- index.html FINAL -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Ángulos de Cámara</title>
+  <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Iconos (FA para spinner y botones del JS) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <!-- CSS -->
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Generador de Ángulos de Cámara con IA</h1>
+      <p>Arrastra una imagen y obtén perspectivas de cámara diferentes al instante.</p>
+    </header>
+
+    <main class="app-container glass-hover">
+      <div id="upload-container">
+        <div id="drop-zone" class="drop-zone">
+          <div id="drop-zone-content">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>Arrastra y suelta tu imagen aquí</p>
+            <p class="text-sm muted-inline">o haz clic para seleccionarla</p>
+          </div>
+          <input type="file" id="file-input" class="hidden" accept="image/*">
+        </div>
+
+        <div id="shot-selector" class="hidden">
+          <!-- <h3 class="section-title">Selecciona hasta 2 tipos de vista:</h3> -->
+          <div class="shot-options-container">
+            <button class="shot-option glass-hover" data-shot="general">Plano General</button>
+            <button class="shot-option glass-hover" data-shot="medium">Plano Medio</button>
+            <button class="shot-option glass-hover" data-shot="close-up">Primer Plano</button>
+            <button class="shot-option glass-hover" data-shot="side">Plano Lateral</button>
+            <button class="shot-option glass-hover" data-shot="top-down">Plano Cenital</button>
+          </div>
+          <div class="background-selector">
+            <select id="background-option">
+              <option value="solid">Fondo liso para todas las imágenes</option>
+              <option value="same-realistic">Fondo fotorrealista igual en todas las imágenes</option>
+              <option value="different-realistic" selected>Fondo fotorrealista diferente para cada imagen</option>
+            </select>
+          </div>
+          <div class="action-buttons">
+            <button id="generate-btn" class="btn btn-primary btn-3d" disabled>
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generar Imágenes
+            </button>
+            <button id="show-history-btn" class="btn btn-secondary btn-3d glass-hover" type="button">
+              <i class="fa-solid fa-clock-rotate-left"></i> Ver historial guardado
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="results-container" class="hidden">
+        <div class="results-header">
+          <h2 class="results-title">Resultados Generados</h2>
+          <div class="action-buttons">
+            <button id="clear-all-btn" class="btn btn-danger btn-3d">
+              <i class="fa-solid fa-trash"></i> Limpiar Todo
+            </button>
+            <button id="download-all-btn" class="btn btn-primary btn-3d">
+              <i class="fa-solid fa-file-zipper"></i> Descargar Todo
+            </button>
+          </div>
+        </div>
+        
+        <!-- Galería a ancho completo -->
+        <section id="gallery-panel" class="full-bleed" aria-label="Galería de imágenes generadas">
+          <div id="gallery-strip" class="gallery-strip" aria-live="polite"></div>
+        </section>
+    
+        <div id="image-grid"></div>
+      </div>
+
+      <!-- Historial Persistente -->
+      <div id="history-container" class="hidden">
+        <div class="history-header">
+          <h2 class="history-title">
+            <i class="fa-solid fa-clock-rotate-left"></i> Historial de Generaciones
+          </h2>
+          <button id="clear-history-btn" class="btn btn-danger btn-sm btn-3d">
+            <i class="fa-solid fa-trash-can"></i> Limpiar Historial
+          </button>
+        </div>
+        <section id="history-panel" class="full-bleed" aria-label="Historial de imágenes">
+          <div id="history-strip" class="gallery-strip history-strip" aria-live="polite"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Loading Overlay Estándar -->
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loading-bg-image"></div>
+    <div class="spinner-triple">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+    </div>
+    <p class="loading-text">IA Generando Obra Maestra...</p>
+  </div>
+
+  <!-- Script INLINE para asegurar que el loading overlay esté OCULTO -->
+  <script>
+    // ESTE SCRIPT SE EJECUTA INMEDIATAMENTE - SOLUCIÓN DEFINITIVA
+    (function() {
+      // 1. Ejecutar inmediatamente
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      if (loadingOverlay) {
+        // Forzar clase hidden y display none
+        loadingOverlay.className = 'loading-overlay hidden';
+        loadingOverlay.style.cssText = 'display: none !important;';
+        document.body.style.overflow = '';
+      }
+      
+      // 2. Ejecutar cuando el DOM esté listo
+      document.addEventListener('DOMContentLoaded', function() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+          overlay.className = 'loading-overlay hidden';
+          overlay.style.cssText = 'display: none !important;';
+          document.body.style.overflow = '';
+        }
+      });
+      
+      // 3. Ejecutar cuando todo cargue
+      window.addEventListener('load', function() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+          overlay.className = 'loading-overlay hidden';
+          overlay.style.cssText = 'display: none !important;';
+          document.body.style.overflow = '';
+        }
+      });
+    })();
+  </script>
+
+  <!-- JSZip para “Descargar Todo” -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-fh2mQdZk1iQdCz0o7dJYk3tYt8r3X3n0a9Jg0u7JzC3r0l2xwqHc9q9V0Zp7mYHn1y1V3Tg9c1XcJw2r3S7Z7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Tu lógica -->
+  <script src="app.js" defer></script>
+</body>
+</html>

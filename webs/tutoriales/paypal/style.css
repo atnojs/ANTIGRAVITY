@@ -1,0 +1,238 @@
+/* ============================================
+   💰 CURSO PAYPAL x FIREBASE x MAKE - STYLES
+   Based on Neon Glassmorphism Style Guide
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --bg1: #020617;
+    --bg2: #0f172a;
+    --acc: #fbbf24;
+    /* Amber/Golden for Monetization */
+    --acc2: #f59e0b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: rgba(251, 191, 36, 0.2);
+    --card-bg: rgba(30, 41, 59, 0.5);
+    --shadow-color: rgba(0, 0, 0, 0.6);
+    --neon-gold: #fbbf24;
+    --neon-orange: #f97316;
+    --glow-strong: rgba(251, 191, 36, 0.3);
+
+    --main-bg-gradient: radial-gradient(circle at top left, #1e293b 0%, #020617 100%);
+    --gradient-text: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444);
+
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-width: 300px;
+}
+
+/* Base Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--main-bg-gradient);
+    background-attachment: fixed;
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+}
+
+.gradient-text {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glassmorphism */
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px 0 var(--shadow-color);
+}
+
+/* Layout */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 2.5rem 1.5rem;
+    overflow-y: auto;
+    z-index: 1000;
+    border-right: 1px solid var(--border);
+    background: rgba(2, 6, 23, 0.85);
+}
+
+.sidebar h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 2.5rem;
+    color: var(--acc);
+}
+
+.sidebar nav ul {
+    list-style: none;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 0.8rem;
+}
+
+.sidebar nav ul li a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: block;
+    padding: 0.85rem 1.2rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition-main);
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li a.active {
+    background: rgba(251, 191, 36, 0.08);
+    color: var(--acc);
+    padding-left: 1.5rem;
+    border-left: 2px solid var(--acc);
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.1);
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 5rem 3.5rem;
+    max-width: 1200px;
+}
+
+.content-section {
+    margin-bottom: 8rem;
+    scroll-margin-top: 5rem;
+}
+
+.content-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
+    color: var(--acc);
+}
+
+.card {
+    padding: 3.5rem;
+    border-radius: var(--radius-lg);
+    line-height: 1.8;
+}
+
+/* UI Elements */
+.tip-box {
+    background: rgba(251, 191, 36, 0.05);
+    border-left: 4px solid var(--acc);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.warning-box {
+    background: rgba(239, 68, 68, 0.05);
+    /* Red/Rose */
+    border-left: 4px solid #ef4444;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.step-list {
+    list-style: none;
+    counter-reset: paypal-step;
+}
+
+.step-list li {
+    position: relative;
+    padding-left: 4.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.step-list li::before {
+    content: counter(paypal-step);
+    counter-increment: paypal-step;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, var(--acc), var(--acc2));
+    color: var(--bg1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3);
+}
+
+code {
+    background: rgba(15, 23, 42, 0.8);
+    color: var(--acc);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9em;
+}
+
+pre {
+    background: #020617;
+    padding: 2rem;
+    border-radius: 16px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    margin: 2rem 0;
+}
+
+pre code {
+    background: none;
+    color: #e2e8f0;
+    padding: 0;
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 4rem 1.5rem;
+    }
+}

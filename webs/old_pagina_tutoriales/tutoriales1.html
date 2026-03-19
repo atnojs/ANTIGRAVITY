@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tutoriales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="imagenes/favicon_integrado.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+  /* ===== CORRECCIONES DE VISIBILIDAD ===== */
+  .prompts-section {
+      display: block;
+  }
+  .prompts-section #promptsListContainer {
+      display: none;  /* Oculto por defecto */
+  }
+  body.edit-mode .prompts-section #promptsListContainer {
+      display: grid;  /* Visible solo en modo edición */
+  }
+  #promptDisplayModal {
+      display: none; /* Oculto por defecto, se mostrará con JS */
+  }
+  .form-modal-overlay {
+      display: none; /* Asegura que se muestre correctamente solo cuando se necesita */
+      z-index: 10000;
+  }
+  .folder-prompts-menu {
+      z-index: 1010;
+  }
+ 
+  /* ===== RESET O AJUSTES BÁSICOS ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ===== FUENTES ===== */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+  /* ===== VARIABLES CSS (Temas) ===== */
+  :root {
+    --bg-color: #f0f2f5; --card-bg-color: #ffffff; --text-color: #333333;
+    --primary-color: #007bff; --accent-color: #00bcd4; --heading-color: #2c3e50;
+    --border-color: #e0e0e0; --shadow-color: rgba(0,0,0,0.1);
+    --placeholder-text-color: #7f8c8d;
+    --button-edit-bg: rgba(0,0,0,0.05); --button-edit-hover-bg: rgba(0,0,0,0.1);
+    --font-primary: 'Inter', sans-serif; --font-secondary: 'Roboto', sans-serif;
+    --card-bg-color-rgb: 255,255,255;
+    --prompt-block-bg: var(--card-bg-color);
+  }
+  body.dark-theme {
+    --bg-color: #1a1a2e; --card-bg-color: #2c3e50; --text-color: #e0e0e0;
+    --primary-color: #00aeff; --accent-color: #00e5ff; --heading-color: #ffffff;
+    --border-color: #4f5b6a; --shadow-color: rgba(0,0,0,0.3);
+    --placeholder-text-color: #95a5a6; --button-edit-bg: rgba(255,255,255,0.1);
+    --button-edit-hover-bg: rgba(255,255,255,0.2);
+    --card-bg-color-rgb: 44,62,80;
+  }
+  body { font-family:var(--font-secondary); min-height:100vh; background-color:var(--bg-color); background-size:cover; background-position:center; background-attachment:fixed; color:var(--text-color); transition:background-color .3s,color .3s; touch-action:manipulation; padding-top:80px; }
+ 
+  .main-app-container { max-width:100%; margin:0 auto; padding:20px; }
+ 
+  .filters-search-bar { position:fixed; top:0; left:0; width:100%; background-color:var(--card-bg-color); padding:15px 20px; box-shadow:0 2px 10px var(--shadow-color); z-index:1001; display:flex; flex-wrap:wrap; gap:15px; align-items:center; }
+  .filters-search-bar input[type="search"] { padding:10px; border:1px solid var(--border-color); border-radius:6px; background-color:var(--bg-color); color:var(--text-color); font-family:var(--font-secondary); }
+  .filters-search-bar input[type="search"] { flex-grow:1; min-width:200px; }
+  .filters-search-bar .theme-switcher-btn { padding:10px 15px; background-color:var(--primary-color); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
+  .filters-search-bar .theme-switcher-btn:hover { opacity:.9; }
+
+  .section-title-wrapper {
+      text-align: center;
+      margin: 40px 0 25px 0; 
+      width: 100%;
+  }
+  .section-title { 
+      font-family: var(--font-primary); 
+      color: var(--heading-color); 
+      font-size: 28px; 
+      border-bottom: none; 
+      padding: 12px 30px; 
+      display: inline-block; 
+      background-color: rgba(var(--card-bg-color-rgb), 0.75); 
+      border-radius: 10px;
+      box-shadow: 0 3px 7px var(--shadow-color);
+  }
+  .add-item-btn {
+      display: none; margin: 0 auto 25px auto; padding: 10px 20px;
+      background-color: var(--primary-color); color: white; border: none;
+      border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center;
+      transition: background-color 0.2s;
+  }
+  .add-item-btn:hover { opacity: 0.85; }
+  .add-item-btn:disabled { background-color: #555; cursor: not-allowed; }
+  body.edit-mode .add-item-btn { display: block; width: fit-content; }
+
+  /* === ESTILOS SECCIÓN CARPETAS (para Prompts) === */
+  .prompt-folders-section .folders-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+  }
+  .prompt-folders-section .folder-item {
+      background-color: var(--card-bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 8px var(--shadow-color);
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .prompt-folders-section .folder-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px var(--shadow-color);
+  }
+  .prompt-folders-section .folder-item .folder-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 5px;
+  }
+  .prompt-folders-section .folder-item .folder-icon {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      border-radius: 8px;
+      background-color: var(--bg-color);
+  }
+  .prompt-folders-section .folder-item .folder-name {
+      font-family: var(--font-primary);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--heading-color);
+      text-align: left; 
+      flex-grow: 1;
+  }
+  .prompt-folders-section .folder-item .folder-description {
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--text-color);
+      flex-grow: 1;
+      min-height: 40px;
+      text-align: left;
+      width: 100%;
+      word-wrap: break-word;
+      margin-bottom: 10px;
+  }
+  .prompt-folders-section .folder-item .folder-description em {
+      color: var(--placeholder-text-color);
+  }
+  .prompt-folders-section .folder-item .item-edit-buttons,
+  .prompt-folders-section .folder-item .item-order-buttons {
+      display: none;
+      position: absolute;
+      top: 5px;
+      gap: 5px;
+  }
+  .prompt-folders-section .folder-item .item-edit-buttons { right: 5px; }
+  .prompt-folders-section .folder-item .item-order-buttons { left: 5px; }
+
+  body.edit-mode .prompt-folders-section .folder-item .item-edit-buttons,
+  body.edit-mode .prompt-folders-section .folder-item .item-order-buttons { display: flex; }
+
+  .prompt-folders-section .folder-item .item-edit-buttons button,
+  .prompt-folders-section .folder-item .item-order-buttons button {
+      background: var(--button-edit-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 3px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+  }
+  .prompt-folders-section .folder-item .item-edit-buttons button:hover,
+  .prompt-folders-section .folder-item .item-order-buttons button:hover {
+      background: var(--button-edit-hover-bg);
+  }
+  .prompt-folders-section .no-items-message { 
+      text-align:center;
+      font-size:1.2em;
+      color:var(--placeholder-text-color);
+      margin-top:30px;
+      padding:20px;
+  }
+  .folder-prompts-menu {
+      display: none; position: absolute; background-color: var(--card-bg-color);
+      border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px var(--shadow-color);
+      padding: 10px; z-index: 1010; width: 300px; max-height: 350px; overflow-y: auto;
+  }
+  .folder-prompts-menu ul { list-style: none; padding: 0; margin: 0; }
+  .folder-prompts-menu li a { display: block; padding: 8px 5px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color); position:relative; }
+  .folder-prompts-menu li a:hover { background-color: var(--bg-color); }
+  .folder-prompts-menu li:last-child a { border-bottom: none; }
+  
+  .prompt-link-description-popup {
+      display: none; position: absolute;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 10px; border-radius: 6px;
+      border: 2px solid var(--border-color);
+      box-shadow: 0 2px 5px var(--shadow-color);
+      width: 280px; z-index: 1012; pointer-events: none;
+      font-size: 0.9em; line-height: 1.4;
+      max-height: 200px; overflow-y: auto;
+  }
+
+  /* === ESTILOS SECCIÓN PROMPTS === */
+  .prompts-section .prompts-title-list.edit-mode-title-view {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+  }
+  .prompts-section .prompt-title-item {
+      background-color: var(--prompt-block-bg); border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 10px 15px; display: flex;
+      justify-content: space-between; align-items: center;
+  }
+  .prompts-section .prompt-title-item .prompt-title-text { font-weight: 600; cursor: pointer; flex-grow:1; }
+  .prompts-section .prompt-title-item .item-controls { display: flex; gap: 8px; }
+  .prompts-section .prompt-title-item .item-controls button {
+      background: var(--button-edit-bg); color: var(--text-color); border: 1px solid var(--border-color);
+      padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.9em;
+  }
+  .prompts-section .prompt-title-item .item-controls button:hover { background: var(--button-edit-hover-bg); }
+
+  /* ESTILOS PARA LA VENTANA DE VISUALIZACIÓN DEL PROMPT (Ahora dentro del modal) */
+  #activePromptDisplayArea .prompt-title { 
+      font-family: var(--font-primary); font-size: 24px; font-weight: 600; 
+      color: var(--heading-color); margin-bottom:15px; text-align: center; 
+  }
+  #activePromptDisplayArea .prompt-description { margin-bottom: 20px; line-height: 1.6; font-size: 1.05em; }
+  #activePromptDisplayArea .prompt-example-images { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+  #activePromptDisplayArea .prompt-example-images img {
+      max-width: 300px;
+      max-height: 200px; height: auto; border-radius: 8px; cursor: pointer;
+      border: 2px solid black;
+      transition: transform 0.2s ease;
+  }
+  #activePromptDisplayArea .prompt-example-images img.interactive-image-thumbnail:hover { transform: scale(1.35); z-index: 10; }
+  #activePromptDisplayArea .prompt-text-display {
+      background-color: var(--bg-color); 
+      padding: 20px; border-radius: 8px;
+      font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word;
+      margin-bottom: 20px; font-size: 1.1em;
+  }
+  #activePromptDisplayArea .prompt-actions { 
+      display: flex; justify-content: center; align-items: center; gap: 15px;
+  }
+  #activePromptDisplayArea .prompt-actions .copy-prompt-btn {
+      padding: 10px 20px; background-color: black; color: white;
+      border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.1em;
+  }
+   #activePromptDisplayArea .prompt-actions .copy-prompt-btn:hover { opacity: 0.85; }
+  .prompts-section .no-items-message { text-align:center; font-size:1.2em; color:var(--card-bg-color); margin-top:30px; padding:20px; }
+ 
+  .form-modal-content .delete-prompt-image-btn { 
+      position: absolute; top: -5px; right: -5px; background-color: #ff4757; color: white;
+      border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 11;
+  }
+  .form-modal-content .image-preview-container .img-preview-wrapper { position: relative; display: inline-block; margin: 5px;}
+
+  /* === ESTILOS PARA MODALES Y FORMULARIOS === */
+  .form-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
+  .form-modal-content {
+      background-color: var(--card-bg-color); color: var(--text-color);
+      border-radius: 12px; padding: 25px; max-width: 900px; width: 90vw;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3); font-family: var(--font-secondary);
+      max-height: 90vh; overflow-y: auto;
+  }
+  .form-modal-content h3 { margin-bottom:20px; text-align:center; font-size:20px; color:var(--heading-color); font-family:var(--font-primary); }
+  .form-modal-content .form-group { margin-bottom:15px; }
+  .form-modal-content .form-group label { display:block; margin-bottom:6px; font-weight:600; color:var(--text-color); }
+  .form-modal-content .form-group input[type="text"],
+  .form-modal-content .form-group input[type="url"],
+  .form-modal-content .form-group input[type="file"],
+  .form-modal-content .form-group textarea,
+  .form-modal-content .form-group select { width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); background-color:var(--bg-color); color:var(--text-color); font-family:var(--font-secondary); }
+  .form-modal-content .form-group textarea { resize:vertical; min-height:80px; }
+  .form-modal-content .form-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+  .form-modal-content .form-buttons button { padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; border:none; transition:opacity .2s; }
+  .form-modal-content .form-buttons .save-btn { background-color:var(--primary-color); color:white;}
+  .form-modal-content .form-buttons .cancel-btn { background-color:#6c757d; color:white; }
+  .form-modal-content .form-buttons button:hover { opacity:.85; }
+  .form-modal-content .image-preview-container { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; min-height: 50px;}
+  .form-modal-content .image-preview-container img { max-width: 100px; max-height: 100px; border-radius: 4px; border: 1px solid var(--border-color); }
+  .form-modal-content .description-preview {
+      margin-top:15px; padding:15px; border:1px dashed var(--border-color); border-radius:8px; 
+      min-height:100px; max-height:300px; overflow-y:auto; background-color:var(--bg-color); color:var(--text-color);
+  }
+
+  .global-controls { position:fixed; bottom:20px; display:flex; flex-direction:column; gap:10px; z-index:1000; }
+  .global-controls.right { right: 20px; }
+  .global-controls button { background:var(--primary-color); color:white; border:none; padding:10px 15px; border-radius:25px; cursor:pointer; font-weight:bold; box-shadow:0 2px 10px var(--shadow-color); transition:background .3s ease,opacity .3s ease; }
+  .global-controls button:hover { opacity:.85; }
+  #edit-mode-toggle-btn { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:999; padding:15px 100px; font-size:16px; background-color:transparent; color:white; border:none; border-radius:25px; cursor:pointer; font-weight:bold; box-shadow:0 2px 10px var(--shadow-color); }
+  #edit-mode-toggle-btn.active { background-color: #dc3545; }
+  #edit-mode-toggle-btn:hover { opacity: 0.85; }
+  #hiddenBgInput { display:none; }
+
+  .password-modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,.6); z-index:10001; justify-content:center; align-items:center; }
+  .password-modal-overlay .password-modal-content { background-color:var(--card-bg-color); color:var(--text-color); padding:25px; border-radius:12px; max-width:300px; width:90%; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,.3); }
+  .password-modal-overlay h3 { margin-top:0; margin-bottom:15px; font-size:18px; color:var(--heading-color); }
+  .password-modal-overlay input[type="password"] { width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:15px; background-color:var(--bg-color); color:var(--text-color); }
+  .password-modal-overlay .password-modal-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+  .password-modal-overlay .password-modal-buttons button { padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; border:none; transition:opacity .2s; color:white; }
+  .password-modal-overlay #submitAdminPasswordBtn { background-color:var(--primary-color); }
+  .password-modal-overlay #cancelAdminPasswordBtn { background-color:#6c757d; }
+  .password-modal-overlay .password-modal-buttons button:hover { opacity:.85; }
+ 
+  .fullscreen-image-viewer {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.85); z-index: 10050;
+      justify-content: center; align-items: center; cursor: zoom-out;
+  }
+  .fullscreen-image-viewer img {
+      max-width: 90%; max-height: 90%; object-fit: contain;
+      border: 3px solid white; border-radius: 5px;
+  }
+  .fullscreen-image-viewer .close-fullscreen-btn {
+      position: absolute; top: 20px; right: 30px; font-size: 30px;
+      color: white; background: none; border: none; cursor: pointer;
+  }
+ 
+  /* Pie de Página */
+  .site-footer {
+      margin-top: 60px;
+      margin-bottom: 60px; 
+      padding-bottom: 20px;
+  }
+  .site-footer .section-title {
+      font-size: 1em;
+      padding: 8px 20px;
+      background-color: rgba(var(--card-bg-color-rgb), 0.6);
+      color: var(--text-color);
+      box-shadow: 0 1px 3px var(--shadow-color);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width:768px) { 
+      body{padding-top:120px;}
+      .filters-search-bar{flex-direction:column;align-items:stretch;} 
+      #activePromptDisplayArea .prompt-example-images img { max-width: 150px; max-height: 150px; }
+      .prompt-folders-section .folder-item { width: calc(50% - 10px); }
+  }
+  @media (max-width:480px) {
+      .prompt-folders-section .folder-item { width: 100%; }
+      #activePromptDisplayArea .prompt-example-images img { max-width: 120px; max-height: 120px; }
+      .prompts-section .prompts-title-list.edit-mode-title-view { grid-template-columns: 1fr; }
+  }
+  .interactive-image-thumbnail:hover {
+    transform: scale(1.35); 
+    z-index: 10; 
+    transition: transform 0.2s ease-out;
+  }
+  </style>
+</head>
+<body class="dark-theme">
+
+  <div class="filters-search-bar">
+    <input type="search" id="globalSearchInput" placeholder="Buscar en Carpetas y Prompts...">
+    <button id="themeSwitcherBtn" class="theme-switcher-btn">Tema Claro</button>
+  </div>
+
+  <div class="main-app-container">
+   
+    <section id="promptFoldersSection" class="prompt-folders-section">
+      <div class="section-title-wrapper"><h2 class="section-title">CARPETAS DE TUTORIALES</h2></div>
+      <button id="addPromptFolderBtn" class="add-item-btn">Añadir Nueva Carpeta</button>
+      <button id="saveFolderOrderBtn" class="add-item-btn" style="background-color: var(--accent-color);">Guardar Orden de Carpetas</button>
+      <div id="promptFoldersGridContainer" class="folders-grid"></div>
+      <p id="noPromptFoldersMessage" class="no-items-message" style="display: none;">No hay carpetas. ¡Crea una para organizar tus prompts!</p>
+    </section>
+
+    <section id="promptsSection" class="prompts-section">
+      <div class="section-title-wrapper"><h2 class="section-title">Prompts</h2></div>
+      <button id="addPromptBtn" class="add-item-btn">Añadir Nuevo Prompt</button>
+      <button id="savePromptOrderBtn" class="add-item-btn" style="background-color: var(--accent-color);">Guardar Orden de Prompts</button>
+     
+      <div id="promptsListContainer" class="prompts-title-list"></div>
+      <p id="noPromptsMessage" class="no-items-message" style="display: none;">No hay prompts todavía. ¡Añade uno!</p>
+
+    </section>
+
+  </div>
+
+  <input type="file" id="hiddenBgInput" accept="image/*">
+  <div class="global-controls right">
+    <button id="changeBgBtn" title="Cambiar Imagen de Fondo"><i class="fas fa-image"></i></button>
+  </div>
+  <button id="edit-mode-toggle-btn"></button>
+
+  <div id="adminPasswordModal" class="password-modal-overlay">
+    <div class="password-modal-content">
+      <h3>Acceder al Modo Edición</h3>
+      <input type="password" id="adminPasswordInput" placeholder="Introduce la contraseña">
+      <div class="password-modal-buttons">
+        <button id="submitAdminPasswordBtn">Activar</button>
+        <button id="cancelAdminPasswordBtn">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="formModal" class="form-modal-overlay">
+    <div class="form-modal-content" id="genericFormContainer"></div>
+  </div>
+
+  <div id="promptDisplayModal" class="form-modal-overlay">
+    <div id="activePromptDisplayArea" class="form-modal-content">
+        </div>
+  </div>
+
+  <div id="fullscreenImageViewer" class="fullscreen-image-viewer">
+    <button class="close-fullscreen-btn">&times;</button>
+    <img src="" alt="Imagen ampliada">
+  </div>
+
+  <footer class="site-footer section-title-wrapper">
+    <p class="section-title">Antonio Jiménez - 2025</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let appData = {
+            settings: { background: '', theme: 'dark' },
+            prompts: [],
+            promptFolders: []
+        };
+
+        let isEditable = false;
+        let currentPassword = ""; 
+        let activePopups = { folderMenu: null };
+        let closeMenuTimer = null;
+       
+        // --- DOM Elements ---
+        const globalSearchInput = document.getElementById('globalSearchInput');
+        const themeSwitcherBtn = document.getElementById('themeSwitcherBtn');
+        const promptFoldersGridContainer = document.getElementById('promptFoldersGridContainer');
+        const noPromptFoldersMessage = document.getElementById('noPromptFoldersMessage');
+        const addPromptFolderBtn = document.getElementById('addPromptFolderBtn');
+        const saveFolderOrderBtn = document.getElementById('saveFolderOrderBtn');
+        const promptsListContainer = document.getElementById('promptsListContainer');
+        const noPromptsMessage = document.getElementById('noPromptsMessage');
+        const addPromptBtn = document.getElementById('addPromptBtn');
+        const savePromptOrderBtn = document.getElementById('savePromptOrderBtn');
+        const hiddenBgInput = document.getElementById('hiddenBgInput');
+        const changeBgBtn = document.getElementById('changeBgBtn');
+        const editModeToggleBtn = document.getElementById('edit-mode-toggle-btn');
+        const adminPasswordModal = document.getElementById('adminPasswordModal');
+        const adminPasswordInput = document.getElementById('adminPasswordInput');
+        const submitAdminPasswordBtn = document.getElementById('submitAdminPasswordBtn');
+        const cancelAdminPasswordBtn = document.getElementById('cancelAdminPasswordBtn');
+        const formModal = document.getElementById('formModal');
+        const genericFormContainer = document.getElementById('genericFormContainer');
+        const fullscreenImageViewer = document.getElementById('fullscreenImageViewer');
+        const fullscreenImage = fullscreenImageViewer.querySelector('img');
+        const closeFullscreenBtn = fullscreenImageViewer.querySelector('.close-fullscreen-btn');
+        const promptDisplayModal = document.getElementById('promptDisplayModal');
+        const activePromptDisplayArea = document.getElementById('activePromptDisplayArea');
+
+        let tempPromptImageFiles = []; 
+        let currentEditingPromptImages = []; 
+       
+        function closeFormModal() { 
+            formModal.style.display = 'none';
+            genericFormContainer.innerHTML = '';
+        }
+
+        // --- INITIALIZATION & DATA HANDLING ---
+        async function loadInitialData() {
+            showLoadingMessage("Cargando...");
+            try {
+                const response = await fetch('load_state.php?t=' + Date.now());
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data && !data.error) {
+                    appData.settings = { ...appData.settings, ...(data.settings || {}) };
+                    appData.prompts = normalizeData(data.prompts, 'prompt');
+                    appData.promptFolders = normalizeData(data.promptFolders, 'folder');
+                }
+            } catch (error) {
+                console.error('Error crítico en carga:', error);
+                showPersistentMessage(`Error de carga. Usando datos por defecto.`, "error");
+            }
+            applyInitialSettings();
+            updateEditModeUI(); 
+            clearLoadingMessage();
+        }
+       
+        function normalizeData(items, type) {
+            if (!Array.isArray(items)) return [];
+            return items.map(item => ({
+                id: item.id || `${type}_${Date.now()}_${Math.random()}`,
+                name: item.name || (type === 'folder' ? "Carpeta Sin Nombre" : undefined),
+                title: item.title || (type === 'prompt' ? "Prompt Sin Título" : undefined),
+                descriptionHTML: item.descriptionHTML || "",
+                exampleImageUrls: Array.isArray(item.exampleImageUrls) ? item.exampleImageUrls.filter(u => typeof u === 'string') : [],
+                promptText: item.promptText || "",
+                folderId: item.folderId || null,
+                iconUrl: item.iconUrl || "",
+                description: item.description || "",
+                timestampAdded: item.timestampAdded || Date.now(),
+                timestampUpdated: item.timestampUpdated || Date.now(),
+            }));
+        }
+
+        async function saveDataToBackend() {
+            if (!isEditable) return false;
+            showLoadingMessage("Guardando...");
+            const formData = new FormData();
+            formData.append('password', currentPassword);
+            const dataToSave = { ...appData };
+            dataToSave.aiAppsCategories = []; 
+            dataToSave.prompts = dataToSave.prompts.map(p => ({ ...p, exampleImageUrls: p.exampleImageUrls.filter(i => typeof i === 'string') }));
+            dataToSave.promptFolders = dataToSave.promptFolders.map(f => ({ ...f, iconUrl: typeof f.iconUrl === 'string' ? f.iconUrl : '' }));
+            formData.append('jsonData', JSON.stringify(dataToSave));
+            appData.prompts.forEach(p => p.exampleImageUrls.forEach((img, i) => { if (img instanceof File) formData.append(`prompt_image_${p.id}_${i}`, img); }));
+            appData.promptFolders.forEach(f => { if (f.iconUrl instanceof File) formData.append(`folder_icon_${f.id}`, f.iconUrl); });
+            try {
+                const r = await fetch('guardar_cambios.php', { method: 'POST', body: formData });
+                if (!r.ok) throw new Error(`Error del servidor: ${r.status}`);
+                const res = await r.json();
+                if (!res.success) throw new Error(res.error || 'Error desconocido al guardar.');
+                if (res.filePaths) {
+                    (res.filePaths.prompts || []).forEach(fp => { const p = appData.prompts.find(p=>p.id===fp.promptId); if(p) p.exampleImageUrls[fp.originalPlaceholderIndex] = fp.newPath; });
+                    (res.filePaths.folders || []).forEach(fp => { const f = appData.promptFolders.find(f=>f.id===fp.folderId); if(f) f.iconUrl = fp.newPath; });
+                }
+                return true;
+            } catch (error) {
+                console.error('Error en saveDataToBackend:', error);
+                showPersistentMessage(error.message, "error");
+                return false;
+            } finally { clearLoadingMessage(); }
+        }
+
+        // --- RENDERING & UI LOGIC ---
+        function renderAll() {
+            renderPromptFolders();
+            renderPrompts(); 
+        }
+       
+        function renderPromptFolders() {
+            promptFoldersGridContainer.innerHTML = '';
+            const searchTerm = globalSearchInput.value.toLowerCase().trim();
+            let filteredFolders = appData.promptFolders.filter(f => !searchTerm || f.name.toLowerCase().includes(searchTerm) || (f.description || '').toLowerCase().includes(searchTerm));
+            noPromptFoldersMessage.style.display = filteredFolders.length === 0 ? 'block' : 'none';
+            noPromptFoldersMessage.textContent = searchTerm ? "No hay carpetas que coincidan." : "No hay carpetas. ¡Crea una!";
+            filteredFolders.forEach((folder) => {
+                const originalIndex = appData.promptFolders.findIndex(f => f.id === folder.id);
+                const folderEl = promptFoldersGridContainer.appendChild(document.createElement('div'));
+                folderEl.className = 'folder-item';
+                folderEl.innerHTML = `
+                    ${isEditable ? `<div class="item-order-buttons"><button class="move-folder-left-btn" title="Mover Izquierda" ${originalIndex === 0 ? 'disabled' : ''}>←</button><button class="move-folder-right-btn" title="Mover Derecha" ${originalIndex === appData.promptFolders.length - 1 ? 'disabled' : ''}>→</button></div>` : ''}
+                    ${isEditable ? `<div class="item-edit-buttons"><button class="edit-folder-btn" title="Editar"><i class="fas fa-edit"></i></button><button class="delete-folder-btn" title="Eliminar"><i class="fas fa-trash-alt"></i></button></div>` : ''}
+                    <div class="folder-header"><img src="${folder.iconUrl || 'https://via.placeholder.com/50/ccc/888?text=F'}" alt="${folder.name} Icon" class="folder-icon interactive-image-thumbnail"><div class="folder-name">${folder.name}</div></div>
+                    <p class="folder-description">${folder.description || "<em>Sin descripción</em>"}</p>`;
+                
+                folderEl.onclick = (e) => { if (!e.target.closest('.item-edit-buttons, .item-order-buttons, .folder-icon')) handleFolderClick(folder.id, folderEl); };
+                
+                // INICIO: Lógica de temporizador REFINADA
+                // Ya no hay onmouseenter en la carpeta. Solo onmouseleave.
+                folderEl.onmouseleave = () => {
+                    closeMenuTimer = setTimeout(closeActivePopups, 60); // Un poco más de tiempo
+                };
+                // FIN: Lógica de temporizador REFINADA
+
+                if (isEditable) {
+                    folderEl.querySelector('.edit-folder-btn')?.addEventListener('click', () => openPromptFolderForm(folder.id));
+                    folderEl.querySelector('.delete-folder-btn')?.addEventListener('click', () => deletePromptFolder(folder.id));
+                    folderEl.querySelector('.move-folder-left-btn')?.addEventListener('click', () => movePromptFolder(folder.id, -1));
+                    folderEl.querySelector('.move-folder-right-btn')?.addEventListener('click', () => movePromptFolder(folder.id, 1));
+                }
+            });
+            attachGenericImageEventListeners(promptFoldersGridContainer);
+        }
+
+        function handleFolderClick(folderId, folderElement) {
+            closeActivePopups(); // Cierra cualquier popup anterior al hacer clic
+            const menu = document.body.appendChild(document.createElement('div'));
+            menu.className = 'folder-prompts-menu';
+            
+            // INICIO: Lógica de temporizador REFINADA
+            // onmouseenter en el menú cancela el cierre
+            menu.onmouseenter = () => {
+                clearTimeout(closeMenuTimer);
+            };
+            // onmouseleave del menú lo cierra
+            menu.onmouseleave = () => {
+                closeActivePopups();
+            };
+            // FIN: Lógica de temporizador REFINADA
+
+            const ul = menu.appendChild(document.createElement('ul'));
+            const promptsInFolder = appData.prompts.filter(p => p.folderId === folderId);
+
+            if (promptsInFolder.length > 0) {
+                promptsInFolder.forEach(p => {
+                    const li = ul.appendChild(document.createElement('li'));
+                    const a = li.appendChild(document.createElement('a'));
+                    a.href = `#`;
+                    a.textContent = p.title;
+                    a.onclick = e => { e.preventDefault(); closeActivePopups(); renderActivePrompt(p.id); };
+
+                    a.addEventListener('mouseenter', (e) => {
+                        document.querySelectorAll('.prompt-link-description-popup').forEach(pop => pop.remove());
+                        const descPopup = document.createElement('div');
+                        descPopup.className = 'prompt-link-description-popup';
+                        descPopup.innerHTML = p.descriptionHTML || '<em>Este prompt no tiene descripción.</em>';
+                        document.body.appendChild(descPopup);
+                        const popupWidth = 280;
+                        const popupMargin = 10;
+                        const linkRect = a.getBoundingClientRect();
+                        if ((linkRect.right + popupWidth + popupMargin) > window.innerWidth) {
+                            descPopup.style.left = `${linkRect.left - popupWidth - popupMargin + window.scrollX}px`;
+                        } else {
+                            descPopup.style.left = `${linkRect.right + popupMargin + window.scrollX}px`;
+                        }
+                        descPopup.style.top = `${linkRect.top + window.scrollY}px`;
+                        descPopup.style.display = 'block';
+                    });
+
+                    a.addEventListener('mouseleave', () => {
+                        const existingPopup = document.querySelector('.prompt-link-description-popup');
+                        if (existingPopup) existingPopup.remove();
+                    });
+                });
+            } else {
+                ul.innerHTML = '<li><em style="color:var(--placeholder-text-color);">Carpeta vacía</em></li>';
+            }
+
+            activePopups.folderMenu = menu;
+            const rect = folderElement.getBoundingClientRect();
+            menu.style.cssText = `left:${rect.left+window.scrollX}px; top:${rect.bottom+5+window.scrollY}px; display:block;`;
+        }
+       
+        function closeActivePopups() {
+            clearTimeout(closeMenuTimer);
+            if (activePopups.folderMenu) activePopups.folderMenu.remove(); 
+            activePopups.folderMenu = null;
+            document.querySelectorAll('.prompt-link-description-popup').forEach(pop => pop.remove());
+        }
+       
+        function renderPrompts() {
+            const section = document.getElementById('promptsSection');
+            const sectionTitle = section.querySelector('.section-title-wrapper');
+            if (isEditable) {
+                sectionTitle.style.display = 'block';
+                promptsListContainer.style.display = 'grid';
+                promptsListContainer.classList.add('edit-mode-title-view');
+                const searchTerm = globalSearchInput.value.toLowerCase().trim();
+                let filtered = appData.prompts.filter(p => !searchTerm || p.title.toLowerCase().includes(searchTerm) || p.promptText.toLowerCase().includes(searchTerm));
+                promptsListContainer.innerHTML = '';
+                noPromptsMessage.style.display = filtered.length === 0 ? 'block' : 'none';
+                noPromptsMessage.textContent = searchTerm ? "No hay prompts que coincidan." : "No hay prompts. ¡Añade uno!";
+                filtered.forEach(prompt => {
+                    const originalIndex = appData.prompts.findIndex(p => p.id === prompt.id);
+                    const itemEl = promptsListContainer.appendChild(document.createElement('div'));
+                    itemEl.className = 'prompt-title-item';
+                    itemEl.innerHTML = `<span class="prompt-title-text">${prompt.title}</span><div class="item-controls"><button class="edit-prompt-btn" title="Editar"><i class="fas fa-edit"></i></button><button class="move-prompt-up-btn" title="Subir" ${originalIndex===0?'disabled':''}>↑</button><button class="move-prompt-down-btn" title="Bajar" ${originalIndex===appData.prompts.length-1?'disabled':''}>↓</button><button class="delete-prompt-btn" title="Eliminar"><i class="fas fa-trash-alt"></i></button></div>`;
+                    itemEl.querySelector('.edit-prompt-btn').onclick = () => openPromptForm(prompt.id);
+                    itemEl.querySelector('.delete-prompt-btn').onclick = () => deletePrompt(prompt.id);
+                    itemEl.querySelector('.move-prompt-up-btn').onclick = () => movePrompt(prompt.id, -1);
+                    itemEl.querySelector('.move-prompt-down-btn').onclick = () => movePrompt(prompt.id, 1);
+                });
+            } else { // Vision Mode
+                promptsListContainer.classList.remove('edit-mode-title-view');
+                promptsListContainer.style.display = 'none';
+                sectionTitle.style.display = 'none'; 
+                noPromptsMessage.style.display = 'none';
+            }
+        }
+
+        function renderActivePrompt(promptId) {
+            const p = appData.prompts.find(p => p.id === promptId);
+            if (!p) {
+                activePromptDisplayArea.innerHTML = '<p>Prompt no encontrado.</p>';
+                return;
+            }
+
+            activePromptDisplayArea.innerHTML = `
+                <h3 class="prompt-title">${p.title}</h3>
+                <hr style="margin:10px 0 20px;">
+                <div class="prompt-description">${p.descriptionHTML || ''}</div>
+                <div class="prompt-example-images">${(p.exampleImageUrls || []).filter(u => typeof u === 'string').map(url => `<img src="${url}" class="interactive-image-thumbnail">`).join('')}</div>
+                <div class="prompt-text-display">${p.promptText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                <div class="prompt-actions">
+                    <button class="copy-prompt-btn">Copiar Prompt</button>
+                    <button id="closeActivePromptBtn" class="cancel-btn">Cerrar</button> 
+                </div>`;
+            
+            activePromptDisplayArea.querySelector('.copy-prompt-btn').onclick = () => copyToClipboard(p.promptText);
+            activePromptDisplayArea.querySelector('#closeActivePromptBtn').onclick = () => {
+                promptDisplayModal.style.display = 'none';
+                activePromptDisplayArea.innerHTML = '';
+            };
+            
+            attachGenericImageEventListeners(activePromptDisplayArea);
+            promptDisplayModal.style.display = 'flex';
+        }
+       
+        // --- FORM HANDLERS ---
+        function openPromptForm(id = null) {
+            const p = id ? appData.prompts.find(p => p.id === id) : null;
+            tempPromptImageFiles = []; currentEditingPromptImages = p ? [...p.exampleImageUrls.filter(u=>typeof u==='string')] : [];
+            genericFormContainer.innerHTML = `<h3>${p ? 'Editar Prompt' : 'Añadir Prompt'}</h3><input type="hidden" id="editingPromptId" value="${p?.id||''}">
+                <div class="form-group"><label>Título:</label><input type="text" id="promptTitleInput" value="${p?.title||''}"></div>
+                <div class="form-group"><label>Descripción (HTML):</label><textarea id="promptDescriptionHTMLInput" rows="4">${p?.descriptionHTML||''}</textarea></div>
+                <div class="form-group"><label>Carpeta:</label><select id="promptFolderSelect"><option value="">(Sin carpeta)</option>${appData.promptFolders.map(f=>`<option value="${f.id}" ${p?.folderId===f.id?'selected':''}>${f.name}</option>`).join('')}</select></div>
+                <div class="form-group"><label>Imágenes (máx. 3):</label><input type="file" id="promptExampleImageFilesInput" multiple accept="image/*"><div id="promptImagePreviewContainer" class="image-preview-container"></div></div>
+                <div class="form-group"><label>Texto del Prompt:</label><textarea id="promptTextInput" rows="6">${p?.promptText||''}</textarea></div>
+                <div class="form-buttons"><button class="save-btn">Guardar</button><button type="button" class="cancel-btn">Cancelar</button></div>`;
+            renderPromptFormImagePreviews();
+            genericFormContainer.querySelector('#promptExampleImageFilesInput').onchange=handlePromptFormImageSelection;
+            genericFormContainer.querySelector('.save-btn').onclick = savePromptHandler;
+            genericFormContainer.querySelector('.cancel-btn').onclick = closeFormModal;
+            formModal.style.display = 'flex';
+        }
+        function handlePromptFormImageSelection(e) {
+            Array.from(e.target.files).forEach(file => {
+                if((currentEditingPromptImages.length+tempPromptImageFiles.length)<3){ const r=new FileReader();r.onload=ev=> {tempPromptImageFiles.push({file,previewUrl:ev.target.result});renderPromptFormImagePreviews();};r.readAsDataURL(file);}
+                else{alert("Máximo 3 imágenes.");}
+            });
+            e.target.value="";
+        }
+        function renderPromptFormImagePreviews() {
+            const c=document.getElementById('promptImagePreviewContainer'); if(!c)return; c.innerHTML='';
+            [...currentEditingPromptImages,...tempPromptImageFiles.map(f=>f.previewUrl)].forEach((url,i)=>{
+                const w=c.appendChild(document.createElement('div')); w.className='img-preview-wrapper'; w.innerHTML=`<img src="${url}"><button class="delete-prompt-image-btn" data-index="${i}">×</button>`;
+            });
+            c.querySelectorAll('button').forEach(b=>b.onclick=e=>{const i=parseInt(e.currentTarget.dataset.index);if(i<currentEditingPromptImages.length){currentEditingPromptImages.splice(i,1);}else{tempPromptImageFiles.splice(i-currentEditingPromptImages.length,1);}renderPromptFormImagePreviews();});
+        }
+        function savePromptHandler() {
+            const id = document.getElementById('editingPromptId').value;
+            const data = { id: id||`p_${Date.now()}`, title:document.getElementById('promptTitleInput').value.trim(), descriptionHTML:document.getElementById('promptDescriptionHTMLInput').value.trim(), exampleImageUrls:[...currentEditingPromptImages,...tempPromptImageFiles.map(f=>f.file)], promptText:document.getElementById('promptTextInput').value.trim(), folderId:document.getElementById('promptFolderSelect').value||null, timestampUpdated:Date.now(), timestampAdded: id?appData.prompts.find(p=>p.id===id)?.timestampAdded||Date.now():Date.now()};
+            if(!data.title||!data.promptText){alert("Título y Texto del Prompt son obligatorios.");return;}
+            const i=appData.prompts.findIndex(p=>p.id===id); if(i>-1)appData.prompts[i]=data;else appData.prompts.push(data);
+            saveDataToBackend().then(ok=>{if(ok){closeFormModal();renderAll();}});
+        }
+        function deletePrompt(id) {const p=appData.prompts.find(p=>p.id===id);if(p&&confirm(`Eliminar prompt "${p.title}"?`)){appData.prompts=appData.prompts.filter(p=>p.id!==id);saveDataToBackend().then(ok=>{if(ok)renderAll();});}}
+        function movePrompt(id,dir){const i=appData.prompts.findIndex(p=>p.id===id);const nI=i+dir;if(i>-1&&nI>=0&&nI<appData.prompts.length){const[item]=appData.prompts.splice(i,1);appData.prompts.splice(nI,0,item);renderPrompts();}}
+       
+        function openPromptFolderForm(id=null){const f=id?appData.promptFolders.find(f=>f.id===id):null;genericFormContainer.innerHTML=`<h3>${f?'Editar Carpeta':'Añadir Carpeta'}</h3><input type="hidden" id="editingFolderId" value="${f?.id||''}">
+        <div class="form-group"><label>Nombre:</label><input type="text" id="folderNameInput" value="${f?.name||''}"></div><div class="form-group"><label>Icono:</label><input type="url" id="folderIconUrlInput" value="${(f?.iconUrl&&typeof f.iconUrl==='string')?f.iconUrl:''}" placeholder="http://..."><input type="file" id="folderIconFileInput" accept="image/*" style="margin-top:5px;"><div id="folderIconPreviewContainer" class="image-preview-container"></div></div><div class="form-group"><label>Descripción:</label><textarea id="folderDescriptionInput" rows="3">${f?.description||''}</textarea></div><div class="form-buttons"><button class="save-btn">Guardar</button><button type="button" class="cancel-btn">Cancelar</button></div>`;
+        const uI=genericFormContainer.querySelector('#folderIconUrlInput'),fI=genericFormContainer.querySelector('#folderIconFileInput'),pV=genericFormContainer.querySelector('#folderIconPreviewContainer');const uP=s=>{pV.innerHTML=s?`<div class="img-preview-wrapper"><img src="${s}"><button class="delete-prompt-image-btn">×</button></div>`:'';if(s)pV.querySelector('button').onclick=()=>{uI.value='';fI.value='';uP()};};if(f?.iconUrl&&typeof f.iconUrl==='string')uP(f.iconUrl);fI.onchange=e=>{if(e.target.files[0]){uI.value='';const r=new FileReader();r.onload=ev=>uP(ev.target.result);r.readAsDataURL(e.target.files[0]);}};uI.oninput=()=>{if(uI.value){fI.value='';uP(uI.value);}};genericFormContainer.querySelector('.save-btn').onclick=savePromptFolderHandler;genericFormContainer.querySelector('.cancel-btn').onclick=closeFormModal;formModal.style.display='flex';}
+        function savePromptFolderHandler(){const id=document.getElementById('editingFolderId').value;const file=document.getElementById('folderIconFileInput').files[0];let icon=file||document.getElementById('folderIconUrlInput').value.trim();if(!icon&&id)icon=appData.promptFolders.find(f=>f.id===id)?.iconUrl||'';if(document.getElementById('folderIconPreviewContainer').innerHTML==='')icon='';const data={id:id||`f_${Date.now()}`,name:document.getElementById('folderNameInput').value.trim(),iconUrl:icon,description:document.getElementById('folderDescriptionInput').value.trim(),timestampUpdated:Date.now(),timestampAdded:id?appData.promptFolders.find(f=>f.id===id)?.timestampAdded||Date.now():Date.now()};if(!data.name){alert("Nombre de carpeta requerido.");return;}
+        const i=appData.promptFolders.findIndex(f=>f.id===id);if(i>-1)appData.promptFolders[i]=data;else appData.promptFolders.push(data);saveDataToBackend().then(ok=>{if(ok){closeFormModal();renderPromptFolders();}});}
+        function deletePromptFolder(id){const f=appData.promptFolders.find(f=>f.id===id);if(f&&confirm(`Eliminar carpeta "${f.name}"? Los prompts se desvincularán.`)){appData.promptFolders=appData.promptFolders.filter(f=>f.id!==id);appData.prompts.forEach(p=>{if(p.folderId===id)p.folderId=null;});saveDataToBackend().then(ok=>{if(ok)renderAll();});}}
+        function movePromptFolder(id,dir){const i=appData.promptFolders.findIndex(f=>f.id===id);const nI=i+dir;if(i>-1&&nI>=0&&nI<appData.promptFolders.length){const[item]=appData.promptFolders.splice(i,1);appData.promptFolders.splice(nI,0,item);renderPromptFolders();}}
+
+        // --- MODO EDICIÓN, TEMA & UTILIDADES ---
+        async function checkPassword(p){try{const fd=new FormData();fd.append('password',p);const r=await fetch('validar_password.php',{method:'POST',body:fd});return r.ok&&(await r.json())?.success;}catch(e){console.error(e);return false;}}
+        
+        function toggleEditMode(){
+            if(isEditable){
+                saveDataToBackend().then(ok=>{
+                    isEditable=false;
+                    currentPassword="";
+                    updateEditModeUI();
+                });
+            } else {
+                adminPasswordInput.value = ''; 
+                adminPasswordModal.style.display='flex';
+                adminPasswordInput.focus();
+            }
+        }
+
+        async function handlePasswordSubmit(){const pass=adminPasswordInput.value;if(!pass)return;showLoadingMessage("Verificando...");if(await checkPassword(pass)){isEditable=true;currentPassword=pass;adminPasswordModal.style.display='none';updateEditModeUI();}else{alert('Contraseña incorrecta.');}clearLoadingMessage();}
+        function updateEditModeUI(){document.body.classList.toggle('edit-mode',isEditable);editModeToggleBtn.classList.toggle('active',isEditable);[addPromptBtn,addPromptFolderBtn,changeBgBtn,saveFolderOrderBtn,savePromptOrderBtn].forEach(btn=>btn.style.display=isEditable?'block':'none');renderAll();}
+        function applyInitialSettings(){const isDark=appData.settings.theme!=='light';document.body.classList.toggle('dark-theme',isDark);themeSwitcherBtn.textContent=isDark?'Tema Claro':'Tema Oscuro';if(appData.settings.background)document.body.style.backgroundImage=appData.settings.background;}
+        function toggleTheme(){const isDark=document.body.classList.toggle('dark-theme');appData.settings.theme=isDark?'dark':'light';themeSwitcherBtn.textContent=isDark?'Tema Claro':'Tema Oscuro';if(isEditable)saveDataToBackend();}
+        function handleBackgroundChange(e){const f=e.target.files[0];if(!f||!isEditable)return;const r=new FileReader();r.onload=ev=>{appData.settings.background=`url(${ev.target.result})`;saveDataToBackend().then(()=>applyInitialSettings());};r.readAsDataURL(f);}
+        function openFullscreenImage(src){fullscreenImage.src=src;fullscreenImageViewer.style.display='flex';}
+        function closeFullscreenImage(){fullscreenImageViewer.style.display='none';fullscreenImage.src='';}
+        function attachGenericImageEventListeners(c){c.querySelectorAll('.interactive-image-thumbnail').forEach(i=>i.addEventListener('click',e=>{if(e.currentTarget.src&&!e.currentTarget.src.includes('via.placeholder.com'))openFullscreenImage(e.currentTarget.src);}));}
+        function copyToClipboard(t,m="Copiado."){navigator.clipboard.writeText(t).then(()=>alert(m)).catch(()=>alert('Error al copiar.'));}
+        function showSaveConfirmation(button){const oT=button.textContent;button.textContent='Guardado ✓';button.disabled=true;setTimeout(()=>{button.textContent=oT;button.disabled=false;},2000);}
+        function showLoadingMessage(m){let d=document.getElementById('loadingOverlay');if(!d){d=document.body.appendChild(document.createElement('div'));d.id='loadingOverlay';d.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);color:white;display:flex;justify-content:center;align-items:center;z-index:20000;font-size:2em;';}d.textContent=m;d.style.display='flex';}
+        function clearLoadingMessage(){const d=document.getElementById('loadingOverlay');if(d)d.style.display='none';}
+        function showPersistentMessage(m,t="info"){if(t==="error")alert(`Error: ${m}`);else alert(m);console.log(`${t.toUpperCase()}: ${m}`);}
+
+        // --- EVENT LISTENERS GLOBALES ---
+        editModeToggleBtn.onclick = toggleEditMode;
+        submitAdminPasswordBtn.onclick = handlePasswordSubmit;
+        adminPasswordInput.onkeypress = e => { if (e.key === 'Enter') handlePasswordSubmit(); };
+        cancelAdminPasswordBtn.onclick = () => adminPasswordModal.style.display = 'none';
+        themeSwitcherBtn.onclick = toggleTheme;
+        changeBgBtn.onclick = () => { if(isEditable) hiddenBgInput.click() };
+        hiddenBgInput.onchange = handleBackgroundChange;
+        addPromptBtn.onclick = () => openPromptForm();
+        addPromptFolderBtn.onclick = () => openPromptFolderForm();
+        saveFolderOrderBtn.onclick = () => saveDataToBackend().then(ok => ok && showSaveConfirmation(saveFolderOrderBtn));
+        savePromptOrderBtn.onclick = () => saveDataToBackend().then(ok => ok && showSaveConfirmation(savePromptOrderBtn));
+        globalSearchInput.oninput = renderAll;
+        closeFullscreenBtn.onclick = closeFullscreenImage;
+        fullscreenImageViewer.onclick = e => { if (e.target === fullscreenImageViewer) closeFullscreenImage(); };
+        document.onkeydown = e => { if (e.key==="Escape") { if (fullscreenImageViewer.style.display==='flex') closeFullscreenImage(); else if (promptDisplayModal.style.display === 'flex') { promptDisplayModal.style.display = 'none'; activePromptDisplayArea.innerHTML = ''; } else if (formModal.style.display==='flex') closeFormModal(); else if (adminPasswordModal.style.display==='flex') adminPasswordModal.style.display='none'; }};
+
+        // --- INICIALIZACIÓN ---
+        loadInitialData();
+    });
+  </script>
+</body>
+</html>

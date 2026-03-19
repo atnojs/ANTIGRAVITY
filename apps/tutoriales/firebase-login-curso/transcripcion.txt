@@ -1,0 +1,617 @@
+0:00
+You've probably built front-end apps using Google AI Studio before, but did you know that you could add a fullon
+0:05
+backend that will let users authenticate, save their information to your database, and even store images and
+0:12
+files they upload? Well, all of this is possible using just one free noode tool called Firebase. And today I'm going to
+0:19
+show you how you can link it to your Google AI Studio apps with this custom drive application where users can
+0:25
+register, verify their email, login, and even authenticate using Google. They can
+0:31
+upload any file to their drive, change the name, add notes, and everything will
+0:36
+get automatically uploaded to our storage and sync with our database ready to download anytime. They can also add a
+0:43
+profile picture and edit the profile details and everything will get automatically synced. A lot of you guys
+0:49
+have been asking for a slower tutorial. So, in this video, I'll be walking you through each part of the process so you
+0:54
+can build amazing apps even if you're just a beginner. I've also gone ahead and created a free follow along guide in
+1:00
+the description. So, make sure to get that and let's get right into the video. The first thing you're going to do is design the front end of our app in
+01:** Designing the Front-End (App Walkthrough)
+1:07
+Google AI Studio build section. We're not going to go through this today, but you can get all of the prompts I used
+1:13
+for this app, plus a free template you can just copy to your Google AI studio in my guide. So, here's how a demo app
+1:19
+works right now. You can hit new upload and add any file here. So, say this
+1:24
+image. Once it's uploaded, you can go ahead and change the name. So, say something like Alex Chen. You can also
+1:31
+add any notes here. So, I'm going to say company, profile, photo. And then you're
+1:37
+going to go ahead and upload the file. And once it's uploaded, you're going to see this in the drive dashboard. You can
+1:42
+open to view it. Edit the nodes. Analyze insights with Gemini. Let's go ahead and
+1:48
+upload another file here. So, say this time is going to be a PDF. So, I'm going to upload the good to great book right
+1:55
+here. I'm not going to change the name, but in notes, I'm going to say my favorite book and go ahead and upload
+2:01
+the file. I'm using a library here to show this uniform file icons. You'll find how to do this in my free guide.
+2:09
+Now, let's go ahead and upload a YouTube video episode. Say this one here. I'm
+2:14
+also going to add some notes and upload the file. And it's also going to appear in our dashboard. Now, you can view the
+2:21
+files in the board view. And that's also the list view Gemini created for me. Everything looks perfect, but there's
+2:27
+only one problem. When I go ahead and reload, everything disappears because our app doesn't have any back end yet.
+2:33
+So, let's go ahead and fix that. Think of your app's back end as kind of like a locker room. A user needs to use a key
+How the Firebase Backend Works (Logic)
+2:40
+to open the locker to put the stuff in or to get it out. So the first thing you need to do is to build this locker and
+2:46
+key system which is our authentication. So users need to create an account or sign in first to use our drive. Before
+02:** Creating a Project in the Firebase Console
+2:52
+setting up a backend, you're going to need to create a free Firebase account if you don't have one yet. And then
+2:57
+you're just going to head over to the console at the top. Now the first thing you'll need to do here is to create a
+3:03
+project. This is where we're going to store all of our backend authentication, storage, databases. So, you're going to
+3:09
+go ahead and click to create a new project and give it a name. I'm going to say Gemini drive. This is a name Google
+3:15
+AI Studio gave to our app. Now, we're not going to use the Gemini Assistant or Google Analytics here. So, feel free to
+3:22
+leave them disabled and then just go ahead and click to create a new project.
+3:27
+This is going to take a minute. But once your project is created, you're going to hit continue. and you're going to get
+3:33
+redirected to your project's overview. Now, the first thing you need to do here is to add an app so we can connect it to
+03:** Register Your Web App & Get the SDK Code
+3:40
+our Google AI studio. So, you're just going to go ahead and click add app at the top and you'll see different type of
+3:47
+apps you can create here. So, we're going to create a web app because our app is running on the web. You're going
+3:52
+to give it a name. I'm just going to say Gemini drive. Again, you don't need the Firebase hosting, so just leave it
+3:58
+unchecked. And in the second step, Firebase is going to generate an SDK code for you. Now, this code is
+4:04
+extremely important, but you don't need to understand it. You can just copy and paste it somewhere. And then you're just
+4:10
+going to continue to the console. Once your app is added, you're going to head over to build authentication. So, we can
+04:** Setting Up Firebase Authentication
+4:17
+build a safe registration and login system for our users. So, here you're just going to click get started. And the
+4:23
+first thing you're going to see is this signin method screen. Now you can have your users sign up with any method,
+05:** Configure Sign-in Methods (Email/Password & Google)
+4:29
+email and password, phone number or any other third-party provider like Google,
+4:34
+Microsoft or Facebook. So for this app, I would just like to add the basic email and password sign in and also Google so
+4:42
+I can show you how to configure it with other providers. So I'm first going to click email and password and enable it
+4:48
+at the top. Here you can also choose to add a passwordless sign in. So, when a user signs in with their email, they're
+4:54
+going to get sent a link to their email. I'm just going to choose the first one and save. Now, at the top, I'm going to
+5:01
+click to add a new provider now. And this time, I'm going to choose Google and enable it. Now, here you're just
+5:07
+going to have to add a support email. I'm just going to choose this test one for now. And later when your app
+5:13
+actually goes live, you can add a professional one. So, let's go ahead and hit save. If your users sign up with
+06:** Configure Email Templates (Sender, Subject, etc.)
+5:18
+Google, there's no need to verify their email or change their password. But if you have the email and password
+5:23
+authentication enabled, this is going to be done automatically. And in templates, you can set up who the emails are going
+5:30
+to be from, the subject, and the email content. So, let's go ahead and head over there. Next to signin methods,
+5:36
+you'll see this templates tab. Now, here, as you can see, we first get the email verification template. At the top,
+5:43
+you'll see who it's going to get sent from. Now, this is the automatic email, and if you don't configure your
+5:49
+professional domain, all of the emails will just go to spam, which is fine for testing, but if you're actually planning
+5:55
+on deploying this app, you can go ahead and hit on the pencil icon right here and click customize domain. You're just
+6:02
+going to have to enter your domain and verify it. I'm just going to leave this default domain. I don't mind the emails
+6:08
+going to spam because I'm just showing you how it works and I'm not planning on actually deploying the app. Now, you can
+6:13
+also go ahead and change the subject here. You'll see that for email address verification, you can't actually change
+6:19
+the email content. This is done due to spam. But if you go to something like password reset, you can see that you can
+6:25
+fully customize this template. You can also go ahead and do the same in email address change, multifactor
+6:31
+authentication. So you can fully customize these templates. So now that you have your sign-in methods and
+07:** Add Email/Password Sign-in to AI Studio (The Prompt)
+6:36
+template set up, let's go ahead and add authentication into our Google AI Studio app. You're just going to copy and paste
+6:43
+this exact prompt from my free guide and then customize it if you want. So, I'm just going to say before using this
+6:49
+drive, you just have to register or login using Firebase authentication logic. Connect to Firebase using this
+6:55
+SDK. And here you're just going to paste the code we copied earlier when we were creating the app. Users can login using
+7:02
+email and password. If credentials are incorrect, display password or email incorrect in the UI. Users can sign up
+7:09
+with a registration form. Now, you're going to fully customize this form. For me, it's just going to be upload a
+7:14
+profile photo, name, email, password, and repeat password. You can add any other fields here like company name, for
+7:20
+example. And here, I'm just going to say for now, just authenticate. Don't save user info because we haven't added a
+7:27
+database yet. We're going to do this later in the video. If a user with those credentials already exists, display user
+7:34
+already exists, sign in question mark. So, you're just going to send this prompt in now. Now, once it's done, the
+7:40
+first thing you're going to see is a sign-in form. Now, I don't have an account yet. So, let's go ahead and hit sign up. And I'm going to create a
+7:46
+profile. I'm going to upload a photo, my name, email, and also enter a password and confirm it. And click to create
+7:53
+account. And as you can see, I'm now automatically signed in. Now, front end works perfectly. Let's see if it
+7:59
+actually worked in the background. You're going to head back to the authentication tab in Firebase. And in
+8:04
+users, you should see the email you've just registered with. So as you can see an identifier, here's our email and we
+8:10
+also have something called a user ID on the right. Now this UID field is extremely important so you need to
+8:16
+understand it. This is how our app identifies if this is the correct user. So say I've just registered with this
+8:22
+email address and then I went ahead and changed it and then changed it again. How does the app know it's actually my
+8:28
+account? Well, by using this unique user ID. This is going to be a key in the future to add information to the
+8:35
+database or storage under the correct user. I can now go ahead and sign out and then sign back in. And as you can
+8:42
+see, everything is working and it's going to every time I decide to sign in with this account. Now, let's see how
+08:** Testing Error Handling ("Email already exists")
+8:48
+our app is interpreting error messages. So, I'm just going to go back to sign in by hitting log out and enter some random
+8:55
+credentials. And as you can see, it says email or password incorrect. So, it's working perfectly. Now, let's go ahead
+9:01
+and sign up with my email address that is already registered in the system. So, I'm just going to go ahead and enter the
+9:06
+same address. Say Jessica and repeat the password. Create account. And as you can
+9:12
+see, it sends me to sign in. User already exists. Sign in instead. Now, if your app isn't showing those messages
+9:18
+correctly, you have to go back to Google AI Studio and prompt it. Now, our authentication is working perfectly, but
+09:** How to Add Email Verification
+9:24
+right now when a user registers, they just get signed in automatically. And that's not good at all. What if they
+9:30
+entered the wrong email address and then they can't remember it? I just want to create a bunch of fake accounts. We
+9:35
+don't want that. So, let's add email verification. Just going to head back to Google UI Studio and paste this exact
+9:41
+prompt from my free guide. Implement email verification. Create an email verification screen. We have sent you a
+9:46
+verification email too. And I'm going to put the email address in curly brackets. That curly brackets basically mean that
+9:52
+it's going to be custom depending on the user. in this case is going to be the email address you used when registering
+9:59
+verify it and login plus the login button. Now what's happening here is basically when you register Firebase is
+10:05
+going to go ahead and send you a verification link to your email. You go ahead and click it and then go back to
+10:10
+our app and now you can login without any errors. If a user registers with email and password, do not sign them in
+10:17
+automatically. Verify their email address using Firebase authentication and display the verification screen.
+10:23
+Now, what if you registered but never confirmed your email and then you go ahead and log in again? Well, we're
+10:29
+going to handle that as well. I'm going to say if a user logs in and the email is not verified, do the same as after
+10:35
+the registration, basically showing the same verification screen. Now, once it's done, let's just go ahead and sign in
+10:40
+with that same user we registered with earlier. And since we didn't verify our email yet, we're going to get this
+10:47
+verify your email screen back to login. Now, if we go to the spam folder, you'll
+10:52
+see that in fact, Firebase just sent me this verification email. I can go ahead and click on this link. And as you can
+10:58
+see, it now says the email has been verified. Now, in our app, I'm going to press back to login. And this time,
+11:05
+login again. And as you can see, now I'm signed in successfully because my email is verified. I'm going to go ahead and
+11:11
+register with a completely different user now so we can see how it works. And we're also sent to the verify your email
+11:19
+page. And we also just received the verification email link. I'm going to go
+11:24
+ahead and click that. And I'll sign in with that same user. And I'm signed in. So everything is working perfectly. Our
+10:** How to Add "Forgot Password" Functionality
+11:31
+final step in email and password sign in is adding a forgot password button in case a user forgot it. So in AI Studio,
+11:38
+going to paste this exact same prompt from my guide. Add a forgot password prompt. When it's clicked, let the user
+11:44
+enter their email or pass it on from the sign-in form. So, if they entered their email in signin and they clicked forgot
+11:51
+password, it's going to get automatically added to the field. When a user clicks get reset link, trigger the
+11:57
+password change using Firebase authentication display. We sent you a password change link too and our sign-in
+12:03
+button. You're going to send this prompt in. Our changes are now done. And you'll see that the forgot password link was
+12:09
+just added below the password field. Let's go ahead and hit this. Now, here I'm just going to enter one of the email
+12:14
+addresses we used for registration and click to get a reset link. And as you
+12:20
+can see, we now see this window that says check your inbox and sign back in. Now, I'm just going to go back to the
+12:26
+spam folder. And as you can see, the reset your password email was just sent to us. Let's go ahead and open it and
+12:32
+click link. Now, inside the link, you can now enter your new password and save. And now we're going to sign back
+12:41
+in, but now with the new password. And as you can see, everything is working successfully. And we are signed in. Our
+12:47
+email and password authentication is fully set up. Our users can now register, verify their email, sign in,
+11:** Add Google Sign-in to AI Studio (The Prompt)
+12:54
+change their password. Let's now add Google authentication. So users can sign up and sign in using Google. You'll be
+13:00
+absolutely amazed at how easy it is. Now, the first step is completely optional. I'm just going to upload a
+13:06
+Google logo with our background into one of my public storage buckets in Google Cloud. Now, you can learn how to host
+13:12
+any images, icons, or any other assets here in one of the previous videos I made. I'll leave a link for you in the
+13:19
+description with a timestamp. So, go ahead and watch that if you don't know how to do it. I'm just going to click on
+13:24
+the three dots and copy the public URL. And now, I'm just going to go to Google AI Studio and paste in this exact prop
+13:31
+from my guide. I'm going to say add sign in up with Google button using Firebase authentication. Use this icon for the
+13:38
+button and I'm just going to paste in the link we've just copied and then go ahead and send the prompt in. Now once
+13:43
+it's done, you're going to see this continue with Google button in sign in. And if I click sign up, you're also
+13:49
+going to see it up here. Now before we can actually use this integration, you're going to have to deploy your app.
+13:54
+Otherwise, it's just not going to work. Google is going to block it. So you're going to click on the rocket icon right
+13:59
+here. Choose a project and deploy your app. Now, I taught you how to do that step by step in one of my previous
+14:05
+videos. So, I'm also going to leave a link in the description with a timestamp. So, go ahead and follow that
+14:10
+tutorial. It's going to take a minute to actually deploy your app. And once it's
+14:15
+done, you're going to find this app URL on the top. So, you're just going to go ahead and copy this. Now, we just need
+14:21
+to tell Google that we're going to use Google Signin from that URL. So to do this in authentication, you're going to
+14:27
+head over to settings and in authorized domains, you're going to click add a domain and add this exact URL we've just
+14:35
+copied. Now do not skip this step because it's not going to work without it. So you're going to go ahead and save
+14:40
+that. And now you're just going to click to open that same URL to go to your app to test it out. This is not going to
+14:47
+work in preview, so you're going to have to test it in the deployed app. So let's go ahead and hit sign up. And I'm going
+14:53
+to choose one of my Google accounts. So, let's click continue. And as you can see, my accounts are now showing up.
+14:59
+Let's go ahead and choose one of them and click continue. And just like that, I'm now signed in
+15:04
+with Google. And there's literally nothing else you need to do. It is so easy. Are you trying to build a custom
+15:10
+app for your work or business, but struggling to automate the back end? Well, building these apps is my absolute
+15:16
+passion, and I've built hundreds of these for my clients. So, if you want to learn how to do it, feel free to book a
+15:22
+personalized session with me where I'll teach you how to build the apps you need or shoot me an email if you want me to
+15:28
+do it for you and I'll give you a quote. You'll find all the links in the description. And let's get back to the
+12:** Build a Firestore Database (Store User & File Info)
+15:34
+video. We have just successfully implemented a keys to the locker system. Our users can create accounts and sign
+15:39
+in, but we don't have any actual lockers yet where people can put their stuff, which in our case is the profile
+15:46
+information or any files they upload. So to do this, we're going to first create a database where we're going to store
+15:52
+all of that data. To do this, head back to Fire Store and hit build again. And this time, you're going to choose Fire
+15:58
+Store database. So you're going to go ahead and click that. And you're going to see this button to create a database.
+16:04
+Go ahead and click that. Now you can choose the standard edition and click next. In the database location, you can
+16:12
+just leave this default one or choose the one closest to your users. Now once your app goes live you can always change
+16:17
+it and in configuration just leave it in production mode because we're using real
+16:22
+user data and click create. Now there are two key terms you need to understand here. One of them is a collection which
+What is a 'Collection' & 'Document'?
+16:29
+is the main folder and another one is a document which is an item inside it. So
+16:34
+say you have a main folder called users and inside it you have several accounts. Well, that main folder is going to be
+16:41
+called a collection, and all of the users will be documents inside it. So, let's go ahead and create our first
+16:47
+collection, which is going to be our main folder where all of the user information will be stored. Now, just go
+16:52
+ahead and click start collection on the left, and let's name it users. And inside it, we're going to need to add
+16:58
+just a sample document. Now, there's no need to add all of the users here manually. Our app is going to do this
+17:04
+automatically, but we just need to create a test record so you can understand how it works. So, let's go
+17:09
+ahead and add a document ID. You're just going to auto ID it. And here you're just going to add some fields you want
+17:16
+to save. So, something like an email, I'm going to say test at test.com.
+17:21
+Name, which is going to be test Jackson. Profile photo, just profile.jpeg. And
+17:27
+click save. So, as you can see, we've just created a main folder, which is our collection uses. And inside it, we have
+17:33
+a unique user ID for our user test Jackson. If you click on this unique ID, you'll see fields inside it like email,
+17:40
+name, and profile photo. That's all you need to add in your database structure for now. And we're ready to link it to
+13:** Setting Up Secure Firestore Rules
+17:46
+our Google AI Studio app. But before we do this, if you head over to rules at the top, this default code is basically
+17:53
+denying any access to this database for anyone. So, we're going to have to change it if we want to use it. Just
+17:59
+going to copy and paste this exact code from my guides and hit publish. What you see here is basically that every user
+18:05
+when they're logged in can add, update, and delete profile information inside their own document that matches their
+18:12
+user ID. And they can also add, delete, and update any folders inside their own
+14:** Link Firestore Database to Your AI Studio App
+18:17
+document. With your rule set up, let's go ahead and link our Fire Store database to our Google AI studio app.
+18:22
+I'm just going to say every time a user registers add them to my fire store database collection/ users which is
+18:28
+going to be our main folder. And it's also a good idea to provide a path here. So I'm going to say / users/ uid and
+18:34
+curly brackets. Now curly brackets basically mean that the user ID is going to be different for everyone. Now for
+18:40
+the users that we have just registered but they are not in the database yet. I'm going to say if a user is already
+18:46
+registered but isn't in the database, add them there when they log in. add all necessary fields into the document like
+18:54
+name, email, photo, and file name. Now, when the user signs in, I'd also like to display all of the profile information
+19:00
+from the database in the UI. So, I'm going to say when a user signs in, display all the profile information from
+19:06
+the document in the profile UI, let users edit their profile information, delete their account, and update records
+19:13
+accordingly. So, let's go ahead and send this prompt in. Now once it's done, let's go ahead and sign in with the user
+19:18
+that is already registered but doesn't exist in our database yet. And you'll see here in our fire store that in the
+19:25
+collection users, a new UID was just created. And if you open it, you'll see
+19:30
+all of the fields I used when I registered for the first time. As you can see, it updated all of the fields
+19:36
+automatically. I didn't have to do anything manually. We have when the profile was created, display name,
+19:42
+email, photo URL, which is empty for now because we haven't configured storage yet. We've got the UID and when it was
+19:48
+updated. Our users are now saved in our database. But how about the files they upload? Well, there are two things we
+The Logic: How File Uploads Work in Firebase
+19:54
+need to do here. First, when a user uploads a file, we're going to save this file information and metadata in our
+20:01
+database. Things like name, the nodes they add, when it was added, file format
+20:06
+and size. And we also will need to upload this file into our storage in Firebase. So users can download it at
+20:14
+any time. Now there's absolutely no need for you to do this manually, but I would just like to show you how our app is
+20:19
+going to store file information when a user uploads it. So say our user test Jackson just went ahead and signed in
+20:25
+and uploaded a file for the first time. So our app is going to automatically create a new folder inside that UID that
+20:33
+is going to be called files. And inside this files, it's going to add unique
+20:38
+ids. And in each of those unique ids, we'll see some file information. For
+20:43
+example, things like file name, which is going to be records.pdf. Now, say a user
+20:48
+just went ahead and added a node to this file. So, our app is going to automatically add a nodes field and add
+20:55
+all the information they entered, like send them to the team, for example. Now, test Jackson goes ahead and adds a new
+21:01
+file to the drive. So, our app will automatically add a new document inside the files collection and they will also
+21:07
+have specific fields like file name and notes. Now, you know how our app is going to store file information inside
+15:** Building Firebase Storage for File Uploads
+21:13
+our files collection. But where will it actually store the files? Well, to do this, you're going to head over to build
+21:19
+and choose storage this time. Now, to store any files, you're going to hit update your project and you're going to
+21:26
+have to upgrade to pay as you go Blaze plan. You're going to click to create a cloud billing account. And here, just
+21:33
+add your contact information, payment methods, and click to confirm a purchase. Now, it's always a good idea
+21:39
+to add a budget limit in case there's a bug and something goes wrong. So, I'm just going to save $5. And I'm going to
+21:45
+click link cloud billing account. And once my account is upgraded, I'm going to click to get started and choose this
+21:52
+no cost location and continue. For now, you're just going to leave the security
+21:57
+rules in production mode and click create. We're going to change them later. And just like that, your storage
+22:02
+is ready. Now, at the top, you're going to see this link. This is your official storage bucket link. You'll need to link
+22:08
+to AI Studio. So, go ahead and copy and paste it somewhere. You'll see that in the SDK code we got from our app
+22:15
+earlier. We have a bucket link, but it's not correct. So, we're going to have to replace it with this one. So, make sure
+22:21
+to save it somewhere. Now, in our storage, let's go ahead and hit to add a new folder and call it user uploads and
+22:27
+save it. Now, when a user uploads a file for the first time, it's going to create a folder with their unique user ID and
+22:33
+inside that unique user ID is going to store all of the files they upload. And if they go ahead and add more files,
+22:40
+they're just going to keep getting added to this folder. Now, of course, this is Firebase and it's top security. So, if
+16:** Setting Up Secure Firebase Storage Rules
+22:46
+you go to rules right now, nobody has access to anything. So, you're just going to copy and paste these exact
+22:52
+rules from my free guide and hit publish. Now, this code basically tells our app that inside the main user
+22:57
+uploads folder, a signed in user can go ahead and access all the files inside
+23:02
+the folder named by their UID and they can also upload, download or delete
+23:08
+anything inside there. Our Firebase storage is now set up. Let's go back to our Google AI Studio app and tell it
+17:** Link Storage & Firestore (File Upload Prompt)
+23:14
+where to save the file and information. So, I'm just going to say when a user uploads, downloads, or deletes a file,
+23:20
+sync everything to the Firebase storage folder. I'm going to provide a path here slash user uploads slash UID in curly
+23:27
+brackets because it's going to be unique for everyone. Automatically sync the file information in slashfiles
+23:33
+collection with all necessary fields including notes and AI summaries. The path is going to be slash users slash
+23:41
+uid in curly brackets files and uh the file ID in curly brackets as well
+23:47
+because obviously the files will all have different IDs. All records should appear in history. You're going to send
+23:53
+this prompt in. Now, once that's done, remember that we also need to update the storage bucket link in the SDK. So, I'm
+24:00
+just going to say use this storage bucket instead of the one in the SDK and paste in the link. If you forgot to copy
+24:06
+the link, you can find it in storage at the top here and paste it in. Once it's done, I'm just going to go ahead and
+24:11
+sign in with my user. And here, I'm just going to click new upload and upload my
+24:17
+logo. For example, we're going to change the file name to main logo and add some notes like a main logo and hit to upload
+24:25
+a file. Now, it appears in the UI, but did it actually get saved in the back end? Let's go back to Firebase and find
+24:32
+out. And as you can see inside my user ID, we've got a files collection added
+24:38
+at the top. So, let's go ahead and open it. And you'll see that a unique ID was just added right here. Let's go ahead
+24:43
+and open it. And inside it, we've got all of our file information, which is the name, the notes I've just added.
+24:51
+We've also got something called storage path. So, this is basically where our file is stored. Now, if you go to
+24:57
+storage, you'll see that inside the main user uploads folder, a new folder was just added named by my unique user ID.
+25:04
+And if I open it, you'll see the image that I've just uploaded inside it, which is my logo. So, if I go ahead and
+25:10
+refresh the page or sign out, this file is still going to be there. Now, let's go ahead and upload another file. Save
+25:16
+this AI generated image. I'm going to name it Michael Sterling and say company profile photo in the notes. And I'm
+25:23
+going to go ahead and upload it. And it now appears in the UI. And in our Fire Store files collection, you'll see that
+25:28
+a new ID was just added. And inside it, we have all of the image information. Says Michael Sterling, company profile,
+25:35
+photo. Now, in our UI, let's go ahead and open the Michael photo. And now, I'm just going to change the notes. So,
+25:41
+instead of company profile, now I'm going to say upload this photo to LinkedIn or something like that. And
+25:48
+let's go ahead and save it. And you'll see that it was automatically updated in the database as well without me having
+25:55
+to refresh the page. Now, this time, let's go ahead and change the file name, say Michael Sterling_2.
+26:02
+And as you can see, it was automatically updated in the Fire Store database as well. I just went ahead and deleted all
+26:08
+of my old files and uploaded these nice 3D icons right here. So, it looks great.
+26:13
+Now, if I go ahead and sign out and then sign back in with that same profile, you'll see that my files are still there
+26:19
+and everything is working perfectly. So, file uploads are working. But how about downloads? Basically, when we were
+18:** Setting Up File Downloads
+26:25
+uploading the files, we saved this storage path in our database. So, if you go here to files and open a file ID,
+26:32
+you'll see this storage path field right here. So what our front-end app is going
+26:37
+to do is send a request to Firebase to get a download link from this storage
+26:42
+path. So this is going to be our prompt. Add download file functionality. When a user downloads a file, find the storage
+26:50
+path from the fire store files/file ID/stopppath
+26:55
+and get the download URL. When you get the URL, open it in a new tab. So we're
+27:01
+going to go ahead and send it in. Now, when it finishes the updates, I can now press to download the file. And as you
+27:08
+can see, it's now opening in a new tab. I can go ahead and rightclick it and save it to my computer. And it gets
+27:14
+downloaded. Let's do the same with an audio. I'm going to go ahead and upload this song right here. Hit to save it.
+27:22
+And now I'm just going to go ahead and click to download this file. And as you can see, it also opens in a new tab. And
+27:28
+I can press on the three dots right here and download it to my computer. So everything is working great. Our file
+19:** Set Up Profile Picture Uploads & Editing
+27:34
+uploads are now working perfectly, but when I go ahead and click on the profile, nothing happens. And I'd like
+27:39
+each user to be able to edit the profile information and upload a photo. So I'm just going to add this prompt. When a
+27:47
+user clicks on the profile, let them edit the profile information and upload a photo. When a user uploads or deletes
+27:54
+the photo, it should be synced with the Firebase storage folder. And I'm going to provide the same path as for file
+28:00
+uploads/ user uploads/ uid. Now for the profile photo, I'd also like to add the
+28:07
+file information into a file store database. So I'm going to say automatically sync file information to
+28:12
+the UID in / users collection with all necessary fields. I'm going to provide the path here which is going to be /
+28:18
+users/ UID and all of the file fields. The profile picture should appear in the
+28:24
+profile. So I'm going to go ahead and send that in. Now that it's done, let's go ahead and click on my profile. I'm
+28:29
+going to go ahead and upload my logo as my profile image. And I'm just going to hit save. And as you can see, it appears
+28:36
+in the front end. But let's check if it's actually working on the back end. First of all, in Fire Store, you'll see
+28:41
+that inside my unique user ID, the photo URL was just added right here. And if we
+28:46
+go to storage inside user uploads and my unique user ID, you'll see that the profile picture was just added here as
+28:53
+well. So it's now going to appear in the UI always. Now the last step is completely optional and purely front
+20:** Add a Storage Loader (Calculate Used Space)
+29:00
+end. But when I was developing the UI, I had this storage loader at the bottom that somehow disappeared when I added a
+29:06
+profile. So let's go ahead and add it back in. But this time actually make it functional. I'm going to say above user
+29:12
+profile display the storage space amount loader. All users have 5 GB of storage.
+29:17
+count up all of the taken storage using the size field from all files in the users slashfiles collection. So when you
+29:25
+actually go to slashfiles and open one of the documents, you'll see the size field right here. So this is the one
+29:30
+we're going to be using. When user uploads or deletes a file, update the loader. And here it is. For now, we just
+29:37
+have the three files uploaded right here. So it's 0%. Let's go ahead and upload more files. And as you can see,
+29:43
+as I'm uploading this video episode, the storage automatically updates. Let's go ahead and add another tutorial. It
+29:50
+updates again. Now I have about 2%. Now everything is working perfectly, but I'm not a big fan of this design. I prefer
+29:56
+the original. So I'm just going to say the load is working great, but the design doesn't look great. Change it to
+30:01
+the original. And I'm going to send it the screenshot of the original loader. And now this is looking much better.
+30:07
+Let's go ahead and delete the video files. Delete the first one.
+30:13
+delete the second one. And as you can see, the loadup is automatically updated. So that's it for today's video.

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ecosistema Google AI · De cero a pro</title>
+  <meta name="description" content="Aprende el ecosistema de Google (Gemini, AI Studio, NotebookLM) con tutoriales oficiales — de cero a pro.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="assets/img/favicon.ico" type="image/x-icon">
+  <meta property="og:title" content="Ecosistema Google AI · De cero a pro">
+  <meta property="og:description" content="Tutoriales oficiales y guías verificadas para aprender Gemini, AI Studio y NotebookLM.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/img/og-card.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <script defer src="assets/js/main.js"></script>
+  <script src="https://kit.fontawesome.com/a2c8c7b0b2.js" crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+<header class="nav">
+  <div class="container inner">
+    <a class="brand" href="index.html" aria-label="Inicio">
+      <img src="assets/img/logo.svg" alt="Logo">
+      <span>Ecosistema Google AI</span>
+    </a>
+    <nav aria-label="Principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="level-beginner.html">Principiante</a></li>
+        <li><a href="level-intermediate.html">Intermedio</a></li>
+        <li><a href="level-pro.html">Pro</a></li>
+        <li><a class="nav-cta" href="#recursos">Recursos</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <div class="hero-card">
+        <span class="kicker">De cero a pro</span>
+        <h1>Aprende el ecosistema de Google AI<br>con fuentes 100% oficiales</h1>
+        <p>Gemini · Google AI Studio · NotebookLM · Vertex AI. Contenido verificado, listo para usar.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="level-beginner.html"><i class="fa-solid fa-rocket"></i> Empezar</a>
+          <a class="btn" href="#recursos"><i class="fa-solid fa-book"></i> Ver recursos</a>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="grid mt-3">
+        <div class="col-4">
+          <article class="card">
+            <div>
+              <h3>Principiante</h3>
+              <p>Primeros pasos con AI Studio, clave API y tu primer prompt/código.</p>
+              <div class="meta"><span class="badge ok">Ruta guiada</span></div>
+            </div>
+            <div class="actions"><a class="btn" href="level-beginner.html">Abrir</a></div>
+          </article>
+        </div>
+        <div class="col-4">
+          <article class="card">
+            <div>
+              <h3>Intermedio</h3>
+              <p>Function calling, multimodalidad, modelos y mejores prácticas.</p>
+              <div class="meta"><span class="badge ok">Casos reales</span></div>
+            </div>
+            <div class="actions"><a class="btn" href="level-intermediate.html">Abrir</a></div>
+          </article>
+        </div>
+        <div class="col-4">
+          <article class="card">
+            <div>
+              <h3>Pro</h3>
+              <p>Vertex AI en producción, labs oficiales, seguridad y despliegue.</p>
+              <div class="meta"><span class="badge ok">Enterprise</span></div>
+            </div>
+            <div class="actions"><a class="btn" href="level-pro.html">Abrir</a></div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="recursos" class="section">
+    <div class="container">
+      <h2>Buscador de recursos oficiales</h2>
+      <p class="lead">Encuentra guías, codelabs y labs de Google (fuentes verificadas).</p>
+      <div class="searchbar">
+        <input type="search" id="q" placeholder="Buscar (ej. 'function calling', 'notebooklm', 'vertex ai'…)" oninput="runSearch(this.value)">
+      </div>
+      <div id="search-results" class="grid mt-3 col-12"></div>
+    </div>
+  </section>
+</main>
+
+<footer role="contentinfo">
+  <div class="container cols">
+    <div>
+      <strong>Ecosistema Google AI</strong>
+      <p class="small mt-2">Guías oficiales (Gemini, AI Studio, NotebookLM). Sitio no afiliado a Google.</p>
+    </div>
+    <div>
+      <strong>Secciones</strong>
+      <ul class="small mt-2">
+        <li><a href="level-beginner.html">Principiante</a></li>
+        <li><a href="level-intermediate.html">Intermedio</a></li>
+        <li><a href="level-pro.html">Pro</a></li>
+      </ul>
+    </div>
+    <div>
+      <strong>Legal</strong>
+      <p class="small mt-2">Usa siempre las fuentes oficiales enlazadas. Logos y marcas son de sus respectivos propietarios.</p>
+    </div>
+    <div>
+      <strong>Actualidad</strong>
+      <ul class="small mt-2">
+        <li><a href="https://blog.google/products/gemini/" target="_blank" rel="noopener">Novedades de Gemini</a></li>
+        <li><a href="https://codelabs.developers.google.com/" target="_blank" rel="noopener">Google Codelabs</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>runSearch('');</script>
+</body>
+</html>

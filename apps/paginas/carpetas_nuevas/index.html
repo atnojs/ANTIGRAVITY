@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Tutoriales IA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="imagenes/favicon_integrado.ico" type="image/x-icon" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+<link rel="stylesheet" href="styles.css"/>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="filters-search-bar">
+  <input type="search" id="globalSearchInput" placeholder="Buscar carpetas o vídeos…" />
+  <div class="toolbar-right">
+    <button id="themeSwitcherBtn" class="toolbar-btn">Tema Claro</button>
+  </div>
+</div>
+<div class="main-app-container">
+  <section id="foldersSection">
+    <div class="section-title-wrapper"><h2 class="section-title">Tutoriales de IA</h2></div>
+    <!-- Botón solo visible en edición; estilo premium -->
+    <button id="addFolderBtn" class="add-item-btn"><i class="fas fa-plus"></i> <span>Añadir Carpeta</span></button>
+    <div id="foldersGrid" class="folders-grid"></div>
+    <p id="noFoldersMsg" class="no-items-message" style="display:none">No hay carpetas todavía.</p>
+  </section>
+  <section id="folderView">
+    <div class="folder-view-header">
+      <div class="folder-view-title" id="folderViewTitle">Carpeta</div>
+      <div class="folder-view-actions">
+        <button id="backToFoldersBtn" class="btn-back">Volver</button>
+        <!-- Botón solo visible en edición; estilo premium -->
+        <button id="addVideoBtn" class="add-item-btn"><i class="fas fa-plus"></i> <span>Añadir Vídeo</span></button>
+      </div>
+    </div>
+    <div id="bulkBar" style="display:none; margin:0 0 10px; padding:8px; border:1px dashed var(--border); border-radius:12px; background:rgba(255,255,255,.03)">
+      <span id="bulkCount">0 seleccionados</span>
+      <button id="bulkMoveBtn" class="toolbar-btn secondary">Mover a…</button>
+      <button id="bulkDupBtn" class="toolbar-btn secondary">Duplicar en…</button>
+      <button id="bulkDelBtn" class="toolbar-btn" style="background:linear-gradient(135deg,#ef4444,#f97316)">Eliminar</button>
+    </div>
+    <div id="videosGrid" class="grid-videos"></div>
+    <p id="noVideosMsg" class="no-items-message" style="display:none">Esta carpeta está vacía.</p>
+  </section>
+</div>
+<div class="global-controls">
+  <button id="changeBgBtn" title="Cambiar fondo"><i class="fas fa-image"></i></button>
+  <button id="deleteBgBtn" title="Eliminar fondo" class="del-bg-btn"><i class="fas fa-trash-alt"></i></button>
+</div>
+<input type="file" id="hiddenBgInput" accept="image/*" style="display:none" />
+<button id="edit-mode-toggle-btn"></button>
+<!-- Notificación para modo arrastre -->
+<div id="dragNotification" class="drag-notification">Arrastra para reordenar vídeos</div>
+<!-- Modal contraseña -->
+<div id="adminPasswordModal" class="form-modal-overlay">
+  <div class="form-modal-content">
+    <h3>Acceder al Modo Edición</h3>
+    <div class="form-group"><input type="password" id="adminPasswordInput" placeholder="Contraseña (usa: admin)" /></div>
+    <div class="form-buttons">
+      <button id="submitAdminPasswordBtn" class="save-btn">Activar</button>
+      <button id="cancelAdminPasswordBtn" class="cancel-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+<!-- Modal genérico -->
+<div id="formModal" class="form-modal-overlay">
+  <div class="form-modal-content" id="genericFormContainer"></div>
+</div>
+<div id="toasts"></div>
+<script src="script.js"></script>
+</body>
+</html>

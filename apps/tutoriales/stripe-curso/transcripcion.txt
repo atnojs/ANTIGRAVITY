@@ -1,0 +1,1366 @@
+0:00
+Google Air Studio has just been upgraded
+0:02
+with Gemini 3 and it's about to destroy
+0:04
+all SAS businesses. I've just built this
+0:07
+booking dashboard for my clients and not
+0:09
+only does it look like I hired a
+0:11
+professional front end to make this,
+0:13
+I've also just made it fully functional
+0:14
+using just one no code tool called
+0:17
+Firebase. You can create an account,
+0:19
+book a time slot, pay with Stripe to
+0:22
+confirm your booking, and even receive
+0:24
+this email confirming the time and date.
+0:27
+And of course, you can view all of your
+0:28
+upcoming calls in the dashboard and
+0:30
+reschedule them at any time. You guys
+0:32
+have been asking me for a Stripe
+0:34
+tutorial for ages. So, this is the
+0:35
+perfect opportunity to show you how to
+0:37
+set it up. So, by the end of this video,
+0:39
+you'll know exactly how to build an app
+0:41
+like this from start to finish and
+0:43
+configure Stripe payments. But before we
+0:45
+start, we're about to reach 20,000
+0:47
+subscribers on this channel. And I'd
+0:49
+love to keep making videos like these
+0:50
+for you guys. So, make sure to hit that
+0:52
+subscribe button and let's get right
+0:54
+into the video. Before building
+0:55
+anything, you're going to head over to
+0:57
+the description of this video and get
+0:58
+the step-by-step guide I made for it.
+1:00
+It's going to walk you through all of
+1:02
+the setup steps and also has the prompts
+1:04
+you can just copy and paste into your
+1:05
+app without having to retype anything.
+1:08
+So, make sure to get this. And for our
+1:09
+first step, you're going to head over to
+1:11
+Google AI Studio and the build section
+1:13
+and paste in the first prompt. I'm just
+1:15
+going to say create a one link AI
+1:16
+session booking dashboard with a modern
+1:18
+minimalistic design using white and
+1:20
+pastel colors. Users must sign up or
+1:22
+login first and once authenticated they
+1:25
+should be able to view all upcoming AI
+1:27
+sessions in a board or calendar view.
+1:29
+Click to book a 1 hour or 2hour private
+1:32
+AI consulting session. The app should
+1:34
+automatically detect the user's time
+1:36
+zone and show my availability in the
+1:38
+local time. And I'm just going to insert
+1:40
+my schedule here in ESD time zone. Now
+1:43
+the app will get my actual schedule from
+1:46
+fire store but I'll add it here anyway
+1:48
+so we can see how the front end works.
+1:50
+When a user clicks book session, show a
+1:53
+booking confirmation screen, a stripe
+1:55
+payment button, and after successful
+1:57
+payment, the book session should appear
+1:59
+in the user's dashboard. For now, the
+2:01
+app is going to be front end only, but
+2:03
+should behave as if it's fully
+2:05
+functional. And here's what the app
+2:07
+looks like with literally just one
+2:08
+prompt. And since it's purely demo, I
+2:10
+can type out any credentials. I'm just
+2:12
+going to say test.com. Type out any
+2:15
+password and just sign in. And here's
+2:17
+what that dashboard looks like. Not bad.
+2:20
+I'm going to go ahead and book a slot
+2:22
+right here. And I can see a 1 hour or
+2:24
+2hour session. Click continue to
+2:27
+payment. And as you can see, the pay
+2:29
+with Stripe button appears. Let's click
+2:31
+it. I absolutely love this booking
+2:34
+confirmed animation. Now, it looks
+2:37
+pretty good, but I'm not happy with all
+2:39
+of the available slots just appearing in
+2:41
+the UI like this. I'd rather just have
+2:43
+them appear only when a user clicks to
+2:45
+book a new session. So, let's ask Gemini
+2:47
+to make a couple of changes. I'm just
+2:49
+going to say the app looks great, but
+2:51
+update the behavior as follows. When a
+2:53
+user signs in, they should only see
+2:55
+their upcoming sessions, not the full on
+2:57
+availability or open slots. User should
+3:00
+only see available time slots after
+3:02
+clicking book a new session. Also,
+3:04
+slightly mute the purple palette to make
+3:06
+the design softer and more minimal. I'm
+3:08
+going to send the prompt in and while
+3:09
+it's getting changes, I'm going to go
+3:11
+ahead and start on my backend setup in
+3:13
+Firebase. Now, if this part of the video
+3:15
+seems a little bit too fast for you, you
+3:17
+can watch a detailed tutorial I made on
+3:19
+Firebase. It walk you through how to set
+3:21
+up authentication, a database, storage
+3:24
+step by step. So, we don't waste any
+3:25
+time on this today. I'll link it for you
+3:27
+in my free guide so you can check it
+3:29
+out. Now, the first thing we need to do
+3:31
+here is to create a new project. And
+3:32
+once that's done, I'm going to head over
+3:34
+to build authentication. And here I'm
+3:37
+just going to add two signin methods,
+3:39
+email and password and Google signin.
+3:42
+Now, we just need to create an app to
+3:44
+link our back end to Google AI Studio.
+3:46
+So, in project overview, I'm going to
+3:48
+click add an app. I'm going to choose
+3:50
+this web icon right here. Give it any
+3:52
+name. And in the next step, I'm going to
+3:55
+copy this SDK code Gemini generates.
+3:57
+Now, this is our key to connecting
+3:59
+everything together. So, make sure to
+4:01
+copy and paste it somewhere. Now, I'll
+4:03
+just need a database where I'm going to
+4:04
+store user details, my schedule, and all
+4:07
+of the booking information. So I'm going
+4:08
+to head over to build fire store
+4:10
+database and I'm going to click to
+4:12
+create a new database with all the
+4:14
+default settings in production mode. Now
+4:17
+once it's done the first thing I'll do
+4:19
+here is to add my availability. So I'm
+4:21
+going to create a / settings collection
+4:24
+and add an availability document inside
+4:27
+it. Now inside the document I'm going to
+4:29
+add this structure time zone as a string
+4:32
+which will be est and a weekly map type
+4:35
+field. And inside this field, I'm going
+4:37
+to add each day as an array of free time
+4:40
+periods. I'm going to go ahead and save
+4:43
+it. And here's what it's going to look
+4:44
+like. We have a main settings collection
+4:46
+with my availability and my schedule
+4:49
+inside this document with all of the
+4:51
+days and time periods. Now, I'm also
+4:54
+going to add another main collection
+4:55
+called global bookings and just generate
+4:58
+a random ID here. Now, this is where our
+5:00
+app will automatically add all bookings
+5:02
+for all users. So, everyone can see
+5:04
+which slots are free and taken. Now,
+5:07
+right now, you don't need to add
+5:09
+anything else here. Our app will add the
+5:11
+rest automatically. Now, last thing left
+5:12
+for us to do in Firebase is to set our
+5:14
+security rules. Now, if you're building
+5:16
+this exact same app, you can just copy
+5:18
+and paste mine, but if you're building a
+5:20
+different one, you can learn how to
+5:22
+prompt Gemini to generate yours in my
+5:24
+free guide. Now in my rules you can see
+5:26
+that every user can read my settings
+5:28
+document which basically means that they
+5:30
+can view my schedule but they can't make
+5:32
+any changes in it unless they're an
+5:34
+admin. Now each user can read and write
+5:37
+in their own document in all path which
+5:39
+basically means that they can view edits
+5:41
+and delete information only in their own
+5:43
+profile. Now all path here means that it
+5:46
+applies to all levels inside their own
+5:48
+document. So if you have a structure
+5:50
+where you have folders inside folders
+5:51
+inside folders, every user can see this
+5:54
+but only if it's inside the Rome user ID
+5:56
+document. And finally, we have rules for
+5:58
+global bookings that basically mean that
+6:00
+anyone who's logged in can view all
+6:02
+bookings to see which periods are free
+6:04
+and taken, but they can only add and
+6:07
+edit their own bookings. Now, make sure
+6:09
+you have figured the rules part out so
+6:11
+you don't get any permission errors in
+6:13
+the future. With our rule set up, let's
+6:15
+head back and see what our app looks
+6:16
+like and start adding our back end.
+6:18
+First, I'm just going to paste in this
+6:20
+authentication prompt from my guide. All
+6:22
+you need to do here is just to replace
+6:24
+this SDK code snippet with the code you
+6:27
+copied earlier when you created your
+6:28
+Firebase app. And once that's done, I'm
+6:31
+also going to go ahead and paste in my
+6:33
+email verification, password change, and
+6:35
+Google sign up prompts. Now, Gemini 3 is
+6:38
+amazing at understanding instructions.
+6:40
+Alicia put everything in one prompt and
+6:42
+it understood everything from the first
+6:44
+try. No need to even split it into
+6:47
+multiple prompts anymore. For Google
+6:49
+signups, don't forget to deploy your
+6:51
+app. Copy this app link and paste it
+6:53
+into authorized domains and settings.
+6:55
+Otherwise, it just won't work. Also,
+6:57
+remember that Google signin does not
+6:59
+work in preview. You can only test it
+7:01
+out in your deployed app. Now that it's
+7:04
+done, I'm going to go ahead and sign up
+7:05
+and I'll need to confirm my email first.
+7:08
+Now, I didn't verify my email domain
+7:10
+yet. So, all of my Firebase emails will
+7:12
+land in spam. So, once your app actually
+7:15
+goes live, make sure to verify your
+7:17
+domain here in authentication templates
+7:19
+settings by just hitting on this pencil
+7:22
+icon and then clicking to customize your
+7:24
+domain. Now, I'll go ahead and sign in
+7:27
+with that confirmed user. And here's my
+7:29
+dashboard. As you can see, it removed
+7:31
+all of the slots from the main screen,
+7:33
+and the UI now looks much cleaner. I can
+7:36
+only see the slots when I click to book
+7:38
+a new session, which is just what I
+7:40
+wanted. Now, if you go back to
+7:42
+authentication of Firebase, you should
+7:44
+see the user you've just registered with
+7:46
+right here. I'm seeing mine, so it's
+7:48
+working perfectly. Now that our
+7:50
+authentication is linked, let's go ahead
+7:51
+and hook our database. I'm just going to
+7:54
+copy and paste this exact prompt from my
+7:56
+guides to link the users collection.
+7:58
+This will automatically add everyone who
+8:00
+signs up or signs in into our users
+8:02
+collection and fire store and add their
+8:04
+user ID as a document inside it. So once
+8:07
+it's done, I'm going to go ahead and
+8:08
+sign in. And as you can see in Fire
+8:11
+Store, a users collection was just added
+8:13
+automatically. And here is my user ID
+8:16
+document inside it. Our users collection
+8:18
+is now linked. Let's go ahead and do the
+8:20
+same with my schedule and booking. So,
+8:22
+I'm going to say 22 clicks book a new
+8:24
+session. Read all available slots in my
+8:27
+main/ settings/avvailability
+8:29
+document and display all my available
+8:32
+slots 60 days in advance excluding
+8:34
+already booked session in / global
+8:37
+bookings collection. Now, this is going
+8:39
+to show all of my schedule from settings
+8:41
+minus the sessions that users already
+8:43
+booked that are going to be stored in
+8:45
+the / global bookings collection. Now,
+8:48
+let's save the event the user booked
+8:50
+into the user ID document. I'm going to
+8:52
+say when a user hits on a slot and books
+8:54
+a new session, create a bookings
+8:57
+subolction in the document and add all
+8:59
+information in this format. Now here I'm
+9:02
+also going to say that for now all
+9:03
+payment confirmation is purely
+9:05
+threatened because we haven't configured
+9:06
+Stripe yet. I'm going to ask it to add
+9:08
+the following fields. The start time,
+9:11
+end time, duration, payment status, when
+9:13
+the event was created. You can fully
+9:15
+customize this to save any information
+9:17
+you want. And I will say the path is
+9:19
+slash user/ user ID bookings and the
+9:22
+booking ID. Now our other users also
+9:24
+need to know that this slot was just
+9:26
+booked. So let's go ahead and write it
+9:28
+in our global bookings collection as
+9:30
+well. And we'll add the user ID field
+9:32
+there. So we know who the booking
+9:33
+belongs to. So I'm going to say
+9:35
+simultaneously add the booking into the
+9:37
+main/global bookings collection in this
+9:40
+format. I'll say the path global
+9:42
+booking/booking ID and fields user ID
+9:46
+start time end time duration payment
+9:48
+status a created ad. So basically the
+9:50
+same fields. Now I'd like each user to
+9:53
+be able to see the booked events in the
+9:55
+dashboard. So I'm going to say when a
+9:56
+user logs in show all bookings in the
+9:58
+dashboard from this path / user/ user
+10:01
+ID/bookings/booking
+10:03
+ID. Going to go ahead and send this pro
+10:05
+in. Now that it's done, let's go ahead
+10:07
+and hit to book a new session. And
+10:09
+you'll see here that it's now syncing my
+10:11
+available times from the database and
+10:13
+showing them up right here. Now, I set
+10:15
+them up in EST time zone, and I'm
+10:17
+currently located in Central Indonesia
+10:19
+time. And as you can see, the first slot
+10:22
+here is 300 p.m., which is 2:00 a.m.
+10:24
+EST. So, it's showing them up correctly.
+10:27
+Let's go ahead and pick that slot. I'm
+10:28
+going to choose 1 hour session. Click
+10:31
+continue to payment. Pay with Stripe. Of
+10:33
+course, for now, this is purely front
+10:35
+end. And as you can see, it's now
+10:37
+showing confirming your booking, which
+10:39
+means that it's actually syncing it to
+10:41
+the database. And once that's done, it's
+10:44
+going to forward me to our main
+10:45
+dashboard where my booking appears. Now,
+10:48
+if we go back to our back end, you'll
+10:50
+see that in global bookings, a booking
+10:52
+ID was just added with my user ID and
+10:55
+all of the information. And in users
+10:57
+collection under my UID, we also see the
+11:00
+new subolction called bookings with my
+11:02
+booking inside it and all of the fields.
+11:04
+That's working perfectly. Our app now
+11:06
+works perfectly, but payments are only
+11:08
+done in demo mode. Let's go ahead and
+11:10
+set up Stripe so we can actually receive
+11:12
+payments from our clients. So, the first
+11:14
+thing you're going to do here is head
+11:15
+over to your Stripe account and hit on
+11:17
+your profile. And you're going to switch
+11:19
+your account into sandbox mode. Now,
+11:21
+this is a testing environment, so we
+11:23
+don't have to use any of our real money
+11:25
+to make payments while we're in
+11:27
+development. I'm going to go ahead and
+11:28
+click create a sandbox. And here it is.
+11:30
+My store is now called Teal Tunnel. Now,
+11:33
+the first thing you're going to do here
+11:34
+is create products you want to sell. So,
+11:37
+in product catalog, I'm going to click
+11:39
+add a product and name the first one
+11:41
+hour private AI consulting session. Now,
+11:43
+you can either choose recurring payments
+11:45
+for subscription or one-time payment.
+11:47
+Now, in my case, the clients will only
+11:49
+pay once per session. So, I'm going to
+11:51
+choose a one-time option. Enter my price
+11:54
+$99 and hit to add a product. You're
+11:56
+going to do the same for the 2our
+11:58
+session. Add the name. Choose one time
+12:01
+price which is 179 and save it. Now that
+12:04
+our products are created, we'll need to
+12:06
+copy their price IDs so we can connect
+12:08
+them to our app. So to do this, below
+12:10
+you'll see this developers workbench
+12:12
+console. Go ahead and click on the arrow
+12:14
+to open it. And you'll see the price on
+12:17
+the left. Go ahead and copy that price
+12:19
+ID and save it somewhere in notes. We're
+12:21
+going to do the same for the 2our
+12:23
+session. And now let's head back to
+12:25
+Firebase to install the Firebase Strike
+12:27
+plugin that will do all the work for us.
+12:30
+Are you trying to build a custom app for
+12:31
+your work or business but struggling to
+12:33
+automate the back end? Well, building
+12:35
+these apps is my absolute passion and
+12:37
+I've built hundreds of these for my
+12:39
+clients. So, if you want to learn how to
+12:41
+do it, feel free to book a personalized
+12:43
+session with me where I'll teach you how
+12:45
+to build the apps you need or shoot me
+12:48
+an email if you want me to do it for you
+12:50
+and I'll give you a quote. You'll find
+12:51
+all the links in the description and
+12:54
+let's get back to the video. To do this
+12:55
+in Firebase, you're just going to head
+12:57
+over to build extensions and you're
+12:59
+going to hit to explore the extensions
+13:00
+hub. Now, here in the search bar, you're
+13:02
+just going to type Stripe and you'll see
+13:05
+this first run payments with Stripe
+13:07
+extension pop up. Go ahead and choose it
+13:09
+and next to it, you'll see the install
+13:11
+in Firebase console button. Hit it. Now,
+13:14
+here you're going to have to select the
+13:16
+project we created earlier. And in setup
+13:18
+billing, you're going to hit to upgrade
+13:21
+project to console button. Now, you're
+13:24
+going to create a cloud billing account
+13:25
+because you're gonna have to upgrade
+13:27
+your project to pay as you go place. Go
+13:29
+ahead and hit this. Now, here you're
+13:31
+just going to enter your billing
+13:32
+information. Click to confirm your
+13:34
+purchase. Once your project is upgraded,
+13:36
+don't forget to add a budget limit
+13:37
+amount in case some bug happens. So,
+13:39
+let's go ahead and press continue. Link
+13:42
+cloud billing accounts. And here, you're
+13:44
+just going to press done. Now, in the
+13:47
+review API settings, you're just going
+13:49
+to go ahead and check out those
+13:50
+functions. And below it, you'll find the
+13:52
+three services that you'll need to
+13:54
+enable. So, press enable next to the
+13:55
+first one, next to the second one, next
+13:58
+to the third one, and hit next. Now, in
+14:00
+access settings, you're just going to
+14:02
+press next again and leave it as
+14:04
+default. And now, this is the most
+14:06
+important step to configure our
+14:08
+extension. Here, you're just going to
+14:09
+leave most settings as default, but let
+14:11
+me walk you through the most important
+14:12
+ones. So, in location, just going to
+14:14
+choose the default one. And in customers
+14:16
+details and subscription collection,
+14:18
+you're going to leave it as customers.
+14:20
+So when a user goes ahead and paste with
+14:22
+stripe on your website, the user ID
+14:24
+document will get added inside this
+14:26
+customers collection just like we do
+14:28
+with users. Now in this field, you could
+14:30
+choose to sync your customers. So they
+14:32
+will get created in both Stripe and Fire
+14:34
+Store. So I suggest you choose the sync
+14:36
+one. And now in Stripe API key, this is
+14:40
+the most important field here. You'll
+14:41
+need to add your secret here from
+14:43
+Stripe. So we can connect the extension.
+14:46
+To get it, go back to your developers
+14:47
+workbench. And in overview, I'm going to
+14:50
+copy this secret key and paste it back
+14:53
+into the Stripe API key field and click
+14:55
+to create a secret. Now the next web
+14:58
+hook secret field is extremely
+15:00
+important, but we're going to leave it
+15:01
+empty for now. We'll add it in the
+15:03
+future once we set up our web hook. For
+15:05
+now, just going to hit to install the
+15:08
+extension. It's going to take 3 to 5
+15:10
+minutes to set up as you can see right
+15:12
+here. Now, I have no idea why, but with
+15:14
+all Fire Store extensions, once you set
+15:16
+them up for the first time, it gives
+15:18
+this error. So, if this happens to you,
+15:20
+you can just click to view details and
+15:22
+click to retry installing. And somehow
+15:25
+that always fixes the problem. Our
+15:27
+extension is now installed and you're
+15:29
+going to be able to create payment links
+15:31
+by sending requests to Stripe. But
+15:33
+Stripe also needs to communicate back to
+15:35
+us to tell us what happened with the
+15:36
+payment. Did it fail? Did it succeed? Or
+15:38
+did the subscription expire? So to do
+15:41
+this, we'll need to configure a web hook
+15:42
+in Stripe. So you're going to head back
+15:44
+to your developers workbench. And here
+15:46
+you're going to click on the web hooks
+15:47
+tab. Go ahead and click to add a
+15:49
+destination. Choose your accounts and
+15:52
+continue. Now in events here you'll need
+15:55
+to add events which will tell our back
+15:56
+end what happened. So did the payment
+15:58
+succeed? Was it refunded? In my guide
+16:01
+you'll find all actions to add here for
+16:03
+both payments and subscription. We're
+16:05
+just going to choose the most important
+16:07
+ones. Will be events like checkout
+16:09
+session completed, payment intent
+16:11
+succeeded, checkout session expired,
+16:14
+payment intent, payment failed, charge
+16:17
+refunded, charge dispute created, etc.
+16:20
+Now, with all events selected, you're
+16:22
+going to click continue and choose the
+16:23
+web hook endpoint. Now, here we'll just
+16:26
+need to add an endpoint URL from Fire
+16:28
+Store. So to find it, you're going to
+16:30
+head over to build functions and you're
+16:33
+going to find this handle web hook
+16:35
+events function. When you hover over the
+16:37
+name, you'll see this request URL right
+16:40
+here. Just hover over it and copy it.
+16:42
+This is exactly the end point we need.
+16:45
+Just go ahead and copy it and paste it
+16:47
+into the Stripe endpoint in the web
+16:49
+hook. Now just click to create the
+16:51
+destination and your web hook is set up.
+16:55
+Now we just need to add the web hook
+16:57
+signin secret. you'll see on the right
+16:58
+here into the Firebase extension for it
+17:01
+to work. Just go ahead and copy it. And
+17:03
+now back in Firebase, head back to your
+17:06
+Stripe extension. Manage reconfigure
+17:09
+extension and scroll down to find the
+17:11
+Stripe web hook secret and just paste
+17:14
+the signing web hook secret. We copy it
+17:16
+right here. Hit create a secret. And
+17:19
+once it's done, don't forget to save
+17:21
+everything at the top. It'll take about
+17:23
+3 to 5 minutes again for changes to take
+17:26
+effect. Now, when a user presses to
+17:28
+complete a payment in our app, Stripe is
+17:30
+going to update our Fire Store database
+17:32
+with a payment and subscription
+17:33
+information. So, we need to change our
+17:35
+Fire Store security rules to allow this.
+17:37
+All you need to do is just copy these
+17:39
+few lines of code from our guide and
+17:41
+paste them into your rules and hit
+17:43
+publish. Now, these rules are universal
+17:45
+and will work for both one-time payments
+17:48
+and recurring payments. Now, the code
+17:50
+you see here will allow Stripe to create
+17:52
+documents with our user ID inside the
+17:54
+new customers collection when they pay
+17:56
+and also allow it to add subolctions
+17:58
+like payments for onetime purchases and
+18:01
+subscriptions for recurring payments.
+18:03
+Now, the last step here before we
+18:04
+connect everything together, you're just
+18:06
+going to head over to build and
+18:08
+functions and Firebase and you're going
+18:09
+to hover over this create checkout
+18:11
+session function and just copy this
+18:14
+exact name. And that's it. We're ready
+18:16
+to connect payments to our front end.
+18:18
+Now, before prompting anything, you're
+18:20
+going to go ahead and redeploy your app
+18:21
+first and copy the URL. We'll need you
+18:23
+to redirect our users to the success or
+18:26
+failed payment page depending on how
+18:28
+that payment went. So, this was my
+18:29
+prompt. You can just copy it from my
+18:31
+guide and customize it to your case.
+18:33
+When a user presses pay with Stripe
+18:34
+after choosing one or two hour session,
+18:36
+you're going to call this tool. And
+18:38
+here, you're just going to paste in the
+18:39
+exact function name we copied from
+18:41
+functions earlier, the create checkout
+18:43
+session one. And then, I'm just going to
+18:45
+provide pricing options. Now, the
+18:47
+default mode is subscriptions. So, if
+18:49
+you're setting up onetime payments,
+18:50
+you're going to have to specify it. So,
+18:52
+I'm going to say onetime payments, not
+18:54
+subscriptions. And then I'm just going
+18:56
+to say 1 hour session the price and the
+18:58
+price ID we copied from our Stripe
+19:00
+workbench earlier. So, it's going to be
+19:02
+price underscore and a string right
+19:05
+here. I'm going to do the same for a
+19:07
+2hour session. Now, to generate your
+19:09
+Stripe payment link, you're going to
+19:10
+need these four parameters. The first
+19:12
+one is price and I'm going to put the
+19:14
+price ID in curly brackets. Meaning
+19:16
+there's going to be different for the
+19:17
+one and twoour session. We already
+19:19
+provided those IDs at the top. Now for
+19:21
+the success URL and cancel URL, you're
+19:23
+going to have to tell your app where to
+19:25
+redirect your user once they make a
+19:27
+payment. So here you're just going to
+19:29
+paste in the deployed app URL/success.
+19:32
+And for the cancel URL, the same one but
+19:34
+slashfailure. Now once your app actually
+19:37
+goes live and you deploy it to a domain,
+19:39
+you're going to have to change it to
+19:40
+your actual domain. Now the last
+19:42
+parameter is very important to link the
+19:44
+payment to the actual user ID who made
+19:46
+it. So I'm going to say client reference
+19:48
+ID and put user ID in curly brackets.
+19:51
+After the tool is executed, redirect the
+19:53
+user to the generated stripe payment
+19:55
+link. Now before you try anything out, I
+19:57
+strongly suggest you ask Google AI
+19:59
+Studio to console log all responses you
+20:01
+receive from Stripe. This way you know
+20:03
+everything happening in the background
+20:04
+and can investigate what happened in
+20:06
+case of an error. So once that's done,
+20:09
+I'm just going to go ahead and click to
+20:10
+book an AI session. I'm going to choose
+20:12
+any slot. Continue to payment. Click pay
+20:15
+with Stripe. And as you can see, we now
+20:18
+get redirected to this empty window.
+20:21
+Now, we won't be able to actually pay in
+20:23
+preview mode. So let's go ahead and open
+20:25
+the console and see what happens. And
+20:28
+you'll see that it actually just
+20:29
+generated this payment link for us. Now,
+20:31
+if you didn't get any errors in the
+20:33
+console and it managed to generate the
+20:35
+Stripe payment link for you,
+20:36
+congratulations. Everything is set up
+20:38
+correctly. But to properly test it out,
+20:40
+you're going to have to redeploy your
+20:41
+app again and open the link. This is not
+20:44
+going to work in preview. So, now let's
+20:46
+go ahead and pay again in this version.
+20:48
+And as you can see, we're now redirected
+20:50
+to the actual Stripe window. At the top
+20:53
+here, you'll see that we're in sandbox
+20:55
+mode. My store is called Teal Tunnel.
+20:57
+Now, to test the payment out, you can
+20:58
+just pay with the standard Stripe
+21:00
+Sandbox card, which is 4242, repeated
+21:03
+four times, and any other numbers or
+21:05
+details in the rest of the fields, or
+21:07
+you can also choose to pay with Google
+21:09
+Pay. As you can see, it's also tied to
+21:11
+the 4242 card, so it's not actually
+21:13
+using your Google Pay account. Now,
+21:15
+you're just going to click pay. And in a
+21:16
+moment, you'll see that your payment was
+21:18
+successful. And we now get this cannot
+21:20
+get success error message. Now this is
+21:22
+absolutely normal because we haven't
+21:24
+told our Google AI studio app what to do
+21:26
+when the user hits the /success route.
+21:29
+But before we set this up, let's go
+21:31
+ahead and check if everything worked in
+21:32
+the background first. Now if you go back
+21:34
+to fire store, you'll see that a new
+21:36
+collection customers with just created
+21:38
+and inside we have my user ID and inside
+21:41
+my document we now have two subolctions
+21:44
+checkout sessions and payments. Now this
+21:46
+payment collection would be called
+21:48
+subscriptions if you set up recurring
+21:50
+payments. Now inside payments you can
+21:52
+see my payment ID and all other
+21:54
+information like price, currency date
+21:57
+and so on. So this is the collection
+21:59
+you'll use to display payment
+22:00
+information in your front end like
+22:02
+expiration date or payment plans. A back
+22:05
+end work perfectly. We just need to tell
+22:07
+Google AI studio what to do when the
+22:08
+user hits the success or failure route.
+22:11
+So I'm just going to say after payment
+22:13
+we see the cannot get success error.
+22:16
+When a user hits slashsuccess, they
+22:18
+should be redirected to the main page.
+22:20
+And a message payment successful should
+22:22
+show up at the top. When a user hits
+22:25
+slashfailure, they should be redirected
+22:27
+to the same main page. And a message
+22:29
+payment fail should show up at the top.
+22:32
+Now, once that's finished, you're going
+22:33
+to have to redeploy your app to test out
+22:35
+the Stripe payments. And now, when I go
+22:38
+ahead and pay with Stripe and just enter
+22:40
+in my credentials, I'm going to pay with
+22:42
+Google this time. And now I'm redirected
+22:45
+to the dashboard. And you'll see the
+22:46
+success message at the top. Now once the
+22:49
+payment is completed successfully,
+22:50
+you're going to want to tell Google AI
+22:52
+Studio which payment information to show
+22:54
+in the UI. This could be things like the
+22:56
+plan they paid for, the expiration date.
+22:59
+But in my case, I would just like the
+23:00
+user to see payment details when they go
+23:02
+ahead and open a calendar event. But to
+23:05
+do this, I'll first need to tie that
+23:07
+payment ID to the event so the app knows
+23:09
+exactly what transaction to show. So
+23:12
+just going to say when user makes a
+23:13
+payment with stripe and is sent to
+23:15
+success. Update information in the
+23:17
+booking ID. I'll write the path here
+23:20
+with the payment ID field from Stripe.
+23:22
+Now I'll tell it exactly where to find
+23:24
+this payment ID in our database. I'm
+23:26
+going to say payments/p payments ID. Now
+23:29
+when a user opens the booking card, show
+23:31
+all information about their session and
+23:34
+the payment information from that
+23:35
+payment ID link to the event. And now
+23:38
+that it's done, I can go ahead and open
+23:40
+any card. And as you can see, the
+23:42
+payment information will now load up
+23:44
+from our database. We can see the price,
+23:47
+the status, method, and this reference
+23:50
+number. You can customize which details
+23:52
+to show here in your prompt. So, that's
+23:55
+it for today's video. If y

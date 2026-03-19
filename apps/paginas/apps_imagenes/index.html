@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>APPs y Prompts para crear imágenes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+
+    <div class="filters-search-bar">
+        <input type="search" id="globalSearchInput" placeholder="Buscar en Apps, Prompts, Carpetas...">
+        <div>
+            <label for="appPricingFilter">Filtrar Apps por Precio:</label>
+            <select id="appPricingFilter">
+                <option value="_all_">Todos los Precios</option>
+                <option value="Gratis">Gratis</option>
+                <option value="Freemium">Freemium</option>
+                <option value="Por Créditos">Por Créditos</option>
+                <option value="De Pago">De Pago</option>
+                <option value="Prueba Gratuita">Prueba Gratuita</option>
+            </select>
+        </div>
+        <button id="themeSwitcherBtn" class="theme-switcher-btn">Tema Claro</button>
+    </div>
+
+    <div class="main-app-container">
+        <section id="aiAppsSection" class="apps-ia-section">
+            <div class="section-title-wrapper">
+                <button id="scrollToFoldersBtn" class="view-styles-btn"><h2>VER LISTADO DE ESTILOS</h2></button>
+                <h2 class="section-title">APPs PARA CREAR IMÁGENES</h2>
+            </div>
+            <button id="addAppCategoryBtn" class="add-item-btn">Añadir Categoría de Apps</button>
+            <div id="aiAppsCategoriesContainer"></div>
+            <p id="noAppCategoriesMessage" class="initial-load-message" style="display: none;">No hay categorías de apps. ¡Añade una para empezar!</p>
+        </section>
+
+        <section id="promptFoldersSection" class="prompt-folders-section">
+            <div class="section-title-wrapper"><h2 class="section-title">CARPETAS DE PROMPTS POR ESTILOS</h2></div>
+            <button id="addPromptFolderBtn" class="add-item-btn">Añadir Nueva Carpeta</button>
+            <div id="promptFoldersGridContainer" class="folders-grid"></div>
+            <p id="noPromptFoldersMessage" class="no-items-message" style="display: none;">No hay carpetas de prompts. ¡Crea una para organizar tus prompts!</p>
+        </section>
+
+        <section id="promptsSection" class="prompts-section">
+            <div class="section-title-wrapper"><h2 class="section-title">Prompts</h2></div>
+            <button id="addPromptBtn" class="add-item-btn">Añadir Nuevo Prompt</button>
+            <div id="promptsListContainer" class="prompts-title-list"></div>
+            <p id="noPromptsMessage" class="no-items-message" style="display: none;">No hay prompts todavía. ¡Añade uno!</p>
+            <div id="activePromptDisplayArea" class="prompt-block-display" style="display:none;"></div>
+        </section>
+    </div>
+
+    <input type="file" id="hiddenBgInput" accept="image/*">
+    <div class="global-controls right">
+        <button id="changeBgBtn" title="Cambiar Imagen de Fondo"><i class="fas fa-image"></i></button>
+        <button id="orderAppCategoriesBtn" title="Ordenar Categorías de Apps IA"><i class="fas fa-sort-alpha-down"></i></button>
+    </div>
+    <button id="edit-mode-toggle-btn"></button>
+
+    <div id="adminPasswordModal" class="password-modal-overlay">
+        <div class="password-modal-content">
+            <h3></h3>
+            <input type="password" id="adminPasswordInput" placeholder="Introduce la contraseña">
+            <div class="password-modal-buttons">
+                <button id="submitAdminPasswordBtn">Activar</button>
+                <button id="cancelAdminPasswordBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="appCategoryOrderModal" class="password-modal-overlay">
+        <div class="modal-content">
+            <h3>Ordenar Categorías de Apps IA</h3>
+            <ul id="appCategoryOrderList"></ul>
+            <div class="modal-actions">
+                <button id="closeAppCategoryOrderModalBtn">Hecho</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="formModal" class="form-modal-overlay">
+        <div class="form-modal-content" id="genericFormContainer"></div>
+    </div>
+
+    <div id="fullscreenImageViewer" class="fullscreen-image-viewer">
+        <button class="close-fullscreen-btn">&times;</button>
+        <img src="" alt="Imagen ampliada">
+    </div>
+
+    <footer class="site-footer section-title-wrapper">
+        <p class="section-title">Antonio Jiménez - 2025</p>
+    </footer>
+
+    <button id="scrollToTopBtn" class="scroll-to-top-floating-btn" title="Ir al inicio"><i class="fas fa-arrow-up"></i></button>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actual - Personalización de productos con DTF y vinilo</title>
+    <meta name="description" content="Personaliza camisetas, tazas, gorras y platos con tus diseños o los nuestros. Servicio de impresión DTF y vinilo de alta calidad. Expertos en crear tus ideas únicas.">
+    <meta name="keywords" content="personalización, DTF, vinilo, camisetas personalizadas, tazas personalizadas, gorras personalizadas, platos personalizados, impresión textil, regalos personalizados, diseño gráfico, custom shirts, custom mugs">
+    
+    <link rel="icon" href="Paginas/pagina_camisetas/imagenes/favicon.ico" type="image/x-icon"> 
+    <link rel="manifest" href="Paginas/pagina_camisetas/manifest.json">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://atnojs.es/camisetas.html"> 
+    <meta property="og:title" content="Tu Diseño en Todo - Personalización de productos con DTF y vinilo">
+    <meta property="og:description" content="Personaliza camisetas, tazas, gorras y platos con tus diseños o los nuestros. Servicio de impresión DTF y vinilo de alta calidad. Expertos en crear tus ideas únicas.">
+    <meta property="og:image" content="Paginas/pagina_camisetas/imagenes/preview-share.webp"> 
+    
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://atnojs.es/camisetas.html">
+    <meta property="twitter:title" content="Tu Diseño en Todo - Personalización de productos con DTF y vinilo">
+    <meta property="twitter:description" content="Personaliza camisetas, tazas, gorras y platos con tus diseños o los nuestros. Servicio de impresión DTF y vinilo de alta calidad. Expertos en crear tus ideas únicas.">
+    <meta property="twitter:image" content="Paginas/pagina_camisetas/imagenes/preview-share.webp"> 
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        darkBg: '#0f172a',
+                        darkText: '#e5e7eb'
+                    },
+                    borderRadius: { 'button': '14px' }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.13/dist/typography.min.css">
+
+    <style>
+    /* === TEMA "GLASS + GRADIENT" (como la página de agradecimiento) === */
+    :root{
+      --bg1:#0f172a;        /* slate-900 */
+      --bg2:#1e293b;        /* slate-800 */
+      --acc:#22d3ee;        /* cyan-400 */
+      --acc2:#a78bfa;       /* violet-400 */
+      --text:#e5e7eb;       /* gray-200 */
+      --muted:#94a3b8;      /* slate-400 */
+      --card:#0b1022f2;     /* glass card */
+      --border:#1f2a44;     /* card border */
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 700px at 20% 10%, var(--acc2) 0%, transparent 60%),
+        radial-gradient(900px 600px at 85% 100%, var(--acc) 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+
+    /* Cabecera pegajosa en vidrio */
+    .sticky-header{
+      background: var(--card) !important;
+      border-bottom:1px solid var(--border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .sticky-header a{ color:#cbd5e1; }
+    .sticky-header a:hover{ color:#ffffff; }
+
+    /* Botones con gradiente del tema (sin tocar tu HTML) */
+    .bg-primary{
+      background:linear-gradient(135deg,var(--acc),var(--acc2)) !important;
+      box-shadow:0 10px 20px rgba(34,211,238,.25), 0 6px 14px rgba(167,139,250,.18);
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .bg-primary:hover{ transform:translateY(-1px); }
+    .bg-secondary{
+      background:linear-gradient(135deg,var(--acc2),var(--acc)) !important;
+      box-shadow:0 10px 20px rgba(167,139,250,.25), 0 6px 14px rgba(34,211,238,.18);
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .bg-secondary:hover{ transform:translateY(-1px); }
+
+    /* Secciones como "tarjetas" de vidrio */
+    .section-card{
+      position:relative;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:24px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      margin:40px auto;
+      width:clamp(280px, 96%, 1300px);
+      padding: 2rem 0;
+    }
+
+    /* Hero: video + overlay con el mismo aura de color */
+    .hero-section{
+      position:relative;
+      min-height:90vh;
+      display:flex; align-items:center;
+      color:#fff; overflow:hidden;
+      background:transparent;
+    }
+    .hero-section video{
+      position:absolute; inset:0; width:100%; height:100%;
+      object-fit:cover; opacity:.35; z-index:0;
+    }
+    .hero-section::after{
+      content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+      background:
+        radial-gradient(1000px 650px at 15% 10%, var(--acc2) 0%, transparent 60%),
+        radial-gradient(800px 500px at 85% 90%, var(--acc) 0%, transparent 55%);
+      mix-blend-mode:screen; opacity:.5;
+    }
+    .hero-section .content-overlay{ position:relative; z-index:2; }
+    .hero-section h1{ text-shadow:0 6px 28px rgba(0,0,0,.45); }
+
+    /* Tarjetas de servicios y galería con look glass */
+    .service-card, .gallery-item, .testimonial-card{
+      background:rgba(15,23,42,.6) !important;
+      border:1px solid var(--border);
+      border-radius:20px !important;
+      box-shadow:0 12px 26px rgba(0,0,0,.35);
+    }
+
+    /* FAQ y pasos con el mismo marco */
+    .bg-white.dark\:bg-gray-700, .bg-gray-50.dark\:bg-gray-700{
+      background:rgba(15,23,42,.55) !important;
+      border:1px solid var(--border) !important;
+    }
+    .timeline-number{
+      background:linear-gradient(135deg,var(--acc),var(--acc2));
+      color:#0b1022;
+      box-shadow:0 8px 18px rgba(34,211,238,.25);
+    }
+
+    /* Inputs/Selects en vidrio */
+    input:not([type="checkbox"]), select, textarea{
+      background:rgba(2,6,23,.55) !important;
+      border:1px solid #334155 !important;
+      color:#e5e7eb !important;
+      border-radius:12px !important;
+    }
+    input::placeholder, textarea::placeholder{ color:#94a3b8 !important; }
+    input:focus, select:focus, textarea:focus{
+      outline:none; border-color: var(--acc2) !important;
+      box-shadow:0 0 0 3px rgba(167,139,250,.25) !important;
+    }
+
+    /* Footer en vidrio */
+    footer.section-card{
+      padding-top: 3rem; padding-bottom:1.5rem;
+    }
+
+    /* WhatsApp flotante */
+    .whatsapp-button{ box-shadow:0 12px 26px rgba(0,0,0,.35); }
+
+    /* Swiper slides overlay coherente */
+    .swiper{ width:100%; height:450px; }
+    .swiper-slide{
+      background-position:center; background-size:cover;
+      display:flex; align-items:center; justify-content:flex-start;
+      padding-left:40px; position:relative; overflow:hidden;
+    }
+    .swiper-slide::before{
+      content:""; position:absolute; inset:0; z-index:1;
+      background:linear-gradient(rgba(2,6,23,.55), rgba(2,6,23,.55));
+    }
+    .swiper-slide .slide-content{ position:relative; z-index:2; color:#fff; max-width:80%; padding:1rem 1rem 1.5rem; text-align:left; }
+
+    /* Pequeños refinamientos */
+    .shadow-md{ box-shadow:0 10px 24px rgba(0,0,0,.25) !important; }
+    .rounded-button{ border-radius:14px !important; }
+    .text-gray-600{ color:#b6c2d2 !important; }
+    .text-gray-800{ color:#e5e7eb !important; }
+    .contact-section-title{ font-size:clamp(1.6rem, 1.2rem + 2vw, 2.2rem); font-weight:800; letter-spacing:.2px; }
+    .contact-section-subtitle{ color:var(--muted); }
+
+    @media (prefers-reduced-motion: reduce){
+      .bg-primary, .bg-secondary{ transition:none; }
+    }
+
+    /* ==== TUS ESTILOS ORIGINALES (conservados y compatibles) ==== */
+    :where([class^="ri-"])::before { content: "\f3c2"; } 
+    h1,h2,h3,h4,h5,h6{ font-family:'Montserrat',sans-serif; }
+
+    .service-card:hover, .gallery-item:hover, .testimonial-card:hover{
+      transform: translateY(-10px);
+      transition: all .3s ease;
+    }
+
+    .timeline-item::before{ content:''; position:absolute; top:24px; left:0; width:100%; height:2px; background-color:#1f2a44; z-index:-1; }
+    .timeline-item:last-child::before{ width:0; }
+
+    input[type="file"]{ display:none; }
+    .custom-file-upload{
+      border:1px dashed #334155; display:inline-block; padding:1rem; cursor:pointer;
+      border-radius:12px; width:100%; text-align:center; transition:.3s;
+      background:rgba(15,23,42,.5);
+    }
+    .custom-file-upload:hover{ border-color:var(--acc2); background:rgba(167,139,250,.06); }
+
+    .gallery-item{ transition: all .3s ease; overflow:hidden; }
+    .gallery-item:hover{ transform:translateY(-5px); box-shadow:0 10px 18px rgba(0,0,0,.28); }
+    .gallery-overlay{ opacity:0; transition: all .3s ease; background:linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,.7)); }
+    .gallery-item:hover .gallery-overlay{ opacity:1; }
+
+    .whatsapp-button{ position:fixed; bottom:30px; right:30px; z-index:100; display:flex; align-items:center; justify-content:center; transition: background-color .3s ease; }
+
+    /* Forzado de textos blancos donde lo pedías */
+    #contacto input, #contacto select, #contacto textarea { color:#fff !important; }
+    #cotizador-pedido .pedido-section input[type="tel"]{ color:#fff !important; }
+    </style>
+</head>
+<body class="text-gray-800 dark:bg-darkBg dark:text-darkText">
+
+    <!-- HEADER (vidrio) -->
+    <header class="sticky top-0 z-50 w-full sticky-header">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex justify-between items-center">
+                <a href="https://atnojs.es/" class="text-3xl font-['Pacifico'] text-white">Tu Diseño en Todo</a>
+                
+                <nav class="hidden md:flex space-x-6 items-center">
+                    <a href="https://atnojs.es/camisetas.html#inicio" class="hover:text-white font-medium transition-colors">Inicio</a>
+                    <a href="https://atnojs.es/camisetas.html#servicios" class="hover:text-white font-medium transition-colors">Servicios</a>
+                    <a href="https://atnojs.es/camisetas.html#galeria" class="hover:text-white font-medium transition-colors">Galería</a>
+                    <a href="https://atnojs.es/camisetas.html#proceso" class="hover:text-white font-medium transition-colors">Proceso</a>
+                    <a href="https://atnojs.es/camisetas.html#faq" class="hover:text-white font-medium transition-colors">FAQ</a>
+                    <a href="https://atnojs.es/camisetas.html#contacto" class="hover:text-white font-medium transition-colors">Contacto</a>
+                    
+                    <a href="https://atnojs.es/27.html" class="bg-secondary text-white px-5 py-2 rounded-button font-medium transition-colors shadow-md whitespace-nowrap hover:scale-105">Presupuesto</a>
+                    
+                    <button id="theme-toggle" class="ml-2 p-2 rounded-full bg-gray-700/60 hover:bg-gray-700 transition-colors text-white">
+                        <i class="ri-sun-line ri-lg dark:hidden"></i><i class="ri-moon-line ri-lg hidden dark:block"></i>
+                    </button>
+                    
+                    <a href="https://atnojs.es/27.html" class="bg-primary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md whitespace-nowrap hover:scale-105">Haz tu pedido</a>
+                </nav>
+                
+                <div class="md:hidden flex items-center space-x-3">
+                    <button id="theme-toggle-mobile" class="p-2 rounded-full bg-gray-700/60 hover:bg-gray-700 transition-colors text-white">
+                        <i class="ri-sun-line ri-lg dark:hidden"></i><i class="ri-moon-line ri-lg hidden dark:block"></i>
+                    </button>
+                    <button id="mobile-menu-button" class="w-10 h-10 flex items-center justify-center text-white">
+                        <i class="ri-menu-line ri-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="mobile-menu" class="hidden md:hidden absolute w-full" style="background:var(--card); border-bottom:1px solid var(--border); backdrop-filter:blur(8px);">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="https://atnojs.es/camisetas.html#inicio" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Inicio</a>
+                <a href="https://atnojs.es/camisetas.html#servicios" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Servicios</a>
+                <a href="https://atnojs.es/camisetas.html#galeria" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Galería</a>
+                <a href="https://atnojs.es/camisetas.html#proceso" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Proceso</a>
+                <a href="https://atnojs.es/camisetas.html#faq" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">FAQ</a>
+                <a href="https://atnojs.es/camisetas.html#contacto" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Contacto</a>
+                
+                <a href="https://atnojs.es/27.html" class="bg-secondary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap hover:scale-105">Presupuesto</a>
+                <a href="https://atnojs.es/27.html" class="bg-primary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap hover:scale-105">Haz tu pedido</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section id="inicio" class="hero-section">
+        <video autoplay muted loop playsinline src="Paginas/pagina_camisetas/imagenes/hero-video.mp4">Tu navegador no soporta la etiqueta de video.</video>
+        <div class="container mx-auto px-4 py-20 content-overlay">
+            <div class="max-w-3xl">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fadeInUp">Diseña. Personaliza. <span class="text-white" style="background:linear-gradient(135deg,var(--acc),var(--acc2)); -webkit-background-clip:text; background-clip:text; color:transparent;">Sorprende.</span></h1>
+                <p class="text-xl md:text-2xl mb-8 animate-fadeInUp delay-100 text-gray-200">Camisetas, tazas, gorras y más con tu diseño o el nuestro.</p>
+                <div class="flex flex-col sm:flex-row gap-4 animate-fadeInUp delay-200">
+                    <a href="https://atnojs.es/camisetas.html#servicios" class="bg-secondary text-white px-8 py-3 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap hover:scale-105">Ver productos</a>
+                    <a href="https://atnojs.es/27.html" class="bg-primary text-white px-8 py-3 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap hover:scale-105">Sube tu diseño</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section id="servicios" class="py-20 section-card">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Nuestros Servicios</h2>
+                <p class="text-lg" style="color:var(--muted)">Personaliza tus productos favoritos con la mejor calidad y durabilidad.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="service-card rounded-lg overflow-hidden transition-all duration-300" data-aos="fade-up">
+                    <div class="h-48 overflow-hidden pt-6">
+                        <img src="Paginas/pagina_camisetas/imagenes/webp/camisetas/1.webp" alt="Camisetas personalizadas de alta calidad" loading="lazy" class="w-full h-full object-contain clickable-service-img cursor-pointer">
+                    </div>
+                    <div class="p-6">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium mb-3" style="background:rgba(34,211,238,.15); color:#67e8f9;">DTF Premium</span>
+                        <h3 class="text-xl font-bold mb-2">Camisetas</h3>
+                        <p class="mb-4">Personaliza camisetas con tus diseños favoritos. Impresión DTF de alta calidad y durabilidad.</p>
+                        <a href="https://atnojs.es/27.html" class="inline-block font-medium hover:underline hover:scale-105 transition-transform" style="color:#93c5fd;">Personaliza la tuya →</a>
+                    </div>
+                </div>
+
+                <div class="service-card rounded-lg overflow-hidden transition-all duration-300" data-aos="fade-up" data-aos-delay="200">
+                    <div class="h-48 overflow-hidden pt-6">
+                        <img src="Paginas/pagina_camisetas/imagenes/webp/gorras/1.webp" alt="Gorras personalizadas con bordado 3D" loading="lazy" class="w-full h-full object-contain clickable-service-img cursor-pointer">
+                    </div>
+                    <div class="p-6">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium mb-3" style="background:rgba(167,139,250,.18); color:#c4b5fd;">DTF Premium</span>
+                        <h3 class="text-xl font-bold mb-2">Gorras</h3>
+                        <p class="mb-4">Gorras de alta calidad con tu diseño en DTF textil.</p>
+                        <a href="https://atnojs.es/27.html" class="inline-block font-medium hover:underline hover:scale-105 transition-transform" style="color:#93c5fd;">Personaliza la tuya →</a>
+                    </div>
+                </div>
+
+                <div class="service-card rounded-lg overflow-hidden transition-all duration-300" data-aos="fade-up" data-aos-delay="100">
+                    <div class="h-48 overflow-hidden pt-6">
+                        <img src="Paginas/pagina_camisetas/imagenes/webp/tazas/2.webp" alt="Tazas personalizadas con diseños vibrantes" loading="lazy" class="w-full h-full object-contain clickable-service-img cursor-pointer">
+                    </div>
+                    <div class="p-6">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium mb-3" style="background:rgba(34,197,94,.15); color:#86efac;">Vinilo Premium</span>
+                        <h3 class="text-xl font-bold mb-2">Tazas</h3>
+                        <p class="mb-4">Tazas personalizadas resistentes al microondas y lavavajillas con tus fotos o diseños.</p>
+                        <a href="https://atnojs.es/27.html" class="inline-block font-medium hover:underline hover:scale-105 transition-transform" style="color:#93c5fd;">Personaliza la tuya →</a>
+                    </div>
+                </div>
+
+                <div class="service-card rounded-lg overflow-hidden transition-all duration-300" data-aos="fade-up" data-aos-delay="300">
+                    <div class="h-48 overflow-hidden pt-6">
+                        <img src="Paginas/pagina_camisetas/imagenes/webp/platos/1.webp" alt="Platos decorativos personalizados" loading="lazy" class="w-full h-full object-contain clickable-service-img cursor-pointer">
+                    </div>
+                    <div class="p-6">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium mb-3" style="background:rgba(250,204,21,.14); color:#fde68a;">Vinilo Premium</span>
+                        <h3 class="text-xl font-bold mb-2">Platos</h3>
+                        <p class="mb-4">Platos decorativos personalizados con tus fotos o diseños.</p>
+                        <a href="https://atnojs.es/27.html" class="inline-block font-medium hover:underline hover:scale-105 transition-transform" style="color:#93c5fd;">Personaliza el tuyo →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GALERÍA -->
+<section id="galeria" class="py-20 section-card">
+  <div class="container mx-auto px-4">
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Nuestros Trabajos</h2>
+      <p class="text-lg" style="color:var(--muted)">Descubre algunos de nuestros diseños y personalizaciones más recientes.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <a href="/Paginas/pagina_camisetas/camisetas/camisetas1.html" class="gallery-item group relative block cursor-pointer overflow-hidden rounded-lg shadow-lg border p-[5px] aspect-[4/5]" data-aos="fade-up" style="border-color:var(--border);" aria-label="Ver detalles de Camisetas">
+        <img src="Paginas/pagina_camisetas/imagenes/webp/camisetas/1.webp" alt="Diseño de camiseta personalizada" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" />
+        <div class="gallery-overlay absolute inset-0 flex items-center justify-center p-4 text-center">
+          <h3 class="text-2xl font-bold tracking-wider text-white">Camisetas</h3>
+        </div>
+      </a>
+
+      <a href="/Paginas/pagina_camisetas/gorras/gorras.html" class="gallery-item group relative block cursor-pointer overflow-hidden rounded-lg shadow-lg border p-[5px] aspect-[4/5]" data-aos="fade-up" data-aos-delay="100" style="border-color:var(--border);" aria-label="Ver detalles de Gorras">
+        <img src="Paginas/pagina_camisetas/imagenes/webp/gorras/1.webp" alt="Diseño de gorra personalizada" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" />
+        <div class="gallery-overlay absolute inset-0 flex items-center justify-center p-4 text-center">
+          <h3 class="text-2xl font-bold tracking-wider text-white">Gorras</h3>
+        </div>
+      </a>
+
+      <a href="/Paginas/pagina_camisetas/tazas/tazas.html" class="gallery-item group relative block cursor-pointer overflow-hidden rounded-lg shadow-lg border p-[5px] aspect-[4/5]" data-aos="fade-up" data-aos-delay="200" style="border-color:var(--border);" aria-label="Ver detalles de Tazas">
+        <img src="Paginas/pagina_camisetas/imagenes/webp/tazas/2.webp" alt="Diseño de taza personalizada" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" />
+        <div class="gallery-overlay absolute inset-0 flex items-center justify-center p-4 text-center">
+          <h3 class="text-2xl font-bold tracking-wider text-white">Tazas</h3>
+        </div>
+      </a>
+
+      <a href="/Paginas/pagina_camisetas/platos/platos.html" class="gallery-item group relative block cursor-pointer overflow-hidden rounded-lg shadow-lg border p-[5px] aspect-[4/5]" data-aos="fade-up" data-aos-delay="300" style="border-color:var(--border);" aria-label="Ver detalles de Platos">
+        <img src="Paginas/pagina_camisetas/imagenes/webp/platos/1.webp" alt="Diseño de plato personalizado" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" />
+        <div class="gallery-overlay absolute inset-0 flex items-center justify-center p-4 text-center">
+          <h3 class="text-2xl font-bold tracking-wider text-white">Platos</h3>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+    <!-- PROCESO -->
+    <section id="proceso" class="py-20 section-card">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Cómo Funciona</h2>
+                <p class="text-lg" style="color:var(--muted)">Personalizar tus productos es muy sencillo. Sigue estos pasos:</p>
+            </div>
+            
+            <div class="relative">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div class="p-6 rounded-lg text-center" data-aos="fade-up" style="background:rgba(15,23,42,.55); border:1px solid var(--border)">
+                        <div class="timeline-number">1</div>
+                        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <i class="ri-t-shirt-line ri-2x" style="color:#93c5fd;"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Elige tu producto</h3>
+                        <p class="">Selecciona entre camisetas, tazas, gorras o platos para personalizar.</p>
+                    </div>
+                    
+                    <div class="p-6 rounded-lg text-center" data-aos="fade-up" data-aos-delay="100" style="background:rgba(15,23,42,.55); border:1px solid var(--border)">
+                        <div class="timeline-number">2</div>
+                        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <i class="ri-image-add-line ri-2x" style="color:#93c5fd;"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Sube tu diseño</h3>
+                        <p>Envíanos tu diseño o cuéntanos tu idea para que nosotros la creemos.</p>
+                    </div>
+                    
+                    <div class="p-6 rounded-lg text-center" data-aos="fade-up" data-aos-delay="200" style="background:rgba(15,23,42,.55); border:1px solid var(--border)">
+                        <div class="timeline-number">3</div>
+                        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <i class="ri-check-double-line ri-2x" style="color:#93c5fd;"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Confirmamos</h3>
+                        <p>Te enviamos una vista previa para tu aprobación antes de producir.</p>
+                    </div>
+                    
+                    <div class="p-6 rounded-lg text-center" data-aos="fade-up" data-aos-delay="300" style="background:rgba(15,23,42,.55); border:1px solid var(--border)">
+                        <div class="timeline-number">4</div>
+                        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <i class="ri-truck-line ri-2x" style="color:#93c5fd;"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Recibe tu pedido</h3>
+                        <p>Fabricamos y enviamos tu producto personalizado en tiempo récord.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="https://atnojs.es/27.html" class="bg-primary text-white px-8 py-3 rounded-button font-medium transition-colors shadow-md inline-block whitespace-nowrap hover:scale-105 animate-fadeInUp delay-400">¡Crear mi diseño personalizado!</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-20 section-card">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Preguntas Frecuentes</h2>
+                <p class="text-lg" style="color:var(--muted)">Resolvemos tus dudas más comunes sobre nuestro servicio.</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="prose lg:prose-xl dark:prose-invert mx-auto">
+                    <details class="mb-4 p-4 rounded-lg border bg-gray-50 dark:bg-gray-700 shadow-sm" data-aos="fade-up" style="border-color:var(--border);">
+                        <summary class="font-semibold cursor-pointer text-lg">¿Qué tipos de productos puedo personalizar?</summary>
+                        <p class="mt-3">
+                            Actualmente, nos especializamos en personalizar camisetas, tazas, gorras y platos. Estamos constantemente evaluando la posibilidad de ampliar nuestro catálogo.
+                        </p>
+                    </details>
+                    
+                    <details class="mb-4 p-4 rounded-lg border bg-gray-50 dark:bg-gray-700 shadow-sm" data-aos="fade-up" data-aos-delay="100" style="border-color:var(--border);">
+                        <summary class="font-semibold cursor-pointer text-lg">¿Qué formatos de archivo aceptan para los diseños?</summary>
+                        <p class="mt-3">
+                            Aceptamos formatos comunes de imagen como JPG, PNG, WEBP y también PDF para los diseños. Asegúrate de que tus archivos tengan la mayor resolución posible para obtener los mejores resultados. El tamaño máximo permitido es de 10MB.
+                        </p>
+                    </details>
+                    
+                    <details class="mb-4 p-4 rounded-lg border bg-gray-50 dark:bg-gray-700 shadow-sm" data-aos="fade-up" data-aos-delay="200" style="border-color:var(--border);">
+                        <summary class="font-semibold cursor-pointer text-lg">¿Cuánto tiempo tarda el proceso de producción y envío?</summary>
+                        <p class="mt-3">
+                            El tiempo de producción suele ser de 2 a 3 días hábiles una vez confirmado el diseño. El tiempo de envío dependerá de tu ubicación, pero generalmente varía entre 24 y 72 horas hábiles adicionales. Te proporcionaremos un número de seguimiento para que puedas estar al tanto.
+                        </p>
+                    </details>
+                    
+                    <details class="mb-4 p-4 rounded-lg border bg-gray-50 dark:bg-gray-700 shadow-sm" data-aos="fade-up" data-aos-delay="300" style="border-color:var(--border);">
+                        <summary class="font-semibold cursor-pointer text-lg">¿Realizan envíos a toda España?</summary>
+                        <p class="mt-3">
+                            Sí, realizamos envíos a toda la península, Baleares, Canarias, Ceuta y Melilla. Los costes de envío pueden variar según la zona y el volumen del pedido.
+                        </p>
+                    </details>
+
+                    <details class="mb-4 p-4 rounded-lg border bg-gray-50 dark:bg-gray-700 shadow-sm" data-aos="fade-up" data-aos-delay="400" style="border-color:var(--border);">
+                        <summary class="font-semibold cursor-pointer text-lg">¿Qué pasa si mi diseño no es apto para impresión?</summary>
+                        <p class="mt-3">
+                            Antes de imprimir, te enviaremos una prueba digital de tu diseño para que la apruebes. Si tu diseño no cumple con los requisitos técnicos para una impresión de calidad (baja resolución, colores no adecuados, etc.), nuestro equipo se pondrá en contacto contigo para ofrecerte alternativas o ayudarte a mejorarlo.
+                        </p>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto" class="py-20 section-card">
+        <div class="container mx-auto px-4">
+            <h2 class="contact-section-title text-center">CONTACTA CON NOSOTROS</h2>
+            <p class="contact-section-subtitle text-center text-lg">¿Tienes alguna idea en mente? Cuéntanos qué quieres personalizar y te ayudaremos a hacerlo realidad.</p>
+            
+            <div class="contact-layout max-w-3xl mx-auto">
+                <div class="form-wrapper">
+                    <form id="contact-form" action="https://formsubmit.co/atnojs@gmail.com" method="POST" enctype="multipart/form-data" class="space-y-6 form-container">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_next" value="https://atnojs.es/Paginas/pagina_camisetas//gr.html">
+                        <input type="hidden" name="_subject" value="Nuevo mensaje desde Tu Diseño en Todo">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name-contacto">Nombre completo</label>
+                                <input type="text" id="name-contacto" name="Nombre" required class="w-full px-4 py-2 border rounded-md placeholder:text-gray-500">
+                            </div>
+                            <div>
+                                <label for="email-contacto">Email</label>
+                                <input type="email" id="email-contacto" name="Email" required class="w-full px-4 py-2 border rounded-md placeholder:text-gray-500">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="phone-contacto">Teléfono (opcional)</label>
+                                <input type="tel" id="phone-contacto" name="Telefono" class="w-full px-4 py-2 border rounded-md placeholder:text-gray-500">
+                            </div>
+                            <div>
+                                <label for="product-contacto">Producto</label>
+                                <div class="relative">
+                                    <select id="product-contacto" name="Producto" required class="w-full px-4 py-2 border rounded-md appearance-none custom-select-arrow">
+                                        <option value="">Selecciona un producto</option>
+                                        <option value="Camiseta">Camiseta</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                        <i class="ri-arrow-down-s-line text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="message-contacto">Mensaje</label>
+                            <textarea id="message-contacto" name="Mensaje" rows="6" required class="w-full px-4 py-2 border rounded-md placeholder:text-gray-500"></textarea>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <button type="submit" class="w-80 bg-primary text-white px-6 py-3 rounded-button font-medium transition-colors shadow-md whitespace-nowrap hover:scale-105">Enviar mensaje</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container mx-auto px-4">
+            <h3 class="contact-section-title text-center">. </h3>
+            <p class="contact-section-subtitle text-center text-lg">© 2025 Tu Diseño en Todo. Todos los derechos reservados..</p>
+            
+</section>
+    <!-- FOOTER -->
+   
+
+    <!-- WhatsApp -->
+    <a href="https://wa.me/34637373304?text=¡Hola%21%20Quiero%20saber%20m%C3%A1s%20sobre%20personalizar%20productos%21" target="_blank" class="whatsapp-button w-14 h-14 bg-green-500 rounded-full hover:bg-green-600 transition-colors">
+        <i class="ri-whatsapp-fill ri-2x text-white"></i>
+    </a>
+
+    <!-- Lightbox -->
+    <div id="image-lightbox" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex justify-center items-center z-[100] hidden opacity-0 transition-opacity duration-300">
+        <span id="close-lightbox" class="absolute top-5 right-8 text-white text-4xl font-bold cursor-pointer hover:text-gray-300 transition-colors">&times;</span>
+        <img id="lightbox-img" src="" alt="Imagen ampliada del servicio" class="max-w-[90%] max-h-[80%] object-contain">
+    </div>
+
+    <!-- Chat flotante -->
+    <div id="live-chat-widget" class="fixed bottom-5 left-5 z-[100]">
+        <div id="chat-bubble" class="w-16 h-16 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-lg">
+            <i class="ri-message-3-fill ri-2x text-white"></i>
+        </div>
+        <div id="chat-window" class="hidden absolute bottom-20 left-0 w-80 rounded-lg shadow-2xl transition-all duration-300" style="background:var(--card); border:1px solid var(--border);">
+            <div class="p-4 rounded-t-lg" style="background:linear-gradient(135deg,var(--acc),var(--acc2)); color:#0b1022;">
+                <h3 class="font-bold">¿Necesitas ayuda?</h3>
+                <p class="text-sm">Estamos aquí para responder tus dudas.</p>
+            </div>
+            <div class="p-4 h-48 overflow-y-auto">
+                <p class="text-sm" style="color:var(--muted)">Hola, ¿cómo podemos ayudarte a personalizar tu producto hoy?</p>
+            </div>
+            <div class="p-2 border-t" style="border-color:rgba(255,255,255,.08)">
+                <input type="text" placeholder="Escribe tu mensaje..." class="w-full px-3 py-2 border rounded-md" style="background:rgba(2,6,23,.55); border-color:#334155;">
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        // AOS
+        AOS.init({ duration:800, once:true });
+
+        // Estilos de flecha select
+        const customSelectArrowStyles = `
+            .custom-select-arrow {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%239ca3af'%3e%3cpath d='M8 11.293l-4.414-4.414a1 1 0 0 1 1.414-1.414L8 8.414l3.904-3.904a1 1 0 0 1 1.414 1.414L8.707 11.293a1 1 0 0 1-1.414 0z'/%3e%3c/svg%3e");
+                background-repeat:no-repeat; background-position:right 10px center; background-size:1.5em 1.5em;
+            }
+            body.dark .custom-select-arrow {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%239ca3af'%3e%3cpath d='M8 11.293l-4.414-4.414a1 1 0 0 1 1.414-1.414L8 8.414l3.904-3.904a1 1 0 0 1 1.414 1.414L8.707 11.293a1 1 0 0 1-1.414 0z'/%3e%3c/svg%3e");
+            }
+        `;
+        const styleSheet = document.createElement("style");
+        styleSheet.type = "text/css";
+        styleSheet.innerText = customSelectArrowStyles;
+        document.head.appendChild(styleSheet);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuLinks = mobileMenu ? mobileMenu.querySelectorAll('a') : [];
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    mobileMenuButton.innerHTML = mobileMenu.classList.contains('hidden') ? '<i class="ri-menu-line ri-lg"></i>' : '<i class="ri-close-line ri-lg"></i>';
+                });
+                mobileMenuLinks.forEach(link => link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenuButton.innerHTML = '<i class="ri-menu-line ri-lg"></i>';
+                }));
+            }
+
+            // Dark mode
+            const themeToggleButton = document.getElementById('theme-toggle');
+            const themeToggleButtonMobile = document.getElementById('theme-toggle-mobile');
+            const setDarkMode = (isDark) => {
+                if (isDark) { document.body.classList.add('dark'); localStorage.theme = 'dark'; }
+                else { document.body.classList.remove('dark'); localStorage.theme = 'light'; }
+            };
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) setDarkMode(true);
+            else setDarkMode(false);
+            const toggleTheme = () => setDarkMode(!document.body.classList.contains('dark'));
+            if (themeToggleButton) themeToggleButton.addEventListener('click', toggleTheme);
+            if (themeToggleButtonMobile) themeToggleButtonMobile.addEventListener('click', toggleTheme);
+
+            // Smooth scroll interno
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        e.preventDefault();
+                        const y = targetElement.getBoundingClientRect().top + window.pageYOffset - 80;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Lightbox
+            const lightbox = document.getElementById('image-lightbox');
+            if (lightbox) {
+                const lightboxImage = document.getElementById('lightbox-img');
+                const closeBtn = document.getElementById('close-lightbox');
+                const serviceImages = document.querySelectorAll('.clickable-service-img');
+                const openLightbox = (e) => {
+                    const imgSrc = e.target.src;
+                    lightboxImage.setAttribute('src', imgSrc);
+                    lightbox.classList.remove('hidden');
+                    setTimeout(() => lightbox.classList.remove('opacity-0'), 10);
+                };
+                const closeLightbox = () => {
+                    lightbox.classList.add('opacity-0');
+                    setTimeout(() => lightbox.classList.add('hidden'), 300);
+                };
+                serviceImages.forEach(img => img.addEventListener('click', openLightbox));
+                if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+                lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+            }
+
+            // Chat
+            const chatBubble = document.getElementById('chat-bubble');
+            const chatWindow = document.getElementById('chat-window');
+            if (chatBubble && chatWindow) chatBubble.addEventListener('click', () => chatWindow.classList.toggle('hidden'));
+        });
+    </script>
+</body>
+</html>

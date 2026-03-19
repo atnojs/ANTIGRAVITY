@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minicampus ChatGPT — Básico y Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="app.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">Minicampus ChatGPT</div>
+    <nav class="nav">
+      <button class="nav-btn" data-route="basico" type="button">Básico</button>
+      <button class="nav-btn" data-route="pro" type="button">Pro</button>
+      <button class="nav-btn" data-route="plantillas" type="button">Plantillas</button>
+    </nav>
+  </header>
+
+  <main id="app">
+    <!-- Básico -->
+    <section class="view" id="view-basico" hidden>
+      <h1>Ruta Básico</h1>
+      <p class="lead">Estructura, objetivos y formatos de salida.</p>
+
+      <article class="card">
+        <h2>Conceptos clave</h2>
+        <ul>
+          <li>Define rol, objetivo y restricciones.</li>
+          <li>Especifica formato de salida claro.</li>
+          <li>Evalúa ambigüedades y huecos.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Ejercicio guiado</h2>
+        <ol>
+          <li>Ve a <em>Plantillas</em>.</li>
+          <li>Descarga <strong>instrucciones_base.md</strong>.</li>
+          <li>Rellena y pruébalo.</li>
+        </ol>
+        <p class="muted">La API se añade al final.</p>
+      </article>
+    </section>
+
+    <!-- Pro -->
+    <section class="view" id="view-pro" hidden>
+      <h1>Ruta Pro</h1>
+      <p class="lead">Proyectos guiados y checklist de calidad.</p>
+
+      <div class="grid">
+        <article class="card">
+          <h2>Analista de Pliegos</h2>
+          <p>Extrae requisitos, criterios y riesgos.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/estructura_gpt_pliegos.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/estructura_gpt_pliegos.md" type="button">Vista previa</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Arquitecto</h2>
+          <p>Diseña roles, memoria, fuentes y pruebas.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/arquitecto_gpt.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/arquitecto_gpt.md" type="button">Vista previa</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Asistente de Código</h2>
+          <p>Refactor, comentarios y tests mínimos.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/asistente_codigo_gpt.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/asistente_codigo_gpt.md" type="button">Vista previa</button>
+          </div>
+        </article>
+      </div>
+
+      <article class="card">
+        <h2>Checklist de calidad</h2>
+        <ul>
+          <li>Propósito en una frase.</li>
+          <li>Formato y límites de longitud.</li>
+          <li>Ejemplos y contraejemplos.</li>
+          <li>Criterios “listo para producción”.</li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- Plantillas -->
+    <section class="view" id="view-plantillas" hidden>
+      <h1>Plantillas descargables</h1>
+      <p class="lead">Markdown listo para rellenar.</p>
+
+      <div class="grid">
+        <article class="card">
+          <h2>Base de Instrucciones</h2>
+          <p>Estructura mínima para cualquier tarea.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/instrucciones_base.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/instrucciones_base.md" type="button">Vista previa</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Guía de Dataset</h2>
+          <p>Ejemplos, contraejemplos y etiquetas.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/dataset_guia.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/dataset_guia.md" type="button">Vista previa</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Analista de Pliegos</h2>
+          <p>Plantilla específica para pliegos, RFP o bases.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/estructura_gpt_pliegos.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/estructura_gpt_pliegos.md" type="button">Vista previa</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Arquitecto de GPT</h2>
+          <p>Diseño de roles, memoria y pruebas.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/arquitecto_gpt.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/arquitecto_gpt.md" type="button">Vista previa</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Asistente de Código</h2>
+          <p>Refactor, comentarios, tests y explicación.</p>
+          <div class="btn-row">
+            <a class="btn" href="descargables/asistente_codigo_gpt.md" download>Descargar .md</a>
+            <button class="btn btn-secondary" data-preview="descargables/asistente_codigo_gpt.md" type="button">Vista previa</button>
+          </div>
+        </article>
+      </div>
+
+      <details class="card">
+        <summary>Cómo usar</summary>
+        <ol>
+          <li>Descarga el MD.</li>
+          <li>Rellena los campos.</li>
+          <li>Pega el prompt en tu modelo.</li>
+        </ol>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>© Minicampus ChatGPT</div>
+    <div class="footer-actions">
+      <div class="progress">
+        <span id="progress-label">Progreso: 0%</span>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+      </div>
+      <button id="btn-export" class="btn-outline" type="button" title="Exporta tu progreso a .json">Exportar progreso (.json)</button>
+    </div>
+  </footer>
+
+  <!-- Modal simple sin <dialog> -->
+  <div id="preview-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+    <div class="modal-card">
+      <header class="modal-header">
+        <h3 id="preview-title">Vista previa</h3>
+        <button class="icon-btn" id="preview-close" type="button" aria-label="Cerrar">✕</button>
+      </header>
+      <section id="preview-content" class="md-preview"></section>
+      <footer class="modal-footer">
+        <button class="btn" id="preview-download" type="button">Descargar .md</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
+

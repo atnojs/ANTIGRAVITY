@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrusel de Diseños</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik+Doodle+Shadow&family=Open+Sans:wght@400;600&family=Roboto:wght@300;400;700&family=Merriweather:wght@300;400&family=Montserrat&family=Orbitron&family=Lato&family=Poppins&family=Nunito&family=Dancing+Script&family=Pacifico&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="icon" href="/Páginas/No_textil/Botellas/logo.ico?v=1" type="image/x-icon">
+    <link rel="shortcut icon" href="/Páginas/No_textil/Botellas/logo.ico?v=1" type="image/x-icon">
+    <style>
+        /* Estilos generales del body y header (heredados de tu página de imágenes) */
+        body { font-family: 'Inter', sans-serif; background: #f9fafb; }
+        .editable-image-container { position: relative; overflow: hidden; aspect-ratio: 1/1; border-radius: .5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0/.1), 0 2px 4px -2px rgb(0 0 0/.1); background: #000!important; }
+        .editable-image-container img { display: block; width:100%; height:100%; }
+        .edit-mode .editable-content { outline:2px dashed #3b82f6; background:rgba(59,130,246,.05); cursor:text; padding:2px; border-radius:4px; }
+        .edit-mode .editable-content:hover { background:rgba(59,130,246,.1); }
+        .edit-style-btn { display:none; position:absolute; top:-5px; right:-10px; background:#fbbf24; color:#422006; border:none; border-radius:50%; width:24px; height:24px; font-size:14px; line-height:24px; text-align:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.2); z-index:20; transition:transform .2s; }
+        /* Ajuste para el texto identificador del carrusel */
+        .carousel-slide-text-wrapper { 
+            position: relative; 
+            padding-bottom: 10px; 
+            text-align: center; /* Asegura que el texto esté centrado por defecto */
+            width: 100%;
+        }
+        .carousel-slide-text { 
+            font-weight: bold; /* Negrita por defecto */
+            color: white; /* Blanco por defecto */
+            font-size: 0.875rem; /* sm */
+            font-family: 'Inter', sans-serif; /* Fuente por defecto */
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        /* Estilos cuando está en modo edición */
+        .edit-mode .carousel-slide-text { 
+            outline:2px dashed #3b82f6; 
+            background:rgba(59,130,246,.05); 
+            cursor:text; 
+            padding:2px; 
+            border-radius:4px; 
+        }
+        .edit-mode .carousel-slide-text-wrapper:hover .edit-style-btn { display:block; }
+        
+        .edit-controls { display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.7); padding:10px 15px; border-radius:10px; z-index:100; }
+        .edit-mode .edit-controls { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+        .edit-button { background:#3b82f6; color:#fff; padding:8px 15px; border:none; border-radius:6px; font-weight:500; font-size:.9rem; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.1); transition:background .3s; }
+        .edit-button:hover { background:#2563eb; }
+        .save-button { background:#10b981; }
+        .background-button { background:#a855f7; }
+        .background-upload-button { background:#d946ef; }
+        #add-carousel-slide-button { background:#6d28d9; } /* Nuevo botón para añadir slide */
+        .slide-edit-controls { display:none; position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.6); padding:.5rem; flex-wrap:wrap; gap:5px; justify-content:center; border-bottom-left-radius:inherit; border-bottom-right-radius:inherit; opacity:0; transition:opacity .2s; z-index:10; }
+        .edit-mode .carousel-slide-container:hover .slide-edit-controls { display:flex; opacity:1; }
+        .slide-edit-button { background:#6b7280; color:#fff; padding:4px 8px; border:none; border-radius:5px; font-size:.75rem; cursor:pointer; transition:background .3s; }
+        .delete-slide-btn { background:#ef4444; }
+        .change-image-url-btn { background:#06b6d4; }
+        .upload-image-pc-btn { background:#f59e0b; }
+        .fit-image-btn { background:#84cc16; }
+        .cover-image-btn { background:#a855f7; }
+        .link-image-btn.has-link { background:#6366f1; }
+        .move-btn { background:#94a3b8; }
+        .move-btn:hover { background:#64748b; }
+        .status { position:fixed; top:20px; left:50%; transform:translateX(-50%); padding:10px 20px; border-radius:8px; color:#fff; z-index:110; display:none; box-shadow:0 4px 6px rgba(0,0,0,.1); text-align:center; }
+        .status.success { background:#10b981; }
+        .status.error { background:#ef4444; }
+        img[src=""], img:not([src]), img[src^="data:image/svg+xml"] { visibility:hidden; }
+        /* Estilos para los placeholders cuando no hay imagen */
+        .edit-mode .carousel-slide-container:has(img[src=""])::before,
+        .edit-mode .carousel-slide-container:has(img:not([src]))::before,
+        .edit-mode .carousel-slide-container:has(img[src^="data:image/svg+xml"])::before {
+            content:"Añadir Mockup"; position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f3f4f6; color:#6b7280; font-size:.9rem; font-weight:500; border:2px dashed #d1d5db; border-radius:inherit; z-index:5;
+        }
+        body:not(.edit-mode) .carousel-slide-container:has(img[src=""]),
+        body:not(.edit-mode) .carousel-slide-container:has(img:not([src])),
+        body:not(.edit-mode) .carousel-slide-container:has(img[src^="data:image/svg+xml"]) { box-shadow:none!important; }
+        body:not(.edit-mode) .carousel-slide-container::before { display:none!important; }
+        /* Estilos para el carrusel */
+        .carousel-container { position: relative; width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 0; }
+        .carousel-wrapper { display: flex; overflow: hidden; position: relative; /* Aspect ratio para el contenedor del carrusel */ width: 100%; /* Ajusta el ancho según necesites */ }
+        .carousel-slide { flex: 0 0 25%; /* Muestra 4 slides */ max-width: 25%; /* Muestra 4 slides */ padding: 0 10px; /* Espacio entre slides */ box-sizing: border-box; } /* Ajusta el padding si necesitas más o menos espacio lateral */
+        .carousel-slide .carousel-slide-container { margin-bottom: 1.5rem; /* Margen inferior para separar de los controles */ }
+        
+        /* Controles del carrusel (flechas) */
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            transition: background-color 0.3s;
+        }
+        .carousel-control:hover { background-color: rgba(0,0,0,0.8); }
+        .carousel-control.prev { left: 10px; }
+        .carousel-control.next { right: 10px; }
+        /* Ocultar controles en modo edición para evitar interferencias */
+        .edit-mode .carousel-control { display: none; }
+        /* Ocultar controles si no hay suficientes slides */
+        .carousel-container:not(.has-multiple-slides) .carousel-control { display: none; }
+        
+        #hidden-file-input { display:none; }
+        #style-editor-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; max-width:400px; background:#fff; padding:25px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,.3); z-index:105; border:1px solid #ccc; }
+        #style-editor-modal h3 { margin:0 0 20px; font-size:1.3rem; font-weight:600; text-align:center; }
+        #style-editor-modal label { display:block; margin-bottom:5px; font-weight:500; font-size:.9rem; }
+        #style-editor-modal input, #style-editor-modal select { width:100%; padding:8px; margin-bottom:15px; border:1px solid #ccc; border-radius:5px; font-size:.9rem; }
+        #style-editor-modal .modal-actions { display:flex; justify-content:space-between; margin-top:20px; }
+        #style-editor-modal .modal-actions button { padding:10px 20px; border-radius:5px; cursor:pointer; font-weight:600; }
+        #apply-style-btn { background:#10b981; color:#fff; border:none; }
+        #cancel-style-btn { background:#ef4444; color:#fff; border:none; }
+        #edit-mode-button { position:fixed; bottom:10px; right:10px; width:30px; height:30px; border:none; background:transparent; border-radius:50%; cursor:pointer; z-index:100; display:flex; align-items:center; justify-content:center; }
+        #edit-mode-button::before { content:'✎'; font-size:16px; }
+        .edit-mode #edit-mode-button::before { content:'❌'; font-size:14px; }
+    </style>
+</head>
+<body class="text-gray-800">
+    <header class="sticky top-0 z-50 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 shadow-sm">
+        <div class="container mx-auto px-4 py-2 flex justify-between items-center">
+            <a href="https://atnojs.es/" class="text-3xl font-['Pacifico'] text-primary">Tu Diseño en Todo</a>
+            <nav class="hidden md:flex space-x-6 items-center">
+                <a href="#inicio" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Inicio</a>
+                <a href="#servicios" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Servicios</a>
+                <a href="#galeria" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Galería</a>
+                <a href="#proceso" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Proceso</a>
+                <a href="#faq" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">FAQ</a>
+                <a href="#contacto" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Contacto</a>
+                <a href="#cotizador-pedido" class="bg-secondary text-white px-5 py-2 rounded-button font-medium hover:bg-opacity-90 shadow-md">Presupuesto</a>
+                <button id="theme-toggle" class="ml-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                    <i class="ri-sun-line ri-lg dark:hidden"></i>
+                    <i class="ri-moon-line ri-lg hidden dark:block"></i>
+                </button>
+                <a href="#cotizador-pedido" class="bg-primary text-white px-6 py-2 rounded-button font-medium shadow-md">Haz tu pedido</a>
+            </nav>
+            <div class="md:hidden flex items-center space-x-4">
+                <button id="theme-toggle-mobile" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                    <i class="ri-sun-line ri-lg dark:hidden"></i>
+                    <i class="ri-moon-line ri-lg hidden dark:block"></i>
+                </button>
+                <button id="mobile-menu-button" class="w-10 h-10 flex items-center justify-center text-gray-700 dark:text-gray-300">
+                    <i class="ri-menu-line ri-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-gray-800 absolute w-full">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#inicio" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Inicio</a>
+                <a href="#servicios" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Servicios</a>
+                <a href="#galeria" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Galería</a>
+                <a href="#proceso" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Proceso</a>
+                <a href="#faq" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">FAQ</a>
+                <a href="#contacto" class="text-gray-800 dark:text-gray-300 hover:text-primary font-medium">Contacto</a>
+                <a href="#cotizador-pedido" class="bg-secondary text-white px-6 py-2 rounded-button font-medium shadow-md text-center">Presupuesto</a>
+                <a href="#contacto" class="bg-primary text-white px-6 py-2 rounded-button font-medium shadow-md text-center">Haz tu pedido</a>
+            </div>
+        </div>
+    </header>
+
+    <button id="edit-mode-button" title="Activar/Desactivar Modo Edición"></button>
+    <input type="file" id="hidden-file-input" accept="image/*">
+
+    <div class="carousel-container">
+        <div class="editable-content-wrapper mb-10 text-center">
+            <!-- Título del Carrusel -->
+            <h1 id="carousel-title" class="editable-content text-3xl md:text-4xl font-bold text-gray-900">Mockups de Camisetas</h1>
+            <button class="edit-style-btn" data-target-element="carousel-title" title="Editar Estilo Texto">🎨</button>
+        </div>
+
+        <div class="carousel-wrapper">
+            <!-- Slides del carrusel -->
+            <div id="carousel-slides-container">
+                <!-- Los slides se generarán aquí con JavaScript -->
+            </div>
+        </div>
+
+        <!-- Controles de navegación del carrusel -->
+        <button id="carousel-prev" class="carousel-control prev">‹</button>
+        <button id="carousel-next" class="carousel-control next">›</button>
+
+        <!-- Controles de edición del carrusel -->
+        <div class="edit-controls">
+            <button id="add-carousel-slide-button" class="edit-button">Añadir Mockup</button>
+            <button id="save-carousel-button" class="edit-button save-button">Guardar Carrusel</button>
+            <!-- Añadir aquí otros controles si son necesarios, como cambiar fondo, etc. -->
+        </div>
+    </div>
+
+    <div id="status-message" class="status"></div>
+
+    <!-- Modal para edición de estilo de texto (para los textos de los slides) -->
+    <div id="style-editor-modal">
+        <h3>Editar Estilo de Texto</h3>
+        <input type="hidden" id="target-element-id">
+        <label for="font-family-select">Fuente:</label>
+        <select id="font-family-select"></select>
+        <label for="font-size-input">Tamaño (ej: 16px, 1.2rem):</label>
+        <input type="text" id="font-size-input" placeholder="Tamaño de fuente">
+        <label for="font-color-input">Color (ej: #FF0000, red):</label>
+        <input type="text" id="font-color-input" placeholder="Color de fuente">
+        <label for="text-align-select">Alineación:</label>
+        <select id="text-align-select">
+            <option value="left">Izquierda</option>
+            <option value="center">Centro</option>
+            <option value="right">Derecha</option>
+            <option value="justify">Justificado</option>
+        </select>
+        <div class="modal-actions">
+            <button id="cancel-style-btn">Cancelar</button>
+            <button id="apply-style-btn">Aplicar Estilo</button>
+        </div>
+    </div>
+
+    <script>
+        // --- VARIABLES GLOBALES Y ELEMENTOS DEL DOM ---
+        const body = document.body;
+        const editModeButton = document.getElementById('edit-mode-button');
+        const saveButton = document.getElementById('save-carousel-button'); // Botón para guardar carrusel
+        const addImageButton = document.getElementById('add-carousel-slide-button'); // Botón para añadir slide al carrusel
+        const statusMessage = document.getElementById('status-message');
+        const hiddenFileInput = document.getElementById('hidden-file-input');
+        const styleEditorModal = document.getElementById('style-editor-modal');
+        const fontFamilySelect = document.getElementById('font-family-select');
+        const fontSizeInput = document.getElementById('font-size-input');
+        const fontColorInput = document.getElementById('font-color-input');
+        const textAlignSelect = document.getElementById('text-align-select');
+        const targetElementIdInput = document.getElementById('target-element-id');
+        const applyStyleButton = document.getElementById('apply-style-btn');
+        const cancelStyleButton = document.getElementById('cancel-style-btn');
+
+        // Elementos específicos del carrusel
+        const carouselContainer = document.querySelector('.carousel-container');
+        const carouselSlidesContainer = document.getElementById('carousel-slides-container');
+        const carouselPrevButton = document.getElementById('carousel-prev');
+        const carouselNextButton = document.getElementById('carousel-next');
+        const carouselTitle = document.getElementById('carousel-title');
+
+        // --- CONFIGURACIÓN ---
+        const VALIDATE_PASS_URL = 'validar_password.php';
+        const LOAD_CONTENT_URL = 'load_carrusel.php'; // Nuevo PHP para cargar carrusel
+        const SAVE_CONTENT_URL = 'save_carrusel.php'; // Nuevo PHP para guardar carrusel
+        const PLACEHOLDER_ERROR_URL = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="%23fecaca"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="30" fill="%23ef4444">Error URL</text></svg>';
+        const SLIDES_PER_VIEW = 4; // Número de slides visibles a la vez
+        const SLIDE_WIDTH = `${100 / SLIDES_PER_VIEW}%`; // Ancho de cada slide
+
+        let isEditMode = false;
+        let currentTargetImageId = null; // ID de la imagen que se está editando (para subir archivo)
+        let isUploadingBackground = false;
+        let hasUnsavedChanges = false;
+        let currentSlideIndex = 0; // Índice del slide visible actualmente
+        const availableFonts = ['Inter', 'Rubik Doodle Shadow', 'Open Sans', 'Roboto', 'Merriweather', 'Montserrat', 'Orbitron', 'Lato', 'Poppins', 'Nunito', 'Dancing Script', 'Pacifico', 'Great Vibes'];
+
+        // --- FUNCIONES DE UTILIDAD GENERAL ---
+        function showStatus(message, isError = false, duration = 4000) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status ' + (isError ? 'error' : 'success');
+            statusMessage.style.display = 'block';
+            setTimeout(() => statusMessage.style.display = 'none', duration);
+        }
+
+        // Función para añadir event listeners de forma segura
+        function safeAdd(element, event, handler) {
+            if (element) element.addEventListener(event, handler);
+        }
+
+        // Función para aplicar enlaces a las imágenes
+        function applyImageLinks() {
+            document.querySelectorAll('img[data-image-link]').forEach(img => {
+                const link = img.dataset.imageLink;
+                if (!link) return;
+                
+                const parent = img.parentElement;
+                if (parent.tagName === 'A') return; // Ya tiene un enlace como padre
+                
+                // Si estamos en modo edición, no aplicamos los enlaces
+                if (isEditMode) return;
+                
+                const wrapper = document.createElement('a');
+                wrapper.href = link;
+                wrapper.target = '_blank';
+                wrapper.rel = 'noopener';
+                
+                // Reemplazar la imagen con el enlace
+                parent.insertBefore(wrapper, img);
+                wrapper.appendChild(img);
+            });
+        }
+
+        async function checkPassword(input) {
+            try {
+                const res = await fetch(`${VALIDATE_PASS_URL}?t=${Date.now()}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cache-Control': 'no-cache' }, body: new URLSearchParams({ 'password': input }) });
+                if (!res.ok) throw new Error(res.status);
+                return (await res.json()).success === true;
+            } catch (e) { showStatus('Error al contactar servidor: ' + e.message, true); return false; }
+        }
+
+        // Función para actualizar la visibilidad de los controles de edición del slide
+        function updateSlideControlsVisibility() {
+            document.querySelectorAll('.carousel-slide-container').forEach(slide => {
+                const controls = slide.querySelector('.slide-edit-controls');
+                if (controls) {
+                    if (isEditMode) {
+                        slide.classList.add('has-controls'); // Clase para que los controles sean visibles en hover
+                    } else {
+                        slide.classList.remove('has-controls');
+                    }
+                }
+            });
+        }
+
+        // Función para actualizar el estado de los elementos editables (títulos, textos de slide)
+        function updateEditableStates() {
+            const isEditing = body.classList.contains('edit-mode');
+            document.querySelectorAll('.editable-content, .editable-text').forEach(el => {
+                el.contentEditable = isEditing;
+                if (!isEditing) {
+                    // Limpiar estilos de edición si no se está editando
+                    el.style.outline = '';
+                    el.style.background = '';
+                }
+            });
+        }
+
+        // --- FUNCIONES DE MODO EDICIÓN ---
+        async function enterEditMode() {
+            if (isEditMode) return;
+            const pwd = prompt('Contraseña edición:');
+            if (pwd === null) { showStatus('Cancelado.', true); return; }
+            editModeButton.disabled = true;
+            const ok = await checkPassword(pwd);
+            editModeButton.disabled = false;
+            if (ok) {
+                isEditMode = true;
+                body.classList.add('edit-mode');
+                applyImageLinks(); // Asegurar que los enlaces se apliquen correctamente
+                updateEditableStates(); // Activar estado editable
+                updateSlideControlsVisibility(); // Mostrar controles de edición de slide
+                showStatus('Modo edición ON.', false);
+            } else {
+                showStatus('Contraseña incorrecta.', true);
+            }
+        }
+
+        function exitEditMode() {
+            if (!isEditMode) return;
+            if (hasUnsavedChanges && !confirm('Cambios sin guardar. Salir igual?')) { showStatus('Salida cancelada.', true); return; }
+            isEditMode = false;
+            body.classList.remove('edit-mode');
+            hasUnsavedChanges = false;
+            updateEditableStates(); // Desactivar estado editable
+            updateSlideControlsVisibility(); // Ocultar controles de edición de slide
+            showStatus('Modo edición OFF.', false);
+        }
+
+        // --- FUNCIONES DE MANEJO DE SLIDES DEL CARRUSEL ---
+
+        // Crea un nuevo slide (mockup de camiseta + texto)
+        function createCarouselSlide(id, imageUrl = '', imageFit = 'cover', alt = 'Mockup de Camiseta', link = '', designText = 'Identificador', colorText = 'Color') {
+            const slideContainer = document.createElement('div');
+            slideContainer.id = `carousel-slide-${id}`;
+            slideContainer.className = 'carousel-slide'; // Clase para el contenedor de slide (para el layout del carrusel)
+
+            const itemContainer = document.createElement('div');
+            itemContainer.className = 'carousel-slide-container relative aspect-square rounded-lg overflow-hidden shadow-md mb-4'; // Contenedor del mockup y texto
+
+            // Wrapper para el texto y el botón de estilo
+            const textWrapper = document.createElement('div');
+            textWrapper.className = 'carousel-slide-text-wrapper';
+
+            const designTextElement = document.createElement('div'); // Texto del diseño (no editable)
+            designTextElement.className = 'carousel-slide-text';
+            designTextElement.textContent = designText;
+            designTextElement.style.fontFamily = `'Inter', sans-serif`; // Fuente por defecto
+            designTextElement.style.fontWeight = 'bold'; // Negrita
+            designTextElement.style.color = 'white'; // Blanco
+            designTextElement.style.fontSize = '0.875rem'; // sm
+            designTextElement.style.textAlign = 'center'; // Centrado
+
+            const colorTextElement = document.createElement('div'); // Campo editable para el color
+            colorTextElement.id = `${id}-color-text`; // ID para el campo editable
+            colorTextElement.className = 'editable-text'; // Usa la clase general para textos editables
+            colorTextElement.textContent = colorText;
+            colorTextElement.style.fontFamily = `'Inter', sans-serif`; // Fuente por defecto
+            colorTextElement.style.fontWeight = 'bold'; // Negrita
+            colorTextElement.style.color = 'white'; // Blanco
+            colorTextElement.style.fontSize = '0.875rem'; // sm
+            colorTextElement.style.textAlign = 'center'; // Centrado
+
+            const styleButton = document.createElement('button');
+            styleButton.className = 'edit-style-btn';
+            styleButton.dataset.targetElement = `${id}-color-text`; // Apunta al ID del campo de color
+            styleButton.title = 'Editar Estilo Texto';
+            styleButton.innerHTML = '🎨';
+
+            textWrapper.appendChild(designTextElement);
+            textWrapper.appendChild(colorTextElement); // Añade el campo editable de color
+            textWrapper.appendChild(styleButton);
+            itemContainer.appendChild(textWrapper);
+
+            // Imagen del mockup
+            const img = document.createElement('img');
+            img.id = id;
+            img.src = imageUrl;
+            img.alt = alt;
+            img.className = 'w-full h-full block';
+            img.style.objectFit = imageFit;
+            img.dataset.imageLink = link;
+            img.loading = 'lazy';
+            if (imageUrl && imageUrl !== PLACEHOLDER_ERROR_URL && !imageUrl.startsWith('data:image/svg+xml')) {
+                itemContainer.classList.add('bg-gray-200');
+            }
+            img.onerror = () => {
+                img.onerror = null; img.src = PLACEHOLDER_ERROR_URL;
+                itemContainer.classList.remove('bg-gray-200'); img.style.visibility = 'visible';
+                applyImageLinks();
+            };
+            img.onload = () => {
+                const c = img.getAttribute('src');
+                if (c && c !== PLACEHOLDER_ERROR_URL && !c.startsWith('data:image/svg+xml')) {
+                    itemContainer.classList.add('bg-gray-200'); img.style.visibility = 'visible';
+                } else {
+                    itemContainer.classList.remove('bg-gray-200');
+                }
+                applyImageLinks();
+            };
+
+            // Controles de edición del slide
+            const controls = document.createElement('div');
+            controls.className = 'slide-edit-controls';
+            controls.innerHTML = `
+                <button class="slide-edit-button change-image-url-btn" data-target-img="${id}" title="URL">URL</button>
+                <button class="slide-edit-button upload-image-pc-btn" data-target-img="${id}" title="Subir PC">Subir PC</button>
+                <button class="slide-edit-button fit-image-btn" data-target-img="${id}" title="Contain">Ajustar</button>
+                <button class="slide-edit-button cover-image-btn" data-target-img="${id}" title="Cover">Cubrir</button>
+                <button class="slide-edit-button link-image-btn ${link && imageUrl ? 'has-link' : ''}" data-target-img="${id}" title="Enlace">🔗</button>
+                <button class="slide-edit-button move-btn left-btn" data-target-img="${id}" title="Izquierda">◀</button>
+                <button class="slide-edit-button move-btn right-btn" data-target-img="${id}" title="Derecha">▶</button>
+                <button class="slide-edit-button delete-slide-btn" data-target-img="${id}" title="Eliminar">Eliminar</button>
+            `;
+
+            itemContainer.appendChild(img);
+            itemContainer.appendChild(controls);
+            slideContainer.appendChild(itemContainer); // Añadir el item al slide
+
+            return slideContainer; // Devolvemos el slide completo
+        }
+
+        // Elimina un slide del carrusel
+        function handleDeleteCarouselSlide(id) {
+            const slideContainer = document.getElementById(`carousel-slide-${id}`);
+            if (!slideContainer) { showStatus('Slide no encontrado.', true); return; }
+            slideContainer.remove();
+            hasUnsavedChanges = true;
+            showStatus('Slide eliminado. Guarda cambios.', false);
+            updateCarouselControlsVisibility(); // Actualizar visibilidad de flechas
+        }
+
+        // Maneja el cambio de URL de la imagen del mockup
+        function triggerImageUrlChange(id) {
+            const img = document.getElementById(id);
+            if (!img) { showStatus('Imagen no encontrada.', true); return; }
+            const currentUrl = img.src === PLACEHOLDER_ERROR_URL ? '' : img.src;
+            const newUrl = prompt('Introduce la nueva URL de la imagen (mockup de camiseta):', currentUrl);
+            if (newUrl !== null) {
+                if (newUrl.trim() === '') {
+                    img.src = PLACEHOLDER_ERROR_URL;
+                    img.onerror = () => { /* Handle error */ };
+                    img.style.visibility = 'visible';
+                    hasUnsavedChanges = true;
+                    showStatus('URL de imagen eliminada/placeholder. Guarda cambios.', false);
+                } else {
+                    img.src = newUrl.trim();
+                    hasUnsavedChanges = true;
+                    showStatus('URL de imagen actualizada. Guarda cambios.', false);
+                }
+                applyImageLinks(); // Re-aplicar enlaces por si acaso
+            }
+        }
+
+        // Maneja el ajuste de la imagen (fit/cover)
+        function handleFitImage(id) {
+            const img = document.getElementById(id);
+            if (!img) return;
+            img.style.objectFit = 'contain'; hasUnsavedChanges = true; showStatus('Contain aplicado. Guarda cambios.', false);
+        }
+        function handleCoverImage(id) {
+            const img = document.getElementById(id);
+            if (!img) return;
+            img.style.objectFit = 'cover'; hasUnsavedChanges = true; showStatus('Cover aplicado. Guarda cambios.', false);
+        }
+
+        // Maneja el enlace de la imagen
+        function handleLinkImage(id) {
+            const img = document.getElementById(id);
+            if (!img) { showStatus('Imagen no encontrada.', true); return; }
+            const curr = img.dataset.imageLink || '';
+            const nl = prompt('URL destino (vacío para quitar):', curr);
+            if (nl !== null) {
+                const t = nl.trim();
+                img.dataset.imageLink = t; hasUnsavedChanges = true;
+                const btn = img.closest('.carousel-slide-container').querySelector(`.link-image-btn[data-target-img="${id}"]`);
+                if (btn) {
+                    const src = img.getAttribute('src');
+                    const placeholder = !src || src === PLACEHOLDER_ERROR_URL || src.startsWith('data:image/svg+xml');
+                    if (t && !placeholder) btn.classList.add('has-link');
+                    else btn.classList.remove('has-link');
+                }
+                applyImageLinks();
+                showStatus(t ? 'Enlace actualizado. Guarda cambios.' : 'Enlace quitado. Guarda cambios.', false);
+            }
+        }
+
+        // Mueve un slide (elemento de imagen)
+        function moveImageElement(id, dir) {
+            const img = document.getElementById(id);
+            if (!img) return;
+            const slideContainer = img.closest('.carousel-slide');
+            if (!slideContainer) return;
+            
+            if (dir === 'left') {
+                const prev = slideContainer.previousElementSibling;
+                if (prev) { 
+                    carouselSlidesContainer.insertBefore(slideContainer, prev); 
+                    hasUnsavedChanges = true; 
+                    showStatus('Slide movido izquierda. Guarda cambios.', false); 
+                }
+            } else {
+                const next = slideContainer.nextElementSibling;
+                if (next) { 
+                    carouselSlidesContainer.insertBefore(next, slideContainer); 
+                    hasUnsavedChanges = true; 
+                    showStatus('Slide movido derecha. Guarda cambios.', false); 
+                }
+            }
+            updateCarouselControlsVisibility(); // Actualizar visibilidad de flechas
+        }
+
+        // Añade un nuevo slide al carrusel (en modo edición)
+        function addNewCarouselSlide() {
+            if (!isEditMode) return;
+            const id = `slide-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+            // Creamos el nuevo slide con un placeholder y texto por defecto
+            const newSlideContainer = createCarouselSlide(id, '', 'cover', 'Mockup de camiseta', '', 'Diseño Base', 'Color');
+            // Añadirlo al principio para que sea lo primero que se vea al añadir
+            carouselSlidesContainer.prepend(newSlideContainer);
+            hasUnsavedChanges = true;
+            showStatus('Mockup y texto añadidos. Guarda cambios.', false);
+            newSlideContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            updateCarouselControlsVisibility(); // Asegurar que las flechas se muestren si aplica
+        }
+
+        // --- FUNCIONES DE NAVEGACIÓN DEL CARRUSEL ---
+
+        function updateCarouselControlsVisibility() {
+            // Muestra u oculta las flechas de navegación según si hay más de un slide visible
+            const slideCount = carouselSlidesContainer.children.length;
+            const slidesVisible = SLIDES_PER_VIEW;
+            const hasMultipleSlides = slideCount > slidesVisible;
+
+            carouselContainer.classList.toggle('has-multiple-slides', hasMultipleSlides);
+        }
+
+        function goToSlide(index) {
+            if (index < 0) index = 0;
+            const maxIndex = Math.max(0, carouselSlidesContainer.children.length - SLIDES_PER_VIEW);
+            if (index > maxIndex) {
+                index = maxIndex;
+            }
+            currentSlideIndex = index;
+            const offset = -currentSlideIndex * (100 / SLIDES_PER_VIEW); // Calculamos el desplazamiento en porcentaje
+            carouselSlidesContainer.style.transform = `translateX(${offset}%)`;
+        }
+
+        function nextSlide() {
+            goToSlide(currentSlideIndex + 1);
+        }
+
+        function prevSlide() {
+            goToSlide(currentSlideIndex - 1);
+        }
+
+        // --- FUNCIONES PARA EL EDITOR DE ESTILOS ---
+        function openStyleEditor(targetElementId) {
+            const targetElement = document.getElementById(targetElementId);
+            if (!targetElement) return;
+            
+            // Guardar el ID del elemento objetivo
+            targetElementIdInput.value = targetElementId;
+            
+            // Obtener los estilos actuales
+            const computedStyle = window.getComputedStyle(targetElement);
+            
+            // Establecer los valores actuales en los campos del formulario
+            fontFamilySelect.value = computedStyle.fontFamily.split(',')[0].replace(/['"]/g, '') || 'Inter';
+            fontSizeInput.value = computedStyle.fontSize || '';
+            fontColorInput.value = computedStyle.color || '';
+            textAlignSelect.value = computedStyle.textAlign || 'center';
+            
+            // Mostrar el modal
+            styleEditorModal.style.display = 'block';
+        }
+
+        function applyStyles() {
+            const targetElementId = targetElementIdInput.value;
+            const targetElement = document.getElementById(targetElementId);
+            
+            if (!targetElement) {
+                showStatus('Elemento no encontrado', true);
+                styleEditorModal.style.display = 'none';
+                return;
+            }
+            
+            // Aplicar los estilos seleccionados
+            const fontFamily = fontFamilySelect.value;
+            const fontSize = fontSizeInput.value;
+            const fontColor = fontColorInput.value;
+            const textAlign = textAlignSelect.value;
+            
+            targetElement.style.fontFamily = `'${fontFamily}', sans-serif`;
+            if (fontSize) targetElement.style.fontSize = fontSize;
+            if (fontColor) targetElement.style.color = fontColor;
+            targetElement.style.textAlign = textAlign;
+            
+            // Cerrar el modal
+            styleEditorModal.style.display = 'none';
+            
+            // Marcar que hay cambios sin guardar
+            hasUnsavedChanges = true;
+            showStatus('Estilo aplicado. Guarda cambios.', false);
+        }
+
+        // --- MANEJO DE CARGA Y GUARDADO ---
+
+        // Guarda el contenido del carrusel
+        async function saveContent() {
+            if (!isEditMode) { showStatus('No estás en modo edición.', true); return; }
+
+            saveButton.disabled = true; addImageButton.disabled = true; saveButton.textContent = 'Guardando...';
+            const data = {};
+
+            const slideContainers = Array.from(carouselSlidesContainer.querySelectorAll('.carousel-slide'));
+
+            // Guardar datos de cada slide (imagen + textos)
+            slideContainers.forEach(container => {
+                const img = container.querySelector('img[id]');
+                if (img) {
+                    const slideId = img.id; // Este es el ID único de la imagen del mockup
+                    data[slideId] = img.getAttribute('src') || '';
+                    data[slideId + '-fit'] = img.style.objectFit || 'cover';
+                    data[slideId + '-link'] = img.dataset.imageLink || '';
+
+                    // Guardar el texto del diseño (no editable)
+                    const designTextElement = container.querySelector('.carousel-slide-text');
+                    if (designTextElement) {
+                        data[`${slideId}-design-text`] = designTextElement.textContent;
+                    }
+
+                    // Guardar el campo editable del color y sus estilos
+                    const colorTextElement = container.querySelector(`#${slideId}-color-text`);
+                    if (colorTextElement) {
+                        data[`${slideId}-color-text`] = colorTextElement.innerHTML;
+                        data[`${slideId}-color-text-fontFamily`] = colorTextElement.style.fontFamily || '';
+                        data[`${slideId}-color-text-fontSize`] = colorTextElement.style.fontSize || '';
+                        data[`${slideId}-color-text-color`] = colorTextElement.style.color || '';
+                        data[`${slideId}-color-text-textAlign`] = colorTextElement.style.textAlign || '';
+                    }
+                }
+            });
+
+            // Guardar el orden de los slides
+            data['carousel-order'] = slideContainers.map(container => container.querySelector('img[id]').id);
+
+            // Guardar el título del carrusel
+            data['carousel-title'] = carouselTitle.innerHTML;
+            data['carousel-title-fontFamily'] = carouselTitle.style.fontFamily || '';
+            data['carousel-title-fontSize'] = carouselTitle.style.fontSize || '';
+            data['carousel-title-color'] = carouselTitle.style.color || '';
+            data['carousel-title-textAlign'] = carouselTitle.style.textAlign || '';
+
+            try {
+                // Usar el nombre del diseño de la URL para saber qué JSON guardar
+                const urlParams = new URLSearchParams(window.location.search);
+                const designName = urlParams.get('diseno');
+                const dataToSave = { content: data, designName: designName || 'default' }; // Pasamos el nombre del diseño para que el PHP sepa qué archivo usar
+
+                const res = await fetch(`${SAVE_CONTENT_URL}`, { // No necesitamos pasar el diseño en la URL aquí si lo enviamos en el body
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(dataToSave)
+                });
+                const r = await res.json();
+                if (!res.ok) throw new Error(r.error || res.status);
+                if (r.success) { hasUnsavedChanges = false; showStatus('¡Guardado correcto!', false); }
+                else throw new Error(r.error || 'Error servidor');
+            } catch (e) {
+                showStatus('Error al guardar: ' + e.message, true);
+            } finally {
+                saveButton.disabled = false; addImageButton.disabled = false; saveButton.textContent = 'Guardar Carrusel';
+            }
+        }
+
+        // Carga el contenido del carrusel desde el JSON
+        async function loadContent() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const designName = urlParams.get('diseno'); // Obtener el nombre del diseño de la URL
+
+            if (!designName) {
+                showStatus('Error: No se especificó un diseño en la URL.', true);
+                // Opcionalmente, podrías redirigir a la página principal o mostrar un mensaje de error más prominente
+                return;
+            }
+
+            carouselSlidesContainer.innerHTML = ''; // Limpiar el contenedor de slides
+            hasUnsavedChanges = false;
+
+            try {
+                // Pasamos el nombre del diseño al PHP para que sepa qué archivo cargar
+                const res = await fetch(`${LOAD_CONTENT_URL}?diseno=${encodeURIComponent(designName)}&t=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error(res.status);
+                const txt = await res.text();
+
+                // Si el archivo está vacío o no existe, inicializar con un estado vacío
+                if (!txt.trim() || txt === '{}') {
+                    console.log("Archivo de carrusel vacío o no encontrado para:", designName);
+                    // Puedes inicializar con un placeholder o un mensaje
+                    // Por ahora, simplemente dejaremos el carrusel vacío y mostraremos un mensaje
+                    showStatus('No hay mockups para este diseño. Añade algunos en modo edición.', false);
+                    return;
+                }
+                const d = JSON.parse(txt);
+
+                // Cargar título del carrusel
+                carouselTitle.innerHTML = d['carousel-title'] || 'Mockups de Camisetas';
+                carouselTitle.style.fontFamily = d['carousel-title-fontFamily'] || '';
+                carouselTitle.style.fontSize = d['carousel-title-fontSize'] || '';
+                carouselTitle.style.color = d['carousel-title-color'] || '';
+                carouselTitle.style.textAlign = d['carousel-title-textAlign'] || '';
+
+                // Cargar orden de los slides
+                let order = Array.isArray(d['carousel-order']) ? d['carousel-order'] : null;
+
+                // Si no hay orden explícito, intentar inferirlo
+                if (!order) {
+                    console.warn("No se encontró 'carousel-order' explícito. Intentando inferir orden.");
+                    order = Object.keys(d).filter(k => k.endsWith('-fit')).map(k => k.replace('-fit', ''));
+                    order.sort((a, b) => { // Ordenar por número en el ID si existe
+                        const numA = parseInt(a.split('-').pop());
+                        const numB = parseInt(b.split('-').pop());
+                        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                        return 0;
+                    });
+                }
+
+                // 3. Guardar los IDs de los contenedores de slide que ya existen en el grid
+                const existingSlideContainers = Array.from(carouselSlidesContainer.querySelectorAll('.carousel-slide'));
+                const existingSlideIds = existingSlideContainers.map(slide => {
+                    const img = slide.querySelector('img[id]');
+                    return img ? img.id : null;
+                }).filter(id => id !== null);
+
+                // 4. Iterar sobre el orden determinado y crear/insertar los slides
+                order.forEach((slideId, index) => {
+                    if (d.hasOwnProperty(slideId)) { // Asegurarse de que el ID exista en los datos cargados
+                        // Verificar si el slide con este ID ya está en el carrusel
+                        if (!existingSlideIds.includes(slideId)) {
+                            // Crear el nuevo slide
+                            const newSlideContainer = createCarouselSlide(
+                                slideId,
+                                d[slideId] || '',
+                                d[slideId + '-fit'] || 'cover',
+                                'Mockup de camiseta',
+                                d[slideId + '-link'] || '',
+                                d[`${slideId}-design-text`] || 'Diseño Base', // Texto del diseño
+                                d[`${slideId}-color-text`] || 'Color' // Texto del color
+                            );
+
+                            // Ajustar estilos del texto del color si se guardaron
+                            const colorTextElement = newSlideContainer.querySelector(`#${slideId}-color-text`);
+                            if (colorTextElement) {
+                                colorTextElement.style.fontFamily = d[`${slideId}-color-text-fontFamily`] || 'Inter, sans-serif';
+                                colorTextElement.style.fontSize = d[`${slideId}-color-text-fontSize`] || '0.875rem';
+                                colorTextElement.style.color = d[`${slideId}-color-text-color`] || 'white';
+                                colorTextElement.style.textAlign = d[`${slideId}-color-text-textAlign`] || 'center';
+                            }
+
+                            // Insertar el slide en la posición correcta
+                            if (index < carouselSlidesContainer.children.length) {
+                                carouselSlidesContainer.insertBefore(newSlideContainer, carouselSlidesContainer.children[index]);
+                            } else {
+                                carouselSlidesContainer.appendChild(newSlideContainer);
+                            }
+                            hasUnsavedChanges = false; // No hay cambios sin guardar después de cargar
+                        } else {
+                            // Si el slide ya existe, actualizarlo
+                            const existingSlide = existingSlideContainers.find(slide => slide.querySelector('img[id]')?.id === slideId);
+                            if (existingSlide) {
+                                // Mover al índice correcto si es necesario
+                                if (index < carouselSlidesContainer.children.length) {
+                                    carouselSlidesContainer.insertBefore(existingSlide, carouselSlidesContainer.children[index]);
+                                } else {
+                                    carouselSlidesContainer.appendChild(existingSlide);
+                                }
+                                // Actualizar propiedades de la imagen existente
+                                const img = existingSlide.querySelector('img[id]');
+                                img.src = d[slideId] || '';
+                                img.style.objectFit = d[slideId + '-fit'] || 'cover';
+                                img.dataset.imageLink = d[slideId + '-link'] || '';
+                                
+                                const itemContainer = existingSlide.querySelector('.carousel-slide-container');
+                                img.onerror = () => { 
+                                    img.onerror = null; 
+                                    img.src = PLACEHOLDER_ERROR_URL; 
+                                    itemContainer.classList.remove('bg-gray-200'); 
+                                    img.style.visibility = 'visible'; 
+                                    applyImageLinks(); 
+                                };
+                                img.onload = () => { 
+                                    const c = img.getAttribute('src'); 
+                                    if (c && c !== PLACEHOLDER_ERROR_URL && !c.startsWith('data:image/svg+xml')) { 
+                                        itemContainer.classList.add('bg-gray-200'); 
+                                        img.style.visibility = 'visible'; 
+                                    } else { 
+                                        itemContainer.classList.remove('bg-gray-200'); 
+                                    } 
+                                    applyImageLinks(); 
+                                };
+
+                                // Actualizar el texto del diseño
+                                const designTextElement = existingSlide.querySelector('.carousel-slide-text');
+                                if (designTextElement) {
+                                    designTextElement.textContent = d[`${slideId}-design-text`] || 'Diseño Base';
+                                }
+                                // Actualizar el texto del color y sus estilos
+                                const colorTextElement = existingSlide.querySelector(`#${slideId}-color-text`);
+                                if (colorTextElement) {
+                                    colorTextElement.innerHTML = d[`${slideId}-color-text`] || 'Color';
+                                    colorTextElement.style.fontFamily = d[`${slideId}-color-text-fontFamily`] || 'Inter, sans-serif';
+                                    colorTextElement.style.fontSize = d[`${slideId}-color-text-fontSize`] || '0.875rem';
+                                    colorTextElement.style.color = d[`${slideId}-color-text-color`] || 'white';
+                                    colorTextElement.style.textAlign = d[`${slideId}-color-text-textAlign`] || 'center';
+                                }
+                                applyImageLinks();
+                            }
+                        }
+                    }
+                });
+
+                // 5. Limpiar slides que quedaron en el carrusel pero no están en el orden guardado
+                existingSlideContainers.forEach(slideContainer => {
+                    const img = slideContainer.querySelector('img[id]');
+                    if (img && !order.includes(img.id)) {
+                        slideContainer.remove();
+                        hasUnsavedChanges = false; // No hay cambios sin guardar después de cargar
+                        console.log(`Slide eliminado por no estar en el orden guardado: ${img.id}`);
+                    }
+                });
+
+                // Configurar el contenedor de slides para el carrusel
+                carouselSlidesContainer.style.display = 'flex';
+                carouselSlidesContainer.style.transition = 'transform 0.3s ease';
+                carouselSlidesContainer.style.width = `${slideContainers.length * 100 / SLIDES_PER_VIEW}%`;
+                
+                // Actualizar visibilidad de las flechas
+                updateCarouselControlsVisibility();
+                
+                // Aplicar enlaces a las imágenes
+                applyImageLinks();
+
+            } catch (e) {
+                console.error("Error en loadContent:", e);
+                showStatus('Error al cargar el carrusel: ' + e.message, true);
+            }
+        }
+
+        // Manejar la subida de archivos
+        hiddenFileInput.addEventListener('change', async function() {
+            if (!this.files || !this.files[0]) return;
+            
+            const file = this.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = document.getElementById(currentTargetImageId);
+                if (img) {
+                    img.src = e.target.result;
+                    hasUnsavedChanges = true;
+                    showStatus('Imagen subida. Guarda cambios para conservarla.', false);
+                    
+                    // Actualizar el estado del botón de enlace
+                    const linkBtn = img.closest('.carousel-slide-container').querySelector(`.link-image-btn[data-target-img="${currentTargetImageId}"]`);
+                    if (linkBtn && img.dataset.imageLink) {
+                        linkBtn.classList.add('has-link');
+                    }
+                }
+            };
+            
+            reader.readAsDataURL(file);
+            this.value = ''; // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+        });
+
+        // --- INICIALIZACIÓN Y EVENT LISTENERS ---
+
+        // Configurar los listeners para los botones principales
+        safeAdd(editModeButton, 'click', () => isEditMode ? exitEditMode() : enterEditMode());
+        safeAdd(saveButton, 'click', saveContent);
+        safeAdd(addImageButton, 'click', addNewCarouselSlide); // Listener para añadir un nuevo slide
+
+        // Listeners para los controles del carrusel
+        safeAdd(carouselPrevButton, 'click', prevSlide);
+        safeAdd(carouselNextButton, 'click', nextSlide);
+
+        // Listeners para el modal de estilos
+        safeAdd(applyStyleButton, 'click', applyStyles);
+        safeAdd(cancelStyleButton, 'click', () => styleEditorModal.style.display = 'none');
+
+        // Listener principal para manejar clics en los botones de edición de slides y estilo
+        safeAdd(body, 'click', e => {
+            if (!isEditMode) return;
+
+            // Manejar botones de edición de slide
+            const slideEditBtn = e.target.closest('.slide-edit-button');
+            if (slideEditBtn) {
+                e.stopPropagation();
+                const slideId = slideEditBtn.dataset.targetImg;
+                if (slideEditBtn.classList.contains('delete-slide-btn')) handleDeleteCarouselSlide(slideId);
+                else if (slideEditBtn.classList.contains('change-image-url-btn')) triggerImageUrlChange(slideId);
+                else if (slideEditBtn.classList.contains('upload-image-pc-btn')) { currentTargetImageId = slideId; hiddenFileInput.click(); }
+                else if (slideEditBtn.classList.contains('fit-image-btn')) handleFitImage(slideId);
+                else if (slideEditBtn.classList.contains('cover-image-btn')) handleCoverImage(slideId);
+                else if (slideEditBtn.classList.contains('link-image-btn')) handleLinkImage(slideId);
+                else if (slideEditBtn.classList.contains('left-btn')) moveImageElement(slideId, 'left');
+                else if (slideEditBtn.classList.contains('right-btn')) moveImageElement(slideId, 'right');
+            }
+
+            // Manejar botón de estilo para el texto
+            const styleBtn = e.target.closest('.edit-style-btn');
+            if (styleBtn) {
+                e.stopPropagation();
+                openStyleEditor(styleBtn.dataset.targetElement); // targetElement es el ID del texto (e.g., 'slide-12345-color-text')
+            }
+        });
+
+        // Inicializar las fuentes en el modal de estilos
+        window.addEventListener('load', () => {
+            availableFonts.forEach(f => {
+                const o = document.createElement('option');
+                o.value = f;
+                o.textContent = f;
+                o.style.fontFamily = `'${f}', sans-serif`;
+                fontFamilySelect.appendChild(o);
+            });
+            loadContent(); // Cargar el contenido inicial del carrusel
+        });
+
+        // Prevenir la recarga de página si hay cambios sin guardar
+        window.addEventListener('beforeunload', e => {
+            if (isEditMode && hasUnsavedChanges) { e.preventDefault(); e.returnValue = 'Tienes cambios sin guardar.'; }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+/* Configuración base */
+body {
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.toast-enter {
+    animation: slideInRight 0.3s ease-out forwards;
+}
+
+.spinner {
+    border: 3px solid rgba(79, 70, 229, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid #4f46e5;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tarjetas interactivas */
+.card-hover {
+    transition: all 0.2s ease-in-out;
+}
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-color: #a5b4fc;
+}
+
+/* Estilos de impresión */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .print-only {
+        display: block !important;
+    }
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    #app-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .puzzle-grid {
+        border: 2px solid black !important;
+    }
+    .puzzle-cell {
+        border: 1px solid black !important;
+        color: black !important;
+    }
+    .page-break {
+        page-break-after: always;
+    }
+}
+
+/* Utilidades para pasatiempos */
+.puzzle-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.grid-sudoku {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 0;
+    border: 2px solid #334155;
+}
+.cell-sudoku {
+    aspect-ratio: 1;
+    border: 1px solid #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+.cell-sudoku:nth-child(3n) {
+    border-right: 2px solid #334155;
+}
+.grid-sudoku > div:nth-child(9n) {
+    border-right: 1px solid #94a3b8; /* Reset right border for last column */
+    border-right: 2px solid #334155; /* Re-apply thick border */
+}
+.cell-sudoku:nth-child(n+19):nth-child(-n+27),
+.cell-sudoku:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 2px solid #334155;
+}
+/* Estilos generales para celdas de puzzles */
+.cell-interactive {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+.cell-interactive:hover {
+    transform: scale(1.05);
+}
+/* Estados de celdas en puzzles */
+.cell-selected {
+    background-color: #4f46e5 !important;
+    color: white !important;
+}
+.cell-shaded {
+    background-color: #1e293b !important;
+    color: #1e293b !important;
+}
+.cell-marked {
+    background-color: #fef3c7 !important;
+}
+/* Animaciones para interacciones */
+@keyframes cellPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+.cell-hint {
+    animation: cellPulse 1s ease-in-out infinite;
+}
+/* Estilos para Nonograma */
+.nonogram-cell {
+    transition: all 0.15s ease;
+}
+.nonogram-cell:hover {
+    background-color: #e0e7ff;
+}
+/* Estilos para Sopa de Letras */
+.wordsearch-cell {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.wordsearch-cell.found {
+    background-color: #86efac;
+    color: #14532d;
+}
+/* Estilos para Hitori */
+.hitori-cell {
+    transition: all 0.2s ease;
+}
+/* Estilos para Kakuro */
+.kakuro-sum {
+    font-size: 10px;
+    line-height: 1;
+}
+/* Estilos para Futoshiki */
+.futoshiki-constraint {
+    font-weight: bold;
+    color: #334155;
+}
+/* Estilos para Laberinto */
+.maze-wall {
+    background-color: #1e293b;
+}
+.maze-path {
+    background-color: white;
+}
+.maze-start {
+    background-color: #dcfce7;
+    border: 2px solid #16a34a;
+}
+.maze-end {
+    background-color: #fee2e2;
+    border: 2px solid #dc2626;
+}
+/* Estilos para Connect Dots */
+.connect-dots-svg {
+    cursor: crosshair;
+}
+/* Estilos para Tents & Trees */
+.tent-cell:hover {
+    background-color: #fed7aa;
+}
+.tree-cell {
+    background-color: #dcfce7;
+}
+/* Estilos para Logic Puzzle */
+.logic-table th,
+.logic-table td {
+    border: 1px solid #cbd5e1;
+    padding: 8px;
+    text-align: center;
+}
+.logic-table select {
+    min-width: 80px;
+}
+/* Estilos para Cryptarithm */
+.cryptarithm-input {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #1e293b;
+}
+.cryptarithm-input:focus {
+    outline: 2px solid #4f46e5;
+    background-color: #e0e7ff;
+}
+/* Estilos para Magic Square */
+.magic-square-cell {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .grid-generic > div {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .cell-sudoku {
+        font-size: 1rem !important;
+    }
+}
+/* Print optimizations for puzzles */
+@media print {
+    .cell-interactive {
+        cursor: default !important;
+    }
+    
+    .cell-interactive:hover {
+        transform: none !important;
+    }
+    
+    [contenteditable="true"] {
+        border-bottom: 1px solid #94a3b8 !important;
+    }
+    
+    .puzzle-grid {
+        break-inside: avoid;
+    }
+}
+
+/* ============================================
+   MODAL DE VICTORIA
+   ============================================ */
+
+#victory-modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+#victory-modal > div {
+    animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Palabras encontradas en sopa de letras */
+.word-to-found {
+    background-color: #86efac !important;
+    color: #14532d !important;
+    text-decoration: line-through;
+    transition: all 0.3s ease;
+}
+
+.word-to-find.found {
+    background-color: #86efac !important;
+    color: #14532d !important;
+    text-decoration: line-through;
+    border-color: #16a34a !important;
+}
+
+/* ============================================
+   CRUCIGRAMA
+   ============================================ */
+
+.crossword-cell {
+    transition: all 0.2s ease;
+}
+
+.crossword-cell:hover {
+    background-color: #e0e7ff !important;
+}
+
+.crossword-input {
+    outline: none;
+    caret-color: #4f46e5;
+}
+
+.crossword-input:focus {
+    background-color: #e0e7ff;
+}
+
+.crossword-clue {
+    transition: all 0.2s ease;
+}
+
+.crossword-clue:hover {
+    background-color: #f1f5f9;
+}
+
+.crossword-clue.active {
+    background-color: #e0e7ff;
+    border-left: 4px solid #4f46e5;
+}
+
+#crossword-victory-modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+#crossword-victory-modal > div {
+    animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

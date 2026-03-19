@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Referencias - VIA</title>
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body class="admin-mode">
+    <div class="container" style="max-width: 800px; padding: 2rem;">
+        <header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="neon-text">Base de Conocimiento Visual</h1>
+            <a href="index.html" class="btn-secondary">Volver al Chat</a>
+        </header>
+
+        <section class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+            <h3>Subir Nueva Foto de Referencia (Antonio)</h3>
+            <p style="color: var(--muted); font-size: 0.8rem; margin-bottom: 1.5rem;">
+                Estas fotos serán usadas por la IA para mantener la consistencia facial. Sube fotos nítidas.
+            </p>
+            <form action="api.php?action=upload_ref" method="POST" enctype="multipart/form-data">
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label>Nombre/Etiqueta:</label>
+                    <input type="text" name="nombre" placeholder="Ej: Primer plano, Perfil..." required
+                        style="width: 100%; padding: 0.8rem; margin-top: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; border-radius: 8px;">
+                </div>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label>Imagen:</label>
+                    <input type="file" name="foto" required style="margin-top: 0.5rem;">
+                </div>
+                <button type="submit" class="btn-3d btn-primary" style="width: 100%;">Agregar a la Base Visual</button>
+            </form>
+        </section>
+
+        <section id="references-list" class="references-grid">
+            <!-- Se cargará por PHP/JS -->
+            <p style="text-align: center; color: var(--muted);">Cargando referencias...</p>
+        </section>
+    </div>
+
+    <script>
+        // Lógica simple para cargar referencias
+        async function loadRefs() {
+            const res = await fetch('api.php?action=get_references');
+            const data = await res.json();
+            const list = document.getElementById('references-list');
+            list.innerHTML = '<h3>Fotos Actuales</h3>';
+
+            const grid = document.createElement('div');
+            grid.style.display = 'grid';
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+            grid.style.gap = '1rem';
+            grid.style.marginTop = '1rem';
+
+            data.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'glass';
+                card.style.padding = '0.5rem';
+                card.innerHTML = `
+                    <img src="${r.ruta}" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px;">
+                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">${r.nombre}</p>
+                `;
+                grid.appendChild(card);
+            });
+            list.appendChild(grid);
+        }
+        loadRefs();
+    </script>
+</body>
+
+</html>

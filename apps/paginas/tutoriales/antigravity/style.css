@@ -1,0 +1,214 @@
+/* ============================================
+   🎨 CURSO ANTIGRAVITY - STYLES
+   Based on Neon Glassmorphism Style Guide
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --bg1: #041847;
+    --bg2: #0c1445;
+    --acc: #22d3ee;
+    --acc2: #a78bfa;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: rgba(34, 211, 238, 0.2);
+    --card-bg: rgba(15, 23, 42, 0.4);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --neon-cyan: #2ee8ff;
+    --neon-pink: #ff4ecd;
+    --glow-strong: rgba(46, 232, 255, 0.4);
+
+    --main-bg-gradient: linear-gradient(135deg, #041847 0%, #0c1445 35%, #1e3a8a 75%, #00bcd4 100%);
+    --gradient-text: linear-gradient(90deg, var(--neon-cyan), var(--acc2), var(--neon-pink));
+
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-width: 280px;
+}
+
+/* Base Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--main-bg-gradient);
+    background-attachment: fixed;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: -0.02em;
+    margin-top: 0;
+}
+
+.gradient-text {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glassmorphism */
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px 0 var(--shadow-color);
+}
+
+/* Layout */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+    z-index: 100;
+    border-right: 1px solid var(--border);
+}
+
+.sidebar h2 {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar nav ul li a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: var(--transition-main);
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li a.active {
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--acc);
+    padding-left: 1.5rem;
+    border-left: 4px solid var(--acc);
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 4rem 2rem;
+    max-width: 1000px;
+}
+
+section {
+    margin-bottom: 6rem;
+    padding-top: 2rem;
+    /* Buffer for anchor scroll */
+}
+
+.card {
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+}
+
+/* UI Elements */
+.tip-box {
+    background: rgba(52, 211, 153, 0.1);
+    border-left: 4px solid #34d399;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.warning-box {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #f87171;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.step-list {
+    list-style: none;
+    padding: 0;
+}
+
+.step-list li {
+    position: relative;
+    padding-left: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.step-list li::before {
+    content: counters(item, ".") " ";
+    counter-increment: item;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.8rem;
+    height: 1.8rem;
+    background: var(--acc);
+    color: var(--bg1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--acc2);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 2rem 1.5rem;
+    }
+}

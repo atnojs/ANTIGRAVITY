@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería de Camisetas</title>
+    <script src="https://cdn.tailwindcss.com/3.4.4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Audiowide&family=Bangers&family=Bebas+Neue&family=Bungee&family=Caveat&family=Cinzel&family=Cormorant+Garamond&family=Creepster&family=Dancing+Script&family=Eater&family=Josefin+Sans&family=Lobster&family=Monoton&family=Nosifer&family=Oswald&family=Permanent+Marker&family=Playfair+Display&family=Roboto:wght@900&family=Rock+Salt&family=Sacramento&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="icon" href="/Páginas/No_textil/Botellas/logo.ico?v=1" type="image/x-icon">
+    <link rel="shortcut" href="/Páginas/No_textil/Botellas/logo.ico?v=1" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        darkBg: '#0f172a',
+                        darkText: '#e5e7eb'
+                    },
+                    borderRadius: { 
+                        'button': '14px' 
+                    },
+                    fontFamily: {
+                        'pacifico': ['Pacifico', 'cursive'],
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                        'rubik-doodle-shadow': ['"Rubik Doodle Shadow"', 'cursive'],
+                        'open-sans': ['"Open Sans"', 'sans-serif'],
+                        'roboto': ['Roboto', 'sans-serif'],
+                        'merriweather': ['Merriweather', 'serif'],
+                        'orbitron': ['Orbitron', 'sans-serif'],
+                        'lato': ['Lato', 'sans-serif'],
+                        'nunito': ['Nunito', 'sans-serif'],
+                        'dancing-script': ['"Dancing Script"', 'cursive'],
+                        'great-vibes': ['"Great Vibes"', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "react/": "https://esm.sh/react@^19.1.1/"
+  }
+}
+</script>
+</head>
+<body>
+    <header class="sticky top-0 z-50 w-full sticky-header">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex justify-between items-center">
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html" class="text-3xl font-pacifico text-white">Tu Diseño en Todo</a>
+                <nav class="hidden md:flex space-x-6 items-center">
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html" class="font-medium transition-colors">Inicio</a>
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#servicios" class="font-medium transition-colors">Servicios</a>
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#galeria" class="font-medium transition-colors">Galería</a>
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#proceso" class="font-medium transition-colors">Proceso</a>
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#faq" class="font-medium transition-colors">FAQ</a>
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#contacto" class="font-medium transition-colors">Contacto</a>
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/presupuesto.html" class="bg-secondary text-white px-5 py-2 rounded-button font-medium transition-colors shadow-md whitespace-nowrap">Presupuesto</a>
+                    <button id="theme-toggle" class="ml-4 p-2 rounded-full bg-gray-700/60 hover:bg-gray-700 transition-colors text-white">
+                        <i class="ri-sun-line ri-lg dark:hidden"></i>
+                        <i class="ri-moon-line ri-lg hidden dark:block"></i>
+                    </button>
+                    <a href="https://atnojs.es/Paginas/pagina_camisetas/presupuesto.html" class="bg-primary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md whitespace-nowrap">Haz tu pedido</a>
+                </nav>
+                <div class="md:hidden flex items-center space-x-4">
+                    <button id="theme-toggle-mobile" class="p-2 rounded-full bg-gray-700/60 hover:bg-gray-700 transition-colors text-white">
+                        <i class="ri-sun-line ri-lg dark:hidden"></i>
+                        <i class="ri-moon-line ri-lg hidden dark:block"></i>
+                    </button>
+                    <button id="mobile-menu-button" class="w-10 h-10 flex items-center justify-center text-white">
+                        <i class="ri-menu-line ri-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden absolute w-full" style="background:var(--card); border-bottom:1px solid var(--border); backdrop-filter:blur(8px);">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#inicio" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Inicio</a>
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#servicios" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Servicios</a>
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#galeria" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Galería</a>
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#proceso" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Proceso</a>
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#faq" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">FAQ</a>
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/index.html#contacto" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Contacto</a>
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/presupuesto.html" class="bg-secondary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap">Presupuesto</a>
+                <a href="https://atnojs.es/Paginas/pagina_camisetas/presupuesto.html" class="bg-primary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap">Haz tu pedido</a>
+            </div>
+        </div>
+    </header>
+
+    <button id="edit-mode-button" title="Activar/Desactivar Modo Edición" class="fixed bottom-5 right-5 w-12 h-12 text-primary rounded-full flex items-center justify-center z-[100] text-2xl transition-all transform hover:scale-110">
+       <!--  <i class="ri-pencil-line"></i> -->
+    </button>
+    <input type="file" id="hidden-file-input" class="hidden" accept="image/*">
+    
+    <main>
+        <section class="section-card">
+            <div class="editable-content-wrapper mb-8 text-center relative">
+                <h1 id="gallery-title" class="editable-content text-3xl md:text-4xl font-extrabold text-center"></h1>
+                <button class="edit-style-btn hidden absolute -top-1 -right-1 bg-amber-400 text-amber-900 w-6 h-6 rounded-full items-center justify-center text-sm shadow-md z-10 hover:scale-110 transition-transform" data-target-element="gallery-title" title="Editar Estilo Texto">🎨</button>
+            </div>
+            <div id="image-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
+        </section>
+    </main>
+
+    <div id="edit-controls" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] p-3 rounded-xl shadow-lg flex-wrap gap-2 justify-center hidden" style="background:var(--card); border:1px solid var(--border); backdrop-filter:blur(8px);">
+        <button id="add-image-button" class="text-white px-4 py-2 rounded-button font-medium shadow-md">Añadir Imagen</button>
+        <button id="save-button" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-button font-medium shadow-md">Guardar Cambios</button>
+    </div>
+
+    <div id="status-message" class="fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-white font-semibold z-[110] shadow-md hidden transition-opacity duration-300"></div>
+
+    <div id="style-editor-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[105] flex items-center justify-center p-4">
+        <div class="p-6 rounded-lg shadow-xl w-full max-w-md m-4" style="background:var(--card); border:1px solid var(--border);">
+            <h3 class="text-xl font-bold mb-6 text-center">Editar Estilo de Texto</h3>
+            <input type="hidden" id="target-element-id">
+            <div class="space-y-4">
+                <div>
+                    <label for="font-family-select" class="block text-sm font-medium text-gray-300 mb-1">Fuente</label>
+                    <select id="font-family-select" class="w-full rounded-md px-3 py-2"></select>
+                </div>
+                <div>
+                    <label for="font-size-input" class="block text-sm font-medium text-gray-300 mb-1">Tamaño (ej: 16px, 1.2rem)</label>
+                    <input type="text" id="font-size-input" placeholder="Tamaño de fuente" class="w-full rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label for="font-color-input" class="block text-sm font-medium text-gray-300 mb-1">Color (ej: #FF6B6B, red)</label>
+                    <input type="text" id="font-color-input" placeholder="Color de fuente" class="w-full rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label for="text-align-select" class="block text-sm font-medium text-gray-300 mb-1">Alineación</label>
+                    <select id="text-align-select" class="w-full rounded-md px-3 py-2">
+                        <option value="left">Izquierda</option>
+                        <option value="center">Centro</option>
+                        <option value="right">Derecha</option>
+                        <option value="justify">Justificado</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-4 mt-8">
+                <button id="cancel-style-btn" class="px-5 py-2 rounded-button bg-gray-600 text-gray-200 font-semibold hover:bg-gray-500 transition">Cancelar</button>
+                <button id="apply-style-btn" class="px-5 py-2 rounded-button text-white font-semibold transition">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="relative p-2 rounded-3xl shadow-2xl" style="background:var(--card);">
+            <img id="lightbox-image" src="" alt="Vista ampliada" class="max-w-[90vw] md:max-w-[60vw] max-h-[85vh] object-contain block rounded-2xl">
+        </div>
+        <button id="lightbox-close" class="absolute top-4 right-4 text-white text-5xl leading-none z-[210] hover:opacity-80 transition-opacity">&times;</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

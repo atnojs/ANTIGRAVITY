@@ -1,0 +1,81 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Directorio de Herramientas IA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="imagenes/favicon_negro1.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+</head>
+<body class="dark-theme"> <canvas id="bgCanvas"></canvas>
+
+  <div class="filters-search-bar" id="filters-bar">
+    <div>
+        <input type="search" id="searchInput" placeholder="Buscar herramienta por nombre, descripción, tags...">
+    </div>
+    <div>
+      <label for="categoryFilter">Categoría:</label>
+      <select id="categoryFilter">
+        <option value="" selected>¿Qué categoría quieres ver?</option>
+        <option value="_all_">Todas las Categorías</option>
+      </select>
+    </div>
+    <div>
+      <label for="linksSelect">Mis Webs:</label>
+      <select id="linksSelect">
+        <option value="">Abrir…</option>
+        </select>
+    </div>
+    <button id="themeSwitcher" class="theme-switcher">Tema Claro</button>
+  </div>
+
+  <div class="container">
+    <div class="columns-container" id="columnsContainer">
+      </div>
+  </div>
+
+  <input type="file" id="bgInput" accept="image/*" style="display: none;">
+  <div class="column-controls">
+    <button class="change-bg-btn" onclick="document.getElementById('bgInput').click()">Cambiar Fondo</button>
+    <button class="add-column-btn" onclick="addColumn()">Añadir Categoría</button>
+    <button id="orderCategoriesBtn">Ordenar Categorías</button>
+  </div>
+
+  <button id="edit-mode-btn" class="edit-mode-btn">ACTIVAR</button>
+
+  <div id="adminPasswordModal" class="password-modal">
+    <div class="password-modal-content">
+      <h3>Activar Modo Edición</h3>
+      <input type="password" id="adminPasswordInput" placeholder="Introduce la contraseña">
+      <div class="password-modal-buttons">
+        <button id="submitAdminPasswordBtn">Activar</button>
+        <button id="cancelAdminPasswordBtn">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="categoryOrderModal" class="password-modal" style="display: none;">
+    <div class="password-modal-content">
+      <h3>Ordenar Categorías</h3>
+      <ul id="categoryOrderList"></ul>
+      <div class="modal-actions">
+        <button id="closeCategoryOrderModalBtn">Hecho</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="linkFormContainer" class="add-link-form-container" style="display: none;">
+    </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

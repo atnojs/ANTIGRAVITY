@@ -1,0 +1,241 @@
+/* ============================================
+   🔥 CURSO FIREBASE AUTH & STORAGE - STYLES
+   Based on Neon Glassmorphism Style Guide
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --bg1: #020617;
+    --bg2: #1e1b4b;
+    /* Deep Indigo */
+    --acc: #a78bfa;
+    /* Violet */
+    --acc2: #22d3ee;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: rgba(167, 139, 250, 0.2);
+    --card-bg: rgba(30, 27, 75, 0.4);
+    --shadow-color: rgba(0, 0, 0, 0.7);
+    --neon-violet: #8b5cf6;
+    --neon-cyan: #06b6d4;
+    --glow-strong: rgba(139, 92, 246, 0.4);
+
+    --main-bg-gradient: radial-gradient(circle at bottom right, #1e1b4b 0%, #020617 100%);
+    --gradient-text: linear-gradient(90deg, #c084fc, #818cf8, #22d3ee);
+
+    --radius-md: 12px;
+    --radius-lg: 24px;
+    --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-width: 300px;
+}
+
+/* Base Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--main-bg-gradient);
+    background-attachment: fixed;
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+}
+
+.gradient-text {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glassmorphism */
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 50px 0 var(--shadow-color);
+}
+
+/* Layout */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 2.5rem 1.5rem;
+    overflow-y: auto;
+    z-index: 1000;
+    border-right: 1px solid var(--border);
+    background: rgba(2, 6, 23, 0.9);
+}
+
+.sidebar h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 2.5rem;
+    color: var(--acc);
+}
+
+.sidebar nav ul {
+    list-style: none;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 0.8rem;
+}
+
+.sidebar nav ul li a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: block;
+    padding: 0.85rem 1.2rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition-main);
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li a.active {
+    background: rgba(167, 139, 250, 0.1);
+    color: var(--acc);
+    box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+    padding-left: 1.5rem;
+    border-left: 2px solid var(--acc);
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 5rem 3.5rem;
+    max-width: 1200px;
+}
+
+.content-section {
+    margin-bottom: 8rem;
+    scroll-margin-top: 5rem;
+}
+
+.content-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
+    color: var(--acc);
+    text-shadow: 0 0 30px rgba(167, 139, 250, 0.3);
+}
+
+.card {
+    padding: 3.5rem;
+    border-radius: var(--radius-lg);
+    line-height: 1.8;
+}
+
+/* UI Elements */
+.tip-box {
+    background: rgba(14, 165, 233, 0.05);
+    /* Sky blue */
+    border-left: 4px solid #0ea5e9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.warning-box {
+    background: rgba(244, 63, 94, 0.05);
+    /* Rose */
+    border-left: 4px solid #f43f5e;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+
+.step-list {
+    list-style: none;
+    counter-reset: fire-step;
+}
+
+.step-list li {
+    position: relative;
+    padding-left: 4rem;
+    margin-bottom: 2.5rem;
+}
+
+.step-list li::before {
+    content: counter(fire-step);
+    counter-increment: fire-step;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2.8rem;
+    height: 2.8rem;
+    background: linear-gradient(135deg, var(--acc2), var(--acc));
+    color: var(--bg1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    box-shadow: 0 5px 20px rgba(167, 139, 250, 0.4);
+}
+
+code {
+    background: rgba(15, 23, 42, 0.8);
+    color: #e879f9;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9em;
+}
+
+pre {
+    background: #020617;
+    padding: 2rem;
+    border-radius: 16px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    margin: 2rem 0;
+}
+
+pre code {
+    background: none;
+    color: #cbd5e1;
+    padding: 0;
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 4rem 1.5rem;
+    }
+}

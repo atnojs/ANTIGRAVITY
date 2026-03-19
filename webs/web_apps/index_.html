@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suite Creativa de IA</title>
+
+  <!-- Fuentes / Iconos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon"/>
+  <link rel="stylesheet" href="web.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="https://atnojs.es/iconos/favicon1.ico" alt="logo" class="brand-logo">
+        <span class="brand-name">Suite Creativa de IA</span>
+      </div>
+
+      <nav class="nav-actions" id="nav-actions">
+        <!-- Estado no autenticado -->
+        <button class="btn ghost" id="btn-login">Iniciar sesión</button>
+        <button class="btn primary" id="btn-register">Registrarse</button>
+
+        <!-- Estado autenticado -->
+        <div class="user-box hidden" id="user-box">
+          <span class="user-email" id="user-email">usuario@correo</span>
+          <button class="btn soft" id="btn-check">Comprobar suscripción</button>
+          <button class="btn soft" id="btn-portal">Gestionar suscripción</button>
+          <button class="btn danger" id="btn-logout">Cerrar sesión</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Avisos -->
+  <section class="top-message" id="top-message">
+    <div class="msg" id="top-msg-text">Regístrate e inicia sesión para acceder a las apps</div>
+  </section>
+
+  <!-- Precios / Suscripción -->
+  <section class="pricing-section" id="pricing">
+    <h2 class="section-title">Planes</h2>
+    <p class="section-subtitle">Empieza en modo <strong>test</strong>. Usa tarjeta 4242 4242 4242 4242 en Stripe.</p>
+
+    <div class="pricing-grid">
+      <article class="price-card">
+        <h3>Básico Mensual</h3>
+        <div class="price"><span class="currency">€</span>9<span class="per">/mes</span></div>
+        <ul class="features">
+          <li>Acceso a apps esenciales</li>
+          <li>Soporte estándar</li>
+        </ul>
+        <button class="btn primary full" data-plan="monthly">Suscribirme</button>
+      </article>
+
+      <article class="price-card highlight">
+        <h3>Pro Anual</h3>
+        <div class="price"><span class="currency">€</span>79<span class="per">/año</span></div>
+        <ul class="features">
+          <li>Todo del plan mensual</li>
+          <li>Descuento anual</li>
+          <li>Soporte prioritario</li>
+        </ul>
+        <button class="btn primary full" data-plan="yearly">Suscribirme</button>
+      </article>
+    </div>
+  </section>
+
+  <!-- Apps -->
+  <main class="container">
+    <h2 class="section-title">Apps para Crear Imágenes</h2>
+
+    <!-- Bloqueo si no hay suscripción -->
+    <div class="apps-guard" id="apps-guard">
+      <i class="fa-solid fa-lock"></i>
+      <p>Inicia sesión y activa tu suscripción para usar las apps.</p>
+      <div class="guard-actions">
+        <button class="btn ghost" id="guard-login">Iniciar sesión</button>
+        <button class="btn primary" id="guard-register">Registrarse</button>
+      </div>
+    </div>
+
+    <!-- Grid de apps (muestras; enlaza a tus rutas reales) -->
+    <section id="apps-grid" class="apps-grid">
+      <a class="app-card" href="https://atnojs.es/apps/generar_imagenes/index.html" target="_blank">
+        <div class="app-ico"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="app-title">Generador de Imágenes</div>
+        <div class="app-desc">Crea imágenes con IA en segundos.</div>
+      </a>
+      <a class="app-card" href="https://atnojs.es/apps/combinador_imagenes/index.html" target="_blank">
+        <div class="app-ico"><i class="fa-solid fa-shapes"></i></div>
+        <div class="app-title">Combinador</div>
+        <div class="app-desc">Fusiona activos y fondos de forma precisa.</div>
+      </a>
+      <a class="app-card" href="https://atnojs.es/apps/generador_mockups/index.html" target="_blank">
+        <div class="app-ico"><i class="fa-solid fa-image"></i></div>
+        <div class="app-title">Mockups</div>
+        <div class="app-desc">Mockups profesionales para tus productos.</div>
+      </a>
+    </section>
+
+    <footer>
+      <p id="footer-text">&copy; 2025 Atnojs. Todos los derechos reservados.</p>
+    </footer>
+  </main>
+
+  <!-- Modal Auth -->
+  <div class="modal-backdrop hidden" id="auth-backdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="auth-title">Iniciar sesión</h3>
+        <button class="icon-btn" id="auth-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <label class="field">
+          <span>Nombre</span>
+          <input type="text" id="auth-name" placeholder="Tu nombre" autocomplete="name">
+        </label>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" id="auth-email" placeholder="tucorreo@dominio.com" autocomplete="email">
+        </label>
+
+        <label class="field">
+          <span>Contraseña</span>
+          <input type="password" id="auth-pass" placeholder="••••••••" autocomplete="current-password">
+        </label>
+
+        <div class="hint">Email y contraseña requeridos (local, no se envían a servidor).</div>
+        <div class="error hidden" id="auth-error"></div>
+
+        <button class="btn primary full" id="auth-submit">Continuar</button>
+        <div class="alt-action">
+          <a href="#" id="auth-switch">¿No tienes cuenta? Regístrate</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="web.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+/* === MC Bridge CSS === */
+/* Toggle Básico/Pro */
+.sidebar .audience-toggle{display:flex;gap:8px;margin:12px 12px 8px}
+.sidebar .audience-toggle .toggle-btn{flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--primary, #2da8ff);background:transparent;color:var(--primary, #2da8ff);cursor:pointer}
+.sidebar .audience-toggle .toggle-btn.active{background:linear-gradient(90deg,#2b6cb0,#2da8ff);color:#fff}
+
+/* Único progreso en sidebar */
+#sidebarProgress{margin:14px 12px 16px;padding:12px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(0,0,0,.25)}
+#sidebarProgress .sp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+#sidebarProgress .sp-bar{height:10px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;border:1px solid rgba(255,255,255,.2)}
+#sidebarProgress .sp-fill{height:100%;width:0%;background:linear-gradient(90deg,#2b6cb0,#2da8ff)}
+#sidebarProgress .sp-actions{display:flex;gap:8px;margin-top:10px}
+.btn{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:transparent;color:inherit;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,#2b6cb0,#2da8ff);color:#fff}
+.btn.outline{border:1px solid var(--primary, #2da8ff);color:var(--primary, #2da8ff)}
+.btn.outline:hover{background:rgba(45,168,255,.12)}
+
+/* Palomilla verde */
+.sidebar-menu a.done{position:relative;padding-right:26px}
+.sidebar-menu a.done::after{content:"✓";position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#18c08f;font-weight:800}
+
+/* Botón siguiente oculto salvo listo */
+button.next-module, a.next-module{display:none!important}
+button.next-module.ready, a.next-module.ready{display:inline-block!important}

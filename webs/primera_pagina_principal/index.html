@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Atnojs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="icon" href="imagenes/favicon2.ico" type="image/x-icon">
+
+  <style>
+    /* Importar tipografías */
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+
+        /* ===== RESET O AJUSTES BÁSICOS ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* ===== BODY ===== */
+    body {
+      font-family: 'Roboto';
+      min-height: 100vh;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      position: relative;
+      color: #000000;
+      touch-action: manipulation; /* Mejora para dispositivos táctiles */
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .columns-container {
+      width: 100%;
+      padding: 5px;
+      position: relative;
+    }
+
+    .column {
+      width: calc(12.5% - 11px); /* Espacio horizontal entre columnas */
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.1); /*Transparencia de las columnas */
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      padding: 15px;
+      box-sizing: border-box;
+      height: fit-content;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    /* ===== MEDIA QUERIES PARA DISPOSITIVOS MÓVILES ===== */
+    @media (max-width: 768px) {
+      .column {
+        /* En tablets y móviles, damos más espacio vertical entre elementos */
+        margin-bottom: 15px;
+        /* Reducir padding horizontal para dar más espacio al contenido */
+        padding: 12px 5px; /* Reducido aún más para aprovechar espacio */
+      }
+      
+      .links-list li {
+        /* Más espacio vertical entre enlaces en móvil */
+        margin-bottom: 8px !important;
+      }
+      
+      .links-list a {
+        /* Mejorar legibilidad en móvil */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        /* Aumentar tamaño de letra en móvil */
+        font-size: 18px !important;
+        /* Hacer que ocupe más ancho */
+        padding: 10px 5px; /* Reducir padding horizontal */
+        /* Agregar un fondo sutil para mejorar legibilidad */
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
+        /* Asegurar que ocupe todo el ancho disponible */
+        width: 96%; /* Ancho para dejar pequeño margen */
+        margin: 0 auto; /* Centrar horizontalmente */
+        max-width: none;
+        /* Para enlaces de dos palabras */
+        hyphens: auto;
+      }
+      
+      /* Clase especial para dividir enlaces de dos palabras en móvil */
+      .links-list a.two-words {
+        word-spacing: 100vw; /* Fuerza salto de línea entre palabras */
+        height: auto;
+        padding-top: 6px;
+        padding-bottom: 6px;
+      }
+    }
+
+    /* Ajuste especial para móviles pequeños */
+    @media (max-width: 576px) {
+      .column {
+        width: calc(33.333% - 11px); /* 3 columnas por fila */
+        padding: 10px 3px; /* Padding aún más reducido */
+      }
+      
+      .links-list a {
+        font-size: 19px !important; /* Links más grandes */
+        width: 100%; /* Ancho completo */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .column {
+        width: calc(50% - 11px); /* 2 columnas por fila */
+      }
+      
+      .column h2 {
+        font-size: 20px; /* Título más grande */
+        margin-bottom: 12px;
+      }
+      
+      .links-list a {
+        font-size: 20px !important; /* Links todavía más grandes */
+        padding: 10px 3px; /* Reducir padding horizontal aún más */
+      }
+    }
+
+    @media (max-width: 360px) {
+      .column {
+        width: calc(100% - 11px); /* 1 columna por fila */
+        padding: 15px 10px; /* Más padding interno */
+      }
+      
+      .links-list a {
+        font-size: 22px !important; /* Links todavía más grandes */
+        padding: 12px 8px; /* Más área táctil */
+      }
+      
+      .links-list a.two-words {
+        word-spacing: normal; /* Ya no necesitamos forzar salto en ancho completo */
+        white-space: normal;
+        hyphens: auto;
+      }
+    }
+
+    /* ===== TÍTULOS DE LAS COLUMNAS ===== */
+    .column h2 {
+      color: #2ffeff;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    /* Ajuste para títulos en móvil */
+    @media (max-width: 576px) {
+      .column h2 {
+        /* Mejora para evitar desbordamiento de títulos largos */
+        word-break: break-word;
+        hyphens: auto;
+        /* Sombra para mejor legibilidad */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+      }
+    }
+
+    /* ===== LISTAS DE ENLACES ===== */
+    .links-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .links-list li {
+      margin-bottom: -4px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* ===== ENLACES EN COLUMNAS ===== */
+    .links-list a {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      font-style: italic;
+      text-decoration: none;
+      display: block;
+      padding: 5px 10px;
+      border-radius: 5px;
+      transition: all 0s ease;
+      cursor: pointer;
+    }
+
+    /* Mejor legibilidad de enlaces en móvil */
+    @media (max-width: 576px) {
+      .links-list a {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: break-word;
+        /* Sombra de texto más prominente para mejor legibilidad */
+        text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.8);
+      }
+    }
+
+    .links-list a:hover {
+    /*  color: #fff20b;   /* COLOR DEL HOVER */
+    /*    color: #C028C9;   /* COLOR DEL HOVER */
+      color: #EC0F16;   /* COLOR DEL HOVER */
+    }
+
+    /* ===== BOTONES DE EDICIÓN ===== */
+    .column-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 120px;
+      display: none; /* Oculto por defecto, se muestra en modo edición */
+      z-index: 1000;
+    }
+
+    /* Apilamos los botones verticalmente en móvil */
+    @media (max-width: 576px) {
+      .column-controls {
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+
+    .add-column-btn, .change-bg-btn {
+      background: #ffffff;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-left: 10px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .add-column-btn:hover, .change-bg-btn:hover {
+      background: #ff00ff;
+      color: #ffffff;
+    }
+
+    /* ===== BOTÓN DE MODO EDICIÓN ===== */
+    .edit-mode-btn {
+      background: transparent;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background 0.3s ease, color 0.3s ease;
+      position: fixed;
+      bottom: 0px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      opacity: 0.8;
+    }
+
+    .edit-mode-btn:hover {
+      background: #ffffff;
+      color: #ffffff;
+      opacity: 1;
+    }
+
+    /* ===== BOTÓN OCULTO DE AÑADIR ENLACE ===== */
+    .add-link-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: #000;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      display: none; /* Se muestra solo en modo edición */
+      font-weight: 600;
+    }
+
+    /* Botón para eliminar columna */
+    .remove-column-btn {
+      background: rgba(255, 0, 0, 0.7);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      display: none; /* Solo se ve en modo edición */
+    }
+
+    /* ===== BOTONES PARA GESTIONAR ENLACES (Eliminar/Reordenar) ===== */
+    .link-edit-buttons {
+      display: none;
+      margin-top: 5px;
+    }
+    .link-edit-buttons button {
+      background: #ffffff;
+      border: none;
+      padding: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      margin: 0 3px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .link-edit-buttons button:hover {
+      background: #ff00ff;
+      color: #fff;
+    }
+
+    /* ===== COLUMNAS ESPACIO (SPACER) ===== */
+    .spacer-column {
+      background: transparent;
+      backdrop-filter: none;
+      height: 100px;
+      width: calc(12.5% - 20px);
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    /* Ajustes responsive para spacer-column */
+    @media (max-width: 576px) {
+      .spacer-column {
+        width: calc(33.333% - 20px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .spacer-column {
+        width: calc(50% - 20px);
+      }
+    }
+
+    @media (max-width: 360px) {
+      .spacer-column {
+        width: calc(100% - 20px);
+      }
+    }
+
+    .spacer-controls {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 5px;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+
+    .spacer-column:hover .spacer-controls {
+      opacity: 1;
+    }
+
+    .spacer-controls button {
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Input de imagen para el fondo (oculto) */
+    #bgInput {
+      display: none;
+    }
+
+    /* ===== ESTILO PARA POPUP (TOOLTIP) ===== */
+    .tooltip {
+      position: absolute;
+      background: rgba(251, 251, 251, 1);
+      color: #000;
+      padding: 2px 12px 2px 12px; /* REDUCIDO al mínimo vertical */
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Roboto', serif;
+      white-space: pre-wrap;
+      max-width: 550px;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 9999;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      line-height: 1.1; /* Líneas más compactas */
+    }
+    
+    /* Ajustes para tooltips en pantallas pequeñas */
+    @media (max-width: 576px) {
+      .tooltip {
+        max-width: 95vw; /* Usar casi todo el ancho de la pantalla */
+        width: 95vw;
+        position: fixed;
+        top: 50%;
+        left: 50% !important;
+        transform: translate(-50%, -50%);
+        padding: 15px;
+        max-height: 70vh; /* Reducir altura máxima */
+      }
+      
+      .tooltip .popup-description {
+        width: 100%;
+      }
+    }
+    
+    .popup-description {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .popup-description p {
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      width: 100%;
+      line-height: 1.1;
+    }
+
+    /* Contenedor de imágenes en flex para mostrarlas en línea */
+    .images-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1px;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      line-height: 0; /* Elimina espacios fantasma */
+      font-size: 0; /* Elimina espacios fantasma */
+    }
+
+    .popup-description img {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+      display: block;
+      vertical-align: bottom;
+      line-height: 0;
+    }
+
+    .popup-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+    
+    .popup-buttons button {
+      background: #ffffff;
+      border: 0.1px solid #000000; /* Grosor y color del borde */
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      opacity: 0.8;
+      min-width: 120px; /* Ancho mínimo para mejor área táctil */
+      margin-bottom: 5px;
+    }
+
+    .popup-buttons button:hover {
+      background: #ff00ff;
+      color: #ffffff;
+      opacity: 1;
+    }
+
+    /* ===== FORMULARIO PARA AÑADIR/EDITAR ENLACES ===== */
+    .add-link-form-container {
+      display: none; /* Se mostrará cuando se edite/añada un enlace */
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 600px;  /* Aumentado para dar más espacio */
+      width: 90%;
+      z-index: 2000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      font-family: 'Open Sans', sans-serif;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 576px) {
+      .add-link-form-container {
+        width: 95%;
+        padding: 15px;
+      }
+    }
+    
+    .add-link-form-container h3 {
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 18px;
+      color: #000;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #000;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: 'Open Sans', sans-serif;
+    }
+    
+    @media (max-width: 576px) {
+      .form-group input, .form-group textarea {
+        padding: 10px;
+        font-size: 16px; /* Mejor tamaño para dispositivos móviles */
+      }
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;  /* Aumentado para más espacio */
+    }
+    .form-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .form-buttons button {
+      background: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      opacity: 0.8;
+      transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 576px) {
+      .form-buttons button {
+        padding: 12px 20px;
+        min-width: 100px;
+      }
+    }
+    
+    .form-buttons button:hover {
+      background: #ff00ff;
+      color: #fff;
+      opacity: 1;
+    }
+
+    /* Estilos para checkbox de enlace privado */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+    
+    @media (max-width: 576px) {
+      .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+      }
+    }
+    
+    .checkbox-group label {
+      display: inline;
+      margin-bottom: 0;
+    }
+
+    /* Estilos para el modal de contraseña */
+    .password-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .password-modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 350px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .password-modal h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 18px;
+      color: #000;
+    }
+
+    .password-modal input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    
+    @media (max-width: 576px) {
+      .password-modal input {
+        padding: 10px;
+        font-size: 16px;
+      }
+    }
+
+    .password-modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .password-modal-buttons button {
+      background: #ffffff;
+      border: 1px solid #000000;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 576px) {
+      .password-modal-buttons button {
+        padding: 10px 16px;
+        min-width: 90px;
+      }
+    }
+
+    .password-modal-buttons button:hover {
+      background: #ff00ff;
+      color: #fff;
+    }
+
+    /* Estilos para herramientas de imagen */
+    .image-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .image-tools button {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    @media (max-width: 576px) {
+      .image-tools button {
+        flex: 1;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+    }
+
+    .image-tools button:hover {
+      background: #e0e0e0;
+    }
+
+    /* Ocultar input de archivo */
+    .image-upload-input {
+      display: none;
+    }
+
+    /* Estilos para la previsualización de descripción */
+    .description-preview {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+      min-height: 50px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    /* Estilo para imagen en vista previa */
+    .description-preview img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0;
+      padding: 0;
+      vertical-align: bottom;
+    }
+
+    /* Contenedor flex para imágenes en la vista previa */
+    .description-preview .images-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1px;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    /* Estilos para el contenedor de imágenes redimensionables */
+    .resizable-img-container {
+      position: relative;
+      display: inline-block;
+      margin: 0;
+      padding: 0;
+      border: 2px dashed #ccc;
+      overflow: visible;
+      vertical-align: middle;
+      line-height: 0;
+    }
+
+    /* El máximo ancho para contenedores SOLO en la vista de descripción popup */
+    .popup-description .resizable-img-container {
+      border: none;
+      max-width: calc(50% - 1px);
+    }
+    
+    @media (max-width: 576px) {
+      .popup-description .resizable-img-container {
+        max-width: 100%;
+      }
+    }
+
+    /* Estilo normal sin restricciones para edición */
+    .edit-mode .resizable-img-container {
+      border: 2px dashed #ff00ff;
+      max-width: none !important; /* !important para asegurar que se aplique en edición */
+    }
+
+    /* Sobreescribir en el modo vista previa de formulario solo para mejor visualización */
+    .description-preview .resizable-img-container {
+      max-width: none; /* Eliminar restricción en vista previa */
+    }
+
+    .resizable-img-container img {
+      display: block;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+      vertical-align: bottom;
+      line-height: 0;
+    }
+
+    .resize-handle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: #ff00ff;
+      border-radius: 50%;
+      z-index: 100;
+      cursor: se-resize;
+      right: -7px;
+      bottom: -7px;
+      border: 2px solid white;
+      box-shadow: 0 0 3px rgba(0,0,0,0.5);
+    }
+    
+    @media (max-width: 576px) {
+      .resize-handle {
+        width: 20px;
+        height: 20px;
+        right: -10px;
+        bottom: -10px;
+      }
+    }
+
+    /* Botón para eliminar imagen */
+    .delete-image-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 101;
+      box-shadow: 0 0 3px rgba(0,0,0,0.5);
+    }
+    
+    @media (max-width: 576px) {
+      .delete-image-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+        top: -10px;
+        right: -10px;
+      }
+    }
+
+    /* Solo mostrar los manejadores en modo edición */
+    .edit-mode .resize-handle,
+    .edit-mode .delete-image-btn {
+      display: block;
+    }
+
+    .resize-handle,
+    .delete-image-btn {
+      display: none;
+    }
+
+    /* Para imágenes antiguas que no tienen contenedor */
+    .edit-mode img:not(.resizable-img-container img) {
+      display: inline-block;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+      border: 2px dashed #ff00ff;
+      position: relative;
+      vertical-align: bottom;
+    }
+
+    /* Mejor visualización de texto e imágenes */
+    .popup-description p {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Para que las imágenes muy grandes se ajusten */
+    .popup-description img {
+      max-width: 100%;
+      height: auto;
+      vertical-align: bottom;
+    }
+
+    /* Área de pegado para portapapeles */
+    .paste-area {
+      width: 100%;
+      height: 40px;
+      border: 1px dashed #aaa;
+      border-radius: 8px;
+      background-color: #f8f8f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+      cursor: pointer;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 13px;
+      color: #666;
+      position: relative;
+    }
+    
+    @media (max-width: 576px) {
+      .paste-area {
+        height: 60px;
+        font-size: 14px;
+      }
+    }
+
+    .paste-area:hover {
+      background-color: #f0f0f0;
+    }
+
+    .paste-area:focus {
+      outline: none;
+      border-color: #ff00ff;
+      box-shadow: 0 0 3px rgba(255, 0, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="columns-container" id="columnsContainer">
+      </div>
+  </div>
+
+  <input type="file" id="bgInput" accept="image/*">
+
+  <div class="column-controls">
+    <button class="change-bg-btn" onclick="document.getElementById('bgInput').click()">Cambiar Fondo</button>
+    <button class="add-column-btn" onclick="addColumn()">Añadir Columna</button>
+  </div>
+
+  <button id="edit-mode-btn" class="edit-mode-btn">Activar Modo Edición</button>
+
+  <div id="passwordModal" class="password-modal">
+    <div class="password-modal-content">
+      <h3>Este enlace es privado</h3>
+      <input type="password" id="linkPasswordInput" placeholder="Introduce la contraseña">
+      <div class="password-modal-buttons">
+        <button id="submitPasswordBtn">Acceder</button>
+        <button id="cancelPasswordBtn">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let isEditable = false;
+      let currentPrivateLink = null; // Variable para almacenar el enlace privado actual
+      let activeResizeContainer = null; // Contenedor actual para redimensionar
+      let initialWidth, initialHeight, initialX, initialY; // Variables para el redimensionado
+
+      const grid = document.querySelector('.columns-container');
+      const columnControls = document.querySelector('.column-controls');
+      const editModeBtn = document.getElementById('edit-mode-btn');
+      const passwordModal = document.getElementById('passwordModal');
+      const linkPasswordInput = document.getElementById('linkPasswordInput');
+      const submitPasswordBtn = document.getElementById('submitPasswordBtn');
+      const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+
+      // Función para determinar si es dispositivo móvil
+      function isMobile() {
+        return window.innerWidth <= 576;
+      }
+
+      // === REFERENCIAS AL FORMULARIO ===
+      let linkFormContainer = document.getElementById('linkFormContainer');
+      let linkFormTitle, linkNameInput, linkUrlInput, linkDescriptionInput, linkTutorialInput,
+          linkPrivateInput, editingLinkIndexInput, editingColumnIndexInput, saveLinkBtn, cancelLinkBtn,
+          descriptionPreview, insertImageBtn, uploadImageBtn, imageUploadInput, pasteAreaElement;
+
+      // Si el formulario no existe, lo crearemos más adelante
+      if (!linkFormContainer) {
+        createLinkFormContainer();
+      } else {
+        setupFormReferences();
+      }
+
+      // Función para procesar enlaces después de cargar el contenido
+      function processLinks() {
+        if (isMobile()) {
+          // Solo en móviles, buscamos enlaces con dos palabras para dividirlos
+          const links = document.querySelectorAll('.links-list a');
+          links.forEach(link => {
+            const text = link.textContent.trim();
+            const words = text.split(/\s+/);
+            if (words.length === 2) {
+              link.classList.add('two-words');
+            }
+          });
+        }
+      }
+
+      // Función para crear el formulario si no existe
+      function createLinkFormContainer() {
+        linkFormContainer = document.createElement('div');
+        linkFormContainer.id = 'linkFormContainer';
+        linkFormContainer.className = 'add-link-form-container';
+
+        linkFormContainer.innerHTML = `
+          <h3 id="linkFormTitle">Añadir Nuevo Enlace</h3>
+          <div class="form-group">
+            <label for="linkName">Nombre del enlace:</label>
+            <input type="text" id="linkName" placeholder="Ej: Mi enlace favorito">
+          </div>
+          <div class="form-group">
+            <label for="linkUrl">URL:</label>
+            <input type="url" id="linkUrl" placeholder="https://ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label for="linkDescription">Descripción (opcional - Puedes usar HTML):</label>
+            <textarea id="linkDescription" placeholder="Escribe aquí o inserta imagen..."></textarea>
+            <div class="image-tools">
+              <button id="insertImageBtn" type="button">Insertar Imagen por URL</button>
+              <button id="uploadImageBtn" type="button">Subir Imagen desde mi PC</button>
+              <input type="file" id="imageUploadInput" class="image-upload-input" accept="image/*">
+              <button id="previewDescriptionBtn" type="button">Vista Previa</button>
+            </div>
+            <div class="paste-area" id="pasteArea" tabindex="0">Haz clic aquí y pega una imagen (Ctrl+V)</div>
+            <div id="descriptionPreview" class="description-preview" style="display: none;"></div>
+          </div>
+          <div class="form-group">
+            <label for="linkTutorial">Tutorial (opcional):</label>
+            <input type="url" id="linkTutorial" placeholder="https://tutorial.com">
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="linkPrivate">
+            <label for="linkPrivate">Este enlace es privado (requiere contraseña)</label>
+          </div>
+          <input type="hidden" id="editingLinkIndex" value="-1">
+          <input type="hidden" id="editingColumnIndex" value="-1">
+          <div class="form-buttons">
+            <button id="saveLinkBtn">GUARDAR</button>
+            <button id="cancelLinkBtn">CANCELAR</button>
+          </div>
+        `;
+
+        document.body.appendChild(linkFormContainer);
+        setupFormReferences();
+        setupImageTools();
+      }
+
+      // Configurar referencias a elementos del formulario
+      function setupFormReferences() {
+        linkFormTitle = document.getElementById('linkFormTitle');
+        linkNameInput = document.getElementById('linkName');
+        linkUrlInput = document.getElementById('linkUrl');
+        linkDescriptionInput = document.getElementById('linkDescription');
+        linkTutorialInput = document.getElementById('linkTutorial');
+        linkPrivateInput = document.getElementById('linkPrivate');
+        editingLinkIndexInput = document.getElementById('editingLinkIndex');
+        editingColumnIndexInput = document.getElementById('editingColumnIndex');
+        saveLinkBtn = document.getElementById('saveLinkBtn');
+        cancelLinkBtn = document.getElementById('cancelLinkBtn');
+        descriptionPreview = document.getElementById('descriptionPreview');
+        insertImageBtn = document.getElementById('insertImageBtn');
+        uploadImageBtn = document.getElementById('uploadImageBtn');
+        imageUploadInput = document.getElementById('imageUploadInput');
+        pasteAreaElement = document.getElementById('pasteArea');
+
+        // Agregar eventos si no existen
+        if (saveLinkBtn && !saveLinkBtn._hasClickListener) {
+          saveLinkBtn.addEventListener('click', saveLinkHandler);
+          saveLinkBtn._hasClickListener = true;
+        }
+
+        if (cancelLinkBtn && !cancelLinkBtn._hasClickListener) {
+          cancelLinkBtn.addEventListener('click', function() {
+            linkFormContainer.style.display = 'none';
+            // Restablecer la vista previa al cerrar el formulario
+            if (descriptionPreview) {
+              descriptionPreview.style.display = 'none';
+            }
+            if (document.getElementById('previewDescriptionBtn')) {
+              document.getElementById('previewDescriptionBtn').textContent = 'Vista Previa';
+            }
+          });
+          cancelLinkBtn._hasClickListener = true;
+        }
+      }
+
+      // Función para procesar imágenes antiguas y convertirlas en contenedores redimensionables
+      function processLegacyImages(container) {
+        // Buscar imágenes que no están dentro de un contenedor resizable
+        const standaloneImages = Array.from(container.querySelectorAll('img')).filter(img =>
+          !img.closest('.resizable-img-container')
+        );
+
+        standaloneImages.forEach(img => {
+          // Obtener el ancho actual
+          const currentWidth = img.width || 300;
+          const parent = img.parentNode;
+
+          // Crear el contenedor redimensionable
+          const container = document.createElement('div');
+          container.className = 'resizable-img-container';
+          container.style.width = currentWidth + 'px';
+
+          // Eliminar restricciones si estamos en modo edición
+          if (isEditable) {
+            container.style.maxWidth = 'none';
+          }
+
+          // Clonar la imagen
+          const newImg = img.cloneNode(true);
+
+          // Eliminar cualquier estilo inline que pueda afectar el redimensionamiento
+          if (newImg.style.width) newImg.style.width = '';
+          if (newImg.style.height) newImg.style.height = '';
+          if (newImg.style.maxWidth) newImg.style.maxWidth = '';
+          if (newImg.style.margin) newImg.style.margin = '0';
+          if (newImg.style.padding) newImg.style.padding = '0';
+
+          // Agregar elementos al contenedor
+          container.appendChild(newImg);
+
+          // Agregar handle de redimensionamiento y botón de eliminar
+          const resizeHandle = document.createElement('div');
+          resizeHandle.className = 'resize-handle';
+          container.appendChild(resizeHandle);
+
+          const deleteBtn = document.createElement('div');
+          deleteBtn.className = 'delete-image-btn';
+          deleteBtn.textContent = '×';
+          container.appendChild(deleteBtn);
+
+          // Reemplazar la imagen con el contenedor
+          parent.replaceChild(container, img);
+        });
+
+        // Configurar las imágenes redimensionables
+        setupResizableImages(container);
+      }
+
+      // Configurar herramientas de imagen
+      function setupImageTools() {
+        const insertImageBtn = document.getElementById('insertImageBtn');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const imageUploadInput = document.getElementById('imageUploadInput');
+        const previewDescriptionBtn = document.getElementById('previewDescriptionBtn');
+        const pasteArea = document.getElementById('pasteArea');
+
+        // Insertar imagen por URL
+        if (insertImageBtn) {
+          insertImageBtn.addEventListener('click', function() {
+            const imageUrl = prompt('Introduce la URL de la imagen:');
+            if (imageUrl && imageUrl.trim() !== '') {
+              insertResizableImage(imageUrl);
+            }
+          });
+        }
+
+        // Subir imagen desde PC
+        if (uploadImageBtn && imageUploadInput) {
+          uploadImageBtn.addEventListener('click', function() {
+            imageUploadInput.click();
+          });
+
+          imageUploadInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+              const file = e.target.files[0];
+              const reader = new FileReader();
+
+              reader.onload = function(event) {
+                insertResizableImage(event.target.result);
+              };
+
+              reader.readAsDataURL(file);
+            }
+          });
+        }
+
+        // Vista previa
+        if (previewDescriptionBtn && descriptionPreview) {
+          previewDescriptionBtn.addEventListener('click', function() {
+            if (descriptionPreview.style.display === 'none') {
+              descriptionPreview.innerHTML = linkDescriptionInput.value;
+              descriptionPreview.style.display = 'block';
+              previewDescriptionBtn.textContent = 'Ocultar Vista Previa';
+
+              // Procesar imágenes antiguas y añadir manejadores
+              processLegacyImages(descriptionPreview);
+
+              // Organizar imágenes en contenedores flex si hay varias
+              organizeImages(descriptionPreview);
+            } else {
+              descriptionPreview.style.display = 'none';
+              previewDescriptionBtn.textContent = 'Vista Previa';
+            }
+          });
+        }
+
+        // Área para pegar imágenes desde el portapapeles
+        if (pasteArea) {
+          pasteArea.addEventListener('click', function() {
+            this.focus(); // Para que pueda recibir eventos de paste
+          });
+
+          pasteArea.addEventListener('paste', handlePaste);
+
+          // También permitir pegar en el textarea
+          if (linkDescriptionInput) {
+            linkDescriptionInput.addEventListener('paste', handlePaste);
+          }
+
+          // Y en toda la ventana si el formulario está activo
+          document.addEventListener('paste', function(e) {
+            if (linkFormContainer.style.display === 'block') {
+              handlePaste(e);
+            }
+          });
+        }
+      }
+
+      // Manejar pegado desde el portapapeles
+      function handlePaste(e) {
+        // Verificar si hay imágenes en el portapapeles
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            // Prevenir el comportamiento por defecto
+            e.preventDefault();
+
+            // Obtener el archivo de imagen
+            const blob = items[i].getAsFile();
+
+            // Convertir a URL de datos
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              insertResizableImage(event.target.result);
+            };
+            reader.readAsDataURL(blob);
+
+            // Solo procesamos la primera imagen encontrada
+            break;
+          }
+        }
+      }
+
+      // Organizar imágenes en contenedores flex
+      function organizeImages(container) {
+        // Buscar todas las imágenes con sus contenedores
+        const images = container.querySelectorAll('.resizable-img-container');
+
+        // Si hay más de una imagen, organizarlas en un contenedor flex
+        if (images.length > 1) {
+          // Verificar si ya existe un contenedor de imágenes
+          let imagesContainer = container.querySelector('.images-container');
+
+          if (!imagesContainer) {
+            // Crear un contenedor para las imágenes
+            imagesContainer = document.createElement('div');
+            imagesContainer.className = 'images-container';
+
+            // Obtener el padre del primer contenedor de imagen
+            const parent = images[0].parentNode;
+
+            // Si todas las imágenes tienen el mismo padre
+            let sameParent = true;
+            for (let i = 1; i < images.length; i++) {
+              if (images[i].parentNode !== parent) {
+                sameParent = false;
+                break;
+              }
+            }
+
+            if (sameParent) {
+              // Mover todas las imágenes al nuevo contenedor
+              Array.from(images).forEach(img => {
+                // Eliminar restricciones de max-width en modo edición
+                if (isEditable) {
+                  img.style.maxWidth = 'none';
+                }
+                imagesContainer.appendChild(img);
+              });
+
+              // Insertar el contenedor de imágenes
+              parent.appendChild(imagesContainer);
+            }
+          }
+        }
+      }
+
+      // Función para insertar una imagen redimensionable en el textarea
+      function insertResizableImage(imageUrl) {
+        // Crear un contenedor redimensionable para la vista previa sin restricciones de tamaño máximo
+        const imgContainerHtml = `
+          <div class="resizable-img-container" style="width: 300px; max-width: none;">
+            <img src="${imageUrl}" alt="Imagen">
+            <div class="resize-handle"></div>
+            <div class="delete-image-btn">×</div>
+          </div>
+        `;
+
+        // Insertar el HTML en el textarea
+        linkDescriptionInput.value += imgContainerHtml;
+
+        // Mostrar la vista previa para que el usuario pueda redimensionar la imagen
+        if (descriptionPreview) {
+          descriptionPreview.innerHTML = linkDescriptionInput.value;
+          descriptionPreview.style.display = 'block';
+          if (document.getElementById('previewDescriptionBtn')) {
+            document.getElementById('previewDescriptionBtn').textContent = 'Ocultar Vista Previa';
+          }
+
+          // Procesar imágenes antiguas y añadir manejadores
+          processLegacyImages(descriptionPreview);
+
+          // Organizar imágenes en contenedores flex si hay varias
+          organizeImages(descriptionPreview);
+
+          // Asegurarse de que las imágenes no tengan límite de tamaño en modo edición
+          if (isEditable) {
+            const containers = descriptionPreview.querySelectorAll('.resizable-img-container');
+            containers.forEach(container => {
+              container.style.maxWidth = 'none';
+            });
+          }
+        }
+      }
+
+      // Configurar las imágenes redimensionables
+      function setupResizableImages(container) {
+        const resizableContainers = container.querySelectorAll('.resizable-img-container');
+
+        resizableContainers.forEach(container => {
+          // En modo edición, asegurarse de que no haya restricciones max-width
+          if (isEditable) {
+            container.style.maxWidth = 'none';
+          }
+
+          // Configurar el redimensionamiento
+          const handle = container.querySelector('.resize-handle');
+
+          if (handle && !handle._hasEvents) {
+            handle._hasEvents = true;
+
+            handle.addEventListener('mousedown', startResize);
+            handle.addEventListener('touchstart', startResize, { passive: false });
+          }
+
+          // Configurar la eliminación
+          const deleteBtn = container.querySelector('.delete-image-btn');
+
+          if (deleteBtn && !deleteBtn._hasEvents) {
+            deleteBtn._hasEvents = true;
+
+            deleteBtn.addEventListener('click', function() {
+              if (confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+                container.remove();
+                updateTextarea();
+              }
+            });
+          }
+        });
+      }
+
+      // Función para iniciar el redimensionamiento
+      function startResize(e) {
+        e.preventDefault();
+
+        // Obtener el contenedor de la imagen
+        activeResizeContainer = this.closest('.resizable-img-container');
+
+        // Eliminar cualquier restricción de tamaño máximo
+        activeResizeContainer.style.maxWidth = 'none';
+
+        // Guardar valores iniciales
+        initialWidth = activeResizeContainer.offsetWidth;
+        initialHeight = activeResizeContainer.offsetHeight;
+
+        // Guardar posición inicial del ratón o toque
+        if (e.type === 'mousedown') {
+          initialX = e.clientX;
+          initialY = e.clientY;
+        } else {
+          initialX = e.touches[0].clientX;
+          initialY = e.touches[0].clientY;
+        }
+
+        // Agregar listeners de movimiento y finalización
+        document.addEventListener('mousemove', resizeMove);
+        document.addEventListener('touchmove', resizeMove, { passive: false });
+        document.addEventListener('mouseup', stopResize);
+        document.addEventListener('touchend', stopResize);
+      }
+
+      // Función para mover durante el redimensionamiento
+      function resizeMove(e) {
+        if (!activeResizeContainer) return;
+
+        e.preventDefault();
+
+        // Asegurarnos de que no hay restricciones
+        activeResizeContainer.style.maxWidth = 'none';
+
+        // Obtener posición actual
+        let currentX, currentY;
+        if (e.type === 'mousemove') {
+          currentX = e.clientX;
+          currentY = e.clientY;
+        } else {
+          currentX = e.touches[0].clientX;
+          currentY = e.touches[0].clientY;
+        }
+
+        // Calcular cambio de tamaño
+        const deltaX = currentX - initialX;
+
+        // Aplicar nuevo ancho (manteniendo relación de aspecto)
+        const newWidth = Math.max(50, initialWidth + deltaX);
+        activeResizeContainer.style.width = newWidth + 'px';
+
+        // Actualizar el HTML en el textarea
+        updateTextarea();
+      }
+
+      // Función para detener el redimensionamiento
+      function stopResize() {
+        if (!activeResizeContainer) return;
+
+        // Mantener sin restricciones en modo edición
+        if (isEditable) {
+          activeResizeContainer.style.maxWidth = 'none';
+        }
+
+        // Eliminar eventos
+        document.removeEventListener('mousemove', resizeMove);
+        document.removeEventListener('touchmove', resizeMove);
+        document.removeEventListener('mouseup', stopResize);
+        document.removeEventListener('touchend', stopResize);
+
+        // Actualizar el textarea una última vez
+        updateTextarea();
+
+        activeResizeContainer = null;
+      }
+
+      // Actualizar el contenido del textarea con el HTML actualizado
+      function updateTextarea() {
+        if (descriptionPreview && linkDescriptionInput) {
+          linkDescriptionInput.value = descriptionPreview.innerHTML;
+        }
+      }
+
+      // Función para manejar el guardado de enlaces
+      function saveLinkHandler() {
+        if (!isEditable) {
+          linkFormContainer.style.display = 'none';
+          return;
+        }
+        const nameVal = linkNameInput.value.trim();
+        const urlVal = linkUrlInput.value.trim();
+        const descVal = linkDescriptionInput.value.trim();
+        const tutorialVal = linkTutorialInput.value.trim();
+        const isPrivate = linkPrivateInput.checked;
+        const linkIndex = parseInt(editingLinkIndexInput.value, 10);
+        const colIndex = parseInt(editingColumnIndexInput.value, 10);
+
+        if (!nameVal) {
+          alert("Por favor, introduce un nombre para el enlace.");
+          return;
+        }
+        let finalUrl = urlVal || "#";
+        if (finalUrl !== "#" && !finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+          finalUrl = 'https://' + finalUrl;
+        }
+
+        // Localizar la columna
+        const allColumns = document.querySelectorAll('.column');
+        const targetColumn = allColumns[colIndex];
+        if (!targetColumn) {
+          linkFormContainer.style.display = 'none';
+          return;
+        }
+        const linksList = targetColumn.querySelector('.links-list');
+        const allLis = linksList.querySelectorAll('li');
+
+        // Codificar el contenido HTML para guardarlo como atributo de datos
+        const encodedDesc = encodeURIComponent(descVal);
+
+        // Comprobar si es un enlace de dos palabras para añadir clase especial
+        let twoWordsClass = '';
+        const words = nameVal.split(/\s+/);
+        if (words.length === 2) {
+          twoWordsClass = 'two-words';
+        }
+
+        // linkIndex === -1 => Añadir nuevo
+        if (linkIndex === -1) {
+          const newLi = document.createElement('li');
+          newLi.innerHTML = `
+            <a href="#" class="${twoWordsClass}" data-url="${finalUrl}" data-description="${encodedDesc}" data-tutorial="${tutorialVal}" data-private="${isPrivate}">${nameVal}</a>
+            <span class="link-edit-buttons" style="display:${isEditable ? 'block' : 'none'};">
+              <button onclick="moveLinkUp(this)">&#9650;</button>
+              <button onclick="moveLinkDown(this)">&#9660;</button>
+              <button onclick="removeThisLink(this)">X</button>
+            </span>
+          `;
+          linksList.appendChild(newLi);
+        } else {
+          // Editar existente
+          const liToEdit = allLis[linkIndex];
+          if (liToEdit) {
+            const linkToEdit = liToEdit.querySelector('a');
+            linkToEdit.textContent = nameVal;
+            linkToEdit.setAttribute('data-url', finalUrl);
+            linkToEdit.setAttribute('data-description', encodedDesc);
+            linkToEdit.setAttribute('data-tutorial', tutorialVal);
+            linkToEdit.setAttribute('data-private', isPrivate.toString());
+            
+            // Actualizar clase two-words
+            linkToEdit.classList.remove('two-words');
+            if (twoWordsClass) {
+              linkToEdit.classList.add('two-words');
+            }
+          }
+        }
+
+        linkFormContainer.style.display = 'none';
+        if (descriptionPreview) descriptionPreview.style.display = 'none';
+        if (document.getElementById('previewDescriptionBtn')) document.getElementById('previewDescriptionBtn').textContent = 'Vista Previa';
+        msnry.layout();
+        saveLinks();
+      }
+
+      // === EVENTOS PARA EL MODAL DE CONTRASEÑA ===
+      submitPasswordBtn.addEventListener('click', function() {
+        checkLinkPassword();
+      });
+
+      cancelPasswordBtn.addEventListener('click', function() {
+        closePasswordModal();
+      });
+
+      // Permitir enviar con Enter
+      linkPasswordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          checkLinkPassword();
+        }
+      });
+
+      // Función para verificar la contraseña del enlace
+      async function checkLinkPassword() {
+        const password = linkPasswordInput.value.trim();
+
+        try {
+          const response = await fetch('contraseña_enlace_privado.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              password: password
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Error de red');
+          }
+
+          const result = await response.json();
+
+          if (result.success) {
+            // Contraseña correcta - abrir el enlace
+            if (currentPrivateLink) {
+              const url = currentPrivateLink.getAttribute('data-url');
+              if (url) {
+                window.open(url, '_blank');
+              }
+            }
+            closePasswordModal();
+          } else {
+            // Contraseña incorrecta - mostrar error
+            alert("Contraseña incorrecta. Inténtalo de nuevo.");
+            linkPasswordInput.value = '';
+            linkPasswordInput.focus();
+          }
+        } catch (error) {
+          console.error('Error al verificar la contraseña:', error);
+          alert("Error al verificar la contraseña. Inténtalo de nuevo.");
+        }
+      }
+
+      // Función para cerrar el modal de contraseña
+      function closePasswordModal() {
+        passwordModal.style.display = 'none';
+        currentPrivateLink = null;
+        linkPasswordInput.value = '';
+      }
+
+      // Función para ajustar el tamaño de los títulos
+      function autoScaleHeadings() {
+        const headings = document.querySelectorAll('.column h2');
+        headings.forEach(h2 => {
+          h2.style.fontSize = '';
+          h2.style.whiteSpace = '';
+          h2.style.overflow = '';
+          h2.style.wordBreak = '';
+          h2.style.overflowWrap = '';
+
+          const texto = h2.textContent.trim();
+          const words = texto.split(/\s+/);
+
+          // Si es móvil, mantener tamaño legible
+          if (isMobile()) {
+            h2.style.fontSize = '';
+            h2.style.whiteSpace = 'normal';
+            h2.style.wordBreak = 'break-word';
+            h2.style.overflowWrap = 'break-word';
+            return;
+          }
+
+          if (words.length === 1) {
+            h2.style.whiteSpace = 'nowrap';
+            h2.style.overflow = 'hidden';
+            h2.style.wordBreak = 'keep-all';
+            h2.offsetWidth;
+            const parentStyle = window.getComputedStyle(h2.parentElement);
+            const parentWidth = parseFloat(parentStyle.width);
+            let fs = parseFloat(window.getComputedStyle(h2).fontSize);
+            while (h2.scrollWidth > parentWidth && fs > 5) {
+              fs -= 0.5;
+              h2.style.fontSize = fs + 'px';
+              h2.offsetWidth;
+            }
+          } else {
+            h2.style.whiteSpace = 'normal';
+            h2.style.wordBreak = 'keep-all';
+            h2.style.overflowWrap = 'normal';
+          }
+        });
+      }
+
+      // Función para activar modo edición
+      async function activateEditMode() {
+        const password = prompt('Introduce la contraseña para activar el modo de edición:');
+        if (password === null) return;
+        try {
+          // Llamada a la función real de script.js
+          const isValid = await checkPassword(password);
+          if (isValid) {
+            isEditable = true;
+            document.body.classList.add('edit-mode');
+            setupMode(isEditable);
+            editModeBtn.textContent = 'Desactivar Modo Edición';
+
+            // Eliminar restricciones de tamaño en todas las imágenes redimensionables
+            const containers = document.querySelectorAll('.resizable-img-container');
+            containers.forEach(container => {
+              container.style.maxWidth = 'none';
+            });
+          } else {
+            alert('Contraseña incorrecta.');
+            isEditable = false;
+            document.body.classList.remove('edit-mode');
+            setupMode(false);
+          }
+        } catch (error) {
+          console.error('Error al validar contraseña:', error);
+          alert('Error de conexión. Intenta nuevamente.');
+        }
+      }
+
+      // Desactivar modo edición
+      function deactivateEditMode() {
+        const confirmSave = confirm("¿Deseas guardar los cambios antes de salir?");
+        if (confirmSave) {
+          saveLinks();
+        }
+        isEditable = false;
+        document.body.classList.remove('edit-mode');
+        setupMode(isEditable);
+        editModeBtn.textContent = 'Activar Modo Edición';
+      }
+
+      // Botón de modo edición
+      editModeBtn.addEventListener('click', async function() {
+        if (!isEditable) {
+          await activateEditMode();
+        } else {
+          deactivateEditMode();
+        }
+      });
+
+      // Cargar datos iniciales desde el servidor
+      async function initialLoad() {
+        const serverData = await loadFromServer();
+        if (serverData) {
+          loadWebsiteState(serverData);
+        }
+      }
+      initialLoad();
+
+      // Configurar Masonry
+      let msnry = new Masonry(grid, {
+        itemSelector: '.column',
+        columnWidth: '.column',
+        percentPosition: true,
+        gutter: 10
+      });
+
+      imagesLoaded(grid, function() {
+        msnry.layout();
+        autoScaleHeadings();
+        // Procesar enlaces para dividir los de dos palabras en móviles
+        processLinks();
+      });
+
+      // Añadir botones de eliminar a columnas
+      function addRemoveButtonsToAllColumns() {
+        const normalColumns = document.querySelectorAll('.column:not(.spacer-column)');
+        normalColumns.forEach(col => {
+          if (!col.querySelector('.remove-column-btn')) {
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-column-btn';
+            removeBtn.textContent = 'Eliminar Columna';
+            removeBtn.style.display = 'none';
+            removeBtn.onclick = function() {
+              removeThisColumn(removeBtn);
+            };
+            col.appendChild(removeBtn);
+          }
+        });
+      }
+      addRemoveButtonsToAllColumns();
+
+      // Añadir botones de edición a enlaces existentes
+      function addEditButtonsToExistingLinks() {
+        const allListItems = document.querySelectorAll('.links-list li');
+        allListItems.forEach(li => {
+          if (!li.querySelector('.link-edit-buttons')) {
+            const span = document.createElement('span');
+            span.className = 'link-edit-buttons';
+            span.innerHTML = ''
+              + '<button onclick="moveLinkUp(this)">&#9650;</button>'
+              + '<button onclick="moveLinkDown(this)">&#9660;</button>'
+              + '<button onclick="removeThisLink(this)">X</button>';
+            li.appendChild(span);
+          }
+        });
+        msnry.layout();
+      }
+      addEditButtonsToExistingLinks();
+
+      // Configurar modo (edición/visión)
+      function setupMode(editMode) {
+        if (!isEditable) {
+          editMode = false;
+        }
+        const titles = document.querySelectorAll('.column h2');
+        const links = document.querySelectorAll('.links-list a');
+        const addLinkButtons = document.querySelectorAll('.add-link-btn');
+        const removeColumnButtons = document.querySelectorAll('.remove-column-btn');
+        const linkEditButtonsGroups = document.querySelectorAll('.link-edit-buttons');
+
+        // Manejar contenedores de imágenes
+        const imgContainers = document.querySelectorAll('.resizable-img-container');
+
+        if (editMode) {
+          columnControls.style.display = 'block';
+          titles.forEach(title => {
+            title.setAttribute('contenteditable', 'true');
+          });
+          addLinkButtons.forEach(btn => {
+            btn.style.display = 'block';
+          });
+          removeColumnButtons.forEach(btn => {
+            btn.style.display = 'block';
+          });
+          links.forEach(link => {
+            // En modo edición, al hacer clic en un enlace, editamos en vez de navegar
+            link.onclick = function(e) {
+              e.preventDefault();
+              openLinkFormForEdit(link);
+            };
+            link.style.pointerEvents = 'auto';
+          });
+          linkEditButtonsGroups.forEach(group => {
+            group.style.display = 'block';
+          });
+
+          // Quitar restricciones a los contenedores de imágenes
+          imgContainers.forEach(container => {
+            container.style.maxWidth = 'none';
+          });
+        } else {
+          columnControls.style.display = 'none';
+          titles.forEach(title => {
+            title.removeAttribute('contenteditable');
+          });
+          addLinkButtons.forEach(btn => {
+            btn.style.display = 'none';
+          });
+          removeColumnButtons.forEach(btn => {
+            btn.style.display = 'none';
+          });
+          links.forEach(link => {
+            const url = link.getAttribute('data-url');
+            if (url) {
+              link.setAttribute('href', url);
+              link.setAttribute('target', '_blank'); // Abrir en nueva pestaña
+            }
+            // En modo visión removemos el onclick de edición
+            link.onclick = null;
+            link.style.pointerEvents = 'auto';
+          });
+          linkEditButtonsGroups.forEach(group => {
+            group.style.display = 'none';
+          });
+
+          // === OCULTAR FORMULARIO EN MODO VISIÓN ===
+          linkFormContainer.style.display = 'none';
+          if (descriptionPreview) descriptionPreview.style.display = 'none';
+          if (document.getElementById('previewDescriptionBtn')) document.getElementById('previewDescriptionBtn').textContent = 'Vista Previa';
+        }
+        msnry.layout();
+        autoScaleHeadings();
+      }
+
+      // Función para guardar enlaces en el servidor
+      function saveLinks() {
+        const columnsContainer = document.getElementById('columnsContainer');
+        const data = {
+          columns: [],
+          background: document.body.style.backgroundImage
+        };
+
+        const columns = columnsContainer.querySelectorAll('.column');
+        columns.forEach(column => {
+          const columnData = {
+            title: column.querySelector('h2').textContent,
+            links: []
+          };
+
+          const links = column.querySelectorAll('.links-list a');
+          links.forEach(link => {
+            columnData.links.push({
+              name: link.textContent,
+              url: link.getAttribute('data-url'),
+              description: link.getAttribute('data-description') || '',
+              tutorial: link.getAttribute('data-tutorial') || '',
+              private: link.getAttribute('data-private') === 'true'
+            });
+          });
+
+          data.columns.push(columnData);
+        });
+
+        saveToServer(data);
+      }
+
+      // Función para guardar en el servidor
+      async function saveToServer(data) {
+        try {
+          const response = await fetch('guardar_cambios.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              password: '0',
+              background: data.background,
+              columns: data.columns,
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('Error al guardar en el servidor:', response.status);
+            return;
+          }
+
+          const result = await response.json();
+          if (result.success) {
+            console.log('Guardado exitosamente en el servidor');
+          } else {
+            console.error('Error del servidor:', result.error);
+          }
+        } catch (error) {
+          console.error('Error al intentar guardar en el servidor:', error);
+        }
+      }
+
+      // Función para cargar desde el servidor
+      async function loadFromServer() {
+        try {
+          const response = await fetch('load_state.php');
+          if (!response.ok) {
+            throw new Error('Failed to load from server');
+          }
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error('Error loading from server:', error);
+          return null;
+        }
+      }
+
+      // Al cargar la página, intentar cargar el estado desde el servidor (backup)
+      window.addEventListener('load', async function() {
+        const serverData = await fetch('load_state.php?t=' + Date.now())
+          .then(res => res.json())
+          .catch(err => {
+            console.error('Error cargando datos:', err);
+            return null;
+          });
+
+        if (serverData) {
+          loadWebsiteState(serverData);
+        }
+      });
+
+      // Función para cargar el estado del sitio
+      function loadWebsiteState(data) {
+        document.body.style.backgroundImage = 'none';
+        if (data.background) {
+          document.body.style.backgroundImage = data.background + '?t=' + Date.now();
+        }
+        if (data.background) {
+          document.body.style.backgroundImage = data.background;
+        }
+        const columnsContainer = document.getElementById('columnsContainer');
+        columnsContainer.innerHTML = '';
+        
+        // Añade este bloque de código aquí para cerrar el panel de vista previa
+        const previewPanel = document.getElementById('previewPanel');
+        if (previewPanel) {
+          previewPanel.style.display = 'none';
+        }
+        // Fin del bloque
+
+        data.columns.forEach(columnData => {
+          const newColumn = document.createElement('div');
+          newColumn.className = 'column';
+          newColumn.innerHTML = `
+           <h2 contenteditable="true">${columnData.title}</h2>
+           <ul class="links-list">
+              ${columnData.links.map(link => {
+                let tutorialButtonHTML = '';
+                if (link.tutorial && link.tutorial.trim() !== "") {
+                  tutorialButtonHTML = `<button onclick="window.open('${link.tutorial}', '_blank')">Tutorial</button>`;
+                }
+                
+                // Verificar si es enlace de dos palabras para clase especial
+                const twoWordsClass = link.name && link.name.split(/\s+/).length === 2 ? 'two-words' : '';
+                
+                return `
+                  <li>
+                    <a href="#" class="${twoWordsClass}"
+                       data-url="${link.url}"
+                       data-description="${link.description || ''}"
+                       data-tutorial="${link.tutorial || ''}"
+                       data-private="${link.private || false}">${link.name}</a>
+                    <span class="link-edit-buttons">
+                      <button onclick="moveLinkUp(this)">&#9650;</button>
+                      <button onclick="moveLinkDown(this)">&#9660;</button>
+                      <button onclick="removeThisLink(this)">X</button>
+                    </span>
+                `;
+              }).join('')}
+            </ul>
+            <button class="add-link-btn" onclick="addLink(this)" style="display: block;">+ Añadir Enlace</button>
+            <button class="remove-column-btn" onclick="removeThisColumn(this)" style="display: block;">Eliminar Columna</button>
+          `;
+
+          columnsContainer.appendChild(newColumn);
+        });
+
+        imagesLoaded(columnsContainer, function() {
+          msnry.reloadItems();
+          msnry.layout();
+          autoScaleHeadings();
+          processLinks(); // Procesar los enlaces para móviles
+        });
+
+        setupMode(isEditable);
+      }
+
+      // Función para añadir una nueva columna
+      window.addColumn = function() {
+        if (!isEditable) return;
+        const newColumn = document.createElement('div');
+        newColumn.className = 'column';
+        newColumn.innerHTML = `
+          <h2 contenteditable="true">Nueva Columna</h2>
+          <ul class="links-list">
+            <li>
+              <a href="#" data-url="" data-description="" data-tutorial="" data-private="false">Nuevo Enlace</a>
+              <span class="link-edit-buttons">
+                <button onclick="moveLinkUp(this)">&#9650;</button>
+                <button onclick="moveLinkDown(this)">&#9660;</button>
+                <button onclick="removeThisLink(this)">X</button>
+              </span>
+            </li>
+          </ul>
+          <button class="add-link-btn" onclick="addLink(this)" style="display: block;">+ Añadir Enlace</button>
+          <button class="remove-column-btn" onclick="removeThisColumn(this)" style="display: block;">Eliminar Columna</button>
+        `;
+        grid.appendChild(newColumn);
+
+        const nuevoTitulo = newColumn.querySelector('h2');
+        if (nuevoTitulo) {
+          nuevoTitulo.addEventListener('blur', function() {
+            setTimeout(autoScaleHeadings, 50);
+          });
+        }
+
+        imagesLoaded(newColumn, function() {
+          msnry.appended(newColumn);
+          msnry.layout();
+          saveLinks();
+          autoScaleHeadings();
+          processLinks(); // Procesar los enlaces para móviles
+        });
+      };
+
+      // Función para añadir un enlace (abre el formulario)
+      window.addLink = function(button) {
+        if (!isEditable) return;
+        // Localiza la columna donde se quiere añadir el enlace
+        const column = button.closest('.column');
+        const colIndex = Array.from(document.querySelectorAll('.column')).indexOf(column);
+        // Configura el formulario para "Añadir Nuevo Enlace"
+        linkFormTitle.textContent = "Añadir Nuevo Enlace";
+        linkNameInput.value = "";
+        linkUrlInput.value = "";
+        linkDescriptionInput.value = "";
+        // Limpiar campo del tutorial
+        linkTutorialInput.value = "";
+        // Limpiar checkbox de enlace privado
+        linkPrivateInput.checked = false;
+        // Ocultar vista previa
+        if (descriptionPreview) {
+          descriptionPreview.style.display = 'none';
+        }
+        if (document.getElementById('previewDescriptionBtn')) {
+          document.getElementById('previewDescriptionBtn').textContent = 'Vista Previa';
+        }
+        editingLinkIndexInput.value = -1; // -1 indica que es un nuevo enlace
+        editingColumnIndexInput.value = colIndex;
+        // Muestra el formulario (cambiando el display a block)
+        linkFormContainer.style.display = 'block';
+      };
+
+      // Función para eliminar una columna
+      window.removeThisColumn = function(button) {
+        if (!isEditable) return;
+        if (!confirm('¿Seguro que quieres eliminar esta columna entera?')) return;
+        const col = button.closest('.column');
+        if (col) {
+          col.remove();
+          msnry.layout();
+          saveLinks();
+          autoScaleHeadings();
+        }
+      };
+
+      // Función para editar un enlace (abre el formulario con datos)
+      function openLinkFormForEdit(link) {
+        if (!isEditable) return;
+        const column = link.closest('.column');
+        const colIndex = Array.from(document.querySelectorAll('.column')).indexOf(column);
+        const li = link.closest('li');
+        const linkIndex = Array.from(column.querySelectorAll('.links-list li')).indexOf(li);
+
+        // Asegúrate de que el formulario existe
+        if (!linkFormContainer) {
+          createLinkFormContainer();
+        }
+
+        linkFormTitle.textContent = "Editar Enlace";
+        linkNameInput.value = link.textContent;
+        linkUrlInput.value = link.getAttribute('data-url') || "";
+
+        // Descodificar la descripción HTML si existe
+        let rawDescription = link.getAttribute('data-description') || "";
+        try {
+          // Si la descripción está codificada, decodifícala
+          if (rawDescription.includes('%')) {
+            rawDescription = decodeURIComponent(rawDescription);
+          }
+        } catch (e) {
+          console.error("Error al decodificar la descripción:", e);
+        }
+
+        linkDescriptionInput.value = rawDescription;
+        linkTutorialInput.value = link.getAttribute('data-tutorial') || "";
+
+        // Configurar el estado del checkbox para enlace privado
+        linkPrivateInput.checked = link.getAttribute('data-private') === 'true';
+
+        // Asegurarse de que la vista previa esté cerrada por defecto
+        if (descriptionPreview) {
+          descriptionPreview.innerHTML = rawDescription;
+          descriptionPreview.style.display = 'none';
+          if (document.getElementById('previewDescriptionBtn')) {
+            document.getElementById('previewDescriptionBtn').textContent = 'Vista Previa';
+          }
+        }
+
+        editingLinkIndexInput.value = linkIndex;
+        editingColumnIndexInput.value = colIndex;
+        linkFormContainer.style.display = 'block';
+      }
+
+      // Función para eliminar un enlace
+      window.removeThisLink = function(button) {
+        if (!isEditable) return;
+        if (!confirm('¿Seguro que quieres eliminar este enlace?')) return;
+        const li = button.closest('li');
+        if (li) {
+          li.remove();
+          msnry.layout();
+          saveLinks();
+        }
+      };
+
+      // Funciones para mover un enlace
+      window.moveLinkUp = function(button) {
+        if (!isEditable) return;
+        const li = button.closest('li');
+        const prev = li.previousElementSibling;
+        if (prev) {
+          li.parentNode.insertBefore(li, prev);
+          msnry.layout();
+          saveLinks();
+        }
+      };
+
+      window.moveLinkDown = function(button) {
+        if (!isEditable) return;
+        const li = button.closest('li');
+        const next = li.nextElementSibling;
+        if (next) {
+          li.parentNode.insertBefore(next, li);
+          msnry.layout();
+          saveLinks();
+        }
+      };
+
+      // Función para añadir un espaciador
+      window.addSpacer = function() {
+        if (!isEditable) return;
+        const spacer = document.createElement('div');
+        spacer.className = 'column spacer-column';
+        spacer.style.height = '100px';
+        spacer.innerHTML = `
+          <div class="spacer-controls">
+            <button onclick="adjustSpacerHeight(this, -50)">-</button>
+            <button onclick="adjustSpacerHeight(this, 50)">+</button>
+<button onclick="this.closest('.spacer-column').remove(); msnry.layout(); saveLinks();">×</button>
+          </div>
+        `;
+        grid.appendChild(spacer);
+        imagesLoaded(spacer, function() {
+          msnry.appended(spacer);
+          msnry.layout();
+          saveLinks();
+        });
+      };
+
+      // Función para ajustar la altura del espaciador
+      window.adjustSpacerHeight = function(button, change) {
+        if (!isEditable) return;
+        const spacer = button.closest('.spacer-column');
+        const currentHeight = parseInt(spacer.style.height || '100');
+        const newHeight = Math.max(50, currentHeight + change);
+        spacer.style.height = newHeight + 'px';
+        msnry.layout();
+        saveLinks();
+      };
+
+      // Evento para cambiar la imagen de fondo
+      document.getElementById('bgInput').addEventListener('change', function(e) {
+        if (!isEditable) return;
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            const imageData = evt.target.result;
+            document.body.style.backgroundImage = 'url(' + imageData + ')';
+            saveLinks();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Listener para enlaces en modo visión
+      document.body.addEventListener('click', function(e) {
+        // Si no estamos en modo edición, comprobamos si se hizo clic en un enlace
+        const link = e.target.closest('.links-list a');
+        if (link && !isEditable) {
+          e.preventDefault(); // Evitamos la navegación por defecto
+          let description = link.getAttribute('data-description');
+          const url = link.getAttribute('data-url');
+          const tutorial = link.getAttribute('data-tutorial');
+          const isPrivate = link.getAttribute('data-private') === 'true';
+
+          // Decodificar la descripción si es necesario
+          try {
+            if (description && description.includes('%')) {
+              description = decodeURIComponent(description);
+            }
+          } catch (e) {
+            console.error("Error al decodificar la descripción:", e);
+          }
+
+          // Si no hay descripción, verificamos si es privado
+          if (!description) {
+            if (isPrivate) {
+              // Es privado sin descripción, mostramos modal de contraseña
+              currentPrivateLink = link;
+              passwordModal.style.display = 'flex';
+              linkPasswordInput.value = '';
+              linkPasswordInput.focus();
+            } else {
+              // No es privado y no tiene descripción, abrimos directamente
+              window.open(url, '_blank');
+            }
+            return;
+          }
+
+          // Si hay descripción, mostramos el popup con los botones
+          document.querySelectorAll('.tooltip.popup').forEach(p => p.remove());
+          const popup = document.createElement('div');
+          popup.className = 'tooltip popup';
+
+          // Organizar el contenido con imágenes en flexbox si hay varias imágenes
+          if (description.includes('<img') && description.indexOf('<img') !== description.lastIndexOf('<img')) {
+            // Crear un contenedor temporal para procesar
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = description;
+
+            // Procesar imágenes en el contenedor temporal
+            const images = Array.from(tempContainer.querySelectorAll('img'));
+
+            if (images.length > 0) {
+              // Crear un contenedor para las imágenes
+              const imagesContainer = document.createElement('div');
+              imagesContainer.className = 'images-container';
+
+              // Mover las imágenes al contenedor de imágenes
+              images.forEach(img => {
+                const parent = img.parentNode;
+
+                // Asegurarse de que la imagen no tenga márgenes
+                img.style.margin = '0';
+                img.style.padding = '0';
+                img.style.verticalAlign = 'bottom';
+                img.style.lineHeight = '0';
+
+                // Si la imagen no está dentro de un contenedor resizable, envolverla
+                if (!parent.classList || !parent.classList.contains('resizable-img-container')) {
+                  const container = document.createElement('div');
+                  container.className = 'resizable-img-container';
+                  container.style.width = (img.width || 300) + 'px';
+                  container.style.margin = '0';
+                  container.style.padding = '0';
+                  container.style.lineHeight = '0';
+
+                  // Clonar la imagen y añadirla al contenedor
+                  const newImg = img.cloneNode(true);
+                  container.appendChild(newImg);
+
+                  // Reemplazar la imagen con el contenedor
+                  imagesContainer.appendChild(container);
+                  img.remove();
+                } else {
+                  // Si ya está en un contenedor, mover el contenedor
+                  parent.style.margin = '0';
+                  parent.style.padding = '0';
+                  parent.style.lineHeight = '0';
+                  imagesContainer.appendChild(parent.cloneNode(true));
+                  parent.remove();
+                }
+              });
+
+              // Añadir el contenedor de imágenes al final
+              tempContainer.appendChild(imagesContainer);
+
+              // Actualizar la descripción
+              description = tempContainer.innerHTML;
+            }
+          }
+
+          popup.innerHTML = `
+            <div class="popup-description">${description}</div>
+            <div class="popup-buttons">
+              <button id="goToLink">Ir a la App</button>
+              ${tutorial && tutorial.trim() !== "" ? `<button id="goToTutorial">Ver Tutorial</button>` : ''}
+              <button id="closePopup">Volver al menú</button>
+            </div>
+          `;
+          document.body.appendChild(popup);
+
+          // Eliminar espacios no deseados en el popup
+          const popupImages = popup.querySelectorAll('img');
+          popupImages.forEach(img => {
+            img.style.margin = '0';
+            img.style.padding = '0';
+            img.style.lineHeight = '0';
+            img.style.display = 'block';
+            img.style.verticalAlign = 'bottom';
+          });
+
+          // Para dispositivos móviles, no necesitamos calcular posición absoluta
+          if (!isMobile()) {
+            // Calculamos la posición del popup sólo para pantallas grandes
+            const rect = link.getBoundingClientRect();
+            const popupWidth = popup.offsetWidth;
+            let left = rect.left + (rect.width / 2) - (popupWidth / 2);
+            const margin = 10;
+            if (left < margin) left = margin;
+            if (left + popupWidth > window.innerWidth - margin) {
+              left = window.innerWidth - popupWidth - margin;
+            }
+            let top = rect.bottom + window.scrollY + 10;
+            const popupHeight = popup.offsetHeight;
+            const viewportBottom = window.scrollY + window.innerHeight - margin;
+            if (top + popupHeight > viewportBottom) {
+              top = viewportBottom - popupHeight;
+            }
+            popup.style.left = `${left + window.scrollX}px`;
+            popup.style.top = `${top}px`;
+            popup.style.position = 'absolute';
+          }
+          
+          popup.style.zIndex = '9999';
+
+          // Botón "Ir al enlace"
+          popup.querySelector('#goToLink').addEventListener('click', function() {
+            if (isPrivate) {
+              // Si es privado, mostramos el modal de contraseña primero
+              currentPrivateLink = link;
+              passwordModal.style.display = 'flex';
+              linkPasswordInput.value = '';
+              linkPasswordInput.focus();
+            } else {
+              // Si no es privado, abrimos directamente
+              window.open(url, '_blank');
+            }
+            popup.remove();
+          });
+
+          // Botón "Tutorial"
+          const goToTutorialBtn = popup.querySelector('#goToTutorial');
+          if (goToTutorialBtn) { // Solo si el botón existe
+            goToTutorialBtn.addEventListener('click', function() {
+              window.open(tutorial, '_blank');
+              popup.remove();
+            });
+          }
+
+          // Botón "Cerrar"
+          popup.querySelector('#closePopup').addEventListener('click', function() {
+            popup.remove();
+          });
+        }
+      });
+
+      // NUEVO: Listener global para cerrar el popup al hacer clic fuera del mismo (y fuera de un enlace)
+      document.addEventListener('click', function(e) {
+        const popup = document.querySelector('.tooltip.popup');
+        if (popup && !e.target.closest('.tooltip.popup') && !e.target.closest('.links-list a')) {
+          popup.remove();
+        }
+      });
+      
+      // Procesar enlaces al iniciar para aplicar estilos de dos palabras
+      window.addEventListener('resize', function() {
+        processLinks();
+      });
+    });
+    
+    // Función simulada para checkPassword (para evitar errores mientras desarrollas)
+    // En producción, esta función debe ser proporcionada por script.js
+    async function checkPassword(password) {
+      // Simular llamada a la API de verificación
+      return true; // Siempre devuelve verdadero para pruebas
+    }
+  </script>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

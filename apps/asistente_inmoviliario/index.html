@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Asistente Inmobiliario</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+
+<!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="app.css"/>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Asistente Inmobiliario IA</h1>
+      <p>Transforma tus fotos y crea el anuncio perfecto en segundos.</p>
+    </header>
+
+    <main class="app-container">
+      <h2 class="section-title">Paso 1: Sube las imágenes</h2>
+
+      <div id="drop-zone" class="drop-zone">
+        <div class="dz-content">
+          <p><strong>Haz clic para subir</strong> o arrastra y suelta</p>
+          <p class="muted-text">PNG, JPG o WEBP</p>
+        </div>
+      </div>
+      <input id="image-uploader" type="file" class="hidden" multiple accept="image/*"/>
+
+      <div id="image-preview-grid"></div>
+
+      <h2 class="section-title">Paso 2: Define el estilo</h2>
+
+      <div class="form-grid">
+        <div class="form-control">
+          <label for="target-audience">Público Objetivo</label>
+          <select id="target-audience">
+            <option value="familias">Familias</option>
+            <option value="profesionales jóvenes">Profesionales Jóvenes</option>
+            <option value="parejas">Parejas</option>
+            <option value="inversores">Inversores</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label for="ad-length">Extensión del Texto</label>
+          <select id="ad-length">
+            <option value="breve">Breve (1 párrafo)</option>
+            <option value="estándar" selected>Estándar (2-3 párrafos)</option>
+            <option value="detallado">Detallado (Más de 3 párrafos)</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label for="ad-tone">Tono del Anuncio</label>
+          <select id="ad-tone">
+            <option value="profesional">Profesional y formal</option>
+            <option value="cálido y acogedor" selected>Cálido y acogedor</option>
+            <option value="lujoso y exclusivo">Lujoso y exclusivo</option>
+            <option value="directo y conciso">Directo y conciso</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="center">
+        <button id="generate-btn" class="btn btn-primary">Generar Anuncio</button>
+      </div>
+    </main>
+
+    <section id="results-section">
+      <div class="results-header">
+        <h3 class="section-title">Resultados</h3>
+      </div>
+      <div id="results-image-grid" class="image-grid"></div>
+      <div id="results-text" class="results-text"></div>
+    </section>
+  </div>
+
+  <script src="app.js" type="module"></script>
+  <script>
+    // Click en el área de subida
+    document.getElementById('drop-zone').addEventListener('click', () => {
+      document.getElementById('image-uploader').click();
+    });
+  </script>
+</body>
+</html>

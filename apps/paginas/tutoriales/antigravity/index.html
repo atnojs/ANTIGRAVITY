@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Antigravity</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Meta SEO -->
+    <meta name="description"
+        content="Aprende a dominar Google Antigravity: Multi-Agentes, Depuración y Contexto Avanzado. De Copiloto a Agente.">
+</head>
+
+<body>
+
+    <aside class="sidebar glass">
+        <h2 class="gradient-text">Tutorial Antigravity</h2>
+        <nav id="sidebar-nav">
+            <ul>
+                <li><a href="#introduccion">1. Introducción</a></li>
+                <li><a href="#interfaz">2. Acceso e Interfaz</a></li>
+                <li><a href="#modos">3. Modos de Trabajo</a></li>
+                <li><a href="#practica1">4. Primera Práctica</a></li>
+                <li><a href="#ojos">5. El Agente con "Ojos"</a></li>
+                <li><a href="#debugging">6. Debugging Autónomo</a></li>
+                <li><a href="#seguridad">7. Seguridad</a></li>
+                <li><a href="#multiagente">8. Orquestación Multi-Agente</a></li>
+                <li><a href="#espacios">9. Gestión de Espacios</a></li>
+                <li><a href="#contexto">10. Contexto Avanzado</a></li>
+                <li><a href="#markdown">11. Estrategia Markdown</a></li>
+                <li><a href="#demo">12. Demo Final</a></li>
+                <li><a href="#conclusion">13. Conclusión</a></li>
+                <li><a href="#siguiente">¿Qué hacer después?</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header id="header-main">
+            <h1 class="gradient-text">Curso Completo de Google Antigravity</h1>
+            <section class="card glass">
+                <p><strong>De Copiloto a Agente: Multi-Agentes, Depuración y Contexto Avanzado.</strong></p>
+                <p>Este curso está dirigido a desarrolladores que buscan dar el salto de usar la IA como un simple
+                    asistente de autocompletado a integrarla como agentes autónomos en su flujo de trabajo diario.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="https://youtu.be/03os6jK5_9c" target="_blank"
+                        style="text-decoration: none; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #06b6d4, #3b82f6); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                        </svg>
+                        Ver Tutorial en YouTube
+                    </a>
+                </div>
+            </section>
+        </header>
+
+        <section id="introduccion" class="content-section">
+            <h2 class="text-cyan">1. El cambio de paradigma</h2>
+            <div class="card glass">
+                <p>Google Antigravity no es solo un editor más; es un fork de Visual Studio Code diseñado
+                    específicamente para trabajar con agentes de IA. El cambio fundamental reside en pasar de ser
+                    "escritores de código" a convertirnos en "arquitectos de software" que supervisan el trabajo de
+                    agentes inteligentes.</p>
+                <div class="tip-box">
+                    <strong>Tip:</strong> Antigravity permite decidir el nivel de autonomía del agente: desde un simple
+                    asistente hasta un planificador autónomo.
+                </div>
+            </div>
+        </section>
+
+        <section id="interfaz" class="content-section">
+            <h2 class="text-cyan">2. Acceso e Interfaz</h2>
+            <div class="card glass">
+                <p>Para comenzar, debes descargar la versión correspondiente a tu sistema operativo en
+                    <code>antigravity.google</code>. La interfaz es casi idéntica a VS Code, lo que facilita la
+                    transición.
+                </p>
+                <ol class="step-list">
+                    <li>Descarga e instala la aplicación para Mac, Windows o Linux.</li>
+                    <li>Vincula tu cuenta de Google (Free, Pro o Ultra).</li>
+                    <li>Explora el panel derecho (Agent Panel) y el <strong>Open Agent Manager</strong>.</li>
+                </ol>
+                <div class="warning-box">
+                    <strong>Importante:</strong> Antigravity no usa API Keys externas; funciona exclusivamente vinculado
+                    a tu cuenta de Google.
+                </div>
+            </div>
+        </section>
+
+        <section id="modos" class="content-section">
+            <h2 class="text-cyan">3. Modos de Trabajo: Fast vs Planning</h2>
+            <div class="card glass">
+                <p>Antigravity permite alternar entre dos motores de razonamiento según la necesidad:</p>
+                <ul>
+                    <li><strong>Fast Mode (Velocidad):</strong> Respuestas instantáneas para preguntas rápidas o
+                        refactorizaciones de una sola función. Es el equivalente a los LLMs tradicionales.</li>
+                    <li><strong>Planning Mode (Estructura):</strong> Vital para tareas complejas. El agente se detiene a
+                        pensar antes de actuar, generando un <strong>Artefacto</strong> (un contrato o plano visual) que
+                        detalla pasos lógicos, estructura de archivos y comandos de terminal.</li>
+                </ul>
+                <div class="tip-box">
+                    <strong>Atajos de Teclado:</strong>
+                    <ul>
+                        <li><code>Ctrl + I</code>: Modo <strong>Inline</strong> (edición directa y contextual).</li>
+                        <li><code>Ctrl + L</code>: Abrir el <strong>Panel de Agente</strong> lateral.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="practica1" class="content-section">
+            <h2 class="text-cyan">4. Práctica: Construcción y Refactorización</h2>
+            <div class="card glass">
+                <h3>4.1 Creación de App Flask (Modo Planning)</h3>
+                <p>Delegamos el proceso completo al agente para entender el flujo de trabajo agéntico:</p>
+                <ol class="step-list" style="counter-reset: item;">
+                    <li>Escribe el prompt: <em>"Crea una aplicación Flask que muestre la fecha actual, instala
+                            dependencias,
+                            arranca el servidor y abre el navegador."</em></li>
+                    <li>Observa la generación del <strong>Artefacto</strong>. Hasta que no firmes el "contrato" (Approve
+                        Plan), el agente no empezará a trabajar.</li>
+                </ol>
+
+                <h3>4.2 Refactorización Inline (Ctrl + I)</h3>
+                <p>No reescribas código a mano. Usa el comando <strong>Inline</strong> directamente sobre el editor:</p>
+                <ul>
+                    <li><strong>Evolución:</strong> <em>"Convierte esta calculadora JS a TypeScript con interfaces y
+                            manejo de errores."</em></li>
+                    <li><strong>Arquitectura:</strong> <em>"Refactoriza esto para usar una estructura MVC
+                            (Model-View-Controller) limpia."</em></li>
+                    <li><strong>Documentación:</strong> <em>"Genera documentación JSDoc explicativa para estos
+                            parámetros."</em></li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="ojos" class="content-section">
+            <h2 class="text-cyan">5. El Agente con "Ojos"</h2>
+            <div class="card glass">
+                <p>La <strong>Browser Surface</strong> permite al agente interactuar con el navegador Chrome integrado.
+                    No solo lanza la web, sino que puede "ver" los elementos y probarlos como un usuario real.</p>
+                <div class="tip-box">
+                    <strong>Tip:</strong> Puedes pedirle al agente: <em>"Abre la app, añade una tarea y verifica que el
+                        botón de borrar funciona."</em>
+                </div>
+            </div>
+        </section>
+
+        <section id="debugging" class="content-section">
+            <h2 class="text-cyan">6. Debugging Autónomo: Sherlock Holmes Digital</h2>
+            <div class="card glass">
+                <p>Antigravity no solo arregla errores de sintaxis, sino fallos de lógica profundos. No necesitas copiar
+                    y pegar el error; el agente tiene integración contextual completa.</p>
+                <ol class="step-list" style="counter-reset: item;">
+                    <li><strong>Mención de Terminal:</strong> Usa <code>@terminal</code> y pide: <em>"Investiga el
+                            último
+                            fallo y arréglalo."</em></li>
+                    <li><strong>Investigación:</strong> El agente inyectará logs temporales para verificar tipos de
+                        datos y formular una hipótesis.</li>
+                    <li><strong>Resolución:</strong> Arreglará el fallo (ej. un String colado en una suma) y
+                        <strong>limpiará sus rastros</strong>, eliminando los logs de depuración creados.
+                    </li>
+                </ol>
+                <div class="warning-box">
+                    <strong>Bucle de Seguridad:</strong> Si el agente entra en un bucle de fallos, se detendrá. Puedes
+                    ordenarle: <em>"Sigue intentando hasta que funcione"</em> directamente en el chat.
+                </div>
+            </div>
+        </section>
+
+        <section id="seguridad" class="content-section">
+            <h2 class="text-cyan">7. Seguridad y Supervisión</h2>
+            <div class="card glass">
+                <p>La seguridad es prioritaria mediante el uso de <strong>Sandboxes</strong> (Jaulas lógicas). El agente
+                    solo tiene acceso a la carpeta del proyecto actual.</p>
+                <div class="warning-box">
+                    <strong>Advertencia:</strong> Configura siempre <code>Review Policy</code> en "Request Review" para
+                    Supervisar cualquier cambio crítico en tus archivos o estrategia.
+                </div>
+            </div>
+        </section>
+
+        <section id="multiagente" class="content-section">
+            <h2 class="text-cyan">8. Orquestación Multi-Agente: Manager View</h2>
+            <div class="card glass">
+                <p>Pasa de una relación lineal a ser el director de una orquesta de IAs. Puedes coordinar expertos
+                    trabajando en paralelo sobre un mismo sistema complejo.</p>
+                <div class="tip-box">
+                    <strong>Lógica de Compartición (Escenario vs Mente):</strong>
+                    <ul>
+                        <li><strong>Comparten escenario:</strong> Ambos ven los archivos del proyecto y cambios en el
+                            disco.</li>
+                        <li><strong>No se leen la mente:</strong> El agente 2 no tiene acceso al chat ni a los
+                            pensamientos del agente 1.</li>
+                    </ul>
+                    <em>Como director, debes actuar como puente de contexto: "Tu compañero ha creado el archivo X, ahora
+                        tú haz Y."</em>
+                </div>
+            </div>
+        </section>
+
+        <section id="espacios" class="content-section">
+            <h2 class="text-cyan">9. Gestión de Workspaces</h2>
+            <div class="card glass">
+                <p>Puedes supervisar múltiples proyectos (Workspaces) desde una única interfaz simplificada. Cada
+                    workspace es un entorno aislado, asegurando que un proyecto no interfiera con otro.</p>
+            </div>
+        </section>
+
+        <section id="contexto" class="content-section">
+            <h2 class="text-cyan">10. Contexto Avanzado</h2>
+            <div class="card glass">
+                <p>Inyecta conocimiento específico de tu empresa (reglas de negocio, guías de estilo) para que la IA
+                    deje de ser genérica.</p>
+                <div class="tip-box">
+                    <strong>Tip:</strong> Usa menciones con <code>@</code> para forzar a la IA a consultar documentos
+                    específicos antes de generar código.
+                </div>
+            </div>
+        </section>
+
+        <section id="markdown" class="content-section">
+            <h2 class="text-cyan">11. Estrategia Markdown</h2>
+            <div class="card glass">
+                <p>El formato <code>.md</code> es la "Constitución" de tu proyecto. Es texto plano que los modelos de
+                    razonamiento entienden a la perfección para seguir reglas de diseño o arquitectura.</p>
+            </div>
+        </section>
+
+        <section id="demo" class="content-section">
+            <h2 class="text-cyan">12. Demo Final: Invocación "@" de Contexto</h2>
+            <div class="card glass">
+                <p>Ignora el conocimiento generalista de la IA y oblígala a seguir tus reglas corporativas mediante el
+                    uso de la <strong>araba (@)</strong>.</p>
+                <div class="tip-box">
+                    <strong>Caso de Uso:</strong> Si vinculas un archivo <code>guiaestilo.md</code>, el agente
+                    consultará
+                    tus fuentes exactas (ej. colores naranja FF5733 y bordes de 12px) antes de generar cualquier
+                    componente, actuando como un consultor diligente que conoce tu cultura de empresa.
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion" class="content-section">
+            <h2 class="text-cyan">13. Conclusión</h2>
+            <div class="card glass">
+                <p>Antigravity no viene a sustituir al desarrollador, sino a eliminar la parte monótona del trabajo. El
+                    futuro pertenece al <strong>Desarrollador Híbrido</strong>: dirección estratégica humana potenciada
+                    por ejecución incansable de la máquina.</p>
+            </div>
+        </section>
+
+        <section id="siguiente" class="content-section">
+            <h2 class="text-purple">¿Qué hacer después de este curso?</h2>
+            <div class="card glass">
+                <ul>
+                    <li><strong>Proyecto 1:</strong> Crea un dashboard interactivo que consuma una API pública usando el
+                        Modo Planning.</li>
+                    <li><strong>Proyecto 2:</strong> Implementa una suite de tests end-to-end automatizada usando la
+                        Browser Surface.</li>
+                    <li><strong>Proyecto 3:</strong> Define tu propia "Constitución de Código" en Markdown y deja que
+                        los agentes refactoricen un proyecto antiguo basado en ella.</li>
+                </ul>
+            </div>
+        </section>
+
+        <footer class="glass" style="padding: 2rem; text-align: center; border-radius: var(--radius-md);">
+            <p>&copy; 2025 Curso Google Antigravity. Implementado con estilo Neon Glassmorphism.</p>
+        </footer>
+    </main>
+
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.sidebar nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                targetSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Optional: Intersection Observer to highlight active section in sidebar
+        const sections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

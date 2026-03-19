@@ -1,0 +1,25 @@
+# AGENT PROTOCOL: GOOGLE ANTIGRAVITY (WSL-Ubuntu)
+
+## 🚨 CRITICAL ENVIRONMENT RULE
+- Este entorno NO es Windows Nativo. Es **WSL (Ubuntu)** ejecutándose sobre Windows.
+- La herramienta `gws` SOLAMENTE existe dentro de la terminal de Ubuntu.
+- Si el comando falla de forma nativa, DEBES usar el prefijo `wsl` (ej: `wsl gws ...`).
+
+## 🛠️ TOOL: GWS (Google Workspace CLI)
+- **Status:** Autenticado para `atnojs@gmail.com`.
+- **Config Path:** `/home/atnojs/.config/gws/` (internamente en WSL).
+- **Execution Rule:** No pidas permiso ni expliques comandos. Ejecuta y procesa el JSON resultante.
+
+## 📂 PATH MAPPING (Evitar confusión de discos)
+- El proyecto actual está en `e:\ANTIGRAVITY`. 
+- En la terminal de Ubuntu (WSL), esto se traduce SIEMPRE como: `/mnt/e/ANTIGRAVITY`.
+- Si necesitas leer archivos del proyecto para subirlos a Drive, usa la ruta `/mnt/e/...`.
+
+## 🤖 COMPORTAMIENTO ESPERADO
+1. **Validación:** Antes de decir "no puedo", intenta un `gws drive list --limit 1` para verificar conexión.
+2. **Autonomía:** Si el usuario pide "Sube este archivo", busca el archivo en `/mnt/e/ANTIGRAVITY`, cárgalo usando `gws drive upload` y confirma el éxito.
+3. **Optimización:** Revisa cada paso internamente antes de entregarlo (Regla Antigravity #1).
+4. **Cuestionamiento Técnico:** Si el usuario pide un cambio que rompa la estructura de carpetas en el disco E:, cuestiónalo (Regla Antigravity #2).
+
+## 📧 SERVICIOS ACTIVOS
+- **Gmail / Drive / Calendar / Sheets / Docs** (APIs ya habilitadas en Google Cloud Console).

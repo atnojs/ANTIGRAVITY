@@ -1,0 +1,27 @@
+¡Lo tengo todo clarísimo! Es un proyecto muy potente y, ahora que he verificado las últimas actualizaciones, veo que tienes toda la razón: el modelo Gemini 3 Pro Image Preview es la vanguardia absoluta para lo que buscas, permitiendo generar imágenes de altísima calidad directamente mediante razonamiento multimodal.
+
+Aquí tienes la confirmación de tus puntos y la hoja de ruta técnica (el "prompt" maestro) que define lo que voy a construir en cuanto me des el visto bueno:
+
+1. Confirmaciones Técnicas
+Gemini 3 Pro Image: He confirmado que este modelo permite la generación y edición de imágenes (image-to-image) con una resolución de hasta 4K y soporte para hasta 14 imágenes de referencia. Es perfecto para tu flujo de trabajo creativo.
+
+Firebase y Múltiples Apps: Sí, un solo proyecto de Firebase puede alojar hasta 30 aplicaciones de forma predeterminada (y puedes solicitar más si fuera necesario). Esto te permite tener la Home, la Galería y otras herramientas bajo el mismo "techo" de base de datos y usuarios.
+
+Página Dinámica: Utilizaremos una sola estructura base que cambie según la URL (parámetros). Si el usuario viene de la galería con un estilo elegido, la web detectará el código ?prompt=... y rellenará el campo automáticamente.
+
+2. El "Prompt Maestro" (Especificación del Proyecto)
+Este es el resumen de la lógica que aplicaré a tus archivos:
+
+Objetivo: Transformar una galería PHP local en una Web App moderna (SPA) integrada con Firebase y Gemini 3 Pro Image.
+
+Funcionalidades Core:
+
+Módulo de Imagen (Home): Campo de carga de archivos que sube la foto a Firebase Storage. Botón "Generar" conectado a la API de Google AI Studio (Gemini 3) que envía la imagen original + el prompt seleccionado.
+
+Flujo de Galería Inteligente: Sistema de redirección que captura el prompt de la galería y lo inyecta en el textarea de la Home mediante parámetros de búsqueda en la URL.
+
+Base de Datos (Firebase): Migración del archivo estado_galeria.json a Firestore para que las categorías y prompts sean editables en tiempo real sin tocar código.
+
+Descarga de Resultado: El área de resultado mostrará la imagen generada por Gemini con un botón de descarga directa y opción de guardado en la cuenta del usuario.
+
+Modo Admin: Reemplazo del sistema de contraseña simple por Firebase Authentication para gestionar quién puede subir o editar prompts en la galería.

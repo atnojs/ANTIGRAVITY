@@ -1,0 +1,15 @@
+🔒 GARANTÍA DE SEGURIDAD Y TRANSPARENCIA
+
+Este software ha sido desarrollado íntegramente con código limpio y legítimo. Te garantizo que este archivo está 100% libre de virus, malware o cualquier tipo de código malicioso.
+
+PRUEBA DE CONFIANZA: No tienes que confiar ciegamente en mi palabra. Te invito a someter este archivo a una prueba de estrés forense tú mismo en la plataforma de ciberseguridad más rigurosa del mundo: 👉 https://www.virustotal.com/
+
+¿POR QUÉ MI ANTIVIRUS ALERTA DE UN "FALSO POSITIVO"? Es posible que Windows Defender o tu antivirus marquen el archivo como sospechoso. Esto es un error común conocido como "Falso Positivo" y ocurre por las siguientes razones técnicas:
+
+Empaquetado Python: Este programa es un script de Python convertido a .exe. Los antivirus no pueden "leer" el código que hay dentro fácilmente, por lo que, ante la duda, lo bloquean por precaución (Análisis Heurístico).
+
+Falta de Firma Digital: Los programas corporativos (como los de Microsoft o Adobe) pagan miles de dólares al año por "certificados digitales". Como este es un desarrollo independiente gratuito, no tiene esa firma costosa, lo que hace que el antivirus lo trate como "desconocido".
+
+Comportamiento: Al ser una herramienta que automatiza tareas (como mover el mouse o teclear), algunos antivirus lo confunden erróneamente con un comportamiento intrusivo, cuando en realidad es la función que tú le has pedido realizar.
+
+Si VirusTotal te muestra la mayoría de motores en verde, puedes ejecutarlo con total tranquilidad agregando una excepción en tu antivirus.

@@ -1,0 +1,49 @@
+🤖 Gestión de Agentes e IA
+/agents: Te permite cambiar entre diferentes perfiles de IA (agentes). Cada agente puede tener una especialización o configuración distinta.
+
+/models: Sirve para cambiar el modelo de lenguaje (LLM) que está procesando tus peticiones (por ejemplo, cambiar entre diferentes versiones de Gemini o Claude si están configurados).
+
+/skills: Accede o gestiona las "habilidades" o herramientas específicas que el agente tiene permitidas usar.
+
+/thinking: Oculta o muestra el proceso de razonamiento interno de la IA. Útil si quieres ver cómo llega a una conclusión o si prefieres una respuesta limpia.
+
+📁 Control de Sesiones y Archivos
+/new: Inicia una sesión de chat totalmente limpia.
+
+/sessions: Lista tus sesiones guardadas y te permite saltar de una a otra.
+
+/rename: Cambia el nombre de la sesión actual para que sea más fácil encontrarla después.
+
+/compact: "Compacta" el historial de la sesión. Esto ayuda a ahorrar espacio en la "memoria" (contexto) del modelo resumiendo lo anterior.
+
+/fork: Crea una nueva rama de la conversación a partir de un mensaje específico. Ideal para probar una solución distinta sin perder el progreso de la actual.
+
+/undo: Revierte el último mensaje, útil si la IA cometió un error o quieres cambiar tu última instrucción.
+
+💻 Desarrollo y Código
+/editor: Abre el editor de código integrado para trabajar directamente sobre los archivos.
+
+/init: Crea o actualiza el archivo AGENTS.md, que suele contener la definición y reglas de los agentes en tu repositorio.
+
+/review: Analiza los cambios en tu código. Puedes especificar si quieres revisar un commit, una rama o un Pull Request (PR). Por defecto, revisa lo que no has commiteado.
+
+/mcps: Activa o desactiva los "Model Context Protocol" servers, que son conectores para que la IA acceda a herramientas externas o datos locales.
+
+🛠️ Utilidades y Sistema
+/status: Muestra información del estado actual (conexión, agente activo, modelo, etc.).
+
+/connect: Configura o cambia el proveedor de servicios de IA.
+
+/copy / /export: Copian al portapapeles o exportan a un archivo todo el historial de la conversación.
+
+/share: Genera un enlace o archivo para compartir la sesión actual con otros.
+
+/timeline: Te permite saltar rápidamente a un punto específico de la conversación.
+
+/timestamps: Muestra la hora exacta en la que se envió cada mensaje.
+
+/themes: Cambia la apariencia visual de la terminal de OpenCode.
+
+/help: Muestra esta lista de comandos y su ayuda básica.
+
+/exit: Cierra la aplicación de forma segura.

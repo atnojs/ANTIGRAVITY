@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minicampus ChatGPT — Básico y Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="app.css" />
+  <!-- Iconos opcionales (no requerido) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!--
+    Cabecera simple con rutas Básico/Pro.
+    Mantiene el patrón de una sola página, alternando vistas por JS.
+  -->
+  <header class="site-header">
+    <div class="brand">Minicampus ChatGPT</div>
+    <nav class="nav">
+      <button class="nav-btn" data-route="basico">Básico</button>
+      <button class="nav-btn" data-route="pro">Pro</button>
+      <button class="nav-btn" data-route="plantillas">Plantillas</button>
+    </nav>
+  </header>
+
+  <main id="app">
+    <!-- Vista: Básico -->
+    <section class="view" id="view-basico" hidden>
+      <h1>Ruta Básico</h1>
+      <p class="lead">
+        Empieza con lo esencial: estructura de un buen prompt, objetivos claros, formato de salida y control de contexto.
+      </p>
+
+      <article class="card">
+        <h2>Conceptos clave</h2>
+        <ul>
+          <li>Define rol, objetivo y restricciones.</li>
+          <li>Pide formato de salida claro: Markdown, JSON o pasos.</li>
+          <li>Evalúa tu prompt: ¿qué falta?, ¿qué sobra?, ¿qué ambigüedades hay?</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Ejercicio guiado rápido</h2>
+        <ol>
+          <li>Abre <em>Plantillas</em> y descarga <strong>instrucciones_base.md</strong>.</li>
+          <li>Rellena los huecos entre corchetes.</li>
+          <li>Pruébalo en tu modelo favorito.</li>
+        </ol>
+        <p class="muted">La API real la añadiremos más adelante. Por ahora, céntrate en la calidad del prompt.</p>
+      </article>
+    </section>
+
+    <!-- Vista: Pro -->
+    <section class="view" id="view-pro" hidden>
+      <h1>Ruta Pro</h1>
+      <p class="lead">Profundiza: proyectos guiados y control de calidad del prompt.</p>
+
+      <!-- Proyectos guiados -->
+      <div class="grid">
+        <article class="card">
+          <h2>Analista de Pliegos</h2>
+          <p>Extrae requisitos, criterios de evaluación y riesgos de un texto largo.</p>
+          <a class="btn" href="descargables/estructura_gpt_pliegos.md" download>
+            Descargar plantilla (MD)
+          </a>
+        </article>
+
+        <article class="card">
+          <h2>Arquitecto</h2>
+          <p>Diseña la estructura de un GPT personalizado: roles, memoria, herramientas y tests.</p>
+          <a class="btn" href="descargables/arquitecto_gpt.md" download>
+            Descargar plantilla (MD)
+          </a>
+        </article>
+
+        <article class="card">
+          <h2>Asistente de Código</h2>
+          <p>Define reglas para refactor, comentarios, pruebas y explicación paso a paso.</p>
+          <a class="btn" href="descargables/asistente_codigo_gpt.md" download>
+            Descargar plantilla (MD)
+          </a>
+        </article>
+      </div>
+
+      <article class="card">
+        <h2>Checklist de calidad de prompt</h2>
+        <ul>
+          <li>Propósito definido en una frase.</li>
+          <li>Formato de salida y límites de longitud.</li>
+          <li>Datos de ejemplo y contraejemplos.</li>
+          <li>Evaluación: criterios de “listo para producción”.</li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- Vista: Plantillas -->
+    <section class="view" id="view-plantillas" hidden>
+      <h1>Plantillas descargables</h1>
+      <p class="lead">Archivos en Markdown listos para rellenar. Úsalos como base en tus proyectos.</p>
+
+      <div class="grid">
+        <!-- Cada tarjeta expone un enlace directo a /descargables -->
+        <article class="card">
+          <h2>Base de Instrucciones</h2>
+          <p>Estructura mínima para cualquier tarea.</p>
+          <a class="btn" href="descargables/instrucciones_base.md" download>Descargar .md</a>
+        </article>
+
+        <article class="card">
+          <h2>Guía de Dataset</h2>
+          <p>Cómo preparar ejemplos, contraejemplos y etiquetas.</p>
+          <a class="btn" href="descargables/dataset_guia.md" download>Descargar .md</a>
+        </article>
+
+        <article class="card">
+          <h2>Analista de Pliegos</h2>
+          <p>Plantilla específica para pliegos, RFP o bases.</p>
+          <a class="btn" href="descargables/estructura_gpt_pliegos.md" download>Descargar .md</a>
+        </article>
+
+        <article class="card">
+          <h2>Arquitecto de GPT</h2>
+          <p>Diseño de roles, memoria y pruebas.</p>
+          <a class="btn" href="descargables/arquitecto_gpt.md" download>Descargar .md</a>
+        </article>
+
+        <article class="card">
+          <h2>Asistente de Código</h2>
+          <p>Refactor, comentarios, tests y explicación.</p>
+          <a class="btn" href="descargables/asistente_codigo_gpt.md" download>Descargar .md</a>
+        </article>
+      </div>
+
+      <details class="card">
+        <summary>¿Cómo usar estas plantillas?</summary>
+        <ol>
+          <li>Descarga el MD y edítalo con tu editor.</li>
+          <li>Rellena los campos entre corchetes.</li>
+          <li>Pega el prompt en tu modelo preferido.</li>
+        </ol>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>© Minicampus ChatGPT</div>
+    <div class="progress">
+      <span id="progress-label">Progreso: 0%</span>
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+  </footer>
+
+  <!-- JS externo -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear un GPT - Guía Paso a Paso</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Banner púrpura movido al inicio */
+        .purple-banner {
+            background-color: #4b0082;
+            color: white;
+            padding: 30px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .purple-banner h2 {
+            color: #87ceeb;
+            margin-top: 0;
+            font-size: 24px;
+        }
+        
+        .step-box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .formula-icons {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0;
+        }
+        
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .icon-circle::after {
+            content: "";
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-color: inherit;
+            clip-path: polygon(0 0, 100% 50%, 0 100%);
+        }
+        
+        .objective { background-color: #ff6347; }
+        .como-actuar { background-color: #ffa500; }
+        .instrucciones { background-color: #ffd700; color: black; }
+        .refuerzo { background-color: #32cd32; }
+        
+        .personalization-panel {
+            background-color: #333;
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: none;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        
+        .trait-button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-cancel, .btn-save {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-cancel {
+            background-color: #555;
+            color: white;
+        }
+        
+        .btn-save {
+            background-color: white;
+            color: #333;
+        }
+        
+        /* Espacio reservado para la imagen personalizada */
+        .image-container {
+            margin: 20px 0;
+        }
+        
+        .instructions-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .instructions-list li {
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Banner púrpura movido al inicio -->
+        <div class="purple-banner">
+            <h2>GPTs PERSONALIZADOS</h2>
+            <h3>La mejor opción para tareas repetitivas</h3>
+            <p>Hay tareas que repites una y otra vez. Analizar contratos, crear briefs de anuncios, puntuar ideas de negocio, generar textos legales o revisar resúmenes con criterios muy definidos. Cuando un proceso se repite más de dos o tres veces, lo ideal no es seguir haciéndolo manualmente, sino convertirlo en una herramienta: un GPT personalizado.</p>
+            <p>Esta herramienta de trabajo te permite empaquetar un procedimiento completo en una instancia propia de ChatGPT. El resultado es una IA especializada en una tarea concreta, con criterios fijos, una estructura de salida clara y un comportamiento predecible.</p>
+        </div>
+        
+        
+<!-- Explicación de GPTs vs Projects -->
+        <div class="step-box">
+            <p>A diferencia de los Projects, que funcionan como espacios temáticos con múltiples conversaciones, un GPT actúa como una máquina de ejecución: recibe una entrada, aplica unas instrucciones y entrega una respuesta consistente.</p>
+        </div>
+
+
+<!-- Sección de pasos -->
+        <div class="step-box">
+            <h3>Paso a Paso Detallado para Crear un GPT</h3>
+            <p>En la barra lateral izquierda de tu cuenta de ChatGPT, haz clic en "GPT".</p>
+            <p>Luego, en la esquina superior derecha, haz clic en el botón "Crear" (Create) y luego en "Personalizar".</p>
+        </div>
+        
+        
+        
+        <!-- Fórmula de Prompting -->
+        <div class="step-box">
+            <h4>Fórmula de Prompting de GPTs para tareas repetitivas</h4>
+           <p>Objetivo/   Cómo Actuar/   Instrucciones Concretas /   Refuerzo de Instrucciones</p>
+           <p>Para crear un buen GPT, necesitas definirlo como si fuera un nuevo miembro del equipo. ¿Qué debe lograr? ¿Cómo debe actuar? ¿Qué pasos exactos debe seguir? ¿Qué cosas debe evitar?</p>
+        </div>
+        
+        <!-- Panel de Personalización -->
+        
+            
+            <!-- CONTENEDOR DE IMAGEN - SOLO SE MOSTRARÁ LA IMAGEN QUE AGREGUES -->
+            <div class="image-container">
+                <!-- COLOCA TU URL DE IMAGEN AQUÍ -->
+                  <img src="https://atnojs.es/Paginas/ia_workflow/1.webp" alt="Tu imagen personalizada" style="width:100%;height:auto;border-radius:4px;"> 
+                <!-- Reemplaza la línea anterior con tu URL de imagen -->
+            </div>
+            
+            
+        
+        
+        <!-- Instrucciones finales -->
+        <div class="step-box">
+            <h4>Copia y pega las siguientes instrucciones en el campo personalizado:</h4>
+            <p>"Cuando el usuario ponga en su prompt $P activarás la conversión del prompt a la fórmula de prompting especial"</p>
+            <p>Cogerás la información que el usuario te haya compartido y lo convertirás siguiendo esta fórmula:</p>
+            
+            <ul class="instructions-list">
+                <li>Contexto y Rol</li>
+                <li>Consulta/Tarea</li>
+                <li>Especificaciones</li>
+                <li>Criterios de Calidad</li>
+                <li>Cómo debe ser la respuesta</li>
+                <li>Verificación</li>
+            </ul>
+            
+            <p>Si te falta información para completar el prompt en su formato fórmula lo que harás es pedirselo al usuario. Extrapolaras su prompt sencillo y lo convertirás en un prompt completo y optimizado siguiendo la fórmula, solo pregunta si es estrictamente necesario."</p>
+            
+            <p>A partir de ahora, cuando escribas un prompt tan simple como "Hazme un plan de redes para mi zapatería" y le añadas $P al final, ChatGPT no te dará una respuesta genérica. En su lugar, utilizará la programación que acabas de insertar para convertir tu pregunta simple en un prompt profesional completo, haciéndote las preguntas necesarias para rellenar cada una de las partes de la fórmula (Contexto, Tarea, Especificaciones, etc.). De este modo, la IA te guiará para que le des la información que necesita para generar un resultado de máxima calidad.</p>
+
+           <p>Si lo deseas puedes añadir archivos con la información que consideres "Cargar Archivos". Además puedes marcar las opciones que tienes en el apartado "Función" teniendo en cuenta el objetivo del GPT (Puedes marcarlas todas o ninguna).</p>
+
+	   <p>Las Acciones son una forma de conectar tu GPT con servicios externos o APIs.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Stripe & Firebase</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Meta SEO -->
+    <meta name="description"
+        content="Aprende a crear un sistema de reservas completo con Stripe, Firebase y Gemini 3. Tutorial profesional paso a paso.">
+</head>
+
+<body>
+
+    <aside class="sidebar glass">
+        <h2 class="gradient-text">Stripe & Firebase</h2>
+        <nav id="sidebar-nav">
+            <ul>
+                <li><a href="#introduccion">1. Introducción</a></li>
+                <li><a href="#prompt">2. Prompt Inicial</a></li>
+                <li><a href="#firebase">3. Setup Backend</a></li>
+                <li><a href="#firestore">4. Base de Datos</a></li>
+                <li><a href="#reglas">5. Seguridad</a></li>
+                <li><a href="#sdk">6. Conexión SDK</a></li>
+                <li><a href="#agenda">7. Sincronización</a></li>
+                <li><a href="#stripe-setup">8. Setup de Stripe</a></li>
+                <li><a href="#extension">9. Extensión Stripe</a></li>
+                <li><a href="#webhooks">10. Webhooks</a></li>
+                <li><a href="#flujo">11. Flujo de Pago</a></li>
+                <li><a href="#validacion">12. Validación</a></li>
+                <li><a href="#conclusion">13. Conclusión</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header id="header-main">
+            <h1 class="gradient-text">Booking System con Stripe y Firebase</h1>
+            <section class="card glass">
+                <p><strong>Domina los pagos digitales y la infraestructura No-Code/Low-Code.</strong></p>
+                <p>Este tutorial te guiará en la creación de una plataforma de reservas funcional: desde el diseño con
+                    Gemini 3 hasta la integración real de pasarelas de pago con Stripe.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="https://youtu.be/vVUNWBkdmc8" target="_blank"
+                        style="text-decoration: none; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #06b6d4, #818cf8); color: white; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                        </svg>
+                        Ver Tutorial en YouTube
+                    </a>
+                </div>
+            </section>
+        </header>
+
+        <section id="introduccion" class="content-section">
+            <h2>1. El fin de los negocios tradicionales</h2>
+            <div class="card glass">
+                <p>Google AI Studio junto a Gemini 3 está transformando el desarrollo SaaS. Lo que antes requería un
+                    equipo de frontend senior, ahora se puede lograr integrando herramientas como Firebase para el
+                    backend y Stripe para la monetización en cuestión de horas.</p>
+                <div class="tip-box">
+                    <strong>Objetivo:</strong> Crear un dashboard de reservas donde los clientes puedan pagar por slots
+                    de consultoría y recibir confirmaciones automáticas.
+                </div>
+            </div>
+        </section>
+
+        <section id="prompt" class="content-section">
+            <h2>2. Prompt Inicial: El Diseño Minimalista</h2>
+            <div class="card glass">
+                <p>Iniciamos en Google AI Studio pidiendo la estructura visual. Busca un diseño minimalista con colores
+                    pastel y blancos para una experiencia de usuario suave.</p>
+                <div class="tip-box">
+                    <strong>Prompt Pro:</strong> <em>"Crea un dashboard de reservas de sesiones de IA con diseño
+                        minimalista blanco y pastel. El usuario debe autenticarse, ver slots disponibles según mi zona
+                        horaria y poder reservar sesiones de 1h o 2h con un botón de Stripe."</em>
+                </div>
+            </div>
+        </section>
+
+        <section id="firebase" class="content-section">
+            <h2>3. Setup Backend con Firebase</h2>
+            <div class="card glass">
+                <p>Firebase será nuestro motor. Configura los pilares fundamentales:</p>
+                <ol class="step-list">
+                    <li>Crea un proyecto en la consola de Firebase.</li>
+                    <li>Activa <strong>Authentication</strong>: Habilita los métodos <em>Email/Password</em> y
+                        <em>Google Sign-in</em>.
+                    </li>
+                    <li>Crea una Web App para obtener tu configuración SDK.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="firestore" class="content-section">
+            <h2>4. Estructura de Firestore</h2>
+            <div class="card glass">
+                <p>Nuestra base de datos necesita dos colecciones clave para funcionar:</p>
+                <ul>
+                    <li><code>/settings/availability</code>: Documento con tu horario semanal mappreado (ej: EST
+                        timezone).</li>
+                    <li><code>/global_bookings</code>: Colección para bloquear slots ocupados y evitar "overbooking".
+                    </li>
+                </ul>
+                <div class="warning-box">
+                    <strong>Importante:</strong> La aplicación debe leer de ambas para mostrar solo los slots realmente
+                    disponibles al cliente.
+                </div>
+            </div>
+        </section>
+
+        <section id="reglas" class="content-section">
+            <h2>5. Reglas de Seguridad</h2>
+            <div class="card glass">
+                <p>Protege los datos de tus usuarios. Las reglas de Firebase deben asegurar que:</p>
+                <pre><code>// Solo el dueño lee el schedule
+match /settings/availability {
+  allow read: if true;
+  allow write: if isAdmin();
+}
+// Los usuarios solo ven y editan sus propias reservas
+match /users/{userId}/bookings/{bookingId} {
+  allow read, write: if request.auth.uid == userId;
+}</code></pre>
+            </div>
+        </section>
+
+        <section id="sdk" class="content-section">
+            <h2>6. Conexión SDK</h2>
+            <div class="card glass">
+                <p>Copia el código de configuración de Firebase e inyéctalo en el prompt de Gemini 3. Esto le permite al
+                    agente escribir funciones reales de login y registro vinculadas a tu base de datos.</p>
+            </div>
+        </section>
+
+        <section id="agenda" class="content-section">
+            <h2>7. Sincronización de Disponibilidad</h2>
+            <div class="card glass">
+                <p>El sistema debe detectar la zona horaria del usuario automáticamente. Si tu agenda está en EST y el
+                    cliente en España, el calendario debe mostrar las horas ajustadas sin intervención manual.</p>
+            </div>
+        </section>
+
+        <section id="stripe-setup" class="content-section">
+            <h2>8. Setup de Stripe Sandbox</h2>
+            <div class="card glass">
+                <p>Antes de cobrar dinero real, usa el entorno de pruebas (Sandbox):</p>
+                <ol class="step-list">
+                    <li>Crea productos en Stripe: <em>"AI Session 1h"</em> y <em>"AI Session 2h"</em>.</li>
+                    <li>Elige <strong>One-time payment</strong> (pago único).</li>
+                    <li>Copia los <strong>Price IDs</strong> (comienzan por <code>price_...</code>).</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="extension" class="content-section">
+            <h2>9. Extensión Firebase-Stripe</h2>
+            <div class="card glass">
+                <p>Instala la extensión <em>"Run Payments with Stripe"</em> desde el Hub de extensiones de Firebase.
+                    Esto automatiza la creación de sesiones de pago y el manejo de suscripciones.</p>
+                <div class="tip-box">
+                    <strong>Configuración:</strong> Pega tu <em>Secret Key</em> de Stripe en los ajustes de la extensión
+                    para vincular ambos servicios.
+                </div>
+            </div>
+        </section>
+
+        <section id="webhooks" class="content-section">
+            <h2>10. Webhooks: Comunicación de Retorno</h2>
+            <div class="card glass">
+                <p>Para que Firebase sepa si un pago tuvo éxito, Stripe debe enviar un "mensaje" de vuelta.</p>
+                <ol class="step-list">
+                    <li>Copia el <strong>Endpoint URL</strong> desde las Funciones de Firebase
+                        (<code>handleWebhookEvents</code>).</li>
+                    <li>Suscrito a eventos: <code>checkout.session.completed</code> y
+                        <code>payment_intent.succeeded</code>.
+                    </li>
+                    <li>Configura el <em>Webhook Secret</em> en Firebase para validar que los mensajes vienen de Stripe.
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="flujo" class="content-section">
+            <h2>11. Flujo de Pago Real</h2>
+            <div class="card glass">
+                <p>Cuando el usuario pulsa "Pagar", invocamos la función <code>createCheckoutSession</code> pasando:</p>
+                <ul>
+                    <li>El <strong>Price ID</strong> seleccionado.</li>
+                    <li>La URL de éxito (<code>/success</code>) y fracaso (<code>/failure</code>).</li>
+                    <li>El <strong>User ID</strong> para saber a quién pertenece el pago.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="validacion" class="content-section">
+            <h2>12. Validación y Rutas Post-Pago</h2>
+            <div class="card glass">
+                <p>Tras el pago exitoso, Stripe añade el ID de transacción a Firestore. El tutorial concluye enseñando a
+                    Gemini a gestionar la ruta <code>/success</code> para:</p>
+                <ol class="step-list">
+                    <li>Mostrar un mensaje de confirmación al usuario.</li>
+                    <li>Vincular el <em>Payment ID</em> a la reserva original en la base de datos.</li>
+                    <li>Mostrar los detalles del ticket (precio, fecha, estado) en el dashboard.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="conclusion" class="content-section">
+            <h2>13. Conclusión: El desarrollador Full-Stack AI</h2>
+            <div class="card glass">
+                <p>Has pasado de tener una idea a un sistema de pagos funcional. La clave está en delegar la lógica
+                    repetitiva a la IA y enfocarte en la orquestación de servicios premium como Stripe y Firebase.</p>
+            </div>
+        </section>
+
+        <footer class="glass" style="padding: 2rem; text-align: center; border-radius: var(--radius-md);">
+            <p>&copy; 2025 Tutorial Stripe & Firebase. Estilo Neon Glassmorphism.</p>
+        </footer>
+    </main>
+
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.sidebar nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                targetSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer to highlight active section in sidebar
+        const sections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

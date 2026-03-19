@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Tutoriales IA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="imagenes/favicon_integrado.ico" type="image/x-icon" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Roboto:wght@300;400;700&display=swap');
+
+/* ——— THEME ——— */
+:root{
+  --bg1:#0b1020; --bg2:#151a33;
+  --card:#131a2f; --card-rgb:19,26,47;
+  --text:#e9ecf5; --muted:#a0a8c0; --heading:#ffffff;
+  --border:#263052; --accent:#7aa2ff; --accent-2:#50e6ff; --accent-3:#ff7ad9;
+  --shadow:rgba(0,0,0,.35);
+  --green:#10b981; --red:#ef4444; --orange:#f59e0b; --violet:#8b5cf6;
+  --toast-bg: rgba(20,28,54,.95);
+}
+body.light{
+  --bg1:#f3f6ff; --bg2:#eaf0ff;
+  --card:#ffffff; --card-rgb:255,255,255;
+  --text:#222; --muted:#5b6275; --heading:#1a1e2b; --border:#e6e8f3;
+  --accent:#3b5cff; --accent-2:#1fb6ff; --accent-3:#b54dff; --shadow:rgba(0,0,0,.09);
+  --toast-bg: rgba(255,255,255,.98);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text); font-family:'Roboto',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;
+  background:
+    radial-gradient(1200px 700px at 10% -10%, rgba(122,162,255,.25), transparent 60%),
+    radial-gradient(900px 600px at 110% 10%, rgba(80,230,255,.18), transparent 60%),
+    radial-gradient(1000px 700px at 50% 120%, rgba(255,122,217,.12), transparent 60%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  min-height:100dvh; padding-top:88px; transition: background .25s ease, color .2s ease;
+}
+
+/* ——— BACKGROUND CANVAS (Efecto 1) ——— */
+#bgCanvas{
+  position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.45; mix-blend-mode:screen;
+}
+
+/* ——— TOP BAR ——— */
+.filters-search-bar{
+  position:fixed; inset:0 0 auto 0; z-index:1001;
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  background:rgba(var(--card-rgb),.75); backdrop-filter:saturate(140%) blur(10px);
+  border-bottom:1px solid var(--border); padding:12px 16px;
+}
+.filters-search-bar input[type="search"]{
+  flex:1; min-width:220px; padding:12px 14px; border-radius:12px;
+  border:1px solid var(--border); background:rgba(255,255,255,.03); color:var(--text);
+}
+.toolbar-right{display:flex; gap:8px; align-items:center}
+.toolbar-btn{
+  padding:10px 12px; border:0; border-radius:12px; cursor:pointer;
+  color:#fff; font-weight:800; box-shadow:0 8px 24px var(--shadow);
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+}
+.toolbar-btn.secondary{ background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06)); color:var(--text); border:1px solid var(--border) }
+.toggle-group{display:flex; gap:6px; align-items:center}
+.toggle-group .small{font-size:12px; color:var(--muted)}
+
+/* ——— TITLES ——— */
+.main-app-container{max-width:1300px;margin:0 auto;padding:22px; position:relative; z-index:1}
+.section-title-wrapper{text-align:center;margin:26px 0 18px}
+.section-title{
+  display:inline-block; font-family:'Inter',sans-serif; font-weight:800; letter-spacing:.3px;
+  font-size:26px; color:var(--heading);
+  padding:10px 20px; border-radius:16px; border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(var(--card-rgb),.7), rgba(var(--card-rgb),.5));
+  box-shadow:0 10px 30px var(--shadow);
+}
+
+/* ——— BUTTONS ——— */
+.add-item-btn{
+  display:none; margin:0 auto 18px; padding:12px 16px; border:0; border-radius:12px; cursor:pointer; font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; box-shadow:0 10px 24px var(--shadow);
+}
+body.edit-mode .add-item-btn{display:block}
+
+/* ——— FOLDERS (incluye efecto 3D + aura) ——— */
+.folders-grid{display:flex; flex-wrap:wrap; gap:18px; justify-content:center}
+.folder-item-wrap{perspective:1000px; width:300px}
+.folder-item{
+  position:relative; transform-style:preserve-3d; cursor:pointer; overflow:hidden;
+  background:rgba(var(--card-rgb), .86); border:1px solid var(--border); border-radius:18px; padding:16px;
+  box-shadow:0 18px 40px var(--shadow); transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.folder-item::before{
+  content:""; position:absolute; inset:-1px; border-radius:18px; padding:1px;
+  background:conic-gradient(from var(--angle,0deg), rgba(122,162,255,.35), rgba(80,230,255,.25), rgba(255,122,217,.35), rgba(122,162,255,.35));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; pointer-events:none;
+  animation: spin 4.5s linear infinite paused;
+}
+.folder-item:hover{ background:rgba(var(--card-rgb), .92); box-shadow: 0 24px 60px rgba(122,162,255,.25), 0 8px 20px var(--shadow) }
+.folder-item:hover::before{ animation-play-state:running }
+@keyframes spin{ to{ --angle:360deg } }
+
+.folder-header{display:flex; gap:12px; align-items:center; margin-bottom:8px}
+.folder-icon{
+  width:54px;height:54px;border-radius:12px;object-fit:cover;background:#0d1226;box-shadow: inset 0 0 0 1px var(--border); transform: translateZ(20px);
+}
+.folder-name{
+  font-family:'Inter',sans-serif; font-weight:800; font-size:18px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent; transform: translateZ(18px);
+}
+.folder-description{ font-size:14px; color:var(--muted); min-height:40px; transform: translateZ(12px); }
+.item-edit-buttons,.item-order-buttons{ display:none; position:absolute; top:8px; gap:6px; z-index:5; transform: translateZ(30px) }
+.item-edit-buttons{ right:8px } .item-order-buttons{ left:8px }
+body.edit-mode .item-edit-buttons, body.edit-mode .item-order-buttons{ display:flex }
+.item-edit-buttons button, .item-order-buttons button{
+  border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--text);
+  padding:6px 8px; border-radius:10px; cursor:pointer; font-size:12px;
+}
+.folder-item.drag-shadow{ outline:2px dashed var(--accent-2); outline-offset:4px }
+
+/* ——— FOLDER VIEW ——— */
+#folderView{ display:none }
+.folder-view-header{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px }
+.folder-view-title{
+  font-family:'Inter',sans-serif; font-size:22px; font-weight:800;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.folder-view-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+.btn-back{
+  display:inline-flex; align-items:center; gap:8px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(var(--card-rgb),.8), rgba(var(--card-rgb),.65));
+  color:#e9ecf5; border-radius:12px; padding:10px 14px; font-weight:800; cursor:pointer;
+  box-shadow:0 10px 24px var(--shadow);
+}
+.btn-back:before{ content:"\f060"; font-family:"Font Awesome 6 Free"; font-weight:900; }
+.btn-back:hover{ background:linear-gradient(180deg, rgba(var(--card-rgb),.95), rgba(var(--card-rgb),.8)); box-shadow:0 20px 40px rgba(122,162,255,.25), 0 8px 20px var(--shadow) }
+
+.tags-filter{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+.tag-chip{
+  padding:6px 10px; border-radius:999px; font-weight:800; font-size:12px; cursor:pointer;
+  border:1px solid var(--border);
+  background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  color:var(--text);
+}
+.tag-chip.active{ color:#fff; border:0; box-shadow:0 8px 20px var(--shadow) }
+
+/* ——— VIDEO GRID / LIST / MASONRY ——— */
+.grid-videos{ display:grid; grid-template-columns:repeat(5,1fr); gap:16px }
+@media (max-width:1200px){ .grid-videos{ grid-template-columns:repeat(4,1fr) } }
+@media (max-width:900px){  .grid-videos{ grid-template-columns:repeat(3,1fr) } }
+@media (max-width:700px){  .grid-videos{ grid-template-columns:repeat(2,1fr) } }
+@media (max-width:460px){  .grid-videos{ grid-template-columns:repeat(1,1fr) } }
+/* Masonry fallback con columns */
+.masonry{ column-count:5; column-gap:16px }
+@media (max-width:1200px){ .masonry{ column-count:4 } }
+@media (max-width:900px){  .masonry{ column-count:3 } }
+@media (max-width:700px){  .masonry{ column-count:2 } }
+@media (max-width:460px){  .masonry{ column-count:1 } }
+.masonry .video-tilt-wrap{ break-inside:avoid; margin:0 0 16px }
+
+/* List view */
+.list-view{ display:flex; flex-direction:column; gap:10px }
+.list-view .video-tilt-wrap{ perspective:900px }
+.list-view .video-card{ flex-direction:row }
+.list-view .thumb-wrap{ width:280px; min-width:280px }
+.list-view .video-body{ flex:1 }
+
+/* ——— VIDEO CARDS 3D + aura + skeleton + actions ——— */
+.video-tilt-wrap{ perspective:1000px }
+.video-card{
+  position:relative; transform-style:preserve-3d; will-change: transform;
+  background:rgba(var(--card-rgb), .9); border:1px solid var(--border);
+  border-radius:16px; overflow:hidden; box-shadow:0 14px 32px var(--shadow);
+  display:flex; flex-direction:column; transition:.12s ease;
+  /* variable per-card para glow */
+  --glow: rgba(122,162,255,.25);
+}
+.video-card::before{
+  content:""; position:absolute; inset:-1px; border-radius:16px; padding:1px;
+  background:conic-gradient(from var(--angle,0deg), var(--glow), rgba(80,230,255,.25), rgba(255,122,217,.25), var(--glow));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; pointer-events:none;
+  animation: spin 6s linear infinite paused;
+}
+.video-card:hover{ background:rgba(var(--card-rgb), .96); box-shadow:0 22px 54px var(--glow), 0 10px 22px var(--shadow); transform: translateZ(8px) }
+.video-card:hover::before{ animation-play-state:running }
+
+.thumb-wrap{ position:relative; aspect-ratio:16/9; background:#0a0a0a; transform: translateZ(22px) }
+.thumb-wrap img{ 
+  position:absolute; 
+  inset:0; 
+  width:100%; 
+  height:100%; 
+  object-fit:contain; /* <-- Cambiado para que la imagen quepa entera */
+  padding: 1.2rem;     /* <-- Añadido para dar un margen al logo */
+  filter:saturate(110%) 
+}
+.thumb-skeleton{
+  position:absolute; inset:0; background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.02), rgba(255,255,255,.06));
+  background-size:200% 100%; animation: shimmer 1.1s linear infinite;
+}
+@keyframes shimmer{ to{background-position: -200% 0} }
+
+.video-body{ padding:12px; display:flex; flex-direction:column; gap:6px }
+.video-title{ font-weight:800; line-height:1.2; font-family:'Inter',sans-serif; transform: translateZ(16px) }
+.video-note{ font-size:13px; color:var(--muted); transform: translateZ(12px) }
+.video-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px }
+.video-tag{
+  font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); color:var(--text); opacity:.95;
+  background:rgba(255,255,255,.04);
+}
+
+.video-actions{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:6px; transform: translateZ(14px) }
+.video-actions a, .video-actions button{
+  border:0; border-radius:8px; padding:6px 8px; color:#fff; font-weight:800; cursor:pointer; font-size:12px; min-width:0;
+}
+.btn-open{ background:linear-gradient(135deg, var(--accent-2), var(--accent)) }
+.btn-edit{ background:linear-gradient(135deg, #8b5cf6, #a855f7) }
+.btn-del{ background:linear-gradient(135deg, #ef4444, #f97316) }
+.btn-move{ background:linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.06)); color:var(--text); border:1px solid var(--border) }
+.btn-dup{ background:linear-gradient(135deg, var(--green), #22d3ee) }
+
+/* selección múltiple */
+.select-box{
+  position:absolute; top:8px; left:8px; z-index:3; display:none;
+  width:22px; height:22px; border-radius:6px; border:1px solid var(--border);
+  background:rgba(0,0,0,.2); backdrop-filter: blur(2px);
+}
+.select-box input{ width:100%; height:100%; margin:0; cursor:pointer }
+body.edit-mode .select-box{ display:block }
+.video-card.selected{ outline:2px solid var(--accent-2); outline-offset:2px }
+
+/* ——— MODALES Y FORMS ——— */
+.form-modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:10000; justify-content:center; align-items:center }
+.form-modal-content{
+  background:rgba(var(--card-rgb), .96); border:1px solid var(--border);
+  border-radius:16px; padding:22px; max-width:900px; width:92vw; box-shadow:0 18px 40px var(--shadow); color:var(--text);
+}
+.form-modal-content h3{ font-family:'Inter',sans-serif; text-align:center; margin:6px 0 14px }
+.form-group{ margin:10px 0 }
+.form-group label{ display:block; margin-bottom:6px; font-weight:800; font-family:'Inter',sans-serif }
+.form-group input, .form-group textarea, .form-group select{
+  width:100%; padding:12px; border-radius:12px; border:1px solid var(--border);
+  background:rgba(255,255,255,.03); color:var(--text);
+}
+.inline-help{ font-size:12px; color:var(--muted); margin-top:6px }
+.thumb-preview{ margin-top:10px; border:1px dashed var(--border); border-radius:12px; padding:10px; display:flex; align-items:center; gap:12px }
+.thumb-preview img{ width:160px; height:auto; border-radius:8px }
+.form-buttons{ display:flex; justify-content:flex-end; gap:10px; margin-top:12px }
+.save-btn{ background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; border:0; border-radius:12px; padding:10px 14px; font-weight:800; cursor:pointer }
+.cancel-btn{ background:#6c757d; color:#fff; border:0; border-radius:12px; padding:10px 14px; font-weight:800; cursor:pointer }
+
+/* ——— GLOBAL CONTROLS ——— */
+.global-controls{ position:fixed; bottom:20px; right:20px; display:none; flex-direction:column; gap:10px; z-index:1000 }
+body.edit-mode .global-controls{ display:flex }
+.global-controls button{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff; border:0; border-radius:28px; padding:10px 14px; font-weight:800; cursor:pointer; box-shadow:0 10px 24px var(--shadow)
+}
+#edit-mode-toggle-btn{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
+  background:transparent; color:#fff; border:1px solid var(--border);
+  border-radius:28px; padding:12px 28px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px var(--shadow)
+}
+#edit-mode-toggle-btn.active{ background:#dc3545 }
+
+/* ——— TOASTS ——— */
+#toasts{ position:fixed; top:14px; right:14px; z-index:20002; display:flex; flex-direction:column; gap:8px }
+.toast{
+  background:var(--toast-bg); color:var(--text); border:1px solid var(--border); border-radius:12px;
+  padding:10px 12px; font-size:13px; box-shadow:0 8px 22px var(--shadow); display:flex; gap:8px; align-items:center; min-width:220px
+}
+.toast.ok::before{content:"✔️"}
+.toast.err::before{content:"⚠️"}
+.toast.info::before{content:"ℹ️"}
+
+/* ——— MISC ——— */
+.no-items-message{text-align:center;color:var(--muted);padding:18px;width:100%}
+footer .section-title{font-size:12px;padding:6px 12px;opacity:.85}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="filters-search-bar">
+  <input type="search" id="globalSearchInput" placeholder="Buscar carpetas o vídeos…" />
+  <div class="toolbar-right">
+    <div class="toggle-group">
+      <button id="themeSwitcherBtn" class="toolbar-btn">Tema Claro</button>
+      <button id="toggleFxBtn" class="toolbar-btn secondary" title="Activar/Desactivar fondo vivo">FX Fondo</button>
+      <span class="small">⌘/Ctrl+K: buscar</span>
+    </div>
+  </div>
+</div>
+
+<div class="main-app-container">
+  <section id="foldersSection">
+    <div class="section-title-wrapper"><h2 class="section-title">Tutoriales de IA</h2></div>
+    <button id="addFolderBtn" class="add-item-btn">Añadir Carpeta</button>
+    <button id="saveFoldersBtn" class="add-item-btn" style="background:linear-gradient(135deg,var(--accent-2),var(--accent))">Guardar Orden de Carpetas</button>
+    <div id="foldersGrid" class="folders-grid"></div>
+    <p id="noFoldersMsg" class="no-items-message" style="display:none">No hay carpetas todavía.</p>
+  </section>
+
+  <section id="folderView">
+    <div class="folder-view-header">
+      <div class="folder-view-title" id="folderViewTitle">Carpeta</div>
+      <div class="folder-view-actions">
+        <div id="tagsFilter" class="tags-filter"></div>
+        <div class="toggle-group">
+          <button id="viewBoardBtn" class="toolbar-btn secondary" title="Vista tablero">Tablero</button>
+          <button id="viewMasonryBtn" class="toolbar-btn secondary" title="Vista masonry">Masonry</button>
+          <button id="viewListBtn" class="toolbar-btn secondary" title="Vista lista">Lista</button>
+        </div>
+        <button id="backToFoldersBtn" class="btn-back">Volver</button>
+        <button id="addVideoBtn" class="add-item-btn">Añadir Vídeo</button>
+        <button id="bulkImportBtn" class="add-item-btn" style="background:linear-gradient(135deg,#22c55e,#06b6d4)">Importar en bloque</button>
+        <button id="saveVideosBtn" class="add-item-btn" style="background:linear-gradient(135deg,var(--accent-2),var(--accent))">Guardar Orden de Vídeos</button>
+      </div>
+    </div>
+
+    <!-- Toolbar selección múltiple -->
+    <div id="bulkBar" style="display:none; margin:0 0 10px; padding:8px; border:1px dashed var(--border); border-radius:12px; background:rgba(255,255,255,.03)">
+      <span id="bulkCount">0 seleccionados</span>
+      <button id="bulkMoveBtn" class="toolbar-btn secondary">Mover a…</button>
+      <button id="bulkDupBtn" class="toolbar-btn secondary">Duplicar en…</button>
+      <button id="bulkDelBtn" class="toolbar-btn" style="background:linear-gradient(135deg,#ef4444,#f97316)">Eliminar</button>
+    </div>
+
+    <div id="videosGrid" class="grid-videos"></div>
+    <p id="noVideosMsg" class="no-items-message" style="display:none">Esta carpeta está vacía.</p>
+  </section>
+</div>
+
+<!-- Controles globales (solo edición) -->
+<div class="global-controls">
+  <button id="changeBgBtn" title="Cambiar fondo"><i class="fas fa-image"></i></button>
+</div>
+<input type="file" id="hiddenBgInput" accept="image/*" style="display:none" />
+<button id="edit-mode-toggle-btn"></button> <!-- activar edición -->
+
+<!-- Modal contraseña -->
+<div id="adminPasswordModal" class="form-modal-overlay">
+  <div class="form-modal-content">
+    <h3>Acceder al Modo Edición</h3>
+    <div class="form-group"><input type="password" id="adminPasswordInput" placeholder="Contraseña" /></div>
+    <div class="form-buttons">
+      <button id="submitAdminPasswordBtn" class="save-btn">Activar</button>
+      <button id="cancelAdminPasswordBtn" class="cancel-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal genérico -->
+<div id="formModal" class="form-modal-overlay">
+  <div class="form-modal-content" id="genericFormContainer"></div>
+</div>
+
+<!-- Quick Search -->
+<div id="quickSearch" class="form-modal-overlay" style="align-items:flex-start; padding-top:120px">
+  <div class="form-modal-content" style="max-width:720px">
+    <h3>Buscar (carpetas y vídeos)</h3>
+    <div class="form-group"><input id="qsInput" placeholder="Empieza a escribir…" /></div>
+    <div id="qsResults"></div>
+    <div class="form-buttons">
+      <button id="qsClose" class="cancel-btn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<footer class="section-title-wrapper" style="margin:60px 0 40px">
+  <p class="section-title">Antonio Jiménez - 2025</p>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  /* ===== STATE ===== */
+  let appData = {
+    settings:{background:'',theme:'dark',fx:'nebula',viewModes:{},savedTagFilters:{}},
+    aiAppsCategories:[],
+    prompts:[],          // vídeos
+    promptFolders:[]
+  };
+  let isEditable = false;
+  let currentPassword = '';
+  let currentFolderId = null;
+  let selectedTagSet = new Set();
+  let selection = new Set(); // selección múltiple en carpeta
+  let currentViewMode = 'board'; // board | masonry | list
+
+  /* ===== DOM ===== */
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  const inputSearch = document.getElementById('globalSearchInput');
+  const btnTheme = document.getElementById('themeSwitcherBtn');
+  const btnFx = document.getElementById('toggleFxBtn');
+  const btnEdit = document.getElementById('edit-mode-toggle-btn');
+
+  const foldersSection = document.getElementById('foldersSection');
+  const foldersGrid = document.getElementById('foldersGrid');
+  const noFoldersMsg = document.getElementById('noFoldersMsg');
+  const addFolderBtn = document.getElementById('addFolderBtn');
+  const saveFoldersBtn = document.getElementById('saveFoldersBtn');
+
+  const folderView = document.getElementById('folderView');
+  const folderViewTitle = document.getElementById('folderViewTitle');
+  const backToFoldersBtn = document.getElementById('backToFoldersBtn');
+  const addVideoBtn = document.getElementById('addVideoBtn');
+  const bulkImportBtn = document.getElementById('bulkImportBtn');
+  const saveVideosBtn = document.getElementById('saveVideosBtn');
+  const videosGrid = document.getElementById('videosGrid');
+  const noVideosMsg = document.getElementById('noVideosMsg');
+  const tagsFilter = document.getElementById('tagsFilter');
+
+  const bulkBar = document.getElementById('bulkBar');
+  const bulkCount = document.getElementById('bulkCount');
+  const bulkMoveBtn = document.getElementById('bulkMoveBtn');
+  const bulkDupBtn = document.getElementById('bulkDupBtn');
+  const bulkDelBtn = document.getElementById('bulkDelBtn');
+
+  const formModal = document.getElementById('formModal');
+  const formBox = document.getElementById('genericFormContainer');
+  const passModal = document.getElementById('adminPasswordModal');
+  const passInput = document.getElementById('adminPasswordInput');
+  const submitPassBtn = document.getElementById('submitAdminPasswordBtn');
+  const cancelPassBtn = document.getElementById('cancelAdminPasswordBtn');
+
+  const hiddenBgInput = document.getElementById('hiddenBgInput');
+  const changeBgBtn = document.getElementById('changeBgBtn');
+
+  const qs = document.getElementById('quickSearch');
+  const qsInput = document.getElementById('qsInput');
+  const qsResults = document.getElementById('qsResults');
+  const qsClose = document.getElementById('qsClose');
+
+  /* ===== UTILS ===== */
+  const showToast = (msg,type='info')=>{
+    const wrap = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = 'toast '+type;
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(-6px)'; }, 2400);
+    setTimeout(()=> el.remove(), 3000);
+  };
+
+  const slugify = str => (str||'').toString().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'carpeta';
+
+  const getYouTubeId = url=>{
+    if(!url) return null;
+    try{
+      const u = new URL(url);
+      if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+      if (u.searchParams.get('v')) return u.searchParams.get('v');
+      const m = u.pathname.match(/\/(embed|shorts|v)\/([^/?#]+)/);
+      if (m) return m[2];
+    }catch(e){}
+    const r = (url+'').match(/(?:v=|\/)([0-9A-Za-z_-]{11})(?:[&?]|$)/);
+    return r ? r[1] : null;
+  };
+  const ytThumb = id => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  const now = () => Date.now();
+
+  function showLoading(txt='Cargando…'){
+    let d = document.getElementById('loadingOverlay');
+    if(!d){
+      d = document.createElement('div');
+      d.id='loadingOverlay';
+      d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;z-index:20000';
+      document.body.appendChild(d);
+    }
+    d.textContent = txt; d.style.display='flex';
+  }
+  const hideLoading = ()=>{ const d=document.getElementById('loadingOverlay'); if(d) d.style.display='none'; };
+  const alertError = msg => alert('Error: '+msg);
+
+  /* ===== THEME & FX ===== */
+  function applyThemeFromSettings(){
+    appData.settings.theme = 'dark'; // forzar oscuro por defecto
+    document.body.classList.toggle('light', appData.settings.theme==='light');
+    btnTheme.textContent = document.body.classList.contains('light') ? 'Tema Oscuro' : 'Tema Claro';
+    if(appData.settings.background){
+      document.body.style.backgroundImage = appData.settings.background + ', ' + getComputedStyle(document.body).backgroundImage;
+      document.body.style.backgroundAttachment='fixed, scroll';
+      document.body.style.backgroundSize='cover, auto';
+    }
+    // FX
+    startOrStopFx(appData.settings.fx !== 'none');
+  }
+  function toggleTheme(){
+    const isLight = document.body.classList.contains('light');
+    document.body.classList.toggle('light', !isLight);
+    appData.settings.theme = (!isLight) ? 'dark' : 'light';
+    btnTheme.textContent = (!isLight) ? 'Tema Claro' : 'Tema Oscuro';
+    if(isEditable) saveAll('Guardando tema…'); 
+  }
+  btnTheme.onclick = toggleTheme;
+
+  btnFx.onclick = ()=>{
+    appData.settings.fx = (appData.settings.fx==='none') ? 'nebula' : 'none';
+    startOrStopFx(appData.settings.fx!=='none');
+    if(isEditable) saveAll('Guardando efecto…');
+    showToast(appData.settings.fx==='none'?'FX desactivado':'FX activado','info');
+  };
+
+  /* ===== BACKGROUND FX (Nebula de partículas) ===== */
+  let fxRAF = null, particles = [];
+  function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+  function startOrStopFx(on){
+    if(on){ resizeCanvas(); createParticles(); animateFx(); addEventListener('resize', resizeCanvas); }
+    else{ cancelAnimationFrame(fxRAF); fxRAF=null; particles=[]; ctx.clearRect(0,0,canvas.width,canvas.height); removeEventListener('resize', resizeCanvas); }
+  }
+  function createParticles(){
+    const count = Math.round((innerWidth*innerHeight)/38000);
+    particles = Array.from({length:count}, ()=>({
+      x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+      r: 0.8+Math.random()*2.2,
+      dx: (-0.3+Math.random()*0.6), dy:(-0.2+Math.random()*0.4),
+      h: Math.floor(Math.random()*360)
+    }));
+  }
+  function animateFx(){
+    fxRAF = requestAnimationFrame(animateFx);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.dx; p.y+=p.dy;
+      if(p.x<0||p.x>innerWidth) p.dx*=-1;
+      if(p.y<0||p.y>innerHeight) p.dy*=-1;
+      ctx.beginPath();
+      const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*6);
+      g.addColorStop(0, `hsla(${p.h},70%,60%,.6)`); g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g; ctx.arc(p.x,p.y,p.r*6,0,Math.PI*2); ctx.fill();
+    });
+  }
+
+  /* ===== EDIT MODE / PASSWORD (ENTER soportado) ===== */
+  function setEditMode(enabled){
+    isEditable = !!enabled;
+    document.body.classList.toggle('edit-mode', isEditable);
+    btnEdit.classList.toggle('active', isEditable);
+    btnEdit.textContent = isEditable ? 'Desactivar edición' : 'Activar edición';
+    render();
+  }
+  async function checkPassword(p){
+    try{
+      const fd = new FormData(); fd.append('password', p);
+      const r = await fetch('validar_password.php',{method:'POST',body:fd});
+      const j = await r.json(); return !!j?.success;
+    }catch{ return false; }
+  }
+  btnEdit.onclick = ()=>{
+    if(isEditable){
+      saveAll('Saliendo del modo edición…').then(()=> setEditMode(false));
+    }else{
+      passInput.value=''; passModal.style.display='flex'; passInput.focus();
+    }
+  };
+  submitPassBtn.onclick = async ()=>{
+    const p = passInput.value; if(!p) return;
+    showLoading('Verificando…');
+    try{
+      const ok = await checkPassword(p);
+      if(ok){ currentPassword=p; passModal.style.display='none'; setEditMode(true); showToast('Edición activada','ok'); }
+      else alert('Contraseña incorrecta');
+    }finally{ hideLoading(); }
+  };
+  cancelPassBtn.onclick = ()=> passModal.style.display='none';
+  passInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitPassBtn.click(); } });
+  
+  
+  
+    /* ===== Micro-interacciones: reveal on view ===== */
+  const revealObserver = {
+    io: new IntersectionObserver(entries=>{
+      entries.forEach(ent=>{
+        if(ent.isIntersecting){
+          ent.target.style.transition='opacity .35s ease, transform .35s ease';
+          ent.target.style.opacity='1'; ent.target.style.transform='translateY(0)';
+          revealObserver.io.unobserve(ent.target);
+        }
+      });
+    }, {rootMargin:'100px'}),
+    observeAll(nodes){
+      nodes.forEach(n=>{
+        n.style.opacity='0'; n.style.transform='translateY(8px)';
+        revealObserver.io.observe(n);
+      });
+    }
+  };
+  
+  
+  
+  
+  
+
+  /* ===== BACKEND ===== */
+  async function loadState(){
+    showLoading('Cargando…');
+    try{
+      const r = await fetch('load_state.php?t='+Date.now());
+      const data = await r.json();
+      if (data && !data.error){
+        appData.settings = {...appData.settings, ...(data.settings||{})};
+        appData.aiAppsCategories = Array.isArray(data.aiAppsCategories)? data.aiAppsCategories : [];
+        appData.prompts = Array.isArray(data.prompts)? data.prompts : [];
+        appData.promptFolders = Array.isArray(data.promptFolders)? data.promptFolders : [];
+        ensureFolderSlugs();
+      }
+    }catch(e){ console.error(e); alertError('No se pudo cargar el estado.'); }
+    applyThemeFromSettings(); route(); hideLoading();
+  }
+  function ensureFolderSlugs(){
+    const used = new Set();
+    appData.promptFolders = appData.promptFolders.map(f=>{
+      let s = f.slug || slugify(f.name||''); const base = s || 'carpeta'; let i=2;
+      while(used.has(s)||!s){ s = base + '-' + i++; } used.add(s);
+      return {...f, slug:s};
+    });
+  }
+  async function saveAll(msg='Guardando…'){
+    if(!isEditable) return true;
+    showLoading(msg);
+    try{
+      const dataToSave = {...appData};
+     // CÓDIGO NUEVO Y CORRECTO
+dataToSave.prompts = dataToSave.prompts.map(p=>({
+    id:p.id, title:p.title, descriptionHTML:p.descriptionHTML||'',
+    thumbnailUrl: p.thumbnailUrl || '', // <--- AÑADE ESTA LÍNEA
+    exampleImageUrls:[], promptText:p.promptText, folderId:p.folderId||null,
+    manualOrderRank: (typeof p.manualOrderRank==='number')? p.manualOrderRank : null,
+    tags: Array.isArray(p.tags)? p.tags : [],
+    timestampAdded:p.timestampAdded||Date.now(), timestampUpdated:p.timestampUpdated||Date.now()
+}));
+      dataToSave.promptFolders = dataToSave.promptFolders.map(f=>({
+        id:f.id, name:f.name, description:f.description||'', iconUrl:f.iconUrl||'',
+        slug:f.slug, timestampAdded:f.timestampAdded||Date.now(), timestampUpdated:f.timestampUpdated||Date.now()
+      }));
+      const fd = new FormData();
+      fd.append('password', currentPassword);
+      fd.append('jsonData', JSON.stringify(dataToSave));
+      const r = await fetch('guardar_cambios.php',{method:'POST',body:fd});
+      const res = await r.json();
+      if(!r.ok || !res.success){ throw new Error(res.error || ('HTTP '+r.status)); }
+      showToast('Guardado','ok');
+      return true;
+    }catch(e){ alertError(e.message); showToast('Error guardando','err'); return false; }
+    finally{ hideLoading(); }
+  }
+
+  /* ===== ORDER & HELPERS ===== */
+  function getSortedVideos(folderId){
+    let vids = appData.prompts.filter(p => p.folderId===folderId);
+    vids.sort((a,b)=>{
+      const am = (typeof a.manualOrderRank==='number'), bm = (typeof b.manualOrderRank==='number');
+      if(am && bm){ return a.manualOrderRank - b.manualOrderRank; }
+      if(am && !bm) return -1; if(!am && bm) return 1;
+      return (b.timestampAdded||0) - (a.timestampAdded||0);
+    });
+    return vids;
+  }
+  function ensureManualRanks(folderId){
+    const list = getSortedVideos(folderId);
+    list.forEach((x,i)=>{ x.manualOrderRank = i; });
+  }
+  function reorderVideosByIdSequence(folderId, idSeq){
+    const vids = appData.prompts.filter(p=>p.folderId===folderId);
+    const map = new Map(idSeq.map((id,i)=>[id,i]));
+    vids.forEach(v=>{
+      const idx = map.get(v.id);
+      if(typeof idx==='number') v.manualOrderRank = idx;
+    });
+  }
+
+  /* ===== RENDER ===== */
+  function render(){ if(currentFolderId) renderFolderView(); else renderFolders(); }
+
+  // ——— Folders
+  function renderFolders(){
+    const q = (inputSearch.value||'').toLowerCase().trim();
+    foldersGrid.innerHTML='';
+    const list = appData.promptFolders.filter(f => !q || (f.name||'').toLowerCase().includes(q) || (f.description||'').toLowerCase().includes(q));
+    noFoldersMsg.style.display = list.length? 'none' : 'block';
+
+    list.forEach((f, idx)=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'folder-item-wrap';
+      wrap.dataset.id = f.id;
+      const el = document.createElement('div');
+      el.className = 'folder-item';
+      el.draggable = isEditable;
+      el.innerHTML = `
+        ${isEditable?`<div class="item-order-buttons">
+          <button class="move-left" ${idx===0?'disabled':''} title="Mover izquierda">←</button>
+          <button class="move-right" ${idx===list.length-1?'disabled':''} title="Mover derecha">→</button>
+        </div>`:''}
+        ${isEditable?`<div class="item-edit-buttons">
+          <button class="edit" title="Editar"><i class="fas fa-edit"></i></button>
+          <button class="del" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+        </div>`:''}
+        <div class="folder-header">
+          <img class="folder-icon" src="${f.iconUrl||'https://via.placeholder.com/64/222/aaa?text=F'}" alt="">
+          <div class="folder-name">${f.name||'Carpeta'}</div>
+        </div>
+        <div class="folder-description">${f.description||'<em style="color:var(--muted)"></em>'}</div>
+      `;
+      el.addEventListener('click',(e)=>{
+        if (e.target.closest('.item-edit-buttons') || e.target.closest('.item-order-buttons')) return;
+        openFolderBySlug(f.slug);
+      });
+
+      if(isEditable){
+        el.addEventListener('dragstart', e=>{
+          el.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', f.id);
+        });
+        el.addEventListener('dragend', ()=> el.classList.remove('dragging'));
+        wrap.addEventListener('dragover', e=>{ e.preventDefault(); el.classList.add('drop-target'); });
+        wrap.addEventListener('dragleave', ()=> el.classList.remove('drop-target'));
+        wrap.addEventListener('drop', e=>{
+          e.preventDefault();
+          el.classList.remove('drop-target');
+          const draggedId = e.dataTransfer.getData('text/plain');
+          if(!draggedId || draggedId===f.id) return;
+          const from = appData.promptFolders.findIndex(x=>x.id===draggedId);
+          const to = appData.promptFolders.findIndex(x=>x.id===f.id);
+          if(from<0 || to<0) return;
+          const [it] = appData.promptFolders.splice(from,1);
+          appData.promptFolders.splice(to,0,it);
+          renderFolders(); saveAll('Guardando orden de carpetas…');
+        });
+
+        el.querySelector('.edit')?.addEventListener('click', (e)=>{ e.stopPropagation(); openFolderForm(f.id); });
+        el.querySelector('.del')?.addEventListener('click', (e)=>{ e.stopPropagation(); deleteFolder(f.id); });
+        el.querySelector('.move-left')?.addEventListener('click', (e)=>{ e.stopPropagation(); moveFolder(f.id,-1); });
+        el.querySelector('.move-right')?.addEventListener('click', (e)=>{ e.stopPropagation(); moveFolder(f.id,1); });
+      }
+
+      wrap.appendChild(el); foldersGrid.appendChild(wrap);
+    });
+
+    attach3DTilt('.folder-item-wrap .folder-item');
+    revealObserver.observeAll(foldersGrid.querySelectorAll('.folder-item'));
+  }
+
+  // ——— Tags (color estable por hash) + recordatorio por carpeta
+  function tagColor(tag){
+    // hash a HSL
+    let h=0; for(let i=0;i<tag.length;i++){ h=(h*31 + tag.charCodeAt(i))>>>0; }
+    h = h % 360;
+    return `hsl(${h} 65% 52%)`;
+  }
+  function renderTagsFilter(){
+    tagsFilter.innerHTML='';
+    const vids = getSortedVideos(currentFolderId);
+    const tagMap = new Map(); // tag -> count
+    vids.forEach(v => (v.tags||[]).forEach(t=>{
+      const key = t.trim(); if(!key) return;
+      tagMap.set(key, (tagMap.get(key)||0)+1);
+    }));
+
+    const allChip = document.createElement('div');
+    allChip.className = 'tag-chip' + (selectedTagSet.size===0 ? ' active':'');
+    allChip.textContent = 'Todas';
+    allChip.onclick = ()=>{ selectedTagSet.clear(); saveTagFilter(); renderFolderView(); };
+    tagsFilter.appendChild(allChip);
+
+    [...tagMap.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([tag,count])=>{
+      const chip = document.createElement('div');
+      chip.className = 'tag-chip' + (selectedTagSet.has(tag) ? ' active':'');
+      chip.textContent = `${tag} (${count})`;
+      chip.style.background = selectedTagSet.has(tag) ? `linear-gradient(135deg, ${tagColor(tag)}, ${tagColor(tag)})` : '';
+      chip.style.color = selectedTagSet.has(tag) ? '#fff' : '';
+      chip.onclick = ()=>{
+        if(selectedTagSet.has(tag)) selectedTagSet.delete(tag);
+        else selectedTagSet.add(tag);
+        saveTagFilter();
+        renderFolderView();
+      };
+      tagsFilter.appendChild(chip);
+    });
+  }
+  function saveTagFilter(){
+    appData.settings.savedTagFilters[currentFolderId] = [...selectedTagSet];
+    if(isEditable) saveAll('Guardando filtro…');
+  }
+
+  // ——— Videos
+  function currentContainerForMode(){
+    if(currentViewMode==='masonry'){ videosGrid.className='masonry'; return videosGrid; }
+    if(currentViewMode==='list'){ videosGrid.className='list-view'; return videosGrid; }
+    videosGrid.className='grid-videos'; return videosGrid;
+  }
+
+  function renderFolderView(){
+    const f = appData.promptFolders.find(x=>x.id===currentFolderId);
+    if(!f){ routeToFolders(); return; }
+    folderViewTitle.textContent = f.name || 'Carpeta';
+
+    // restaurar vista y filtros
+    currentViewMode = appData.settings.viewModes[currentFolderId] || 'board';
+    selectedTagSet = new Set(appData.settings.savedTagFilters[currentFolderId] || []);
+
+    renderTagsFilter();
+
+    const q = (inputSearch.value||'').toLowerCase().trim();
+    let vids = getSortedVideos(currentFolderId);
+
+    vids = vids.filter(v =>
+      !q ||
+      (v.title||'').toLowerCase().includes(q) ||
+      (v.promptText||'').toLowerCase().includes(q) ||
+      (v.descriptionHTML||'').toLowerCase().includes(q) ||
+      (Array.isArray(v.tags) && v.tags.join(' ').toLowerCase().includes(q))
+    );
+
+    if(selectedTagSet.size>0){
+      vids = vids.filter(v => (v.tags||[]).some(t=>selectedTagSet.has(t)));
+    }
+
+    const container = currentContainerForMode();
+    container.innerHTML='';
+    noVideosMsg.style.display = vids.length? 'none':'block';
+    selection.clear(); updateBulkBar();
+
+    vids.forEach((v, idx)=>{
+      /*const id = getYouTubeId(v.promptText);
+      const thumb = id ? ytThumb(id) : 'https://via.placeholder.com/480x270/000/fff?text=URL+YouTube';*/
+      const thumb = v.thumbnailUrl || 'https://via.placeholder.com/480x270/000/fff?text=Sin+Miniatura';
+      const wrap = document.createElement('div');
+      wrap.className = 'video-tilt-wrap';
+      const card = document.createElement('div');
+      card.className='video-card';
+      card.dataset.id = v.id;
+      card.draggable = isEditable;
+      // per-card glow var (fallback hash)
+      card.style.setProperty('--glow', colorFromId(v, .28));
+
+      const tagsHtml = (v.tags||[]).map(t=>`<span class="video-tag" style="background:${tagColor(t)}20;border-color:${tagColor(t)};color:#fff;padding:.25rem .5rem">${t}</span>`).join('');
+
+      card.innerHTML=`
+        <label class="select-box"><input type="checkbox"></label>
+        <div class="thumb-wrap">
+          <div class="thumb-skeleton"></div>
+          <img data-src="${thumb}" alt="Miniatura" loading="lazy" crossorigin="anonymous">
+        </div>
+        <div class="video-body">
+          <div class="video-title">${v.title||'(Sin título)'}</div>
+          ${v.descriptionHTML? `<div class="video-note">${v.descriptionHTML}</div>`:''}
+          <div class="video-tags">${tagsHtml}</div>
+          <div class="video-actions">
+            <a class="btn-open" href="${v.promptText}" target="_blank" rel="noopener">Abrir</a>
+            ${isEditable?`
+              <button class="btn-edit">Editar</button>
+              <button class="btn-dup" title="Duplicar a otras carpetas">Duplicar</button>
+              <button class="btn-del">Borrar</button>
+              <button class="btn-move" data-d="-1" ${idx===0?'disabled':''}>←</button>
+              <button class="btn-move" data-d="1" ${idx===vids.length-1?'disabled':''}>→</button>
+            `:''}
+          </div>
+        </div>`;
+
+      // selection
+      const sel = card.querySelector('.select-box input');
+      sel.addEventListener('change', ()=>{
+        if(sel.checked) selection.add(v.id); else selection.delete(v.id);
+        card.classList.toggle('selected', sel.checked);
+        updateBulkBar();
+      });
+
+      if(isEditable){
+        // DnD reorden
+        card.addEventListener('dragstart', e=>{
+          card.classList.add('dragging'); e.dataTransfer.setData('text/plain', v.id);
+        });
+        card.addEventListener('dragend', ()=> card.classList.remove('dragging'));
+        wrap.addEventListener('dragover', e=>{ e.preventDefault(); card.classList.add('drop-target'); });
+        wrap.addEventListener('dragleave', ()=> card.classList.remove('drop-target'));
+        wrap.addEventListener('drop', e=>{
+          e.preventDefault(); card.classList.remove('drop-target');
+          const draggedId = e.dataTransfer.getData('text/plain');
+          if(!draggedId || draggedId===v.id) return;
+          const cards = [...container.querySelectorAll('.video-card')];
+          const ids = cards.map(c=>c.dataset.id);
+          const from = ids.indexOf(draggedId);
+          const to = ids.indexOf(v.id);
+          if(from<0 || to<0) return;
+          ids.splice(to,0, ids.splice(from,1)[0]);
+          reorderVideosByIdSequence(currentFolderId, ids);
+          renderFolderView(); saveAll('Guardando orden de vídeos…');
+        });
+
+        card.querySelector('.btn-edit')?.addEventListener('click',()=>openVideoForm(v.id));
+        card.querySelector('.btn-del')?.addEventListener('click',()=>deleteVideo(v.id));
+        card.querySelectorAll('.btn-move').forEach(btn=>{
+          btn.addEventListener('click',()=>{ moveVideo(v.id, parseInt(btn.dataset.d,10)); });
+        });
+        const dupBtn = card.querySelector('.btn-dup');
+        dupBtn?.addEventListener('click',(e)=>{
+          e.stopPropagation(); openFolderMultiSelect(dupBtn, currentFolderId, new Set(), (targets)=>{
+            duplicateOrMove([v.id], targets, 'dup');
+          });
+        });
+      }
+
+      wrap.appendChild(card); container.appendChild(wrap);
+    });
+
+    foldersSection.style.display='none';
+    folderView.style.display='block';
+
+    attach3DTilt('.video-tilt-wrap .video-card');
+    attachLazyThumbs(container);
+    revealObserver.observeAll(container.querySelectorAll('.video-card'));
+
+    // vista toggles
+    document.getElementById('viewBoardBtn').onclick = ()=> setViewMode('board');
+    document.getElementById('viewMasonryBtn').onclick = ()=> setViewMode('masonry');
+    document.getElementById('viewListBtn').onclick = ()=> setViewMode('list');
+  }
+
+  function setViewMode(mode){
+    currentViewMode = mode;
+    appData.settings.viewModes[currentFolderId] = mode;
+    renderFolderView();
+    if(isEditable) saveAll('Guardando vista…');
+  }
+
+  function updateBulkBar(){
+    const n = selection.size;
+    bulkBar.style.display = (isEditable && n>0) ? 'block':'none';
+    bulkCount.textContent = `${n} seleccionados`;
+  }
+
+  /* ===== Lazy thumbs + glow color por thumbnail (fallback hash si CORS) ===== */
+  function attachLazyThumbs(scope=document){
+    const imgs = [...scope.querySelectorAll('img[data-src]')];
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(ent=>{
+        if(ent.isIntersecting){
+          const img = ent.target;
+          const skeleton = img.previousElementSibling;
+          img.onload = ()=>{
+            skeleton?.remove();
+            // Dominant color (puede fallar por CORS)
+            applyDominantGlow(img);
+          };
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+          io.unobserve(img);
+        }
+      });
+    }, {rootMargin:'200px'});
+    imgs.forEach(img=> io.observe(img));
+  }
+
+  function applyDominantGlow(img){
+    const card = img.closest('.video-card');
+    // intento canvas
+    try{
+      const c = document.createElement('canvas'); const cx = c.getContext('2d');
+      c.width = 64; c.height = 36; cx.drawImage(img,0,0,64,36);
+      const d = cx.getImageData(0,0,64,36).data; let r=0,g=0,b=0,count=0;
+      for(let i=0;i<d.length;i+=4){ r+=d[i]; g+=d[i+1]; b+=d[i+2]; count++; }
+      r=Math.round(r/count); g=Math.round(g/count); b=Math.round(b/count);
+      card.style.setProperty('--glow', `rgba(${r},${g},${b},.35)`);
+    }catch(e){
+      // CORS => fallback por hash
+      card.style.setProperty('--glow', colorFromId(img.src, .28));
+    }
+  }
+  function colorFromId(obj, alpha=0.28){
+    const s = typeof obj==='string'? obj : (obj.title||obj.id||'x');
+    let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; }
+    h = h % 360;
+    return `hsla(${h}, 70%, 60%, ${alpha})`;
+  }
+
+  /* ===== CRUD CARPETAS ===== */
+  function openFolderForm(folderId=null){
+    const f = folderId? appData.promptFolders.find(x=>x.id===folderId): null;
+    formBox.innerHTML = `
+      <h3>${f?'Editar carpeta':'Nueva carpeta'}</h3>
+      <div class="form-group"><label>Nombre</label><input id="fld_name" value="${f?.name||''}"></div>
+      <div class="form-group"><label>Descripción</label><textarea id="fld_desc" rows="3">${f?.description||''}</textarea></div>
+      <div class="form-group"><label>Icono (URL, opcional)</label><input id="fld_icon" value="${f?.iconUrl||''}"></div>
+      <div class="form-buttons">
+        <button class="save-btn" id="btnSaveFolder">Guardar</button>
+        <button class="cancel-btn" id="btnCancel">Cancelar</button>
+      </div>
+    `;
+    formModal.style.display='flex';
+    document.getElementById('btnCancel').onclick=()=> formModal.style.display='none';
+    const saveFolder = async ()=>{
+      const name = document.getElementById('fld_name').value.trim();
+      if(!name){ alert('Nombre requerido'); return; }
+      const desc = document.getElementById('fld_desc').value.trim();
+      const icon = document.getElementById('fld_icon').value.trim();
+      if(f){
+        f.name=name; f.description=desc; f.iconUrl=icon; f.slug = slugify(name); f.timestampUpdated=now();
+      }else{
+        const id = 'f_'+now(); const slug = slugify(name);
+        appData.promptFolders.push({id,name,description:desc,iconUrl:icon,slug,timestampAdded:now(),timestampUpdated:now()});
+      }
+      if(await saveAll('Guardando carpeta…')){ formModal.style.display='none'; renderFolders(); }
+    };
+    document.getElementById('btnSaveFolder').onclick = saveFolder;
+    formBox.onkeydown = (e)=>{
+      if(e.key==='Enter' && (!/TEXTAREA/i.test(e.target.tagName) || e.ctrlKey||e.metaKey)){
+        e.preventDefault(); saveFolder();
+      }
+    };
+  }
+  function deleteFolder(id){
+    const f = appData.promptFolders.find(x=>x.id===id);
+    if(!f) return;
+    if(!confirm(`Eliminar la carpeta "${f.name}"? Los vídeos no se borran.`)) return;
+    appData.promptFolders = appData.promptFolders.filter(x=>x.id!==id);
+    appData.prompts.forEach(p=>{ if(p.folderId===id) p.folderId=null; });
+    saveAll('Eliminando carpeta…').then(()=>{ routeToFolders(); renderFolders(); });
+  }
+  function moveFolder(id, dir){
+    const i = appData.promptFolders.findIndex(x=>x.id===id);
+    const j = i+dir; if(i<0 || j<0 || j>=appData.promptFolders.length) return;
+    const [it] = appData.promptFolders.splice(i,1); appData.promptFolders.splice(j,0,it); renderFolders();
+  }
+
+  /* ===== CRUD VIDEOS (con checkbox popover para carpetas múltiples) ===== */
+  function openVideoForm(videoId=null){
+    const v = videoId? appData.prompts.find(x=>x.id===videoId) : null;
+    if(!currentFolderId){ alert('Abre primero una carpeta.'); return; }
+
+    let extraSelection = new Set();
+
+    const tagsStr = (v?.tags||[]).join(', ');
+
+    formBox.innerHTML = `
+      <h3>${v?'Editar vídeo':'Añadir vídeo'}</h3>
+      <div class="form-group"><label>Título</label><input id="vid_title" value="${v?.title||''}"></div>
+      <div class="form-group">
+        <label>URL de YouTube</label>
+        <input id="vid_url" value="${v?.promptText||''}" placeholder="https://www.youtube.com/watch?v=...">
+        <div class="inline-help">Al pegar URL se previsualiza la miniatura y se propone título si está vacío.</div>
+        <div class="thumb-preview" id="thumbPrev" style="display:none">
+          <img id="thumbPrevImg" alt="Miniatura">
+          <div class="inline-help">Previsualización</div>
+        </div>
+      </div>
+      <div class="form-group"><label>Nota (opcional, HTML)</label><textarea id="vid_note" rows="3">${v?.descriptionHTML||''}</textarea></div>
+      <div class="form-group"><label>Etiquetas (separadas por comas)</label><input id="vid_tags" value="${tagsStr}"></div>
+
+      <div class="form-group">
+        <label>Copiar también a otras carpetas</label>
+        <div class="multi-select">
+          <button type="button" class="toolbar-btn secondary" id="openExtraFolders">Elegir carpetas</button>
+          <div class="summary" id="extraFoldersSummary">(ninguna)</div>
+        </div>
+      </div>
+
+      <div class="form-buttons">
+        <button class="save-btn" id="btnSaveVideo">Guardar</button>
+        <button class="cancel-btn" id="btnCancel">Cancelar</button>
+      </div>
+    `;
+    formModal.style.display='flex';
+    document.getElementById('btnCancel').onclick=()=> formModal.style.display='none';
+
+    const urlInput = document.getElementById('vid_url');
+    const titleInput = document.getElementById('vid_title');
+    const thumbPrev = document.getElementById('thumbPrev');
+    const thumbPrevImg = document.getElementById('thumbPrevImg');
+    function refreshThumb(){
+      const id = getYouTubeId(urlInput.value.trim());
+      if(id){ thumbPrevImg.src = ytThumb(id); thumbPrev.style.display='flex'; }
+      else { thumbPrev.style.display='none'; }
+    }
+    urlInput.addEventListener('paste', ()=> setTimeout(()=>{
+      const url = urlInput.value.trim();
+      const id = getYouTubeId(url);
+      if(id){
+        refreshThumb();
+        if(!titleInput.value.trim()){
+          titleInput.value = `Vídeo de YouTube • ${id}`;
+        }
+      }
+    },0));
+    urlInput.addEventListener('input', refreshThumb); refreshThumb();
+
+    const summaryEl = document.getElementById('extraFoldersSummary');
+    const openBtn = document.getElementById('openExtraFolders');
+    function summarizeExtra(){
+      if(extraSelection.size===0){ summaryEl.textContent='(ninguna)'; return; }
+      const names = appData.promptFolders
+        .filter(f=> extraSelection.has(f.id))
+        .map(f=>f.name);
+      summaryEl.textContent = names.slice(0,3).join(', ') + (names.length>3? ` +${names.length-3}`:'');
+    }
+    summarizeExtra();
+    openBtn.addEventListener('click', ()=>{
+      openFolderMultiSelect(openBtn, currentFolderId, extraSelection, (newSet)=>{
+        extraSelection = newSet; summarizeExtra();
+      });
+    });
+
+    const saveVideo = async ()=>{
+      const title = titleInput.value.trim();
+      const url = urlInput.value.trim();
+      const note = document.getElementById('vid_note').value.trim();
+      const tags = document.getElementById('vid_tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+      const extraIds = Array.from(extraSelection);
+      const vid = getYouTubeId(url);
+
+      if(!title || !url){ alert('Título y URL son obligatorios.'); return; }
+      if(!vid){ if(!confirm('No parece una URL válida de YouTube. ¿Guardar igualmente?')) return; }
+
+      if(v){
+        v.title=title; v.promptText=url; v.descriptionHTML=note; v.tags = tags; v.timestampUpdated=now();
+      }else{
+        appData.prompts.push({
+          id:'p_'+now(),
+          title, promptText:url, descriptionHTML:note, tags,
+          folderId: currentFolderId,
+          manualOrderRank: null,
+          timestampAdded: now(), timestampUpdated: now(),
+          exampleImageUrls:[]
+        });
+      }
+
+      // copiar/actualizar en otras carpetas
+      extraIds.filter(fid => fid !== currentFolderId).forEach(fid=>{
+        const existing = appData.prompts.find(p=>p.folderId===fid && p.promptText===url);
+        if(existing){
+          existing.title = title; existing.descriptionHTML = note; existing.tags = tags; existing.timestampUpdated = now();
+        }else{
+          appData.prompts.push({
+            id:'p_'+now()+'_'+Math.random().toString(36).slice(2,6),
+            title, promptText:url, descriptionHTML:note, tags,
+            folderId: fid, manualOrderRank: null,
+            timestampAdded: now(), timestampUpdated: now(),
+            exampleImageUrls:[]
+          });
+        }
+      });
+
+      if(await saveAll('Guardando vídeo…')){ formModal.style.display='none'; renderFolderView(); }
+    };
+    document.getElementById('btnSaveVideo').onclick = saveVideo;
+    formBox.onkeydown = (e)=>{
+      if(e.key==='Enter' && (!/TEXTAREA|SELECT/i.test(e.target.tagName) || e.ctrlKey||e.metaKey)){
+        e.preventDefault(); saveVideo();
+      }
+    };
+  }
+
+  // multiselección popover
+  function openFolderMultiSelect(anchorBtn, currentFolderIdForContext, selectedSet, onApply){
+    const pop = document.createElement('div');
+    pop.className = 'form-modal-content';
+    pop.style.position='absolute'; pop.style.maxWidth='340px'; pop.style.padding='12px';
+    pop.innerHTML = `
+      <h3 style="margin-top:0">Elegir carpetas</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px">
+        <button class="cancel-btn" id="selNone">Ninguna</button>
+        <button class="save-btn" id="selAll">Todas</button>
+      </div>
+      <div class="list" id="listFolders" style="max-height:260px;overflow:auto;display:grid;gap:6px"></div>
+      <div class="form-buttons" style="margin-top:10px">
+        <button class="cancel-btn">Cancelar</button>
+        <button class="save-btn">Aplicar</button>
+      </div>
+    `;
+    document.body.appendChild(pop);
+    const listBox = pop.querySelector('#listFolders');
+    const folders = appData.promptFolders.filter(f=> f.id!==currentFolderIdForContext);
+    folders.forEach(f=>{
+      const id = 'chk_'+f.id;
+      const row = document.createElement('label');
+      row.style.display='flex'; row.style.alignItems='center'; row.style.gap='8px';
+      row.innerHTML = `<input type="checkbox" id="${id}" value="${f.id}" ${selectedSet.has(f.id)?'checked':''}><span>${f.name}</span>`;
+      listBox.appendChild(row);
+    });
+    const rect = anchorBtn.getBoundingClientRect();
+    pop.style.left = (rect.left + window.scrollX) + 'px';
+    pop.style.top  = (rect.bottom + 8 + window.scrollY) + 'px';
+
+    const btnCancel = pop.querySelector('.cancel-btn');
+    const btnOk = pop.querySelector('.save-btn:last-of-type');
+    const btnAll = pop.querySelector('#selAll');
+    const btnNone = pop.querySelector('#selNone');
+
+    btnAll.onclick = ()=> listBox.querySelectorAll('input[type=checkbox]').forEach(c=> c.checked = true);
+    btnNone.onclick = ()=> listBox.querySelectorAll('input[type=checkbox]').forEach(c=> c.checked = false);
+
+    function apply(){
+      const newSet = new Set([...listBox.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value));
+      if(typeof onApply==='function') onApply(newSet);
+      close();
+    }
+    function close(){ document.removeEventListener('keydown', onKey); pop.remove(); }
+    function onKey(e){ if(e.key==='Enter'){ e.preventDefault(); apply(); } if(e.key==='Escape'){ close(); } }
+    btnOk.onclick = apply; btnCancel.onclick = close; document.addEventListener('keydown', onKey);
+    setTimeout(()=>{
+      function outside(e){ if(!pop.contains(e.target) && e.target!==anchorBtn){ close(); document.removeEventListener('mousedown', outside); } }
+      document.addEventListener('mousedown', outside);
+    },0);
+  }
+
+  function deleteVideo(id){
+    const v = appData.prompts.find(x=>x.id===id); if(!v) return;
+    if(!confirm(`Eliminar el vídeo "${v.title}"?`)) return;
+    appData.prompts = appData.prompts.filter(x=>x.id!==id);
+    saveAll('Eliminando vídeo…').then(()=> renderFolderView());
+  }
+  function moveVideo(id, dir){
+    ensureManualRanks(currentFolderId);
+    const list = getSortedVideos(currentFolderId);
+    const idx = list.findIndex(x=>x.id===id);
+    const j = idx + dir; if(idx<0 || j<0 || j>=list.length) return;
+    const a = list[idx], b = list[j];
+    const tmp = a.manualOrderRank; a.manualOrderRank = b.manualOrderRank; b.manualOrderRank = tmp;
+    renderFolderView();
+  }
+
+  // —— Acciones en lote
+  function duplicateOrMove(ids, targetIds, action){
+    if(targetIds.size===0){ showToast('Sin carpetas destino','info'); return; }
+    const items = appData.prompts.filter(p=> ids.includes(p.id));
+    targetIds.forEach(fid=>{
+      items.forEach(v=>{
+        if(action==='move'){
+          // mover: cambiar folderId del original (si está en la actual)
+          const item = appData.prompts.find(p=>p.id===v.id);
+          if(item){ item.folderId = fid; item.timestampUpdated = now(); }
+        }else{
+          // duplicar: crear si no existe ese URL en destino
+          const exists = appData.prompts.find(p=>p.folderId===fid && p.promptText===v.promptText);
+          if(!exists){
+            appData.prompts.push({
+              id:'p_'+now()+'_'+Math.random().toString(36).slice(2,6),
+              title:v.title, promptText:v.promptText, descriptionHTML:v.descriptionHTML, tags:[...(v.tags||[])],
+              folderId: fid, manualOrderRank: null,
+              timestampAdded: now(), timestampUpdated: now(),
+              exampleImageUrls:[]
+            });
+          }
+        }
+      });
+    });
+    saveAll(action==='move'?'Moviendo…':'Duplicando…').then(()=>{ renderFolderView(); showToast(action==='move'?'Movidos':'Duplicados','ok'); });
+  }
+
+  bulkMoveBtn.onclick = ()=>{
+    openFolderMultiSelect(bulkMoveBtn, currentFolderId, new Set(), (targets)=> duplicateOrMove([...selection], targets, 'move'));
+  };
+  bulkDupBtn.onclick = ()=>{
+    openFolderMultiSelect(bulkDupBtn, currentFolderId, new Set(), (targets)=> duplicateOrMove([...selection], targets, 'dup'));
+  };
+  bulkDelBtn.onclick = ()=>{
+    if(!confirm(`Eliminar ${selection.size} vídeo(s)?`)) return;
+    appData.prompts = appData.prompts.filter(p=> !selection.has(p.id));
+    saveAll('Eliminando…').then(()=> renderFolderView());
+  };
+
+  /* ===== ROUTING ===== */
+  function openFolderBySlug(slug){
+    const f = appData.promptFolders.find(x=>x.slug===slug); if(!f) return;
+    currentFolderId = f.id; history.replaceState(null,'','?carpeta='+encodeURIComponent(slug));
+    renderFolderView();
+  }
+  function routeToFolders(){ currentFolderId = null; history.replaceState(null,'','?'); folderView.style.display='none'; foldersSection.style.display='block'; }
+  function route(){
+    const slug = new URLSearchParams(location.search).get('carpeta');
+    if(slug){
+      const f = appData.promptFolders.find(x=>x.slug===slug);
+      if(f){ currentFolderId=f.id; foldersSection.style.display='none'; folderView.style.display='block'; renderFolderView(); return; }
+    }
+    routeToFolders(); renderFolders();
+  }
+
+  /* ===== SEARCH, THEME BG, BUTTONS ===== */
+  inputSearch.oninput = ()=> { if(currentFolderId) renderFolderView(); else renderFolders(); };
+  changeBgBtn.onclick = ()=>{ if(isEditable) hiddenBgInput.click(); };
+  hiddenBgInput.onchange = e=>{
+    const f = e.target.files?.[0]; if(!f || !isEditable) return;
+    const r = new FileReader();
+    r.onload = ev => { appData.settings.background = `url(${ev.target.result})`; saveAll('Guardando fondo…').then(()=>applyThemeFromSettings()); };
+    r.readAsDataURL(f);
+  };
+  addFolderBtn.onclick = ()=> openFolderForm(null);
+  saveFoldersBtn.onclick = ()=> saveAll('Guardando orden de carpetas…').then(ok=>{ if(ok) showToast('Guardado','ok'); });
+  backToFoldersBtn.onclick = ()=> routeToFolders();
+  addVideoBtn.onclick = ()=> openVideoForm(null);
+  saveVideosBtn.onclick = ()=> saveAll('Guardando orden de vídeos…').then(ok=>{ if(ok) showToast('Guardado','ok'); });
+
+  /* ===== Efecto 3D genérico ===== */
+  function attach3DTilt(selector){
+    document.querySelectorAll(selector).forEach(card=>{
+      const parent = card.closest('.video-tilt-wrap') || card.parentElement;
+      const max = 12;
+      const reset = ()=>{ card.style.transform = `rotateX(0deg) rotateY(0deg) translateZ(0)`; };
+      parent.addEventListener('mousemove', (e)=>{
+        const rect = parent.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const rotY = (px - .5) * (max*2);
+        const rotX = - (py - .5) * (max*2);
+        card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(10px)`;
+      });
+      parent.addEventListener('mouseleave', reset);
+      parent.addEventListener('mouseenter', reset);
+    });
+  }
+
+
+
+  /* ===== Quick Search (⌘/Ctrl+K) ===== */
+  function openQuickSearch(){
+    qs.style.display='flex';
+    qsInput.value=''; qsResults.innerHTML=''; qsInput.focus();
+  }
+  function closeQuickSearch(){ qs.style.display='none'; }
+  function runQuickSearch(q){
+    q = q.toLowerCase().trim();
+    const results = [];
+    // carpetas
+    appData.promptFolders.forEach(f=>{
+      if(!q || (f.name||'').toLowerCase().includes(q)){ results.push({type:'folder', id:f.id, name:f.name}); }
+    });
+    // vídeos actuales (si hay carpeta)
+    appData.prompts.forEach(p=>{
+      if(!q || (p.title||'').toLowerCase().includes(q)){ results.push({type:'video', id:p.id, title:p.title, folderId:p.folderId}); }
+    });
+    qsResults.innerHTML = results.slice(0,50).map(r=>{
+      if(r.type==='folder') return `<div class="tag-chip" data-type="folder" data-id="${r.id}">📁 ${r.name}</div>`;
+      const folderName = appData.promptFolders.find(f=>f.id===r.folderId)?.name || '';
+      return `<div class="tag-chip" data-type="video" data-id="${r.id}">🎬 ${r.title} <small style="opacity:.7">(${folderName})</small></div>`;
+    }).join('') || '<div class="no-items-message">Sin resultados</div>';
+
+    qsResults.querySelectorAll('.tag-chip').forEach(el=>{
+      el.onclick = ()=>{
+        const t = el.dataset.type, id = el.dataset.id;
+        if(t==='folder'){ const s = appData.promptFolders.find(f=>f.id===id)?.slug; if(s){ openFolderBySlug(s); closeQuickSearch(); } }
+        else{
+          const video = appData.prompts.find(p=>p.id===id);
+          if(video){
+            if(currentFolderId !== video.folderId){
+              const f = appData.promptFolders.find(x=>x.id===video.folderId);
+              if(f) openFolderBySlug(f.slug);
+              setTimeout(()=> openVideoForm(video.id), 50);
+            }else{
+              openVideoForm(video.id);
+            }
+            closeQuickSearch();
+          }
+        }
+      };
+    });
+  }
+  qsClose.onclick = closeQuickSearch;
+  qsInput.oninput = ()=> runQuickSearch(qsInput.value);
+
+  /* ===== Keyboard Shortcuts ===== */
+  document.addEventListener('keydown', (e)=>{
+    const meta = e.ctrlKey || e.metaKey;
+    if(meta && e.key.toLowerCase()==='k'){ e.preventDefault(); openQuickSearch(); }
+    if(e.key==='Escape'){
+      if(qs.style.display==='flex') return closeQuickSearch();
+      if(formModal.style.display==='flex') return formModal.style.display='none';
+      if(passModal.style.display==='flex') return passModal.style.display='none';
+    }
+    if(isEditable && currentFolderId){
+      if(meta && (e.key==='ArrowLeft' || e.key==='ArrowRight')){
+        // reordenar seleccionado (si uno)
+        if(selection.size===1){
+          const id = [...selection][0];
+          moveVideo(id, e.key==='ArrowLeft'?-1:1);
+        }
+      }
+    }
+  });
+
+  /* ===== INIT ===== */
+  loadState();
+});
+</script>
+</body>
+</html>

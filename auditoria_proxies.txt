@@ -1,0 +1,30 @@
+APLICACIONES QUE NO UTILIZAN EL SISTEMA DE PROXY SEGURO (getenv('C')) O UNA SOLA LETRA:
+
+1. (((((editar_crear)))))
+2. (((((generar_editar)))))
+3. angulos_de_camara
+4. angulos_de_camara\images
+5. app_estilos\public
+6. asistente_inmoviliario
+7. color
+8. crear_historias
+9. decorar_habitacion
+10. escenario_modelo
+11. ficha_producto
+12. generar_imagene_personalizadas
+13. generar_imagenes\mascara
+14. generar_imagenes\rectangulos
+15. imagenes_ia\_combinar_imagenes
+16. imagenes_ia\editar
+17. imagenes_ia\generar
+18. outfit
+19. pasatiempos (Usa clave hardcodeada)
+20. prompts_predeterminados
+21. protocolo_gemini_web
+22. recetas
+23. unified-app\dist
+24. vestir_modelo
+
+NOTA:
+- Las apps 'generar_imagen' (usa 'A') y 'editar_imagen' (usa 'D') utilizan una sola letra pero no necesariamente la 'C' centralizada que acabamos de implantar.
+- La carpeta 'rrss' tiene un proxy para descargas que no requiere API Key de Gemini.

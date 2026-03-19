@@ -1,0 +1,27 @@
+En Illusion Diffusion / Double Exposure el modelo:
+
+Primero crea una forma / silueta / contenedor visual.
+Puede ser un rostro, una figura, un objeto, una forma abstracta, etc.
+
+Dentro de ese contenedor “inyecta” otra imagen o concepto,
+mezclándolo mediante transparencias, capas, niebla y fusión suave.
+
+El resultado es una integración visual, donde:
+
+la silueta define los límites,
+
+la imagen interior aporta narrativa/estética,
+
+y ambas se funden sin bordes duros.
+
+No es literalmente “insertar una imagen dentro de otra como un collage”, sino una fusión guiada por máscaras y blending suave, lo que produce el efecto onírico y artístico.
+
+En resumen
+
+Contenedor = forma/silueta externa.
+
+Contenido = imagen interior fusionada.
+
+Técnica = blending suave + capas + atmósfera.
+
+Si quieres, te preparo luego prompts específicos:con contenedor humano, con objetos, con formas abstractas, con logos, o con paisajes.

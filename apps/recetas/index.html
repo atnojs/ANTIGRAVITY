@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chef at Home - Copiloto Culinario Inteligente</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Scripts -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00FFD1',
+                        background: '#0A0F0D',
+                        surface: '#1A211E',
+                        accent: '#00A3FF',
+                        danger: '#FF4D4D',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-background text-white font-sans selection:bg-primary selection:text-black;
+            }
+        }
+        @layer components {
+            .thumb-friendly-btn {
+                @apply active:scale-95 transition-transform duration-150;
+            }
+            .glass-panel {
+                @apply bg-surface/80 backdrop-blur-xl border border-white/5;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0F0D;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1A211E;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2A312E;
+        }
+
+        /* Responsive Layouts */
+        .pc-layout {
+            display: none;
+        }
+        @media (min-width: 1024px) {
+            .mobile-layout {
+                display: none;
+            }
+            .pc-layout {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // Constants & Types (Simplified)
+        const UnitSystem = {
+            METRIC: 'metric',
+            IMPERIAL: 'imperial'
+        };
+
+        const MOCK_RECIPES = [
+            {
+                id: '1',
+                title: 'Pollo al Limón Gourmet',
+                description: 'Una versión sofisticada del clásico, con salsa de mantequilla cítrica y romero fresco. Ideal para una cena especial.',
+                timeMinutes: 25,
+                difficulty: 'Fácil',
+                servings: 2,
+                rating: 4.9,
+                imageUrl: 'https://images.unsplash.com/photo-1632778149975-420e0e7a1631?auto=format&fit=crop&w=600&q=80',
+                ingredients: [
+                    { id: 'i1', name: 'Pechuga de Pollo', amount: 500, unit: 'g', amountImperial: 1.1, unitImperial: 'lb' },
+                    { id: 'i2', name: 'Limón Meyer', amount: 2, unit: 'ud', amountImperial: 2, unitImperial: 'pc' },
+                    { id: 'i3', name: 'Aceite de Oliva Extra Virgen', amount: 30, unit: 'ml', amountImperial: 2, unitImperial: 'tbsp' },
+                    { id: 'i4', name: 'Romero fresco', amount: 10, unit: 'g', amountImperial: 0.4, unitImperial: 'oz' }
+                ],
+                instructions: [
+                    {
+                        stepNumber: 1,
+                        description: 'Salpimienta el pollo y calienta el aceite en una sartén a fuego alto.',
+                        ingredients: ['i1', 'i3'],
+                        sensoryCue: 'Debes escuchar un siseo fuerte al poner el pollo; eso significa que el sellado es perfecto.'
+                    },
+                    {
+                        stepNumber: 2,
+                        description: 'Añade el zumo de limón y el romero. Reduce el fuego y deja glasear.',
+                        durationSeconds: 180,
+                        ingredients: ['i2', 'i4'],
+                        sensoryCue: 'El aroma cítrico se intensificará y la salsa empezará a espesar.'
+                    }
+                ]
+            },
+            {
+                id: '2',
+                title: 'Pasta al Pesto Mediterráneo',
+                description: 'Pesto casero de albahaca fresca y piñones tostados con un toque de parmesano añejo.',
+                timeMinutes: 20,
+                difficulty: 'Fácil',
+                servings: 2,
+                rating: 4.7,
+                imageUrl: 'https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&w=600&q=80',
+                ingredients: [
+                    { id: 'i5', name: 'Pasta Penne', amount: 200, unit: 'g', amountImperial: 7, unitImperial: 'oz' },
+                    { id: 'i6', name: 'Albahaca fresca', amount: 50, unit: 'g', amountImperial: 1.8, unitImperial: 'oz' },
+                    { id: 'i7', name: 'Piñones tostados', amount: 30, unit: 'g', amountImperial: 1, unitImperial: 'oz' },
+                    { id: 'i8', name: 'Parmesano añejo', amount: 50, unit: 'g', amountImperial: 1.8, unitImperial: 'oz' },
+                    { id: 'i9', name: 'Aceite de oliva virgen', amount: 80, unit: 'ml', amountImperial: 5, unitImperial: 'tbsp' },
+                    { id: 'i10', name: 'Ajo', amount: 2, unit: 'dientes', amountImperial: 2, unitImperial: 'cloves' }
+                ],
+                instructions: [
+                    {
+                        stepNumber: 1,
+                        description: 'Cuece la pasta al dente siguiendo las instrucciones del paquete.',
+                        durationSeconds: 600,
+                        ingredients: ['i5'],
+                        sensoryCue: 'La pasta debe ofrecer una ligera resistencia al morderla.'
+                    },
+                    {
+                        stepNumber: 2,
+                        description: 'Mientras tanto, tritura en un mortero o procesador la albahaca, los piñones, el ajo y una pizca de sal.',
+                        ingredients: ['i6', 'i7', 'i10'],
+                        sensoryCue: 'Debe quedar una pasta verde vibrante y aromática.'
+                    },
+                    {
+                        stepNumber: 3,
+                        description: 'Añade el parmesano rallado y ve incorporando el aceite en hilo mientras mezclas.',
+                        ingredients: ['i8', 'i9'],
+                        sensoryCue: 'La textura debe ser cremosa pero no líquida.'
+                    },
+                    {
+                        stepNumber: 4,
+                        description: 'Escurre la pasta reservando un poco del agua de cocción. Mezcla con el pesto y ajusta consistencia.',
+                        durationSeconds: 60,
+                        ingredients: ['i5'],
+                        sensoryCue: 'El pesto debe cubrir cada pieza de pasta uniformemente.'
+                    }
+                ]
+            }
+        ];
+
+        // --- Services ---
+        const apiService = {
+            async analyzePantry(base64Image) {
+                try {
+                    const response = await fetch('./proxy.php', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { inlineData: { data: base64Image, mimeType: "image/jpeg" } },
+                                    { text: "Identifica los ingredientes en esta imagen de una nunca/despensa. Devuelve UN ARRAY JSON (sin markdown) de objetos con {name, likelyExpiryDays}." }
+                                ]
+                            }]
+                        })
+                    });
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+                    return JSON.parse(text.replace(/```json|```/g, '').trim());
+                } catch (e) { return []; }
+            },
+
+            async getRecipeFromImage(base64Image) {
+                try {
+                    const response = await fetch('./proxy.php', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { inlineData: { data: base64Image, mimeType: "image/jpeg" } },
+                                    { text: "Identifica este plato de comida. Devuelve un OBJETO JSON con: title, description, timeMinutes, difficulty, servings, rating (0-5), ingredients (array de {id, name, amount, unit, amountImperial, unitImperial}), instructions (array de {stepNumber, description, ingredients (array de IDs), sensoryCue}). NO uses markdown." }
+                                ]
+                            }]
+                        })
+                    });
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+                    return JSON.parse(text.replace(/```json|```/g, '').trim());
+                } catch (e) { return null; }
+            },
+
+            async extractData(base64Image) {
+                try {
+                    const response = await fetch('./proxy.php', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { inlineData: { data: base64Image, mimeType: "image/jpeg" } },
+                                    { text: "Extrae los datos de esta imagen (recibo, menú o gráfico). Proporciona un resumen estructurado y extracciones clave. Devuelve texto formateado." }
+                                ]
+                            }]
+                        })
+                    });
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo extraer información.";
+                } catch (e) { return "Error en la extracción."; }
+            },
+
+            // Búsqueda web de recetas
+            async searchRecipesOnWeb(query) {
+                try {
+                    const response = await fetch(`./proxy.php?action=search_recipe&q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    return data.results || [];
+                } catch (e) {
+                    console.error('Error buscando recetas:', e);
+                    return [];
+                }
+            },
+
+            // Extraer receta de una URL
+            async extractRecipeFromUrl(url) {
+                try {
+                    const response = await fetch(`./proxy.php?action=extract_url&url=${encodeURIComponent(url)}`);
+                    const data = await response.json();
+                    if (data.error) {
+                        console.error('Error extrayendo receta:', data.error);
+                        return null;
+                    }
+                    return data;
+                } catch (e) {
+                    console.error('Error extrayendo receta:', e);
+                    return null;
+                }
+            },
+
+            // Generar imagen descriptiva para un paso de cocina
+            async generateStepImage(recipeTitle, stepDescription, stepNumber) {
+                try {
+                    const prompt = `Genera una imagen fotorrealista de alta calidad estilo food photography profesional que muestre: "${stepDescription}" para la receta "${recipeTitle}". 
+                    La imagen debe ser limpia, elegante, con buena iluminación tipo estudio, fondo suave desenfocado, colores vibrantes y apetitosos. 
+                    Estilo: revista gourmet, publicidad gastronómica premium. NO incluir texto ni personas.`;
+
+                    const response = await fetch('./proxy.php', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            model: 'gemini-3.1-flash-image-preview',
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: {
+                                responseModalities: ['TEXT', 'IMAGE']
+                            }
+                        })
+                    });
+                    const data = await response.json();
+
+                    // Buscar la parte con imagen
+                    const parts = data.candidates?.[0]?.content?.parts || [];
+                    for (const part of parts) {
+                        if (part.inlineData) {
+                            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                        }
+                    }
+
+                    // Fallback a Unsplash
+                    return `https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80`;
+                } catch (e) {
+                    console.error('Error generando imagen:', e);
+                    return `https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80`;
+                }
+            }
+        };
+
+        // --- Storage helpers ---
+        const storage = {
+            getInventory: () => JSON.parse(localStorage.getItem('chef_inventory') || '[]'),
+            setInventory: (items) => localStorage.setItem('chef_inventory', JSON.stringify(items)),
+            getGeneratedRecipes: () => JSON.parse(localStorage.getItem('chef_recipes') || '[]'),
+            setGeneratedRecipes: (recipes) => localStorage.setItem('chef_recipes', JSON.stringify(recipes)),
+            addRecipe: (recipe) => {
+                const recipes = storage.getGeneratedRecipes();
+                recipes.unshift({ ...recipe, id: recipe.id || 'gen_' + Date.now() });
+                storage.setGeneratedRecipes(recipes);
+                return recipes;
+            },
+            removeRecipe: (id) => {
+                const recipes = storage.getGeneratedRecipes().filter(r => r.id !== id);
+                storage.setGeneratedRecipes(recipes);
+                return recipes;
+            }
+        };
+
+        // --- Components ---
+
+        const RecipeCard = ({ recipe, onClick }) => (
+            <div
+                onClick={() => onClick(recipe)}
+                className="group cursor-pointer bg-surface rounded-[2rem] overflow-hidden border border-white/5 hover:border-primary transition-all duration-300 shadow-xl"
+            >
+                <div className="h-48 relative overflow-hidden">
+                    <img src={recipe.imageUrl} alt={recipe.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold ring-1 ring-white/20">
+                        ⏱️ {recipe.timeMinutes} min
+                    </div>
+                </div>
+                <div className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-xl font-bold">{recipe.title}</h3>
+                        <span className="text-yellow-400 text-sm font-bold">★ {recipe.rating}</span>
+                    </div>
+                    <p className="text-gray-400 text-sm line-clamp-2 mb-4">{recipe.description}</p>
+                    <div className="flex gap-2">
+                        <span className="bg-white/5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">{recipe.difficulty}</span>
+                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">Perfecto para ti</span>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const InventoryItem = ({ item }) => (
+            <div className={`flex items-center justify-between p-5 rounded-2xl border ${item.urgent ? 'border-danger bg-danger/5' : 'border-white/5 bg-surface'}`}>
+                <div>
+                    <h3 className="font-bold text-lg">{item.name}</h3>
+                    <p className="text-gray-400 text-sm font-medium">{item.quantity || 'Detectado por IA'}</p>
+                </div>
+                <div className="text-right">
+                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded tracking-widest ${item.urgent ? 'bg-danger text-white' : 'bg-white/10 text-gray-300'}`}>
+                        {item.expiry}
+                    </span>
+                </div>
+            </div>
+        );
+
+        // --- Views ---
+
+        const HomeView = ({
+            recipes,
+            generatedRecipes,
+            onSelectRecipe,
+            onDeleteRecipe,
+            onOpenInventory,
+            onRecipeFromPhoto,
+            onScanDoc,
+            searchTerm,
+            setSearchTerm,
+            onWebSearch,
+            webResults,
+            isSearching,
+            onSelectWebResult
+        }) => {
+            const allRecipes = [...recipes, ...generatedRecipes];
+            const hasWebResults = webResults && webResults.length > 0;
+
+            return (
+                <div className="p-6 md:p-12 pb-24 max-w-7xl mx-auto">
+                    <header className="mb-10 lg:mb-16">
+                        <h1 className="text-4xl lg:text-6xl font-black mb-4 tracking-tight">Hola, <span className="text-primary">Chef</span></h1>
+                        <p className="text-gray-400 text-lg">¿Qué obra maestra cocinaremos hoy?</p>
+                    </header>
+
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        {/* Main Content Area */}
+                        <div className="lg:col-span-2 space-y-12">
+                            {/* Search Bar */}
+                            <div className="relative group">
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && searchTerm && onWebSearch(searchTerm)}
+                                    placeholder="Busca recetas en internet o pega una URL..."
+                                    className="w-full bg-surface rounded-3xl py-6 px-10 pr-28 border border-white/5 focus:border-primary outline-none transition-all text-xl shadow-2xl"
+                                />
+                                <button
+                                    onClick={() => searchTerm && onWebSearch(searchTerm)}
+                                    disabled={!searchTerm || isSearching}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-primary text-black px-6 py-3 rounded-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
+                                >
+                                    {isSearching ? '...' : '🔍'}
+                                </button>
+                            </div>
+
+                            {/* Web Search Results */}
+                            {hasWebResults && (
+                                <section className="glass-panel rounded-[2rem] p-6 space-y-4">
+                                    <h3 className="text-lg font-bold text-primary">📡 Resultados de Internet</h3>
+                                    <div className="grid gap-3">
+                                        {webResults.map((result, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => onSelectWebResult(result.url)}
+                                                className="w-full text-left p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all flex justify-between items-center group"
+                                            >
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold truncate">{result.title}</p>
+                                                    <p className="text-xs text-gray-500 truncate">{result.source}</p>
+                                                </div>
+                                                <span className="text-primary ml-4 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Multimodal Actions */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <button
+                                    onClick={onRecipeFromPhoto}
+                                    className="bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 p-8 rounded-[2rem] flex items-center justify-between group hover:scale-[1.02] transition-all"
+                                >
+                                    <div className="text-left">
+                                        <h3 className="text-xl font-bold mb-1">Receta por Foto 📸</h3>
+                                        <p className="text-sm text-gray-400">Sube un plato y obtén la receta</p>
+                                    </div>
+                                    <div className="text-3xl group-hover:rotate-12 transition-transform">🍳</div>
+                                </button>
+                                <button
+                                    onClick={onScanDoc}
+                                    className="bg-gradient-to-br from-white/5 to-white/10 border border-white/10 p-8 rounded-[2rem] flex items-center justify-between group hover:scale-[1.02] transition-all"
+                                >
+                                    <div className="text-left">
+                                        <h3 className="text-xl font-bold mb-1">Escanear Documento 📄</h3>
+                                        <p className="text-sm text-gray-400">Recibos, menús o tablas</p>
+                                    </div>
+                                    <div className="text-3xl group-hover:rotate-12 transition-transform">📊</div>
+                                </button>
+                            </div>
+
+                            {/* Generated Recipes Section */}
+                            {generatedRecipes.length > 0 && (
+                                <section>
+                                    <h2 className="text-2xl font-bold mb-6">🧠 Mis Recetas Guardadas</h2>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        {generatedRecipes.map(recipe => (
+                                            <div key={recipe.id} className="relative group">
+                                                <RecipeCard recipe={recipe} onClick={onSelectRecipe} />
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); onDeleteRecipe(recipe.id); }}
+                                                    className="absolute top-4 right-4 w-10 h-10 bg-danger/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold hover:bg-danger"
+                                                >
+                                                    ✕
+                                                </button>
+                                                {recipe.sourceUrl && (
+                                                    <div className="absolute bottom-20 left-4 right-4 bg-black/60 text-xs px-3 py-1 rounded-full truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        📎 {new URL(recipe.sourceUrl).hostname}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Recommendations Grid */}
+                            <section>
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-2xl font-bold">Recomendado para ti</h2>
+                                    <button className="text-primary text-sm font-bold uppercase tracking-widest hover:underline">Ver todo</button>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    {recipes.map(recipe => (
+                                        <RecipeCard key={recipe.id} recipe={recipe} onClick={onSelectRecipe} />
+                                    ))}
+                                </div>
+                            </section>
+                        </div>
+
+                        {/* Sidebar Area (Visible on PC) */}
+                        <aside className="space-y-8">
+                            <div className="glass-panel rounded-[2.5rem] p-8 space-y-6">
+                                <h3 className="text-xl font-bold mb-4">Acciones Rápidas</h3>
+                                <button
+                                    onClick={onOpenInventory}
+                                    className="w-full bg-white/5 p-6 rounded-3xl border border-white/5 flex items-center gap-6 hover:bg-white/10 transition-all group overflow-hidden relative"
+                                >
+                                    <span className="text-4xl group-hover:scale-110 transition-transform">🧊</span>
+                                    <div className="text-left">
+                                        <span className="block font-bold text-lg">Mi Despensa</span>
+                                        <span className="text-xs text-gray-400 font-semibold uppercase tracking-widest">Gestionada por IA</span>
+                                    </div>
+                                    <div className="absolute -right-4 -bottom-4 opacity-5 text-8xl">🧊</div>
+                                </button>
+                                <button className="w-full bg-white/5 p-6 rounded-3xl border border-white/5 flex items-center gap-6 hover:bg-white/10 transition-all group overflow-hidden relative">
+                                    <span className="text-4xl group-hover:scale-110 transition-transform">📅</span>
+                                    <div className="text-left">
+                                        <span className="block font-bold text-lg">Planificador</span>
+                                        <span className="text-xs text-gray-400 font-semibold uppercase tracking-widest">Menú Semanal</span>
+                                    </div>
+                                    <div className="absolute -right-4 -bottom-4 opacity-5 text-8xl">📅</div>
+                                </button>
+                            </div>
+
+                            {/* Small inventory preview for PC */}
+                            <div className="glass-panel rounded-[2.5rem] p-8">
+                                <h3 className="text-xl font-bold mb-6">Próximo a caducar</h3>
+                                <div className="space-y-4">
+                                    <InventoryItem item={{ id: '1', name: 'Leche', quantity: '1L', expiry: 'En 2 días', urgent: true }} />
+                                    <InventoryItem item={{ id: '2', name: 'Pollo', quantity: '500g', expiry: 'En 3 días', urgent: true }} />
+                                    <button onClick={onOpenInventory} className="w-full py-4 text-primary text-sm font-bold uppercase tracking-widest hover:underline text-center">Gestionar todo</button>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            );
+        };
+
+        const RecipeDetailView = ({ recipe, onBack, onStart, unitSystem, setUnitSystem }) => (
+            <div className="min-h-screen max-w-5xl mx-auto flex flex-col">
+                <div className="relative h-[40vh] md:h-[50vh] overflow-hidden md:rounded-b-[4rem]">
+                    <img src={recipe.imageUrl} className="w-full h-full object-cover" alt={recipe.title} />
+                    <button
+                        onClick={onBack}
+                        className="absolute top-8 left-8 w-14 h-14 bg-black/40 backdrop-blur-xl rounded-full flex items-center justify-center text-white ring-1 ring-white/20 transition-all active:scale-90"
+                    >
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent"></div>
+                </div>
+
+                <div className="px-8 mt-[-4rem] relative z-10 pb-32">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                        <div>
+                            <span className="inline-block bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4 ring-1 ring-primary/20">Receta Destacada</span>
+                            <h1 className="text-5xl lg:text-7xl font-black">{recipe.title}</h1>
+                        </div>
+                        <div className="flex gap-4">
+                            <div className="text-center p-6 bg-surface rounded-3xl min-w-[120px] border border-white/5">
+                                <span className="block text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-2">Tiempo</span>
+                                <span className="text-2xl font-black">{recipe.timeMinutes} <span className="text-sm font-normal text-gray-400">min</span></span>
+                            </div>
+                            <div className="text-center p-6 bg-surface rounded-3xl min-w-[120px] border border-white/5">
+                                <span className="block text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-2">Nivel</span>
+                                <span className="text-2xl font-black uppercase text-primary">{recipe.difficulty}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid lg:grid-cols-3 gap-12">
+                        <div className="lg:col-span-2 space-y-12">
+                            <section>
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-3xl font-bold">Ingredientes</h2>
+                                    <button
+                                        onClick={() => setUnitSystem(unitSystem === UnitSystem.METRIC ? UnitSystem.IMPERIAL : UnitSystem.METRIC)}
+                                        className="text-[10px] font-black text-primary bg-primary/10 px-4 py-2 rounded-full uppercase tracking-[0.2em] ring-1 ring-primary/30"
+                                    >
+                                        Sistema: {unitSystem === UnitSystem.METRIC ? 'Métrico' : 'Imperial'}
+                                    </button>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {recipe.ingredients.map(ing => (
+                                        <div key={ing.id} className="flex justify-between items-center bg-surface/50 p-6 rounded-3xl border border-white/5 group hover:border-white/10 transition-colors">
+                                            <span className="font-semibold text-lg">{ing.name}</span>
+                                            <span className="text-primary font-mono font-bold text-lg">
+                                                {unitSystem === UnitSystem.METRIC ? `${ing.amount} ${ing.unit}` : `${ing.amountImperial} ${ing.unitImperial}`}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section>
+                                <h2 className="text-3xl font-bold mb-8">Resumen de la Receta</h2>
+                                <p className="text-gray-400 text-xl leading-relaxed">{recipe.description}</p>
+                            </section>
+                        </div>
+
+                        <aside className="relative">
+                            <div className="sticky top-8 space-y-6">
+                                <div className="glass-panel p-8 rounded-[3rem] space-y-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+                                            <span className="text-2xl">⚡</span>
+                                        </div>
+                                        <p className="text-sm text-gray-300">Esta receta se adapta a tus 2 ingredientes próximos a caducar.</p>
+                                    </div>
+                                    <button
+                                        onClick={onStart}
+                                        className="w-full bg-primary text-black font-black py-8 rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(0,255,209,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all thumb-friendly-btn text-xl uppercase tracking-widest"
+                                    >
+                                        Cocinar ahora
+                                    </button>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const GuidedCookingView = ({ recipe, onClose, unitSystem }) => {
+            const [currentStepIdx, setCurrentStepIdx] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(null);
+            const [isEditingTime, setIsEditingTime] = useState(false);
+            const [customDuration, setCustomDuration] = useState(null);
+            const [stepImages, setStepImages] = useState({});
+            const [isLoadingImage, setIsLoadingImage] = useState(false);
+
+            const step = recipe.instructions[currentStepIdx];
+            const stepDuration = customDuration ?? step.durationSeconds;
+
+            // Load image for current step
+            useEffect(() => {
+                const loadImage = async () => {
+                    if (stepImages[currentStepIdx]) return; // Already loaded
+                    setIsLoadingImage(true);
+                    const img = await apiService.generateStepImage(
+                        recipe.title,
+                        step.description,
+                        currentStepIdx
+                    );
+                    setStepImages(prev => ({ ...prev, [currentStepIdx]: img }));
+                    setIsLoadingImage(false);
+                };
+                loadImage();
+            }, [currentStepIdx, recipe.title, step.description]);
+
+            useEffect(() => {
+                setCustomDuration(null);
+                setIsEditingTime(false);
+            }, [currentStepIdx]);
+
+            useEffect(() => {
+                let timer;
+                if (timeLeft !== null && timeLeft > 0) {
+                    timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+                }
+                return () => clearInterval(timer);
+            }, [timeLeft]);
+
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const handleDurationEdit = (e) => {
+                const mins = parseInt(e.target.value) || 0;
+                setCustomDuration(mins * 60);
+            };
+
+            const handleExport = () => {
+                const htmlContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>${recipe.title} - Presentación</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: white; }
+        .slide { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px; background-size: cover; background-position: center; position: relative; }
+        .slide::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9)); }
+        .slide-content { position: relative; z-index: 1; max-width: 900px; }
+        h1 { font-size: 3rem; margin-bottom: 20px; }
+        h2 { font-size: 2.5rem; margin-bottom: 30px; font-weight: 800; }
+        p { font-size: 1.3rem; color: #00ffd1; font-style: italic; }
+        .step-num { background: rgba(0,255,209,0.2); color: #00ffd1; padding: 10px 30px; border-radius: 50px; font-size: 0.9rem; font-weight: bold; letter-spacing: 0.3em; margin-bottom: 40px; display: inline-block; }
+        .ingredients { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+        .ing { background: rgba(255,255,255,0.1); padding: 15px 25px; border-radius: 15px; }
+        .ing-name { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.1em; }
+        .ing-amount { font-size: 1.3rem; color: #00ffd1; font-weight: bold; }
+        @media print { .slide { page-break-after: always; } }
+    </style>
+</head>
+<body>
+    <div class="slide" style="background-image: url('${recipe.imageUrl || ''}')">
+        <div class="slide-content">
+            <h1>${recipe.title}</h1>
+            <p>${recipe.description}</p>
+        </div>
+    </div>
+    ${recipe.instructions.map((s, i) => `
+    <div class="slide" style="background-image: url('${stepImages[i] || ''}')">
+        <div class="slide-content">
+            <span class="step-num">PASO ${i + 1} / ${recipe.instructions.length}</span>
+            <h2>${s.description}</h2>
+            ${s.sensoryCue ? `<p>"${s.sensoryCue}"</p>` : ''}
+            <div class="ingredients">
+                ${(s.ingredients || []).map(id => {
+                    const ing = recipe.ingredients.find(x => x.id === id);
+                    return ing ? `<div class="ing"><div class="ing-name">${ing.name}</div><div class="ing-amount">${ing.amount} ${ing.unit}</div></div>` : '';
+                }).join('')}
+            </div>
+        </div>
+    </div>
+    `).join('')}
+</body>
+</html>`;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${recipe.title.replace(/\s+/g, '_')}_presentacion.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const currentImage = stepImages[currentStepIdx];
+
+            return (
+                <div
+                    className="flex flex-col h-screen bg-background relative overflow-hidden"
+                    style={{
+                        backgroundImage: currentImage ? `url(${currentImage})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                >
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black/95 z-0" />
+
+                    {/* Loading indicator */}
+                    {isLoadingImage && (
+                        <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full">
+                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            <span className="text-xs text-primary">Generando imagen...</span>
+                        </div>
+                    )}
+
+                    {/* Content - relative to be above overlay */}
+                    <div className="relative z-10 flex flex-col h-full p-4 md:p-8 lg:p-12">
+                        {/* Header Controls */}
+                        <div className="flex justify-between items-center mb-8">
+                            <div className="flex gap-2 flex-1">
+                                {recipe.instructions.map((_, i) => (
+                                    <div key={i} className={`h-2 rounded-full flex-1 transition-all duration-500 ${i <= currentStepIdx ? 'bg-primary' : 'bg-white/20'}`} />
+                                ))}
+                            </div>
+                            <button
+                                onClick={handleExport}
+                                className="ml-4 px-4 py-2 bg-primary/20 text-primary rounded-xl text-sm font-bold hover:bg-primary/30 transition-colors"
+                            >
+                                📥 Exportar
+                            </button>
+                            <button onClick={onClose} className="ml-4 p-4 bg-white/10 rounded-2xl text-gray-400 hover:text-white transition-colors backdrop-blur-md">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col justify-center items-center text-center">
+                            <span className="bg-primary/20 backdrop-blur-md text-primary px-6 py-3 rounded-full text-sm font-black tracking-[0.3em] mb-8 uppercase border border-primary/30">
+                                PASO {step.stepNumber} / {recipe.instructions.length}
+                            </span>
+
+                            <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-12 leading-tight select-none drop-shadow-2xl">
+                                {step.description}
+                            </h2>
+
+                            {step.sensoryCue && (
+                                <div className="bg-black/40 backdrop-blur-xl p-6 rounded-[2rem] border-l-4 border-primary text-left max-w-2xl mb-10 shadow-2xl">
+                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Pista Sensorial</p>
+                                    <p className="text-lg md:text-2xl italic text-primary font-medium">"{step.sensoryCue}"</p>
+                                </div>
+                            )}
+
+                            <div className="flex flex-wrap justify-center gap-3 mb-10">
+                                {step.ingredients.map(id => {
+                                    const ing = recipe.ingredients.find(i => i.id === id);
+                                    return ing && (
+                                        <div key={id} className="bg-black/40 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10">
+                                            <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest mb-1">{ing.name}</p>
+                                            <p className="text-xl font-bold text-primary">
+                                                {unitSystem === UnitSystem.METRIC ? `${ing.amount} ${ing.unit}` : `${ing.amountImperial} ${ing.unitImperial}`}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {step.durationSeconds && (
+                                <div className="mb-8">
+                                    {timeLeft === null ? (
+                                        <div className="flex flex-col items-center gap-4">
+                                            {isEditingTime ? (
+                                                <div className="flex items-center gap-4 bg-black/50 backdrop-blur-md p-6 rounded-2xl border border-primary/30">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={Math.floor((customDuration ?? step.durationSeconds) / 60)}
+                                                        onChange={handleDurationEdit}
+                                                        className="w-24 p-4 bg-white/10 rounded-xl border border-white/20 text-center text-2xl font-bold outline-none focus:border-primary"
+                                                        autoFocus
+                                                    />
+                                                    <span className="text-xl text-gray-300">minutos</span>
+                                                    <button onClick={() => setIsEditingTime(false)} className="px-6 py-3 bg-primary text-black font-bold rounded-xl">OK</button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setTimeLeft(stepDuration)}
+                                                    className="bg-white text-black font-black px-10 py-5 rounded-full flex items-center gap-4 group hover:scale-105 transition-all shadow-2xl text-lg"
+                                                >
+                                                    <svg className="w-7 h-7 group-hover:rotate-12 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z" />
+                                                    </svg>
+                                                    INICIAR {formatTime(stepDuration)}
+                                                </button>
+                                            )}
+                                            {!isEditingTime && (
+                                                <button onClick={() => setIsEditingTime(true)} className="text-sm text-gray-400 hover:text-primary underline">
+                                                    ✏️ Editar tiempo
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="text-6xl md:text-8xl font-black font-mono text-primary drop-shadow-[0_0_50px_rgba(0,255,209,0.4)] animate-pulse">
+                                            {formatTime(timeLeft)}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Navigation Footer */}
+                        <footer className="max-w-4xl mx-auto w-full flex items-center gap-6 py-8">
+                            <button
+                                disabled={currentStepIdx === 0}
+                                onClick={() => { setCurrentStepIdx(prev => prev - 1); setTimeLeft(null); }}
+                                className="w-20 h-20 lg:w-24 lg:h-24 bg-white/10 backdrop-blur-md rounded-[2rem] flex items-center justify-center text-gray-400 hover:text-white transition-all disabled:opacity-20"
+                            >
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    if (currentStepIdx < recipe.instructions.length - 1) {
+                                        setCurrentStepIdx(prev => prev + 1);
+                                        setTimeLeft(null);
+                                    } else {
+                                        onClose();
+                                    }
+                                }}
+                                className="bg-primary text-black font-black flex-1 py-6 lg:py-8 rounded-[2rem] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all text-xl uppercase tracking-widest"
+                            >
+                                {currentStepIdx === recipe.instructions.length - 1 ? '✅ TERMINAR' : 'SIGUIENTE →'}
+                            </button>
+                        </footer>
+                    </div>
+                </div>
+            );
+        };
+
+        const InventoryView = ({ onBack }) => {
+            const [items, setItems] = useState(() => {
+                const saved = storage.getInventory();
+                return saved.length > 0 ? saved : [
+                    { id: '1', name: 'Limones', expiry: 'En 3 días', quantity: '4 unidades', urgent: true },
+                    { id: '2', name: 'Pechuga de Pollo', expiry: 'En 2 días', quantity: '500g', urgent: true },
+                    { id: '3', name: 'Leche', expiry: 'En 7 días', quantity: '1L', urgent: false },
+                ];
+            });
+            const [isScanning, setIsScanning] = useState(false);
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [editingItem, setEditingItem] = useState(null);
+            const [newItem, setNewItem] = useState({ name: '', quantity: '', expiryDays: 7 });
+
+            // Persist items
+            useEffect(() => {
+                storage.setInventory(items);
+            }, [items]);
+
+            const handleAddItem = () => {
+                if (!newItem.name.trim()) return;
+                const item = {
+                    id: 'inv_' + Date.now(),
+                    name: newItem.name.trim(),
+                    quantity: newItem.quantity.trim() || 'Sin especificar',
+                    expiry: `En ${newItem.expiryDays} días`,
+                    urgent: newItem.expiryDays <= 3
+                };
+                setItems(prev => [item, ...prev]);
+                setNewItem({ name: '', quantity: '', expiryDays: 7 });
+                setShowAddModal(false);
+            };
+
+            const handleDeleteItem = (id) => {
+                setItems(prev => prev.filter(item => item.id !== id));
+            };
+
+            const handleUpdateItem = () => {
+                if (!editingItem) return;
+                setItems(prev => prev.map(item =>
+                    item.id === editingItem.id ? editingItem : item
+                ));
+                setEditingItem(null);
+            };
+
+            const handleFileUpload = async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                setIsScanning(true);
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64 = reader.result.split(',')[1];
+                    const results = await apiService.analyzePantry(base64);
+
+                    const newItems = results.map((r, idx) => ({
+                        id: Date.now() + idx + '',
+                        name: r.name,
+                        expiry: `En ${r.likelyExpiryDays || 5} días`,
+                        quantity: 'Detectado por IA',
+                        urgent: (r.likelyExpiryDays || 5) <= 3
+                    }));
+
+                    setItems(prev => [...newItems, ...prev]);
+                    setIsScanning(false);
+                };
+                reader.readAsDataURL(file);
+            };
+
+            return (
+                <div className="p-8 md:p-12 max-w-4xl mx-auto min-h-screen">
+                    <header className="flex items-center gap-8 mb-16">
+                        <button onClick={onBack} className="p-5 bg-surface rounded-2xl hover:bg-white/10 transition-colors">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tight">Mi Despensa <span className="text-primary italic">IA</span></h1>
+                    </header>
+
+                    <div className="mb-20 grid md:grid-cols-2 gap-6">
+                        {/* Scan Fridge */}
+                        <label className="block cursor-pointer bg-gradient-to-br from-primary to-accent p-8 rounded-[2rem] text-center shadow-xl hover:scale-[1.02] transition-all group relative overflow-hidden">
+                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                            <div className="relative z-10 flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
+                                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 className="text-black font-black text-xl mb-1">Escanear Nevera</h2>
+                                    <p className="text-black/60 font-bold uppercase tracking-widest text-xs">IA detecta ingredientes</p>
+                                </div>
+                            </div>
+                        </label>
+
+                        {/* Add Manually */}
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="bg-surface border border-white/10 p-8 rounded-[2rem] text-center hover:bg-white/5 transition-all group"
+                        >
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <span className="text-4xl text-primary">+</span>
+                                </div>
+                                <div>
+                                    <h2 className="font-black text-xl mb-1">Añadir Manualmente</h2>
+                                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Agregar ingrediente</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    {isScanning && (
+                        <div className="fixed inset-0 bg-background/80 flex items-center justify-center backdrop-blur-xl z-50">
+                            <div className="text-center">
+                                <div className="w-20 h-20 border-8 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
+                                <p className="text-3xl font-black text-primary animate-pulse">ANALIZANDO INGREDIENTES...</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Add Modal */}
+                    {showAddModal && (
+                        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                            <div className="bg-surface rounded-[2rem] p-8 max-w-md w-full space-y-6 border border-white/10">
+                                <h3 className="text-2xl font-black">Añadir Ingrediente</h3>
+                                <input
+                                    type="text"
+                                    placeholder="Nombre del ingrediente"
+                                    value={newItem.name}
+                                    onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                                    className="w-full p-4 bg-white/5 rounded-xl border border-white/10 outline-none focus:border-primary"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Cantidad (ej: 500g, 2 unidades)"
+                                    value={newItem.quantity}
+                                    onChange={(e) => setNewItem(prev => ({ ...prev, quantity: e.target.value }))}
+                                    className="w-full p-4 bg-white/5 rounded-xl border border-white/10 outline-none focus:border-primary"
+                                />
+                                <div className="flex items-center gap-4">
+                                    <label className="text-sm text-gray-400">Días hasta caducidad:</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={newItem.expiryDays}
+                                        onChange={(e) => setNewItem(prev => ({ ...prev, expiryDays: parseInt(e.target.value) || 1 }))}
+                                        className="w-20 p-3 bg-white/5 rounded-xl border border-white/10 text-center outline-none focus:border-primary"
+                                    />
+                                </div>
+                                <div className="flex gap-4">
+                                    <button onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-white/5 rounded-xl font-bold">Cancelar</button>
+                                    <button onClick={handleAddItem} className="flex-1 py-4 bg-primary text-black rounded-xl font-bold">Añadir</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Edit Modal */}
+                    {editingItem && (
+                        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                            <div className="bg-surface rounded-[2rem] p-8 max-w-md w-full space-y-6 border border-white/10">
+                                <h3 className="text-2xl font-black">Editar Ingrediente</h3>
+                                <input
+                                    type="text"
+                                    value={editingItem.name}
+                                    onChange={(e) => setEditingItem(prev => ({ ...prev, name: e.target.value }))}
+                                    className="w-full p-4 bg-white/5 rounded-xl border border-white/10 outline-none focus:border-primary"
+                                />
+                                <input
+                                    type="text"
+                                    value={editingItem.quantity}
+                                    onChange={(e) => setEditingItem(prev => ({ ...prev, quantity: e.target.value }))}
+                                    className="w-full p-4 bg-white/5 rounded-xl border border-white/10 outline-none focus:border-primary"
+                                />
+                                <div className="flex gap-4">
+                                    <button onClick={() => setEditingItem(null)} className="flex-1 py-4 bg-white/5 rounded-xl font-bold">Cancelar</button>
+                                    <button onClick={handleUpdateItem} className="flex-1 py-4 bg-primary text-black rounded-xl font-bold">Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <section>
+                        <div className="flex justify-between items-center mb-10">
+                            <h2 className="text-2xl font-black uppercase tracking-[0.2em] text-gray-500">Inventario Actual</h2>
+                            <span className="bg-surface px-4 py-2 rounded-xl text-xs font-bold">{items.length} Ingredientes</span>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            {items.map(item => (
+                                <div
+                                    key={item.id}
+                                    className={`relative group flex items-center justify-between p-5 rounded-2xl border cursor-pointer ${item.urgent ? 'border-danger bg-danger/5' : 'border-white/5 bg-surface'}`}
+                                    onClick={() => setEditingItem(item)}
+                                >
+                                    <div>
+                                        <h3 className="font-bold text-lg">{item.name}</h3>
+                                        <p className="text-gray-400 text-sm font-medium">{item.quantity}</p>
+                                    </div>
+                                    <div className="text-right flex items-center gap-3">
+                                        <span className={`text-[10px] font-black uppercase px-2 py-1 rounded tracking-widest ${item.urgent ? 'bg-danger text-white' : 'bg-white/10 text-gray-300'}`}>
+                                            {item.expiry}
+                                        </span>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }}
+                                            className="w-8 h-8 bg-danger/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-sm hover:bg-danger"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                </div>
+            );
+        };
+
+        const VoiceChatOverlay = ({ onClose }) => {
+            const [messages, setMessages] = useState([{ role: 'ai', text: '¡Hola! Soy tu asistente Chef. ¿En qué puedo ayudarte hoy?' }]);
+            const [isListening, setIsListening] = useState(false);
+            const [isSpeaking, setIsSpeaking] = useState(false);
+
+            const speak = (text) => {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 1.1;
+                utterance.onstart = () => setIsSpeaking(true);
+                utterance.onend = () => setIsSpeaking(false);
+                window.speechSynthesis.speak(utterance);
+            };
+
+            const startListening = () => {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) return alert("Tu navegador no soporta reconocimiento de voz.");
+
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'es-ES';
+                recognition.onstart = () => setIsListening(true);
+                recognition.onresult = async (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    setMessages(prev => [...prev, { role: 'user', text: transcript }]);
+                    setIsListening(false);
+
+                    try {
+                        const response = await fetch('./proxy.php', {
+                            method: 'POST',
+                            body: JSON.stringify({ contents: [{ parts: [{ text: `Actúa como un asistente culinario experto. El usuario dice: "${transcript}". Responde de forma concisa y amigable.` }] }] })
+                        });
+                        const data = await response.json();
+                        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No te escuché bien, ¿puedes repetir?";
+                        setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
+                        speak(aiText);
+                    } catch (e) {
+                        speak("Lo siento, tengo problemas de conexión.");
+                    }
+                };
+                recognition.onerror = () => setIsListening(false);
+                recognition.start();
+            };
+
+            return (
+                <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-2xl flex flex-col p-8">
+                    <header className="flex justify-between items-center mb-8">
+                        <button onClick={onClose} className="p-4 bg-white/5 rounded-2xl text-gray-400">Cerrar</button>
+                        <h2 className="text-xl font-bold text-primary">Chef Live Chat</h2>
+                        <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                            <div className={`w-3 h-3 bg-primary rounded-full ${isSpeaking ? 'animate-ping' : ''}`} />
+                        </div>
+                    </header>
+
+                    <div className="flex-1 overflow-y-auto space-y-6 flex flex-col items-center justify-center text-center">
+                        <div className={`w-48 h-48 rounded-full border-4 border-primary/50 flex items-center justify-center relative ${isSpeaking || isListening ? 'scale-110 shadow-[0_0_80px_rgba(0,255,209,0.3)]' : ''} transition-all duration-500`}>
+                            {isListening && (
+                                <div className="absolute inset-0 border-8 border-primary rounded-full animate-ping opacity-20" />
+                            )}
+                            <svg className={`w-24 h-24 ${isListening ? 'text-primary' : 'text-gray-600'}`} fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                            </svg>
+                        </div>
+                        <div className="max-w-xl space-y-4">
+                            <p className="text-2xl font-bold italic text-white leading-tight">
+                                {messages[messages.length - 1].text}
+                            </p>
+                            {isListening && <p className="text-primary font-black uppercase tracking-[0.3em] animate-pulse">Escuchando...</p>}
+                        </div>
+                    </div>
+
+                    <footer className="py-12 flex justify-center">
+                        <button
+                            onClick={startListening}
+                            disabled={isListening || isSpeaking}
+                            className="bg-primary text-black font-black w-24 h-24 rounded-full shadow-[0_20px_60px_rgba(0,255,209,0.5)] flex items-center justify-center hover:rotate-12 transition-all disabled:opacity-50"
+                        >
+                            <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                            </svg>
+                        </button>
+                    </footer>
+                </div>
+            );
+        };
+
+        // --- Main App ---
+
+        const App = () => {
+            const [view, setView] = useState('home');
+            const [selectedRecipe, setSelectedRecipe] = useState(null);
+            const [unitSystem, setUnitSystem] = useState(UnitSystem.METRIC);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+            const [extractedData, setExtractedData] = useState(null);
+
+            // New states for web search and persistence
+            const [webResults, setWebResults] = useState([]);
+            const [isSearching, setIsSearching] = useState(false);
+            const [generatedRecipes, setGeneratedRecipes] = useState(() => storage.getGeneratedRecipes());
+
+            const handleRecipeSelect = (recipe) => {
+                setSelectedRecipe(recipe);
+                setView('recipe-detail');
+                window.scrollTo(0, 0);
+            };
+
+            const handleDeleteRecipe = (id) => {
+                const updated = storage.removeRecipe(id);
+                setGeneratedRecipes(updated);
+            };
+
+            const handleWebSearch = async (query) => {
+                // Check if it's a URL
+                if (query.startsWith('http://') || query.startsWith('https://')) {
+                    setIsLoading(true);
+                    const recipe = await apiService.extractRecipeFromUrl(query);
+                    setIsLoading(false);
+                    if (recipe && recipe.title) {
+                        const updated = storage.addRecipe(recipe);
+                        setGeneratedRecipes(updated);
+                        handleRecipeSelect(recipe);
+                    } else {
+                        alert('No se pudo extraer la receta de esta URL');
+                    }
+                    return;
+                }
+
+                // Regular search
+                setIsSearching(true);
+                setWebResults([]);
+                const results = await apiService.searchRecipesOnWeb(query);
+                setWebResults(results);
+                setIsSearching(false);
+            };
+
+            const handleSelectWebResult = async (url) => {
+                setIsLoading(true);
+                setWebResults([]);
+                const recipe = await apiService.extractRecipeFromUrl(url);
+                setIsLoading(false);
+                if (recipe && recipe.title) {
+                    const updated = storage.addRecipe(recipe);
+                    setGeneratedRecipes(updated);
+                    handleRecipeSelect(recipe);
+                } else {
+                    alert('No se pudo extraer la receta de esta página');
+                }
+            };
+
+            const triggerFileUpload = (callback) => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    setIsLoading(true);
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                        const base64 = reader.result.split(',')[1];
+                        await callback(base64);
+                        setIsLoading(false);
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            };
+
+            return (
+                <main className="min-h-screen">
+                    {isLoading && (
+                        <div className="fixed inset-0 z-[200] bg-background/80 flex items-center justify-center backdrop-blur-xl">
+                            <div className="text-center">
+                                <div className="w-20 h-20 border-8 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
+                                <p className="text-2xl font-black text-primary animate-pulse uppercase tracking-widest">IA Procesando...</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {extractedData && (
+                        <div className="fixed inset-0 z-[150] bg-background p-8 flex flex-col max-w-4xl mx-auto my-12 rounded-[3rem] border border-white/10 shadow-2xl">
+                            <header className="flex justify-between items-center mb-8">
+                                <h2 className="text-3xl font-black">Información Extraída</h2>
+                                <button onClick={() => setExtractedData(null)} className="p-4 bg-white/5 rounded-2xl">Cerrar</button>
+                            </header>
+                            <div className="flex-1 overflow-y-auto bg-surface p-8 rounded-3xl text-gray-300 leading-relaxed font-mono whitespace-pre-wrap ring-1 ring-white/5">
+                                {extractedData}
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'home' && (
+                        <HomeView
+                            recipes={MOCK_RECIPES}
+                            generatedRecipes={generatedRecipes}
+                            searchTerm={searchTerm}
+                            setSearchTerm={setSearchTerm}
+                            onSelectRecipe={handleRecipeSelect}
+                            onDeleteRecipe={handleDeleteRecipe}
+                            onOpenInventory={() => setView('inventory')}
+                            onWebSearch={handleWebSearch}
+                            webResults={webResults}
+                            isSearching={isSearching}
+                            onSelectWebResult={handleSelectWebResult}
+                            onRecipeFromPhoto={() => triggerFileUpload(async (b64) => {
+                                const recipe = await apiService.getRecipeFromImage(b64);
+                                if (recipe && recipe.title) {
+                                    const updated = storage.addRecipe(recipe);
+                                    setGeneratedRecipes(updated);
+                                    handleRecipeSelect(recipe);
+                                }
+                            })}
+                            onScanDoc={() => triggerFileUpload(async (b64) => {
+                                const data = await apiService.extractData(b64);
+                                setExtractedData(data);
+                            })}
+                        />
+                    )}
+
+                    {view === 'recipe-detail' && selectedRecipe && (
+                        <RecipeDetailView
+                            recipe={selectedRecipe}
+                            onBack={() => setView('home')}
+                            onStart={() => {
+                                setView('guided');
+                                window.scrollTo(0, 0);
+                            }}
+                            unitSystem={unitSystem}
+                            setUnitSystem={setUnitSystem}
+                        />
+                    )}
+
+                    {view === 'guided' && selectedRecipe && (
+                        <GuidedCookingView
+                            recipe={selectedRecipe}
+                            onClose={() => setView('recipe-detail')}
+                            unitSystem={unitSystem}
+                        />
+                    )}
+
+                    {view === 'inventory' && (
+                        <InventoryView onBack={() => setView('home')} />
+                    )}
+
+                    {isVoiceOpen && <VoiceChatOverlay onClose={() => setIsVoiceOpen(false)} />}
+
+                    {/* VUI Floating Action Indicator (Global) */}
+                    {view !== 'guided' && !isVoiceOpen && (
+                        <div className="fixed bottom-10 right-10 z-50">
+                            <div
+                                onClick={() => setIsVoiceOpen(true)}
+                                className="w-16 h-16 bg-primary rounded-full shadow-[0_10px_40px_rgba(0,255,209,0.4)] flex items-center justify-center animate-pulse group cursor-pointer hover:scale-110 transition-transform"
+                            >
+                                <svg className="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                                </svg>
+
+                                <div className="absolute right-full mr-4 bg-surface px-6 py-3 rounded-2xl border border-white/5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-2xl pointer-events-none">
+                                    <p className="text-sm font-bold">"Oye Chef..."</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </main>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

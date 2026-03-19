@@ -1,0 +1,829 @@
+/* app.css FINAL - Actualizado según Style Guide Neon Glassmorphism */
+/* === TEMA "NEON GLASSMORPHISM" === */
+:root{
+  /* Colores base según guía */
+  --bg1:#041847; --bg2:#0c1445;
+  --acc:#22d3ee; --acc2:#a78bfa;
+  --text:#e5e7eb; --muted:#94a3b8;
+  --border:rgba(34, 211, 238, 0.2); --card-bg:rgba(15,23,42,0.4);
+  --shadow-color:rgba(0,0,0,0.5); --shadow-light:rgba(34,211,238,0.2);
+  
+  /* Colores neón según guía */
+  --neon-cyan:#2ee8ff; --neon-pink:#ff4ecd; --neon-purple:#d54cff;
+  --glow-strong:rgba(46, 232, 255, 0.4);
+  
+  /* Colores adicionales */
+  --color-purple:#a78bfa; --color-cyan:#22d3ee; --color-emerald:#34d399;
+  --color-pink:#f472b6; --color-amber:#fbbf24;
+  
+  /* Gradientes */
+  --main-bg-gradient:linear-gradient(135deg, #041847 0%, #0c1445 35%, #1e3a8a 75%, #00bcd4 100%);
+  --gradient-cyan-blue:linear-gradient(135deg, #06b6d4, #3b82f6);
+  --gradient-purple-pink:linear-gradient(135deg, #a78bfa, #f472b6);
+  --gradient-text:linear-gradient(90deg, var(--neon-cyan), var(--acc2), var(--neon-pink));
+  
+  /* Espaciado y bordes */
+  --radius-sm:8px; --radius-md:16px; --radius-lg:24px; --radius-xl:3rem;
+  
+  /* Transiciones */
+  --transition-main:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast:all 0.15s ease; --transition-slow:all 0.5s ease;
+  
+  /* Colores de estado */
+  --danger:#ef4444; --danger-hover:#dc2626;
+  --success:#34d399; --warning:#fbbf24; --info:#60a5fa;
+  
+  color-scheme: dark;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+.hidden{display:none;}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 1rem;}
+
+body{
+  font-family:'Poppins',sans-serif;
+  color:var(--text);
+  background:var(--main-bg-gradient);
+  background-attachment:fixed;
+  min-height:100vh;overflow-x:hidden;padding:2rem 1rem;
+  margin:0;
+}
+
+/* Header */
+header{text-align:center;margin-bottom:3rem;padding:1rem;}
+header h1{
+  font-family:'Montserrat',sans-serif;
+  font-size:clamp(2rem,5vw,3.5rem);
+  margin-bottom:.5rem;text-shadow:0 4px 15px var(--shadow-color);
+  letter-spacing:-0.02em;
+}
+header p{font-size:clamp(1rem,2.5vw,1.2rem);color:var(--muted);max-width:600px;margin:0 auto;}
+
+/* Tipografía según guía */
+h1, h2, h3, .font-montserrat {
+  font-family:'Montserrat',sans-serif;
+  letter-spacing:-0.02em;
+}
+
+/* Texto Neón */
+.neon-text {
+  color:var(--neon-cyan);
+  text-shadow:0 0 10px var(--glow-strong);
+}
+
+/* Texto Gradiente */
+.gradient-text {
+  background:var(--gradient-text);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* Contenedor principal - Glassmorphism */
+.app-container{
+  background:var(--card-bg);
+  border-radius:var(--radius-md);border:1px solid var(--border);
+  padding:clamp(1.5rem,4vw,2.5rem);
+  box-shadow:0 8px 32px 0 var(--shadow-color);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  max-width:900px;margin:0 auto;
+  transition:var(--transition-main);
+}
+
+/* Glass con hover animado */
+.glass-hover {
+  transition:var(--transition-main);
+}
+
+.glass-hover:hover {
+  background:rgba(255, 255, 255, 0.08);
+  border-color:var(--acc);
+  transform:translateY(-5px) scale(1.01);
+  box-shadow:0 15px 45px 0 rgba(46, 232, 255, 0.15);
+}
+
+/* Cargador */
+#upload-container{max-width:550px;margin:0 auto;}
+.section-title{text-align:center;font-size:1.2rem;font-weight:600;color:var(--text);margin:1.5rem 0;}
+
+.drop-zone{
+  border:2px dashed var(--border);border-radius:16px;
+  background:rgba(15,23,42,0.5);color:var(--muted);
+  transition:background-color .3s ease,border-color .3s ease;
+  padding:3rem 2rem;text-align:center;cursor:pointer;margin-bottom:2rem;
+  min-height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+}
+.drop-zone.dragover{background-color:rgba(30,58,138,0.6);border-color:var(--acc);color:var(--text);}
+.drop-zone.has-image{
+  padding:0;border-style:solid;border-width:1px;
+  background-size:contain;background-position:center;background-repeat:no-repeat;cursor:pointer;
+}
+.drop-zone i{font-size:3rem;margin-bottom:1rem;display:block;}
+.muted-inline{color:var(--muted);margin-top:.25rem;font-size:.9rem;}
+
+/* Opciones de plano */
+.shot-options-container{display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-bottom:2rem;}
+.shot-option{
+  background:transparent;color:var(--text);
+  border:1px solid var(--border);border-radius:8px;padding:.75rem 1.5rem;
+  font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s ease;
+}
+.shot-option:hover{background-color:rgba(30,64,175,0.5);border-color:var(--acc2);transform:translateY(-2px);}
+.shot-option.selected{
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  border-color:transparent;color:#fff;box-shadow:0 0 15px var(--shadow-light);
+}
+
+/* Selector de fondo */
+.background-selector {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0 2rem 0;
+}
+#background-option {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all .2s ease;
+  width: 100%;
+  max-width: 400px;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23e5e7eb%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right .75rem top 50%;
+  background-size: .65rem auto;
+}
+#background-option:hover {
+  background-color: rgba(30,64,175,0.5);
+  border-color: var(--acc2);
+}
+
+/* Botones */
+.action-buttons{display:flex;justify-content:center;gap:1rem;margin-top:2rem;}
+
+/* Botón 3D con efecto de luz deslizante */
+.btn-3d {
+  position:relative;
+  transition:var(--transition-main);
+  overflow:hidden;
+  z-index:1;
+}
+
+.btn-3d::before {
+  content:'';
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition:0.5s;
+  z-index:-1;
+}
+
+.btn-3d:hover::before {
+  left:100%;
+}
+
+.btn-3d:active {
+  transform:scale(0.95);
+}
+
+.btn{
+  padding:1rem 2rem;border:none;border-radius:var(--radius-md);
+  font-family:'Poppins',sans-serif;font-weight:600;font-size:1rem;cursor:pointer;
+  transition:var(--transition-main);display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+}
+.btn:hover{transform:translateY(-2px);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* Botón primario - Gradiente cyan-azul */
+.btn-primary{
+  background:var(--gradient-cyan-blue);
+  color:#fff;
+  box-shadow:0 4px 15px rgba(6, 182, 212, 0.3);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg, #22d3ee, #60a5fa);
+  box-shadow:0 10px 30px rgba(6, 182, 212, 0.3);
+}
+
+/* Botón secundario (Glass) */
+.btn-secondary{
+  background:var(--card-bg);
+  backdrop-filter:blur(16px);
+  color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-secondary:hover{
+  background:rgba(255, 255, 255, 0.08);
+  border-color:var(--acc);
+}
+
+/* Botón peligro */
+.btn-danger{
+  background:var(--danger);
+  color:#fff;
+}
+.btn-danger:hover{
+  background:var(--danger-hover);
+}
+
+/* Resultados */
+#results-container{margin-top:3rem;}
+.results-header{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;margin-bottom:2rem;text-align:center;
+}
+@media (min-width:768px){.results-header{flex-direction:row;justify-content:space-between;}}
+.results-title{font-family:'Montserrat',sans-serif;font-size:1.8rem;}
+
+/* Grid */
+#image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.5rem;}
+
+/* Tarjeta de imagen generada - Glassmorphism */
+.new-image{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  box-shadow:0 8px 32px 0 var(--shadow-color);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  padding:1rem;
+  transition:var(--transition-main);
+}
+.new-image:hover {
+  background:rgba(255, 255, 255, 0.08);
+  border-color:var(--acc);
+  transform:translateY(-5px) scale(1.01);
+  box-shadow:0 15px 45px 0 rgba(46, 232, 255, 0.15);
+}
+.new-image h3{
+  font-family:'Montserrat',sans-serif;
+  color:var(--text);
+  opacity:.9;
+  margin-bottom:.5rem;
+  text-align:center;
+  letter-spacing:-0.02em;
+}
+.image-container{
+  position:relative;
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  border:1px solid var(--border);
+  aspect-ratio:1/1;
+  background:rgba(15,23,42,.5);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Loader mínimo para tu JS */
+.loader{
+  width:42px;height:42px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.2);border-top-color:var(--acc);
+  animation:spin 1s linear infinite;box-shadow:0 0 15px var(--shadow-light);
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Botones de acción circulares (Style Guide) */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 197, 255, 0.65);
+  background: radial-gradient(circle at 0% 0%,
+      rgba(56, 189, 248, 0.16),
+      transparent 55%),
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(30, 64, 175, 0.95));
+  color: #e5f0ff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow:
+    0 8px 20px rgba(3, 7, 18, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 20px rgba(56, 189, 248, 0.5);
+  transition:
+    transform 0.16s ease-out,
+    box-shadow 0.16s ease-out,
+    background 0.18s ease-out;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow:
+    0 12px 28px rgba(3, 7, 18, 1),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 30px rgba(56, 189, 248, 0.8);
+}
+
+.action-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Botón de descarga - Cyan accent */
+.action-btn.btn-dl {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.9), rgba(59, 130, 246, 0.9));
+}
+
+.action-btn.btn-dl:hover {
+  box-shadow:
+    0 12px 28px rgba(6, 182, 212, 0.4),
+    0 0 30px rgba(6, 182, 212, 0.7);
+}
+
+/* Botón de eliminar - Red accent */
+.action-btn.btn-del {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(185, 28, 28, 0.9));
+}
+
+.action-btn.btn-del:hover {
+  box-shadow:
+    0 12px 28px rgba(239, 68, 68, 0.4),
+    0 0 30px rgba(239, 68, 68, 0.7);
+}
+
+/* Botón de regenerar - Purple accent */
+.action-btn.btn-regen {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(139, 92, 246, 0.9));
+}
+
+.action-btn.btn-regen:hover {
+  box-shadow:
+    0 12px 28px rgba(168, 85, 247, 0.4),
+    0 0 30px rgba(168, 85, 247, 0.7);
+}
+
+/* Botones por tarjeta (Estilos base) */
+.image-action-btn {
+  position: absolute;
+  bottom: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all .2s ease;
+}
+
+/* Colores y posición de cada botón */
+.download-btn { right: 104px; background-color: rgba(34, 211, 238, .75); }
+.download-btn:hover { background-color: var(--acc); }
+
+.regen-btn { right: 58px; background-color: rgba(34, 197, 94, 0.8); }
+.regen-btn:hover { background-color: rgba(22, 163, 74, 0.9); }
+
+.delete-btn { right: 12px; background-color: rgba(239, 68, 68, .8); }
+.delete-btn:hover { background-color: var(--danger); }
+
+.image-action-btn:hover {
+  transform: scale(1.08);
+}
+
+/* Efecto hover para mostrar botones SÓLO en escritorio */
+@media (hover: hover) and (min-width: 768px) {
+  .image-container .image-action-btn {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+  }
+  .image-container:hover .image-action-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .image-container:hover .image-action-btn:hover {
+    transform: translateY(0) scale(1.08);
+  }
+}
+
+/* Imágenes dentro de tarjeta */
+.image-container img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+
+/* Mensaje de error en tarjeta */
+.error-message{color:#fecaca;background:rgba(127,29,29,.25);border:1px solid rgba(239,68,68,.6);border-radius:8px;}
+
+
+:root{
+  /* Ajusta SOLO este valor para decidir cuántas tarjetas caben sin scroll */
+  --gallery-columns: 5;        /* prueba 5, 6, 4 según tu pantalla */
+  --gallery-gap: 0.6rem;       /* espacio entre tarjetas */
+  --gallery-padding-x: 0.5rem;  /* padding lateral del carril */
+}
+
+/* ===== Galería a ancho completo ===== */
+.full-bleed{width:100vw;margin-left:50%;transform:translateX(-50%);}
+#gallery-panel{margin-top:1.25rem;}
+#gallery-panel .gallery-strip{
+  display:flex;
+  gap:var(--gallery-gap);
+  padding:0.5rem var(--gallery-padding-x);
+  overflow-x:auto; /* con scroll horizontal */
+  flex-wrap:nowrap;
+  align-items:stretch;
+  -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+}
+
+/* Tarjetas: ancho calculado por columnas, cuadradas */
+#gallery-panel .new-image{
+  flex:0 0 calc(
+    (100vw - (2 * var(--gallery-padding-x)) - ((var(--gallery-columns) - 1) * var(--gallery-gap)))
+    / var(--gallery-columns)
+  );
+  max-width:none;
+}
+#gallery-panel .image-container{aspect-ratio:1/1;}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  :root {
+    --gallery-columns: 1.5; /* Ajusta para que quepan aprox 1-2 cards visibles, con scroll */
+    --gallery-gap: 1rem;
+  }
+
+  .new-image {
+    aspect-ratio: auto;
+    padding: 1rem 1rem 4rem 1rem; /* Espacio adicional abajo para botones */
+  }
+
+  .image-container {
+    position: relative;
+    overflow: visible;
+    border-radius: 12px 12px 0 0; /* Ajusta bordes si es necesario */
+  }
+
+  .image-action-btn {
+    position: absolute;
+    top: calc(100% + 0.5rem); /* Coloca debajo del contenedor de imagen con espacio */
+    bottom: auto;
+    /* !important ya no es necesario al quitar la inyección de JS */
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    width: 32px;
+    height: 32px;
+  }
+
+  .image-action-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .download-btn {
+    left: calc(25% - 16px);
+    right: auto;
+  }
+
+  .regen-btn {
+    left: calc(50% - 16px);
+    right: auto;
+  }
+
+  .delete-btn {
+    left: calc(75% - 16px);
+    right: auto;
+  }
+}
+
+/* ===== Botones de acción circulares (Style Guide) ===== */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 197, 255, 0.65);
+  background: radial-gradient(circle at 0% 0%,
+      rgba(56, 189, 248, 0.16),
+      transparent 55%),
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(30, 64, 175, 0.95));
+  color: #e5f0ff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow:
+    0 8px 20px rgba(3, 7, 18, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 20px rgba(56, 189, 248, 0.5);
+  transition:
+    transform 0.16s ease-out,
+    box-shadow 0.16s ease-out,
+    background 0.18s ease-out;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow:
+    0 12px 28px rgba(3, 7, 18, 1),
+    0 0 0 1px rgba(15, 23, 42, 1),
+    0 0 30px rgba(56, 189, 248, 0.8);
+}
+
+.action-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Download button - Cyan accent */
+.action-btn.btn-dl {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.9), rgba(59, 130, 246, 0.9));
+}
+
+.action-btn.btn-dl:hover {
+  box-shadow:
+    0 12px 28px rgba(6, 182, 212, 0.4),
+    0 0 30px rgba(6, 182, 212, 0.7);
+}
+
+/* Delete button - Red accent */
+.action-btn.btn-del {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(185, 28, 28, 0.9));
+}
+
+.action-btn.btn-del:hover {
+  box-shadow:
+    0 12px 28px rgba(239, 68, 68, 0.4),
+    0 0 30px rgba(239, 68, 68, 0.7);
+}
+
+/* ===== Historial Persistente ===== */
+#history-container {
+  margin-top: 3rem;
+}
+
+.history-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .history-header {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.history-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.history-title i {
+  color: var(--acc);
+  filter: drop-shadow(0 0 8px var(--acc));
+}
+
+.btn-sm {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+}
+
+/* Tarjetas del historial */
+.history-card {
+  position: relative;
+  transition: var(--transition-main);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px 0 var(--shadow-color);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 1rem;
+}
+
+.history-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--acc);
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 15px 45px 0 rgba(46, 232, 255, 0.15);
+}
+
+.history-card .image-container {
+  overflow: hidden;
+}
+
+.history-card img {
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+.history-card:hover img {
+  transform: scale(1.02);
+}
+
+/* Fecha en la tarjeta */
+.history-date {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: 'Poppins', sans-serif;
+  z-index: 10;
+}
+
+/* Acciones del historial */
+.history-actions {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.4rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.history-card:hover .history-actions {
+  opacity: 1;
+}
+
+/* Scroll horizontal para historial */
+.history-strip {
+  display: flex;
+  gap: var(--gallery-gap);
+  padding: 0.5rem var(--gallery-padding-x);
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  -webkit-overflow-scrolling: touch;
+}
+
+.history-strip .history-card {
+  flex: 0 0 calc(
+    (100vw - (2 * var(--gallery-padding-x)) - ((var(--gallery-columns) - 1) * var(--gallery-gap)))
+    / var(--gallery-columns)
+  );
+  max-width: none;
+}
+
+.history-empty {
+  width: 100%;
+  text-align: center;
+  color: var(--muted);
+  padding: 1rem;
+}
+
+/* Mobile: botones siempre visibles */
+@media (max-width: 767px) {
+  .history-actions {
+    opacity: 1;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    bottom: auto;
+  }
+  
+  .history-card {
+    padding: 1rem 1rem 4rem 1rem;
+  }
+  
+  .history-card .image-container {
+    overflow: visible;
+  }
+  
+  .history-actions .action-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .history-actions .action-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .history-download {
+    left: calc(30% - 16px);
+    right: auto;
+  }
+  
+  .history-delete {
+    left: calc(70% - 16px);
+    right: auto;
+  }
+}
+
+/* ===== LOADING OVERLAY ESTÁNDAR ===== */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none; /* CAMBIADO: empezar como none */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  overflow: hidden;
+}
+
+.loading-overlay:not(.hidden) {
+  display: flex; /* Solo mostrar cuando NO tenga clase hidden */
+}
+
+/* Div para fondo dinámico (se establece via JS) */
+.loading-bg-image {
+  position: absolute;
+  inset: -20px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(30px) brightness(0.4);
+  z-index: -1;
+  opacity: 0.7;
+  transition: opacity 0.5s ease;
+}
+
+.spinner-triple {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-triple .ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 4px solid transparent;
+}
+
+/* Aro Exterior - Cyan */
+.spinner-triple .ring-1 {
+  inset: 0;
+  border-top-color: var(--neon-cyan);
+  animation: spin 1.2s linear infinite;
+  filter: drop-shadow(0 0 8px var(--neon-cyan));
+}
+
+/* Aro Medio - Purple */
+.spinner-triple .ring-2 {
+  inset: 15px;
+  border-right-color: var(--acc2);
+  animation: spin 1.5s linear infinite reverse;
+  filter: drop-shadow(0 0 8px var(--acc2));
+}
+
+/* Aro Interior - Pink */
+.spinner-triple .ring-3 {
+  inset: 30px;
+  border-bottom-color: var(--neon-pink);
+  animation: spin 2s linear infinite;
+  filter: drop-shadow(0 0 8px var(--neon-pink));
+}
+
+.loading-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 15px var(--neon-cyan);
+  animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

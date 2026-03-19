@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal, Firebase & Make - Tutorial</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Meta SEO -->
+    <meta name="description"
+        content="Aprende a monetizar tus aplicaciones de IA con PayPal, Firebase y Make.com. Guía completa de suscripciones y webhooks.">
+</head>
+
+<body>
+
+    <aside class="sidebar glass">
+        <h2 class="gradient-text">PayPal, Plataforma de Pago</h2>
+        <nav id="sidebar-nav">
+            <ul>
+                <li><a href="#introduccion">1. Introducción</a></li>
+                <li><a href="#setup">2. App Setup Base</a></li>
+                <li><a href="#creditos">3. Lógica de Créditos</a></li>
+                <li><a href="#pricing">4. Diseño de Planes</a></li>
+                <li><a href="#sandbox">5. PayPal Sandbox</a></li>
+                <li><a href="#productos">6. Productos & Planes</a></li>
+                <li><a href="#make1">7. Make: Checkout</a></li>
+                <li><a href="#firestore">8. Sync Firestore</a></li>
+                <li><a href="#listeners">9. Listeners AI Studio</a></li>
+                <li><a href="#ux">10. Loader Verificación</a></li>
+                <li><a href="#cancelacion">11. Cancelación UI</a></li>
+                <li><a href="#make2">12. Make: Bajas API</a></li>
+                <li><a href="#estados">13. Gestión de Estados</a></li>
+                <li><a href="#live">14. Checklist Live</a></li>
+                <li><a href="#conclusion">15. Conclusión</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header id="header-main">
+            <h1 class="gradient-text">YouTube Learner: Pagos con PayPal</h1>
+            <section class="card glass">
+                <p><strong>Transforma tus ideas en beneficios reales.</strong></p>
+                <p>Este tutorial te enseña a implementar un sistema de monetización completo utilizando PayPal y
+                    Make.com. Aprenderás a gestionar suscripciones, créditos de uso y automatizaciones complejas sin
+                    escribir código de backend tradicional.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="https://youtu.be/vgl6BvAVpcc" target="_blank"
+                        style="text-decoration: none; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #020617; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                        </svg>
+                        Ver Tutorial en YouTube
+                    </a>
+                </div>
+            </section>
+        </header>
+
+        <section id="introduccion" class="content-section">
+            <h2>1. El fin del desarrollo gratuito</h2>
+            <div class="card glass">
+                <p>Lanzar un negocio SaaS hoy no requiere miles de dólares. Gracias a la IA y herramientas de
+                    automatización, puedes construir sistemas de cobro recurrentes que escalen automáticamente,
+                    permitiéndote monetizar tus herramientas de IA desde el primer día.</p>
+            </div>
+        </section>
+
+        <section id="setup" class="content-section">
+            <h2>2. App Setup: El Cimiento</h2>
+            <div class="card glass">
+                <p>Iniciamos con una base sólida en Google AI Studio conectada a Firebase. Es vital tener la
+                    autenticación y la base de datos Firestore listas antes de introducir la lógica de pagos.</p>
+                <div class="tip-box">
+                    <strong>Recordatorio:</strong> Necesitas tener el `iDToken` de Firebase configurado para validar
+                    peticiones seguras desde Make.com.
+                </div>
+            </div>
+        </section>
+
+        <section id="creditos" class="content-section">
+            <h2>3. El Sistema de Créditos Gratuitos</h2>
+            <div class="card glass">
+                <p>Atrae usuarios con un modelo Freemium. Cada nuevo registro recibe automáticamente 10 créditos para
+                    probar la herramienta.</p>
+                <pre><code>// Lógica Firestore al añadir video:
+videos_used = videos_used + 1;
+if (videos_used >= 10 && plan == "free") {
+   disable_access();
+}</code></pre>
+            </div>
+        </section>
+
+        <section id="pricing" class="content-section">
+            <h2>4. Diseño de la Página de Planes</h2>
+            <div class="card glass">
+                <p>Crea una interfaz clara de precios: Plus ($20) y Premium ($40). El diseño debe invitar al upgrade una
+                    vez se agoten los créditos gratuitos.</p>
+            </div>
+        </section>
+
+        <section id="sandbox" class="content-section">
+            <h2>5. PayPal Sandbox Explorer</h2>
+            <div class="card glass">
+                <p>Nunca pruebes con dinero real al inicio. Usa el **Sandbox** de PayPal para simular compras exitosas y
+                    fallidas utilizando cuentas ficticias de "Vendedor" y "Comprador".</p>
+                <ol class="step-list">
+                    <li>Activa el modo Sandbox en el Developer Dashboard.</li>
+                    <li>Obtén tu **Client ID** y **Secret Key**.</li>
+                    <li>Usa los WebHook Simulators para probar escenarios de error.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="productos" class="content-section">
+            <h2>6. Creación de Productos & Planes</h2>
+            <div class="card glass">
+                <p>En tu panel de PayPal Sandbox, define los productos. Cada plan genera un <strong>Plan ID</strong>
+                    único (ej: <code>P-LLX...</code>) que usaremos para indicar a la API cuánto cobrar.</p>
+            </div>
+        </section>
+
+        <section id="make1" class="content-section">
+            <h2>7. Make.com: Generador de Links</h2>
+            <div class="card glass">
+                <p>El primer escenario de Make recibe el `iDToken` del usuario, valida su identidad contra Firebase y
+                    solicita a PayPal un link de pago único. Este link se devuelve al front-end para la redirección.</p>
+            </div>
+        </section>
+
+        <section id="firestore" class="content-section">
+            <h2>8. Sincronización con Firestore</h2>
+            <div class="card glass">
+                <p>Cuando el pago se completa, PayPal dispara un <strong>WebHook</strong>. Make.com captura este evento
+                    y
+                    actualiza el campo <code>plan</code> y <code>status</code> en el documento del usuario en tiempo
+                    real.</p>
+            </div>
+        </section>
+
+        <section id="listeners" class="content-section">
+            <h2>9. Listeners en AI Studio</h2>
+            <div class="card glass">
+                <p>Configuramos el front-end para que "escuche" cambios en el documento de usuario. En cuanto
+                    <code>status</code> pasa a <code>active</code>, se desbloquean las funciones de análisis premium
+                    automáticamente.
+                </p>
+            </div>
+        </section>
+
+        <section id="ux" class="content-section">
+            <h2>10. Loader de Verificación</h2>
+            <div class="card glass">
+                <p>Implementa un estado UX intermedio. Mientras Make procesa el pago, muestra: <em>"Verificando tu
+                        pago... esto puede tardar unos segundos"</em>. Esto evita confusiones si la base de datos tarda
+                    un instante en actualizarse.</p>
+            </div>
+        </section>
+
+        <section id="cancelacion" class="content-section">
+            <h2>11. El Flujo de Cancelación</h2>
+            <div class="card glass">
+                <p>Todo buen sistema de pagos debe dejar ir al usuario con elegancia. Implementa un pop-up de
+                    confirmación pidiendo el motivo de la baja (feedback valioso).</p>
+            </div>
+        </section>
+
+        <section id="make2" class="content-section">
+            <h2>12. Make.com: Automatizando Bajas</h2>
+            <div class="card glass">
+                <p>Un segundo escenario de Make llama al endpoint <code>/billing/subscriptions/{id}/cancel</code> de
+                    PayPal para detener el cobro recurrente de forma inmediata.</p>
+            </div>
+        </section>
+
+        <section id="estados" class="content-section">
+            <h2>13. Gestión de Estados: Cancelado vs Expirado</h2>
+            <div class="card glass">
+                <p>Diferencia entre:</p>
+                <ul>
+                    <li><strong>Cancelled</strong>: El usuario detuvo el cobro pero aún tiene acceso hasta el fin de
+                        mes.</li>
+                    <li><strong>Expired/Failed</strong>: Se revoca el acceso y el usuario vuelve al plan gratuito.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="live" class="content-section">
+            <h2>14. Checklist para el GoLive</h2>
+            <div class="card glass">
+                <p>Antes del lanzamiento real:</p>
+                <ol class="step-list">
+                    <li>Cambia el entorno Sandbox a **Live** en PayPal y Make.</li>
+                    <li>Actualiza los **Price/Plan IDs** con versiones reales.</li>
+                    <li>Configura los Webhooks de producción.</li>
+                    <li>Vuelve a testear cada flujo.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="conclusion" class="content-section">
+            <h2>15. Conclusión: Monetización Inteligente</h2>
+            <div class="card glass">
+                <p>Has construido un motor de ingresos SaaS. La integración de PayPal con automatizaciones sin código es
+                    el atajo más rápido para convertir tus habilidades de IA en una fuente de ingresos real y escalable.
+                </p>
+            </div>
+        </section>
+
+        <footer class="glass"
+            style="padding: 2rem; text-align: center; border-radius: var(--radius-md); margin-top: 4rem;">
+            <p>&copy; 2025 YouTube Learner Monetization. Neon Gold Edition.</p>
+        </footer>
+    </main>
+
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.sidebar nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                targetSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer to highlight active section in sidebar
+        const sections = document.querySelectorAll('.content-section');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

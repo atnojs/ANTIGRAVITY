@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manual Antigravity + Claude – Landing Técnica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #050816;
+      --bg-card: rgba(15, 23, 42, 0.9);
+      --bg-card-soft: rgba(15, 23, 42, 0.75);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --accent-strong: #0ea5e9;
+      --text-main: #e5e7eb;
+      --text-soft: #9ca3af;
+      --border-subtle: rgba(148, 163, 184, 0.35);
+      --radius-xl: 20px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.7);
+      --max-width: 1180px;
+      --danger: #f97373;
+      --success: #4ade80;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #1d283a 0, #020617 45%, #000 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page-wrap {
+      width: 100%;
+      max-width: 1280px;
+      padding: 24px 16px 40px;
+    }
+
+    .shell {
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.88));
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 18px 18px 28px;
+      backdrop-filter: blur(24px);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px 18px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 0%, #38bdf8, #0f172a 60%, #020617 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.65);
+    }
+
+    .brand-badge span {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f9fafb;
+    }
+
+    .brand-text-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .brand-text-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    nav {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .nav-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--text-soft);
+      background: radial-gradient(circle at top, rgba(30, 64, 175, 0.45), rgba(15, 23, 42, 0.9));
+    }
+
+    .nav-tag {
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.8);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    /* Sidebar (índice + PDF) */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      padding: 14px 14px 16px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.6);
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .sidebar-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .section-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 340px;
+      overflow: hidden auto;
+      padding-right: 4px;
+    }
+
+    .section-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: rgba(15, 23, 42, 0.95);
+      transition: all 0.15s ease-out;
+      font-size: 12px;
+      color: var(--text-main);
+    }
+
+    .section-link span.label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section-link span.badge {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+
+    .section-link:hover {
+      border-color: rgba(56, 189, 248, 0.7);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+      transform: translateY(-1px);
+      background: radial-gradient(circle at left top, rgba(15, 118, 220, 0.3), rgba(15, 23, 42, 0.95));
+    }
+
+    .section-link.active {
+      border-color: var(--accent-strong);
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.2), rgba(15, 23, 42, 0.95));
+    }
+
+    /* PDF uploader card */
+    .pdf-card {
+      background: var(--bg-card-soft);
+      border-radius: var(--radius-xl);
+      padding: 14px;
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pdf-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle at 10% 0%, rgba(56,189,248,0.3), transparent 60%);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .pdf-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .pdf-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .pdf-sub {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .pdf-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .pdf-input-label {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .pdf-input {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pdf-input input[type="file"] {
+      opacity: 0;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+    }
+
+    .pdf-fake-button {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: radial-gradient(circle at top, rgba(17, 24, 39, 0.95), rgba(15, 23, 42, 0.95));
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .pdf-filename {
+      font-size: 11px;
+      color: var(--text-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+    }
+
+    .pdf-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0 4px;
+    }
+
+    .pdf-analyze-btn {
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(56, 189, 248, 0.9);
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.18), rgba(15, 23, 42, 0.98));
+      font-size: 11px;
+      font-weight: 600;
+      color: #e0f2fe;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease-out;
+    }
+
+    .pdf-analyze-btn[disabled] {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .pdf-analyze-btn:hover:not([disabled]) {
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      border: 2px solid rgba(148, 163, 184, 0.7);
+      border-top-color: var(--accent);
+      animation: spin 0.72s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .pdf-status {
+      font-size: 11px;
+      color: var(--text-soft);
+      min-height: 14px;
+    }
+
+    .pdf-status.ok {
+      color: var(--success);
+    }
+
+    .pdf-status.err {
+      color: var(--danger);
+    }
+
+    .pdf-hint-list {
+      list-style: none;
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 4px;
+    }
+
+    .pdf-hint-list li::before {
+      content: "• ";
+      color: var(--accent);
+    }
+
+    /* Main content */
+    .main-content {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.11), rgba(15, 23, 42, 0.98));
+      border-radius: 22px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 18px 18px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .main-content::before {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 100%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.18), transparent 70%);
+      filter: blur(6px);
+      opacity: 0.7;
+      top: -180px;
+      right: -40px;
+      pointer-events: none;
+    }
+
+    .main-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+    }
+
+    .hero-title {
+      font-size: clamp(22px, 3vw, 26px);
+      font-weight: 700;
+    }
+
+    .hero-title span.accent {
+      background: linear-gradient(120deg, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      color: var(--text-soft);
+      max-width: 90%;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .meta-pill {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-soft);
+    }
+
+    .section-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-soft);
+    }
+
+    .sections-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: calc(100vh - 220px);
+      overflow: hidden auto;
+      padding-right: 4px;
+    }
+
+    .content-section {
+      border-radius: 18px;
+      padding: 14px 14px 16px;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .content-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .content-section-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .content-section-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+    }
+
+    .content-section-desc {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    .content-placeholder {
+      border-radius: 14px;
+      padding: 10px;
+      border: 1px dashed rgba(148, 163, 184, 0.65);
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+      font-size: 12px;
+      color: var(--text-soft);
+      position: relative;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .content-placeholder::before {
+      content: "Zona para texto extenso (rellenado automático desde PDF)";
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      padding: 0 6px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: rgba(15, 23, 42, 1);
+      color: rgba(148, 163, 184, 0.95);
+    }
+
+    .placeholder-lines {
+      display: grid;
+      gap: 4px;
+    }
+
+    .placeholder-line {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(55,65,81,0.8), rgba(31,41,55,0.5));
+      opacity: 0.7;
+    }
+
+    .placeholder-line.short { width: 40%; }
+    .placeholder-line.mid { width: 70%; }
+    .placeholder-line.full { width: 95%; }
+
+    .content-placeholder.filled {
+      border-style: solid;
+      border-color: rgba(56, 189, 248, 0.75);
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      color: var(--text-main);
+    }
+
+    /* Scrollbars */
+    .section-list::-webkit-scrollbar,
+    .sections-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .section-list::-webkit-scrollbar-thumb,
+    .sections-container::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.6);
+      border-radius: 999px;
+    }
+
+    /* Responsive */
+    @media (max-width: 880px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        order: 2;
+      }
+      .main-content {
+        order: 1;
+      }
+      .hero-sub {
+        max-width: 100%;
+      }
+      .sections-container {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 520px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .brand-text-title {
+        font-size: 16px;
+      }
+      .nav-pill {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <div class="shell">
+      <header>
+        <div class="brand">
+          <div class="brand-badge">
+            <span>AG</span>
+          </div>
+          <div>
+            <div class="brand-text-title">Manual Antigravity + Claude</div>
+            <div class="brand-text-sub">Plantilla landing para guías técnicas muy extensas</div>
+          </div>
+        </div>
+        <nav>
+          <div class="nav-pill">Opción C · Landing estructurada</div>
+          <div class="nav-tag">PDF → Gemini → Web</div>
+        </nav>
+      </header>
+
+      <div class="layout">
+        <!-- Sidebar izquierda: índice + PDF -->
+        <aside class="sidebar">
+          <div class="card">
+            <div class="sidebar-title">
+              <span>Índice principal</span>
+              <span style="font-size:11px;color:var(--accent);">Navegación</span>
+            </div>
+            <p class="sidebar-sub">
+              Haz clic para saltar a cada sección del manual. Una vez analizado el PDF,
+              el contenido se insertará automáticamente en estas secciones.
+            </p>
+            <ul class="section-list">
+              <li><button class="section-link active" data-target="intro"><span class="label">Introducción</span><span class="badge">01</span></button></li>
+              <li><button class="section-link" data-target="interfaz"><span class="label">Visión general de la interfaz</span><span class="badge">02</span></button></li>
+              <li><button class="section-link" data-target="agentes"><span class="label">Fundamentos de agentes</span><span class="badge">03</span></button></li>
+              <li><button class="section-link" data-target="claude"><span class="label">Modelos Claude y artefactos</span><span class="badge">04</span></button></li>
+              <li><button class="section-link" data-target="claude-code"><span class="label">Claude Code y análisis de código</span><span class="badge">05</span></button></li>
+              <li><button class="section-link" data-target="test-sprite"><span class="label">Herramientas de inspección / Test Sprite</span><span class="badge">06</span></button></li>
+              <li><button class="section-link" data-target="workflows"><span class="label">Workflows y agentes múltiples</span><span class="badge">07</span></button></li>
+              <li><button class="section-link" data-target="config-avanzada"><span class="label">Configuración avanzada de agentes</span><span class="badge">08</span></button></li>
+              <li><button class="section-link" data-target="seguridad"><span class="label">Seguridad y buenas prácticas</span><span class="badge">09</span></button></li>
+              <li><button class="section-link" data-target="problemas"><span class="label">Problemas comunes y recuperación</span><span class="badge">10</span></button></li>
+              <li><button class="section-link" data-target="checklist"><span class="label">Resumen y checklist final</span><span class="badge">11</span></button></li>
+            </ul>
+          </div>
+
+          <div class="pdf-card">
+            <div class="pdf-inner">
+              <div class="pdf-title">Entrada de información desde PDF</div>
+              <div class="pdf-sub">
+                Sube un PDF (por ejemplo, el informe generado con NotebookLM). La web lo enviará a tu <code>proxy.php</code>,
+                que usará el modelo <strong>gemini-3.1-flash-image-preview</strong> para analizarlo y rellenar automáticamente el manual.
+              </div>
+              <div class="pdf-input-wrap">
+                <div class="pdf-input-label">1) Selecciona el PDF de referencia:</div>
+                <div class="pdf-input">
+                  <div class="pdf-fake-button">Elegir PDF…</div>
+                  <span id="pdfFileName" class="pdf-filename">Ningún archivo seleccionado</span>
+                  <input id="pdfInput" type="file" accept=".pdf,application/pdf">
+                </div>
+              </div>
+              <div class="pdf-actions">
+                <button id="analyzeBtn" class="pdf-analyze-btn">
+                  <span class="spinner" style="display:none;"></span>
+                  <span id="analyzeBtnText">Analizar PDF con IA</span>
+                </button>
+              </div>
+              <div id="pdfStatus" class="pdf-status"></div>
+              <ul class="pdf-hint-list">
+                <li>Asegúrate de que <code>proxy.php</code> está en el mismo directorio que este HTML.</li>
+                <li>El proxy debe tener el task <code>analyzePDF</code> configurado con Gemini.</li>
+                <li>Tras el análisis, las secciones se rellenarán de forma automática.</li>
+              </ul>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Contenido principal derecha -->
+        <main class="main-content">
+          <div class="main-inner">
+            <section class="hero">
+              <div class="hero-eyebrow">Plantilla Opción C · Landing estructurada</div>
+              <h1 class="hero-title">
+                Convierte tu <span class="accent">PDF en un manual web técnico</span>
+              </h1>
+              <p class="hero-sub">
+                Sube un PDF largo (por ejemplo, una guía generada con NotebookLM) y deja que la IA lo analice
+                mediante tu <strong>proxy.php</strong>. El contenido se distribuirá automáticamente en las secciones
+                de este manual visual.
+              </p>
+              <div class="hero-meta">
+                <span class="meta-pill">Soporta textos muy extensos</span>
+                <span class="meta-pill">Diseño tipo landing / documentación</span>
+                <span class="meta-pill">Integrado con Gemini via proxy</span>
+              </div>
+            </section>
+
+            <div class="section-chips">
+              <span class="chip">Índice lateral interactivo</span>
+              <span class="chip">Secciones autocompletadas desde PDF</span>
+              <span class="chip">Un único archivo HTML</span>
+            </div>
+
+            <div class="sections-container">
+              <!-- INTRODUCCIÓN -->
+              <section id="intro" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Introducción al manual</h2>
+                  <span class="content-section-tag">Sección 01</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se colocará la introducción general extraída del PDF: propósito del manual, contexto, público objetivo y visión global.
+                </p>
+                <div class="content-placeholder" data-section-key="introduccion">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- INTERFAZ -->
+              <section id="interfaz" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Visión general de la interfaz de Antigravity</h2>
+                  <span class="content-section-tag">Sección 02</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se explicará cómo está organizada la interfaz de Antigravity: editor, consola, navegador integrado, panel de agentes y artefactos.
+                </p>
+                <div class="content-placeholder" data-section-key="interfaz">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- AGENTES -->
+              <section id="agentes" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Fundamentos de agentes</h2>
+                  <span class="content-section-tag">Sección 03</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí irá la explicación completa de qué es un agente en Antigravity, cómo se define su misión y cómo se supervisa con artefactos.
+                </p>
+                <div class="content-placeholder" data-section-key="agentes">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- CLAUDE -->
+              <section id="claude" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Modelos Claude y artefactos</h2>
+                  <span class="content-section-tag">Sección 04</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se detallará cómo los modelos Claude impulsan el razonamiento de los agentes y cómo se utilizan los artefactos para auditar cada paso.
+                </p>
+                <div class="content-placeholder" data-section-key="claude">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- CLAUDE CODE -->
+              <section id="claude-code" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Claude Code y análisis de código</h2>
+                  <span class="content-section-tag">Sección 05</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se explicará cómo Claude Code analiza proyectos, detecta problemas y propone mejoras dentro del entorno Antigravity.
+                </p>
+                <div class="content-placeholder" data-section-key="claudeCode">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- TEST SPRITE -->
+              <section id="test-sprite" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Herramientas de inspección / Test Sprite</h2>
+                  <span class="content-section-tag">Sección 06</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se describirán las herramientas de inspección (como Test Sprite), su función y cómo integrarlas en el flujo con agentes.
+                </p>
+                <div class="content-placeholder" data-section-key="testSprite">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- WORKFLOWS -->
+              <section id="workflows" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Workflows y agentes múltiples</h2>
+                  <span class="content-section-tag">Sección 07</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se explicará cómo coordinar varios agentes, crear workflows y supervisar interacciones en tareas complejas.
+                </p>
+                <div class="content-placeholder" data-section-key="workflows">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- CONFIGURACIÓN AVANZADA -->
+              <section id="config-avanzada" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Configuración avanzada de agentes</h2>
+                  <span class="content-section-tag">Sección 08</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se mostrarán patrones avanzados de configuración: roles especializados, límites de acción, misiones complejas, etc.
+                </p>
+                <div class="content-placeholder" data-section-key="configAvanzada">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SEGURIDAD -->
+              <section id="seguridad" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Seguridad y buenas prácticas</h2>
+                  <span class="content-section-tag">Sección 09</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se recogerán recomendaciones de seguridad: limitación de permisos, revisión de planes, uso de entornos aislados, etc.
+                </p>
+                <div class="content-placeholder" data-section-key="seguridad">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- PROBLEMAS COMUNES -->
+              <section id="problemas" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Problemas comunes y recuperación</h2>
+                  <span class="content-section-tag">Sección 10</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se listarán errores típicos, cómo diagnosticarlos y cómo recuperar el estado del proyecto.
+                </p>
+                <div class="content-placeholder" data-section-key="problemas">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- CHECKLIST FINAL -->
+              <section id="checklist" class="content-section">
+                <div class="content-section-header">
+                  <h2 class="content-section-title">Resumen y checklist final</h2>
+                  <span class="content-section-tag">Sección 11</span>
+                </div>
+                <p class="content-section-desc">
+                  Aquí se incluirá un resumen global y una lista de verificación para que el lector compruebe si domina todos los puntos clave.
+                </p>
+                <div class="content-placeholder" data-section-key="checklist">
+                  <div class="placeholder-lines">
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line full"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line mid"></div>
+                    <div class="placeholder-line short"></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Navegación por índice lateral
+    const links = document.querySelectorAll('.section-link');
+    links.forEach(link => {
+      link.addEventListener('click', () => {
+        const targetId = link.getAttribute('data-target');
+        const targetSection = document.getElementById(targetId);
+
+        links.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Gestión de PDF + llamada al proxy
+    const pdfInput = document.getElementById('pdfInput');
+    const pdfFileName = document.getElementById('pdfFileName');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const analyzeBtnText = document.getElementById('analyzeBtnText');
+    const spinnerEl = analyzeBtn.querySelector('.spinner');
+    const pdfStatus = document.getElementById('pdfStatus');
+
+    let selectedPdfFile = null;
+
+    if (pdfInput) {
+      pdfInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        selectedPdfFile = file || null;
+        if (file) {
+          pdfFileName.textContent = file.name;
+          pdfStatus.textContent = '';
+          pdfStatus.className = 'pdf-status';
+        } else {
+          pdfFileName.textContent = 'Ningún archivo seleccionado';
+        }
+      });
+    }
+
+    function setLoadingState(isLoading) {
+      if (!analyzeBtn) return;
+      if (isLoading) {
+        analyzeBtn.disabled = true;
+        spinnerEl.style.display = 'inline-block';
+        analyzeBtnText.textContent = 'Analizando…';
+      } else {
+        analyzeBtn.disabled = false;
+        spinnerEl.style.display = 'none';
+        analyzeBtnText.textContent = 'Analizar PDF con IA';
+      }
+    }
+
+    function fillSectionFromText(sectionKey, text) {
+      const placeholder = document.querySelector(`.content-placeholder[data-section-key="${sectionKey}"]`);
+      if (!placeholder) return;
+      if (!text || typeof text !== 'string') return;
+
+      placeholder.classList.add('filled');
+      placeholder.innerHTML = '';
+
+      // Convertir dobles saltos de línea en párrafos sencillos
+      const blocks = text.split(/\n\s*\n/);
+      blocks.forEach(block => {
+        const p = document.createElement('p');
+        p.style.margin = '0 0 0.6rem 0';
+        p.textContent = block.trim();
+        placeholder.appendChild(p);
+      });
+    }
+
+    if (analyzeBtn) {
+      analyzeBtn.addEventListener('click', () => {
+        if (!selectedPdfFile) {
+          pdfStatus.textContent = 'Selecciona primero un PDF.';
+          pdfStatus.className = 'pdf-status err';
+          return;
+        }
+
+        const reader = new FileReader();
+        setLoadingState(true);
+        pdfStatus.textContent = 'Leyendo PDF local…';
+        pdfStatus.className = 'pdf-status';
+
+        reader.onload = function(evt) {
+          const result = evt.target.result;
+          // result = data:application/pdf;base64,xxxxx
+          const base64 = result.split(',')[1];
+
+          pdfStatus.textContent = 'Enviando PDF al proxy…';
+
+          fetch('proxy.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              task: 'analyzePDF',
+              pdf: base64
+            })
+          })
+          .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok) {
+              const msg = data && data.error ? data.error : ('Error HTTP ' + res.status);
+              throw new Error(msg);
+            }
+            return data;
+          })
+          .then((json) => {
+            if (!json || !json.sections) {
+              throw new Error('El proxy no devolvió el campo "sections".');
+            }
+
+            const s = json.sections;
+
+            fillSectionFromText('introduccion',  s.introduccion);
+            fillSectionFromText('interfaz',      s.interfaz);
+            fillSectionFromText('agentes',       s.agentes);
+            fillSectionFromText('claude',        s.claude);
+            fillSectionFromText('claudeCode',    s.claudeCode);
+            fillSectionFromText('testSprite',    s.testSprite);
+            fillSectionFromText('workflows',     s.workflows);
+            fillSectionFromText('configAvanzada', s.configAvanzada);
+            fillSectionFromText('seguridad',     s.seguridad);
+            fillSectionFromText('problemas',     s.problemas);
+            fillSectionFromText('checklist',     s.checklist);
+
+            pdfStatus.textContent = 'PDF analizado correctamente. Secciones rellenadas.';
+            pdfStatus.className = 'pdf-status ok';
+          })
+          .catch((err) => {
+            console.error(err);
+            pdfStatus.textContent = 'Error: ' + err.message;
+            pdfStatus.className = 'pdf-status err';
+          })
+          .finally(() => {
+            setLoadingState(false);
+          });
+        };
+
+        reader.onerror = function() {
+          setLoadingState(false);
+          pdfStatus.textContent = 'No se pudo leer el PDF local.';
+          pdfStatus.className = 'pdf-status err';
+        };
+
+        reader.readAsDataURL(selectedPdfFile);
+      });
+    }
+  </script>
+</body>
+</html>
+

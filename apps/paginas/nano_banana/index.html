@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tu Diseño en Todo – IA Premium v2</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand">Tu Diseño en Todo</div>
+      <div class="actions">
+        <button class="btn alt" id="tabBase">1) Base IA</button>
+        <button class="btn alt" id="tabIntegracion" disabled>2) Integración</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h1>Diseños IA – Variaciones x3 + Marca de agua</h1>
+      <div class="small">Genera/refina la base, crea variaciones y aplica marca de agua opcional.</div>
+    </div>
+
+    <!-- FASE 1 -->
+    <section class="card" id="faseBase">
+      <h2>Fase 1 · Base IA</h2>
+      <div class="row">
+        <div class="col">
+          <label>Preset profesional</label>
+          <select id="preset"><option value="">— Elegir preset —</option></select>
+          <div class="small" id="presetDesc" style="margin:6px 0 12px"></div>
+
+          <label>Prompt base</label>
+          <textarea id="promptBase" rows="5" placeholder="Describe la escena base…"></textarea>
+
+          <div class="row">
+            <div class="col">
+              <label>Estilo</label>
+              <select id="style">
+                <option value="fotorrealista" selected>Fotorrealista</option>
+                <option value="ilustración">Ilustración</option>
+                <option value="acuarela">Acuarela</option>
+                <option value="cómic">Cómic</option>
+                <option value="pixel art">Pixel Art</option>
+                <option value="anime">Anime</option>
+                <option value="óleo">Óleo</option>
+                <option value="low-poly">Low‑poly</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Intensidad de estilo (0–100)</label>
+              <input id="styleStrength" type="text" value="75" />
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <label>Negative prompt (opcional)</label>
+          <input id="negPrompt" type="text" placeholder="Evita…">
+          <div class="row">
+            <div class="col"><label>Seed</label><input id="seed" type="text" placeholder="Ej. 12345" /></div>
+            <div class="col"><label>Variación (0–100)</label><input id="variation" type="text" value="30" /></div>
+            <div class="col">
+              <label>Tamaño</label>
+              <select id="size"><option value="1024">1024</option><option value="1536">1536</option></select>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <label>Imagen guía (opcional)</label>
+          <input id="imgGuia" type="file" accept="image/*" />
+          <div style="margin-top:10px">
+            <button class="btn" id="btnGenerar">Generar</button>
+            <button class="btn alt" id="btnRefinar" disabled>Refinar</button>
+            <button class="btn warn" id="btnDeshacer" disabled>Deshacer</button>
+            <button class="btn" id="btnVariarBase" disabled>Variaciones x3 (Base)</button>
+            <button class="btn ok" id="btnGuardarBase" disabled>Guardar definitiva</button>
+          </div>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <div class="row">
+        <div class="col">
+          <label>Previsualización base</label>
+          <div class="thumb" id="thumbBase">
+            <img id="previewBase" alt="">
+            <div class="overlay" id="overlayBase"><div class="wm" id="wmBase">Tu Diseño en Todo</div></div>
+          </div>
+        </div>
+        <div class="col">
+          <label>Historial base</label>
+          <div id="histBase" class="grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 2 -->
+    <section class="card" id="faseIntegracion" style="display:none">
+      <h2>Fase 2 · Integración</h2>
+      <div class="row">
+        <div class="col">
+          <label>Imágenes a integrar (múltiple)</label>
+          <input id="imgsIntegrar" type="file" accept="image/*" multiple />
+          <label style="margin-top:8px">Instrucciones globales</label>
+          <textarea id="instrGlobal" rows="3" placeholder="Ej.: centrado, respeta iluminación derecha, sombra de contacto suave…"></textarea>
+          <div style="margin-top:10px">
+            <button class="btn" id="btnIntegrar">Integrar</button>
+            <button class="btn" id="btnVariarInt" disabled>Variaciones x3 (Integración)</button>
+            <button class="btn alt" id="btnVolverBase">Volver a Base</button>
+            <button class="btn ok" id="btnDescargar" disabled>Descargar JPG</button>
+          </div>
+        </div>
+        <div class="col">
+          <label>Resultado</label>
+          <div class="thumb" id="thumbRes">
+            <img id="previewResult" alt="">
+            <div class="overlay" id="overlayRes"><div class="wm" id="wmRes">Tu Diseño en Todo</div></div>
+          </div>
+          <label style="margin-top:8px">Historial resultados</label>
+          <div id="histResult" class="grid"></div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+      <div class="row">
+        <div class="col">
+          <label><input type="checkbox" id="wmEnable" /> Mostrar marca de agua</label>
+          <label style="margin-top:6px">Texto</label>
+          <input id="wmText" type="text" value="Tu Diseño en Todo" />
+        </div>
+        <div class="col">
+          <label>Opacidad (0–100)</label>
+          <input id="wmOpacity" type="text" value="25" />
+          <div class="small">La marca de agua se aplica en la vista y también al descargar.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+const $ = s => document.querySelector(s);
+const histBase = []; const histResult = [];
+let baseDefinitiva = null; let ultimaBase = null;
+
+const PRESETS = {
+  "Studio portrait":{style:"fotorrealista",strength:80,desc:"Retrato de estudio con luz suave.",prompt:"Retrato de estudio profesional, iluminación suave con softbox lateral, fondo degradado neutro, enfoque en ojos, piel limpia sin over-smoothing, textura realista, microcontraste natural, bokeh suave, composición de 3/4, lente 85mm, f/1.8."},
+  "Product render":{style:"fotorrealista",strength:85,desc:"Producto catálogo con sombra de contacto.",prompt:"Fotografía de producto premium sobre fondo neutro, iluminación de estudio con key y fill, reflejos especulares controlados, sombra de contacto suave, colores precisos, nitidez alta, composición centrada, aspecto publicitario limpio."},
+  "Cómic retro UPA":{style:"cómic",strength:75,desc:"Cartoon 50s (UPA).",prompt:"Ilustración estilo cartoon de los años 50 (UPA), formas geométricas simples, colores planos y paleta limitada, líneas limpias, textura de papel sutil, composición gráfica, aspecto retro elegante."},
+  "Acuarela grano frío":{style:"acuarela",strength:80,desc:"Acuarela con pigmento visible.",prompt:"Pintura en acuarela con grano visible, bordes difusos, degradados suaves, papel de acuarela de grano fino, paleta armoniosa, sensación artesanal, manchas y blooms naturales."},
+  "Anime cel-shaded":{style:"anime",strength:85,desc:"Cel-shading y líneas nítidas.",prompt:"Ilustración anime con cel-shading, líneas nítidas, colores planos con sombras definidas, composición dinámica, expresividad alta, acabado limpio tipo producción."},
+  "Pixel Art NES":{style:"pixel art",strength:70,desc:"8-bit con paleta limitada.",prompt:"Pixel art estilo 8-bit, resolución baja intencional, paleta limitada, dithering sutil, composición legible, contornos claros, estética retro consola NES."},
+  "Óleo impresionista":{style:"óleo",strength:75,desc:"Pincelada visible, atmósfera.",prompt:"Pintura al óleo estilo impresionista, pinceladas visibles, mezcla óptica de color, vibración lumínica, atmósfera aireada, textura de lienzo y empaste moderado."},
+  "Low‑poly isométrico":{style:"low-poly",strength:70,desc:"Isométrico low‑poly.",prompt:"Ilustración 3D low‑poly con vista isométrica, geometría simplificada, sombras limpias, materiales mate, composición ordenada y legible."},
+  "Producto e‑commerce fondo blanco":{style:"fotorrealista",strength:85,desc:"Fondo blanco #fff.",prompt:"Fotografía de producto e-commerce sobre fondo blanco puro (#ffffff), iluminación de estudio uniforme, reflejos suaves, sombra de contacto natural, sin ruido visual, aspecto premium para catálogo online."},
+  "Render isométrico de app con UI":{style:"low-poly",strength:80,desc:"Mockup UI isométrico.",prompt:"Render isométrico de interfaz de aplicación, paneles flotando con sombras suaves, colores planos y limpios, tipografía legible, estilo moderno para mockup de UI, vista 3/4 en perspectiva isométrica."}
+};
+
+function applyPreset(name){
+  const p = PRESETS[name]; if(!p) return;
+  $('#style').value = p.style; $('#styleStrength').value = p.strength;
+  const current = $('#promptBase').value.trim();
+  $('#promptBase').value = (current ? current + "\n\n" : "") + p.prompt;
+  $('#presetDesc').textContent = p.desc;
+}
+(function initPresets(){
+  const sel = $('#preset');
+  Object.keys(PRESETS).forEach(k=>{ const o=document.createElement('option'); o.value=k;o.textContent=k; sel.appendChild(o); });
+  sel.addEventListener('change', e=> applyPreset(e.target.value));
+})();
+
+function addThumb(container, dataURL, onClick, mini=false){
+  const div = document.createElement('div'); div.className = mini ? 'thumb mini':'thumb';
+  const img = document.createElement('img'); img.src=dataURL; div.appendChild(img);
+  div.onclick = () => onClick && onClick(dataURL); container.appendChild(div);
+}
+
+async function fileToBase64(file){
+  if(!file) return null;
+  return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result.split(',')[1]); r.onerror=reject; r.readAsDataURL(file); });
+}
+
+function toggleTabs(toIntegracion){
+  $('#faseBase').style.display = toIntegracion ? 'none' : 'block';
+  $('#faseIntegracion').style.display = toIntegracion ? 'block' : 'none';
+  $('#tabIntegracion').disabled = !baseDefinitiva;
+}
+$('#tabBase').onclick = () => toggleTabs(false);
+$('#tabIntegracion').onclick = () => toggleTabs(true);
+
+function setWmVisibility(){
+  const show = $('#wmEnable')?.checked;
+  if($('#overlayBase')) $('#overlayBase').classList.toggle('show', show);
+  if($('#overlayRes')) $('#overlayRes').classList.toggle('show', show);
+  if($('#wmBase')) $('#wmBase').textContent = $('#wmText')?.value || 'Marca';
+  if($('#wmRes'))  $('#wmRes').textContent  = $('#wmText')?.value || 'Marca';
+  const op = Math.max(0, Math.min(100, parseInt($('#wmOpacity')?.value||'25',10))) / 100;
+  if($('#overlayBase')) $('#overlayBase').style.opacity = op;
+  if($('#overlayRes'))  $('#overlayRes').style.opacity = op;
+}
+document.addEventListener('input', (e)=>{ if(['wmEnable','wmText','wmOpacity'].includes(e.target.id)) setWmVisibility(); });
+
+async function callAPI(path, payload){
+  const res = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  const data = await res.json().catch(()=>({ok:false,error:'Respuesta inválida'}));
+  return data;
+}
+
+async function buildBasePayload(overrideVar=null){
+  const prompt = $('#promptBase').value.trim();
+  const neg = $('#negPrompt').value.trim();
+  const seed = $('#seed').value.trim();
+  const variation = overrideVar!==null ? String(overrideVar) : ($('#variation').value.trim() || "30");
+  const size = $('#size').value;
+  const style = $('#style').value;
+  const styleStrength = $('#styleStrength').value.trim() || "75";
+  const guiaFile = $('#imgGuia').files[0];
+  const guia64 = guiaFile ? await fileToBase64(guiaFile) : null;
+  const previa64 = ultimaBase ? ultimaBase.split(',')[1] : null;
+
+  return { prompt_base:prompt, negative_prompt:neg||null, seed:seed||null, variation:variation,
+    size:size, style:style, style_strength:styleStrength, base_inicial_base64:guia64, base_previa_base64:previa64 };
+}
+
+function setBaseImage(dataURL){
+  ultimaBase = dataURL; $('#previewBase').src = dataURL;
+  if(!histBase.length) $('#btnVariarBase').disabled = false;
+  pushHistBase(dataURL);
+  $('#btnRefinar').disabled = false; $('#btnGuardarBase').disabled = false; $('#btnDeshacer').disabled = histBase.length<=1;
+}
+
+function pushHistBase(dataURL){
+  histBase.push(dataURL); $('#histBase').innerHTML = '';
+  histBase.forEach(d => addThumb($('#histBase'), d, (u)=>{ ultimaBase=u; $('#previewBase').src=u; }, true));
+}
+
+function pushHistResult(dataURL){
+  histResult.push(dataURL); $('#histResult').innerHTML = '';
+  histResult.forEach(d => addThumb($('#histResult'), d, (u)=>{ $('#previewResult').src=u; }, true));
+}
+
+$('#btnGenerar').onclick = async () => {
+  const prompt = $('#promptBase').value.trim(); if(!prompt){ alert('Escribe un prompt.'); return; }
+  const payload = await buildBasePayload();
+  $('#btnGenerar').disabled = true; $('#btnRefinar').disabled = true;
+  const data = await callAPI('api/base.php', payload);
+  $('#btnGenerar').disabled = false;
+  if(!data.ok){ alert('Error: '+(data.error||'desconocido')); return; }
+  setBaseImage('data:image/jpeg;base64,'+data.image_base64);
+};
+
+$('#btnRefinar').onclick = () => $('#btnGenerar').click();
+$('#btnVariarBase').onclick = async () => {
+  const prompt = $('#promptBase').value.trim(); if(!prompt){ alert('Escribe un prompt.'); return; }
+  const v = parseInt($('#variation').value||'30',10);
+  const deltas = [-5, 0, +5];
+  $('#btnVariarBase').disabled = true;
+  for(const d of deltas){
+    const payload = await buildBasePayload(v + d);
+    const data = await callAPI('api/base.php', payload);
+    if(data.ok){ pushHistBase('data:image/jpeg;base64,'+data.image_base64); }
+  }
+  $('#btnVariarBase').disabled = false;
+};
+
+$('#btnDeshacer').onclick = () => {
+  if(histBase.length>1){ histBase.pop(); ultimaBase = histBase[histBase.length-1]; $('#previewBase').src=ultimaBase; pushHistBase(ultimaBase); }
+};
+
+$('#btnGuardarBase').onclick = () => {
+  if(!ultimaBase){ alert('Genera una base primero.'); return; }
+  baseDefinitiva = ultimaBase; alert('Base guardada. Pasa a la Fase 2.');
+  $('#tabIntegracion').disabled = false; toggleTabs(true);
+};
+
+$('#btnVolverBase').onclick = () => toggleTabs(false);
+
+async function integrateOnce(){
+  if(!baseDefinitiva){ alert('Guarda una base definitiva.'); return false; }
+  const files = $('#imgsIntegrar').files; if(!files || files.length===0){ alert('Sube al menos una imagen.'); return false; }
+  const imgs64 = []; for(const f of files){ imgs64.push(await fileToBase64(f)); }
+  const payload = { base_definitiva_base64: baseDefinitiva.split(',')[1], imagenes_secundarias_base64: imgs64,
+    instrucciones_globales: $('#instrGlobal').value.trim() || null, preserve_style: true };
+  $('#btnIntegrar').disabled = true;
+  const data = await callAPI('api/integrate.php', payload);
+  $('#btnIntegrar').disabled = false;
+  if(!data.ok){ alert('Error: '+(data.error||'desconocido')); return false; }
+  const out = 'data:image/jpeg;base64,'+data.image_base64;
+  $('#previewResult').src = out; pushHistResult(out); $('#btnDescargar').disabled = false; setWmVisibility();
+  return true;
+}
+
+$('#btnIntegrar').onclick = integrateOnce;
+$('#btnVariarInt').onclick = async () => { for(const _ of [0,1,2]){ await integrateOnce(); } };
+
+$('#btnDescargar').onclick = async () => {
+  const src = $('#previewResult').src; if(!src) return;
+  if($('#wmEnable').checked){
+    const img = new Image(); img.crossOrigin = 'anonymous'; img.src = src;
+    img.onload = () => {
+      const canvas = document.createElement('canvas'); canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d'); ctx.drawImage(img,0,0);
+      const text = $('#wmText').value || 'Marca'; const op = Math.max(0, Math.min(100, parseInt($('#wmOpacity').value||'25',10))) / 100;
+      ctx.save(); ctx.globalAlpha = op; ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(-25 * Math.PI/180);
+      ctx.fillStyle = '#ffffff'; ctx.font = Math.floor(canvas.width*0.08) + 'px Arial Black';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,0,0);
+      ctx.restore();
+      const url = canvas.toDataURL('image/jpeg', 0.95);
+      download(url, 'resultado.jpg');
+    };
+  } else {
+    download(src, 'resultado.jpg');
+  }
+};
+function download(url, name){ const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+
+setWmVisibility();
+</script>
+</body>
+</html>

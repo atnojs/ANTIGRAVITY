@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suite Creativa de IA</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
+    
+    <link rel="stylesheet" href="web.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1 id="header-title">Apps para Crear Imágenes</h1>
+            <p id="header-subtitle">Selecciona una aplicación para comenzar a crear.</p>
+        </header>
+
+        <main id="apps-grid" class="apps-grid"></main>
+
+        <!-- ========================== -->
+        <!--  ZONA DE PAGOS STRIPE      -->
+        <!-- ========================== -->
+        <section id="pricing" style="max-width:900px;margin:60px auto 40px auto">
+            <h2 style="text-align:center;margin-bottom:25px;font-size:28px;">Suscripción</h2>
+
+            <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
+                
+                <!-- PLAN MENSUAL -->
+                <div style="flex:1;min-width:280px;max-width:360px;border:1px solid #444;border-radius:12px;padding:20px;background:#111;">
+                    <h3 style="margin:0 0 10px 0;font-size:22px;">Mensual</h3>
+                    <p style="margin:0 0 20px 0;font-size:18px;">9,99 € / mes</p>
+
+                    <input id="email-monthly" type="email" placeholder="tu@email.com"
+                        style="width:100%;padding:10px;margin-bottom:12px;border-radius:6px;border:1px solid #333;background:#222;color:#fff">
+
+                    <button onclick="startCheckout('monthly','email-monthly')"
+                        style="width:100%;padding:12px;border:none;border-radius:6px;background:#00aaff;color:#fff;font-size:16px;cursor:pointer;">
+                        Suscribirme
+                    </button>
+                </div>
+
+                <!-- PLAN ANUAL -->
+                <div style="flex:1;min-width:280px;max-width:360px;border:1px solid #444;border-radius:12px;padding:20px;background:#111;">
+                    <h3 style="margin:0 0 10px 0;font-size:22px;">Anual</h3>
+                    <p style="margin:0 0 20px 0;font-size:18px;">79,00 € / año</p>
+
+                    <input id="email-yearly" type="email" placeholder="tu@email.com"
+                        style="width:100%;padding:10px;margin-bottom:12px;border-radius:6px;border:1px solid #333;background:#222;color:#fff">
+
+                    <button onclick="startCheckout('yearly','email-yearly')"
+                        style="width:100%;padding:12px;border:none;border-radius:6px;background:#00aaff;color:#fff;font-size:16px;cursor:pointer;">
+                        Suscribirme
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- PORTAL DE CLIENTE -->
+            <div style="margin-top:30px;text-align:center">
+                <input id="customer-id" type="text" placeholder="stripe_customer_id"
+                    style="width:280px;padding:10px;margin-bottom:10px;border-radius:6px;border:1px solid #333;background:#222;color:#fff">
+
+                <button onclick="openPortal()"
+                    style="padding:10px 18px;border:none;border-radius:6px;background:#ffaa00;color:#000;font-size:15px;cursor:pointer;">
+                    Gestionar mi suscripción
+                </button>
+            </div>
+
+            <p id="msg" style="margin-top:20px;text-align:center;color:#0f0;font-size:16px;"></p>
+        </section>
+        <!-- ========================== -->
+        <!--  FIN ZONA DE PAGOS STRIPE  -->
+        <!-- ========================== -->
+
+        <footer>
+            <p id="footer-text">&copy; 2025 Atnojs. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    <button id="edit-mode-btn" title="Activar Modo Edición"><i class="fa-solid fa-pencil"></i></button>
+
+    <div id="edit-modals-container"></div>
+    
+    <script src="web.js"></script>
+
+
+    <!-- SCRIPT STRIPE -->
+    <script>
+    async function startCheckout(plan, emailInputId){
+        const email = document.getElementById(emailInputId).value.trim();
+        const form  = new URLSearchParams();
+        form.append("plan", plan);
+        if(email) form.append("email", email);
+
+        const res = await fetch("/Paginas/payments/create-checkout-session.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: form.toString()
+        });
+
+        const data = await res.json();
+        if(data.url){
+            window.location.href = data.url;
+        } else {
+            document.getElementById("msg").textContent = data.error || "Error iniciando pago.";
+        }
+    }
+
+    async function openPortal(){
+        const cid = document.getElementById("customer-id").value.trim();
+        if(!cid){ alert("Introduce tu stripe_customer_id"); return; }
+
+        const res = await fetch("/Paginas/payments/create-portal-session.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: new URLSearchParams({customer_id: cid}).toString()
+        });
+
+        const data = await res.json();
+        if(data.url) window.location.href = data.url;
+        else alert(data.error || "No se pudo abrir el Portal de Facturación");
+    }
+
+    // Manejo de ?success y session_id
+    (async function(){
+        const params = new URLSearchParams(window.location.search);
+        if(params.get("success") && params.get("session_id")){
+            const res = await fetch("/Paginas/payments/retrieve-session.php?session_id=" + params.get("session_id"));
+            const data = await res.json();
+
+            const msg = document.getElementById("msg");
+            msg.textContent =
+                "Pago completado. Customer: " + (data.customer || "N/D") +
+                " | Suscripción: " + (data.subscription || "N/D");
+
+            if(data.customer)
+                document.getElementById("customer-id").value = data.customer;
+        }
+    })();
+    </script>
+
+</body>
+</html>

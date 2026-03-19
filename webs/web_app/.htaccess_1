@@ -1,0 +1,6 @@
+<Files "admin.php">
+    AuthType Basic
+    AuthName "Área Restringida"
+    AuthUserFile /ruta/completa/.htpasswd
+    Require valid-user
+</Files>

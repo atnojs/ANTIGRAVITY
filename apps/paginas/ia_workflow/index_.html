@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA Workflow Pro Navigator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        dark: '#0f172a',
+                        light: '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+        }
+        .workflow-checklist li {
+            transition: all 0.2s ease;
+        }
+        .workflow-checklist li.checked {
+            opacity: 0.7;
+        }
+        .workflow-checklist li.checked span {
+            text-decoration: line-through;
+        }
+        pre {
+            background-color: #f1f5f9;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-brain text-primary text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-gray-900">IA Workflow Pro</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#home" class="border-primary text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Inicio</a>
+                        <a href="#fundamentos" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Fundamentos</a>
+                        <a href="#prompting" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Prompting</a>
+                        <a href="#projects" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Projects</a>
+                        <a href="#gpts" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">GPTs</a>
+                        <a href="#workflows" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Workflows</a>
+                        <a href="#vibecoding" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Vibe Coding</a>
+                        <a href="#economia" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Economía IA</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-gradient-to-r from-primary to-secondary text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">
+                    IA Workflow Pro Navigator: Tu Ecosistema de IA Profesional
+                </h1>
+                <p class="mt-6 text-xl max-w-3xl mx-auto">
+                    Domina la IA para Automatizar, Innovar y Monetizar en la Nueva Era Digital
+                </p>
+                <div class="mt-10 flex justify-center">
+                    <div class="rounded-md shadow">
+                        <a href="#fundamentos" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-primary bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
+                            Comenzar Aprendizaje
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Navigation Cards -->
+    <section class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Explora el Ecosistema de IA</h2>
+                <p class="mt-4 text-lg text-gray-600">Accede rápidamente a cada componente del IA Workflow 2025</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a href="#fundamentos" class="card bg-white rounded-lg p-6 flex flex-col items-center text-center">
+                    <i class="fas fa-book text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Fundamentos</h3>
+                    <p class="mt-2 text-gray-600">Conceptos clave y tipos de tareas</p>
+                </a>
+                <a href="#prompting" class="card bg-white rounded-lg p-6 flex flex-col items-center text-center">
+                    <i class="fas fa-comment-dots text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Prompting</h3>
+                    <p class="mt-2 text-gray-600">Fórmula para resultados profesionales</p>
+                </a>
+                <a href="#projects" class="card bg-white rounded-lg p-6 flex flex-col items-center text-center">
+                    <i class="fas fa-project-diagram text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Projects</h3>
+                    <p class="mt-2 text-gray-600">Gestión de temas a largo plazo</p>
+                </a>
+                <a href="#gpts" class="card bg-white rounded-lg p-6 flex flex-col items-center text-center">
+                    <i class="fas fa-robot text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">GPTs Personalizados</h3>
+                    <p class="mt-2 text-gray-600">Automatización de tareas repetitivas</p>
+                </a>
+                <a href="#workflows" class="card bg-white rounded-lg p-6 flex flex-col items-center text-center">
+                    <i class="fas fa-sync-alt text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Workflows</h3>
+                    <p class="mt-2 text-gray-600">Orquestación de herramientas</p>
+                </a>
+                <a href="#vibecoding" class="card bg-white rounded-lg p-6 flex flex-col items-center text-center">
+                    <i class="fas fa-code text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Vibe Coding</h3>
+                    <p class="mt-2 text-gray-600">Creación sin código con IA</p>
+                </a>
+                <a href="#economia" class="card bg-white rounded-lg p-6 flex flex-col items-center text-center">
+                    <i class="fas fa-chart-line text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Economía IA</h3>
+                    <p class="mt-2 text-gray-600">Monetización y nuevas profesiones</p>
+                </a>
+                <div class="card bg-white rounded-lg p-6 flex flex-col items-center text-center cursor-pointer" onclick="showResourcesModal()">
+                    <i class="fas fa-download text-3xl text-primary mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900">Recursos</h3>
+                    <p class="mt-2 text-gray-600">Descargas y herramientas clave</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fundamentos Section -->
+    <section id="fundamentos" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Fundamentos de la IA Profesional</h2>
+                <p class="mt-4 text-lg text-gray-600">Conceptos esenciales para dominar el IA Workflow 2025</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-lightbulb text-2xl text-primary mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-900">IA como Herramienta Estratégica</h3>
+                    </div>
+                    <p class="text-gray-600">
+                        La IA ha dejado de ser una promesa lejana para convertirse en una herramienta clave para automatizar procesos, aumentar la productividad, reducir errores y tomar decisiones más inteligentes. Usada estratégicamente, amplifica tus capacidades: redacta, resume, analiza, compara, sugiere, corrige y trabaja contigo.
+                    </p>
+                </div>
+                
+                <div class="card bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fab fa-openai text-2xl text-primary mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-900">OpenAI y GPT-5</h3>
+                    </div>
+                    <p class="text-gray-600">
+                        GPT-5 representa un nuevo salto en capacidades conversacionales, comprensión contextual y generación de contenido. Es más preciso, seguro y útil que sus versiones anteriores, destacando en comprensión de instrucciones complejas, análisis de datos, razonamiento avanzado y personalización según el usuario.
+                    </p>
+                </div>
+                
+                <div class="card bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-tasks text-2xl text-primary mr-3"></i>
+                        <h3 class="text-xl font-semibold text-gray-900">Tipos de Tareas con IA</h3>
+                    </div>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-600">
+                        <li><strong>Puntuales:</strong> Tareas aisladas como redactar una oferta de trabajo.</li>
+                        <li><strong>Por Tema:</strong> Solicitudes múltiples en un proyecto continuo (plan de marketing).</li>
+                        <li><strong>Repetitivas:</strong> Procesos recurrentes como informes semanales.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prompting Section -->
+    <section id="prompting" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Maestría en Prompting</h2>
+                <p class="mt-4 text-lg text-gray-600">Obteniendo Resultados Profesionales de la IA</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 mb-12">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">La Fórmula del Prompting para Tareas Puntuales</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleAccordion(this)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-medium text-gray-900">Contexto / Rol</h4>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
+                        </div>
+                        <div class="accordion-content mt-2 text-gray-600">
+                            <p>Define quién es la IA y cuál es el marco de la situación. Ejemplo: "Eres editor técnico para una audiencia ejecutiva no técnica".</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleAccordion(this)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-medium text-gray-900">Consulta / Tarea</h4>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
+                        </div>
+                        <div class="accordion-content mt-2 text-gray-600">
+                            <p>La acción específica que debe realizar. Evita mezclar varias tareas en un mismo prompt.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleAccordion(this)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-medium text-gray-900">Especificaciones</h4>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
+                        </div>
+                        <div class="accordion-content mt-2 text-gray-600">
+                            <p>Detalles concretos: longitud, tono, fuentes permitidas, inclusiones/exclusiones, restricciones de estilo o confidencialidad.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleAccordion(this)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-medium text-gray-900">Criterios de Calidad</h4>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
+                        </div>
+                        <div class="accordion-content mt-2 text-gray-600">
+                            <p>Reglas para que el resultado sea bueno: claridad, coherencia con guía de marca, ausencia de jerga, etc.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleAccordion(this)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-medium text-gray-900">Formato de Respuesta</h4>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
+                        </div>
+                        <div class="accordion-content mt-2 text-gray-600">
+                            <p>Cómo debe estructurar la información (tabla, lista, texto corrido, markdown) para su uso posterior.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="toggleAccordion(this)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-medium text-gray-900">Verificación</h4>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
+                        </div>
+                        <div class="accordion-content mt-2 text-gray-600">
+                            <p>Pídele que revise su propio trabajo antes de entregarlo: controles de hechos, consistencia, tono y duplicidades.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejemplo de Prompting Completo -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-12">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Ejemplo Completo de Prompting (GPT-5 Comparativa)</h3>
+                <p class="text-gray-600 mb-4">A continuación se muestra un ejemplo completo de un prompt siguiendo la fórmula, para una tarea puntual compleja:</p>
+                <pre><code>PROMPT — GPT-5 (Comparativa narrativa de 2+ entidades con informe ejecutivo estético en chat)
+<strong>Contexto y Rol</strong> 
+Tomas el papel de alguien que hace comparaciones claras entre diferentes opciones para ayudar a elegir rápido y bien. Tu estilo es serio y directo, sin adornos innecesarios ni explicaciones complicadas. Escribes en párrafos corridos, no en listas.
+<strong>Consulta/Tarea</strong> 
+Tienes que preparar una comparación completa entre las opciones que te diga el usuario. El resultado debe incluir: un pequeño resumen en prosa, una tabla comparativa en formato  Markdown , una recomendación breve y un informe más detallado sobre la opción ganadora. Aunque falte información, siempre entregas algo y completas todas las secciones. En este caso, quiero que compares  Zoom , Google  Meet  y Microsoft  Teams  para reuniones online.
+<strong>Especificaciones</strong> 
+Cuando investigues, das prioridad a páginas oficiales (webs de precios, centros de ayuda, documentación de producto). Si no hay datos confirmados, pones “N/D” y aclaras el nivel de confianza (Alta, Media o Baja). Si el usuario pone la palabra VERIFICA, revisas todas las  afirmaciones y pones citas al final. En la tabla indicas precios con moneda, tipo de plan y fecha en que lo miraste. Si no encuentras nada oficial, dejas N/D. En comparaciones de personas solo mencionas información pública como logros o experiencia. Siempre completas el trabajo de principio a fin.
+<strong>Criterios de Calidad</strong> 
+El trabajo se considera bueno si no inventas nada, si dejas claro lo que no sabes (N/D), si añades el nivel de confianza en los datos clave, y si presentas ventajas y limitaciones de manera fácil de entender. El formato debe ser limpio, con precios y fechas claras, y un tono práctico que ayude a tomar una decisión. Nada de frases vacías o publicidad disfrazada.
+<strong>Cómo debe ser la respuesta</strong> 
+Respondes en el idioma del usuario (por defecto, español neutro). Sigues siempre este orden:
+1.  Un resumen en un solo párrafo de 4–6 frases explicando las diferencias más importantes y qué opción encaja mejor en cada caso.
+2.  Una tabla en  Markdown  con estas columnas: Entidad, Qué es, Qué ofrece, Precio desde, Ventajas, Limitaciones, Mejor para y Confianza. Cada celda escrita con frases cortas separadas por punto y coma.
+3.  Una recomendación rápida en una o dos frases con la opción ganadora y un próximo paso (como prueba gratis o demo).
+4.  Un informe ejecutivo sobre la opción ganadora de 350–550 palabras, dividido en secciones con títulos claros: Contexto y propuesta de valor, Impacto en métricas de negocio, Costes e implantación, Riesgos y mitigaciones, Encaje e integración, ROI o  payback  estimado. Cada sección con dos o tres frases en  micro-párrafos . Usas negritas en títulos y en cifras clave.
+<strong>Verificación</strong> 
+Antes de entregar, revisas que no hayas inventado datos, que hayas puesto N/D donde falta información y que hayas indicado el nivel de confianza. Al final añades una línea con las citas de precios y planes, en este formato: [nombre de la fuente — AAAA-MM-DD]. Si el usuario pidió VERIFICA, incluyes también las demás citas relevantes.
+</code></pre>
+            </div>
+            
+            
+                <div id="optimizedPromptResult" class="mt-4 p-4 bg-gray-50 rounded-md hidden">
+                    <h4 class="font-medium text-gray-900 mb-2">Prompt Optimizado:</h4>
+                    <div id="optimizedPromptText" class="text-gray-700 whitespace-pre-wrap"></div>
+                    <div class="mt-3 text-sm text-gray-500">
+                        <p><strong>Preguntas que haría ChatGPT para completar la información:</strong></p>
+                        <ul class="list-disc pl-5 mt-1">
+                            <li>¿Cuál es el público objetivo de la zapatería?</li>
+                            <li>¿Qué productos o servicios destacan?</li>
+                            <li>¿Qué canales de redes sociales prefieres usar?</li>
+                            <li>¿Cuál es el tono de marca que deseas mantener?</li>
+                            <li>¿Tienes algún contenido existente que podamos reutilizar?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Projects de IA: Gestión de Temas y Proyectos a Largo Plazo</h2>
+                <p class="mt-4 text-lg text-gray-600">Espacios de trabajo coherentes para tareas temáticas</p>
+            </div>
+            
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Ejemplos de Fórmulas de Prompting para Projects</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card bg-gray-50 rounded-lg p-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">Asistente de Marketing (Zapatería)</h4>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <p><strong>Contexto y Rol:</strong> Eres mi asistente de Marketing para una zapatería...</p>
+                            <p><strong>Especificaciones:</strong> Plan de redes, textos listos, fichas de producto...</p>
+                            <p><strong>Criterios de Calidad:</strong> Coherencia, marca, claridad, resultado...</p>
+                        </div>
+                        <button onclick="copyToClipboard('Asistente de Marketing (Zapatería) prompt')" class="text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-copy mr-1"></i> Copiar Prompt
+                        </button>
+                    </div>
+                    
+                    <div class="card bg-gray-50 rounded-lg p-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">Asistente de Operativa Financiera</h4>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <p><strong>Contexto y Rol:</strong> Eres mi asistente financiero...</p>
+                            <p><strong>Especificaciones:</strong> Análisis de estados financieros, KPIs, informes...</p>
+                            <p><strong>Criterios de Calidad:</strong> Precisión, cumplimiento normativo, claridad...</p>
+                        </div>
+                        <button onclick="copyToClipboard('Asistente de Operativa Financiera prompt')" class="text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-copy mr-1"></i> Copiar Prompt
+                        </button>
+                    </div>
+                    
+                    <div class="card bg-gray-50 rounded-lg p-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">Service Desk L1/L2 y Seguridad</h4>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <p><strong>Contexto y Rol:</strong> Eres mi asistente de IT para resolver tickets...</p>
+                            <p><strong>Especificaciones:</strong> Gestión de tickets, soluciones técnicas, seguridad...</p>
+                            <p><strong>Criterios de Calidad:</strong> Resolución rápida, precisión técnica, seguridad...</p>
+                        </div>
+                        <button onclick="copyToClipboard('Service Desk L1/L2 prompt')" class="text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-copy mr-1"></i> Copiar Prompt
+                        </button>
+                    </div>
+                    
+                    <div class="card bg-gray-50 rounded-lg p-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">Asistente de RR. HH.</h4>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <p><strong>Contexto y Rol:</strong> Eres mi asistente de Recursos Humanos...</p>
+                            <p><strong>Especificaciones:</strong> Descripciones de puesto, procesos de selección...</p>
+                            <p><strong>Criterios de Calidad:</strong> Claridad, cumplimiento legal, objetividad...</p>
+                        </div>
+                        <button onclick="copyToClipboard('Asistente de RR. HH. prompt')" class="text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-copy mr-1"></i> Copiar Prompt
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Memoria en Projects</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-2">Predeterminado (Default)</h4>
+                        <p class="text-gray-600">
+                            Permite al proyecto comunicarse con la memoria global de ChatGPT. Ideal cuando necesitas que el proyecto acceda a información mencionada en otras conversaciones o aproveche aprendizajes previos.
+                        </p>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-2">Solo proyecto (Project-only)</h4>
+                        <p class="text-gray-600">
+                            Crea una burbuja cerrada donde solo existe la información compartida dentro de ese espacio. Recomendado para contenido sensible, instrucciones muy controladas o flujos que deben mantenerse siempre iguales.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GPTs Section -->
+    <section id="gpts" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">GPTs Personalizados: Automatización de Tareas Repetitivas</h2>
+                <p class="mt-4 text-lg text-gray-600">Empaqueta procedimientos completos en herramientas especializadas</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 mb-12">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">La Fórmula de Prompting de GPTs</h3>
+                <ul class="list-disc pl-5 space-y-2 text-gray-600">
+                    <li><strong>Objetivo:</strong> Qué debe lograr el GPT.</li>
+                    <li><strong>Cómo actuar:</strong> Cómo debe comportarse y qué pasos seguir.</li>
+                    <li><strong>Instrucciones concretas:</strong> Detalles específicos del procedimiento.</li>
+                    <li><strong>Refuerzo de instrucciones:</strong> Delimitaciones y ejemplos para consistencia.</li>
+                </ul>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Como crear un GPT personalizado</h3>
+                <!-- <p class="text-gray-600 mb-4">Introduce un prompt simple y observa cómo se optimiza según la fórmula:</p> -->
+                <div class="flex flex-col md:flex-row gap-4">
+                    <!-- <input type="text" id="simplePrompt" class="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Ej: Hazme un plan de redes para mi zapatería"> -->
+                    <a href="https://atnojs.es/Paginas/ia_workflow/gpt_personalizado.html" class="px-6 py-2 bg-primary text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary inline-block">
+    Ver Instrucciones
+</a>
+                </div>
+                
+                
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflows Section -->
+    <section id="workflows" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">IA Workflows: Orquestando Herramientas para Resultados Reales</h2>
+                <p class="mt-4 text-lg text-gray-600">Secuencias de herramientas que forman un sistema de producción</p>
+            </div>
+            
+            <div class="space-y-12">
+                <!-- Workflow 1 -->
+                <div class="card bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Workflow 1: Creación de Contenido Audiovisual</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Pasos Detallados:</h4>
+                            <ul class="workflow-checklist space-y-2">
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Generar ideas con GPT personalizado</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Transformar guión en prompts técnicos para imágenes</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Crear imágenes con IA (Flux)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Animar imágenes para crear clips (Fal.ai)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Montar el vídeo final (CapCut, Filmora)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Métricas de Seguimiento:</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 4 horas">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Dinero ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: €200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo de verificación</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 30 minutos">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <a href="workflow1-detalles.html" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    Ver Detalles del Workflow
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workflow 2 -->
+                <div class="card bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Workflow 2: Creación de Presentaciones con IA</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Pasos Detallados:</h4>
+                            <ul class="workflow-checklist space-y-2">
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Extraer y resumir información clave de un informe (ChatGPT)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Generar presentación automáticamente (Kimi Slides)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Métricas de Seguimiento:</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 3 horas">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Dinero ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: €150">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo de verificación</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 20 minutos">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <a href="workflow2-detalles.html" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    Ver Detalles del Workflow
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workflow 3 -->
+                <div class="card bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Workflow 3: Preparación de Visitas de Ventas (Deep Research)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Pasos Detallados:</h4>
+                            <ul class="workflow-checklist space-y-2">
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Investigación Profunda (ChatGPT con multifuente)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Transformar informe con NotebookLM (Audio/Video, Mind Map, FAQ)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Métricas de Seguimiento:</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 5 horas">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Dinero ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: €300">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo de verificación</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 45 minutos">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <a href="workflow3-detalles.html" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    Ver Detalles del Workflow
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workflow 4 -->
+                <div class="card bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Workflow 4: Automatización de Correos Electrónicos (Make.com)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Pasos Detallados:</h4>
+                            <ul class="workflow-checklist space-y-2">
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Disparador: Revisar nuevos emails (Gmail)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Extraer pregunta y guardar en variable (Herramientas)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Dar contexto con FAQ (Google Docs)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Generar respuesta (OpenAI)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Router: Mejorar respuesta y crear borrador (OpenAI + Gmail)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <input type="checkbox" class="mt-1 mr-2">
+                                    <span>Guardar lead en base de datos (Google Sheets)</span>
+                                </li>
+                            </ul>
+                            <p class="mt-4 text-sm text-gray-600"><strong>Blueprint:</strong> Archivo de automatización para importar en Make.com</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Métricas de Seguimiento:</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 10 horas/semana">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Dinero ahorrado</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: €500/mes">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tiempo de verificación</label>
+                                    <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="Ej: 1 hora/semana">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <a href="workflow4-detalles.html" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    Ver Detalles del Workflow
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vibe Coding Section -->
+    <section id="vibecoding" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Vibe Coding: Creando Webs y Apps con Lenguaje Natural</h2>
+                <p class="mt-4 text-lg text-gray-600">Metodología de programación sin código, exploratoria e intuitiva</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">¿Qué es Vibe Coding?</h3>
+                    <p class="text-gray-600 mb-6">
+                        Es un estilo de programar sin código, con lenguaje natural y de forma exploratoria e intuitiva. Permite crear aplicaciones web de manera rápida y sencilla, sin necesidad de saber programar. Los usuarios describen su idea en lenguaje natural, y la IA genera automáticamente el código utilizando tecnologías como React, TypeScript y Supabase.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Presentación de Lovable</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-600">
+                        <li>Fundada en Estocolmo en 2023</li>
+                        <li>2.3 millones de usuarios activos a septiembre de 2025</li>
+                        <li>180,000 suscriptores de pago</li>
+                        <li>Utiliza React, TypeScript y Supabase</li>
+                        <li>Ideal para emprendedores, startups y no técnicos</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Ejemplos de Aplicaciones Lovable</h3>
+                    <div class="space-y-6">
+                        <div class="card bg-white p-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-wallet text-2xl text-primary mr-3 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">GastoFlow</h4>
+                                    <p class="text-gray-600 mt-1">Lleva un control y una gestión perfecta de todos tus gastos personales, familiares o empresariales.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-white p-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-palette text-2xl text-primary mr-3 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">ColorCraft</h4>
+                                    <p class="text-gray-600 mt-1">Convierte fácilmente tus fotografías en páginas para colorear únicas utilizando herramientas web con inteligencia artificial.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-white p-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-tasks text-2xl text-primary mr-3 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Gestor de Tareas</h4>
+                                    <p class="text-gray-600 mt-1">Aplicación personalizada para gestionar tareas diarias con recordatorios y prioridades.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Economía IA Section -->
+    <section id="economia" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Monetizando la IA: Oportunidades en la Nueva Economía Digital</h2>
+                <p class="mt-4 text-lg text-gray-600">Cómo la IA está creando un mercado de 105 mil millones de dólares para 2030</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Mercado de la IA</h3>
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <canvas id="marketChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Nuevas Profesiones y Servicios con IA</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Consultor de IA (€100-200/h)</h4>
+                            <p class="text-gray-600 mt-1">Asesora empresas en mejorar sus procesos con IA.</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-medium text-gray-900">Especialista en Implementación de IA (€150-300/h)</h4>
+                            <p class="text-gray-600 mt-1">Ejecuta flujos de trabajo de IA en empresas. Ej: Javi Fernández (€40k facturados en un año).</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-medium text-gray-900">Creador de Contenido con IA</h4>
+                            <p class="text-gray-600 mt-1">Genera fotografía, avatares, textos y vídeos con IA. Ej: WeMake.</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-medium text-gray-900">IA Manager</h4>
+                            <p class="text-gray-600 mt-1">Coordina la implementación de IA en todos los departamentos. Ej: José Maríallare de UBESOL.</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-medium text-gray-900">Nuevas Agencias de IA</h4>
+                            <p class="text-gray-600 mt-1">Especializadas en implementaciones, contenido con avatares o desarrollos específicos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Creación de Productos y Canales Digitales</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Aplicaciones con IA</h4>
+                        <p class="text-gray-600 mb-3">
+                            Ejemplo: CalAI, una app de un chaval de 18 años que le haces una foto a tu comida y te dice las calorías. Factura $3.4 millones al mes.
+                        </p>
+                        <h4 class="font-medium text-gray-900 mb-2">Canales Automatizados de IA</h4>
+                        <p class="text-gray-600">
+                            Especialmente en YouTube y TikTok. Herramientas como Invideo crean guion, vídeos, locución y entregan contenido listo. Canales con millones de visualizaciones generan €600-3.000/mes.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Impacto en la Empleabilidad</h4>
+                        <p class="text-gray-600">
+                            El mayor impacto económico de la IA está en la gente que ya trabaja. La productividad que se consigue al aplicar IA en el día a día genera mucho más valor global. La IA democratiza el acceso a habilidades que antes requerían años de aprendizaje.
+                        </p>
+                        <div class="mt-4 p-4 bg-white rounded-md">
+                            <p class="font-medium text-gray-900 italic">
+                                "La marea ha subido para todos, y eso permite que mucha más gente pueda crear, implementar y monetizar."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">IA Workflow Pro Navigator</h3>
+                    <p class="text-gray-300">
+                        Tu ecosistema completo para dominar la IA profesional y transformar tu productividad.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Secciones</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#fundamentos" class="text-gray-300 hover:text-white">Fundamentos</a></li>
+                        <li><a href="#prompting" class="text-gray-300 hover:text-white">Prompting</a></li>
+                        <li><a href="#projects" class="text-gray-300 hover:text-white">Projects</a></li>
+                        <li><a href="#gpts" class="text-gray-300 hover:text-white">GPTs</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Workflows</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#workflows" class="text-gray-300 hover:text-white">Contenido Audiovisual</a></li>
+                        <li><a href="#workflows" class="text-gray-300 hover:text-white">Presentaciones</a></li>
+                        <li><a href="#workflows" class="text-gray-300 hover:text-white">Visitas de Ventas</a></li>
+                        <li><a href="#workflows" class="text-gray-300 hover:text-white">Automatización Emails</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Recursos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white">Guía PDF Completa</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Prompts Optimizados</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Blueprints de Automatización</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Plantillas de Projects</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
+                <p>&copy; 2025 IA Workflow Pro Navigator. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Resources Modal -->
+    <div id="resourcesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-900">Recursos y Descargas</h3>
+                    <button onclick="closeResourcesModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900">Guía Completa en PDF</h4>
+                        <p class="text-gray-600 text-sm mt-1">Documento completo con todos los conceptos y ejemplos.</p>
+                        <a href="#" class="mt-2 inline-flex items-center text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-download mr-1"></i> Descargar PDF
+                        </a>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900">Colección de Prompts Optimizados</h4>
+                        <p class="text-gray-600 text-sm mt-1">Archivo con todos los prompts de ejemplo en formato txt.</p>
+                        <a href="#" class="mt-2 inline-flex items-center text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-download mr-1"></i> Descargar ZIP
+                        </a>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900">Blueprints de Automatización Make.com</h4>
+                        <p class="text-gray-600 text-sm mt-1">Archivos para importar automatizaciones directamente en Make.</p>
+                        <a href="#" class="mt-2 inline-flex items-center text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-download mr-1"></i> Descargar Blueprints
+                        </a>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900">Plantillas de Projects de IA</h4>
+                        <p class="text-gray-600 text-sm mt-1">Ejemplos configurados de Projects para diferentes departamentos.</p>
+                        <a href="#" class="mt-2 inline-flex items-center text-primary hover:text-indigo-800 text-sm font-medium">
+                            <i class="fas fa-download mr-1"></i> Descargar Plantillas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle accordion for prompting section
+        function toggleAccordion(element) {
+            const content = element.querySelector('.accordion-content');
+            content.classList.toggle('open');
+            const icon = element.querySelector('i');
+            if (content.classList.contains('open')) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Optimize prompt demo
+        function optimizePrompt() {
+            const simplePrompt = document.getElementById('simplePrompt').value;
+            if (!simplePrompt) {
+                alert('Por favor, introduce un prompt simple.');
+                return;
+            }
+
+            const optimizedText = `Contexto / Rol: 
+Eres un experto en marketing digital especializado en estrategias para pequeñas empresas locales, como zapaterías. Tu tarea es crear un plan de contenido para redes sociales que atraiga clientes locales y fidelice a los existentes.
+
+Consulta / Tarea: 
+Desarrolla un plan de contenido para redes sociales para una zapatería local, incluyendo ideas de publicaciones, frecuencia de publicación y canales recomendados.
+
+Especificaciones: 
+- Público objetivo: Hombres y mujeres de 25-55 años, residentes locales
+- Canales: Instagram y Facebook principalmente
+- Frecuencia: 4 publicaciones por semana en total
+- Incluir: Fotos de productos, promociones, consejos de estilo, detrás de escenas
+- Tono: Amigable, cercano, experto en moda
+
+Criterios de Calidad: 
+- Las ideas deben ser originales y relevantes para el público local
+- El contenido debe promover la interacción (likes, comentarios, shares)
+- Debe incluir llamadas a la acción claras
+- Coherente con la identidad de marca de la zapatería
+
+Formato de Respuesta: 
+Lista numerada con descripción de cada tipo de publicación, día de la semana recomendado y breve explicación del objetivo.
+
+Verificación: 
+Revisa que todas las ideas sean aplicables a una zapatería, que el tono sea consistente y que se cubran diferentes aspectos del negocio.`;
+
+            document.getElementById('optimizedPromptText').textContent = optimizedText;
+            document.getElementById('optimizedPromptResult').classList.remove('hidden');
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Prompt copiado al portapapeles!');
+            });
+        }
+
+        // Business Analyzer demo
+        function analyzeBusiness() {
+            alert('¡Funcionalidad de Business Analyzer activada! En una implementación completa, esto abriría un simulador interactivo.');
+        }
+
+        // Resources modal
+        function showResourcesModal() {
+            document.getElementById('resourcesModal').classList.remove('hidden');
+            document.getElementById('resourcesModal').classList.add('flex');
+        }
+
+        function closeResourcesModal() {
+            document.getElementById('resourcesModal').classList.add('hidden');
+            document.getElementById('resourcesModal').classList.remove('flex');
+        }
+
+        // Initialize market chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2020', '2021', '2022', '2023', '2024', '2025 (Est.)', '2030 (Proy.)'],
+                    datasets: [{
+                        label: 'Mercado de IA (miles de millones $)',
+                        data: [5000, 8000, 12000, 18000, 22500, 35000, 105000],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

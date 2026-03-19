@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultor de CorelDRAW 2024 (desde PDF)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #preguntaInput {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        #preguntaInput:focus {
+            border-color: #3498db;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #resultados {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eaf2f8;
+            border-left: 5px solid #3498db;
+            border-radius: 4px;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            max-height: 400px;
+            overflow-y: auto;
+            text-align: left;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        #resultados p {
+            margin: 0;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        #resultados p:hover {
+            background-color: #f0f8ff;
+        }
+        .no-results {
+            font-style: italic;
+            color: #7f8c8d;
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            text-align: center;
+        }
+        .loading-message {
+            font-style: italic;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .result-content {
+            flex-grow: 1;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: calc(100% - 70px);
+        }
+        .result-page {
+            font-weight: bold;
+            color: #27ae60;
+            min-width: 40px;
+            text-align: right;
+            margin-left: 10px;
+            flex-shrink: 0;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .result-page:hover {
+            color: #2980b9;
+        }
+        .result-detail { /* Estilo para texto adicional después del número */
+            font-size: 0.9em;
+            font-style: italic;
+            color: #7f8c8d;
+            margin-left: 10px;
+        }
+    </style>
+    <!-- Incluimos la librería pdf.js LOCALMENTE -->
+    <script src="pdf.mjs" type="module"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🌍 Consultor de CorelDRAW 2024 (desde PDF)</h1>
+
+        <p class="loading-message" id="statusMessage">Cargando documento...</p>
+
+        <div class="input-area">
+            <input type="text" id="preguntaInput" placeholder="Escribe tu duda sobre CorelDRAW 2024..." disabled>
+            <button onclick="buscarInformacion()" id="buscarBtn" disabled>Buscar</button>
+        </div>
+
+        <div id="resultados">
+            <p>El documento se está cargando. Por favor, espera.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- CONFIGURACIÓN DE PDF.JS ---
+        const pdfjsLib = globalThis.pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.mjs'; // Ruta a tu worker local
+
+        // --- CONFIGURACIÓN DEL PDF ---
+        const urlArchivoPDF = 'coreldraw2024.pdf'; // Tu PDF en la misma carpeta
+
+        // --- VARIABLES Y ELEMENTOS DEL DOM ---
+        let lineasDeIndiceProcesadas = []; // Guardaremos objetos con { temaCompleto, numeroPagina }
+        const preguntaInput = document.getElementById('preguntaInput');
+        const buscarBtn = document.getElementById('buscarBtn');
+        const resultadosDiv = document.getElementById('resultados');
+        const statusMessage = document.getElementById('statusMessage');
+
+        /**
+         * Extrae el texto del PDF y lo procesa para identificar entradas de índice completas.
+         * @param {string} url La URL del archivo PDF.
+         */
+        async function extraerTextoDePDF(url) {
+            try {
+                statusMessage.textContent = 'Procesando el documento PDF...';
+                const loadingTask = pdfjsLib.getDocument(url);
+                const pdfDocument = await loadingTask.promise;
+                const numPages = pdfDocument.numPages;
+
+                let allLines = []; // Todas las líneas de texto extraídas
+
+                for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                    const page = await pdfDocument.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    
+                    // Extraer texto y dividir por líneas, filtrando líneas vacías
+                    const linesOnPage = textContent.items.map(item => item.str).join(' ').split('\n').filter(line => line.trim() !== '');
+                    allLines.push(...linesOnPage);
+                }
+
+                // --- LÓGICA DE RECONSTRUCCIÓN DE ENTRADAS DE ÍNDICE ---
+                // Intentamos agrupar líneas para formar entradas completas.
+                // Una línea de índice suele tener: Tema + Puntos + NúmeroDePágina + Detalles (opcional)
+                // Si una línea NO parece ser el inicio de un índice (no tiene puntos y número),
+                // la adjuntamos a la entrada anterior.
+
+                let currentIndexEntry = null; // La entrada del índice que estamos construyendo actualmente
+                
+                for (const line of allLines) {
+                    // Regex para detectar el INICIO de una entrada de índice:
+                    // Captura:
+                    // 1. `(.*?)`: El tema (texto antes de los puntos).
+                    // 2. `\.{2,}`: Dos o más puntos suspensivos.
+                    // 3. `\s*`: Espacios opcionales.
+                    // 4. `(\d+)`: El número de página (uno o más dígitos).
+                    // 5. `(.*)?`: Cualquier texto adicional al final de la línea.
+                    const indexStartMatch = line.match(/^(.*?)\.{2,}\s*(\d+)(.*)?$/);
+                    
+                    if (indexStartMatch) {
+                        // Si encontramos una nueva entrada de índice:
+                        // 1. Guardamos la entrada anterior (si existe)
+                        if (currentIndexEntry) {
+                            lineasDeIndiceProcesadas.push(currentIndexEntry);
+                        }
+                        // 2. Creamos la nueva entrada
+                        currentIndexEntry = {
+                            tema: indexStartMatch[1] ? indexStartMatch[1].trim() : '',
+                            numeroPagina: parseInt(indexStartMatch[2], 10),
+                            detalles: indexStartMatch[3] ? indexStartMatch[3].trim() : ''
+                        };
+                    } else if (currentIndexEntry) {
+                        // Si la línea NO es un inicio de índice Y ya tenemos una entrada en construcción:
+                        // Añadimos esta línea como continuación del tema o detalles de la entrada actual.
+                        // Verificamos si la línea contiene solo puntos o es texto plano para añadir.
+                        if (line.trim().length > 0) {
+                            // Si la línea no está vacía y no es solo puntos, la añadimos.
+                            // Añadimos un espacio antes si hay detalles.
+                            if (currentIndexEntry.detalles) {
+                                currentIndexEntry.detalles += ' ' + line.trim();
+                            } else {
+                                currentIndexEntry.detalles = line.trim();
+                            }
+                        }
+                    }
+                }
+
+                // Asegurarnos de guardar la última entrada procesada
+                if (currentIndexEntry) {
+                    lineasDeIndiceProcesadas.push(currentIndexEntry);
+                }
+
+                statusMessage.textContent = 'Documento cargado y listo.';
+                preguntaInput.disabled = false;
+                buscarBtn.disabled = false;
+                resultadosDiv.innerHTML = '<p class="no-results">¡El documento está listo! Escribe tu pregunta y haz clic en "Buscar".</p>';
+
+            } catch (error) {
+                console.error('Error al leer el archivo PDF:', error);
+                statusMessage.textContent = 'Error al cargar el documento. Asegúrate de que la URL sea correcta y el archivo exista.';
+                resultadosDiv.innerHTML = '<p class="no-results">No se pudo cargar el documento PDF. Verifica la URL, los permisos del archivo y la configuración de pdf.js.</p>';
+            }
+        }
+
+        /**
+         * Realiza la búsqueda en las entradas de índice procesadas.
+         */
+        function buscarInformacion() {
+            const pregunta = preguntaInput.value.trim().toLowerCase();
+
+            if (pregunta === "") {
+                resultadosDiv.innerHTML = '<p class="no-results">Por favor, introduce una pregunta.</p>';
+                return;
+            }
+
+            if (!lineasDeIndiceProcesadas || lineasDeIndiceProcesadas.length === 0) {
+                resultadosDiv.innerHTML = '<p class="no-results">El documento aún no está listo o no se han procesado las líneas del índice.</p>';
+                return;
+            }
+
+            const palabrasBusqueda = pregunta.split(' ').filter(Boolean);
+            let resultadosEncontrados = [];
+
+            lineasDeIndiceProcesadas.forEach(entry => {
+                const textoBusquedaCompleto = `${entry.tema} ${entry.detalles || ''}`.toLowerCase();
+                let coincide = false;
+
+                for (const palabra of palabrasBusqueda) {
+                    if (textoBusquedaCompleto.includes(palabra)) {
+                        coincide = true;
+                        break;
+                    }
+                }
+
+                if (coincide) {
+                    // Construimos el texto para mostrar, combinando tema y detalles
+                    const textoAMostrar = `${entry.tema}${entry.detalles ? ' ' + entry.detalles : ''}`;
+                    
+                    const resultadoHTML = `
+                        <p class="result-item">
+                            <span class="result-content">${textoAMostrar}</span>
+                            <span class="result-page" onclick="irAPagina(${entry.numeroPagina})">Pág. ${entry.numeroPagina}</span>
+                        </p>
+                    `;
+                    resultadosEncontrados.push(resultadoHTML);
+                }
+            });
+
+            // Mostramos los resultados
+            if (resultadosEncontrados.length > 0) {
+                resultadosDiv.innerHTML = resultadosEncontrados.join('');
+            } else {
+                resultadosDiv.innerHTML = '<p class="no-results">No se encontraron coincidencias en el índice para tu búsqueda. Intenta con otras palabras.</p>';
+            }
+        }
+
+        /**
+         * Función para simular el salto a página.
+         * @param {number} pageNumber El número de página a la que saltar.
+         */
+        function irAPagina(pageNumber) {
+            alert(`Para ir a la página ${pageNumber}, por favor abre el archivo ${urlArchivoPDF} en tu visor de PDF y navega a esa página.`);
+            // Opcionalmente, intentar abrir en nueva pestaña (descomentar si se desea probar):
+            // window.open(`${urlArchivoPDF}#page=${pageNumber}`, '_blank');
+        }
+
+        // Iniciar la carga del PDF al cargar la página
+        extraerTextoDePDF(urlArchivoPDF);
+
+        // Permitir buscar al presionar Enter en el input
+        preguntaInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                buscarInformacion();
+            }
+        });
+    </script>
+
+</body>
+</html>

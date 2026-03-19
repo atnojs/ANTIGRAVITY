@@ -1,0 +1,387 @@
+/* ============================================
+   💎 PREMIUM SAAS/FINTECH DASHBOARD
+   Clean, Vibrant, and Professional
+   ============================================ */
+
+/* ===== RESET & ROOT ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-deep: #020617;
+    --bg-glow: radial-gradient(circle at 40% 40%, #0f172a 0%, #020617 100%);
+
+    --primary: #38bdf8;
+    --primary-glow: rgba(56, 189, 248, 0.4);
+    --secondary: #818cf8;
+    --accent: #22d3ee;
+
+    --text-main: #f1f5f9;
+    --text-dim: #94a3b8;
+
+    --glass-card: rgba(15, 23, 42, 0.85);
+    --glass-border: rgba(56, 189, 248, 0.15);
+
+    --grad-main: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+
+    --radius-md: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-glow);
+    background-attachment: fixed;
+    color: var(--text-main);
+    padding-top: 110px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+/* 🔒 VISIBILITY LOGIC */
+/* Los controles se ocultan por defecto EXCEPTO que el body tenga la clase edit-mode */
+.edit-mode-controls,
+.item-edit-buttons,
+.panel-edit-buttons {
+    display: none !important;
+}
+
+body.edit-mode .edit-mode-controls {
+    display: flex !important;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+body.edit-mode .item-edit-buttons {
+    display: flex !important;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    gap: 8px;
+    z-index: 50;
+}
+
+body.edit-mode .panel-edit-buttons {
+    display: flex !important;
+    gap: 10px;
+}
+
+/* MODALES: Se ocultan por defecto para que JS los maneje */
+.modal-overlay {
+    display: none;
+    /* JS usará 'flex' para mostrar */
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== TOPBAR ===== */
+.topbar {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-width: 1400px;
+    z-index: 1000;
+    background: var(--glass-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 100px;
+    padding: 12px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.brand {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    background: var(--grad-main);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 0.5px;
+}
+
+.search-wrapper {
+    flex: 0 1 500px;
+    position: relative;
+    margin-left: 20px;
+}
+
+.search-wrapper input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 50px;
+    padding: 10px 100px 10px 25px;
+    color: white;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.search-wrapper input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(56, 189, 248, 0.05);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+}
+
+.search-wrapper button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 5px;
+}
+
+#search-btn {
+    right: 15px;
+    color: var(--primary);
+}
+
+#lens-btn {
+    right: 45px;
+}
+
+#voice-btn {
+    right: 75px;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px 40px;
+}
+
+.tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+/* ===== PANELES ===== */
+.panel {
+    background: var(--glass-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 35px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.panel-header {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.panel-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-grow: 1;
+    color: var(--text-main);
+}
+
+.panel-content {
+    padding: 25px;
+}
+
+.panel.closed .panel-content {
+    display: none;
+}
+
+/* ===== TARJETAS PREMIUM ===== */
+.tile-card {
+    background: var(--glass-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    height: 140px !important;
+    /* Altura fija obligatoria para evitar deformación */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: var(--transition);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.tile-card:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: var(--primary);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+}
+
+.tile-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 14px;
+    z-index: 5;
+    transition: var(--transition);
+}
+
+.tile-icon img {
+    max-width: 36px;
+    max-height: 36px;
+    object-fit: contain;
+}
+
+.tile-icon i {
+    font-size: 26px !important;
+    color: var(--primary);
+}
+
+.tile-card:hover .tile-icon {
+    background: var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.tile-card:hover .tile-icon i {
+    color: white;
+}
+
+.tile-title {
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+    z-index: 5;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tile-desc {
+    display: none;
+}
+
+/* BG ICON Decorativo */
+.bg-icon {
+    position: absolute;
+    bottom: -15px;
+    right: -15px;
+    font-size: 90px !important;
+    opacity: 0.02 !important;
+    color: var(--primary) !important;
+    pointer-events: none;
+    transition: var(--transition);
+    z-index: 1;
+}
+
+.tile-card:hover .bg-icon {
+    transform: scale(1.4) rotate(-10deg);
+    opacity: 0.06 !important;
+}
+
+/* ===== BOTONES & MODALES ===== */
+.add-item-btn,
+.btn-save {
+    background: var(--grad-main);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 25px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 15px rgba(56, 189, 248, 0.2);
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-dim);
+    border-radius: 50px;
+    padding: 10px 20px;
+}
+
+/* BOTÓN EDITAR (SÚPER DISCRETO) */
+#edit-mode-btn {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    opacity: 0.2;
+    transition: var(--transition);
+    z-index: 1000;
+}
+
+#edit-mode-btn:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 15px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .tiles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .topbar {
+        width: 95%;
+        padding: 10px 20px;
+    }
+
+    .search-wrapper {
+        display: none;
+    }
+
+    .brand {
+        font-size: 0.95rem;
+    }
+}

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Apps IA - Plataforma de Aplicaciones</title>
+    <link rel="stylesheet" href="web.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="main-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <span>Web Apps IA</span>
+            </div>
+            <nav id="header-nav">
+                <!-- Se llenará dinámicamente -->
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 id="hero-title" class="editable-text">Tus Apps IA en un Solo Lugar</h1>
+        <p id="hero-subtitle" class="editable-text">Accede a múltiples herramientas de inteligencia artificial con un sistema unificado de créditos</p>
+    </section>
+
+    <!-- Apps Grid -->
+    <main class="container">
+        <div id="apps-grid" class="apps-grid">
+            <!-- Las apps se cargarán dinámicamente -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p id="footer-text" class="editable-text">© 2024 Web Apps IA. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Botón Modo Edición -->
+    <button id="edit-mode-btn" class="edit-mode-btn" title="Modo Edición">
+        <i class="fas fa-lock"></i>
+    </button>
+
+    <!-- Botón Añadir App (solo visible en modo edición) -->
+    <button id="add-app-btn" class="add-app-btn hidden">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Botón Guardar Todo (solo visible en modo edición) -->
+    <button id="save-all-btn" class="save-all-btn hidden">
+        <i class="fas fa-save"></i> Guardar Todo
+    </button>
+
+    <!-- Modal Login/Registro -->
+    <div id="auth-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2 id="auth-modal-title">Iniciar Sesión</h2>
+            <form id="auth-form">
+                <input type="email" id="auth-email" placeholder="Email" required>
+                <input type="password" id="auth-password" placeholder="Contraseña" required>
+                <button type="submit" id="auth-submit-btn">Entrar</button>
+            </form>
+            <p class="auth-toggle">
+                <span id="auth-toggle-text">¿No tienes cuenta?</span>
+                <a href="#" id="auth-toggle-link">Regístrate</a>
+            </p>
+        </div>
+    </div>
+
+<div id="admin-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('admin-modal').classList.add('hidden')">&times;</button>
+            <h2>Acceso Admin</h2>
+            <form method="POST">
+                <input type="text" name="username" placeholder="Usuario" required autofocus style="width: 100%; margin-bottom: 10px; padding: 8px;">
+                <input type="password" name="password" placeholder="Contraseña" required style="width: 100%; margin-bottom: 10px; padding: 8px;">
+                <button type="submit" name="login" class="btn-primary" style="width: 100%;">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    
+
+
+    <!-- Modal Añadir/Editar App -->
+    <div id="app-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <button class="modal-close">&times;</button>
+            <h2 id="app-modal-title">Añadir Nueva App</h2>
+            <form id="app-form">
+                <input type="hidden" id="app-id">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" id="app-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="app-description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>URL de la App</label>
+                    <input type="url" id="app-url" required>
+                </div>
+                <div class="form-group">
+                    <label>Icono (emoji o código FontAwesome)</label>
+                    <input type="text" id="app-icon" placeholder="🎨 o fas fa-palette">
+                </div>
+                <div class="form-group">
+                    <label>URL de Imagen de Fondo</label>
+                    <input type="url" id="app-bg-url" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>O subir imagen</label>
+                    <input type="file" id="app-image-upload" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Coste en Créditos por Solicitud</label>
+                    <input type="number" id="app-credits" min="1" value="1" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="app-cancel-btn">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación Solicitud -->
+    <div id="request-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Confirmar Solicitud</h2>
+            <p>Esta acción consumirá <strong id="request-credits">X</strong> créditos.</p>
+            <p>Créditos disponibles: <strong id="request-available">Y</strong></p>
+            <div class="form-actions">
+                <button class="btn-secondary" id="request-cancel-btn">Cancelar</button>
+                <button class="btn-primary" id="request-confirm-btn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Perfil -->
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2>Mi Perfil</h2>
+            <div class="profile-info">
+                <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                <p><strong>Plan:</strong> <span id="profile-plan"></span></p>
+                <p><strong>Créditos hoy:</strong> <span id="profile-credits"></span></p>
+                <p><strong>Próxima renovación:</strong> <span id="profile-reset"></span></p>
+            </div>
+            <button class="btn-primary" id="upgrade-plan-btn">Cambiar Plan</button>
+            <button class="btn-secondary" id="logout-btn">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- Modal Planes -->
+    <div id="plans-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <button class="modal-close">&times;</button>
+            <h2>Planes de Suscripción</h2>
+            <div class="plans-grid" id="plans-grid">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <script src="web.js"></script>
+</body>
+</html>

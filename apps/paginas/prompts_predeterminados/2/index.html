@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+     <meta charset="UTF-8" />
+     <title>Galería de Prompts | AI Image Studio</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
+          rel="stylesheet">
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+     <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
+     <link rel="stylesheet" href="web.css">
+</head>
+
+<body>
+     <div class="topbar">
+          <div class="brand">
+               <i class="fa fa-wand-magic-sparkles"></i>
+               Galería de Prompts para Imágenes Profesionales
+          </div>
+     </div>
+
+     <div class="container">
+          <!-- HISTORIAL DE IMÁGENES GENERADAS -->
+          <div id="generated-history" class="generated-history" style="display: none;">
+               <div class="history-header">
+                    <h3><i class="fa fa-images"></i> Imágenes Generadas</h3>
+                    <button id="clear-history-btn" class="btn-clear-history">
+                         <i class="fa fa-trash"></i> Limpiar Todo
+                    </button>
+               </div>
+               <div id="history-grid" class="history-grid"></div>
+          </div>
+
+          <div class="edit-mode-controls">
+               <button id="add-panel-btn" class="btn-neon">+ Añadir Categoría</button>
+               <button id="add-item-btn" class="btn-neon">+ Subir Nueva Imagen</button>
+          </div>
+
+          <div id="panels-container"></div>
+          <div class="tiles-grid" id="tiles-grid"></div>
+     </div>
+
+     <button id="edit-mode-btn" class="btn-edit-toggle">Editar Galería</button>
+
+     <!-- MODAL CONTRASEÑA ADMIN -->
+     <div id="password-modal" class="modal-overlay">
+          <div class="modal-content">
+               <h3><i class="fa fa-lock"></i> Modo Administrador</h3>
+               <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="admin-password-input" placeholder="Introduce la contraseña"
+                         autocomplete="current-password" />
+               </div>
+               <div class="form-buttons">
+                    <button id="submit-password-btn" class="btn-save">Entrar</button>
+                    <button id="cancel-password-btn" class="btn-cancel">Cancelar</button>
+               </div>
+          </div>
+     </div>
+
+     <!-- VISOR DE IMAGEN -->
+     <div id="image-viewer" class="modal-overlay viewer-mode">
+          <div class="viewer-wrap">
+               <img class="modal-content-viewer" id="full-image">
+          </div>
+     </div>
+
+     <!-- MODAL FORMULARIO AÑADIR/EDITAR IMAGEN -->
+     <div id="form-modal" class="modal-overlay">
+          <div class="modal-content">
+               <h3 id="form-title">Nueva Imagen</h3>
+               <input type="hidden" id="editing-id" />
+               <input type="hidden" id="editing-panel-id" />
+
+               <div class="form-group">
+                    <label>Título del Diseño</label>
+                    <input type="text" id="form-title-input" />
+               </div>
+
+               <div class="form-group">
+                    <label>Imagen</label>
+                    <div class="upload-container">
+                         <label for="form-file-input" class="custom-file-upload">
+                              <i class="fa fa-cloud-upload"></i> Seleccionar Imagen
+                         </label>
+                         <input type="file" id="form-file-input" accept="image/*" />
+                         <img id="upload-preview" src="#" alt="Vista previa" style="display:none;" />
+                    </div>
+                    <input type="text" id="form-url-input" placeholder="O pega una URL" style="margin-top:10px;" />
+               </div>
+
+               <div class="form-group">
+                    <label>Prompt Utilizado</label>
+                    <textarea id="form-desc-input" rows="4" placeholder="Pega el prompt aquí..."></textarea>
+               </div>
+
+               <div class="form-buttons">
+                    <button id="form-save-btn" class="btn-save">Guardar</button>
+                    <button id="form-cancel-btn" class="btn-cancel">Cancelar</button>
+               </div>
+          </div>
+     </div>
+
+     <!-- ═══════════════════════════════════════════════════════════════════ -->
+     <!-- MODAL GENERADOR DE IMÁGENES -->
+     <!-- ═══════════════════════════════════════════════════════════════════ -->
+     <div id="generator-modal" class="modal-overlay">
+          <div class="modal-content generator-modal-content">
+               <button id="close-generator-btn" class="close-modal-btn"><i class="fa fa-times"></i></button>
+
+               <div class="generator-header">
+                    <i class="fa fa-wand-magic-sparkles generator-icon"></i>
+                    <h2>Generador de Imágenes con IA</h2>
+                    <p class="generator-subtitle">Sube tu foto y aplica el estilo del prompt seleccionado</p>
+               </div>
+
+               <div class="generator-body">
+                    <div class="generator-left">
+                         <!-- UPLOAD AREA -->
+                         <div class="gen-section">
+                              <h4><i class="fa fa-image"></i> Imagen Base</h4>
+                              <div class="gen-upload-area" id="gen-upload-area">
+                                   <i class="fa fa-cloud-upload upload-icon"></i>
+                                   <span>Arrastra o haz clic para subir</span>
+                                   <input type="file" id="gen-file-input" accept="image/*" />
+                              </div>
+                              <img id="gen-preview" src="#" alt="Preview" style="display:none;" />
+                         </div>
+
+                         <!-- PROMPT AREA -->
+                         <div class="gen-section">
+                              <h4><i class="fa fa-terminal"></i> Prompt</h4>
+                              <textarea id="gen-prompt-input" rows="5"
+                                   placeholder="Describe el estilo o cambios que deseas aplicar..."></textarea>
+                         </div>
+
+                         <!-- GENERATE BUTTON -->
+                         <button id="gen-submit-btn" class="btn-generate">
+                              <i class="fa fa-wand-magic-sparkles"></i> GENERAR 2 IMÁGENES
+                         </button>
+                    </div>
+
+                    <div class="generator-right">
+                         <h4><i class="fa fa-images"></i> Resultados</h4>
+                         <div id="gen-results" class="gen-results-grid">
+                              <div class="gen-result-placeholder">
+                                   <i class="fa fa-image"></i>
+                                   <span>Imagen 1</span>
+                              </div>
+                              <div class="gen-result-placeholder">
+                                   <i class="fa fa-image"></i>
+                                   <span>Imagen 2</span>
+                              </div>
+                         </div>
+                         <div id="gen-loading" class="gen-loading" style="display:none;">
+                              <div class="spinner-triple">
+                                   <div class="ring ring-1"></div>
+                                   <div class="ring ring-2"></div>
+                                   <div class="ring ring-3"></div>
+                              </div>
+                              <span>Generando con Gemini...</span>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </div>
+
+     <script src="web.js"></script>
+</body>
+
+</html>

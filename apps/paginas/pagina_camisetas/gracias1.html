@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gracias por contactar</title>
+  <meta name="description" content="Página de agradecimiento por tu contacto con La Empresa." />
+  <style>
+    :root{
+      --bg1:#0f172a; /* slate-900 */
+      --bg2:#1e293b; /* slate-800 */
+      --acc:#22d3ee; /* cyan-400 */
+      --acc2:#a78bfa; /* violet-400 */
+      --text:#e5e7eb; /* gray-200 */
+      --muted:#94a3b8; /* slate-400 */
+      --card:#0b1022f2;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;
+      color:var(--text); background: radial-gradient(1200px 800px at 20% 10%, var(--acc2) 0%, transparent 60%),
+                           radial-gradient(900px 600px at 80% 90%, var(--acc) 0%, transparent 55%),
+                           linear-gradient(180deg, var(--bg1), var(--bg2));
+      display:grid; place-items:center; padding:24px;
+    }
+    .card{
+      width:100%; max-width:720px; background:var(--card); border:1px solid #1f2a44;
+      border-radius:24px; padding:36px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      backdrop-filter: blur(8px);
+      text-align:center;
+    }
+    .logo{
+      display:inline-flex; align-items:center; gap:12px; margin-bottom:12px; font-weight:700; letter-spacing:.3px;
+      color:#c7d2fe;
+    }
+    .logo svg{width:28px; height:28px}
+    h1{
+      margin:8px 0 8px; font-size:clamp(1.6rem, 2.2vw + 1rem, 2.4rem); line-height:1.15;
+    }
+    p{margin:0 auto 22px; max-width:55ch; color:var(--muted); font-size:1.05rem}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:.6rem;
+      padding:14px 20px; border-radius:14px; background:linear-gradient(135deg,var(--acc),var(--acc2));
+      color:#0b1022; font-weight:700; text-decoration:none; border:0; cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .2s ease;
+      box-shadow:0 10px 20px rgba(34,211,238,.25), 0 6px 14px rgba(167,139,250,.18);
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn svg{width:18px; height:18px}
+    .meta{margin-top:18px; font-size:.95rem; color:#aab3c5}
+    @media (prefers-reduced-motion: reduce){
+      .btn{transition:none}
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="title">
+    <div class="logo" aria-label=" "> <!-- La Empresa -->
+      <!-- Icono check -->
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity=".35" stroke-width="1.2"/>
+        <path d="M7 12.5l3 3 7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+     <!-- La Empresa -->
+    </div>
+
+    <h1 id="title">¡Gracias por contactar con <span style="white-space:nowrap">nosotros</span>!</h1>
+    <p>
+      Hemos recibido tu mensaje correctamente. Nuestro equipo te responderá lo antes posible.
+    </p>
+
+    <a class="btn" href="https://atnojs.es/camisetas.html" aria-label="Volver al inicio de la página principal">
+      <!-- Icono casa -->
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 10.5l9-7 9 7" stroke="#0b1022" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 10.5V20a1 1 0 001 1h12a1 1 0 001-1v-9.5" stroke="#0b1022" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Volver al inicio
+    </a>
+
+    <!-- <div class="meta" aria-hidden="true">Si no ves la página principal, revisa que el enlace del botón apunte a tu URL de inicio.</div> -->
+  </main>
+</body>
+</html>

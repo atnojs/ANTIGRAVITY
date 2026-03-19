@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nueva Pestaña</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="web.css">
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+
+<body class="dark-theme">
+  <canvas id="bgCanvas"></canvas>
+  <!-- Barra superior fija -->
+  <div class="topbar">
+    <div class="brand">Mi Panel</div>
+    <form id="google-form" action="https://www.google.com/search" method="get" target="_blank" rel="noopener" class="search-wrapper">
+      <button type="button" id="voice-btn" aria-label="Buscar por voz"><i class="fa fa-microphone"></i></button>
+      <button type="button" id="lens-btn" aria-label="Buscar por imagen"><i class="fa fa-camera"></i></button>
+      <input type="search" name="q" placeholder="Buscar en Google…" autocomplete="off" />
+      <button type="submit" id="search-btn" aria-label="Buscar"><i class="fa fa-search"></i></button>
+    </form>
+    <button id="themeSwitcher" class="theme-switcher">Tema Claro</button>
+  </div>
+
+  <div class="container">
+    <div class="edit-mode-controls">
+        <button id="add-panel-btn" class="add-item-btn">+ Añadir Nuevo Panel</button>
+        <button id="add-item-btn" class="add-item-btn">+ Añadir Nuevo Enlace</button>
+    </div>
+    
+    <div id="panels-container">
+        <!-- Los paneles se generarán aquí por JavaScript -->
+    </div>
+
+    <div class="tiles-grid" id="tiles-grid">
+      <!-- Los enlaces sin panel se generarán aquí por JavaScript -->
+    </div>
+  </div>
+
+  <!-- Botón para activar/desactivar modo edición -->
+  <button id="edit-mode-btn">Editar</button>
+
+  <!-- Modal para la contraseña de edición -->
+  <div id="password-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Acceder al Modo Edición</h3>
+      <div class="form-group">
+        <input type="password" id="admin-password-input" placeholder="Contraseña" />
+      </div>
+      <div class="form-buttons">
+        <button id="submit-password-btn" class="btn-save">Activar</button>
+        <button id="cancel-password-btn" class="btn-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para añadir/editar enlaces -->
+  <div id="form-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="form-title">Añadir Enlace</h3>
+      <input type="hidden" id="editing-id" />
+      <input type="hidden" id="editing-panel-id" />
+      <div class="form-group">
+        <label for="form-title-input">Título</label>
+        <input type="text" id="form-title-input" />
+      </div>
+      <div class="form-group">
+        <label for="form-url-input">URL</label>
+        <input type="url" id="form-url-input" />
+      </div>
+      <div class="form-group">
+        <label for="form-desc-input">Descripción</label>
+        <textarea id="form-desc-input" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="form-icon-input">Icono (HTML de FontAwesome o etiqueta &lt;img&gt;)</label>
+        <textarea id="form-icon-input" rows="3" placeholder='<i class="fa-solid fa-globe"></i>'></textarea>
+      </div>
+      <div class="form-buttons">
+        <button id="form-save-btn" class="btn-save">Guardar</button>
+        <button id="form-cancel-btn" class="btn-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para añadir/editar paneles -->
+  <div id="panel-form-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="panel-form-title">Añadir Panel</h3>
+      <input type="hidden" id="editing-panel-id-form" />
+      <div class="form-group">
+        <label for="panel-form-title-input">Título del Panel</label>
+        <input type="text" id="panel-form-title-input" />
+      </div>
+      <div class="form-buttons">
+        <button id="panel-form-save-btn" class="btn-save">Guardar</button>
+        <button id="panel-form-cancel-btn" class="btn-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="web.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Custom scrollbar for a modern look */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e293b; /* slate-800 */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155; /* slate-700 */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569; /* slate-600 */
+}
+
+/* Style for the active navigation link */
+.nav-link.active {
+    background-color: #1e293b; /* slate-800 */
+    color: #7dd3fc; /* sky-300 */
+}
+
+/* Sidebar open state for mobile */
+#sidebar.open {
+    transform: translateX(0);
+}

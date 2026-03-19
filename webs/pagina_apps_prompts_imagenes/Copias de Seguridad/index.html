@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Promts</title>
+  <style>
+    /* Importar tipografías */
+    @import url('https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Rubik Doodle Shadow', cursive;
+      min-height: 100vh;
+      background: white;
+      background-image: url('./imagenes/fondo_pantalla.png');
+      position: relative;
+      /* Modificación para que el fondo permanezca fijo */
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Contenedor principal centrado */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* BLOQUE PRINCIPAL */
+    .bloque-principal {
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 0 auto 20px;
+      display: block;
+      width: fit-content;
+    }
+    .bloque-principal h2 {
+      color: #000000 !important;
+      font-size: 28px !important;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    /* CONTENEDOR DEL MENÚ */
+    #blockNavContainer {
+      display: block;
+      width: auto;
+      max-width: 90%; /* Limitar el ancho máximo */
+      min-width: 800px; /* Establecer un ancho mínimo suficiente */
+      margin: 0 auto 20px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+      padding: 10px 20px;
+      text-align: left;
+      font-family: 'Open Sans', sans-serif;
+      color: #000000;
+      font-size: 18px;
+    }
+    
+    /* ESTILOS MODIFICADOS PARA EL TÍTULO DEL MENÚ */
+    #blockNavTitle {
+      /* Cambiamos por la fuente Rubik Doodle Shadow por defecto */
+      font-family: 'Rubik Doodle Shadow', cursive;
+      color: #000000; /* Color del texto */
+      font-size: 28px; /* Tamaño aumentado */
+      margin-bottom: 15px;
+      text-align: center;
+      display: block;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0); /* Fondo semitransparente */
+      border-radius: 10px; /* Bordes redondeados */
+      /* border: 2px solid #99ff00; /* Contorno verde */
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Sombra sutil */
+    }
+
+    /* Estilos para el panel de personalización */
+    .title-style-options {
+      display: none;
+      margin: 10px auto;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      padding: 15px;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .title-style-options h3 {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .style-option {
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .style-option label {
+      flex: 1;
+      text-align: right;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    .style-option select,
+    .style-option input {
+      flex: 2;
+      padding: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    
+   #blockNav {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center; /* Centrar las columnas */
+      gap: 60px; /* Más espacio entre columnas */
+      position: relative; /* Para posicionamiento de popups */
+    }
+   .navColumn {
+      flex: 0 1 auto; /* Cambiado de flex: 1 para que no se estire */
+      min-width: 380px; /* Anchura mínima para cada columna */
+      position: relative; /* Para posicionamiento de popups */
+    }
+    #blockNav ul {
+     list-style-position: outside; /* Posición de los números */
+     padding-left: 30px; /* Más espacio para los números */
+      margin: 0;
+    }
+    #blockNav li {
+      margin: 8px 0; /* Más espacio vertical entre elementos */
+      padding-left: 5px; /* Espacio después del número */
+      position: relative;
+    }
+    #blockNav a {
+      color: #000000;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-block; /* Para que funcione bien el hover */
+    }
+    #blockNav a:hover {
+      text-decoration: underline;
+    }
+
+    /* BLOQUE-TITULO */
+    .bloque-titulo {
+      display: block;
+      width: fit-content;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 0 auto 10px;
+      font-family: 'Open Sans', sans-serif;
+      text-align: center;
+    }
+    .bloque-titulo h2 {
+      color: #000000;
+      font-size: 30px;
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+      max-width: 90vw;
+    }
+
+    /* NUEVA SECCIÓN: BLOQUE DESCRIPCIÓN */
+    .bloque-descripcion {
+      display: block;
+      width: fit-content;
+      min-width: 300px;
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 15px;
+      padding: 15px;
+      margin: 0 auto 10px;
+      font-family: 'Open Sans', sans-serif;
+      text-align: center;
+    }
+    .bloque-descripcion textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: 'Open Sans', sans-serif;
+      resize: vertical;
+      background-color: white;
+    }
+
+    /* POPUP DE DESCRIPCIÓN */
+    .description-popup {
+      display: none;
+      position: absolute;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      padding: 10px 15px;
+      width: 500px;
+      max-width: 500px;
+      max-height: 80vh; /* Altura máxima para evitar desbordamientos extremos */
+      overflow-y: auto; /* Permitir scroll si el contenido es muy largo */
+      z-index: 100;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      color: #333;
+      text-align: left;
+      white-space: pre-wrap; /* Preserva los saltos de línea y espacios */
+      pointer-events: none; /* Para que no interfiera con los hover */
+      animation: fadeIn 0.2s ease-in-out;
+      word-wrap: break-word;
+      border-left: 3px solid #99ff00;
+    }
+    
+    /* Posicionamiento para columna izquierda - popup a la derecha */
+    .left-column-popup {
+      left: 100%;
+      top: 0;
+    }
+    
+    /* Posicionamiento para columna derecha - popup a la izquierda */
+    .right-column-popup {
+      right: 100%;
+      top: 0;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    #blockNav li:hover .description-popup {
+      display: block;
+    }
+
+    /* BLOQUE-IMAGEN: Contenedor para imágenes de ejemplo.
+       Se ajusta al contenido y se centra. */
+    .bloque-imagen {
+      display: inline-block;
+      margin: 0 auto 10px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+      text-align: center;
+      font-family: 'Open Sans', sans-serif;
+    }
+    /* Contenedor interno para disponer las imágenes en fila */
+    .image-display {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    /* Cada imagen en estado normal */
+    .example-image-container img {
+      max-width: 188px;
+      max-height: 256px;
+      display: block;
+      transition: all 0.3s ease;
+    }
+    /* Estados de ampliación */
+    .enlarged {
+      display: block;
+      margin: 0 auto;
+      max-width: 775px;
+      max-height: 378px;
+      cursor: zoom-in;
+    }
+    .further-enlarged {
+      display: block;
+      margin: 0 auto;
+      max-width: 1550px;
+      max-height: 756px;
+      cursor: zoom-out;
+    }
+    /* Botón para eliminar imagen */
+    .delete-image-btn {
+      display: inline-block;
+      margin-top: 5px;
+      font-size: 12px;
+      transition: all 0.3s ease;
+    }
+
+    /* CONTENEDOR DE SUBGRUPOS */
+    .bloque-subgrupos {
+      display: block;
+      width: 95vw;
+      margin-left: calc(50% - 47.5vw);
+      margin-bottom: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+      font-family: 'Merriweather', serif;
+    }
+    /* SUBGRUPO */
+    .subgrupo {
+      margin: 20px 0;
+      padding: 10px;
+      border-left: 3px solid #99ff00;
+      text-align: center;
+    }
+    .subgrupo h3 {
+      font-size: 18px;
+      white-space: pre-wrap;
+      text-align: left;
+      margin: 10px auto;
+      display: block;
+      width: 100%;
+      font-family: 'Merriweather', serif;
+      font-weight: 300;
+    }
+
+    /* BOTONES GENERALES */
+    .boton-estilo {
+      background: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+    .boton-estilo:hover {
+      background: #ff00ff;
+      color: #ffffff;
+      opacity: 1;
+    }
+    .copy-btn {
+      display: inline-block;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    /* BOTÓN MODO EDICIÓN */
+    #edit-mode-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+    }
+    /* BOTONES AÑADIR BLOQUE / CAMBIAR FONDO */
+    .add-block-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    .change-bg-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+    }
+    #bgInput {
+      display: none !important;
+    }
+    /* BOTÓN "VOLVER AL INICIO" */
+    #backToTop {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      z-index: 1001;
+      background: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      opacity: 0.8;
+      transition: all 0.3s ease;
+    }
+    #backToTop:hover {
+      background: #ff00ff;
+      color: #ffffff;
+      opacity: 1;
+    }
+    
+    /* Cada imagen en estado normal (estilos inline se establecen cuando se crea la imagen) */
+    .example-image-container img {
+      max-width: 188px;
+      max-height: 256px;
+      display: block;
+      transition: all 0.3s ease;
+    }
+    /* Estados de ampliación: forzamos con !important para sobrescribir los estilos inline */
+    .enlarged {
+      display: block;
+      margin: 0 auto;
+      max-width: 775px !important;  /* Amplía hasta 775px de ancho */
+      max-height: 378px !important; /* y 378px de alto */
+      cursor: zoom-in;
+    }
+    .further-enlarged {
+      display: block;
+      margin: 0 auto;
+      max-width: 1550px !important; /* Doble tamaño: 1550px de ancho */
+      max-height: 756px !important; /* 756px de alto */
+      cursor: zoom-out;
+    }
+
+    /* Estilos para los botones de reordenamiento */
+    .reorder-btn {
+      display: none;
+      margin-left: 5px;
+      padding: 2px 6px;
+      font-size: 12px;
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .reorder-btn:hover:not(:disabled) {
+      background-color: #ff00ff;
+      color: #ffffff;
+    }
+    .reorder-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Mensajes de guardado */
+    .save-message {
+      color: green;
+      font-size: 14px;
+      margin-top: 5px;
+      font-family: 'Open Sans', sans-serif;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="mainContainer">
+    <!-- BLOQUE PRINCIPAL -->
+    <div class="bloque-principal">
+      <h2 contenteditable="false">CARGANDO  PÁGINA...</h2>
+    </div>
+    <!-- CONTENEDOR DEL MENÚ -->
+    <div id="blockNavContainer">
+      <h2 id="blockNavTitle" contenteditable="false"></h2>
+      
+      <!-- Botón para personalizar el título (solo visible en modo edición) -->
+      <button id="customize-title-btn" class="boton-estilo" style="display:none; margin: 0 auto 10px;">Personalizar Texto</button>
+      
+      <!-- Panel de opciones de estilo para el título (oculto por defecto) -->
+      <div class="title-style-options">
+        <h3>Personaliza el texto "LISTADO DE ESTILOS"</h3>
+        
+        <div class="style-option">
+          <label for="title-font">Fuente:</label>
+          <select id="title-font">
+            <option value="'Rubik Doodle Shadow', cursive">Rubik Doodle Shadow</option>
+            <option value="'Open Sans', sans-serif">Open Sans</option>
+            <option value="'Roboto', sans-serif">Roboto</option>
+            <option value="'Merriweather', serif">Merriweather</option>
+          </select>
+        </div>
+        
+        <div class="style-option">
+          <label for="title-size">Tamaño (px):</label>
+          <input type="number" id="title-size" min="16" max="48" value="28">
+        </div>
+        
+        <div class="style-option">
+          <label for="title-color">Color del texto:</label>
+          <input type="color" id="title-color" value="#000000">
+        </div>
+        
+        <div class="style-option">
+          <label for="title-bg-color">Color de fondo:</label>
+          <input type="color" id="title-bg-color" value="#ffffff">
+        </div>
+        
+        <div class="style-option">
+          <label for="title-border-color">Color del borde:</label>
+          <input type="color" id="title-border-color" value="">
+        </div>
+        
+        <button class="boton-estilo" id="apply-title-styles" style="margin-top: 15px; background-color: #4CAF50; color: white;">
+          Aplicar Cambios
+        </button>
+      </div>
+      
+      <nav id="blockNav"></nav>
+    </div>
+  </div>
+
+  <!-- BOTONES FIJOS -->
+  <button class="boton-estilo" id="edit-mode-btn">Activar Modo Edición</button>
+  <button class="boton-estilo add-block-btn" onclick="addBlock()" style="display:none;">AÑADIR BLOQUE</button>
+  <button class="boton-estilo change-bg-btn" onclick="document.getElementById('bgInput').click()" style="display:none;">CAMBIAR FONDO</button>
+  <button class="boton-estilo" id="backToTop">Inicio</button>
+  <input type="file" id="bgInput" accept="image/*">
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let isEditable = false;
+      let validatedPassword = "";
+      const editModeBtn = document.getElementById('edit-mode-btn');
+      const mainTitleElement = document.querySelector('.bloque-principal h2');
+      const blockNavTitleElem = document.getElementById('blockNavTitle');
+      
+      // Elementos para personalización del título
+      const customizeTitleBtn = document.getElementById('customize-title-btn');
+      const titleStyleOptions = document.querySelector('.title-style-options');
+      const applyTitleStylesBtn = document.getElementById('apply-title-styles');
+
+      // Función para validar la contraseña en el servidor
+      async function checkPassword(password) {
+        try {
+          const response = await fetch('validar_password.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password })
+          });
+          if (!response.ok) throw new Error("Error en la petición");
+          const data = await response.json();
+          return data.success;
+        } catch (error) {
+          console.error("Error al validar la contraseña:", error);
+          return false;
+        }
+      }
+      
+      // Función para configurar eventos de personalización del título
+      function setupTitleCustomization() {
+        // Mostrar/ocultar panel de opciones al hacer clic en el botón
+        customizeTitleBtn.addEventListener('click', function() {
+          // Toggle del panel de opciones
+          const isVisible = titleStyleOptions.style.display === 'block';
+          titleStyleOptions.style.display = isVisible ? 'none' : 'block';
+          customizeTitleBtn.textContent = isVisible ? 'Personalizar Texto' : 'Ocultar Opciones';
+        });
+        
+        // Aplicar estilos al hacer clic en el botón
+        applyTitleStylesBtn.addEventListener('click', function() {
+          // Obtener valores seleccionados
+          const fontFamily = document.getElementById('title-font').value;
+          const fontSize = document.getElementById('title-size').value + 'px';
+          const textColor = document.getElementById('title-color').value;
+          const bgColor = document.getElementById('title-bg-color').value;
+          const borderColor = document.getElementById('title-border-color').value;
+          
+          // Aplicar estilos al título
+          blockNavTitleElem.style.fontFamily = fontFamily;
+          blockNavTitleElem.style.fontSize = fontSize;
+          blockNavTitleElem.style.color = textColor;
+          blockNavTitleElem.style.backgroundColor = hexToRgba(bgColor, 0.7); // Semitransparente
+          blockNavTitleElem.style.borderColor = borderColor;
+          
+          // Guardar los estilos
+          saveData();
+          
+          // Mostrar mensaje de confirmación
+          alert('Estilos aplicados correctamente');
+        });
+      }
+      
+      // Función para convertir color hex a rgba (para transparencia)
+      function hexToRgba(hex, alpha = 1) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+
+      // ===== 1. CARGAR DATOS INICIALES =====
+      async function loadInitialData() {
+        try {
+          const response = await fetch('load_state.php?t=' + Date.now());
+          const data = await response.json();
+          if(data) {
+            document.body.style.backgroundImage = data.background || '';
+            mainTitleElement.textContent = data.mainTitle || 'TEXTO PRINCIPAL';
+            blockNavTitleElem.textContent = data.blockNavTitle || 'LISTADO DE ESTILOS';
+            
+            // Cargar estilos guardados del título si existen
+            if(data.titleStyles) {
+              blockNavTitleElem.style.fontFamily = data.titleStyles.fontFamily || '';
+              blockNavTitleElem.style.fontSize = data.titleStyles.fontSize || '';
+              blockNavTitleElem.style.color = data.titleStyles.color || '';
+              blockNavTitleElem.style.backgroundColor = data.titleStyles.backgroundColor || '';
+              blockNavTitleElem.style.borderColor = data.titleStyles.borderColor || '';
+              
+              // Actualizar los valores en el panel de opciones
+              if(document.getElementById('title-font')) {
+                const fontSelect = document.getElementById('title-font');
+                const fontValue = data.titleStyles.fontFamily;
+                
+                // Buscar la opción que coincide con la fuente guardada
+                for(let i = 0; i < fontSelect.options.length; i++) {
+                  if(fontSelect.options[i].value === fontValue) {
+                    fontSelect.selectedIndex = i;
+                    break;
+                  }
+                }
+                
+                // Tamaño (quitar 'px' para obtener solo el número)
+                const sizeValue = data.titleStyles.fontSize;
+                if(sizeValue && document.getElementById('title-size')) {
+                  document.getElementById('title-size').value = parseInt(sizeValue) || 28;
+                }
+                
+                // Colores
+                if(data.titleStyles.color && document.getElementById('title-color')) {
+                  document.getElementById('title-color').value = data.titleStyles.color;
+                }
+                
+                // Extraer color de fondo de rgba (si existe)
+                const bgColor = data.titleStyles.backgroundColor;
+                if(bgColor && document.getElementById('title-bg-color')) {
+                  // Intentar extraer valores RGB de rgba()
+                  const rgbaMatch = bgColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/);
+                  if(rgbaMatch) {
+                    const r = parseInt(rgbaMatch[1]).toString(16).padStart(2, '0');
+                    const g = parseInt(rgbaMatch[2]).toString(16).padStart(2, '0');
+                    const b = parseInt(rgbaMatch[3]).toString(16).padStart(2, '0');
+                    document.getElementById('title-bg-color').value = `#${r}${g}${b}`;
+                  }
+                }
+                
+                // Color del borde
+                if(data.titleStyles.borderColor && document.getElementById('title-border-color')) {
+                  document.getElementById('title-border-color').value = data.titleStyles.borderColor;
+                }
+              }
+            }
+            
+            data.blocks.forEach((block, idx) => {
+              createBlockFromData(block, idx+1);
+            });
+            updateBlockNav();
+          }
+        } catch(error) {
+          console.log('Carga inicial sin datos guardados');
+        }
+        
+        // Inicializar la personalización del título
+        setupTitleCustomization();
+      }
+
+      loadInitialData();
+
+      // ===== 2. CONTROL MODO EDICIÓN =====
+      editModeBtn.addEventListener('click', async function() {
+        if(!isEditable) {
+          const password = prompt('Contraseña para editar:');
+          if(password === null) return;
+          const isValid = await checkPassword(password);
+          if(isValid) {
+            isEditable = true;
+            validatedPassword = password;
+            setupMode(true);
+            editModeBtn.textContent = 'Guardar y Salir';
+          } else {
+            alert('Contraseña incorrecta.');
+          }
+        } else {
+          const confirmar = confirm('¿Guardar cambios antes de salir?');
+          if(confirmar) {
+            await saveData();
+            alert('¡Cambios guardados correctamente!');
+          }
+          isEditable = false;
+          setupMode(false);
+          editModeBtn.textContent = 'Activar Modo Edición';
+          updateBlockNav();
+        }
+      });
+
+      // Añadir el evento del botón "Volver al inicio" FUERA del evento anterior
+      document.getElementById('backToTop').addEventListener('click', function() {
+        window.scrollTo(0, 0); // Sin opciones adicionales para que sea instantáneo
+      });
+
+      // ===== 3. CONFIGURAR INTERFAZ (MODO EDICIÓN/VISIÓN) =====
+      function setupMode(editMode) {
+        document.querySelectorAll('.add-block-btn, .change-bg-btn').forEach(btn => {
+          btn.style.display = editMode ? 'block' : 'none';
+        });
+        
+        // Configurar títulos editables
+        mainTitleElement.contentEditable = editMode;
+        blockNavTitleElem.contentEditable = editMode;
+        document.querySelectorAll('.bloque-titulo h2').forEach(h2 => {
+          h2.contentEditable = editMode;
+        });
+        
+        // Configurar subgrupos editables
+        document.querySelectorAll('.subgrupo h3').forEach(h3 => {
+          h3.contentEditable = editMode;
+        });
+        
+        // Configurar botones visibles solo en modo edición
+        document.querySelectorAll('.delete-block-btn, .delete-subgrupo-btn, .add-subgrupo-btn').forEach(btn => {
+          btn.style.display = editMode ? 'inline-block' : 'none';
+        });
+        
+        // Mostrar u ocultar botones de imagen sólo en modo edición
+        document.querySelectorAll('.upload-image-btn').forEach(btn => {
+          btn.style.display = editMode ? 'inline-block' : 'none';
+        });
+        document.querySelectorAll('.delete-image-btn').forEach(btn => {
+          btn.style.display = editMode ? 'inline-block' : 'none';
+        });
+        
+        // Mostrar u ocultar botones de reordenamiento
+        document.querySelectorAll('.reorder-btn').forEach(btn => {
+          btn.style.display = editMode ? 'inline-block' : 'none';
+        });
+        
+        // Mostrar u ocultar botones de descripción y hacer los textarea editables
+        document.querySelectorAll('.add-description-btn, .edit-description-btn').forEach(btn => {
+          btn.style.display = editMode ? 'inline-block' : 'none';
+        });
+        
+        // Actualizar textareas - importante aplicar DESPUÉS de que se muestre/oculte el contenedor
+        document.querySelectorAll('.bloque-descripcion textarea').forEach(textarea => {
+          textarea.readOnly = !editMode;
+          // Forzar el enfoque para hacerlo editable si está visible
+          if (editMode && getComputedStyle(textarea.parentNode).display !== 'none') {
+            setTimeout(() => {
+              textarea.focus();
+              textarea.blur();
+            }, 100);
+          }
+        });
+        
+        // Mostrar u ocultar los bloques de descripción según el modo
+        document.querySelectorAll('.bloque-descripcion').forEach(bloque => {
+          if (editMode) {
+            bloque.style.display = 'block';
+          } else {
+            // No ocultamos la descripción, solo la mantenemos en el DOM para los popups
+            // pero la hacemos invisible para no afectar la vista
+            bloque.style.display = 'none';
+          }
+        });
+        
+        // Mostrar u ocultar botón de personalización del título y ocultar panel de opciones si sale del modo edición
+        customizeTitleBtn.style.display = editMode ? 'block' : 'none';
+        if (!editMode) {
+          titleStyleOptions.style.display = 'none';
+        }
+        
+        // Mostrar u ocultar botones de guardar subgrupos
+        document.querySelectorAll('#guardar-subgrupos-btn').forEach(btn => {
+          btn.style.display = editMode ? 'block' : 'none';
+        });
+      }
+
+      // ===== 4. AÑADIR BLOQUE (CORREGIDO) =====
+      window.addBlock = function() {
+        const blockData = {
+          title: "Nuevo Bloque",
+          subgroups: ["Nuevo Subgrupo"],
+          exampleImages: [],
+          description: "" // Añadimos un campo para la descripción
+        };
+        
+        // Crear el bloque y obtener el número asignado
+        const blockIndex = document.querySelectorAll('.bloque-titulo').length + 1;
+        createBlockFromData(blockData, blockIndex);
+        
+        // Actualizamos el menú de navegación
+        updateBlockNav();
+        
+        // Aseguramos que los elementos del nuevo bloque sean editables si estamos en modo edición
+        if (isEditable) {
+          const lastTitleBlock = document.querySelector('.bloque-titulo:last-child');
+          if (lastTitleBlock) {
+            // Hacer editable el título
+            const titleH2 = lastTitleBlock.querySelector('h2');
+            if (titleH2) {
+              titleH2.contentEditable = true;
+            }
+            
+            // Hacer editables los subgrupos
+            const subgroupsContainer = document.querySelector('.bloque-subgrupos:last-child');
+            if (subgroupsContainer) {
+              const subgroupH3s = subgroupsContainer.querySelectorAll('.subgrupo h3');
+              subgroupH3s.forEach(h3 => {
+                h3.contentEditable = true;
+              });
+              
+              // Hacer visibles los botones de control
+              const controlButtons = subgroupsContainer.querySelectorAll('.delete-subgrupo-btn, .add-subgrupo-btn');
+              controlButtons.forEach(btn => {
+                btn.style.display = 'inline-block';
+              });
+              
+              // Mostrar botón de guardar
+              const guardarBtn = subgroupsContainer.querySelector('#guardar-subgrupos-btn');
+              if (guardarBtn) {
+                guardarBtn.style.display = 'block';
+              }
+            }
+            
+            // Configurar la descripción
+            const descriptionBlock = lastTitleBlock.nextElementSibling;
+            if (descriptionBlock && descriptionBlock.classList.contains('bloque-descripcion')) {
+              descriptionBlock.style.display = 'block';
+              const addDescBtn = descriptionBlock.querySelector('.add-description-btn');
+              if (addDescBtn) {
+                addDescBtn.style.display = 'inline-block';
+              }
+            }
+            
+            // Hacer visible el botón de eliminar bloque
+            const deleteBlockBtn = lastTitleBlock.querySelector('.delete-block-btn');
+            if (deleteBlockBtn) {
+              deleteBlockBtn.style.display = 'inline-block';
+            }
+          }
+        }
+        
+        // Después de crear el bloque, desplazamos la página hacia él
+        const newBlock = document.querySelector('.bloque-titulo:last-child');
+        if (newBlock) {
+          newBlock.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      // ===== FUNCIÓN PARA CREAR CONTENEDORES DE CADA BLOQUE (CORREGIDA) =====
+      function createBlockFromData(block, index = null) {
+        // 1. Contenedor del título
+        const titleContainer = document.createElement('div');
+        titleContainer.className = 'bloque-titulo';
+        if (index !== null) {
+          titleContainer.id = 'block-' + index;
+        }
+        titleContainer.innerHTML = `
+          <h2 contenteditable="${isEditable}">${block.title}</h2>
+          <button class="boton-estilo delete-block-btn" onclick="deleteBlock(this)" style="display:${isEditable ? 'inline-block' : 'none'};">ELIMINAR BLOQUE</button>
+        `;
+
+        // 2. Contenedor para la descripción (nuevo)
+        const descriptionContainer = document.createElement('div');
+        descriptionContainer.className = 'bloque-descripcion';
+        
+        // Si ya existe una descripción la mostramos, si no añadimos el botón para añadirla
+        if (block.description) {
+          descriptionContainer.innerHTML = `
+            <textarea style="width: 100%; min-height: 100px;" ${isEditable ? '' : 'readonly'}>${block.description}</textarea>
+            <button class="boton-estilo edit-description-btn" onclick="updateDescription(this)" style="display:${isEditable ? 'inline-block' : 'none'};">ACTUALIZAR DESCRIPCIÓN</button>
+          `;
+          
+          descriptionContainer.style.display = isEditable ? 'block' : 'none';
+        } else {
+          descriptionContainer.innerHTML = `
+            <button class="boton-estilo add-description-btn" onclick="addDescription(this)" style="display:${isEditable ? 'inline-block' : 'none'};">AÑADIR DESCRIPCIÓN</button>
+          `;
+          descriptionContainer.style.display = isEditable ? 'block' : 'none';
+        }
+
+        // 3. Contenedor para imagen de ejemplo
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'bloque-imagen';
+        if(block.exampleImages && block.exampleImages.length > 0) {
+          let imagesHTML = "";
+          block.exampleImages.forEach(src => {
+            imagesHTML += `<div class="example-image-container">
+                              <img src="${src}" style="max-width:188px; max-height:256px; display:block;">
+                              <button class="boton-estilo delete-image-btn" onclick="this.parentNode.remove()" style="display:${isEditable ? 'inline-block' : 'none'};">Eliminar Imagen</button>
+                            </div>`;
+          });
+          imageContainer.innerHTML = `
+            <button class="boton-estilo upload-image-btn" style="display:${isEditable ? 'inline-block' : 'none'};">Subir Imagen</button>
+            <input type="file" class="image-input" accept="image/*" style="display:none;">
+            <div class="image-display">${imagesHTML}</div>
+          `;
+          // Asignar event listeners a cada imagen cargada desde el servidor:
+          const imgs = imageContainer.querySelectorAll('.example-image-container img');
+          imgs.forEach(imgElem => {
+            imgElem.addEventListener('mouseenter', function() {
+              if (!imgElem.classList.contains('further-enlarged')) {
+                imgElem.classList.add('enlarged');
+              }
+            });
+            imgElem.addEventListener('mouseleave', function() {
+              imgElem.classList.remove('enlarged');
+              imgElem.classList.remove('further-enlarged');
+            });
+            imgElem.addEventListener('click', function(e) {
+              e.stopPropagation();
+              if (imgElem.classList.contains('enlarged') && !imgElem.classList.contains('further-enlarged')) {
+                imgElem.classList.remove('enlarged');
+                imgElem.classList.add('further-enlarged');
+              } else if (imgElem.classList.contains('further-enlarged')) {
+                imgElem.classList.remove('further-enlarged');
+                imgElem.classList.add('enlarged');
+              }
+            });
+          });
+        } else {
+          imageContainer.innerHTML = `
+            <button class="boton-estilo upload-image-btn" style="display:${isEditable ? 'inline-block' : 'none'};">Subir Imagen</button>
+            <input type="file" class="image-input" accept="image/*" style="display:none;">
+            <div class="image-display"></div>
+          `;
+        }
+
+        // Configurar eventos para subir imágenes
+        const uploadButton = imageContainer.querySelector('.upload-image-btn');
+        const fileInput = imageContainer.querySelector('.image-input');
+        uploadButton.addEventListener('click', function(){
+          if(isEditable) {
+            fileInput.click();
+          }
+        });
+        fileInput.addEventListener('change', function(){
+          const file = this.files[0];
+          if(file){
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const displayDiv = imageContainer.querySelector('.image-display');
+              const existingImages = displayDiv.querySelectorAll('.example-image-container').length;
+              if(existingImages < 3){
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'example-image-container';
+                const imgElem = document.createElement('img');
+                imgElem.src = e.target.result;
+                imgElem.style.maxWidth = "188px";
+                imgElem.style.maxHeight = "256px";
+                imgElem.style.display = "block";
+                // Eventos para ampliar imagen
+                imgElem.addEventListener('mouseenter', function() {
+                  if (!imgElem.classList.contains('further-enlarged')) {
+                    imgElem.classList.add('enlarged');
+                  }
+                });
+                imgElem.addEventListener('mouseleave', function() {
+                  imgElem.classList.remove('enlarged');
+                  imgElem.classList.remove('further-enlarged');
+                });
+                imgElem.addEventListener('click', function(e) {
+                  e.stopPropagation();
+                  if (imgElem.classList.contains('enlarged') && !imgElem.classList.contains('further-enlarged')) {
+                    imgElem.classList.remove('enlarged');
+                    imgElem.classList.add('further-enlarged');
+                  } else if (imgElem.classList.contains('further-enlarged')) {
+                    imgElem.classList.remove('further-enlarged');
+                    imgElem.classList.add('enlarged');
+                  }
+                });
+                const delBtn = document.createElement('button');
+                delBtn.className = "boton-estilo delete-image-btn";
+                delBtn.textContent = "Eliminar Imagen";
+                delBtn.style.display = isEditable ? "inline-block" : "none";
+                delBtn.addEventListener('click', function(){
+                  imgDiv.remove();
+                });
+                imgDiv.appendChild(imgElem);
+                imgDiv.appendChild(delBtn);
+                displayDiv.appendChild(imgDiv);
+              } else {
+                alert("Máximo de 3 imágenes alcanzado");
+              }
+            }
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // 4. Contenedor para subgrupos
+        const subgroupsContainer = document.createElement('div');
+        subgroupsContainer.className = 'bloque-subgrupos';
+        let subgroupsHTML = "";
+        block.subgroups.forEach(sub => {
+          subgroupsHTML += `
+            <div class="subgrupo">
+              <button class="boton-estilo copy-btn" onclick="copySubgroupText(this.parentNode.querySelector('h3'))">COPIAR PROMT</button>
+              <h3 contenteditable="${isEditable}">${sub}</h3>
+              <button class="boton-estilo copy-btn" onclick="copySubgroupText(this.parentNode.querySelector('h3'))">COPIAR PROMT</button>
+              <button class="boton-estilo delete-subgrupo-btn" onclick="deleteSubgrupo(this)" style="display:${isEditable ? 'inline-block' : 'none'};">ELIMINAR SUBGRUPO</button>
+            </div>
+          `;
+        });
+        
+        // Botón para añadir subgrupos
+        subgroupsHTML += `
+          <button class="boton-estilo add-subgrupo-btn" onclick="addSubgrupo(this)" style="display:${isEditable ? 'inline-block' : 'none'};">AÑADIR SUBGRUPO</button>
+        `;
+        
+        // Añadir un botón global de guardado para todos los subgrupos
+        subgroupsHTML += `
+          <button class="boton-estilo" style="background-color: #4CAF50; color: white; margin-top: 20px; display: ${isEditable ? 'block' : 'none'};"
+                  onclick="guardarSubgrupos(this)" id="guardar-subgrupos-btn">
+            ➤ GUARDAR TODOS LOS TEXTOS
+          </button>
+          <div class="save-message" style="display: none;"></div>
+        `;
+        
+        subgroupsContainer.innerHTML = subgroupsHTML;
+
+        // Insertar contenedores en orden: título, descripción, imagen, subgrupos
+        const container = document.getElementById('mainContainer');
+        container.appendChild(titleContainer);
+        container.appendChild(descriptionContainer); // Insertar descripción después del título
+        container.appendChild(imageContainer);
+        container.appendChild(subgroupsContainer);
+      }
+      
+      // ===== NUEVA FUNCIÓN PARA GUARDAR SUBGRUPOS =====
+      window.guardarSubgrupos = function(button) {
+        const bloqueSubgrupos = button.closest('.bloque-subgrupos');
+        const saveMessage = bloqueSubgrupos.querySelector('.save-message');
+        
+        // Mostrar mensaje de guardado
+        saveMessage.textContent = "Guardando cambios...";
+        saveMessage.style.display = "block";
+        saveMessage.style.color = "blue";
+        
+        // Ejecutar el guardado
+        saveData().then(() => {
+          // Mostrar confirmación de éxito
+          saveMessage.textContent = "✓ Cambios guardados correctamente";
+          saveMessage.style.color = "green";
+          
+          // Ocultar mensaje después de 3 segundos
+          setTimeout(() => {
+            saveMessage.style.display = "none";
+          }, 3000);
+        }).catch(error => {
+          // Mostrar mensaje de error
+          saveMessage.textContent = "✗ Error al guardar: " + error.message;
+          saveMessage.style.color = "red";
+        });
+      };
+
+      // ===== NUEVA FUNCIÓN PARA AÑADIR DESCRIPCIÓN (CORREGIDA) =====
+      window.addDescription = function(button) {
+        // Buscar el contenedor de descripción (que ya contiene el botón)
+        const descContainer = button.closest('.bloque-descripcion');
+        
+        // Reemplazar el contenido con un textarea y botón de actualización
+        descContainer.innerHTML = `
+          <textarea placeholder="Escribe aquí la descripción del bloque..." style="width: 100%; min-height: 100px;"></textarea>
+          <button class="boton-estilo edit-description-btn" onclick="updateDescription(this)">ACTUALIZAR DESCRIPCIÓN</button>
+        `;
+        
+        // Enfocar el textarea para que sea más fácil empezar a escribir
+        const textarea = descContainer.querySelector('textarea');
+        textarea.readOnly = false;
+        setTimeout(() => {
+          textarea.focus();
+        }, 100);
+      };
+
+      // ===== NUEVA FUNCIÓN PARA ACTUALIZAR DESCRIPCIÓN =====
+      window.updateDescription = function(button) {
+        const descContainer = button.closest('.bloque-descripcion');
+        const textarea = descContainer.querySelector('textarea');
+        
+        // Actualizar la descripción en el DOM
+        if (textarea.value.trim() === '') {
+          if (confirm('La descripción está vacía. ¿Desea eliminarla?')) {
+            // Reemplazar con el botón para añadir descripción
+            descContainer.innerHTML = `
+              <button class="boton-estilo add-description-btn" onclick="addDescription(this)" style="display:inline-block;">AÑADIR DESCRIPCIÓN</button>
+            `;
+          }
+        } else {
+          alert('Descripción actualizada');
+        }
+        
+        // Los cambios se guardarán cuando se guarde todo el contenido
+        saveData(); // Guardar los cambios inmediatamente
+        updateBlockNav(); // Actualizar la navegación para reflejar los cambios
+      };
+
+      // ===== 5. AÑADIR SUBGRUPO (CORREGIDO) =====
+      window.addSubgrupo = function(button) {
+        const newSubgrupo = document.createElement('div');
+        newSubgrupo.className = 'subgrupo';
+        newSubgrupo.innerHTML = `
+          <button class="boton-estilo copy-btn" onclick="copySubgroupText(this.parentNode.querySelector('h3'))">COPIAR PROMT</button>
+          <h3 contenteditable="true">Nuevo Subgrupo</h3>
+          <button class="boton-estilo copy-btn" onclick="copySubgroupText(this.parentNode.querySelector('h3'))">COPIAR PROMT</button>
+          <button class="boton-estilo delete-subgrupo-btn" onclick="deleteSubgrupo(this)" style="display:${isEditable ? 'inline-block' : 'none'};">ELIMINAR SUBGRUPO</button>
+        `;
+        button.parentNode.insertBefore(newSubgrupo, button);
+        
+        // Asegurar que el nuevo subgrupo sea editable
+        const h3 = newSubgrupo.querySelector('h3');
+        if (h3) {
+          h3.contentEditable = true;
+          // Dar foco al nuevo elemento para editar
+          setTimeout(() => {
+            h3.focus();
+          }, 100);
+        }
+      };
+
+      // ===== 6. ELIMINAR BLOQUE =====
+      window.deleteBlock = function(btn) {
+        if(!confirm('¿Seguro que quieres eliminar este bloque?')) return;
+        const titleContainer = btn.closest('.bloque-titulo');
+        if(!titleContainer) return;
+        
+        // Eliminar también el contenedor de descripción
+        const nextElement = titleContainer.nextElementSibling;
+        if(nextElement && nextElement.classList.contains('bloque-descripcion')) {
+          nextElement.remove();
+        }
+        
+        const imageContainer = titleContainer.nextElementSibling;
+        const subgroupsContainer = imageContainer ? imageContainer.nextElementSibling : null;
+        if(subgroupsContainer && subgroupsContainer.classList.contains('bloque-subgrupos')) {
+          subgroupsContainer.remove();
+        }
+        if(imageContainer && imageContainer.classList.contains('bloque-imagen')) {
+          imageContainer.remove();
+        }
+        titleContainer.remove();
+        updateBlockNav();
+      };
+
+      // ===== 7. ELIMINAR SUBGRUPO =====
+      window.deleteSubgrupo = function(btn) {
+        if(!confirm('¿Seguro que quieres eliminar este subgrupo?')) return;
+        const subgrupo = btn.closest('.subgrupo');
+        if(subgrupo) subgrupo.remove();
+      };
+
+      // ===== 8. GUARDAR DATOS - FUNCIÓN CORREGIDA =====
+      async function saveData() {
+        const titleBlocks = document.querySelectorAll('.bloque-titulo');
+        const blocksData = [];
+        
+        titleBlocks.forEach((tb, index) => {
+          const title = tb.querySelector('h2').textContent;
+          
+          // Obtener la descripción
+          let description = "";
+          const descriptionContainer = tb.nextElementSibling;
+          if(descriptionContainer && descriptionContainer.classList.contains('bloque-descripcion')) {
+            const textarea = descriptionContainer.querySelector('textarea');
+            if(textarea) description = textarea.value;
+          }
+          
+          // Obtener las imágenes (ahora es el elemento después del contenedor de descripción)
+          let imageContainer;
+          if(descriptionContainer && descriptionContainer.classList.contains('bloque-descripcion')) {
+            imageContainer = descriptionContainer.nextElementSibling;
+          } else {
+            imageContainer = tb.nextElementSibling;
+          }
+            
+          let exampleImages = [];
+          if(imageContainer && imageContainer.classList.contains('bloque-imagen')) {
+            const imgs = imageContainer.querySelectorAll('.example-image-container img');
+            imgs.forEach(img => {
+              exampleImages.push(img.src);
+            });
+          }
+          
+          // Obtener los subgrupos
+          let subgroupsContainer;
+          if(imageContainer && imageContainer.classList.contains('bloque-imagen')) {
+            subgroupsContainer = imageContainer.nextElementSibling;
+          } else if(descriptionContainer && descriptionContainer.classList.contains('bloque-descripcion')) {
+            subgroupsContainer = descriptionContainer.nextElementSibling;
+          } else {
+            subgroupsContainer = tb.nextElementSibling;
+          }
+          
+          let subgroups = [];
+          if(subgroupsContainer && subgroupsContainer.classList.contains('bloque-subgrupos')) {
+            // AQUÍ ESTÁ EL CAMBIO CLAVE: Ahora obtenemos el innerHTML completo, que preserva todo el formato
+            subgroups = Array.from(subgroupsContainer.querySelectorAll('.subgrupo h3'))
+                              .map(h3 => h3.innerHTML);
+          }
+          
+          // Añadir los datos del bloque incluso si faltan algunos componentes
+          blocksData.push({ title, description, exampleImages, subgroups });
+        });
+        
+        // Obtener los estilos del título
+        const titleStyles = {
+          fontFamily: blockNavTitleElem.style.fontFamily || '',
+          fontSize: blockNavTitleElem.style.fontSize || '',
+          color: blockNavTitleElem.style.color || '',
+          backgroundColor: blockNavTitleElem.style.backgroundColor || '',
+          borderColor: blockNavTitleElem.style.borderColor || ''
+        };
+
+        const dataToSave = {
+          password: validatedPassword,
+          mainTitle: mainTitleElement.textContent,
+          blockNavTitle: blockNavTitleElem.textContent,
+          titleStyles: titleStyles, // Añadir esto para guardar estilos del título
+          background: document.body.style.backgroundImage,
+          blocks: blocksData
+        };
+
+        try {
+          const response = await fetch('guardar_cambios.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dataToSave)
+          });
+          
+          if(!response.ok) {
+            const errorText = await response.text();
+            console.error('Respuesta del servidor:', errorText);
+            throw new Error('Error en guardado');
+          }
+          
+          console.log('Cambios guardados correctamente');
+          return true;
+        } catch(error) {
+          console.error('Error al guardar:', error.message);
+          throw error;
+        }
+      }
+
+      // ===== 9. CAMBIAR FONDO =====
+      document.getElementById('bgInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(file && isEditable) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            document.body.style.backgroundImage = `url('${e.target.result}')`;
+            saveData();
+          }
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // ===== 10. ACTUALIZAR MENÚ DE BLOQUES EN DOS COLUMNAS =====
+      function updateBlockNav() {
+        const blockNav = document.getElementById('blockNav');
+        blockNav.innerHTML = "";
+        
+        // Crear las dos columnas
+        const leftColumn = document.createElement('div');
+        leftColumn.className = 'navColumn';
+        const leftOl = document.createElement('ol'); // Usamos ol (ordered list) en lugar de ul
+        leftColumn.appendChild(leftOl);
+        
+        const rightColumn = document.createElement('div');
+        rightColumn.className = 'navColumn';
+        const rightOl = document.createElement('ol'); // Usamos ol (ordered list) en lugar de ul
+        rightColumn.appendChild(rightOl);
+        
+        // Obtener todos los bloques
+        const titleBlocks = document.querySelectorAll('.bloque-titulo');
+        const totalBlocks = titleBlocks.length;
+        const middleIndex = Math.ceil(totalBlocks / 2);
+        
+        // Configurar el atributo start para la segunda lista
+        rightOl.setAttribute('start', middleIndex + 1);
+        
+        // Distribuir los elementos equitativamente
+        titleBlocks.forEach((tb, index) => {
+          if (!tb.id) {
+            tb.id = 'block-' + (index + 1);
+          }
+          
+          const title = tb.querySelector('h2').textContent;
+          const li = document.createElement('li');
+          li.style.position = 'relative'; // Para posicionamiento absoluto de popup
+          
+          // Contenedor para el enlace y los botones
+          const itemContainer = document.createElement('div');
+          itemContainer.style.display = 'flex';
+          itemContainer.style.alignItems = 'center';
+          
+          // Enlace al bloque
+          const a = document.createElement('a');
+          a.href = '#' + tb.id;
+          a.textContent = title || ('Bloque ' + (index + 1));
+          a.style.flexGrow = '1';
+          
+          // Obtener la descripción si existe
+          let description = "";
+          const descriptionContainer = tb.nextElementSibling;
+          if(descriptionContainer && descriptionContainer.classList.contains('bloque-descripcion')) {
+            const textarea = descriptionContainer.querySelector('textarea');
+            if(textarea) description = textarea.value;
+          }
+          
+          // Si hay descripción, añadir el popup
+          if(description && description.trim() !== '') {
+            const popup = document.createElement('div');
+            popup.className = 'description-popup';
+            
+            // Decidir la posición según la columna
+            if (index < middleIndex) {
+              popup.classList.add('left-column-popup'); // Popup de columna izquierda va a la derecha
+            } else {
+              popup.classList.add('right-column-popup'); // Popup de columna derecha va a la izquierda
+            }
+            
+            // Mantener el texto exactamente como está en el textarea (con sus saltos de línea)
+            popup.textContent = description;
+            li.appendChild(popup);
+            
+            // Configurar el evento de hover para ajustar automáticamente la posición vertical
+            a.addEventListener('mouseenter', function() {
+              popup.style.display = 'block';
+              
+              // Calcular si el popup se sale de la pantalla por abajo
+              const popupRect = popup.getBoundingClientRect();
+              const viewportHeight = window.innerHeight;
+              
+              if (popupRect.bottom > viewportHeight) {
+                // Calcular la cantidad que se sale
+                const overflow = popupRect.bottom - viewportHeight;
+                // Ajustar la posición vertical
+                popup.style.top = `-${overflow + 20}px`; // +20px para un poco de margen
+              } else {
+                popup.style.top = '0'; // Restaurar la posición original
+              }
+            });
+            
+            a.addEventListener('mouseleave', function() {
+              popup.style.display = 'none';
+            });
+          }
+          
+          // Botones de reordenamiento (ocultos por defecto)
+          const btnUp = document.createElement('button');
+          btnUp.innerHTML = '&#9650;'; // Triángulo hacia arriba
+          btnUp.className = 'reorder-btn';
+          btnUp.title = 'Subir bloque';
+          btnUp.style.display = isEditable ? 'inline-block' : 'none';
+          btnUp.disabled = index === 0; // Deshabilitar para el primer elemento
+          btnUp.onclick = function(e) {
+            e.preventDefault();
+            moveBlock(index, -1);
+          };
+          
+          const btnDown = document.createElement('button');
+          btnDown.innerHTML = '&#9660;'; // Triángulo hacia abajo
+          btnDown.className = 'reorder-btn';
+          btnDown.title = 'Bajar bloque';
+          btnDown.style.display = isEditable ? 'inline-block' : 'none';
+          btnDown.disabled = index === titleBlocks.length - 1; // Deshabilitar para el último elemento
+          btnDown.onclick = function(e) {
+            e.preventDefault();
+            moveBlock(index, 1);
+          };
+          
+          // Añadir elementos al contenedor
+          itemContainer.appendChild(a);
+          itemContainer.appendChild(btnUp);
+          itemContainer.appendChild(btnDown);
+          li.appendChild(itemContainer);
+          
+          // Distribuir entre columnas izquierda y derecha
+          if (index < middleIndex) {
+            leftOl.appendChild(li);
+          } else {
+            rightOl.appendChild(li);
+          }
+        });
+        
+        // Añadir ambas columnas al contenedor de navegación
+        blockNav.appendChild(leftColumn);
+        blockNav.appendChild(rightColumn);
+      }
+      
+      // ===== 11. FUNCIÓN MEJORADA PARA MOVER BLOQUES =====
+      window.moveBlock = function(currentIndex, direction) {
+        // Obtener todos los bloques de título
+        const titleBlocks = Array.from(document.querySelectorAll('.bloque-titulo'));
+        if (currentIndex < 0 || currentIndex >= titleBlocks.length) return;
+        
+        const newIndex = currentIndex + direction;
+        if (newIndex < 0 || newIndex >= titleBlocks.length) return;
+        
+        const container = document.getElementById('mainContainer');
+        
+        // Obtener el bloque actual y todos sus componentes
+        const currentTitleBlock = titleBlocks[currentIndex];
+        
+        // Encontrar todos los elementos que pertenecen al bloque actual
+        // Esto incluye el título, descripción, imagen y subgrupos
+        const elementsToMove = [];
+        elementsToMove.push(currentTitleBlock);
+        
+        // Obtener el bloque de descripción si existe
+        let current = currentTitleBlock.nextElementSibling;
+        if (current && current.classList.contains('bloque-descripcion')) {
+          elementsToMove.push(current);
+          current = current.nextElementSibling;
+        }
+        
+        // Obtener el bloque de imagen si existe
+        if (current && current.classList.contains('bloque-imagen')) {
+          elementsToMove.push(current);
+          current = current.nextElementSibling;
+        }
+        
+        // Obtener el bloque de subgrupos si existe
+        if (current && current.classList.contains('bloque-subgrupos')) {
+          elementsToMove.push(current);
+        }
+        
+        // Obtener el bloque de título destino
+        const targetTitleBlock = titleBlocks[newIndex];
+        
+        // Obtener todos los elementos que pertenecen al bloque destino
+        const targetElements = [];
+        targetElements.push(targetTitleBlock);
+        
+        // Obtener el bloque de descripción si existe
+        let targetCurrent = targetTitleBlock.nextElementSibling;
+        if (targetCurrent && targetCurrent.classList.contains('bloque-descripcion')) {
+          targetElements.push(targetCurrent);
+          targetCurrent = targetCurrent.nextElementSibling;
+        }
+        
+        // Obtener el bloque de imagen si existe
+        if (targetCurrent && targetCurrent.classList.contains('bloque-imagen')) {
+          targetElements.push(targetCurrent);
+          targetCurrent = targetCurrent.nextElementSibling;
+        }
+        
+        // Obtener el bloque de subgrupos si existe
+        if (targetCurrent && targetCurrent.classList.contains('bloque-subgrupos')) {
+          targetElements.push(targetCurrent);
+        }
+        
+        // Eliminar temporalmente los elementos a mover del DOM
+        const tempContainer = document.createDocumentFragment();
+        elementsToMove.forEach(el => {
+          tempContainer.appendChild(el);
+        });
+        
+        if (direction < 0) { // Mover hacia arriba
+          // Insertar antes del bloque destino
+          container.insertBefore(tempContainer, targetElements[0]);
+        } else { // Mover hacia abajo
+          // Insertar después del último elemento del bloque destino
+          const lastTargetElement = targetElements[targetElements.length - 1];
+          if (lastTargetElement.nextElementSibling) {
+            container.insertBefore(tempContainer, lastTargetElement.nextElementSibling);
+          } else {
+            container.appendChild(tempContainer);
+          }
+        }
+        
+        // Actualizar el menú de navegación
+        updateBlockNav();
+        
+        // Reconfigurar eventos para imágenes después de mover
+        setupImageEvents();
+        
+        // Guardar los cambios automáticamente después de mover
+        saveData();
+      };
+
+      // Función auxiliar para configurar eventos de imágenes después de mover bloques
+      function setupImageEvents() {
+        document.querySelectorAll('.example-image-container img').forEach(imgElem => {
+          imgElem.addEventListener('mouseenter', function() {
+            if (!imgElem.classList.contains('further-enlarged')) {
+              imgElem.classList.add('enlarged');
+            }
+          });
+          imgElem.addEventListener('mouseleave', function() {
+            imgElem.classList.remove('enlarged');
+            imgElem.classList.remove('further-enlarged');
+          });
+          imgElem.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (imgElem.classList.contains('enlarged') && !imgElem.classList.contains('further-enlarged')) {
+              imgElem.classList.remove('enlarged');
+              imgElem.classList.add('further-enlarged');
+            } else if (imgElem.classList.contains('further-enlarged')) {
+              imgElem.classList.remove('further-enlarged');
+              imgElem.classList.add('enlarged');
+            }
+          });
+        });
+        
+        // También reinstalar eventos para botones de subir imágenes
+        document.querySelectorAll('.upload-image-btn').forEach(btn => {
+          const fileInput = btn.nextElementSibling;
+          btn.addEventListener('click', function(){
+            if(isEditable) {
+              fileInput.click();
+            }
+          });
+        });
+      }
+
+      // ===== 12. COPIAR TEXTO DE SUBGRUPO =====
+      window.copySubgroupText = function(h3Elem) {
+        if(!h3Elem) return;
+        const text = h3Elem.textContent;
+        navigator.clipboard.writeText(text)
+          .then(() => alert('Texto copiado al portapapeles'))
+          .catch(err => alert('Error al copiar: ' + err));
+      };
+      
+      // ===== 13. MANEJADOR DE EVENTOS DE PEGADO MEJORADO =====
+      document.addEventListener('paste', function(e) {
+        if (isEditable) {
+          let target = e.target;
+          if ((target.nodeName === 'H3' && target.closest('.subgrupo')) || target.nodeName === 'TEXTAREA') {
+            e.preventDefault();
+            
+            const text = e.clipboardData.getData('text/plain');
+            
+            if (target.nodeName === 'TEXTAREA') {
+              const start = target.selectionStart;
+              const end = target.selectionEnd;
+              const beforeText = target.value.substring(0, start);
+              const afterText = target.value.substring(end);
+              target.value = beforeText + text + afterText;
+              target.selectionStart = target.selectionEnd = start + text.length;
+            } else {
+              const selection = window.getSelection();
+              if (selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                
+                // Crear nodos de texto que preservan las líneas nuevas
+                const lines = text.split('\n');
+                
+                for (let i = 0; i < lines.length; i++) {
+                  if (i > 0) {
+                    range.insertNode(document.createElement('br'));
+                    range.collapse(false);
+                  }
+                  
+                  if (lines[i]) {
+                    const textNode = document.createTextNode(lines[i]);
+                    range.insertNode(textNode);
+                    range.collapse(false);
+                  }
+                }
+                
+                range.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+            }
+          }
+        }
+      });
+
+      // Mostrar botones de guardar subgrupos al cargar inicialmente
+      document.addEventListener('DOMContentLoaded', function() {
+        // Esto se ejecutará después de que se hayan cargado los bloques
+        setTimeout(() => {
+          const guardarBtns = document.querySelectorAll('#guardar-subgrupos-btn');
+          guardarBtns.forEach(btn => {
+            btn.style.display = isEditable ? 'block' : 'none';
+          });
+        }, 1000);
+      });
+    });
+  </script>
+</body>
+</html>
