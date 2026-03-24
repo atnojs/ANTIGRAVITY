@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const PROXY_URL = 'proxy.php';
     // --- REFERENCIAS A ELEMENTOS DEL DOM ---
     const imageInput = document.getElementById('image-input');
     const startButton = document.getElementById('start-button');
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const aspectRatio = findClosestAspectRatio(dimensions.width, dimensions.height);
             const requestBody = createRequestBody(base64Data, file.type, aspectRatio);
 
-            const response = await fetch('proxy.php', {
+            const response = await fetch(PROXY_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody),
