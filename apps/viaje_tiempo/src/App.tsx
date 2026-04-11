@@ -282,55 +282,53 @@ export default function App() {
     setError(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      // Helper para llamar al proxy PHP
+      const callProxy = async (model: string, contents: any) => {
+        const response = await fetch('proxy.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, contents })
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.details || errData.error || "Error en la comunicación con el servidor");
+        }
+        return response.json();
+      };
+
       const base64Data = capturedImage.split(',')[1];
 
-      // Step 1: Analyze the original photo with gemini-3-flash-preview (more robust for vision)
-      const analysisResponse = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: {
+      // Step 1: Analyze the original photo
+      const analysisData = await callProxy('gemini-1.5-flash', [
+        {
           parts: [
-            {
-              inlineData: {
-                data: base64Data,
-                mimeType: 'image/jpeg'
-              }
-            },
-            {
-              text: "Analyze this person's facial features, hair, expression, and pose in detail. Provide a concise description that can be used to recreate their likeness in a historical setting."
-            }
+            { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
+            { text: "Analyze this person's facial features, hair, expression, and pose in detail. Provide a concise description that can be used to recreate their likeness in a historical setting." }
           ]
         }
-      });
+      ]);
 
-      const analysisText = analysisResponse.text;
+      const analysisText = analysisData.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!analysisText) {
         throw new Error("La IA no pudo analizar la imagen original.");
       }
 
-      // Step 2: Generate the historical photo using gemini-2.5-flash-image
-      const generationResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
+      // Step 2: Generate the historical photo
+      const generationData = await callProxy('gemini-1.5-flash', [
+        {
           parts: [
-            {
-              inlineData: {
-                data: base64Data,
-                mimeType: 'image/jpeg'
-              }
-            },
-            {
-              text: `Transform the person in this photo into a character from ${selectedScene.name} (${selectedScene.era}). 
+            { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
+            { text: `Transform the person in this photo into a character from ${selectedScene.name} (${selectedScene.era}). 
                      ${selectedScene.prompt} 
                      Based on this analysis: "${analysisText}", maintain their unique facial features, expression, and pose exactly. 
                      Change their clothing, hair, and background to be historically accurate. 
-                     The final image should look like a high-quality historical photograph or painting.`
+                     The final image should look like a high-quality historical photograph or painting.` 
             }
           ]
         }
-      });
+      ]);
 
-      if (!generationResponse.candidates?.[0]?.content?.parts) {
+      if (!generationData.candidates?.[0]?.content?.parts) {
         throw new Error("La IA no devolvió ninguna imagen. Puede que la imagen haya sido bloqueada por filtros de seguridad.");
       }
 
