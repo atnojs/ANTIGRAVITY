@@ -291,7 +291,14 @@ export default function App() {
         });
         if (!response.ok) {
           const errData = await response.json();
-          throw new Error(errData.details || errData.error || "Error en la comunicación con el servidor");
+          let errorMsg = "Error en la comunicación con el servidor";
+          if (errData.error) {
+              errorMsg = typeof errData.error === 'object' ? JSON.stringify(errData.error) : errData.error;
+          }
+          if (errData.details) {
+              errorMsg += " " + errData.details;
+          }
+          throw new Error(errorMsg);
         }
         return response.json();
       };
