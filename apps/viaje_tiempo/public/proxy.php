@@ -18,9 +18,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
+// 0. Si viene por GET con un pollinationsUrl, hacemos de puente para evitar el CSP del navegador
+if (isset($_GET['pollinationsUrl'])) {
+    $url = $_GET['pollinationsUrl'];
+    
+    // Antispam / Security Check: Solo permitir fetch a pollinations.ai (evita SSRF)
+    if (strpos($url, 'https://image.pollinations.ai/') !== 0) {
+        http_response_code(403);
+        exit('Forbidden target.');
+    }
+    
+    // Hostinger a veces restringe file_get_contents en URLs, mejor usar cURL puro
+    header('Content-Type: image/jpeg');
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_exec($ch);
+    curl_close($ch);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método no permitido. Usa POST.']);
+    echo json_encode(['error' => 'Método no permitido. Usa POST, excepto para el puente GET de Pollinations.']);
     exit;
 }
 

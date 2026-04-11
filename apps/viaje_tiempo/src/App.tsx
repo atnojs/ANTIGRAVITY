@@ -344,8 +344,10 @@ export default function App() {
       const encodedPrompt = encodeURIComponent(imagePrompt.trim());
       const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=1024&nologo=true&enhance=true`;
       
-      // Fetch the image to convert to base64 for storage
-      const imgResponse = await fetch(pollinationsUrl);
+      // Fetch the image to convert to base64 for storage. 
+      // We pass the URL through our proxy.php to bypass aggressive browser Content Security Policies
+      const proxyUrl = `proxy.php?pollinationsUrl=${encodeURIComponent(pollinationsUrl)}`;
+      const imgResponse = await fetch(proxyUrl);
       const blob = await imgResponse.blob();
       const historicalPhotoBase64 = await new Promise<string>((resolve) => {
         const reader = new FileReader();
