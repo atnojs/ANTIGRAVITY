@@ -48,19 +48,28 @@ if (!$requestData) {
     exit;
 }
 
-// 3. Determinar el modelo y el endpoint
+// 3. Determinar el modelo, el endpoint y los datos extras
 $model = $requestData['model'] ?? 'gemini-1.5-flash';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
-// 4. Preparar la llamada a Google
+// 4. Preparar payload
+$payload = [
+    'contents' => $requestData['contents'] ?? []
+];
+
+if (isset($requestData['generationConfig'])) {
+    $payload['generationConfig'] = $requestData['generationConfig'];
+}
+
+// 5. Preparar la llamada a Google
 $ch = curl_init($endpoint);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
     CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-    CURLOPT_POSTFIELDS => $inputJson,
+    CURLOPT_POSTFIELDS => json_encode($payload),
     CURLOPT_TIMEOUT => 60,
-    CURLOPT_SSL_VERIFYPEER => true // Asegurar conexión segura
+    CURLOPT_SSL_VERIFYPEER => true
 ]);
 
 $response = curl_exec($ch);

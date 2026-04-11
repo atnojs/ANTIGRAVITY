@@ -283,11 +283,11 @@ export default function App() {
 
     try {
       // Helper para llamar al proxy PHP
-      const callProxy = async (model: string, contents: any) => {
+      const callProxy = async (model: string, contents: any, generationConfig?: any) => {
         const response = await fetch('proxy.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model, contents })
+          body: JSON.stringify({ model, contents, generationConfig })
         });
         if (!response.ok) {
           const errData = await response.json();
@@ -314,19 +314,22 @@ export default function App() {
       }
 
       // Step 2: Generate the historical photo
-      const generationData = await callProxy('gemini-1.5-flash', [
-        {
-          parts: [
-            { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
-            { text: `Transform the person in this photo into a character from ${selectedScene.name} (${selectedScene.era}). 
-                     ${selectedScene.prompt} 
-                     Based on this analysis: "${analysisText}", maintain their unique facial features, expression, and pose exactly. 
-                     Change their clothing, hair, and background to be historically accurate. 
-                     The final image should look like a high-quality historical photograph or painting.` 
-            }
-          ]
-        }
-      ]);
+      const generationData = await callProxy('gemini-2.0-flash-exp', 
+        [
+          {
+            parts: [
+              { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
+              { text: `Transform the person in this photo into a character from ${selectedScene.name} (${selectedScene.era}). 
+                       ${selectedScene.prompt} 
+                       Based on this analysis: "${analysisText}", maintain their unique facial features, expression, and pose exactly. 
+                       Change their clothing, hair, and background to be historically accurate. 
+                       The final image should look like a high-quality historical photograph or painting.` 
+              }
+            ]
+          }
+        ],
+        { responseModalities: ["IMAGE"] }
+      );
 
       if (!generationData.candidates?.[0]?.content?.parts) {
         throw new Error("La IA no devolvió ninguna imagen. Puede que la imagen haya sido bloqueada por filtros de seguridad.");
