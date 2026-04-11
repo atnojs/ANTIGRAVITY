@@ -30,8 +30,11 @@ import {
 } from 'firebase/firestore';
 import { GoogleGenAI } from "@google/genai";
 import { cn } from './lib/utils';
+import { X } from 'lucide-react';
 
 // --- Constants & Types ---
+
+const STORAGE_KEY = 'viaje_tiempo_history';
 
 const HISTORICAL_SCENES = [
   {
@@ -106,6 +109,7 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [travels, setTravels] = useState<TravelEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -144,6 +148,16 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
+    
+    // Cargar historial local inicial (opcional, para rapidez)
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && travels.length === 0) setTravels(parsed);
+      }
+    } catch (e) { console.warn('Error cargando historial:', e); }
+
     const q = query(
       collection(db, 'travels'),
       where('uid', '==', user.uid),
@@ -155,12 +169,27 @@ export default function App() {
         ...doc.data()
       })) as TravelEntry[];
       setTravels(entries);
+      
+      // Persistir en localStorage
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      } catch (e) { console.warn('Error guardando historial:', e); }
+
     }, (err) => {
       console.error("Firestore error:", err);
       setError("Failed to load gallery. Check security rules.");
     });
     return unsubscribe;
   }, [user]);
+
+  // Manejar Escape para el lightbox
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedImage(null);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
   // --- Camera Logic ---
 
@@ -350,10 +379,32 @@ export default function App() {
   };
 
   const deleteEntry = async (id: string) => {
+    if (!confirm('¿Seguro que quieres borrar este registro histórico?')) return;
     try {
       await deleteDoc(doc(db, 'travels', id));
     } catch (err) {
       console.error("Delete error:", err);
+    }
+  };
+
+  const clearAllHistory = async () => {
+    if (!user) return;
+    if (!confirm('¿ESTÁS SEGURO? Esta acción destruirá TODOS tus registros temporales de forma permanente.')) return;
+    
+    try {
+      setIsProcessing(true);
+      // Borrar de Firestore (limitado a 500 por lote si fuera necesario, aquí borramos uno a uno por sencillez o podriamos usar Batch)
+      for (const entry of travels) {
+        await deleteDoc(doc(db, 'travels', entry.id));
+      }
+      // Limpiar local
+      localStorage.removeItem(STORAGE_KEY);
+      setTravels([]);
+    } catch (err) {
+      console.error("Clear error:", err);
+      setError("Error al limpiar el historial.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -640,12 +691,23 @@ export default function App() {
             >
               <div className="flex items-center justify-between mb-12">
                 <h2 className="text-5xl font-light tracking-tighter">REGISTROS TEMPORALES</h2>
-                <button 
-                  onClick={() => setView('home')}
-                  className="px-6 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm"
-                >
-                  Nuevo Viaje
-                </button>
+                <div className="flex gap-4">
+                  {travels.length > 0 && (
+                    <button 
+                      onClick={clearAllHistory}
+                      className="px-4 py-2 rounded-full border border-red-500/30 text-red-500/60 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Limpiar todo
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setView('home')}
+                    className="px-6 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm"
+                  >
+                    Nuevo Viaje
+                  </button>
+                </div>
               </div>
 
               {travels.length === 0 ? (
@@ -667,7 +729,8 @@ export default function App() {
                         <img 
                           src={entry.historicalPhoto} 
                           alt={entry.scene}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          onClick={() => setSelectedImage(entry.historicalPhoto)}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 cursor-zoom-in"
                         />
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button 
@@ -721,6 +784,58 @@ export default function App() {
           Desarrollado por Neural Temporal Engine & Gemini AI
         </div>
       </footer>
+
+      {/* Lightbox Standard Antigravity */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+            className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 cursor-zoom-out"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-7xl max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img 
+                src={selectedImage} 
+                className="w-full h-full object-contain rounded-xl shadow-2xl border border-white/10"
+                alt="Enlarged temporal record"
+              />
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-12 right-0 p-2 text-white/50 hover:text-white transition-colors"
+              >
+                <X className="w-8 h-8" />
+              </button>
+              <div className="absolute -bottom-12 left-0 right-0 flex justify-center">
+                <button 
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = selectedImage;
+                    link.download = `chronos-zoom.png`;
+                    link.click();
+                  }}
+                  className="flex items-center gap-2 px-6 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white text-sm transition-all"
+                >
+                  <Download className="w-4 h-4" />
+                  Descargar Copia de Alta Definición
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        .cursor-zoom-in { cursor: zoom-in; }
+        .cursor-zoom-out { cursor: zoom-out; }
+      `}</style>
     </div>
   );
 }
