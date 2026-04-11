@@ -320,35 +320,38 @@ export default function App() {
         throw new Error("La IA no pudo analizar la imagen original.");
       }
 
-      // Step 2: Generate the historical photo
-      const generationData = await callProxy('gemini-flash-latest', 
-        [
-          {
-            parts: [
-              { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
-              { text: `Transform the person in this photo into a character from ${selectedScene.name} (${selectedScene.era}). 
-                       ${selectedScene.prompt} 
-                       Based on this analysis: "${analysisText}", maintain their unique facial features, expression, and pose exactly. 
-                       Change their clothing, hair, and background to be historically accurate. 
-                       The final image should look like a high-quality historical photograph or painting.` 
-              }
-            ]
-          }
-        ],
-        { responseModalities: ["IMAGE"] }
-      );
-
-      if (!generationData.candidates?.[0]?.content?.parts) {
-        throw new Error("La IA no devolvió ninguna imagen. Puede que la imagen haya sido bloqueada por filtros de seguridad.");
-      }
-
-      let historicalPhotoBase64 = '';
-      for (const part of generationData.candidates[0].content.parts) {
-        if (part.inlineData) {
-          historicalPhotoBase64 = `data:image/png;base64,${part.inlineData.data}`;
-          break;
+      // Step 2: Generate an English Image Prompt using Gemini
+      const promptGenerationData = await callProxy('gemini-flash-latest', [
+        {
+          parts: [
+            { text: `Based on this physical description of a user: "${analysisText}", write a highly detailed, descriptive prompt in ENGLISH for an AI image generator (like Midjourney). 
+                     The prompt MUST describe this exact person as a character from ${selectedScene.name} (${selectedScene.era}). 
+                     ${selectedScene.prompt} 
+                     Include details about cinematic lighting, hyper-realistic, 8k resolution, maintaining their facial features, age, and hair.
+                     Do not include any introductory text, ONLY return the raw prompt string.` 
+            }
+          ]
         }
+      ]);
+
+      const imagePrompt = promptGenerationData.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!imagePrompt) {
+        throw new Error("La IA no pudo generar el prompt para la imagen.");
       }
+
+      // Step 3: Render the image using Pollinations.ai (Free, no API key required, works in EU)
+      const encodedPrompt = encodeURIComponent(imagePrompt.trim());
+      const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=1024&nologo=true&enhance=true`;
+      
+      // Fetch the image to convert to base64 for storage
+      const imgResponse = await fetch(pollinationsUrl);
+      const blob = await imgResponse.blob();
+      const historicalPhotoBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
 
       if (!historicalPhotoBase64) {
         throw new Error("AI failed to generate the historical image.");
