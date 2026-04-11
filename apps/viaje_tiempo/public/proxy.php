@@ -24,17 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// 1. Obtención de la API KEY desde .htaccess (SetEnv GEMINI_API_KEY)
-$API_KEY = getenv('GEMINI_API_KEY');
+// 1. Obtención de la API KEY desde .htaccess (SetEnv G)
+$API_KEY = getenv('G');
 
 // Fallback por si getenv() no funciona en algunos entornos de Hostinger
-if (!$API_KEY && isset($_SERVER['GEMINI_API_KEY'])) {
-    $API_KEY = $_SERVER['GEMINI_API_KEY'];
+if (!$API_KEY && isset($_SERVER['G'])) {
+    $API_KEY = $_SERVER['G'];
 }
 
 if (!$API_KEY) {
     http_response_code(500);
-    echo json_encode(['error' => 'Configuración incompleta. Falta GEMINI_API_KEY en el servidor.']);
+    echo json_encode(['error' => 'Configuración incompleta. Falta llave G en el servidor.']);
     exit;
 }
 
