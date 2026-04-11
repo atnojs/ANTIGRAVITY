@@ -306,7 +306,7 @@ export default function App() {
       const base64Data = capturedImage.split(',')[1];
 
       // Step 1: Analyze the original photo
-      const analysisData = await callProxy('gemini-1.5-flash', [
+      const analysisData = await callProxy('gemini-flash-latest', [
         {
           parts: [
             { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
@@ -321,7 +321,7 @@ export default function App() {
       }
 
       // Step 2: Generate the historical photo
-      const generationData = await callProxy('gemini-2.0-flash-exp', 
+      const generationData = await callProxy('gemini-flash-latest', 
         [
           {
             parts: [
@@ -343,7 +343,7 @@ export default function App() {
       }
 
       let historicalPhotoBase64 = '';
-      for (const part of generationResponse.candidates[0].content.parts) {
+      for (const part of generationData.candidates[0].content.parts) {
         if (part.inlineData) {
           historicalPhotoBase64 = `data:image/png;base64,${part.inlineData.data}`;
           break;
