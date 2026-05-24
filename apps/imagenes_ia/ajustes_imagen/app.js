@@ -1,6 +1,6 @@
-const { useState, useRef, useEffect, useCallback } = React;
+﻿const { useState, useRef, useEffect, useCallback } = React;
 
-// --- CONFIGURACIÓN FIREBASE & CONSTANTES ---
+// --- CONFIGURACIÃ“N FIREBASE & CONSTANTES ---
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAlTZgodkiHACqJSRcDqymTdvaegBdLZMk",
     authDomain: "nanobanana-cbb2d.firebaseapp.com",
@@ -104,25 +104,25 @@ const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 // Descripciones de los efectos para los tooltips
 const EFFECT_DESCRIPTIONS = {
-    brightness: "Ajusta el brillo general de la imagen. El resultado debe ser una imagen más clara u oscura, natural y visualmente coherente.",
-    contrast: "Controla la diferencia entre las áreas claras y oscuras de la imagen para modificar su impacto visual.",
+    brightness: "Ajusta el brillo general de la imagen. El resultado debe ser una imagen mÃ¡s clara u oscura, natural y visualmente coherente.",
+    contrast: "Controla la diferencia entre las Ã¡reas claras y oscuras de la imagen para modificar su impacto visual.",
     saturation: "Intensifica o reduce la intensidad de los colores de la imagen de forma equilibrada.",
-    hue: "Desplaza de forma controlada todos los colores a lo largo del espectro cromático para generar un efecto visual creativo.",
-    blur: "Aplica un desenfoque suave y uniforme a toda la imagen para generar una sensación etérea o de ensueño.",
+    hue: "Desplaza de forma controlada todos los colores a lo largo del espectro cromÃ¡tico para generar un efecto visual creativo.",
+    blur: "Aplica un desenfoque suave y uniforme a toda la imagen para generar una sensaciÃ³n etÃ©rea o de ensueÃ±o.",
     exposure: "Simula el ajuste para controlar la luminosidad general de la imagen.",
-    temperature: "Ajusta la temperatura de color de la imagen para desplazarla hacia tonos cálidos o fríos de forma controlada.",
-    vignette: "Añade un efecto de viñeta sutil oscureciendo progresivamente los bordes de la imagen para dirigir la atención hacia el centro. Instrucciones técnicas: Aplica una viñeta suave y radial, con transición gradual desde los bordes hacia el área central. Ajusta la intensidad de forma controlada para reforzar el punto focal sin invadir el contenido principal. Mantén el centro con exposición y color intactos. Reglas: Evita bordes duros, cortes visibles o un oscurecimiento excesivo. No alterar de forma perceptible el contraste, la saturación ni el balance de color global. El resultado debe ser elegante, natural y visualmente equilibrado, sin apariencia de filtro artificial.",
-    scale: "Amplía o reduce el tamaño de la imagen manteniendo intactas sus proporciones originales.",
+    temperature: "Ajusta la temperatura de color de la imagen para desplazarla hacia tonos cÃ¡lidos o frÃ­os de forma controlada.",
+    vignette: "AÃ±ade un efecto de viÃ±eta sutil oscureciendo progresivamente los bordes de la imagen para dirigir la atenciÃ³n hacia el centro. Instrucciones tÃ©cnicas: Aplica una viÃ±eta suave y radial, con transiciÃ³n gradual desde los bordes hacia el Ã¡rea central. Ajusta la intensidad de forma controlada para reforzar el punto focal sin invadir el contenido principal. MantÃ©n el centro con exposiciÃ³n y color intactos. Reglas: Evita bordes duros, cortes visibles o un oscurecimiento excesivo. No alterar de forma perceptible el contraste, la saturaciÃ³n ni el balance de color global. El resultado debe ser elegante, natural y visualmente equilibrado, sin apariencia de filtro artificial.",
+    scale: "AmplÃ­a o reduce el tamaÃ±o de la imagen manteniendo intactas sus proporciones originales.",
     rotation: "Gira la imagen en el sentido de las agujas del reloj.",
-    clarity: "Mejora la claridad y definición general de la imagen, incrementando la percepción de detalle sin alterar el equilibrio tonal.",
-    vibrance: "Intensifica de forma selectiva los colores menos saturados para lograr una imagen más rica y equilibrada, preservando la naturalidad de los tonos de piel.",
-    noiseReduction: "Reduce el ruido digital y la granulosidad de la imagen, especialmente en áreas de bajo contraste.",
-    sharpening: "Aumenta la nitidez de los bordes y detalles de la imagen para resaltar texturas y definición.",
-    filmGrain: "Añade un grano cinematográfico para aportar un aspecto vintage o artístico.",
+    clarity: "Mejora la claridad y definiciÃ³n general de la imagen, incrementando la percepciÃ³n de detalle sin alterar el equilibrio tonal.",
+    vibrance: "Intensifica de forma selectiva los colores menos saturados para lograr una imagen mÃ¡s rica y equilibrada, preservando la naturalidad de los tonos de piel.",
+    noiseReduction: "Reduce el ruido digital y la granulosidad de la imagen, especialmente en Ã¡reas de bajo contraste.",
+    sharpening: "Aumenta la nitidez de los bordes y detalles de la imagen para resaltar texturas y definiciÃ³n.",
+    filmGrain: "AÃ±ade un grano cinematogrÃ¡fico para aportar un aspecto vintage o artÃ­stico.",
     midtoneContrast: "Ajusta el contraste exclusivamente en los tonos medios de la imagen.",
     hdrEffect: "Recupera detalle en altas luces y sombras sin quemar ni empastar.",
-    ortonEffect: "Crea una atmósfera etérea y soñadora.",
-    focalBlur: "Aplica un desenfoque selectivo del fondo para crear profundidad de campo realista, manteniendo el sujeto principal perfectamente nítido.",
+    ortonEffect: "Crea una atmÃ³sfera etÃ©rea y soÃ±adora.",
+    focalBlur: "Aplica un desenfoque selectivo del fondo para crear profundidad de campo realista, manteniendo el sujeto principal perfectamente nÃ­tido.",
 };
 // Reemplazar completamente el objeto INITIAL_SETTINGS existente
 const INITIAL_SETTINGS = {
@@ -236,7 +236,7 @@ const applyBackgroundBlur = (ctx, canvas, blurAmount = 15) => {
     tempCtx.filter = `blur(${blurAmount}px)`;
     tempCtx.drawImage(canvas, 0, 0);
 
-    // Crear gradiente radial para el centro (área nítida)
+    // Crear gradiente radial para el centro (Ã¡rea nÃ­tida)
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(canvas.width, canvas.height) * 0.35;
@@ -253,12 +253,12 @@ const applyBackgroundBlur = (ctx, canvas, blurAmount = 15) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(tempCanvas, 0, 0);
 
-    // Aplicar máscara para recuperar el centro nítido
+    // Aplicar mÃ¡scara para recuperar el centro nÃ­tido
     ctx.globalCompositeOperation = 'destination-in';
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Restaurar áreas fuera del gradiente con la imagen original desenfocada
+    // Restaurar Ã¡reas fuera del gradiente con la imagen original desenfocada
     ctx.globalCompositeOperation = 'destination-over';
     ctx.drawImage(tempCanvas, 0, 0);
 
@@ -270,7 +270,7 @@ const applyBackgroundBlur = (ctx, canvas, blurAmount = 15) => {
     const originalCtx = originalCanvas.getContext('2d');
     originalCtx.putImageData(originalImageData, 0, 0);
 
-    // Aplicar máscara inversa para el centro
+    // Aplicar mÃ¡scara inversa para el centro
     ctx.save();
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius * 0.6, 0, Math.PI * 2);
@@ -306,11 +306,11 @@ const applyCenterBlur = (ctx, canvas, blurAmount = 15) => {
     tempCtx.filter = `blur(${blurAmount}px)`;
     tempCtx.drawImage(canvas, 0, 0);
 
-    // Dibujar imagen original (nítida) como base
+    // Dibujar imagen original (nÃ­tida) como base
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.putImageData(originalImageData, 0, 0);
 
-    // Crear gradiente radial para el centro (área desenfocada)
+    // Crear gradiente radial para el centro (Ã¡rea desenfocada)
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(canvas.width, canvas.height) * 0.35;
@@ -323,17 +323,17 @@ const applyCenterBlur = (ctx, canvas, blurAmount = 15) => {
     gradient.addColorStop(0.5, 'rgba(0,0,0,0.9)');
     gradient.addColorStop(1, 'rgba(0,0,0,0)');
 
-    // Aplicar desenfoque solo en el centro usando composición
+    // Aplicar desenfoque solo en el centro usando composiciÃ³n
     ctx.save();
     ctx.globalCompositeOperation = 'source-over';
 
-    // Crear máscara circular
+    // Crear mÃ¡scara circular
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
 
-    // Dibujar versión desenfocada en el área recortada
+    // Dibujar versiÃ³n desenfocada en el Ã¡rea recortada
     ctx.filter = `blur(${blurAmount}px)`;
     ctx.drawImage(canvas, 0, 0);
     ctx.filter = 'none';
@@ -341,7 +341,7 @@ const applyCenterBlur = (ctx, canvas, blurAmount = 15) => {
     ctx.restore();
 };
 
-// Función para generar una descripción de los efectos aplicados
+// FunciÃ³n para generar una descripciÃ³n de los efectos aplicados
 const getEffectsDescription = (settings) => {
     const effects = [];
 
@@ -352,28 +352,28 @@ const getEffectsDescription = (settings) => {
         effects.push(`Contraste: ${settings.contrast > 100 ? '+' : ''}${settings.contrast - 100}%`);
     }
     if (settings.saturation !== 100) {
-        effects.push(`Saturación: ${settings.saturation > 100 ? '+' : ''}${settings.saturation - 100}%`);
+        effects.push(`SaturaciÃ³n: ${settings.saturation > 100 ? '+' : ''}${settings.saturation - 100}%`);
     }
     if (settings.hue !== 0) {
-        effects.push(`Matiz: ${settings.hue}°`);
+        effects.push(`Matiz: ${settings.hue}Â°`);
     }
     if (settings.blur !== 0) {
         effects.push(`Desenfoque: ${settings.blur}px`);
     }
     if (settings.exposure !== 0) {
-        effects.push(`Exposición: ${settings.exposure > 0 ? '+' : ''}${settings.exposure}`);
+        effects.push(`ExposiciÃ³n: ${settings.exposure > 0 ? '+' : ''}${settings.exposure}`);
     }
     if (settings.temperature !== 0) {
         effects.push(`Temperatura: ${settings.temperature > 0 ? '+' : ''}${settings.temperature}`);
     }
     if (settings.vignette !== 0) {
-        effects.push(`Viñeta: ${settings.vignette}%`);
+        effects.push(`ViÃ±eta: ${settings.vignette}%`);
     }
     if (settings.scale !== 100) {
         effects.push(`Escala: ${settings.scale}%`);
     }
     if (settings.rotation !== 0) {
-        effects.push(`Rotación: ${settings.rotation}°`);
+        effects.push(`RotaciÃ³n: ${settings.rotation}Â°`);
     }
     if (settings.clarity !== 0) {
         effects.push(`Claridad: ${settings.clarity > 0 ? '+' : ''}${settings.clarity}`);
@@ -382,13 +382,13 @@ const getEffectsDescription = (settings) => {
         effects.push(`Vibrancia: ${settings.vibrance > 0 ? '+' : ''}${settings.vibrance}`);
     }
     if (settings.noiseReduction !== 0) {
-        effects.push(`Reducción ruido: ${settings.noiseReduction}%`);
+        effects.push(`ReducciÃ³n ruido: ${settings.noiseReduction}%`);
     }
     if (settings.sharpening !== 0) {
         effects.push(`Nitidez: ${settings.sharpening}%`);
     }
     if (settings.filmGrain !== 0) {
-        effects.push(`Grano cinematográfico: ${settings.filmGrain}%`);
+        effects.push(`Grano cinematogrÃ¡fico: ${settings.filmGrain}%`);
     }
     if (settings.midtoneContrast !== 0) {
         effects.push(`Contraste medios tonos: ${settings.midtoneContrast > 0 ? '+' : ''}${settings.midtoneContrast}`);
@@ -408,7 +408,7 @@ const getEffectsDescription = (settings) => {
 
 
 
-// --- COMPONENTE: MODAL DE AUTENTICACIÓN ---
+// --- COMPONENTE: MODAL DE AUTENTICACIÃ“N ---
 const AuthModal = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
@@ -434,7 +434,7 @@ const AuthModal = () => {
                     return;
                 } catch (loginErr) {
                     setError(
-                        'Este email ya tiene cuenta. Si te registraste con Google, usa el botón "Google".'
+                        'Este email ya tiene cuenta. Si te registraste con Google, usa el botÃ³n "Google".'
                     );
                     return;
                 }
@@ -470,7 +470,7 @@ const AuthModal = () => {
                         {isLogin ? 'Bienvenido' : 'Crear Cuenta'}
                     </h2>
                     <p className="text-slate-400 text-sm">
-                        {isLogin ? 'Inicia sesión para continuar' : 'Regístrate para guardar tu arte'}
+                        {isLogin ? 'Inicia sesiÃ³n para continuar' : 'RegÃ­strate para guardar tu arte'}
                     </p>
                 </div>
 
@@ -494,7 +494,7 @@ const AuthModal = () => {
                     <div>
                         <input
                             type="password"
-                            placeholder="Contraseña"
+                            placeholder="ContraseÃ±a"
                             className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl focus:border-blue-500 outline-none text-white placeholder-slate-500"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
@@ -512,7 +512,7 @@ const AuthModal = () => {
 
                 <div className="mt-4 flex items-center gap-2">
                     <div className="h-px bg-slate-700 flex-1"></div>
-                    <span className="text-xs text-slate-500">O continúa con</span>
+                    <span className="text-xs text-slate-500">O continÃºa con</span>
                     <div className="h-px bg-slate-700 flex-1"></div>
                 </div>
 
@@ -531,7 +531,7 @@ const AuthModal = () => {
                         onClick={() => setIsLogin(!isLogin)}
                         className="text-sm text-blue-400 hover:text-blue-300 underline"
                     >
-                        {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Entra'}
+                        {isLogin ? 'Â¿No tienes cuenta? RegÃ­strate' : 'Â¿Ya tienes cuenta? Entra'}
                     </button>
                 </div>
             </div>
@@ -549,7 +549,7 @@ const AdminPanel = ({ onClose }) => {
     const [stats, setStats] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTab, setSelectedTab] = useState('overview'); // overview | users
-    const [lastRefresh, setLastRefresh] = useState(null); // Hora de última actualización
+    const [lastRefresh, setLastRefresh] = useState(null); // Hora de Ãºltima actualizaciÃ³n
 
     const today = getTodayDateString();
 
@@ -580,7 +580,7 @@ const AdminPanel = ({ onClose }) => {
             'UID',
             'Email',
             'Uso hoy',
-            'Última actividad'
+            'Ãšltima actividad'
         ];
 
         const rows = users.map(u => {
@@ -650,7 +650,7 @@ const AdminPanel = ({ onClose }) => {
     const loadData = async () => {
         setLoading(true);
         try {
-            // Evito orderBy para no depender de índices
+            // Evito orderBy para no depender de Ã­ndices
             const snapshot = await db.collection('users').limit(300).get();
 
             const usersData = await Promise.all(snapshot.docs.map(async (doc) => {
@@ -692,7 +692,7 @@ const AdminPanel = ({ onClose }) => {
     useEffect(() => {
         loadData();
 
-        // Auto-refrescar cada 30 segundos mientras el panel esté abierto
+        // Auto-refrescar cada 30 segundos mientras el panel estÃ© abierto
         const intervalId = setInterval(() => {
             loadData();
         }, 30000);
@@ -724,7 +724,7 @@ const AdminPanel = ({ onClose }) => {
     };
 
     const deleteUserDoc = async (uid, email) => {
-        if (!confirm(`¿Eliminar el usuario en Firestore?
+        if (!confirm(`Â¿Eliminar el usuario en Firestore?
 
  ${email || uid}
 
@@ -786,10 +786,10 @@ const AdminPanel = ({ onClose }) => {
                                 <i data-lucide="shield" className="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-extrabold text-white leading-tight">Panel de Administración</h2>
+                                <h2 className="text-2xl font-extrabold text-white leading-tight">Panel de AdministraciÃ³n</h2>
                                 <p className="text-sm text-slate-400">
-                                    {today} · {lastRefresh ? `Actualizado: ${lastRefresh}` : 'Cargando...'}
-                                    <span className="text-emerald-400 ml-2">● Auto-refresh 30s</span>
+                                    {today} Â· {lastRefresh ? `Actualizado: ${lastRefresh}` : 'Cargando...'}
+                                    <span className="text-emerald-400 ml-2">â— Auto-refresh 30s</span>
                                 </p>
                             </div>
                         </div>
@@ -820,7 +820,7 @@ const AdminPanel = ({ onClose }) => {
                 <div className="flex-1 overflow-auto custom-scrollbar p-6">
                     {/* Tabs */}
                     <div className="flex flex-wrap gap-2 mb-6">
-                        <TabBtn id="overview" icon={<i data-lucide="bar-chart-3" className="w-4 h-4"></i>}>Estadísticas</TabBtn>
+                        <TabBtn id="overview" icon={<i data-lucide="bar-chart-3" className="w-4 h-4"></i>}>EstadÃ­sticas</TabBtn>
                         <TabBtn id="users" icon={<i data-lucide="users" className="w-4 h-4"></i>}>Usuarios ({users.length})</TabBtn>
                     </div>
 
@@ -835,10 +835,10 @@ const AdminPanel = ({ onClose }) => {
                             {selectedTab === 'overview' && stats && (
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <StatCard icon="👥" label="Total usuarios" value={stats.total} subtext="Documentos en users/*" />
-                                        <StatCard icon="🔥" label="Activos hoy" value={stats.activeToday} subtext="Uso > 0 hoy" accent="from-amber-300 to-red-400" />
-                                        <StatCard icon="📈" label="Uso total hoy" value={stats.totalUsageToday} subtext={`Media activos: ${stats.avgUsageActive.toFixed(2)}`} accent="from-emerald-300 to-cyan-300" />
-                                        <StatCard icon="⏱️" label="Activos 24h" value={stats.last24hActive} subtext={`Límite alcanzado: ${stats.limitReached}`} accent="from-violet-300 to-fuchsia-300" />
+                                        <StatCard icon="ðŸ‘¥" label="Total usuarios" value={stats.total} subtext="Documentos en users/*" />
+                                        <StatCard icon="ðŸ”¥" label="Activos hoy" value={stats.activeToday} subtext="Uso > 0 hoy" accent="from-amber-300 to-red-400" />
+                                        <StatCard icon="ðŸ“ˆ" label="Uso total hoy" value={stats.totalUsageToday} subtext={`Media activos: ${stats.avgUsageActive.toFixed(2)}`} accent="from-emerald-300 to-cyan-300" />
+                                        <StatCard icon="â±ï¸" label="Activos 24h" value={stats.last24hActive} subtext={`LÃ­mite alcanzado: ${stats.limitReached}`} accent="from-violet-300 to-fuchsia-300" />
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -847,7 +847,7 @@ const AdminPanel = ({ onClose }) => {
                                             <div className="flex items-center justify-between mb-3">
                                                 <div className="text-sm font-extrabold text-white flex items-center gap-2">
                                                     <i data-lucide="badge-check" className="w-4 h-4 text-cyan-300"></i>
-                                                    Distribución de roles
+                                                    DistribuciÃ³n de roles
                                                 </div>
                                                 <div className="text-xs text-slate-400">Campo users.role (si existe)</div>
                                             </div>
@@ -865,7 +865,7 @@ const AdminPanel = ({ onClose }) => {
                                             </div>
 
                                             <div className="mt-4 text-xs text-slate-400">
-                                                Consejo: puedes poner <span className="text-slate-200 font-bold">role: 'vip'</span> a un usuario para identificarlo aquí.
+                                                Consejo: puedes poner <span className="text-slate-200 font-bold">role: 'vip'</span> a un usuario para identificarlo aquÃ­.
                                             </div>
                                         </div>
 
@@ -890,7 +890,7 @@ const AdminPanel = ({ onClose }) => {
                                                         <div className="min-w-0">
                                                             <div className="text-white font-bold truncate">{u.email || '(sin email)'}</div>
                                                             <div className="text-xs text-slate-400 truncate">{u.uid}</div>
-                                                            <div className="text-xs text-slate-400 mt-1">Último: {u.lastActiveText}</div>
+                                                            <div className="text-xs text-slate-400 mt-1">Ãšltimo: {u.lastActiveText}</div>
                                                         </div>
                                                         <div className={`ml-4 shrink-0 px-3 py-1 rounded-lg text-xs font-extrabold border
                                                             ${(u.todayUsage || 0) >= DAILY_LIMIT
@@ -941,7 +941,7 @@ const AdminPanel = ({ onClose }) => {
                                                         <th className="p-4">UID</th>
                                                         <th className="p-4">Rol</th>
                                                         <th className="p-4">Uso hoy</th>
-                                                        <th className="p-4">Última actividad</th>
+                                                        <th className="p-4">Ãšltima actividad</th>
                                                         <th className="p-4">Acciones</th>
                                                     </tr>
                                                 </thead>
@@ -1028,6 +1028,33 @@ const AdminPanel = ({ onClose }) => {
             </div>
         </div>
     );
+};
+
+
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
 };
 
 const App = () => {
@@ -1142,7 +1169,7 @@ const App = () => {
         reader.readAsDataURL(file);
     };
 
-    // Reemplazar completamente la función renderImage existente
+    // Reemplazar completamente la funciÃ³n renderImage existente
     const renderImage = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !originalImage) return;
@@ -1311,7 +1338,7 @@ const App = () => {
             if (currentSettings.ortonEffect > 0) {
                 ctx.save();
 
-                // Crear versión desenfocada
+                // Crear versiÃ³n desenfocada
                 const blurredCanvas = document.createElement('canvas');
                 blurredCanvas.width = canvas.width;
                 blurredCanvas.height = canvas.height;
@@ -1330,7 +1357,7 @@ const App = () => {
             if (currentSettings.focalBlur > 0) {
                 ctx.save();
 
-                // Crear máscara radial para el desenfoque
+                // Crear mÃ¡scara radial para el desenfoque
                 const gradient = ctx.createRadialGradient(
                     canvas.width * currentSettings.focalPoint.x / 100,
                     canvas.height * currentSettings.focalPoint.y / 100,
@@ -1357,7 +1384,7 @@ const App = () => {
                 const originalCtx = originalCanvas.getContext('2d');
                 originalCtx.putImageData(originalImageData, 0, 0);
 
-                // Aplicar máscara para mantener el área focal nítida
+                // Aplicar mÃ¡scara para mantener el Ã¡rea focal nÃ­tida
                 ctx.globalCompositeOperation = 'destination-in';
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1452,7 +1479,7 @@ const App = () => {
                 const hex = `#${[pixel[0], pixel[1], pixel[2]].map(c => c.toString(16).padStart(2, '0')).join('')}`;
                 setColorPickerColor(hex);
             }
-            // Posición del cursor flotante relativa al contenedor del canvas
+            // PosiciÃ³n del cursor flotante relativa al contenedor del canvas
             const container = canvasContainerRef.current;
             if (container) {
                 const cRect = container.getBoundingClientRect();
@@ -1498,7 +1525,7 @@ const App = () => {
         setUploadedFile(originalUploadedFile);
         setCurrentSettings(INITIAL_SETTINGS);
         setMemeData(null);
-        setStatusMessage("¡Guardado! Lienzo restaurado a la imagen original.");
+        setStatusMessage("Â¡Guardado! Lienzo restaurado a la imagen original.");
         setPreviousImageBeforeEdit(null);
         setHasOverlayFromHistory(false);
 
@@ -1531,7 +1558,7 @@ const App = () => {
     const handleDeleteCurrentImage = () => {
         setOriginalImage(null);
         setUploadedFile(null);
-        setOriginalUploadedFile(null); // Limpiar también la imagen original
+        setOriginalUploadedFile(null); // Limpiar tambiÃ©n la imagen original
         setCurrentSettings(INITIAL_SETTINGS);
         setMemeData(null);
         setPalette([]);
@@ -1674,7 +1701,7 @@ const App = () => {
                     break;
 
                 case 'vintage':
-                    // Vintage: sepia + contraste reducido + viñeta
+                    // Vintage: sepia + contraste reducido + viÃ±eta
                     for (let i = 0; i < data.length; i += 4) {
                         const r = data[i];
                         const g = data[i + 1];
@@ -1690,7 +1717,7 @@ const App = () => {
                     }
                     ctx.putImageData(imageData, 0, 0);
 
-                    // Añadir viñeta
+                    // AÃ±adir viÃ±eta
                     ctx.globalCompositeOperation = 'multiply';
                     const gradient = ctx.createRadialGradient(
                         canvas.width / 2, canvas.height / 2, canvas.width * 0.4,
@@ -1718,13 +1745,13 @@ const App = () => {
                     break;
 
                 case 'polaroid': {
-                    // Polaroid: Marco blanco con imagen encogida y borde inferior más grande
+                    // Polaroid: Marco blanco con imagen encogida y borde inferior mÃ¡s grande
                     const padSide = Math.min(canvas.width, canvas.height) * 0.06;
-                    const padBottom = padSide * 2.5; // borde inferior más grande (estilo Polaroid)
+                    const padBottom = padSide * 2.5; // borde inferior mÃ¡s grande (estilo Polaroid)
                     const newW = canvas.width + padSide * 2;
                     const newH = canvas.height + padSide + padBottom;
 
-                    // Crear canvas nuevo con el tamaño del marco
+                    // Crear canvas nuevo con el tamaÃ±o del marco
                     const polaroidCanvas = document.createElement('canvas');
                     polaroidCanvas.width = newW;
                     polaroidCanvas.height = newH;
@@ -1773,7 +1800,7 @@ const App = () => {
         img.src = originalImage;
     };
 
-    // --- FUNCIONES DE TRANSFORMACIÓN ---
+    // --- FUNCIONES DE TRANSFORMACIÃ“N ---
     const handleFlipHorizontal = () => {
         if (!originalImage) return;
 
@@ -1843,10 +1870,10 @@ const App = () => {
             const rotatedImage = canvas.toDataURL('image/jpeg', 0.95);
             setOriginalImage(rotatedImage);
             setUploadedFile(rotatedImage);
-            setManualActions(prev => [...prev, "Rotar 90°"]);
+            setManualActions(prev => [...prev, "Rotar 90Â°"]);
             setCurrentSettings(INITIAL_SETTINGS);
 
-            setStatusMessage("Imagen rotada 90°");
+            setStatusMessage("Imagen rotada 90Â°");
             setTimeout(() => setStatusMessage(""), 3000);
         };
         img.src = originalImage;
@@ -1897,10 +1924,10 @@ const App = () => {
             const rotatedImage = canvas.toDataURL('image/jpeg', 0.95);
             setOriginalImage(rotatedImage);
             setUploadedFile(rotatedImage);
-            setManualActions(prev => [...prev, `Rotar ${angle}°`]);
+            setManualActions(prev => [...prev, `Rotar ${angle}Â°`]);
             setCurrentSettings(INITIAL_SETTINGS);
 
-            setStatusMessage(`Imagen rotada ${angle}°`);
+            setStatusMessage(`Imagen rotada ${angle}Â°`);
             setTimeout(() => setStatusMessage(""), 3000);
         };
         img.src = originalImage;
@@ -1929,7 +1956,7 @@ const App = () => {
             setManualActions(prev => [...prev, `Marco: ${borderWidth}px`]);
             setCurrentSettings(INITIAL_SETTINGS);
 
-            setStatusMessage(`Marco añadido (${borderWidth}px)`);
+            setStatusMessage(`Marco aÃ±adido (${borderWidth}px)`);
             setTimeout(() => setStatusMessage(""), 3000);
         };
         img.src = originalImage;
@@ -1945,14 +1972,14 @@ const App = () => {
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
 
-            // Dibujar imagen pequeña
+            // Dibujar imagen pequeÃ±a
             const smallCanvas = document.createElement('canvas');
             smallCanvas.width = img.width / pixelSize;
             smallCanvas.height = img.height / pixelSize;
             const smallCtx = smallCanvas.getContext('2d');
             smallCtx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
 
-            // Dibujar pequeña a tamaño original (pixelado)
+            // Dibujar pequeÃ±a a tamaÃ±o original (pixelado)
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(smallCanvas, 0, 0, canvas.width, canvas.height);
 
@@ -1995,9 +2022,9 @@ const App = () => {
         if (lastAppliedTexts && lastAppliedTexts.length > 0 && preTextImage) {
             const choice = confirm(
                 `Tienes ${lastAppliedTexts.length} texto(s) aplicado(s).\n\n` +
-                `¿Quieres editarlos?\n\n` +
+                `Â¿Quieres editarlos?\n\n` +
                 `Aceptar = Editar textos existentes\n` +
-                `Cancelar = Añadir texto nuevo`
+                `Cancelar = AÃ±adir texto nuevo`
             );
             if (choice) {
                 // Save current image so cancel can restore it
@@ -2163,7 +2190,7 @@ const App = () => {
         setIsTextEditing(false);
         setTextOverlays([]);
         setSelectedTextIdx(-1);
-        setStatusMessage(textNames.length === 1 ? "Texto añadido" : `${textNames.length} textos añadidos`);
+        setStatusMessage(textNames.length === 1 ? "Texto aÃ±adido" : `${textNames.length} textos aÃ±adidos`);
         setTimeout(() => setStatusMessage(""), 3000);
     };
 
@@ -2350,7 +2377,7 @@ const updateSetting = (key, value) => {
 
     return (
         <div className="flex flex-col h-full bg-slate-900 text-slate-300 font-sans">
-            {/* 🔥 Overlay de carga con fondo animado */}
+            {/* ðŸ”¥ Overlay de carga con fondo animado */}
             {isProcessing && (
                 <div className="loading-overlay">
                     <div className="spinner-triple">
@@ -2386,7 +2413,7 @@ const updateSetting = (key, value) => {
                 />
             )}
 
-            {/* MODAL DE ROTACIÓN LIBRE */}
+            {/* MODAL DE ROTACIÃ“N LIBRE */}
             {rotateModalOpen && (
                 <RotateModal
                     onClose={() => setRotateModalOpen(false)}
@@ -2431,7 +2458,7 @@ const updateSetting = (key, value) => {
                 <div className="flex items-center gap-2 text-blue-400 select-none">
                     <i data-lucide="aperture" className="w-6 h-6"></i>
                     <h1 className="font-bold text-lg text-white tracking-tight">
-                        <span className="font-light text-blue-200">Editor de Imágenes</span>
+                        <span className="font-light text-blue-200">Editor de ImÃ¡genes</span>
                     </h1>
                 </div>
 
@@ -2454,7 +2481,7 @@ const updateSetting = (key, value) => {
                             <button
                                 onClick={() => auth.signOut()}
                                 className="p-1.5 hover:bg-slate-700 rounded text-slate-400"
-                                title="Cerrar Sesión"
+                                title="Cerrar SesiÃ³n"
                             >
                                 <i data-lucide="log-out" className="w-4 h-4"></i>
                             </button>
@@ -2494,24 +2521,24 @@ const updateSetting = (key, value) => {
                                     </h4>
                                     <div className="grid grid-cols-2 gap-2">
                                         {[
-                                            { id: "Recortar", label: "Recortar", icon: "crop", func: handleOpenCropModal, desc: "Recorta la imagen manualmente seleccionando el área deseada." },
-                                            { id: "Difuminar Centro", label: "Difuminar Centro", icon: "circle-dot", func: handleCenterBlur, desc: "Difumina el centro manteniendo el fondo nítido. Efecto artístico único." },
+                                            { id: "Recortar", label: "Recortar", icon: "crop", func: handleOpenCropModal, desc: "Recorta la imagen manualmente seleccionando el Ã¡rea deseada." },
+                                            { id: "Difuminar Centro", label: "Difuminar Centro", icon: "circle-dot", func: handleCenterBlur, desc: "Difumina el centro manteniendo el fondo nÃ­tido. Efecto artÃ­stico Ãºnico." },
                                             { id: "B&N", label: "B&N", icon: "contrast", func: () => applyFilter('bw'), desc: "Convierte la imagen a blanco y negro." },
                                             { id: "Sepia", label: "Sepia", icon: "coffee", func: () => applyFilter('sepia'), desc: "Aplica efecto sepia vintage." },
-                                            { id: "Vintage", label: "Vintage", icon: "camera", func: () => applyFilter('vintage'), desc: "Efecto vintage con tono cálido y viñeta." },
-                                            { id: "Noir", label: "Noir", icon: "moon", func: () => applyFilter('noir'), desc: "Blanco y negro con alto contraste estilo película negra." },
-                                            { id: "Polaroid", label: "Polaroid", icon: "camera", func: () => applyFilter('polaroid'), desc: "Añade un marco blanco estilo Polaroid." },
+                                            { id: "Vintage", label: "Vintage", icon: "camera", func: () => applyFilter('vintage'), desc: "Efecto vintage con tono cÃ¡lido y viÃ±eta." },
+                                            { id: "Noir", label: "Noir", icon: "moon", func: () => applyFilter('noir'), desc: "Blanco y negro con alto contraste estilo pelÃ­cula negra." },
+                                            { id: "Polaroid", label: "Polaroid", icon: "camera", func: () => applyFilter('polaroid'), desc: "AÃ±ade un marco blanco estilo Polaroid." },
                                             { id: "Espejo H", label: "Espejo H", icon: "flip-horizontal", func: handleFlipHorizontal, desc: "Voltea la imagen horizontalmente (efecto espejo)." },
                                             { id: "Espejo V", label: "Espejo V", icon: "flip-vertical", func: handleFlipVertical, desc: "Voltea la imagen verticalmente." },
-                                            { id: "Rotar 90°", label: "Rotar 90°", icon: "rotate-cw", func: handleRotate90, desc: "Rota la imagen 90 grados en sentido horario." },
-                                            { id: "Redimensionar", label: "Redimensionar", icon: "maximize", func: () => setResizeModalOpen(true), desc: "Cambia el tamaño de la imagen a dimensiones específicas." },
-                                            { id: "Rotar Libre", label: "Rotar Libre", icon: "rotate-ccw", func: () => setRotateModalOpen(true), desc: "Rota la imagen a cualquier ángulo personalizado." },
-                                            { id: "Marco", label: "Marco", icon: "square", func: () => setBorderModalOpen(true), desc: "Añade un marco/borde decorativo a la imagen." },
+                                            { id: "Rotar 90Â°", label: "Rotar 90Â°", icon: "rotate-cw", func: handleRotate90, desc: "Rota la imagen 90 grados en sentido horario." },
+                                            { id: "Redimensionar", label: "Redimensionar", icon: "maximize", func: () => setResizeModalOpen(true), desc: "Cambia el tamaÃ±o de la imagen a dimensiones especÃ­ficas." },
+                                            { id: "Rotar Libre", label: "Rotar Libre", icon: "rotate-ccw", func: () => setRotateModalOpen(true), desc: "Rota la imagen a cualquier Ã¡ngulo personalizado." },
+                                            { id: "Marco", label: "Marco", icon: "square", func: () => setBorderModalOpen(true), desc: "AÃ±ade un marco/borde decorativo a la imagen." },
                                             { id: "Perspectiva", label: "Perspectiva", icon: "scaling", func: () => setPerspectiveModalOpen(true), desc: "Corrige la perspectiva (Keystone) vertical u horizontal." },
                                             { id: "Curvas", label: "Curvas", icon: "spline", func: () => setCurvesModalOpen(true), desc: "Ajusta las curvas de tono (RGB) detalladamente." },
-                                            { id: "Bal. Blancos", label: "Bal. Blancos", icon: "sun", func: handleAutoWhiteBalance, desc: "Ajuste automático de temperatura de color (Gray World)." },
-                                            { id: "Color Picker", label: "Color Picker", icon: "pipette", func: () => { setIsColorPickerActive(!isColorPickerActive); setStatusMessage(isColorPickerActive ? "Selector desactivado" : "Haz clic en la imagen para copiar el color"); }, desc: "Selecciona un color de la imagen y cópialo. (Haz clic en la imagen)", active: isColorPickerActive },
-                                            { id: "Texto", label: "Texto", icon: "type", func: startTextEditing, desc: "Añade texto interactivo sobre la imagen." },
+                                            { id: "Bal. Blancos", label: "Bal. Blancos", icon: "sun", func: handleAutoWhiteBalance, desc: "Ajuste automÃ¡tico de temperatura de color (Gray World)." },
+                                            { id: "Color Picker", label: "Color Picker", icon: "pipette", func: () => { setIsColorPickerActive(!isColorPickerActive); setStatusMessage(isColorPickerActive ? "Selector desactivado" : "Haz clic en la imagen para copiar el color"); }, desc: "Selecciona un color de la imagen y cÃ³pialo. (Haz clic en la imagen)", active: isColorPickerActive },
+                                            { id: "Texto", label: "Texto", icon: "type", func: startTextEditing, desc: "AÃ±ade texto interactivo sobre la imagen." },
                                             { id: "Pixelar", label: "Pixelar", icon: "grid-3x3", func: () => handlePixelate(10), desc: "Aplica efecto pixelado a la imagen." },
                                             { id: "Exportar", label: "Exportar", icon: "download", func: () => setExportModalOpen(true), desc: "Opciones avanzadas de guardado (Formato, Calidad).", active: false }
                                         ].map((btn) => (
@@ -2626,7 +2653,7 @@ const updateSetting = (key, value) => {
                                     description={EFFECT_DESCRIPTIONS.contrast}
                                 />
                                 <SliderControl
-                                    label="Exposición"
+                                    label="ExposiciÃ³n"
                                     value={currentSettings.exposure}
                                     min={-5}
                                     max={5}
@@ -2642,7 +2669,7 @@ const updateSetting = (key, value) => {
                                     <i data-lucide="palette" className="w-3 h-3"></i> Color
                                 </div>
                                 <SliderControl
-                                    label="Saturación"
+                                    label="SaturaciÃ³n"
                                     value={currentSettings.saturation}
                                     min={0}
                                     max={200}
@@ -2694,7 +2721,7 @@ const updateSetting = (key, value) => {
                                     description={EFFECT_DESCRIPTIONS.blur}
                                 />
                                 <SliderControl
-                                    label="Viñeta"
+                                    label="ViÃ±eta"
                                     value={currentSettings.vignette}
                                     min={0}
                                     max={100}
@@ -2721,7 +2748,7 @@ const updateSetting = (key, value) => {
                                     description={EFFECT_DESCRIPTIONS.clarity}
                                 />
                                 <SliderControl
-                                    label="Reducción Ruido"
+                                    label="ReducciÃ³n Ruido"
                                     value={currentSettings.noiseReduction}
                                     min={0}
                                     max={100}
@@ -2730,7 +2757,7 @@ const updateSetting = (key, value) => {
                                     description={EFFECT_DESCRIPTIONS.noiseReduction}
                                 />
                                 <SliderControl
-                                    label="Grano Cinematográfico"
+                                    label="Grano CinematogrÃ¡fico"
                                     value={currentSettings.filmGrain}
                                     min={0}
                                     max={100}
@@ -2751,7 +2778,7 @@ const updateSetting = (key, value) => {
 
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2 text-xs uppercase font-bold text-slate-500 tracking-wider mb-2">
-                                    <i data-lucide="move" className="w-3 h-3"></i> Transformación
+                                    <i data-lucide="move" className="w-3 h-3"></i> TransformaciÃ³n
                                 </div>
                                 <SliderControl
                                     label="Zoom (%)"
@@ -2763,7 +2790,7 @@ const updateSetting = (key, value) => {
                                     description={EFFECT_DESCRIPTIONS.scale}
                                 />
                                 <SliderControl
-                                    label="Rotación"
+                                    label="RotaciÃ³n"
                                     value={currentSettings.rotation}
                                     min={0}
                                     max={360}
@@ -2772,7 +2799,7 @@ const updateSetting = (key, value) => {
                                     description={EFFECT_DESCRIPTIONS.rotation}
                                 />
                                 <div className="text-[10px] text-slate-500 italic mt-1 text-center bg-slate-800/50 rounded py-1">
-                                    Arrastra la imagen con el ratón para moverte
+                                    Arrastra la imagen con el ratÃ³n para moverte
                                 </div>
                             </div>
 
@@ -2820,12 +2847,12 @@ const updateSetting = (key, value) => {
                                     transform: 'translate(-50%, -50%)'
                                 }}
                             >
-                                {/* Título idéntico al historial: Azul y negrita */}
+                                {/* TÃ­tulo idÃ©ntico al historial: Azul y negrita */}
                                 <div className="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
                                     <span className="font-bold text-blue-300 text-lg tracking-wide">{hoveredSlider.label}</span>
                                 </div>
 
-                                {/* Descripción idéntica al historial: Clara y fina */}
+                                {/* DescripciÃ³n idÃ©ntica al historial: Clara y fina */}
                                 <div className="leading-snug text-slate-200 font-light text-[14px] text-left tracking-wide">
                                     {hoveredSlider.description}
                                 </div>
@@ -2851,9 +2878,9 @@ const updateSetting = (key, value) => {
                     {!originalImage && (
                         <div className="text-center p-12 border-2 border-dashed border-slate-700/50 rounded-2xl bg-slate-800/30 backdrop-blur-sm max-w-md mx-auto relative z-10 pointer-events-none">
 
-                            <h3 className="text-lg font-medium text-slate-200 mb-1">Galería de Edición</h3>
+                            <h3 className="text-lg font-medium text-slate-200 mb-1">GalerÃ­a de EdiciÃ³n</h3>
                             <p className="text-sm text-slate-500 mb-6">
-                                Sube imágenes, edítalas y guárdalas en el historial.
+                                Sube imÃ¡genes, edÃ­talas y guÃ¡rdalas en el historial.
                             </p>
                             <button
                                 onClick={() => fileInputRef.current.click()}
@@ -2910,15 +2937,15 @@ const updateSetting = (key, value) => {
 
 
 
-                    {/* BOTÓN FLOTANTE PARA CANCELAR EDICIÓN DESDE HISTORIAL */}
+                    {/* BOTÃ“N FLOTANTE PARA CANCELAR EDICIÃ“N DESDE HISTORIAL */}
                     {originalImage && hasOverlayFromHistory && previousImageBeforeEdit && (
                         <button
                             onClick={handleCancelOverlayEdit}
                             className="absolute bottom-4 right-4 px-3 py-1.5 bg-red-600/95 hover:bg-red-500 text-white text-xs font-medium rounded-full shadow-lg flex items-center gap-1 border border-red-400 z-20"
-                            title="Eliminar solo esta edición y volver a la imagen anterior"
+                            title="Eliminar solo esta ediciÃ³n y volver a la imagen anterior"
                         >
                             <i data-lucide="trash-2" className="w-4 h-4"></i>
-                            <span>Eliminar solo esta edición</span>
+                            <span>Eliminar solo esta ediciÃ³n</span>
                         </button>
                     )}
                 </section>
@@ -2954,7 +2981,7 @@ const updateSetting = (key, value) => {
                                         <img
                                             src={item.thumbnail}
                                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                            alt="Versión guardada"
+                                            alt="VersiÃ³n guardada"
                                         />
 
                                         {/* Overlay de acciones con iconos + leyenda */}
@@ -2966,7 +2993,7 @@ const updateSetting = (key, value) => {
                                                         handleDownloadHistory(item);
                                                     }}
                                                     className="flex-1 flex flex-col items-center gap-1 text-[9px] text-slate-100"
-                                                    title="Descargar esta versión"
+                                                    title="Descargar esta versiÃ³n"
                                                 >
                                                     <div className="w-7 h-7 rounded-full bg-slate-900/90 border border-slate-500 flex items-center justify-center shadow">
                                                         <i data-lucide="download" className="w-3 h-3"></i>
@@ -2979,7 +3006,7 @@ const updateSetting = (key, value) => {
                                                         restoreFromHistory(item);
                                                     }}
                                                     className="flex-1 flex flex-col items-center gap-1 text-[9px] text-sky-100"
-                                                    title="Editar esta versión en el lienzo"
+                                                    title="Editar esta versiÃ³n en el lienzo"
                                                 >
                                                     <div className="w-7 h-7 rounded-full bg-sky-700/90 border border-sky-400 flex items-center justify-center shadow">
                                                         <i data-lucide="pencil" className="w-3 h-3"></i>
@@ -3006,12 +3033,12 @@ const updateSetting = (key, value) => {
                                     {/* TOOLTIP PARA EFECTOS APLICADOS */}
                                     {hoveredHistoryItem === item.id && item.effectsDescription && (
                                         <div className="glass-popup absolute bottom-1/2 right-0 mb-0 p-4 w-56 z-50 whitespace-normal">
-                                            {/* Título idéntico al historial: Azul y negrita */}
+                                            {/* TÃ­tulo idÃ©ntico al historial: Azul y negrita */}
                                             <div className="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
                                                 <span className="font-bold text-blue-300 text-lg tracking-wide">Efectos aplicados</span>
                                             </div>
 
-                                            {/* Descripción idéntica al historial: Clara y fina */}
+                                            {/* DescripciÃ³n idÃ©ntica al historial: Clara y fina */}
                                             <div className="leading-snug text-slate-200 font-light text-[14px] text-left tracking-wide">
                                                 {item.effectsDescription}
                                             </div>
@@ -3023,7 +3050,7 @@ const updateSetting = (key, value) => {
                                             {item.timestamp}
                                         </span>
                                         <span className="text-[10px] text-blue-400">
-                                            Versión guardada
+                                            VersiÃ³n guardada
                                         </span>
                                     </div>
                                 </div>
@@ -3108,7 +3135,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
             imageRef.current = img;
             setImageLoaded(true);
 
-            // Calcular tamaño del canvas para que quepa en la pantalla
+            // Calcular tamaÃ±o del canvas para que quepa en la pantalla
             const maxWidth = Math.min(window.innerWidth * 0.8, 900);
             const maxHeight = Math.min(window.innerHeight * 0.7, 600);
 
@@ -3124,7 +3151,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
 
             setCanvasSize({ width: canvasWidth, height: canvasHeight });
 
-            // Inicializar área de recorte al 80% del centro
+            // Inicializar Ã¡rea de recorte al 80% del centro
             const initialCropWidth = canvasWidth * 0.8;
             const initialCropHeight = canvasHeight * 0.8;
             setCropArea({
@@ -3157,10 +3184,10 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Limpiar área de recorte (efecto de "ventana")
+        // Limpiar Ã¡rea de recorte (efecto de "ventana")
         ctx.clearRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
 
-        // Dibujar imagen en el área de recorte
+        // Dibujar imagen en el Ã¡rea de recorte
         ctx.drawImage(
             img,
             cropArea.x / scaleRef.current,
@@ -3173,7 +3200,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
             cropArea.height
         );
 
-        // Dibujar borde del área de recorte
+        // Dibujar borde del Ã¡rea de recorte
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2;
         ctx.strokeRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
@@ -3196,12 +3223,12 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
             ctx.fillRect(handle.x, handle.y, handleSize, handleSize);
         });
 
-        // Dibujar líneas de la regla de tercios
+        // Dibujar lÃ­neas de la regla de tercios
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.lineWidth = 1;
         ctx.setLineDash([5, 5]);
 
-        // Líneas verticales
+        // LÃ­neas verticales
         ctx.beginPath();
         ctx.moveTo(cropArea.x + cropArea.width / 3, cropArea.y);
         ctx.lineTo(cropArea.x + cropArea.width / 3, cropArea.y + cropArea.height);
@@ -3209,7 +3236,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
         ctx.lineTo(cropArea.x + 2 * cropArea.width / 3, cropArea.y + cropArea.height);
         ctx.stroke();
 
-        // Líneas horizontales
+        // LÃ­neas horizontales
         ctx.beginPath();
         ctx.moveTo(cropArea.x, cropArea.y + cropArea.height / 3);
         ctx.lineTo(cropArea.x + cropArea.width, cropArea.y + cropArea.height / 3);
@@ -3257,7 +3284,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
         e.preventDefault();
         const pos = getMousePos(e);
 
-        // Verificar si está haciendo clic en un handle
+        // Verificar si estÃ¡ haciendo clic en un handle
         const handle = getHandleAtPosition(pos);
         if (handle) {
             setIsResizing(true);
@@ -3266,7 +3293,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
             return;
         }
 
-        // Verificar si está dentro del área de recorte
+        // Verificar si estÃ¡ dentro del Ã¡rea de recorte
         if (pos.x >= cropArea.x && pos.x <= cropArea.x + cropArea.width &&
             pos.y >= cropArea.y && pos.y <= cropArea.y + cropArea.height) {
             setIsDragging(true);
@@ -3389,16 +3416,16 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
         let newWidth, newHeight;
 
         if (currentRatio > targetRatio) {
-            // La imagen es más ancha que la relación objetivo
+            // La imagen es mÃ¡s ancha que la relaciÃ³n objetivo
             newHeight = currentHeight;
             newWidth = currentHeight * targetRatio;
         } else {
-            // La imagen es más alta que la relación objetivo
+            // La imagen es mÃ¡s alta que la relaciÃ³n objetivo
             newWidth = currentWidth;
             newHeight = currentWidth / targetRatio;
         }
 
-        // Centrar el nuevo área de recorte
+        // Centrar el nuevo Ã¡rea de recorte
         const newX = cropArea.x + (currentWidth - newWidth) / 2;
         const newY = cropArea.y + (currentHeight - newHeight) / 2;
 
@@ -3446,7 +3473,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-white">Recortar Imagen</h2>
-                            <p className="text-xs text-slate-400">Arrastra el área seleccionada para ajustar el recorte</p>
+                            <p className="text-xs text-slate-400">Arrastra el Ã¡rea seleccionada para ajustar el recorte</p>
                         </div>
                     </div>
                     <button
@@ -3459,7 +3486,7 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
 
                 {/* Contenido */}
                 <div className="flex-1 overflow-auto p-6 flex flex-col items-center gap-6">
-                    {/* Opciones de relación de aspecto */}
+                    {/* Opciones de relaciÃ³n de aspecto */}
                     <div className="flex flex-wrap gap-2 justify-center">
                         {Object.keys(aspectRatios).map((ratio) => (
                             <button
@@ -3499,10 +3526,10 @@ const CropModal = ({ imageSrc, onClose, onCrop }) => {
                     {/* Info del recorte */}
                     <div className="text-center text-sm text-slate-400">
                         <span className="text-slate-300 font-medium">
-                            {Math.round(cropArea.width / scaleRef.current)} × {Math.round(cropArea.height / scaleRef.current)} px
+                            {Math.round(cropArea.width / scaleRef.current)} Ã— {Math.round(cropArea.height / scaleRef.current)} px
                         </span>
                         <span className="mx-2">|</span>
-                        <span>Relación: {(cropArea.width / cropArea.height).toFixed(2)}</span>
+                        <span>RelaciÃ³n: {(cropArea.width / cropArea.height).toFixed(2)}</span>
                     </div>
                 </div>
 
@@ -3579,7 +3606,7 @@ const ResizeModal = ({ imageSrc, onClose, onResize }) => {
             <div className="glass-modal w-full max-w-md rounded-2xl relative overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-700/50">
                     <h2 className="text-xl font-bold text-white">Redimensionar Imagen</h2>
-                    <p className="text-xs text-slate-400 mt-1">Original: {originalSize.width} × {originalSize.height} px</p>
+                    <p className="text-xs text-slate-400 mt-1">Original: {originalSize.width} Ã— {originalSize.height} px</p>
                 </div>
                 <div className="p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -3611,7 +3638,7 @@ const ResizeModal = ({ imageSrc, onClose, onResize }) => {
                             onChange={(e) => setMaintainAspect(e.target.checked)}
                             className="w-4 h-4 rounded border-slate-600"
                         />
-                        <span className="text-sm text-slate-300">Mantener proporción</span>
+                        <span className="text-sm text-slate-300">Mantener proporciÃ³n</span>
                     </label>
                 </div>
                 <div className="px-6 py-4 border-t border-slate-700/50 flex justify-end gap-3">
@@ -3623,7 +3650,7 @@ const ResizeModal = ({ imageSrc, onClose, onResize }) => {
     );
 };
 
-// --- COMPONENTE: MODAL DE ROTACIÓN LIBRE ---
+// --- COMPONENTE: MODAL DE ROTACIÃ“N LIBRE ---
 const RotateModal = ({ onClose, onRotate }) => {
     const [angle, setAngle] = useState(0);
 
@@ -3635,7 +3662,7 @@ const RotateModal = ({ onClose, onRotate }) => {
                 </div>
                 <div className="p-6 space-y-4">
                     <div>
-                        <label className="text-xs text-slate-400 block mb-2">Ángulo: {angle}°</label>
+                        <label className="text-xs text-slate-400 block mb-2">Ãngulo: {angle}Â°</label>
                         <input
                             type="range"
                             min="-180"
@@ -3645,9 +3672,9 @@ const RotateModal = ({ onClose, onRotate }) => {
                             className="w-full"
                         />
                         <div className="flex justify-between text-xs text-slate-500 mt-1">
-                            <span>-180°</span>
-                            <span>0°</span>
-                            <span>+180°</span>
+                            <span>-180Â°</span>
+                            <span>0Â°</span>
+                            <span>+180Â°</span>
                         </div>
                     </div>
                     <input
@@ -3675,7 +3702,7 @@ const BorderModal = ({ onClose, onAddBorder }) => {
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <div className="glass-modal w-full max-w-sm rounded-2xl relative overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-700/50">
-                    <h2 className="text-xl font-bold text-white">Añadir Marco</h2>
+                    <h2 className="text-xl font-bold text-white">AÃ±adir Marco</h2>
                 </div>
                 <div className="p-6 space-y-4">
                     <div>
@@ -3949,7 +3976,7 @@ const TextOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx,
                                 background: '#7f1d1d', color: '#fca5a5', border: '1px solid #991b1b',
                                 borderRadius: 6, padding: '4px 7px', fontSize: 11, cursor: 'pointer'
                             }}
-                        >🗑</button>
+                        >ðŸ—‘</button>
 
                         <div style={{ width: 1, height: 20, background: '#475569' }} />
                     </>
@@ -3960,7 +3987,7 @@ const TextOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx,
                 {/* Add another text */}
                 <button
                     onClick={onAdd}
-                    title="Añadir otro texto"
+                    title="AÃ±adir otro texto"
                     style={{
                         background: '#1e40af', color: '#fff', border: 'none',
                         borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer'
@@ -3974,7 +4001,7 @@ const TextOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx,
                         background: '#16a34a', color: '#fff', border: 'none',
                         borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer'
                     }}
-                >✓ Aplicar todo</button>
+                >âœ“ Aplicar todo</button>
 
                 {/* Cancel */}
                 <button
@@ -3983,7 +4010,7 @@ const TextOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx,
                         background: '#dc2626', color: '#fff', border: 'none',
                         borderRadius: 6, padding: '5px 7px', fontSize: 11, cursor: 'pointer'
                     }}
-                >✕</button>
+                >âœ•</button>
             </div>
         </>
     );
@@ -4161,8 +4188,8 @@ const ShapeOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx
                 boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                 flexWrap: 'wrap', justifyContent: 'center', maxWidth: '90%'
             }}>
-                <button title="Rectángulo" onClick={() => onAdd('rect')} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold">⬜</button>
-                <button title="Círculo" onClick={() => onAdd('circle')} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold">⚪</button>
+                <button title="RectÃ¡ngulo" onClick={() => onAdd('rect')} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold">â¬œ</button>
+                <button title="CÃ­rculo" onClick={() => onAdd('circle')} className="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold">âšª</button>
 
                 <div className="w-[1px] h-6 bg-slate-700 mx-1"></div>
 
@@ -4192,7 +4219,7 @@ const ShapeOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx
                                 background: '#7f1d1d', color: '#fca5a5', border: '1px solid #991b1b',
                                 borderRadius: 6, padding: '4px 7px', fontSize: 11, cursor: 'pointer'
                             }}
-                        >🗑</button>
+                        >ðŸ—‘</button>
                     </>
                 ) : (
                     <span className="text-[10px] text-slate-400">Selecciona una forma</span>
@@ -4207,7 +4234,7 @@ const ShapeOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx
                         background: '#16a34a', color: '#fff', border: 'none',
                         borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer'
                     }}
-                >✓ Aplicar</button>
+                >âœ“ Aplicar</button>
 
                 {/* Cancel */}
                 <button
@@ -4216,7 +4243,7 @@ const ShapeOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx
                         background: '#dc2626', color: '#fff', border: 'none',
                         borderRadius: 6, padding: '5px 7px', fontSize: 11, cursor: 'pointer'
                     }}
-                >✕</button>
+                >âœ•</button>
             </div>
         </>
     );
@@ -4346,7 +4373,7 @@ const PerspectiveModal = ({ imageSrc, onClose, onApply }) => {
 // --- COMPONENTE: MODAL DE CURVAS (con vista previa en tiempo real) ---
 const CurvesModal = ({ imageSrc, onClose, onApply }) => {
     // Puntos de control de la curva en coordenadas de canvas (0,0 arriba-izq, 255,255 abajo-der)
-    // Un punto (x, y) significa: entrada x → salida (255 - y) (porque el eje Y del canvas está invertido)
+    // Un punto (x, y) significa: entrada x â†’ salida (255 - y) (porque el eje Y del canvas estÃ¡ invertido)
     const [points, setPoints] = useState([{ x: 0, y: 255 }, { x: 255, y: 0 }]);
 
     const graphCanvasRef = useRef(null);
@@ -4423,14 +4450,14 @@ const CurvesModal = ({ imageSrc, onClose, onApply }) => {
         setPreviewUrl(canvas.toDataURL('image/jpeg', 0.85));
     }, [points]);
 
-    // Dibuja el gráfico de la curva
+    // Dibuja el grÃ¡fico de la curva
     const drawGraph = () => {
         const canvas = graphCanvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, 256, 256);
 
-        // Línea diagonal de referencia (sin curva = sin cambio)
+        // LÃ­nea diagonal de referencia (sin curva = sin cambio)
         ctx.strokeStyle = '#1e293b';
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
@@ -4450,7 +4477,7 @@ const CurvesModal = ({ imageSrc, onClose, onApply }) => {
         }
         ctx.stroke();
 
-        // Curva (interpolación lineal entre puntos ordenados)
+        // Curva (interpolaciÃ³n lineal entre puntos ordenados)
         const sorted = [...points].sort((a, b) => a.x - b.x);
         ctx.strokeStyle = '#3b82f6';
         ctx.lineWidth = 2;
@@ -4473,7 +4500,7 @@ const CurvesModal = ({ imageSrc, onClose, onApply }) => {
         });
     };
 
-    // Eventos de ratón para el gráfico de curvas
+    // Eventos de ratÃ³n para el grÃ¡fico de curvas
     const handleGraphMouseDown = (e) => {
         const rect = graphCanvasRef.current.getBoundingClientRect();
         const scaleX = 256 / rect.width;
@@ -4519,7 +4546,7 @@ const CurvesModal = ({ imageSrc, onClose, onApply }) => {
                     <p className="text-xs text-slate-400 mt-1">Arrastra los puntos de la curva. Los cambios se reflejan al instante.</p>
                 </div>
                 <div className="p-6 flex flex-col gap-4 bg-slate-900 overflow-auto" style={{ flex: 1 }}>
-                    {/* Fila superior: Gráfico de curva (compacto) */}
+                    {/* Fila superior: GrÃ¡fico de curva (compacto) */}
                     <div className="flex flex-col items-center gap-1">
                         <div className="relative w-[200px] h-[200px] bg-black border border-slate-700 cursor-crosshair rounded">
                             <canvas
@@ -4566,7 +4593,7 @@ const CurvesModal = ({ imageSrc, onClose, onApply }) => {
     );
 };
 
-// --- COMPONENTE: MODAL DE EXPORTACIÓN ---
+// --- COMPONENTE: MODAL DE EXPORTACIÃ“N ---
 const ExportModal = ({ imageSrc, onClose, onExport }) => {
     const [format, setFormat] = useState('image/jpeg');
     const [quality, setQuality] = useState(0.9);
@@ -4651,7 +4678,7 @@ const ExportModal = ({ imageSrc, onClose, onExport }) => {
 
                         <div>
                             <div className="flex justify-between mb-2">
-                                <label className="text-sm font-medium text-slate-300">Calidad (Compresión)</label>
+                                <label className="text-sm font-medium text-slate-300">Calidad (CompresiÃ³n)</label>
                                 <span className="text-xs text-blue-400 font-bold">{Math.round(quality * 100)}%</span>
                             </div>
                             <input

@@ -1,5 +1,5 @@
 <?php
-$API_KEY = getenv('GEMINI_API_KEY') ?: getenv('A');
+$API_KEY = getenv('GEMINI_API_KEY');
 
 $models = ['veo-3.1-fast-generate-preview', 'veo-3.1-fast-generate-001'];
 foreach ($models as $model) {

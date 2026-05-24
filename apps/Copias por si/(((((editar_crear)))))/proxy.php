@@ -36,10 +36,10 @@ if (!function_exists('curl_init')) {
 }
 
 // 1) API Key desde variable de entorno (.htaccess -> SetEnv)
-$API_KEY = getenv('GEMINI_KEY_COLOR'); // define esta variable en .htaccess
+$API_KEY = getenv('GEMINI_API_KEY'); // define esta variable en .htaccess
 if (!$API_KEY) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falta la API key. Configura GEMINI_KEY_FLASH_IMAGE en .htaccess.']);
+    echo json_encode(['error' => 'Falta la API key. Configura GEMINI_API_KEY en .htaccess.']);
     exit;
 }
 

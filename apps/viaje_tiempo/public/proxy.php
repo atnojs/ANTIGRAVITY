@@ -1,7 +1,7 @@
-<?php
+﻿<?php
 /**
  * CHRONOS BOOTH - Gemini Proxy
- * Versión segura: La API Key se lee del entorno (.htaccess)
+ * VersiÃ³n segura: La API Key se lee del entorno (.htaccess)
  */
 
 declare(strict_types=1);
@@ -9,7 +9,7 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 
-// Configuración de seguridad: Encabezados CORS (Ajustar según necesidad)
+// ConfiguraciÃ³n de seguridad: Encabezados CORS (Ajustar segÃºn necesidad)
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -41,11 +41,11 @@ if (isset($_GET['pollinationsUrl'])) {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método no permitido. Usa POST, excepto para el puente GET de Pollinations.']);
+    echo json_encode(['error' => 'MÃ©todo no permitido. Usa POST, excepto para el puente GET de Pollinations.']);
     exit;
 }
 
-// 1. Obtención de la API KEY desde .htaccess (SetEnv G)
+// 1. ObtenciÃ³n de la API KEY desde .htaccess (SetEnv G)
 $API_KEY = getenv('G');
 
 // Fallback por si getenv() no funciona en algunos entornos de Hostinger
@@ -55,17 +55,17 @@ if (!$API_KEY && isset($_SERVER['G'])) {
 
 if (!$API_KEY) {
     http_response_code(500);
-    echo json_encode(['error' => 'Configuración incompleta. Falta llave G en el servidor.']);
+    echo json_encode(['error' => 'ConfiguraciÃ³n incompleta. Falta llave G en el servidor.']);
     exit;
 }
 
-// 2. Lectura del cuerpo de la petición
+// 2. Lectura del cuerpo de la peticiÃ³n
 $inputJson = file_get_contents('php://input');
 $requestData = json_decode($inputJson, true);
 
 if (!$requestData) {
     http_response_code(400);
-    echo json_encode(['error' => 'JSON inválido o vacío.']);
+    echo json_encode(['error' => 'JSON invÃ¡lido o vacÃ­o.']);
     exit;
 }
 
@@ -100,10 +100,11 @@ curl_close($ch);
 
 if ($response === false) {
     http_response_code(502);
-    echo json_encode(['error' => 'Error de conexión con la IA', 'details' => $curlError]);
+    echo json_encode(['error' => 'Error de conexiÃ³n con la IA', 'details' => $curlError]);
     exit;
 }
 
 // 5. Devolver la respuesta de Google tal cual
 http_response_code($httpCode);
 echo $response;
+

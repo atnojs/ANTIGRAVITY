@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Hub - Herramientas y Prompts</title>
+    <link rel="icon" href="/favicon2.ico" type="image/x-icon"> <style>
+        /* Importar tipografías modernas */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
+
+        :root {
+            --primary-color: #6a5af9; /* Un morado suave y moderno */
+            --secondary-color: #f0f2f5; /* Un gris claro para fondos */
+            --text-color: #333;
+            --text-color-light: #555;
+            --card-bg: #ffffff;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Roboto', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            padding-top: 80px; /* Espacio para el header fijo */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        /* Header y Navegación */
+        header.main-header {
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            margin: 0 20px;
+            max-width: 500px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            font-family: var(--font-primary);
+        }
+
+        .user-actions button, nav.main-nav a {
+            background: none;
+            border: none;
+            color: var(--text-color-light);
+            margin-left: 15px;
+            font-size: 1em;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        nav.main-nav a.active,
+        nav.main-nav a:hover,
+        .user-actions button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .user-actions img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+
+        /* Secciones Principales */
+        .content-section {
+            display: none; /* Ocultas por defecto, se muestran con JS */
+            padding: 25px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .section-title {
+            font-size: 2em;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        /* Tarjetas (para Herramientas, Prompts, Categorías) */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background-color: #fff; /* Fondo ligeramente diferente al del contenedor de sección si es necesario */
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        .card-icon img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .card-description {
+            font-size: 0.95em;
+            color: var(--text-color-light);
+            margin-bottom: 15px;
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Limita a 3 líneas */
+            -webkit-box-orient: vertical;
+        }
+        .card-tags {
+            margin-bottom: 15px;
+        }
+        .card-tags .tag {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .card-actions {
+            margin-top: auto; /* Empuja las acciones al final */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-actions .btn {
+            padding: 8px 15px;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            background-color: transparent;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background-color 0.3s, color 0.3s;
+            cursor: pointer;
+        }
+        .card-actions .btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .card-actions .btn-secondary {
+            border-color: var(--text-color-light);
+            color: var(--text-color-light);
+        }
+         .card-actions .btn-secondary:hover {
+            background-color: var(--text-color-light);
+            color: white;
+        }
+
+
+        /* Filtros */
+        .filters {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .filters select, .filters input[type="text"] {
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            font-family: var(--font-primary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-close:hover, .modal-close:focus {
+            color: black;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-family: var(--font-primary);
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-group .preview-icon {
+            max-width: 60px;
+            max-height: 60px;
+            margin-top: 10px;
+            display: block;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-buttons .btn { /* Reutiliza estilo .btn */
+             padding: 10px 20px;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            background-color: transparent;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-size: 1em;
+            transition: background-color 0.3s, color 0.3s;
+            cursor: pointer;
+        }
+        .modal-buttons .btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .modal-buttons .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .modal-buttons .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+
+        /* Botones de Edición Generales */
+        .edit-controls { /* Contenedor para botones de edición en tarjetas/elementos */
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none; /* Oculto en modo visión */
+            gap: 5px;
+        }
+        .edit-controls button {
+            background-color: rgba(255,255,255,0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .edit-controls button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        body.edit-mode .edit-controls {
+            display: flex;
+        }
+        body.edit-mode .card-title[contenteditable="true"],
+        body.edit-mode .card-description[contenteditable="true"],
+        body.edit-mode .section-title[contenteditable="true"] {
+            outline: 1px dashed var(--primary-color);
+            padding: 5px;
+            cursor: text;
+        }
+
+
+        /* Botones Flotantes (Modo Edición, Cambiar Fondo, etc.) */
+        .fixed-action-buttons button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, opacity 0.3s;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        .fixed-action-buttons button:hover {
+            opacity: 1;
+            background-color: #5849e0; /* Un poco más oscuro al pasar el ratón */
+        }
+
+        #edit-mode-btn-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+        }
+        #add-content-area { /* Contenedor para botones de añadir globales */
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            display: none; /* Oculto por defecto, visible en modo edición */
+            flex-direction: column;
+        }
+         #change-bg-btn-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 999;
+            display: none; /* Oculto por defecto, visible en modo edición */
+        }
+        body.edit-mode #add-content-area,
+        body.edit-mode #change-bg-btn-container {
+            display: flex;
+        }
+        #bgInput { display: none !important; }
+
+        #backToTop {
+            position: fixed;
+            bottom: 80px; /* Ajustar si los otros botones están visibles */
+            right: 20px;
+            z-index: 1001;
+        }
+         body.edit-mode #backToTop {
+            bottom: 180px; /* Más arriba si hay muchos botones de edición */
+        }
+
+
+        /* Estilos para Modo Visión (simplificación) */
+        body.view-mode .edit-controls,
+        body.view-mode #add-content-area,
+        body.view-mode #change-bg-btn-container,
+        body.view-mode .admin-only { /* Cualquier elemento solo para admin */
+            display: none !important;
+        }
+        body.view-mode .card-title[contenteditable="true"],
+        body.view-mode .card-description[contenteditable="true"],
+        body.view-mode .section-title[contenteditable="true"] {
+            outline: none;
+            cursor: default;
+        }
+
+        /* Responsividad */
+        @media (max-width: 768px) {
+            .main-header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-bottom: 10px;
+            }
+            body { padding-top: 150px; } /* Ajustar para header más alto */
+            .search-bar { margin: 10px 0; max-width: 100%;}
+            nav.main-nav { margin-top: 10px; width:100%; }
+            nav.main-nav a { display: block; text-align: center; margin-bottom: 5px;}
+            .filters { flex-direction: column; align-items: stretch; }
+            .card-grid { grid-template-columns: 1fr; } /* Una columna en móviles */
+
+            #edit-mode-btn-container,
+            #add-content-area,
+            #change-bg-btn-container,
+            #backToTop {
+                padding: 8px 12px;
+                font-size: 0.8em;
+            }
+             body.edit-mode #backToTop {
+                bottom: 160px;
+            }
+        }
+        .save-message {
+            color: green;
+            font-size: 14px;
+            margin-top: 10px;
+            font-family: var(--font-secondary);
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="view-mode"> <header class="main-header">
+        <div class="logo">AI Hub</div>
+        <div class="search-bar">
+            <input type="text" id="globalSearchInput" placeholder="Buscar herramientas, prompts...">
+        </div>
+        <nav class="main-nav">
+            <a href="#home" data-section="home-section" class="active">Inicio</a>
+            <a href="#tools" data-section="tools-section">Herramientas IA</a>
+            <a href="#prompts" data-section="prompts-section">Prompts</a>
+            <a href="#user-panel" data-section="user-panel-section" id="userPanelNav">Panel Usuario</a>
+        </nav>
+        <div class="user-actions">
+            <button id="tempUserLogin">Acceder</button> </div>
+    </header>
+
+    <div class="container">
+        <section id="home-section" class="content-section active">
+            <h2 class="section-title" contenteditable="false" data-id="homeTitle">Bienvenido a AI Image Hub</h2>
+            
+            <h3 class="section-subtitle" data-id="featuredToolsTitle">Herramientas Destacadas</h3>
+            <div id="featured-tools-grid" class="card-grid">
+                </div>
+
+            <h3 class="section-subtitle" data-id="featuredPromptsTitle">Prompts Populares</h3>
+            <div id="featured-prompts-grid" class="card-grid">
+                </div>
+
+            <h3 class="section-subtitle" data-id="categoriesTitle">Explorar por Categorías</h3>
+            <div id="categories-grid" class="card-grid">
+                </div>
+        </section>
+
+        <section id="tools-section" class="content-section">
+            <h2 class="section-title" contenteditable="false" data-id="toolsSectionTitle">Repositorio de Herramientas IA</h2>
+            <div class="filters">
+                <input type="text" id="toolSearchInput" placeholder="Buscar herramienta...">
+                <select id="toolCategoryFilter">
+                    <option value="">Todas las Categorías</option>
+                    </select>
+                <select id="toolSortFilter">
+                    <option value="name_asc">Nombre (A-Z)</option>
+                    <option value="name_desc">Nombre (Z-A)</option>
+                    <option value="date_new">Más Nuevas</option>
+                    <option value="date_old">Más Antiguas</option>
+                </select>
+            </div>
+            <div id="tools-grid" class="card-grid">
+                </div>
+        </section>
+
+        <section id="prompts-section" class="content-section">
+            <h2 class="section-title" contenteditable="false" data-id="promptsSectionTitle">Biblioteca de Prompts</h2>
+            <div class="filters">
+                <input type="text" id="promptSearchInput" placeholder="Buscar prompt...">
+                <select id="promptCategoryFilter">
+                    <option value="">Todas las Categorías</option>
+                    </select>
+                <select id="promptSortFilter">
+                    <option value="title_asc">Título (A-Z)</option>
+                    <option value="title_desc">Título (Z-A)</option>
+                    <option value="date_new">Más Nuevos</option>
+                    <option value="date_old">Más Antiguos</option>
+                    </select>
+            </div>
+            <div id="prompts-grid" class="card-grid">
+                </div>
+        </section>
+
+        <section id="user-panel-section" class="content-section">
+            <h2 class="section-title" data-id="userPanelTitle">Panel de Usuario</h2>
+            <p>Aquí podrías ver tus herramientas favoritas, prompts guardados, colecciones y configuración.</p>
+            </section>
+    </div>
+
+    <div id="toolModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('toolModal')">&times;</span>
+            <h3 id="toolModalTitle">Añadir Nueva Herramienta</h3>
+            <input type="hidden" id="editingToolId">
+            <div class="form-group">
+                <label for="toolName">Nombre de la Herramienta:</label>
+                <input type="text" id="toolName" required>
+            </div>
+            <div class="form-group">
+                <label for="toolDescription">Descripción:</label>
+                <textarea id="toolDescription" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="toolIconUrl">URL del Icono:</label>
+                <input type="url" id="toolIconUrl">
+                <img id="toolIconPreview" class="preview-icon" src="#" alt="Vista previa del icono" style="display:none;">
+            </div>
+            <div class="form-group">
+                <label for="toolLink">Enlace a la Herramienta:</label>
+                <input type="url" id="toolLink" required>
+            </div>
+            <div class="form-group">
+                <label for="toolTutorialLink">Enlace al Tutorial (opcional):</label>
+                <input type="url" id="toolTutorialLink">
+            </div>
+            <div class="form-group">
+                <label for="toolCategory">Categoría:</label>
+                <select id="toolCategory">
+                    </select>
+            </div>
+            <div class="form-group">
+                <label for="toolTags">Etiquetas (separadas por coma):</label>
+                <input type="text" id="toolTags" placeholder="Ej: arte, fotorrealismo, abstracto">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('toolModal')">Cancelar</button>
+                <button class="btn btn-primary" id="saveToolBtn">Guardar Herramienta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="promptModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('promptModal')">&times;</span>
+            <h3 id="promptModalTitle">Añadir Nuevo Prompt</h3>
+            <input type="hidden" id="editingPromptId">
+            <div class="form-group">
+                <label for="promptTitle">Título del Prompt:</label>
+                <input type="text" id="promptTitle" required>
+            </div>
+            <div class="form-group">
+                <label for="promptText">Texto del Prompt Principal:</label>
+                <textarea id="promptText" required></textarea>
+            </div>
+             <div class="form-group">
+                <label for="promptExampleImageUrl">URL de Imagen de Ejemplo (opcional):</label>
+                <input type="url" id="promptExampleImageUrl">
+                 <img id="promptImagePreview" class="preview-icon" src="#" alt="Vista previa de imagen" style="display:none;">
+            </div>
+            <div class="form-group">
+                <label for="promptVariations">Variaciones / Sub-Prompts (uno por línea, opcional):</label>
+                <textarea id="promptVariations"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="promptCategory">Categoría:</label>
+                <select id="promptCategory">
+                     </select>
+            </div>
+            <div class="form-group">
+                <label for="promptTags">Etiquetas (separadas por coma):</label>
+                <input type="text" id="promptTags" placeholder="Ej: cyberpunk, fantasía, detallado">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('promptModal')">Cancelar</button>
+                <button class="btn btn-primary" id="savePromptBtn">Guardar Prompt</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('categoryModal')">&times;</span>
+            <h3 id="categoryModalTitle">Añadir Nueva Categoría</h3>
+            <input type="hidden" id="editingCategoryId">
+            <div class="form-group">
+                <label for="categoryName">Nombre de la Categoría:</label>
+                <input type="text" id="categoryName" required>
+            </div>
+            <div class="form-group">
+                <label for="categoryDescription">Descripción (opcional):</label>
+                <textarea id="categoryDescription"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="categoryIconUrl">URL del Icono (opcional):</label>
+                <input type="url" id="categoryIconUrl">
+                 <img id="categoryIconPreview" class="preview-icon" src="#" alt="Vista previa del icono" style="display:none;">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('categoryModal')">Cancelar</button>
+                <button class="btn btn-primary" id="saveCategoryBtn">Guardar Categoría</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed-action-buttons">
+        <div id="edit-mode-btn-container">
+            <button id="edit-mode-btn">Activar Modo Edición</button>
+        </div>
+        <div id="add-content-area">
+            <button id="addToolGlobalBtn" onclick="openModal('toolModal')">Añadir Herramienta</button>
+            <button id="addPromptGlobalBtn" onclick="openModal('promptModal')">Añadir Prompt</button>
+            <button id="addCategoryGlobalBtn" onclick="openModal('categoryModal')">Añadir Categoría</button>
+        </div>
+        <div id="change-bg-btn-container">
+            <button id="change-bg-btn" onclick="document.getElementById('bgInput').click()">Cambiar Fondo</button>
+        </div>
+        <button id="backToTop">Inicio</button>
+    </div>
+    <input type="file" id="bgInput" accept="image/*" style="display: none;">
+    <div class="save-message" style="display: none;"></div>
+
+    <script>
+        let appData = {
+            mainTitle: "AI Image Hub", // Título principal de la app, podría ser el logo
+            sectionsTitles: { // Títulos editables para las secciones
+                homeTitle: "Bienvenido a AI Image Hub",
+                featuredToolsTitle: "Herramientas Destacadas",
+                featuredPromptsTitle: "Prompts Populares",
+                categoriesTitle: "Explorar por Categorías",
+                toolsSectionTitle: "Repositorio de Herramientas IA",
+                promptsSectionTitle: "Biblioteca de Prompts",
+                userPanelTitle: "Panel de Usuario"
+            },
+            tools: [], // Array de objetos: { id, name, description, iconUrl, link, tutorialLink, categoryId, tags:[], dateAdded, isFeatured }
+            prompts: [], // Array de objetos: { id, title, text, exampleImageUrl, variations:[], categoryId, tags:[], dateAdded, isPopular, rating }
+            categories: [], // Array de objetos: { id, name, description, iconUrl }
+            userPreferences: { // Datos simulados de usuario
+                favoritesTools: [],
+                favoritesPrompts: [],
+                collections: [] // { id, name, promptIds:[] }
+            },
+            backgroundImage: '',
+            editPasswordHash: '' // Se cargará desde el backend
+        };
+
+        let isEditable = false;
+        let validatedPassword = ""; // Contraseña validada para la sesión actual
+        const PHP_SAVE_URL = 'Paginas/pagina_apps_prompts_imagenes/guardar_cambios_v2.php'; // NUEVO SCRIPT PHP
+        const PHP_LOAD_URL = 'Paginas/pagina_apps_prompts_imagenes/load_state_v2.php';    // NUEVO SCRIPT PHP
+        const PHP_VALIDATE_URL = 'Paginas/pagina_apps_prompts_imagenes/validar_password.php';
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initNavigation();
+            loadInitialData(); // Carga datos del servidor
+
+            document.getElementById('edit-mode-btn').addEventListener('click', toggleEditMode);
+            document.getElementById('backToTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            document.getElementById('bgInput').addEventListener('change', handleBackgroundChange);
+            
+            // Listeners para guardar en modales
+            document.getElementById('saveToolBtn').addEventListener('click', saveTool);
+            document.getElementById('savePromptBtn').addEventListener('click', savePrompt);
+            document.getElementById('saveCategoryBtn').addEventListener('click', saveCategory);
+
+            // Preview de iconos en modales
+            setupIconPreview('toolIconUrl', 'toolIconPreview');
+            setupIconPreview('promptExampleImageUrl', 'promptImagePreview');
+            setupIconPreview('categoryIconUrl', 'categoryIconPreview');
+
+            // Búsqueda global (muy básica, mejorar según necesidad)
+            document.getElementById('globalSearchInput').addEventListener('input', handleGlobalSearch);
+
+            // Navegación y activación de la primera sección
+            const firstSection = document.querySelector('.main-nav a').dataset.section;
+            showSection(firstSection);
+        });
+
+        function setupIconPreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            if (input && preview) {
+                input.addEventListener('input', () => {
+                    if (input.value && isValidHttpUrl(input.value)) {
+                        preview.src = input.value;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                });
+            }
+        }
+        function isValidHttpUrl(string) {
+            let url;
+            try {
+                url = new URL(string);
+            } catch (_) {
+                return false;  
+            }
+            return url.protocol === "http:" || url.protocol === "https:";
+        }
+
+
+        function initNavigation() {
+            const navLinks = document.querySelectorAll('.main-nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = link.dataset.section;
+                    showSection(sectionId);
+                    navLinks.forEach(el => el.classList.remove('active'));
+                    link.classList.add('active');
+                    window.location.hash = sectionId; // Actualiza el hash para deeplinking básico
+                });
+            });
+             // Check hash on load
+            if (window.location.hash) {
+                const sectionIdFromHash = window.location.hash.substring(1);
+                const targetLink = document.querySelector(`.main-nav a[data-section="${sectionIdFromHash}"]`);
+                if (targetLink) {
+                    showSection(sectionIdFromHash);
+                    document.querySelectorAll('.main-nav a').forEach(el => el.classList.remove('active'));
+                    targetLink.classList.add('active');
+                } else {
+                     showSection('home-section'); // fallback
+                }
+            } else {
+                 showSection('home-section'); // Default section
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            const activeSection = document.getElementById(sectionId);
+            if (activeSection) {
+                activeSection.classList.add('active');
+            }
+        }
+
+        async function checkPassword(password) {
+            try {
+                const response = await fetch(PHP_VALIDATE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
+                });
+                if (!response.ok) throw new Error("Error en la petición de validación");
+                const data = await response.json();
+                return data.success;
+            } catch (error) {
+                console.error("Error al validar la contraseña:", error);
+                if (password === "admin") { // Contraseña de emergencia solo para desarrollo local
+                    console.warn("Usando contraseña de emergencia 'admin'");
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        async function toggleEditMode() {
+            const editBtn = document.getElementById('edit-mode-btn');
+            if (!isEditable) {
+                const password = prompt('Contraseña para editar:');
+                if (password === null) return; // User cancelled
+                
+                const isValid = await checkPassword(password);
+
+                if (isValid) {
+                    isEditable = true;
+                    validatedPassword = password; // Guardar para la sesión
+                    document.body.classList.remove('view-mode');
+                    document.body.classList.add('edit-mode');
+                    editBtn.textContent = 'Guardar y Salir';
+                    makeElementsEditable(true);
+                } else {
+                    alert('Contraseña incorrecta.');
+                }
+            } else {
+                const confirmar = confirm('¿Guardar cambios antes de salir?');
+                if (confirmar) {
+                    await saveData();
+                    alert("¡Cambios guardados correctamente!");
+                }
+                isEditable = false;
+                validatedPassword = ""; // Limpiar contraseña
+                document.body.classList.remove('edit-mode');
+                document.body.classList.add('view-mode');
+                editBtn.textContent = 'Activar Modo Edición';
+                makeElementsEditable(false);
+                 // Forzar re-renderizado para quitar controles de edición, etc.
+                renderAllContent();
+            }
+        }
+
+        function makeElementsEditable(editable) {
+            // Títulos de sección
+            document.querySelectorAll('.section-title[data-id]').forEach(el => {
+                el.contentEditable = editable;
+                 if (editable) {
+                    el.addEventListener('blur', handleTitleEdit);
+                } else {
+                    el.removeEventListener('blur', handleTitleEdit);
+                }
+            });
+            // Habilitar/deshabilitar botones de añadir globales, etc.
+            document.getElementById('add-content-area').style.display = editable ? 'flex' : 'none';
+            document.getElementById('change-bg-btn-container').style.display = editable ? 'block' : 'none';
+             // Re-renderizar contenido para mostrar/ocultar controles de edición en tarjetas
+            renderAllContent();
+        }
+        
+        function handleTitleEdit(event) {
+            const element = event.target;
+            const id = element.dataset.id;
+            if (appData.sectionsTitles.hasOwnProperty(id)) {
+                appData.sectionsTitles[id] = element.textContent;
+                // No es necesario llamar a saveData() aquí, se hará al salir del modo edición
+                // o si se implementa un botón de guardado explícito.
+                showSaveMessage("Título actualizado. Se guardará al salir del modo edición.");
+            }
+        }
+
+
+        function handleBackgroundChange(event) {
+            const file = event.target.files[0];
+            if (file && isEditable) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.body.style.backgroundImage = `url('${e.target.result}')`;
+                    appData.backgroundImage = `url('${e.target.result}')`;
+                    // No es necesario saveData aquí, se hará al salir del modo edición.
+                    showSaveMessage("Fondo actualizado. Se guardará al salir del modo edición.");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function loadInitialData() {
+            try {
+                const response = await fetch(`${PHP_LOAD_URL}?t=${Date.now()}`); // Cache busting
+                if (!response.ok) throw new Error(`Error al cargar: ${response.status}`);
+                const loaded = await response.json();
+                if (loaded) {
+                    appData = { // Merge con defaults para asegurar que todas las claves existen
+                        ...appData, // Valores por defecto
+                        ...loaded,  // Valores cargados
+                        sectionsTitles: { ...appData.sectionsTitles, ...loaded.sectionsTitles },
+                        userPreferences: { ...appData.userPreferences, ...loaded.userPreferences },
+                        tools: loaded.tools || [],
+                        prompts: loaded.prompts || [],
+                        categories: loaded.categories || []
+                    };
+
+                    if (appData.backgroundImage) {
+                        document.body.style.backgroundImage = appData.backgroundImage;
+                    }
+                    // Aplicar títulos de sección cargados
+                    for (const id in appData.sectionsTitles) {
+                        const el = document.querySelector(`.section-title[data-id="${id}"]`);
+                        if (el) el.textContent = appData.sectionsTitles[id];
+                    }
+                    renderAllContent();
+                }
+            } catch (error) {
+                console.error('Error al cargar datos iniciales:', error);
+                // Cargar con datos por defecto si falla
+                renderAllContent();
+            }
+        }
+
+        async function saveData() {
+            if (!isEditable || !validatedPassword) {
+                console.warn("Intento de guardado sin estar en modo edición o sin contraseña validada.");
+                // return; // Podrías descomentar esto si no quieres que guarde automáticamente sin estar logueado
+            }
+            showSaveMessage("Guardando cambios...", "blue");
+
+            // Recoger títulos editables antes de enviar
+            document.querySelectorAll('.section-title[data-id]').forEach(el => {
+                const id = el.dataset.id;
+                if (appData.sectionsTitles.hasOwnProperty(id)) {
+                    appData.sectionsTitles[id] = el.textContent;
+                }
+            });
+            
+            const dataToSave = { ...appData, password: validatedPassword }; // Incluir la contraseña para autorización en el backend
+
+            try {
+                const response = await fetch(PHP_SAVE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSave)
+                });
+                if (!response.ok) throw new Error(`Error al guardar: ${response.status}`);
+                const responseData = await response.json();
+                if (responseData.error) throw new Error(responseData.error);
+                
+                showSaveMessage("✓ Cambios guardados correctamente", "green");
+                return true;
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                showSaveMessage(`✗ Error al guardar: ${error.message}`, "red");
+                throw error;
+            }
+        }
+
+        function showSaveMessage(message, color = "green") {
+            const msgElement = document.querySelector('.save-message');
+            if (msgElement) {
+                msgElement.textContent = message;
+                msgElement.style.color = color;
+                msgElement.style.display = 'block';
+                setTimeout(() => { msgElement.style.display = 'none'; }, 3000);
+            }
+        }
+
+
+        function renderAllContent() {
+            renderCategories(); // Renderizar categorías primero para que estén disponibles en los selectores
+            renderTools();
+            renderPrompts();
+            // renderFeatured(); // Si tienes lógica para destacados
+        }
+
+        // --- Lógica de Categorías ---
+        function renderCategories() {
+            const categoriesGrid = document.getElementById('categories-grid');
+            const toolCategoryFilter = document.getElementById('toolCategoryFilter');
+            const promptCategoryFilter = document.getElementById('promptCategoryFilter');
+            const toolCategoryModalSelect = document.getElementById('toolCategory');
+            const promptCategoryModalSelect = document.getElementById('promptCategory');
+
+            if (categoriesGrid) categoriesGrid.innerHTML = '';
+            
+            // Limpiar y rellenar selectores de filtro y modales
+            [toolCategoryFilter, promptCategoryFilter, toolCategoryModalSelect, promptCategoryModalSelect].forEach(select => {
+                if (select) {
+                    // Guardar la opción "Todas las categorías" o la primera opción si existe
+                    const firstOptionHTML = select.options.length > 0 && (select.id.includes("Filter") || select.options[0].value==="") ? select.options[0].outerHTML : '<option value="">Seleccionar Categoría</option>';
+                    select.innerHTML = firstOptionHTML; 
+                }
+            });
+
+            appData.categories.forEach(cat => {
+                if (categoriesGrid) { // Solo si estamos en la página de inicio
+                    const card = document.createElement('div');
+                    card.className = 'card category-card'; // Clase específica si necesitas estilos diferentes
+                    card.innerHTML = `
+                        ${cat.iconUrl ? `<div class="card-icon"><img src="${cat.iconUrl}" alt="${cat.name}"></div>` : ''}
+                        <h4 class="card-title">${cat.name}</h4>
+                        ${cat.description ? `<p class="card-description">${cat.description}</p>` : ''}
+                        <div class="card-actions">
+                            <button class="btn" onclick="navigateToCategory('${cat.id}')">Ver Contenido</button>
+                        </div>
+                        ${isEditable ? `
+                        <div class="edit-controls">
+                            <button title="Editar" onclick="editCategory('${cat.id}')">✏️</button>
+                            <button title="Eliminar" onclick="deleteCategory('${cat.id}')">🗑️</button>
+                        </div>` : ''}
+                    `;
+                    categoriesGrid.appendChild(card);
+                }
+                // Añadir a los selectores
+                 [toolCategoryFilter, promptCategoryFilter, toolCategoryModalSelect, promptCategoryModalSelect].forEach(select => {
+                    if (select) {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.name;
+                        select.appendChild(option);
+                    }
+                });
+            });
+        }
+
+        function openModal(modalId, itemId = null, type = null) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+
+            // Resetear formulario
+            const form = modal.querySelector('form') || modal; // Si el modal es el form o contiene uno
+            if (form.reset) form.reset(); // Si es un elemento form
+            else { // Limpieza manual para divs que actúan como forms
+                 Array.from(form.querySelectorAll('input[type="text"], input[type="url"], textarea, input[type="hidden"]')).forEach(input => input.value = '');
+                 Array.from(form.querySelectorAll('select')).forEach(select => select.selectedIndex = 0);
+                 Array.from(form.querySelectorAll('.preview-icon')).forEach(img => {img.src='#'; img.style.display='none';});
+            }
+
+
+            if (type === 'tool' && itemId) { // Editando herramienta
+                document.getElementById('toolModalTitle').textContent = 'Editar Herramienta';
+                document.getElementById('editingToolId').value = itemId;
+                const tool = appData.tools.find(t => t.id === itemId);
+                if (tool) {
+                    document.getElementById('toolName').value = tool.name;
+                    document.getElementById('toolDescription').value = tool.description;
+                    document.getElementById('toolIconUrl').value = tool.iconUrl;
+                     if(tool.iconUrl && isValidHttpUrl(tool.iconUrl)) {
+                        document.getElementById('toolIconPreview').src = tool.iconUrl;
+                        document.getElementById('toolIconPreview').style.display = 'block';
+                    }
+                    document.getElementById('toolLink').value = tool.link;
+                    document.getElementById('toolTutorialLink').value = tool.tutorialLink || '';
+                    document.getElementById('toolCategory').value = tool.categoryId || '';
+                    document.getElementById('toolTags').value = tool.tags ? tool.tags.join(', ') : '';
+                }
+            } else if (type === 'tool') { // Añadiendo herramienta
+                 document.getElementById('toolModalTitle').textContent = 'Añadir Nueva Herramienta';
+                 document.getElementById('editingToolId').value = ''; // Limpiar ID
+            }
+
+
+            if (type === 'prompt' && itemId) { // Editando prompt
+                document.getElementById('promptModalTitle').textContent = 'Editar Prompt';
+                document.getElementById('editingPromptId').value = itemId;
+                const prompt = appData.prompts.find(p => p.id === itemId);
+                 if (prompt) {
+                    document.getElementById('promptTitle').value = prompt.title;
+                    document.getElementById('promptText').value = prompt.text;
+                    document.getElementById('promptExampleImageUrl').value = prompt.exampleImageUrl || '';
+                    if(prompt.exampleImageUrl && isValidHttpUrl(prompt.exampleImageUrl)) {
+                        document.getElementById('promptImagePreview').src = prompt.exampleImageUrl;
+                        document.getElementById('promptImagePreview').style.display = 'block';
+                    }
+                    document.getElementById('promptVariations').value = prompt.variations ? prompt.variations.join('\n') : '';
+                    document.getElementById('promptCategory').value = prompt.categoryId || '';
+                    document.getElementById('promptTags').value = prompt.tags ? prompt.tags.join(', ') : '';
+                }
+            } else if (type === 'prompt') {
+                document.getElementById('promptModalTitle').textContent = 'Añadir Nuevo Prompt';
+                document.getElementById('editingPromptId').value = '';
+            }
+
+            if (type === 'category' && itemId) { // Editando categoría
+                document.getElementById('categoryModalTitle').textContent = 'Editar Categoría';
+                document.getElementById('editingCategoryId').value = itemId;
+                const category = appData.categories.find(c => c.id === itemId);
+                if (category) {
+                    document.getElementById('categoryName').value = category.name;
+                    document.getElementById('categoryDescription').value = category.description || '';
+                    document.getElementById('categoryIconUrl').value = category.iconUrl || '';
+                     if(category.iconUrl && isValidHttpUrl(category.iconUrl)) {
+                        document.getElementById('categoryIconPreview').src = category.iconUrl;
+                        document.getElementById('categoryIconPreview').style.display = 'block';
+                    }
+                }
+            } else if (type === 'category') {
+                 document.getElementById('categoryModalTitle').textContent = 'Añadir Nueva Categoría';
+                 document.getElementById('editingCategoryId').value = '';
+            }
+            modal.style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+        }
+        // Cerrar modal si se hace clic fuera
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        }
+
+        function saveCategory() {
+            const id = document.getElementById('editingCategoryId').value;
+            const name = document.getElementById('categoryName').value.trim();
+            const description = document.getElementById('categoryDescription').value.trim();
+            const iconUrl = document.getElementById('categoryIconUrl').value.trim();
+
+            if (!name) {
+                alert("El nombre de la categoría es obligatorio.");
+                return;
+            }
+
+            if (id) { // Editando
+                const index = appData.categories.findIndex(c => c.id === id);
+                if (index > -1) {
+                    appData.categories[index] = { ...appData.categories[index], name, description, iconUrl };
+                }
+            } else { // Nuevo
+                // Verificar si ya existe una categoría con el mismo nombre (insensible a mayúsculas/minúsculas)
+                const existingCategory = appData.categories.find(cat => cat.name.toLowerCase() === name.toLowerCase());
+                if (existingCategory) {
+                    alert(`La categoría "${name}" ya existe. Por favor, elige un nombre diferente.`);
+                    return;
+                }
+                appData.categories.push({ id: `cat-${Date.now()}`, name, description, iconUrl });
+            }
+            renderCategories(); // Actualiza la UI de categorías y los selectores
+            closeModal('categoryModal');
+            showSaveMessage("Categoría guardada. Se actualizará en el servidor al salir del modo edición.");
+        }
+
+        function editCategory(id) {
+            openModal('categoryModal', id, 'category');
+        }
+
+        function deleteCategory(id) {
+            if (confirm("¿Estás seguro de que quieres eliminar esta categoría? Esto también desasignará la categoría de las herramientas y prompts asociados.")) {
+                appData.categories = appData.categories.filter(c => c.id !== id);
+                // Desasignar de herramientas y prompts
+                appData.tools.forEach(t => { if (t.categoryId === id) t.categoryId = ''; });
+                appData.prompts.forEach(p => { if (p.categoryId === id) p.categoryId = ''; });
+                renderAllContent(); // Re-renderiza todo para reflejar cambios
+                showSaveMessage("Categoría eliminada. Se actualizará en el servidor al salir del modo edición.");
+            }
+        }
+
+
+        // --- Lógica de Herramientas ---
+        function renderTools() {
+            const toolsGrid = document.getElementById('tools-grid');
+            if (!toolsGrid) return;
+            toolsGrid.innerHTML = ''; // Limpiar grid
+
+            // Aplicar filtros y ordenación si existen
+            const searchTerm = document.getElementById('toolSearchInput')?.value.toLowerCase() || "";
+            const categoryFilter = document.getElementById('toolCategoryFilter')?.value || "";
+            // const sortFilter = document.getElementById('toolSortFilter').value; // Implementar lógica de ordenación
+
+            const filteredTools = appData.tools.filter(tool => {
+                const matchesSearch = tool.name.toLowerCase().includes(searchTerm) || tool.description.toLowerCase().includes(searchTerm) || (tool.tags && tool.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
+                const matchesCategory = categoryFilter ? tool.categoryId === categoryFilter : true;
+                return matchesSearch && matchesCategory;
+            });
+
+
+            filteredTools.forEach(tool => {
+                const category = appData.categories.find(c => c.id === tool.categoryId);
+                const card = document.createElement('div');
+                card.className = 'card tool-card';
+                card.innerHTML = `
+                    ${tool.iconUrl ? `<div class="card-icon"><img src="${tool.iconUrl}" alt="${tool.name}"></div>` : '<div class="card-icon"><img src="placeholder-icon.png" alt="Placeholder"></div>'}
+                    <h4 class="card-title">${tool.name}</h4>
+                    <p class="card-description">${tool.description}</p>
+                    ${tool.tags && tool.tags.length > 0 ? `
+                        <div class="card-tags">
+                            ${tool.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${category ? `<p class="card-category">Categoría: ${category.name}</p>` : ''}
+                    <div class="card-actions">
+                        <a href="${tool.link}" target="_blank" class="btn">Visitar</a>
+                        ${tool.tutorialLink ? `<a href="${tool.tutorialLink}" target="_blank" class="btn btn-secondary">Tutorial</a>` : ''}
+                    </div>
+                    ${isEditable ? `
+                    <div class="edit-controls">
+                        <button title="Editar" onclick="openModal('toolModal', '${tool.id}', 'tool')">✏️</button>
+                        <button title="Eliminar" onclick="deleteTool('${tool.id}')">🗑️</button>
+                    </div>` : ''}
+                `;
+                toolsGrid.appendChild(card);
+            });
+        }
+        
+        function saveTool() {
+            const id = document.getElementById('editingToolId').value;
+            const name = document.getElementById('toolName').value.trim();
+            const description = document.getElementById('toolDescription').value.trim();
+            const iconUrl = document.getElementById('toolIconUrl').value.trim();
+            const link = document.getElementById('toolLink').value.trim();
+            const tutorialLink = document.getElementById('toolTutorialLink').value.trim();
+            const categoryId = document.getElementById('toolCategory').value;
+            const tags = document.getElementById('toolTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            if (!name || !description || !link) {
+                alert("Nombre, descripción y enlace son obligatorios.");
+                return;
+            }
+
+            const toolData = {
+                name, description, iconUrl, link, tutorialLink, categoryId, tags,
+                dateAdded: id ? appData.tools.find(t=>t.id===id).dateAdded : new Date().toISOString() // Mantener fecha original o nueva
+            };
+
+            if (id) { // Editando
+                const index = appData.tools.findIndex(t => t.id === id);
+                appData.tools[index] = { ...appData.tools[index], ...toolData };
+            } else { // Nuevo
+                appData.tools.push({ id: `tool-${Date.now()}`, ...toolData });
+            }
+            renderTools();
+            closeModal('toolModal');
+            showSaveMessage("Herramienta guardada. Se actualizará en el servidor al salir del modo edición.");
+        }
+
+        function deleteTool(id) {
+            if (confirm("¿Estás seguro de que quieres eliminar esta herramienta?")) {
+                appData.tools = appData.tools.filter(t => t.id !== id);
+                renderTools();
+                showSaveMessage("Herramienta eliminada. Se actualizará en el servidor al salir del modo edición.");
+            }
+        }
+
+
+        // --- Lógica de Prompts ---
+        function renderPrompts() {
+            const promptsGrid = document.getElementById('prompts-grid');
+            if (!promptsGrid) return;
+            promptsGrid.innerHTML = '';
+
+            const searchTerm = document.getElementById('promptSearchInput')?.value.toLowerCase() || "";
+            const categoryFilter = document.getElementById('promptCategoryFilter')?.value || "";
+
+            const filteredPrompts = appData.prompts.filter(prompt => {
+                const matchesSearch = prompt.title.toLowerCase().includes(searchTerm) || prompt.text.toLowerCase().includes(searchTerm) || (prompt.tags && prompt.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
+                const matchesCategory = categoryFilter ? prompt.categoryId === categoryFilter : true;
+                return matchesSearch && matchesCategory;
+            });
+
+            filteredPrompts.forEach(prompt => {
+                const category = appData.categories.find(c => c.id === prompt.categoryId);
+                const card = document.createElement('div');
+                card.className = 'card prompt-card';
+                // Simular imagen de prompt o usar la real
+                const imageHTML = prompt.exampleImageUrl ? `<div class="card-icon"><img src="${prompt.exampleImageUrl}" alt="Ejemplo de prompt"></div>` : '<div class="card-icon"><img src="placeholder-prompt.png" alt="Placeholder"></div>';
+
+                card.innerHTML = `
+                    ${imageHTML}
+                    <h4 class="card-title">${prompt.title}</h4>
+                    <p class="card-description">${prompt.text.substring(0,100)}${prompt.text.length > 100 ? '...' : ''}</p>
+                     ${prompt.tags && prompt.tags.length > 0 ? `
+                        <div class="card-tags">
+                            ${prompt.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${category ? `<p class="card-category">Categoría: ${category.name}</p>` : ''}
+                    <div class="card-actions">
+                        <button class="btn" onclick="copyToClipboard('${prompt.text.replace(/'/g, "\\'")}')">Copiar</button>
+                        <button class="btn btn-secondary" onclick="viewPromptDetails('${prompt.id}')">Detalles</button>
+                    </div>
+                     ${isEditable ? `
+                    <div class="edit-controls">
+                        <button title="Editar" onclick="openModal('promptModal', '${prompt.id}', 'prompt')">✏️</button>
+                        <button title="Eliminar" onclick="deletePrompt('${prompt.id}')">🗑️</button>
+                    </div>` : ''}
+                `;
+                promptsGrid.appendChild(card);
+            });
+        }
+
+        function savePrompt() {
+            const id = document.getElementById('editingPromptId').value;
+            const title = document.getElementById('promptTitle').value.trim();
+            const text = document.getElementById('promptText').value.trim();
+            const exampleImageUrl = document.getElementById('promptExampleImageUrl').value.trim();
+            const variations = document.getElementById('promptVariations').value.split('\n').map(v => v.trim()).filter(v => v);
+            const categoryId = document.getElementById('promptCategory').value;
+            const tags = document.getElementById('promptTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            if (!title || !text) {
+                alert("Título y texto del prompt son obligatorios.");
+                return;
+            }
+             const promptData = {
+                title, text, exampleImageUrl, variations, categoryId, tags,
+                dateAdded: id ? appData.prompts.find(p=>p.id===id).dateAdded : new Date().toISOString()
+            };
+
+            if (id) { // Editando
+                const index = appData.prompts.findIndex(p => p.id === id);
+                appData.prompts[index] = { ...appData.prompts[index], ...promptData };
+            } else { // Nuevo
+                appData.prompts.push({ id: `prompt-${Date.now()}`, ...promptData });
+            }
+            renderPrompts();
+            closeModal('promptModal');
+            showSaveMessage("Prompt guardado. Se actualizará en el servidor al salir del modo edición.");
+        }
+
+        function deletePrompt(id) {
+            if (confirm("¿Estás seguro de que quieres eliminar este prompt?")) {
+                appData.prompts = appData.prompts.filter(p => p.id !== id);
+                renderPrompts();
+                showSaveMessage("Prompt eliminado. Se actualizará en el servidor al salir del modo edición.");
+            }
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Prompt copiado al portapapeles!');
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+                alert('Error al copiar el prompt.');
+            });
+        }
+
+        function viewPromptDetails(promptId) {
+            // Aquí podrías abrir un modal más grande con todos los detalles del prompt,
+            // incluyendo variaciones, etc. Por ahora, es un placeholder.
+            const prompt = appData.prompts.find(p => p.id === promptId);
+            if(prompt) {
+                alert(`Título: ${prompt.title}\nPrompt: ${prompt.text}\nVariaciones: ${prompt.variations.join(', ')}`);
+            }
+        }
+
+        // --- Búsqueda y Filtros (Simplificado) ---
+        document.getElementById('toolSearchInput')?.addEventListener('input', renderTools);
+        document.getElementById('toolCategoryFilter')?.addEventListener('change', renderTools);
+        // document.getElementById('toolSortFilter').addEventListener('change', renderTools); // Añadir lógica
+
+        document.getElementById('promptSearchInput')?.addEventListener('input', renderPrompts);
+        document.getElementById('promptCategoryFilter')?.addEventListener('change', renderPrompts);
+        // document.getElementById('promptSortFilter').addEventListener('change', renderPrompts); // Añadir lógica
+
+
+        function handleGlobalSearch(event) {
+            const query = event.target.value.toLowerCase();
+            if (!query) { // Si la búsqueda está vacía, no filtrar nada o mostrar home
+                showSection('home-section'); // O la sección activa previa
+                document.querySelectorAll('.main-nav a').forEach(el => el.classList.remove('active'));
+                document.querySelector('.main-nav a[data-section="home-section"]').classList.add('active');
+                // Limpiar filtros de secciones específicas si es necesario
+                if(document.getElementById('toolSearchInput')) document.getElementById('toolSearchInput').value = "";
+                if(document.getElementById('promptSearchInput')) document.getElementById('promptSearchInput').value = "";
+                renderAllContent();
+                return;
+            }
+
+            // Una idea simple: redirigir a la sección de herramientas y filtrar allí
+            showSection('tools-section');
+            document.querySelectorAll('.main-nav a').forEach(el => el.classList.remove('active'));
+            document.querySelector('.main-nav a[data-section="tools-section"]').classList.add('active');
+            document.getElementById('toolSearchInput').value = query;
+            renderTools(); // Esto aplicará el filtro de herramientas
+
+            // Podrías hacer lo mismo para prompts o tener una página de resultados de búsqueda combinada (más complejo)
+        }
+        
+        // --- Final de Script ---
+    </script>
+</body>
+</html>

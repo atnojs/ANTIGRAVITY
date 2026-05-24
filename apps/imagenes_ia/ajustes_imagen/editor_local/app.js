@@ -1,6 +1,6 @@
-const { useState, useRef, useEffect, useCallback } = React;
+﻿const { useState, useRef, useEffect, useCallback } = React;
 
-// --- CONFIGURACIÓN CONSTANTES ---
+// --- CONFIGURACIÃ“N CONSTANTES ---
 const DB_NAME = 'editor_local_db';
 const DB_VERSION = 1;
 const STORE_NAME = 'history';
@@ -214,13 +214,13 @@ const getEffectsDescription = (settings) => {
     if (settings.brightness !== 100) effects.push(`Brillo: ${settings.brightness > 100 ? '+' : ''}${settings.brightness - 100}%`);
     if (settings.contrast !== 100) effects.push(`Contraste: ${settings.contrast > 100 ? '+' : ''}${settings.contrast - 100}%`);
     if (settings.saturation !== 100) effects.push(`Saturacion: ${settings.saturation > 100 ? '+' : ''}${settings.saturation - 100}%`);
-    if (settings.hue !== 0) effects.push(`Matiz: ${settings.hue}°`);
+    if (settings.hue !== 0) effects.push(`Matiz: ${settings.hue}Â°`);
     if (settings.blur !== 0) effects.push(`Desenfoque: ${settings.blur}px`);
     if (settings.exposure !== 0) effects.push(`Exposicion: ${settings.exposure > 0 ? '+' : ''}${settings.exposure}`);
     if (settings.temperature !== 0) effects.push(`Temperatura: ${settings.temperature > 0 ? '+' : ''}${settings.temperature}`);
     if (settings.vignette !== 0) effects.push(`Vineta: ${settings.vignette}%`);
     if (settings.scale !== 100) effects.push(`Escala: ${settings.scale}%`);
-    if (settings.rotation !== 0) effects.push(`Rotacion: ${settings.rotation}°`);
+    if (settings.rotation !== 0) effects.push(`Rotacion: ${settings.rotation}Â°`);
     if (settings.clarity !== 0) effects.push(`Claridad: ${settings.clarity > 0 ? '+' : ''}${settings.clarity}`);
     if (settings.vibrance !== 0) effects.push(`Vibrancia: ${settings.vibrance > 0 ? '+' : ''}${settings.vibrance}`);
     if (settings.noiseReduction !== 0) effects.push(`Reduccion ruido: ${settings.noiseReduction}%`);
@@ -231,6 +231,33 @@ const getEffectsDescription = (settings) => {
     if (settings.ortonEffect !== 0) effects.push(`Orton: ${settings.ortonEffect}%`);
     if (settings.focalBlur !== 0) effects.push(`Enfoque selectivo: ${settings.focalBlur}px`);
     return effects.length > 0 ? effects.join(', ') : 'Sin efectos aplicados';
+};
+
+
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
 };
 
 const App = () => {
@@ -768,8 +795,8 @@ const App = () => {
             ctx.drawImage(img, -img.width / 2, -img.height / 2);
             const rotatedImage = canvas.toDataURL('image/jpeg', 0.95);
             setOriginalImage(rotatedImage); setUploadedFile(rotatedImage);
-            setManualActions(prev => [...prev, `Rotar ${angle}°`]); setCurrentSettings(INITIAL_SETTINGS);
-            setMessage(`Rotado ${angle}°`); setTimeout(() => setMessage(""), 3000);
+            setManualActions(prev => [...prev, `Rotar ${angle}Â°`]); setCurrentSettings(INITIAL_SETTINGS);
+            setMessage(`Rotado ${angle}Â°`); setTimeout(() => setMessage(""), 3000);
         };
         img.src = originalImage;
     };
@@ -897,7 +924,7 @@ const App = () => {
     const startTextEditing = () => {
         if (!originalImage) return;
         if (lastAppliedTexts && lastAppliedTexts.length > 0 && preTextImage) {
-            const choice = confirm(`Tienes ${lastAppliedTexts.length} texto(s) aplicado(s).\\n\\n¿Quieres editarlos?\\n\\nAceptar = Editar\\nCancelar = Nuevo`);
+            const choice = confirm(`Tienes ${lastAppliedTexts.length} texto(s) aplicado(s).\\n\\nÂ¿Quieres editarlos?\\n\\nAceptar = Editar\\nCancelar = Nuevo`);
             if (choice) {
                 preReEditImageRef.current = originalImage;
                 isReEditingRef.current = true;
@@ -1527,13 +1554,13 @@ const TextOverlayEditor = ({ overlays, setOverlays, selectedIdx, setSelectedIdx,
                         <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><span style={{ fontSize: 10, color: '#94a3b8' }}>Tam</span><input type="range" min="12" max="120" value={selected.fontSize} onChange={(e) => updateOverlay(selectedIdx, { fontSize: parseInt(e.target.value) })} style={{ width: 60, accentColor: '#3b82f6' }} /><span style={{ fontSize: 10, color: '#cbd5e1', minWidth: 20 }}>{selected.fontSize}</span></div>
                         <input type="color" value={selected.color} onChange={(e) => updateOverlay(selectedIdx, { color: e.target.value })} style={{ width: 26, height: 26, border: '1px solid #475569', borderRadius: 6, cursor: 'pointer', padding: 1, background: 'transparent' }} />
                         <input type="text" value={selected.text} onChange={(e) => updateOverlay(selectedIdx, { text: e.target.value })} placeholder="Texto..." style={{ background: '#1e293b', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, padding: '4px 8px', fontSize: 11, outline: 'none', width: 120, minWidth: 80 }} />
-                        <button onClick={() => onDelete(selectedIdx)} title="Eliminar" style={{ background: '#7f1d1d', color: '#fca5a5', border: '1px solid #991b1b', borderRadius: 6, padding: '4px 7px', fontSize: 11, cursor: 'pointer' }}>🗑</button>
+                        <button onClick={() => onDelete(selectedIdx)} title="Eliminar" style={{ background: '#7f1d1d', color: '#fca5a5', border: '1px solid #991b1b', borderRadius: 6, padding: '4px 7px', fontSize: 11, cursor: 'pointer' }}>ðŸ—‘</button>
                         <div style={{ width: 1, height: 20, background: '#475569' }} />
                     </>
                 ) : (<span style={{ fontSize: 11, color: '#94a3b8' }}>Haz clic en un texto</span>)}
                 <button onClick={onAdd} title="Anadir" style={{ background: '#1e40af', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>+ Texto</button>
-                <button onClick={onApply} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>✓ Aplicar</button>
-                <button onClick={onCancel} style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 7px', fontSize: 11, cursor: 'pointer' }}>✕</button>
+                <button onClick={onApply} style={{ background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>âœ“ Aplicar</button>
+                <button onClick={onCancel} style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 7px', fontSize: 11, cursor: 'pointer' }}>âœ•</button>
             </div>
         </>
     );
@@ -1793,3 +1820,4 @@ const ExportModal = ({ onClose, onExport }) => {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+

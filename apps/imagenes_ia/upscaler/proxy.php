@@ -1,6 +1,6 @@
-<?php
-// Proxy para Google Gemini — PHP 8+, cURL habilitado.
-// Upscaler Pro: soporta passthrough Gemini + modo enhance (edición fiel)
+﻿<?php
+// Proxy para Google Gemini â€” PHP 8+, cURL habilitado.
+// Upscaler Pro: soporta passthrough Gemini + modo enhance (ediciÃ³n fiel)
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -26,22 +26,44 @@ register_shutdown_function(function () {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método no permitido. Usa POST.']);
+    echo json_encode(['error' => 'MÃ©todo no permitido. Usa POST.']);
     exit;
 }
 
 if (!function_exists('curl_init')) {
     http_response_code(500);
-    echo json_encode(['error' => 'cURL no está habilitado en el servidor.']);
+    echo json_encode(['error' => 'cURL no estÃ¡ habilitado en el servidor.']);
     exit;
 }
 
-// 1) API Key desde variable de entorno (.htaccess -> SetEnv)
-$API_KEY = getenv('A')
-    ?: ($_SERVER['A'] ?? $_SERVER['REDIRECT_A'] ?? null);
-if (!$API_KEY) {
+// 1) API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$API_KEY = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $API_KEY = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('GEMINI_API_KEY');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_GEMINI_API_KEY');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falta la API key. Configura A en .htaccess.']);
+    echo json_encode(['error' => ['message' => 'API key no configurada.']]);
     exit;
 }
 
@@ -50,13 +72,13 @@ $raw = file_get_contents('php://input') ?: '';
 $req = json_decode($raw, true);
 if (!is_array($req)) {
     http_response_code(400);
-    echo json_encode(['error' => 'JSON inválido o vacío.']);
+    echo json_encode(['error' => 'JSON invÃ¡lido o vacÃ­o.']);
     exit;
 }
 
 $task = $req['task'] ?? '';
 
-// --- TAREA: ENHANCE (edición fiel de imagen, NO generación) ---
+// --- TAREA: ENHANCE (ediciÃ³n fiel de imagen, NO generaciÃ³n) ---
 if ($task === 'enhance') {
     $imageData = $req['imageData'] ?? '';
     $mimeType  = $req['mimeType'] ?? 'image/jpeg';
@@ -68,8 +90,8 @@ if ($task === 'enhance') {
         exit;
     }
 
-    // Usar gemini-2.0-flash-exp o el modelo de edición más fiel disponible
-    $model = 'gemini-2.0-flash-preview-image-generation';
+    // Usar gemini-2.0-flash-exp o el modelo de ediciÃ³n mÃ¡s fiel disponible
+    $model = 'gemini-2.5-flash-image';
     $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
     $payload = [
@@ -100,7 +122,7 @@ if ($task === 'enhance') {
         $err = curl_error($ch);
         curl_close($ch);
         http_response_code(502);
-        echo json_encode(['error' => 'Error de comunicación con Google', 'details' => $err]);
+        echo json_encode(['error' => 'Error de comunicaciÃ³n con Google', 'details' => $err]);
         exit;
     }
 
@@ -132,7 +154,7 @@ if ($task === 'enhance') {
     if ($imageB64) {
         echo json_encode(['image' => $imageB64, 'mimeType' => $mime, 'type' => 'image']);
     } else {
-        // No devolvió imagen, puede haber devuelto texto explicativo
+        // No devolviÃ³ imagen, puede haber devuelto texto explicativo
         $textResponse = '';
         if (isset($data['candidates'][0]['content']['parts'])) {
             foreach ($data['candidates'][0]['content']['parts'] as $p) {
@@ -141,7 +163,7 @@ if ($task === 'enhance') {
         }
         http_response_code(422);
         echo json_encode([
-            'error' => 'Gemini no devolvió imagen mejorada.',
+            'error' => 'Gemini no devolviÃ³ imagen mejorada.',
             'text' => $textResponse,
             'reason' => $data['candidates'][0]['finishReason'] ?? 'unknown'
         ]);
@@ -149,8 +171,8 @@ if ($task === 'enhance') {
     exit;
 }
 
-// --- PASSTHROUGH GENÉRICO (compatibilidad con el formato anterior) ---
-$model = (string)($req['model'] ?? 'gemini-2.0-flash-preview-image-generation');
+// --- PASSTHROUGH GENÃ‰RICO (compatibilidad con el formato anterior) ---
+$model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 if (isset($req['contents'])) {
@@ -195,7 +217,7 @@ if ($response === false) {
     $err = curl_error($ch);
     curl_close($ch);
     http_response_code(502);
-    echo json_encode(['error' => 'Error de comunicación con Google', 'details' => $err]);
+    echo json_encode(['error' => 'Error de comunicaciÃ³n con Google', 'details' => $err]);
     exit;
 }
 $code = (int)(curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 502);
@@ -203,3 +225,4 @@ curl_close($ch);
 
 http_response_code($code);
 echo $response;
+

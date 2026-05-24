@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 /**
  * Proxy para Google Gemini - Chef at Home
  * Permite realizar peticiones a la API de Gemini desde el frontend sin exponer la API Key.
- * También incluye funciones de web scraping para buscar recetas.
+ * TambiÃ©n incluye funciones de web scraping para buscar recetas.
  */
 declare(strict_types=1);
 ini_set('display_errors', '0');
@@ -30,12 +30,12 @@ register_shutdown_function(function () {
 
 if (!function_exists('curl_init')) {
     http_response_code(500);
-    echo json_encode(['error' => 'cURL no está habilitado en el servidor.']);
+    echo json_encode(['error' => 'cURL no estÃ¡ habilitado en el servidor.']);
     exit;
 }
 
 // API Key
-$API_KEY = getenv('GEMINI_KEY_COLOR') ?: 'TU_API_KEY_AQUI';
+$API_KEY = getenv('GEMINI_API_KEY') ?: 'TU_API_KEY_AQUI';
 
 // ============ ACCIONES ESPECIALES (GET) ============
 $action = $_GET['action'] ?? null;
@@ -44,7 +44,7 @@ if ($action === 'search_recipe') {
     $query = $_GET['q'] ?? '';
     if (empty($query)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Falta el parámetro q']);
+        echo json_encode(['error' => 'Falta el parÃ¡metro q']);
         exit;
     }
 
@@ -58,7 +58,7 @@ if ($action === 'extract_url') {
     $url = $_GET['url'] ?? '';
     if (empty($url)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Falta el parámetro url']);
+        echo json_encode(['error' => 'Falta el parÃ¡metro url']);
         exit;
     }
 
@@ -68,10 +68,10 @@ if ($action === 'extract_url') {
     exit;
 }
 
-// ============ PETICIÓN GEMINI NORMAL (POST) ============
+// ============ PETICIÃ“N GEMINI NORMAL (POST) ============
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método no permitido. Usa POST o GET con action.']);
+    echo json_encode(['error' => 'MÃ©todo no permitido. Usa POST o GET con action.']);
     exit;
 }
 
@@ -80,7 +80,7 @@ $req = json_decode($raw, true);
 
 if (!is_array($req)) {
     http_response_code(400);
-    echo json_encode(['error' => 'JSON inválido o vacío.']);
+    echo json_encode(['error' => 'JSON invÃ¡lido o vacÃ­o.']);
     exit;
 }
 
@@ -103,7 +103,7 @@ if ($response === false) {
     $err = curl_error($ch);
     curl_close($ch);
     http_response_code(502);
-    echo json_encode(['error' => 'Error de comunicación con Google', 'details' => $err]);
+    echo json_encode(['error' => 'Error de comunicaciÃ³n con Google', 'details' => $err]);
     exit;
 }
 
@@ -180,14 +180,14 @@ function extractRecipeWithAI(string $html, string $url, string $apiKey): array
     $text = substr($text, 0, 12000);
 
     $prompt = "Extrae la receta completa de este contenido web. URL origen: {$url}\n\nContenido:\n{$text}\n\n" .
-        "IMPORTANTE: Devuelve ÚNICAMENTE un objeto JSON válido (sin bloques de código markdown) con esta estructura:\n" .
-        '{"id":"gen_' . time() . '","title":"nombre del plato","description":"breve descripción","timeMinutes":número,' .
-        '"difficulty":"Fácil/Media/Difícil","servings":número,"rating":4.5,' .
+        "IMPORTANTE: Devuelve ÃšNICAMENTE un objeto JSON vÃ¡lido (sin bloques de cÃ³digo markdown) con esta estructura:\n" .
+        '{"id":"gen_' . time() . '","title":"nombre del plato","description":"breve descripciÃ³n","timeMinutes":nÃºmero,' .
+        '"difficulty":"FÃ¡cil/Media/DifÃ­cil","servings":nÃºmero,"rating":4.5,' .
         '"imageUrl":"busca una imagen de unsplash relacionada o usa https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600",' .
         '"sourceUrl":"' . $url . '",' .
         '"ingredients":[{"id":"i1","name":"ingrediente","amount":cantidad,"unit":"unidad","amountImperial":cantidad,"unitImperial":"unidad"}],' .
-        '"instructions":[{"stepNumber":1,"description":"paso detallado","durationSeconds":null o número,"ingredients":["i1"],"sensoryCue":"pista sensorial opcional"}]}' .
-        "\n\nAsegúrate de incluir TODOS los ingredientes y TODOS los pasos de la receta original.";
+        '"instructions":[{"stepNumber":1,"description":"paso detallado","durationSeconds":null o nÃºmero,"ingredients":["i1"],"sensoryCue":"pista sensorial opcional"}]}' .
+        "\n\nAsegÃºrate de incluir TODOS los ingredientes y TODOS los pasos de la receta original.";
 
     $payload = [
         'contents' => [['parts' => [['text' => $prompt]]]],
@@ -215,13 +215,14 @@ function extractRecipeWithAI(string $html, string $url, string $apiKey): array
 
     $recipe = json_decode($text, true);
     if (!$recipe || !isset($recipe['title'])) {
-        return ['error' => 'No se pudo extraer la receta de esta página', 'url' => $url];
+        return ['error' => 'No se pudo extraer la receta de esta pÃ¡gina', 'url' => $url];
     }
 
-    // Asegurar ID único
+    // Asegurar ID Ãºnico
     $recipe['id'] = 'web_' . md5($url) . '_' . time();
     $recipe['sourceUrl'] = $url;
 
     return $recipe;
 }
+
 

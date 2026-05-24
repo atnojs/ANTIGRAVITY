@@ -1,0 +1,22 @@
+services:
+  motor-ia:
+    image: rocm/pytorch:latest
+    container_name: generador_lineas_atnojs
+    ports:
+      - "8188:8188"
+    volumes:
+      - .:/workspace
+      - ./modelos:/workspace/models
+      # NUEVO: Conectamos tu carpeta salida
+      - ./salida:/workspace/output
+    command: >
+      bash -c "pip install requests websocket-client Pillow && 
+      if [ ! -f main.py ]; then
+        git clone https://github.com/comfyanonymous/ComfyUI temp_dir &&
+        cp -r temp_dir/* . && rm -rf temp_dir;
+      fi &&
+      if [ ! -d custom_nodes/comfyui_controlnet_aux ]; then
+        cd custom_nodes && git clone https://github.com/Fannovel16/comfyui_controlnet_aux && cd ..;
+      fi &&
+      pip install -r requirements.txt &&
+      python main.py --listen 0.0.0.0 --cpu"

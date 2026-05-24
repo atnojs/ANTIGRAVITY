@@ -1,18 +1,18 @@
-const { useState, useEffect, useRef } = React;
+﻿const { useState, useEffect, useRef } = React;
 
 // =============================================================================
-// CONFIGURACIÓN DE MODELOS ESRGAN
+// CONFIGURACIÃ“N DE MODELOS ESRGAN
 // =============================================================================
-// Los modelos ESRGAN son redes neuronales de super-resolución REALES
-// que generan píxeles de alta frecuencia a partir de la imagen original.
+// Los modelos ESRGAN son redes neuronales de super-resoluciÃ³n REALES
+// que generan pÃ­xeles de alta frecuencia a partir de la imagen original.
 // NO son modelos generativos - NO reimaginan ni inventan contenido.
-// Son entrenados específicamente para upscaling fiel.
+// Son entrenados especÃ­ficamente para upscaling fiel.
 
 const MODEL_OPTIONS = [
     {
         id: 'slim-2x',
         name: 'ESRGAN Slim 2x',
-        description: 'Rápido. Modelo ligero (~900KB). Buena calidad, ideal para pruebas rápidas.',
+        description: 'RÃ¡pido. Modelo ligero (~900KB). Buena calidad, ideal para pruebas rÃ¡pidas.',
         scale: 2,
         getModel: () => ESRGANSlim2x,
         globalName: 'ESRGANSlim2x'
@@ -20,7 +20,7 @@ const MODEL_OPTIONS = [
     {
         id: 'slim-4x',
         name: 'ESRGAN Slim 4x',
-        description: 'Rápido. 4x con modelo ligero. Buenos resultados generales.',
+        description: 'RÃ¡pido. 4x con modelo ligero. Buenos resultados generales.',
         scale: 4,
         getModel: () => ESRGANSlim4x,
         globalName: 'ESRGANSlim4x'
@@ -36,7 +36,7 @@ const MODEL_OPTIONS = [
     {
         id: 'medium-4x',
         name: 'ESRGAN Medium 4x',
-        description: 'Mejor calidad. 4x con modelo medio. Excelente para fotos e impresión.',
+        description: 'Mejor calidad. 4x con modelo medio. Excelente para fotos e impresiÃ³n.',
         scale: 4,
         getModel: () => ESRGANMedium4x,
         globalName: 'ESRGANMedium4x'
@@ -94,7 +94,7 @@ const deleteFromDb = async (id) => {
 };
 
 // =============================================================================
-// DPI INJECTOR (cabecera JFIF binaria → 600 DPI)
+// DPI INJECTOR (cabecera JFIF binaria â†’ 600 DPI)
 // =============================================================================
 
 const inject600Dpi = (base64DataUrl) => {
@@ -129,7 +129,7 @@ const loadImage = (src) => new Promise((resolve, reject) => {
     img.src = src;
 });
 
-// Escalar canvas en múltiples pasos de 2x para mejor interpolación
+// Escalar canvas en mÃºltiples pasos de 2x para mejor interpolaciÃ³n
 const canvasMultiStepScale = (sourceCanvas, targetW, targetH) => {
     let current = sourceCanvas;
     let cw = sourceCanvas.width;
@@ -184,32 +184,32 @@ const runUpscale = async (sourceDataUrl, modelOption, useDinA4, onProgress, onSt
     const modelDef = modelOption.getModel();
     const upscaler = new Upscaler({ model: modelDef });
 
-    onStatus('Modelo cargado. Procesando super-resolución...');
+    onStatus('Modelo cargado. Procesando super-resoluciÃ³n...');
     onProgress(10);
 
     // Ejecutar ESRGAN sobre la imagen original
-    // patchSize y padding para procesar por parches (evita OOM en imágenes grandes)
+    // patchSize y padding para procesar por parches (evita OOM en imÃ¡genes grandes)
     const upscaledSrc = await upscaler.upscale(sourceDataUrl, {
         patchSize: 128,
         padding: 6,
         progress: (pct) => {
             const progressPct = 10 + Math.round(pct * 75);
             onProgress(progressPct);
-            onStatus(`Super-resolución ESRGAN: ${Math.round(pct * 100)}%`);
+            onStatus(`Super-resoluciÃ³n ESRGAN: ${Math.round(pct * 100)}%`);
         }
     });
 
     onProgress(85);
-    onStatus('Super-resolución completada. Ajustando tamaño final...');
+    onStatus('Super-resoluciÃ³n completada. Ajustando tamaÃ±o final...');
 
-    // Si las dimensiones ESRGAN coinciden con el objetivo, ya está
+    // Si las dimensiones ESRGAN coinciden con el objetivo, ya estÃ¡
     // Si no (DIN A4), escalar con Canvas de alta calidad
     let finalDataUrl;
 
     if (targetW === esrganW && targetH === esrganH) {
         finalDataUrl = upscaledSrc;
     } else {
-        // Necesitamos re-escalar al tamaño DIN A4
+        // Necesitamos re-escalar al tamaÃ±o DIN A4
         onStatus(`Ajustando a ${targetW}x${targetH} (DIN A4 600dpi)...`);
         const esrganImg = await loadImage(upscaledSrc);
         const esrganCanvas = document.createElement('canvas');
@@ -219,7 +219,7 @@ const runUpscale = async (sourceDataUrl, modelOption, useDinA4, onProgress, onSt
 
         const finalCanvas = canvasMultiStepScale(esrganCanvas, targetW, targetH);
 
-        // Si el canvas resultante es más grande que el objetivo, recortar
+        // Si el canvas resultante es mÃ¡s grande que el objetivo, recortar
         if (finalCanvas.width !== targetW || finalCanvas.height !== targetH) {
             const cropCanvas = document.createElement('canvas');
             cropCanvas.width = targetW;
@@ -270,6 +270,33 @@ const LoadingOverlay = ({ progress, status }) => (
     </div>
 );
 
+
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
+
 const App = () => {
     const [source, setSource] = useState(null);
     const [sourceInfo, setSourceInfo] = useState(null);
@@ -283,7 +310,7 @@ const App = () => {
     const [modelsReady, setModelsReady] = useState(false);
     const fileInputRef = useRef(null);
 
-    // Inicializar DB e historial (filtrar entradas corruptas sin imagen válida)
+    // Inicializar DB e historial (filtrar entradas corruptas sin imagen vÃ¡lida)
     useEffect(() => {
         openDb().then(() => getAllFromDb().then(items => {
             const valid = items.filter(item => item.dataUrl && item.dataUrl.startsWith('data:'));
@@ -291,7 +318,7 @@ const App = () => {
         })).catch(console.warn);
     }, []);
 
-    // Verificar que los modelos están cargados (globals de los scripts CDN)
+    // Verificar que los modelos estÃ¡n cargados (globals de los scripts CDN)
     useEffect(() => {
         const check = () => {
             if (typeof Upscaler !== 'undefined' &&
@@ -344,7 +371,7 @@ const App = () => {
             const newItem = {
                 id: Date.now().toString(),
                 dataUrl: result.dataUrl,
-                name: selectedModel.name + (isDinA4 ? ' → DIN A4' : ''),
+                name: selectedModel.name + (isDinA4 ? ' â†’ DIN A4' : ''),
                 size: sizeLabel,
                 createdAt: Date.now()
             };
@@ -400,7 +427,7 @@ const App = () => {
                     </div>
                     <div>
                         <h1 className="text-xl font-extrabold uppercase font-montserrat tracking-tight">Upscaler Pro</h1>
-                        <p className="text-[9px] font-bold text-cyan-500/60 uppercase tracking-widest">ESRGAN Super-Resolución Real</p>
+                        <p className="text-[9px] font-bold text-cyan-500/60 uppercase tracking-widest">ESRGAN Super-ResoluciÃ³n Real</p>
                     </div>
                 </div>
 
@@ -490,7 +517,7 @@ const App = () => {
                             <i className="fa-solid fa-print text-lg"></i>
                             <div className="text-left">
                                 <span className="block text-[10px] font-black uppercase leading-none">Formato DIN A4</span>
-                                <span className="text-[8px] opacity-50 uppercase font-bold">Ajustar a 600 DPI para impresión</span>
+                                <span className="text-[8px] opacity-50 uppercase font-bold">Ajustar a 600 DPI para impresiÃ³n</span>
                             </div>
                         </div>
                         <div className={`w-10 h-5 rounded-full relative ${isDinA4 ? 'bg-purple-500' : 'bg-slate-800'}`}>
@@ -513,9 +540,9 @@ const App = () => {
                     <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                         <p className="text-[10px] text-emerald-300 leading-relaxed">
                             <i className="fa-solid fa-microchip mr-1"></i>
-                            ESRGAN es un modelo de super-resolución real (no generativo).
-                            Preserva fielmente el contenido original mientras añade detalle real.
-                            Se ejecuta en tu GPU vía WebGL.
+                            ESRGAN es un modelo de super-resoluciÃ³n real (no generativo).
+                            Preserva fielmente el contenido original mientras aÃ±ade detalle real.
+                            Se ejecuta en tu GPU vÃ­a WebGL.
                         </p>
                     </div>
 
@@ -525,7 +552,7 @@ const App = () => {
                         className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl disabled:opacity-20 uppercase text-[11px] tracking-widest font-montserrat btn-hover-effect"
                     >
                         <i className={isProcessing ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-bolt'}></i>
-                        {isProcessing ? 'Procesando...' : 'Iniciar Super-Resolución'}
+                        {isProcessing ? 'Procesando...' : 'Iniciar Super-ResoluciÃ³n'}
                     </button>
 
                     {error && (
@@ -551,8 +578,8 @@ const App = () => {
                     {history.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-24 text-gray-600">
                             <i className="fa-solid fa-images text-4xl mb-4 opacity-20"></i>
-                            <p className="text-sm font-medium">Aún no hay imágenes escaladas</p>
-                            <p className="text-[10px] text-gray-700 mt-1">Sube una imagen y haz click en Iniciar Super-Resolución</p>
+                            <p className="text-sm font-medium">AÃºn no hay imÃ¡genes escaladas</p>
+                            <p className="text-[10px] text-gray-700 mt-1">Sube una imagen y haz click en Iniciar Super-ResoluciÃ³n</p>
                         </div>
                     )}
 
@@ -605,3 +632,4 @@ const App = () => {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+

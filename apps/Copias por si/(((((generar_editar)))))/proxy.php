@@ -22,8 +22,8 @@ try {
         throw new Exception('Método no permitido', 405);
 
     // Prioridad de API Keys: Entorno > Server Params
-    $apiKey = getenv('GEMINI_KEY_COLOR')
-        ?: ($_SERVER['GEMINI_KEY_COLOR'] ?? $_SERVER['REDIRECT_GEMINI_KEY_COLOR'] ?? null);
+    $apiKey = getenv('GEMINI_API_KEY')
+        ?: (getenv('GEMINI_API_KEY') ?? getenv('GEMINI_API_KEY') ?? null);
 
     $replicateKey = getenv('REPLICATE_API_TOKEN')
         ?: ($_SERVER['REPLICATE_API_TOKEN'] ?? $_SERVER['REDIRECT_REPLICATE_API_TOKEN'] ?? null);

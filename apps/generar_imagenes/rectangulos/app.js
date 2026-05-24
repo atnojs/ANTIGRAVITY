@@ -1,4 +1,4 @@
-/* app_edicion.js - Solo Edición de Imágenes (SIN MÁSCARA — AHORA RECTÁNGULOS) */
+﻿/* app_edicion.js - Solo EdiciÃ³n de ImÃ¡genes (SIN MÃSCARA â€” AHORA RECTÃNGULOS) */
 (() => {
   const { useState, useEffect, useRef } = React;
 
@@ -53,7 +53,7 @@
   const checkCanGenerate = (userData) => {
     if (!userData) return { canGenerate: false, reason: "No user data" };
     if (userData.role === "admin" || userData.role === "vip") {
-      return { canGenerate: true, remaining: "∞" };
+      return { canGenerate: true, remaining: "âˆž" };
     }
     const today = new Date().toISOString().split("T")[0];
     if (userData.usage.date !== today) {
@@ -63,7 +63,7 @@
     if (remaining <= 0) {
       return {
         canGenerate: false,
-        reason: "Límite diario alcanzado",
+        reason: "LÃ­mite diario alcanzado",
         remaining: 0
       };
     }
@@ -266,7 +266,7 @@
     );
   };
 
-  /* ==== COMPONENTE: EDITOR DE RECTÁNGULOS (ARREGLADO SCROLL & OFFSET) ==== */
+  /* ==== COMPONENTE: EDITOR DE RECTÃNGULOS (ARREGLADO SCROLL & OFFSET) ==== */
   const RectangleEditor = ({ src, onClose, onConfirm }) => {
     const containerRef = useRef(null);
     const imgRef = useRef(null);
@@ -387,7 +387,7 @@
                   pointerEvents: "none"
                 }}
               >
-                Rectángulo {i + 1}
+                RectÃ¡ngulo {i + 1}
               </div>
             );
           })}
@@ -560,7 +560,7 @@
         )
           setError("Credenciales incorrectas.");
         else if (err.code === "auth/email-already-in-use")
-          setError("El email ya está registrado.");
+          setError("El email ya estÃ¡ registrado.");
         else setError(err.message);
       } finally {
         setLoading(false);
@@ -667,7 +667,7 @@
             <p style={{ color: "#94a3b8", fontSize: "14px" }}>
               {isLogin
                 ? "Accede para continuar editando"
-                : "Regístrate para empezar"}
+                : "RegÃ­strate para empezar"}
             </p>
           </div>
           {error && (
@@ -705,7 +705,7 @@
               ></i>
               <input
                 type="email"
-                placeholder="Tu correo electrónico"
+                placeholder="Tu correo electrÃ³nico"
                 style={inputStyle}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -735,7 +735,7 @@
               ></i>
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Contraseña"
+                placeholder="ContraseÃ±a"
                 style={inputStyle}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -801,7 +801,7 @@
               {loading ? (
                 <i className="fa-solid fa-circle-notch fa-spin"></i>
               ) : isLogin ? (
-                "Iniciar Sesión"
+                "Iniciar SesiÃ³n"
               ) : (
                 "Crear Cuenta"
               )}
@@ -825,7 +825,7 @@
                 letterSpacing: "0.5px"
               }}
             >
-              O continúa con
+              O continÃºa con
             </span>
             <div style={{ height: "1px", background: "#334155", flex: 1 }}></div>
           </div>
@@ -878,26 +878,26 @@
             >
               {isLogin ? (
                 <span>
-                  ¿No tienes cuenta?{" "}
+                  Â¿No tienes cuenta?{" "}
                   <span
                     style={{
                       fontWeight: "700",
                       textDecoration: "underline"
                     }}
                   >
-                    Regístrate gratis
+                    RegÃ­strate gratis
                   </span>
                 </span>
               ) : (
                 <span>
-                  ¿Ya tienes cuenta?{" "}
+                  Â¿Ya tienes cuenta?{" "}
                   <span
                     style={{
                       fontWeight: "700",
                       textDecoration: "underline"
                     }}
                   >
-                    Inicia sesión
+                    Inicia sesiÃ³n
                   </span>
                 </span>
               )}
@@ -909,7 +909,34 @@
   };
 
   /* ==== APP ==== */
-  const App = () => {
+  
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
+
+const App = () => {
     const [prompt, setPrompt] = useState("");
     const [baseImages, setBaseImages] = useState([]);
     const [images, setImages] = useState([]);
@@ -941,7 +968,7 @@
     const [error, setError] = useState("");
     const [modalImage, setModalImage] = useState(null);
 
-    // NUEVO editor de rectángulos
+    // NUEVO editor de rectÃ¡ngulos
     const [rectEditorOpen, setRectEditorOpen] = useState(false);
     const [rectImageSrc, setRectImageSrc] = useState(null);
     const [rectangles, setRectangles] = useState([]);
@@ -965,13 +992,13 @@
     const MAP_REALISM = {
       Fotorrealista: "Photorealistic",
       Hiperrealista: "Hyperrealistic",
-      Ilustración: "Illustration",
+      IlustraciÃ³n: "Illustration",
       Anime: "Anime style"
     };
     const MAP_CREATIVO = {
       Ninguno: "",
-      Cinemático: "Cinematic",
-      Fantasía: "Fantasy",
+      CinemÃ¡tico: "Cinematic",
+      FantasÃ­a: "Fantasy",
       Cyberpunk: "Cyberpunk",
       Vintage: "Vintage"
     };
@@ -1049,9 +1076,9 @@
       setRectEditorOpen(false);
       if (!rects || rects.length === 0) return;
       setRectangles(rects);
-      let txt = `EDITA ÚNICAMENTE DENTRO DE LOS RECTÁNGULOS INDICADOS.
-Trata cada rectángulo como una zona independiente de edición localizada.
-No modifiques píxeles que no estén dentro de los rectángulos.
+      let txt = `EDITA ÃšNICAMENTE DENTRO DE LOS RECTÃNGULOS INDICADOS.
+Trata cada rectÃ¡ngulo como una zona independiente de ediciÃ³n localizada.
+No modifiques pÃ­xeles que no estÃ©n dentro de los rectÃ¡ngulos.
 Respeta la luz, el estilo, la gama de color, la perspectiva y la coherencia visual de la imagen.
 
 INSTRUCCIONES POR ZONA:
@@ -1059,18 +1086,18 @@ INSTRUCCIONES POR ZONA:
       rects.forEach((_, i) => {
         txt += `
 
-RECTÁNGULO ${i + 1}:
-Describe de forma muy específica lo que debe ocurrir solo dentro del rectángulo ${
+RECTÃNGULO ${i + 1}:
+Describe de forma muy especÃ­fica lo que debe ocurrir solo dentro del rectÃ¡ngulo ${
           i + 1
-        }. Indica objeto, estilo, iluminación, textura y grado de integración.
+        }. Indica objeto, estilo, iluminaciÃ³n, textura y grado de integraciÃ³n.
 `;
       });
       txt += `
 
 IMPORTANTE:
-• No hagas cambios fuera de los rectángulos.
-• Ajusta las ediciones para que queden perfectamente integradas.
-• Mantén proporciones, perspectiva y coherencia con la escena original.
+â€¢ No hagas cambios fuera de los rectÃ¡ngulos.
+â€¢ Ajusta las ediciones para que queden perfectamente integradas.
+â€¢ MantÃ©n proporciones, perspectiva y coherencia con la escena original.
 `;
       setPrompt(txt);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1219,7 +1246,7 @@ IMPORTANTE:
         )}
 
         <header className="app-header">
-          <h1>Editar Imágenes</h1>
+          <h1>Editar ImÃ¡genes</h1>
           <div
             style={{
               marginLeft: "auto",
@@ -1264,7 +1291,7 @@ IMPORTANTE:
                       color: "#0c1445"
                     }}
                   >
-                    Ediciones restantes: ∞
+                    Ediciones restantes: âˆž
                   </div>
                 )}
               </>
@@ -1282,7 +1309,7 @@ IMPORTANTE:
                 className="btn btn-sm"
                 onClick={() => setAuthModalOpen(true)}
               >
-                Iniciar Sesión
+                Iniciar SesiÃ³n
               </button>
             )}
           </div>
@@ -1337,7 +1364,7 @@ IMPORTANTE:
                   <div className="base-overlay-actions">
                     <button
                       className="base-action-btn"
-                      title="Seleccionar rectángulos"
+                      title="Seleccionar rectÃ¡ngulos"
                       onClick={openRectanglesOnBase}
                     >
                       <i className="fa-regular fa-square"></i>
@@ -1361,7 +1388,7 @@ IMPORTANTE:
 
             {/* PROMPT */}
             <div className="input-group">
-              <label>Describe la edición</label>
+              <label>Describe la ediciÃ³n</label>
               <textarea
                 value={prompt}
                 onChange={(e) => {
@@ -1383,7 +1410,7 @@ IMPORTANTE:
                         setSelectedPromptId(idx + 1);
                       }}
                     >
-                      Opción {idx + 1}
+                      OpciÃ³n {idx + 1}
                     </button>
                   ))}
                 </div>
@@ -1425,7 +1452,7 @@ IMPORTANTE:
             {/* OPCIONES */}
             <div className="select-row" style={{ marginTop: "1rem" }}>
               <CustomSelect
-                label="Relación de aspecto"
+                label="RelaciÃ³n de aspecto"
                 value={aspectRatio}
                 onChange={setAspectRatio}
                 groups={aspectGroups}
@@ -1463,3 +1490,4 @@ IMPORTANTE:
   const root = ReactDOM.createRoot(document.getElementById("root"));
   root.render(<App />);
 })();
+

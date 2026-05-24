@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="TrickVault — Colección personal de trucos, tips y conocimientos organizados por categorías">
+    <title>TrickVault — Tu Colección de Trucos</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel" data-type="module">
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+/* ═══════════════════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════════════════ */
+const STORAGE_KEY = 'trickvault_data';
+
+const CATEGORIES = [
+    { id: 'terminal',    label: 'Terminal / Linux',   icon: '🖥️',  color: 'cyan',    bgIcon: '💻' },
+    { id: 'css',         label: 'CSS / Diseño',       icon: '🎨',  color: 'pink',    bgIcon: '✨' },
+    { id: 'productividad', label: 'Productividad',    icon: '⚡',  color: 'emerald', bgIcon: '🚀' },
+    { id: 'ia',          label: 'IA / Prompts',       icon: '🤖',  color: 'purple',  bgIcon: '🧠' },
+    { id: 'dev-web',     label: 'Desarrollo Web',     icon: '🌐',  color: 'cyan',    bgIcon: '⚛️' },
+    { id: 'javascript',  label: 'JavaScript / TS',    icon: '📜',  color: 'amber',   bgIcon: '🟨' },
+    { id: 'python',      label: 'Python',             icon: '🐍',  color: 'emerald', bgIcon: '📦' },
+    { id: 'devops',      label: 'DevOps / Docker',    icon: '🐳',  color: 'purple',  bgIcon: '☸️' },
+    { id: 'vscode',      label: 'VS Code / Editores', icon: '📝',  color: 'cyan',    bgIcon: '🔧' },
+    { id: 'otros',       label: 'Otros',              icon: '📌',  color: 'pink',    bgIcon: '💡' },
+];
+
+const DIFFICULTIES = [
+    { value: 'beginner',     label: 'Principiante' },
+    { value: 'intermediate', label: 'Intermedio' },
+    { value: 'advanced',     label: 'Avanzado' },
+];
+
+const TAG_COLORS = ['', 'purple', 'emerald', 'pink', 'amber'];
+
+const SEED_TRICKS = [
+    { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'terminal', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
+    { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'css', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
+    { id: 's3', title: 'Prompt engineering: Chain of Thought', description: 'Añadir "Pensemos paso a paso" al final de un prompt mejora drásticamente la calidad del razonamiento en modelos de lenguaje.', category: 'ia', tags: ['prompts', 'chatgpt', 'claude'], codeSnippet: 'No: "Resuelve este problema"\nSí: "Resuelve este problema. Pensemos paso a paso."', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 3 },
+    { id: 's4', title: 'Git bisect: encontrar bugs rápido', description: 'git bisect usa búsqueda binaria para encontrar el commit exacto que introdujo un bug. Automatizable con tests.', category: 'dev-web', tags: ['git', 'debugging'], codeSnippet: 'git bisect start\ngit bisect bad HEAD\ngit bisect good v1.0.0\n# Git hace checkout automático en el punto medio\n# Marca: git bisect good | git bisect bad\ngit bisect reset  # al terminar', difficulty: 'intermediate', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 2 },
+    { id: 's5', title: 'Docker prune: limpiar sistema', description: 'Elimina todas las imágenes, contenedores, volúmenes y redes que no estén en uso. Libera GBs de espacio.', category: 'devops', tags: ['docker', 'limpieza'], codeSnippet: 'docker system prune -a --volumes\n# -a: todas las imágenes sin usar\n# --volumes: incluye volúmenes huérfanos', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 },
+    { id: 's6', title: 'Array.from para crear rangos', description: 'Genera arrays de números secuenciales sin necesidad de bucles. Útil para paginación, mapeos y generación de datos.', category: 'javascript', tags: ['javascript', 'arrays', 'oneliner'], codeSnippet: 'const range = (n) => Array.from({ length: n }, (_, i) => i);\n// range(5) → [0, 1, 2, 3, 4]\n\nconst rangeFrom = (s, e) => Array.from({ length: e - s }, (_, i) => s + i);\n// rangeFrom(5, 10) → [5, 6, 7, 8, 9]', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 7 },
+    { id: 's7', title: 'Python f-strings avanzados', description: 'Formatea números, fechas y alinea texto directamente dentro de f-strings con especificadores de formato.', category: 'python', tags: ['python', 'string', 'formato'], codeSnippet: 'n = 1234.5678\nprint(f"{n:,.2f}")      # 1,234.57\nprint(f"{n:>15,.2f}")   # alineado derecha\nprint(f"{42:08b}")       # binario: 00101010\n\nfrom datetime import datetime\nd = datetime.now()\nprint(f"{d:%Y-%m-%d %H:%M}")', difficulty: 'intermediate', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 6 },
+    { id: 's8', title: 'VS Code: Multi-cursor con Alt+Click', description: 'Alt+Click en diferentes líneas crea cursores múltiples para editar en paralelo. Combinado con Ctrl+D selecciona ocurrencias.', category: 'vscode', tags: ['vscode', 'atajos', 'productividad'], codeSnippet: 'Alt+Click       → cursor múltiple en cualquier punto\nCtrl+D          → seleccionar siguiente ocurrencia\nCtrl+Shift+L    → seleccionar TODAS las ocurrencias\nAlt+Shift+↑/↓   → duplicar línea arriba/abajo', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 8 },
+    { id: 's9', title: 'Método Ivy Lee: productividad diaria', description: 'Cada noche escribe las 6 tareas más importantes para mañana, ordenadas por prioridad. Al día siguiente empieza por la #1 y no pases a la siguiente hasta terminar.', category: 'productividad', tags: ['productividad', 'metodo', 'focus'], codeSnippet: '📋 Cada noche:\n1. Escribe 6 tareas para mañana\n2. Priorízalas (1 = más importante)\n\n🌅 Al día siguiente:\n1. Empieza por la tarea #1\n2. No pases a #2 hasta terminar #1\n3. Las no acabadas pasan a mañana', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 10 },
+    { id: 's10', title: 'Regla 5-5-5 para tomar decisiones', description: 'Pregúntate: ¿esto importará en 5 minutos, 5 meses o 5 años? La respuesta te ayuda a calibrar cuánta energía mental merece cada decisión.', category: 'productividad', tags: ['decisiones', 'mentalidad', 'minimalismo'], codeSnippet: '⏱️ ¿Importará en 5 MINUTOS?\n   → Déjalo pasar. No reacciones.\n\n📅 ¿Importará en 5 MESES?\n   → Dedícale atención moderada.\n\n🎯 ¿Importará en 5 AÑOS?\n   → Esto SÍ merece tu mejor energía.', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 9 },
+    { id: 's11', title: 'El truco del patito de goma (Rubber Duck Debugging)', description: 'Cuando estés atascado con un bug, explícaselo en voz alta a un objeto inanimado (como un patito de goma). El mero hecho de verbalizar el problema te hace ver la solución.', category: 'otros', tags: ['debugging', 'pensamiento', 'metodologia'], codeSnippet: '🐤 Pasos del Rubber Duck Debugging:\n1. Coge un patito (o cualquier objeto)\n2. Explícale el problema línea por línea\n3. No asumas nada - explícalo TODO\n4. La solución suele aparecer a mitad de la explicación', difficulty: 'beginner', sourceUrl: 'https://es.wikipedia.org/wiki/M%C3%A9todo_de_depuraci%C3%B3n_del_patito_de_goma', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 11 },
+];
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════ */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
+function formatDate(ts) { return new Date(ts).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
+function getCat(id) { return CATEGORIES.find(c => c.id === id); }
+
+/* ═══════════════════════════════════════════════
+   HOOK: useLocalStorage
+   ═══════════════════════════════════════════════ */
+function useLocalStorage(key, initial) {
+    const [val, setVal] = useState(() => {
+        try {
+            const saved = localStorage.getItem(key);
+            return saved ? JSON.parse(saved) : initial;
+        } catch { return initial; }
+    });
+
+    useEffect(() => {
+        try { localStorage.setItem(key, JSON.stringify(val)); }
+        catch(e) { console.warn('localStorage full', e); }
+    }, [key, val]);
+
+    return [val, setVal];
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: Toast
+   ═══════════════════════════════════════════════ */
+function Toast({ toasts, removeToast }) {
+    if (!toasts.length) return null;
+    return (
+        <div className="toast-container">
+            {toasts.map(t => (
+                <div key={t.id} className={`toast ${t.type}`} onClick={() => removeToast(t.id)}>
+                    {t.msg}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: Lightbox
+   ═══════════════════════════════════════════════ */
+function Lightbox({ src, onClose }) {
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    return (
+        <div className="lightbox" onClick={onClose}>
+            <img src={src} alt="Vista ampliada" />
+            <button className="lightbox-close" onClick={onClose} aria-label="Cerrar lightbox">✕</button>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: TrickForm (Add / Edit Modal)
+   ═══════════════════════════════════════════════ */
+function TrickForm({ trick, onSave, onClose }) {
+    const isEdit = !!trick;
+    const [form, setForm] = useState(trick || {
+        title: '', description: '', category: 'terminal', tags: '',
+        codeSnippet: '', imageUrl: '', sourceUrl: '', difficulty: 'beginner', isFavorite: false
+    });
+
+    function handleChange(e) {
+        const { name, value, type, checked } = e.target;
+        setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        if (!form.title.trim() || !form.description.trim()) return;
+        const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
+        onSave({ ...form, tags });
+    }
+
+    const fields = [
+        { label: 'Título *', name: 'title', type: 'text', placeholder: 'Ej: Atajo para buscar en el historial' },
+        { label: 'Descripción *', name: 'description', type: 'textarea', placeholder: 'Explica el truco, cuándo usarlo y por qué es útil...', rows: 3 },
+        { label: 'Categoría', name: 'category', type: 'select', options: CATEGORIES.map(c => ({ value: c.id, label: `${c.icon} ${c.label}` })) },
+        { label: 'Etiquetas (separadas por comas)', name: 'tags', type: 'text', placeholder: 'bash, terminal, atajos' },
+        { label: 'Código / Comando', name: 'codeSnippet', type: 'textarea', placeholder: 'Pega aquí el código o comando...', rows: 4 },
+        { label: 'URL de imagen', name: 'imageUrl', type: 'text', placeholder: 'https://ejemplo.com/imagen.png' },
+        { label: 'URL de fuente', name: 'sourceUrl', type: 'text', placeholder: 'https://donde-lo-encontraste.com' },
+        { label: 'Dificultad', name: 'difficulty', type: 'select', options: DIFFICULTIES.map(d => ({ value: d.value, label: d.label })) },
+    ];
+
+    return (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal" role="dialog" aria-modal="true" aria-label={isEdit ? 'Editar truco' : 'Nuevo truco'}>
+                <div className="modal-header">
+                    <h2>{isEdit ? '✏️ Editar Truco' : '💎 Nuevo Truco'}</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="modal-body">
+                        {fields.map(f => {
+                            if (f.type === 'select') return (
+                                <div key={f.name}>
+                                    <label htmlFor={`field-${f.name}`}>{f.label}</label>
+                                    <select id={`field-${f.name}`} name={f.name} value={form[f.name]} onChange={handleChange}>
+                                        {f.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                    </select>
+                                </div>
+                            );
+                            if (f.type === 'textarea') return (
+                                <div key={f.name}>
+                                    <label htmlFor={`field-${f.name}`}>{f.label}</label>
+                                    <textarea id={`field-${f.name}`} name={f.name} value={form[f.name]} onChange={handleChange} placeholder={f.placeholder} rows={f.rows || 3} />
+                                </div>
+                            );
+                            return (
+                                <div key={f.name}>
+                                    <label htmlFor={`field-${f.name}`}>{f.label}</label>
+                                    <input id={`field-${f.name}`} name={f.name} type={f.type} value={form[f.name]} onChange={handleChange} placeholder={f.placeholder} />
+                                </div>
+                            );
+                        })}
+                        <label style={{display:'flex',alignItems:'center',gap:'0.5rem',cursor:'pointer',marginTop:'0.5rem'}}>
+                            <input type="checkbox" name="isFavorite" checked={form.isFavorite} onChange={handleChange} style={{width:'auto'}} />
+                            <span style={{color:'var(--neon-pink)',fontSize:'0.9rem'}}>⭐ Marcar como favorito</span>
+                        </label>
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary">{isEdit ? '💾 Guardar Cambios' : '✨ Crear Truco'}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: TrickCard
+   ═══════════════════════════════════════════════ */
+function TrickCard({ trick, onToggleFav, onEdit, onDelete, onImageClick, onCopy, copiedId }) {
+    const cat = getCat(trick.category);
+    return (
+        <div className={`trick-card ${trick.isFavorite ? 'favorite' : ''}`}>
+            <div className="trick-card-header">
+                <h3>{trick.title}</h3>
+                <div className="actions">
+                    <button className={`fav-btn ${trick.isFavorite ? 'active' : ''}`} onClick={() => onToggleFav(trick.id)} title={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-label={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}>⭐</button>
+                    <button onClick={() => onEdit(trick)} title="Editar" aria-label="Editar truco">✏️</button>
+                    <button onClick={() => onDelete(trick.id)} title="Eliminar" aria-label="Eliminar truco">🗑️</button>
+                </div>
+            </div>
+
+            <div className="meta">
+                <span className={`tag`}>{cat?.icon} {cat?.label}</span>
+                {trick.tags.map((t, i) => <span key={i} className={`tag ${TAG_COLORS[i % TAG_COLORS.length]}`}>{t}</span>)}
+                <span className={`difficulty ${trick.difficulty}`}>
+                    {DIFFICULTIES.find(d => d.value === trick.difficulty)?.label || trick.difficulty}
+                </span>
+            </div>
+
+            <p className="description">{trick.description}</p>
+
+            {trick.imageUrl && (
+                <img src={trick.imageUrl} alt={trick.title} className="trick-image" onClick={() => onImageClick(trick.imageUrl)} loading="lazy" />
+            )}
+
+            {trick.codeSnippet && (
+                <div className="code-snippet">
+                    <button className={`copy-btn ${copiedId === trick.id ? 'copied' : ''}`} onClick={() => onCopy(trick)} title="Copiar código" aria-label="Copiar código al portapapeles">
+                        {copiedId === trick.id ? '✓' : '📋'}
+                    </button>
+                    {trick.codeSnippet}
+                </div>
+            )}
+
+            <div className="card-footer">
+                {trick.sourceUrl ? (
+                    <a href={trick.sourceUrl} target="_blank" rel="noopener noreferrer" className="source-link">🔗 Fuente original</a>
+                ) : <span></span>}
+                <span className="date">{formatDate(trick.createdAt)}</span>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: CategoryGrid (Main Dashboard)
+   ═══════════════════════════════════════════════ */
+function CategoryGrid({ tricks, onSelectCategory }) {
+    const counts = useMemo(() => {
+        const map = {};
+        tricks.forEach(t => { map[t.category] = (map[t.category] || 0) + 1; });
+        return map;
+    }, [tricks]);
+
+    return (
+        <div className="category-grid">
+            {CATEGORIES.map(cat => (
+                <div key={cat.id} className={`category-card ${cat.color}-border`} onClick={() => onSelectCategory(cat.id)}>
+                    <div className="bg-icon">{cat.bgIcon}</div>
+                    <div className={`cat-icon ${cat.color}`}>{cat.icon}</div>
+                    <h3>{cat.label}</h3>
+                    <span className="cat-count">{counts[cat.id] || 0} trucos</span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: TrickList (Category View)
+   ═══════════════════════════════════════════════ */
+function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onDelete, onImageClick, onCopy, copiedId, onAdd, search, setSearch, filter, setFilter }) {
+    const cat = getCat(categoryId);
+
+    const filtered = useMemo(() => {
+        let result = tricks.filter(t => t.category === categoryId);
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            result = result.filter(t => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || t.tags.some(tg => tg.toLowerCase().includes(q)));
+        }
+        if (filter === 'favorites') result = result.filter(t => t.isFavorite);
+        if (filter === 'beginner' || filter === 'intermediate' || filter === 'advanced') result = result.filter(t => t.difficulty === filter);
+        return result.sort((a, b) => b.createdAt - a.createdAt);
+    }, [tricks, categoryId, search, filter]);
+
+    return (
+        <div>
+            <button className="back-nav" onClick={onBack}>← Volver a categorías</button>
+
+            <div className="section-header">
+                <h2>{cat?.icon} {cat?.label} <span style={{color:'var(--muted)',fontSize:'0.9rem',fontWeight:400}}>({filtered.length} trucos)</span></h2>
+                <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Truco</button>
+            </div>
+
+            <div className="stats-bar">
+                <div className="search-wrap">
+                    <span className="search-icon">🔍</span>
+                    <input type="text" placeholder="Buscar en esta categoría..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar trucos" />
+                </div>
+                <button className={`btn btn-glass btn-sm ${filter === '' ? 'active' : ''}`} onClick={() => setFilter('')}>Todos</button>
+                <button className={`btn btn-glass btn-sm ${filter === 'favorites' ? 'active' : ''}`} onClick={() => setFilter('favorites')}>⭐ Favoritos</button>
+                <button className={`btn btn-glass btn-sm ${filter === 'beginner' ? 'active' : ''}`} onClick={() => setFilter('beginner')}>🟢 Principiante</button>
+                <button className={`btn btn-glass btn-sm ${filter === 'intermediate' ? 'active' : ''}`} onClick={() => setFilter('intermediate')}>🟡 Intermedio</button>
+                <button className={`btn btn-glass btn-sm ${filter === 'advanced' ? 'active' : ''}`} onClick={() => setFilter('advanced')}>🔴 Avanzado</button>
+            </div>
+
+            {filtered.length === 0 ? (
+                <div className="empty-state">
+                    <div className="empty-icon">📭</div>
+                    <h3>No hay trucos aquí todavía</h3>
+                    <p>{search ? 'Prueba con otros términos de búsqueda' : '¡Añade tu primer truco!'}</p>
+                </div>
+            ) : (
+                <div className="tricks-grid">
+                    {filtered.map(t => (
+                        <TrickCard key={t.id} trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onDelete={onDelete} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: GlobalSearch
+   ═══════════════════════════════════════════════ */
+function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onDelete, onImageClick, onCopy, copiedId }) {
+    const [query, setQuery] = useState('');
+
+    const results = useMemo(() => {
+        if (!query.trim()) return [];
+        const q = query.toLowerCase();
+        return tricks.filter(t =>
+            t.title.toLowerCase().includes(q) ||
+            t.description.toLowerCase().includes(q) ||
+            t.tags.some(tg => tg.toLowerCase().includes(q)) ||
+            (getCat(t.category)?.label || '').toLowerCase().includes(q)
+        ).sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+    }, [tricks, query]);
+
+    return (
+        <div>
+            <div className="section-header">
+                <h2>🔍 Búsqueda Global</h2>
+            </div>
+            <div className="stats-bar">
+                <div className="search-wrap">
+                    <span className="search-icon">🔍</span>
+                    <input type="text" placeholder="Buscar en todos los trucos..." value={query} onChange={e => setQuery(e.target.value)} autoFocus aria-label="Buscar en todos los trucos" />
+                </div>
+                {query && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
+            </div>
+
+            {query && results.length === 0 ? (
+                <div className="empty-state">
+                    <div className="empty-icon">🔎</div>
+                    <h3>Sin resultados</h3>
+                    <p>Prueba con otros términos</p>
+                </div>
+            ) : query && (
+                <div className="tricks-grid">
+                    {results.map(t => (
+                        <div key={t.id} style={{position:'relative'}}>
+                            <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onDelete={onDelete} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
+                            <button className="btn btn-glass btn-sm" style={{position:'absolute',top:'0.5rem',right:'4rem',zIndex:2}} onClick={() => onSelectCategory(t.category)} title="Ir a la categoría">
+                                📂 {getCat(t.category)?.label}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: ExportImport
+   ═══════════════════════════════════════════════ */
+function ExportImport({ tricks, onImport }) {
+    const [show, setShow] = useState(false);
+    const [importData, setImportData] = useState('');
+    const fileRef = useRef(null);
+
+    function handleExport() {
+        const blob = new Blob([JSON.stringify(tricks, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `trickvault-backup-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function handleFileImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (Array.isArray(data) && data.every(d => d.id && d.title && d.category)) {
+                    onImport(data);
+                } else {
+                    alert('El archivo no tiene el formato correcto de TrickVault.');
+                }
+            } catch { alert('Error al leer el archivo JSON.'); }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
+
+    return (
+        <div style={{position:'relative'}}>
+            <button className="btn btn-glass btn-sm" onClick={() => setShow(!show)}>⚙️ Datos</button>
+            {show && (
+                <div style={{position:'absolute',top:'100%',right:0, marginTop:'0.5rem', padding:'1rem', borderRadius:'var(--radius-md)', background:'var(--card-bg)', backdropFilter:'blur(20px)', border:'1px solid var(--border)', zIndex:100, minWidth:'220px', display:'flex', flexDirection:'column', gap:'0.75rem'}}>
+                    <button className="btn btn-glass btn-sm" onClick={handleExport}>📥 Exportar JSON</button>
+                    <label className="btn btn-glass btn-sm" style={{cursor:'pointer',textAlign:'center'}}>
+                        📤 Importar JSON
+                        <input type="file" accept=".json" ref={fileRef} onChange={handleFileImport} style={{display:'none'}} />
+                    </label>
+                    <span style={{fontSize:'0.7rem',color:'var(--muted)'}}>{tricks.length} trucos guardados</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   APP ROOT
+   ═══════════════════════════════════════════════ */
+function App() {
+    const [tricks, setTricks] = useLocalStorage(STORAGE_KEY, SEED_TRICKS);
+    const [view, setView] = useState('categories'); // 'categories' | 'category' | 'search'
+    const [currentCategory, setCurrentCategory] = useState(null);
+    const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('');
+    const [showForm, setShowForm] = useState(false);
+    const [editingTrick, setEditingTrick] = useState(null);
+    const [lightboxSrc, setLightboxSrc] = useState(null);
+    const [copiedId, setCopiedId] = useState(null);
+    const [toasts, setToasts] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    function addToast(msg, type = 'success') {
+        const id = uid();
+        setToasts(prev => [...prev, { id, msg, type }]);
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+    }
+
+    function removeToast(id) { setToasts(prev => prev.filter(t => t.id !== id)); }
+
+    const toggleFav = useCallback((id) => {
+        setTricks(prev => prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t));
+    }, [setTricks]);
+
+    const deleteTrick = useCallback((id) => {
+        if (!confirm('¿Eliminar este truco para siempre?')) return;
+        setTricks(prev => prev.filter(t => t.id !== id));
+        addToast('🗑️ Truco eliminado', 'error');
+    }, [setTricks]);
+
+    const saveTrick = useCallback((formData) => {
+        if (editingTrick) {
+            setTricks(prev => prev.map(t => t.id === editingTrick.id ? { ...editingTrick, ...formData } : t));
+            addToast('✅ Truco actualizado');
+        } else {
+            const newTrick = { ...formData, id: uid(), createdAt: Date.now() };
+            setTricks(prev => [newTrick, ...prev]);
+            addToast('✨ Truco creado');
+        }
+        setShowForm(false);
+        setEditingTrick(null);
+    }, [editingTrick, setTricks]);
+
+    const handleCopy = useCallback(async (trick) => {
+        try {
+            await navigator.clipboard.writeText(trick.codeSnippet);
+            setCopiedId(trick.id);
+            addToast('📋 Código copiado al portapapeles');
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch {
+            addToast('Error al copiar', 'error');
+        }
+    }, []);
+
+    const handleImport = useCallback((importedTricks) => {
+        const existingIds = new Set(tricks.map(t => t.id));
+        const newOnes = importedTricks.filter(t => !existingIds.has(t.id));
+        if (newOnes.length === 0) {
+            addToast('No hay trucos nuevos para importar', 'error');
+            return;
+        }
+        setTricks(prev => [...newOnes, ...prev]);
+        addToast(`📤 ${newOnes.length} trucos importados`);
+    }, [tricks, setTricks]);
+
+    const selectCategory = useCallback((catId) => {
+        setCurrentCategory(catId);
+        setView('category');
+        setSearch('');
+        setFilter('');
+    }, []);
+
+    const goHome = useCallback(() => {
+        setView('categories');
+        setCurrentCategory(null);
+        setSearch('');
+        setFilter('');
+    }, []);
+
+    const openAddForm = useCallback(() => {
+        setEditingTrick(null);
+        setShowForm(true);
+    }, []);
+
+    const openEditForm = useCallback((trick) => {
+        setEditingTrick(trick);
+        setShowForm(true);
+    }, []);
+
+    // Simulated loading for premium feel
+    useEffect(() => {
+        setLoading(true);
+        const t = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(t);
+    }, []);
+
+    const totalFavs = useMemo(() => tricks.filter(t => t.isFavorite).length, [tricks]);
+    const globalSearchQuery = search; // used across views
+
+    return (
+        <div className="app-container">
+            {loading && (
+                <div className="loading-overlay">
+                    <div className="spinner-triple">
+                        <div className="ring ring-1"></div>
+                        <div className="ring ring-2"></div>
+                        <div className="ring ring-3"></div>
+                    </div>
+                    <p className="loading-text">Cargando TrickVault...</p>
+                </div>
+            )}
+
+            {/* HEADER */}
+            <header className="app-header">
+                <div className="header-left">
+                    <span className="app-logo">💎</span>
+                    <div>
+                        <div className="app-title">TrickVault</div>
+                        <div className="app-subtitle">Tu colección personal de trucos</div>
+                    </div>
+                </div>
+                <div className="header-right">
+                    <button className={`btn btn-glass btn-sm ${view === 'categories' ? 'active' : ''}`} onClick={goHome}>🏠 Inicio</button>
+                    <button className={`btn btn-glass btn-sm ${view === 'search' ? 'active' : ''}`} onClick={() => { setView('search'); setSearch(''); }}>🔍 Buscar</button>
+                    <button className="btn btn-primary btn-sm" onClick={openAddForm}>✨ Nuevo</button>
+                    <ExportImport tricks={tricks} onImport={handleImport} />
+                </div>
+            </header>
+
+            {/* STATS */}
+            <div className="stats-bar">
+                <span className="stat-chip">💎 <span className="count">{tricks.length}</span> trucos</span>
+                <span className="stat-chip">📂 <span className="count">{new Set(tricks.map(t => t.category)).size}</span> categorías</span>
+                <span className="stat-chip">⭐ <span className="count">{totalFavs}</span> favoritos</span>
+            </div>
+
+            {/* MAIN CONTENT */}
+            {view === 'categories' && (
+                <div>
+                    <div className="section-header">
+                        <h2>📂 Categorías</h2>
+                    </div>
+                    <CategoryGrid tricks={tricks} onSelectCategory={selectCategory} />
+                </div>
+            )}
+
+            {view === 'category' && currentCategory && (
+                <TrickList
+                    tricks={tricks}
+                    categoryId={currentCategory}
+                    onBack={goHome}
+                    onToggleFav={toggleFav}
+                    onEdit={openEditForm}
+                    onDelete={deleteTrick}
+                    onImageClick={setLightboxSrc}
+                    onCopy={handleCopy}
+                    copiedId={copiedId}
+                    onAdd={openAddForm}
+                    search={search}
+                    setSearch={setSearch}
+                    filter={filter}
+                    setFilter={setFilter}
+                />
+            )}
+
+            {view === 'search' && (
+                <GlobalSearch
+                    tricks={tricks}
+                    onSelectCategory={selectCategory}
+                    onToggleFav={toggleFav}
+                    onEdit={openEditForm}
+                    onDelete={deleteTrick}
+                    onImageClick={setLightboxSrc}
+                    onCopy={handleCopy}
+                    copiedId={copiedId}
+                />
+            )}
+
+            {/* MODALS */}
+            {showForm && (
+                <TrickForm trick={editingTrick} onSave={saveTrick} onClose={() => { setShowForm(false); setEditingTrick(null); }} />
+            )}
+
+            {lightboxSrc && (
+                <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+            )}
+
+            <Toast toasts={toasts} removeToast={removeToast} />
+
+            {/* FOOTER */}
+            <footer style={{textAlign:'center',padding:'3rem 0 1.5rem',color:'var(--muted)',fontSize:'0.75rem'}}>
+                TrickVault — Hecho con 💎 y Neon Glassmorphism
+            </footer>
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>

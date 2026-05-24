@@ -1,4 +1,4 @@
-/* app_edicion.js - Solo Edición de Imágenes */
+﻿/* app_edicion.js - Solo EdiciÃ³n de ImÃ¡genes */
 (() => {
     const { useState, useEffect, useRef } = React;
 
@@ -50,7 +50,7 @@
     const checkCanGenerate = (userData) => {
         if (!userData) return { canGenerate: false, reason: 'No user data' };
         if (userData.role === 'admin' || userData.role === 'vip') {
-            return { canGenerate: true, remaining: '∞' };
+            return { canGenerate: true, remaining: 'âˆž' };
         }
         const today = new Date().toISOString().split('T')[0];
         if (userData.usage.date !== today) {
@@ -58,7 +58,7 @@
         }
         const remaining = DAILY_LIMIT - (userData.usage.count || 0);
         if (remaining <= 0) {
-            return { canGenerate: false, reason: 'Límite diario alcanzado', remaining: 0 };
+            return { canGenerate: false, reason: 'LÃ­mite diario alcanzado', remaining: 0 };
         }
         return { canGenerate: true, remaining };
     };
@@ -212,7 +212,7 @@
         );
     };
 
-    /* ==== COMPONENTE: EDITOR DE MÁSCARA ==== */
+    /* ==== COMPONENTE: EDITOR DE MÃSCARA ==== */
     const MaskEditor = ({ src, onClose, onSave }) => {
         const canvasRef = useRef(null);
         const imgRef = useRef(null);
@@ -299,7 +299,7 @@
         return (
             <div className="mask-editor-overlay">
                 {showCursor && <div ref={cursorRef} className="brush-cursor" />}
-                <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>Editor de Máscara</h3>
+                <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>Editor de MÃ¡scara</h3>
                 <div className="mask-editor-container">
                     <div className="mask-zoom-wrapper" style={{ transform: `scale(${zoom})` }} onMouseEnter={() => setShowCursor(true)} onMouseLeave={() => setShowCursor(false)}>
                         <img ref={imgRef} src={src} alt="reference" style={{ display: 'block', maxWidth: 'none' }} />
@@ -361,7 +361,7 @@
                         <button className="action-btn btn-dl" data-tooltip="Descargar" onClick={() => download(img.src)}>
                             <i className="fa-solid fa-download"></i>
                         </button>
-                        <button className="action-btn" style={{ background: '#f59e0b' }} data-tooltip="Crear Máscara" onClick={() => onEditRequest(img, 'mask')}>
+                        <button className="action-btn" style={{ background: '#f59e0b' }} data-tooltip="Crear MÃ¡scara" onClick={() => onEditRequest(img, 'mask')}>
                             <i className="fa-solid fa-paintbrush"></i>
                         </button>
                         <button className="action-btn btn-edit" data-tooltip="Editar con texto" onClick={() => setShowEditBox(!showEditBox)}>
@@ -408,7 +408,7 @@
                 if (onClose) setTimeout(onClose, 100);
             } catch (err) {
                 if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') setError('Credenciales incorrectas.');
-                else if (err.code === 'auth/email-already-in-use') setError('El email ya está registrado.');
+                else if (err.code === 'auth/email-already-in-use') setError('El email ya estÃ¡ registrado.');
                 else setError(err.message);
             } finally {
                 setLoading(false);
@@ -455,7 +455,7 @@
                             {isLogin ? 'Bienvenido de nuevo' : 'Crear cuenta'}
                         </h2>
                         <p style={{ color: '#94a3b8', fontSize: '14px' }}>
-                            {isLogin ? 'Accede para continuar editando' : 'Regístrate para empezar'}
+                            {isLogin ? 'Accede para continuar editando' : 'RegÃ­strate para empezar'}
                         </p>
                     </div>
                     {error && (
@@ -466,22 +466,22 @@
                     <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div style={{ position: 'relative' }}>
                             <i className="fa-solid fa-envelope" style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '16px', pointerEvents: 'none' }}></i>
-                            <input type="email" placeholder="Tu correo electrónico" style={inputStyle} value={email} onChange={e => setEmail(e.target.value)} onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 1px #3b82f6'; }} onBlur={e => { e.target.style.borderColor = '#334155'; e.target.style.boxShadow = 'none'; }} required />
+                            <input type="email" placeholder="Tu correo electrÃ³nico" style={inputStyle} value={email} onChange={e => setEmail(e.target.value)} onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 1px #3b82f6'; }} onBlur={e => { e.target.style.borderColor = '#334155'; e.target.style.boxShadow = 'none'; }} required />
                         </div>
                         <div style={{ position: 'relative' }}>
                             <i className="fa-solid fa-lock" style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '16px', pointerEvents: 'none' }}></i>
-                            <input type={showPassword ? "text" : "password"} placeholder="Contraseña" style={inputStyle} value={password} onChange={e => setPassword(e.target.value)} onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 1px #3b82f6'; }} onBlur={e => { e.target.style.borderColor = '#334155'; e.target.style.boxShadow = 'none'; }} required />
+                            <input type={showPassword ? "text" : "password"} placeholder="ContraseÃ±a" style={inputStyle} value={password} onChange={e => setPassword(e.target.value)} onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.boxShadow = '0 0 0 1px #3b82f6'; }} onBlur={e => { e.target.style.borderColor = '#334155'; e.target.style.boxShadow = 'none'; }} required />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#64748b' }}>
                                 <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} style={{ fontSize: '14px' }}></i>
                             </button>
                         </div>
                         <button type="submit" disabled={loading} style={{ marginTop: '8px', width: '100%', padding: '14px', background: 'linear-gradient(to right, #2563eb, #1d4ed8)', color: 'white', fontWeight: '600', fontSize: '15px', borderRadius: '12px', border: 'none', cursor: loading ? 'wait' : 'pointer', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)', opacity: loading ? 0.7 : 1, transition: 'transform 0.1s' }} onMouseDown={e => !loading && (e.target.style.transform = 'scale(0.98)')} onMouseUp={e => !loading && (e.target.style.transform = 'scale(1)')}>
-                            {loading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
+                            {loading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : (isLogin ? 'Iniciar SesiÃ³n' : 'Crear Cuenta')}
                         </button>
                     </form>
                     <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '12px' }}>
                         <div style={{ height: '1px', background: '#334155', flex: 1 }}></div>
-                        <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>O continúa con</span>
+                        <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>O continÃºa con</span>
                         <div style={{ height: '1px', background: '#334155', flex: 1 }}></div>
                     </div>
                     <button onClick={handleGoogleLogin} type="button" disabled={loading} style={{ width: '100%', padding: '12px', background: '#ffff', color: '#0f172a', fontWeight: '600', fontSize: '15px', borderRadius: '12px', border: 'none', cursor: loading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', transition: 'background 0.2s' }} onMouseOver={e => !loading && (e.target.style.background = '#f1f5f9')} onMouseOut={e => !loading && (e.target.style.background = '#ffff')}>
@@ -491,9 +491,9 @@
                     <div style={{ marginTop: '24px', textAlign: 'center' }}>
                         <button onClick={() => { setIsLogin(!isLogin); setError(''); }} style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '14px', cursor: 'pointer' }}>
                             {isLogin ? (
-                                <span>¿No tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>Regístrate gratis</span></span>
+                                <span>Â¿No tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>RegÃ­strate gratis</span></span>
                             ) : (
-                                <span>¿Ya tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>Inicia sesión</span></span>
+                                <span>Â¿Ya tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>Inicia sesiÃ³n</span></span>
                             )}
                         </button>
                     </div>
@@ -503,7 +503,34 @@
     };
 
     /* ==== APP ==== */
-    const App = () => {
+    
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
+
+const App = () => {
         const [prompt, setPrompt] = useState('');
         const [baseImages, setBaseImages] = useState([]);
         const [originalBaseImage, setOriginalBaseImage] = useState(null);
@@ -553,8 +580,8 @@
         const [logoMode, setLogoMode] = useState('Conservar logos');
 
         const aspectGroups = [{ label: 'Vertical', options: ['9:16', '3:4', '2:3', '4:5'] }, { label: 'Horizontal', options: ['16:9', '4:3', '3:2', '21:9'] }, { label: 'Cuadrado', options: ['1:1'] }];
-        const MAP_REALISM = { 'Fotorrealista': 'Photorealistic', 'Hiperrealista': 'Hyperrealistic', 'Ilustración': 'Illustration', 'Anime': 'Anime style' };
-        const MAP_CREATIVO = { 'Ninguno': '', 'Cinemático': 'Cinematic', 'Fantasía': 'Fantasy', 'Cyberpunk': 'Cyberpunk', 'Vintage': 'Vintage' };
+        const MAP_REALISM = { 'Fotorrealista': 'Photorealistic', 'Hiperrealista': 'Hyperrealistic', 'IlustraciÃ³n': 'Illustration', 'Anime': 'Anime style' };
+        const MAP_CREATIVO = { 'Ninguno': '', 'CinemÃ¡tico': 'Cinematic', 'FantasÃ­a': 'Fantasy', 'Cyberpunk': 'Cyberpunk', 'Vintage': 'Vintage' };
 
        const onUploadBase = (e) => {
     if (e.target.files?.length > 0) {
@@ -646,7 +673,7 @@
             setTempMaskData(prev => ({ ...prev, [activeEditImgId]: maskObjects }));
             setMaskEditorOpen(false);
             setIsLoading(true);
-            setLoadingMsg('Analizando zonas de la máscara...');
+            setLoadingMsg('Analizando zonas de la mÃ¡scara...');
             try {
                 let baseSrc = null;
                 const baseImgObj = baseImages.find(i => i.id === activeEditImgId);
@@ -663,7 +690,7 @@
                     }
                 }
             } catch (e) {
-                setError('Error analizando máscara: ' + e.message);
+                setError('Error analizando mÃ¡scara: ' + e.message);
             } finally {
                 setIsLoading(false);
                 setActiveEditImgId(null);
@@ -673,7 +700,7 @@
         const generate = async (customPromptOverride = null) => {
             let effPrompt = customPromptOverride || prompt;
             
-            // REQUIERE IMAGEN BASE PARA EDICIÓN
+            // REQUIERE IMAGEN BASE PARA EDICIÃ“N
             if (baseImages.length === 0) { 
                 setError('Debes subir una imagen base para editar.'); 
                 return; 
@@ -690,7 +717,7 @@
     if (aspectRatio !== originalAspectRatio) autoParts.push(`Adjust to ${aspectRatio} aspect ratio`);
     
     if (autoParts.length === 0) {
-        setError('Describe la edición o cambia alguna opción (estilo, relación de aspecto, etc.).');
+        setError('Describe la ediciÃ³n o cambia alguna opciÃ³n (estilo, relaciÃ³n de aspecto, etc.).');
         return;
     }
     effPrompt = autoParts.join('. ') + '. Keep the rest of the image identical.';
@@ -714,7 +741,7 @@
                 let imagesToSend = [];
 
                 if (maskData) {
-                    setLoadingMsg('Fusionando máscara visual...');
+                    setLoadingMsg('Fusionando mÃ¡scara visual...');
                     const combinedImagePart = await combineBaseAndMaskVisual(baseImages[0].url, maskData.visual);
                     imagesToSend = [combinedImagePart];
                     blocks.push(PRE_PROMPT_INPAINT_VISUAL);
@@ -742,7 +769,7 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                         src: `data:${res.mimeType};base64,${res.image}`,
                         arCss: cssAR(aspectRatio),
                         promptUsed: effPrompt,
-                       promptLabel: maskData ? 'Editado (Máscara)' : `Editado - Prompt ${selectedPromptId || 'Manual'}`
+                       promptLabel: maskData ? 'Editado (MÃ¡scara)' : `Editado - Prompt ${selectedPromptId || 'Manual'}`
                     };
                     setImages(prev => [newImg, ...prev]);
                     
@@ -804,7 +831,7 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                 {maskEditorOpen && <MaskEditor src={maskImageSrc} onClose={() => { setMaskEditorOpen(false); setActiveEditImgId(null); }} onSave={handleMaskSave} />}
 
                 <header className="app-header">
-                    <h1>Editar Imágenes</h1>
+                    <h1>Editar ImÃ¡genes</h1>
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '15px' }}>
                         {user && userData && (
                             <>
@@ -816,7 +843,7 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                                 )}
                                 {(userData.role === 'vip' || userData.role === 'admin') && (
                                     <div style={{ padding: '0.4rem 0.8rem', background: 'linear-gradient(135deg, #22d3ee, #a78bfa)', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600', color: '#0c1445' }}>
-                                        Ediciones restantes: ∞
+                                        Ediciones restantes: âˆž
                                     </div>
                                 )}
                             </>
@@ -826,7 +853,7 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                                 <i className="fa-solid fa-right-from-bracket"></i> Salir
                             </button>
                         ) : (
-                            <button className="btn btn-sm" onClick={() => setAuthModalOpen(true)}>Iniciar Sesión</button>
+                            <button className="btn btn-sm" onClick={() => setAuthModalOpen(true)}>Iniciar SesiÃ³n</button>
                         )}
                     </div>
                 </header>
@@ -838,7 +865,7 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                     <div className="controls-column">
                         <input id="base-upload" type="file" accept="image/*" onChange={onUploadBase} style={{ display: 'none' }} />
 
-                        {/* SECCIÓN: SUBIR IMAGEN BASE */}
+                        {/* SECCIÃ“N: SUBIR IMAGEN BASE */}
                         <div className="base-uploader-section" style={{ marginBottom: '1rem' }}>
                             <h3 style={{ marginBottom: '0.5rem', color: '#e5e7eb' }}>Subir Imagen Base</h3>
                             <button className="btn" onClick={() => document.getElementById('base-upload').click()} style={{ width: '100%', background: 'linear-gradient(135deg, #3b82f6, #a78bfa)' }}>
@@ -850,7 +877,7 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                                     <img src={baseImages[0].url} alt="base" onClick={() => setModalImage(baseImages[0].url)} />
                                     {tempMaskData[baseImages[0].id] && tempMaskData[baseImages[0].id].visual && <img className="mask-overlay-img" src={tempMaskData[baseImages[0].id].visual} alt="mask overlay" />}
                                     <div className="base-overlay-actions">
-                                        <button className="base-action-btn" title="Pintar área a editar" onClick={() => onBaseImageMask(baseImages[0])}>
+                                        <button className="base-action-btn" title="Pintar Ã¡rea a editar" onClick={() => onBaseImageMask(baseImages[0])}>
                                             <i className="fa-solid fa-paintbrush"></i>
                                         </button>
                                         <button className="base-action-btn danger" title="Eliminar imagen" onClick={() => { setBaseImages([]); setTempMaskData({}); }}>
@@ -859,17 +886,17 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                                     </div>
                                 </div>
                             )}
-                            {tempMaskData[baseImages[0]?.id] && <p style={{ color: 'var(--acc)', fontSize: '0.9rem', textAlign: 'center', marginTop: '5px' }}>Máscara activa.</p>}
+                            {tempMaskData[baseImages[0]?.id] && <p style={{ color: 'var(--acc)', fontSize: '0.9rem', textAlign: 'center', marginTop: '5px' }}>MÃ¡scara activa.</p>}
                         </div>
 
                         {/* PROMPT */}
                         <div className="input-group">
-                            <label>Describe la edición</label>
+                            <label>Describe la ediciÃ³n</label>
                             <textarea value={prompt} onChange={e => { setPrompt(e.target.value); setSelectedPromptId(null); }} placeholder="Ej: Cambia el fondo por una playa tropical..." />
                             {enhancedOptions.length > 0 && (
                                 <div className="prompt-options-grid">
                                     {enhancedOptions.map((opt, idx) => (
-                                        <button key={idx} className={`prompt-opt-btn ${selectedPromptId === (idx + 1) ? 'selected' : ''}`} onClick={() => { setPrompt(opt); setSelectedPromptId(idx + 1); }}>Opción {idx + 1}</button>
+                                        <button key={idx} className={`prompt-opt-btn ${selectedPromptId === (idx + 1) ? 'selected' : ''}`} onClick={() => { setPrompt(opt); setSelectedPromptId(idx + 1); }}>OpciÃ³n {idx + 1}</button>
                                     ))}
                                 </div>
                             )}
@@ -887,15 +914,15 @@ imagesToSend = [await fileToPart(imageToUse.file)];
                             </button>
                         </div>
 
-                        {/* OPCIONES: Relación de aspecto */}
+                        {/* OPCIONES: RelaciÃ³n de aspecto */}
                         
                         <div className="select-row" style={{ marginTop: '1rem' }}>
-                            <CustomSelect label="Relación de aspecto" value={aspectRatio} onChange={setAspectRatio} groups={aspectGroups} />
+                            <CustomSelect label="RelaciÃ³n de aspecto" value={aspectRatio} onChange={setAspectRatio} groups={aspectGroups} />
                         </div>
 
                         
 
-                        {/* BOTÓN GENERAR */}
+                        {/* BOTÃ“N GENERAR */}
                         <div className="actions" style={{ marginTop: '1.5rem' }}>
                             
                         </div>

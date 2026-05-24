@@ -223,11 +223,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // También cerrar al hacer clic en la imagen (cursor zoom-out)
     lightboxImg.onclick = closeLightbox;
 
-    downloadBtnLb.onclick = () => {
-        if (currentLightboxImage) {
-            downloadImage(currentLightboxImage, 'clon_gemini.png');
-        }
-    };
+    if (downloadBtnLb) {
+        downloadBtnLb.onclick = () => {
+            if (currentLightboxImage) {
+                downloadImage(currentLightboxImage, 'clon_gemini.png');
+            }
+        };
+    }
 
     // ════
     // DESCARGA
@@ -355,7 +357,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error:', error);
-            alert('Fallo: ' + error.message);
+
+            let mensajeError = error.message;
+
+            // Manejo específico de errores de seguridad de Gemini
+            if (mensajeError.includes('Bloqueado: OTHER')) {
+                mensajeError = '⚠️ La IA bloqueó esta generación por filtros de seguridad.\n\n' +
+                    'Posibles causas:\n' +
+                    '• Las imágenes contienen rostros que no puede procesar\n' +
+                    '• Contenido que viola las políticas de uso\n' +
+                    '• Imágenes con baja calidad o poco claras\n' +
+                    '• Demasiadas caras o ninguna cara detectada\n\n' +
+                    'Recomendaciones:\n' +
+                    '1. Usa una selfie clara con buena iluminación\n' +
+                    '2. Asegúrate de que solo haya UNA cara en cada imagen\n' +
+                    '3. Evita imágenes borrosas o con ángulos extraños\n\n' +
+                    'Detalles técnicos:\n' + error.message;
+            } else if (mensajeError.includes('Bloqueado: SAFETY')) {
+                mensajeError = '⚠️ Generación bloqueada por filtros de seguridad.\n\n' + error.message;
+            } else if (mensajeError.includes('Bloqueado')) {
+                mensajeError = '⚠️ Generación bloqueada\n\n' + mensajeError;
+            }
+
+            alert(mensajeError);
         } finally {
             setTimeout(() => {
                 loadingOverlay.classList.add('hidden');
@@ -418,11 +442,31 @@ RESULT: The person in the second image now has the face and hair from the first 
         const res = await fetch(PROXY_URL, { method: 'POST', body: JSON.stringify(requestBody) });
         const data = await res.json();
 
+        // Información detallada de errores de seguridad
+        if (data.debug?.blockReason) {
+            console.warn('Bloqueo de seguridad:', data.debug);
+        }
+
         if (data.error) {
             throw new Error(data.error.message || JSON.stringify(data.error));
         }
         if (data.promptFeedback?.blockReason) {
-            throw new Error('Bloqueado: ' + data.promptFeedback.blockReason);
+            const reason = data.promptFeedback.blockReason;
+            const safetyRatings = data.promptFeedback.safetyRatings || [];
+
+            // Construir mensaje detallado
+            let detalles = 'Motivo: ' + reason;
+            if (safetyRatings.length > 0) {
+                const problematicas = safetyRatings
+                    .filter(r => r.probability !== 'NEGLIGIBLE')
+                    .map(r => r.category + ': ' + r.probability)
+                    .join(', ');
+                if (problematicas) {
+                    detalles += '\nDetectado: ' + problematicas;
+                }
+            }
+
+            throw new Error('Bloqueado: ' + reason + '\n\n' + detalles);
         }
 
         const images = [];
@@ -434,10 +478,6 @@ RESULT: The person in the second image now has the face and hair from the first 
                 const mimeType = part.inlineData?.mimeType || part.inline_data?.mime_type || 'image/png';
                 if (imgData) {
                     images.push(`data:${mimeType};base64,${imgData}`);
-                }
-            }
-        }
-                    }
                 }
             }
         }

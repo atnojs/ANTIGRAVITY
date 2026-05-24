@@ -1,4 +1,4 @@
-/* app.js */
+﻿/* app.js */
 (() => {
     const { useState, useEffect, useRef } = React;
 
@@ -21,7 +21,7 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Forzar logout al cargar la página para siempre pedir login (solo se ejecuta 1 vez)
+    // Forzar logout al cargar la pÃ¡gina para siempre pedir login (solo se ejecuta 1 vez)
     auth.signOut();
 
     /* ==== USER MANAGEMENT ==== */
@@ -67,10 +67,10 @@
 
         // Admin y VIP tienen acceso ilimitado
         if (userData.role === 'admin' || userData.role === 'vip') {
-            return { canGenerate: true, remaining: '∞' };
+            return { canGenerate: true, remaining: 'âˆž' };
         }
 
-        // Verificar límite diario para usuarios free
+        // Verificar lÃ­mite diario para usuarios free
         const today = new Date().toISOString().split('T')[0];
 
         // Handle case where usage object doesn't exist yet
@@ -79,13 +79,13 @@
         }
 
         if (userData.usage.date !== today) {
-            // Nuevo día, resetear contador
+            // Nuevo dÃ­a, resetear contador
             return { canGenerate: true, remaining: DAILY_LIMIT };
         }
 
         const remaining = DAILY_LIMIT - (userData.usage.count || 0);
         if (remaining <= 0) {
-            return { canGenerate: false, reason: 'Límite diario alcanzado', remaining: 0 };
+            return { canGenerate: false, reason: 'LÃ­mite diario alcanzado', remaining: 0 };
         }
 
         return { canGenerate: true, remaining };
@@ -101,7 +101,7 @@
         const today = new Date().toISOString().split('T')[0];
 
         if (userData.usage.date !== today) {
-            // Nuevo día, resetear
+            // Nuevo dÃ­a, resetear
             await userRef.update({
                 'usage.date': today,
                 'usage.count': 1
@@ -114,7 +114,7 @@
         }
     };
 
-    /* ==== CONSTANTES BÁSICAS ==== */
+    /* ==== CONSTANTES BÃSICAS ==== */
     const PRE_PROMPT_BASE = "CRITICAL: ABSOLUTELY NO TEXT, NO WATERMARKS. If a base image is provided, PRESERVE IT EXACTLY unless explicitly changed.";
     const PRE_PROMPT_INPAINT_VISUAL = "ROLE: Precise Image Editor. TASK: Edit ONLY the area highlighted with a RED semi-transparent overlay in the image. The rest of the image MUST REMAIN IDENTICAL.";
 
@@ -133,7 +133,7 @@
         enhancePrompt(prompt, isMaskMode = false) {
             return this.call({ task: 'enhancePrompt', prompt, isMaskMode });
         },
-        // NUEVO: Analizar máscara para generar plantilla
+        // NUEVO: Analizar mÃ¡scara para generar plantilla
         analyzeMask(imageB64) {
             return this.call({
                 task: 'analyzeMaskPosition',
@@ -251,7 +251,7 @@
         );
     };
 
-    /* ==== COMPONENTE: EDITOR DE MÁSCARA ==== */
+    /* ==== COMPONENTE: EDITOR DE MÃSCARA ==== */
     const MaskEditor = ({ src, onClose, onSave }) => {
         const canvasRef = useRef(null);
         const imgRef = useRef(null);
@@ -345,7 +345,7 @@
         return (
             <div className="mask-editor-overlay">
                 {showCursor && <div ref={cursorRef} className="brush-cursor" />}
-                <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>Editor de Máscara</h3>
+                <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>Editor de MÃ¡scara</h3>
                 <div className="mask-editor-container">
                     <div className="mask-zoom-wrapper" style={{ transform: `scale(${zoom})` }} onMouseEnter={() => setShowCursor(true)} onMouseLeave={() => setShowCursor(false)}>
                         <img ref={imgRef} src={src} alt="reference" style={{ display: 'block', maxWidth: 'none' }} />
@@ -408,7 +408,7 @@
                         <button className="action-btn btn-dl" data-tooltip="Descargar" onClick={() => download(img.src)}>
                             <i className="fa-solid fa-download"></i>
                         </button>
-                        <button className="action-btn" style={{ background: '#f59e0b' }} data-tooltip="Crear Máscara" onClick={() => onEditRequest(img, 'mask')}>
+                        <button className="action-btn" style={{ background: '#f59e0b' }} data-tooltip="Crear MÃ¡scara" onClick={() => onEditRequest(img, 'mask')}>
                             <i className="fa-solid fa-paintbrush"></i>
                         </button>
                         <button className="action-btn btn-edit" data-tooltip="Editar con texto" onClick={() => setShowEditBox(!showEditBox)}>
@@ -465,7 +465,7 @@
                 if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
                     setError('Credenciales incorrectas.');
                 } else if (err.code === 'auth/email-already-in-use') {
-                    setError('El email ya está registrado.');
+                    setError('El email ya estÃ¡ registrado.');
                 } else {
                     setError(err.message);
                 }
@@ -553,7 +553,7 @@
                             {isLogin ? 'Bienvenido de nuevo' : 'Crear cuenta'}
                         </h2>
                         <p style={{ color: '#94a3b8', fontSize: '14px' }}>
-                            {isLogin ? 'Accede para continuar creando' : 'Regístrate para empezar'}
+                            {isLogin ? 'Accede para continuar creando' : 'RegÃ­strate para empezar'}
                         </p>
                     </div>
 
@@ -572,7 +572,7 @@
                             <i className="fa-solid fa-envelope" style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '16px', pointerEvents: 'none' }}></i>
                             <input
                                 type="email"
-                                placeholder="Tu correo electrónico"
+                                placeholder="Tu correo electrÃ³nico"
                                 style={inputStyle}
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
@@ -587,7 +587,7 @@
                             <i className="fa-solid fa-lock" style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '16px', pointerEvents: 'none' }}></i>
                             <input
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Contraseña"
+                                placeholder="ContraseÃ±a"
                                 style={inputStyle}
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
@@ -604,7 +604,7 @@
                             </button>
                         </div>
 
-                        {/* BOTÓN SUBMIT */}
+                        {/* BOTÃ“N SUBMIT */}
                         <button
                             type="submit"
                             disabled={loading}
@@ -626,18 +626,18 @@
                             onMouseDown={e => !loading && (e.target.style.transform = 'scale(0.98)')}
                             onMouseUp={e => !loading && (e.target.style.transform = 'scale(1)')}
                         >
-                            {loading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
+                            {loading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : (isLogin ? 'Iniciar SesiÃ³n' : 'Crear Cuenta')}
                         </button>
                     </form>
 
                     {/* SEPARADOR */}
                     <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '12px' }}>
                         <div style={{ height: '1px', background: '#334155', flex: 1 }}></div>
-                        <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>O continúa con</span>
+                        <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>O continÃºa con</span>
                         <div style={{ height: '1px', background: '#334155', flex: 1 }}></div>
                     </div>
 
-                    {/* BOTÓN GOOGLE */}
+                    {/* BOTÃ“N GOOGLE */}
                     <button
                         onClick={handleGoogleLogin}
                         type="button"
@@ -672,9 +672,9 @@
                             style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '14px', cursor: 'pointer' }}
                         >
                             {isLogin ? (
-                                <span>¿No tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>Regístrate gratis</span></span>
+                                <span>Â¿No tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>RegÃ­strate gratis</span></span>
                             ) : (
-                                <span>¿Ya tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>Inicia sesión</span></span>
+                                <span>Â¿Ya tienes cuenta? <span style={{ fontWeight: '700', textDecoration: 'underline' }}>Inicia sesiÃ³n</span></span>
                             )}
                         </button>
                     </div>
@@ -749,7 +749,7 @@
         };
 
         const deleteUser = async (uid, email) => {
-            if (!confirm(`¿Eliminar usuario ${email}?`)) return;
+            if (!confirm(`Â¿Eliminar usuario ${email}?`)) return;
             try {
                 await db.collection('users').doc(uid).delete();
                 await loadData();
@@ -766,7 +766,7 @@
                 });
                 await loadData();
             } catch (e) {
-                alert('Error al resetear límite: ' + e.message);
+                alert('Error al resetear lÃ­mite: ' + e.message);
             }
         };
 
@@ -834,10 +834,10 @@
                                 WebkitTextFillColor: 'transparent',
                                 fontWeight: '700'
                             }}>
-                                Panel de Administración
+                                Panel de AdministraciÃ³n
                             </h2>
                             <p style={{ margin: '0.5rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>
-                                Gestión completa y estadísticas de la plataforma
+                                GestiÃ³n completa y estadÃ­sticas de la plataforma
                             </p>
                         </div>
                         <button onClick={onClose} style={{
@@ -870,7 +870,7 @@
                                 transition: '0.3s'
                             }}
                         >
-                            <i className="fa-solid fa-chart-line"></i> Estadísticas
+                            <i className="fa-solid fa-chart-line"></i> EstadÃ­sticas
                         </button>
                         <button
                             onClick={() => setSelectedTab('users')}
@@ -907,29 +907,29 @@
                                         marginBottom: '2rem'
                                     }}>
                                         <StatCard
-                                            icon="👥"
+                                            icon="ðŸ‘¥"
                                             label="Total Usuarios"
                                             value={stats.totalUsers.total}
-                                            subtext={`${stats.totalUsers.free} Free · ${stats.totalUsers.vip} VIP · ${stats.totalUsers.admin} Admin`}
+                                            subtext={`${stats.totalUsers.free} Free Â· ${stats.totalUsers.vip} VIP Â· ${stats.totalUsers.admin} Admin`}
                                             gradient="linear-gradient(135deg, #3b82f6, #8b5cf6)"
                                         />
                                         <StatCard
-                                            icon="🖼️"
+                                            icon="ðŸ–¼ï¸"
                                             label="Generaciones Hoy"
                                             value={stats.todayUsage}
                                             subtext={`Promedio: ${stats.avgUsage} por usuario activo`}
                                             gradient="linear-gradient(135deg, #22d3ee, #06b6d4)"
                                         />
                                         <StatCard
-                                            icon="⚡"
+                                            icon="âš¡"
                                             label="Usuarios Activos Hoy"
                                             value={stats.activeToday}
                                             subtext={`${((stats.activeToday / stats.totalUsers.total) * 100).toFixed(0)}% del total`}
                                             gradient="linear-gradient(135deg, #10b981, #059669)"
                                         />
                                         <StatCard
-                                            icon="📊"
-                                            label="Tasa de Conversión VIP"
+                                            icon="ðŸ“Š"
+                                            label="Tasa de ConversiÃ³n VIP"
                                             value={`${((stats.totalUsers.vip / stats.totalUsers.total) * 100).toFixed(1)}%`}
                                             subtext={`${stats.totalUsers.vip} de ${stats.totalUsers.total} usuarios`}
                                             gradient="linear-gradient(135deg, #f59e0b, #d97706)"
@@ -978,7 +978,7 @@
                                                         <div style={{ flex: 1 }}>
                                                             <div style={{ color: '#e5e7eb', fontWeight: '500' }}>{u.email}</div>
                                                             <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                                                                {u.role === 'admin' ? '👑 Admin' : u.role === 'vip' ? '⭐ VIP' : 'Free'}
+                                                                {u.role === 'admin' ? 'ðŸ‘‘ Admin' : u.role === 'vip' ? 'â­ VIP' : 'Free'}
                                                             </div>
                                                         </div>
                                                         <div style={{
@@ -1056,11 +1056,11 @@
                                                                         'rgba(255,255,255,0.1)',
                                                                 color: '#fff'
                                                             }}>
-                                                                {u.role === 'admin' ? '👑 Admin' : u.role === 'vip' ? '⭐ VIP' : 'Free'}
+                                                                {u.role === 'admin' ? 'ðŸ‘‘ Admin' : u.role === 'vip' ? 'â­ VIP' : 'Free'}
                                                             </span>
                                                         </td>
                                                         <td style={{ padding: '1rem', color: '#94a3b8' }}>
-                                                            {u.usage?.count || 0} / {u.role === 'free' ? DAILY_LIMIT : '∞'}
+                                                            {u.usage?.count || 0} / {u.role === 'free' ? DAILY_LIMIT : 'âˆž'}
                                                         </td>
                                                         <td style={{ padding: '1rem' }}>
                                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1076,7 +1076,7 @@
                                                                                 padding: '0.4rem 0.8rem'
                                                                             }}
                                                                         >
-                                                                            {u.role === 'vip' ? '❌ VIP' : '⭐ VIP'}
+                                                                            {u.role === 'vip' ? 'âŒ VIP' : 'â­ VIP'}
                                                                         </button>
                                                                         {u.role === 'free' && u.usage?.count > 0 && (
                                                                             <button
@@ -1090,7 +1090,7 @@
                                                                                     padding: '0.4rem 0.8rem'
                                                                                 }}
                                                                             >
-                                                                                🔄 Reset
+                                                                                ðŸ”„ Reset
                                                                             </button>
                                                                         )}
                                                                         <button
@@ -1104,7 +1104,7 @@
                                                                                 padding: '0.4rem 0.8rem'
                                                                             }}
                                                                         >
-                                                                            🗑️
+                                                                            ðŸ—‘ï¸
                                                                         </button>
                                                                     </>
                                                                 )}
@@ -1130,7 +1130,34 @@
     };
 
     /* ==== APP ==== */
-    const App = () => {
+    
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
+
+const App = () => {
         const [prompt, setPrompt] = useState('');
         const [provider, setProvider] = useState('gemini');
         const [baseImages, setBaseImages] = useState([]);
@@ -1180,8 +1207,8 @@
         const [logoMode, setLogoMode] = useState('Conservar logos');
 
         const aspectGroups = [{ label: 'Vertical', options: ['9:16', '3:4', '2:3', '4:5'] }, { label: 'Horizontal', options: ['16:9', '4:3', '3:2', '21:9'] }, { label: 'Cuadrado', options: ['1:1'] }];
-        const MAP_REALISM = { 'Fotorrealista': 'Photorealistic', 'Hiperrealista': 'Hyperrealistic', 'Ilustración': 'Illustration', 'Anime': 'Anime style' };
-        const MAP_CREATIVO = { 'Ninguno': '', 'Cinemático': 'Cinematic', 'Fantasía': 'Fantasy', 'Cyberpunk': 'Cyberpunk', 'Vintage': 'Vintage' };
+        const MAP_REALISM = { 'Fotorrealista': 'Photorealistic', 'Hiperrealista': 'Hyperrealistic', 'IlustraciÃ³n': 'Illustration', 'Anime': 'Anime style' };
+        const MAP_CREATIVO = { 'Ninguno': '', 'CinemÃ¡tico': 'Cinematic', 'FantasÃ­a': 'Fantasy', 'Cyberpunk': 'Cyberpunk', 'Vintage': 'Vintage' };
 
         const onUploadBase = (e) => {
             if (e.target.files?.length > 0) {
@@ -1242,14 +1269,14 @@
             setMaskEditorOpen(true);
         };
 
-        // ==== MODIFICADO: ANÁLISIS DE MÁSCARA AL CONFIRMAR ====
+        // ==== MODIFICADO: ANÃLISIS DE MÃSCARA AL CONFIRMAR ====
         const handleMaskSave = async (maskObjects) => {
-            // 1. Guardar máscara visual y binaria en el estado
+            // 1. Guardar mÃ¡scara visual y binaria en el estado
             setTempMaskData(prev => ({ ...prev, [activeEditImgId]: maskObjects }));
             setMaskEditorOpen(false); // Cerramos visualmente el editor, pero mostramos loader
 
             setIsLoading(true);
-            setLoadingMsg('Analizando zonas de la máscara...');
+            setLoadingMsg('Analizando zonas de la mÃ¡scara...');
 
             try {
                 // Buscamos la imagen base para fusionar
@@ -1262,7 +1289,7 @@
                 }
 
                 if (baseSrc) {
-                    // 2. Fusionar imagen + máscara visual
+                    // 2. Fusionar imagen + mÃ¡scara visual
                     const combined = await combineBaseAndMaskVisual(baseSrc, maskObjects.visual);
 
                     // 3. Enviar a Gemini para que escriba la plantilla
@@ -1274,7 +1301,7 @@
                     }
                 }
             } catch (e) {
-                setError('Error analizando máscara: ' + e.message);
+                setError('Error analizando mÃ¡scara: ' + e.message);
             } finally {
                 setIsLoading(false);
                 setActiveEditImgId(null);
@@ -1285,7 +1312,7 @@
             const effPrompt = customPromptOverride || prompt;
             if (!effPrompt.trim() && baseImages.length === 0) { setError('Falta prompt o imagen.'); return; }
 
-            // Verificar límite de uso
+            // Verificar lÃ­mite de uso
             const usageCheck = checkCanGenerate(userData);
             if (!usageCheck.canGenerate) {
                 setError(usageCheck.reason + '. Actualiza tu plan para continuar.');
@@ -1304,7 +1331,7 @@
                 let imagesToSend = [];
 
                 if (maskData && provider === 'gemini') {
-                    setLoadingMsg('Fusionando máscara visual...');
+                    setLoadingMsg('Fusionando mÃ¡scara visual...');
                     const combinedImagePart = await combineBaseAndMaskVisual(baseImages[0].url, maskData.visual);
                     imagesToSend = [combinedImagePart];
 
@@ -1399,7 +1426,7 @@
                 {maskEditorOpen && <MaskEditor src={maskImageSrc} onClose={() => { setMaskEditorOpen(false); setActiveEditImgId(null); }} onSave={handleMaskSave} />}
 
                 <header className="app-header">
-                    <h1>Generador de Imágenes</h1>
+                    <h1>Generador de ImÃ¡genes</h1>
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '15px' }}>
                         {user && userData && (
                             <>
@@ -1425,7 +1452,7 @@
                                         fontWeight: '600',
                                         color: '#0c1445'
                                     }}>
-                                        {userData.role === 'admin' ? '👑 Admin' : '⭐ VIP'}
+                                        {userData.role === 'admin' ? 'ðŸ‘‘ Admin' : 'â­ VIP'}
                                     </div>
                                 )}
                             </>
@@ -1460,7 +1487,7 @@
 
                         <div style={{ marginBottom: '1rem', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
                             <CustomSelect
-                                label="Elige Modelo de Generación"
+                                label="Elige Modelo de GeneraciÃ³n"
                                 value={provider}
                                 onChange={setProvider}
                                 options={[
@@ -1477,7 +1504,7 @@
                                     <img src={baseImages[0].url} alt="base" onClick={() => setModalImage(baseImages[0].url)} />
                                     {tempMaskData[baseImages[0].id] && tempMaskData[baseImages[0].id].visual && <img className="mask-overlay-img" src={tempMaskData[baseImages[0].id].visual} alt="mask overlay" />}
                                     <div className="base-overlay-actions">
-                                        <button className="base-action-btn" title="Pintar área a editar" onClick={() => onBaseImageMask(baseImages[0])}>
+                                        <button className="base-action-btn" title="Pintar Ã¡rea a editar" onClick={() => onBaseImageMask(baseImages[0])}>
                                             <i className="fa-solid fa-paintbrush"></i>
                                         </button>
                                         <button className="base-action-btn danger" title="Eliminar imagen" onClick={() => { setBaseImages([]); setTempMaskData({}); }}>
@@ -1485,7 +1512,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                {tempMaskData[baseImages[0].id] && <p style={{ color: 'var(--acc)', fontSize: '0.9rem', textAlign: 'center', marginTop: '5px' }}>Máscara activa.</p>}
+                                {tempMaskData[baseImages[0].id] && <p style={{ color: 'var(--acc)', fontSize: '0.9rem', textAlign: 'center', marginTop: '5px' }}>MÃ¡scara activa.</p>}
                             </div>
                         )}
 
@@ -1495,7 +1522,7 @@
                             {enhancedOptions.length > 0 && (
                                 <div className="prompt-options-grid">
                                     {enhancedOptions.map((opt, idx) => (
-                                        <button key={idx} className={`prompt-opt-btn ${selectedPromptId === (idx + 1) ? 'selected' : ''}`} onClick={() => { setPrompt(opt); setSelectedPromptId(idx + 1); }}>Opción {idx + 1}</button>
+                                        <button key={idx} className={`prompt-opt-btn ${selectedPromptId === (idx + 1) ? 'selected' : ''}`} onClick={() => { setPrompt(opt); setSelectedPromptId(idx + 1); }}>OpciÃ³n {idx + 1}</button>
                                     ))}
                                 </div>
                             )}
@@ -1512,16 +1539,16 @@
 
                         <div className="select-row">
                             <CustomSelect label="Realismo" value={realism} onChange={setRealism} options={Object.keys(MAP_REALISM).map(k => ({ value: k, label: k }))} />
-                            <CustomSelect label="Estilo" value={style} onChange={setStyle} options={['Realista', 'Cinemático', 'Anime', '3D Render'].map(k => ({ value: k, label: k }))} />
+                            <CustomSelect label="Estilo" value={style} onChange={setStyle} options={['Realista', 'CinemÃ¡tico', 'Anime', '3D Render'].map(k => ({ value: k, label: k }))} />
                         </div>
                         <div className="select-row" style={{ marginTop: '1rem' }}>
                             <CustomSelect label="Creativo" value={creative} onChange={setCreative} options={Object.keys(MAP_CREATIVO).map(k => ({ value: k, label: k }))} />
-                            <CustomSelect label="Relación de aspecto" value={aspectRatio} onChange={setAspectRatio} groups={aspectGroups} />
+                            <CustomSelect label="RelaciÃ³n de aspecto" value={aspectRatio} onChange={setAspectRatio} groups={aspectGroups} />
                         </div>
                         <div style={{ marginTop: '1rem' }}>
                             <label className="section-title" style={{ fontSize: '1rem' }}>Opciones Extra</label>
                             <div style={{ display: 'flex', gap: '1rem', margin: '.5rem 0' }}>
-                                <label><input type="checkbox" checked={allowText} onChange={e => setAllowText(e.target.checked)} /> Texto explícito</label>
+                                <label><input type="checkbox" checked={allowText} onChange={e => setAllowText(e.target.checked)} /> Texto explÃ­cito</label>
                                 <label><input type="checkbox" checked={allowObjs} onChange={e => setAllowObjs(e.target.checked)} /> Objetos extra</label>
                             </div>
                             {allowText && <input className="input" placeholder="Texto..." value={customText} onChange={e => setCustomText(e.target.value)} />}

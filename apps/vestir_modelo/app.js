@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadingText.textContent = defaultLoadingMsg;
                 }
 
-                const res = await fetch('./proxy.php', {
+                const res = await fetch('proxy.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),

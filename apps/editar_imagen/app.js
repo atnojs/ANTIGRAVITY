@@ -25,6 +25,32 @@ const getClosestAspectRatio = (width, height) => {
     return targets.reduce((prev, curr) => Math.abs(curr.val - ratio) < Math.abs(prev.val - ratio) ? curr : prev).id;
 };
 
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
+
 const STYLE_GROUPS = {
     ilustracion: [
         { id: '', name: '🖌️ Dibujo / Ilustración', promptSuffix: '' },
@@ -159,7 +185,7 @@ const generateImage = async (params) => {
     const parts = [{ text: finalPrompt }];
     if (params.sourceImage) {
         const base64Data = params.sourceImage.split(',')[1];
-        parts.push({ inlineData: { data: base64Data, mimeType: "image/png" } });
+        parts.push({ inlineData: { data: base64Data, mimeType: "image/jpeg" } });
     }
     const contents = [{ parts }];
     const config = {
@@ -181,7 +207,7 @@ const editImageConversation = async (params) => {
     const base64Data = params.originalImage.split(',')[1];
     const contents = [{
         parts: [
-            { inlineData: { data: base64Data, mimeType: "image/png" } },
+            { inlineData: { data: base64Data, mimeType: "image/jpeg" } },
             { text: params.instruction }
         ]
     }];
@@ -198,24 +224,13 @@ const editImageConversation = async (params) => {
 const ApiKeyChecker = ({ children }) => <>{children}</>;
 
 const LoadingOverlay = () => (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500">
-        <style>{`
-            .spinner-triple { position: relative; width: 80px; height: 80px; }
-            .spinner-triple .ring { position: absolute; border-radius: 50%; border: 3px solid transparent; }
-            .spinner-triple .ring-1 { inset: 0; border-top-color: #22d3ee; animation: spin-loader 1.2s linear infinite; box-shadow: 0 0 20px rgba(34, 211, 238, 0.4); }
-            .spinner-triple .ring-2 { inset: 10px; border-right-color: #a78bfa; animation: spin-loader-reverse 1s linear infinite; box-shadow: 0 0 15px rgba(167, 139, 250, 0.4); }
-            .spinner-triple .ring-3 { inset: 20px; border-bottom-color: #f472b6; animation: spin-loader 0.8s linear infinite; box-shadow: 0 0 10px rgba(244, 114, 182, 0.4); }
-            @keyframes spin-loader { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            @keyframes spin-loader-reverse { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-            .loading-text-glow { color: white; font-size: 14px; font-weight: 600; text-transform: uppercase; tracking-widest: 0.2em; text-shadow: 0 0 10px rgba(34, 211, 238, 0.8); animation: pulse-text 2s ease-in-out infinite; }
-            @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        `}</style>
+    <div className="loading-overlay">
         <div className="spinner-triple">
             <div className="ring ring-1"></div>
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <div className="loading-text-glow">IA Generando Obra Maestra...</div>
+        <p className="loading-text">IA Generando Obra Maestra...</p>
     </div>
 );
 
@@ -438,22 +453,22 @@ const App = () => {
         setError(null);
         try {
             const styleSuffix = selectedStyle.promptSuffix;
-            const results = await Promise.all([
-                generateImage({
-                    prompt: effectivePrompt,
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
-                }),
-                generateImage({
-                    prompt: effectivePrompt + (mode === 'remix' ? " (Alternative detailed variation)" : " --variation distinct composition"),
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
-                })
-            ]);
+            let finalSourceImage = mode === 'remix' ? (remixSource || undefined) : undefined;
+            
+            // Compresión y redimensionado de imagen
+            if (finalSourceImage) {
+                finalSourceImage = await resizeImage(finalSourceImage, 1024, 0.85);
+            }
 
-            const newHistoryImages = results.map(imageUrl => ({
+            // Una sola llamada para ahorrar tokens
+            const imageUrl = await generateImage({
+                prompt: effectivePrompt,
+                styleSuffix,
+                aspectRatio: selectedAR,
+                sourceImage: finalSourceImage
+            });
+
+            const newHistoryImage = {
                 id: Math.random().toString(36).substring(7),
                 url: imageUrl,
                 prompt: effectivePrompt || 'Remezcla',
@@ -461,9 +476,9 @@ const App = () => {
                 aspectRatio: selectedAR,
                 size: '1K',
                 createdAt: Date.now()
-            }));
+            };
 
-            setImages(prev => [...newHistoryImages, ...prev]);
+            setImages(prev => [newHistoryImage, ...prev]);
         } catch (err) {
             setError(err.message || "Error de generación");
         } finally {
@@ -491,8 +506,9 @@ const App = () => {
         if (!editImage || !editInstruction.trim()) return;
         setIsGenerating(true);
         try {
+            const compressedOriginal = await resizeImage(editImage.url, 1024, 0.85);
             const updatedUrl = await editImageConversation({
-                originalImage: editImage.url,
+                originalImage: compressedOriginal,
                 instruction: editInstruction,
                 aspectRatio: editImage.aspectRatio
             });

@@ -1,5 +1,5 @@
-<?php
-declare(strict_types=1); // <--- IMPORTANTE: primera línea
+﻿<?php
+declare(strict_types=1); // <--- IMPORTANTE: primera lÃ­nea
 
 // ===============================
 // DECORAR HABITACION - PROXY
@@ -10,7 +10,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// ---------- CSP (🔥 CLAVE PARA FIREBASE 🔥) ----------
+// ---------- CSP (ðŸ”¥ CLAVE PARA FIREBASE ðŸ”¥) ----------
 header(
   "Content-Security-Policy: " .
   "default-src 'self'; " .
@@ -41,24 +41,41 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 
-// ---------- API KEY ----------
-$API_KEY = getenv('B');
-
-// Si quieres hardcodearla temporalmente:
-// if (!$API_KEY) {
-//     $API_KEY = "TU_API_KEY_AQUI";
-// }
-
-if (!$API_KEY) {
+// ---------- API KEY (B) — cascadeo robusto ----------
+$API_KEY = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $API_KEY = defined('B') ? B : '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('B');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_B');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['B'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_B'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['B'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_B'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falta la API key en el servidor.']);
+    echo json_encode(['error' => ['message' => 'API key no configurada.']]);
     exit;
 }
 
-// ---------- MÉTODO ----------
+// ---------- MÃ‰TODO ----------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método no permitido. Usa POST.']);
+    echo json_encode(['error' => 'MÃ©todo no permitido. Usa POST.']);
     exit;
 }
 
@@ -66,14 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $raw = file_get_contents('php://input');
 if (!$raw) {
     http_response_code(400);
-    echo json_encode(['error' => 'Body vacío.']);
+    echo json_encode(['error' => 'Body vacÃ­o.']);
     exit;
 }
 
 $req = json_decode($raw, true);
 if (!is_array($req)) {
     http_response_code(400);
-    echo json_encode(['error' => 'JSON inválido.']);
+    echo json_encode(['error' => 'JSON invÃ¡lido.']);
     exit;
 }
 
@@ -113,7 +130,7 @@ if ($response === false) {
     $err = curl_error($ch);
     curl_close($ch);
     http_response_code(502);
-    echo json_encode(['error' => 'Error de comunicación con Google', 'details' => $err]);
+    echo json_encode(['error' => 'Error de comunicaciÃ³n con Google', 'details' => $err]);
     exit;
 }
 
@@ -123,3 +140,4 @@ curl_close($ch);
 // ---------- RESPUESTA ----------
 http_response_code($code);
 echo $response;
+

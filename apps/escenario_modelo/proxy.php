@@ -12,8 +12,31 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 /* ===== Config ===== */
-// NOTA: Asegúrate de que esta variable de entorno exista en tu servidor, o pon la key directa aquí para probar.
-$API_KEY = getenv('C'); 
+// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$API_KEY = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $API_KEY = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('GEMINI_API_KEY');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_GEMINI_API_KEY');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
 
 $API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 

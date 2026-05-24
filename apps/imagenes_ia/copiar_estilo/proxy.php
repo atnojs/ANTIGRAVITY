@@ -3,13 +3,34 @@
 header('Content-Type: application/json');
 
 // --- CONFIGURACIÓN IMPORTANTE ---
-// Lee la clave de API desde la variable de entorno configurada en .htaccess
-$apiKey = getenv('C');
-
-// VERIFICACIÓN: Si la clave no se encuentra, detiene la ejecución con un error.
-if ($apiKey === false || empty($apiKey)) {
-    http_response_code(500); // Internal Server Error
-    echo json_encode(['error' => ['message' => 'Error del servidor: La clave de API no está configurada o no se pudo leer desde .htaccess.']]);
+// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$apiKey = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('GEMINI_API_KEY');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('REDIRECT_GEMINI_API_KEY');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'API key no configurada.']]);
     exit;
 }
 

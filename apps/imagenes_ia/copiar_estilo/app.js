@@ -1,5 +1,31 @@
-// --- CONSTANTES DE FORMATO ---
+﻿// --- CONSTANTES DE FORMATO ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
+
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
 const STORAGE_KEY = 'copiar_estilo_history';
 
 // Estado del historial
@@ -20,7 +46,7 @@ const getClosestAspectRatio = (width, height) => {
 // Variable para guardar el AR detectado de la referencia
 let detectedAR = AspectRatio.SQUARE;
 
-// Función auxiliar para convertir File a Base64
+// FunciÃ³n auxiliar para convertir File a Base64
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -35,7 +61,7 @@ function fileToBase64(file) {
     });
 }
 
-// Lógica de previsualización mejorada
+// LÃ³gica de previsualizaciÃ³n mejorada
 function setupPreview(inputId, imgId) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -127,7 +153,7 @@ function downloadHistoryImage(id) {
 }
 
 function clearHistory() {
-    if (!confirm('¿Estás seguro de que quieres borrar todo el historial?')) return;
+    if (!confirm('Â¿EstÃ¡s seguro de que quieres borrar todo el historial?')) return;
     history = [];
     saveHistory();
     renderHistory();
@@ -149,8 +175,8 @@ function renderHistory() {
         <div class="history-card">
             <img src="${item.src}" alt="Historial" onclick="openLightbox('${item.src.replace(/'/g, "\\'")}')">
             <div class="history-actions">
-                <button onclick="event.stopPropagation(); downloadHistoryImage(${item.id})">📥</button>
-                <button class="btn-delete" onclick="event.stopPropagation(); removeFromHistory(${item.id})">🗑️</button>
+                <button onclick="event.stopPropagation(); downloadHistoryImage(${item.id})">ðŸ“¥</button>
+                <button class="btn-delete" onclick="event.stopPropagation(); removeFromHistory(${item.id})">ðŸ—‘ï¸</button>
             </div>
         </div>
     `).join('');
@@ -204,7 +230,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // =============================================
-// GENERACIÓN DE IMÁGENES
+// GENERACIÃ“N DE IMÃGENES
 // =============================================
 async function generateImage() {
     const styleFile = document.getElementById('styleInput').files[0];
@@ -216,7 +242,7 @@ async function generateImage() {
     const resultTxt = document.getElementById('resultText');
 
     if (!styleFile || !subjectFile) {
-        alert("Por favor sube ambas imágenes.");
+        alert("Por favor sube ambas imÃ¡genes.");
         return;
     }
 
@@ -226,7 +252,7 @@ async function generateImage() {
     resultsGrid.innerHTML = '';
     resultTxt.innerHTML = '';
 
-    // Configurar fondo dinámico del overlay (usando la imagen de referencia)
+    // Configurar fondo dinÃ¡mico del overlay (usando la imagen de referencia)
     const loadingBg = document.getElementById('loadingBgImage');
     const stylePreview = document.getElementById('stylePreview');
     if (stylePreview && stylePreview.src && stylePreview.style.display !== 'none') {
@@ -241,16 +267,16 @@ async function generateImage() {
         const styleData = await fileToBase64(styleFile);
         const subjectData = await fileToBase64(subjectFile);
 
-        // Función para hacer una llamada a la API
+        // FunciÃ³n para hacer una llamada a la API
         const callAPI = async (variationNum) => {
             const promptText = `
-Actúa como un motor de edición fotográfica de alta gama. Tu tarea es REEMPLAZAR elementos específicos quirúrgicamente.
-DEFINICIÓN DE ROLES:
-- Input A [REFERENCIA_ESCENA]: Provee ESCENARIO, ILUMINACIÓN, POSE y ÁNGULO.
+ActÃºa como un motor de ediciÃ³n fotogrÃ¡fica de alta gama. Tu tarea es REEMPLAZAR elementos especÃ­ficos quirÃºrgicamente.
+DEFINICIÃ“N DE ROLES:
+- Input A [REFERENCIA_ESCENA]: Provee ESCENARIO, ILUMINACIÃ“N, POSE y ÃNGULO.
 - Input B [REFERENCIA_ACTIVO]: Provee IDENTIDAD FACIAL y VESTUARIO.
-MISIÓN: El Sujeto B (con su cara y ropa) posando EXACTO como el Sujeto A.
+MISIÃ“N: El Sujeto B (con su cara y ropa) posando EXACTO como el Sujeto A.
 IMPORTANTE: El resultado debe respetar el formato de imagen de la referencia A.
-Esta es la variación número ${variationNum}. Genera una interpretación única.
+Esta es la variaciÃ³n nÃºmero ${variationNum}. Genera una interpretaciÃ³n Ãºnica.
             `;
 
             const payload = {
@@ -301,8 +327,8 @@ Esta es la variación número ${variationNum}. Genera una interpretación única
                             <div class="result-card">
                                 <img src="${imgSrc}" alt="Resultado ${imageCount + 1}" onclick="openLightbox('${imgSrc.replace(/'/g, "\\'")}')">
                                 <div class="card-actions">
-                                    <button onclick="event.stopPropagation(); exportImage('${imgSrc.replace(/'/g, "\\'")}')">📥 Exportar</button>
-                                    <button onclick="event.stopPropagation(); addToHistory('${imgSrc.replace(/'/g, "\\'")}')">➕ Historial</button>
+                                    <button onclick="event.stopPropagation(); exportImage('${imgSrc.replace(/'/g, "\\'")}')">ðŸ“¥ Exportar</button>
+                                    <button onclick="event.stopPropagation(); addToHistory('${imgSrc.replace(/'/g, "\\'")}')">âž• Historial</button>
                                 </div>
                             </div>
                         `;
@@ -318,7 +344,7 @@ Esta es la variación número ${variationNum}. Genera una interpretación única
         }
 
         if (imageCount === 0) {
-            resultTxt.innerHTML = "No se generaron imágenes.";
+            resultTxt.innerHTML = "No se generaron imÃ¡genes.";
         }
 
     } catch (error) {
@@ -339,8 +365,9 @@ function exportImage(imgSrc) {
 }
 
 function exportResult() {
-    // Función legacy por compatibilidad
+    // FunciÃ³n legacy por compatibilidad
     const img = document.querySelector('#resultsGrid .result-card img');
     if (img) exportImage(img.src);
 }
+
 

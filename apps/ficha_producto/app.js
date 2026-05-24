@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
   const { useState, useMemo, useCallback } = React;
 
   // ========= INYECCIONES OBLIGATORIAS =========
@@ -70,7 +70,7 @@
     return c.toDataURL('image/jpeg', 0.95);
   }
 
-  // ======= Helpers de integración y config =======
+  // ======= Helpers de integraciÃ³n y config =======
   const baseImageCfg = {
     gradingPreset: "filmic-soft",
     contrastProfile: "soft S-curve, rich blacks, smooth highlight roll-off",
@@ -83,7 +83,7 @@
 
   function __buildImageConfigFromPrompt(finalPrompt) {
     const txt = (finalPrompt || "").toLowerCase();
-    const isWarmIndoor = /(interior|pub|bar|tungsten|lámpara|lamp|sconce)/.test(txt);
+    const isWarmIndoor = /(interior|pub|bar|tungsten|lÃ¡mpara|lamp|sconce)/.test(txt);
     const imageCfg99 = Object.assign({}, baseImageCfg, isWarmIndoor ? {
       whiteBalance: "tungsten-warm",
       backgroundSaturation: "slightly reduced"
@@ -142,9 +142,9 @@
   const HISTORY_KEY = 'ficha_producto_history';
   const MAX_HISTORY_ITEMS = 50;
 
-  // Verificar si localStorage está disponible
+  // Verificar si localStorage estÃ¡ disponible
   function isLocalStorageAvailable() {
-    // Versión SIMPLE
+    // VersiÃ³n SIMPLE
     try {
       return typeof localStorage !== 'undefined';
     } catch (e) {
@@ -153,7 +153,7 @@
   }
 
   function getHistory() {
-    // Versión SIMPLE y ROBUSTA
+    // VersiÃ³n SIMPLE y ROBUSTA
     try {
       // 1. Verificar localStorage
       if (typeof localStorage === 'undefined') {
@@ -178,19 +178,19 @@
       
       // 5. Filtrar items corruptos o sin datos esenciales
       const validItems = parsed.filter(item => {
-        // Un item válido debe ser un objeto
+        // Un item vÃ¡lido debe ser un objeto
         if (!item || typeof item !== 'object') return false;
         
-        // Debe tener al menos nombre o código fuente
+        // Debe tener al menos nombre o cÃ³digo fuente
         const hasName = item.name && typeof item.name === 'string';
         const hasSourceCode = item.sourceCode && typeof item.sourceCode === 'string';
         
         return hasName || hasSourceCode;
       });
       
-      // 6. Si hay items inválidos, guardar solo los válidos
+      // 6. Si hay items invÃ¡lidos, guardar solo los vÃ¡lidos
       if (validItems.length !== parsed.length) {
-        console.log(`Filtrados ${parsed.length - validItems.length} items inválidos del historial`);
+        console.log(`Filtrados ${parsed.length - validItems.length} items invÃ¡lidos del historial`);
         if (validItems.length > 0) {
           localStorage.setItem(HISTORY_KEY, JSON.stringify(validItems));
         } else {
@@ -211,28 +211,28 @@
   }
 
   function saveHistory(history) {
-    // Versión SIMPLE y ROBUSTA con gestión de quota
+    // VersiÃ³n SIMPLE y ROBUSTA con gestiÃ³n de quota
     try {
       if (!Array.isArray(history)) {
         console.warn('Historial no es array, no guardando');
         return;
       }
       
-      // Limitar a 20 items máximo inicialmente
+      // Limitar a 20 items mÃ¡ximo inicialmente
       let toSave = history.slice(0, 20);
       
-      // Intentar guardar, si falla por quota, eliminar items más antiguos
+      // Intentar guardar, si falla por quota, eliminar items mÃ¡s antiguos
       while (toSave.length > 0) {
         try {
           const jsonString = JSON.stringify(toSave);
-          console.log(`Guardando ${toSave.length} items, tamaño: ${Math.round(jsonString.length / 1024)}KB`);
+          console.log(`Guardando ${toSave.length} items, tamaÃ±o: ${Math.round(jsonString.length / 1024)}KB`);
           localStorage.setItem(HISTORY_KEY, jsonString);
           console.log('Historial guardado exitosamente');
           return;
         } catch (error) {
           if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-            console.log('Quota excedida, eliminando item más antiguo');
-            toSave.pop(); // Eliminar el más antiguo
+            console.log('Quota excedida, eliminando item mÃ¡s antiguo');
+            toSave.pop(); // Eliminar el mÃ¡s antiguo
           } else {
             console.warn('Error guardando historial:', error);
             throw error;
@@ -240,8 +240,8 @@
         }
       }
       
-      // Si llegamos aquí, no se pudo guardar nada
-      console.log('No se pudo guardar ningún item, limpiando historial');
+      // Si llegamos aquÃ­, no se pudo guardar nada
+      console.log('No se pudo guardar ningÃºn item, limpiando historial');
       localStorage.removeItem(HISTORY_KEY);
       
     } catch (error) {
@@ -251,7 +251,7 @@
 
   function addToHistory(item) {
     if (!isLocalStorageAvailable()) {
-      console.warn('localStorage no disponible, no se puede añadir al historial');
+      console.warn('localStorage no disponible, no se puede aÃ±adir al historial');
       return null;
     }
     
@@ -261,7 +261,7 @@
       id: Date.now().toString(36) + Math.random().toString(36).substr(2),
       timestamp: Date.now()
     };
-    console.log('Añadiendo al historial:', newItem);
+    console.log('AÃ±adiendo al historial:', newItem);
     history.unshift(newItem);
     saveHistory(history);
     return newItem;
@@ -291,26 +291,26 @@
     });
   }
 
-  // Función para comprimir datos del historial
+  // FunciÃ³n para comprimir datos del historial
   const compressHistoryData = (productResult) => {
     try {
-      // Crear una versión optimizada para almacenamiento
+      // Crear una versiÃ³n optimizada para almacenamiento
       const compressed = {
         name: productResult.productData.name,
         price: productResult.productData.price,
         description: productResult.productData.description,
         preserveLogo: productResult.productData.preserveLogo,
         generatedImagesCount: productResult.productData.generatedImages.length,
-        // Guardar miniaturas pequeñas (primeras 5000 caracteres) para preview
+        // Guardar miniaturas pequeÃ±as (primeras 5000 caracteres) para preview
         imageThumbnails: productResult.productData.generatedImages.map((img, index) => {
           const previewSrc = img.previewSrc || '';
           if (previewSrc && previewSrc.length > 100) {
-            // Tomar una versión reducida para thumbnail
+            // Tomar una versiÃ³n reducida para thumbnail
             return previewSrc.substring(0, 5000) + (previewSrc.length > 5000 ? '...' : '');
           }
           return '';
         }),
-        // Guardar información básica de las imágenes
+        // Guardar informaciÃ³n bÃ¡sica de las imÃ¡genes
         imagesInfo: productResult.productData.generatedImages.map((img, index) => ({
           index,
           hasHistory: img.history && img.history.length > 0,
@@ -325,7 +325,7 @@
     }
   };
 
-  // Función para extraer código fuente de una página generada
+  // FunciÃ³n para extraer cÃ³digo fuente de una pÃ¡gina generada
   const extractSourceCode = (productData, htmlContent) => {
     try {
       // Extraer CSS del estilo compartido
@@ -339,7 +339,7 @@
       const bodyMatch = htmlContent.match(/<body>([\s\S]*?)<\/body>/);
       const htmlBody = bodyMatch ? bodyMatch[1].trim() : '';
       
-      // Extraer título del head
+      // Extraer tÃ­tulo del head
       const titleMatch = htmlContent.match(/<title>([\s\S]*?)<\/title>/);
       const pageTitle = titleMatch ? titleMatch[1].trim() : productData.name;
       
@@ -359,15 +359,15 @@
         timestamp: Date.now()
       };
     } catch (error) {
-      console.error('Error extrayendo código fuente:', error);
+      console.error('Error extrayendo cÃ³digo fuente:', error);
       return null;
     }
   };
 
-  // Función para guardar código fuente en el historial
+  // FunciÃ³n para guardar cÃ³digo fuente en el historial
   const saveSourceCodeToHistory = (productResult) => {
     try {
-      // Versión SIMPLE - solo guardar lo esencial
+      // VersiÃ³n SIMPLE - solo guardar lo esencial
       const htmlContent = createProductPageHtml(productResult.productData);
       const sourceCode = extractSourceCode(productResult.productData, htmlContent);
       
@@ -397,14 +397,14 @@
     }
   };
 
-  // Función para restaurar desde el historial CON código fuente
+  // FunciÃ³n para restaurar desde el historial CON cÃ³digo fuente
   const restoreFromHistory = async (historyItem) => {
     try {
       if (!historyItem.sourceCode) {
-        throw new Error('Este item del historial no tiene código fuente guardado.');
+        throw new Error('Este item del historial no tiene cÃ³digo fuente guardado.');
       }
       
-      // Crear datos básicos del producto
+      // Crear datos bÃ¡sicos del producto
       const productData = {
         name: historyItem.name || 'Producto restaurado',
         price: historyItem.price || '0',
@@ -424,13 +424,13 @@
         hasSourceCode: true
       };
       
-      // Si hay código fuente, generar ZIP con él
+      // Si hay cÃ³digo fuente, generar ZIP con Ã©l
       if (historyItem.sourceCode) {
         try {
           const zipBlob = await createZip(productData, historyItem.sourceCode);
           restoredData.zipBlob = zipBlob;
         } catch (zipError) {
-          console.warn('No se pudo generar ZIP con código fuente:', zipError);
+          console.warn('No se pudo generar ZIP con cÃ³digo fuente:', zipError);
         }
       }
       
@@ -461,7 +461,7 @@
     return new Blob([bytes], { type: mime });
   };
 
-  // Normaliza imágenes para el iframe: acepta {data, mimeType} con o sin prefijo data:
+  // Normaliza imÃ¡genes para el iframe: acepta {data, mimeType} con o sin prefijo data:
   const toDataUrl = (img) => {
     const mime = (img.mimeType || "image/png").trim();
     const d = String(img.data || "").trim();
@@ -495,9 +495,9 @@
   const api = {
     async describe(imageInline, referenceDesc) {
       let prompt =
-        "Escribe una descripción de producto para e-commerce, en español, basada en la imagen. La descripción debe ser atractiva y concisa (máx 1000 caracteres). Responde únicamente con la descripción del producto, sin añadir texto introductorio.";
+        "Escribe una descripciÃ³n de producto para e-commerce, en espaÃ±ol, basada en la imagen. La descripciÃ³n debe ser atractiva y concisa (mÃ¡x 1000 caracteres). Responde Ãºnicamente con la descripciÃ³n del producto, sin aÃ±adir texto introductorio.";
       if (referenceDesc && referenceDesc.trim() !== "") {
-        prompt += `\n\nUtiliza la siguiente descripción como inspiración y referencia para mejorar el resultado: "${referenceDesc}"`;
+        prompt += `\n\nUtiliza la siguiente descripciÃ³n como inspiraciÃ³n y referencia para mejorar el resultado: "${referenceDesc}"`;
       }
 
       const __imageNorm = __normalizeImageForApi(imageInline);
@@ -514,13 +514,13 @@
       const prompts = [
         "A photorealistic studio product photo of a [PRODUCT]. Captured with a Phase One IQ4 150MP medium format camera using a 90mm lens, aperture f/4 for crisp focus and shallow depth of field. The product is centered on a clean, bright, minimalist background with soft diffused lighting from both sides. Highlight material textures and edges naturally, no harsh reflections, no text, no watermark, no extra objects. Professional catalog composition, high-end advertising aesthetic, balanced exposure, subtle contrast, and refined color accuracy. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
         
-        "A photorealistic lifestyle photo featuring a [PRODUCT] in a realistic everyday urban environment—such as a café table, street bench, local shop, or outdoor market. Captured with a Phase One IQ4 150MP, 80mm lens, aperture f/2.8 for natural bokeh and soft depth of field. Natural daylight with gentle fill light, warm tone balance, realistic textures, and authentic atmosphere. Include subtle human presence or context elements that show real use or display of the product. No text, no artificial lighting artifacts, no watermark. Professional-grade realism and composition suitable for premium social media advertising. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
+        "A photorealistic lifestyle photo featuring a [PRODUCT] in a realistic everyday urban environmentâ€”such as a cafÃ© table, street bench, local shop, or outdoor market. Captured with a Phase One IQ4 150MP, 80mm lens, aperture f/2.8 for natural bokeh and soft depth of field. Natural daylight with gentle fill light, warm tone balance, realistic textures, and authentic atmosphere. Include subtle human presence or context elements that show real use or display of the product. No text, no artificial lighting artifacts, no watermark. Professional-grade realism and composition suitable for premium social media advertising. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
         
-        "A photorealistic lifestyle photo of a [PRODUCT] displayed or being used naturally inside a public indoor space—such as a café, boutique, art studio, or concept store. Captured with a Phase One IQ4 150MP medium format camera, 80mm lens at f/2.8 for shallow depth of field and cinematic focus. Soft directional lighting through large windows or diffused studio lights, highlighting textures and realistic reflections. Professional interior ambiance with warm tones, subtle shadows, and balanced exposure. Include authentic human presence or contextual elements (tables, shelves, decor) that enhance realism without distraction. No text, no logo, no watermark, no artificial look. High-end advertising composition optimized for premium lifestyle campaigns and social media visuals. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
+        "A photorealistic lifestyle photo of a [PRODUCT] displayed or being used naturally inside a public indoor spaceâ€”such as a cafÃ©, boutique, art studio, or concept store. Captured with a Phase One IQ4 150MP medium format camera, 80mm lens at f/2.8 for shallow depth of field and cinematic focus. Soft directional lighting through large windows or diffused studio lights, highlighting textures and realistic reflections. Professional interior ambiance with warm tones, subtle shadows, and balanced exposure. Include authentic human presence or contextual elements (tables, shelves, decor) that enhance realism without distraction. No text, no logo, no watermark, no artificial look. High-end advertising composition optimized for premium lifestyle campaigns and social media visuals. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
         
-        "A photorealistic close-up of a [PRODUCT], highlighting its texture, materials, and key design features. Captured with a Phase One IQ4 150MP medium format camera using a 120mm macro lens at f/2.8 for shallow depth of field. Focus precisely on the most distinctive area of the product, keeping the rest softly blurred to emphasize depth and realism. Controlled studio lighting with soft diffused highlights to reveal surface detail and material quality. Maintain perfect framing within the original composition—no cropping or elements extending beyond frame limits. No text, no watermark, no artificial reflections. Professional macro-style image optimized for high-end product advertising and social media presentation. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
+        "A photorealistic close-up of a [PRODUCT], highlighting its texture, materials, and key design features. Captured with a Phase One IQ4 150MP medium format camera using a 120mm macro lens at f/2.8 for shallow depth of field. Focus precisely on the most distinctive area of the product, keeping the rest softly blurred to emphasize depth and realism. Controlled studio lighting with soft diffused highlights to reveal surface detail and material quality. Maintain perfect framing within the original compositionâ€”no cropping or elements extending beyond frame limits. No text, no watermark, no artificial reflections. Professional macro-style image optimized for high-end product advertising and social media presentation. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
         
-        "A photorealistic studio image of a [PRODUCT] placed on a modern geometric pedestal or platform, as if displayed in a contemporary art museum. Captured with a Phase One IQ4 150MP medium format camera, 90mm lens, aperture f/5.6 for full sharpness and balanced depth of field. Use a solid-color background that complements the product's tones—neutral, soft, or slightly gradient—to create an elegant, sophisticated atmosphere. Lighting should be diffused yet directional, emphasizing clean lines, subtle reflections, and a premium exhibition look. The product must appear as a collector's piece, central and perfectly composed, with no clutter or additional props. No text, no watermark, no overexposed highlights. High-end composition suitable for luxury advertising and fine art presentation. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
+        "A photorealistic studio image of a [PRODUCT] placed on a modern geometric pedestal or platform, as if displayed in a contemporary art museum. Captured with a Phase One IQ4 150MP medium format camera, 90mm lens, aperture f/5.6 for full sharpness and balanced depth of field. Use a solid-color background that complements the product's tonesâ€”neutral, soft, or slightly gradientâ€”to create an elegant, sophisticated atmosphere. Lighting should be diffused yet directional, emphasizing clean lines, subtle reflections, and a premium exhibition look. The product must appear as a collector's piece, central and perfectly composed, with no clutter or additional props. No text, no watermark, no overexposed highlights. High-end composition suitable for luxury advertising and fine art presentation. **IMPORTANT: Preserve any existing logos, brand marks, text, or branding elements exactly as they appear in the original image. Do not modify, remove, or alter any logos or branding.**",
       ];
       
       const images = [];
@@ -554,11 +554,11 @@
       }
       
       if (images.length === 0) {
-        throw new Error("No se pudo generar ninguna imagen. Por favor, inténtalo de nuevo con otra imagen.");
+        throw new Error("No se pudo generar ninguna imagen. Por favor, intÃ©ntalo de nuevo con otra imagen.");
       }
       
       if (failedPrompts.length > 0) {
-        console.warn(`No se pudieron generar las imágenes: ${failedPrompts.join(", ")}`);
+        console.warn(`No se pudieron generar las imÃ¡genes: ${failedPrompts.join(", ")}`);
       }
       
       return images;
@@ -586,20 +586,20 @@
       if (data.images && data.images.length > 0) {
         return data.images[0];
       } else {
-        throw new Error("La API no devolvió una imagen editada.");
+        throw new Error("La API no devolviÃ³ una imagen editada.");
       }
     },
     
     async improvePrompt(userPrompt) {
       let improvedPrompt = userPrompt;
-      if (!improvedPrompt.includes("fotográfica") && !improvedPrompt.includes("foto")) {
-        improvedPrompt = "Imagen fotográfica " + improvedPrompt;
+      if (!improvedPrompt.includes("fotogrÃ¡fica") && !improvedPrompt.includes("foto")) {
+        improvedPrompt = "Imagen fotogrÃ¡fica " + improvedPrompt;
       }
       if (!improvedPrompt.includes("calidad") && !improvedPrompt.includes("alta")) {
         improvedPrompt += ", alta calidad";
       }
-      if (!improvedPrompt.includes("luz") && !improvedPrompt.includes("iluminación")) {
-        improvedPrompt += ", iluminación profesional";
+      if (!improvedPrompt.includes("luz") && !improvedPrompt.includes("iluminaciÃ³n")) {
+        improvedPrompt += ", iluminaciÃ³n profesional";
       }
       if (!improvedPrompt.includes("detallado") && !improvedPrompt.includes("detalles")) {
         improvedPrompt += ", muy detallado";
@@ -607,8 +607,8 @@
       if (!improvedPrompt.includes("realista") && !improvedPrompt.includes("estilo")) {
         improvedPrompt += ", estilo realista";
       }
-      if (!improvedPrompt.includes("cámara") && !improvedPrompt.includes("lente")) {
-        improvedPrompt += ", capturado con cámara profesional";
+      if (!improvedPrompt.includes("cÃ¡mara") && !improvedPrompt.includes("lente")) {
+        improvedPrompt += ", capturado con cÃ¡mara profesional";
       }
       if (improvedPrompt.includes("cambia") || improvedPrompt.includes("cambiar")) {
         improvedPrompt = improvedPrompt.replace(/cambia|cambiar/g, "modifica");
@@ -620,7 +620,7 @@
         improvedPrompt += ", producto como elemento principal";
       }
       if (!improvedPrompt.includes("logo") && !improvedPrompt.includes("marca") && !improvedPrompt.includes("branding")) {
-        improvedPrompt += ". **MUY IMPORTANTE: Preservar todos los logos, marcas, texto o elementos de branding exactamente como aparecen en la imagen original. No modificar, eliminar ni alterar ningún logo o branding bajo ninguna circunstancia.**";
+        improvedPrompt += ". **MUY IMPORTANTE: Preservar todos los logos, marcas, texto o elementos de branding exactamente como aparecen en la imagen original. No modificar, eliminar ni alterar ningÃºn logo o branding bajo ninguna circunstancia.**";
       }
       improvedPrompt = improvedPrompt
         .replace(/\s+/g, ' ')
@@ -650,7 +650,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 .thumbnail.active,.thumbnail:hover{border-color:#0d6efd}
 .product-info{display:flex;flex-direction:column}
 
-/* Título con Brush Script MT y múltiples fallbacks */
+/* TÃ­tulo con Brush Script MT y mÃºltiples fallbacks */
 .product-title-modern{
   font-family:'Brush Script MT', cursive;
   font-size:3.5rem;
@@ -668,7 +668,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   transition:transform 0.3s ease;
 }
 
-/* Fallback para Dancing Script (Google Fonts) si Brush Script MT no está disponible */
+/* Fallback para Dancing Script (Google Fonts) si Brush Script MT no estÃ¡ disponible */
 @font-face {
   font-family: 'Brush Script MT Fallback';
   src: local('Dancing Script'), local('Dancing Script Bold');
@@ -694,7 +694,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   }
 }
 
-/* Línea decorativa animada */
+/* LÃ­nea decorativa animada */
 .product-title-modern::after{
   content:'';
   position:absolute;
@@ -789,8 +789,8 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       </div>
       <div class="product-info">
         <h1 class="product-title-modern" data-text="${data.name}">${data.name}</h1>
-        <p class="product-price">${data.price} €</p>
-        <h2>Descripción</h2>
+        <p class="product-price">${data.price} â‚¬</p>
+        <h2>DescripciÃ³n</h2>
         <p class="product-description">${data.description.replace(/\n/g, "<br>")}</p>
       </div>
     </div>
@@ -818,12 +818,12 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       return `images/producto-${i + 1}.jpg`;
     });
     
-    // Si hay código fuente editado, usarlo
+    // Si hay cÃ³digo fuente editado, usarlo
     if (data.sourceCode?.html) {
-      // Combinar el HTML editado con las rutas de imágenes correctas
+      // Combinar el HTML editado con las rutas de imÃ¡genes correctas
       let html = data.sourceCode.html;
       
-      // Reemplazar rutas de imágenes si es necesario
+      // Reemplazar rutas de imÃ¡genes si es necesario
       imageFiles.forEach((imagePath, index) => {
         const regex = new RegExp(`images/producto-${index + 1}\\.jpg`, 'g');
         html = html.replace(regex, imagePath);
@@ -836,11 +836,11 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     return `<!DOCTYPE html>${createBaseHtml(data, imageFiles)}`;
   };
 
-  // ZIP con imágenes postprocesadas obligatorias
+  // ZIP con imÃ¡genes postprocesadas obligatorias
   const createZip = async (productData, sourceCode = null) => {
     const zip = new JSZip();
     
-    // Usar código fuente editado si está disponible, de lo contrario generar nuevo
+    // Usar cÃ³digo fuente editado si estÃ¡ disponible, de lo contrario generar nuevo
     const htmlContent = sourceCode?.html 
       ? createProductPageHtml({ ...productData, sourceCode })
       : createProductPageHtml(productData);
@@ -932,7 +932,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
           {/* Efecto de vidrio esmerilado */}
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-pink-500/5 mix-blend-overlay"></div>
           
-          {/* Efecto de partículas sutiles */}
+          {/* Efecto de partÃ­culas sutiles */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/3 rounded-full blur-3xl"></div>
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/3 rounded-full blur-3xl"></div>
@@ -986,7 +986,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     const f = e.target.files[0];
     if (!f) return;
     if (f.size > 4 * 1024 * 1024) {
-      setError("La imagen es demasiado grande. Máximo 4MB.");
+      setError("La imagen es demasiado grande. MÃ¡ximo 4MB.");
       return;
     }
     setError("");
@@ -1018,7 +1018,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300">Precio (€)</label>
+        <label className="block text-sm font-medium text-gray-300">Precio (â‚¬)</label>
         <input
           type="number"
           step="0.01"
@@ -1030,13 +1030,13 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300">Descripción de Referencia (Opcional)</label>
+        <label className="block text-sm font-medium text-gray-300">DescripciÃ³n de Referencia (Opcional)</label>
         <textarea
           value={referenceDesc}
           onChange={(e) => setReferenceDesc(e.target.value)}
           rows="3"
           className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          placeholder="Ej: Zapatillas de running ligeras, con buena amortiguación."
+          placeholder="Ej: Zapatillas de running ligeras, con buena amortiguaciÃ³n."
         ></textarea>
       </div>
 
@@ -1045,7 +1045,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         <div className="mt-2 flex justify-center rounded-md border-2 border-dashed border-gray-600 px-6 pt-5 pb-6">
           <div className="space-y-1 text-center">
             {previewUrl ? (
-              <img src={previewUrl} alt="Previsualización" className="mx-auto h-24 w-24 rounded-md object-cover" />
+              <img src={previewUrl} alt="PrevisualizaciÃ³n" className="mx-auto h-24 w-24 rounded-md object-cover" />
             ) : (
               <svg
                 className="mx-auto h-12 w-12 text-gray-500"
@@ -1075,7 +1075,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                   required
                 />
               </label>
-              <p className="pl-1">o arrástralo aquí</p>
+              <p className="pl-1">o arrÃ¡stralo aquÃ­</p>
             </div>
             <p className="text-xs text-gray-500">PNG, JPG, WEBP hasta 4MB</p>
           </div>
@@ -1136,7 +1136,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         setPrompt(improvedPrompt);
       } catch (e) {
         console.error("Error mejorando prompt:", e);
-        setError("No se pudo mejorar el prompt. Por favor, inténtalo de nuevo.");
+        setError("No se pudo mejorar el prompt. Por favor, intÃ©ntalo de nuevo.");
       } finally {
         setIsImproving(false);
       }
@@ -1151,14 +1151,14 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
           <form onSubmit={handleSubmit}>
             <div className="modal-field">
               <label className="modal-label">
-                Describe cómo quieres editar la imagen
+                Describe cÃ³mo quieres editar la imagen
               </label>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows="4"
                 className="modal-textarea"
-                placeholder="Ej: Cambia el fondo a un color azul brillante, haz que el producto parezca más brillante..."
+                placeholder="Ej: Cambia el fondo a un color azul brillante, haz que el producto parezca mÃ¡s brillante..."
               ></textarea>
             </div>
             {error && <p className="modal-error">{error}</p>}
@@ -1169,7 +1169,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                 disabled={isImproving || !prompt.trim()}
                 className="modal-button modal-button-improve"
               >
-                {isImproving ? "✨ Mejorando..." : "✨ Mejorar con IA"}
+                {isImproving ? "âœ¨ Mejorando..." : "âœ¨ Mejorar con IA"}
               </button>
               <button
                 type="button"
@@ -1192,7 +1192,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     );
   };
 
-  // Vista previa que usa imágenes postprocesadas
+  // Vista previa que usa imÃ¡genes postprocesadas
   const ProductPreview = ({ productData, onReset, onDeleteImage, onEditImage, onUndoImage, onCompareImage }) => {
     const [mainImageIndex, setMainImageIndex] = useState(0);
     const [isComparing, setIsComparing] = useState(false);
@@ -1247,7 +1247,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       }
     };
 
-    // Nueva función para descargar la imagen actual
+    // Nueva funciÃ³n para descargar la imagen actual
     const handleDownloadSingle = () => {
       const link = document.createElement('a');
       link.href = getCurrentImage();
@@ -1260,10 +1260,10 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     const currentImage = productData.generatedImages[mainImageIndex];
     const hasHistory = currentImage ? (currentImage.historyPreviewSrcs?.length || 0) > 1 : false;
     const currentVersionLabel = isComparing && currentImage?.historyPreviewSrcs
-      ? `Versión ${compareIndex + 1} de ${currentImage.historyPreviewSrcs.length}` 
-      : `Versión actual`;
+      ? `VersiÃ³n ${compareIndex + 1} de ${currentImage.historyPreviewSrcs.length}` 
+      : `VersiÃ³n actual`;
 
-    // Verificar si hay imágenes
+    // Verificar si hay imÃ¡genes
     const hasImages = productData.generatedImages && productData.generatedImages.length > 0;
     const currentImageSrc = getCurrentImage();
     
@@ -1293,12 +1293,12 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <p>No hay imágenes disponibles para este producto</p>
-                    <p className="text-sm mt-2">Las imágenes originales no se guardan en el historial para ahorrar espacio.</p>
+                    <p>No hay imÃ¡genes disponibles para este producto</p>
+                    <p className="text-sm mt-2">Las imÃ¡genes originales no se guardan en el historial para ahorrar espacio.</p>
                   </div>
                 )}
                 <div className="absolute top-2 right-2 flex space-x-1">
-                    {/* Botón de descarga añadido */}
+                    {/* BotÃ³n de descarga aÃ±adido */}
                     <button
                      onClick={handleDownloadSingle}
                      className={`p-1.5 ${currentImageSrc ? 'bg-green-600 bg-opacity-80 hover:bg-opacity-100' : 'bg-gray-400 cursor-not-allowed'} text-white rounded focus:outline-none transition-all`}
@@ -1315,8 +1315,8 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                         <button
                          onClick={handleCompareImage}
                          className={`p-1.5 bg-purple-600 bg-opacity-80 text-white rounded hover:bg-opacity-100 focus:outline-none transition-all`}
-                         title={isComparing ? "Ver versión anterior" : "Comparar con versiones anteriores"}
-                         aria-label={isComparing ? "Ver versión anterior" : "Comparar con versiones anteriores"}
+                         title={isComparing ? "Ver versiÃ³n anterior" : "Comparar con versiones anteriores"}
+                         aria-label={isComparing ? "Ver versiÃ³n anterior" : "Comparar con versiones anteriores"}
                        >
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -1326,8 +1326,8 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                         <button
                          onClick={handleUndoImage}
                          className="p-1.5 bg-orange-600 bg-opacity-80 text-white rounded hover:bg-opacity-100 focus:outline-none transition-all"
-                         title="Deshacer última edición"
-                         aria-label="Deshacer última edición"
+                         title="Deshacer Ãºltima ediciÃ³n"
+                         aria-label="Deshacer Ãºltima ediciÃ³n"
                        >
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -1339,8 +1339,8 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                     <button
                      onClick={handleEditImage}
                      className={`p-1.5 ${hasImages ? 'bg-blue-600 bg-opacity-80 hover:bg-opacity-100' : 'bg-gray-400 cursor-not-allowed'} text-white rounded focus:outline-none transition-all`}
-                     title={hasImages ? "Editar imagen" : "No hay imágenes para editar"}
-                     aria-label={hasImages ? "Editar imagen" : "No hay imágenes para editar"}
+                     title={hasImages ? "Editar imagen" : "No hay imÃ¡genes para editar"}
+                     aria-label={hasImages ? "Editar imagen" : "No hay imÃ¡genes para editar"}
                      disabled={!hasImages}
                    >
                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -1350,8 +1350,8 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                     <button
                      onClick={handleDeleteImage}
                      className={`p-1.5 ${hasImages ? 'bg-red-600 bg-opacity-80 hover:bg-opacity-100' : 'bg-gray-400 cursor-not-allowed'} text-white rounded focus:outline-none transition-all`}
-                     title={hasImages ? "Eliminar imagen" : "No hay imágenes para eliminar"}
-                     aria-label={hasImages ? "Eliminar imagen" : "No hay imágenes para eliminar"}
+                     title={hasImages ? "Eliminar imagen" : "No hay imÃ¡genes para eliminar"}
+                     aria-label={hasImages ? "Eliminar imagen" : "No hay imÃ¡genes para eliminar"}
                      disabled={!hasImages}
                    >
                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -1396,9 +1396,9 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
               <div className="mb-6">
                 <h1 className="product-title-brush">{productData.name}</h1>
               </div>
-              <p className="text-2xl text-green-600 font-semibold mb-6">{productData.price} €</p>
+              <p className="text-2xl text-green-600 font-semibold mb-6">{productData.price} â‚¬</p>
               <div>
-                <h2 className="text-xl font-semibold border-b border-gray-300 pb-2 mb-4">Descripción</h2>
+                <h2 className="text-xl font-semibold border-b border-gray-300 pb-2 mb-4">DescripciÃ³n</h2>
                 <p className="leading-relaxed whitespace-pre-line">{productData.description}</p>
               </div>
             </div>
@@ -1426,7 +1426,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Previsualización y Descarga</h2>
+          <h2 className="text-xl font-semibold">PrevisualizaciÃ³n y Descarga</h2>
           <button
             onClick={onReset}
             className="py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500"
@@ -1450,12 +1450,12 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
             <button
               onClick={onEditCode}
               className="w-full md:w-auto inline-flex justify-center items-center gap-2 py-3 px-6 border border-cyan-600 rounded-md shadow-sm text-base font-medium text-cyan-300 bg-cyan-900/30 hover:bg-cyan-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500"
-              title="Editar código HTML/CSS/JS de esta ficha"
+              title="Editar cÃ³digo HTML/CSS/JS de esta ficha"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>
-              Editar Código
+              Editar CÃ³digo
             </button>
           )}
         </div>
@@ -1472,7 +1472,34 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     );
   };
 
-  const App = () => {
+  
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
+
+const App = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [error, setError] = useState(null);
@@ -1482,13 +1509,13 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     const [history, setHistory] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
 
-    // Cargar historial al montar - VERSIÓN SUPER SIMPLE
+    // Cargar historial al montar - VERSIÃ“N SUPER SIMPLE
     React.useEffect(() => {
       // Cargar historial inmediatamente
       const savedHistory = getHistory();
       setHistory(savedHistory);
       
-      // También cargar después de un breve delay por si acaso
+      // TambiÃ©n cargar despuÃ©s de un breve delay por si acaso
       const timeoutId = setTimeout(() => {
         const refreshedHistory = getHistory();
         if (refreshedHistory.length > 0 && history.length === 0) {
@@ -1518,14 +1545,14 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     setLoadingMessage("Convirtiendo imagen.");
     const inline = await fileToBase64Part(imageFile);
 
-    setLoadingMessage("Generando descripción.");
+    setLoadingMessage("Generando descripciÃ³n.");
     const description = await api.describe(inline, referenceDesc);
 
-    setLoadingMessage("Generando imágenes de producto.");
+    setLoadingMessage("Generando imÃ¡genes de producto.");
     const images = await api.generateImages(inline, setLoadingMessage);
 
     if (images.length === 0) {
-      throw new Error("No se pudieron generar imágenes. Inténtalo de nuevo.");
+      throw new Error("No se pudieron generar imÃ¡genes. IntÃ©ntalo de nuevo.");
     }
 
     // Crear estructura con historial para cada imagen
@@ -1553,24 +1580,24 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       preserveLogo: preserveLogo
     };
 
-    // Guardar en historial - ahora con código fuente completo
-    console.log('handleGenerate iniciado, guardando código fuente en historial');
+    // Guardar en historial - ahora con cÃ³digo fuente completo
+    console.log('handleGenerate iniciado, guardando cÃ³digo fuente en historial');
     console.log('isLocalStorageAvailable:', isLocalStorageAvailable());
     
-    // Guardar el código fuente completo en el historial
+    // Guardar el cÃ³digo fuente completo en el historial
     const historyItem = saveSourceCodeToHistory(productResult);
     
-    console.log('Guardando código fuente en historial. historyItem:', historyItem);
+    console.log('Guardando cÃ³digo fuente en historial. historyItem:', historyItem);
     setGeneratedData(productResult);
     
     if (historyItem) {
       setHistory(prev => [historyItem, ...prev]);
-      console.log('Historial actualizado con nuevo item (con código fuente):', historyItem);
-      // Mostrar el historial automáticamente cuando se añade un nuevo producto
+      console.log('Historial actualizado con nuevo item (con cÃ³digo fuente):', historyItem);
+      // Mostrar el historial automÃ¡ticamente cuando se aÃ±ade un nuevo producto
       setShowHistory(true);
     } else {
-      console.log('No se pudo guardar código fuente en historial');
-      // Fallback: guardar versión básica
+      console.log('No se pudo guardar cÃ³digo fuente en historial');
+      // Fallback: guardar versiÃ³n bÃ¡sica
       const fallbackItem = addToHistory({
         name: name,
         price: price,
@@ -1603,7 +1630,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       newImages.splice(index, 1);
       
       if (newImages.length === 0) {
-        setError("No puedes eliminar todas las imágenes. Debe quedar al menos una.");
+        setError("No puedes eliminar todas las imÃ¡genes. Debe quedar al menos una.");
         return;
       }
       
@@ -1689,7 +1716,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     const [editedSourceCode, setEditedSourceCode] = useState({ html: '', css: '', js: '' });
 
     const handleHistoryItemClick = async (id, e) => {
-      // Si se hace clic en el botón de editar código, no restaurar
+      // Si se hace clic en el botÃ³n de editar cÃ³digo, no restaurar
       if (e && e.target.closest('.edit-code-btn')) {
         return;
       }
@@ -1702,12 +1729,12 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       console.log('Item structure:', JSON.stringify(item, null, 2));
       
       if (item) {
-        // Mostrar confirmación para restaurar
+        // Mostrar confirmaciÃ³n para restaurar
         const userConfirmed = confirm(
-          `¿Restaurar producto "${item.name}"?\n\n` +
-          `Precio: ${item.price} €\n` +
-          `Imágenes: ${item.imagesCount || item.productData?.generatedImages?.length || 0}\n\n` +
-          `Se restaurará la información del producto para que puedas verla y descargarla nuevamente.`
+          `Â¿Restaurar producto "${item.name}"?\n\n` +
+          `Precio: ${item.price} â‚¬\n` +
+          `ImÃ¡genes: ${item.imagesCount || item.productData?.generatedImages?.length || 0}\n\n` +
+          `Se restaurarÃ¡ la informaciÃ³n del producto para que puedas verla y descargarla nuevamente.`
         );
         
         if (userConfirmed) {
@@ -1725,9 +1752,9 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
             if (restoredData) {
               setGeneratedData(restoredData);
               setError(null);
-              // Ocultar el historial después de restaurar
+              // Ocultar el historial despuÃ©s de restaurar
               setShowHistory(false);
-              alert(`✅ Producto "${item.name}" restaurado correctamente.\n\nPuedes ver la información del producto y descargar la ficha editada.`);
+              alert(`âœ… Producto "${item.name}" restaurado correctamente.\n\nPuedes ver la informaciÃ³n del producto y descargar la ficha editada.`);
             }
           } catch (error) {
             console.error('Error restaurando desde historial:', error);
@@ -1743,11 +1770,11 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       console.log('Opening code editor for:', item);
       setEditingHistoryItem(item);
       
-      // Extraer el código fuente si está disponible
+      // Extraer el cÃ³digo fuente si estÃ¡ disponible
       if (item.sourceCode) {
         setEditedSourceCode(item.sourceCode);
       } else if (item.htmlContent) {
-        // Intentar extraer código de htmlContent si existe
+        // Intentar extraer cÃ³digo de htmlContent si existe
         const extracted = extractSourceCode(item.productData || {
           name: item.name,
           price: item.price,
@@ -1757,7 +1784,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         }, item.htmlContent);
         setEditedSourceCode(extracted);
       } else {
-        // Inicializar con código vacío
+        // Inicializar con cÃ³digo vacÃ­o
         setEditedSourceCode({ html: '', css: '', js: '' });
       }
       
@@ -1767,13 +1794,13 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     const handleSaveEditedCode = () => {
       if (!editingHistoryItem) return;
       
-      // Actualizar el historial con el código editado
+      // Actualizar el historial con el cÃ³digo editado
       const updatedHistory = history.map(item => {
         if (item.id === editingHistoryItem.id) {
           const updatedItem = {
             ...item,
             sourceCode: editedSourceCode,
-            timestamp: Date.now() // Actualizar timestamp para indicar modificación
+            timestamp: Date.now() // Actualizar timestamp para indicar modificaciÃ³n
           };
           
           // Actualizar productData con el nuevo sourceCode si existe
@@ -1797,13 +1824,13 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
       setIsCodeEditorOpen(false);
       setEditingHistoryItem(null);
       
-      alert('✅ Código guardado correctamente. Puedes descargar la versión editada desde el historial.');
+      alert('âœ… CÃ³digo guardado correctamente. Puedes descargar la versiÃ³n editada desde el historial.');
     };
 
     const handleEditCodeFromPreview = () => {
       if (!generatedData) return;
       
-      // Crear un item temporal para editar el código actual
+      // Crear un item temporal para editar el cÃ³digo actual
       const tempItem = {
         id: 'preview-' + Date.now(),
         name: generatedData.productData.name,
@@ -1821,7 +1848,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
 
     const handleDeleteFromHistory = (e, id) => {
       e.stopPropagation();
-      if (confirm('¿Eliminar este producto del historial?')) {
+      if (confirm('Â¿Eliminar este producto del historial?')) {
         deleteFromHistory(id);
         setHistory(prev => prev.filter(h => h.id !== id));
       }
@@ -1830,7 +1857,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     const handleClearHistory = () => {
       console.log('handleClearHistory called');
       console.log('isLocalStorageAvailable:', isLocalStorageAvailable());
-      if (confirm('¿Estás seguro de que quieres eliminar todo el historial?')) {
+      if (confirm('Â¿EstÃ¡s seguro de que quieres eliminar todo el historial?')) {
         console.log('Limpiando historial');
         clearAllHistory();
         setHistory([]);
@@ -1862,22 +1889,22 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         }
       }
       
-      // Mostrar alerta con información
+      // Mostrar alerta con informaciÃ³n
       let alertMessage = `Historial debug:\n\n` +
         `Estado React: ${history.length} items\n` +
         `localStorage: ${isLocalStorageAvailable() ? 'Disponible' : 'No disponible'}\n` +
         `Clave: ${HISTORY_KEY}\n`;
       
       if (parseError) {
-        alertMessage += `\n❌ ERROR parseando: ${parseError.message}\n`;
-        alertMessage += `\n¿Quieres intentar reparar el historial?`;
+        alertMessage += `\nâŒ ERROR parseando: ${parseError.message}\n`;
+        alertMessage += `\nÂ¿Quieres intentar reparar el historial?`;
         
         if (confirm(alertMessage)) {
           handleRepairHistory();
         }
       } else if (localStorageData) {
         alertMessage += `Items en localStorage: ${localStorageData.length}\n`;
-        alertMessage += `\nEstado sincronizado: ${history.length === localStorageData.length ? '✅ Sí' : '❌ No'}`;
+        alertMessage += `\nEstado sincronizado: ${history.length === localStorageData.length ? 'âœ… SÃ­' : 'âŒ No'}`;
         alert(alertMessage);
       } else {
         alertMessage += `Items en localStorage: No hay datos`;
@@ -1898,7 +1925,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
           return;
         }
         
-        // Intentar diferentes estrategias de reparación
+        // Intentar diferentes estrategias de reparaciÃ³n
         let repairedData = [];
         
         try {
@@ -1908,23 +1935,23 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
             throw new Error('No es un array');
           }
         } catch (e1) {
-          console.log('Intento 1 falló, intentando estrategia 2...', e1);
+          console.log('Intento 1 fallÃ³, intentando estrategia 2...', e1);
           
           try {
-            // Intento 2: Limpiar caracteres inválidos
+            // Intento 2: Limpiar caracteres invÃ¡lidos
             const cleaned = saved
               .replace(/[\x00-\x1F\x7F]/g, '') // Remover caracteres de control
               .replace(/,\s*]/g, ']') // Remover comas antes de cerrar array
               .replace(/,\s*}/g, '}') // Remover comas antes de cerrar objeto
-              .replace(/\[\s*,/g, '[') // Remover comas después de abrir array
-              .replace(/{\s*,/g, '{'); // Remover comas después de abrir objeto
+              .replace(/\[\s*,/g, '[') // Remover comas despuÃ©s de abrir array
+              .replace(/{\s*,/g, '{'); // Remover comas despuÃ©s de abrir objeto
             
             repairedData = JSON.parse(cleaned);
             if (!Array.isArray(repairedData)) {
-              throw new Error('No es un array después de limpiar');
+              throw new Error('No es un array despuÃ©s de limpiar');
             }
           } catch (e2) {
-            console.log('Intento 2 falló, intentando estrategia 3...', e2);
+            console.log('Intento 2 fallÃ³, intentando estrategia 3...', e2);
             
             try {
               // Intento 3: Extraer arrays manualmente
@@ -1932,20 +1959,20 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
               if (arrayMatch) {
                 repairedData = JSON.parse(arrayMatch[0]);
                 if (!Array.isArray(repairedData)) {
-                  throw new Error('No es un array después de extraer');
+                  throw new Error('No es un array despuÃ©s de extraer');
                 }
               } else {
-                throw new Error('No se encontró array en los datos');
+                throw new Error('No se encontrÃ³ array en los datos');
               }
             } catch (e3) {
-              console.log('Intento 3 falló, datos irreparables', e3);
-              alert('No se pudo reparar el historial. Se creará uno nuevo vacío.');
+              console.log('Intento 3 fallÃ³, datos irreparables', e3);
+              alert('No se pudo reparar el historial. Se crearÃ¡ uno nuevo vacÃ­o.');
               repairedData = [];
             }
           }
         }
         
-        // Filtrar items inválidos
+        // Filtrar items invÃ¡lidos
         const validItems = repairedData.filter(item => 
           item && 
           typeof item === 'object' && 
@@ -1956,14 +1983,14 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         localStorage.setItem(HISTORY_KEY, JSON.stringify(validItems));
         setHistory(validItems);
         
-        alert(`✅ Historial reparado\n\n` +
+        alert(`âœ… Historial reparado\n\n` +
           `Items originales: ${repairedData.length}\n` +
-          `Items válidos: ${validItems.length}\n` +
+          `Items vÃ¡lidos: ${validItems.length}\n` +
           `Items descartados: ${repairedData.length - validItems.length}`);
         
       } catch (error) {
         console.error('Error reparando historial:', error);
-        alert(`❌ Error reparando historial: ${error.message}`);
+        alert(`âŒ Error reparando historial: ${error.message}`);
       }
     };
 
@@ -1972,7 +1999,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         <div className="max-w-2xl w-full mx-auto bg-gray-800 p-8 rounded-xl shadow-2xl">
           {isLoading && <Loader message={loadingMessage} />}
 
-            {/* Botón para mostrar/ocultar historial */}
+            {/* BotÃ³n para mostrar/ocultar historial */}
             {history.length > 0 && (
               <div className="mb-6">
                 <button
@@ -1988,7 +2015,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
             )}
               {history.length === 0 && (
                 <div className="mb-6 text-center text-gray-400">
-                  No hay productos en el historial. Los productos generados aparecerán aquí.
+                  No hay productos en el historial. Los productos generados aparecerÃ¡n aquÃ­.
                   <div className="text-xs mt-2 text-yellow-500">
                     Debug: history.length = {history.length}
                   </div>
@@ -2004,7 +2031,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                Transforma una foto casera en una ficha de producto profesional lista para descargar.
              </p>
              
-             {/* Botón de debug global - SIEMPRE visible */}
+             {/* BotÃ³n de debug global - SIEMPRE visible */}
              <div className="mt-4 flex justify-center">
                <button
                  onClick={handleDebugHistory}
@@ -2027,11 +2054,11 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
               </div>
             )}
 
-            {/* ===== SECCIÓN DE HISTORIAL - MEJORADA ===== */}
-            {/* Los botones de debug SIEMPRE están visibles si hay algo en localStorage */}
+            {/* ===== SECCIÃ“N DE HISTORIAL - MEJORADA ===== */}
+            {/* Los botones de debug SIEMPRE estÃ¡n visibles si hay algo en localStorage */}
             {(history.length > 0 || (isLocalStorageAvailable() && localStorage.getItem(HISTORY_KEY))) ? (
               <>
-                {/* Título y botones - SIEMPRE visibles si hay datos */}
+                {/* TÃ­tulo y botones - SIEMPRE visibles si hay datos */}
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold text-white">
                     Historial de Generaciones ({history.length > 0 ? history.length : '?'})
@@ -2051,7 +2078,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                       onClick={() => {
                         const savedHistory = getHistory();
                         setHistory(savedHistory);
-                        alert(`✅ Historial recargado\n\nItems: ${savedHistory.length}`);
+                        alert(`âœ… Historial recargado\n\nItems: ${savedHistory.length}`);
                       }}
                       className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
                       title="Recargar historial desde localStorage"
@@ -2098,7 +2125,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                                       e.target.onerror = null;
                                       e.target.parentElement.innerHTML = `
                                         <div class="text-cyan-300 text-xs text-center p-2">
-                                          <span class="text-lg">${index === 0 ? '🆕' : '📷'}</span><br/>
+                                          <span class="text-lg">${index === 0 ? 'ðŸ†•' : 'ðŸ“·'}</span><br/>
                                           <span class="text-[10px]">${index === 0 ? 'Nuevo' : 'Producto'}</span>
                                         </div>
                                       `;
@@ -2106,7 +2133,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                                   />
                                 ) : (
                                   <div className="text-cyan-300 text-xs text-center p-2">
-                                    <span className="text-lg">${index === 0 ? '🆕' : '📷'}</span><br/>
+                                    <span className="text-lg">${index === 0 ? 'ðŸ†•' : 'ðŸ“·'}</span><br/>
                                     <span className="text-[10px]">${index === 0 ? 'Nuevo' : 'Producto'}</span>
                                   </div>
                                 )}
@@ -2115,7 +2142,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                                 <div className="flex justify-between items-start">
                                   <div>
                                     <h3 className="text-sm font-semibold text-white truncate">{item.name}</h3>
-                                    <p className="text-xs text-cyan-300 mt-1 font-medium">{item.price} €</p>
+                                    <p className="text-xs text-cyan-300 mt-1 font-medium">{item.price} â‚¬</p>
                                   </div>
                                   <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
                                     #{history.length - index}
@@ -2131,12 +2158,12 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                                         handleEditCode(item);
                                       }}
                                       className="edit-code-btn text-xs text-cyan-400 hover:text-cyan-300 py-1 px-2 rounded bg-cyan-900/30 hover:bg-cyan-900/50 transition-colors flex items-center gap-1"
-                                      title="Editar código HTML/CSS/JS"
+                                      title="Editar cÃ³digo HTML/CSS/JS"
                                     >
                                       <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                       </svg>
-                                      Editar Código
+                                      Editar CÃ³digo
                                     </button>
                                     <button
                                       onClick={(e) => handleDeleteFromHistory(e, item.id)}
@@ -2159,7 +2186,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                 ) : (
                   <div className="mb-6 p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg">
                     <div className="text-yellow-300 text-center">
-                      <p className="font-medium">⚠️ Historial detectado en almacenamiento</p>
+                      <p className="font-medium">âš ï¸ Historial detectado en almacenamiento</p>
                       <p className="text-sm mt-1">Pero no se pudo cargar en la interfaz.</p>
                       <button
                         onClick={() => {
@@ -2168,7 +2195,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                         }}
                         className="mt-3 px-4 py-2 bg-yellow-700 hover:bg-yellow-600 rounded text-sm font-medium"
                       >
-                        Haz clic aquí para forzar la carga
+                        Haz clic aquÃ­ para forzar la carga
                       </button>
                     </div>
                   </div>
@@ -2240,7 +2267,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         <div className="bg-gray-900 rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col border border-gray-700">
           <div className="flex justify-between items-center p-6 border-b border-gray-800">
             <div>
-              <h2 className="text-xl font-bold text-white">Editor de Código</h2>
+              <h2 className="text-xl font-bold text-white">Editor de CÃ³digo</h2>
               <p className="text-gray-400 text-sm mt-1">
                 Editando: <span className="text-cyan-300">{productName || 'Producto'}</span>
               </p>
@@ -2257,7 +2284,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
           </div>
 
           <div className="flex-1 flex flex-col min-h-0">
-            {/* Pestañas */}
+            {/* PestaÃ±as */}
             <div className="flex border-b border-gray-800 bg-gray-800/50">
               {['html', 'css', 'js'].map(tab => (
                 <button
@@ -2279,7 +2306,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                 onChange={handleCodeChange}
                 className="w-full h-full bg-gray-950 text-gray-100 font-mono text-sm p-6 resize-none focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
                 spellCheck="false"
-                placeholder={`Escribe tu código ${activeTab.toUpperCase()} aquí...`}
+                placeholder={`Escribe tu cÃ³digo ${activeTab.toUpperCase()} aquÃ­...`}
                 style={{ tabSize: 2 }}
               />
               <div className="absolute top-4 right-4 text-xs text-gray-500 bg-gray-900/80 px-2 py-1 rounded">
@@ -2287,12 +2314,12 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
               </div>
             </div>
 
-            {/* Información y acciones */}
+            {/* InformaciÃ³n y acciones */}
             <div className="p-6 border-t border-gray-800 bg-gray-900/50">
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-400">
-                  <p>💡 Puedes editar el código HTML, CSS y JavaScript directamente.</p>
-                  <p className="mt-1">Los cambios se guardarán en el historial y estarán disponibles para descargar.</p>
+                  <p>ðŸ’¡ Puedes editar el cÃ³digo HTML, CSS y JavaScript directamente.</p>
+                  <p className="mt-1">Los cambios se guardarÃ¡n en el historial y estarÃ¡n disponibles para descargar.</p>
                 </div>
                 <div className="flex gap-3">
                   <button

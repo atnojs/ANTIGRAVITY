@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // API Key
-$API_KEY = getenv('A') ?: getenv('GEMINI_API_KEY');
+$API_KEY = getenv('GEMINI_API_KEY');
 if (!$API_KEY) {
     http_response_code(500);
     echo json_encode(['error' => 'Falta la API key en el servidor.']);

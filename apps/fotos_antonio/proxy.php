@@ -16,13 +16,31 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 
 
-$apiKey = getenv('D');
-  if (!$apiKey && isset($_SERVER['GOOGLE_API_KEY'])) $apiKey = $_SERVER['GOOGLE_API_KEY'];
-  if (!$apiKey) {
+// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('GEMINI_API_KEY');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('REDIRECT_GEMINI_API_KEY');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falta GOOGLE_API_KEY en entorno del servidor']);
+    echo json_encode(['error' => ['message' => 'API key no configurada.']]);
     exit;
-  }
+}
 
 $raw = file_get_contents('php://input') ?: '';
 $req = json_decode($raw, true);

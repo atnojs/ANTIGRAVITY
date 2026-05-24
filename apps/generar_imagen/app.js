@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Lucide from 'lucide-react';
 
@@ -12,6 +12,32 @@ const {
 
 // --- CONSTANTES (ORIGINAL) ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
+
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
 
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
@@ -27,38 +53,38 @@ const getClosestAspectRatio = (width, height) => {
 
 const STYLE_GROUPS = {
     ilustracion: [
-        { id: '', name: '🖌️ Dibujo / Ilustración', promptSuffix: '' },
+        { id: '', name: 'ðŸ–Œï¸ Dibujo / IlustraciÃ³n', promptSuffix: '' },
         { id: 'anime', name: 'Anime Moderno', promptSuffix: 'Modern masterpiece anime style, high-quality animation aesthetic, sharp line art, vibrant cel-shading, expressive characters.' },
-        { id: 'comic', name: 'Cómic Americano', promptSuffix: 'Classic American comic book style, Marvel/DC aesthetic, bold black ink outlines, heroic anatomy, vibrant colors, Ben-Day dots and halftone shading.' },
-        { id: 'mortadelo', name: 'Mortadelo y Filemón', promptSuffix: 'Unmistakable Francisco Ibañez cartoon style, slapstick aesthetic, humorous caricatures. Include ONE or TWO small, clean speech bubbles with a very short, satirical and funny Spanish phrase strictly related to the main characters and their absurd situation. Keep text minimal and sharp.' },
-        { id: 'boceto', name: 'Boceto a Lápiz', promptSuffix: 'Artistic charcoal and graphite pencil sketch, rough hand-drawn lines, visible hatching, textured paper background, expressive unfinished look.' },
+        { id: 'comic', name: 'CÃ³mic Americano', promptSuffix: 'Classic American comic book style, Marvel/DC aesthetic, bold black ink outlines, heroic anatomy, vibrant colors, Ben-Day dots and halftone shading.' },
+        { id: 'mortadelo', name: 'Mortadelo y FilemÃ³n', promptSuffix: 'Unmistakable Francisco IbaÃ±ez cartoon style, slapstick aesthetic, humorous caricatures. Include ONE or TWO small, clean speech bubbles with a very short, satirical and funny Spanish phrase strictly related to the main characters and their absurd situation. Keep text minimal and sharp.' },
+        { id: 'boceto', name: 'Boceto a LÃ¡piz', promptSuffix: 'Artistic charcoal and graphite pencil sketch, rough hand-drawn lines, visible hatching, textured paper background, expressive unfinished look.' },
         { id: 'ghibli', name: 'Studio Ghibli', promptSuffix: 'Breathtaking Studio Ghibli anime style, painterly hand-painted backgrounds, whimsical and nostalgic atmosphere, soft natural lighting, magical aesthetic.' },
-        { id: 'manga-clasico', name: 'Manga Clásico (BN)', promptSuffix: 'Classic 90s monochrome manga style, hand-drawn ink lines, professional screentones, dramatic hatching, high-contrast black and white art.' },
+        { id: 'manga-clasico', name: 'Manga ClÃ¡sico (BN)', promptSuffix: 'Classic 90s monochrome manga style, hand-drawn ink lines, professional screentones, dramatic hatching, high-contrast black and white art.' },
         { id: 'line-art', name: 'Line Art Minimalista', promptSuffix: 'Clean minimalist line art, pure black lines on stark white background, sharp elegant contours, no shading, sophisticated simplicity.' },
-        { id: 'cartoon-europeo', name: 'Cartoon Europeo', promptSuffix: 'Classic European bande dessinée style, Tintin/Spirou ligne claire aesthetic, flat charming colors, clean lines, nostalgic adventure atmosphere.' },
-        { id: 'il-editorial', name: 'Ilustración Editorial', promptSuffix: 'Contemporary editorial illustration style, sophisticated color palette, stylized geometric shapes, conceptual visual storytelling, clean digital textures.' },
+        { id: 'cartoon-europeo', name: 'Cartoon Europeo', promptSuffix: 'Classic European bande dessinÃ©e style, Tintin/Spirou ligne claire aesthetic, flat charming colors, clean lines, nostalgic adventure atmosphere.' },
+        { id: 'il-editorial', name: 'IlustraciÃ³n Editorial', promptSuffix: 'Contemporary editorial illustration style, sophisticated color palette, stylized geometric shapes, conceptual visual storytelling, clean digital textures.' },
         { id: 'ink', name: 'Dibujo a Tinta', promptSuffix: 'Intricate black ink drawing, artistic cross-hatching, stippling techniques, fine detail, high-contrast pen and ink aesthetic.' }
     ],
     pictorico: [
-        { id: '', name: '🎨 Arte / Tradicional', promptSuffix: '' },
-        { id: 'acuarela', name: 'Acuarela Artística', promptSuffix: 'Exquisite watercolor painting, soft dreamlike color bleeds, realistic wet-on-wet technique, textured cold-press paper background, delicate artistic touch.' },
-        { id: 'oleo', name: 'Pintura al Óleo', promptSuffix: 'Masterpiece oil painting on canvas, visible thick impasto brushstrokes, rich oil textures, dramatic chiaroscuro lighting, traditional fine art aesthetic.' },
+        { id: '', name: 'ðŸŽ¨ Arte / Tradicional', promptSuffix: '' },
+        { id: 'acuarela', name: 'Acuarela ArtÃ­stica', promptSuffix: 'Exquisite watercolor painting, soft dreamlike color bleeds, realistic wet-on-wet technique, textured cold-press paper background, delicate artistic touch.' },
+        { id: 'oleo', name: 'Pintura al Ã“leo', promptSuffix: 'Masterpiece oil painting on canvas, visible thick impasto brushstrokes, rich oil textures, dramatic chiaroscuro lighting, traditional fine art aesthetic.' },
         { id: 'vintage', name: 'Vintage / Retro', promptSuffix: 'Authentic retro vintage aesthetic, 1970s film grain, faded nostalgic colors, analog photography look, warm lighting, distressed texture.' },
-        { id: 'fantasia', name: 'Fantasía Épica', promptSuffix: 'High fantasy concept art, magical glowing elements, legendary creatures, intricate gold armor, cinematic atmospheric lighting, epic scale.' },
-        { id: 'surrealista', name: 'Surrealismo', promptSuffix: 'Surrealist masterpiece, dreamlike impossible landscape, melting objects, bizarre proportions, Dalí-esque subconscious imagery, thought-provoking.' },
+        { id: 'fantasia', name: 'FantasÃ­a Ã‰pica', promptSuffix: 'High fantasy concept art, magical glowing elements, legendary creatures, intricate gold armor, cinematic atmospheric lighting, epic scale.' },
+        { id: 'surrealista', name: 'Surrealismo', promptSuffix: 'Surrealist masterpiece, dreamlike impossible landscape, melting objects, bizarre proportions, DalÃ­-esque subconscious imagery, thought-provoking.' },
         { id: 'gouache', name: 'Gouache Vibrante', promptSuffix: 'Vibrant gouache painting, flat opaque colors, hand-painted matte textures, charming book illustration aesthetic, bold and colorful.' },
-        { id: 'acrilico', name: 'Acrílico Moderno', promptSuffix: 'Modern acrylic painting style, bold expressive colors, textured brushwork, high contrast, contemporary art gallery aesthetic.' },
+        { id: 'acrilico', name: 'AcrÃ­lico Moderno', promptSuffix: 'Modern acrylic painting style, bold expressive colors, textured brushwork, high contrast, contemporary art gallery aesthetic.' },
         { id: 'expresionismo', name: 'Expresionismo', promptSuffix: 'Expressionist art style, intense emotional colors, distorted forms for dramatic impact, raw energetic brushstrokes, soul-stirring composition.' },
-        { id: 'realismo', name: 'Realismo Pictórico', promptSuffix: 'Sophisticated painterly realism, focus on lighting and atmosphere, accurate proportions with visible artistic brushstrokes, high-end fine art.' },
+        { id: 'realismo', name: 'Realismo PictÃ³rico', promptSuffix: 'Sophisticated painterly realism, focus on lighting and atmosphere, accurate proportions with visible artistic brushstrokes, high-end fine art.' },
         { id: 'impresionismo', name: 'Impresionismo', promptSuffix: 'Impressionist masterpiece, small thin visible brushstrokes, emphasis on light qualities, vibrant unmixed colors, capturing the fleeting movement.' }
     ],
     digital: [
-        { id: '', name: '💻 Digital / 3D', promptSuffix: '' },
+        { id: '', name: 'ðŸ’» Digital / 3D', promptSuffix: '' },
         { id: '3d-render', name: '3D Hyper-Render', promptSuffix: 'Professional 3D render, Octane rendering engine, 8k resolution, realistic ray-tracing, cinematic studio lighting, hyper-detailed textures.' },
         { id: 'lego', name: 'Estilo LEGO', promptSuffix: 'Constructed from high-quality LEGO bricks and minifigures, detailed plastic block textures, toy photography aesthetic, vibrant primary colors.' },
         { id: 'clay', name: 'Plastilina / Clay', promptSuffix: 'Handcrafted claymation style, tactile plasticine textures, fingerprints on material surface, stop-motion animation look, charming and organic.' },
         { id: 'pixel-art', name: 'Pixel Art Retro', promptSuffix: 'High-quality 16-bit pixel art, nostalgic retro video game aesthetic, vibrant limited color palette, clean grid-aligned pixels.' },
-        { id: 'isometrico', name: '3D Isométrico', promptSuffix: 'Stylized 3D isometric perspective, clean geometry, miniature world aesthetic, soft global illumination, vibrant digital toy look.' },
+        { id: 'isometrico', name: '3D IsomÃ©trico', promptSuffix: 'Stylized 3D isometric perspective, clean geometry, miniature world aesthetic, soft global illumination, vibrant digital toy look.' },
         { id: 'low-poly', name: 'Low Poly Art', promptSuffix: 'Modern low poly 3D aesthetic, visible polygonal triangulation, clean gradients, minimalist geometric digital art.' },
         { id: 'clay-render', name: 'Clay Render 3D', promptSuffix: 'Professional 3D clay render, matte monochrome material, soft shadows, global illumination, focus on form and volume.' },
         { id: 'diorama', name: 'Diorama Digital', promptSuffix: 'Intricate digital diorama, miniature scene isolated in a 3D box, tilt-shift lens effect, magical and detailed miniature environment.' },
@@ -66,17 +92,17 @@ const STYLE_GROUPS = {
         { id: 'maqueta', name: 'Maqueta 3D', promptSuffix: 'Architectural scale model style, clean white materials, precision laser-cut details, professional 3D presentation aesthetic.' }
     ],
     grafico: [
-        { id: '', name: '📐 Gráfico / Moderno', promptSuffix: '' },
-        { id: 'neon', name: 'Luces de Neón', promptSuffix: 'Vibrant neon light aesthetic, glowing electric colors, dark atmospheric background, synthwave cyberpunk vibe.' },
-        { id: 'pop-art', name: 'Pop Art Clásico', promptSuffix: 'Iconic Pop Art style, Andy Warhol and Roy Lichtenstein aesthetic, bold solid colors, Ben-Day dots, high-impact graphic culture.' },
+        { id: '', name: 'ðŸ“ GrÃ¡fico / Moderno', promptSuffix: '' },
+        { id: 'neon', name: 'Luces de NeÃ³n', promptSuffix: 'Vibrant neon light aesthetic, glowing electric colors, dark atmospheric background, synthwave cyberpunk vibe.' },
+        { id: 'pop-art', name: 'Pop Art ClÃ¡sico', promptSuffix: 'Iconic Pop Art style, Andy Warhol and Roy Lichtenstein aesthetic, bold solid colors, Ben-Day dots, high-impact graphic culture.' },
         { id: 'minimalista', name: 'Minimalismo Puro', promptSuffix: 'Minimalist graphic design, clean simple shapes, strategic use of negative space, restricted elegant color palette, essentialist aesthetic.' },
         { id: 'flat', name: 'Illustration Flat', promptSuffix: 'Modern flat design illustration, no shadows, geometric simplicity, clean solid colors, trendy digital graphic style.' },
-        { id: 'vectorial', name: 'Gráfico Vectorial', promptSuffix: 'Sharp SVG vector illustration, smooth paths, clean edges, professional logo-style graphics, scalable digital art.' },
-        { id: 'geometrico', name: 'Abstracción Geométrica', promptSuffix: 'Abstract art made of geometric patterns, triangles and circles, mathematical precision, vibrant color blocks, balanced composition.' },
+        { id: 'vectorial', name: 'GrÃ¡fico Vectorial', promptSuffix: 'Sharp SVG vector illustration, smooth paths, clean edges, professional logo-style graphics, scalable digital art.' },
+        { id: 'geometrico', name: 'AbstracciÃ³n GeomÃ©trica', promptSuffix: 'Abstract art made of geometric patterns, triangles and circles, mathematical precision, vibrant color blocks, balanced composition.' },
         { id: 'memphis', name: 'Estilo Memphis', promptSuffix: 'Quirky 80s Memphis design movement, loud clashing patterns, zig-zags and squiggles, pastel colors with bold outlines.' },
         { id: 'duotono', name: 'Duotono Impactante', promptSuffix: 'Bold duotone color effect, two high-contrast ink colors, graphic design aesthetic, modern visual power.' },
         { id: 'glitch', name: 'Glitch Art Digital', promptSuffix: 'Digital glitch aesthetic, chromatic aberration, data corruption artifacts, scanlines, cybernetic distortion look.' },
-        { id: 'poster', name: 'Póster Moderno', promptSuffix: 'Contemporary graphic poster layout, swiss design style, grid-based composition, high-impact typographic focus (simulated).' }
+        { id: 'poster', name: 'PÃ³ster Moderno', promptSuffix: 'Contemporary graphic poster layout, swiss design style, grid-based composition, high-impact typographic focus (simulated).' }
     ]
 };
 
@@ -107,15 +133,15 @@ const callProxy = async (model, contents, config = {}) => {
 
 const enhancePrompt = async (basePrompt) => {
     try {
-        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÓN DE IMÁGENES.
-TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÓN DEL USUARIO.
+        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÃ“N DE IMÃGENES.
+TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÃ“N DEL USUARIO.
 Instrucciones:
-1. NO inventes sujetos nuevos (ej: si pide un perro, no digas que es un Golden Retriever a menos que él lo diga).
-2. NO cambies el entorno drásticamente.
-3. Céntrate en añadir detalles técnicos de calidad (iluminación, texturas, estilo de cámara) para que el prompt sea más efectivo pero manteniendo el mensaje original intacto.
-4. Si el usuario pide un cambio pequeño (ej: "lazo rojo"), el prompt debe centrarse en ese cambio pero con mejor lenguaje técnico.
+1. NO inventes sujetos nuevos (ej: si pide un perro, no digas que es un Golden Retriever a menos que Ã©l lo diga).
+2. NO cambies el entorno drÃ¡sticamente.
+3. CÃ©ntrate en aÃ±adir detalles tÃ©cnicos de calidad (iluminaciÃ³n, texturas, estilo de cÃ¡mara) para que el prompt sea mÃ¡s efectivo pero manteniendo el mensaje original intacto.
+4. Si el usuario pide un cambio pequeÃ±o (ej: "lazo rojo"), el prompt debe centrarse en ese cambio pero con mejor lenguaje tÃ©cnico.
 
-Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (Descriptiva, Cinematográfica, Artística, y Minimalista) siguiendo estas reglas estrictas.`;
+Analiza este prompt original: "${basePrompt}" y genera 4 variantes en espaÃ±ol (Descriptiva, CinematogrÃ¡fica, ArtÃ­stica, y Minimalista) siguiendo estas reglas estrictas.`;
         const contents = [{ parts: [{ text: systemInstructions }] }];
         const config = {
             generationConfig: {
@@ -159,7 +185,7 @@ const generateImage = async (params) => {
     const parts = [{ text: finalPrompt }];
     if (params.sourceImage) {
         const base64Data = params.sourceImage.split(',')[1];
-        parts.push({ inlineData: { data: base64Data, mimeType: "image/png" } });
+        parts.push({ inlineData: { data: base64Data, mimeType: "image/jpeg" } });
     }
     const contents = [{ parts }];
     const config = {
@@ -181,7 +207,7 @@ const editImageConversation = async (params) => {
     const base64Data = params.originalImage.split(',')[1];
     const contents = [{
         parts: [
-            { inlineData: { data: base64Data, mimeType: "image/png" } },
+            { inlineData: { data: base64Data, mimeType: "image/jpeg" } },
             { text: params.instruction }
         ]
     }];
@@ -191,31 +217,20 @@ const editImageConversation = async (params) => {
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
     }
-    throw new Error("Error en la edición conversacional");
+    throw new Error("Error en la ediciÃ³n conversacional");
 };
 
 // --- COMPONENTS ---
 const ApiKeyChecker = ({ children }) => <>{children}</>;
 
 const LoadingOverlay = () => (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500">
-        <style>{`
-            .spinner-triple { position: relative; width: 80px; height: 80px; }
-            .spinner-triple .ring { position: absolute; border-radius: 50%; border: 3px solid transparent; }
-            .spinner-triple .ring-1 { inset: 0; border-top-color: #22d3ee; animation: spin-loader 1.2s linear infinite; box-shadow: 0 0 20px rgba(34, 211, 238, 0.4); }
-            .spinner-triple .ring-2 { inset: 10px; border-right-color: #a78bfa; animation: spin-loader-reverse 1s linear infinite; box-shadow: 0 0 15px rgba(167, 139, 250, 0.4); }
-            .spinner-triple .ring-3 { inset: 20px; border-bottom-color: #f472b6; animation: spin-loader 0.8s linear infinite; box-shadow: 0 0 10px rgba(244, 114, 182, 0.4); }
-            @keyframes spin-loader { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            @keyframes spin-loader-reverse { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-            .loading-text-glow { color: white; font-size: 14px; font-weight: 600; text-transform: uppercase; tracking-widest: 0.2em; text-shadow: 0 0 10px rgba(34, 211, 238, 0.8); animation: pulse-text 2s ease-in-out infinite; }
-            @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        `}</style>
+    <div className="loading-overlay">
         <div className="spinner-triple">
             <div className="ring ring-1"></div>
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <div className="loading-text-glow">IA Generando Obra Maestra...</div>
+        <p className="loading-text">IA Generando Obra Maestra...</p>
     </div>
 );
 
@@ -345,7 +360,7 @@ const Splash = ({ onSelect }) => (
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
             <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Edita como un Pro</h1>
             <p className="text-gray-300 text-lg md:text-2xl font-light max-w-2xl mx-auto">
-                <span className="neon-text font-semibold">Generación/Edición Visual de Imágenes</span>
+                <span className="neon-text font-semibold">GeneraciÃ³n/EdiciÃ³n Visual de ImÃ¡genes</span>
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
@@ -357,7 +372,7 @@ const Splash = ({ onSelect }) => (
                     <Wand2 size={32} />
                 </div>
                 <h2 className="text-4xl font-bold">Editar Imagen</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de Nano Banana.</p>
+                <p className="text-gray-400 text-lg leading-relaxed">Edita imÃ¡genes existentes con la potencia de Nano Banana.</p>
             </button>
             <button onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
@@ -366,8 +381,8 @@ const Splash = ({ onSelect }) => (
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Generar Imágenes</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
+                <h2 className="text-4xl font-bold">Generar ImÃ¡genes</h2>
+                <p className="text-gray-400 text-lg leading-relaxed">Genera imÃ¡genes desde una descripciÃ³n de texto.</p>
             </button>
         </div>
     </div>
@@ -460,10 +475,10 @@ const App = () => {
 
             setImages(prev => [...newHistoryImages, ...prev]);
         } catch (err) {
-            setError(err.message || "Error de generación");
+            setError(err.message || "Error de generaciÃ³n");
         } finally {
             setIsGenerating(false);
-            // Resetear estados post-generación (mantenemos enhancedPrompts)
+            // Resetear estados post-generaciÃ³n (mantenemos enhancedPrompts)
             setPrompt("");
             setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
             setSelectedAR(AspectRatio.SQUARE);
@@ -494,7 +509,7 @@ const App = () => {
             const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, createdAt: Date.now() };
             setImages([updatedImage, ...images]);
             setEditImage(null);
-        } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
+        } catch (err) { setError("Error de ediciÃ³n"); } finally { setIsGenerating(false); }
     };
 
     const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim()) || (mode === 'remix' && !remixSource);
@@ -511,7 +526,7 @@ const App = () => {
                             <div className="flex items-center justify-between shrink-0">
                                 <h1 className="text-2xl font-bold gradient-text flex items-center gap-3">
                                     <Sparkles className="text-cyan-400" size={28} />
-                                    Generador de Imágenes
+                                    Generador de ImÃ¡genes
                                 </h1>
                             </div>
 
@@ -617,7 +632,7 @@ const App = () => {
                             <div className="max-w-7xl mx-auto space-y-16">
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
-                                        <h2 className="text-4xl font-bold tracking-tight">Historial de Imágenes Editadas</h2>
+                                        <h2 className="text-4xl font-bold tracking-tight">Historial de ImÃ¡genes Editadas</h2>
                                         <p className="text-gray-400 font-medium">Controla y refina tus creaciones visuales en tiempo real.</p>
                                     </div>
                                 </div>
@@ -628,7 +643,7 @@ const App = () => {
                                             <ImageIcon size={48} />
                                         </div>
                                         <div className="space-y-2">
-                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imágenes aún</h3>
+                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imÃ¡genes aÃºn</h3>
                                             <p className="text-gray-600 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
                                         </div>
                                     </div>
@@ -671,12 +686,12 @@ const App = () => {
                                         <div className="flex-1 flex flex-col justify-between space-y-8">
                                             <div className="space-y-4">
                                                 <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 font-medium">
-                                                    Indica modificaciones puntuales (luz, color, expansión) para aplicar sobre la base actual manteniendo la coherencia estructural.
+                                                    Indica modificaciones puntuales (luz, color, expansiÃ³n) para aplicar sobre la base actual manteniendo la coherencia estructural.
                                                 </div>
                                                 <textarea
                                                     value={editInstruction}
                                                     onChange={(e) => setEditInstruction(e.target.value)}
-                                                    placeholder="Ej: 'Transforma la iluminación a un atardecer cálido'..."
+                                                    placeholder="Ej: 'Transforma la iluminaciÃ³n a un atardecer cÃ¡lido'..."
                                                     className="w-full h-44 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none focus:border-cyan-400 transition-all shadow-inner"
                                                 />
                                             </div>
@@ -698,5 +713,6 @@ const App = () => {
 
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
+
 
 

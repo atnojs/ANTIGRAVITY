@@ -30,13 +30,18 @@ import {
 } from 'firebase/firestore';
 import { GoogleGenAI } from "@google/genai";
 import { cn } from './lib/utils';
-import { X } from 'lucide-react';
 
 // --- Constants & Types ---
 
-const STORAGE_KEY = 'viaje_tiempo_history';
-
 const HISTORICAL_SCENES = [
+  {
+    id: 'prehistory',
+    name: 'Prehistoria',
+    era: '20,000 a.C.',
+    description: 'Los albores de la humanidad, cazadores-recolectores y cuevas.',
+    prompt: 'A primitive hunter-gatherer in a prehistoric landscape. Furs and hide clothing, bone jewelry, standing near a cave entrance with ancient cave paintings and a flickering fire.',
+    image: 'https://images.unsplash.com/photo-1510597074741-d8a4bc56521e?auto=format&fit=crop&w=800&q=80'
+  },
   {
     id: 'ancient-egypt',
     name: 'Antiguo Egipto',
@@ -46,12 +51,68 @@ const HISTORICAL_SCENES = [
     image: 'https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&w=800&q=80'
   },
   {
+    id: 'classical-greece',
+    name: 'Grecia Clásica',
+    era: '450 a.C.',
+    description: 'La cuna de la democracia, la filosofía y el arte.',
+    prompt: 'A Greek philosopher or citizen in the Agora of Athens. White chiton, laurel wreath, marble columns of the Parthenon in the background under a bright Mediterranean sun.',
+    image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'roman-empire',
+    name: 'Imperio Romano',
+    era: '100 d.C.',
+    description: 'La gloria de Roma, legionarios y el Coliseo.',
+    prompt: 'A high-ranking Roman Centurion or a noble Senator. Red tunic, ornate bronze armor or a purple-bordered toga, with the bustling Roman Forum or the Colosseum behind.',
+    image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'viking-age',
+    name: 'Era Vikinga',
+    era: '900 d.C.',
+    description: 'Exploradores nórdicos, guerreros y drakkares.',
+    prompt: 'A fierce Viking warrior or shield-maiden. Fur-lined leather armor, braided hair, iron helmet, standing on a rocky fjord with a longship in the misty waters.',
+    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'medieval',
+    name: 'Edad Media',
+    era: '1200 d.C.',
+    description: 'Caballeros, castillos y caballería.',
+    prompt: 'A brave knight in shining plate armor or a noble lady in a medieval castle hall. Tapestries on stone walls, torches flickering, and a tournament field visible outside.',
+    image: 'https://images.unsplash.com/photo-1599409673963-8f304a658f4e?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'feudal-japan',
+    name: 'Japón Feudal',
+    era: '1600 d.C.',
+    description: 'Samuráis, honor y la era de los Shogunes.',
+    prompt: 'A noble Samurai in traditional lacquered armor or a graceful figure in a silk kimono. Katana at the waist, cherry blossoms falling in a Zen garden with a pagoda.',
+    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80'
+  },
+  {
     id: 'renaissance',
     name: 'Renacimiento',
     era: '1500 d.C.',
     description: 'El renacimiento del arte y la ciencia en Florencia.',
     prompt: 'A wealthy Renaissance merchant or artist in a studio filled with canvases and scientific instruments. Rich velvet clothing, ornate collars, and a view of Florence cathedral.',
     image: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'piracy-age',
+    name: 'Era de la Piratería',
+    era: '1720 d.C.',
+    description: 'Buscadores de tesoros y capitanes en el Caribe.',
+    prompt: 'A legendary pirate captain on the deck of a galleon. Tricorne hat, long coat, weathered skin, holding a telescope with a tropical island and turquoise sea behind.',
+    image: 'https://images.unsplash.com/photo-1599420186946-7b6fb4e297f0?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'industrial-era',
+    name: 'Era Industrial',
+    era: '1850 d.C.',
+    description: 'Vapor, fábricas y el nacimiento de la modernidad.',
+    prompt: 'A Victorian inventor or factory owner in London. Top hat, waistcoat, pocket watch, with steam-powered machinery and brick chimneys in a foggy industrial city.',
+    image: 'https://images.unsplash.com/photo-1510519133417-2467388a1340?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'wild-west',
@@ -70,12 +131,12 @@ const HISTORICAL_SCENES = [
     image: 'https://images.unsplash.com/photo-1514525253344-f814d074358a?auto=format&fit=crop&w=800&q=80'
   },
   {
-    id: 'medieval',
-    name: 'Edad Media',
-    era: '1200 d.C.',
-    description: 'Caballeros, castillos y caballería.',
-    prompt: 'A brave knight in shining plate armor or a noble lady in a medieval castle hall. Tapestries on stone walls, torches flickering, and a tournament field visible outside.',
-    image: 'https://images.unsplash.com/photo-1599409673963-8f304a658f4e?auto=format&fit=crop&w=800&q=80'
+    id: 'cold-war',
+    name: 'Guerra Fría',
+    era: '1965 d.C.',
+    description: 'Espionaje, la carrera espacial y tensiones globales.',
+    prompt: 'A mysterious secret agent or a scientist in a high-tech control room. Trench coat or lab coat, analog computers, reel-to-reel tapes, and a rocket launch visible on a screen.',
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'cyberpunk',
@@ -84,6 +145,14 @@ const HISTORICAL_SCENES = [
     description: 'Una distopía cyberpunk de alta tecnología y baja calidad de vida.',
     prompt: 'A high-tech street samurai or netrunner in a rain-slicked neon city. Cybernetic implants, glowing visor, futuristic jacket, and massive holographic advertisements.',
     image: 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'galactic-empire',
+    name: 'Imperio Galáctico',
+    era: '3500 d.C.',
+    description: 'Civilizaciones estelares y naves espaciales.',
+    prompt: 'A high-ranking galactic officer or starship pilot. Sleek futuristic uniform, glowing data pads, standing on a bridge of a massive spaceship overlooking a nebula.',
+    image: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=800&q=80'
   }
 ];
 
@@ -95,6 +164,7 @@ interface TravelEntry {
   scene: string;
   era: string;
   description: string;
+  aspectRatio?: string;
   createdAt: any;
 }
 
@@ -105,18 +175,19 @@ export default function App() {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [view, setView] = useState<'home' | 'booth' | 'gallery'>('home');
   const [selectedScene, setSelectedScene] = useState(HISTORICAL_SCENES[0]);
+  const [selectedAR, setSelectedAR] = useState<'1:1' | '3:4' | '4:3' | '9:16' | '16:9'>('1:1');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [travels, setTravels] = useState<TravelEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<TravelEntry | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // --- Utilities ---
 
-  const compressImage = (dataUrl: string, maxWidth: number = 600, quality: number = 0.5): Promise<string> => {
+  const compressImage = (dataUrl: string, maxWidth: number = 1280, quality: number = 0.85): Promise<string> => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
@@ -148,16 +219,6 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    
-    // Cargar historial local inicial (opcional, para rapidez)
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && travels.length === 0) setTravels(parsed);
-      }
-    } catch (e) { console.warn('Error cargando historial:', e); }
-
     const q = query(
       collection(db, 'travels'),
       where('uid', '==', user.uid),
@@ -169,27 +230,12 @@ export default function App() {
         ...doc.data()
       })) as TravelEntry[];
       setTravels(entries);
-      
-      // Persistir en localStorage
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-      } catch (e) { console.warn('Error guardando historial:', e); }
-
     }, (err) => {
       console.error("Firestore error:", err);
       setError("Failed to load gallery. Check security rules.");
     });
     return unsubscribe;
   }, [user]);
-
-  // Manejar Escape para el lightbox
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedImage(null);
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
 
   // --- Camera Logic ---
 
@@ -282,88 +328,99 @@ export default function App() {
     setError(null);
 
     try {
-      // Helper para llamar al proxy PHP
-      const callProxy = async (model: string, contents: any, generationConfig?: any) => {
-        const response = await fetch('proxy.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model, contents, generationConfig })
-        });
-        if (!response.ok) {
-          const errData = await response.json();
-          let errorMsg = "Error en la comunicación con el servidor";
-          if (errData.error) {
-              errorMsg = typeof errData.error === 'object' ? JSON.stringify(errData.error) : errData.error;
-          }
-          if (errData.details) {
-              errorMsg += " " + errData.details;
-          }
-          throw new Error(errorMsg);
-        }
-        return response.json();
-      };
-
+      const apiBase = window.location.pathname.replace(/\/$/, '') + '/api';
+      const ai = new GoogleGenAI({ 
+        apiKey: 'DUMMY_KEY_BYPASS_CLIENT_CHECK',
+        httpOptions: { baseUrl: apiBase }
+      });
       const base64Data = capturedImage.split(',')[1];
 
-      // Step 1: Analyze the original photo
-      const analysisData = await callProxy('gemini-flash-latest', [
-        {
+      // Step 1: Analyze the original photo with gemini-3-flash-preview (more robust for vision)
+      const analysisResponse = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: {
           parts: [
-            { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
-            { text: "Analyze this person's facial features, hair, expression, and pose in detail. Provide a concise description that can be used to recreate their likeness in a historical setting." }
+            {
+              inlineData: {
+                data: base64Data,
+                mimeType: 'image/jpeg'
+              }
+            },
+            {
+              text: "Analyze this person's facial features, hair, expression, and pose in detail. Provide a concise description that can be used to recreate their likeness in a historical setting."
+            }
           ]
         }
-      ]);
+      });
 
-      const analysisText = analysisData.candidates?.[0]?.content?.parts?.[0]?.text;
+      const analysisText = analysisResponse.text;
       if (!analysisText) {
         throw new Error("La IA no pudo analizar la imagen original.");
       }
 
-      // Step 2: Generate an English Image Prompt using Gemini
-      const promptGenerationData = await callProxy('gemini-flash-latest', [
-        {
-          parts: [
-            { text: `Based on this physical description of a user: "${analysisText}", write a highly detailed, descriptive prompt in ENGLISH for an AI image generator (like Midjourney). 
-                     The prompt MUST describe this exact person as a character from ${selectedScene.name} (${selectedScene.era}). 
-                     ${selectedScene.prompt} 
-                     Include details about cinematic lighting, hyper-realistic, 8k resolution, maintaining their facial features, age, and hair.
-                     Do not include any introductory text, ONLY return the raw prompt string.` 
-            }
-          ]
+      // Step 2: Generate TWO distinct prompts for variety
+      const promptResponse = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Based on this person's analysis: "${analysisText}", and the historical scene "${selectedScene.name}" (${selectedScene.era}), 
+                   generate TWO distinct and detailed image generation prompts. 
+                   The prompts should describe the person as a character in that era, maintaining their likeness but changing clothing and background.
+                   Make the two prompts significantly different in terms of lighting, specific setting within the era, or artistic style (e.g., one more like a classic oil painting, another like an early photograph).
+                   Return ONLY a JSON array with two strings.`,
+        config: {
+          responseMimeType: 'application/json'
         }
-      ]);
-
-      const imagePrompt = promptGenerationData.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (!imagePrompt) {
-        throw new Error("La IA no pudo generar el prompt para la imagen.");
-      }
-
-      // Step 3: Render the image using Pollinations.ai (Free, no API key required, works in EU)
-      const encodedPrompt = encodeURIComponent(imagePrompt.trim());
-      const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=1024&nologo=true&enhance=true`;
-      
-      // Fetch the image to convert to base64 for storage. 
-      // We pass the URL through our proxy.php to bypass aggressive browser Content Security Policies
-      const proxyUrl = `proxy.php?pollinationsUrl=${encodeURIComponent(pollinationsUrl)}`;
-      const imgResponse = await fetch(proxyUrl);
-      const blob = await imgResponse.blob();
-      const historicalPhotoBase64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
       });
 
-      if (!historicalPhotoBase64) {
-        throw new Error("AI failed to generate the historical image.");
+      const dynamicPrompts = JSON.parse(promptResponse.text || '[]');
+      if (!Array.isArray(dynamicPrompts) || dynamicPrompts.length < 2) {
+        throw new Error("La IA no pudo generar las variaciones de los prompts.");
       }
 
-      // Compress historical photo before saving to Firestore
-      const compressedHistorical = await compressImage(historicalPhotoBase64);
+      // Step 3: Generate TWO historical photos using the dynamic prompts
+      const generateImage = async (index: number) => {
+        const generationResponse = await ai.models.generateContent({
+          model: 'gemini-2.5-flash-image',
+          contents: {
+            parts: [
+              {
+                inlineData: {
+                  data: base64Data,
+                  mimeType: 'image/jpeg'
+                }
+              },
+              {
+                text: `${dynamicPrompts[index]} 
+                       Ensure the person's unique facial features, expression, and pose from the original photo are preserved exactly. 
+                       The aspect ratio must be ${selectedAR}.`
+              }
+            ]
+          },
+          config: {
+            imageConfig: {
+              aspectRatio: selectedAR
+            }
+          }
+        });
 
-      // Step 2: Save to Firestore
-      try {
+        if (!generationResponse.candidates?.[0]?.content?.parts) {
+          throw new Error(`La IA no devolvió ninguna imagen para la variación ${index + 1}.`);
+        }
+
+        let historicalPhotoBase64 = '';
+        for (const part of generationResponse.candidates[0].content.parts) {
+          if (part.inlineData) {
+            historicalPhotoBase64 = `data:image/png;base64,${part.inlineData.data}`;
+            break;
+          }
+        }
+
+        if (!historicalPhotoBase64) {
+          throw new Error(`AI failed to generate historical image variation ${index + 1}.`);
+        }
+
+        const compressedHistorical = await compressImage(historicalPhotoBase64);
+
+        // Save to Firestore
         await addDoc(collection(db, 'travels'), {
           uid: user.uid,
           originalPhoto: capturedImage,
@@ -371,15 +428,13 @@ export default function App() {
           scene: selectedScene.name,
           era: selectedScene.era,
           description: selectedScene.description,
+          aspectRatio: selectedAR,
           createdAt: serverTimestamp()
         });
-      } catch (fsErr: any) {
-        console.error("Firestore write error:", fsErr);
-        if (fsErr.message?.includes("permissions")) {
-          throw new Error("Error de permisos en la base de datos. Por favor, contacta con soporte.");
-        }
-        throw fsErr;
-      }
+      };
+
+      // Run both generations in parallel
+      await Promise.all([generateImage(0), generateImage(1)]);
 
       setView('gallery');
       setCapturedImage(null);
@@ -392,32 +447,10 @@ export default function App() {
   };
 
   const deleteEntry = async (id: string) => {
-    if (!confirm('¿Seguro que quieres borrar este registro histórico?')) return;
     try {
       await deleteDoc(doc(db, 'travels', id));
     } catch (err) {
       console.error("Delete error:", err);
-    }
-  };
-
-  const clearAllHistory = async () => {
-    if (!user) return;
-    if (!confirm('¿ESTÁS SEGURO? Esta acción destruirá TODOS tus registros temporales de forma permanente.')) return;
-    
-    try {
-      setIsProcessing(true);
-      // Borrar de Firestore (limitado a 500 por lote si fuera necesario, aquí borramos uno a uno por sencillez o podriamos usar Batch)
-      for (const entry of travels) {
-        await deleteDoc(doc(db, 'travels', entry.id));
-      }
-      // Limpiar local
-      localStorage.removeItem(STORAGE_KEY);
-      setTravels([]);
-    } catch (err) {
-      console.error("Clear error:", err);
-      setError("Error al limpiar el historial.");
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -535,6 +568,26 @@ export default function App() {
                             className="absolute inset-0 bg-orange-500/10"
                           />
                         )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4 mt-8">
+                  <h3 className="text-xs uppercase tracking-[0.3em] text-zinc-500 font-semibold">Relación de Aspecto (AR)</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(['1:1', '3:4', '4:3', '9:16', '16:9'] as const).map((ar) => (
+                      <button
+                        key={ar}
+                        onClick={() => setSelectedAR(ar)}
+                        className={cn(
+                          "px-4 py-2 rounded-full border text-xs font-medium transition-all",
+                          selectedAR === ar 
+                            ? "border-orange-500 bg-orange-500 text-white" 
+                            : "border-white/10 hover:border-white/30 bg-white/5 text-zinc-400"
+                        )}
+                      >
+                        {ar}
                       </button>
                     ))}
                   </div>
@@ -704,23 +757,12 @@ export default function App() {
             >
               <div className="flex items-center justify-between mb-12">
                 <h2 className="text-5xl font-light tracking-tighter">REGISTROS TEMPORALES</h2>
-                <div className="flex gap-4">
-                  {travels.length > 0 && (
-                    <button 
-                      onClick={clearAllHistory}
-                      className="px-4 py-2 rounded-full border border-red-500/30 text-red-500/60 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm flex items-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Limpiar todo
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => setView('home')}
-                    className="px-6 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm"
-                  >
-                    Nuevo Viaje
-                  </button>
-                </div>
+                <button 
+                  onClick={() => setView('home')}
+                  className="px-6 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm"
+                >
+                  Nuevo Viaje
+                </button>
               </div>
 
               {travels.length === 0 ? (
@@ -738,16 +780,27 @@ export default function App() {
                       animate={{ opacity: 1 }}
                       className="group bg-white/5 rounded-[2rem] overflow-hidden border border-white/10 hover:border-orange-500/30 transition-all"
                     >
-                      <div className="relative aspect-[4/5] overflow-hidden">
+                      <div 
+                        onClick={() => setSelectedImage(entry)}
+                        className={cn(
+                          "relative overflow-hidden cursor-zoom-in",
+                          entry.aspectRatio === '1:1' && "aspect-square",
+                          entry.aspectRatio === '3:4' && "aspect-[3/4]",
+                          entry.aspectRatio === '4:3' && "aspect-[4/3]",
+                          entry.aspectRatio === '9:16' && "aspect-[9/16]",
+                          entry.aspectRatio === '16:9' && "aspect-[16/9]",
+                          !entry.aspectRatio && "aspect-[4/5]"
+                        )}
+                      >
                         <img 
                           src={entry.historicalPhoto} 
                           alt={entry.scene}
-                          onClick={() => setSelectedImage(entry.historicalPhoto)}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 cursor-zoom-in"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                           <button 
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const link = document.createElement('a');
                               link.href = entry.historicalPhoto;
                               link.download = `chronos-${entry.scene.toLowerCase()}.png`;
@@ -758,7 +811,10 @@ export default function App() {
                             <Download className="w-4 h-4" />
                           </button>
                           <button 
-                            onClick={() => deleteEntry(entry.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteEntry(entry.id);
+                            }}
                             className="p-2 bg-red-500/60 backdrop-blur-md rounded-full hover:bg-red-500/80 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -789,7 +845,117 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Global Floating Action Button for Gallery */}
+        <AnimatePresence>
+          {view === 'gallery' && (
+            <motion.button 
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              onClick={() => setView('home')}
+              className="fixed bottom-8 right-8 z-[60] flex items-center gap-2 px-6 py-4 bg-orange-500 text-white rounded-full font-bold shadow-2xl shadow-orange-500/40 hover:bg-orange-400 transition-all active:scale-95 lg:px-8 lg:py-4"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span className="tracking-wide">NUEVO VIAJE</span>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </main>
+
+      {/* Lightbox / Zoom Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/98 backdrop-blur-2xl"
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-[90vw] h-full max-h-[90vh] flex flex-col lg:flex-row items-center lg:items-stretch gap-8 lg:gap-12"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-12 lg:top-0 lg:-right-16 p-2 text-zinc-400 hover:text-white transition-colors z-[110]"
+              >
+                <LogOut className="w-8 h-8 rotate-90" />
+              </button>
+
+              {/* Image Container - Maximized */}
+              <div 
+                onClick={() => setSelectedImage(null)}
+                className={cn(
+                  "relative flex-1 w-full h-full flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/50 shadow-2xl cursor-zoom-out",
+                  "max-h-[60vh] lg:max-h-none"
+                )}
+              >
+                <img 
+                  src={selectedImage.historicalPhoto} 
+                  alt={selectedImage.scene}
+                  className="w-full h-full object-contain select-none"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Info Panel - Side on Desktop */}
+              <div className="w-full lg:w-80 flex flex-col justify-center text-center lg:text-left shrink-0">
+                <div className="mb-8">
+                  <div className="text-orange-500 tracking-[0.3em] text-[10px] font-bold uppercase mb-2">{selectedImage.era}</div>
+                  <h3 className="text-4xl lg:text-5xl font-light tracking-tighter mb-4 leading-none">{selectedImage.scene}</h3>
+                  <p className="text-zinc-400 text-sm font-light leading-relaxed hidden lg:block">
+                    {selectedImage.description}
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center justify-center lg:justify-start gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10 shrink-0">
+                      <img src={selectedImage.originalPhoto} className="w-full h-full object-cover grayscale" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Imagen Original</div>
+                      <div className="text-xs text-zinc-400 font-mono">
+                        {new Date(selectedImage.createdAt?.seconds * 1000).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-3">
+                    <button 
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = selectedImage.historicalPhoto;
+                        link.download = `chronos-${selectedImage.scene.toLowerCase()}.png`;
+                        link.click();
+                      }}
+                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-white text-black rounded-full font-semibold hover:bg-zinc-200 transition-all active:scale-95"
+                    >
+                      <Download className="w-5 h-5" />
+                      Descargar Imagen
+                    </button>
+                    <button 
+                      onClick={() => {
+                        deleteEntry(selectedImage.id);
+                        setSelectedImage(null);
+                      }}
+                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full font-medium hover:bg-red-500/20 transition-all active:scale-95"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                      Eliminar Registro
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="relative z-10 p-12 text-center border-t border-white/5 mt-24">
@@ -797,58 +963,6 @@ export default function App() {
           Desarrollado por Neural Temporal Engine & Gemini AI
         </div>
       </footer>
-
-      {/* Lightbox Standard Antigravity */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
-            className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 cursor-zoom-out"
-          >
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-7xl max-h-[90vh]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img 
-                src={selectedImage} 
-                className="w-full h-full object-contain rounded-xl shadow-2xl border border-white/10"
-                alt="Enlarged temporal record"
-              />
-              <button 
-                onClick={() => setSelectedImage(null)}
-                className="absolute -top-12 right-0 p-2 text-white/50 hover:text-white transition-colors"
-              >
-                <X className="w-8 h-8" />
-              </button>
-              <div className="absolute -bottom-12 left-0 right-0 flex justify-center">
-                <button 
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = selectedImage;
-                    link.download = `chronos-zoom.png`;
-                    link.click();
-                  }}
-                  className="flex items-center gap-2 px-6 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white text-sm transition-all"
-                >
-                  <Download className="w-4 h-4" />
-                  Descargar Copia de Alta Definición
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <style>{`
-        .cursor-zoom-in { cursor: zoom-in; }
-        .cursor-zoom-out { cursor: zoom-out; }
-      `}</style>
     </div>
   );
 }

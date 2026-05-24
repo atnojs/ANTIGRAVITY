@@ -36,3 +36,58 @@ auth_zoer.php
 # Basura de la descarga
 _public_html.zip
 .htaccess
+
+# Ignorar archivos de datos JSON DENTRO de las carpetas `estado_sitio.json`
+apps/**/estado_sitio.json
+webs/**/estado_sitio.json
+
+# Si quieres ser más específico y permitir algunos JSON de configuración 
+# pero ignorar los de "estado" o "datos":
+# **/data.json
+# **/state.json
+# **/config_usuario.json
+
+# Entornos virtuales de Python y caché
+**/env/
+**/venv/
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# Archivos de video y multimedia pesados
+*.mp4
+*.avi
+*.mov
+*.mkv
+**/uploads/
+**/output/
+
+# Modelos de Inteligencia Artificial (AI Weights) y archivos pesados
+*.pth
+*.bin
+*.ckpt
+*.safetensors
+*.onnx
+**/modelos/
+**/models/
+
+# Archivos de configuración y backups que contienen claves/credenciales
+htaccess
+Restos/
+apps/ESTADO_ACTUAL_*.md
+**/ESTADO_ACTUAL_*.md
+*#*BACKUP*
+*#*RESTAUR*
+*BACKUP*
+*Instructions_personalizadas_chatgpt*
+*Find-Corel*
+*Nuke-Corel*
+*Skill*
+*backup_wsl*
+*restore_wsl*
+*uninstall_corel*
+*verify_corel*
+*nuevo cloude code*
+*Claude Code Ollama*
+Corel/
+Restos/

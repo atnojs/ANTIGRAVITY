@@ -31,8 +31,8 @@ $API_KEY = getenv('GEMINI_API_KEY');
 
 // Opción B: Hardcodear la clave si A falla (Solo para pruebas locales o Hosting compartido)
 if (!$API_KEY) {
-    // Clave insertada para Hostinger
-    $API_KEY = 'AIzaSyDgvw713T-ffzKfAFg5zib8mwXjzUVCZ48';
+    // Clave configurada en las variables de entorno de Hostinger
+    $API_KEY = getenv('GEMINI_API_KEY');
 }
 
 // Validación básica

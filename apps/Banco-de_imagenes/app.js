@@ -1,4 +1,4 @@
-const { useState, useEffect, useCallback } = React;
+﻿const { useState, useEffect, useCallback } = React;
 
 const API_PROXY_URL = '/apps/banco_de_imagenes/proxy.php';
 const STOCK_BASE_URL = '/stock_images';
@@ -7,99 +7,99 @@ const STOCK_BASE_URL = '/stock_images';
 const BUSINESS_CATEGORIES = [
     {
         id: 'gastro',
-        name: "Gastronomía y Hostelería",
+        name: "GastronomÃ­a y HostelerÃ­a",
         icon: "fa-utensils",
         color: "text-orange-500",
-        options: ['restaurante', 'cafetería', 'bar', 'food truck', 'pastelería', 'heladería', 'vinoteca', 'catering', 'hotel', 'hostal', 'bed and breakfast', 'resort', 'spa hotel']
+        options: ['restaurante', 'cafeterÃ­a', 'bar', 'food truck', 'pastelerÃ­a', 'heladerÃ­a', 'vinoteca', 'catering', 'hotel', 'hostal', 'bed and breakfast', 'resort', 'spa hotel']
     },
     {
         id: 'salud',
         name: "Salud y Bienestar",
         icon: "fa-heartbeat",
         color: "text-red-500",
-        options: ['consultorio médico', 'clínica dental', 'fisioterapia', 'gimnasio', 'centro de yoga', 'nutricionista', 'psicología', 'spa', 'centro de estética', 'peluquería', 'salón de belleza', 'barbería', 'manicuría', 'quiropráctico', 'veterinaria']
+        options: ['consultorio mÃ©dico', 'clÃ­nica dental', 'fisioterapia', 'gimnasio', 'centro de yoga', 'nutricionista', 'psicologÃ­a', 'spa', 'centro de estÃ©tica', 'peluquerÃ­a', 'salÃ³n de belleza', 'barberÃ­a', 'manicurÃ­a', 'quiroprÃ¡ctico', 'veterinaria']
     },
     {
         id: 'pro',
         name: "Servicios Profesionales",
         icon: "fa-briefcase",
         color: "text-blue-600",
-        options: ['despacho de abogados', 'asesoría fiscal', 'consultoría empresarial', 'arquitectura', 'despacho de interiorismo', 'agencia de marketing', 'agencia de publicidad', 'agencia de social media', 'consultoría IT', 'seguros', 'agencia de viajes', 'inmobiliaria', 'agente inmobiliario']
+        options: ['despacho de abogados', 'asesorÃ­a fiscal', 'consultorÃ­a empresarial', 'arquitectura', 'despacho de interiorismo', 'agencia de marketing', 'agencia de publicidad', 'agencia de social media', 'consultorÃ­a IT', 'seguros', 'agencia de viajes', 'inmobiliaria', 'agente inmobiliario']
     },
     {
         id: 'edu',
-        name: "Educación y Formación",
+        name: "EducaciÃ³n y FormaciÃ³n",
         icon: "fa-graduation-cap",
         color: "text-indigo-600",
-        options: ['academia de idiomas', 'escuela infantil', 'colegio privado', 'academia de música', 'clases de baile', 'academia de arte', 'taller de cocina', 'coach personal', 'formación online', 'guardería', 'autoescuela']
+        options: ['academia de idiomas', 'escuela infantil', 'colegio privado', 'academia de mÃºsica', 'clases de baile', 'academia de arte', 'taller de cocina', 'coach personal', 'formaciÃ³n online', 'guarderÃ­a', 'autoescuela']
     },
     {
         id: 'retail',
         name: "Comercio y Retail",
         icon: "fa-store",
         color: "text-purple-600",
-        options: ['tienda de ropa', 'boutique', 'tienda de decoración', 'floristería', 'librería', 'tienda de muebles', 'ferretería', 'tienda de electrónica', 'joyería', 'tienda de regalos', 'tienda óptica', 'tienda de mascotas']
+        options: ['tienda de ropa', 'boutique', 'tienda de decoraciÃ³n', 'floristerÃ­a', 'librerÃ­a', 'tienda de muebles', 'ferreterÃ­a', 'tienda de electrÃ³nica', 'joyerÃ­a', 'tienda de regalos', 'tienda Ã³ptica', 'tienda de mascotas']
     },
     {
         id: 'tech',
-        name: "Tecnología y Startups",
+        name: "TecnologÃ­a y Startups",
         icon: "fa-microchip",
         color: "text-cyan-600",
-        options: ['agencia web', 'desarrollo de apps', 'consultoría ciberseguridad', 'empresa de software', 'startup tecnológica', 'empresa de inteligencia artificial', 'servicios cloud', 'e-commerce', 'dropshipping']
+        options: ['agencia web', 'desarrollo de apps', 'consultorÃ­a ciberseguridad', 'empresa de software', 'startup tecnolÃ³gica', 'empresa de inteligencia artificial', 'servicios cloud', 'e-commerce', 'dropshipping']
     },
     {
         id: 'deporte',
         name: "Deportes y Ocio",
         icon: "fa-futbol",
         color: "text-green-600",
-        options: ['escuela de fútbol', 'club de pádel', 'escalada indoor', 'club de golf', 'alquiler de bicicletas', 'escuela de surf', 'organización de eventos', 'alquiler de locales', 'sala de escape room', 'centro de realidad virtual']
+        options: ['escuela de fÃºtbol', 'club de pÃ¡del', 'escalada indoor', 'club de golf', 'alquiler de bicicletas', 'escuela de surf', 'organizaciÃ³n de eventos', 'alquiler de locales', 'sala de escape room', 'centro de realidad virtual']
     },
     {
         id: 'hogar',
         name: "Servicios al Hogar",
         icon: "fa-home",
         color: "text-teal-600",
-        options: ['limpieza doméstica', 'cuidado de personas mayores', 'niñera', 'organización profesional', 'home staging', 'reformas de cocina', 'decorador de interiores', 'instalación de domótica', 'impermeabilización']
+        options: ['limpieza domÃ©stica', 'cuidado de personas mayores', 'niÃ±era', 'organizaciÃ³n profesional', 'home staging', 'reformas de cocina', 'decorador de interiores', 'instalaciÃ³n de domÃ³tica', 'impermeabilizaciÃ³n']
     },
     {
         id: 'constru',
-        name: "Industria y Construcción",
+        name: "Industria y ConstrucciÃ³n",
         icon: "fa-building",
         color: "text-stone-600",
-        options: ['constructora', 'empresa de reformas integrales', 'arquitecto técnico', 'topografía', 'peritaje', 'empresa de limpieza industrial', 'mantenimiento de edificios']
+        options: ['constructora', 'empresa de reformas integrales', 'arquitecto tÃ©cnico', 'topografÃ­a', 'peritaje', 'empresa de limpieza industrial', 'mantenimiento de edificios']
     },
     {
         id: 'eco',
         name: "Sostenibilidad y Eco",
         icon: "fa-leaf",
         color: "text-green-500",
-        options: ['tienda zero waste', 'alimentación orgánica', 'instalación de placas solares', 'consultoría de sostenibilidad', 'compostaje comunitario', 'moda sostenible']
+        options: ['tienda zero waste', 'alimentaciÃ³n orgÃ¡nica', 'instalaciÃ³n de placas solares', 'consultorÃ­a de sostenibilidad', 'compostaje comunitario', 'moda sostenible']
     },
     {
         id: 'auto',
-        name: "Automoción",
+        name: "AutomociÃ³n",
         icon: "fa-car",
         color: "text-gray-700",
-        options: ['concesionario de coches', 'taller de chapa y pintura', 'rent a car', 'lavado de coches ecológico', 'renting de vehículos', 'recambios de automoción']
+        options: ['concesionario de coches', 'taller de chapa y pintura', 'rent a car', 'lavado de coches ecolÃ³gico', 'renting de vehÃ­culos', 'recambios de automociÃ³n']
     },
     {
         id: 'otros',
         name: "Otros Servicios",
         icon: "fa-ellipsis",
         color: "text-slate-500",
-        options: ['ludoteca', 'parque infantil', 'salón de juegos', 'estudio de tatuajes', 'piercing studio', 'tienda de vapeo', 'alquiler de trajes', 'lavandería', 'tintorería', 'servicio de recogida a domicilio']
+        options: ['ludoteca', 'parque infantil', 'salÃ³n de juegos', 'estudio de tatuajes', 'piercing studio', 'tienda de vapeo', 'alquiler de trajes', 'lavanderÃ­a', 'tintorerÃ­a', 'servicio de recogida a domicilio']
     }
 ];
 
 const IMAGE_TYPE_MAP = [
     { id: 'hero', name: "Imagen Hero Principal", file: 'hero.jpg' },
-    { id: 'servicio', name: "Servicio en Acción", file: 'servicio.jpg' },
+    { id: 'servicio', name: "Servicio en AcciÃ³n", file: 'servicio.jpg' },
     { id: 'equipo', name: "Equipo Profesional", file: 'equipo.jpg' },
     { id: 'testimonial', name: "Cliente Satisfecho", file: 'testimonial.jpg' },
-    { id: 'blog', name: "Artículo de Blog", file: 'blog.jpg' },
+    { id: 'blog', name: "ArtÃ­culo de Blog", file: 'blog.jpg' },
     { id: 'cta', name: "Banner CTA", file: 'cta.jpg' },
     { id: 'producto', name: "Detalle Producto", file: 'producto.jpg' },
-    { id: 'mision', name: "Imagen de Misión", file: 'mision.jpg' },
+    { id: 'mision', name: "Imagen de MisiÃ³n", file: 'mision.jpg' },
     { id: 'hero2', name: "Segunda Hero", file: 'hero2.jpg' },
     { id: 'servicio2', name: "Segundo Servicio", file: 'servicio2.jpg' },
     { id: 'oficina', name: "Ambiente Oficina", file: 'oficina.jpg' },
@@ -107,10 +107,10 @@ const IMAGE_TYPE_MAP = [
     { id: 'abstracta', name: "Imagen Abstracta", file: 'abstracta.jpg' },
     { id: 'promo', name: "Banner Promocional", file: 'promo.jpg' },
     { id: 'nosotros', name: "Sobre Nosotros", file: 'nosotros.jpg' },
-    { id: 'contacto', name: "Contacto/Ubicación", file: 'contacto.jpg' }
+    { id: 'contacto', name: "Contacto/UbicaciÃ³n", file: 'contacto.jpg' }
 ];
 
-// INDEXEDDB MANAGER - Solución definitiva para almacenar imágenes
+// INDEXEDDB MANAGER - SoluciÃ³n definitiva para almacenar imÃ¡genes
 const HistoryDB = {
     DB_NAME: 'AIImageHistoryDB',
     STORE_NAME: 'images',
@@ -157,7 +157,7 @@ const HistoryDB = {
 
     async add(item) {
         try {
-            // Verificar límite primero
+            // Verificar lÃ­mite primero
             const existing = await this.getAll();
             if (existing.find(e => e.id === item.id)) {
                 return existing; // Ya existe
@@ -169,7 +169,7 @@ const HistoryDB = {
                 const transaction = db.transaction([this.STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(this.STORE_NAME);
 
-                // Si hay más de MAX_ITEMS, eliminar el más antiguo
+                // Si hay mÃ¡s de MAX_ITEMS, eliminar el mÃ¡s antiguo
                 if (existing.length >= this.MAX_ITEMS) {
                     const oldest = existing[existing.length - 1];
                     store.delete(oldest.id);
@@ -411,6 +411,33 @@ const Lightbox = ({ image, onClose }) => {
 };
 
 // APP PRINCIPAL
+
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+};
+
 const App = () => {
     const [business, setBusiness] = useState('');
     const [businessCategory, setBusinessCategory] = useState(null);
@@ -478,16 +505,16 @@ const App = () => {
 
         try {
             const aiSystemPrompt = `
-                Actúa como experto en fotografía y dirección de arte. 
+                ActÃºa como experto en fotografÃ­a y direcciÃ³n de arte. 
                 Genera 4 opciones de descripciones visuales detalladas y diferentes para un negocio de: "${business}". 
-                Categoría: "${businessCategory?.name || 'General'}".
+                CategorÃ­a: "${businessCategory?.name || 'General'}".
                 Contexto usuario: "${desc}".
                 
                 Requisitos:
                 1. Estilo FOTORREALISTA y profesional.
-                2. Descripciones breves pero evocadoras (iluminación, ambiente, composición).
+                2. Descripciones breves pero evocadoras (iluminaciÃ³n, ambiente, composiciÃ³n).
                 3. Devuelve SOLO las 4 opciones separadas por una barra vertical "|".
-                4. No incluyas numeración ni texto extra.
+                4. No incluyas numeraciÃ³n ni texto extra.
                 Ejemplo: "Oficina moderna con luz natural | Primer plano de producto | Exterior con cielo azul | Interior minimalista"
             `;
 
@@ -507,7 +534,7 @@ const App = () => {
 
             if (options.length > 0) {
                 setSuggestedPrompts(options);
-                showToast('✨ 4 Ideas generadas');
+                showToast('âœ¨ 4 Ideas generadas');
             } else {
                 throw new Error('No se generaron opciones');
             }
@@ -525,14 +552,14 @@ const App = () => {
         console.log('Saving to history via IndexedDB:', img.id);
 
         if (!img || !img.src) {
-            showToast('Error: Imagen inválida');
+            showToast('Error: Imagen invÃ¡lida');
             return;
         }
 
         const itemToSave = {
             id: img.id,
             src: img.src,
-            category: img.category || 'Sin categoría',
+            category: img.category || 'Sin categorÃ­a',
             business: img.business || business || 'Sin negocio',
             parentCategory: img.parentCategory || (businessCategory ? businessCategory.name : ''),
             typeId: img.typeId || '',
@@ -542,10 +569,10 @@ const App = () => {
         try {
             const newHistory = await HistoryDB.add(itemToSave);
             setHistory(newHistory);
-            showToast('✓ Guardado en historial');
+            showToast('âœ“ Guardado en historial');
         } catch (err) {
             console.error('Error saving:', err);
-            showToast('× Error al guardar');
+            showToast('Ã— Error al guardar');
         }
     }, [business, businessCategory]);
 
@@ -567,7 +594,7 @@ const App = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        showToast('✓ Descargado');
+        showToast('âœ“ Descargado');
     };
 
     const applySuggestion = (suggestion) => {
@@ -581,7 +608,7 @@ const App = () => {
         setIsGenerating(true);
         setProgress(0);
 
-        // Identificar qué falta generar
+        // Identificar quÃ© falta generar
         const toGenerate = selectedTypes.filter(id => !generatedTypes.includes(id));
 
         // Crear placeholders
@@ -591,8 +618,8 @@ const App = () => {
                 id: Date.now() + i,
                 typeId: typeId,
                 category: typeInfo.name,
-                src: '', // Vacío inicialmente
-                prompt: `Fotografía profesional fotorrealista de alta calidad. Tema: ${typeInfo.name} para un negocio de ${business}. ${desc}. Iluminación cinematográfica, 8k, detallado. Sin texto, sin marcas de agua.`,
+                src: '', // VacÃ­o inicialmente
+                prompt: `FotografÃ­a profesional fotorrealista de alta calidad. Tema: ${typeInfo.name} para un negocio de ${business}. ${desc}. IluminaciÃ³n cinematogrÃ¡fica, 8k, detallado. Sin texto, sin marcas de agua.`,
                 status: 'loading',
                 selected: false,
                 business: business,
@@ -621,23 +648,23 @@ const App = () => {
                 const data = await response.json();
 
                 // Extraer imagen base64 (asumiendo que Gemini devuelve base64 en alguna parte, 
-                // o si la API devuelve URL, adaptar aquí. El proxy actual devuelve JSON estándar de Gemini)
+                // o si la API devuelve URL, adaptar aquÃ­. El proxy actual devuelve JSON estÃ¡ndar de Gemini)
                 // NOTA: Gemini Pro Vision/Image devuelve structure compleja.
                 // Asumimos que el proxy maneja la respuesta binaria o base64 correctamente.
                 // Si el proxy devuelve text, es un error.
                 // El proxy actual parece devolver el JSON crudo de Gemini.
 
-                // ADAPTACIÓN PARA GEMINI IMAGE (B64):
+                // ADAPTACIÃ“N PARA GEMINI IMAGE (B64):
                 // La respuesta de Gemini para imagen suele venir en inlineData o similar.
-                // Ajustar según respuesta real. Si falla, usar placeholder para demo.
+                // Ajustar segÃºn respuesta real. Si falla, usar placeholder para demo.
 
                 let imageUrl = '';
-                // Intento de parseo de respuesta estándar Gemini Image
+                // Intento de parseo de respuesta estÃ¡ndar Gemini Image
                 if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
                     imageUrl = `data:image/png;base64,${data.candidates[0].content.parts[0].inlineData.data}`;
                 } else if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    // Si devuelve texto, es que falló la generación de imagen
-                    throw new Error('Modelo devolvió texto en vez de imagen');
+                    // Si devuelve texto, es que fallÃ³ la generaciÃ³n de imagen
+                    throw new Error('Modelo devolviÃ³ texto en vez de imagen');
                 } else {
                     // Fallback simulado si la API no es la de imagen real (para evitar crash en dev)
                     throw new Error('Formato de respuesta no reconocido');
@@ -656,11 +683,11 @@ const App = () => {
         }
 
         setIsGenerating(false);
-        showToast('Generación completada');
+        showToast('GeneraciÃ³n completada');
     };
 
     const regenerateImage = async (img) => {
-        // Lógica similar a generateImages pero para uno solo
+        // LÃ³gica similar a generateImages pero para uno solo
         setImages(prev => prev.map(item => item.id === img.id ? { ...item, status: 'loading' } : item));
 
         try {
@@ -711,7 +738,7 @@ const App = () => {
             });
 
             if (count === 0) {
-                showToast('Error: No hay imágenes válidas para ZIP');
+                showToast('Error: No hay imÃ¡genes vÃ¡lidas para ZIP');
                 return;
             }
 
@@ -724,7 +751,7 @@ const App = () => {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            showToast('✓ ZIP descargado');
+            showToast('âœ“ ZIP descargado');
         } catch (err) {
             console.error('ZIP Error:', err);
             showToast('Error al crear ZIP');
@@ -742,13 +769,13 @@ const App = () => {
     };
 
     const clearHistory = async () => {
-        if (!confirm('¿Borrar todo el historial?')) return;
+        if (!confirm('Â¿Borrar todo el historial?')) return;
         await HistoryDB.clear();
         setHistory([]);
         showToast('Historial vaciado');
     };
 
-    // Filtrado de imágenes completadas
+    // Filtrado de imÃ¡genes completadas
     const completedImages = images.filter(i => i.status === 'done');
     const selectedImages = images.filter(i => i.selected);
 
@@ -761,7 +788,7 @@ const App = () => {
                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-600/20">
                             <i className="fa-solid fa-images text-white text-xl"></i>
                         </div>
-                        <h1 className="text-xl font-bold gradient-text">Banco de Imágenes AI Pro</h1>
+                        <h1 className="text-xl font-bold gradient-text">Banco de ImÃ¡genes AI Pro</h1>
                     </div>
                     <div className="text-sm font-medium text-cyan-300 bg-white/5 px-3 py-1 rounded-full border border-cyan-400/30">
                         Historial: {isLoadingHistory ? '...' : `${history.length}/25`}
@@ -775,10 +802,10 @@ const App = () => {
                     {/* COLUMNA IZQUIERDA: Config */}
                     <div className="space-y-4">
                         <div className="glass-panel rounded-2xl p-5 relative">
-                            {isImproving && <ThinkingOverlay text="Ideando 4 conceptos únicos..." />}
+                            {isImproving && <ThinkingOverlay text="Ideando 4 conceptos Ãºnicos..." />}
 
                             <h2 className="text-xs font-bold text-cyan-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <i className="fa-solid fa-sliders"></i> Configuración
+                                <i className="fa-solid fa-sliders"></i> ConfiguraciÃ³n
                             </h2>
 
                             <div className="space-y-4">
@@ -807,12 +834,12 @@ const App = () => {
                                 )}
 
                                 <div>
-                                    <label className="block text-xs font-semibold mb-2 text-slate-300">Descripción / Estilo</label>
+                                    <label className="block text-xs font-semibold mb-2 text-slate-300">DescripciÃ³n / Estilo</label>
                                     <div className="relative">
                                         <textarea
                                             value={desc}
                                             onChange={(e) => setDesc(e.target.value)}
-                                            placeholder="Detalla el estilo, iluminación, colores..."
+                                            placeholder="Detalla el estilo, iluminaciÃ³n, colores..."
                                             rows="3"
                                             className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-cyan-400 bg-white/5 resize-none pr-10 outline-none transition-all focus:bg-white/10 text-white placeholder-slate-400"
                                             disabled={isGenerating || isImproving}
@@ -828,7 +855,7 @@ const App = () => {
                                         </button>
                                     </div>
 
-                                    {/* SUGERENCIAS DE PROMPTS (BOTONES ESTILO GUÍA) */}
+                                    {/* SUGERENCIAS DE PROMPTS (BOTONES ESTILO GUÃA) */}
                                     {suggestedPrompts.length > 0 && (
                                         <div className="mt-4 animate-fadeIn">
                                             <p className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -841,7 +868,7 @@ const App = () => {
                                                         onClick={() => applySuggestion(suggestion)}
                                                         className="prompt-btn w-full text-left group"
                                                     >
-                                                        <span className="font-semibold text-cyan-300 block mb-1 text-xs">Opción {idx + 1}</span>
+                                                        <span className="font-semibold text-cyan-300 block mb-1 text-xs">OpciÃ³n {idx + 1}</span>
                                                         <span className="opacity-90 group-hover:opacity-100">{suggestion}</span>
                                                     </button>
                                                 ))}
@@ -858,7 +885,7 @@ const App = () => {
                                             className="w-full py-3 glass-button rounded-xl text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:border-cyan-400/50 disabled:opacity-50 flex items-center justify-center gap-2"
                                         >
                                             <i className="fa-solid fa-layer-group"></i>
-                                            {selectedTypes.length > 0 ? `Modificar Selección (${selectedTypes.length})` : 'Seleccionar Imágenes'}
+                                            {selectedTypes.length > 0 ? `Modificar SelecciÃ³n (${selectedTypes.length})` : 'Seleccionar ImÃ¡genes'}
                                         </button>
 
                                         <button
@@ -877,7 +904,7 @@ const App = () => {
                                             ) : (
                                                 <>
                                                     <i className="fa-solid fa-bolt"></i>
-                                                    Generar {selectedTypes.length > 0 ? `${selectedTypes.length} Imágenes` : 'Pack'}
+                                                    Generar {selectedTypes.length > 0 ? `${selectedTypes.length} ImÃ¡genes` : 'Pack'}
                                                 </>
                                             )}
                                         </button>
@@ -894,7 +921,7 @@ const App = () => {
                         <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/10 backdrop-blur-sm">
                             <h3 className="font-bold text-white flex items-center gap-2">
                                 <i className="fa-solid fa-palette text-blue-500"></i>
-                                Galería
+                                GalerÃ­a
                             </h3>
                             {completedImages.length > 0 && (
                                 <div className="flex gap-2">
@@ -922,7 +949,7 @@ const App = () => {
                                     <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center mb-4 shadow-inner">
                                         <i className="fa-solid fa-image text-4xl text-slate-400"></i>
                                     </div>
-                                    <p className="text-sm font-medium">Tu galería está vacía</p>
+                                    <p className="text-sm font-medium">Tu galerÃ­a estÃ¡ vacÃ­a</p>
                                     <p className="text-xs mt-1 opacity-70">Define tu negocio y genera contenido</p>
                                 </div>
                             ) : (
@@ -939,7 +966,7 @@ const App = () => {
                                                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                                     </div>
 
-                                                    {/* BOTONES ACCIÓN (NUEVO ESTILO CÍRCULO) */}
+                                                    {/* BOTONES ACCIÃ“N (NUEVO ESTILO CÃRCULO) */}
                                                     <div className="image-actions">
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); regenerateImage(img); }}
@@ -1028,7 +1055,7 @@ const App = () => {
                                         <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-2">
                                             <i className="fa-regular fa-folder-open text-xl opacity-60"></i>
                                         </div>
-                                        <p>Tu historial está vacío</p>
+                                        <p>Tu historial estÃ¡ vacÃ­o</p>
                                     </div>
                                 ) : (
                                     <div className="history-grid-2">

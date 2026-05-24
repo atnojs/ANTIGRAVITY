@@ -525,7 +525,7 @@ async function callImageAPI(base64ImageData, mimeType, shotType, cardId, backgro
         prompt: finalPrompt,
         base64ImageData: base64ImageData,
         mimeType: mimeType,
-        model: 'gemini-2.0-flash-exp-image-generation'
+        model: 'gemini-2.5-flash-image'
     };
 
     // generationConfig merge obligatorio

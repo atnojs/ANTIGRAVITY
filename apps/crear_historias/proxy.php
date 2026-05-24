@@ -16,8 +16,36 @@ error_reporting(E_ALL);
 try {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
 
-  $apiKey = getenv('B')
-    ?: ($_SERVER['B'] ?? $_SERVER['REDIRECT_B'] ?? null);
+  // API Key (B) — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+  $apiKey = '';
+  $configFile = __DIR__ . '/config.php';
+  if (file_exists($configFile)) {
+      include $configFile;
+      $apiKey = defined('B') ? B : '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = getenv('B');
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = getenv('REDIRECT_B');
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_SERVER['B'] ?? '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_SERVER['REDIRECT_B'] ?? '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_ENV['B'] ?? '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_ENV['REDIRECT_B'] ?? '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      http_response_code(500);
+      echo json_encode(['error' => ['message' => 'API key no configurada.']]);
+      exit;
+  }
 
   $replicateKey = getenv('REPLICATE_API_FLUX') 
     ?: ($_SERVER['REPLICATE_API_FLUX'] ?? $_SERVER['REDIRECT_REPLICATE_API_TOKEN'] ?? null);
