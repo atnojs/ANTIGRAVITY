@@ -349,7 +349,55 @@
     return `[Optimizado] ${prompt}${suffix}`;
   }
 
-  // Generate image — generación real con Gemini via proxy
+  // Helper: genera una sola imagen via proxy y devuelve datos listos para guardar
+  async function generateSingleImage(prompt, styleName) {
+    const imgResult = await callProxy('generate-image', {
+      prompt: prompt,
+      style: styleName,
+      aspectRatio: state.settings.aspectRatioId,
+      referenceImage: state.settings.referenceImage
+    });
+
+    if (imgResult && imgResult.error) throw new Error(imgResult.error);
+
+    let imageUrl = '';
+    if (imgResult.image) {
+      imageUrl = `data:${imgResult.mimeType || 'image/png'};base64,${imgResult.image}`;
+    } else if (imgResult.imageUrl) {
+      imageUrl = imgResult.imageUrl;
+    } else {
+      throw new Error('El modelo no devolvió datos de imagen.');
+    }
+
+    let description = imgResult.description || '';
+    let tags = [styleName, 'IA Generada', 'Aura Gen-3', 'Ultra HD'];
+
+    // Enriquecer con tags de Gemini
+    try {
+      const tagData = await callProxy('generate', {
+        prompt: prompt,
+        style: styleName,
+        model: 'gemini-2.5-flash'
+      });
+      if (tagData.candidates?.[0]?.content?.parts?.[0]?.text) {
+        try {
+          const parsed = JSON.parse(tagData.candidates[0].content.parts[0].text.trim());
+          if (parsed.coolTags?.length) tags = parsed.coolTags;
+          if (parsed.visualizationDescription && !description) description = parsed.visualizationDescription;
+        } catch (e) { /* mantener defaults */ }
+      }
+    } catch (e) {
+      console.warn('Enriquecimiento de tags falló:', e.message);
+    }
+
+    if (!description) {
+      description = `Arte visual que captura "${prompt}" con estética ${styleName}.`;
+    }
+
+    return { imageUrl, description, tags };
+  }
+
+  // Generate image — genera 2 imágenes secuencialmente
   async function generateImage() {
     const prompt = state.settings.prompt.trim();
     if (!prompt) return;
@@ -362,102 +410,49 @@
     const progressBar = document.getElementById('loading-progress-bar');
     const progressPercent = document.getElementById('loading-percentage-text');
     const progressStep = document.getElementById('loading-step-text');
-    
+    const loadingTitle = document.getElementById('loading-title');
+    const loadingSubtitle = document.getElementById('loading-subtitle');
+
     if (overlay) {
       overlay.classList.remove('hidden');
       if (progressBar) progressBar.style.width = '0%';
       if (progressPercent) progressPercent.textContent = '0%';
       if (progressStep) progressStep.textContent = 'Inicializando motor neural...';
+      if (loadingTitle) loadingTitle.textContent = 'Forjando tu imaginación...';
+      if (loadingSubtitle) loadingSubtitle.textContent = 'El motor de AuraStudio está modelando cada píxel de tu obra de arte.';
     }
 
     let currentProgress = 0;
-    const progressStepsText = [
-      'Estableciendo enlace cuántico Aura...',
-      'Analizando prompt y estilo artístico...',
-      'Estructurando espacio latente tridimensional...',
-      'Calculando coeficientes de difracción cromática...',
-      'Alineando proporciones de orientación y aspecto...',
-      'Refinando micro-texturas y contraste dinámico...',
-      'Forjando píxeles finales de alta resolución...'
-    ];
+
+    function updateProgress(percent, stepText) {
+      currentProgress = percent;
+      if (progressBar) progressBar.style.width = `${percent}%`;
+      if (progressPercent) progressPercent.textContent = `${percent}%`;
+      if (progressStep && stepText) progressStep.textContent = stepText;
+    }
 
     const progressInterval = setInterval(() => {
-      if (currentProgress < 94) {
-        currentProgress += Math.floor(Math.random() * 6) + 2;
-        if (currentProgress > 94) currentProgress = 94;
-        
+      if (currentProgress < 90) {
+        currentProgress += Math.floor(Math.random() * 5) + 1;
+        if (currentProgress > 90) currentProgress = 90;
         if (progressBar) progressBar.style.width = `${currentProgress}%`;
         if (progressPercent) progressPercent.textContent = `${currentProgress}%`;
-        
-        const stepIdx = Math.min(
-          Math.floor((currentProgress / 100) * progressStepsText.length),
-          progressStepsText.length - 1
-        );
-        if (progressStep && progressStepsText[stepIdx]) {
-          progressStep.textContent = progressStepsText[stepIdx];
-        }
       }
-    }, 450);
+    }, 500);
 
     const styleName = getActiveStyleName();
 
     try {
-      // Llamar al proxy para generar imagen real con Gemini
-      const imgResult = await callProxy('generate-image', {
-        prompt: prompt,
-        style: styleName,
-        aspectRatio: state.settings.aspectRatioId,
-        referenceImage: state.settings.referenceImage
-      });
+      // === PRIMERA IMAGEN ===
+      if (loadingTitle) loadingTitle.textContent = 'Esculpiendo 1ª obra maestra...';
+      if (loadingSubtitle) loadingSubtitle.textContent = 'El motor Aura está componiendo la primera imagen a partir de tu prompt.';
+      updateProgress(5, 'Inicializando motor neural...');
 
-      if (imgResult && imgResult.error) {
-        throw new Error(imgResult.error);
-      }
+      const result1 = await generateSingleImage(prompt, styleName);
 
-      let imageUrl = '';
-      let description = imgResult.description || '';
-      let tags = [styleName, 'IA Generada', 'Aura Gen-3', 'Ultra HD'];
-
-      // Usar imagen base64 si está disponible, sino la URL del archivo guardado
-      if (imgResult.image) {
-        const mime = imgResult.mimeType || 'image/png';
-        imageUrl = `data:${mime};base64,${imgResult.image}`;
-      } else if (imgResult.imageUrl) {
-        imageUrl = imgResult.imageUrl;
-      } else {
-        throw new Error('El modelo no devolvió datos de imagen.');
-      }
-
-      // Intentar enriquecer con tags de Gemini
-      try {
-        const tagData = await callProxy('generate', {
-          prompt: prompt,
-          style: styleName,
-          model: 'gemini-2.5-flash'
-        });
-
-        if (tagData.candidates && tagData.candidates[0] && tagData.candidates[0].content) {
-          const parts = tagData.candidates[0].content.parts;
-          if (parts && parts[0] && parts[0].text) {
-            try {
-              const parsed = JSON.parse(parts[0].text.trim());
-              if (parsed.coolTags && parsed.coolTags.length) tags = parsed.coolTags;
-              if (parsed.visualizationDescription && !description) description = parsed.visualizationDescription;
-            } catch (e) { /* mantener defaults */ }
-          }
-        }
-      } catch (e) {
-        console.warn('Enriquecimiento de tags falló:', e.message);
-      }
-
-      if (!description) {
-        description = `Arte visual que captura "${prompt}" con estética ${styleName}.`;
-      }
-
-      // Crear y guardar
-      const newImage = {
+      const newImage1 = {
         id: 'gen-' + Date.now(),
-        url: imageUrl,
+        url: result1.imageUrl,
         prompt: prompt,
         style: styleName,
         aspectRatio: state.settings.aspectRatioId,
@@ -466,20 +461,58 @@
         cfgScale: state.settings.cfgScale,
         sampler: state.settings.sampler,
         generationTime: (0.9 + Math.random() * 0.8).toFixed(2) + 's',
-        description: description,
-        tags: tags,
+        description: result1.description,
+        tags: result1.tags,
         referenceImage: state.settings.referenceImage,
         createdAt: new Date().toISOString()
       };
 
-      state.images.unshift(newImage);
+      state.images.unshift(newImage1);
+      saveImages();
+
+      // === SEGUNDA IMAGEN (variación) ===
+      updateProgress(48, 'Primera obra completada. Iniciando variación...');
+      if (loadingTitle) loadingTitle.textContent = 'Creando variación artística...';
+      if (loadingSubtitle) loadingSubtitle.textContent = 'Generando una composición alternativa para expandir tu galería.';
+
+      const variationPrompts = [
+        prompt + ', variación alternativa con composición diferente y ángulo distinto',
+        prompt + ', reinterpretación creativa con nueva perspectiva y encuadre único',
+        prompt + ', versión alternativa con iluminación y atmósfera diferentes',
+        prompt + ', segunda composición con arreglo espacial y enfoque distintos'
+      ];
+      const variationPrompt = variationPrompts[Math.floor(Math.random() * variationPrompts.length)];
+
+      const result2 = await generateSingleImage(variationPrompt, styleName);
+
+      // Pequeña pausa para que el id sea distinto
+      await new Promise(r => setTimeout(r, 100));
+
+      const newImage2 = {
+        id: 'gen-' + Date.now(),
+        url: result2.imageUrl,
+        prompt: prompt,
+        style: styleName,
+        aspectRatio: state.settings.aspectRatioId,
+        seed: Math.floor(1000000000 + Math.random() * 9000000000),
+        steps: state.settings.steps,
+        cfgScale: state.settings.cfgScale,
+        sampler: state.settings.sampler,
+        generationTime: (0.9 + Math.random() * 0.8).toFixed(2) + 's',
+        description: result2.description,
+        tags: result2.tags,
+        referenceImage: state.settings.referenceImage,
+        createdAt: new Date().toISOString()
+      };
+
+      state.images.unshift(newImage2);
       saveImages();
 
       // Completar barra
       clearInterval(progressInterval);
-      if (progressBar) progressBar.style.width = '100%';
-      if (progressPercent) progressPercent.textContent = '100%';
-      if (progressStep) progressStep.textContent = 'Escultura completada!';
+      updateProgress(100, '¡2 obras maestras completadas!');
+      if (loadingTitle) loadingTitle.textContent = '¡Galería expandida!';
+      if (loadingSubtitle) loadingSubtitle.textContent = 'Dos nuevas obras de arte se han añadido a tu colección.';
 
     } catch (e) {
       clearInterval(progressInterval);
@@ -493,7 +526,7 @@
         updateGenerateButton();
         renderGeneratorResults();
         renderGalleryTab();
-      }, 500);
+      }, 700);
     }
   }
 
@@ -526,9 +559,41 @@
   }
 
   // Styles carousel
+  let carouselArrowsSetup = false;
+
   function renderStylesCarousel() {
     const container = $('#styles-carousel');
     if (!container) return;
+
+    // Configurar flechas de navegación (solo la primera vez)
+    if (!carouselArrowsSetup) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'carousel-wrapper';
+      container.parentNode.insertBefore(wrapper, container);
+      wrapper.appendChild(container);
+
+      // Flecha izquierda
+      const leftArrow = document.createElement('button');
+      leftArrow.className = 'carousel-arrow carousel-arrow-left';
+      leftArrow.setAttribute('aria-label', 'Ver estilos anteriores');
+      leftArrow.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+      leftArrow.addEventListener('click', () => {
+        container.scrollBy({ left: -280, behavior: 'smooth' });
+      });
+
+      // Flecha derecha
+      const rightArrow = document.createElement('button');
+      rightArrow.className = 'carousel-arrow carousel-arrow-right';
+      rightArrow.setAttribute('aria-label', 'Ver más estilos');
+      rightArrow.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+      rightArrow.addEventListener('click', () => {
+        container.scrollBy({ left: 280, behavior: 'smooth' });
+      });
+
+      wrapper.appendChild(leftArrow);
+      wrapper.appendChild(rightArrow);
+      carouselArrowsSetup = true;
+    }
 
     container.innerHTML = VISUAL_STYLES.map(style => {
       const isSel = state.settings.styleId === style.id;
