@@ -296,7 +296,7 @@ textarea {
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: #0b1220;
+  background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 20px 20px;
   margin-top: 1rem;
   cursor: pointer;
 }
@@ -304,9 +304,8 @@ textarea {
 .base-image-preview img {
   width: 100%;
   display: block;
-  max-height: 500px;
-  min-height: 250px;
-  object-fit: cover;
+  max-height: 450px;
+  object-fit: contain;
 }
 
 .base-overlay-actions {

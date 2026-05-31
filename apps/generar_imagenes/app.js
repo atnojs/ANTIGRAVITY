@@ -1300,6 +1300,7 @@ const App = () => {
         const [customText, setCustomText] = useState('');
         const [allowObjs, setAllowObjs] = useState(false);
         const [logoMode, setLogoMode] = useState('Conservar logos');
+        const [styleStrength, setStyleStrength] = useState(70); // % de estilo a copiar de la imagen base
 
         const aspectGroups = [{ label: 'Vertical', options: ['9:16', '3:4', '2:3', '4:5'] }, { label: 'Horizontal', options: ['16:9', '4:3', '3:2', '21:9'] }, { label: 'Cuadrado', options: ['1:1'] }];
         const MAP_REALISM = { 'Fotorrealista': 'Photorealistic', 'Hiperrealista': 'Hyperrealistic', 'IlustraciÃ³n': 'Illustration', 'Anime': 'Anime style' };
@@ -1436,6 +1437,7 @@ const App = () => {
                 } else {
                     if (baseImages.length > 0) {
                         blocks.push(PRE_PROMPT_BASE);
+                        blocks.push(`STYLE INTENSITY: ${styleStrength}%. At 100% fully replicate the reference style (lighting, colors, textures, atmosphere). At 0% ignore the reference style completely. Apply at exactly ${styleStrength}% strength.`);
                         imagesToSend = await Promise.all(baseImages.map(img => fileToPart(img.file)));
                     }
 
@@ -1615,6 +1617,39 @@ const App = () => {
                                     </div>
                                 </div>
                                 {tempMaskData[baseImages[0].id] && <p style={{ color: 'var(--acc)', fontSize: '0.9rem', textAlign: 'center', marginTop: '5px' }}>MÃ¡scara activa.</p>}
+                            </div>
+                        )}
+
+                        {baseImages.length > 0 && (
+                            <div style={{ marginBottom: '1rem', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                    <label style={{ fontSize: '0.85rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <i className="fa-solid fa-palette" style={{ color: 'var(--acc)' }}></i> Intensidad del estilo base
+                                    </label>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--acc)' }}>{styleStrength}%</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    step="5"
+                                    value={styleStrength}
+                                    onChange={e => setStyleStrength(Number(e.target.value))}
+                                    style={{
+                                        width: '100%',
+                                        height: '6px',
+                                        WebkitAppearance: 'none',
+                                        appearance: 'none',
+                                        background: `linear-gradient(to right, #64748b 0%, #64748b ${styleStrength}%, var(--acc) ${styleStrength}%, var(--acc2) 100%)`,
+                                        borderRadius: '5px',
+                                        outline: 'none',
+                                        cursor: 'pointer'
+                                    }}
+                                />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--muted)', marginTop: '3px' }}>
+                                    <span>0% — ignorar estilo</span>
+                                    <span>100% — copiar todo el estilo</span>
+                                </div>
                             </div>
                         )}
 
