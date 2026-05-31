@@ -37,7 +37,7 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
 
 <body>
   <div id="root"></div>
-  <script type="text/babel" data-presets="env,react" src="app.js?v=2"></script>
+  <script type="text/babel" data-presets="env,react" src="app.js?v=3"></script>
   <noscript>Activa JavaScript para usar esta aplicación.</noscript>
 </body>
 
