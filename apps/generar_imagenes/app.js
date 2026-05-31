@@ -1,4 +1,4 @@
-﻿/* app.js */
+/* app.js */
 (() => {
     const { useState, useEffect, useRef } = React;
 
@@ -101,8 +101,8 @@
 
         const today = new Date().toISOString().split('T')[0];
 
-        if (userData.usage.date !== today) {
-            // Nuevo dÃ­a, resetear
+        if (!userData.usage || userData.usage.date !== today) {
+            // Nuevo día o sin historial de uso, resetear
             await userRef.update({
                 'usage.date': today,
                 'usage.count': 1
@@ -1164,6 +1164,7 @@ const App = () => {
         const [baseImages, setBaseImages] = useState([]);
         const [images, setImages] = useState([]);
         const [history, setHistory] = useState([]);
+        const historyLoaded = useRef(false);
         const [enhancedOptions, setEnhancedOptions] = useState([]);
         const [selectedPromptId, setSelectedPromptId] = useState(null);
         const [user, setUser] = useState(null);
@@ -1198,13 +1199,15 @@ const App = () => {
                     if (Array.isArray(parsed)) setHistory(parsed);
                 }
             } catch (e) { console.warn('Error cargando historial:', e); }
+            historyLoaded.current = true;
         }, []);
 
         // Guardar historial en localStorage cuando cambia
         useEffect(() => {
+            if (!historyLoaded.current) return;
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 25)));
-            } catch (e) { console.warn('Error guardando historial:', e); }
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 10)));
+            } catch (e) { console.warn('Error guardando historial (cuota excedida?):', e.message); }
         }, [history]);
 
         const [isLoading, setIsLoading] = useState(false);
@@ -1397,7 +1400,7 @@ const App = () => {
                         promptLabel: (maskData ? 'Editado (Visual)' : (customPromptOverride ? 'Regenerado' : 'Original')) + ` (${provider})`
                     };
                     setImages(prev => [newImg, ...prev]);
-                    setHistory(prev => [newImg, ...prev].slice(0, 25));
+                    setHistory(prev => [newImg, ...prev].slice(0, 10));
 
                     // Incrementar contador de uso
                     await incrementUsage(user.uid);
@@ -1444,7 +1447,7 @@ const App = () => {
                         promptLabel: maskDataObj ? 'Inpainting' : 'Editado'
                     };
                     setImages(prev => [newInlineImg, ...prev]);
-                    setHistory(prev => [newInlineImg, ...prev].slice(0, 25));
+                    setHistory(prev => [newInlineImg, ...prev].slice(0, 10));
                 }
             } catch (e) { setError(e.message); } finally { setIsLoading(false); }
         };

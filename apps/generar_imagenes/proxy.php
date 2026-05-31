@@ -270,11 +270,13 @@ Genera EXACTAMENTE 4 objetos JSON, uno por cada tipo. En ESPAÑOL.";
             }
         }
         
-        if ($textResponse) { 
-            echo json_encode(['text' => $textResponse, 'type' => 'text']); 
-            exit; 
+        if ($textResponse) {
+            echo json_encode(['text' => $textResponse, 'type' => 'text']);
+            exit;
         }
-        throw new Exception('Gemini no generó imagen ni texto. Motivo: ' . ($data['promptFeedback']['blockReason'] ?? 'Desconocido'));
+        // Debug: capturar la respuesta completa para diagnóstico
+        $debug = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        throw new Exception('Gemini no generó imagen ni texto. Respuesta: ' . substr($debug, 0, 500));
     }
   }
 } catch (Throwable $e) {
