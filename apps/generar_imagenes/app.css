@@ -304,7 +304,6 @@ textarea {
 .base-image-preview img {
   width: 100%;
   display: block;
-  max-height: 450px;
   object-fit: contain;
 }
 
