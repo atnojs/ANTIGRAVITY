@@ -27,6 +27,7 @@
     /* ==== USER MANAGEMENT ==== */
     const ADMIN_EMAIL = 'atnojs@gmail.com';
     const DAILY_LIMIT = 8;
+    const STORAGE_KEY = 'generar_imagenes_history';
 
     // Crear o actualizar documento de usuario en Firestore
     const ensureUserDocument = async (user) => {
@@ -1162,6 +1163,7 @@ const App = () => {
         const [provider, setProvider] = useState('gemini');
         const [baseImages, setBaseImages] = useState([]);
         const [images, setImages] = useState([]);
+        const [history, setHistory] = useState([]);
         const [enhancedOptions, setEnhancedOptions] = useState([]);
         const [selectedPromptId, setSelectedPromptId] = useState(null);
         const [user, setUser] = useState(null);
@@ -1187,10 +1189,35 @@ const App = () => {
             return () => unsubscribe();
         }, []);
 
+        // Cargar historial desde localStorage al montar
+        useEffect(() => {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) setHistory(parsed);
+                }
+            } catch (e) { console.warn('Error cargando historial:', e); }
+        }, []);
+
+        // Guardar historial en localStorage cuando cambia
+        useEffect(() => {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 25)));
+            } catch (e) { console.warn('Error guardando historial:', e); }
+        }, [history]);
+
         const [isLoading, setIsLoading] = useState(false);
         const [loadingMsg, setLoadingMsg] = useState('');
         const [error, setError] = useState('');
         const [modalImage, setModalImage] = useState(null);
+
+        // Cerrar lightbox con Escape
+        useEffect(() => {
+            const handleKey = (e) => { if (e.key === 'Escape') setModalImage(null); };
+            document.addEventListener('keydown', handleKey);
+            return () => document.removeEventListener('keydown', handleKey);
+        }, []);
 
         const [maskEditorOpen, setMaskEditorOpen] = useState(false);
         const [maskImageSrc, setMaskImageSrc] = useState(null);
@@ -1370,6 +1397,7 @@ const App = () => {
                         promptLabel: (maskData ? 'Editado (Visual)' : (customPromptOverride ? 'Regenerado' : 'Original')) + ` (${provider})`
                     };
                     setImages(prev => [newImg, ...prev]);
+                    setHistory(prev => [newImg, ...prev].slice(0, 25));
 
                     // Incrementar contador de uso
                     await incrementUsage(user.uid);
@@ -1408,13 +1436,15 @@ const App = () => {
                 const res = await api.generateImage(blocks.join(' '), editProvider, imagesToSend, null, ['IMAGE'], maskDataObj);
 
                 if (res.type === 'image') {
-                    setImages(prev => [{
+                    const newInlineImg = {
                         id: Date.now(),
                         src: `data:${res.mimeType};base64,${res.image}`,
                         arCss: baseImgObj.arCss,
                         promptUsed: instruction,
                         promptLabel: maskDataObj ? 'Inpainting' : 'Editado'
-                    }, ...prev]);
+                    };
+                    setImages(prev => [newInlineImg, ...prev]);
+                    setHistory(prev => [newInlineImg, ...prev].slice(0, 25));
                 }
             } catch (e) { setError(e.message); } finally { setIsLoading(false); }
         };
@@ -1562,15 +1592,22 @@ const App = () => {
                     </div>
 
                     <div className="results-column">
-                        <h2 className="section-title">Resultados</h2>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 className="section-title" style={{ marginBottom: 0 }}>Resultados</h2>
+                            {history.length > 0 && (
+                                <button className="btn btn-sm" onClick={() => { if (confirm('¿Eliminar todo el historial?')) { setHistory([]); setImages([]); } }} style={{ background: 'var(--danger)' }}>
+                                    <i className="fa-solid fa-trash"></i> Limpiar ({history.length})
+                                </button>
+                            )}
+                        </div>
                         <div className="preview">
-                            {images.map(img => (
+                            {history.map(img => (
                                 <ResultCard
                                     key={img.id} img={img}
                                     maskObj={tempMaskData[img.id]}
                                     setModalImage={setModalImage}
                                     onEditRequest={onCardEditRequest}
-                                    onDelete={(id) => setImages(l => l.filter(x => x.id !== id))}
+                                    onDelete={(id) => { setImages(l => l.filter(x => x.id !== id)); setHistory(l => l.filter(x => x.id !== id)); }}
                                     setThisAsBase={setAsBaseImage}
                                     onRegenerate={regenerateFromCard}
                                 />

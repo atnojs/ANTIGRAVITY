@@ -86,7 +86,7 @@ try {
     $isMaskMode = $json['isMaskMode'] ?? false;
 
     if ($isMaskMode) {
-        $sysPrompt = "Eres un experto en edición de imágenes (Inpainting). El usuario quiere editar una ZONA ESPECÍFICA (máscara). Genera 4 variantes del prompt en ESPAÑOL describiendo SOLO el contenido nuevo para la zona enmascarada para que se integre bien (iluminación, estilo). Separa con '|||'.";
+        $sysPrompt = "Eres un experto en edición de imágenes (Inpainting). El usuario quiere editar una ZONA ESPECÍFICA (máscara). Genera 4 variantes del prompt en ESPAÑOL describiendo SOLO el contenido nuevo para la zona enmascarada para que se integre bien (iluminación, estilo). ";
     } else {
     $sysPrompt = "Eres un experto en edición de imágenes con IA. El usuario tiene una imagen base y quiere un cambio ESPECÍFICO.
 
@@ -111,12 +111,29 @@ Respuestas INCORRECTAS (NUNCA hagas esto):
 - Crea una interpretación artística ❌
 - Cambia el fondo ❌
 
-Responde SOLO con 4 variaciones separadas por '|||'. En ESPAÑOL.";
+Usa los tipos: Descriptiva, Cinematográfica, Artística, Minimalista.
+
+Genera EXACTAMENTE 4 objetos JSON, uno por cada tipo. En ESPAÑOL.";
 }
     
     $body = [
       'contents' => [[ 'role' => 'user', 'parts' => [[ 'text' => $sysPrompt . "\n\nPROMPT USUARIO: " . $prompt ]] ]],
-      'generationConfig' => [ 'responseModalities' => ['TEXT'], 'temperature' => 0.7 ]
+      'generationConfig' => [
+        'responseModalities' => ['TEXT'],
+        'temperature' => 0.7,
+        'responseMimeType' => 'application/json',
+        'responseSchema' => [
+          'type' => 'ARRAY',
+          'items' => [
+            'type' => 'OBJECT',
+            'properties' => [
+              'type' => ['type' => 'STRING'],
+              'text' => ['type' => 'STRING']
+            ],
+            'required' => ['type', 'text']
+          ]
+        ]
+      ]
     ];
     $data = $callApi($modelUrl, $body, ['Content-Type: application/json']);
     $text = '';
@@ -124,7 +141,11 @@ Responde SOLO con 4 variaciones separadas por '|||'. En ESPAÑOL.";
         foreach ($data['candidates'][0]['content']['parts'] as $p) { if (isset($p['text'])) $text .= $p['text']; }
     }
     if (empty($text)) throw new Exception('Gemini no devolvió texto.', 500);
-    $options = array_values(array_filter(array_map('trim', explode('|||', $text))));
+    $parsed = json_decode($text, true);
+    if (!is_array($parsed)) throw new Exception('Gemini no devolvió JSON válido. Respuesta: ' . substr($text, 0, 200), 500);
+    $options = array_map(fn($item) => $item['text'] ?? '', $parsed);
+    $options = array_values(array_filter($options, fn($t) => !empty(trim($t))));
+    if (count($options) === 0) throw new Exception('No se generaron opciones válidas.', 500);
     echo json_encode(['options' => $options]);
     exit;
   }
