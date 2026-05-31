@@ -27,7 +27,81 @@
     /* ==== USER MANAGEMENT ==== */
     const ADMIN_EMAIL = 'atnojs@gmail.com';
     const DAILY_LIMIT = 8;
-    const STORAGE_KEY = 'generar_imagenes_history';
+    // IndexedDB — soporta imágenes grandes (localStorage solo 5MB)
+    const DB_NAME = 'generar_imagenes_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'history';
+    let db = null;
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => { db = request.result; resolve(db); };
+            request.onupgradeneeded = (event) => {
+                const database = event.target.result;
+                if (!database.objectStoreNames.contains(STORE_NAME)) {
+                    database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                }
+            };
+        });
+    }
+
+    async function loadHistoryFromDB() {
+        try {
+            if (!db) await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.getAll();
+                req.onsuccess = () => {
+                    const items = req.result || [];
+                    items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    resolve(items);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        } catch (e) { console.warn('Error cargando historial:', e); return []; }
+    }
+
+    async function saveItemToDB(item) {
+        try {
+            if (!db) await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.put(item);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        } catch (e) { console.warn('Error guardando en DB:', e); }
+    }
+
+    async function deleteItemFromDB(id) {
+        try {
+            if (!db) await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.delete(id);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        } catch (e) { console.warn('Error eliminando de DB:', e); }
+    }
+
+    async function clearHistoryDB() {
+        try {
+            if (!db) await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.clear();
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        } catch (e) { console.warn('Error limpiando DB:', e); }
+    }
 
     // Crear o actualizar documento de usuario en Firestore
     const ensureUserDocument = async (user) => {
@@ -1164,7 +1238,6 @@ const App = () => {
         const [baseImages, setBaseImages] = useState([]);
         const [images, setImages] = useState([]);
         const [history, setHistory] = useState([]);
-        const historyLoaded = useRef(false);
         const [enhancedOptions, setEnhancedOptions] = useState([]);
         const [selectedPromptId, setSelectedPromptId] = useState(null);
         const [user, setUser] = useState(null);
@@ -1190,25 +1263,17 @@ const App = () => {
             return () => unsubscribe();
         }, []);
 
-        // Cargar historial desde localStorage al montar
+        // Cargar historial desde IndexedDB al montar
         useEffect(() => {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (Array.isArray(parsed)) setHistory(parsed);
+            (async () => {
+                const items = await loadHistoryFromDB();
+                if (items.length > 0) {
+                    setHistory(items);
+                    setImages(items);
+                    console.log('Historial cargado de IndexedDB:', items.length, 'imagenes');
                 }
-            } catch (e) { console.warn('Error cargando historial:', e); }
-            historyLoaded.current = true;
+            })();
         }, []);
-
-        // Guardar historial en localStorage cuando cambia
-        useEffect(() => {
-            if (!historyLoaded.current) return;
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 10)));
-            } catch (e) { console.warn('Error guardando historial (cuota excedida?):', e.message); }
-        }, [history]);
 
         const [isLoading, setIsLoading] = useState(false);
         const [loadingMsg, setLoadingMsg] = useState('');
@@ -1397,10 +1462,12 @@ const App = () => {
                         id: Date.now(), src: `data:${res.mimeType};base64,${res.image}`,
                         arCss: cssAR(aspectRatio),
                         promptUsed: effPrompt,
-                        promptLabel: (maskData ? 'Editado (Visual)' : (customPromptOverride ? 'Regenerado' : 'Original')) + ` (${provider})`
+                        promptLabel: (maskData ? 'Editado (Visual)' : (customPromptOverride ? 'Regenerado' : 'Original')) + ` (${provider})`,
+                        createdAt: Date.now()
                     };
                     setImages(prev => [newImg, ...prev]);
                     setHistory(prev => [newImg, ...prev].slice(0, 10));
+                    saveItemToDB(newImg);
 
                     // Incrementar contador de uso
                     await incrementUsage(user.uid);
@@ -1444,10 +1511,12 @@ const App = () => {
                         src: `data:${res.mimeType};base64,${res.image}`,
                         arCss: baseImgObj.arCss,
                         promptUsed: instruction,
-                        promptLabel: maskDataObj ? 'Inpainting' : 'Editado'
+                        promptLabel: maskDataObj ? 'Inpainting' : 'Editado',
+                        createdAt: Date.now()
                     };
                     setImages(prev => [newInlineImg, ...prev]);
                     setHistory(prev => [newInlineImg, ...prev].slice(0, 10));
+                    saveItemToDB(newInlineImg);
                 }
             } catch (e) { setError(e.message); } finally { setIsLoading(false); }
         };
@@ -1598,7 +1667,7 @@ const App = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h2 className="section-title" style={{ marginBottom: 0 }}>Resultados</h2>
                             {history.length > 0 && (
-                                <button className="btn btn-sm" onClick={() => { if (confirm('¿Eliminar todo el historial?')) { setHistory([]); setImages([]); } }} style={{ background: 'var(--danger)' }}>
+                                <button className="btn btn-sm" onClick={() => { if (confirm('¿Eliminar todo el historial?')) { setHistory([]); setImages([]); clearHistoryDB(); } }} style={{ background: 'var(--danger)' }}>
                                     <i className="fa-solid fa-trash"></i> Limpiar ({history.length})
                                 </button>
                             )}
@@ -1610,7 +1679,7 @@ const App = () => {
                                     maskObj={tempMaskData[img.id]}
                                     setModalImage={setModalImage}
                                     onEditRequest={onCardEditRequest}
-                                    onDelete={(id) => { setImages(l => l.filter(x => x.id !== id)); setHistory(l => l.filter(x => x.id !== id)); }}
+                                    onDelete={(id) => { setImages(l => l.filter(x => x.id !== id)); setHistory(l => l.filter(x => x.id !== id)); deleteItemFromDB(id); }}
                                     setThisAsBase={setAsBaseImage}
                                     onRegenerate={regenerateFromCard}
                                 />
