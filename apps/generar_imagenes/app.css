@@ -298,13 +298,15 @@ textarea {
   border: 1px solid var(--border);
   background: #0b1220;
   margin-top: 1rem;
+  cursor: pointer;
 }
 
 .base-image-preview img {
   width: 100%;
   display: block;
-  max-height: 300px;
-  object-fit: contain;
+  max-height: 500px;
+  min-height: 250px;
+  object-fit: cover;
 }
 
 .base-overlay-actions {

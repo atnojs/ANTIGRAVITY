@@ -190,7 +190,7 @@
     };
 
     /* ==== CONSTANTES BÃSICAS ==== */
-    const PRE_PROMPT_BASE = "CRITICAL: ABSOLUTELY NO TEXT, NO WATERMARKS. If a base image is provided, PRESERVE IT EXACTLY unless explicitly changed.";
+    const PRE_PROMPT_BASE = "CRITICAL: ABSOLUTELY NO TEXT, NO WATERMARKS. Use the reference image as STYLE REFERENCE: copy its lighting, color palette, textures, atmosphere, composition and overall aesthetic. Apply this exact visual style to the user's request below. The generated image must look like it belongs to the same visual universe as the reference.";
     const PRE_PROMPT_INPAINT_VISUAL = "ROLE: Precise Image Editor. TASK: Edit ONLY the area highlighted with a RED semi-transparent overlay in the image. The rest of the image MUST REMAIN IDENTICAL.";
 
     /* ==== API ==== */
