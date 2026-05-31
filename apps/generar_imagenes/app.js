@@ -31,13 +31,13 @@
     const DB_NAME = 'generar_imagenes_db';
     const DB_VERSION = 1;
     const STORE_NAME = 'history';
-    let db = null;
+    let idb = null;
 
     function openDB() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
             request.onerror = () => reject(request.error);
-            request.onsuccess = () => { db = request.result; resolve(db); };
+            request.onsuccess = () => { idb = request.result; resolve(idb); };
             request.onupgradeneeded = (event) => {
                 const database = event.target.result;
                 if (!database.objectStoreNames.contains(STORE_NAME)) {
@@ -49,9 +49,9 @@
 
     async function loadHistoryFromDB() {
         try {
-            if (!db) await openDB();
+            if (!idb) await openDB();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readonly');
+                const tx = idb.transaction(STORE_NAME, 'readonly');
                 const store = tx.objectStore(STORE_NAME);
                 const req = store.getAll();
                 req.onsuccess = () => {
@@ -66,9 +66,9 @@
 
     async function saveItemToDB(item) {
         try {
-            if (!db) await openDB();
+            if (!idb) await openDB();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const tx = idb.transaction(STORE_NAME, 'readwrite');
                 const store = tx.objectStore(STORE_NAME);
                 const req = store.put(item);
                 req.onsuccess = () => resolve();
@@ -79,9 +79,9 @@
 
     async function deleteItemFromDB(id) {
         try {
-            if (!db) await openDB();
+            if (!idb) await openDB();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const tx = idb.transaction(STORE_NAME, 'readwrite');
                 const store = tx.objectStore(STORE_NAME);
                 const req = store.delete(id);
                 req.onsuccess = () => resolve();
@@ -92,9 +92,9 @@
 
     async function clearHistoryDB() {
         try {
-            if (!db) await openDB();
+            if (!idb) await openDB();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const tx = idb.transaction(STORE_NAME, 'readwrite');
                 const store = tx.objectStore(STORE_NAME);
                 const req = store.clear();
                 req.onsuccess = () => resolve();
