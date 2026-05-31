@@ -14,7 +14,52 @@
   --danger: #ef4444;
   --danger-hover: #dc2626;
   --radius: 16px;
+  --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════
+   GLASS HOVER — tarjetas con elevación y glow
+   ═══════════════════════════════════════════════ */
+.glass-hover {
+  transition: var(--transition-main);
+}
+
+.glass-hover:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--acc) !important;
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 15px 45px 0 rgba(34, 211, 238, 0.15) !important;
+}
+
+/* ═══════════════════════════════════════════════
+   BTN-3D — botones con luz deslizante
+   ═══════════════════════════════════════════════ */
+.btn-3d {
+  position: relative;
+  transition: var(--transition-main);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: 0.5s;
+  z-index: -1;
+}
+
+.btn-3d:hover::before {
+  left: 100%;
+}
+
+.btn-3d:active {
+  transform: scale(0.95);
 }
 
 * {

@@ -438,9 +438,9 @@
                         <span style={{ fontSize: '0.8rem', minWidth: '30px' }}>{zoom}x</span>
                     </div>
                     <div style={{ flex: 1 }}></div>
-                    <button className="btn btn-sm" onClick={() => { const ctx = canvasRef.current.getContext('2d'); ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); }} style={{ background: 'var(--muted)' }}>Borrar</button>
-                    <button className="btn btn-sm" onClick={onClose} style={{ background: 'var(--danger)' }}>Cancelar</button>
-                    <button className="btn btn-sm" onClick={handleSave} style={{ background: '#22c55e' }}>Confirmar</button>
+                    <button className="btn btn-3d btn-sm" onClick={() => { const ctx = canvasRef.current.getContext('2d'); ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); }} style={{ background: 'var(--muted)' }}>Borrar</button>
+                    <button className="btn btn-3d btn-sm" onClick={onClose} style={{ background: 'var(--danger)' }}>Cancelar</button>
+                    <button className="btn btn-3d btn-sm" onClick={handleSave} style={{ background: '#22c55e' }}>Confirmar</button>
                 </div>
             </div>
         );
@@ -470,7 +470,7 @@
         };
 
         return (
-            <div className="card" ref={cardRef}>
+            <div className="card glass-hover" ref={cardRef}>
                 <div className={`ar-box ${maskObj ? 'has-mask-indicator' : ''}`}
                     onClick={() => setModalImage(img.src)}
                     style={{ position: 'relative', aspectRatio: img.arCss || '1 / 1' }}>
@@ -480,19 +480,19 @@
                     {img.promptLabel && <div className="prompt-legend">{img.promptLabel}</div>}
 
                     <div className="overlay-actions" onClick={e => e.stopPropagation()}>
-                        <button className="action-btn btn-dl" data-tooltip="Descargar" onClick={() => download(img.src)}>
+                        <button className="action-btn btn-3d btn-dl" data-tooltip="Descargar" onClick={() => download(img.src)}>
                             <i className="fa-solid fa-download"></i>
                         </button>
-                        <button className="action-btn" style={{ background: '#f59e0b' }} data-tooltip="Crear MÃ¡scara" onClick={() => onEditRequest(img, 'mask')}>
+                        <button className="action-btn btn-3d" style={{ background: '#f59e0b' }} data-tooltip="Crear MÃ¡scara" onClick={() => onEditRequest(img, 'mask')}>
                             <i className="fa-solid fa-paintbrush"></i>
                         </button>
-                        <button className="action-btn btn-edit" data-tooltip="Editar con texto" onClick={() => setShowEditBox(!showEditBox)}>
+                        <button className="action-btn btn-3d btn-edit" data-tooltip="Editar con texto" onClick={() => setShowEditBox(!showEditBox)}>
                             <i className="fa-solid fa-pen"></i>
                         </button>
-                        <button className="action-btn btn-regen" data-tooltip="Regenerar" onClick={() => onRegenerate(img)}>
+                        <button className="action-btn btn-3d btn-regen" data-tooltip="Regenerar" onClick={() => onRegenerate(img)}>
                             <i className="fa-solid fa-rotate-right"></i>
                         </button>
-                        <button className="action-btn btn-del" data-tooltip="Eliminar" onClick={() => onDelete(img.id)}>
+                        <button className="action-btn btn-3d btn-del" data-tooltip="Eliminar" onClick={() => onDelete(img.id)}>
                             <i className="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -501,7 +501,7 @@
                     <div className="inline-edit-container">
                         {maskObj && <div style={{ color: 'var(--acc)', fontSize: '0.8rem', marginBottom: '5px' }}><i className="fa-solid fa-circle-check"></i> Zona marcada activa</div>}
                         <textarea value={editPrompt} onChange={e => setEditPrompt(e.target.value)} placeholder="Describe el cambio..." autoFocus />
-                        <div className="actions"><button className="btn btn-sm" onClick={executeEdit}>Generar</button></div>
+                        <div className="actions"><button className="btn btn-3d btn-sm" onClick={executeEdit}>Generar</button></div>
                     </div>
                 )}
             </div>
@@ -1142,7 +1142,7 @@
                                                                 {u.role !== 'admin' && (
                                                                     <>
                                                                         <button
-                                                                            className="btn btn-sm"
+                                                                            className="btn btn-3d btn-sm"
                                                                             onClick={() => toggleVIP(u.uid, u.role)}
                                                                             style={{
                                                                                 background: u.role === 'vip' ? 'rgba(239, 68, 68, 0.2)' : 'linear-gradient(135deg, #22d3ee, #a78bfa)',
@@ -1155,7 +1155,7 @@
                                                                         </button>
                                                                         {u.role === 'free' && u.usage?.count > 0 && (
                                                                             <button
-                                                                                className="btn btn-sm"
+                                                                                className="btn btn-3d btn-sm"
                                                                                 onClick={() => resetDailyLimit(u.uid)}
                                                                                 style={{
                                                                                     background: 'rgba(34, 197, 94, 0.2)',
@@ -1169,7 +1169,7 @@
                                                                             </button>
                                                                         )}
                                                                         <button
-                                                                            className="btn btn-sm"
+                                                                            className="btn btn-3d btn-sm"
                                                                             onClick={() => deleteUser(u.uid, u.email)}
                                                                             style={{
                                                                                 background: 'rgba(239, 68, 68, 0.2)',
@@ -1562,14 +1562,14 @@ const App = () => {
                             </>
                         )}
                         {user && userData && userData.role === 'admin' && (
-                            <button className="btn btn-sm" onClick={() => setAdminPanelOpen(true)} style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>
+                            <button className="btn btn-3d btn-sm" onClick={() => setAdminPanelOpen(true)} style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>
                                 <i className="fa-solid fa-users-gear"></i> Panel Admin
                             </button>
                         )}
                         {user && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <span style={{ fontSize: '0.9rem' }}>{user.displayName || user.email}</span>
-                                <button className="btn btn-sm" onClick={() => { auth.signOut(); setUser(null); setUserData(null); }} style={{ background: 'var(--danger)' }}>Salir</button>
+                                <button className="btn btn-3d btn-sm" onClick={() => { auth.signOut(); setUser(null); setUserData(null); }} style={{ background: 'var(--danger)' }}>Salir</button>
                             </div>
                         )}
                     </div>
@@ -1581,8 +1581,8 @@ const App = () => {
                 {adminPanelOpen && <AdminPanel onClose={() => setAdminPanelOpen(false)} />}
 
                 <div className="big-actions">
-                    <button className="btn-big" onClick={clearAll}>Generar desde cero</button>
-                    <button className="btn-big" onClick={() => { document.getElementById('base-upload').click(); }}>Subir Imagen Base</button>
+                    <button className="btn-big btn-3d" onClick={clearAll}>Generar desde cero</button>
+                    <button className="btn-big btn-3d" onClick={() => { document.getElementById('base-upload').click(); }}>Subir Imagen Base</button>
                 </div>
 
                 <div id="app-content">
@@ -1608,10 +1608,10 @@ const App = () => {
                                     <img src={baseImages[0].url} alt="base" onClick={() => setModalImage(baseImages[0].url)} />
                                     {tempMaskData[baseImages[0].id] && tempMaskData[baseImages[0].id].visual && <img className="mask-overlay-img" src={tempMaskData[baseImages[0].id].visual} alt="mask overlay" />}
                                     <div className="base-overlay-actions">
-                                        <button className="base-action-btn" title="Pintar Ã¡rea a editar" onClick={() => onBaseImageMask(baseImages[0])}>
+                                        <button className="base-action-btn btn-3d" title="Pintar Ã¡rea a editar" onClick={() => onBaseImageMask(baseImages[0])}>
                                             <i className="fa-solid fa-paintbrush"></i>
                                         </button>
-                                        <button className="base-action-btn danger" title="Eliminar imagen" onClick={() => { setBaseImages([]); setTempMaskData({}); }}>
+                                        <button className="base-action-btn btn-3d danger" title="Eliminar imagen" onClick={() => { setBaseImages([]); setTempMaskData({}); }}>
                                             <i className="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
@@ -1665,10 +1665,10 @@ const App = () => {
                             )}
 
                             <div className="input-actions-row">
-                                <button className="btn" onClick={enhance} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                                <button className="btn btn-3d" onClick={enhance} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
                                     <i className="fa-solid fa-sparkles"></i> Mejorar Prompt (4 Opciones)
                                 </button>
-                                <button className="btn" onClick={clearAll} style={{ background: 'linear-gradient(135deg, #3b82f6, #06b6d4)' }}>
+                                <button className="btn btn-3d" onClick={clearAll} style={{ background: 'linear-gradient(135deg, #3b82f6, #06b6d4)' }}>
                                     <i className="fa-solid fa-rotate"></i> Limpiar
                                 </button>
                             </div>
@@ -1693,7 +1693,7 @@ const App = () => {
                         </div>
 
                         <div className="actions" style={{ marginTop: '1.5rem' }}>
-                            <button className="btn" onClick={() => generate()} style={{ width: '100%', fontSize: '1.1rem' }}><i className="fa-solid fa-wand-magic-sparkles"></i> Generar</button>
+                            <button className="btn btn-3d" onClick={() => generate()} style={{ width: '100%', fontSize: '1.1rem' }}><i className="fa-solid fa-wand-magic-sparkles"></i> Generar</button>
                         </div>
                         {error && <p className="error-message">{error}</p>}
                     </div>
@@ -1702,7 +1702,7 @@ const App = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h2 className="section-title" style={{ marginBottom: 0 }}>Resultados</h2>
                             {history.length > 0 && (
-                                <button className="btn btn-sm" onClick={() => { if (confirm('¿Eliminar todo el historial?')) { setHistory([]); setImages([]); clearHistoryDB(); } }} style={{ background: 'var(--danger)' }}>
+                                <button className="btn btn-3d btn-sm" onClick={() => { if (confirm('¿Eliminar todo el historial?')) { setHistory([]); setImages([]); clearHistoryDB(); } }} style={{ background: 'var(--danger)' }}>
                                     <i className="fa-solid fa-trash"></i> Limpiar ({history.length})
                                 </button>
                             )}
