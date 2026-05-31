@@ -296,14 +296,14 @@ textarea {
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 20px 20px;
+  background: #0b1220;
   margin-top: 1rem;
-  cursor: pointer;
 }
 
 .base-image-preview img {
   width: 100%;
   display: block;
+  max-height: 300px;
   object-fit: contain;
 }
 
