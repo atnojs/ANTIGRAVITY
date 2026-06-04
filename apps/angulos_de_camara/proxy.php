@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Proxy para Gemini. PHP 8+, cURL habilitado.
 declare(strict_types = 1)
 ;

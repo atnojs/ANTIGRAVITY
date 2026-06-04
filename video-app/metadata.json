@@ -1,0 +1,6 @@
+{
+  "name": "AMD Video Optimizer",
+  "description": "Herramienta de optimización de vídeo para WhatsApp optimizada para hardware AMD (VA-API).",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

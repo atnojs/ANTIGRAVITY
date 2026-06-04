@@ -156,6 +156,7 @@ const GROUPS = {
 
 // --- INICIALIZACIÓN DE LA APP ---
 document.addEventListener('DOMContentLoaded', () => {
+  HistoryManager.configure({ dbName: 'escenario_modelo_db' });
   initDragAndDrop();
   initThreeSelects();
   attachSelectEvents();
@@ -183,6 +184,61 @@ document.addEventListener('DOMContentLoaded', () => {
   const container = document.querySelector('.container');
   if(container) container.addEventListener('click', handleTagDeletion);
   updateAllTagsUI();
+
+  // ─── Historial ────────────────────────────────────────────
+  function loadAndRenderHistory() {
+      HistoryManager.loadAll().then(function(items) {
+          var grid = document.getElementById('history-grid');
+          var title = document.getElementById('history-title');
+          var clearBtn = document.getElementById('history-clear-btn');
+          if (!grid) return;
+          if (!items || !items.length) {
+              grid.innerHTML = '';
+              if (title) title.style.display = 'none';
+              if (clearBtn) clearBtn.style.display = 'none';
+              return;
+          }
+          if (title) title.style.display = 'block';
+          if (clearBtn) clearBtn.style.display = 'inline-block';
+          grid.innerHTML = items.map(function(item) {
+              return '<div style="position:relative;border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden">' +
+                  '<img src="' + item.url + '" style="width:100%;display:block;cursor:pointer" onclick="window._openLightbox(\'' + item.url + '\')" alt="Historial">' +
+                  '<button style="position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.8);color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px" ' +
+                  'onclick="event.stopPropagation();window._deleteHistoryItem(\'' + item.id + '\')">🗑️</button>' +
+                  '<p style="padding:0.5rem;color:#94a3b8;font-size:0.75rem;margin:0">' + new Date(item.createdAt).toLocaleString() + '</p>' +
+                  '</div>';
+          }).join('');
+      });
+  }
+
+  window._deleteHistoryItem = function(id) {
+      if (confirm('¿Eliminar del historial?')) {
+          HistoryManager.deleteItem(id).then(function() { loadAndRenderHistory(); });
+      }
+  };
+  window._openLightbox = function(url) {
+      var lb = document.getElementById('antigravity-lightbox');
+      if (!lb) {
+          lb = document.createElement('div');
+          lb.id = 'antigravity-lightbox';
+          lb.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+          lb.onclick = function() { lb.style.display = 'none'; };
+          var img = document.createElement('img');
+          img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px';
+          lb.appendChild(img);
+          document.body.appendChild(lb);
+      }
+      lb.querySelector('img').src = url;
+      lb.style.display = 'flex';
+  };
+
+  document.getElementById('history-clear-btn').addEventListener('click', function() {
+      if (confirm('¿Eliminar todo el historial?')) {
+          HistoryManager.clearAll().then(function() { loadAndRenderHistory(); });
+      }
+  });
+
+  HistoryManager.init().then(function() { loadAndRenderHistory(); });
 });
 
 // --- LÓGICA PRINCIPAL ---
@@ -302,6 +358,8 @@ async function generateImages() {
   let currentImage = 0;
 
   loadingElement.style.display = 'block';
+  var overlay = document.getElementById('loading-overlay');
+  if (overlay) { overlay.classList.remove('hidden'); overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
   generateBtn.disabled = true;
   downloadAllBtn.disabled = true;
   loadingText.textContent = `Preparando para generar ${totalImages} imágenes...`;
@@ -395,6 +453,18 @@ async function generateImages() {
               const imgKey = `${comp}_${v}`;
               const imgObj = { key: imgKey, data: src };
               generatedImages.unshift(imgObj);
+              // Guardar en historial persistente
+              HistoryManager.saveItem({
+                id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
+                url: imgObj.data,
+                prompt: 'Composición: ' + (COMPOSITION_MAP[comp]?.title || comp),
+                aspectRatio: '1:1',
+                size: '',
+                geminiSize: '1K',
+                style: {},
+                createdAt: Date.now()
+              }).then(function() { loadAndRenderHistory(); })
+                .catch(function(e) { console.warn('Error guardando historial:', e); });
               addResultCard(imgObj.key, imgObj.data);
           } else {
                console.warn("La respuesta no contenía datos de imagen válidos", raw);
@@ -412,6 +482,8 @@ async function generateImages() {
     alert(`Ocurrió un error de conexión. Asegúrate de que el servidor (proxy.php) está funcionando. Error: ${error.message}`);
   } finally {
     loadingElement.style.display = 'none';
+    var overlay = document.getElementById('loading-overlay');
+    if (overlay) { overlay.classList.add('hidden'); overlay.style.display = 'none'; document.body.style.overflow = ''; }
     generateBtn.disabled = false;
   }
 }

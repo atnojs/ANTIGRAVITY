@@ -1,19 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ==== State ====
-    const STORAGE_KEY = 'outfit_app_history';
     let originalImageBase64 = null;
     let generatedImageBase64 = null;
     let history = [];
-
-    // Load history from localStorage
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            history = JSON.parse(saved);
-        }
-    } catch (e) {
-        console.warn('Error loading history:', e);
-    }
     let isLoading = false;
     let activeCategory = null;
 
@@ -78,10 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
         div.id = 'global-loader';
         div.className = 'global-loader';
         div.innerHTML = `
-    <div class="spinner-triple">
-        <div class="ring ring-1"></div>
-        <div class="ring ring-2"></div>
-        <div class="ring ring-3"></div>
+    <div class="spinner-container">
+    <div class="spinner-outer"></div>
+    <div class="spinner-inner"></div>
     </div>
     <div class="loader-text" id="global-loader-text">Procesando...</div>
     `;
@@ -428,7 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
         injectLightbox();
         ensureStyleDescClose();
         setupComparisonSlider();
-        if (history.length > 0) renderHistory();
     };
 
     const renderCategories = () => {
@@ -681,26 +668,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addToHistory = (imageBase64, styleInfo, promptUsed) => {
-        // Save original image too so we can restore the pair
-        const historyItem = {
-            image: imageBase64,
-            original: originalImageBase64, // SAVE ORIGINAL
-            style: styleInfo,
-            prompt: promptUsed,
-            date: Date.now()
-        };
+        const historyItem = { image: imageBase64, style: styleInfo, prompt: promptUsed };
         history.unshift(historyItem);
-
-        // Persist
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-        } catch (e) {
-            console.warn('History save failed', e);
-            if (e.name === 'QuotaExceededError') {
-                alert("El historial está lleno. Borra algunas imágenes antiguas para guardar nuevas.");
-            }
-        }
-
         renderHistory();
     };
 
@@ -732,14 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 () => { const a = document.createElement('a'); a.href = item.image; a.download = `outfit_${index}.png`; a.click(); }
             ));
 
-            // 0. ZOOM (Nuevo)
-            actions.appendChild(createBtn('btn-sq-white',
-                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
-                'Ver Zoom',
-                () => openLightbox(item.image)
-            ));
-
-            // 1. Descargar
+            // 2. Reintentar
             actions.appendChild(createBtn('btn-sq-blue',
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
                 'Regenerar imagen',
@@ -771,47 +733,13 @@ document.addEventListener('DOMContentLoaded', () => {
             actions.appendChild(createBtn('btn-sq-red',
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
                 'Eliminar',
-                () => {
-                    history.splice(index, 1);
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); // Update storage
-                    renderHistory();
-                }
+                () => { history.splice(index, 1); renderHistory(); }
             ));
 
-            wrapper.onclick = () => restoreFromHistory(item);
+            wrapper.onclick = () => openLightbox(item.image);
             wrapper.append(thumb, actions);
             historyContainer.appendChild(wrapper);
         });
-    };
-
-    const restoreFromHistory = (item) => {
-        if (!item.original) {
-            // Fallback for old history items that might not have 'original'
-            showToast("Imagen antigua: solo se puede ver, no editar.");
-            openLightbox(item.image);
-            return;
-        }
-
-        originalImageBase64 = item.original;
-        generatedImageBase64 = item.image;
-
-        // UI Update
-        uploadedImagePreview.src = originalImageBase64;
-        uploadedImagePreview.classList.remove('hidden');
-        uploadPlaceholder.classList.add('hidden');
-
-        imageBefore.src = originalImageBase64;
-        imageAfter.src = generatedImageBase64;
-
-        comparisonContainer.classList.remove('hidden');
-        styleDescriptionSection.classList.remove('hidden');
-        styleDescriptionOutput.classList.add('hidden'); // Clear old description
-
-        resetComparisonSlider();
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        showToast("Estilo cargado desde historial");
     };
 
     async function handleDownloadAll() {
@@ -883,8 +811,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 parts: [
                     { text: finalPrompt },
                     {
-                        inline_data: {
-                            mime_type: "image/jpeg",
+                        inlineData: {
+                            mimeType: "image/jpeg",
                             data: cleanBase64
                         }
                     }
@@ -928,15 +856,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 parts: [
                     { text: finalPrompt },
                     {
-                        inline_data: {
-                            mime_type: "image/jpeg",
+                        inlineData: {
+                            mimeType: "image/jpeg",
                             data: cleanBase64
                         }
                     }
                 ]
             }],
             safetySettings: safetySettings,
-            generation_config: {
+            generationConfig: {
                 candidateCount: 1,
                 maxOutputTokens: 2048,
                 temperature: 0.7,
@@ -982,7 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Si el modelo no soporta imagen, probablemente devuelva texto o error 400/404
             if (data.error) {
-                throw new Error("Error de API: " + data.error.message);
+                 throw new Error("Error de API: " + data.error.message);
             }
 
             throw new Error("La API no devolvió imagen. Revisa la consola.");

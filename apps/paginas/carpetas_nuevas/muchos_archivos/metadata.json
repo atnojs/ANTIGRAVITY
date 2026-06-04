@@ -1,0 +1,5 @@
+{
+  "name": "AI Tutorials Link Manager",
+  "description": "An application to organize and manage links to AI tutorials, with the ability to pin or lock important links to the top of the list.",
+  "requestFramePermissions": []
+}

@@ -20,10 +20,8 @@ node_modules/
 # Bloquear archivos pesados detectados
 *.zip
 *.pdf
-*.json
-_Paginas.zip
+*.zip
 *.pdf
-estado_sitio.json
 inicio.md
 Instrucciones para que un modelo se conecte a GitHub..txt
 
@@ -37,15 +35,9 @@ auth_zoer.php
 _public_html.zip
 .htaccess
 
-# Ignorar archivos de datos JSON DENTRO de las carpetas `estado_sitio.json`
-apps/**/estado_sitio.json
-webs/**/estado_sitio.json
-
-# Si quieres ser más específico y permitir algunos JSON de configuración 
-# pero ignorar los de "estado" o "datos":
-# **/data.json
-# **/state.json
-# **/config_usuario.json
+# JSON de estado generado (no necesarios en el repo)
+**/estado_*.json
+**/firebase_backup.json
 
 # Entornos virtuales de Python y caché
 **/env/
@@ -82,7 +74,7 @@ apps/ESTADO_ACTUAL_*.md
 *Instructions_personalizadas_chatgpt*
 *Find-Corel*
 *Nuke-Corel*
-*Skill*
+agent/skills/
 *backup_wsl*
 *restore_wsl*
 *uninstall_corel*
@@ -91,3 +83,18 @@ apps/ESTADO_ACTUAL_*.md
 *Claude Code Ollama*
 Corel/
 Restos/
+
+# Repositorios git anidados (se gestionan por separado)
+apps/editar_generar/5/
+flow-image-generator/
+
+# .htaccess ya trackeados (contienen claves)
+apps/imagenes_ia/generar/.htaccess
+
+# Archivos con secretos y claves (Firebase, API keys, config privada)
+keys/
+.private/config.json
+opengravity/firebase.json
+webs/limpiador-windows/agente/config.json
+webs/limpiador-windows/agente/config.example.json
+webs/limpiador-windows/data/

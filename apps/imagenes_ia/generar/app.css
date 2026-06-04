@@ -185,3 +185,85 @@ select option:focus {
 .fade-in { animation: fade-in 0.5s ease-out forwards; }
 .slide-in-from-top-4 { animation: slide-in-from-top 0.6s ease-out forwards; }
 .slide-in-from-left-4 { animation: slide-in-from-left 0.6s ease-out forwards; }
+
+/* ═══════════════════════════════════════════════
+   LOADING OVERLAY & SPINNER TRIPLE (Style Guide)
+   ═══════════════════════════════════════════════ */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    background: rgba(0, 0, 0, 0.30);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    overflow: hidden;
+}
+
+.spinner-triple {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner-triple .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 4px solid transparent;
+}
+
+.spinner-triple .ring-1 {
+    inset: 0;
+    border-top-color: var(--neon-cyan);
+    animation: spin 1.2s linear infinite;
+    filter: drop-shadow(0 0 8px var(--neon-cyan));
+}
+
+.spinner-triple .ring-2 {
+    inset: 15px;
+    border-right-color: var(--acc2);
+    animation: spin 1.5s linear infinite reverse;
+    filter: drop-shadow(0 0 8px var(--acc2));
+}
+
+.spinner-triple .ring-3 {
+    inset: 30px;
+    border-bottom-color: var(--neon-pink);
+    animation: spin 2s linear infinite;
+    filter: drop-shadow(0 0 8px var(--neon-pink));
+}
+
+.loading-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    text-shadow: 0 0 15px var(--neon-cyan);
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes textPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.98); }
+}
+
+/* Glass ligero para sugerencias y elementos secundarios */
+.glass-light {
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(34, 211, 238, 0.15);
+}

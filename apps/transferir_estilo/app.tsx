@@ -39,7 +39,13 @@ const App: React.FC = () => {
   const [image2, setImage2] = useState<ImageSource | null>(null);
   const [blendMode, setBlendMode] = useState<BlendMode>('normal');
   const [crossfade, setCrossfade] = useState<number>(50); // 0 (Img1) to 100 (Img2)
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    // Cargar historial desde localStorage al iniciar
+    try {
+      const saved = localStorage.getItem('fusionai_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [activeTab, setActiveTab] = useState<'edit' | 'history'>('edit');
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -57,6 +63,13 @@ const App: React.FC = () => {
       setImage2(prev => prev ? { ...prev, settings: { ...prev.settings, opacity: opacity2 } } : null);
     }
   }, [crossfade]);
+
+  // Persistencia localStorage: guardar historial cuando cambia
+  useEffect(() => {
+    try {
+      localStorage.setItem('fusionai_history', JSON.stringify(history));
+    } catch { /* storage full */ }
+  }, [history]);
 
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {

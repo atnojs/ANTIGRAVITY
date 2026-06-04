@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Proxy para Google Gemini â€” PHP 8+, cURL habilitado.
 // Upscaler Pro: soporta passthrough Gemini + modo enhance (ediciÃ³n fiel)
 declare(strict_types=1);

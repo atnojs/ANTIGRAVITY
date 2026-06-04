@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Proxy para Google Gemini â€” PHP 8+, cURL habilitado.
 declare(strict_types=1);
 ini_set('display_errors', '0');

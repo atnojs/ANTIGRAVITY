@@ -1,6 +1,67 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createRoot } from 'react-dom/client';
-import { Upload, Wand2, Download, Trash2, Image, Loader2, Eye, History, Sparkles, X } from 'lucide-react';
+const { useState, useEffect, useRef, useCallback } = React;
+const { createRoot } = ReactDOM;
+
+// Iconos SVG inline (reemplazo de lucide-react)
+const Icon = ({ size, children }) => React.createElement('svg', {
+    width: size || 24, height: size || 24, viewBox: '0 0 24 24',
+    fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round',
+    style: { display: 'inline-block', verticalAlign: 'middle' }
+}, children);
+
+const Upload = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+    React.createElement('polyline', { points: '17 8 12 3 7 8' }),
+    React.createElement('line', { x1: 12, y1: 3, x2: 12, y2: 15 })
+);
+const Wand2 = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'm21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72' }),
+    React.createElement('path', { d: 'm14 7 3 3' }),
+    React.createElement('path', { d: 'M5 6v4' }),
+    React.createElement('path', { d: 'M19 14v4' }),
+    React.createElement('path', { d: 'M10 2v2' }),
+    React.createElement('path', { d: 'M7 8H3' }),
+    React.createElement('path', { d: 'M21 16h-4' }),
+    React.createElement('path', { d: 'M11 3H9' })
+);
+const Download = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+    React.createElement('polyline', { points: '7 10 12 15 17 10' }),
+    React.createElement('line', { x1: 12, y1: 15, x2: 12, y2: 3 })
+);
+const Trash2 = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('polyline', { points: '3 6 5 6 21 6' }),
+    React.createElement('path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }),
+    React.createElement('line', { x1: 10, y1: 11, x2: 10, y2: 17 }),
+    React.createElement('line', { x1: 14, y1: 11, x2: 14, y2: 17 })
+);
+const Image = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('rect', { width: 18, height: 18, x: 3, y: 3, rx: 2, ry: 2 }),
+    React.createElement('circle', { cx: 9, cy: 9, r: 2 }),
+    React.createElement('path', { d: 'm21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' })
+);
+const Loader2 = ({ size }) => React.createElement(Icon, { size, className: 'animate-spin' },
+    React.createElement('path', { d: 'M21 12a9 9 0 1 1-6.219-8.56' })
+);
+const Eye = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z' }),
+    React.createElement('circle', { cx: 12, cy: 12, r: 3 })
+);
+const History = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M3 3v5h5' }),
+    React.createElement('path', { d: 'M3.05 13A9 9 0 1 0 6 5.3L3 8' }),
+    React.createElement('path', { d: 'M12 7v5l4 2' })
+);
+const Sparkles = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'm12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z' }),
+    React.createElement('path', { d: 'M5 3v4' }),
+    React.createElement('path', { d: 'M19 17v4' }),
+    React.createElement('path', { d: 'M3 5h4' }),
+    React.createElement('path', { d: 'M17 19h4' })
+);
+const X = ({ size }) => React.createElement(Icon, { size },
+    React.createElement('path', { d: 'M18 6 6 18' }),
+    React.createElement('path', { d: 'm6 6 12 12' })
+);
 
 const STORAGE_KEY = 'illusion_diffusion_history';
 

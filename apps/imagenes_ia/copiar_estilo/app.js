@@ -327,7 +327,7 @@ Esta es la variaciÃ³n nÃºmero ${variationNum}. Genera una interpretaciÃ³n 
                             <div class="result-card">
                                 <img src="${imgSrc}" alt="Resultado ${imageCount + 1}" onclick="openLightbox('${imgSrc.replace(/'/g, "\\'")}')">
                                 <div class="card-actions">
-                                    <button onclick="event.stopPropagation(); exportImage('${imgSrc.replace(/'/g, "\\'")}')">ðŸ“¥ Exportar</button>
+                                    <button onclick="event.stopPropagation(); exportImage('${imgSrc.replace(/'/g, "\\'")}')">ðŸ“¥ Descargar</button>
                                     <button onclick="event.stopPropagation(); addToHistory('${imgSrc.replace(/'/g, "\\'")}')">âž• Historial</button>
                                 </div>
                             </div>

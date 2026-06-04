@@ -1,0 +1,72 @@
+{
+  "descripcion_tecnica": {
+    "tipo_imagen": "Retrato fotográfico editorial en interior",
+    "formato": {
+      "orientacion": "vertical",
+      "relacion_aspecto_aproximada": "4:5",
+      "encuadre": "primer plano medio cerrado",
+      "composicion": "sujeto ocupando casi todo el encuadre, rostro desplazado hacia la zona superior izquierda, cuerpo inclinado ligeramente hacia delante"
+    },
+    "sujeto": {
+      "genero_aparente": "hombre adulto",
+      "edad_aparente": "adulto maduro",
+      "cabello": "corto, oscuro, ligeramente despeinado",
+      "barba": "barba corta y bigote recortado",
+      "expresion": "seria, pensativa, introspectiva",
+      "mirada": "dirigida hacia la izquierda fuera de cámara",
+      "pose": "apoya el rostro sobre la mano izquierda, con el codo o brazo apoyado fuera del encuadre"
+    },
+    "vestuario": {
+      "prenda_principal": "jersey grueso de punto",
+      "color": "negro con patrón jaspeado beige o crema",
+      "textura": "tejido muy marcado, lana gruesa, patrón repetitivo visible",
+      "estilo": "casual elegante, cálido, invernal"
+    },
+    "iluminacion": {
+      "tipo": "luz natural lateral",
+      "direccion": "desde la derecha o zona frontal lateral",
+      "temperatura": "cálida",
+      "contraste": "medio-suave",
+      "sombras": "suaves en rostro y cuello, con zonas más oscuras en el lateral del rostro y el jersey",
+      "efecto_visual": "ambiente íntimo, melancólico y cinematográfico"
+    },
+    "fondo": {
+      "ubicacion": "interior",
+      "elementos_visibles": [
+        "cortina marrón o rojiza a la izquierda",
+        "pared clara o ventana iluminada a la derecha"
+      ],
+      "profundidad": "fondo desenfocado",
+      "nivel_de_detalle": "bajo, sin elementos protagonistas"
+    },
+    "color_y_estetica": {
+      "paleta": [
+        "marrón cálido",
+        "beige",
+        "negro",
+        "crema",
+        "tonos piel cálidos"
+      ],
+      "color_grading": "cálido, ligeramente desaturado, con estética de fotografía editorial antigua o cinematográfica",
+      "ambiente": "íntimo, sobrio, reflexivo"
+    },
+    "camara": {
+      "tipo_plano": "medium close-up",
+      "angulo": "ligeramente lateral",
+      "altura": "a la altura del rostro o ligeramente inferior",
+      "distancia": "cercana",
+      "profundidad_de_campo": "reducida",
+      "enfoque": "rostro, mano y textura del jersey"
+    },
+    "calidad_visual": {
+      "nitidez": "moderada-alta en el sujeto",
+      "detalle_destacado": "textura del jersey, barba, piel y mano",
+      "ruido": "ligero grano o compresión visible",
+      "acabado": "fotográfico realista con aspecto editorial"
+    },
+    "lectura_visual": {
+      "intencion": "mostrar un momento de reflexión o espera",
+      "sensacion_general": "serenidad, pensamiento profundo, nostalgia y calidez"
+    }
+  }
+}

@@ -17,6 +17,61 @@ const state = {
     loading: false
 };
 
+// ===== CONFIGURACIÓN DE HISTORIAL PERSISTENTE =====
+HistoryManager.configure({ dbName: 'pasatiempos_history' });
+HistoryManager.init().catch(e => console.warn('HistoryManager init error:', e));
+
+// ===== FUNCIONES DE HISTORIAL =====
+async function savePuzzleToHistory() {
+  if (!state.generatedData || !state.currentPuzzle) return;
+  try {
+    const id = `puzzle-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
+    await HistoryManager.saveItem({
+      id,
+      puzzleType: state.currentPuzzle.id,
+      puzzleName: state.currentPuzzle.name,
+      difficulty: state.currentDifficulty,
+      mode: state.currentMode,
+      generatedData: JSON.parse(JSON.stringify(state.generatedData)),
+      createdAt: Date.now()
+    });
+  } catch (e) {
+    console.warn('Error guardando puzzle en historial:', e);
+  }
+}
+
+async function loadHistoryPuzzles() {
+  try {
+    return await HistoryManager.loadAll();
+  } catch (e) {
+    console.warn('Error cargando historial:', e);
+    return [];
+  }
+}
+
+async function loadPuzzleFromHistory(historyItem) {
+  const puzzle = PUZZLES.find(p => p.id === historyItem.puzzleType);
+  if (!puzzle) return;
+  state.currentPuzzle = puzzle;
+  state.currentDifficulty = historyItem.difficulty;
+  state.currentMode = historyItem.mode;
+  state.generatedData = historyItem.generatedData;
+  state.view = 'generated';
+  render();
+}
+
+async function deleteHistoryPuzzle(id) {
+  await HistoryManager.deleteItem(id);
+  render(); // Re-renderizar home
+}
+
+async function clearAllHistory() {
+  if (confirm('¿Eliminar todo el historial de puzzles?')) {
+    await HistoryManager.clearAll();
+    render();
+  }
+}
+
 // 3. DATOS DE LOS PASATIEMPOS
 const PUZZLES = [
     {
@@ -286,7 +341,57 @@ function renderHome(container) {
 
     container.innerHTML = hero;
     container.appendChild(grid);
+
+    // Añadir sección de historial (carga asíncrona)
+    const historySection = document.createElement('div');
+    historySection.className = 'history-section fade-in';
+    historySection.innerHTML = `
+      <div class="history-header">
+        <h3 class="text-lg font-bold text-slate-800">📋 Historial de Puzzles</h3>
+        <button onclick="window._clearAllHistory()" class="text-sm text-red-500 hover:text-red-700 font-medium">🗑 Limpiar todo</button>
+      </div>
+      <div id="history-grid" class="history-grid">
+        <p class="text-slate-400 text-sm">Cargando historial...</p>
+      </div>
+    `;
+    container.appendChild(historySection);
+
+    // Cargar historial asíncronamente
+    loadHistoryPuzzles().then(items => {
+      const historyGrid = document.getElementById('history-grid');
+      if (!historyGrid) return;
+      if (!items || items.length === 0) {
+        historyGrid.innerHTML = '<p class="text-slate-400 text-sm">No hay puzzles guardados aún. ¡Genera tu primer puzzle!</p>';
+        return;
+      }
+      historyGrid.innerHTML = '';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        card.innerHTML = `
+          <div class="hist-type">${item.puzzleName || 'Puzzle'} ${item.difficulty ? `(${item.difficulty})` : ''}</div>
+          <div class="hist-meta">${new Date(item.createdAt).toLocaleDateString('es-ES', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} · ${item.mode === 'pdf' ? '📄 Imprimir' : '🖥 Online'}</div>
+          <div class="hist-actions">
+            <button onclick="window._loadPuzzleFromHistory('${item.id}')">📂 Cargar</button>
+            <button class="hist-delete" onclick="window._deleteHistoryPuzzle('${item.id}')">🗑 Eliminar</button>
+          </div>
+        `;
+        historyGrid.appendChild(card);
+      });
+    }).catch(e => {
+      const historyGrid = document.getElementById('history-grid');
+      if (historyGrid) historyGrid.innerHTML = '<p class="text-slate-400 text-sm">Error cargando historial.</p>';
+    });
 }
+
+// Exponer funciones de historial globalmente
+window._loadPuzzleFromHistory = async (id) => {
+  const items = await loadHistoryPuzzles();
+  const item = items.find(i => i.id === id);
+  if (item) loadPuzzleFromHistory(item);
+};
+window._deleteHistoryPuzzle = async (id) => { await deleteHistoryPuzzle(id); };
+window._clearAllHistory = clearAllHistory;
 
 // Vista: Detalle
 function renderDetail(container) {
@@ -388,6 +493,10 @@ async function generatePuzzle() {
         state.generatedData = mockData;
         state.view = 'generated';
         state.loading = false;
+
+        // Guardar en historial persistente
+        savePuzzleToHistory().catch(e => console.warn('Error guardando en historial:', e));
+
         render();
         
         console.log('Renderizado completado con datos locales');
@@ -398,6 +507,7 @@ async function generatePuzzle() {
             if (apiData && isValidPuzzleData(currentPuzzle.id, apiData)) {
                 console.log('Datos de API recibidos, actualizando...');
                 state.generatedData = apiData;
+                savePuzzleToHistory().catch(e => console.warn('Error actualizando historial:', e));
                 render();
             }
         }).catch(err => {

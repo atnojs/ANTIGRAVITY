@@ -37,6 +37,18 @@ if (!$apiKey || empty($apiKey)) {
 // --- MODELO ---
 $model = 'gemini-3.1-flash-image-preview';
 
+// Permitir que el payload sobrescriba el modelo
+$requestBody = file_get_contents('php://input');
+if (!empty($requestBody)) {
+    $payload = json_decode($requestBody, true);
+    if (isset($payload['model']) && !empty($payload['model'])) {
+        $model = $payload['model'];
+        // Eliminar el campo model del payload antes de enviarlo a la API
+        unset($payload['model']);
+        $requestBody = json_encode($payload);
+    }
+}
+
 // URL del punto de enlace (endpoint) del API de Google AI.
 $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
@@ -49,9 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// 2. Obtiene el cuerpo de la petición (JSON) enviado desde el JavaScript.
-$requestBody = file_get_contents('php://input');
-
+// 2. Validar que el cuerpo de la petición no esté vacío (ya leído arriba).
 if (empty($requestBody)) {
     http_response_code(400); // 400 Bad Request
     echo json_encode(['error' => ['message' => 'Cuerpo de la petición vacío.']]);

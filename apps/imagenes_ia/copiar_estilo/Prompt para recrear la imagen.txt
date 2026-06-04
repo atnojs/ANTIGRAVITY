@@ -1,0 +1,34 @@
+{
+  "title": "Retrato editorial masculino en interior cálido",
+  "aspect_ratio": "4:5",
+  "style": "fotografía editorial de moda, realista, íntima, cálida, cinematográfica",
+  "prompt": "Retrato fotográfico editorial de un hombre adulto de aspecto atractivo y maduro, cabello corto oscuro ligeramente despeinado, barba corta bien cuidada, mirada pensativa dirigida hacia la izquierda fuera de cámara. Está sentado en interior, apoyando el rostro sobre una mano, con expresión seria y contemplativa. Lleva un jersey grueso de punto jaspeado en tonos negro y beige, de textura muy marcada y visible. Encuadre de medio cuerpo en primer plano, composición cerrada, sujeto ocupando gran parte de la imagen. Iluminación natural suave y cálida entrando lateralmente desde una ventana, creando sombras delicadas y volumen en el rostro. Fondo interior desenfocado con cortinas marrones y pared clara, ambiente acogedor y elegante. Profundidad de campo reducida, enfoque nítido en rostro, mano y tejido del jersey. Color grading cálido, tonos tierra, contraste suave, estética premium de revista de moda, fotografía muy detallada y realista.",
+  "negative_prompt": "texto, letras, logotipos, marca de agua, baja resolución, desenfoque excesivo, deformidades en manos o dedos, ojos desalineados, rostro distorsionado, piel plástica, iluminación dura, sobreexposición, fondo recargado, accesorios innecesarios, pose artificial, duplicaciones, ruido digital fuerte",
+  "camera": {
+    "shot_type": "medium close-up",
+    "angle": "frontal ligeramente lateral",
+    "focus": "rostro, mano y textura del jersey",
+    "depth_of_field": "shallow"
+  },
+  "lighting": {
+    "type": "luz natural suave lateral",
+    "temperature": "cálida",
+    "mood": "íntimo y contemplativo"
+  },
+  "color_palette": [
+    "marrón cálido",
+    "beige",
+    "negro",
+    "crema",
+    "tonos tierra"
+  ],
+  "environment": {
+    "location": "interior acogedor",
+    "background": "cortinas marrones y pared clara desenfocadas"
+  },
+  "quality": {
+    "detail_level": "alto",
+    "render_style": "fotorrealista",
+    "finish": "editorial premium"
+  }
+}

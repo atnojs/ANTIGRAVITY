@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FusionAI Studio - Copiar Estilo</title>
+    <title>Copiar Estilo</title>
 
     <!-- Google Fonts: Montserrat (Títulos) + Poppins (Texto) -->
     <link
@@ -23,12 +23,12 @@
         style="background: radial-gradient(circle, var(--neon-pink) 0%, transparent 70%); bottom: -100px; right: -100px;">
     </div>
 
-    <h1 class="gradient-text">FUSION STUDIO</h1>
+    <h1 class="gradient-text">COPIAR ESTILO</h1>
 
     <div class="container">
         <!-- Card 1: Style Reference -->
         <div class="glass upload-card">
-            <h3>Referencia de Escena</h3>
+            <h3>Escena de Referencia</h3>
             <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: -10px;">Define iluminación, ángulo y pose
             </p>
             <div class="file-input-wrapper">
@@ -39,18 +39,19 @@
             </div>
         </div>
 
-        <!-- Middle: Result Area (Grid de 2 imágenes) -->
-        <div id="resultArea" class="glass">
-            <span class="placeholder-text">El resultado de la IA aparecerá aquí...</span>
-            <div id="resultsGrid" class="results-grid"></div>
-            <div id="resultText"
-                style="white-space: pre-wrap; text-align: left; margin-top: 20px; font-size: 0.9rem; line-height: 1.6;">
+        <!-- Middle: Analysis Cards Area (2 columns) -->
+        <div id="resultArea" class="glass analysis-center-area">
+            <div id="analysisCardTech" class="analysis-slot">
+                <span class="placeholder-text">Sube ambas imágenes para analizar la referencia...</span>
+            </div>
+            <div id="analysisCardCreative" class="analysis-slot">
+                <span class="placeholder-text">Sube ambas imágenes para analizar la referencia...</span>
             </div>
         </div>
 
         <!-- Card 2: Subject Reference -->
         <div class="glass upload-card">
-            <h3>Activo de Identidad</h3>
+            <h3>IMAGEN A EDITAR</h3>
             <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: -10px;">Define rostro y vestuario</p>
             <div class="file-input-wrapper">
                 <div class="upload-icon">👤</div>
@@ -61,12 +62,6 @@
         </div>
     </div>
 
-    <!-- Generate Button below -->
-    <button id="generateBtn" class="btn-primary btn-3d" onclick="generateImage()"
-        style="margin-top: 40px; padding: 18px 50px;">
-        GENERAR FUSIÓN IA
-    </button>
-
     <!-- Premium Loading Overlay (Style from Editar Imagen) -->
     <div id="loadingOverlay">
         <div id="loadingBgImage" class="loading-bg-image"></div>
@@ -76,6 +71,15 @@
             <div class="ring ring-3"></div>
         </div>
         <div class="loading-text-glow">IA Generando Obra Maestra...</div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-container">
+            <div class="progress-percentage" id="progressPercentage">0%</div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-status" id="progressStatus">Iniciando...</div>
+        </div>
     </div>
 
     <!-- Sección de Historial -->

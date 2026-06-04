@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Proxy para Google Gemini - Chef at Home
  * Permite realizar peticiones a la API de Gemini desde el frontend sin exponer la API Key.

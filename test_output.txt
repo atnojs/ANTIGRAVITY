@@ -1,0 +1,2 @@
+Node/Bun works! Version: v24.3.0
+Platform: win32

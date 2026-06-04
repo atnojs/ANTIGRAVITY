@@ -1,0 +1,6 @@
+{
+  "name": "AuraStudio",
+  "description": "Ultra-sleek AI image generator visualizer with high-end glassmorphic dark mode, visual styles, dynamic prompt optimizer, custom settings, and responsive mobile bottom sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

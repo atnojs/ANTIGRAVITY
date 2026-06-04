@@ -408,6 +408,23 @@ const App = () => {
 
     const fileInputRef = useRef(null);
 
+    // ─── Cargar historial al montar ──────────────
+    useEffect(() => {
+        HistoryManager.configure({ dbName: 'editar_imagen_db' });
+        HistoryManager.init()
+            .then(() => HistoryManager.loadAll())
+            .then(items => {
+                if (items && items.length > 0) {
+                    setImages(prev => {
+                        const existingIds = new Set(prev.map(i => i.id));
+                        const newItems = items.filter(i => !existingIds.has(i.id));
+                        if (newItems.length === 0) return prev;
+                        return [...newItems, ...prev].sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+                    });
+                }
+            });
+    }, []);
+
     // Auto-open file selector on mount for edit mode
     useEffect(() => {
         setTimeout(() => fileInputRef.current?.click(), 100);
@@ -479,6 +496,7 @@ const App = () => {
             };
 
             setImages(prev => [newHistoryImage, ...prev]);
+            HistoryManager.saveItem(newHistoryImage);
         } catch (err) {
             setError(err.message || "Error de generación");
         } finally {
@@ -490,7 +508,7 @@ const App = () => {
         }
     };
 
-    const handleDelete = (id) => setImages(images.filter(img => img.id !== id));
+    const handleDelete = (id) => { setImages(images.filter(img => img.id !== id)); HistoryManager.deleteItem(id); };
     const handleRegenerate = (img) => {
         setPrompt(img.prompt);
         setSelectedStyle(img.style);

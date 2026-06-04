@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    HistoryManager.configure({ dbName: 'dibujo_lineas_db' });
     const PROXY_URL = 'proxy.php';
     const imageInput = document.getElementById('image-input');
     const startButton = document.getElementById('start-button');
@@ -10,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const spinnerContainer = document.getElementById('spinner-container');
     const resultsGallery = document.getElementById('results-gallery');
     const galleryTitle = document.querySelector('.gallery-title');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
 
     let imageQueue = [];
 
@@ -36,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.disabled = true;
         processingSection.classList.remove('hidden');
         spinnerContainer.classList.remove('hidden');
+        // Mostrar overlay premium
+        if (loadingOverlay) { loadingOverlay.classList.remove('hidden'); loadingOverlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        if (loadingText) loadingText.textContent = 'Convirtiendo a Dibujo Lineal...';
         galleryTitle.classList.remove('hidden');
         resultsGallery.innerHTML = '';
         const total = imageQueue.length;
@@ -70,16 +76,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.image) {
                     // GPT-4o devolvio una imagen
+                    var imgDataUrl = "data:" + (data.mimeType || 'image/png') + ";base64," + data.image;
                     const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
                     item.innerHTML = `
-                        <img src="data:${data.mimeType};base64,${data.image}" alt="Dibujo lineal">
+                        <img src="${imgDataUrl}" alt="Dibujo lineal">
                         <div class="gallery-item-actions">
-                            <a href="data:${data.mimeType};base64,${data.image}" download="dibujo_${safeName}.png" class="download-single-btn">💾 Descargar</a>
+                            <a href="${imgDataUrl}" download="dibujo_${safeName}.png" class="download-single-btn">💾 Descargar</a>
                         </div>
                     `;
                     resultsGallery.appendChild(item);
+                    // Guardar en historial
+                    HistoryManager.saveItem({
+                        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
+                        url: imgDataUrl,
+                        prompt: 'Dibujo lineal: ' + safeName,
+                        aspectRatio: '1:1',
+                        size: '',
+                        geminiSize: '1K',
+                        style: { type: 'line_art' },
+                        createdAt: Date.now()
+                    });
                 } else if (data.text) {
                     // GPT-4o devolvio solo texto (no pudo generar imagen)
                     const item = document.createElement('div');
@@ -108,6 +126,64 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         spinnerContainer.classList.add('hidden');
+        if (loadingOverlay) { loadingOverlay.classList.add('hidden'); loadingOverlay.style.display = 'none'; document.body.style.overflow = ''; }
         progressText.innerText = 'Procesamiento Finalizado';
+        loadAndRenderHistory();
     });
+
+    // ─── Historial ────────────────────────────────────────────
+    function loadAndRenderHistory() {
+        HistoryManager.loadAll().then(function(items) {
+            var grid = document.getElementById('history-grid');
+            var title = document.getElementById('history-title');
+            var clearBtn = document.getElementById('history-clear-btn');
+            if (!grid) return;
+            if (!items || !items.length) {
+                grid.innerHTML = '';
+                if (title) title.style.display = 'none';
+                if (clearBtn) clearBtn.style.display = 'none';
+                return;
+            }
+            if (title) title.style.display = 'block';
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+            grid.innerHTML = items.map(function(item) {
+                return '<div class="gallery-item">' +
+                    '<img src="' + item.url + '" alt="Historial" style="cursor:pointer" onclick="window._openDibujoLightbox(\'' + item.url + '\')">' +
+                    '<div class="gallery-item-actions">' +
+                    '<a href="' + item.url + '" download="dibujo_' + (item.id || 'historial') + '.png" class="download-single-btn">💾 Descargar</a>' +
+                    '<button class="download-single-btn" style="background:rgba(239,68,68,0.8);margin-left:0.5rem;border:none;cursor:pointer" onclick="window._deleteDibujoItem(\'' + item.id + '\')">🗑️</button>' +
+                    '</div></div>';
+            }).join('');
+        });
+    }
+
+    window._deleteDibujoItem = function(id) {
+        if (confirm('¿Eliminar del historial?')) {
+            HistoryManager.deleteItem(id).then(function() { loadAndRenderHistory(); });
+        }
+    };
+    window._openDibujoLightbox = function(url) {
+        var lb = document.getElementById('dibujo-lightbox');
+        if (!lb) {
+            lb = document.createElement('div');
+            lb.id = 'dibujo-lightbox';
+            lb.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+            lb.onclick = function() { lb.remove(); };
+            var img = document.createElement('img');
+            img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px';
+            lb.appendChild(img);
+            document.body.appendChild(lb);
+        }
+        lb.querySelector('img').src = url;
+        lb.style.display = 'flex';
+    };
+
+    document.getElementById('history-clear-btn').addEventListener('click', function() {
+        if (confirm('¿Eliminar todo el historial?')) {
+            HistoryManager.clearAll().then(function() { loadAndRenderHistory(); });
+        }
+    });
+
+    // Cargar historial al iniciar
+    HistoryManager.init().then(function() { loadAndRenderHistory(); });
 });

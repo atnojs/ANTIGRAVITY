@@ -1,14 +1,121 @@
 lucide.createIcons();
 
+// ===== CONFIGURACIÓN DE HISTORIAL PERSISTENTE =====
+const HISTORY_DB_NAME = 'asistente_inmoviliario_history';
+HistoryManager.configure({ dbName: HISTORY_DB_NAME });
+HistoryManager.init().catch(e => console.warn('HistoryManager init error:', e));
+
+// ===== REFERENCIAS DOM =====
 const imageUploader = document.getElementById('image-uploader');
 const imagePreviewGrid = document.getElementById('image-preview-grid');
 const generateBtn = document.getElementById('generate-btn');
-const loadingIndicator = document.getElementById('loading-indicator');
+const loadingOverlay = document.getElementById('loadingOverlay');
 const resultsSection = document.getElementById('results-section');
 const resultsImageGrid = document.getElementById('results-image-grid');
 const resultsText = document.getElementById('results-text');
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxDownload = document.getElementById('lightboxDownload');
+const lightboxClose = document.getElementById('lightboxClose');
+const historyGrid = document.getElementById('historyGrid');
+const historyEmpty = document.getElementById('historyEmpty');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
 let uploadedFiles = []; // Array de objetos { id, file, base64, action }
+
+// ===== LIGHTBOX =====
+function openLightbox(src) {
+  lightboxImg.src = src;
+  lightboxDownload.onclick = () => {
+    const a = document.createElement('a');
+    a.href = src;
+    a.download = 'generado-asistente-inmobiliario.png';
+    a.click();
+  };
+  lightbox.classList.remove('hidden');
+}
+function closeLightboxFn() { lightbox.classList.add('hidden'); }
+lightbox.addEventListener('click', (e) => {
+  if (e.target === lightbox || e.target === lightboxImg) closeLightboxFn();
+});
+lightboxClose.addEventListener('click', closeLightboxFn);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) closeLightboxFn();
+});
+
+// ===== LOADING OVERLAY =====
+function showLoading(text) {
+  loadingOverlay.querySelector('.loading-text').textContent = text || 'IA Generando Obra Maestra...';
+  loadingOverlay.classList.remove('hidden');
+}
+function hideLoading() { loadingOverlay.classList.add('hidden'); }
+
+// ===== HISTORIAL =====
+async function loadHistory() {
+  try {
+    const items = await HistoryManager.loadAll();
+    renderHistory(items);
+  } catch (e) {
+    console.warn('Error cargando historial:', e);
+    historyEmpty.style.display = 'block';
+  }
+}
+
+function renderHistory(items) {
+  historyGrid.innerHTML = '';
+  if (!items || items.length === 0) {
+    historyEmpty.style.display = 'block';
+    return;
+  }
+  historyEmpty.style.display = 'none';
+  items.forEach(item => {
+    const src = item.url || item.imageUrl || '';
+    if (!src) return;
+    const card = document.createElement('div');
+    card.className = 'history-card';
+    card.innerHTML = `
+      <img src="${src}" alt="Generación ${item.id}" onclick="window._openLightbox && window._openLightbox('${src}')" style="cursor:zoom-in" />
+      <div class="history-actions">
+        <button class="hist-download" title="Descargar">
+          <i data-lucide="download" style="width:14px;height:14px"></i>
+        </button>
+        <button class="hist-delete" title="Eliminar">
+          <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+        </button>
+      </div>
+      <div class="history-info">${new Date(item.createdAt).toLocaleDateString('es-ES', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+    `;
+    card.querySelector('.hist-download').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const a = document.createElement('a');
+      a.href = src;
+      a.download = `generado-${item.id}.png`;
+      a.click();
+    });
+    card.querySelector('.hist-delete').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await HistoryManager.deleteItem(item.id);
+      const items = await HistoryManager.loadAll();
+      renderHistory(items);
+    });
+    card.querySelector('img').addEventListener('click', () => openLightbox(src));
+    historyGrid.appendChild(card);
+  });
+  lucide.createIcons();
+}
+
+window._openLightbox = openLightbox;
+
+clearHistoryBtn.addEventListener('click', async () => {
+  if (confirm('¿Eliminar todo el historial de generaciones?')) {
+    await HistoryManager.clearAll();
+    historyGrid.innerHTML = '';
+    historyEmpty.style.display = 'block';
+  }
+});
+
+// Cargar historial al iniciar
+loadHistory();
 
 imageUploader.addEventListener('change', handleImageUpload);
 
@@ -104,22 +211,11 @@ async function handleGeneration() {
     }
 
     generateBtn.disabled = true;
-    const loadingIndicator = document.getElementById('loading-indicator');
-    if (loadingIndicator) {
-        loadingIndicator.classList.remove('hidden');
-    }
-    const resultsSection = document.getElementById('results-section'); // Asegura que exista
-    if (resultsSection) {
-        resultsSection.classList.add('hidden');
-    }
-    const resultsImageGrid = document.getElementById('results-image-grid');
-    if (resultsImageGrid) {
-        resultsImageGrid.innerHTML = '';
-    }
-    const resultsText = document.getElementById('results-text');
-    if (resultsText) {
-        resultsText.innerHTML = '';
-    }
+    generateBtn.textContent = 'PROCESANDO...';
+    showLoading('IA Generando Anuncio Inmobiliario...');
+    resultsImageGrid.innerHTML = '';
+    resultsText.innerHTML = '';
+    resultsSection.classList.add('hidden');
 
     const audience = document.getElementById('target-audience').value;
     const length = document.getElementById('ad-length').value;
@@ -130,7 +226,7 @@ async function handleGeneration() {
         console.log('Iniciando procesamiento de imágenes...');
         const imagePromises = uploadedFiles.map(fileData => processImage(fileData));
         const textPromise = generateAdText(audience, length, tone);
-        
+
         console.log('Esperando promesas...');
         const [images, text] = await Promise.all([
             Promise.all(imagePromises),
@@ -140,18 +236,31 @@ async function handleGeneration() {
 
         displayResults(images, text);
 
+        // Guardar en historial persistente
+        for (const img of images) {
+          if (img.dataUrl && img.dataUrl.startsWith('data:image')) {
+            const historyId = `hist-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
+            await HistoryManager.saveItem({
+              id: historyId,
+              url: img.dataUrl,
+              prompt: `Staging/Vaciado de ${img.originalName}`,
+              createdAt: Date.now()
+            });
+          }
+        }
+        // Recargar historial
+        const items = await HistoryManager.loadAll();
+        renderHistory(items);
+
     } catch (error) {
         console.error("Error durante la generación:", error);
         alert("Hubo un error al generar el anuncio: " + error.message + ". Revisa la consola para más detalles.");
     } finally {
         console.log('Rehabilitando botón y ocultando loader');
         generateBtn.disabled = false;
-        if (loadingIndicator) {
-            loadingIndicator.classList.add('hidden');
-        }
-        if (resultsSection) {
-            resultsSection.classList.remove('hidden'); // Opcional: muestra resultados si hay error
-        }
+        generateBtn.textContent = 'Generar Anuncio';
+        hideLoading();
+        resultsSection.classList.remove('hidden');
     }
 }
 
@@ -267,9 +376,9 @@ function displayResults(images, text) {
         const resultCard = document.createElement('div');
         resultCard.className = 'relative group';
         resultCard.innerHTML = `
-            <img src="${img.dataUrl}" alt="Imagen generada de ${img.originalName}" class="w-full h-48 object-cover rounded-lg shadow-md">
-            <a href="${img.dataUrl}" download="generado-${img.originalName}" class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-lg transition-all opacity-0 group-hover:opacity-100">
-                <div class="bg-white text-gray-800 p-3 rounded-full shadow-lg">
+            <img src="${img.dataUrl}" alt="Imagen generada de ${img.originalName}" class="w-full h-48 object-cover rounded-lg shadow-md" style="cursor:zoom-in" onclick="window._openLightbox('${img.dataUrl}')" />
+            <a href="${img.dataUrl}" download="generado-${img.originalName}" class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-lg transition-all opacity-0 group-hover:opacity-100" style="pointer-events:none">
+                <div class="bg-white text-gray-800 p-3 rounded-full shadow-lg" style="pointer-events:auto">
                     <i data-lucide="download" class="w-6 h-6"></i>
                 </div>
             </a>

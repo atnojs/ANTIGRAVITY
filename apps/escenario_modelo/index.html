@@ -156,6 +156,11 @@
       <button class="new-composition" id="new-composition">Crear Nueva Composición</button>
     </section>
 
+    <section id="history-section" style="margin-top:3rem">
+      <h2 id="history-title" style="color:var(--text);margin-bottom:1rem;display:none">Historial</h2>
+      <div id="history-grid"></div>
+      <button id="history-clear-btn" style="display:none;margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem">Limpiar Historial</button>
+    </section>
     <footer>
       <p>Atnojs © 2025 - Todos los derechos reservados</p>
     </footer>
@@ -168,10 +173,20 @@
     <img class="modal-content" id="modal-image" alt="">
   </div>
 
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden" style="display:none">
+    <div class="spinner-triple">
+      <div class="ring ring-1"></div><div class="ring ring-2"></div><div class="ring ring-3"></div>
+    </div>
+    <p id="loading-text" class="loading-text">IA Generando Obra Maestra...</p>
+  </div>
+  <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
+
   <!-- Iconos Feather -->
   <script src="https://unpkg.com/feather-icons"></script>
   <!-- Librerías JS -->
   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="history-manager.js"></script>
   <script src="app.js"></script>
   <!-- Inicializar iconos -->
   <script>

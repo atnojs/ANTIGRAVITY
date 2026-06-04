@@ -85,6 +85,221 @@ const clearHistoryFromDb = async () => {
 // Estado local del historial para renderizado
 let history = [];
 
+// --- ESTADO DE RESULTADOS DE ANÁLISIS ---
+const analysisResults = {
+    techDesc: null,
+    creativePrompt: null
+};
+let analysisInProgress = false;
+
+// --- ESTADO DE IMÁGENES GENERADAS EN LOS SLOTS CENTRALES ---
+const slotImages = {
+    tech: null,
+    creative: null
+};
+
+// Auto-disparar el análisis cuando ambas imágenes están cargadas
+async function onBothImagesLoaded() {
+    const styleLoaded = document.getElementById('stylePreview')?.style?.display === 'block';
+    const subjectLoaded = document.getElementById('subjectPreview')?.style?.display === 'block';
+    if (!styleLoaded || !subjectLoaded) return;
+    if (analysisInProgress) return;
+
+    analysisInProgress = true;
+    const loading = document.getElementById('loadingOverlay');
+    const loadingText = loading?.querySelector('.loading-text-glow');
+    const loadingBg = document.getElementById('loadingBgImage');
+    const stylePreview = document.getElementById('stylePreview');
+
+    if (loadingBg && stylePreview?.src) {
+        loadingBg.style.backgroundImage = `url(${stylePreview.src})`;
+    }
+    if (loading) loading.style.display = 'flex';
+    if (loadingText) loadingText.textContent = 'IA Analizando Imagen de Referencia...';
+    startProgress('Analizando imagen de referencia...');
+
+    try {
+        const styleFile = document.getElementById('styleInput').files[0];
+        if (!styleFile) { analysisInProgress = false; if (loading) loading.style.display = 'none'; resetProgress(); return; }
+        const styleData = await fileToBase64(styleFile);
+
+        const [techResult, creativeResult] = await Promise.allSettled([
+            callAnalysisAPI(styleData, 'tech'),
+            callAnalysisAPI(styleData, 'creative')
+        ]);
+
+        if (techResult.status === 'fulfilled' && techResult.value) {
+            analysisResults.techDesc = techResult.value;
+        }
+        if (creativeResult.status === 'fulfilled' && creativeResult.value) {
+            analysisResults.creativePrompt = creativeResult.value;
+        }
+
+    } catch (e) {
+        console.error('Error en análisis automático:', e);
+    } finally {
+        completeProgress();
+        setTimeout(() => {
+            if (loading) loading.style.display = 'none';
+            resetProgress();
+        }, 600);
+        analysisInProgress = false;
+        renderAnalysisCards();
+    }
+}
+
+// Helper que llama a Gemini 2.5 Flash para generar un JSON de análisis
+async function callAnalysisAPI(styleData, type) {
+    let promptText;
+    if (type === 'tech') {
+        promptText = `Actúa como un analista visual y director de fotografía profesional. Analiza esta imagen de referencia y genera un JSON con una descripción técnica EXTREMADAMENTE detallada. Usa EXACTAMENTE esta estructura (todo en español):
+
+{
+  "descripcion_tecnica": {
+    "tipo_imagen": "tipo de imagen (retrato, paisaje, editorial, etc.)",
+    "formato": {
+      "orientacion": "vertical, horizontal o cuadrada",
+      "relacion_aspecto_aproximada": "ej: 4:5, 1:1, 16:9",
+      "encuadre": "primer plano, plano medio, plano general, etc.",
+      "composicion": "descripción detallada de la composición visual"
+    },
+    "sujeto": {
+      "genero_aparente": "hombre, mujer, niño, etc.",
+      "edad_aparente": "bebé, niño, joven, adulto, adulto maduro, anciano",
+      "cabello": "color, longitud, textura y peinado",
+      "barba": "si aplica, describir tipo y longitud",
+      "expresion": "seria, sonriente, pensativa, melancólica, etc.",
+      "mirada": "dirección de la mirada y lenguaje ocular",
+      "pose": "descripción detallada de la postura corporal completa"
+    },
+    "vestuario": {
+      "prenda_principal": "tipo de prenda dominante",
+      "color": "color o patrón de colores",
+      "textura": "tipo de tejido y su apariencia visual",
+      "estilo": "casual, formal, deportivo, elegante, etc."
+    },
+    "iluminacion": {
+      "tipo": "natural, artificial, estudio, mixta",
+      "direccion": "frontal, lateral, cenital, contraluz, etc.",
+      "temperatura": "cálida, fría, neutra",
+      "contraste": "alto, medio, suave",
+      "sombras": "duras, suaves, inexistentes",
+      "efecto_visual": "atmósfera creada por la iluminación"
+    },
+    "fondo": {
+      "ubicacion": "interior, exterior, estudio",
+      "elementos_visibles": ["lista de objetos o elementos del fondo"],
+      "profundidad": "desenfocado, nítido, medio",
+      "nivel_de_detalle": "alto, medio, bajo"
+    },
+    "color_y_estetica": {
+      "paleta": ["color1", "color2", "color3"],
+      "color_grading": "descripción del tratamiento de color",
+      "ambiente": "atmósfera emocional y estética"
+    },
+    "camara": {
+      "tipo_plano": "close-up, medium shot, full shot, etc.",
+      "angulo": "frontal, picado, contrapicado, lateral",
+      "altura": "a la altura del rostro, cintura, etc.",
+      "distancia": "cercana, media, lejana",
+      "profundidad_de_campo": "reducida, media, amplia",
+      "enfoque": "qué elementos están enfocados"
+    },
+    "calidad_visual": {
+      "nitidez": "alta, media, suave",
+      "detalle_destacado": "qué texturas o detalles resaltan",
+      "ruido": "grano visible, imagen limpia, etc.",
+      "acabado": "fotográfico, cinematográfico, editorial, etc."
+    },
+    "lectura_visual": {
+      "intencion": "qué mensaje transmite la imagen",
+      "sensacion_general": "serenidad, tensión, alegría, nostalgia, etc."
+    }
+  }
+}
+
+Sé extremadamente detallado. Describe CADA aspecto como un director de fotografía profesional analizando una imagen de referencia para replicarla. Responde ÚNICAMENTE con JSON válido, sin markdown ni comentarios. Solo el objeto JSON puro.`;
+    } else {
+        promptText = `Actúa como un director creativo experto en generación de imágenes con IA (Midjourney, DALL-E, Stable Diffusion). Analiza esta imagen de referencia y genera un JSON con todos los elementos necesarios para recrear una imagen con el MISMO ESTILO. Usa EXACTAMENTE esta estructura (todo en español):
+
+{
+  "title": "título descriptivo corto de la imagen",
+  "aspect_ratio": "relación de aspecto detectada",
+  "style": "descripción del estilo visual general",
+  "prompt": "PROMPT COMPLETO Y EXTREMADAMENTE DETALLADO listo para pegar en un generador de IA. Describe la escena, sujeto, iluminación, cámara, colores, ambiente y estilo con el MÁXIMO detalle posible. Mínimo 150 palabras. Debe servir para replicar el ESTILO de la imagen de referencia, no el contenido exacto.",
+  "negative_prompt": "elementos a evitar en la generación",
+  "camera": {
+    "shot_type": "tipo de plano",
+    "angle": "ángulo de cámara",
+    "focus": "punto de enfoque",
+    "depth_of_field": "profundidad de campo"
+  },
+  "lighting": {
+    "type": "tipo de iluminación",
+    "temperature": "temperatura de color",
+    "mood": "atmósfera creada por la luz"
+  },
+  "color_palette": ["color1", "color2", "color3", "color4", "color5"],
+  "environment": {
+    "location": "ubicación de la escena",
+    "background": "descripción del fondo"
+  },
+  "quality": {
+    "detail_level": "nivel de detalle",
+    "render_style": "estilo de renderizado",
+    "finish": "acabado final"
+  }
+}
+
+El campo "prompt" debe ser extremadamente detallado, de al menos 150 palabras. Céntrate en describir el ESTILO VISUAL (iluminación, paleta, atmósfera, tipo de plano, calidad) para poder aplicarlo a cualquier sujeto. Responde ÚNICAMENTE con JSON válido, sin markdown ni comentarios.`;
+    }
+
+    const payload = {
+        model: "gemini-2.5-flash",
+        contents: [{ parts: [
+            { text: promptText },
+            { inlineData: { mimeType: styleData.mimeType, data: styleData.data } }
+        ]}],
+        generationConfig: { responseModalities: ["TEXT"] }
+    };
+
+    const response = await fetch('proxy.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (data.candidates?.[0]?.content?.parts) {
+        for (const part of data.candidates[0].content.parts) {
+            if (part.text) {
+                let jsonText = part.text.trim();
+                jsonText = jsonText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+                try {
+                    const jsonContent = JSON.parse(jsonText);
+                    return {
+                        id: type + '_' + Date.now(),
+                        type: type,
+                        jsonContent: jsonContent,
+                        createdAt: new Date().toLocaleString()
+                    };
+                } catch (parseErr) {
+                    console.error('Error parseando JSON (' + type + '):', parseErr);
+                    return {
+                        id: type + '_' + Date.now(),
+                        type: type,
+                        jsonContent: { raw_text: jsonText },
+                        createdAt: new Date().toLocaleString()
+                    };
+                }
+            }
+        }
+    }
+    console.error('Respuesta inesperada para ' + type + ':', data);
+    return null;
+}
+
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
     const targets = [
@@ -142,6 +357,9 @@ function setupPreview(inputId, imgId) {
                 if (img.parentElement) {
                     img.parentElement.querySelectorAll('.upload-icon, span').forEach(el => el.style.opacity = '0');
                 }
+
+                // Auto-disparar análisis si ambas imágenes están cargadas
+                onBothImagesLoaded();
             }
             reader.readAsDataURL(file);
         }
@@ -160,10 +378,11 @@ async function loadHistory() {
     renderHistory();
 }
 
-async function addToHistory(imageData) {
+async function addToHistory(imageData, sourceLabel = '') {
     const item = {
         id: Math.random().toString(36).substring(7), // ID estilo editar/app.js
         src: imageData,
+        sourceLabel: sourceLabel,
         createdAt: Date.now()
     };
 
@@ -214,15 +433,18 @@ function renderHistory() {
     section.style.display = 'block';
 
     // Usamos item.src y item.id para construir el HTML
-    grid.innerHTML = history.map(item => `
+    grid.innerHTML = history.map(item => {
+        const labelHtml = item.sourceLabel ? `<span class="history-source-label">${item.sourceLabel}</span>` : '';
+        return `
         <div class="history-card">
             <img src="${item.src}" alt="Historial" onclick="openLightbox('${item.src.replace(/'/g, "\\'")}')">
+            ${labelHtml}
             <div class="history-actions">
                 <button onclick="event.stopPropagation(); downloadHistoryImage('${item.id}')">📥</button>
                 <button class="btn-delete" onclick="event.stopPropagation(); removeFromHistory('${item.id}')">🗑️</button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // =============================================
@@ -272,129 +494,52 @@ document.addEventListener('keydown', (e) => {
 });
 
 // =============================================
-// GENERACIÓN DE IMÁGENES
+// SISTEMA DE PROGRESO SIMULADO
 // =============================================
-async function generateImage() {
-    const styleFile = document.getElementById('styleInput').files[0];
-    const subjectFile = document.getElementById('subjectInput').files[0];
-    const btn = document.getElementById('generateBtn');
-    const loading = document.getElementById('loadingOverlay');
-    const placeholder = document.querySelector('.placeholder-text');
-    const resultsGrid = document.getElementById('resultsGrid');
-    const resultTxt = document.getElementById('resultText');
+let progressInterval = null;
+let currentProgress = 0;
 
-    if (!styleFile || !subjectFile) {
-        alert("Por favor sube ambas imágenes.");
-        return;
-    }
+function startProgress(statusText = 'Generando imagen...') {
+    currentProgress = 0;
+    const pct = document.getElementById('progressPercentage');
+    const bar = document.getElementById('progressBarFill');
+    const status = document.getElementById('progressStatus');
+    if (pct) pct.textContent = '0%';
+    if (bar) bar.style.width = '0%';
+    if (status) status.textContent = statusText;
 
-    // UI Updates
-    btn.disabled = true;
-    placeholder.style.display = 'none';
-    resultsGrid.innerHTML = '';
-    resultTxt.innerHTML = '';
-
-    // Configurar fondo dinámico del overlay
-    const loadingBg = document.getElementById('loadingBgImage');
-    const stylePreview = document.getElementById('stylePreview');
-    if (stylePreview && stylePreview.src && stylePreview.style.display !== 'none') {
-        loadingBg.style.backgroundImage = `url(${stylePreview.src})`;
-    } else {
-        loadingBg.style.backgroundImage = 'none';
-    }
-
-    loading.style.display = 'flex';
-
-    try {
-        const styleData = await fileToBase64(styleFile);
-        const subjectData = await fileToBase64(subjectFile);
-
-        // Función para hacer una llamada a la API
-        const callAPI = async (variationNum) => {
-            const promptText = `
-Actúa como un motor de edición fotográfica de alta gama. Tu tarea es REEMPLAZAR elementos específicos quirúrgicamente.
-DEFINICIÓN DE ROLES:
-- Input A [REFERENCIA_ESCENA]: Provee ESCENARIO, ILUMINACIÓN, POSE y ÁNGULO.
-- Input B [REFERENCIA_ACTIVO]: Provee IDENTIDAD FACIAL y VESTUARIO.
-MISIÓN: El Sujeto B (con su cara y ropa) posando EXACTO como el Sujeto A.
-IMPORTANTE: El resultado debe respetar el formato de imagen de la referencia A.
-Esta es la variación número ${variationNum}. Genera una interpretación única.
-            `;
-
-            const payload = {
-                model: "gemini-3.1-flash-image-preview",
-                contents: [
-                    {
-                        parts: [
-                            { text: promptText },
-                            { inlineData: { mimeType: styleData.mimeType, data: styleData.data } },
-                            { inlineData: { mimeType: subjectData.mimeType, data: subjectData.data } }
-                        ]
-                    }
-                ],
-                generationConfig: {
-                    responseModalities: ["IMAGE"],
-                    imageConfig: {
-                        aspectRatio: detectedAR
-                    }
-                }
-            };
-
-            const response = await fetch('proxy.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            return response.json();
-        };
-
-        // Ejecutar 2 llamadas en paralelo
-        const [data1, data2] = await Promise.all([callAPI(1), callAPI(2)]);
-
-        loading.style.display = 'none';
-        btn.disabled = false;
-
-        let imageCount = 0;
-
-        // Procesar resultados de ambas llamadas
-        for (const data of [data1, data2]) {
-            if (data.candidates?.[0]?.content?.parts) {
-                const parts = data.candidates[0].content.parts;
-
-                for (const part of parts) {
-                    if (part.inlineData) {
-                        const imgSrc = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-                        const cardHtml = `
-                            <div class="result-card">
-                                <img src="${imgSrc}" alt="Resultado ${imageCount + 1}" onclick="openLightbox('${imgSrc.replace(/'/g, "\\'")}')">
-                                <div class="card-actions">
-                                    <button onclick="event.stopPropagation(); exportImage('${imgSrc.replace(/'/g, "\\'")}')">📥 Exportar</button>
-                                    <button onclick="event.stopPropagation(); addToHistory('${imgSrc.replace(/'/g, "\\'")}')">➕ Historial</button>
-                                </div>
-                            </div>
-                        `;
-                        resultsGrid.innerHTML += cardHtml;
-                        imageCount++;
-                    } else if (part.text) {
-                        resultTxt.innerHTML += part.text + '<br>';
-                    }
-                }
-            } else if (data.error) {
-                resultTxt.innerHTML += "Error: " + JSON.stringify(data.error) + '<br>';
-            }
+    if (progressInterval) clearInterval(progressInterval);
+    progressInterval = setInterval(() => {
+        if (currentProgress < 90) {
+            currentProgress += Math.random() * 3 + 0.5;
+            if (currentProgress > 90) currentProgress = 90;
+            const val = Math.floor(currentProgress);
+            if (pct) pct.textContent = val + '%';
+            if (bar) bar.style.width = val + '%';
         }
+    }, 400);
+}
 
-        if (imageCount === 0) {
-            resultTxt.innerHTML = "No se generaron imágenes.";
-        }
+function completeProgress() {
+    if (progressInterval) clearInterval(progressInterval);
+    currentProgress = 100;
+    const pct = document.getElementById('progressPercentage');
+    const bar = document.getElementById('progressBarFill');
+    const status = document.getElementById('progressStatus');
+    if (pct) pct.textContent = '100%';
+    if (bar) bar.style.width = '100%';
+    if (status) status.textContent = 'Completado';
+}
 
-    } catch (error) {
-        console.error(error);
-        loading.style.display = 'none';
-        btn.disabled = false;
-        resultTxt.innerHTML = "Error: " + error.message;
-    }
+function resetProgress() {
+    if (progressInterval) clearInterval(progressInterval);
+    currentProgress = 0;
+    const pct = document.getElementById('progressPercentage');
+    const bar = document.getElementById('progressBarFill');
+    const status = document.getElementById('progressStatus');
+    if (pct) pct.textContent = '0%';
+    if (bar) bar.style.width = '0%';
+    if (status) status.textContent = 'Iniciando...';
 }
 
 function exportImage(imgSrc) {
@@ -406,9 +551,276 @@ function exportImage(imgSrc) {
     document.body.removeChild(link);
 }
 
-function exportResult() {
-    // Función legacy por compatibilidad
-    const img = document.querySelector('#resultsGrid .result-card img');
-    if (img) exportImage(img.src);
+// =============================================
+// ANÁLISIS DE IMAGEN DE REFERENCIA (AUTO-TRIGGER)
+// =============================================
+
+// --- RENDERIZADO DE TARJETAS JSON / IMÁGENES EN LOS SLOTS CENTRALES ---
+function renderAnalysisCards() {
+    const slotTech = document.getElementById('analysisCardTech');
+    const slotCreative = document.getElementById('analysisCardCreative');
+    if (!slotTech || !slotCreative) return;
+
+    const hasTech = analysisResults.techDesc !== null;
+    const hasCreative = analysisResults.creativePrompt !== null;
+
+    // Slot Técnico
+    if (slotImages.tech) {
+        slotTech.innerHTML = buildSlotImageHTML(slotImages.tech, 'tech');
+    } else if (hasTech) {
+        const item = analysisResults.techDesc;
+        slotTech.innerHTML = `
+            <div class="analysis-card card-tech" id="card-${item.id}">
+                <div class="analysis-card-header">
+                    <span class="analysis-badge badge-tech">📋 DESCRIPCIÓN TÉCNICA</span>
+                    <button class="btn-card-delete" onclick="deleteAnalysisCard('${item.id}')" title="Eliminar">✕</button>
+                </div>
+                <div class="analysis-card-actions-dual">
+                    <button class="btn-copy" onclick="copyAnalysisJSON('${item.id}')">📋 Copiar JSON</button>
+                    <button class="btn-generate" onclick="generateImageFromAnalysis('${item.id}')">🎨 Generar Imagen</button>
+                </div>
+            </div>`;
+    } else {
+        slotTech.innerHTML = '<span class="placeholder-text">Sube ambas imágenes para analizar la referencia...</span>';
+    }
+
+    // Slot Creativo
+    if (slotImages.creative) {
+        slotCreative.innerHTML = buildSlotImageHTML(slotImages.creative, 'creative');
+    } else if (hasCreative) {
+        const item = analysisResults.creativePrompt;
+        slotCreative.innerHTML = `
+            <div class="analysis-card card-creative" id="card-${item.id}">
+                <div class="analysis-card-header">
+                    <span class="analysis-badge badge-creative">🎨 COPIA DE ESTILO</span>
+                    <button class="btn-card-delete" onclick="deleteAnalysisCard('${item.id}')" title="Eliminar">✕</button>
+                </div>
+                <div class="analysis-card-actions-dual">
+                    <button class="btn-copy" onclick="copyAnalysisJSON('${item.id}')">📋 Copiar JSON</button>
+                    <button class="btn-generate" onclick="generateImageFromAnalysis('${item.id}')">🎨 Generar Imagen</button>
+                </div>
+            </div>`;
+    } else {
+        slotCreative.innerHTML = '<span class="placeholder-text">Sube ambas imágenes para analizar la referencia...</span>';
+    }
+}
+
+function buildSlotImageHTML(imgSrc, slotType) {
+    const label = slotType === 'tech' ? '📋 Descripción Técnica' : '🎨 Copia de Estilo';
+    return `
+        <div class="slot-image-wrapper">
+            <img src="${imgSrc}" alt="${label}" onclick="openLightbox('${imgSrc.replace(/'/g, "\\'")}')">
+            <div class="slot-image-actions">
+                <button onclick="event.stopPropagation(); exportSlotImage('${slotType}')">📥 Exportar</button>
+                <button onclick="event.stopPropagation(); addSlotImageToHistory('${slotType}')">➕ Historial</button>
+                <button onclick="event.stopPropagation(); clearSlotImage('${slotType}')">↩️ Volver</button>
+            </div>
+            <span class="slot-image-label">${label}</span>
+        </div>
+    `;
+}
+
+function exportSlotImage(slotType) {
+    if (!slotImages[slotType]) return;
+    exportImage(slotImages[slotType]);
+}
+
+async function addSlotImageToHistory(slotType) {
+    if (!slotImages[slotType]) return;
+    const label = slotType === 'tech' ? '📋 Descripción Técnica' : '🎨 Copia de Estilo';
+    await addToHistory(slotImages[slotType], label);
+}
+
+function clearSlotImage(slotType) {
+    slotImages[slotType] = null;
+    renderAnalysisCards();
+}
+
+// --- COPIAR JSON AL PORTAPAPELES ---
+async function copyAnalysisJSON(id) {
+    let item = null;
+    if (analysisResults.techDesc?.id === id) item = analysisResults.techDesc;
+    if (analysisResults.creativePrompt?.id === id) item = analysisResults.creativePrompt;
+    if (!item) return;
+
+    const jsonStr = JSON.stringify(item.jsonContent, null, 2);
+    try {
+        await navigator.clipboard.writeText(jsonStr);
+        const btn = document.querySelector(`#card-${id} .btn-copy`);
+        if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = '✅ Copiado!';
+            btn.classList.add('btn-copied');
+            setTimeout(() => { btn.textContent = orig; btn.classList.remove('btn-copied'); }, 2000);
+        }
+    } catch (e) {
+        alert('Error al copiar: ' + e.message);
+    }
+}
+
+// --- ELIMINAR TARJETA DE ANÁLISIS ---
+function deleteAnalysisCard(id) {
+    if (analysisResults.techDesc?.id === id) analysisResults.techDesc = null;
+    if (analysisResults.creativePrompt?.id === id) analysisResults.creativePrompt = null;
+    renderAnalysisCards();
+}
+
+// --- CONSTRUIR PROMPT DE IMAGEN DESDE JSON TÉCNICO ---
+function buildTechImagePrompt(json) {
+    const d = json.descripcion_tecnica || json;
+    let p = '';
+
+    if (d.iluminacion) {
+        const il = d.iluminacion;
+        p += `Iluminación: ${il.tipo || ''}, dirección ${il.direccion || ''}, temperatura ${il.temperatura || ''}, contraste ${il.contraste || ''}, sombras ${il.sombras || ''}. Efecto visual: ${il.efecto_visual || ''}. `;
+    }
+    if (d.camara) {
+        const ca = d.camara;
+        p += `Cámara: ${ca.tipo_plano || ''}, ángulo ${ca.angulo || ''}, altura ${ca.altura || ''}, distancia ${ca.distancia || ''}, profundidad de campo ${ca.profundidad_de_campo || ''}, enfoque en ${ca.enfoque || ''}. `;
+    }
+    if (d.formato) {
+        const fo = d.formato;
+        p += `Encuadre: ${fo.encuadre || ''}. Composición: ${fo.composicion || ''}. `;
+    }
+    if (d.fondo) {
+        const fd = d.fondo;
+        const elem = Array.isArray(fd.elementos_visibles) ? fd.elementos_visibles.join(', ') : (fd.elementos_visibles || '');
+        p += `Fondo: ${fd.ubicacion || ''}, ${fd.profundidad || ''}${elem ? ', elementos: ' + elem : ''}. `;
+    }
+    if (d.color_y_estetica) {
+        const ce = d.color_y_estetica;
+        const pal = Array.isArray(ce.paleta) ? ce.paleta.join(', ') : (ce.paleta || '');
+        p += `Paleta de colores: ${pal}. Color grading: ${ce.color_grading || ''}. Ambiente: ${ce.ambiente || ''}. `;
+    }
+    if (d.calidad_visual) {
+        const cv = d.calidad_visual;
+        p += `Calidad: ${cv.acabado || ''}, nitidez ${cv.nitidez || ''}${cv.detalle_destacado ? ', detalle destacado: ' + cv.detalle_destacado : ''}. `;
+    }
+    if (d.lectura_visual) {
+        const lv = d.lectura_visual;
+        p += `Intención: ${lv.intencion || ''}. Sensación general: ${lv.sensacion_general || ''}.`;
+    }
+
+    return p;
+}
+
+// --- GENERAR IMAGEN APLICANDO EL JSON AL SUJETO ---
+async function generateImageFromAnalysis(id) {
+    const styleFile = document.getElementById('styleInput').files[0];
+    const subjectFile = document.getElementById('subjectInput').files[0];
+    if (!styleFile || !subjectFile) {
+        alert("Por favor sube ambas imágenes (Referencia + Identidad).");
+        return;
+    }
+
+    let item = analysisResults.techDesc?.id === id ? analysisResults.techDesc
+             : analysisResults.creativePrompt?.id === id ? analysisResults.creativePrompt
+             : null;
+    if (!item) return;
+
+    const btn = document.querySelector(`#card-${id} .btn-generate`);
+    const loading = document.getElementById('loadingOverlay');
+    const loadingText = loading?.querySelector('.loading-text-glow');
+    const loadingBg = document.getElementById('loadingBgImage');
+    const stylePreview = document.getElementById('stylePreview');
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generando...'; }
+    if (loadingBg && stylePreview?.src) {
+        loadingBg.style.backgroundImage = `url(${stylePreview.src})`;
+    }
+    if (loading) loading.style.display = 'flex';
+    if (loadingText) loadingText.textContent = 'IA Aplicando Estilo a la Imagen...';
+    startProgress(item.type === 'tech' ? 'Sustituyendo sujeto en escena...' : 'Aplicando estilo fotográfico...');
+
+    try {
+        const styleData = await fileToBase64(styleFile);
+        const subjectData = await fileToBase64(subjectFile);
+        const json = item.jsonContent;
+        let promptInstructions;
+
+        if (item.type === 'tech') {
+            const sceneDescription = buildTechImagePrompt(json);
+            promptInstructions = `Eres un director de fotografía y editor de imagen de élite. Tu misión es crear una imagen fotográfica donde el SUJETO de la Imagen B (identidad, rostro, vestuario) aparece integrado en la ESCENA de la Imagen A.
+
+ESCENA DE REFERENCIA (Imagen A) — REPLICA ESTA ESCENA EXACTAMENTE:
+${sceneDescription}
+
+IDENTIDAD A PRESERVAR (Imagen B):
+- Usa el rostro, rasgos faciales, expresión natural, cabello y vestuario del sujeto de la Imagen B.
+- Mantén la identidad facial reconocible del sujeto de la Imagen B.
+
+INSTRUCCIONES DE COMPOSICIÓN:
+1. El sujeto de la Imagen B debe ocupar la MISMA POSICIÓN, POSE y ENCUAADRE que el sujeto de la Imagen A.
+2. El fondo, la iluminación, el ángulo de cámara y la atmósfera deben ser IDÉNTICOS a los de la Imagen A.
+3. El resultado debe parecer que has sustituido al sujeto de la Imagen A por el sujeto de la Imagen B, manteniendo todo lo demás exactamente igual.
+4. Fotografía realista, editorial, de alta calidad.`;
+        } else {
+            const paleta = Array.isArray(json.color_palette) ? json.color_palette.join(', ') : (json.color_palette || '');
+            promptInstructions = `Eres un colorista y director de fotografía de élite especializado en grading y retoque. Tu trabajo es tomar la Imagen B como base absoluta y aplicarle UNICAMENTE los parámetros de estilo de la Imagen A.
+
+REGLA DE ORO: La Imagen B es intocable en su composición. Solo cambias luz y color.
+
+PARAMETROS DE ESTILO a aplicar (extraídos de la Imagen A):
+- Paleta de colores dominante: ${paleta}
+- Temperatura de luz: ${json.lighting?.temperature || ''}
+- Tipo de iluminación: ${json.lighting?.type || ''}
+- Atmósfera lumínica: ${json.lighting?.mood || ''}
+- Color grading general: ${json.color_grading || json.style || ''}
+- Acabado fotográfico: ${json.quality?.render_style || ''}, ${json.quality?.finish || ''}
+
+INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
+1. La Imagen B es la imagen BASE. Conserva SU fondo, SU entorno, SU escena, SU pose y SU composición exactamente igual. CERO cambios en el fondo.
+2. La única modificación permitida es el TRATAMIENTO DE COLOR E ILUMINACIÓN: aplica la paleta de colores, temperatura de luz, atmósfera y acabado fotográfico descritos arriba.
+3. Mantén intacta la ropa, accesorios, expresión y pose del sujeto de la Imagen B.
+4. NO copies ningún elemento del fondo de la Imagen A. NO inventes nuevos fondos. NO cambies la escena. NO alteres la pose. NO añadas ni quites objetos.
+5. El resultado visual debe ser: la Imagen B exacta, pero revelada con la paleta de colores y la atmósfera lumínica de la Imagen A. Como si un colorista de cine aplicara un LUT de grading sobre la Imagen B.`;
+        }
+
+        const payload = {
+            model: "gemini-3.1-flash-image-preview",
+            contents: [{ parts: [
+                { text: promptInstructions },
+                { inlineData: { mimeType: styleData.mimeType, data: styleData.data } },
+                { inlineData: { mimeType: subjectData.mimeType, data: subjectData.data } }
+            ]}],
+            generationConfig: {
+                responseModalities: ["IMAGE"],
+                imageConfig: { aspectRatio: detectedAR }
+            }
+        };
+
+        const response = await fetch('proxy.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.candidates?.[0]?.content?.parts) {
+            for (const part of data.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const imgSrc = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                    slotImages[item.type] = imgSrc;
+                    renderAnalysisCards();
+                }
+            }
+        } else if (data.error) {
+            alert("Error generando imagen: " + JSON.stringify(data.error));
+        } else {
+            alert("El modelo no devolvió una imagen. Prueba con el otro JSON.");
+        }
+
+    } catch (e) {
+        console.error(e);
+        alert("Error: " + e.message);
+    } finally {
+        completeProgress();
+        setTimeout(() => {
+            if (loading) loading.style.display = 'none';
+            resetProgress();
+        }, 600);
+        if (btn) { btn.disabled = false; btn.textContent = '🎨 Generar Imagen'; }
+    }
 }
 

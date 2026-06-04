@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * CHRONOS BOOTH - Gemini Proxy
  * VersiÃ³n segura: La API Key se lee del entorno (.htaccess)

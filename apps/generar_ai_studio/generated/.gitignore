@@ -1,0 +1,6 @@
+# Ignorar imágenes generadas por el proxy
+*.png
+*.jpg
+*.jpeg
+*.webp
+!.gitignore

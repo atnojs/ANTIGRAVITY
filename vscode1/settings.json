@@ -1,0 +1,14 @@
+{
+    "workbench.colorTheme": "Default Light Modern",
+    "php.suggest.basic": false,
+    "php.validate.enable": false,
+    "emmet.excludeLanguages": [
+        "markdown",
+        "php"
+    ],
+    "git.confirmSync": false,
+    "opencode.openai.apiKey": "27b6169eedab41cabdd8df34d0c1e3ae.qQFWau5LXpM7YfoQ",
+    "opencode.openai.baseUrl": "https://open.bigmodel.cn/api/paas/v4/",
+    "opencode.provider": "openai",
+    "antigravity.llm.provider": "openai"
+}

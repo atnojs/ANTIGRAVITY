@@ -1,0 +1,18 @@
+{
+  "name": "manager-centralizado",
+  "version": "1.0.0",
+  "description": "API Gateway centralizado para aplicaciones de generación de imagen",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.7.1",
+    "axios": "^1.6.8",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "sharp": "^0.33.5"
+  }
+}

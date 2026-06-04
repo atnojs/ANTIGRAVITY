@@ -1,0 +1,30 @@
+{
+    "name": "opengravity",
+    "version": "1.0.0",
+    "description": "Agente de IA personal con Telegram",
+    "type": "module",
+    "main": "src/index.ts",
+    "scripts": {
+        "dev": "tsx src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js"
+    },
+    "dependencies": {
+        "@types/fs-extra": "^11.0.4",
+        "dotenv": "^17.3.1",
+        "elevenlabs": "^1.59.0",
+        "firebase-admin": "^13.7.0",
+        "fs-extra": "^11.3.4",
+        "grammy": "^1.32.0",
+        "groq-sdk": "^0.7.0",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/node": "^22.9.0",
+        "tsx": "^4.19.2",
+        "typescript": "^5.6.3"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

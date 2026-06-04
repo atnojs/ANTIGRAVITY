@@ -1,70 +1,44 @@
-﻿<?php
-declare(strict_types=1); // <--- IMPORTANTE: primera lÃ­nea
+<?php
+declare(strict_types=1); // <--- IMPORTANTE: Esto debe ir en la primera lÃ­nea
 
-// ===============================
-// DECORAR HABITACION - PROXY
-// ===============================
-
-// ---------- CORS ----------
+// DECORAR HABITACION - PROXY CORREGIDO
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// ---------- CSP (ðŸ”¥ CLAVE PARA FIREBASE ðŸ”¥) ----------
-header(
-  "Content-Security-Policy: " .
-  "default-src 'self'; " .
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .
-    "https://www.gstatic.com " .
-    "https://www.googleapis.com " .
-    "https://unpkg.com " .
-    "https://cdn.jsdelivr.net " .
-    "https://cdn.tailwindcss.com; " .
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
-  "font-src 'self' https://fonts.gstatic.com; " .
-  "img-src 'self' data: blob: https://*.googleusercontent.com; " .
-  "connect-src 'self' " .
-    "https://firestore.googleapis.com " .
-    "https://identitytoolkit.googleapis.com " .
-    "https://securetoken.googleapis.com " .
-    "https://www.googleapis.com;"
-);
-
-// Preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
+    exit(0);
 }
 
-// ---------- ERRORES ----------
+// ConfiguraciÃ³n de errores (para depuraciÃ³n, puedes cambiar a 0 en producciÃ³n)
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 
-// ---------- API KEY (B) — cascadeo robusto ----------
+// 1) API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
 $API_KEY = '';
 $configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
-    $API_KEY = defined('B') ? B : '';
+    $API_KEY = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('B');
+    $API_KEY = getenv('GEMINI_API_KEY');
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('REDIRECT_B');
+    $API_KEY = getenv('REDIRECT_GEMINI_API_KEY');
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['B'] ?? '';
+    $API_KEY = $_SERVER['GEMINI_API_KEY'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['REDIRECT_B'] ?? '';
+    $API_KEY = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['B'] ?? '';
+    $API_KEY = $_ENV['GEMINI_API_KEY'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['REDIRECT_B'] ?? '';
+    $API_KEY = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
@@ -72,14 +46,13 @@ if (!$API_KEY || empty($API_KEY)) {
     exit;
 }
 
-// ---------- MÃ‰TODO ----------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'MÃ©todo no permitido. Usa POST.']);
     exit;
 }
 
-// ---------- INPUT ----------
+// 2) Procesar Entrada
 $raw = file_get_contents('php://input');
 if (!$raw) {
     http_response_code(400);
@@ -94,13 +67,15 @@ if (!is_array($req)) {
     exit;
 }
 
-// ---------- MODELO ----------
-$model  = $req['model']  ?? 'gemini-3.1-flash-image-preview';
+// 3) Configurar Modelo y Endpoint
+// Recibimos el modelo desde el JS (serÃ¡ flash para texto o gemini-3 para imÃ¡genes)
+$model = $req['model'] ?? 'gemini-3.1-flash-image-preview';
 $action = $req['action'] ?? 'generate';
 
+// Endpoint estÃ¡ndar de Google Gemini
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
-// ---------- PAYLOAD ----------
+// 4) Construir Payload limpio
 $payload = [];
 
 if (isset($req['contents'])) {
@@ -110,11 +85,13 @@ if (isset($req['contents'])) {
     }
 }
 
+// IMPORTANTE: Solo forzamos la respuesta de IMAGEN si la acciÃ³n es 'generate'
+// Para 'analyze' o 'detect', dejamos que devuelva TEXTO normalmente.
 if ($action === 'generate') {
     $payload['generationConfig']['responseModalities'] = ['IMAGE'];
 }
 
-// ---------- CURL ----------
+// 5) Ejecutar cURL
 $ch = curl_init($endpoint);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
@@ -137,7 +114,8 @@ if ($response === false) {
 $code = curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 500;
 curl_close($ch);
 
-// ---------- RESPUESTA ----------
+// Devolver respuesta tal cual
 http_response_code($code);
 echo $response;
+?>
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Lucide from 'lucide-react';
 
@@ -53,38 +53,38 @@ const getClosestAspectRatio = (width, height) => {
 
 const STYLE_GROUPS = {
     ilustracion: [
-        { id: '', name: 'ðŸ–Œï¸ Dibujo / IlustraciÃ³n', promptSuffix: '' },
+        { id: '', name: 'Dibujo / Ilustración', promptSuffix: '' },
         { id: 'anime', name: 'Anime Moderno', promptSuffix: 'Modern masterpiece anime style, high-quality animation aesthetic, sharp line art, vibrant cel-shading, expressive characters.' },
-        { id: 'comic', name: 'CÃ³mic Americano', promptSuffix: 'Classic American comic book style, Marvel/DC aesthetic, bold black ink outlines, heroic anatomy, vibrant colors, Ben-Day dots and halftone shading.' },
-        { id: 'mortadelo', name: 'Mortadelo y FilemÃ³n', promptSuffix: 'Unmistakable Francisco IbaÃ±ez cartoon style, slapstick aesthetic, humorous caricatures. Include ONE or TWO small, clean speech bubbles with a very short, satirical and funny Spanish phrase strictly related to the main characters and their absurd situation. Keep text minimal and sharp.' },
-        { id: 'boceto', name: 'Boceto a LÃ¡piz', promptSuffix: 'Artistic charcoal and graphite pencil sketch, rough hand-drawn lines, visible hatching, textured paper background, expressive unfinished look.' },
+        { id: 'comic', name: 'Cómic Americano', promptSuffix: 'Classic American comic book style, Marvel/DC aesthetic, bold black ink outlines, heroic anatomy, vibrant colors, Ben-Day dots and halftone shading.' },
+        { id: 'mortadelo', name: 'Mortadelo y Filemón', promptSuffix: 'Unmistakable Francisco Ibañez cartoon style, slapstick aesthetic, humorous caricatures. Include ONE or TWO small, clean speech bubbles with a very short, satirical and funny Spanish phrase strictly related to the main characters and their absurd situation. Keep text minimal and sharp.' },
+        { id: 'boceto', name: 'Boceto a Lápiz', promptSuffix: 'Artistic charcoal and graphite pencil sketch, rough hand-drawn lines, visible hatching, textured paper background, expressive unfinished look.' },
         { id: 'ghibli', name: 'Studio Ghibli', promptSuffix: 'Breathtaking Studio Ghibli anime style, painterly hand-painted backgrounds, whimsical and nostalgic atmosphere, soft natural lighting, magical aesthetic.' },
-        { id: 'manga-clasico', name: 'Manga ClÃ¡sico (BN)', promptSuffix: 'Classic 90s monochrome manga style, hand-drawn ink lines, professional screentones, dramatic hatching, high-contrast black and white art.' },
+        { id: 'manga-clasico', name: 'Manga Clásico (BN)', promptSuffix: 'Classic 90s monochrome manga style, hand-drawn ink lines, professional screentones, dramatic hatching, high-contrast black and white art.' },
         { id: 'line-art', name: 'Line Art Minimalista', promptSuffix: 'Clean minimalist line art, pure black lines on stark white background, sharp elegant contours, no shading, sophisticated simplicity.' },
-        { id: 'cartoon-europeo', name: 'Cartoon Europeo', promptSuffix: 'Classic European bande dessinÃ©e style, Tintin/Spirou ligne claire aesthetic, flat charming colors, clean lines, nostalgic adventure atmosphere.' },
-        { id: 'il-editorial', name: 'IlustraciÃ³n Editorial', promptSuffix: 'Contemporary editorial illustration style, sophisticated color palette, stylized geometric shapes, conceptual visual storytelling, clean digital textures.' },
+        { id: 'cartoon-europeo', name: 'Cartoon Europeo', promptSuffix: 'Classic European bande dessinée style, Tintin/Spirou ligne claire aesthetic, flat charming colors, clean lines, nostalgic adventure atmosphere.' },
+        { id: 'il-editorial', name: 'Ilustración Editorial', promptSuffix: 'Contemporary editorial illustration style, sophisticated color palette, stylized geometric shapes, conceptual visual storytelling, clean digital textures.' },
         { id: 'ink', name: 'Dibujo a Tinta', promptSuffix: 'Intricate black ink drawing, artistic cross-hatching, stippling techniques, fine detail, high-contrast pen and ink aesthetic.' }
     ],
     pictorico: [
-        { id: '', name: 'ðŸŽ¨ Arte / Tradicional', promptSuffix: '' },
-        { id: 'acuarela', name: 'Acuarela ArtÃ­stica', promptSuffix: 'Exquisite watercolor painting, soft dreamlike color bleeds, realistic wet-on-wet technique, textured cold-press paper background, delicate artistic touch.' },
+        { id: '', name: 'Arte / Tradicional', promptSuffix: '' },
+        { id: 'acuarela', name: 'Acuarela Artística', promptSuffix: 'Exquisite watercolor painting, soft dreamlike color bleeds, realistic wet-on-wet technique, textured cold-press paper background, delicate artistic touch.' },
         { id: 'oleo', name: 'Pintura al Ã“leo', promptSuffix: 'Masterpiece oil painting on canvas, visible thick impasto brushstrokes, rich oil textures, dramatic chiaroscuro lighting, traditional fine art aesthetic.' },
         { id: 'vintage', name: 'Vintage / Retro', promptSuffix: 'Authentic retro vintage aesthetic, 1970s film grain, faded nostalgic colors, analog photography look, warm lighting, distressed texture.' },
-        { id: 'fantasia', name: 'FantasÃ­a Ã‰pica', promptSuffix: 'High fantasy concept art, magical glowing elements, legendary creatures, intricate gold armor, cinematic atmospheric lighting, epic scale.' },
-        { id: 'surrealista', name: 'Surrealismo', promptSuffix: 'Surrealist masterpiece, dreamlike impossible landscape, melting objects, bizarre proportions, DalÃ­-esque subconscious imagery, thought-provoking.' },
+        { id: 'fantasia', name: 'Fantasía Ã‰pica', promptSuffix: 'High fantasy concept art, magical glowing elements, legendary creatures, intricate gold armor, cinematic atmospheric lighting, epic scale.' },
+        { id: 'surrealista', name: 'Surrealismo', promptSuffix: 'Surrealist masterpiece, dreamlike impossible landscape, melting objects, bizarre proportions, Dalí-esque subconscious imagery, thought-provoking.' },
         { id: 'gouache', name: 'Gouache Vibrante', promptSuffix: 'Vibrant gouache painting, flat opaque colors, hand-painted matte textures, charming book illustration aesthetic, bold and colorful.' },
-        { id: 'acrilico', name: 'AcrÃ­lico Moderno', promptSuffix: 'Modern acrylic painting style, bold expressive colors, textured brushwork, high contrast, contemporary art gallery aesthetic.' },
+        { id: 'acrilico', name: 'Acrílico Moderno', promptSuffix: 'Modern acrylic painting style, bold expressive colors, textured brushwork, high contrast, contemporary art gallery aesthetic.' },
         { id: 'expresionismo', name: 'Expresionismo', promptSuffix: 'Expressionist art style, intense emotional colors, distorted forms for dramatic impact, raw energetic brushstrokes, soul-stirring composition.' },
-        { id: 'realismo', name: 'Realismo PictÃ³rico', promptSuffix: 'Sophisticated painterly realism, focus on lighting and atmosphere, accurate proportions with visible artistic brushstrokes, high-end fine art.' },
+        { id: 'realismo', name: 'Realismo Pictórico', promptSuffix: 'Sophisticated painterly realism, focus on lighting and atmosphere, accurate proportions with visible artistic brushstrokes, high-end fine art.' },
         { id: 'impresionismo', name: 'Impresionismo', promptSuffix: 'Impressionist masterpiece, small thin visible brushstrokes, emphasis on light qualities, vibrant unmixed colors, capturing the fleeting movement.' }
     ],
     digital: [
-        { id: '', name: 'ðŸ’» Digital / 3D', promptSuffix: '' },
+        { id: '', name: 'Digital / 3D', promptSuffix: '' },
         { id: '3d-render', name: '3D Hyper-Render', promptSuffix: 'Professional 3D render, Octane rendering engine, 8k resolution, realistic ray-tracing, cinematic studio lighting, hyper-detailed textures.' },
         { id: 'lego', name: 'Estilo LEGO', promptSuffix: 'Constructed from high-quality LEGO bricks and minifigures, detailed plastic block textures, toy photography aesthetic, vibrant primary colors.' },
         { id: 'clay', name: 'Plastilina / Clay', promptSuffix: 'Handcrafted claymation style, tactile plasticine textures, fingerprints on material surface, stop-motion animation look, charming and organic.' },
         { id: 'pixel-art', name: 'Pixel Art Retro', promptSuffix: 'High-quality 16-bit pixel art, nostalgic retro video game aesthetic, vibrant limited color palette, clean grid-aligned pixels.' },
-        { id: 'isometrico', name: '3D IsomÃ©trico', promptSuffix: 'Stylized 3D isometric perspective, clean geometry, miniature world aesthetic, soft global illumination, vibrant digital toy look.' },
+        { id: 'isometrico', name: '3D Isométrico', promptSuffix: 'Stylized 3D isometric perspective, clean geometry, miniature world aesthetic, soft global illumination, vibrant digital toy look.' },
         { id: 'low-poly', name: 'Low Poly Art', promptSuffix: 'Modern low poly 3D aesthetic, visible polygonal triangulation, clean gradients, minimalist geometric digital art.' },
         { id: 'clay-render', name: 'Clay Render 3D', promptSuffix: 'Professional 3D clay render, matte monochrome material, soft shadows, global illumination, focus on form and volume.' },
         { id: 'diorama', name: 'Diorama Digital', promptSuffix: 'Intricate digital diorama, miniature scene isolated in a 3D box, tilt-shift lens effect, magical and detailed miniature environment.' },
@@ -92,17 +92,17 @@ const STYLE_GROUPS = {
         { id: 'maqueta', name: 'Maqueta 3D', promptSuffix: 'Architectural scale model style, clean white materials, precision laser-cut details, professional 3D presentation aesthetic.' }
     ],
     grafico: [
-        { id: '', name: 'ðŸ“ GrÃ¡fico / Moderno', promptSuffix: '' },
-        { id: 'neon', name: 'Luces de NeÃ³n', promptSuffix: 'Vibrant neon light aesthetic, glowing electric colors, dark atmospheric background, synthwave cyberpunk vibe.' },
-        { id: 'pop-art', name: 'Pop Art ClÃ¡sico', promptSuffix: 'Iconic Pop Art style, Andy Warhol and Roy Lichtenstein aesthetic, bold solid colors, Ben-Day dots, high-impact graphic culture.' },
+        { id: '', name: 'Gráfico / Moderno', promptSuffix: '' },
+        { id: 'neon', name: 'Luces de Neón', promptSuffix: 'Vibrant neon light aesthetic, glowing electric colors, dark atmospheric background, synthwave cyberpunk vibe.' },
+        { id: 'pop-art', name: 'Pop Art Clásico', promptSuffix: 'Iconic Pop Art style, Andy Warhol and Roy Lichtenstein aesthetic, bold solid colors, Ben-Day dots, high-impact graphic culture.' },
         { id: 'minimalista', name: 'Minimalismo Puro', promptSuffix: 'Minimalist graphic design, clean simple shapes, strategic use of negative space, restricted elegant color palette, essentialist aesthetic.' },
         { id: 'flat', name: 'Illustration Flat', promptSuffix: 'Modern flat design illustration, no shadows, geometric simplicity, clean solid colors, trendy digital graphic style.' },
-        { id: 'vectorial', name: 'GrÃ¡fico Vectorial', promptSuffix: 'Sharp SVG vector illustration, smooth paths, clean edges, professional logo-style graphics, scalable digital art.' },
-        { id: 'geometrico', name: 'AbstracciÃ³n GeomÃ©trica', promptSuffix: 'Abstract art made of geometric patterns, triangles and circles, mathematical precision, vibrant color blocks, balanced composition.' },
+        { id: 'vectorial', name: 'Gráfico Vectorial', promptSuffix: 'Sharp SVG vector illustration, smooth paths, clean edges, professional logo-style graphics, scalable digital art.' },
+        { id: 'geometrico', name: 'Abstracción Geométrica', promptSuffix: 'Abstract art made of geometric patterns, triangles and circles, mathematical precision, vibrant color blocks, balanced composition.' },
         { id: 'memphis', name: 'Estilo Memphis', promptSuffix: 'Quirky 80s Memphis design movement, loud clashing patterns, zig-zags and squiggles, pastel colors with bold outlines.' },
         { id: 'duotono', name: 'Duotono Impactante', promptSuffix: 'Bold duotone color effect, two high-contrast ink colors, graphic design aesthetic, modern visual power.' },
         { id: 'glitch', name: 'Glitch Art Digital', promptSuffix: 'Digital glitch aesthetic, chromatic aberration, data corruption artifacts, scanlines, cybernetic distortion look.' },
-        { id: 'poster', name: 'PÃ³ster Moderno', promptSuffix: 'Contemporary graphic poster layout, swiss design style, grid-based composition, high-impact typographic focus (simulated).' }
+        { id: 'poster', name: 'Póster Moderno', promptSuffix: 'Contemporary graphic poster layout, swiss design style, grid-based composition, high-impact typographic focus (simulated).' }
     ]
 };
 
@@ -114,8 +114,76 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
+const RESOLUTION_OPTIONS = [
+    { id: '1K', label: '512px', geminiSize: '1K' },
+    { id: '1K-hd', label: '1.024px', geminiSize: '1K' },
+    { id: '2K', label: '2.048px', geminiSize: '2K' },
+    { id: '4K', label: '4.096px', geminiSize: '4K' },
+];
+
 // --- SERVICES (ORIGINAL LOGIC) ---
 const PROXY_URL = './proxy.php';
+const HISTORY_URL = './history.php';
+
+// --- SERVER PERSISTENCE (sync híbrido: localStorage caché + servidor fuente) ---
+const syncToServer = async (image) => {
+    try {
+        const res = await fetch(HISTORY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: image.id,
+                prompt: image.prompt,
+                style: image.style,
+                aspectRatio: image.aspectRatio,
+                size: image.size,
+                geminiSize: image.geminiSize,
+                createdAt: image.createdAt,
+                imageData: image.url
+            })
+        });
+        if (!res.ok) console.warn('Sync server falló:', res.status);
+    } catch (e) { console.warn('Error syncing al servidor:', e); }
+};
+
+const deleteFromServer = async (id) => {
+    try {
+        await fetch(HISTORY_URL, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+    } catch (e) { console.warn('Error eliminando del servidor:', e); }
+};
+
+const clearServerHistory = async () => {
+    try {
+        await fetch(HISTORY_URL, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clearAll: true })
+        });
+    } catch (e) { console.warn('Error limpiando servidor:', e); }
+};
+
+const loadFromServer = async () => {
+    try {
+        const res = await fetch(HISTORY_URL);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data?.items || [];
+    } catch (e) { console.warn('Error cargando del servidor:', e); return []; }
+};
+
+const mergeHistory = (localItems, serverItems) => {
+    const localMap = new Map(localItems.map(item => [item.id, item]));
+    for (const s of serverItems) {
+        if (!localMap.has(s.id)) {
+            localMap.set(s.id, { ...s, url: s.imageUrl || s.url });
+        }
+    }
+    return Array.from(localMap.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+};
 
 const callProxy = async (model, contents, config = {}) => {
     const payload = { model, contents, ...config };
@@ -133,15 +201,15 @@ const callProxy = async (model, contents, config = {}) => {
 
 const enhancePrompt = async (basePrompt) => {
     try {
-        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÃ“N DE IMÃGENES.
+        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÃ“N DE IMÁGENES.
 TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÃ“N DEL USUARIO.
 Instrucciones:
-1. NO inventes sujetos nuevos (ej: si pide un perro, no digas que es un Golden Retriever a menos que Ã©l lo diga).
-2. NO cambies el entorno drÃ¡sticamente.
-3. CÃ©ntrate en aÃ±adir detalles tÃ©cnicos de calidad (iluminaciÃ³n, texturas, estilo de cÃ¡mara) para que el prompt sea mÃ¡s efectivo pero manteniendo el mensaje original intacto.
-4. Si el usuario pide un cambio pequeÃ±o (ej: "lazo rojo"), el prompt debe centrarse en ese cambio pero con mejor lenguaje tÃ©cnico.
+1. NO inventes sujetos nuevos (ej: si pide un perro, no digas que es un Golden Retriever a menos que él lo diga).
+2. NO cambies el entorno drásticamente.
+3. Céntrate en añadir detalles técnicos de calidad (iluminación, texturas, estilo de cámara) para que el prompt sea más efectivo pero manteniendo el mensaje original intacto.
+4. Si el usuario pide un cambio pequeño (ej: "lazo rojo"), el prompt debe centrarse en ese cambio pero con mejor lenguaje técnico.
 
-Analiza este prompt original: "${basePrompt}" y genera 4 variantes en espaÃ±ol (Descriptiva, CinematogrÃ¡fica, ArtÃ­stica, y Minimalista) siguiendo estas reglas estrictas.`;
+Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (Descriptiva, Cinematográfica, Artística, y Minimalista) siguiendo estas reglas estrictas.`;
         const contents = [{ parts: [{ text: systemInstructions }] }];
         const config = {
             generationConfig: {
@@ -191,7 +259,8 @@ const generateImage = async (params) => {
     const config = {
         generationConfig: {
             imageConfig: {
-                aspectRatio: params.aspectRatio
+                aspectRatio: params.aspectRatio,
+                imageSize: params.imageSize || '1K'
             }
         }
     };
@@ -211,13 +280,13 @@ const editImageConversation = async (params) => {
             { text: params.instruction }
         ]
     }];
-    const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
+    const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio, imageSize: params.imageSize || '1K' } } };
     const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
     }
-    throw new Error("Error en la ediciÃ³n conversacional");
+    throw new Error("Error en la edición conversacional");
 };
 
 // --- COMPONENTS ---
@@ -358,9 +427,9 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
 const Splash = ({ onSelect }) => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
-            <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Edita como un Pro</h1>
+            <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Diseña como un Pro</h1>
             <p className="text-gray-300 text-lg md:text-2xl font-light max-w-2xl mx-auto">
-                <span className="neon-text font-semibold">GeneraciÃ³n/EdiciÃ³n Visual de ImÃ¡genes</span>
+                <span className="neon-text font-semibold">Edición/Generación de Imágenes</span>
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
@@ -372,7 +441,7 @@ const Splash = ({ onSelect }) => (
                     <Wand2 size={32} />
                 </div>
                 <h2 className="text-4xl font-bold">Editar Imagen</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Edita imÃ¡genes existentes con la potencia de Nano Banana.</p>
+                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de Nano Banana.</p>
             </button>
             <button onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
@@ -381,22 +450,59 @@ const Splash = ({ onSelect }) => (
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Generar ImÃ¡genes</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Genera imÃ¡genes desde una descripciÃ³n de texto.</p>
+                <h2 className="text-4xl font-bold">Generar Imágenes</h2>
+                <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
             </button>
         </div>
     </div>
 );
 
+const STORAGE_KEY = 'gemini_image_studio_history';
+
 // --- APP MAIN ---
 const App = () => {
-    const [view, setView] = useState('editor');
+    const [view, setView] = useState('splash');
     const [mode, setMode] = useState('text-to-image');
     const [prompt, setPrompt] = useState('');
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.ilustracion[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
-    const [images, setImages] = useState([]);
+    const [images, setImages] = useState(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch (e) { console.warn('Error cargando historial:', e); }
+        return [];
+    });
+
+    // Persistencia: guardar historial al cambiar (máx 50 items en local)
+    useEffect(() => {
+        try {
+            const toSave = images.slice(0, 50);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+        } catch (e) { console.warn('Error guardando historial:', e); }
+    }, [images]);
+
+    // Al montar: cargar del servidor y fusionar con localStorage
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                const localItems = saved ? (JSON.parse(saved) || []) : [];
+                const serverItems = await loadFromServer();
+                if (cancelled) return;
+                const merged = mergeHistory(localItems, serverItems);
+                if (merged.length > images.length || serverItems.length > 0) {
+                    setImages(merged);
+                }
+            } catch (e) { console.warn('Error en sync inicial:', e); }
+        })();
+        return () => { cancelled = true; };
+    }, []); // solo al montar
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isEnhancing, setIsEnhancing] = useState(false);
@@ -405,6 +511,7 @@ const App = () => {
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
+    const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
 
     const fileInputRef = useRef(null);
 
@@ -448,45 +555,43 @@ const App = () => {
         setError(null);
         try {
             const styleSuffix = selectedStyle.promptSuffix;
-            const results = await Promise.all([
-                generateImage({
-                    prompt: effectivePrompt,
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
-                }),
-                generateImage({
-                    prompt: effectivePrompt + (mode === 'remix' ? " (Alternative detailed variation)" : " --variation distinct composition"),
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
-                })
-            ]);
+            const imageUrl = await generateImage({
+                prompt: effectivePrompt,
+                styleSuffix,
+                aspectRatio: selectedAR,
+                imageSize: imageSize.geminiSize,
+                sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
+            });
 
-            const newHistoryImages = results.map(imageUrl => ({
+            const newImage = {
                 id: Math.random().toString(36).substring(7),
                 url: imageUrl,
                 prompt: effectivePrompt || 'Remezcla',
                 style: selectedStyle,
                 aspectRatio: selectedAR,
-                size: '1K',
+                size: imageSize.label,
+                geminiSize: imageSize.geminiSize,
                 createdAt: Date.now()
-            }));
+            };
 
-            setImages(prev => [...newHistoryImages, ...prev]);
+            setImages(prev => [newImage, ...prev]);
+            syncToServer(newImage); // persistir en servidor (fuego-y-olvido)
         } catch (err) {
-            setError(err.message || "Error de generaciÃ³n");
+            setError(err.message || "Error de generación");
         } finally {
             setIsGenerating(false);
-            // Resetear estados post-generaciÃ³n (mantenemos enhancedPrompts)
+            // Resetear estados post-generación (mantenemos enhancedPrompts)
             setPrompt("");
             setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
             setSelectedAR(AspectRatio.SQUARE);
         }
     };
 
-    const handleDelete = (id) => setImages(images.filter(img => img.id !== id));
-    const handleClearHistory = () => { if (window.confirm('Â¿Deseas eliminar todo el historial?')) setImages([]); };
+    const handleDelete = (id) => {
+        setImages(images.filter(img => img.id !== id));
+        deleteFromServer(id);
+    };
+    const handleClearHistory = () => { if (window.confirm('¿Deseas eliminar todo el historial?')) { setImages([]); try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} clearServerHistory(); } };
     const handleRegenerate = (img) => {
         setPrompt(img.prompt);
         setSelectedStyle(img.style);
@@ -505,12 +610,14 @@ const App = () => {
             const updatedUrl = await editImageConversation({
                 originalImage: editImage.url,
                 instruction: editInstruction,
-                aspectRatio: editImage.aspectRatio
+                aspectRatio: editImage.aspectRatio,
+                imageSize: editImage.geminiSize || '1K'
             });
             const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, createdAt: Date.now() };
             setImages([updatedImage, ...images]);
+            syncToServer(updatedImage);
             setEditImage(null);
-        } catch (err) { setError("Error de ediciÃ³n"); } finally { setIsGenerating(false); }
+        } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
     };
 
     const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim()) || (mode === 'remix' && !remixSource);
@@ -541,7 +648,7 @@ const App = () => {
                             )}
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Quieres aÃ±adir algo??</label>
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Quieres añadir algo??</label>
                                 <div className="relative">
                                     <textarea
                                         value={prompt}
@@ -564,10 +671,9 @@ const App = () => {
                                         {enhancedPrompts.map((p, i) => (
                                             <button
                                                 key={i}
-                                                onClick={() => {
-                                                    setPrompt(p.text);
-                                                }}
-                                                className="text-[10px] text-left p-3 glass-light border border-white/5 rounded-2xl text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all leading-tight group"
+                                                disabled={isGenerating}
+                                                onClick={() => setPrompt(p.text)}
+                                                className="text-[10px] text-left p-3 glass-light border border-white/5 rounded-2xl text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all leading-tight group disabled:opacity-40 disabled:cursor-not-allowed"
                                             >
                                                 <div className="font-bold text-[9px] uppercase tracking-tighter text-gray-500 group-hover:text-cyan-500 mb-1">{p.type}</div>
                                                 <div className="line-clamp-2 italic opacity-80">{p.text}</div>
@@ -619,10 +725,25 @@ const App = () => {
                                 </div>
                             </div>
 
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Resolución de Salida</label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {RESOLUTION_OPTIONS.map((res) => (
+                                        <button
+                                            key={res.id}
+                                            onClick={() => setImageSize(res)}
+                                            className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${imageSize.id === res.id ? 'border-purple-500 bg-purple-500/10 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                        >
+                                            <span className="text-[10px] font-bold tracking-tighter">{res.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="pt-6 order-last">
                                 <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-                                    {isGenerating ? 'PROCESANDO...' : 'GENERAR EDICIÃ“N'}
+                                    {isGenerating ? 'PROCESANDO...' : 'GENERAR EDICIÓN'}
                                 </button>
                                 {error && <p className="text-red-400 text-[10px] text-center mt-4 font-bold uppercase tracking-widest">{error}</p>}
                             </div>
@@ -632,7 +753,7 @@ const App = () => {
                             <div className="max-w-7xl mx-auto space-y-16">
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
-                                        <h2 className="text-4xl font-bold tracking-tight">Historial de ImÃ¡genes Editadas</h2>
+                                        <h2 className="text-4xl font-bold tracking-tight">Historial de Imágenes Editadas</h2>
                                         <p className="text-gray-400 font-medium">Controla y refina tus creaciones visuales en tiempo real.</p>
                                     </div>
                                     <button onClick={handleClearHistory} className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] font-bold uppercase tracking-widest border border-red-500/20">
@@ -646,7 +767,7 @@ const App = () => {
                                             <ImageIcon size={48} />
                                         </div>
                                         <div className="space-y-2">
-                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imÃ¡genes aÃºn</h3>
+                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imágenes aún</h3>
                                             <p className="text-gray-600 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
                                         </div>
                                     </div>
@@ -689,12 +810,12 @@ const App = () => {
                                         <div className="flex-1 flex flex-col justify-between space-y-8">
                                             <div className="space-y-4">
                                                 <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 font-medium">
-                                                    Indica modificaciones puntuales (luz, color, expansiÃ³n) para aplicar sobre la base actual manteniendo la coherencia estructural.
+                                                    Indica modificaciones puntuales (luz, color, expansión) para aplicar sobre la base actual manteniendo la coherencia estructural.
                                                 </div>
                                                 <textarea
                                                     value={editInstruction}
                                                     onChange={(e) => setEditInstruction(e.target.value)}
-                                                    placeholder="Ej: 'Transforma la iluminaciÃ³n a un atardecer cÃ¡lido'..."
+                                                    placeholder="Ej: 'Transforma la iluminación a un atardecer cálido'..."
                                                     className="w-full h-44 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none focus:border-cyan-400 transition-all shadow-inner"
                                                 />
                                             </div>

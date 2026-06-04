@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // ─── HistoryManager ──────────────────────────────────────
+    HistoryManager.configure({ dbName: 'color_app_db' });
+
     const colorModeBtn = document.getElementById('color-mode-btn');
     const imageModeBtn = document.getElementById('image-mode-btn');
     const colorInputContainer = document.getElementById('color-input-container');
@@ -238,6 +241,9 @@ La entrada del usuario es:`;
                 const hasResults = displayResults(response.candidates[0].content.parts);
                 if (!hasResults) {
                     resultsContainer.innerHTML = `<p class="error-message">El modelo devolvió una respuesta pero no se encontraron imágenes generadas. Prueba a cambiar el texto o la imagen.</p>`;
+                } else {
+                    // Guardar imágenes generadas en el historial
+                    saveGeneratedToHistory(response.candidates[0].content.parts);
                 }
             } else {
                 console.error('La respuesta de la API no tiene el formato esperado o fue bloqueada.', response);
@@ -260,42 +266,25 @@ La entrada del usuario es:`;
     });
 
     function setLoading(isLoading) {
+        const overlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
         if (isLoading) {
             generateBtn.disabled = true;
-            // Usamos el loader premium con difuminado
-            let overlay = document.getElementById('premium-loader');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'premium-loader';
-                overlay.className = 'loading-overlay';
-                overlay.innerHTML = `
-                    <div class="loading-bg-image"></div>
-                    <div class="spinner-triple">
-                        <div class="ring ring-1"></div>
-                        <div class="ring ring-2"></div>
-                        <div class="ring ring-3"></div>
-                    </div>
-                    <p class="loading-text">Interpretando Concepto...</p>
-                `;
-                document.body.appendChild(overlay);
-
-                // Si hay una imagen cargada, usarla de fondo
-                const bgImage = overlay.querySelector('.loading-bg-image');
-                if (currentMode === 'image' && uploadedFile) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => bgImage.style.backgroundImage = `url(${e.target.result})`;
-                    reader.readAsDataURL(uploadedFile);
-                } else if (currentMode === 'color') {
-                    bgImage.style.backgroundColor = colorInput.value;
-                }
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.style.display = 'flex';
             }
-            overlay.style.display = 'flex';
+            if (loadingText) loadingText.textContent = 'Interpretando Concepto...';
+            document.body.style.overflow = 'hidden';
             resultsContainer.innerHTML = '';
             resultsContainer.classList.add('hidden');
         } else {
             generateBtn.disabled = false;
-            const overlay = document.getElementById('premium-loader');
-            if (overlay) overlay.style.display = 'none';
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.style.display = 'none';
+            }
+            document.body.style.overflow = '';
             resultsContainer.classList.remove('hidden');
         }
     }
@@ -538,6 +527,83 @@ La entrada del usuario es:`;
         link.click();
         document.body.removeChild(link);
     }
+
+    // ─── Persistencia con HistoryManager ────────────────────────
+    function saveGeneratedToHistory(parts) {
+        parts.forEach(function (p) {
+            if (p.inlineData) {
+                var imageUrl = 'data:' + (p.inlineData.mimeType || 'image/png') + ';base64,' + p.inlineData.data;
+                HistoryManager.saveItem({
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
+                    url: imageUrl,
+                    prompt: colorInput.value || uploadedFile?.name || 'Paleta generada',
+                    aspectRatio: '1:1',
+                    size: '',
+                    geminiSize: '1K',
+                    style: { mode: currentMode },
+                    createdAt: Date.now()
+                });
+            }
+        });
+        loadAndRenderHistory();
+    }
+
+    function deleteHistoryItem(id) {
+        if (confirm('¿Eliminar esta imagen del historial?')) {
+            HistoryManager.deleteItem(id).then(function () { loadAndRenderHistory(); });
+        }
+    }
+
+    function clearAllHistory() {
+        if (confirm('¿Eliminar todo el historial?')) {
+            HistoryManager.clearAll().then(function () { loadAndRenderHistory(); });
+        }
+    }
+
+    function loadAndRenderHistory() {
+        HistoryManager.loadAll().then(function (items) {
+            var grid = document.getElementById('history-grid');
+            var title = document.getElementById('history-title');
+            if (!grid) return;
+            if (!items || !items.length) {
+                grid.innerHTML = '';
+                if (title) title.style.display = 'none';
+                return;
+            }
+            if (title) title.style.display = 'block';
+            grid.innerHTML = items.map(function (item) {
+                return '<article class="result-card" style="position:relative">' +
+                    '<div class="image-container">' +
+                    '<img src="' + item.url + '" alt="Historial" onclick="document.getElementById(\'image-viewer\')?.' +
+                    'classList.add(\'active\');var v=document.querySelector(\'#image-viewer img\');if(v)v.src=this.src">' +
+                    '<button class="download-card-btn" title="Eliminar" style="right:10px;left:auto;background:rgba(239,68,68,0.8)" ' +
+                    'onclick="event.stopPropagation();window._deleteHistoryItem && window._deleteHistoryItem(\'' + item.id + '\')">' +
+                    '<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 20 20\' fill=\'white\' width=\'16\' height=\'16\'>' +
+                    '<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.75h-.75A2.25 2.25 0 0 0 3 6.75v.5c0 .414.336.75.75.75H4v6.75A2.75 2.75 0 0 0 6.75 17h6.5A2.75 2.75 0 0 0 16 14.75V8h.25A.75.75 0 0 0 17 7.25v-.5A2.25 2.25 0 0 0 14.75 4.5H14v-.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM12.5 4.5v-.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.75h5Z" clip-rule="evenodd"/></svg>' +
+                    '</button></div>' +
+                    '<div class="result-info"><p style="color:#94a3b8;font-size:0.8rem;margin:0">' +
+                    new Date(item.createdAt).toLocaleString() + '</p></div></article>';
+            }).join('');
+
+            // Botón limpiar todo
+            var clearBtn = document.getElementById('history-clear-btn');
+            if (!clearBtn) {
+                clearBtn = document.createElement('button');
+                clearBtn.id = 'history-clear-btn';
+                clearBtn.textContent = 'Limpiar Historial';
+                clearBtn.style.cssText = 'margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem';
+                clearBtn.onclick = clearAllHistory;
+                var historyContainer = document.getElementById('history-container');
+                if (historyContainer) historyContainer.appendChild(clearBtn);
+            }
+        });
+    }
+
+    // Exponer función de borrado para onclick inline
+    window._deleteHistoryItem = deleteHistoryItem;
+
+    // Cargar historial al iniciar
+    HistoryManager.init().then(function () { loadAndRenderHistory(); });
 
     setInputMode('image');
 });

@@ -1,0 +1,77 @@
+{
+    "apps": [
+        {
+            "id": "1",
+            "title": "Generador de Imágenes",
+            "description": "Crea imágenes únicas y personalizadas a partir de tus ideas",
+            "url": "https:\/\/atnojs.es\/apps\/generar_imagenes\/index.html",
+            "icon": "🎨",
+            "backgroundImage": "https:\/\/images.unsplash.com\/photo-1618005182384-a83a8bd57fbe?w=800",
+            "creditsPerRequest": 2,
+            "order": 0
+        },
+        {
+            "id": "2",
+            "title": "Asistente de Texto",
+            "description": "Genera contenido de calidad con inteligencia artificial",
+            "url": "https:\/\/ejemplo.com\/asistente-texto",
+            "icon": "✍️",
+            "backgroundImage": "https:\/\/images.unsplash.com\/photo-1455390582262-044cdead277a?w=800",
+            "creditsPerRequest": 1,
+            "order": 1
+        }
+    ],
+    "texts": {
+        "heroTitle": "Tus Apps IA en un Solo Lugar",
+        "heroSubtitle": "Accede a múltiples herramientas de inteligencia artificial con un sistema unificado de créditos",
+        "footerText": "© 2024 Web Apps IA. Todos los derechos reservados."
+    },
+    "plans": {
+        "free": {
+            "name": "Gratuito",
+            "credits": 5,
+            "price": 0,
+            "description": "Perfecto para probar"
+        },
+        "basic": {
+            "name": "Básico",
+            "credits": 20,
+            "price": 4.99,
+            "description": "Para uso regular"
+        },
+        "premium": {
+            "name": "Premium",
+            "credits": 50,
+            "price": 14.99,
+            "description": "Uso intensivo con descuentos"
+        },
+        "vip": {
+            "name": "👑 VIP Ilimitado",
+            "credits": 1000000,
+            "price": 0,
+            "description": "Uso ilimitado para Administradores"
+        }
+    },
+    "users": [
+        {
+            "id": "1763928156200",
+            "email": "a@a",
+            "passwordHash": "MA==",
+            "currentPlan": "basic",
+            "creditsToday": 20,
+            "lastReset": "Sun Nov 23 2025",
+            "registrationDate": "2025-11-23T20:02:36.200Z"
+        }
+    ],
+    "appUsage": [
+        null,
+        {
+            "totalRequests": 2,
+            "totalCreditsUsed": 4,
+            "lastUsed": "2025-11-23T20:55:42.217Z",
+            "userRequests": {
+                "a@a": 2
+            }
+        }
+    ]
+}

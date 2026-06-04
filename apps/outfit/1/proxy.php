@@ -1,0 +1,92 @@
+<?php
+// proxy.php — Outfit App
+
+// 1. Establecer el tipo de contenido de la respuesta a JSON.
+header('Content-Type: application/json');
+
+// 2. API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$apiKey = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('GEMINI_API_KEY');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('REDIRECT_GEMINI_API_KEY');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['GEMINI_API_KEY'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+
+// Si la clave de API no está configurada, devuelve un error.
+if (!$apiKey) {
+    http_response_code(500);
+    echo json_encode(['error' => 'La clave de API no está configurada en el servidor.']);
+    exit();
+}
+
+// 3. Obtener los datos POST enviados desde el JavaScript.
+$requestBody = file_get_contents('php://input');
+$data = json_decode($requestBody, true);
+
+// Validar que los datos recibidos son correctos.
+if (json_last_error() !== JSON_ERROR_NONE || !isset($data['targetUrl']) || !isset($data['payload'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Datos de la solicitud no válidos.', 'data' => $data]);
+    exit();
+}
+
+$targetUrl = $data['targetUrl'];
+$payload = $data['payload'];
+
+// 4. Construir la URL final de la API de Google con la clave.
+$finalApiUrl = $targetUrl . '?key=' . $apiKey;
+
+// 5. Usar cURL para reenviar la solicitud a la API de Google.
+$ch = curl_init();
+
+curl_setopt($ch, CURLOPT_URL, $finalApiUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+// 6. Ejecutar la solicitud y obtener la respuesta y el código de estado.
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+// Manejar errores de cURL.
+if (curl_errno($ch)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Error de cURL: ' . curl_error($ch)]);
+    curl_close($ch);
+    exit();
+}
+
+curl_close($ch);
+
+// 7. Reenviar el código de estado y la respuesta de Google de vuelta al cliente.
+http_response_code($httpcode);
+
+if ($httpcode >= 400) {
+    echo json_encode([
+        'error' => 'Error en la API de Google',
+        'status' => $httpcode,
+        'response' => json_decode($response)
+    ]);
+} else {
+    echo $response;
+}
+?>

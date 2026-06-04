@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AuraStudio — Premium AI Image Workspace</title>
+  <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="app-shell" id="app-shell">
+
+  <!-- ========== SIDEBAR (Desktop) ========== -->
+  <aside class="sidebar expanded" id="sidebar">
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-inner">
+        <div class="sidebar-logo">
+          <i class="fa-solid fa-wand-magic-sparkles" style="position:relative;z-index:1;font-size:0.75rem;color:var(--accent-pink)"></i>
+        </div>
+        <span class="sidebar-brand-text" id="brand-text">AURA<span>STUDIO</span></span>
+      </div>
+      <button class="sidebar-toggle" id="toggle-sidebar" title="Colapsar barra">
+        <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
+      </button>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav custom-scrollbar">
+      <div class="sidebar-section-label" id="nav-label-work">Entorno de Trabajo</div>
+      <div style="display:flex;flex-direction:column;gap:0.375rem;margin-bottom:1.5rem;" id="nav-primary">
+        <button class="nav-item active" data-tab="generator"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="nav-label">Espacio Aura</span><span class="nav-tooltip">Espacio Aura</span></button>
+        <button class="nav-item" data-tab="gallery"><i class="fa-solid fa-grid-2"></i><span class="nav-label">Mis Esculturas</span><span class="nav-tooltip">Mis Esculturas</span></button>
+      </div>
+
+      <div class="sidebar-section-label" id="nav-label-conf">Configuración</div>
+      <div style="display:flex;flex-direction:column;gap:0.375rem;" id="nav-secondary">
+        <button class="nav-item nav-item-secondary" data-tab="docs"><i class="fa-solid fa-circle-question"></i><span class="nav-label">Documentación</span><span class="nav-tooltip">Documentación</span></button>
+      </div>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+      <div class="user-card">
+        <div class="user-avatar"><div class="user-avatar-inner">AS</div></div>
+        <div class="user-info" id="sidebar-user-info">
+          <p class="user-name">Artista Aura</p>
+          <p class="user-status">● Motor Conectado</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <div class="main-content sidebar-expanded settings-visible" id="main-content">
+
+    <!-- Header -->
+    <header class="workspace-header">
+      <span class="header-badge" id="header-badge">Entorno Aura</span>
+      <div class="header-right">
+        <button class="btn-mobile-settings" id="btn-mobile-settings">
+          <i class="fa-solid fa-sliders"></i> <span>Ajustes Avanzados</span>
+        </button>
+        <div class="header-connection">
+          <span class="header-connection-dot"></span>
+          Canal de Aura-3 Conectado
+        </div>
+      </div>
+    </header>
+
+    <!-- Workspace Main -->
+    <main class="workspace-main custom-scrollbar" id="workspace-main">
+
+      <!-- ===== GENERATOR TAB ===== -->
+      <section class="workspace-section" id="tab-generator">
+        <div class="section-heading">
+          <h1>Esculpe Obras de Arte en Alta Resolución</h1>
+          <p>Introduce palabras clave, selecciona estilos visuales, configura proporciones y ordena a los modelos Aura codificar obras prémium al instante.</p>
+        </div>
+
+        <!-- Prompt Area -->
+        <div class="prompt-container">
+          <div class="prompt-box" id="prompt-box">
+            <textarea id="prompt-input" rows="3" placeholder="Describe tu obra maestra aquí... (ej. 'Un majestuoso fénix de cristal surgiendo de polvo estelar cósmico')"></textarea>
+            <div class="prompt-footer">
+              <span class="style-badge" id="style-badge">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Estilo: Fotorrealista
+              </span>
+              <button class="btn-optimize" id="btn-optimize">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Mejorar Redacción
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="btn-generate active" id="btn-generate">
+          <i class="fa-solid fa-bolt"></i> Generar Imagen <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <!-- Styles Carousel -->
+        <div class="styles-section">
+          <div class="styles-section-header">
+            <div class="styles-section-icon"><i class="fa-solid fa-palette"></i></div>
+            <div>
+              <h2 class="styles-section-title">Elige tu Estilo Visual</h2>
+              <p class="styles-section-sub">Selecciona el estilo artístico para tu creación</p>
+            </div>
+          </div>
+          <div class="styles-carousel-container no-scrollbar" id="styles-carousel"></div>
+        </div>
+
+        <!-- Gallery / Loading -->
+        <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:1.5rem;" id="generator-results-area"></div>
+      </section>
+
+      <!-- ===== GALLERY TAB ===== -->
+      <section class="workspace-section hidden" id="tab-gallery">
+        <div class="section-heading">
+          <h1 style="font-family:var(--font-sans);background:none;-webkit-text-fill-color:#fff;color:#fff;">Mi Historial de Esculturas</h1>
+          <p>Explora y descarga tu historial de visualizaciones generadas. Todo se almacena de forma segura en el almacenamiento local de tu navegador.</p>
+        </div>
+        <div style="padding-top:1rem;" id="gallery-tab-content"></div>
+      </section>
+
+
+
+      <!-- ===== DOCS TAB ===== -->
+      <section class="workspace-section hidden" id="tab-docs">
+        <div class="section-heading">
+          <h1 style="font-family:var(--font-sans);background:none;-webkit-text-fill-color:#fff;color:#fff;">Guía de Redacción Estética</h1>
+          <p>Consejos prácticos para componer prompts sobresalientes y obtener el mejor partido del Motor Aura de AuraStudio.</p>
+        </div>
+        <div class="docs-content" style="margin-top:1.5rem;">
+          <div>
+            <h3>1. Fórmula de Estructura de Prompt</h3>
+            <p>Las obras estéticas más refinadas siguen un patrón claro: <code>[Sujeto Central] + [Fondo y Atmósfera] + [Configuración de Lente/Cámara] + [Estilos Estéticos/Iluminación]</code>.</p>
+          </div>
+          <div class="docs-divider">
+            <h3>2. Calibración de la Escala de Guía (CFG)</h3>
+            <p>El valor de CFG determina con qué precisión el modelo interpreta las instrucciones literales de tu prompt:</p>
+            <ul>
+              <li><strong style="color:#cbd5e1;">CFG 1 - 5:</strong> Arte suave más abstracto e interpretativo, mayor libertad creadora.</li>
+              <li><strong style="color:#cbd5e1;">CFG 7 - 10 (Recomendado):</strong> Renderizado natural bien balanceado que sigue tus palabras a la perfección.</li>
+              <li><strong style="color:#cbd5e1;">CFG 12 - 20:</strong> Adherencia matemática extrema, altos contrastes y bordes muy marcados.</li>
+            </ul>
+          </div>
+          <div class="docs-divider">
+            <h3>3. Pautas de Imagen de Referencia (Img2Img)</h3>
+            <p>La técnica de Imagen a Imagen adquiere las geometrías de contornos del lienzo guía y les superpone tus prompts de texto estéticos. Úsalo con siluetas definidas y contrastes limpios.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========== SETTINGS PANEL (Desktop Right) ========== -->
+  <aside class="settings-panel custom-scrollbar" id="settings-panel">
+    <div class="settings-header">
+      <div class="settings-header-icon"><i class="fa-solid fa-sliders"></i></div>
+      <div>
+        <h2>Ajustes del Motor</h2>
+        <p>Configuración Personalizada</p>
+      </div>
+    </div>
+
+    <!-- Aspect Ratio -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;">
+        <label class="settings-label" style="margin-bottom:0;"><i class="fa-solid fa-maximize"></i> Relación de Aspecto</label>
+        <span style="font-size:0.625rem;font-family:var(--font-mono);padding:0.25rem 0.625rem;border-radius:9999px;background:rgba(52,211,153,0.10);color:var(--accent-emerald);border:1px solid rgba(52,211,153,0.20);" id="aspect-badge">Fijado: 1:1</span>
+      </div>
+      <div class="aspect-grid" id="aspect-grid"></div>
+    </div>
+
+    <!-- Reference Image -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+        <label class="settings-label" style="margin-bottom:0;"><i class="fa-solid fa-upload"></i> Imagen de Referencia</label>
+        <span style="font-size:0.625rem;color:var(--text-muted);">Lienzo opcional</span>
+      </div>
+      <div class="dropzone" id="dropzone">
+        <input type="file" accept="image/*" class="sr-only" id="ref-file-input">
+        <div id="dropzone-empty">
+          <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <p class="dropzone-title">Arrastra o haz clic aquí</p>
+          <p class="dropzone-sub">Aplica las instrucciones del prompt sobre los contornos estructurales de la imagen</p>
+        </div>
+        <div class="dropzone-preview hidden" id="dropzone-preview">
+          <img id="ref-preview-img" src="" alt="Referencia">
+          <div class="dropzone-preview-overlay">
+            <button class="btn-clear-ref" id="btn-clear-ref"><i class="fa-solid fa-xmark"></i> Quitar Referencia</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fine-Tuning -->
+    <div class="settings-divider">
+      <label class="settings-label"><i class="fa-solid fa-sliders"></i> Ajustes Estéticos Avanzados</label>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span><i class="fa-solid fa-gauge-high"></i> Escala de Guía (CFG)</span>
+          <span class="slider-value pink" id="cfg-value">7.5</span>
+        </div>
+        <input type="range" min="1" max="20" step="0.5" value="7.5" id="cfg-slider">
+        <p class="slider-hint">Valores más altos vinculan el estilo estrictamente a las palabras clave del prompt.</p>
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span><i class="fa-solid fa-wave-square"></i> Pasos de Refinamiento</span>
+          <span class="slider-value purple" id="steps-value">50</span>
+        </div>
+        <input type="range" min="10" max="100" step="5" value="50" id="steps-slider">
+        <p class="slider-hint">Un muestreo más denso produce perfiles de textura sumamente detallados pero demora más.</p>
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Muestreador de Difusión</span>
+          <span style="font-size:0.625rem;color:var(--text-muted);">Gen-3 Beta</span>
+        </div>
+        <select class="styled-select" id="sampler-select">
+          <option value="DPM++ 2M SDE Karras">DPM++ 2M SDE Karras (Premium)</option>
+          <option value="Euler Ancestral (Karras)">Euler Ancestral (Karras - Alta Velocidad)</option>
+          <option value="Heun (SD)">Heun (SD - Detalles Finos)</option>
+          <option value="DDIM">DDIM (Paisajes Fotográficos)</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ========== MOBILE BOTTOM NAV ========== -->
+<nav class="mobile-nav" id="mobile-nav"></nav>
+
+<!-- ========== MOBILE SETTINGS SHEET ========== -->
+<div class="mobile-sheet-overlay hidden" id="mobile-sheet-overlay">
+  <div class="mobile-sheet custom-scrollbar" id="mobile-sheet">
+    <div class="mobile-sheet-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <i class="fa-solid fa-sliders" style="color:var(--accent-purple);"></i>
+        <span style="font-family:var(--font-display);font-weight:600;color:#fff;letter-spacing:0.025em;">Ajustes del Espacio</span>
+      </div>
+      <button id="close-mobile-settings" style="padding:0.375rem;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.05);color:var(--text-secondary);cursor:pointer;display:flex;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="mobile-settings-content"></div>
+  </div>
+</div>
+
+<!-- ========== IMAGE DETAIL MODAL ========== -->
+<div class="modal-overlay hidden" id="image-modal">
+  <div class="modal-content custom-scrollbar" id="modal-content"></div>
+</div>
+
+<!-- ========== INPAINT MODAL ========== -->
+<div class="inpaint-overlay hidden" id="inpaint-modal">
+  <div class="inpaint-content" id="inpaint-content"></div>
+</div>
+
+<!-- ========== NEON GLASS LOADING OVERLAY ========== -->
+<div class="loading-overlay hidden" id="generation-loading-overlay">
+  <div class="spinner-triple">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+  </div>
+  <div style="text-align: center; margin-top: 1rem; z-index: 10;">
+    <h3 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: #fff; letter-spacing: 0.05em; margin-bottom: 0.5rem;" id="loading-title">Forjando tu imaginación...</h3>
+    <p style="font-size: 0.75rem; color: var(--text-secondary); max-width: 320px; line-height: 1.6; margin: 0 auto 1.5rem;" id="loading-subtitle">El motor de AuraStudio está modelando cada píxel de tu obra de arte.</p>
+    
+    <div class="progress-bar-wrap" style="width: 280px; margin: 0 auto;">
+      <div class="progress-bar" style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; position: relative;">
+        <div class="progress-bar-fill" id="loading-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #22d3ee, #a78bfa, #f472b6); border-radius: 999px; transition: width 0.4s ease-out; position: absolute; left: 0; top: 0;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.6875rem; color: var(--text-muted);">
+        <span id="loading-step-text">Procesando prompt...</span>
+        <span id="loading-percentage-text">0%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="app.js" defer></script>
+<script src="lightbox.js"></script>
+</body>
+</html>

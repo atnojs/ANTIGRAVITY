@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Travel": {
+      "title": "Travel",
+      "description": "A time-travel photo entry",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "originalPhoto": { "type": "string", "description": "Base64 or URL of original photo" },
+        "historicalPhoto": { "type": "string", "description": "Base64 or URL of generated photo" },
+        "scene": { "type": "string" },
+        "era": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "originalPhoto", "historicalPhoto", "scene", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/travels/{travelId}": {
+      "schema": "Travel",
+      "description": "Historical photo entries"
+    }
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "resources": [
+    {
+      "title": "Gemini API · Quickstart (JS/Python)",
+      "description": "Instala el SDK oficial y realiza tu primera llamada a Gemini.",
+      "url": "https://ai.google.dev/gemini-api/docs/quickstart",
+      "tags": [
+        "Gemini API",
+        "Quickstart",
+        "SDK"
+      ],
+      "type": "docs",
+      "levels": [
+        "beginner"
+      ],
+      "topics": [
+        "gemini"
+      ]
+    },
+    {
+      "title": "Google AI Studio · Página oficial",
+      "description": "Prototipa con Gemini desde el navegador y consigue tu clave API.",
+      "url": "https://ai.google.dev/aistudio",
+      "tags": [
+        "AI Studio",
+        "Sin código"
+      ],
+      "type": "docs",
+      "levels": [
+        "beginner"
+      ],
+      "topics": [
+        "aistudio"
+      ]
+    },
+    {
+      "title": "NotebookLM · Centro de Ayuda",
+      "description": "Guías para crear cuadernos, cargar fuentes, chatear con citas y más.",
+      "url": "https://support.google.com/notebooklm/?hl=en",
+      "tags": [
+        "NotebookLM",
+        "Help Center"
+      ],
+      "type": "help",
+      "levels": [
+        "beginner"
+      ],
+      "topics": [
+        "notebooklm"
+      ]
+    },
+    {
+      "title": "Modelos disponibles en Gemini API",
+      "description": "Listado oficial de variantes y capacidades de modelos.",
+      "url": "https://ai.google.dev/gemini-api/docs/models",
+      "tags": [
+        "Modelos",
+        "Capacidades"
+      ],
+      "type": "docs",
+      "levels": [
+        "intermediate"
+      ],
+      "topics": [
+        "gemini"
+      ]
+    },
+    {
+      "title": "Codelab: Automatiza Google Workspace con Gemini",
+      "description": "Function calling y multimodalidad para automatizar flujos en Workspace.",
+      "url": "https://codelabs.developers.google.com/codelabs/gemini-workspace",
+      "tags": [
+        "Codelab",
+        "Workspace",
+        "Function Calling"
+      ],
+      "type": "codelab",
+      "levels": [
+        "intermediate"
+      ],
+      "topics": [
+        "gemini",
+        "workspace"
+      ]
+    },
+    {
+      "title": "Codelab: Function Calling en Gemini",
+      "description": "Invoca APIs externas desde Gemini para construir apps prácticas.",
+      "url": "https://codelabs.developers.google.com/codelabs/gemini-function-calling",
+      "tags": [
+        "Codelab",
+        "APIs"
+      ],
+      "type": "codelab",
+      "levels": [
+        "intermediate"
+      ],
+      "topics": [
+        "gemini"
+      ]
+    },
+    {
+      "title": "Gemini para Google Cloud · Descripción general",
+      "description": "Cómo usar Gemini en productos de Google Cloud (Vertex AI, BigQuery y más).",
+      "url": "https://cloud.google.com/gemini/docs/overview",
+      "tags": [
+        "Google Cloud",
+        "Vertex AI"
+      ],
+      "type": "docs",
+      "levels": [
+        "pro"
+      ],
+      "topics": [
+        "cloud",
+        "vertexai"
+      ]
+    },
+    {
+      "title": "Vertex AI · Plataforma oficial",
+      "description": "Despliega aplicaciones de IA generativa en producción con seguridad y escalado.",
+      "url": "https://cloud.google.com/vertex-ai",
+      "tags": [
+        "Producción",
+        "Seguridad"
+      ],
+      "type": "docs",
+      "levels": [
+        "pro"
+      ],
+      "topics": [
+        "vertexai"
+      ]
+    },
+    {
+      "title": "Lab: Desarrolla una app con Vertex AI Gemini API",
+      "description": "Laboratorio práctico (Cloud Skills Boost): Streamlit + Cloud Run.",
+      "url": "https://www.cloudskillsboost.google/focuses/86788?parent=catalog",
+      "tags": [
+        "Lab",
+        "Cloud Run",
+        "Streamlit"
+      ],
+      "type": "lab",
+      "levels": [
+        "pro"
+      ],
+      "topics": [
+        "vertexai",
+        "gemini"
+      ]
+    },
+    {
+      "title": "Lab: Apps GenAI con Gemini y Google Maps",
+      "description": "Caso práctico para recomendar hoteles/restaurantes con mapas.",
+      "url": "https://www.cloudskillsboost.google/focuses/111748?parent=catalog",
+      "tags": [
+        "Lab",
+        "Maps"
+      ],
+      "type": "lab",
+      "levels": [
+        "pro"
+      ],
+      "topics": [
+        "vertexai",
+        "maps"
+      ]
+    },
+    {
+      "title": "Novedades oficiales de Gemini (Blog de Google)",
+      "description": "Noticias oficiales y actualizaciones del equipo de Google sobre Gemini.",
+      "url": "https://blog.google/products/gemini/",
+      "tags": [
+        "Novedades",
+        "Blog"
+      ],
+      "type": "news",
+      "levels": [
+        "beginner",
+        "intermediate",
+        "pro"
+      ],
+      "topics": [
+        "gemini"
+      ]
+    },
+    {
+      "title": "I/O 2025: Actualizaciones de Gemini 2.5",
+      "description": "Resumen oficial de las novedades anunciadas en Google I/O 2025.",
+      "url": "https://blog.google/technology/google-deepmind/google-gemini-updates-io-2025/",
+      "tags": [
+        "Release Notes"
+      ],
+      "type": "news",
+      "levels": [
+        "intermediate",
+        "pro"
+      ],
+      "topics": [
+        "gemini"
+      ]
+    }
+  ]
+}

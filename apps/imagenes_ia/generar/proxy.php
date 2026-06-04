@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Proxy para Google Gemini â€” PHP 8+, cURL habilitado.
 declare(strict_types=1);
 ini_set('display_errors', '0');
@@ -95,9 +95,10 @@ if (isset($req['contents'])) {
     $payload = $req['payload'];
 } else {
     // B) Formato sencillo: prompt + base64ImageData + mimeType
-    $prompt   = trim((string)($req['prompt'] ?? ''));
-    $imageB64 = (string)($req['base64ImageData'] ?? '');
-    $mime     = (string)($req['mimeType'] ?? 'image/jpeg');
+    $prompt    = trim((string)($req['prompt'] ?? ''));
+    $imageB64  = (string)($req['base64ImageData'] ?? '');
+    $mime      = (string)($req['mimeType'] ?? 'image/jpeg');
+    $imageSize = (string)($req['imageSize'] ?? '1K');
 
     if ($prompt === '' || $imageB64 === '') {
         http_response_code(400);
@@ -115,8 +116,12 @@ if (isset($req['contents'])) {
                 ]]
             ]
         ]],
-        // TEXT+IMAGE por si el modelo devuelve ambos
-        'generationConfig' => ['responseModalities' => ['TEXT', 'IMAGE']]
+        'generationConfig' => [
+            'responseModalities' => ['IMAGE', 'TEXT'],
+            'imageConfig' => [
+                'imageSize' => $imageSize
+            ]
+        ]
     ];
 }
 

@@ -1,0 +1,24 @@
+# Skill: Limpieza Profunda de CorelDRAW
+**Propósito:** Eliminar de forma automática y definitiva cualquier rastro de instalaciones de CorelDRAW previas (especialmente versiones como 2026 o 2021) que estén generando conflictos de instalación (error "newer version installed").
+
+## Instrucciones para el Agente / Usuario
+
+1. **Contexto:** Cuando el sistema de Windows Installer (MSI) tiene registros huérfanos de versiones más recientes de CorelDRAW, la instalación de versiones anteriores falla. El desinstalador oficial y herramientas como Revo Uninstaller a menudo no pueden limpiar claves de registro protegidas (ej. `Classes\Installer\Products`).
+2. **Acción requerida:** Para limpiar el sistema, se debe ejecutar un script de PowerShell con privilegios elevados (Administrador) que elimine todos los rastros conocidos.
+3. **Ejecución:** 
+   - El script ejecutable se encuentra en `e:\ANTIGRAVITY\Skill-Limpieza-CorelDRAW.ps1`.
+   - Si el agente debe ejecutar la limpieza, puede ejecutar este script directamente en la terminal. El script intentará escalar privilegios automáticamente solicitando permiso de UAC.
+
+## Procedimiento manual que el agente debe seguir si el script no está disponible:
+
+1. Buscar y desinstalar todos los ProductCodes de MSI relacionados con Corel (incluyendo 'Corel Windows Shell Extension', causante del error 'A newer version...'). Esto se automatiza buscando en las claves de Uninstall de HKLM.
+2. Ejecutar como Administrador en cmd o PowerShell:
+   - `reg delete "HKLM\SOFTWARE\Classes\Installer\Products\EAE5109B22C0BA64EA8F4A3E4EDB6D6D" /f`
+   - `reg delete "HKLM\SOFTWARE\Classes\Installer\Features\EAE5109B22C0BA64EA8F4A3E4EDB6D6D" /f`
+   - `reg delete "HKLM\SOFTWARE\Classes\CorelDRAW.CMX.23" /f` (y las demás clases .23 asociadas)
+   - `reg delete "HKLM\SOFTWARE\Classes\Installer\UpgradeCodes\8A8CD5234F780984D8D6B49827BECD8C" /f`
+3. Eliminar ensamblados de `C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL` relacionados con CorelDRAW y VGCore.
+4. Eliminar directorios de instalación en `C:\Program Files\Corel`, `C:\Program Files (x86)\Corel`, `C:\ProgramData\Corel`, y `AppData\Roaming\Corel`.
+5. Limpiar temporales `%TEMP%\*Corel*`.
+
+Este protocolo garantiza que el sistema quede totalmente limpio para una instalación fresca.

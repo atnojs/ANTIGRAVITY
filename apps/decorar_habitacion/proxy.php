@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1); // <--- IMPORTANTE: Esto debe ir en la primera lÃ­nea
 
 // DECORAR HABITACION - PROXY CORREGIDO
