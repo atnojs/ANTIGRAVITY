@@ -21,6 +21,9 @@
 
     <link rel="stylesheet" href="app.css">
 
+    <!-- History Manager -->
+    <script src="history-manager.js"></script>
+
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) {
@@ -40,12 +43,7 @@
 <body class="glass-body text-slate-200 h-screen w-screen overflow-hidden select-none">
     <div id="root" class="h-full w-full"></div>
 
-    <script type="text/babel" src="app.js?v=1"></script>
-    <script type="text/babel">
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) window.lucide.createIcons();
-        });
-    </script>
+    <script src="app-compiled.js?v=1"></script>
 </body>
 
 </html>

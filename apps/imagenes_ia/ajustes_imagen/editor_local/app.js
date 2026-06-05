@@ -1,79 +1,7 @@
-﻿const { useState, useRef, useEffect, useCallback } = React;
+const { useState, useRef, useEffect, useCallback } = React;
 
-// --- CONFIGURACIÃ“N CONSTANTES ---
-const DB_NAME = 'editor_local_db';
-const DB_VERSION = 1;
-const STORE_NAME = 'history';
-
-let db = null;
-
-const openDb = () => new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => { db = request.result; resolve(db); };
-    request.onupgradeneeded = (e) => {
-        const database = e.target.result;
-        if (!database.objectStoreNames.contains(STORE_NAME)) {
-            database.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        }
-    };
-});
-
-const loadHistoryFromDb = async () => {
-    try {
-        if (!db) await openDb();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(STORE_NAME, 'readonly');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.getAll();
-            req.onsuccess = () => {
-                const items = req.result || [];
-                items.sort((a, b) => (b.id || 0) - (a.id || 0));
-                resolve(items);
-            };
-            req.onerror = () => reject(req.error);
-        });
-    } catch (e) { console.warn('Error cargando historial:', e); return []; }
-};
-
-const saveHistoryItemToDb = async (item) => {
-    try {
-        if (!db) await openDb();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.put(item);
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-        });
-    } catch (e) { console.warn('Error guardando item:', e); }
-};
-
-const deleteHistoryItemFromDb = async (id) => {
-    try {
-        if (!db) await openDb();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.delete(id);
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-        });
-    } catch (e) { console.warn('Error eliminando item:', e); }
-};
-
-const clearHistoryFromDb = async () => {
-    try {
-        if (!db) await openDb();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.clear();
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-        });
-    } catch (e) { console.warn('Error limpiando historial:', e); }
-};
+// --- HISTORIAL PERSISTENTE (HistoryManager global) ---
+HistoryManager.configure({ dbName: 'editor_local_db' });
 
 // Descripciones de los efectos para los tooltips
 const EFFECT_DESCRIPTIONS = {
@@ -302,7 +230,8 @@ const App = () => {
     useEffect(() => {
         const loadHistory = async () => {
             try {
-                const items = await loadHistoryFromDb();
+                await HistoryManager.init();
+                const items = await HistoryManager.loadAll();
                 if (items.length > 0) setHistory(items);
             } catch (e) { console.warn('Error cargando historial:', e); }
         };
@@ -573,7 +502,7 @@ const App = () => {
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             settings: { ...currentSettings }, effectsDescription: effectsDescription, manualActions: [...manualActions]
         };
-        await saveHistoryItemToDb(newHistoryItem);
+        await HistoryManager.saveItem(newHistoryItem);
         setHistory(prev => [newHistoryItem, ...prev]);
         if (originalUploadedFile) setOriginalImage(originalUploadedFile);
         setUploadedFile(originalUploadedFile);
@@ -598,7 +527,7 @@ const App = () => {
     };
 
     const handleDeleteHistory = async (id) => {
-        await deleteHistoryItemFromDb(id);
+        await HistoryManager.deleteItem(id);
         setHistory(prev => prev.filter(item => item.id !== id));
     };
 
