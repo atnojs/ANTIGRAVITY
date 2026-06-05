@@ -1,4 +1,4 @@
-﻿const { useState, useRef, useEffect, useCallback } = React;
+const { useState, useRef, useEffect, useCallback } = React;
 
 // --- CONFIGURACIÃ“N FIREBASE & CONSTANTES ---
 const FIREBASE_CONFIG = {
