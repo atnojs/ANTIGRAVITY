@@ -1,0 +1,4800 @@
+const {
+  useState,
+  useRef,
+  useEffect,
+  useCallback
+} = React;
+
+// --- CONFIGURACIÃ“N FIREBASE & CONSTANTES ---
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAlTZgodkiHACqJSRcDqymTdvaegBdLZMk",
+  authDomain: "nanobanana-cbb2d.firebaseapp.com",
+  projectId: "nanobanana-cbb2d",
+  storageBucket: "nanobanana-cbb2d.firebasestorage.app",
+  messagingSenderId: "490656740654",
+  appId: "1:490656740654:web:104f76973c1254d5b876bf",
+  measurementId: "G-8XK035PGTV"
+};
+const ADMIN_EMAIL = "atnojs@gmail.com";
+const DAILY_LIMIT = 8;
+
+// --- HISTORIAL PERSISTENTE CON INDEXEDDB ---
+const DB_NAME_AJUSTES = 'ajustes_imagen_db';
+const DB_VERSION_AJUSTES = 1;
+const STORE_NAME_AJUSTES = 'history';
+let ajustesDb = null;
+const openAjustesDb = () => new Promise((resolve, reject) => {
+  const request = indexedDB.open(DB_NAME_AJUSTES, DB_VERSION_AJUSTES);
+  request.onerror = () => reject(request.error);
+  request.onsuccess = () => {
+    ajustesDb = request.result;
+    resolve(ajustesDb);
+  };
+  request.onupgradeneeded = e => {
+    const database = e.target.result;
+    if (!database.objectStoreNames.contains(STORE_NAME_AJUSTES)) {
+      database.createObjectStore(STORE_NAME_AJUSTES, {
+        keyPath: 'id'
+      });
+    }
+  };
+});
+const loadAjustesHistoryFromDb = async () => {
+  try {
+    if (!ajustesDb) await openAjustesDb();
+    return new Promise((resolve, reject) => {
+      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readonly');
+      const store = tx.objectStore(STORE_NAME_AJUSTES);
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const items = req.result || [];
+        items.sort((a, b) => (b.id || 0) - (a.id || 0));
+        resolve(items);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) {
+    console.warn('Error cargando historial:', e);
+    return [];
+  }
+};
+const saveAjustesHistoryItemToDb = async item => {
+  try {
+    if (!ajustesDb) await openAjustesDb();
+    return new Promise((resolve, reject) => {
+      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readwrite');
+      const store = tx.objectStore(STORE_NAME_AJUSTES);
+      const req = store.put(item);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) {
+    console.warn('Error guardando item:', e);
+  }
+};
+const deleteAjustesHistoryItemFromDb = async id => {
+  try {
+    if (!ajustesDb) await openAjustesDb();
+    return new Promise((resolve, reject) => {
+      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readwrite');
+      const store = tx.objectStore(STORE_NAME_AJUSTES);
+      const req = store.delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) {
+    console.warn('Error eliminando item:', e);
+  }
+};
+const clearAjustesHistoryFromDb = async () => {
+  try {
+    if (!ajustesDb) await openAjustesDb();
+    return new Promise((resolve, reject) => {
+      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readwrite');
+      const store = tx.objectStore(STORE_NAME_AJUSTES);
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) {
+    console.warn('Error limpiando historial:', e);
+  }
+};
+
+// Inicializar Firebase
+console.log("DEBUG: Initializing Firebase with:", FIREBASE_CONFIG);
+if (!firebase.apps.length) {
+  firebase.initializeApp(FIREBASE_CONFIG);
+}
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// --- HELPERS FIREBASE ---
+const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
+// Descripciones de los efectos para los tooltips
+const EFFECT_DESCRIPTIONS = {
+  brightness: "Ajusta el brillo general de la imagen. El resultado debe ser una imagen mÃ¡s clara u oscura, natural y visualmente coherente.",
+  contrast: "Controla la diferencia entre las Ã¡reas claras y oscuras de la imagen para modificar su impacto visual.",
+  saturation: "Intensifica o reduce la intensidad de los colores de la imagen de forma equilibrada.",
+  hue: "Desplaza de forma controlada todos los colores a lo largo del espectro cromÃ¡tico para generar un efecto visual creativo.",
+  blur: "Aplica un desenfoque suave y uniforme a toda la imagen para generar una sensaciÃ³n etÃ©rea o de ensueÃ±o.",
+  exposure: "Simula el ajuste para controlar la luminosidad general de la imagen.",
+  temperature: "Ajusta la temperatura de color de la imagen para desplazarla hacia tonos cÃ¡lidos o frÃ­os de forma controlada.",
+  vignette: "AÃ±ade un efecto de viÃ±eta sutil oscureciendo progresivamente los bordes de la imagen para dirigir la atenciÃ³n hacia el centro. Instrucciones tÃ©cnicas: Aplica una viÃ±eta suave y radial, con transiciÃ³n gradual desde los bordes hacia el Ã¡rea central. Ajusta la intensidad de forma controlada para reforzar el punto focal sin invadir el contenido principal. MantÃ©n el centro con exposiciÃ³n y color intactos. Reglas: Evita bordes duros, cortes visibles o un oscurecimiento excesivo. No alterar de forma perceptible el contraste, la saturaciÃ³n ni el balance de color global. El resultado debe ser elegante, natural y visualmente equilibrado, sin apariencia de filtro artificial.",
+  scale: "AmplÃ­a o reduce el tamaÃ±o de la imagen manteniendo intactas sus proporciones originales.",
+  rotation: "Gira la imagen en el sentido de las agujas del reloj.",
+  clarity: "Mejora la claridad y definiciÃ³n general de la imagen, incrementando la percepciÃ³n de detalle sin alterar el equilibrio tonal.",
+  vibrance: "Intensifica de forma selectiva los colores menos saturados para lograr una imagen mÃ¡s rica y equilibrada, preservando la naturalidad de los tonos de piel.",
+  noiseReduction: "Reduce el ruido digital y la granulosidad de la imagen, especialmente en Ã¡reas de bajo contraste.",
+  sharpening: "Aumenta la nitidez de los bordes y detalles de la imagen para resaltar texturas y definiciÃ³n.",
+  filmGrain: "AÃ±ade un grano cinematogrÃ¡fico para aportar un aspecto vintage o artÃ­stico.",
+  midtoneContrast: "Ajusta el contraste exclusivamente en los tonos medios de la imagen.",
+  hdrEffect: "Recupera detalle en altas luces y sombras sin quemar ni empastar.",
+  ortonEffect: "Crea una atmÃ³sfera etÃ©rea y soÃ±adora.",
+  focalBlur: "Aplica un desenfoque selectivo del fondo para crear profundidad de campo realista, manteniendo el sujeto principal perfectamente nÃ­tido."
+};
+// Reemplazar completamente el objeto INITIAL_SETTINGS existente
+const INITIAL_SETTINGS = {
+  brightness: 100,
+  contrast: 100,
+  saturation: 100,
+  hue: 0,
+  blur: 0,
+  exposure: 0,
+  temperature: 0,
+  vignette: 0,
+  scale: 100,
+  rotation: 0,
+  panX: 0,
+  panY: 0,
+  // Nuevas funcionalidades locales
+  focalBlur: 0,
+  focalPoint: {
+    x: 50,
+    y: 50
+  },
+  clarity: 0,
+  vibrance: 0,
+  noiseReduction: 0,
+  sharpening: 0,
+  filmGrain: 0,
+  midtoneContrast: 0,
+  hdrEffect: 0,
+  ortonEffect: 0
+};
+
+// Funciones auxiliares para efectos locales
+const applyNoiseReduction = (imageData, strength) => {
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+  const output = new Uint8ClampedArray(data);
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      for (let c = 0; c < 3; c++) {
+        let sum = 0;
+        let count = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const idx = ((y + dy) * width + (x + dx)) * 4 + c;
+            sum += data[idx];
+            count++;
+          }
+        }
+        const idx = (y * width + x) * 4 + c;
+        output[idx] = data[idx] * (1 - strength) + sum / count * strength;
+      }
+    }
+  }
+  for (let i = 0; i < data.length; i++) {
+    data[i] = output[i];
+  }
+};
+const applySharpening = (imageData, amount) => {
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+  const output = new Uint8ClampedArray(data);
+  const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      for (let c = 0; c < 3; c++) {
+        let sum = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const idx = ((y + ky) * width + (x + kx)) * 4 + c;
+            const kidx = (ky + 1) * 3 + (kx + 1);
+            sum += data[idx] * kernel[kidx];
+          }
+        }
+        const idx = (y * width + x) * 4 + c;
+        output[idx] = Math.min(255, Math.max(0, data[idx] * (1 - amount) + sum * amount));
+      }
+    }
+  }
+  for (let i = 0; i < data.length; i++) {
+    data[i] = output[i];
+  }
+};
+
+// --- FUNCIONES DE DESENFOQUE SIN IA ---
+const applyBackgroundBlur = (ctx, canvas, blurAmount = 15) => {
+  // Guardar imagen original
+  const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  // Crear canvas temporal con desenfoque aplicado a toda la imagen
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tempCtx = tempCanvas.getContext('2d');
+
+  // Aplicar desenfoque gaussiano
+  tempCtx.filter = `blur(${blurAmount}px)`;
+  tempCtx.drawImage(canvas, 0, 0);
+
+  // Crear gradiente radial para el centro (Ã¡rea nÃ­tida)
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radius = Math.min(canvas.width, canvas.height) * 0.35;
+  const gradient = ctx.createRadialGradient(centerX, centerY, radius * 0.3, centerX, centerY, radius);
+  gradient.addColorStop(0, 'rgba(0,0,0,1)');
+  gradient.addColorStop(0.7, 'rgba(0,0,0,0.8)');
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+  // Combinar: imagen desenfocada como base
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(tempCanvas, 0, 0);
+
+  // Aplicar mÃ¡scara para recuperar el centro nÃ­tido
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Restaurar Ã¡reas fuera del gradiente con la imagen original desenfocada
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.drawImage(tempCanvas, 0, 0);
+
+  // Finalmente, poner la imagen original en el centro
+  ctx.globalCompositeOperation = 'source-over';
+  const originalCanvas = document.createElement('canvas');
+  originalCanvas.width = canvas.width;
+  originalCanvas.height = canvas.height;
+  const originalCtx = originalCanvas.getContext('2d');
+  originalCtx.putImageData(originalImageData, 0, 0);
+
+  // Aplicar mÃ¡scara inversa para el centro
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius * 0.6, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(originalCanvas, 0, 0);
+  ctx.restore();
+
+  // Suavizar el borde entre centro y fondo
+  const edgeGradient = ctx.createRadialGradient(centerX, centerY, radius * 0.5, centerX, centerY, radius * 0.8);
+  edgeGradient.addColorStop(0, 'rgba(0,0,0,0)');
+  edgeGradient.addColorStop(1, 'rgba(0,0,0,0.3)');
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = edgeGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+};
+const applyCenterBlur = (ctx, canvas, blurAmount = 15) => {
+  // Guardar imagen original
+  const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  // Crear canvas temporal con desenfoque aplicado a toda la imagen
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tempCtx = tempCanvas.getContext('2d');
+
+  // Aplicar desenfoque gaussiano
+  tempCtx.filter = `blur(${blurAmount}px)`;
+  tempCtx.drawImage(canvas, 0, 0);
+
+  // Dibujar imagen original (nÃ­tida) como base
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(originalImageData, 0, 0);
+
+  // Crear gradiente radial para el centro (Ã¡rea desenfocada)
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radius = Math.min(canvas.width, canvas.height) * 0.35;
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+  gradient.addColorStop(0, 'rgba(0,0,0,1)');
+  gradient.addColorStop(0.5, 'rgba(0,0,0,0.9)');
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+  // Aplicar desenfoque solo en el centro usando composiciÃ³n
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+
+  // Crear mÃ¡scara circular
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+
+  // Dibujar versiÃ³n desenfocada en el Ã¡rea recortada
+  ctx.filter = `blur(${blurAmount}px)`;
+  ctx.drawImage(canvas, 0, 0);
+  ctx.filter = 'none';
+  ctx.restore();
+};
+
+// FunciÃ³n para generar una descripciÃ³n de los efectos aplicados
+const getEffectsDescription = settings => {
+  const effects = [];
+  if (settings.brightness !== 100) {
+    effects.push(`Brillo: ${settings.brightness > 100 ? '+' : ''}${settings.brightness - 100}%`);
+  }
+  if (settings.contrast !== 100) {
+    effects.push(`Contraste: ${settings.contrast > 100 ? '+' : ''}${settings.contrast - 100}%`);
+  }
+  if (settings.saturation !== 100) {
+    effects.push(`SaturaciÃ³n: ${settings.saturation > 100 ? '+' : ''}${settings.saturation - 100}%`);
+  }
+  if (settings.hue !== 0) {
+    effects.push(`Matiz: ${settings.hue}Â°`);
+  }
+  if (settings.blur !== 0) {
+    effects.push(`Desenfoque: ${settings.blur}px`);
+  }
+  if (settings.exposure !== 0) {
+    effects.push(`ExposiciÃ³n: ${settings.exposure > 0 ? '+' : ''}${settings.exposure}`);
+  }
+  if (settings.temperature !== 0) {
+    effects.push(`Temperatura: ${settings.temperature > 0 ? '+' : ''}${settings.temperature}`);
+  }
+  if (settings.vignette !== 0) {
+    effects.push(`ViÃ±eta: ${settings.vignette}%`);
+  }
+  if (settings.scale !== 100) {
+    effects.push(`Escala: ${settings.scale}%`);
+  }
+  if (settings.rotation !== 0) {
+    effects.push(`RotaciÃ³n: ${settings.rotation}Â°`);
+  }
+  if (settings.clarity !== 0) {
+    effects.push(`Claridad: ${settings.clarity > 0 ? '+' : ''}${settings.clarity}`);
+  }
+  if (settings.vibrance !== 0) {
+    effects.push(`Vibrancia: ${settings.vibrance > 0 ? '+' : ''}${settings.vibrance}`);
+  }
+  if (settings.noiseReduction !== 0) {
+    effects.push(`ReducciÃ³n ruido: ${settings.noiseReduction}%`);
+  }
+  if (settings.sharpening !== 0) {
+    effects.push(`Nitidez: ${settings.sharpening}%`);
+  }
+  if (settings.filmGrain !== 0) {
+    effects.push(`Grano cinematogrÃ¡fico: ${settings.filmGrain}%`);
+  }
+  if (settings.midtoneContrast !== 0) {
+    effects.push(`Contraste medios tonos: ${settings.midtoneContrast > 0 ? '+' : ''}${settings.midtoneContrast}`);
+  }
+  if (settings.hdrEffect !== 0) {
+    effects.push(`Efecto HDR: ${settings.hdrEffect}%`);
+  }
+  if (settings.ortonEffect !== 0) {
+    effects.push(`Efecto Orton: ${settings.ortonEffect}%`);
+  }
+  if (settings.focalBlur !== 0) {
+    effects.push(`Enfoque selectivo: ${settings.focalBlur}px`);
+  }
+  return effects.length > 0 ? effects.join(', ') : 'Sin efectos aplicados';
+};
+
+// --- COMPONENTE: MODAL DE AUTENTICACIÃ“N ---
+const AuthModal = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const handleAuth = async e => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      if (isLogin) {
+        await auth.signInWithEmailAndPassword(email, password);
+      } else {
+        await auth.createUserWithEmailAndPassword(email, password);
+      }
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') {
+        try {
+          await auth.signInWithEmailAndPassword(email, password);
+          onClose();
+          return;
+        } catch (loginErr) {
+          setError('Este email ya tiene cuenta. Si te registraste con Google, usa el botÃ³n "Google".');
+          return;
+        }
+      }
+      setError(err.message);
+    }
+  };
+  const handleGoogleLogin = async () => {
+    setError('');
+    setLoading(true);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+    try {
+      await auth.signInWithPopup(provider);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-sm p-8 rounded-2xl relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center mb-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mx-auto w-12 h-12 bg-blue-600/20 rounded-full flex items-center justify-center mb-3"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "lock",
+    className: "w-6 h-6 text-blue-400"
+  })), /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-white mb-1"
+  }, isLogin ? 'Bienvenido' : 'Crear Cuenta'), /*#__PURE__*/React.createElement("p", {
+    className: "text-slate-400 text-sm"
+  }, isLogin ? 'Inicia sesiÃ³n para continuar' : 'RegÃ­strate para guardar tu arte')), error && /*#__PURE__*/React.createElement("div", {
+    className: "mb-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200 text-xs"
+  }, error), /*#__PURE__*/React.createElement("form", {
+    onSubmit: handleAuth,
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
+    type: "email",
+    placeholder: "Email",
+    className: "w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl focus:border-blue-500 outline-none text-white placeholder-slate-500",
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    required: true
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    placeholder: "Contrase\xC3\xB1a",
+    className: "w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl focus:border-blue-500 outline-none text-white placeholder-slate-500",
+    value: password,
+    onChange: e => setPassword(e.target.value),
+    required: true
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    disabled: loading,
+    className: "w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50"
+  }, loading ? 'Procesando...' : isLogin ? 'Entrar' : 'Registrarse')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-px bg-slate-700 flex-1"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-500"
+  }, "O contin\xC3\xBAa con"), /*#__PURE__*/React.createElement("div", {
+    className: "h-px bg-slate-700 flex-1"
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: handleGoogleLogin,
+    type: "button",
+    disabled: loading,
+    className: "mt-4 w-full py-3 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg",
+    className: "w-5 h-5",
+    alt: "Google"
+  }), "Google"), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 text-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setIsLogin(!isLogin),
+    className: "text-sm text-blue-400 hover:text-blue-300 underline"
+  }, isLogin ? 'Â¿No tienes cuenta? RegÃ­strate' : 'Â¿Ya tienes cuenta? Entra'))));
+};
+
+// --- COMPONENTE: PANEL DE ADMINISTRADOR (PRO) ---
+// Nota: Adaptado a tu estructura real:
+// users/{uid} (email, lastActive, role?)
+// users/{uid}/usage/{YYYY-MM-DD} -> { count }
+const AdminPanel = ({
+  onClose
+}) => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTab, setSelectedTab] = useState('overview'); // overview | users
+  const [lastRefresh, setLastRefresh] = useState(null); // Hora de Ãºltima actualizaciÃ³n
+
+  const today = getTodayDateString();
+  const safeDate = ts => {
+    try {
+      if (!ts) return null;
+      // Firestore Timestamp
+      if (typeof ts.seconds === 'number') return new Date(ts.seconds * 1000);
+      // JS Date
+      if (ts instanceof Date) return ts;
+      // string/number
+      const d = new Date(ts);
+      return isNaN(d.getTime()) ? null : d;
+    } catch {
+      return null;
+    }
+  };
+  const formatDateTime = d => {
+    if (!d) return '-';
+    return d.toLocaleString([], {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  const exportUsersCSV = () => {
+    if (!users || users.length === 0) return;
+    const headers = ['UID', 'Email', 'Uso hoy', 'Ãšltima actividad'];
+    const rows = users.map(u => {
+      const usageToday = u.todayUsage ?? 0;
+      const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toISOString() : '';
+      return [`"${u.id}"`, `"${u.email || ''}"`, usageToday, `"${lastActive}"`].join(',');
+    });
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], {
+      type: 'text/csv;charset=utf-8;'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'usuarios_admin.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  const computeStats = usersData => {
+    const now = Date.now();
+    const last24hMs = 24 * 60 * 60 * 1000;
+    const total = usersData.length;
+    const activeToday = usersData.filter(u => (u.todayUsage || 0) > 0).length;
+    const limitReached = usersData.filter(u => (u.todayUsage || 0) >= DAILY_LIMIT).length;
+    const totalUsageToday = usersData.reduce((s, u) => s + (u.todayUsage || 0), 0);
+    const avgUsageActive = activeToday > 0 ? totalUsageToday / activeToday : 0;
+    const last24hActive = usersData.filter(u => u.lastActiveDate && now - u.lastActiveDate.getTime() <= last24hMs).length;
+    const topUsers = [...usersData].sort((a, b) => (b.todayUsage || 0) - (a.todayUsage || 0)).slice(0, 8);
+    const roleCounts = usersData.reduce((acc, u) => {
+      const role = u.role || 'user';
+      acc[role] = (acc[role] || 0) + 1;
+      return acc;
+    }, {});
+    setStats({
+      total,
+      activeToday,
+      last24hActive,
+      totalUsageToday,
+      avgUsageActive,
+      limitReached,
+      roleCounts,
+      topUsers
+    });
+  };
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      // Evito orderBy para no depender de Ã­ndices
+      const snapshot = await db.collection('users').limit(300).get();
+      const usersData = await Promise.all(snapshot.docs.map(async doc => {
+        const data = doc.data() || {};
+        const usageDoc = await doc.ref.collection('usage').doc(today).get();
+        const todayUsage = usageDoc.exists ? usageDoc.data()?.count || 0 : 0;
+        const email = data.email || '';
+        const role = data.role || (email === ADMIN_EMAIL ? 'admin' : 'user');
+        const lastActiveDate = safeDate(data.lastActive);
+        return {
+          uid: doc.id,
+          email,
+          role,
+          todayUsage,
+          lastActiveRaw: data.lastActive || null,
+          lastActiveDate,
+          lastActiveText: formatDateTime(lastActiveDate),
+          createdAtRaw: data.createdAt || null
+        };
+      }));
+
+      // Orden por actividad (cliente)
+      usersData.sort((a, b) => (b.lastActiveDate?.getTime() || 0) - (a.lastActiveDate?.getTime() || 0));
+      setUsers(usersData);
+      computeStats(usersData);
+      setLastRefresh(new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }));
+    } catch (e) {
+      console.error('Error loading admin data:', e);
+      alert('Error cargando datos de Firestore: ' + (e?.message || e));
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    loadData();
+
+    // Auto-refrescar cada 30 segundos mientras el panel estÃ© abierto
+    const intervalId = setInterval(() => {
+      loadData();
+    }, 30000);
+    return () => clearInterval(intervalId);
+  }, []);
+  useEffect(() => {
+    if (window.lucide) window.lucide.createIcons();
+  });
+  const resetTodayUsage = async uid => {
+    try {
+      const usageRef = db.collection('users').doc(uid).collection('usage').doc(today);
+      await usageRef.set({
+        count: 0
+      }, {
+        merge: true
+      });
+      await loadData();
+    } catch (e) {
+      alert('Error reseteando uso: ' + e.message);
+    }
+  };
+  const setRole = async (uid, newRole) => {
+    try {
+      await db.collection('users').doc(uid).set({
+        role: newRole
+      }, {
+        merge: true
+      });
+      await loadData();
+    } catch (e) {
+      alert('Error actualizando rol: ' + e.message);
+    }
+  };
+  const deleteUserDoc = async (uid, email) => {
+    if (!confirm(`Â¿Eliminar el usuario en Firestore?
+
+ ${email || uid}
+
+(OJO: esto NO elimina la cuenta en Auth)`)) return;
+    try {
+      await db.collection('users').doc(uid).delete();
+      await loadData();
+    } catch (e) {
+      alert('Error eliminando usuario: ' + e.message);
+    }
+  };
+  const filteredUsers = users.filter(u => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return true;
+    return (u.email || '').toLowerCase().includes(q) || (u.uid || '').toLowerCase().includes(q);
+  });
+  const StatCard = ({
+    icon,
+    label,
+    value,
+    subtext,
+    accent = 'from-cyan-400 to-violet-400'
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 backdrop-blur-xl p-5 shadow-xl"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `absolute -top-10 -right-10 h-28 w-28 rounded-full bg-gradient-to-br ${accent} opacity-20 blur-2xl`
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "relative flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `h-10 w-10 rounded-xl bg-gradient-to-br ${accent} opacity-90 flex items-center justify-center text-slate-950 font-black`
+  }, icon), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xs uppercase tracking-wider text-slate-400 font-bold"
+  }, label), /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl font-extrabold text-white leading-tight"
+  }, value), subtext && /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 text-xs text-slate-400"
+  }, subtext))));
+  const TabBtn = ({
+    id,
+    icon,
+    children
+  }) => {
+    const active = selectedTab === id;
+    return /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSelectedTab(id),
+      className: `px-4 py-2 rounded-xl text-sm font-bold border transition flex items-center gap-2
+                    ${active ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-slate-950 border-white/20 shadow-lg' : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'}`
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "opacity-90"
+    }, icon), children);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full max-w-6xl max-h-[90vh] rounded-3xl overflow-hidden border border-white/10 bg-slate-950/70 shadow-2xl flex flex-col"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-5 border-b border-white/10 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-11 w-11 rounded-2xl bg-gradient-to-br from-red-400 to-amber-300 flex items-center justify-center text-slate-950 font-black"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "shield",
+    className: "w-5 h-5"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-extrabold text-white leading-tight"
+  }, "Panel de Administraci\xC3\xB3n"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-400"
+  }, today, " \xC2\xB7 ", lastRefresh ? `Actualizado: ${lastRefresh}` : 'Cargando...', /*#__PURE__*/React.createElement("span", {
+    className: "text-emerald-400 ml-2"
+  }, "\xE2\u2014\x8F Auto-refresh 30s"))))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: loadData,
+    className: "px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-sm font-bold flex items-center gap-2",
+    title: "Recargar"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "refresh-cw",
+    className: "w-4 h-4"
+  }), "Recargar"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/15 border border-red-500/30 text-red-200 text-sm font-bold flex items-center gap-2",
+    title: "Cerrar"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "x",
+    className: "w-4 h-4"
+  }), "Cerrar"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-auto custom-scrollbar p-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mb-6"
+  }, /*#__PURE__*/React.createElement(TabBtn, {
+    id: "overview",
+    icon: /*#__PURE__*/React.createElement("i", {
+      "data-lucide": "bar-chart-3",
+      className: "w-4 h-4"
+    })
+  }, "Estad\xC3\xADsticas"), /*#__PURE__*/React.createElement(TabBtn, {
+    id: "users",
+    icon: /*#__PURE__*/React.createElement("i", {
+      "data-lucide": "users",
+      className: "w-4 h-4"
+    })
+  }, "Usuarios (", users.length, ")")), loading ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center justify-center py-20 text-slate-300"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-16 h-16 rounded-full border-4 border-white/10 border-t-cyan-300 animate-spin mb-4"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-bold tracking-wide"
+  }, "Cargando datos...")) : /*#__PURE__*/React.createElement(React.Fragment, null, selectedTab === 'overview' && stats && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+  }, /*#__PURE__*/React.createElement(StatCard, {
+    icon: "\xF0\u0178\u2018\xA5",
+    label: "Total usuarios",
+    value: stats.total,
+    subtext: "Documentos en users/*"
+  }), /*#__PURE__*/React.createElement(StatCard, {
+    icon: "\xF0\u0178\u201D\xA5",
+    label: "Activos hoy",
+    value: stats.activeToday,
+    subtext: "Uso > 0 hoy",
+    accent: "from-amber-300 to-red-400"
+  }), /*#__PURE__*/React.createElement(StatCard, {
+    icon: "\xF0\u0178\u201C\u02C6",
+    label: "Uso total hoy",
+    value: stats.totalUsageToday,
+    subtext: `Media activos: ${stats.avgUsageActive.toFixed(2)}`,
+    accent: "from-emerald-300 to-cyan-300"
+  }), /*#__PURE__*/React.createElement(StatCard, {
+    icon: "\xE2\x8F\xB1\xEF\xB8\x8F",
+    label: "Activos 24h",
+    value: stats.last24hActive,
+    subtext: `LÃ­mite alcanzado: ${stats.limitReached}`,
+    accent: "from-violet-300 to-fuchsia-300"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 lg:grid-cols-3 gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "rounded-2xl border border-white/10 bg-white/5 p-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-extrabold text-white flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "badge-check",
+    className: "w-4 h-4 text-cyan-300"
+  }), "Distribuci\xC3\xB3n de roles"), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-slate-400"
+  }, "Campo users.role (si existe)")), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, Object.entries(stats.roleCounts || {}).sort((a, b) => b[1] - a[1]).map(([role, count]) => /*#__PURE__*/React.createElement("div", {
+    key: role,
+    className: "flex items-center justify-between text-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-slate-300 font-bold"
+  }, role), /*#__PURE__*/React.createElement("div", {
+    className: "text-white font-extrabold"
+  }, count))), !Object.keys(stats.roleCounts || {}).length && /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-slate-400"
+  }, "Sin datos de roles (se muestra 'user' por defecto).")), /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 text-xs text-slate-400"
+  }, "Consejo: puedes poner ", /*#__PURE__*/React.createElement("span", {
+    className: "text-slate-200 font-bold"
+  }, "role: 'vip'"), " a un usuario para identificarlo aqu\xC3\xAD.")), /*#__PURE__*/React.createElement("div", {
+    className: "lg:col-span-2 rounded-2xl border border-white/10 bg-white/5 p-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-extrabold text-white flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "trophy",
+    className: "w-4 h-4 text-amber-300"
+  }), "Top usuarios hoy"), /*#__PURE__*/React.createElement("button", {
+    className: "px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-bold",
+    onClick: () => exportCSV(filteredUsers)
+  }, "Exportar CSV")), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-3"
+  }, stats.topUsers.map(u => /*#__PURE__*/React.createElement("div", {
+    key: u.uid,
+    className: "rounded-xl border border-white/10 bg-slate-900/40 p-4 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-white font-bold truncate"
+  }, u.email || '(sin email)'), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-slate-400 truncate"
+  }, u.uid), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-slate-400 mt-1"
+  }, "\xC3\u0161ltimo: ", u.lastActiveText)), /*#__PURE__*/React.createElement("div", {
+    className: `ml-4 shrink-0 px-3 py-1 rounded-lg text-xs font-extrabold border
+                                                            ${(u.todayUsage || 0) >= DAILY_LIMIT ? 'bg-red-500/15 text-red-200 border-red-500/30' : 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30'}`
+  }, u.todayUsage || 0, " / ", DAILY_LIMIT))), !stats.topUsers.length && /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-slate-400"
+  }, "No hay actividad hoy."))))), selectedTab === 'users' && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col md:flex-row gap-3 md:items-center md:justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 block"
+  }, "Buscar por email o UID"), /*#__PURE__*/React.createElement("input", {
+    value: searchTerm,
+    onChange: e => setSearchTerm(e.target.value),
+    placeholder: "Ej: usuario@gmail.com o uid...",
+    className: "w-full px-4 py-3 rounded-xl bg-slate-900/60 border border-white/10 text-white placeholder-slate-500 outline-none focus:border-cyan-300/50"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-sm font-bold",
+    onClick: () => exportCSV(filteredUsers)
+  }, "Exportar CSV (filtrado)"))), /*#__PURE__*/React.createElement("div", {
+    className: "rounded-2xl border border-white/10 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "overflow-auto"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "min-w-[900px] w-full text-left border-collapse"
+  }, /*#__PURE__*/React.createElement("thead", {
+    className: "bg-slate-900/70"
+  }, /*#__PURE__*/React.createElement("tr", {
+    className: "text-[11px] uppercase text-slate-400 tracking-wider"
+  }, /*#__PURE__*/React.createElement("th", {
+    className: "p-4"
+  }, "Usuario"), /*#__PURE__*/React.createElement("th", {
+    className: "p-4"
+  }, "UID"), /*#__PURE__*/React.createElement("th", {
+    className: "p-4"
+  }, "Rol"), /*#__PURE__*/React.createElement("th", {
+    className: "p-4"
+  }, "Uso hoy"), /*#__PURE__*/React.createElement("th", {
+    className: "p-4"
+  }, "\xC3\u0161ltima actividad"), /*#__PURE__*/React.createElement("th", {
+    className: "p-4"
+  }, "Acciones"))), /*#__PURE__*/React.createElement("tbody", {
+    className: "bg-slate-950/40"
+  }, filteredUsers.map(u => /*#__PURE__*/React.createElement("tr", {
+    key: u.uid,
+    className: "border-t border-white/5 hover:bg-white/5"
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-bold text-white"
+  }, u.email || '(sin email)')), /*#__PURE__*/React.createElement("td", {
+    className: "p-4 font-mono text-xs text-slate-400"
+  }, u.uid), /*#__PURE__*/React.createElement("td", {
+    className: "p-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `px-2 py-1 rounded-lg text-xs font-extrabold border
+                                                                    ${u.role === 'admin' ? 'bg-amber-500/15 text-amber-200 border-amber-500/30' : u.role === 'vip' ? 'bg-violet-500/15 text-violet-200 border-violet-500/30' : 'bg-slate-500/15 text-slate-200 border-slate-500/30'}`
+  }, u.role)), /*#__PURE__*/React.createElement("td", {
+    className: "p-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `px-2 py-1 rounded-lg text-xs font-extrabold border
+                                                                    ${(u.todayUsage || 0) >= DAILY_LIMIT ? 'bg-red-500/15 text-red-200 border-red-500/30' : 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30'}`
+  }, u.todayUsage || 0, " / ", DAILY_LIMIT)), /*#__PURE__*/React.createElement("td", {
+    className: "p-4 text-xs text-slate-400"
+  }, u.lastActiveText), /*#__PURE__*/React.createElement("td", {
+    className: "p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-bold",
+    onClick: () => resetTodayUsage(u.uid)
+  }, "Reset hoy"), u.role !== 'admin' && /*#__PURE__*/React.createElement("button", {
+    className: `px-3 py-2 rounded-xl border text-xs font-bold
+                                                                                ${u.role === 'vip' ? 'bg-violet-500/10 hover:bg-violet-500/15 border-violet-500/30 text-violet-200' : 'bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/30 text-emerald-200'}`,
+    onClick: () => setRole(u.uid, u.role === 'vip' ? 'user' : 'vip')
+  }, u.role === 'vip' ? 'Quitar VIP' : 'Hacer VIP'), u.uid !== auth.currentUser?.uid && /*#__PURE__*/React.createElement("button", {
+    className: "px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/15 border border-red-500/30 text-red-200 text-xs font-bold",
+    onClick: () => deleteUserDoc(u.uid, u.email)
+  }, "Eliminar doc"))))), !filteredUsers.length && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    className: "p-6 text-sm text-slate-400",
+    colSpan: "6"
+  }, "No hay resultados.")))))), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-slate-400"
+  }, "Nota: \"Eliminar doc\" borra el documento en Firestore, pero no elimina la cuenta de Firebase Auth (eso requiere backend/admin SDK)."))))));
+};
+const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth || height > maxWidth) {
+        if (width > height) {
+          height = Math.round(height * maxWidth / width);
+          width = maxWidth;
+        } else {
+          width = Math.round(width * maxWidth / height);
+          height = maxWidth;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+  });
+};
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [adminPanelOpen, setAdminPanelOpen] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [originalUploadedFile, setOriginalUploadedFile] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
+  const [currentSettings, setCurrentSettings] = useState(INITIAL_SETTINGS);
+  const [history, setHistory] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [shapeOverlays, setShapeOverlays] = useState([]);
+  const [selectedShapeIdx, setSelectedShapeIdx] = useState(-1);
+  const [isShapeEditing, setIsShapeEditing] = useState(false);
+  const [perspectiveModalOpen, setPerspectiveModalOpen] = useState(false);
+  const [curvesModalOpen, setCurvesModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [memeData, setMemeData] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({
+    x: 0,
+    y: 0
+  });
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [previousImageBeforeEdit, setPreviousImageBeforeEdit] = useState(null);
+  const [hasOverlayFromHistory, setHasOverlayFromHistory] = useState(false);
+  const [hoveredSlider, setHoveredSlider] = useState(null);
+  const [hoveredHistoryItem, setHoveredHistoryItem] = useState(null);
+  const [hoveredButton, setHoveredButton] = useState(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [resizeModalOpen, setResizeModalOpen] = useState(false);
+  const [rotateModalOpen, setRotateModalOpen] = useState(false);
+  const [borderModalOpen, setBorderModalOpen] = useState(false);
+  const [isColorPickerActive, setIsColorPickerActive] = useState(false);
+  const [textModalOpen, setTextModalOpen] = useState(false);
+  const [isTextEditing, setIsTextEditing] = useState(false);
+  const [textOverlays, setTextOverlays] = useState([]);
+  const [selectedTextIdx, setSelectedTextIdx] = useState(-1);
+  const [lastAppliedTexts, setLastAppliedTexts] = useState(null);
+  const [preTextImage, setPreTextImage] = useState(null);
+  const [imageDimensions, setImageDimensions] = useState({
+    width: 0,
+    height: 0
+  });
+  const [manualActions, setManualActions] = useState([]);
+  const canvasRef = useRef(null);
+  const canvasContainerRef = useRef(null);
+  const textOverlaysRef = useRef([]); // Always-fresh ref for stale closure safety
+  const isReEditingRef = useRef(false); // true when re-editing previously applied texts
+  const preReEditImageRef = useRef(null); // snapshot of image before re-edit started
+  const fileInputRef = useRef(null);
+
+  // Sync textOverlays ref
+  useEffect(() => {
+    textOverlaysRef.current = textOverlays;
+  }, [textOverlays]);
+
+  // Cargar historial desde IndexedDB al montar
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const items = await loadAjustesHistoryFromDb();
+        if (items.length > 0) setHistory(items);
+      } catch (e) {
+        console.warn('Error cargando historial:', e);
+      }
+    };
+    loadHistory();
+  }, []);
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async currentUser => {
+      setUser(currentUser);
+      if (!currentUser) {
+        setAuthModalOpen(true);
+      } else {
+        setAuthModalOpen(false);
+        const userRef = db.collection('users').doc(currentUser.uid);
+        await userRef.set({
+          email: currentUser.email,
+          lastActive: new Date()
+        }, {
+          merge: true
+        });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+  useEffect(() => {
+    if (window.lucide) window.lucide.createIcons();
+  });
+  const handleImageUpload = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = event => {
+      const img = new Image();
+      img.onload = () => {
+        setUploadedFile(event.target.result);
+        setOriginalUploadedFile(event.target.result);
+        setOriginalImage(event.target.result);
+        setCurrentSettings(INITIAL_SETTINGS);
+        setStatusMessage("");
+        setMemeData(null);
+        setPreviousImageBeforeEdit(null);
+        setHasOverlayFromHistory(false);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Reemplazar completamente la funciÃ³n renderImage existente
+  const renderImage = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !originalImage) return;
+    const ctx = canvas.getContext('2d', {
+      willReadFrequently: true
+    });
+    const img = new Image();
+    img.src = originalImage;
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(canvas.width / 2 + currentSettings.panX, canvas.height / 2 + currentSettings.panY);
+      ctx.rotate(currentSettings.rotation * Math.PI / 180);
+      const scale = currentSettings.scale / 100;
+      ctx.scale(scale, scale);
+      ctx.translate(-canvas.width / 2, -canvas.height / 2);
+      const brightnessVal = currentSettings.brightness + currentSettings.exposure * 10;
+      ctx.filter = `
+                brightness(${brightnessVal}%) 
+                contrast(${currentSettings.contrast}%) 
+                saturate(${currentSettings.saturation}%) 
+                hue-rotate(${currentSettings.hue}deg) 
+                blur(${currentSettings.blur}px)
+            `;
+      ctx.drawImage(img, 0, 0);
+      ctx.restore();
+
+      // Aplicar efectos locales
+      if (currentSettings.temperature !== 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.fillStyle = currentSettings.temperature > 0 ? `rgba(255,140,0,${Math.abs(currentSettings.temperature) / 250})` : `rgba(0,100,255,${Math.abs(currentSettings.temperature) / 250})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+      if (currentSettings.vignette > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        const maxDim = Math.max(canvas.width, canvas.height);
+        const gradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.width * 0.3, canvas.width / 2, canvas.height / 2, maxDim * 0.8);
+        gradient.addColorStop(0, "rgba(0,0,0,0)");
+        gradient.addColorStop(1, `rgba(0,0,0,${currentSettings.vignette / 100})`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+
+      // Nuevas funcionalidades locales
+      if (currentSettings.clarity !== 0) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const factor = currentSettings.clarity / 100;
+        for (let i = 0; i < data.length; i += 4) {
+          const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+          const contrast = (gray - 128) * factor;
+          data[i] = Math.min(255, Math.max(0, data[i] + contrast));
+          data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + contrast));
+          data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + contrast));
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (currentSettings.vibrance !== 0) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const amount = currentSettings.vibrance / 100;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const max = Math.max(r, g, b);
+          const avg = (r + g + b) / 3;
+          const amt = Math.abs(max - avg) * 2 / 255 * amount / 100;
+          data[i] = Math.min(255, Math.max(0, r + (max - r) * amt));
+          data[i + 1] = Math.min(255, Math.max(0, g + (max - g) * amt));
+          data[i + 2] = Math.min(255, Math.max(0, b + (max - b) * amt));
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (currentSettings.noiseReduction > 0) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        applyNoiseReduction(imageData, currentSettings.noiseReduction / 100);
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (currentSettings.sharpening > 0) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        applySharpening(imageData, currentSettings.sharpening / 100);
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (currentSettings.filmGrain > 0) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const intensity = currentSettings.filmGrain * 2.55;
+        for (let i = 0; i < data.length; i += 4) {
+          const noise = (Math.random() - 0.5) * intensity;
+          data[i] = Math.min(255, Math.max(0, data[i] + noise));
+          data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+          data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (currentSettings.midtoneContrast !== 0) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const factor = 259 * (currentSettings.midtoneContrast + 255) / (255 * (259 - currentSettings.midtoneContrast));
+        for (let i = 0; i < data.length; i += 4) {
+          // Aplicar solo a medios tonos (valores entre 64 y 192)
+          for (let c = 0; c < 3; c++) {
+            const value = data[i + c];
+            if (value > 64 && value < 192) {
+              data[i + c] = Math.min(255, Math.max(0, factor * (value - 128) + 128));
+            }
+          }
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (currentSettings.hdrEffect > 0) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const strength = currentSettings.hdrEffect / 100;
+        for (let i = 0; i < data.length; i += 4) {
+          // Mapeo tonal HDR
+          for (let c = 0; c < 3; c++) {
+            let value = data[i + c] / 255;
+
+            // Curva tonal HDR
+            value = Math.pow(value, 1 / (1 + strength * 2));
+            value = value / (value + Math.pow(0.5, 1 / (1 + strength)));
+            data[i + c] = Math.min(255, Math.max(0, value * 255));
+          }
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (currentSettings.ortonEffect > 0) {
+        ctx.save();
+
+        // Crear versiÃ³n desenfocada
+        const blurredCanvas = document.createElement('canvas');
+        blurredCanvas.width = canvas.width;
+        blurredCanvas.height = canvas.height;
+        const blurredCtx = blurredCanvas.getContext('2d');
+        blurredCtx.filter = `blur(${20 + currentSettings.ortonEffect / 5}px)`;
+        blurredCtx.drawImage(canvas, 0, 0);
+
+        // Combinar con la original
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = currentSettings.ortonEffect / 200;
+        ctx.drawImage(blurredCanvas, 0, 0);
+        ctx.restore();
+      }
+      if (currentSettings.focalBlur > 0) {
+        ctx.save();
+
+        // Crear mÃ¡scara radial para el desenfoque
+        const gradient = ctx.createRadialGradient(canvas.width * currentSettings.focalPoint.x / 100, canvas.height * currentSettings.focalPoint.y / 100, 0, canvas.width * currentSettings.focalPoint.x / 100, canvas.height * currentSettings.focalPoint.y / 100, Math.max(canvas.width, canvas.height) * 0.7);
+        gradient.addColorStop(0, "rgba(0,0,0,0)");
+        gradient.addColorStop(0.3, "rgba(0,0,0,0)");
+        gradient.addColorStop(1, "rgba(0,0,0,1)");
+
+        // Guardar la imagen original
+        const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        // Aplicar desenfoque a toda la imagen
+        ctx.filter = `blur(${currentSettings.focalBlur}px)`;
+        ctx.drawImage(canvas, 0, 0);
+
+        // Recuperar la imagen original
+        const originalCanvas = document.createElement('canvas');
+        originalCanvas.width = canvas.width;
+        originalCanvas.height = canvas.height;
+        const originalCtx = originalCanvas.getContext('2d');
+        originalCtx.putImageData(originalImageData, 0, 0);
+
+        // Aplicar mÃ¡scara para mantener el Ã¡rea focal nÃ­tida
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Combinar con la imagen original
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.drawImage(originalCanvas, 0, 0);
+        ctx.restore();
+      }
+      ctx.filter = 'none';
+      if (memeData) {
+        ctx.save();
+        const fontSize = Math.max(20, canvas.height * 0.1);
+        ctx.font = `900 ${fontSize}px Impact, sans-serif`;
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = fontSize * 0.08;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        const drawMemeText = (text, y, baseline) => {
+          if (!text) return;
+          ctx.textBaseline = baseline;
+          const x = canvas.width / 2;
+          const maxWidth = canvas.width * 0.95;
+          const words = text.toUpperCase().split(' ');
+          let line = '';
+          let lines = [];
+          for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+              lines.push(line);
+              line = words[n] + ' ';
+            } else {
+              line = testLine;
+            }
+          }
+          lines.push(line);
+          let currentY = y;
+          if (baseline === "bottom") {
+            currentY = y - (lines.length - 1) * (fontSize * 1.1);
+          }
+          for (let i = 0; i < lines.length; i++) {
+            ctx.strokeText(lines[i], x, currentY);
+            ctx.fillText(lines[i], x, currentY);
+            currentY += fontSize * 1.1;
+          }
+        };
+        if (memeData.top) drawMemeText(memeData.top, fontSize * 0.2, "top");
+        if (memeData.bottom) drawMemeText(memeData.bottom, canvas.height - fontSize * 0.4, "bottom");
+        ctx.restore();
+      }
+    };
+  }, [originalImage, currentSettings, memeData]);
+  useEffect(() => {
+    renderImage();
+  }, [renderImage]);
+
+  // --- Estado del cursor circular del Color Picker ---
+  const [colorPickerPos, setColorPickerPos] = useState({
+    x: 0,
+    y: 0
+  });
+  const [colorPickerColor, setColorPickerColor] = useState('#000000');
+  const handleMouseDown = e => {
+    if (isColorPickerActive) {
+      handleColorPick(e);
+      return;
+    }
+    setIsDragging(true);
+    dragStart.current = {
+      x: e.clientX,
+      y: e.clientY
+    };
+  };
+  const handleMouseMove = e => {
+    // Color Picker: muestrear color bajo el cursor en tiempo real
+    if (isColorPickerActive && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const px = (e.clientX - rect.left) * scaleX;
+      const py = (e.clientY - rect.top) * scaleY;
+      if (px >= 0 && py >= 0 && px < canvas.width && py < canvas.height) {
+        const ctx = canvas.getContext('2d');
+        const pixel = ctx.getImageData(Math.round(px), Math.round(py), 1, 1).data;
+        const hex = `#${[pixel[0], pixel[1], pixel[2]].map(c => c.toString(16).padStart(2, '0')).join('')}`;
+        setColorPickerColor(hex);
+      }
+      // PosiciÃ³n del cursor flotante relativa al contenedor del canvas
+      const container = canvasContainerRef.current;
+      if (container) {
+        const cRect = container.getBoundingClientRect();
+        setColorPickerPos({
+          x: e.clientX - cRect.left,
+          y: e.clientY - cRect.top
+        });
+      }
+      return;
+    }
+    if (!isDragging) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    dragStart.current = {
+      x: e.clientX,
+      y: e.clientY
+    };
+    setCurrentSettings(prev => ({
+      ...prev,
+      panX: prev.panX + dx,
+      panY: prev.panY + dy
+    }));
+  };
+  const handleMouseUp = () => setIsDragging(false);
+  const saveToHistory = async () => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const savedImage = canvas.toDataURL('image/jpeg', 0.9);
+    const thumbUrl = canvas.toDataURL('image/jpeg', 0.5);
+    let effectsDescription = getEffectsDescription(currentSettings);
+    if (manualActions.length > 0) {
+      effectsDescription = manualActions.join(', ') + (effectsDescription ? ', ' + effectsDescription : '');
+    }
+    const newHistoryItem = {
+      id: Date.now(),
+      thumbnail: thumbUrl,
+      originalSource: savedImage,
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      settings: {
+        ...currentSettings
+      },
+      effectsDescription: effectsDescription,
+      manualActions: [...manualActions]
+    };
+    await saveAjustesHistoryItemToDb(newHistoryItem);
+    setHistory(prev => [newHistoryItem, ...prev]);
+    if (originalUploadedFile) setOriginalImage(originalUploadedFile);
+    setUploadedFile(originalUploadedFile);
+    setCurrentSettings(INITIAL_SETTINGS);
+    setMemeData(null);
+    setStatusMessage("Â¡Guardado! Lienzo restaurado a la imagen original.");
+    setPreviousImageBeforeEdit(null);
+    setHasOverlayFromHistory(false);
+    setManualActions([]);
+    setTimeout(() => setStatusMessage(""), 2000);
+  };
+  const restoreFromHistory = item => {
+    if (!originalImage) return;
+    setPreviousImageBeforeEdit(originalImage);
+    setOriginalImage(item.originalSource);
+    setCurrentSettings(item.settings || INITIAL_SETTINGS);
+    setMemeData(null);
+    setHasOverlayFromHistory(true);
+  };
+  const handleDownloadHistory = item => {
+    const link = document.createElement('a');
+    link.download = `historial-${item.id}.jpg`;
+    link.href = item.originalSource;
+    link.click();
+  };
+  const handleDeleteHistory = async id => {
+    await deleteAjustesHistoryItemFromDb(id);
+    setHistory(prev => prev.filter(item => item.id !== id));
+  };
+  const handleDeleteCurrentImage = () => {
+    setOriginalImage(null);
+    setUploadedFile(null);
+    setOriginalUploadedFile(null); // Limpiar tambiÃ©n la imagen original
+    setCurrentSettings(INITIAL_SETTINGS);
+    setMemeData(null);
+    setPalette([]);
+    setStatusMessage("");
+    setPreviousImageBeforeEdit(null);
+    setHasOverlayFromHistory(false);
+  };
+  const handleCancelOverlayEdit = () => {
+    if (!previousImageBeforeEdit) return;
+    setOriginalImage(previousImageBeforeEdit);
+    setPreviousImageBeforeEdit(null);
+    setHasOverlayFromHistory(false);
+    setCurrentSettings(INITIAL_SETTINGS);
+    setMemeData(null);
+  };
+
+  // --- FUNCIONES DE RECORTE ---
+  const handleOpenCropModal = () => {
+    if (!originalImage) {
+      setStatusMessage("Primero debes subir una imagen para recortar");
+      setTimeout(() => setStatusMessage(""), 3000);
+      return;
+    }
+    setCropModalOpen(true);
+  };
+  const handleCropComplete = croppedImage => {
+    setOriginalImage(croppedImage);
+    setUploadedFile(croppedImage);
+    setManualActions(prev => [...prev, "Recorte"]);
+    setCurrentSettings(INITIAL_SETTINGS);
+    setMemeData(null);
+    setStatusMessage("Imagen recortada correctamente");
+    setTimeout(() => setStatusMessage(""), 3000);
+  };
+  const handleCenterBlur = () => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      applyCenterBlur(ctx, canvas, 20);
+      const blurredImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(blurredImage);
+      setUploadedFile(blurredImage);
+      setManualActions(prev => [...prev, "Difuminar Centro"]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setMemeData(null);
+      setStatusMessage("Centro difuminado aplicado");
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+  const handleColorPick = e => {
+    if (!canvasRef.current || !originalImage) return;
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const ctx = canvas.getContext('2d');
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    const color = `#${[pixel[0], pixel[1], pixel[2]].map(c => c.toString(16).padStart(2, '0')).join('')}`;
+    copyColor(color);
+    setIsColorPickerActive(false);
+    setStatusMessage(`Color copiado: ${color}`);
+    setTimeout(() => setStatusMessage(""), 2000);
+  };
+  const applyFilter = filterType => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      switch (filterType) {
+        case 'bw':
+          // Blanco y Negro (promedio ponderado)
+          for (let i = 0; i < data.length; i += 4) {
+            const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+            data[i] = gray;
+            data[i + 1] = gray;
+            data[i + 2] = gray;
+          }
+          ctx.putImageData(imageData, 0, 0);
+          break;
+        case 'sepia':
+          // Sepia
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            data[i] = Math.min(255, r * 0.393 + g * 0.769 + b * 0.189);
+            data[i + 1] = Math.min(255, r * 0.349 + g * 0.686 + b * 0.168);
+            data[i + 2] = Math.min(255, r * 0.272 + g * 0.534 + b * 0.131);
+          }
+          ctx.putImageData(imageData, 0, 0);
+          break;
+        case 'high-contrast':
+          // Alto Contraste: Ajuste agresivo de contraste
+          const contrast = 100; // Valor entre 0 y 255 (100 es bastante fuerte)
+          const factor = 259 * (contrast + 255) / (255 * (259 - contrast));
+          for (let i = 0; i < data.length; i += 4) {
+            data[i] = factor * (data[i] - 128) + 128; // R
+            data[i + 1] = factor * (data[i + 1] - 128) + 128; // G
+            data[i + 2] = factor * (data[i + 2] - 128) + 128; // B
+            // Clamping
+            data[i] = Math.max(0, Math.min(255, data[i]));
+            data[i + 1] = Math.max(0, Math.min(255, data[i + 1]));
+            data[i + 2] = Math.max(0, Math.min(255, data[i + 2]));
+          }
+          ctx.putImageData(imageData, 0, 0);
+          break;
+        case 'vintage':
+          // Vintage: sepia + contraste reducido + viÃ±eta
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            // Sepia suave
+            data[i] = Math.min(255, r * 0.9 + g * 0.4 + b * 0.1);
+            data[i + 1] = Math.min(255, r * 0.3 + g * 0.8 + b * 0.1);
+            data[i + 2] = Math.min(255, r * 0.2 + g * 0.4 + b * 0.6);
+            // Reducir contraste
+            for (let j = 0; j < 3; j++) {
+              data[i + j] = data[i + j] * 0.85 + 25;
+            }
+          }
+          ctx.putImageData(imageData, 0, 0);
+
+          // AÃ±adir viÃ±eta
+          ctx.globalCompositeOperation = 'multiply';
+          const gradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.width * 0.4, canvas.width / 2, canvas.height / 2, canvas.width * 0.8);
+          gradient.addColorStop(0, 'rgba(255,255,255,0)');
+          gradient.addColorStop(1, 'rgba(80,60,40,0.5)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.globalCompositeOperation = 'source-over';
+          break;
+        case 'noir':
+          // Noir: B&W con alto contraste
+          for (let i = 0; i < data.length; i += 4) {
+            let gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+            // Aumentar contraste
+            gray = (gray - 128) * 1.5 + 128;
+            gray = Math.max(0, Math.min(255, gray));
+            data[i] = gray;
+            data[i + 1] = gray;
+            data[i + 2] = gray;
+          }
+          ctx.putImageData(imageData, 0, 0);
+          break;
+        case 'polaroid':
+          {
+            // Polaroid: Marco blanco con imagen encogida y borde inferior mÃ¡s grande
+            const padSide = Math.min(canvas.width, canvas.height) * 0.06;
+            const padBottom = padSide * 2.5; // borde inferior mÃ¡s grande (estilo Polaroid)
+            const newW = canvas.width + padSide * 2;
+            const newH = canvas.height + padSide + padBottom;
+
+            // Crear canvas nuevo con el tamaÃ±o del marco
+            const polaroidCanvas = document.createElement('canvas');
+            polaroidCanvas.width = newW;
+            polaroidCanvas.height = newH;
+            const pCtx = polaroidCanvas.getContext('2d');
+
+            // Fondo blanco
+            pCtx.fillStyle = '#ffffff';
+            pCtx.fillRect(0, 0, newW, newH);
+
+            // Sombra sutil
+            pCtx.shadowColor = 'rgba(0,0,0,0.15)';
+            pCtx.shadowBlur = 12;
+            pCtx.shadowOffsetX = 2;
+            pCtx.shadowOffsetY = 4;
+
+            // Dibujar la imagen original centrada dentro del marco
+            pCtx.drawImage(img, padSide, padSide, canvas.width, canvas.height);
+
+            // Transferir resultado al canvas principal
+            canvas.width = newW;
+            canvas.height = newH;
+            ctx.drawImage(polaroidCanvas, 0, 0);
+            break;
+          }
+      }
+      const filteredImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(filteredImage);
+      setUploadedFile(filteredImage);
+      const filterNames = {
+        'bw': 'Blanco y Negro',
+        'sepia': 'Sepia',
+        'vintage': 'Vintage',
+        'high-contrast': 'Alto Contraste',
+        'noir': 'Noir',
+        'polaroid': 'Polaroid'
+      };
+      setManualActions(prev => [...prev, `Filtro: ${filterNames[filterType]}`]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setMemeData(null);
+      setStatusMessage(`Filtro ${filterNames[filterType]} aplicado`);
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+
+  // --- FUNCIONES DE TRANSFORMACIÃ“N ---
+  const handleFlipHorizontal = () => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, 0, 0);
+      const flippedImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(flippedImage);
+      setUploadedFile(flippedImage);
+      setManualActions(prev => [...prev, "Espejo horizontal"]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setStatusMessage("Imagen volteada horizontalmente");
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+  const handleFlipVertical = () => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(0, canvas.height);
+      ctx.scale(1, -1);
+      ctx.drawImage(img, 0, 0);
+      const flippedImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(flippedImage);
+      setUploadedFile(flippedImage);
+      setManualActions(prev => [...prev, "Espejo vertical"]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setStatusMessage("Imagen volteada verticalmente");
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+  const handleRotate90 = () => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.height;
+      canvas.height = img.width;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(90 * Math.PI / 180);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      const rotatedImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(rotatedImage);
+      setUploadedFile(rotatedImage);
+      setManualActions(prev => [...prev, "Rotar 90Â°"]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setStatusMessage("Imagen rotada 90Â°");
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+
+  // --- FUNCIONES ADICIONALES SIN IA ---
+  const handleResize = (newWidth, newHeight) => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+      const resizedImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(resizedImage);
+      setUploadedFile(resizedImage);
+      setManualActions(prev => [...prev, `Redimensionar: ${newWidth}x${newHeight}`]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setStatusMessage(`Imagen redimensionada a ${newWidth}x${newHeight}`);
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+  const handleRotateFree = angle => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const rad = angle * Math.PI / 180;
+      const sin = Math.abs(Math.sin(rad));
+      const cos = Math.abs(Math.cos(rad));
+      canvas.width = img.width * cos + img.height * sin;
+      canvas.height = img.width * sin + img.height * cos;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(rad);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      const rotatedImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(rotatedImage);
+      setUploadedFile(rotatedImage);
+      setManualActions(prev => [...prev, `Rotar ${angle}Â°`]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setStatusMessage(`Imagen rotada ${angle}Â°`);
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+  const handleAddBorder = (borderWidth, borderColor) => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width + borderWidth * 2;
+      canvas.height = img.height + borderWidth * 2;
+      const ctx = canvas.getContext('2d');
+
+      // Dibujar borde
+      ctx.fillStyle = borderColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Dibujar imagen centrada
+      ctx.drawImage(img, borderWidth, borderWidth);
+      const borderedImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(borderedImage);
+      setUploadedFile(borderedImage);
+      setManualActions(prev => [...prev, `Marco: ${borderWidth}px`]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setStatusMessage(`Marco aÃ±adido (${borderWidth}px)`);
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+  const handlePixelate = (pixelSize = 10) => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+
+      // Dibujar imagen pequeÃ±a
+      const smallCanvas = document.createElement('canvas');
+      smallCanvas.width = img.width / pixelSize;
+      smallCanvas.height = img.height / pixelSize;
+      const smallCtx = smallCanvas.getContext('2d');
+      smallCtx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
+
+      // Dibujar pequeÃ±a a tamaÃ±o original (pixelado)
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(smallCanvas, 0, 0, canvas.width, canvas.height);
+      const pixelatedImage = canvas.toDataURL('image/jpeg', 0.95);
+      setOriginalImage(pixelatedImage);
+      setUploadedFile(pixelatedImage);
+      setManualActions(prev => [...prev, "Pixelado"]);
+      setCurrentSettings(INITIAL_SETTINGS);
+      setStatusMessage("Efecto pixelado aplicado");
+      setTimeout(() => setStatusMessage(""), 3000);
+    };
+    img.src = originalImage;
+  };
+
+  // --- TEXTO INTERACTIVO (MULTI-CAPA) ---
+  const addNewTextOverlay = () => {
+    const text = prompt("Escribe el texto:");
+    if (!text || !text.trim()) return false;
+    const currentLen = textOverlaysRef.current.length;
+    const newOverlay = {
+      text: text.trim(),
+      x: 20 + currentLen * 5 % 30,
+      y: 30 + currentLen * 5 % 20,
+      width: 50,
+      height: 20,
+      fontSize: 36,
+      color: '#0ae674',
+      fontFamily: 'Arial'
+    };
+    setTextOverlays(prev => [...prev, newOverlay]);
+    setSelectedTextIdx(currentLen);
+    return true;
+  };
+  const startTextEditing = () => {
+    if (!originalImage) return;
+
+    // If there are previously applied texts, offer to re-edit them
+    if (lastAppliedTexts && lastAppliedTexts.length > 0 && preTextImage) {
+      const choice = confirm(`Tienes ${lastAppliedTexts.length} texto(s) aplicado(s).\n\n` + `Â¿Quieres editarlos?\n\n` + `Aceptar = Editar textos existentes\n` + `Cancelar = AÃ±adir texto nuevo`);
+      if (choice) {
+        // Save current image so cancel can restore it
+        preReEditImageRef.current = originalImage;
+        isReEditingRef.current = true;
+
+        // Restore pre-text image and re-open overlays for editing
+        setOriginalImage(preTextImage);
+        setUploadedFile(preTextImage);
+        setTextOverlays(lastAppliedTexts.map(o => ({
+          ...o
+        })));
+        setSelectedTextIdx(0);
+        setIsTextEditing(true);
+        // Redraw canvas with pre-text image
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+          };
+          img.src = preTextImage;
+        }
+        return;
+      }
+    }
+
+    // Add new text
+    isReEditingRef.current = false;
+    if (addNewTextOverlay()) {
+      // Save current image as pre-text baseline if not already set
+      if (!preTextImage) {
+        setPreTextImage(originalImage);
+      }
+      setIsTextEditing(true);
+    }
+  };
+  const updateSelectedOverlay = updates => {
+    if (selectedTextIdx < 0) return;
+    setTextOverlays(prev => prev.map((o, i) => i === selectedTextIdx ? {
+      ...o,
+      ...updates
+    } : o));
+  };
+  const deleteTextOverlay = idx => {
+    const currentLen = textOverlaysRef.current.length;
+    setTextOverlays(prev => prev.filter((_, i) => i !== idx));
+    if (selectedTextIdx === idx) {
+      setSelectedTextIdx(currentLen > 1 ? Math.max(0, idx - 1) : -1);
+    } else if (selectedTextIdx > idx) {
+      setSelectedTextIdx(prev => prev - 1);
+    }
+    // If no overlays left, exit edit mode
+    if (currentLen <= 1) {
+      setIsTextEditing(false);
+    }
+  };
+  const applyTextOverlay = () => {
+    // Use ref for always-fresh overlays (avoids stale closure)
+    const currentOverlays = textOverlaysRef.current;
+    if (!originalImage || currentOverlays.length === 0 || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const container = canvasContainerRef.current;
+    if (!container) return;
+    const canvasRect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / canvasRect.width;
+    const scaleY = canvas.height / canvasRect.height;
+    const containerRect = container.getBoundingClientRect();
+    const canvasOffsetX = canvasRect.left - containerRect.left;
+    const canvasOffsetY = canvasRect.top - containerRect.top;
+    const ctx = canvas.getContext('2d');
+
+    // Draw ALL text overlays
+    const textNames = [];
+    currentOverlays.forEach(ov => {
+      const overlayPxX = ov.x / 100 * containerRect.width;
+      const overlayPxY = ov.y / 100 * containerRect.height;
+      const overlayPxW = ov.width / 100 * containerRect.width;
+      const overlayPxH = ov.height / 100 * containerRect.height;
+      const textPxX = (overlayPxX - canvasOffsetX) * scaleX;
+      const textPxY = (overlayPxY - canvasOffsetY) * scaleY;
+      const textPxW = overlayPxW * scaleX;
+      const textPxH = overlayPxH * scaleY;
+      const scaledFontSize = ov.fontSize * scaleX;
+      ctx.font = `bold ${scaledFontSize}px ${ov.fontFamily}`;
+      ctx.fillStyle = ov.color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+      ctx.shadowBlur = 4 * scaleX;
+      ctx.shadowOffsetX = 2 * scaleX;
+      ctx.shadowOffsetY = 2 * scaleY;
+      const centerX = textPxX + textPxW / 2;
+      const centerY = textPxY + textPxH / 2;
+
+      // Word wrap
+      const words = ov.text.split(' ');
+      const maxWidth = textPxW * 0.9;
+      const lines = [];
+      let currentLine = '';
+      words.forEach(word => {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      });
+      if (currentLine) lines.push(currentLine);
+      const lineHeight = scaledFontSize * 1.2;
+      const totalTextHeight = lines.length * lineHeight;
+      const startY = centerY - totalTextHeight / 2 + lineHeight / 2;
+      lines.forEach((line, i) => {
+        ctx.fillText(line, centerX, startY + i * lineHeight);
+      });
+      textNames.push(ov.text.substring(0, 15));
+    });
+
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Save pre-text image before burning
+    if (!preTextImage) {
+      setPreTextImage(originalImage);
+    }
+    const imageWithText = canvas.toDataURL('image/jpeg', 0.95);
+    setOriginalImage(imageWithText);
+    setUploadedFile(imageWithText);
+
+    // Save deep copy of overlays for re-editing later
+    if (isReEditingRef.current) {
+      // Re-editing: replace all tracked texts with the current set
+      setLastAppliedTexts(currentOverlays.map(o => ({
+        ...o
+      })));
+    } else {
+      // Adding new: accumulate onto previously tracked texts
+      setLastAppliedTexts(prev => [...(prev || []), ...currentOverlays.map(o => ({
+        ...o
+      }))]);
+    }
+    isReEditingRef.current = false;
+    preReEditImageRef.current = null;
+    const desc = textNames.length === 1 ? `Texto: "${textNames[0]}${textNames[0].length >= 15 ? '...' : ''}"` : `${textNames.length} Textos`;
+    setManualActions(prev => [...prev, desc]);
+    setCurrentSettings(INITIAL_SETTINGS);
+    setIsTextEditing(false);
+    setTextOverlays([]);
+    setSelectedTextIdx(-1);
+    setStatusMessage(textNames.length === 1 ? "Texto aÃ±adido" : `${textNames.length} textos aÃ±adidos`);
+    setTimeout(() => setStatusMessage(""), 3000);
+  };
+  const cancelTextOverlay = () => {
+    // If we were re-editing, restore the snapshot image from before re-edit
+    if (isReEditingRef.current && preReEditImageRef.current) {
+      const snapshotImage = preReEditImageRef.current;
+      setOriginalImage(snapshotImage);
+      setUploadedFile(snapshotImage);
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = snapshotImage;
+      }
+    }
+    isReEditingRef.current = false;
+    preReEditImageRef.current = null;
+    setIsTextEditing(false);
+    setTextOverlays([]);
+    setSelectedTextIdx(-1);
+  };
+  const updateSetting = (key, value) => {
+    setCurrentSettings(prev => ({
+      ...prev,
+      [key]: parseFloat(value)
+    }));
+  };
+
+  // Copia un color al portapapeles con fallback para entornos sin HTTPS
+  const copyColor = color => {
+    const doCopy = () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(color).catch(() => fallbackCopy(color));
+      } else {
+        return fallbackCopy(color);
+      }
+    };
+    const fallbackCopy = text => {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {/* silently fail */}
+      document.body.removeChild(textarea);
+    };
+    doCopy();
+    setStatusMessage(`Color ${color} copiado.`);
+    setTimeout(() => setStatusMessage(""), 2000);
+  };
+
+  // --- NEW FEATURES HANDLERS ---
+
+  // Auto White Balance
+  const handleAutoWhiteBalance = () => {
+    if (!originalImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      // Gray World Assumption
+      let rSum = 0,
+        gSum = 0,
+        bSum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        rSum += data[i];
+        gSum += data[i + 1];
+        bSum += data[i + 2];
+      }
+      const numPixels = data.length / 4;
+      const avgR = rSum / numPixels || 1;
+      const avgG = gSum / numPixels || 1;
+      const avgB = bSum / numPixels || 1;
+      const avgGray = (avgR + avgG + avgB) / 3;
+      const gainR = avgGray / avgR;
+      const gainG = avgGray / avgG;
+      const gainB = avgGray / avgB;
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = Math.min(255, data[i] * gainR);
+        data[i + 1] = Math.min(255, data[i + 1] * gainG);
+        data[i + 2] = Math.min(255, data[i + 2] * gainB);
+      }
+      ctx.putImageData(imageData, 0, 0);
+      setOriginalImage(canvas.toDataURL());
+      setUploadedFile(canvas.toDataURL());
+      setStatusMessage("Balance de blancos auto aplicado");
+      setTimeout(() => setStatusMessage(""), 2000);
+    };
+    img.src = originalImage;
+  };
+
+  // Shapes
+  const startShapeEditing = () => {
+    setIsShapeEditing(true);
+    if (shapeOverlays.length === 0) {
+      addNewShape('rect');
+    }
+  };
+  const addNewShape = type => {
+    const newOverlay = {
+      id: Date.now(),
+      type: type,
+      x: 40,
+      y: 40,
+      width: 20,
+      height: 20,
+      color: '#0ae674',
+      filled: false
+    };
+    setShapeOverlays(prev => [...prev, newOverlay]);
+    setSelectedShapeIdx(shapeOverlays.length);
+  };
+  const deleteShape = idx => {
+    setShapeOverlays(prev => prev.filter((_, i) => i !== idx));
+    if (selectedShapeIdx >= idx) setSelectedShapeIdx(-1);
+  };
+  const applyShapeOverlay = () => {
+    if (!originalImage || shapeOverlays.length === 0 || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const container = canvasContainerRef.current;
+    if (!container) return;
+
+    // Needed for scaling coords
+    const canvasRect = canvas.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const scaleX = canvas.width / canvasRect.width;
+    const scaleY = canvas.height / canvasRect.height;
+    const canvasOffsetX = canvasRect.left - containerRect.left;
+    const canvasOffsetY = canvasRect.top - containerRect.top;
+    const ctx = canvas.getContext('2d');
+    shapeOverlays.forEach(ov => {
+      const overlayPxX = ov.x / 100 * containerRect.width;
+      const overlayPxY = ov.y / 100 * containerRect.height;
+      const overlayPxW = ov.width / 100 * containerRect.width;
+      const overlayPxH = ov.height / 100 * containerRect.height;
+      const x = (overlayPxX - canvasOffsetX) * scaleX;
+      const y = (overlayPxY - canvasOffsetY) * scaleY;
+      const w = overlayPxW * scaleX;
+      const h = overlayPxH * scaleY;
+      ctx.fillStyle = ov.filled ? ov.color : 'transparent';
+      ctx.strokeStyle = ov.color;
+      ctx.lineWidth = 3 * scaleX;
+      ctx.beginPath();
+      if (ov.type === 'circle') {
+        ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
+      } else {
+        ctx.rect(x, y, w, h);
+      }
+      if (ov.filled) ctx.fill();
+      ctx.stroke();
+    });
+    const imageWithShapes = canvas.toDataURL('image/jpeg', 0.95);
+    setOriginalImage(imageWithShapes);
+    setUploadedFile(imageWithShapes);
+    setShapeOverlays([]);
+    setIsShapeEditing(false);
+    setStatusMessage("Formas aplicadas");
+    setTimeout(() => setStatusMessage(""), 2000);
+  };
+  const handleApplyExternalEdit = newImageSrc => {
+    setOriginalImage(newImageSrc);
+    setUploadedFile(newImageSrc);
+    setStatusMessage("Cambios aplicados");
+    setTimeout(() => setStatusMessage(""), 2000);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col h-full bg-slate-900 text-slate-300 font-sans"
+  }, isProcessing && /*#__PURE__*/React.createElement("div", {
+    className: "loading-overlay"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "spinner-triple"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ring ring-1"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ring ring-2"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ring ring-3"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "loading-text"
+  }, "Procesando...")), !user && authModalOpen && /*#__PURE__*/React.createElement(AuthModal, null), adminPanelOpen && /*#__PURE__*/React.createElement(AdminPanel, {
+    onClose: () => setAdminPanelOpen(false)
+  }), cropModalOpen && /*#__PURE__*/React.createElement(CropModal, {
+    imageSrc: originalImage,
+    onClose: () => setCropModalOpen(false),
+    onCrop: handleCropComplete
+  }), resizeModalOpen && /*#__PURE__*/React.createElement(ResizeModal, {
+    imageSrc: originalImage,
+    onClose: () => setResizeModalOpen(false),
+    onResize: handleResize
+  }), rotateModalOpen && /*#__PURE__*/React.createElement(RotateModal, {
+    onClose: () => setRotateModalOpen(false),
+    onRotate: handleRotateFree
+  }), borderModalOpen && /*#__PURE__*/React.createElement(BorderModal, {
+    onClose: () => setBorderModalOpen(false),
+    onAddBorder: handleAddBorder
+  }), perspectiveModalOpen && /*#__PURE__*/React.createElement(PerspectiveModal, {
+    imageSrc: originalImage,
+    onClose: () => setPerspectiveModalOpen(false),
+    onApply: handleApplyExternalEdit
+  }), curvesModalOpen && /*#__PURE__*/React.createElement(CurvesModal, {
+    imageSrc: originalImage,
+    onClose: () => setCurvesModalOpen(false),
+    onApply: handleApplyExternalEdit
+  }), exportModalOpen && /*#__PURE__*/React.createElement(ExportModal, {
+    imageSrc: originalImage,
+    onClose: () => setExportModalOpen(false),
+    onExport: () => setStatusMessage("Imagen exportada")
+  }), /*#__PURE__*/React.createElement("header", {
+    className: "h-14 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 shrink-0 shadow-sm z-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 text-blue-400 select-none"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "aperture",
+    className: "w-6 h-6"
+  }), /*#__PURE__*/React.createElement("h1", {
+    className: "font-bold text-lg text-white tracking-tight"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-light text-blue-200"
+  }, "Editor de Im\xC3\xA1genes"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 items-center"
+  }, user && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4 mr-2"
+  }, user.email === ADMIN_EMAIL && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setAdminPanelOpen(true),
+    className: "px-3 py-1 bg-red-900/50 border border-red-500 text-red-300 text-xs font-bold rounded hover:bg-red-900 transition flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "shield",
+    className: "w-3 h-3"
+  }), "ADMIN"), /*#__PURE__*/React.createElement("div", {
+    className: "text-right"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-white font-medium"
+  }, user.email)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => auth.signOut(),
+    className: "p-1.5 hover:bg-slate-700 rounded text-slate-400",
+    title: "Cerrar Sesi\xC3\xB3n"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "log-out",
+    className: "w-4 h-4"
+  }))), /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: "image/*",
+    ref: fileInputRef,
+    onChange: handleImageUpload,
+    className: "hidden"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => fileInputRef.current.click(),
+    className: "px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-sm font-medium transition flex items-center gap-2 border border-slate-600 btn-3d"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "upload",
+    className: "w-4 h-4"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "hidden sm:inline"
+  }, "Subir Otra Imagen")))), /*#__PURE__*/React.createElement("main", {
+    className: "flex-1 flex overflow-hidden"
+  }, /*#__PURE__*/React.createElement("aside", {
+    className: "w-80 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 z-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "p-4 bg-gradient-to-br from-indigo-900/50 to-slate-900 rounded-xl border border-indigo-500/40 shadow-lg relative overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-3"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "wrench",
+    className: "w-3 h-3"
+  }), " Herramientas Locales"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-2"
+  }, [{
+    id: "Recortar",
+    label: "Recortar",
+    icon: "crop",
+    func: handleOpenCropModal,
+    desc: "Recorta la imagen manualmente seleccionando el Ã¡rea deseada."
+  }, {
+    id: "Difuminar Centro",
+    label: "Difuminar Centro",
+    icon: "circle-dot",
+    func: handleCenterBlur,
+    desc: "Difumina el centro manteniendo el fondo nÃ­tido. Efecto artÃ­stico Ãºnico."
+  }, {
+    id: "B&N",
+    label: "B&N",
+    icon: "contrast",
+    func: () => applyFilter('bw'),
+    desc: "Convierte la imagen a blanco y negro."
+  }, {
+    id: "Sepia",
+    label: "Sepia",
+    icon: "coffee",
+    func: () => applyFilter('sepia'),
+    desc: "Aplica efecto sepia vintage."
+  }, {
+    id: "Vintage",
+    label: "Vintage",
+    icon: "camera",
+    func: () => applyFilter('vintage'),
+    desc: "Efecto vintage con tono cÃ¡lido y viÃ±eta."
+  }, {
+    id: "Noir",
+    label: "Noir",
+    icon: "moon",
+    func: () => applyFilter('noir'),
+    desc: "Blanco y negro con alto contraste estilo pelÃ­cula negra."
+  }, {
+    id: "Polaroid",
+    label: "Polaroid",
+    icon: "camera",
+    func: () => applyFilter('polaroid'),
+    desc: "AÃ±ade un marco blanco estilo Polaroid."
+  }, {
+    id: "Espejo H",
+    label: "Espejo H",
+    icon: "flip-horizontal",
+    func: handleFlipHorizontal,
+    desc: "Voltea la imagen horizontalmente (efecto espejo)."
+  }, {
+    id: "Espejo V",
+    label: "Espejo V",
+    icon: "flip-vertical",
+    func: handleFlipVertical,
+    desc: "Voltea la imagen verticalmente."
+  }, {
+    id: "Rotar 90Â°",
+    label: "Rotar 90Â°",
+    icon: "rotate-cw",
+    func: handleRotate90,
+    desc: "Rota la imagen 90 grados en sentido horario."
+  }, {
+    id: "Redimensionar",
+    label: "Redimensionar",
+    icon: "maximize",
+    func: () => setResizeModalOpen(true),
+    desc: "Cambia el tamaÃ±o de la imagen a dimensiones especÃ­ficas."
+  }, {
+    id: "Rotar Libre",
+    label: "Rotar Libre",
+    icon: "rotate-ccw",
+    func: () => setRotateModalOpen(true),
+    desc: "Rota la imagen a cualquier Ã¡ngulo personalizado."
+  }, {
+    id: "Marco",
+    label: "Marco",
+    icon: "square",
+    func: () => setBorderModalOpen(true),
+    desc: "AÃ±ade un marco/borde decorativo a la imagen."
+  }, {
+    id: "Perspectiva",
+    label: "Perspectiva",
+    icon: "scaling",
+    func: () => setPerspectiveModalOpen(true),
+    desc: "Corrige la perspectiva (Keystone) vertical u horizontal."
+  }, {
+    id: "Curvas",
+    label: "Curvas",
+    icon: "spline",
+    func: () => setCurvesModalOpen(true),
+    desc: "Ajusta las curvas de tono (RGB) detalladamente."
+  }, {
+    id: "Bal. Blancos",
+    label: "Bal. Blancos",
+    icon: "sun",
+    func: handleAutoWhiteBalance,
+    desc: "Ajuste automÃ¡tico de temperatura de color (Gray World)."
+  }, {
+    id: "Color Picker",
+    label: "Color Picker",
+    icon: "pipette",
+    func: () => {
+      setIsColorPickerActive(!isColorPickerActive);
+      setStatusMessage(isColorPickerActive ? "Selector desactivado" : "Haz clic en la imagen para copiar el color");
+    },
+    desc: "Selecciona un color de la imagen y cÃ³pialo. (Haz clic en la imagen)",
+    active: isColorPickerActive
+  }, {
+    id: "Texto",
+    label: "Texto",
+    icon: "type",
+    func: startTextEditing,
+    desc: "AÃ±ade texto interactivo sobre la imagen."
+  }, {
+    id: "Pixelar",
+    label: "Pixelar",
+    icon: "grid-3x3",
+    func: () => handlePixelate(10),
+    desc: "Aplica efecto pixelado a la imagen."
+  }, {
+    id: "Exportar",
+    label: "Exportar",
+    icon: "download",
+    func: () => setExportModalOpen(true),
+    desc: "Opciones avanzadas de guardado (Formato, Calidad).",
+    active: false
+  }].map(btn => /*#__PURE__*/React.createElement("button", {
+    key: btn.id,
+    onClick: () => {
+      btn.func();
+    },
+    disabled: !originalImage || isProcessing,
+    onMouseEnter: () => setHoveredButton({
+      label: btn.label,
+      description: btn.desc
+    }),
+    onMouseLeave: () => setHoveredButton(null),
+    className: `py-1.5 text-[10px] rounded border transition-all duration-200 flex justify-center items-center gap-1 ${hoveredButton?.label === btn.label || btn.active ? "bg-blue-600 border-blue-300 text-white scale-[1.05] z-10 shadow-[0_0_15px_rgba(59,130,246,0.5)]" : "bg-slate-700 border-slate-600 text-slate-200"}`
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": btn.icon,
+    className: "w-3 h-3"
+  }), " ", btn.label)))), hoveredButton && /*#__PURE__*/React.createElement("div", {
+    className: "relative min-h-[60px] p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-blue-300 font-bold text-sm tracking-wide border-b border-white/10 pb-1 mb-1"
+  }, hoveredButton.label), /*#__PURE__*/React.createElement("div", {
+    className: "text-slate-200 font-light text-[12px] leading-tight"
+  }, hoveredButton.description))), statusMessage && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 relative group"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] font-mono p-3 bg-black/40 border border-indigo-500/20 rounded-lg text-indigo-200 break-words max-h-64 overflow-y-auto custom-scrollbar whitespace-pre-wrap"
+  }, statusMessage), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      navigator.clipboard.writeText(statusMessage);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    },
+    className: "absolute top-2 right-2 p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-600 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100",
+    title: "Copiar texto"
+  }, copySuccess ? /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "check",
+    className: "w-3 h-3 text-green-400"
+  }) : /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "copy",
+    className: "w-3 h-3"
+  })))), memeData && /*#__PURE__*/React.createElement("div", {
+    className: "p-4 bg-slate-800/50 border border-amber-600/40 rounded-xl shadow-lg"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-sm font-bold text-amber-300 flex items-center gap-2 mb-3"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "edit-2",
+    className: "w-4 h-4 text-amber-400"
+  }), "Editar Meme"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 block"
+  }, "Texto superior"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: memeData.top || "",
+    onChange: e => setMemeData(prev => ({
+      ...prev,
+      top: e.target.value.toUpperCase()
+    })),
+    className: "w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-amber-500 outline-none"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 block"
+  }, "Texto inferior"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: memeData.bottom || "",
+    onChange: e => setMemeData(prev => ({
+      ...prev,
+      bottom: e.target.value.toUpperCase()
+    })),
+    className: "w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-amber-500 outline-none"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 text-xs uppercase font-bold text-slate-500 tracking-wider mb-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "sun",
+    className: "w-3 h-3"
+  }), " Luz"), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Brillo",
+    value: currentSettings.brightness,
+    min: 0,
+    max: 200,
+    onChange: v => updateSetting('brightness', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.brightness
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Contraste",
+    value: currentSettings.contrast,
+    min: 0,
+    max: 200,
+    onChange: v => updateSetting('contrast', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.contrast
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Exposici\xC3\xB3n",
+    value: currentSettings.exposure,
+    min: -5,
+    max: 5,
+    step: 0.1,
+    onChange: v => updateSetting('exposure', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.exposure
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 text-xs uppercase font-bold text-slate-500 tracking-wider mb-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "palette",
+    className: "w-3 h-3"
+  }), " Color"), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Saturaci\xC3\xB3n",
+    value: currentSettings.saturation,
+    min: 0,
+    max: 200,
+    onChange: v => updateSetting('saturation', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.saturation
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Temperatura",
+    value: currentSettings.temperature,
+    min: -100,
+    max: 100,
+    onChange: v => updateSetting('temperature', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.temperature
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Matiz",
+    value: currentSettings.hue,
+    min: 0,
+    max: 360,
+    onChange: v => updateSetting('hue', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.hue
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Vibrancia",
+    value: currentSettings.vibrance,
+    min: -100,
+    max: 100,
+    onChange: v => updateSetting('vibrance', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.vibrance
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 text-xs uppercase font-bold text-slate-500 tracking-wider mb-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "wand-2",
+    className: "w-3 h-3"
+  }), " Efectos"), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Desenfoque",
+    value: currentSettings.blur,
+    min: 0,
+    max: 20,
+    step: 0.5,
+    onChange: v => updateSetting('blur', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.blur
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Vi\xC3\xB1eta",
+    value: currentSettings.vignette,
+    min: 0,
+    max: 100,
+    onChange: v => updateSetting('vignette', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.vignette
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Nitidez",
+    value: currentSettings.sharpening,
+    min: 0,
+    max: 100,
+    onChange: v => updateSetting('sharpening', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.sharpening
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Claridad",
+    value: currentSettings.clarity,
+    min: -100,
+    max: 100,
+    onChange: v => updateSetting('clarity', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.clarity
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Reducci\xC3\xB3n Ruido",
+    value: currentSettings.noiseReduction,
+    min: 0,
+    max: 100,
+    onChange: v => updateSetting('noiseReduction', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.noiseReduction
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Grano Cinematogr\xC3\xA1fico",
+    value: currentSettings.filmGrain,
+    min: 0,
+    max: 100,
+    onChange: v => updateSetting('filmGrain', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.filmGrain
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Efecto Orton",
+    value: currentSettings.ortonEffect,
+    min: 0,
+    max: 100,
+    onChange: v => updateSetting('ortonEffect', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.ortonEffect
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 text-xs uppercase font-bold text-slate-500 tracking-wider mb-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "move",
+    className: "w-3 h-3"
+  }), " Transformaci\xC3\xB3n"), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Zoom (%)",
+    value: currentSettings.scale,
+    min: 10,
+    max: 300,
+    onChange: v => updateSetting('scale', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.scale
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Rotaci\xC3\xB3n",
+    value: currentSettings.rotation,
+    min: 0,
+    max: 360,
+    onChange: v => updateSetting('rotation', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.rotation
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] text-slate-500 italic mt-1 text-center bg-slate-800/50 rounded py-1"
+  }, "Arrastra la imagen con el rat\xC3\xB3n para moverte")), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 text-xs uppercase font-bold text-slate-500 tracking-wider mb-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "aperture",
+    className: "w-3 h-3"
+  }), " Avanzado"), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Enfoque Selectivo",
+    value: currentSettings.focalBlur,
+    min: 0,
+    max: 50,
+    onChange: v => updateSetting('focalBlur', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.focalBlur
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Contraste Medios Tonos",
+    value: currentSettings.midtoneContrast,
+    min: -100,
+    max: 100,
+    onChange: v => updateSetting('midtoneContrast', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.midtoneContrast
+  }), /*#__PURE__*/React.createElement(SliderControl, {
+    label: "Efecto HDR",
+    value: currentSettings.hdrEffect,
+    min: 0,
+    max: 100,
+    onChange: v => updateSetting('hdrEffect', v),
+    onHover: label => setHoveredSlider(label),
+    description: EFFECT_DESCRIPTIONS.hdrEffect
+  }))), hoveredSlider && /*#__PURE__*/React.createElement("div", {
+    className: "glass-popup pointer-events-none fixed z-50 p-4 w-64",
+    style: {
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2 border-b border-white/10 pb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-blue-300 text-lg tracking-wide"
+  }, hoveredSlider.label)), /*#__PURE__*/React.createElement("div", {
+    className: "leading-snug text-slate-200 font-light text-[14px] text-left tracking-wide"
+  }, hoveredSlider.description))), /*#__PURE__*/React.createElement("div", {
+    className: "p-4 border-t border-slate-800 bg-slate-900 space-y-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: saveToHistory,
+    disabled: !originalImage,
+    className: "w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:bg-slate-700 text-white font-bold rounded-lg shadow-lg transition flex justify-center items-center gap-2 btn-3d"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "save",
+    className: "w-4 h-4"
+  }), /*#__PURE__*/React.createElement("span", null, "GUARDAR Y REINICIAR IMAGEN")))), /*#__PURE__*/React.createElement("section", {
+    ref: canvasContainerRef,
+    className: "flex-1 canvas-container flex items-center justify-center relative overflow-hidden bg-slate-950"
+  }, !originalImage && /*#__PURE__*/React.createElement("div", {
+    className: "text-center p-12 border-2 border-dashed border-slate-700/50 rounded-2xl bg-slate-800/30 backdrop-blur-sm max-w-md mx-auto relative z-10 pointer-events-none"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-lg font-medium text-slate-200 mb-1"
+  }, "Galer\xC3\xADa de Edici\xC3\xB3n"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-500 mb-6"
+  }, "Sube im\xC3\xA1genes, ed\xC3\xADtalas y gu\xC3\xA1rdalas en el historial."), /*#__PURE__*/React.createElement("button", {
+    onClick: () => fileInputRef.current.click(),
+    className: "pointer-events-auto px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-sm font-medium transition"
+  }, "Subir imagen")), /*#__PURE__*/React.createElement("canvas", {
+    ref: canvasRef,
+    onMouseDown: handleMouseDown,
+    onMouseMove: handleMouseMove,
+    onMouseUp: handleMouseUp,
+    onMouseLeave: e => {
+      handleMouseUp();
+      if (isColorPickerActive) setColorPickerPos({
+        x: -100,
+        y: -100
+      });
+    },
+    className: `max-w-full max-h-full object-contain shadow-2xl ring-1 ring-white/10 transition-opacity duration-300 ${!originalImage ? 'opacity-0 absolute' : 'opacity-100'} ${isColorPickerActive ? 'cursor-none' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`
+  }), isColorPickerActive && originalImage && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      left: colorPickerPos.x - 20,
+      top: colorPickerPos.y - 20,
+      width: 40,
+      height: 40,
+      borderRadius: '50%',
+      border: '3px solid #fff',
+      boxShadow: '0 0 0 1px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(0,0,0,0.2)',
+      background: colorPickerColor,
+      pointerEvents: 'none',
+      zIndex: 60,
+      transition: 'background-color 0.05s ease'
+    }
+  }), isTextEditing && textOverlays.length > 0 && canvasContainerRef.current && /*#__PURE__*/React.createElement(TextOverlayEditor, {
+    overlays: textOverlays,
+    setOverlays: setTextOverlays,
+    selectedIdx: selectedTextIdx,
+    setSelectedIdx: setSelectedTextIdx,
+    containerRef: canvasContainerRef,
+    onApply: applyTextOverlay,
+    onCancel: cancelTextOverlay,
+    onAdd: addNewTextOverlay,
+    onDelete: deleteTextOverlay
+  }), originalImage && hasOverlayFromHistory && previousImageBeforeEdit && /*#__PURE__*/React.createElement("button", {
+    onClick: handleCancelOverlayEdit,
+    className: "absolute bottom-4 right-4 px-3 py-1.5 bg-red-600/95 hover:bg-red-500 text-white text-xs font-medium rounded-full shadow-lg flex items-center gap-1 border border-red-400 z-20",
+    title: "Eliminar solo esta edici\xC3\xB3n y volver a la imagen anterior"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "trash-2",
+    className: "w-4 h-4"
+  }), /*#__PURE__*/React.createElement("span", null, "Eliminar solo esta edici\xC3\xB3n"))), /*#__PURE__*/React.createElement("aside", {
+    className: "w-64 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 z-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "p-4 border-b border-slate-800 bg-slate-900/95 backdrop-blur"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-bold text-sm text-slate-300 flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "history",
+    className: "w-4 h-4 text-slate-400"
+  }), "Historial de Ediciones")), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar"
+  }, history.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center justify-center h-40 text-slate-600"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "images",
+    className: "w-8 h-8 mb-2 opacity-20"
+  })) : history.map((item, index) => /*#__PURE__*/React.createElement("div", {
+    key: item.id,
+    onClick: () => restoreFromHistory(item),
+    onMouseEnter: () => setHoveredHistoryItem(item.id),
+    onMouseLeave: () => setHoveredHistoryItem(null),
+    className: "group relative bg-slate-800 rounded-lg p-2 border border-slate-700/60 hover:border-blue-500 hover:bg-slate-750 transition-all duration-200 hover:shadow-md cursor-pointer glass-hover"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "absolute top-2 left-2 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded backdrop-blur-sm z-20"
+  }, "#", history.length - index), /*#__PURE__*/React.createElement("div", {
+    className: "relative aspect-square bg-slate-950 rounded mb-2 overflow-hidden border border-slate-800"
+  }, /*#__PURE__*/React.createElement("img", {
+    src: item.thumbnail,
+    className: "w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity",
+    alt: "Versi\xC3\xB3n guardada"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-2 z-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex w-full gap-2 justify-center"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: e => {
+      e.stopPropagation();
+      handleDownloadHistory(item);
+    },
+    className: "flex-1 flex flex-col items-center gap-1 text-[9px] text-slate-100",
+    title: "Descargar esta versi\xC3\xB3n"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-7 h-7 rounded-full bg-slate-900/90 border border-slate-500 flex items-center justify-center shadow"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "download",
+    className: "w-3 h-3"
+  })), /*#__PURE__*/React.createElement("span", null, "Descargar")), /*#__PURE__*/React.createElement("button", {
+    onClick: e => {
+      e.stopPropagation();
+      restoreFromHistory(item);
+    },
+    className: "flex-1 flex flex-col items-center gap-1 text-[9px] text-sky-100",
+    title: "Editar esta versi\xC3\xB3n en el lienzo"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-7 h-7 rounded-full bg-sky-700/90 border border-sky-400 flex items-center justify-center shadow"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "pencil",
+    className: "w-3 h-3"
+  })), /*#__PURE__*/React.createElement("span", null, "Editar")), /*#__PURE__*/React.createElement("button", {
+    onClick: e => {
+      e.stopPropagation();
+      handleDeleteHistory(item.id);
+    },
+    className: "flex-1 flex flex-col items-center gap-1 text-[9px] text-red-100",
+    title: "Eliminar del historial"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-7 h-7 rounded-full bg-red-700/90 border border-red-400 flex items-center justify-center shadow"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "trash-2",
+    className: "w-3 h-3"
+  })), /*#__PURE__*/React.createElement("span", null, "Eliminar"))))), hoveredHistoryItem === item.id && item.effectsDescription && /*#__PURE__*/React.createElement("div", {
+    className: "glass-popup absolute bottom-1/2 right-0 mb-0 p-4 w-56 z-50 whitespace-normal"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2 border-b border-white/10 pb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-blue-300 text-lg tracking-wide"
+  }, "Efectos aplicados")), /*#__PURE__*/React.createElement("div", {
+    className: "leading-snug text-slate-200 font-light text-[14px] text-left tracking-wide"
+  }, item.effectsDescription)), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center px-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-slate-500 font-mono"
+  }, item.timestamp), /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-blue-400"
+  }, "Versi\xC3\xB3n guardada"))))))));
+};
+const SliderControl = ({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  onChange,
+  onHover,
+  description
+}) => /*#__PURE__*/React.createElement("div", {
+  className: "group relative"
+}, /*#__PURE__*/React.createElement("div", {
+  className: "flex justify-between mb-1.5 items-end"
+}, /*#__PURE__*/React.createElement("label", {
+  className: "text-xs text-slate-400 group-hover:text-blue-300 transition-colors font-medium cursor-pointer"
+}, label), /*#__PURE__*/React.createElement("span", {
+  className: "text-[10px] text-slate-500 font-mono bg-slate-800 px-1.5 rounded group-hover:text-white transition-colors"
+}, Math.round(value * 10) / 10)), /*#__PURE__*/React.createElement("div", {
+  className: "relative h-4 flex items-center"
+}, /*#__PURE__*/React.createElement("input", {
+  type: "range",
+  min: min,
+  max: max,
+  step: step,
+  value: value,
+  onChange: e => onChange(e.target.value),
+  onMouseEnter: () => onHover({
+    label,
+    description
+  }),
+  onMouseLeave: () => onHover(null)
+  // --- NUEVO: Ocultar al hacer clic o tocar ---
+  ,
+  onMouseDown: () => onHover(null),
+  onTouchStart: () => onHover(null)
+  // -------------------------------------------
+  ,
+  className: "w-full z-10 relative cursor-pointer"
+}), /*#__PURE__*/React.createElement("div", {
+  className: "absolute left-0 right-0 h-1 bg-slate-700 rounded-full overflow-hidden top-1/2 -translate-y-1/2 pointer-events-none"
+}, /*#__PURE__*/React.createElement("div", {
+  className: "h-full bg-blue-600/50",
+  style: {
+    width: `${(value - min) / (max - min) * 100}%`
+  }
+}))));
+
+// --- COMPONENTE: MODAL DE RECORTE ---
+const CropModal = ({
+  imageSrc,
+  onClose,
+  onCrop
+}) => {
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const [cropArea, setCropArea] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({
+    x: 0,
+    y: 0
+  });
+  const [resizeHandle, setResizeHandle] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState('free');
+  const [canvasSize, setCanvasSize] = useState({
+    width: 0,
+    height: 0
+  });
+  const imageRef = useRef(null);
+  const scaleRef = useRef(1);
+
+  // Relaciones de aspecto predefinidas
+  const aspectRatios = {
+    'free': null,
+    '1:1': 1,
+    '16:9': 16 / 9,
+    '9:16': 9 / 16,
+    '4:3': 4 / 3,
+    '3:2': 3 / 2,
+    '21:9': 21 / 9
+  };
+  useEffect(() => {
+    if (!imageSrc) return;
+    const img = new Image();
+    img.onload = () => {
+      imageRef.current = img;
+      setImageLoaded(true);
+
+      // Calcular tamaÃ±o del canvas para que quepa en la pantalla
+      const maxWidth = Math.min(window.innerWidth * 0.8, 900);
+      const maxHeight = Math.min(window.innerHeight * 0.7, 600);
+      let canvasWidth = img.width;
+      let canvasHeight = img.height;
+      const widthRatio = maxWidth / canvasWidth;
+      const heightRatio = maxHeight / canvasHeight;
+      scaleRef.current = Math.min(widthRatio, heightRatio, 1);
+      canvasWidth *= scaleRef.current;
+      canvasHeight *= scaleRef.current;
+      setCanvasSize({
+        width: canvasWidth,
+        height: canvasHeight
+      });
+
+      // Inicializar Ã¡rea de recorte al 80% del centro
+      const initialCropWidth = canvasWidth * 0.8;
+      const initialCropHeight = canvasHeight * 0.8;
+      setCropArea({
+        x: (canvasWidth - initialCropWidth) / 2,
+        y: (canvasHeight - initialCropHeight) / 2,
+        width: initialCropWidth,
+        height: initialCropHeight
+      });
+    };
+    img.src = imageSrc;
+  }, [imageSrc]);
+  useEffect(() => {
+    if (!imageLoaded || !canvasRef.current) return;
+    drawCanvas();
+  }, [imageLoaded, cropArea, canvasSize]);
+  const drawCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const img = imageRef.current;
+
+    // Limpiar canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dibujar imagen escalada
+    ctx.drawImage(img, 0, 0, canvasSize.width, canvasSize.height);
+
+    // Dibujar overlay oscuro
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Limpiar Ã¡rea de recorte (efecto de "ventana")
+    ctx.clearRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
+
+    // Dibujar imagen en el Ã¡rea de recorte
+    ctx.drawImage(img, cropArea.x / scaleRef.current, cropArea.y / scaleRef.current, cropArea.width / scaleRef.current, cropArea.height / scaleRef.current, cropArea.x, cropArea.y, cropArea.width, cropArea.height);
+
+    // Dibujar borde del Ã¡rea de recorte
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
+
+    // Dibujar handles de redimensionamiento
+    const handleSize = 10;
+    const handles = [{
+      x: cropArea.x - handleSize / 2,
+      y: cropArea.y - handleSize / 2
+    },
+    // top-left
+    {
+      x: cropArea.x + cropArea.width / 2 - handleSize / 2,
+      y: cropArea.y - handleSize / 2
+    },
+    // top-center
+    {
+      x: cropArea.x + cropArea.width - handleSize / 2,
+      y: cropArea.y - handleSize / 2
+    },
+    // top-right
+    {
+      x: cropArea.x - handleSize / 2,
+      y: cropArea.y + cropArea.height / 2 - handleSize / 2
+    },
+    // middle-left
+    {
+      x: cropArea.x + cropArea.width - handleSize / 2,
+      y: cropArea.y + cropArea.height / 2 - handleSize / 2
+    },
+    // middle-right
+    {
+      x: cropArea.x - handleSize / 2,
+      y: cropArea.y + cropArea.height - handleSize / 2
+    },
+    // bottom-left
+    {
+      x: cropArea.x + cropArea.width / 2 - handleSize / 2,
+      y: cropArea.y + cropArea.height - handleSize / 2
+    },
+    // bottom-center
+    {
+      x: cropArea.x + cropArea.width - handleSize / 2,
+      y: cropArea.y + cropArea.height - handleSize / 2
+    } // bottom-right
+    ];
+    ctx.fillStyle = '#38bdf8';
+    handles.forEach(handle => {
+      ctx.fillRect(handle.x, handle.y, handleSize, handleSize);
+    });
+
+    // Dibujar lÃ­neas de la regla de tercios
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+
+    // LÃ­neas verticales
+    ctx.beginPath();
+    ctx.moveTo(cropArea.x + cropArea.width / 3, cropArea.y);
+    ctx.lineTo(cropArea.x + cropArea.width / 3, cropArea.y + cropArea.height);
+    ctx.moveTo(cropArea.x + 2 * cropArea.width / 3, cropArea.y);
+    ctx.lineTo(cropArea.x + 2 * cropArea.width / 3, cropArea.y + cropArea.height);
+    ctx.stroke();
+
+    // LÃ­neas horizontales
+    ctx.beginPath();
+    ctx.moveTo(cropArea.x, cropArea.y + cropArea.height / 3);
+    ctx.lineTo(cropArea.x + cropArea.width, cropArea.y + cropArea.height / 3);
+    ctx.moveTo(cropArea.x, cropArea.y + 2 * cropArea.height / 3);
+    ctx.lineTo(cropArea.x + cropArea.width, cropArea.y + 2 * cropArea.height / 3);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  };
+  const getMousePos = e => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || e.touches && e.touches[0].clientX;
+    const clientY = e.clientY || e.touches && e.touches[0].clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+  const getHandleAtPosition = pos => {
+    const handleSize = 10;
+    const handles = [{
+      id: 'tl',
+      x: cropArea.x - handleSize / 2,
+      y: cropArea.y - handleSize / 2
+    }, {
+      id: 'tc',
+      x: cropArea.x + cropArea.width / 2 - handleSize / 2,
+      y: cropArea.y - handleSize / 2
+    }, {
+      id: 'tr',
+      x: cropArea.x + cropArea.width - handleSize / 2,
+      y: cropArea.y - handleSize / 2
+    }, {
+      id: 'ml',
+      x: cropArea.x - handleSize / 2,
+      y: cropArea.y + cropArea.height / 2 - handleSize / 2
+    }, {
+      id: 'mr',
+      x: cropArea.x + cropArea.width - handleSize / 2,
+      y: cropArea.y + cropArea.height / 2 - handleSize / 2
+    }, {
+      id: 'bl',
+      x: cropArea.x - handleSize / 2,
+      y: cropArea.y + cropArea.height - handleSize / 2
+    }, {
+      id: 'bc',
+      x: cropArea.x + cropArea.width / 2 - handleSize / 2,
+      y: cropArea.y + cropArea.height - handleSize / 2
+    }, {
+      id: 'br',
+      x: cropArea.x + cropArea.width - handleSize / 2,
+      y: cropArea.y + cropArea.height - handleSize / 2
+    }];
+    for (const handle of handles) {
+      if (pos.x >= handle.x && pos.x <= handle.x + handleSize && pos.y >= handle.y && pos.y <= handle.y + handleSize) {
+        return handle.id;
+      }
+    }
+    return null;
+  };
+  const handleMouseDown = e => {
+    e.preventDefault();
+    const pos = getMousePos(e);
+
+    // Verificar si estÃ¡ haciendo clic en un handle
+    const handle = getHandleAtPosition(pos);
+    if (handle) {
+      setIsResizing(true);
+      setResizeHandle(handle);
+      setDragStart({
+        x: pos.x,
+        y: pos.y
+      });
+      return;
+    }
+
+    // Verificar si estÃ¡ dentro del Ã¡rea de recorte
+    if (pos.x >= cropArea.x && pos.x <= cropArea.x + cropArea.width && pos.y >= cropArea.y && pos.y <= cropArea.y + cropArea.height) {
+      setIsDragging(true);
+      setDragStart({
+        x: pos.x - cropArea.x,
+        y: pos.y - cropArea.y
+      });
+    }
+  };
+  const handleMouseMove = e => {
+    if (isResizing) {
+      e.preventDefault();
+      const pos = getMousePos(e);
+      const dx = pos.x - dragStart.x;
+      const dy = pos.y - dragStart.y;
+      let newArea = {
+        ...cropArea
+      };
+      const minSize = 50;
+      switch (resizeHandle) {
+        case 'br':
+          // bottom-right
+          newArea.width = Math.max(minSize, Math.min(cropArea.width + dx, canvasSize.width - cropArea.x));
+          newArea.height = Math.max(minSize, Math.min(cropArea.height + dy, canvasSize.height - cropArea.y));
+          break;
+        case 'bl':
+          // bottom-left
+          newArea.width = Math.max(minSize, cropArea.width - dx);
+          newArea.height = Math.max(minSize, Math.min(cropArea.height + dy, canvasSize.height - cropArea.y));
+          if (newArea.width > minSize) newArea.x = cropArea.x + dx;
+          break;
+        case 'tr':
+          // top-right
+          newArea.width = Math.max(minSize, Math.min(cropArea.width + dx, canvasSize.width - cropArea.x));
+          newArea.height = Math.max(minSize, cropArea.height - dy);
+          if (newArea.height > minSize) newArea.y = cropArea.y + dy;
+          break;
+        case 'tl':
+          // top-left
+          newArea.width = Math.max(minSize, cropArea.width - dx);
+          newArea.height = Math.max(minSize, cropArea.height - dy);
+          if (newArea.width > minSize) newArea.x = cropArea.x + dx;
+          if (newArea.height > minSize) newArea.y = cropArea.y + dy;
+          break;
+        case 'tc':
+          // top-center
+          newArea.height = Math.max(minSize, cropArea.height - dy);
+          if (newArea.height > minSize) newArea.y = cropArea.y + dy;
+          break;
+        case 'bc':
+          // bottom-center
+          newArea.height = Math.max(minSize, Math.min(cropArea.height + dy, canvasSize.height - cropArea.y));
+          break;
+        case 'ml':
+          // middle-left
+          newArea.width = Math.max(minSize, cropArea.width - dx);
+          if (newArea.width > minSize) newArea.x = cropArea.x + dx;
+          break;
+        case 'mr':
+          // middle-right
+          newArea.width = Math.max(minSize, Math.min(cropArea.width + dx, canvasSize.width - cropArea.x));
+          break;
+      }
+
+      // Mantener dentro del canvas
+      newArea.x = Math.max(0, Math.min(newArea.x, canvasSize.width - newArea.width));
+      newArea.y = Math.max(0, Math.min(newArea.y, canvasSize.height - newArea.height));
+      setCropArea(newArea);
+      setDragStart({
+        x: pos.x,
+        y: pos.y
+      });
+      return;
+    }
+    if (!isDragging) return;
+    e.preventDefault();
+    const pos = getMousePos(e);
+    let newX = pos.x - dragStart.x;
+    let newY = pos.y - dragStart.y;
+
+    // Limitar al canvas
+    newX = Math.max(0, Math.min(newX, canvasSize.width - cropArea.width));
+    newY = Math.max(0, Math.min(newY, canvasSize.height - cropArea.height));
+    setCropArea(prev => ({
+      ...prev,
+      x: newX,
+      y: newY
+    }));
+  };
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle(null);
+  };
+  const handleCrop = () => {
+    if (!imageRef.current) return;
+    const img = imageRef.current;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Calcular dimensiones originales
+    const sourceX = cropArea.x / scaleRef.current;
+    const sourceY = cropArea.y / scaleRef.current;
+    const sourceWidth = cropArea.width / scaleRef.current;
+    const sourceHeight = cropArea.height / scaleRef.current;
+    canvas.width = sourceWidth;
+    canvas.height = sourceHeight;
+    ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
+    const croppedImage = canvas.toDataURL('image/jpeg', 0.95);
+    onCrop(croppedImage);
+    onClose();
+  };
+  const applyAspectRatio = ratio => {
+    setAspectRatio(ratio);
+    if (ratio === 'free' || !aspectRatios[ratio]) return;
+    const targetRatio = aspectRatios[ratio];
+    const currentWidth = cropArea.width;
+    const currentHeight = cropArea.height;
+    const currentRatio = currentWidth / currentHeight;
+    let newWidth, newHeight;
+    if (currentRatio > targetRatio) {
+      // La imagen es mÃ¡s ancha que la relaciÃ³n objetivo
+      newHeight = currentHeight;
+      newWidth = currentHeight * targetRatio;
+    } else {
+      // La imagen es mÃ¡s alta que la relaciÃ³n objetivo
+      newWidth = currentWidth;
+      newHeight = currentWidth / targetRatio;
+    }
+
+    // Centrar el nuevo Ã¡rea de recorte
+    const newX = cropArea.x + (currentWidth - newWidth) / 2;
+    const newY = cropArea.y + (currentHeight - newHeight) / 2;
+    setCropArea({
+      x: Math.max(0, Math.min(newX, canvasSize.width - newWidth)),
+      y: Math.max(0, Math.min(newY, canvasSize.height - newHeight)),
+      width: newWidth,
+      height: newHeight
+    });
+  };
+  const resetCrop = () => {
+    const initialCropWidth = canvasSize.width * 0.8;
+    const initialCropHeight = canvasSize.height * 0.8;
+    setCropArea({
+      x: (canvasSize.width - initialCropWidth) / 2,
+      y: (canvasSize.height - initialCropHeight) / 2,
+      width: initialCropWidth,
+      height: initialCropHeight
+    });
+    setAspectRatio('free');
+  };
+  if (!imageLoaded) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "glass-modal w-full max-w-4xl p-8 rounded-2xl relative"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col items-center justify-center py-12"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "w-12 h-12 rounded-full border-4 border-white/10 border-t-blue-500 animate-spin mb-4"
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-white"
+    }, "Cargando imagen..."))));
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-5xl max-h-[90vh] rounded-2xl relative flex flex-col overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-b border-slate-700/50 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "crop",
+    className: "w-5 h-5 text-white"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-white"
+  }, "Recortar Imagen"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-400"
+  }, "Arrastra el \xC3\xA1rea seleccionada para ajustar el recorte"))), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "p-2 hover:bg-slate-700/50 rounded-lg transition"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "x",
+    className: "w-5 h-5 text-slate-400"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-auto p-6 flex flex-col items-center gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 justify-center"
+  }, Object.keys(aspectRatios).map(ratio => /*#__PURE__*/React.createElement("button", {
+    key: ratio,
+    onClick: () => applyAspectRatio(ratio),
+    className: `px-3 py-1.5 rounded-lg text-xs font-medium border transition ${aspectRatio === ratio ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'}`
+  }, ratio === 'free' ? 'Libre' : ratio))), /*#__PURE__*/React.createElement("div", {
+    ref: containerRef,
+    className: "relative bg-slate-950 rounded-lg overflow-hidden shadow-2xl",
+    style: {
+      maxWidth: '100%'
+    }
+  }, /*#__PURE__*/React.createElement("canvas", {
+    ref: canvasRef,
+    width: canvasSize.width,
+    height: canvasSize.height,
+    onMouseDown: handleMouseDown,
+    onMouseMove: handleMouseMove,
+    onMouseUp: handleMouseUp,
+    onMouseLeave: handleMouseUp,
+    onTouchStart: handleMouseDown,
+    onTouchMove: handleMouseMove,
+    onTouchEnd: handleMouseUp,
+    className: `${isDragging ? 'cursor-grabbing' : 'cursor-grab'} max-w-full h-auto`
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-center text-sm text-slate-400"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-slate-300 font-medium"
+  }, Math.round(cropArea.width / scaleRef.current), " \xC3\u2014 ", Math.round(cropArea.height / scaleRef.current), " px"), /*#__PURE__*/React.createElement("span", {
+    className: "mx-2"
+  }, "|"), /*#__PURE__*/React.createElement("span", null, "Relaci\xC3\xB3n: ", (cropArea.width / cropArea.height).toFixed(2)))), /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-t border-slate-700/50 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: resetCrop,
+    className: "px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-600 transition"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "rotate-ccw",
+    className: "w-4 h-4 inline mr-2"
+  }), "Restablecer"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-6 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-600 transition"
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleCrop,
+    className: "px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium border border-emerald-500 transition flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "check",
+    className: "w-4 h-4"
+  }), "Aplicar Recorte")))));
+};
+
+// --- COMPONENTE: MODAL DE REDIMENSIONAR ---
+const ResizeModal = ({
+  imageSrc,
+  onClose,
+  onResize
+}) => {
+  const [width, setWidth] = useState(800);
+  const [height, setHeight] = useState(600);
+  const [maintainAspect, setMaintainAspect] = useState(true);
+  const [originalSize, setOriginalSize] = useState({
+    width: 0,
+    height: 0
+  });
+  useEffect(() => {
+    if (imageSrc) {
+      const img = new Image();
+      img.onload = () => {
+        setOriginalSize({
+          width: img.width,
+          height: img.height
+        });
+        setWidth(img.width);
+        setHeight(img.height);
+      };
+      img.src = imageSrc;
+    }
+  }, [imageSrc]);
+  const handleWidthChange = e => {
+    const newWidth = parseInt(e.target.value) || 0;
+    setWidth(newWidth);
+    if (maintainAspect && originalSize.width > 0) {
+      const ratio = originalSize.height / originalSize.width;
+      setHeight(Math.round(newWidth * ratio));
+    }
+  };
+  const handleHeightChange = e => {
+    const newHeight = parseInt(e.target.value) || 0;
+    setHeight(newHeight);
+    if (maintainAspect && originalSize.height > 0) {
+      const ratio = originalSize.width / originalSize.height;
+      setWidth(Math.round(newHeight * ratio));
+    }
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-md rounded-2xl relative overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-b border-slate-700/50"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-white"
+  }, "Redimensionar Imagen"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-400 mt-1"
+  }, "Original: ", originalSize.width, " \xC3\u2014 ", originalSize.height, " px")), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs text-slate-400 block mb-2"
+  }, "Ancho (px)"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: width,
+    onChange: handleWidthChange,
+    className: "w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm",
+    min: "1"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs text-slate-400 block mb-2"
+  }, "Alto (px)"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: height,
+    onChange: handleHeightChange,
+    className: "w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm",
+    min: "1"
+  }))), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-2 cursor-pointer"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: maintainAspect,
+    onChange: e => setMaintainAspect(e.target.checked),
+    className: "w-4 h-4 rounded border-slate-600"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm text-slate-300"
+  }, "Mantener proporci\xC3\xB3n"))), /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-t border-slate-700/50 flex justify-end gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm"
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      onResize(width, height);
+      onClose();
+    },
+    className: "px-4 py-2 rounded-lg bg-blue-600 text-white text-sm"
+  }, "Aplicar"))));
+};
+
+// --- COMPONENTE: MODAL DE ROTACIÃ“N LIBRE ---
+const RotateModal = ({
+  onClose,
+  onRotate
+}) => {
+  const [angle, setAngle] = useState(0);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-sm rounded-2xl relative overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-b border-slate-700/50"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-white"
+  }, "Rotar Imagen")), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 space-y-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs text-slate-400 block mb-2"
+  }, "\xC3\x81ngulo: ", angle, "\xC2\xB0"), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "-180",
+    max: "180",
+    value: angle,
+    onChange: e => setAngle(parseInt(e.target.value)),
+    className: "w-full"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between text-xs text-slate-500 mt-1"
+  }, /*#__PURE__*/React.createElement("span", null, "-180\xC2\xB0"), /*#__PURE__*/React.createElement("span", null, "0\xC2\xB0"), /*#__PURE__*/React.createElement("span", null, "+180\xC2\xB0"))), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: angle,
+    onChange: e => setAngle(parseInt(e.target.value) || 0),
+    className: "w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm text-center"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-t border-slate-700/50 flex justify-end gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm"
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      onRotate(angle);
+      onClose();
+    },
+    className: "px-4 py-2 rounded-lg bg-blue-600 text-white text-sm"
+  }, "Aplicar"))));
+};
+
+// --- COMPONENTE: MODAL DE MARCO ---
+const BorderModal = ({
+  onClose,
+  onAddBorder
+}) => {
+  const [borderWidth, setBorderWidth] = useState(20);
+  const [borderColor, setBorderColor] = useState('#ffffff');
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-sm rounded-2xl relative overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-b border-slate-700/50"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-white"
+  }, "A\xC3\xB1adir Marco")), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 space-y-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs text-slate-400 block mb-2"
+  }, "Ancho del marco: ", borderWidth, "px"), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "5",
+    max: "100",
+    value: borderWidth,
+    onChange: e => setBorderWidth(parseInt(e.target.value)),
+    className: "w-full"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs text-slate-400 block mb-2"
+  }, "Color"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 flex-wrap"
+  }, ['#ffffff', '#000000', '#ef4444', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'].map(color => /*#__PURE__*/React.createElement("button", {
+    key: color,
+    onClick: () => setBorderColor(color),
+    className: `w-8 h-8 rounded-lg border-2 ${borderColor === color ? 'border-white' : 'border-transparent'}`,
+    style: {
+      backgroundColor: color
+    }
+  }))), /*#__PURE__*/React.createElement("input", {
+    type: "color",
+    value: borderColor,
+    onChange: e => setBorderColor(e.target.value),
+    className: "w-full mt-2 h-10 rounded cursor-pointer"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-t border-slate-700/50 flex justify-end gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm"
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      onAddBorder(borderWidth, borderColor);
+      onClose();
+    },
+    className: "px-4 py-2 rounded-lg bg-blue-600 text-white text-sm"
+  }, "Aplicar"))));
+};
+
+// --- COMPONENTE: MODAL DE TEXTO ---
+const TextOverlayEditor = ({
+  overlays,
+  setOverlays,
+  selectedIdx,
+  setSelectedIdx,
+  containerRef,
+  onApply,
+  onCancel,
+  onAdd,
+  onDelete
+}) => {
+  const [dragState, setDragState] = useState(null);
+  const FONTS = ['Arial', 'Georgia', 'Courier New', 'Impact', 'Verdana', 'Times New Roman', 'Comic Sans MS', 'Trebuchet MS'];
+  const HANDLE_SIZE = 10;
+  const selected = selectedIdx >= 0 && selectedIdx < overlays.length ? overlays[selectedIdx] : null;
+  const updateOverlay = (idx, updates) => {
+    setOverlays(prev => prev.map((o, i) => i === idx ? {
+      ...o,
+      ...updates
+    } : o));
+  };
+  const handleMouseDown = (e, type, handle = null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (selectedIdx < 0) return;
+    setDragState({
+      type,
+      handle,
+      startX: e.clientX,
+      startY: e.clientY,
+      startOverlay: {
+        ...overlays[selectedIdx]
+      }
+    });
+  };
+  useEffect(() => {
+    if (!dragState || selectedIdx < 0) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const handleMouseMove = e => {
+      const dx = (e.clientX - dragState.startX) / containerRect.width * 100;
+      const dy = (e.clientY - dragState.startY) / containerRect.height * 100;
+      const s = dragState.startOverlay;
+      if (dragState.type === 'move') {
+        updateOverlay(selectedIdx, {
+          x: Math.max(0, Math.min(100 - s.width, s.x + dx)),
+          y: Math.max(0, Math.min(100 - s.height, s.y + dy))
+        });
+      } else if (dragState.type === 'resize') {
+        const h = dragState.handle;
+        let newX = s.x,
+          newY = s.y,
+          newW = s.width,
+          newH = s.height;
+        const MIN = 5;
+        if (h.includes('l')) {
+          newX = s.x + dx;
+          newW = s.width - dx;
+        }
+        if (h.includes('r')) {
+          newW = s.width + dx;
+        }
+        if (h.includes('t')) {
+          newY = s.y + dy;
+          newH = s.height - dy;
+        }
+        if (h.includes('b')) {
+          newH = s.height + dy;
+        }
+        if (newW >= MIN && newH >= MIN) {
+          updateOverlay(selectedIdx, {
+            x: Math.max(0, newX),
+            y: Math.max(0, newY),
+            width: Math.min(100, newW),
+            height: Math.min(100, newH)
+          });
+        }
+      }
+    };
+    const handleMouseUp = () => setDragState(null);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragState, selectedIdx]);
+  const handles = [{
+    id: 'tl',
+    cursor: 'nwse-resize',
+    style: {
+      top: -HANDLE_SIZE / 2,
+      left: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'tc',
+    cursor: 'ns-resize',
+    style: {
+      top: -HANDLE_SIZE / 2,
+      left: '50%',
+      marginLeft: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'tr',
+    cursor: 'nesw-resize',
+    style: {
+      top: -HANDLE_SIZE / 2,
+      right: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'ml',
+    cursor: 'ew-resize',
+    style: {
+      top: '50%',
+      marginTop: -HANDLE_SIZE / 2,
+      left: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'mr',
+    cursor: 'ew-resize',
+    style: {
+      top: '50%',
+      marginTop: -HANDLE_SIZE / 2,
+      right: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'bl',
+    cursor: 'nesw-resize',
+    style: {
+      bottom: -HANDLE_SIZE / 2,
+      left: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'bc',
+    cursor: 'ns-resize',
+    style: {
+      bottom: -HANDLE_SIZE / 2,
+      left: '50%',
+      marginLeft: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'br',
+    cursor: 'nwse-resize',
+    style: {
+      bottom: -HANDLE_SIZE / 2,
+      right: -HANDLE_SIZE / 2
+    }
+  }];
+  const handleDir = {
+    tl: 'tl',
+    tc: 't',
+    tr: 'tr',
+    ml: 'l',
+    mr: 'r',
+    bl: 'bl',
+    bc: 'b',
+    br: 'br'
+  };
+  return /*#__PURE__*/React.createElement(React.Fragment, null, overlays.map((ov, idx) => {
+    const isSelected = idx === selectedIdx;
+    return /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      style: {
+        position: 'absolute',
+        left: `${ov.x}%`,
+        top: `${ov.y}%`,
+        width: `${ov.width}%`,
+        height: `${ov.height}%`,
+        zIndex: isSelected ? 50 : 40,
+        cursor: isSelected ? dragState?.type === 'move' ? 'grabbing' : 'grab' : 'pointer',
+        userSelect: 'none'
+      },
+      onMouseDown: e => {
+        if (isSelected) {
+          handleMouseDown(e, 'move');
+        } else {
+          e.preventDefault();
+          e.stopPropagation();
+          setSelectedIdx(idx);
+        }
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        inset: 0,
+        border: isSelected ? '2px dashed rgba(59, 130, 246, 0.9)' : '1px dashed rgba(148, 163, 184, 0.5)',
+        borderRadius: 4,
+        background: isSelected ? 'rgba(59, 130, 246, 0.05)' : 'transparent'
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 8,
+        overflow: 'hidden',
+        fontFamily: ov.fontFamily,
+        fontSize: `${ov.fontSize}px`,
+        fontWeight: 'bold',
+        color: ov.color,
+        textShadow: '2px 2px 4px rgba(0,0,0,0.6)',
+        textAlign: 'center',
+        wordBreak: 'break-word',
+        lineHeight: 1.2,
+        pointerEvents: 'none'
+      }
+    }, ov.text), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        top: -8,
+        left: -8,
+        width: 18,
+        height: 18,
+        borderRadius: '50%',
+        background: isSelected ? '#3b82f6' : '#64748b',
+        color: '#fff',
+        fontSize: 9,
+        fontWeight: 700,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid #fff',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+        pointerEvents: 'none'
+      }
+    }, idx + 1), isSelected && handles.map(h => /*#__PURE__*/React.createElement("div", {
+      key: h.id,
+      style: {
+        position: 'absolute',
+        width: HANDLE_SIZE,
+        height: HANDLE_SIZE,
+        background: '#3b82f6',
+        border: '2px solid #fff',
+        borderRadius: '50%',
+        cursor: h.cursor,
+        zIndex: 51,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+        ...h.style
+      },
+      onMouseDown: e => handleMouseDown(e, 'resize', handleDir[h.id])
+    })));
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      bottom: 12,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 55,
+      display: 'flex',
+      gap: 6,
+      alignItems: 'center',
+      padding: '6px 10px',
+      background: 'rgba(15, 23, 42, 0.95)',
+      borderRadius: 12,
+      border: '1px solid rgba(100, 116, 139, 0.4)',
+      backdropFilter: 'blur(8px)',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      maxWidth: '90%'
+    }
+  }, selected ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("select", {
+    value: selected.fontFamily,
+    onChange: e => updateOverlay(selectedIdx, {
+      fontFamily: e.target.value
+    }),
+    style: {
+      background: '#1e293b',
+      color: '#e2e8f0',
+      border: '1px solid #475569',
+      borderRadius: 6,
+      padding: '4px 6px',
+      fontSize: 11,
+      outline: 'none',
+      cursor: 'pointer'
+    }
+  }, FONTS.map(f => /*#__PURE__*/React.createElement("option", {
+    key: f,
+    value: f,
+    style: {
+      fontFamily: f
+    }
+  }, f))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 3
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      color: '#94a3b8'
+    }
+  }, "Tam"), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "12",
+    max: "120",
+    value: selected.fontSize,
+    onChange: e => updateOverlay(selectedIdx, {
+      fontSize: parseInt(e.target.value)
+    }),
+    style: {
+      width: 60,
+      accentColor: '#3b82f6'
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      color: '#cbd5e1',
+      minWidth: 20
+    }
+  }, selected.fontSize)), /*#__PURE__*/React.createElement("input", {
+    type: "color",
+    value: selected.color,
+    onChange: e => updateOverlay(selectedIdx, {
+      color: e.target.value
+    }),
+    style: {
+      width: 26,
+      height: 26,
+      border: '1px solid #475569',
+      borderRadius: 6,
+      cursor: 'pointer',
+      padding: 1,
+      background: 'transparent'
+    }
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: selected.text,
+    onChange: e => updateOverlay(selectedIdx, {
+      text: e.target.value
+    }),
+    placeholder: "Escribe tu texto...",
+    style: {
+      background: '#1e293b',
+      color: '#e2e8f0',
+      border: '1px solid #475569',
+      borderRadius: 6,
+      padding: '4px 8px',
+      fontSize: 11,
+      outline: 'none',
+      width: 120,
+      minWidth: 80
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onDelete(selectedIdx),
+    title: "Eliminar este texto",
+    style: {
+      background: '#7f1d1d',
+      color: '#fca5a5',
+      border: '1px solid #991b1b',
+      borderRadius: 6,
+      padding: '4px 7px',
+      fontSize: 11,
+      cursor: 'pointer'
+    }
+  }, "\xF0\u0178\u2014\u2018"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 1,
+      height: 20,
+      background: '#475569'
+    }
+  })) : /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: '#94a3b8'
+    }
+  }, "Haz clic en un texto para editarlo"), /*#__PURE__*/React.createElement("button", {
+    onClick: onAdd,
+    title: "A\xC3\xB1adir otro texto",
+    style: {
+      background: '#1e40af',
+      color: '#fff',
+      border: 'none',
+      borderRadius: 6,
+      padding: '5px 10px',
+      fontSize: 11,
+      fontWeight: 600,
+      cursor: 'pointer'
+    }
+  }, "+ Texto"), /*#__PURE__*/React.createElement("button", {
+    onClick: onApply,
+    style: {
+      background: '#16a34a',
+      color: '#fff',
+      border: 'none',
+      borderRadius: 6,
+      padding: '5px 10px',
+      fontSize: 11,
+      fontWeight: 600,
+      cursor: 'pointer'
+    }
+  }, "\xE2\u0153\u201C Aplicar todo"), /*#__PURE__*/React.createElement("button", {
+    onClick: onCancel,
+    style: {
+      background: '#dc2626',
+      color: '#fff',
+      border: 'none',
+      borderRadius: 6,
+      padding: '5px 7px',
+      fontSize: 11,
+      cursor: 'pointer'
+    }
+  }, "\xE2\u0153\u2022")));
+};
+
+// --- COMPONENTE: EDITOR DE FORMAS ---
+const ShapeOverlayEditor = ({
+  overlays,
+  setOverlays,
+  selectedIdx,
+  setSelectedIdx,
+  containerRef,
+  onApply,
+  onCancel,
+  onAdd,
+  onDelete
+}) => {
+  const [dragState, setDragState] = useState(null);
+  const HANDLE_SIZE = 10;
+  const selected = selectedIdx >= 0 && selectedIdx < overlays.length ? overlays[selectedIdx] : null;
+  const updateOverlay = (idx, updates) => {
+    setOverlays(prev => prev.map((o, i) => i === idx ? {
+      ...o,
+      ...updates
+    } : o));
+  };
+  const handleMouseDown = (e, type, handle = null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (selectedIdx < 0) return;
+    setDragState({
+      type,
+      handle,
+      startX: e.clientX,
+      startY: e.clientY,
+      startOverlay: {
+        ...overlays[selectedIdx]
+      }
+    });
+  };
+  useEffect(() => {
+    if (!dragState || selectedIdx < 0) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const handleMouseMove = e => {
+      const dx = (e.clientX - dragState.startX) / containerRect.width * 100;
+      const dy = (e.clientY - dragState.startY) / containerRect.height * 100;
+      const s = dragState.startOverlay;
+      if (dragState.type === 'move') {
+        updateOverlay(selectedIdx, {
+          x: Math.max(0, Math.min(100 - s.width, s.x + dx)),
+          y: Math.max(0, Math.min(100 - s.height, s.y + dy))
+        });
+      } else if (dragState.type === 'resize') {
+        const h = dragState.handle;
+        let newX = s.x,
+          newY = s.y,
+          newW = s.width,
+          newH = s.height;
+        const MIN = 5;
+        if (h.includes('l')) {
+          newX = s.x + dx;
+          newW = s.width - dx;
+        }
+        if (h.includes('r')) {
+          newW = s.width + dx;
+        }
+        if (h.includes('t')) {
+          newY = s.y + dy;
+          newH = s.height - dy;
+        }
+        if (h.includes('b')) {
+          newH = s.height + dy;
+        }
+        if (newW >= MIN && newH >= MIN) {
+          updateOverlay(selectedIdx, {
+            x: Math.max(0, newX),
+            y: Math.max(0, newY),
+            width: Math.min(100, newW),
+            height: Math.min(100, newH)
+          });
+        }
+      }
+    };
+    const handleMouseUp = () => setDragState(null);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragState, selectedIdx]);
+  const handles = [{
+    id: 'tl',
+    cursor: 'nwse-resize',
+    style: {
+      top: -HANDLE_SIZE / 2,
+      left: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'tc',
+    cursor: 'ns-resize',
+    style: {
+      top: -HANDLE_SIZE / 2,
+      left: '50%',
+      marginLeft: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'tr',
+    cursor: 'nesw-resize',
+    style: {
+      top: -HANDLE_SIZE / 2,
+      right: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'ml',
+    cursor: 'ew-resize',
+    style: {
+      top: '50%',
+      marginTop: -HANDLE_SIZE / 2,
+      left: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'mr',
+    cursor: 'ew-resize',
+    style: {
+      top: '50%',
+      marginTop: -HANDLE_SIZE / 2,
+      right: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'bl',
+    cursor: 'nesw-resize',
+    style: {
+      bottom: -HANDLE_SIZE / 2,
+      left: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'bc',
+    cursor: 'ns-resize',
+    style: {
+      bottom: -HANDLE_SIZE / 2,
+      left: '50%',
+      marginLeft: -HANDLE_SIZE / 2
+    }
+  }, {
+    id: 'br',
+    cursor: 'nwse-resize',
+    style: {
+      bottom: -HANDLE_SIZE / 2,
+      right: -HANDLE_SIZE / 2
+    }
+  }];
+  const handleDir = {
+    tl: 'tl',
+    tc: 't',
+    tr: 'tr',
+    ml: 'l',
+    mr: 'r',
+    bl: 'bl',
+    bc: 'b',
+    br: 'br'
+  };
+  return /*#__PURE__*/React.createElement(React.Fragment, null, overlays.map((ov, idx) => {
+    const isSelected = idx === selectedIdx;
+    return /*#__PURE__*/React.createElement("div", {
+      key: idx,
+      style: {
+        position: 'absolute',
+        left: `${ov.x}%`,
+        top: `${ov.y}%`,
+        width: `${ov.width}%`,
+        height: `${ov.height}%`,
+        zIndex: isSelected ? 50 : 40,
+        cursor: isSelected ? dragState?.type === 'move' ? 'grabbing' : 'grab' : 'pointer',
+        userSelect: 'none'
+      },
+      onMouseDown: e => {
+        if (isSelected) {
+          handleMouseDown(e, 'move');
+        } else {
+          e.preventDefault();
+          e.stopPropagation();
+          setSelectedIdx(idx);
+        }
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        inset: 0,
+        border: `2px solid ${ov.color}`,
+        background: ov.filled ? ov.color : 'transparent',
+        borderRadius: ov.type === 'circle' ? '50%' : '0%',
+        boxSizing: 'border-box'
+      }
+    }), isSelected && /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        inset: -4,
+        border: '1px dashed rgba(59, 130, 246, 0.8)',
+        borderRadius: ov.type === 'circle' ? '50%' : 4,
+        pointerEvents: 'none'
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        top: -12,
+        left: -12,
+        width: 18,
+        height: 18,
+        borderRadius: '50%',
+        background: isSelected ? '#3b82f6' : '#64748b',
+        color: '#fff',
+        fontSize: 9,
+        fontWeight: 700,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid #fff',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+        pointerEvents: 'none'
+      }
+    }, idx + 1), isSelected && handles.map(h => /*#__PURE__*/React.createElement("div", {
+      key: h.id,
+      style: {
+        position: 'absolute',
+        width: HANDLE_SIZE,
+        height: HANDLE_SIZE,
+        background: '#3b82f6',
+        border: '2px solid #fff',
+        borderRadius: '50%',
+        cursor: h.cursor,
+        zIndex: 51,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+        ...h.style
+      },
+      onMouseDown: e => handleMouseDown(e, 'resize', handleDir[h.id])
+    })));
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      bottom: 12,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 55,
+      display: 'flex',
+      gap: 6,
+      alignItems: 'center',
+      padding: '6px 10px',
+      background: 'rgba(15, 23, 42, 0.95)',
+      borderRadius: 12,
+      border: '1px solid rgba(100, 116, 139, 0.4)',
+      backdropFilter: 'blur(8px)',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      maxWidth: '90%'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    title: "Rect\xC3\xA1ngulo",
+    onClick: () => onAdd('rect'),
+    className: "px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold"
+  }, "\xE2\xAC\u0153"), /*#__PURE__*/React.createElement("button", {
+    title: "C\xC3\xADrculo",
+    onClick: () => onAdd('circle'),
+    className: "px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold"
+  }, "\xE2\u0161\xAA"), /*#__PURE__*/React.createElement("div", {
+    className: "w-[1px] h-6 bg-slate-700 mx-1"
+  }), selected ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("input", {
+    type: "color",
+    value: selected.color,
+    onChange: e => updateOverlay(selectedIdx, {
+      color: e.target.value
+    }),
+    className: "w-8 h-8 rounded cursor-pointer bg-transparent border border-slate-600 p-0.5"
+  }), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-1 text-[10px] text-slate-300 cursor-pointer select-none"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: selected.filled,
+    onChange: e => updateOverlay(selectedIdx, {
+      filled: e.target.checked
+    }),
+    className: "w-3 h-3 rounded border-slate-600"
+  }), "Relleno"), /*#__PURE__*/React.createElement("div", {
+    className: "w-[1px] h-6 bg-slate-700 mx-1"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onDelete(selectedIdx),
+    title: "Eliminar forma",
+    style: {
+      background: '#7f1d1d',
+      color: '#fca5a5',
+      border: '1px solid #991b1b',
+      borderRadius: 6,
+      padding: '4px 7px',
+      fontSize: 11,
+      cursor: 'pointer'
+    }
+  }, "\xF0\u0178\u2014\u2018")) : /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-slate-400"
+  }, "Selecciona una forma"), /*#__PURE__*/React.createElement("div", {
+    className: "w-[1px] h-6 bg-slate-700 mx-1"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: onApply,
+    style: {
+      background: '#16a34a',
+      color: '#fff',
+      border: 'none',
+      borderRadius: 6,
+      padding: '5px 10px',
+      fontSize: 11,
+      fontWeight: 600,
+      cursor: 'pointer'
+    }
+  }, "\xE2\u0153\u201C Aplicar"), /*#__PURE__*/React.createElement("button", {
+    onClick: onCancel,
+    style: {
+      background: '#dc2626',
+      color: '#fff',
+      border: 'none',
+      borderRadius: 6,
+      padding: '5px 7px',
+      fontSize: 11,
+      cursor: 'pointer'
+    }
+  }, "\xE2\u0153\u2022")));
+};
+
+// --- COMPONENTE: MODAL DE PERSPECTIVA (Keystone) ---
+const PerspectiveModal = ({
+  imageSrc,
+  onClose,
+  onApply
+}) => {
+  const [vertical, setVertical] = useState(0); // -50 to 50
+  const [horizontal, setHorizontal] = useState(0); // -50 to 50
+  const [previewUrl, setPreviewUrl] = useState(null);
+  useEffect(() => {
+    if (imageSrc) {
+      updatePreview();
+    }
+  }, [imageSrc, vertical, horizontal]);
+  const updatePreview = () => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+
+      // Simple preview using transform (not real perspective but close for small adjustments)
+      // Real perspective needs webgl or complex slicing. 
+      // We implementation simple Keystone by slicing image into strips.
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (vertical !== 0) {
+        // Vertical Keystone
+        const strips = 50;
+        const h = img.height / strips;
+        for (let i = 0; i < strips; i++) {
+          const y = i * h;
+          // Calculate width scaling factor based on y
+          // If vertical > 0 (bottom smaller), scale factor decreases as y increases? 
+          // Let's say vertical 50 => bottom width is 50%.
+          // If vertical < 0 (top smaller), top width is 50%.
+
+          let scale = 1;
+          const progress = i / strips;
+          if (vertical > 0) {
+            // Bottom smaller
+            scale = 1 - progress * (vertical / 100);
+          } else {
+            // Top smaller
+            scale = 1 - (1 - progress) * (-vertical / 100);
+          }
+          const w = img.width * scale;
+          const x = (img.width - w) / 2;
+          ctx.drawImage(img, 0, y, img.width, h, x, y, w, h);
+        }
+      } else if (horizontal !== 0) {
+        // Horizontal Keystone
+        const strips = 50;
+        const w = img.width / strips;
+        for (let i = 0; i < strips; i++) {
+          const x = i * w;
+          let scale = 1;
+          const progress = i / strips;
+          if (horizontal > 0) {
+            // Right smaller
+            scale = 1 - progress * (horizontal / 100);
+          } else {
+            // Left smaller
+            scale = 1 - (1 - progress) * (-horizontal / 100);
+          }
+          const h = img.height * scale;
+          const y = (img.height - h) / 2;
+          ctx.drawImage(img, x, 0, w, img.height, x, y, w, h);
+        }
+      } else {
+        ctx.drawImage(img, 0, 0);
+      }
+      setPreviewUrl(canvas.toDataURL());
+    };
+    img.src = imageSrc;
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-lg rounded-2xl relative overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-b border-slate-700/50"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-white"
+  }, "Perspectiva (Keystone)")), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-slate-950 rounded border border-slate-800 h-64 flex items-center justify-center overflow-hidden"
+  }, previewUrl && /*#__PURE__*/React.createElement("img", {
+    src: previewUrl,
+    className: "max-h-full object-contain"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between mb-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs text-slate-400"
+  }, "Vertical"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-blue-400"
+  }, vertical)), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "-50",
+    max: "50",
+    value: vertical,
+    onChange: e => {
+      setVertical(parseInt(e.target.value));
+      setHorizontal(0);
+    },
+    className: "w-full"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between mb-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-xs text-slate-400"
+  }, "Horizontal"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-blue-400"
+  }, horizontal)), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "-50",
+    max: "50",
+    value: horizontal,
+    onChange: e => {
+      setHorizontal(parseInt(e.target.value));
+      setVertical(0);
+    },
+    className: "w-full"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-t border-slate-700/50 flex justify-end gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm"
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      onApply(previewUrl);
+      onClose();
+    },
+    className: "px-4 py-2 rounded-lg bg-blue-600 text-white text-sm"
+  }, "Aplicar"))));
+};
+
+// --- COMPONENTE: MODAL DE CURVAS (con vista previa en tiempo real) ---
+const CurvesModal = ({
+  imageSrc,
+  onClose,
+  onApply
+}) => {
+  // Puntos de control de la curva en coordenadas de canvas (0,0 arriba-izq, 255,255 abajo-der)
+  // Un punto (x, y) significa: entrada x â†’ salida (255 - y) (porque el eje Y del canvas estÃ¡ invertido)
+  const [points, setPoints] = useState([{
+    x: 0,
+    y: 255
+  }, {
+    x: 255,
+    y: 0
+  }]);
+  const graphCanvasRef = useRef(null);
+  const [dragIdx, setDragIdx] = useState(-1);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const originalImageDataRef = useRef(null); // Cache de datos originales para rendimiento
+
+  // Cargar y cachear los datos de la imagen original al montar
+  useEffect(() => {
+    if (!imageSrc) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      originalImageDataRef.current = {
+        width: img.width,
+        height: img.height,
+        data: ctx.getImageData(0, 0, img.width, img.height)
+      };
+      setPreviewUrl(imageSrc); // Preview inicial = imagen sin cambios
+    };
+    img.src = imageSrc;
+  }, [imageSrc]);
+
+  // Genera la LUT (Look-Up Table) a partir de los puntos de control
+  const generateLUT = pts => {
+    const lut = new Uint8Array(256);
+    const sorted = [...pts].sort((a, b) => a.x - b.x);
+    for (let i = 0; i < 256; i++) {
+      if (i <= sorted[0].x) {
+        lut[i] = Math.max(0, Math.min(255, 255 - sorted[0].y));
+      } else if (i >= sorted[sorted.length - 1].x) {
+        lut[i] = Math.max(0, Math.min(255, 255 - sorted[sorted.length - 1].y));
+      } else {
+        const idx = sorted.findIndex(p => p.x >= i);
+        const p1 = sorted[idx - 1];
+        const p2 = sorted[idx];
+        const t = p2.x - p1.x === 0 ? 0 : (i - p1.x) / (p2.x - p1.x);
+        const val = p1.y + (p2.y - p1.y) * t;
+        lut[i] = Math.max(0, Math.min(255, 255 - val));
+      }
+    }
+    return lut;
+  };
+
+  // Actualiza la vista previa de la imagen en tiempo real cuando cambian los puntos
+  useEffect(() => {
+    drawGraph();
+    if (!originalImageDataRef.current) return;
+    const lut = generateLUT(points);
+    const {
+      width,
+      height,
+      data: origData
+    } = originalImageDataRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    // Copia profunda de los datos originales para no mutarlos
+    const newImageData = ctx.createImageData(width, height);
+    const src = origData.data;
+    const dst = newImageData.data;
+    for (let i = 0; i < src.length; i += 4) {
+      dst[i] = lut[src[i]]; // R
+      dst[i + 1] = lut[src[i + 1]]; // G
+      dst[i + 2] = lut[src[i + 2]]; // B
+      dst[i + 3] = src[i + 3]; // A
+    }
+    ctx.putImageData(newImageData, 0, 0);
+    setPreviewUrl(canvas.toDataURL('image/jpeg', 0.85));
+  }, [points]);
+
+  // Dibuja el grÃ¡fico de la curva
+  const drawGraph = () => {
+    const canvas = graphCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 256, 256);
+
+    // LÃ­nea diagonal de referencia (sin curva = sin cambio)
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, 255);
+    ctx.lineTo(255, 0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Rejilla
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i <= 4; i++) {
+      ctx.moveTo(i * 64, 0);
+      ctx.lineTo(i * 64, 256);
+      ctx.moveTo(0, i * 64);
+      ctx.lineTo(256, i * 64);
+    }
+    ctx.stroke();
+
+    // Curva (interpolaciÃ³n lineal entre puntos ordenados)
+    const sorted = [...points].sort((a, b) => a.x - b.x);
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(sorted[0].x, sorted[0].y);
+    for (let i = 1; i < sorted.length; i++) {
+      ctx.lineTo(sorted[i].x, sorted[i].y);
+    }
+    ctx.stroke();
+
+    // Puntos de control
+    sorted.forEach((p, i) => {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  };
+
+  // Eventos de ratÃ³n para el grÃ¡fico de curvas
+  const handleGraphMouseDown = e => {
+    const rect = graphCanvasRef.current.getBoundingClientRect();
+    const scaleX = 256 / rect.width;
+    const scaleY = 256 / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const hit = points.findIndex(p => Math.sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < 15);
+    if (hit >= 0) {
+      setDragIdx(hit);
+    } else if (points.length < 10) {
+      setPoints(prev => [...prev, {
+        x: Math.round(x),
+        y: Math.round(y)
+      }]);
+      setDragIdx(points.length);
+    }
+  };
+  const handleGraphMouseMove = e => {
+    if (dragIdx < 0) return;
+    const rect = graphCanvasRef.current.getBoundingClientRect();
+    const scaleX = 256 / rect.width;
+    const scaleY = 256 / rect.height;
+    const x = Math.max(0, Math.min(255, Math.round((e.clientX - rect.left) * scaleX)));
+    const y = Math.max(0, Math.min(255, Math.round((e.clientY - rect.top) * scaleY)));
+    setPoints(prev => {
+      const newPts = [...prev];
+      newPts[dragIdx] = {
+        x,
+        y
+      };
+      return newPts;
+    });
+  };
+
+  // Aceptar: aplica la curva final a la imagen
+  const handleAccept = () => {
+    if (previewUrl) {
+      onApply(previewUrl);
+    }
+    onClose();
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-3xl rounded-2xl relative overflow-hidden",
+    style: {
+      maxHeight: '90vh',
+      display: 'flex',
+      flexDirection: 'column'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-b border-slate-700/50 shrink-0"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-white"
+  }, "Curvas de Tono"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-400 mt-1"
+  }, "Arrastra los puntos de la curva. Los cambios se reflejan al instante.")), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 flex flex-col gap-4 bg-slate-900 overflow-auto",
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center gap-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "relative w-[200px] h-[200px] bg-black border border-slate-700 cursor-crosshair rounded"
+  }, /*#__PURE__*/React.createElement("canvas", {
+    ref: graphCanvasRef,
+    width: 256,
+    height: 256,
+    onMouseDown: handleGraphMouseDown,
+    onMouseMove: handleGraphMouseMove,
+    onMouseUp: () => setDragIdx(-1),
+    onMouseLeave: () => setDragIdx(-1),
+    style: {
+      display: 'block',
+      width: '100%',
+      height: '100%'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between w-[200px] text-[9px] text-slate-500"
+  }, /*#__PURE__*/React.createElement("span", null, "Sombras"), /*#__PURE__*/React.createElement("span", null, "Medios tonos"), /*#__PURE__*/React.createElement("span", null, "Luces"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center gap-1",
+    style: {
+      flex: 1,
+      minHeight: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-slate-950 rounded border border-slate-800 w-full flex items-center justify-center overflow-hidden",
+    style: {
+      height: '45vh',
+      minHeight: 250
+    }
+  }, previewUrl ? /*#__PURE__*/React.createElement("img", {
+    src: previewUrl,
+    style: {
+      maxWidth: '100%',
+      maxHeight: '100%',
+      objectFit: 'contain'
+    },
+    alt: "Preview"
+  }) : /*#__PURE__*/React.createElement("span", {
+    className: "text-slate-500 text-xs"
+  }, "Cargando imagen...")), /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-slate-400"
+  }, "Vista previa en tiempo real"))), /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-t border-slate-700/50 flex justify-between items-center bg-slate-900"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPoints([{
+      x: 0,
+      y: 255
+    }, {
+      x: 255,
+      y: 0
+    }]),
+    className: "text-xs text-slate-500 hover:text-white transition"
+  }, "Resetear"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm hover:bg-slate-700 transition"
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleAccept,
+    className: "px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-500 transition font-medium"
+  }, "Aceptar")))));
+};
+
+// --- COMPONENTE: MODAL DE EXPORTACIÃ“N ---
+const ExportModal = ({
+  imageSrc,
+  onClose,
+  onExport
+}) => {
+  const [format, setFormat] = useState('image/jpeg');
+  const [quality, setQuality] = useState(0.9);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [fileSize, setFileSize] = useState(null);
+  useEffect(() => {
+    if (imageSrc) {
+      generatePreview();
+    }
+  }, [imageSrc, format, quality]);
+  const generatePreview = () => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const url = canvas.toDataURL(format, parseFloat(quality));
+      setPreviewUrl(url);
+
+      // Estimate size
+      const head = 'data:' + format + ';base64,';
+      const size = Math.round((url.length - head.length) * 3 / 4);
+      setFileSize((size / 1024).toFixed(1) + ' KB');
+    };
+    img.src = imageSrc;
+  };
+  const handleDownload = () => {
+    if (!previewUrl) return;
+    const link = document.createElement('a');
+    const ext = format.split('/')[1];
+    link.download = `editado-${Date.now()}.${ext}`;
+    link.href = previewUrl;
+    link.click();
+    onExport();
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "glass-modal w-full max-w-2xl rounded-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4 border-b border-slate-700/50"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-white"
+  }, "Exportar Imagen")), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-slate-950 rounded-lg p-2 border border-slate-800 flex items-center justify-center min-h-[200px]"
+  }, previewUrl ? /*#__PURE__*/React.createElement("img", {
+    src: previewUrl,
+    className: "max-w-full max-h-[300px] object-contain",
+    alt: "Preview"
+  }) : /*#__PURE__*/React.createElement("div", {
+    className: "text-slate-500"
+  }, "Generando vista previa...")), /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-slate-300 font-medium"
+  }, fileSize))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "text-sm font-medium text-slate-300 block mb-2"
+  }, "Formato"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, ['image/jpeg', 'image/png', 'image/webp'].map(fmt => /*#__PURE__*/React.createElement("button", {
+    key: fmt,
+    onClick: () => setFormat(fmt),
+    className: `px-4 py-2 rounded-lg text-xs font-bold border transition-all ${format === fmt ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/50' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`
+  }, fmt.split('/')[1].toUpperCase())))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between mb-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-sm font-medium text-slate-300"
+  }, "Calidad (Compresi\xC3\xB3n)"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-blue-400 font-bold"
+  }, Math.round(quality * 100), "%")), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "0.1",
+    max: "1",
+    step: "0.05",
+    value: quality,
+    onChange: e => setQuality(parseFloat(e.target.value)),
+    className: "w-full",
+    disabled: format === 'image/png' // PNG is lossless usually, but canvas supports quality for some browsers. Standard PNG doesn't use quality param in toDataURL per spec, but some do. Safest to disable or ignore.
+  }), format === 'image/png' && /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] text-slate-500 mt-1"
+  }, "PNG no soporta ajuste de calidad (lossless).")), /*#__PURE__*/React.createElement("div", {
+    className: "pt-4 border-t border-slate-700/50"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: handleDownload,
+    className: "w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-lg shadow-emerald-900/50 transition flex items-center justify-center gap-2"
+  }, /*#__PURE__*/React.createElement("i", {
+    "data-lucide": "download",
+    className: "w-4 h-4"
+  }), "Descargar"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "w-full mt-3 py-2 bg-transparent hover:bg-slate-800 text-slate-400 font-medium rounded-lg border border-slate-700 transition"
+  }, "Cancelar"))))));
+};
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(/*#__PURE__*/React.createElement(App, null));
