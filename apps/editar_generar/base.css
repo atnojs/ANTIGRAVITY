@@ -1,0 +1,242 @@
+/* ═══════════════════════════════════════════════════════════
+   IMAGE STUDIO PRO — BASE DESIGN SYSTEM
+   Dark Premium: zinc palette + amber/violet accents
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens ── */
+:root {
+    --bg-root: #09090B;
+    --bg-surface: #18181B;
+    --bg-card: #1C1C1F;
+    --bg-card-hover: #232326;
+    --bg-elevated: #27272A;
+    --bg-input: #18181B;
+
+    --border-default: rgba(255, 255, 255, 0.06);
+    --border-strong: rgba(255, 255, 255, 0.10);
+    --border-accent: rgba(245, 158, 11, 0.25);
+    --border-violet: rgba(139, 92, 246, 0.20);
+
+    --text-primary: #FAFAFA;
+    --text-secondary: #A1A1AA;
+    --text-tertiary: #71717A;
+    --text-muted: #52525B;
+
+    --accent: #F59E0B;
+    --accent-soft: rgba(245, 158, 11, 0.12);
+    --accent-glow: rgba(245, 158, 11, 0.25);
+    --violet: #8B5CF6;
+    --violet-soft: rgba(139, 92, 246, 0.12);
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --shadow-glow-amber: 0 0 40px rgba(245, 158, 11, 0.15);
+    --shadow-glow-violet: 0 0 40px rgba(139, 92, 246, 0.12);
+
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Reset & Base ── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background: var(--bg-root);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Glass surface ── */
+.glass {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+.glass-light {
+    background: rgba(39, 39, 42, 0.6);
+    border: 1px solid var(--border-default);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+    background: linear-gradient(135deg, #F59E0B 0%, #FCD34D 40%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.1); }
+    50% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.25); }
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.animate-in {
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.animate-in-fast {
+    animation: fadeIn 0.3s ease both;
+}
+.animate-scale-in {
+    animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.animate-slide-left {
+    animation: slideInLeft 0.4s ease both;
+}
+.animate-slide-right {
+    animation: slideInRight 0.4s ease both;
+}
+
+/* Stagger children */
+.stagger>*:nth-child(1) { animation-delay: 0.05s; }
+.stagger>*:nth-child(2) { animation-delay: 0.10s; }
+.stagger>*:nth-child(3) { animation-delay: 0.15s; }
+.stagger>*:nth-child(4) { animation-delay: 0.20s; }
+.stagger>*:nth-child(5) { animation-delay: 0.25s; }
+.stagger>*:nth-child(6) { animation-delay: 0.30s; }
+.stagger>*:nth-child(7) { animation-delay: 0.35s; }
+.stagger>*:nth-child(8) { animation-delay: 0.40s; }
+
+/* ── Button 3D effect ── */
+.btn-3d {
+    position: relative;
+    transition: all var(--transition-base);
+}
+.btn-3d:hover {
+    transform: translateY(-2px);
+}
+.btn-3d:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+/* ── Gradient border card ── */
+.gradient-border {
+    position: relative;
+}
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(139, 92, 246, 0.3), rgba(245, 158, 11, 0.1));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* ── Shimmer skeleton ── */
+.skeleton {
+    background: linear-gradient(90deg, #27272A 25%, #3F3F46 50%, #27272A 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
