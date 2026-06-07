@@ -1,11 +1,9 @@
-const { useState, useRef, useEffect, Fragment, useCallback, createContext, useContext } = React;
+const { useState, useRef, useEffect, Fragment } = React;
 const ReactDOM = window.ReactDOM;
 
-// ═══════════════════════════════════════════════════
-// ICON SYSTEM
-// ═══════════════════════════════════════════════════
+// --- Lucide Icon Wrapper ---
 const toPascal = (kebab) => kebab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
-const Icon = ({ name, size = 20, className = '', ...rest }) => {
+const Icon = ({ name, size = 24, className = '', ...rest }) => {
     const ref = useRef(null);
     useEffect(() => {
         if (!ref.current || !window.lucide) return;
@@ -17,7 +15,9 @@ const Icon = ({ name, size = 20, className = '', ...rest }) => {
                 if (svg) {
                     svg.setAttribute('width', size);
                     svg.setAttribute('height', size);
-                    if (className) className.split(/\s+/).filter(Boolean).forEach(c => svg.classList.add(c));
+                    if (className) {
+                        className.split(/\s+/).filter(Boolean).forEach(c => svg.classList.add(c));
+                    }
                     ref.current.appendChild(svg);
                 }
             }
@@ -26,32 +26,31 @@ const Icon = ({ name, size = 20, className = '', ...rest }) => {
     return <span ref={ref} style={{ display: 'inline-flex', width: size, height: size }} {...rest} />;
 };
 
-// Icon components
 const Sparkles = (p) => <Icon name="sparkles" {...p} />;
 const Wand2 = (p) => <Icon name="wand-2" {...p} />;
+const ChevronLeft = (p) => <Icon name="chevron-left" {...p} />;
+const X = (p) => <Icon name="x" {...p} />;
 const Upload = (p) => <Icon name="upload" {...p} />;
 const Send = (p) => <Icon name="send" {...p} />;
 const Loader2 = (p) => <Icon name="loader-2" {...p} />;
+const LayoutGrid = (p) => <Icon name="layout-grid" {...p} />;
+const History = (p) => <Icon name="history" {...p} />;
+const Info = (p) => <Icon name="info" {...p} />;
 const ImageIcon = (p) => <Icon name="image" {...p} />;
 const Square = (p) => <Icon name="square" {...p} />;
 const RectangleHorizontal = (p) => <Icon name="rectangle-horizontal" {...p} />;
 const RectangleVertical = (p) => <Icon name="rectangle-vertical" {...p} />;
 const Monitor = (p) => <Icon name="monitor" {...p} />;
 const Smartphone = (p) => <Icon name="smartphone" {...p} />;
+const Key = (p) => <Icon name="key" {...p} />;
+const ExternalLink = (p) => <Icon name="external-link" {...p} />;
 const Trash2 = (p) => <Icon name="trash-2" {...p} />;
+const RefreshCw = (p) => <Icon name="refresh-cw" {...p} />;
+const MessageSquare = (p) => <Icon name="message-square" {...p} />;
 const Download = (p) => <Icon name="download" {...p} />;
-const X = (p) => <Icon name="x" {...p} />;
-const ChevronLeft = (p) => <Icon name="chevron-left" {...p} />;
-const Pencil = (p) => <Icon name="pencil" {...p} />;
-const RotateCcw = (p) => <Icon name="rotate-ccw" {...p} />;
-const Info = (p) => <Icon name="info" {...p} />;
-const Palette = (p) => <Icon name="palette" {...p} />;
-const Zap = (p) => <Icon name="zap" {...p} />;
-const Layers = (p) => <Icon name="layers" {...p} />;
+const Share2 = (p) => <Icon name="share-2" {...p} />;
 
-// ═══════════════════════════════════════════════════
-// CONSTANTS
-// ═══════════════════════════════════════════════════
+// --- CONSTANTES (ORIGINAL) ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
 const getClosestAspectRatio = (width, height) => {
@@ -71,13 +70,20 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
         const img = new Image();
         img.src = base64Str;
         img.onload = () => {
-            let width = img.width, height = img.height;
+            let width = img.width;
+            let height = img.height;
             if (width > maxWidth || height > maxWidth) {
-                if (width > height) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
-                else { width = Math.round((width * maxWidth) / height); height = maxWidth; }
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
             }
             const canvas = document.createElement('canvas');
-            canvas.width = width; canvas.height = height;
+            canvas.width = width;
+            canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
             resolve(canvas.toDataURL('image/jpeg', quality));
@@ -85,9 +91,6 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     });
 };
 
-// ═══════════════════════════════════════════════════
-// STYLE GROUPS (preserved from original)
-// ═══════════════════════════════════════════════════
 const STYLE_GROUPS = {
     ilustracion: [
         { id: '', name: '🖌️ Dibujo / Ilustración', promptSuffix: '' },
@@ -143,27 +146,19 @@ const STYLE_GROUPS = {
     ]
 };
 
-const STYLE_CATEGORIES = [
-    { key: 'ilustracion', label: '🖌️ Ilustración', color: '#F59E0B' },
-    { key: 'pictorico', label: '🎨 Pictórico', color: '#8B5CF6' },
-    { key: 'digital', label: '💻 Digital 3D', color: '#06B6D4' },
-    { key: 'grafico', label: '📐 Gráfico', color: '#10B981' },
-];
-
 const ASPECT_RATIOS = [
-    { id: AspectRatio.SQUARE, name: '1:1', icon: <Square size={16} /> },
-    { id: AspectRatio.PORTRAIT, name: '3:4', icon: <RectangleVertical size={16} /> },
-    { id: AspectRatio.WIDE, name: '16:9', icon: <Monitor size={16} /> },
-    { id: AspectRatio.TALL, name: '9:16', icon: <Smartphone size={16} /> },
-    { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <RectangleHorizontal size={16} /> },
+    { id: AspectRatio.SQUARE, name: '1:1', icon: <Square size={18} /> },
+    { id: AspectRatio.PORTRAIT, name: '3:4', icon: <RectangleVertical size={18} /> },
+    { id: AspectRatio.WIDE, name: '16:9', icon: <Monitor size={18} /> },
+    { id: AspectRatio.TALL, name: '9:16', icon: <Smartphone size={18} /> },
+    { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
-// ═══════════════════════════════════════════════════
-// INDEXEDDB (preserved from original)
-// ═══════════════════════════════════════════════════
-const DB_NAME = 'editar_generar_db_v2';
+// --- HISTORIAL PERSISTENTE CON INDEXEDDB ---
+const DB_NAME = 'editar_imagenes_db';
 const DB_VERSION = 1;
 const STORE_NAME = 'history';
+
 let historyDb = null;
 
 const openHistoryDb = () => new Promise((resolve, reject) => {
@@ -192,7 +187,7 @@ const loadHistoryFromDb = async () => {
             };
             req.onerror = () => reject(req.error);
         });
-    } catch (e) { return []; }
+    } catch (e) { console.warn('Error cargando historial:', e); return []; }
 };
 
 const saveHistoryItemToDb = async (item) => {
@@ -205,7 +200,7 @@ const saveHistoryItemToDb = async (item) => {
             req.onsuccess = () => resolve();
             req.onerror = () => reject(req.error);
         });
-    } catch (e) {}
+    } catch (e) { console.warn('Error guardando item:', e); }
 };
 
 const deleteHistoryItemFromDb = async (id) => {
@@ -218,7 +213,7 @@ const deleteHistoryItemFromDb = async (id) => {
             req.onsuccess = () => resolve();
             req.onerror = () => reject(req.error);
         });
-    } catch (e) {}
+    } catch (e) { console.warn('Error eliminando item:', e); }
 };
 
 const clearHistoryFromDb = async () => {
@@ -231,305 +226,293 @@ const clearHistoryFromDb = async () => {
             req.onsuccess = () => resolve();
             req.onerror = () => reject(req.error);
         });
-    } catch (e) {}
+    } catch (e) { console.warn('Error limpiando historial:', e); }
 };
 
-// ═══════════════════════════════════════════════════
-// API CALLS (preserved from original)
-// ═══════════════════════════════════════════════════
-const API_BASE = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+// --- SERVICES (ORIGINAL LOGIC) ---
+const PROXY_URL = './proxy.php';
 
-const enhancePrompt = async (text) => {
-    const resp = await fetch(`${API_BASE}/proxy.php`, {
+const callProxy = async (model, contents, config = {}) => {
+    const payload = { model, contents, ...config };
+    const response = await fetch(PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'enhance', prompt: text })
+        body: JSON.stringify(payload)
     });
-    if (!resp.ok) throw new Error(`Enhance failed: ${resp.status}`);
-    const data = await resp.json();
-    return data.prompts || [];
-};
-
-const generateImage = async ({ prompt, styleSuffix, aspectRatio, sourceImage }) => {
-    const resp = await fetch(`${API_BASE}/proxy.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'generate',
-            prompt: prompt,
-            styleSuffix: styleSuffix,
-            aspectRatio: aspectRatio,
-            sourceImage: sourceImage || null
-        })
-    });
-    if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.error || `Generation failed: ${resp.status}`);
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Error ${response.status}: ${text}`);
     }
-    const data = await resp.json();
-    return data.imageUrl || data.url || data.image;
+    return await response.json();
 };
 
-const editImageConversation = async ({ originalImage, instruction, aspectRatio }) => {
-    const resp = await fetch(`${API_BASE}/proxy.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'edit',
-            sourceImage: originalImage,
-            instruction: instruction,
-            aspectRatio: aspectRatio
-        })
-    });
-    if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.error || `Edit failed: ${resp.status}`);
+const enhancePrompt = async (basePrompt) => {
+    try {
+        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÓN DE IMÁGENES.
+TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÓN DEL USUARIO.
+Instrucciones:
+1. NO inventes sujetos nuevos (ej: si pide un perro, no digas que es un Golden Retriever a menos que él lo diga).
+2. NO cambies el entorno drásticamente.
+3. Céntrate en añadir detalles técnicos de calidad (iluminación, texturas, estilo de cámara) para que el prompt sea más efectivo pero manteniendo el mensaje original intacto.
+4. Si el usuario pide un cambio pequeño (ej: "lazo rojo"), el prompt debe centrarse en ese cambio pero con mejor lenguaje técnico.
+
+Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (Descriptiva, Cinematográfica, Artística, y Minimalista) siguiendo estas reglas estrictas.`;
+        const contents = [{ parts: [{ text: systemInstructions }] }];
+        const config = {
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: { type: { type: "STRING" }, text: { type: "STRING" } },
+                        required: ["type", "text"]
+                    }
+                }
+            }
+        };
+        const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        return text ? JSON.parse(text) : [];
+    } catch (e) {
+        console.error("Failed to enhance prompt", e);
+        return [];
     }
-    const data = await resp.json();
-    return data.imageUrl || data.url || data.image;
 };
 
-// ═══════════════════════════════════════════════════
-// PREMIUM COMPONENTS
-// ═══════════════════════════════════════════════════
+const generateImage = async (params) => {
+    let basePrompt = (params.prompt || '').trim();
+    const styleSuffix = (params.styleSuffix || '').trim();
+    const fullStylePrompt = `${basePrompt} ${styleSuffix}`.trim();
 
-// ── Loading Overlay ──
+    let finalPrompt = '';
+    if (params.sourceImage) {
+        const sizeInfo = `Adjust the aspect ratio to ${params.aspectRatio}.`;
+        if (fullStylePrompt) {
+            finalPrompt = `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`;
+        } else {
+            finalPrompt = `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`;
+        }
+    } else {
+        finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
+    }
+
+    const parts = [{ text: finalPrompt }];
+    if (params.sourceImage) {
+        const base64Data = params.sourceImage.split(',')[1];
+        parts.push({ inlineData: { data: base64Data, mimeType: "image/jpeg" } });
+    }
+    const contents = [{ parts }];
+    const config = {
+        generationConfig: {
+            imageConfig: {
+                aspectRatio: params.aspectRatio
+            }
+        }
+    };
+    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
+    for (const part of partsResponse) {
+        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    }
+    throw new Error("No se pudo generar la imagen");
+};
+
+const editImageConversation = async (params) => {
+    const base64Data = params.originalImage.split(',')[1];
+    const contents = [{
+        parts: [
+            { inlineData: { data: base64Data, mimeType: "image/jpeg" } },
+            { text: params.instruction }
+        ]
+    }];
+    const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
+    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
+    for (const part of partsResponse) {
+        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    }
+    throw new Error("Error en la edición conversacional");
+};
+
+// --- COMPONENTS ---
+const ApiKeyChecker = ({ children }) => <>{children}</>;
+
 const LoadingOverlay = ({ progress = 0, status = '' }) => (
     <div className="loading-overlay">
-        <div className="loading-card">
-            <div className="loading-spinner"></div>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                {status || 'Procesando...'}
+        <div className="spinner-triple">
+            <div className="ring ring-1"></div>
+            <div className="ring ring-2"></div>
+            <div className="ring ring-3"></div>
+        </div>
+        <p className="loading-text">IA Generando Obra Maestra...</p>
+        <div className="progress-container">
+            <div className="progress-percentage">{progress}%</div>
+            <div className="progress-bar-track">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
             </div>
-            <div className="progress-track" style={{ width: '100%' }}>
-                <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-            </div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent)' }}>
-                {Math.round(progress)}%
-            </div>
+            <div className="progress-status">{status || 'Iniciando...'}</div>
         </div>
     </div>
 );
 
-// ── Custom Select ──
-const CustomSelect = ({ options, value, onChange, accentColor = '#F59E0B' }) => {
-    const [open, setOpen] = useState(false);
-    const ref = useRef(null);
-    const selected = options.find(o => o.id === value) || options[0];
+const CustomSelect = ({ options, value, onChange, className }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const selectedOption = options.find(opt => opt.id === value) || options[0];
+    const isPlaceholder = !value;
+    const dropdownRef = useRef(null);
 
     useEffect(() => {
-        const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     return (
-        <div ref={ref} style={{ position: 'relative' }}>
+        <div ref={dropdownRef} className={`relative ${className || ''}`}>
             <button
-                onClick={() => setOpen(!open)}
-                className="style-select"
-                style={{ width: '100%', textAlign: 'left' }}
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
             >
-                <span style={{ opacity: value ? 1 : 0.4 }}>{selected.name}</span>
+                <span className={isPlaceholder ? 'text-gray-500' : 'text-gray-200'}>{selectedOption.name}</span>
+                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
             </button>
-            {open && (
-                <div style={{
-                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
-                    background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-                    borderRadius: 'var(--radius-md)', maxHeight: 240, overflowY: 'auto',
-                    zIndex: 50, boxShadow: 'var(--shadow-lg)',
-                    animation: 'scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1) both'
-                }}>
-                    {options.map(o => (
-                        <div
-                            key={o.id}
-                            onClick={() => { onChange(o.id); setOpen(false); }}
-                            style={{
-                                padding: '10px 14px', cursor: 'pointer', fontSize: '0.75rem',
-                                color: o.id === value ? 'var(--text-primary)' : 'var(--text-secondary)',
-                                background: o.id === value ? 'rgba(255,255,255,0.04)' : 'transparent',
-                                transition: 'all var(--transition-fast)',
-                                borderLeft: o.id === value ? `2px solid ${accentColor}` : '2px solid transparent'
-                            }}
-                            onMouseEnter={e => { if (o.id !== value) e.target.style.background = 'rgba(255,255,255,0.03)'; }}
-                            onMouseLeave={e => { if (o.id !== value) e.target.style.background = 'transparent'; }}
-                        >
-                            {o.name}
-                        </div>
-                    ))}
+            {isOpen && (
+                <div className="absolute z-50 w-full mt-2 glass rounded-2xl border border-cyan-500/20 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+                    <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                        {options.map((opt) => (
+                            <button
+                                key={opt.id}
+                                onClick={() => {
+                                    onChange(opt.id);
+                                    setIsOpen(false);
+                                }}
+                                className={`w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
+                                    ? 'bg-cyan-500/20 text-cyan-400 border-l-2 border-cyan-400'
+                                    : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 border-l-2 border-transparent'
+                                    }`}
+                            >
+                                {opt.name}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
     );
 };
 
-// ── Image Card (Premium) ──
-const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, index = 0 }) => {
-    const [imgLoaded, setImgLoaded] = useState(false);
+const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
+    const handleDownload = (e) => {
+        e.stopPropagation();
+        const link = document.createElement('a');
+        link.href = image.url;
+        link.download = `gemini-studio-${image.id}.jpg`;
+        link.click();
+    };
 
     return (
-        <div
-            className="card-premium animate-in"
-            style={{ animationDelay: `${0.06 * index}s` }}
-        >
-            <div
-                className="card-image-wrap"
-                style={{ aspectRatio: image.aspectRatio === '9:16' ? '9/16' : image.aspectRatio === '16:9' ? '16/9' : image.aspectRatio === '21:9' ? '21/9' : image.aspectRatio === '3:4' ? '3/4' : '1/1' }}
-                onClick={() => onClick(image)}
-            >
-                {!imgLoaded && (
-                    <div className="skeleton" style={{ position: 'absolute', inset: 0 }} />
-                )}
-                <img
-                    src={image.url}
-                    alt={image.prompt || 'Generated image'}
-                    onLoad={() => setImgLoaded(true)}
-                    style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.4s ease' }}
-                />
-                <div className="card-overlay">
-                    <button
-                        className="card-action-btn"
-                        onClick={(e) => { e.stopPropagation(); onRegenerate(image); }}
-                        title="Regenerar"
-                    >
-                        <RotateCcw size={16} />
-                    </button>
-                    <button
-                        className="card-action-btn"
-                        onClick={(e) => { e.stopPropagation(); onEdit(image); }}
-                        title="Editar"
-                    >
-                        <Pencil size={16} />
-                    </button>
-                    <button
-                        className="card-action-btn danger"
-                        onClick={(e) => { e.stopPropagation(); onDelete(image.id); }}
-                        title="Eliminar"
-                    >
-                        <Trash2 size={16} />
-                    </button>
+        <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
+            <div className="absolute top-4 left-4 z-10">
+                <div className="px-3 py-1 glass rounded-full text-[9px] font-bold uppercase tracking-widest text-white/90 border-white/5 backdrop-blur-md">
+                    {image.style.name} | {image.aspectRatio}
                 </div>
             </div>
-            <div className="card-info-bar">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                    <span className="tag">{image.aspectRatio}</span>
-                    {image.style?.name && image.style.name !== '🖌️ Dibujo / Ilustración' && image.style.name !== '🎨 Arte / Tradicional' && image.style.name !== '💻 Digital / 3D' && image.style.name !== '📐 Gráfico / Moderno' && (
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {image.style.name.split(' ').slice(0, 2).join(' ')}
-                        </span>
-                    )}
+            <div className="relative aspect-square bg-slate-950 overflow-hidden flex items-center justify-center">
+                <img
+                    src={image.url}
+                    alt={image.prompt}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+                />
+
+                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-start justify-center pt-8 backdrop-blur-[2px] z-20">
+                    <div className="flex items-center justify-center gap-4 w-full">
+                        <button onClick={(e) => { e.stopPropagation(); onRegenerate(image); }} className="flex flex-col items-center gap-1.5 group/btn">
+                            <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center group-hover/btn:bg-cyan-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
+                                <RefreshCw className="text-cyan-400" size={16} />
+                            </div>
+                            <span className="text-[8px] font-bold text-cyan-200 uppercase tracking-tighter">Nuevas</span>
+                        </button>
+
+                        <button onClick={(e) => { e.stopPropagation(); onEdit(image); }} className="flex flex-col items-center gap-1.5 group/btn">
+                            <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center group-hover/btn:bg-purple-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
+                                <MessageSquare className="text-purple-400" size={16} />
+                            </div>
+                            <span className="text-[8px] font-bold text-purple-200 uppercase tracking-tighter">Variar</span>
+                        </button>
+
+                        <button onClick={handleDownload} className="flex flex-col items-center gap-1.5 group/btn">
+                            <div className="w-9 h-9 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center group-hover/btn:bg-slate-700 group-hover/btn:scale-110 transition-all shadow-lg">
+                                <Download className="text-slate-200" size={16} />
+                            </div>
+                            <span className="text-[8px] font-bold text-slate-300 uppercase tracking-tighter">Bajar</span>
+                        </button>
+
+                        <button onClick={(e) => { e.stopPropagation(); onDelete(image.id); }} className="flex flex-col items-center gap-1.5 group/btn">
+                            <div className="w-9 h-9 rounded-full bg-red-900/40 border border-red-500/50 flex items-center justify-center group-hover/btn:bg-red-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
+                                <Trash2 className="text-red-400" size={16} />
+                            </div>
+                            <span className="text-[8px] font-bold text-red-300 uppercase tracking-tighter">Quitar</span>
+                        </button>
+                    </div>
                 </div>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    {new Date(image.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short' })}
-                </span>
+            </div>
+
+            <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
+                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight italic">
+                    {image.prompt}
+                </p>
+                <div className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-1">
+                    {new Date(image.createdAt).toLocaleTimeString()}
+                </div>
             </div>
         </div>
     );
 };
 
-// ── Splash Screen (Premium) ──
 const Splash = ({ onSelect }) => (
-    <div style={{
-        minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', padding: '40px 20px',
-        position: 'relative', overflow: 'hidden'
-    }}>
-        {/* Glow orbs */}
-        <div className="glow-orb glow-orb-amber"></div>
-        <div className="glow-orb glow-orb-violet"></div>
-
-        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 700 }}>
-            {/* Logo */}
-            <div className="animate-scale-in" style={{ marginBottom: 32 }}>
-                <div style={{
-                    width: 80, height: 80, margin: '0 auto 24px',
-                    background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                    borderRadius: 'var(--radius-xl)', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 20px 60px rgba(245,158,11,0.3)'
-                }}>
-                    <Wand2 size={36} style={{ color: '#09090B' }} />
-                </div>
-                <h1 style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-                    fontWeight: 800, letterSpacing: '-0.02em',
-                    lineHeight: 1.1, marginBottom: 12
-                }}>
-                    <span className="gradient-text">Image Studio Pro</span>
-                </h1>
-                <p style={{ color: 'var(--text-tertiary)', fontSize: '1rem', fontWeight: 400, maxWidth: 460, margin: '0 auto', lineHeight: 1.7 }}>
-                    Crea, edita y transforma imágenes con inteligencia artificial de última generación
-                </p>
-            </div>
-
-            {/* Mode cards */}
-            <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                gap: 16, marginTop: 48
-            }} className="stagger">
-                <div className="splash-card animate-in" onClick={() => onSelect('text-to-image')}>
-                    <div style={{
-                        width: 52, height: 52, borderRadius: 'var(--radius-md)',
-                        background: 'var(--accent-soft)', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', marginBottom: 16
-                    }}>
-                        <Sparkles size={24} style={{ color: 'var(--accent)' }} />
-                    </div>
-                    <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 6, color: 'var(--text-primary)' }}>
-                        Texto a Imagen
-                    </h3>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', lineHeight: 1.6 }}>
-                        Describe tu idea y la IA la convierte en una imagen única con el estilo que elijas
-                    </p>
-                </div>
-
-                <div className="splash-card animate-in" onClick={() => onSelect('remix')}>
-                    <div style={{
-                        width: 52, height: 52, borderRadius: 'var(--radius-md)',
-                        background: 'var(--violet-soft)', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', marginBottom: 16
-                    }}>
-                        <Layers size={24} style={{ color: 'var(--violet)' }} />
-                    </div>
-                    <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 6, color: 'var(--text-primary)' }}>
-                        Remezclar Imagen
-                    </h3>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', lineHeight: 1.6 }}>
-                        Sube una imagen base y transfórmala con nuevos estilos, composiciones y detalles
-                    </p>
-                </div>
-
-                <div className="splash-card animate-in" onClick={() => onSelect('text-to-image')}>
-                    <div style={{
-                        width: 52, height: 52, borderRadius: 'var(--radius-md)',
-                        background: 'rgba(6,182,212,0.12)', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', marginBottom: 16
-                    }}>
-                        <Palette size={24} style={{ color: '#06B6D4' }} />
-                    </div>
-                    <h3 style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 6, color: 'var(--text-primary)' }}>
-                        Explorar Estilos
-                    </h3>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', lineHeight: 1.6 }}>
-                        +40 estilos artísticos: anime, óleo, 3D, pixel art, acuarela, cómic y mucho más
-                    </p>
-                </div>
-            </div>
-
-            {/* Footer */}
-            <p style={{ marginTop: 48, fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.06em' }}>
-                POTENCIADO POR GEMINI AI · GENERACIÓN EN SEGUNDOS
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
+        <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
+            <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Edita como un Pro</h1>
+            <p className="text-gray-300 text-lg md:text-2xl font-light max-w-2xl mx-auto">
+                <span className="neon-text font-semibold">Generación/Edición Visual de Imágenes</span>
             </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+            <button onClick={() => onSelect('remix')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30">
+                <div className="absolute top-0 right-0 p-8 text-purple-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
+                    <ImageIcon size={200} />
+                </div>
+                <div className="bg-purple-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-purple-400 mb-6 border border-purple-500/30">
+                    <Wand2 size={32} />
+                </div>
+                <h2 className="text-4xl font-bold">Editar Imagen</h2>
+                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de Nano Banana.</p>
+            </button>
+            <button onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
+                <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
+                    <Sparkles size={200} />
+                </div>
+                <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
+                    <Sparkles size={32} />
+                </div>
+                <h2 className="text-4xl font-bold">Generar Imágenes</h2>
+                <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
+            </button>
         </div>
     </div>
 );
 
-// ═══════════════════════════════════════════════════
-// MAIN APP
-// ═══════════════════════════════════════════════════
+// --- APP MAIN ---
 const App = () => {
-    const [view, setView] = useState('splash');
+    const [view, setView] = useState('editor');
     const [mode, setMode] = useState('remix');
     const [prompt, setPrompt] = useState('');
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
@@ -543,33 +526,34 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
+    const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
+
     const [progress, setProgress] = useState(0);
     const [progressStatus, setProgressStatus] = useState('');
-    const [toast, setToast] = useState(null);
 
     const fileInputRef = useRef(null);
 
-    // Load history
+    // Cargar historial al montar
     useEffect(() => {
         const loadHistory = async () => {
             try {
                 const items = await loadHistoryFromDb();
                 if (items.length > 0) setImages(items);
-            } catch (e) {}
+            } catch (e) { console.warn('Error cargando historial:', e); }
         };
         loadHistory();
     }, []);
 
-    // Toast auto-dismiss
+    // Auto-open file selector on mount for edit mode
     useEffect(() => {
-        if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }
-    }, [toast]);
+        setTimeout(() => fileInputRef.current?.click(), 100);
+    }, []);
 
     const handleStart = (m) => {
         setMode(m);
         setView('editor');
         if (m === 'text-to-image') setRemixSource(null);
-        if (m === 'remix') setTimeout(() => fileInputRef.current?.click(), 300);
+        if (m === 'remix') setTimeout(() => fileInputRef.current?.click(), 100);
     };
 
     const handleFileUpload = (e) => {
@@ -581,6 +565,7 @@ const App = () => {
             img.onload = () => {
                 const detectedAR = getClosestAspectRatio(img.width, img.height);
                 setSelectedAR(detectedAR);
+                setOriginalImageAR(detectedAR);
                 setRemixSource(f.target.result);
             };
             img.src = f.target.result;
@@ -594,27 +579,46 @@ const App = () => {
         try {
             const enhanced = await enhancePrompt(prompt);
             setEnhancedPrompts(enhanced);
-        } catch (err) {} finally { setIsEnhancing(false); }
+        } catch (err) { console.error(err); } finally { setIsEnhancing(false); }
     };
 
     const handleGenerate = async (finalPrompt = prompt) => {
         const effectivePrompt = finalPrompt.trim() || (mode === 'remix' && remixSource ? ' ' : '');
         if (!effectivePrompt && !(mode === 'remix' && remixSource)) return;
-        setIsGenerating(true); setError(null); setProgress(0);
+        setIsGenerating(true);
+        setError(null);
+        setProgress(0);
         setProgressStatus('Preparando...');
         try {
             const styleSuffix = selectedStyle.promptSuffix;
             let finalSourceImage = mode === 'remix' ? (remixSource || undefined) : undefined;
-            if (finalSourceImage) finalSourceImage = await resizeImage(finalSourceImage, 1024, 0.85);
 
-            setProgress(10); setProgressStatus('Generando imagen 1 de 2...');
+            if (finalSourceImage) {
+                finalSourceImage = await resizeImage(finalSourceImage, 1024, 0.85);
+            }
+
+            setProgress(10);
+            setProgressStatus('Generando imagen 1 de 2...');
+
+            // Generar 2 imágenes en paralelo
             const results = await Promise.all([
-                generateImage({ prompt: effectivePrompt, styleSuffix, aspectRatio: selectedAR, sourceImage: finalSourceImage })
-                    .then(url => { setProgress(40); setProgressStatus('Generando imagen 2 de 2...'); return url; }),
-                generateImage({ prompt: effectivePrompt + (mode === 'remix' ? " (Alternative detailed variation)" : " --variation distinct composition"), styleSuffix, aspectRatio: selectedAR, sourceImage: finalSourceImage })
+                generateImage({
+                    prompt: effectivePrompt,
+                    styleSuffix,
+                    aspectRatio: selectedAR,
+                    sourceImage: finalSourceImage
+                }).then(url => { setProgress(40); setProgressStatus('Generando imagen 2 de 2...'); return url; }),
+                generateImage({
+                    prompt: effectivePrompt + (mode === 'remix' ? " (Alternative detailed variation)" : " --variation distinct composition"),
+                    styleSuffix,
+                    aspectRatio: selectedAR,
+                    sourceImage: finalSourceImage
+                }).then(url => { setProgress(70); setProgressStatus('Finalizando...'); return url; })
             ]);
 
-            setProgress(85); setProgressStatus('Guardando...');
+            setProgress(90);
+            setProgressStatus('Guardando...');
+
             const newHistoryImages = results.map(imageUrl => ({
                 id: Math.random().toString(36).substring(7),
                 url: imageUrl,
@@ -624,16 +628,20 @@ const App = () => {
                 size: '1K',
                 createdAt: Date.now()
             }));
-            for (const img of newHistoryImages) await saveHistoryItemToDb(img);
+
+            // Guardar en IndexedDB
+            for (const img of newHistoryImages) {
+                await saveHistoryItemToDb(img);
+            }
+
             setProgress(100);
             setImages(prev => [...newHistoryImages, ...prev]);
-            setToast({ type: 'success', message: '¡Imágenes generadas con éxito!' });
         } catch (err) {
             setError(err.message || "Error de generación");
-            setToast({ type: 'error', message: 'Error al generar. Inténtalo de nuevo.' });
         } finally {
             setTimeout(() => { setIsGenerating(false); setProgress(0); setProgressStatus(''); }, 400);
-            setPrompt(""); setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
+            setPrompt("");
+            setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
             setSelectedAR(AspectRatio.SQUARE);
         }
     };
@@ -641,23 +649,22 @@ const App = () => {
     const handleDelete = async (id) => {
         await deleteHistoryItemFromDb(id);
         setImages(images.filter(img => img.id !== id));
-        setToast({ type: 'info', message: 'Imagen eliminada' });
     };
-
     const handleClearHistory = async () => {
-        if (!confirm('¿Eliminar todo el historial?')) return;
+        if (!confirm('¿Estás seguro de que quieres eliminar todo el historial?')) return;
         await clearHistoryFromDb();
         setImages([]);
     };
-
     const handleRegenerate = (img) => {
         setPrompt(img.prompt);
         setSelectedStyle(img.style);
         setSelectedAR(img.aspectRatio);
         handleGenerate(img.prompt);
     };
-
-    const handleOpenEdit = (img) => { setEditImage(img); setEditInstruction(''); };
+    const handleOpenEdit = (img) => {
+        setEditImage(img);
+        setEditInstruction('');
+    };
 
     const handleEditSubmit = async () => {
         if (!editImage || !editInstruction.trim()) return;
@@ -673,411 +680,214 @@ const App = () => {
             await saveHistoryItemToDb(updatedImage);
             setImages([updatedImage, ...images]);
             setEditImage(null);
-            setToast({ type: 'success', message: '¡Imagen refinada con éxito!' });
-        } catch (err) {
-            setError("Error de edición");
-            setToast({ type: 'error', message: 'Error al editar la imagen.' });
-        } finally { setIsGenerating(false); }
+        } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
     };
 
-    const handleBackToSplash = () => {
-        setView('splash');
-        setRemixSource(null);
-        setPrompt('');
-        setEnhancedPrompts([]);
-    };
-
-    const isGenerateDisabled = isGenerating ||
-        (mode === 'text-to-image' && !prompt.trim()) ||
-        (mode === 'remix' && !remixSource);
-
-    // Find active style category
-    const activeCategory = STYLE_CATEGORIES.find(cat =>
-        STYLE_GROUPS[cat.key].some(s => s.id === selectedStyle.id)
-    );
+    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim()) || (mode === 'remix' && !remixSource);
 
     return (
-        <div className="app-container custom-scrollbar" style={{ position: 'relative' }}>
-            {/* Ambient glow orbs */}
-            <div className="glow-orb glow-orb-amber" style={{ opacity: 0.08 }}></div>
-            <div className="glow-orb glow-orb-violet" style={{ opacity: 0.06 }}></div>
-
-            {/* Loading Overlay */}
+        <ApiKeyChecker>
             {isGenerating && <LoadingOverlay progress={progress} status={progressStatus} />}
-
-            {/* Toast */}
-            {toast && (
-                <div className="toast" style={{
-                    borderColor: toast.type === 'error' ? 'rgba(239,68,68,0.3)' :
-                                toast.type === 'success' ? 'rgba(16,185,129,0.3)' :
-                                'var(--border-default)'
-                }}>
-                    <div style={{
-                        width: 8, height: 8, borderRadius: '50%',
-                        background: toast.type === 'error' ? '#EF4444' :
-                                   toast.type === 'success' ? '#10B981' : '#F59E0B'
-                    }}></div>
-                    {toast.message}
-                </div>
-            )}
-
-            {view === 'splash' ? (
-                <Splash onSelect={handleStart} />
-            ) : (
-                <>
-                    {/* ── SIDEBAR ── */}
-                    <aside className="sidebar custom-scrollbar">
-                        {/* Header */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <button
-                                    onClick={handleBackToSplash}
-                                    className="btn-ghost"
-                                    style={{ padding: 6 }}
-                                    title="Volver al inicio"
-                                >
-                                    <ChevronLeft size={20} />
-                                </button>
-                                <div>
-                                    <h1 className="gradient-text" style={{ fontSize: '1.3rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
-                                        Image Studio
-                                    </h1>
-                                    <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.06em' }}>
-                                        PREMIUM EDITION
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Mode tabs */}
-                        <div style={{ display: 'flex', gap: 6 }}>
-                            <button
-                                className={`mode-tab ${mode === 'text-to-image' ? 'active' : ''}`}
-                                onClick={() => handleStart('text-to-image')}
-                            >
-                                <Sparkles size={14} /> Texto a Imagen
-                            </button>
-                            <button
-                                className={`mode-tab ${mode === 'remix' ? 'active' : ''}`}
-                                onClick={() => handleStart('remix')}
-                            >
-                                <Layers size={14} /> Remezclar
-                            </button>
-                        </div>
-
-                        {/* Upload zone (remix mode) */}
-                        {mode === 'remix' && (
-                            <div className="animate-in-fast">
-                                <div className="section-label" style={{ marginBottom: 10, color: 'var(--violet)' }}>
-                                    Imagen Base
-                                </div>
-                                <div
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className={`upload-zone ${remixSource ? 'has-image' : ''}`}
-                                >
-                                    {remixSource ? (
-                                        <img src={remixSource} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                    ) : (
-                                        <div style={{ textAlign: 'center', color: 'var(--text-tertiary)' }}>
-                                            <Upload size={28} style={{ margin: '0 auto 8px' }} />
-                                            <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>Click para subir imagen</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} accept="image/*" />
-                            </div>
-                        )}
-
-                        {/* Prompt */}
-                        <div>
-                            <div className="section-label" style={{ marginBottom: 10, color: 'var(--accent)' }}>
-                                Prompt
-                            </div>
-                            <div style={{ position: 'relative' }}>
-                                <textarea
-                                    value={prompt}
-                                    onChange={(e) => setPrompt(e.target.value)}
-                                    placeholder="Describe la imagen que deseas crear..."
-                                    className="textarea-premium"
-                                    style={{ height: mode === 'remix' ? 100 : 130 }}
-                                />
-                                <button
-                                    onClick={handleEnhance}
-                                    disabled={isEnhancing || !prompt.trim()}
-                                    title="Mejorar prompt con IA"
-                                    style={{
-                                        position: 'absolute', bottom: 12, right: 12,
-                                        width: 36, height: 36, borderRadius: 'var(--radius-full)',
-                                        background: 'var(--accent-soft)', border: '1px solid var(--border-accent)',
-                                        color: 'var(--accent)', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        transition: 'all var(--transition-fast)',
-                                        opacity: prompt.trim() ? 1 : 0.3
-                                    }}
-                                >
-                                    {isEnhancing ? (
-                                        <Loader2 size={16} className="animate-spin" />
-                                    ) : (
-                                        <Zap size={16} />
-                                    )}
-                                </button>
+            <div className="min-h-screen custom-scrollbar overflow-y-auto">
+                {view === 'splash' ? (
+                    <Splash onSelect={handleStart} />
+                ) : (
+                    <div className="flex flex-col lg:flex-row min-h-screen">
+                        <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
+                            <div className="flex items-center justify-between shrink-0">
+                                <h1 className="text-2xl font-bold gradient-text flex items-center gap-3">
+                                    <Wand2 className="text-purple-400" size={28} />
+                                    Editor de Imágenes
+                                </h1>
                             </div>
 
-                            {/* Enhanced prompts */}
-                            {enhancedPrompts.length > 0 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }} className="stagger">
-                                    {enhancedPrompts.map((p, i) => (
-                                        <div
-                                            key={i}
-                                            className="prompt-chip animate-in"
-                                            onClick={() => { setPrompt(p.text); setEnhancedPrompts([]); }}
-                                        >
-                                            <div className="chip-type">{p.type}</div>
-                                            <div className="chip-text">{p.text}</div>
-                                        </div>
-                                    ))}
+                            {mode === 'remix' && (
+                                <div className="space-y-4 animate-in">
+                                    <label className="text-[11px] font-bold text-purple-400 uppercase tracking-widest">Imagen a Editar</label>
+                                    <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-purple-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-purple-500 transition-all">
+                                        {remixSource ? <img src={remixSource} className="w-full h-full object-contain" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="text-[10px] font-bold uppercase">Sube Imagen</span></div>}
+                                    </div>
+                                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                                 </div>
                             )}
-                        </div>
 
-                        {/* Style selector */}
-                        <div>
-                            <div className="section-label" style={{ marginBottom: 10 }}>
-                                Estilo Artístico
-                            </div>
-                            <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
-                                {STYLE_CATEGORIES.map(cat => {
-                                    const isActive = STYLE_GROUPS[cat.key].some(s => s.id === selectedStyle.id);
-                                    return (
-                                        <button
-                                            key={cat.key}
-                                            onClick={() => setSelectedStyle(STYLE_GROUPS[cat.key][0])}
-                                            style={{
-                                                padding: '5px 10px', borderRadius: 'var(--radius-full)',
-                                                fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer',
-                                                background: isActive ? `${cat.color}20` : 'transparent',
-                                                border: `1px solid ${isActive ? cat.color + '40' : 'transparent'}`,
-                                                color: isActive ? cat.color : 'var(--text-muted)',
-                                                transition: 'all var(--transition-fast)'
-                                            }}
-                                        >
-                                            {cat.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                                {STYLE_CATEGORIES.map(cat => (
-                                    <div key={cat.key}>
-                                        <CustomSelect
-                                            options={STYLE_GROUPS[cat.key]}
-                                            value={STYLE_GROUPS[cat.key].some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
-                                            onChange={(id) => {
-                                                const found = STYLE_GROUPS[cat.key].find(s => s.id === id);
-                                                if (found) setSelectedStyle(found);
-                                                else setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' });
-                                            }}
-                                            accentColor={cat.color}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Aspect ratio */}
-                        <div>
-                            <div className="section-label" style={{ marginBottom: 10 }}>
-                                Formato
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-                                {ASPECT_RATIOS.map((ar) => (
-                                    <button
-                                        key={ar.id}
-                                        onClick={() => setSelectedAR(ar.id)}
-                                        className={`ar-btn ${selectedAR === ar.id ? 'active' : ''}`}
-                                    >
-                                        {ar.icon}
-                                        <span style={{ fontSize: '0.6rem', fontWeight: 700 }}>{ar.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Generate button */}
-                        <div style={{ paddingTop: 8 }}>
-                            <button
-                                onClick={() => handleGenerate()}
-                                disabled={isGenerateDisabled}
-                                className="btn-primary"
-                                style={{ width: '100%', padding: '16px 24px', fontSize: '0.9rem' }}
-                            >
-                                {isGenerating ? (
-                                    <><Loader2 size={18} className="animate-spin" /> GENERANDO...</>
-                                ) : (
-                                    <><Sparkles size={18} /> GENERAR IMAGEN</>
-                                )}
-                            </button>
-                            {error && (
-                                <p style={{
-                                    color: '#EF4444', fontSize: '0.7rem', textAlign: 'center',
-                                    marginTop: 12, fontWeight: 600, letterSpacing: '0.04em'
-                                }}>
-                                    {error}
-                                </p>
-                            )}
-                        </div>
-                    </aside>
-
-                    {/* ── MAIN CONTENT ── */}
-                    <main className="main-content custom-scrollbar" style={{ position: 'relative', zIndex: 1 }}>
-                        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-                            {/* Header */}
-                            <div className="history-header">
-                                <div>
-                                    <h2 style={{
-                                        fontFamily: "'Playfair Display', serif",
-                                        fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
-                                        fontWeight: 700, letterSpacing: '-0.02em',
-                                        color: 'var(--text-primary)', marginBottom: 4
-                                    }}>
-                                        Galería
-                                    </h2>
-                                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-                                        {images.length === 0
-                                            ? 'Tus creaciones aparecerán aquí'
-                                            : `${images.length} ${images.length === 1 ? 'imagen' : 'imágenes'} en el historial`}
-                                    </p>
-                                </div>
-                                {images.length > 0 && (
-                                    <button onClick={handleClearHistory} className="btn-secondary">
-                                        <Trash2 size={14} /> Limpiar historial
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Image grid or empty state */}
-                            {images.length === 0 ? (
-                                <div className="empty-state">
-                                    <div className="empty-state-icon">
-                                        <ImageIcon size={40} />
-                                    </div>
-                                    <h3 style={{
-                                        fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-secondary)',
-                                        marginBottom: 8
-                                    }}>
-                                        Sin imágenes aún
-                                    </h3>
-                                    <p style={{
-                                        color: 'var(--text-tertiary)', maxWidth: 360, lineHeight: 1.7,
-                                        fontSize: '0.85rem'
-                                    }}>
-                                        Describe tu idea en el panel lateral y observa cómo cobra vida con inteligencia artificial
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="image-grid">
-                                    {images.map((img, i) => (
-                                        <ImageCard
-                                            key={img.id}
-                                            image={img}
-                                            index={i}
-                                            onDelete={handleDelete}
-                                            onRegenerate={handleRegenerate}
-                                            onEdit={handleOpenEdit}
-                                            onClick={setLightboxImage}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </main>
-                </>
-            )}
-
-            {/* ── LIGHTBOX ── */}
-            {lightboxImage && (
-                <div className="lightbox-backdrop" onClick={() => setLightboxImage(null)}>
-                    <img src={lightboxImage.url} className="lightbox-image" />
-                    <div className="lightbox-info">
-                        <span style={{ color: 'var(--accent)' }}>{lightboxImage.aspectRatio}</span>
-                        <span>RES: {lightboxImage.size}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>ID: {lightboxImage.id}</span>
-                    </div>
-                </div>
-            )}
-
-            {/* ── EDIT MODAL ── */}
-            {editImage && (
-                <div className="modal-backdrop" onClick={() => setEditImage(null)}>
-                    <div className="modal-content animate-scale-in" onClick={e => e.stopPropagation()}>
-                        <div style={{
-                            padding: '24px 32px', borderBottom: '1px solid var(--border-default)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-                        }}>
-                            <h3 style={{ fontWeight: 700, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <div style={{
-                                    width: 36, height: 36, borderRadius: 'var(--radius-md)',
-                                    background: 'var(--violet-soft)', display: 'flex',
-                                    alignItems: 'center', justifyContent: 'center'
-                                }}>
-                                    <Wand2 size={18} style={{ color: 'var(--violet)' }} />
-                                </div>
-                                Refinar Imagen
-                            </h3>
-                            <button
-                                onClick={() => setEditImage(null)}
-                                className="btn-ghost"
-                                style={{ padding: 8 }}
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <div style={{ padding: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                                <div className="edit-image-preview">
-                                    <img src={editImage.url} alt="Original" />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                    <div style={{
-                                        background: 'var(--violet-soft)', border: '1px solid var(--border-violet)',
-                                        borderRadius: 'var(--radius-md)', padding: '14px 18px',
-                                        fontSize: '0.75rem', color: '#A78BFA', lineHeight: 1.6, fontWeight: 500
-                                    }}>
-                                        <Info size={16} style={{ display: 'inline', marginRight: 6, verticalAlign: -3 }} />
-                                        Indica los cambios que quieres aplicar: iluminación, color, composición, estilo...
-                                    </div>
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Quieres añadir algo??</label>
+                                <div className="relative">
                                     <textarea
-                                        value={editInstruction}
-                                        onChange={(e) => setEditInstruction(e.target.value)}
-                                        placeholder="Ej: 'Convierte el fondo a un atardecer dorado con nubes dramáticas'..."
-                                        className="textarea-premium"
-                                        style={{ flex: 1, minHeight: 130 }}
+                                        value={prompt}
+                                        onChange={(e) => setPrompt(e.target.value)}
+                                        placeholder="Detalla lo que deseas ver en tu imagen..."
+                                        className="w-full h-48 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none custom-scrollbar focus:border-cyan-400 transition-all shadow-inner"
+                                    />
+                                    <button
+                                        onClick={handleEnhance}
+                                        disabled={isEnhancing || !prompt.trim()}
+                                        title="mejorar prompt con IA"
+                                        className="absolute bottom-4 right-4 p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl hover:bg-cyan-500/30 transition-all z-30"
+                                    >
+                                        {isEnhancing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                                    </button>
+                                </div>
+
+                                {enhancedPrompts.length > 0 && (
+                                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-2 duration-300">
+                                        {enhancedPrompts.map((p, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => {
+                                                    setPrompt(p.text);
+                                                }}
+                                                className="text-[10px] text-left p-3 glass-light border border-white/5 rounded-2xl text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all leading-tight group"
+                                            >
+                                                <div className="font-bold text-[9px] uppercase tracking-tighter text-gray-500 group-hover:text-cyan-500 mb-1">{p.type}</div>
+                                                <div className="line-clamp-2 italic opacity-80">{p.text}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-6">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Panel de Estilos</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <CustomSelect
+                                        options={STYLE_GROUPS.ilustracion}
+                                        value={STYLE_GROUPS.ilustracion.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
+                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.ilustracion.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
+                                    />
+                                    <CustomSelect
+                                        options={STYLE_GROUPS.pictorico}
+                                        value={STYLE_GROUPS.pictorico.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
+                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.pictorico.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
+                                    />
+                                    <CustomSelect
+                                        options={STYLE_GROUPS.digital}
+                                        value={STYLE_GROUPS.digital.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
+                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.digital.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
+                                    />
+                                    <CustomSelect
+                                        options={STYLE_GROUPS.grafico}
+                                        value={STYLE_GROUPS.grafico.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
+                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.grafico.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
                                     />
                                 </div>
                             </div>
-                            <button
-                                onClick={handleEditSubmit}
-                                disabled={isGenerating || !editInstruction.trim()}
-                                className="btn-primary"
-                                style={{ width: '100%', padding: '16px 24px' }}
-                            >
-                                {isGenerating ? (
-                                    <><Loader2 size={18} className="animate-spin" /> APLICANDO...</>
+
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Formato de Salida</label>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {ASPECT_RATIOS.map((ar) => (
+                                        <button
+                                            key={ar.id}
+                                            onClick={() => setSelectedAR(ar.id)}
+                                            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${selectedAR === ar.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                        >
+                                            <div className="flex items-center justify-center">{ar.icon}</div>
+                                            <span className="text-[9px] font-bold tracking-tighter">{ar.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="pt-6 order-last">
+                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                    {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                                    {isGenerating ? 'PROCESANDO...' : 'GENERAR EDICIÓN'}
+                                </button>
+                                {error && <p className="text-red-400 text-[10px] text-center mt-4 font-bold uppercase tracking-widest">{error}</p>}
+                            </div>
+                        </aside>
+
+                        <main className="flex-1 p-10 lg:p-20 overflow-y-auto custom-scrollbar">
+                            <div className="max-w-7xl mx-auto space-y-16">
+                                <div className="flex items-end justify-between">
+                                    <div className="space-y-2">
+                                        <h2 className="text-4xl font-bold tracking-tight">Historial de Imágenes Editadas</h2>
+                                        <p className="text-gray-400 font-medium">Controla y refina tus creaciones visuales en tiempo real.</p>
+                                    </div>
+                                    {images.length > 0 && (
+                                        <button onClick={handleClearHistory} className="px-4 py-2 glass rounded-2xl text-xs text-gray-400 hover:text-red-400 hover:border-red-500/30 transition-all flex items-center gap-2">
+                                            <Trash2 size={14} /> Limpiar
+                                        </button>
+                                    )}
+                                </div>
+
+                                {images.length === 0 ? (
+                                    <div className="h-[50vh] flex flex-col items-center justify-center text-center space-y-6 animate-in">
+                                        <div className="w-24 h-24 bg-white/5 rounded-[2.5rem] flex items-center justify-center text-gray-700 border border-white/5 shadow-inner">
+                                            <ImageIcon size={48} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imágenes aún</h3>
+                                            <p className="text-gray-600 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <><Send size={18} /> Aplicar Cambios</>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                                        {images.map((img) => (
+                                            <ImageCard key={img.id} image={img} onDelete={handleDelete} onRegenerate={handleRegenerate} onEdit={handleOpenEdit} onClick={setLightboxImage} />
+                                        ))}
+                                    </div>
                                 )}
-                            </button>
-                        </div>
+                            </div>
+                        </main>
+
+                        {lightboxImage && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl p-8 cursor-zoom-out" onClick={() => setLightboxImage(null)}>
+                                <div className="relative max-w-6xl w-full h-full flex flex-col items-center justify-center gap-8">
+                                    <img src={lightboxImage.url} className="max-w-full max-h-[85vh] object-contain rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5" />
+                                    <div className="glass px-8 py-4 rounded-full flex gap-10 text-[11px] font-bold text-gray-400 tracking-widest uppercase">
+                                        <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
+                                        <span>RES: {lightboxImage.size}</span>
+                                        <span className="text-gray-600">ID: {lightboxImage.id}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {editImage && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-950/80 backdrop-blur-md animate-in">
+                                <div className="glass max-w-4xl w-full rounded-[3.5rem] overflow-hidden flex flex-col shadow-2xl border border-white/10">
+                                    <div className="p-10 border-b border-white/5 flex items-center justify-between">
+                                        <h3 className="text-2xl font-bold flex items-center gap-4">
+                                            <Wand2 size={24} className="text-purple-400" /> Refinar Proyecto
+                                        </h3>
+                                        <button onClick={() => setEditImage(null)} className="p-2 text-gray-500 hover:text-white transition-all"><X size={24} /></button>
+                                    </div>
+                                    <div className="p-12 flex flex-col md:flex-row gap-12">
+                                        <div className="w-full md:w-1/2 aspect-square rounded-[2.5rem] overflow-hidden bg-slate-900 border border-white/5 shadow-inner">
+                                            <img src={editImage.url} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-between space-y-8">
+                                            <div className="space-y-4">
+                                                <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 font-medium">
+                                                    Indica modificaciones puntuales (luz, color, expansión) para aplicar sobre la base actual manteniendo la coherencia estructural.
+                                                </div>
+                                                <textarea
+                                                    value={editInstruction}
+                                                    onChange={(e) => setEditInstruction(e.target.value)}
+                                                    placeholder="Ej: 'Transforma la iluminación a un atardecer cálido'..."
+                                                    className="w-full h-44 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none focus:border-cyan-400 transition-all shadow-inner"
+                                                />
+                                            </div>
+                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                                {isGenerating ? <Loader2 className="animate-spin" /> : <Send size={20} />}
+                                                Aplicar Cambios
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </ApiKeyChecker>
     );
 };
 
-// ═══════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+
+

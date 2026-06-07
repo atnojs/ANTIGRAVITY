@@ -1,222 +1,95 @@
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
    IMAGE STUDIO PRO — APP SPECIFIC
-   ═══════════════════════════════════════════════════════════ */
+   Solo estilos nuevos + refinamientos del original
+   ═══════════════════════════════════════════════ */
 
-/* ── Main layout ── */
-.app-container {
-    min-height: 100vh;
+/* ── Progress bar (app.js usa estas clases) ── */
+.progress-container {
     display: flex;
     flex-direction: column;
-}
-@media (min-width: 1024px) {
-    .app-container {
-        flex-direction: row;
-    }
-}
-
-/* ── Sidebar ── */
-.sidebar {
-    width: 100%;
-    background: var(--bg-surface);
-    border-right: 1px solid var(--border-default);
-    overflow-y: auto;
-    padding: 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-    z-index: 20;
-}
-@media (min-width: 1024px) {
-    .sidebar {
-        width: 440px;
-        min-width: 440px;
-        position: sticky;
-        top: 0;
-        height: 100vh;
-    }
-}
-
-/* ── Upload zone ── */
-.upload-zone {
-    position: relative;
-    border: 2px dashed var(--border-default);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    aspect-ratio: 16/9;
-    display: flex;
     align-items: center;
-    justify-content: center;
-    background: var(--bg-input);
-    cursor: pointer;
-    transition: all var(--transition-base);
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(34, 211, 238, 0.15);
+    border-radius: 24px;
+    padding: 24px 32px;
+    min-width: 300px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: scaleIn 0.3s var(--ease-spring) both;
 }
-.upload-zone:hover {
-    border-color: var(--accent);
-    background: rgba(245, 158, 11, 0.03);
+.progress-percentage {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
 }
-.upload-zone.has-image {
-    border-style: solid;
-    border-color: var(--border-default);
-}
-.upload-zone.has-image:hover {
-    border-color: var(--border-strong);
-}
-
-/* ── Main content area ── */
-.main-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 32px;
-}
-@media (min-width: 1024px) {
-    .main-content {
-        padding: 48px 60px;
-    }
-}
-
-/* ── Image grid ── */
-.image-grid {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 24px;
-}
-@media (min-width: 768px) {
-    .image-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-@media (min-width: 1280px) {
-    .image-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* ── History header ── */
-.history-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 40px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-/* ── Edit modal image side ── */
-.edit-image-preview {
+.progress-bar-track {
     width: 100%;
-    aspect-ratio: 1;
-    border-radius: var(--radius-xl);
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
     overflow: hidden;
-    background: var(--bg-input);
-    border: 1px solid var(--border-default);
 }
-.edit-image-preview img {
-    width: 100%;
+.progress-bar-fill {
     height: 100%;
-    object-fit: cover;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+    border-radius: 3px;
+    transition: width 0.5s var(--ease-out);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
 }
-
-/* ── Mode tabs ── */
-.mode-tab {
-    flex: 1;
-    padding: 12px 20px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-full);
-    color: var(--text-tertiary);
-    font-size: 0.8rem;
+.progress-status {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    text-align: center;
-    white-space: nowrap;
-}
-.mode-tab:hover {
     color: var(--text-secondary);
-    border-color: var(--border-strong);
-}
-.mode-tab.active {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
-    box-shadow: 0 0 20px var(--accent-glow);
-}
-
-/* ── Section divider ── */
-.section-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
-    border: none;
-}
-
-/* ── Style group label in select ── */
-.style-group-label {
-    font-size: 0.55rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 8px 12px 4px;
 }
 
-/* ── Image info bar on card ── */
-.card-info-bar {
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    border-top: 1px solid var(--border-default);
+/* ── Scrollbar custom (ya está en base.css, compatibilidad) ── */
+
+/* ── Image hover zoom (usado por app.js) ── */
+.group:hover .group-hover\:scale-105 {
+    transform: scale(1.05);
+}
+.group:hover .group-hover\:scale-110 {
+    transform: scale(1.10);
+}
+.transition-transform {
+    transition: transform 0.6s var(--ease-out);
 }
 
-/* ── Responsive adjustments ── */
-@media (max-width: 767px) {
-    .sidebar {
-        padding: 20px;
-        gap: 20px;
-    }
-    .main-content {
-        padding: 20px;
-    }
-    .mobile-full {
-        width: 100%;
-    }
-}
-
-/* ── Glow orb decoration ── */
-.glow-orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.15;
-    pointer-events: none;
-    z-index: 0;
-}
-.glow-orb-amber {
-    width: 500px;
-    height: 500px;
-    background: #F59E0B;
-    top: -200px;
-    right: -150px;
-}
-.glow-orb-violet {
-    width: 400px;
-    height: 400px;
-    background: #8B5CF6;
-    bottom: -150px;
-    left: -100px;
-}
-
-/* ── Focus ring for keyboard nav ── */
-*:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-/* ── Line clamp utility ── */
+/* ── Line clamp ── */
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* ── Animate pulse ── */
+.animate-pulse {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Backdrop blur ── */
+.backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Responsive spacing ── */
+@media (max-width: 768px) {
+    .progress-container {
+        min-width: auto;
+        padding: 20px;
+    }
+    .progress-percentage {
+        font-size: 1.6rem;
+    }
 }
