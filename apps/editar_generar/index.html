@@ -73,8 +73,69 @@
 </head>
 
 <body>
+    <!-- Preloader: visible mientras Babel compila JSX y React monta -->
+    <div id="preloader" style="
+        position:fixed;inset:0;z-index:9999;display:flex;
+        flex-direction:column;align-items:center;justify-content:center;
+        background:#09090B;gap:20px;font-family:Inter,sans-serif;
+    ">
+        <div style="
+            width:48px;height:48px;border-radius:50%;
+            border:3px solid rgba(255,255,255,0.08);
+            border-top-color:#F59E0B;
+            animation:preloader-spin 0.8s linear infinite;
+        "></div>
+        <p style="color:#71717A;font-size:0.8rem;font-weight:500;letter-spacing:0.06em;">
+            CARGANDO IMAGE STUDIO PRO
+        </p>
+        <style>
+            @keyframes preloader-spin { to { transform: rotate(360deg); } }
+        </style>
+    </div>
+
     <div id="root"></div>
+
+    <!-- Scripts: cargan en orden. Babel compila app.js y React reemplaza #root -->
     <script type="text/babel" src="app.js"></script>
+
+    <!-- Ocultar preloader cuando React monte -->
+    <script>
+        // Fallback: ocultar preloader después de 8s si React no montó
+        setTimeout(function() {
+            var pl = document.getElementById('preloader');
+            var root = document.getElementById('root');
+            if (pl && root && root.innerHTML.trim() === '') {
+                pl.innerHTML = '<div style="text-align:center;color:#A1A1AA">' +
+                    '<p style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:#F59E0B">⚡ Carga lenta detectada</p>' +
+                    '<p style="font-size:0.8rem;margin-bottom:16px">Las dependencias CDN pueden tardar en conexiones lentas.</p>' +
+                    '<p style="font-size:0.7rem;color:#52525B">Recarga la página o verifica tu conexión.</p>' +
+                    '</div>';
+            }
+        }, 8000);
+
+        // Ocultar preloader inmediatamente si React ya montó
+        var checkReact = setInterval(function() {
+            var root = document.getElementById('root');
+            if (root && root.children.length > 0) {
+                var pl = document.getElementById('preloader');
+                if (pl) { pl.style.display = 'none'; }
+                clearInterval(checkReact);
+            }
+        }, 100);
+    </script>
+
+    <!-- Fallback si JS está desactivado -->
+    <noscript>
+        <div style="
+            position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+            background:#09090B;color:#A1A1AA;font-family:Inter,sans-serif;text-align:center;
+        ">
+            <div>
+                <p style="font-size:1.5rem;font-weight:700;color:#F59E0B;margin-bottom:12px">JavaScript Requerido</p>
+                <p style="font-size:0.85rem">Image Studio Pro necesita JavaScript para funcionar.</p>
+            </div>
+        </div>
+    </noscript>
 </body>
 
 </html>
