@@ -506,55 +506,52 @@ function App() {
 
   // --- PERSISTENCIA (HistoryManager server-side + localStorage fallback) ---
   useEffect(() => {
-    HistoryManager.configure({ dbName: 'decorar_habitacion_db' });
-    HistoryManager.init()
-      .then(() => HistoryManager.loadAll())
-      .then(items => {
-        if (items && items.length > 0) {
-          const rebuilt = {};
-          items.forEach(item => {
-            const style = (item.style && item.style.name) || 'Personalizado';
-            if (!rebuilt[style]) rebuilt[style] = [];
-            rebuilt[style].push({
-              uri: item.url,
-              ts: item.createdAt || Date.now(),
-              objects: item.objects || [],
-              style: style
+    // Cargar desde HistoryManager si está disponible; si no, usar solo localStorage
+    if (typeof HistoryManager !== 'undefined') {
+      HistoryManager.configure({ dbName: 'decorar_habitacion_db' });
+      HistoryManager.init()
+        .then(() => HistoryManager.loadAll())
+        .then(items => {
+          if (items && items.length > 0) {
+            const rebuilt = {};
+            items.forEach(item => {
+              const style = (item.style && item.style.name) || 'Personalizado';
+              if (!rebuilt[style]) rebuilt[style] = [];
+              rebuilt[style].push({
+                uri: item.url,
+                ts: item.createdAt || Date.now(),
+                objects: item.objects || [],
+                style: style
+              });
             });
-          });
-          setResults(rebuilt);
-        } else {
-          // Fallback a localStorage si no hay datos en servidor
-          try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-              const parsed = JSON.parse(saved);
-              if (typeof parsed === 'object' && !Array.isArray(parsed)) {
-                setResults(parsed);
-                // Migrar datos de localStorage al servidor
-                Object.entries(parsed).forEach(([style, items]) => {
-                  (items || []).forEach(it => {
-                    HistoryManager.saveItem({
-                      id: 'dh_' + style + '_' + (it.ts || Date.now()),
-                      url: it.uri || '',
-                      prompt: style,
-                      style: { name: style },
-                      objects: it.objects || [],
-                      createdAt: it.ts || Date.now()
-                    });
-                  });
-                });
-              }
-            }
-          } catch (e) {
-            console.warn('Error cargando historial:', e);
+            setResults(rebuilt);
+          } else {
+            loadFromLocalStorage();
+          }
+        })
+        .catch(() => loadFromLocalStorage());
+    } else {
+      loadFromLocalStorage();
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+            setResults(parsed);
           }
         }
-      });
+      } catch (e) {
+        console.warn('Error cargando historial:', e);
+      }
+    }
   }, []);
 
   // Guardar items individuales en el servidor cuando cambian (no el objeto completo)
   const saveItemToHistory = (style, item) => {
+    if (typeof HistoryManager === 'undefined') return;
     HistoryManager.saveItem({
       id: 'dh_' + style + '_' + (item.ts || Date.now()) + '_' + Math.random().toString(36).substr(2,4),
       url: item.uri || '',
@@ -569,7 +566,7 @@ function App() {
     if (confirm("¿Estás seguro de que quieres borrar todo el historial?")) {
       setResults({});
       localStorage.removeItem(STORAGE_KEY);
-      HistoryManager.clearAll();
+      if (typeof HistoryManager !== 'undefined') HistoryManager.clearAll();
       location.reload();
     }
   };
