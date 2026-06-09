@@ -164,13 +164,15 @@
     // ─── Servidor (history.php) ─────────────────────────────
 
     /**
-     * Sincroniza un item al servidor (fire-and-forget).
+     * Sincroniza un item al servidor con reintentos.
      * Envía imageData como data URL base64 para que history.php guarde el archivo.
      * @param {Object} item — debe tener { id, url } (url = data URL base64)
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>} — true si se guardó correctamente
      */
-    syncToServer: function (item) {
+    syncToServer: function (item, retries) {
       var self = this;
+      retries = retries || 0;
+      var maxRetries = 2;
       return fetch(self.config.historyUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -185,9 +187,17 @@
           imageData: item.url || ''
         })
       }).then(function (res) {
-        if (!res.ok) console.warn('[HistoryManager] syncToServer falló:', res.status);
+        if (!res.ok) {
+          console.warn('[HistoryManager] syncToServer falló:', res.status);
+          return false;
+        }
+        return res.json().then(function () { return true; });
       }).catch(function (e) {
         console.warn('[HistoryManager] Error syncToServer:', e);
+        if (retries < maxRetries) {
+          return self.syncToServer(item, retries + 1);
+        }
+        return false;
       });
     },
 
@@ -290,15 +300,14 @@
     },
 
     /**
-     * Guarda un item: IndexedDB + servidor (fire-and-forget).
+     * Guarda un item: IndexedDB + servidor (espera confirmación).
      * @param {Object} item
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>} — true si se guardó en servidor
      */
     saveItem: function (item) {
       var self = this;
       return this.saveToDB(item).then(function () {
-        // Fire-and-forget al servidor (no esperamos)
-        self.syncToServer(item);
+        return self.syncToServer(item);
       });
     },
 
