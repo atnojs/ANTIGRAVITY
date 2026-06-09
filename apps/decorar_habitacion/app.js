@@ -705,8 +705,8 @@ function App() {
     setBusy(true);
     try {
       const newItems = [];
-      // Generamos 2 variantes
-      for (let i = 0; i < 2; i++) {
+      // Generamos 1 variante
+      for (let i = 0; i < 1; i++) {
         const variation = makeVariationNote(style, selectedRoom);
         const prompt = buildUniversalPrompt(style, variation, selectedRoom);
 
