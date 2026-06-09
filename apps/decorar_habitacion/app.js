@@ -1239,7 +1239,7 @@ function App() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="mt-2 text-xs text-gray-500">Detectando objetos…</p>
+                      <p className="mt-2 text-xs text-gray-500 italic">Sin objetos</p>
                     )}
                   </figure>
                 ))}
