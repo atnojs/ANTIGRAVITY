@@ -504,41 +504,73 @@ function App() {
   const cameraRef = useRef(null);
   const isMobile = useIsMobile();
 
-  // --- PERSISTENCIA ---
+  // --- PERSISTENCIA (HistoryManager server-side + localStorage fallback) ---
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed === 'object' && !Array.isArray(parsed)) {
-          setResults(parsed);
+    HistoryManager.configure({ dbName: 'decorar_habitacion_db' });
+    HistoryManager.init()
+      .then(() => HistoryManager.loadAll())
+      .then(items => {
+        if (items && items.length > 0) {
+          const rebuilt = {};
+          items.forEach(item => {
+            const style = (item.style && item.style.name) || 'Personalizado';
+            if (!rebuilt[style]) rebuilt[style] = [];
+            rebuilt[style].push({
+              uri: item.url,
+              ts: item.createdAt || Date.now(),
+              objects: item.objects || [],
+              style: style
+            });
+          });
+          setResults(rebuilt);
+        } else {
+          // Fallback a localStorage si no hay datos en servidor
+          try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+                setResults(parsed);
+                // Migrar datos de localStorage al servidor
+                Object.entries(parsed).forEach(([style, items]) => {
+                  (items || []).forEach(it => {
+                    HistoryManager.saveItem({
+                      id: 'dh_' + style + '_' + (it.ts || Date.now()),
+                      url: it.uri || '',
+                      prompt: style,
+                      style: { name: style },
+                      objects: it.objects || [],
+                      createdAt: it.ts || Date.now()
+                    });
+                  });
+                });
+              }
+            }
+          } catch (e) {
+            console.warn('Error cargando historial:', e);
+          }
         }
-      }
-    } catch (e) {
-      console.warn('Error cargando historial:', e);
-    }
+      });
   }, []);
 
-  useEffect(() => {
-    if (Object.keys(results).length > 0) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
-      } catch (e) {
-        console.warn('Error guardando historial:', e);
-      }
-    }
-  }, [results]);
+  // Guardar items individuales en el servidor cuando cambian (no el objeto completo)
+  const saveItemToHistory = (style, item) => {
+    HistoryManager.saveItem({
+      id: 'dh_' + style + '_' + (item.ts || Date.now()) + '_' + Math.random().toString(36).substr(2,4),
+      url: item.uri || '',
+      prompt: style,
+      style: { name: style },
+      objects: item.objects || [],
+      createdAt: item.ts || Date.now()
+    });
+  };
 
   const clearHistory = () => {
     if (confirm("¿Estás seguro de que quieres borrar todo el historial?")) {
-      const initialResults = {};
-      Object.keys(ROOM_CONFIG).forEach(room => {
-        initialResults[room] = {}; // O resets structure
-      });
-      // Re-initialize structure based on current selectedRoom if needed or just empty
       setResults({});
       localStorage.removeItem(STORAGE_KEY);
-      location.reload(); // Refresh to clean up
+      HistoryManager.clearAll();
+      location.reload();
     }
   };
 
@@ -555,6 +587,17 @@ function App() {
       });
     }
   }, [selectedRoom]);
+
+  // Backup: sincronizar results → localStorage en cada cambio
+  useEffect(() => {
+    if (Object.keys(results).length > 0) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+      } catch (e) {
+        console.warn('Error guardando en localStorage:', e);
+      }
+    }
+  }, [results]);
 
   /* REMOVED handleClickOutside for upload menu
   useEffect(() => {
@@ -685,6 +728,7 @@ function App() {
         ...prev,
         Personalizado: [newItem, ...prev.Personalizado]
       }));
+      saveItemToHistory("Personalizado", newItem);
 
     } catch (e) {
       alert(`No se pudo generar con instrucción personalizada: ${e.message}`);
@@ -725,6 +769,7 @@ function App() {
         newItems.push({ uri, ts: Date.now() + i, objects, style });
       }
       setResults((prev) => ({ ...prev, [style]: [...newItems, ...prev[style]] }));
+      newItems.forEach(item => saveItemToHistory(style, item));
     } catch (e) {
       alert(`No se pudo generar (${style}): ${e.message}`);
     } finally { setBusy(false); }
@@ -764,12 +809,14 @@ function App() {
       if (!uri) throw new Error("La respuesta no contiene imagen regenerada.");
 
       const objects = await detectObjectsFromImageUri(uri);
+      const newItem = { uri, ts: Date.now(), objects, style };
 
       setResults((prev) => {
         const copy = { ...prev };
-        copy[style] = [{ uri, ts: Date.now(), objects, style }, ...copy[style]];
+        copy[style] = [newItem, ...copy[style]];
         return copy;
       });
+      saveItemToHistory(style, newItem);
     } catch (e) {
       alert(`No se pudo regenerar (${style}): ${e.message}`);
     } finally { setBusy(false); }
@@ -822,6 +869,7 @@ function App() {
         copy[style] = [newItem, ...copy[style]];
         return copy;
       });
+      saveItemToHistory(style, newItem);
 
       setEditInstruction("");
       setEditingItem(null);
