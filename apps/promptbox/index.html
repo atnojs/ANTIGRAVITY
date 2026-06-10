@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PromptBox — Biblioteca de Prompts IA</title>
+    <meta name="description" content="Biblioteca personal de prompts con variables dinámicas, categorías y colecciones. Persistencia local-first con IndexedDB." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" />
+    <script>
+      (function() {
+        try {
+          var _fetch = window.fetch;
+          Object.defineProperty(window, 'fetch', {
+            configurable: true,
+            enumerable: true,
+            get: function() {
+              return _fetch;
+            },
+            set: function(v) {
+              _fetch = v;
+            }
+          });
+        } catch (e) {
+          console.warn('Could not redefine window.fetch:', e);
+        }
+        try {
+          var _globalFetch = globalThis.fetch;
+          Object.defineProperty(globalThis, 'fetch', {
+            configurable: true,
+            enumerable: true,
+            get: function() {
+              return _globalFetch;
+            },
+            set: function(v) {
+              _globalFetch = v;
+            }
+          });
+        } catch (e) {
+          console.warn('Could not redefine globalThis.fetch:', e);
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-Dug-QOEi.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DrwvcRcT.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+

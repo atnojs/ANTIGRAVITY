@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+    <script>
+      (function() {
+        try {
+          var _fetch = window.fetch;
+          Object.defineProperty(window, 'fetch', {
+            configurable: true,
+            enumerable: true,
+            get: function() {
+              return _fetch;
+            },
+            set: function(v) {
+              _fetch = v;
+            }
+          });
+        } catch (e) {
+          console.warn('Could not redefine window.fetch:', e);
+        }
+        try {
+          var _globalFetch = globalThis.fetch;
+          Object.defineProperty(globalThis, 'fetch', {
+            configurable: true,
+            enumerable: true,
+            get: function() {
+              return _globalFetch;
+            },
+            set: function(v) {
+              _globalFetch = v;
+            }
+          });
+        } catch (e) {
+          console.warn('Could not redefine globalThis.fetch:', e);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
