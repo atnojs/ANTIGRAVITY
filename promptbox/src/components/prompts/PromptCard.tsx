@@ -112,7 +112,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
   
   if (viewType === 'list') {
     return (
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-lg transition-all hover:border-slate-250 dark:hover:border-slate-700 relative overflow-hidden group">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-lg transition-all hover:border-slate-300 dark:hover:border-slate-600 relative overflow-hidden group">
         {/* Left Side: General Info */}
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
     return (
       <div 
         onClick={prompt.isTrash ? undefined : onUse}
-        className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 hover:shadow-md transition-all hover:border-slate-250 dark:hover:border-slate-700 cursor-pointer flex items-center justify-between gap-3 group relative overflow-hidden"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 hover:shadow-md transition-all hover:border-slate-300 dark:hover:border-slate-500 cursor-pointer flex items-center justify-between gap-3 group relative overflow-hidden"
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`p-1.5 rounded-lg text-white ${category ? category.color : 'bg-slate-400'} shrink-0`}>
@@ -301,7 +301,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
 
   // Premium Pinterest Grid Card
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[16px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.13)] hover:-translate-y-1 transition-all duration-300 group flex flex-col relative h-full">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[16px] overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col relative h-full">
       {/* Visual Image / Gradient Header */}
       <div className="h-32 relative overflow-hidden shrink-0 transition-transform duration-500">
         {prompt.imageUrl ? (
@@ -318,9 +318,9 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
             className="w-full h-full flex items-center justify-center transition-all"
           >
             {category ? (
-              <IconRenderer name={category.icon} className="w-12 h-12 text-white/90 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500" />
+              <IconRenderer name={category.icon} className="w-12 h-12 text-white transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500" />
             ) : (
-              <Zap className="w-12 h-12 text-white/90" />
+              <Zap className="w-12 h-12 text-white" />
             )}
           </div>
         )}
@@ -328,13 +328,13 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
         {/* Floating overlays */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
           {category && (
-            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 px-2.5 py-1 rounded-full text-white shadow-xs bg-opacity-90 ${category.color}`}>
+            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full text-white shadow-sm ${category.color}`}>
               <IconRenderer name={category.icon} size={9} />
               {category.name}
             </span>
           )}
           {collection && (
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 px-2.5 py-1 rounded-full bg-slate-900/60 backdrop-blur-sm text-slate-100 shadow-xs">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-100 shadow-sm">
               {collection.name}
             </span>
           )}
@@ -345,10 +345,10 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
           <button
             onClick={handleToggleFavorite}
             type="button"
-            className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md shadow-xs transition-all hover:scale-105 active:scale-95 ${
+            className={`absolute top-3 right-3 p-2 rounded-xl shadow-sm transition-all hover:scale-105 active:scale-95 ${
               prompt.isFavorite
                 ? 'bg-amber-500 text-white'
-                : 'bg-white/90 dark:bg-slate-950/90 text-slate-650 hover:text-amber-500 dark:text-slate-450 dark:hover:text-amber-400'
+                : 'bg-white dark:bg-slate-900 text-slate-700 hover:text-amber-500 dark:text-slate-300 dark:hover:text-amber-400'
             }`}
           >
             <Star size={14} className={prompt.isFavorite ? 'fill-current' : ''} />
@@ -357,7 +357,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
 
         {/* Quick Variables Pill indicator */}
         {hasVariables && (
-          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-[4px] bg-[#EEF2FF] text-[#4F46E5] text-[10px] font-bold font-mono select-none">
+          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-indigo-500 text-white text-[10px] font-bold font-mono select-none shadow-sm">
             {prompt.variables.length} VARS
           </div>
         )}
@@ -377,7 +377,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
           )}
 
           {/* Subtly Masked Preview of Content with clean markup */}
-          <div className="mt-3 p-3 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-700 rounded-xl max-h-[110px] overflow-hidden relative select-none">
+          <div className="mt-3 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl max-h-[110px] overflow-hidden relative select-none">
             <span className="text-[10px] font-mono text-slate-800 dark:text-slate-200 line-clamp-4 whitespace-pre-wrap leading-relaxed select-none">
               {prompt.content}
             </span>
