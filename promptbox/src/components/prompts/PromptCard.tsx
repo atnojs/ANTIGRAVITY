@@ -94,18 +94,18 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
   // Determine specific premium gradient based on category or ID as fallback
   const getGradientStyle = (): React.CSSProperties => {
     if (prompt.categoryId === 'cat-images') {
-      return { backgroundImage: 'linear-gradient(135deg, #FF0844 0%, #FFB199 100%)' }; // Vibrant sunset pink/orange
+      return { backgroundImage: 'linear-gradient(135deg, #FF0066 0%, #FF6B35 50%, #FFD700 100%)' }; // Fuego solar: rosa neón → naranja → dorado
     }
     if (prompt.categoryId === 'cat-coding') {
-      return { backgroundImage: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)' }; // Pure deep purple-indigo
+      return { backgroundImage: 'linear-gradient(135deg, #6C3CE1 0%, #3B82F6 50%, #06B6D4 100%)' }; // Deep violeta → azul eléctrico → cian
     }
     if (prompt.categoryId === 'cat-marketing') {
-      return { backgroundImage: 'linear-gradient(135deg, #FA709A 0%, #FEE140 100%)' }; // Fiery bright pink-yellow
+      return { backgroundImage: 'linear-gradient(135deg, #E11D48 0%, #F97316 50%, #FBBF24 100%)' }; // Rojo fuego → naranja → amarillo
     }
     if (prompt.categoryId === 'cat-creative') {
-      return { backgroundImage: 'linear-gradient(135deg, #11998E 0%, #38EF7D 100%)' }; // Vivid bright emerald mint green
+      return { backgroundImage: 'linear-gradient(135deg, #059669 0%, #10B981 50%, #34D399 100%)' }; // Esmeralda intenso → verde neón → menta
     }
-    return { backgroundImage: 'linear-gradient(135deg, #20E2FF 0%, #3351FF 100%)' }; // Electric cyan-blue
+    return { backgroundImage: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)' }; // Azul eléctrico → púrpura → rosa intenso
   };
 
   const hasVariables = prompt.variables.length > 0;
@@ -136,7 +136,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
             {prompt.isFavorite && <Star className="w-4 h-4 text-amber-400 fill-amber-400 animate-pulse shrink-0 mt-1" />}
           </div>
 
-          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 max-w-2xl">
+          <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1 max-w-2xl">
             {prompt.description || 'Sin descripción adicional descriptiva.'}
           </p>
 
@@ -301,7 +301,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
 
   // Premium Pinterest Grid Card
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#E2E8F0] dark:border-slate-800/80 rounded-[16px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300 group flex flex-col relative h-full">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[16px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.13)] hover:-translate-y-1 transition-all duration-300 group flex flex-col relative h-full">
       {/* Visual Image / Gradient Header */}
       <div className="h-32 relative overflow-hidden shrink-0 transition-transform duration-500">
         {prompt.imageUrl ? (
@@ -371,14 +371,14 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
           </h4>
 
           {prompt.description && (
-            <p className="text-[13px] text-[#64748B] dark:text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
+            <p className="text-[13px] text-slate-700 dark:text-slate-300 mt-1.5 line-clamp-2 leading-relaxed">
               {prompt.description}
             </p>
           )}
 
           {/* Subtly Masked Preview of Content with clean markup */}
-          <div className="mt-3 p-3 bg-[#F8FAFC] dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/40 rounded-xl max-h-[110px] overflow-hidden relative select-none">
-            <span className="text-[10px] font-mono text-slate-700 dark:text-slate-350 line-clamp-4 whitespace-pre-wrap leading-relaxed select-none">
+          <div className="mt-3 p-3 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-700 rounded-xl max-h-[110px] overflow-hidden relative select-none">
+            <span className="text-[10px] font-mono text-slate-800 dark:text-slate-200 line-clamp-4 whitespace-pre-wrap leading-relaxed select-none">
               {prompt.content}
             </span>
           </div>
@@ -392,7 +392,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
               {prompt.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-2.5 py-1 rounded-full bg-[#F1F5F9] dark:bg-slate-800 text-[#475569] dark:text-slate-400 text-[11px] font-semibold select-none"
+                  className="px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 text-[11px] font-semibold select-none border border-indigo-100 dark:border-indigo-800/40"
                 >
                   #{tag}
                 </span>
@@ -402,7 +402,7 @@ export function PromptCard({ prompt, onEdit, onUse, viewType }: PromptCardProps)
 
           {/* Inline Action Row */}
           {!prompt.isTrash ? (
-            <div className="flex items-center justify-between border-t border-[#F1F5F9] dark:border-slate-850 pt-3.5">
+            <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3.5">
               {/* Left quick edit & history icons */}
               <div className="flex items-center gap-1">
                 {/* Edit Button */}
