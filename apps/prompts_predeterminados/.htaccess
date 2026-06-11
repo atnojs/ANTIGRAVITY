@@ -1,0 +1,27 @@
+# API Key para Gemini (cascadeo: proxy.php → config.php → env)
+SetEnv GEMINI_API_KEY "AIzaSyCeV3D7dNcInIJ84C2sO8YKRRYG1lnbzyw"
+
+# Configurar Content Security Policy para Firebase
+<IfModule mod_headers.c>
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://*.firebaseapp.com https://*.googleapis.com https://generativelanguage.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com;"
+
+    # Headers para evitar caché
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</IfModule>
+
+# Activar CORS si es necesario
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Configuración PHP (si aplica)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
