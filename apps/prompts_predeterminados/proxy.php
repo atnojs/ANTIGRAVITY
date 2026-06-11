@@ -25,13 +25,34 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// 1) API Key
-// Usando variable de entorno en lugar de hardcoded
-$API_KEY = getenv('GEMINI_API_KEY');
-
-if (!$API_KEY) {
+// 1) API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$API_KEY = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $API_KEY = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('GEMINI_API_KEY');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_GEMINI_API_KEY');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falta la API key. Configura la variable de entorno GEMINI_API_KEY en .htaccess.']);
+    echo json_encode(['error' => ['message' => 'API key no configurada.']]);
     exit;
 }
 
