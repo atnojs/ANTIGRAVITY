@@ -41,12 +41,52 @@ try {
     
     // Forzar permisos
     chmod($ruta_archivo, 0666);
+
+    // Sistema de Backups Redundantes
+    $dir_backups = __DIR__ . '/copias_estado_nueva_pestaña';
+    if (!is_dir($dir_backups)) {
+        mkdir($dir_backups, 0777, true);
+    }
+
+    // 1. Guardar el backup persistente estático (siempre actualizado)
+    $ruta_backup_estatico = $dir_backups . '/estado_nueva_pestaña_backup.json';
+    file_put_contents($ruta_backup_estatico, $contenido);
+    chmod($ruta_backup_estatico, 0666);
+
+    // 2. Guardar backup histórico con timestamp
+    $timestamp = date('Ymd_His');
+    $ruta_backup_historico = $dir_backups . '/estado_nueva_pestaña_' . $timestamp . '.json';
+    file_put_contents($ruta_backup_historico, $contenido);
+    chmod($ruta_backup_historico, 0666);
+
+    // 3. Rotación de copias (mantener sólo las últimas 20)
+    $patron = $dir_backups . '/estado_nueva_pestaña_*.json';
+    $archivos = glob($patron);
+    
+    // Excluir el backup estático de la lista de rotación
+    $archivos_historicos = array_filter($archivos, function($archivo) {
+        return basename($archivo) !== 'estado_nueva_pestaña_backup.json';
+    });
+
+    if (count($archivos_historicos) > 20) {
+        // Ordenar por tiempo de modificación (más antiguos primero)
+        usort($archivos_historicos, function($a, $b) {
+            return filemtime($a) - filemtime($b);
+        });
+        
+        // Eliminar excedentes
+        $a_eliminar = count($archivos_historicos) - 20;
+        for ($i = 0; $i < $a_eliminar; $i++) {
+            @unlink($archivos_historicos[$i]);
+        }
+    }
     
     echo json_encode([
         'success' => true,
         'detalles' => [
             'ruta' => $ruta_archivo,
-            'tamano' => $bytes
+            'tamano' => $bytes,
+            'backup' => true
         ]
     ]);
     
