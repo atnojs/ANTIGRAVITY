@@ -1,5 +1,5 @@
 # API Key para Gemini (cascadeo: proxy.php → config.php → env)
-SetEnv GEMINI_API_KEY "AIzaSyCeV3D7dNcInIJ84C2sO8YKRRYG1lnbzyw"
+SetEnv GEMINI_API_KEY "PEGA_AQUI_TU_API_KEY_DE_GEMINI"
 
 # Configurar Content Security Policy para Firebase
 <IfModule mod_headers.c>
