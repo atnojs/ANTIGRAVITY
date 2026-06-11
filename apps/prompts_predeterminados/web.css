@@ -867,70 +867,97 @@ body.edit-mode .category-btn:active {
     position: fixed;
     inset: 0;
     z-index: 20000;
-    background: rgba(4, 24, 71, 0.6);
+    background: rgba(15, 23, 42, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 30px;
+    overflow: hidden;
+}
+
+.loading-overlay:not(.hidden) {
+    display: flex;
+}
+
+/* Fondo dinámico con blur */
+.loading-bg-image {
+    position: absolute;
+    inset: -20px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(30px) brightness(0.4);
+    z-index: -1;
+    opacity: 0.7;
+    transition: opacity 0.5s ease;
 }
 
 .spinner-triple {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .spinner-triple .ring {
     position: absolute;
-    inset: 0;
     border-radius: 50%;
-    border: 3px solid transparent;
+    border: 4px solid transparent;
 }
 
+/* Aro Exterior - Cyan */
 .spinner-triple .ring-1 {
+    inset: 0;
     border-top-color: var(--neon-cyan);
-    animation: spin 1s linear infinite;
+    animation: spin 1.2s linear infinite;
+    filter: drop-shadow(0 0 8px var(--neon-cyan));
 }
 
+/* Aro Medio - Purple */
 .spinner-triple .ring-2 {
+    inset: 15px;
     border-right-color: var(--acc2);
     animation: spin 1.5s linear infinite reverse;
+    filter: drop-shadow(0 0 8px var(--acc2));
 }
 
+/* Aro Interior - Pink */
 .spinner-triple .ring-3 {
+    inset: 30px;
     border-bottom-color: #ec4899;
     animation: spin 2s linear infinite;
+    filter: drop-shadow(0 0 8px #ec4899);
 }
 
 .loading-text {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--neon-cyan);
-    letter-spacing: 0.05em;
-    text-shadow: 0 0 10px rgba(46, 232, 255, 0.5);
-    animation: pulse 1.5s infinite ease-in-out;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    text-shadow: 0 0 15px var(--neon-cyan);
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(0.98);
+    }
 }
 
 @keyframes spin {
     to {
         transform: rotate(360deg);
-    }
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 0.8;
-    }
-
-    50% {
-        opacity: 1;
-        text-shadow: 0 0 20px rgba(46, 232, 255, 0.8);
     }
 }
 
