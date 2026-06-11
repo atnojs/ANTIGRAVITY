@@ -362,6 +362,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════
 
     async function loadState() {
+        // Cargar imágenes generadas desde HistoryManager (servidor + IndexedDB)
+        try {
+          HistoryManager.configure({ dbName: 'prompts_pred_db' });
+          await HistoryManager.init();
+          const items = await HistoryManager.loadAll();
+          if (items && items.length > 0) {
+            items.forEach(item => {
+              if (item.url) {
+                generatedImages.push({ id: item.id, data: item.url });
+              }
+            });
+          }
+        } catch(e) {}
+
         try {
             // Intentar cargar desde PHP primero
             const response = await fetch('load_state.php?t=' + Date.now());
@@ -1248,62 +1262,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             try {
-                // Generar 2 imágenes con IA
-                const results = await Promise.all([
-                    generateWithGemini(prompt, genBaseImage, [], []),
-                    generateWithGemini(prompt + " (variación creativa)", genBaseImage, [], [])
-                ]);
+                // Generar 1 imagen con IA
+                const imageData = await generateWithGemini(prompt, genBaseImage, [], []);
 
                 genLoading.classList.add('hidden');
                 genResults.innerHTML = '';
 
-                results.forEach((imageData, index) => {
-                    if (imageData) {
-                        // Añadir al historial persistente
-                        addToHistory(imageData);
+                if (imageData) {
+                    // Añadir al historial persistente
+                    addToHistory(imageData);
 
-                        const resultItem = document.createElement('div');
-                        resultItem.className = 'gen-result-item';
-                        resultItem.innerHTML = `
-                        <img src="${imageData}" alt="Generada ${index + 1}">
-                        <button class="delete-btn" data-index="${index}">
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'gen-result-item';
+                    resultItem.innerHTML = `
+                        <img src="${imageData}" alt="Generada">
+                        <button class="delete-btn">
                             <i class="fa fa-trash"></i>
                         </button>
-                        <button class="download-btn" data-src="${imageData}" data-index="${index + 1}">
+                        <button class="download-btn" data-src="${imageData}">
                             <i class="fa fa-download"></i>
                         </button>
                     `;
 
-                        // Click en imagen para ver en grande
-                        resultItem.querySelector('img').onclick = () => {
-                            const viewer = document.getElementById('image-viewer');
-                            const fullImg = document.getElementById('full-image');
-                            fullImg.src = imageData;
-                            viewer.style.display = 'flex';
-                        };
+                    // Click en imagen para ver en grande
+                    resultItem.querySelector('img').onclick = () => {
+                        const viewer = document.getElementById('image-viewer');
+                        const fullImg = document.getElementById('full-image');
+                        fullImg.src = imageData;
+                        viewer.style.display = 'flex';
+                    };
 
-                        // Botón descargar
-                        resultItem.querySelector('.download-btn').onclick = (e) => {
-                            e.stopPropagation();
-                            const src = e.currentTarget.getAttribute('data-src');
-                            const idx = e.currentTarget.getAttribute('data-index');
-                            downloadImage(src, `generada_${idx}_${Date.now()}.jpg`);
-                        };
+                    // Botón descargar
+                    resultItem.querySelector('.download-btn').onclick = (e) => {
+                        e.stopPropagation();
+                        const src = e.currentTarget.getAttribute('data-src');
+                        downloadImage(src, `generada_${Date.now()}.jpg`);
+                    };
 
-                        // Botón eliminar del modal
-                        resultItem.querySelector('.delete-btn').onclick = (e) => {
-                            e.stopPropagation();
-                            resultItem.remove();
-                        };
+                    // Botón eliminar del modal
+                    resultItem.querySelector('.delete-btn').onclick = (e) => {
+                        e.stopPropagation();
+                        resultItem.remove();
+                    };
 
-                        genResults.appendChild(resultItem);
-                    } else {
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'gen-result-placeholder';
-                        placeholder.innerHTML = `<i class="fa fa-exclamation-triangle"></i><span>Error</span>`;
-                        genResults.appendChild(placeholder);
-                    }
-                });
+                    genResults.appendChild(resultItem);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'gen-result-placeholder';
+                    placeholder.innerHTML = `<i class="fa fa-exclamation-triangle"></i><span>Error</span>`;
+                    genResults.appendChild(placeholder);
+                }
 
             } catch (error) {
                 console.error('Error generando:', error);
@@ -1450,6 +1458,15 @@ USER STYLE: ${prompt}`;
         const id = 'gen_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         generatedImages.push({ id, data: imageData });
         renderHistory();
+        // Persistencia server-side via HistoryManager
+        try {
+          HistoryManager.saveItem({
+            id: id,
+            url: imageData,
+            prompt: '',
+            createdAt: Date.now()
+          });
+        } catch(e) {}
     }
 
     function renderHistory() {
@@ -1503,6 +1520,7 @@ USER STYLE: ${prompt}`;
     function removeFromHistory(id) {
         generatedImages = generatedImages.filter(img => img.id !== id);
         renderHistory();
+        HistoryManager.deleteItem(id);
     }
 
     // Limpiar todo el historial
@@ -1510,6 +1528,7 @@ USER STYLE: ${prompt}`;
         if (confirm('¿Eliminar todas las imágenes generadas?')) {
             generatedImages = [];
             renderHistory();
+            HistoryManager.clearAll();
         }
     };
 
