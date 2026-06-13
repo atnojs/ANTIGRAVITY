@@ -77,7 +77,8 @@ $model = $req['model'] ?? 'gemini-3.1-flash-image-preview';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 if (isset($req['contents'])) {
-    $payload = $req; // ya viene en formato Gemini
+    $payload = $req;
+    unset($payload['model']); // No enviar 'model' en el body a Gemini
 } else {
     $prompt = trim((string) ($req['prompt'] ?? ''));
     // CORRECCIÃ“N: El frontend envÃ­a 'base64ImageData', no 'image'.
