@@ -90,6 +90,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════
 
     async function loadState() {
+        // Cargar imágenes generadas desde HistoryManager (servidor + IndexedDB)
+        try {
+          HistoryManager.configure({ dbName: 'gen_img_pers_db' });
+          await HistoryManager.init();
+          const items = await HistoryManager.loadAll();
+          if (items && items.length > 0) {
+            items.forEach(item => {
+              if (item.url) {
+                generatedImages.push({ id: item.id, data: item.url });
+              }
+            });
+          }
+        } catch(e) {}
+
         try {
             // Intentar cargar desde PHP primero
             const response = await fetch('load_state.php?t=' + Date.now());
@@ -736,6 +750,14 @@ ESTILO A APLICAR: ${prompt}`,
         const id = 'gen_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         generatedImages.push({ id, data: imageData });
         renderHistory();
+        try {
+          HistoryManager.saveItem({
+            id: id,
+            url: imageData,
+            prompt: '',
+            createdAt: Date.now()
+          });
+        } catch(e) {}
     }
 
     function renderHistory() {
@@ -789,6 +811,7 @@ ESTILO A APLICAR: ${prompt}`,
     function removeFromHistory(id) {
         generatedImages = generatedImages.filter(img => img.id !== id);
         renderHistory();
+        HistoryManager.deleteItem(id);
     }
 
     // Limpiar todo el historial
@@ -796,6 +819,7 @@ ESTILO A APLICAR: ${prompt}`,
         if (confirm('¿Eliminar todas las imágenes generadas?')) {
             generatedImages = [];
             renderHistory();
+            HistoryManager.clearAll();
         }
     };
 

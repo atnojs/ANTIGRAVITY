@@ -224,22 +224,50 @@
     settingCollapseSidebar: $('#setting-collapse-sidebar'),
   };
 
-  // ===================== LOCAL STORAGE =====================
+  // ===================== PERSISTENCIA (HistoryManager server-side + localStorage fallback) =====================
 
   function loadImages() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        state.images = JSON.parse(saved);
-      } else {
-        state.images = [...INITIAL_GALLERY];
-      }
-    } catch (e) {
-      state.images = [...INITIAL_GALLERY];
-    }
+    HistoryManager.configure({ dbName: 'aurastudio_db' });
+    HistoryManager.init()
+      .then(() => HistoryManager.loadAll())
+      .then(items => {
+        if (items && items.length > 0) {
+          state.images = items.map(item => ({
+            id: item.id,
+            url: item.url,
+            prompt: item.prompt || '',
+            createdAt: item.createdAt || Date.now()
+          }));
+        } else {
+          // Fallback a localStorage
+          try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            state.images = saved ? JSON.parse(saved) : [...INITIAL_GALLERY];
+            // Migrar datos existentes al servidor
+            state.images.forEach(img => {
+              HistoryManager.saveItem({
+                id: img.id || 'as_' + Date.now(),
+                url: img.url || '',
+                prompt: img.prompt || '',
+                createdAt: img.createdAt || Date.now()
+              });
+            });
+          } catch (e) {
+            state.images = [...INITIAL_GALLERY];
+          }
+        }
+        updateAllViews();
+      });
   }
 
-  function saveImages() {
+  function saveImageToHistory(img) {
+    HistoryManager.saveItem({
+      id: img.id,
+      url: img.url || '',
+      prompt: img.prompt || '',
+      createdAt: img.createdAt || Date.now()
+    });
+    // Mantener localStorage como backup
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.images));
     } catch (e) {
@@ -468,7 +496,7 @@
       };
 
       state.images.unshift(newImage1);
-      saveImages();
+      saveImageToHistory(newImage1);
 
       // === SEGUNDA IMAGEN (variación) ===
       updateProgress(48, 'Primera obra completada. Iniciando variación...');
@@ -506,7 +534,7 @@
       };
 
       state.images.unshift(newImage2);
-      saveImages();
+      saveImageToHistory(newImage2);
 
       // Completar barra
       clearInterval(progressInterval);
@@ -972,7 +1000,8 @@
   function deleteImage(id) {
     if (!confirm('¿Estás seguro de que deseas eliminar esta escultura permanentemente?')) return;
     state.images = state.images.filter(i => i.id !== id);
-    saveImages();
+    HistoryManager.deleteItem(id);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.images)); } catch(e) {}
     renderGeneratorResults();
     renderGalleryTab();
   }

@@ -35,11 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Función auxiliar para pausa entre peticiones
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
     startButton.addEventListener('click', async () => {
         startButton.disabled = true;
         processingSection.classList.remove('hidden');
         spinnerContainer.classList.remove('hidden');
-        // Mostrar overlay premium
         if (loadingOverlay) { loadingOverlay.classList.remove('hidden'); loadingOverlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         if (loadingText) loadingText.textContent = 'Convirtiendo a Dibujo Lineal...';
         galleryTitle.classList.remove('hidden');
@@ -52,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBar.style.width = `${((i + 1) / total) * 100}%`;
 
             try {
+                // Pequeña pausa para no saturar la API
+                await delay(1500);
+
                 const base64 = await new Promise(r => {
                     const rd = new FileReader();
                     rd.onload = () => r(rd.result.split(',')[1]);
@@ -64,18 +69,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         image: base64,
                         mimeType: file.type || 'image/jpeg',
-                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page.\n\nStyle Conversion: Convert all visual elements from the input image (people, objects, backgrounds, text, etc.) into consistent, smooth, and distinct black outlines using clean, uniform lines.\n\nTonal Removal: Completely eliminate all colors, gradients, shading, textures, and gray fills. The resulting image must consist purely of black lines on a pure white background.\n\nClarity and Space: Simplify complex shapes when necessary to create distinct, clear areas of white space that invite and are easy to color. Ensure that the outlines of key objects are prominent.\n\nDetail & Context Preservation: Maintain the original composition, perspective, and key elements of the input image. If the input image contains text, render it as clear, simple, colorable outlines. If there are intricate details, reduce them to essential lines without losing the object's identity (e.g., ship rigging details or basic facial features).\n\nCleanliness: The final drawing must be sharp, without artifacts, smudges, or extraneous lines. Do not add additional background textures or decorative frames unless they were present in the original image or specifically requested.\n\nThe final output should appear ready to be printed and hand-colored."
+                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page..."
                     })
                 });
 
                 const data = await res.json();
 
-                if (!res.ok || data.error) {
+                if (!res.ok) {
                     throw new Error(data.error?.message || `Error HTTP ${res.status}`);
                 }
 
                 if (data.image) {
-                    // GPT-4o devolvio una imagen
                     var imgDataUrl = "data:" + (data.mimeType || 'image/png') + ";base64," + data.image;
                     const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
                     const item = document.createElement('div');
@@ -87,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                     resultsGallery.appendChild(item);
-                    // Guardar en historial
                     HistoryManager.saveItem({
                         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
                         url: imgDataUrl,
@@ -99,29 +102,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         createdAt: Date.now()
                     });
                 } else if (data.text) {
-                    // GPT-4o devolvio solo texto (no pudo generar imagen)
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
                     item.style.borderColor = 'var(--acc2)';
-                    item.innerHTML = `
-                        <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:1rem;color:var(--text);text-align:center;font-size:.8rem;overflow:auto">
-                            ${data.text.substring(0, 500)}
-                        </div>
-                    `;
+                    item.innerHTML = `<div style="padding:1rem;color:var(--text);font-size:.8rem">${data.text.substring(0, 500)}</div>`;
                     resultsGallery.appendChild(item);
-                } else {
-                    throw new Error('Respuesta vacia del modelo');
                 }
 
             } catch (err) {
+                // ERROR CONTROLADO: No detenemos el bucle, informamos y seguimos
+                console.error("Error en archivo:", file.name, err);
                 const item = document.createElement('div');
                 item.className = 'gallery-item';
                 item.style.borderColor = 'var(--danger)';
-                item.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:1rem;color:var(--danger);text-align:center;font-size:.85rem">
-                        Error: ${err.message}
-                    </div>
-                `;
+                item.innerHTML = `<div style="padding:1rem;color:var(--danger);font-size:.85rem">Error en ${file.name}: ${err.message}</div>`;
                 resultsGallery.appendChild(item);
             }
         }
@@ -131,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAndRenderHistory();
     });
 
-    // ─── Historial ────────────────────────────────────────────
+    // ... (El resto del código de HistoryManager y funciones de UI se mantiene igual)
     function loadAndRenderHistory() {
         HistoryManager.loadAll().then(function(items) {
             var grid = document.getElementById('history-grid');
@@ -184,6 +178,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Cargar historial al iniciar
     HistoryManager.init().then(function() { loadAndRenderHistory(); });
 });

@@ -1,4 +1,4 @@
-﻿// --- FIREBASE CONFIG (ACTUALIZADA A NANOBANANA) ---
+// --- FIREBASE CONFIG (ACTUALIZADA A NANOBANANA) ---
 const firebaseConfig = {
     apiKey: "AIzaSyAlTZgodkiHACqJSRcDqymTdvaegBdLZMk",
     authDomain: "nanobanana-cbb2d.firebaseapp.com",
@@ -410,4 +410,4 @@ const App = () => {
 
 // --- RENDER ---
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render(<App />);

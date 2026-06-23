@@ -138,7 +138,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen w-screen bg-[#F8FAFC] dark:bg-slate-950 text-[#1E293B] dark:text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-screen w-screen bg-white dark:bg-slate-950 text-[#1E293B] dark:text-slate-100 overflow-hidden font-sans">
       
       {/*Collapsible Navigation Sidebar */}
       <Sidebar
@@ -153,17 +153,17 @@ function Dashboard() {
       <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
         
         {/* Superior Search & Dynamic Topbar Header with height 72px */}
-        <header className="h-[72px] px-8 border-b border-[#E2E8F0] dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-4 shrink-0 transition-all">
+        <header className="h-[72px] px-8 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-4 shrink-0">
           
           {/* Text search input within a width 400px container */}
           <div className="relative w-[400px] max-w-full">
-            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-4.5 h-4.5" />
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4.5 h-4.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar prompts por título, contenido, variables o #tag..."
-              className="w-full pl-10 pr-8 py-2 text-sm bg-[#F1F5F9] dark:bg-slate-950 hover:bg-[#ebf0f5] dark:hover:bg-slate-900 border-0 focus:border-0 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:bg-white dark:focus:bg-slate-950 dark:text-slate-150 placeholder-[#94A3B8] dark:placeholder:text-slate-600 transition-all font-sans"
+              className="w-full pl-10 pr-8 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all font-sans"
             />
             {searchQuery && (
               <button
@@ -178,7 +178,7 @@ function Dashboard() {
 
           {/* Quick Metrics Dashboard Badge Indicators */}
           <div className="flex items-center gap-4 text-xs font-sans overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-            <div className="flex items-center gap-2 border border-slate-100 dark:border-slate-805 bg-slate-50/50 dark:bg-slate-950/20 rounded-xl px-3 py-1.5 shrink-0">
+            <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3 py-1.5 shrink-0 shadow-sm">
               <Bot className="w-4 h-4 text-indigo-500" />
               <div>
                 <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Activos</span>
@@ -186,7 +186,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 border border-slate-100 dark:border-slate-805 bg-slate-50/50 dark:bg-slate-950/20 rounded-xl px-3 py-1.5 shrink-0">
+            <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3 py-1.5 shrink-0 shadow-sm">
               <Sliders className="w-4 h-4 text-emerald-500" />
               <div>
                 <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Variables</span>
@@ -194,7 +194,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 border border-slate-100 dark:border-slate-805 bg-slate-50/50 dark:bg-slate-950/20 rounded-xl px-3 py-1.5 shrink-0">
+            <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3 py-1.5 shrink-0 shadow-sm">
               <Star className="w-4 h-4 text-amber-500" />
               <div>
                 <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Favoritos</span>
@@ -216,7 +216,7 @@ function Dashboard() {
         <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6">
           
           {/* Title of Active View Section with Filtering Controls */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-850 pb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
             <div>
               <h2 className="font-display font-semibold text-xl tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2.5">
                 {getFilterHeading()}
@@ -224,7 +224,7 @@ function Dashboard() {
                   {filteredPrompts.length} items
                 </span>
               </h2>
-              <p className="text-xs text-slate-450 dark:text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {getFilterDescription()}
               </p>
             </div>

@@ -375,6 +375,22 @@ setupPreview('subjectInput', 'subjectPreview');
 async function loadHistory() {
     // Cargar desde DB al iniciar
     history = await loadHistoryFromDb();
+    // Enriquecer desde servidor (HistoryManager)
+    HistoryManager.configure({ dbName: 'copiar_estilo_db' });
+    HistoryManager.init()
+        .then(() => HistoryManager.loadAll())
+        .then(serverItems => {
+            if (serverItems && serverItems.length > 0) {
+                const existingIds = new Set(history.map(h => h.id));
+                const newItems = serverItems
+                    .filter(s => !existingIds.has(s.id))
+                    .map(s => ({ id: s.id, src: s.url, sourceLabel: s.sourceLabel || '', createdAt: s.createdAt }));
+                if (newItems.length > 0) {
+                    history = [...newItems, ...history].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    renderHistory();
+                }
+            }
+        });
     renderHistory();
 }
 
@@ -386,8 +402,15 @@ async function addToHistory(imageData, sourceLabel = '') {
         createdAt: Date.now()
     };
 
-    // Guardar en DB
+    // Guardar en DB + servidor
     await saveHistoryItemToDb(item);
+    HistoryManager.saveItem({
+        id: item.id,
+        url: imageData,
+        prompt: sourceLabel || 'Copiar Estilo',
+        sourceLabel: sourceLabel,
+        createdAt: item.createdAt
+    });
 
     // Actualizar estado local y UI
     history.unshift(item);
@@ -396,6 +419,7 @@ async function addToHistory(imageData, sourceLabel = '') {
 
 async function removeFromHistory(id) {
     await deleteHistoryItemFromDb(id);
+    HistoryManager.deleteItem(id);
     history = history.filter(item => item.id !== id);
     renderHistory();
 }
@@ -403,6 +427,7 @@ async function removeFromHistory(id) {
 async function clearHistory() {
     if (!confirm('¿Estás seguro de que quieres borrar todo el historial?')) return;
     await clearHistoryFromDb();
+    HistoryManager.clearAll();
     history = [];
     renderHistory();
 }

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SilhouetteText Pro - Generador Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="history-manager.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -767,6 +768,28 @@
 
                 this.presets = JSON.parse(localStorage.getItem('silhouette_presets') || '[]');
                 this.savedHistory = JSON.parse(localStorage.getItem('silhouette_history') || '[]');
+
+                // Cargar historial desde servidor (HistoryManager)
+                HistoryManager.configure({ dbName: 'silhouette_app_db' });
+                HistoryManager.init()
+                  .then(() => HistoryManager.loadAll())
+                  .then(items => {
+                    if (items && items.length > 0) {
+                      const serverItems = items.map(i => ({
+                        id: i.id,
+                        date: new Date(i.createdAt).toLocaleString(),
+                        wordCount: i.wordCount || 0,
+                        settings: i.settings || {},
+                        words: i.words || [],
+                        fullImage: i.url
+                      }));
+                      // Fusionar: servidor primero, luego localStorage (evitar duplicados)
+                      const existingIds = new Set(serverItems.map(i => i.id));
+                      const localOnly = this.savedHistory.filter(h => !existingIds.has(h.id));
+                      this.savedHistory = [...serverItems, ...localOnly];
+                      this.renderSavedHistory();
+                    }
+                  });
 
                 this.renderTimeout = null;
                 this.generateTimeout = null;
@@ -1574,6 +1597,15 @@
                 if (this.savedHistory.length > 20) this.savedHistory.pop();
 
                 localStorage.setItem('silhouette_history', JSON.stringify(this.savedHistory));
+                HistoryManager.saveItem({
+                  id: String(historyItem.id),
+                  url: historyItem.fullImage,
+                  prompt: 'Silhouette: ' + (historyItem.words || []).join(', '),
+                  wordCount: historyItem.wordCount,
+                  settings: historyItem.settings,
+                  words: historyItem.words,
+                  createdAt: historyItem.id
+                });
                 this.loadHistory();
 
                 this.showStatus('Guardado en historial');
@@ -1635,6 +1667,7 @@
             deleteHistory(id) {
                 this.savedHistory = this.savedHistory.filter(h => h.id !== id);
                 localStorage.setItem('silhouette_history', JSON.stringify(this.savedHistory));
+                HistoryManager.deleteItem(String(id));
                 this.loadHistory();
             }
 
@@ -1642,6 +1675,7 @@
                 if (!confirm('¿Eliminar todo el historial?')) return;
                 this.savedHistory = [];
                 localStorage.removeItem('silhouette_history');
+                HistoryManager.clearAll();
                 this.loadHistory();
             }
 

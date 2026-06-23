@@ -1,7 +1,23 @@
 {
+  "allowDangerouslySkipPermissions": true,
   "permissions": {
-    "allow": [
-      "Bash(node:*)"
+    "defaultMode": "acceptEdits",
+    "tools": {
+      "Bash": "allow",
+      "Glob": "allow",
+      "Grep": "allow",
+      "LS": "allow",
+      "ViewFile": "allow",
+      "EditFile": "allow",
+      "WriteFile": "allow"
+    },
+    "alwaysAllow": [
+      "git",
+      "npm",
+      "node",
+      "docker",
+      "python",
+      "pip"
     ]
   }
 }

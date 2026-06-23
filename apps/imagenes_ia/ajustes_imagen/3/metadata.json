@@ -1,0 +1,6 @@
+{
+  "name": "CON~SENTID@S Terraza & Lounge",
+  "description": "Sitio web de una cafetería, lounge y bar premium con terraza panorámica, eventos deportivos en pantalla gigante, música en vivo y gastronomía gourmet internacional.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -199,29 +199,37 @@ function App() {
   const containerInputRef = useRef(null);
   const contentInputRef = useRef(null);
 
-  // Cargar historial desde localStorage
+  // Cargar historial desde HistoryManager (servidor + IndexedDB)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setHistory(parsed);
+    HistoryManager.configure({
+      dbName: 'illusion_diffusion_db'
+    });
+    HistoryManager.init().then(() => HistoryManager.loadAll()).then(items => {
+      if (items && items.length > 0) {
+        const loaded = items.map(i => ({
+          id: i.id,
+          data: i.url,
+          createdAt: i.createdAt || Date.now(),
+          containerOpacity: i.containerOpacity || 0.5,
+          contentOpacity: i.contentOpacity || 0.5,
+          containerBW: i.containerBW || false,
+          contentBW: i.contentBW || false
+        }));
+        setHistory(loaded);
+      } else {
+        // Fallback a localStorage
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) setHistory(parsed);
+          }
+        } catch (e) {
+          console.warn('Error cargando localStorage:', e);
         }
       }
-    } catch (e) {
-      console.warn('Error cargando historial:', e);
-    }
+    });
   }, []);
-
-  // Guardar historial en localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-    } catch (e) {
-      console.warn('Error guardando historial:', e);
-    }
-  }, [history]);
 
   // Convertir imagen a blanco y negro
   const applyGrayscale = useCallback(imageData => {
@@ -461,6 +469,16 @@ function App() {
           contentBW: contentBW
         };
         setHistory(prev => [newItem, ...prev]);
+        HistoryManager.saveItem({
+          id: newItem.id,
+          url: imageData,
+          prompt: 'Illusion Diffusion',
+          containerOpacity,
+          contentOpacity,
+          containerBW,
+          contentBW,
+          createdAt: newItem.createdAt
+        });
       } catch (e) {
         console.error('Error generando imagen:', e);
         alert('Error al generar la imagen');
@@ -483,12 +501,14 @@ function App() {
   // Eliminar del historial
   const removeFromHistory = id => {
     setHistory(prev => prev.filter(item => item.id !== id));
+    HistoryManager.deleteItem(id);
   };
 
   // Limpiar todo el historial
   const clearHistory = () => {
     if (confirm('¿Eliminar todas las imágenes del historial?')) {
       setHistory([]);
+      HistoryManager.clearAll();
     }
   };
   const canGenerate = containerImage && contentImage;

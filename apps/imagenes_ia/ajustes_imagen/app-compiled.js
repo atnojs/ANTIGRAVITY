@@ -5,7 +5,7 @@ const {
   useCallback
 } = React;
 
-// --- CONFIGURACIÃ“N FIREBASE & CONSTANTES ---
+// --- CONFIGURACIÓN FIREBASE & CONSTANTES ---
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAlTZgodkiHACqJSRcDqymTdvaegBdLZMk",
   authDomain: "nanobanana-cbb2d.firebaseapp.com",
@@ -114,25 +114,25 @@ const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 // Descripciones de los efectos para los tooltips
 const EFFECT_DESCRIPTIONS = {
-  brightness: "Ajusta el brillo general de la imagen. El resultado debe ser una imagen mÃ¡s clara u oscura, natural y visualmente coherente.",
-  contrast: "Controla la diferencia entre las Ã¡reas claras y oscuras de la imagen para modificar su impacto visual.",
+  brightness: "Ajusta el brillo general de la imagen. El resultado debe ser una imagen más clara u oscura, natural y visualmente coherente.",
+  contrast: "Controla la diferencia entre las áreas claras y oscuras de la imagen para modificar su impacto visual.",
   saturation: "Intensifica o reduce la intensidad de los colores de la imagen de forma equilibrada.",
-  hue: "Desplaza de forma controlada todos los colores a lo largo del espectro cromÃ¡tico para generar un efecto visual creativo.",
-  blur: "Aplica un desenfoque suave y uniforme a toda la imagen para generar una sensaciÃ³n etÃ©rea o de ensueÃ±o.",
+  hue: "Desplaza de forma controlada todos los colores a lo largo del espectro cromático para generar un efecto visual creativo.",
+  blur: "Aplica un desenfoque suave y uniforme a toda la imagen para generar una sensación etérea o de ensueño.",
   exposure: "Simula el ajuste para controlar la luminosidad general de la imagen.",
-  temperature: "Ajusta la temperatura de color de la imagen para desplazarla hacia tonos cÃ¡lidos o frÃ­os de forma controlada.",
-  vignette: "AÃ±ade un efecto de viÃ±eta sutil oscureciendo progresivamente los bordes de la imagen para dirigir la atenciÃ³n hacia el centro. Instrucciones tÃ©cnicas: Aplica una viÃ±eta suave y radial, con transiciÃ³n gradual desde los bordes hacia el Ã¡rea central. Ajusta la intensidad de forma controlada para reforzar el punto focal sin invadir el contenido principal. MantÃ©n el centro con exposiciÃ³n y color intactos. Reglas: Evita bordes duros, cortes visibles o un oscurecimiento excesivo. No alterar de forma perceptible el contraste, la saturaciÃ³n ni el balance de color global. El resultado debe ser elegante, natural y visualmente equilibrado, sin apariencia de filtro artificial.",
-  scale: "AmplÃ­a o reduce el tamaÃ±o de la imagen manteniendo intactas sus proporciones originales.",
+  temperature: "Ajusta la temperatura de color de la imagen para desplazarla hacia tonos cálidos o fríos de forma controlada.",
+  vignette: "Añade un efecto de viñeta sutil oscureciendo progresivamente los bordes de la imagen para dirigir la atención hacia el centro. Instrucciones técnicas: Aplica una viñeta suave y radial, con transición gradual desde los bordes hacia el área central. Ajusta la intensidad de forma controlada para reforzar el punto focal sin invadir el contenido principal. Mantén el centro con exposición y color intactos. Reglas: Evita bordes duros, cortes visibles o un oscurecimiento excesivo. No alterar de forma perceptible el contraste, la saturación ni el balance de color global. El resultado debe ser elegante, natural y visualmente equilibrado, sin apariencia de filtro artificial.",
+  scale: "Amplía o reduce el tamaño de la imagen manteniendo intactas sus proporciones originales.",
   rotation: "Gira la imagen en el sentido de las agujas del reloj.",
-  clarity: "Mejora la claridad y definiciÃ³n general de la imagen, incrementando la percepciÃ³n de detalle sin alterar el equilibrio tonal.",
-  vibrance: "Intensifica de forma selectiva los colores menos saturados para lograr una imagen mÃ¡s rica y equilibrada, preservando la naturalidad de los tonos de piel.",
-  noiseReduction: "Reduce el ruido digital y la granulosidad de la imagen, especialmente en Ã¡reas de bajo contraste.",
-  sharpening: "Aumenta la nitidez de los bordes y detalles de la imagen para resaltar texturas y definiciÃ³n.",
-  filmGrain: "AÃ±ade un grano cinematogrÃ¡fico para aportar un aspecto vintage o artÃ­stico.",
+  clarity: "Mejora la claridad y definición general de la imagen, incrementando la percepción de detalle sin alterar el equilibrio tonal.",
+  vibrance: "Intensifica de forma selectiva los colores menos saturados para lograr una imagen más rica y equilibrada, preservando la naturalidad de los tonos de piel.",
+  noiseReduction: "Reduce el ruido digital y la granulosidad de la imagen, especialmente en áreas de bajo contraste.",
+  sharpening: "Aumenta la nitidez de los bordes y detalles de la imagen para resaltar texturas y definición.",
+  filmGrain: "Añade un grano cinematográfico para aportar un aspecto vintage o artístico.",
   midtoneContrast: "Ajusta el contraste exclusivamente en los tonos medios de la imagen.",
   hdrEffect: "Recupera detalle en altas luces y sombras sin quemar ni empastar.",
-  ortonEffect: "Crea una atmÃ³sfera etÃ©rea y soÃ±adora.",
-  focalBlur: "Aplica un desenfoque selectivo del fondo para crear profundidad de campo realista, manteniendo el sujeto principal perfectamente nÃ­tido."
+  ortonEffect: "Crea una atmósfera etérea y soñadora.",
+  focalBlur: "Aplica un desenfoque selectivo del fondo para crear profundidad de campo realista, manteniendo el sujeto principal perfectamente nítido."
 };
 // Reemplazar completamente el objeto INITIAL_SETTINGS existente
 const INITIAL_SETTINGS = {
@@ -233,7 +233,7 @@ const applyBackgroundBlur = (ctx, canvas, blurAmount = 15) => {
   tempCtx.filter = `blur(${blurAmount}px)`;
   tempCtx.drawImage(canvas, 0, 0);
 
-  // Crear gradiente radial para el centro (Ã¡rea nÃ­tida)
+  // Crear gradiente radial para el centro (área nítida)
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const radius = Math.min(canvas.width, canvas.height) * 0.35;
@@ -246,12 +246,12 @@ const applyBackgroundBlur = (ctx, canvas, blurAmount = 15) => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(tempCanvas, 0, 0);
 
-  // Aplicar mÃ¡scara para recuperar el centro nÃ­tido
+  // Aplicar máscara para recuperar el centro nítido
   ctx.globalCompositeOperation = 'destination-in';
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Restaurar Ã¡reas fuera del gradiente con la imagen original desenfocada
+  // Restaurar áreas fuera del gradiente con la imagen original desenfocada
   ctx.globalCompositeOperation = 'destination-over';
   ctx.drawImage(tempCanvas, 0, 0);
 
@@ -263,7 +263,7 @@ const applyBackgroundBlur = (ctx, canvas, blurAmount = 15) => {
   const originalCtx = originalCanvas.getContext('2d');
   originalCtx.putImageData(originalImageData, 0, 0);
 
-  // Aplicar mÃ¡scara inversa para el centro
+  // Aplicar máscara inversa para el centro
   ctx.save();
   ctx.beginPath();
   ctx.arc(centerX, centerY, radius * 0.6, 0, Math.PI * 2);
@@ -294,11 +294,11 @@ const applyCenterBlur = (ctx, canvas, blurAmount = 15) => {
   tempCtx.filter = `blur(${blurAmount}px)`;
   tempCtx.drawImage(canvas, 0, 0);
 
-  // Dibujar imagen original (nÃ­tida) como base
+  // Dibujar imagen original (nítida) como base
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.putImageData(originalImageData, 0, 0);
 
-  // Crear gradiente radial para el centro (Ã¡rea desenfocada)
+  // Crear gradiente radial para el centro (área desenfocada)
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const radius = Math.min(canvas.width, canvas.height) * 0.35;
@@ -307,24 +307,24 @@ const applyCenterBlur = (ctx, canvas, blurAmount = 15) => {
   gradient.addColorStop(0.5, 'rgba(0,0,0,0.9)');
   gradient.addColorStop(1, 'rgba(0,0,0,0)');
 
-  // Aplicar desenfoque solo en el centro usando composiciÃ³n
+  // Aplicar desenfoque solo en el centro usando composición
   ctx.save();
   ctx.globalCompositeOperation = 'source-over';
 
-  // Crear mÃ¡scara circular
+  // Crear máscara circular
   ctx.beginPath();
   ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
   ctx.closePath();
   ctx.clip();
 
-  // Dibujar versiÃ³n desenfocada en el Ã¡rea recortada
+  // Dibujar versión desenfocada en el área recortada
   ctx.filter = `blur(${blurAmount}px)`;
   ctx.drawImage(canvas, 0, 0);
   ctx.filter = 'none';
   ctx.restore();
 };
 
-// FunciÃ³n para generar una descripciÃ³n de los efectos aplicados
+// Función para generar una descripción de los efectos aplicados
 const getEffectsDescription = settings => {
   const effects = [];
   if (settings.brightness !== 100) {
@@ -334,28 +334,28 @@ const getEffectsDescription = settings => {
     effects.push(`Contraste: ${settings.contrast > 100 ? '+' : ''}${settings.contrast - 100}%`);
   }
   if (settings.saturation !== 100) {
-    effects.push(`SaturaciÃ³n: ${settings.saturation > 100 ? '+' : ''}${settings.saturation - 100}%`);
+    effects.push(`Saturación: ${settings.saturation > 100 ? '+' : ''}${settings.saturation - 100}%`);
   }
   if (settings.hue !== 0) {
-    effects.push(`Matiz: ${settings.hue}Â°`);
+    effects.push(`Matiz: ${settings.hue}°`);
   }
   if (settings.blur !== 0) {
     effects.push(`Desenfoque: ${settings.blur}px`);
   }
   if (settings.exposure !== 0) {
-    effects.push(`ExposiciÃ³n: ${settings.exposure > 0 ? '+' : ''}${settings.exposure}`);
+    effects.push(`Exposición: ${settings.exposure > 0 ? '+' : ''}${settings.exposure}`);
   }
   if (settings.temperature !== 0) {
     effects.push(`Temperatura: ${settings.temperature > 0 ? '+' : ''}${settings.temperature}`);
   }
   if (settings.vignette !== 0) {
-    effects.push(`ViÃ±eta: ${settings.vignette}%`);
+    effects.push(`Viñeta: ${settings.vignette}%`);
   }
   if (settings.scale !== 100) {
     effects.push(`Escala: ${settings.scale}%`);
   }
   if (settings.rotation !== 0) {
-    effects.push(`RotaciÃ³n: ${settings.rotation}Â°`);
+    effects.push(`Rotación: ${settings.rotation}°`);
   }
   if (settings.clarity !== 0) {
     effects.push(`Claridad: ${settings.clarity > 0 ? '+' : ''}${settings.clarity}`);
@@ -364,13 +364,13 @@ const getEffectsDescription = settings => {
     effects.push(`Vibrancia: ${settings.vibrance > 0 ? '+' : ''}${settings.vibrance}`);
   }
   if (settings.noiseReduction !== 0) {
-    effects.push(`ReducciÃ³n ruido: ${settings.noiseReduction}%`);
+    effects.push(`Reducción ruido: ${settings.noiseReduction}%`);
   }
   if (settings.sharpening !== 0) {
     effects.push(`Nitidez: ${settings.sharpening}%`);
   }
   if (settings.filmGrain !== 0) {
-    effects.push(`Grano cinematogrÃ¡fico: ${settings.filmGrain}%`);
+    effects.push(`Grano cinematográfico: ${settings.filmGrain}%`);
   }
   if (settings.midtoneContrast !== 0) {
     effects.push(`Contraste medios tonos: ${settings.midtoneContrast > 0 ? '+' : ''}${settings.midtoneContrast}`);
@@ -387,7 +387,7 @@ const getEffectsDescription = settings => {
   return effects.length > 0 ? effects.join(', ') : 'Sin efectos aplicados';
 };
 
-// --- COMPONENTE: MODAL DE AUTENTICACIÃ“N ---
+// --- COMPONENTE: MODAL DE AUTENTICACIÓN ---
 const AuthModal = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -411,7 +411,7 @@ const AuthModal = () => {
           onClose();
           return;
         } catch (loginErr) {
-          setError('Este email ya tiene cuenta. Si te registraste con Google, usa el botÃ³n "Google".');
+          setError('Este email ya tiene cuenta. Si te registraste con Google, usa el botón "Google".');
           return;
         }
       }
@@ -448,7 +448,7 @@ const AuthModal = () => {
     className: "text-2xl font-bold text-white mb-1"
   }, isLogin ? 'Bienvenido' : 'Crear Cuenta'), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-400 text-sm"
-  }, isLogin ? 'Inicia sesiÃ³n para continuar' : 'RegÃ­strate para guardar tu arte')), error && /*#__PURE__*/React.createElement("div", {
+  }, isLogin ? 'Inicia sesión para continuar' : 'Regístrate para guardar tu arte')), error && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200 text-xs"
   }, error), /*#__PURE__*/React.createElement("form", {
     onSubmit: handleAuth,
@@ -462,7 +462,7 @@ const AuthModal = () => {
     required: true
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
     type: "password",
-    placeholder: "Contrase\xC3\xB1a",
+    placeholder: "Contrase\xF1a",
     className: "w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl focus:border-blue-500 outline-none text-white placeholder-slate-500",
     value: password,
     onChange: e => setPassword(e.target.value),
@@ -477,7 +477,7 @@ const AuthModal = () => {
     className: "h-px bg-slate-700 flex-1"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500"
-  }, "O contin\xC3\xBAa con"), /*#__PURE__*/React.createElement("div", {
+  }, "O contin\xFAa con"), /*#__PURE__*/React.createElement("div", {
     className: "h-px bg-slate-700 flex-1"
   })), /*#__PURE__*/React.createElement("button", {
     onClick: handleGoogleLogin,
@@ -493,7 +493,7 @@ const AuthModal = () => {
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setIsLogin(!isLogin),
     className: "text-sm text-blue-400 hover:text-blue-300 underline"
-  }, isLogin ? 'Â¿No tienes cuenta? RegÃ­strate' : 'Â¿Ya tienes cuenta? Entra'))));
+  }, isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Entra'))));
 };
 
 // --- COMPONENTE: PANEL DE ADMINISTRADOR (PRO) ---
@@ -508,7 +508,7 @@ const AdminPanel = ({
   const [stats, setStats] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('overview'); // overview | users
-  const [lastRefresh, setLastRefresh] = useState(null); // Hora de Ãºltima actualizaciÃ³n
+  const [lastRefresh, setLastRefresh] = useState(null); // Hora de última actualización
 
   const today = getTodayDateString();
   const safeDate = ts => {
@@ -521,7 +521,7 @@ const AdminPanel = ({
       // string/number
       const d = new Date(ts);
       return isNaN(d.getTime()) ? null : d;
-    } catch {
+    } catch (e) {
       return null;
     }
   };
@@ -537,7 +537,7 @@ const AdminPanel = ({
   };
   const exportUsersCSV = () => {
     if (!users || users.length === 0) return;
-    const headers = ['UID', 'Email', 'Uso hoy', 'Ãšltima actividad'];
+    const headers = ['UID', 'Email', 'Uso hoy', 'Última actividad'];
     const rows = users.map(u => {
       const usageToday = u.todayUsage ?? 0;
       const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toISOString() : '';
@@ -585,7 +585,7 @@ const AdminPanel = ({
   const loadData = async () => {
     setLoading(true);
     try {
-      // Evito orderBy para no depender de Ã­ndices
+      // Evito orderBy para no depender de índices
       const snapshot = await db.collection('users').limit(300).get();
       const usersData = await Promise.all(snapshot.docs.map(async doc => {
         const data = doc.data() || {};
@@ -625,7 +625,7 @@ const AdminPanel = ({
   useEffect(() => {
     loadData();
 
-    // Auto-refrescar cada 30 segundos mientras el panel estÃ© abierto
+    // Auto-refrescar cada 30 segundos mientras el panel esté abierto
     const intervalId = setInterval(() => {
       loadData();
     }, 30000);
@@ -660,7 +660,7 @@ const AdminPanel = ({
     }
   };
   const deleteUserDoc = async (uid, email) => {
-    if (!confirm(`Â¿Eliminar el usuario en Firestore?
+    if (!confirm(`¿Eliminar el usuario en Firestore?
 
  ${email || uid}
 
@@ -729,7 +729,7 @@ const AdminPanel = ({
     className: "w-5 h-5"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl font-extrabold text-white leading-tight"
-  }, "Panel de Administraci\xC3\xB3n"), /*#__PURE__*/React.createElement("p", {
+  }, "Panel de Administraci\xF3n"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-400"
   }, today, " \xC2\xB7 ", lastRefresh ? `Actualizado: ${lastRefresh}` : 'Cargando...', /*#__PURE__*/React.createElement("span", {
     className: "text-emerald-400 ml-2"
@@ -759,7 +759,7 @@ const AdminPanel = ({
       "data-lucide": "bar-chart-3",
       className: "w-4 h-4"
     })
-  }, "Estad\xC3\xADsticas"), /*#__PURE__*/React.createElement(TabBtn, {
+  }, "Estad\xEDsticas"), /*#__PURE__*/React.createElement(TabBtn, {
     id: "users",
     icon: /*#__PURE__*/React.createElement("i", {
       "data-lucide": "users",
@@ -796,7 +796,7 @@ const AdminPanel = ({
     icon: "\xE2\x8F\xB1\xEF\xB8\x8F",
     label: "Activos 24h",
     value: stats.last24hActive,
-    subtext: `LÃ­mite alcanzado: ${stats.limitReached}`,
+    subtext: `Límite alcanzado: ${stats.limitReached}`,
     accent: "from-violet-300 to-fuchsia-300"
   })), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 lg:grid-cols-3 gap-4"
@@ -809,7 +809,7 @@ const AdminPanel = ({
   }, /*#__PURE__*/React.createElement("i", {
     "data-lucide": "badge-check",
     className: "w-4 h-4 text-cyan-300"
-  }), "Distribuci\xC3\xB3n de roles"), /*#__PURE__*/React.createElement("div", {
+  }), "Distribuci\xF3n de roles"), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-400"
   }, "Campo users.role (si existe)")), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
@@ -826,7 +826,7 @@ const AdminPanel = ({
     className: "mt-4 text-xs text-slate-400"
   }, "Consejo: puedes poner ", /*#__PURE__*/React.createElement("span", {
     className: "text-slate-200 font-bold"
-  }, "role: 'vip'"), " a un usuario para identificarlo aqu\xC3\xAD.")), /*#__PURE__*/React.createElement("div", {
+  }, "role: 'vip'"), " a un usuario para identificarlo aqu\xED.")), /*#__PURE__*/React.createElement("div", {
     className: "lg:col-span-2 rounded-2xl border border-white/10 bg-white/5 p-5"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-3"
@@ -851,7 +851,7 @@ const AdminPanel = ({
     className: "text-xs text-slate-400 truncate"
   }, u.uid), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-400 mt-1"
-  }, "\xC3\u0161ltimo: ", u.lastActiveText)), /*#__PURE__*/React.createElement("div", {
+  }, "\xDAltimo: ", u.lastActiveText)), /*#__PURE__*/React.createElement("div", {
     className: `ml-4 shrink-0 px-3 py-1 rounded-lg text-xs font-extrabold border
                                                             ${(u.todayUsage || 0) >= DAILY_LIMIT ? 'bg-red-500/15 text-red-200 border-red-500/30' : 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30'}`
   }, u.todayUsage || 0, " / ", DAILY_LIMIT))), !stats.topUsers.length && /*#__PURE__*/React.createElement("div", {
@@ -894,7 +894,7 @@ const AdminPanel = ({
     className: "p-4"
   }, "Uso hoy"), /*#__PURE__*/React.createElement("th", {
     className: "p-4"
-  }, "\xC3\u0161ltima actividad"), /*#__PURE__*/React.createElement("th", {
+  }, "\xDAltima actividad"), /*#__PURE__*/React.createElement("th", {
     className: "p-4"
   }, "Acciones"))), /*#__PURE__*/React.createElement("tbody", {
     className: "bg-slate-950/40"
@@ -1052,6 +1052,23 @@ const App = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  // Nuevo: Escuchar eventos de actualización de IA
+  useEffect(() => {
+    const handleAIUpdate = (event) => {
+      if (event.detail && event.detail.imageUrl) {
+        setOriginalImage(event.detail.imageUrl);
+        setUploadedFile(event.detail.imageUrl);
+        setCurrentSettings(INITIAL_SETTINGS);
+        setMemeData(null);
+        setStatusMessage("Imagen actualizada por IA");
+        setTimeout(() => setStatusMessage(""), 3000);
+      }
+    };
+
+    window.addEventListener('ai-tool-update', handleAIUpdate);
+    return () => window.removeEventListener('ai-tool-update', handleAIUpdate);
+  }, []);
   useEffect(() => {
     if (window.lucide) window.lucide.createIcons();
   });
@@ -1076,7 +1093,7 @@ const App = () => {
     reader.readAsDataURL(file);
   };
 
-  // Reemplazar completamente la funciÃ³n renderImage existente
+  // Reemplazar completamente la función renderImage existente
   const renderImage = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !originalImage) return;
@@ -1214,7 +1231,7 @@ const App = () => {
       if (currentSettings.ortonEffect > 0) {
         ctx.save();
 
-        // Crear versiÃ³n desenfocada
+        // Crear versión desenfocada
         const blurredCanvas = document.createElement('canvas');
         blurredCanvas.width = canvas.width;
         blurredCanvas.height = canvas.height;
@@ -1231,7 +1248,7 @@ const App = () => {
       if (currentSettings.focalBlur > 0) {
         ctx.save();
 
-        // Crear mÃ¡scara radial para el desenfoque
+        // Crear máscara radial para el desenfoque
         const gradient = ctx.createRadialGradient(canvas.width * currentSettings.focalPoint.x / 100, canvas.height * currentSettings.focalPoint.y / 100, 0, canvas.width * currentSettings.focalPoint.x / 100, canvas.height * currentSettings.focalPoint.y / 100, Math.max(canvas.width, canvas.height) * 0.7);
         gradient.addColorStop(0, "rgba(0,0,0,0)");
         gradient.addColorStop(0.3, "rgba(0,0,0,0)");
@@ -1251,7 +1268,7 @@ const App = () => {
         const originalCtx = originalCanvas.getContext('2d');
         originalCtx.putImageData(originalImageData, 0, 0);
 
-        // Aplicar mÃ¡scara para mantener el Ã¡rea focal nÃ­tida
+        // Aplicar máscara para mantener el área focal nítida
         ctx.globalCompositeOperation = 'destination-in';
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1343,7 +1360,7 @@ const App = () => {
         const hex = `#${[pixel[0], pixel[1], pixel[2]].map(c => c.toString(16).padStart(2, '0')).join('')}`;
         setColorPickerColor(hex);
       }
-      // PosiciÃ³n del cursor flotante relativa al contenedor del canvas
+      // Posición del cursor flotante relativa al contenedor del canvas
       const container = canvasContainerRef.current;
       if (container) {
         const cRect = container.getBoundingClientRect();
@@ -1397,7 +1414,7 @@ const App = () => {
     setUploadedFile(originalUploadedFile);
     setCurrentSettings(INITIAL_SETTINGS);
     setMemeData(null);
-    setStatusMessage("Â¡Guardado! Lienzo restaurado a la imagen original.");
+    setStatusMessage("¡Guardado! Lienzo restaurado a la imagen original.");
     setPreviousImageBeforeEdit(null);
     setHasOverlayFromHistory(false);
     setManualActions([]);
@@ -1424,7 +1441,7 @@ const App = () => {
   const handleDeleteCurrentImage = () => {
     setOriginalImage(null);
     setUploadedFile(null);
-    setOriginalUploadedFile(null); // Limpiar tambiÃ©n la imagen original
+    setOriginalUploadedFile(null); // Limpiar también la imagen original
     setCurrentSettings(INITIAL_SETTINGS);
     setMemeData(null);
     setPalette([]);
@@ -1546,7 +1563,7 @@ const App = () => {
           ctx.putImageData(imageData, 0, 0);
           break;
         case 'vintage':
-          // Vintage: sepia + contraste reducido + viÃ±eta
+          // Vintage: sepia + contraste reducido + viñeta
           for (let i = 0; i < data.length; i += 4) {
             const r = data[i];
             const g = data[i + 1];
@@ -1562,7 +1579,7 @@ const App = () => {
           }
           ctx.putImageData(imageData, 0, 0);
 
-          // AÃ±adir viÃ±eta
+          // Añadir viñeta
           ctx.globalCompositeOperation = 'multiply';
           const gradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.width * 0.4, canvas.width / 2, canvas.height / 2, canvas.width * 0.8);
           gradient.addColorStop(0, 'rgba(255,255,255,0)');
@@ -1586,13 +1603,13 @@ const App = () => {
           break;
         case 'polaroid':
           {
-            // Polaroid: Marco blanco con imagen encogida y borde inferior mÃ¡s grande
+            // Polaroid: Marco blanco con imagen encogida y borde inferior más grande
             const padSide = Math.min(canvas.width, canvas.height) * 0.06;
-            const padBottom = padSide * 2.5; // borde inferior mÃ¡s grande (estilo Polaroid)
+            const padBottom = padSide * 2.5; // borde inferior más grande (estilo Polaroid)
             const newW = canvas.width + padSide * 2;
             const newH = canvas.height + padSide + padBottom;
 
-            // Crear canvas nuevo con el tamaÃ±o del marco
+            // Crear canvas nuevo con el tamaño del marco
             const polaroidCanvas = document.createElement('canvas');
             polaroidCanvas.width = newW;
             polaroidCanvas.height = newH;
@@ -1638,7 +1655,7 @@ const App = () => {
     img.src = originalImage;
   };
 
-  // --- FUNCIONES DE TRANSFORMACIÃ“N ---
+  // --- FUNCIONES DE TRANSFORMACIÓN ---
   const handleFlipHorizontal = () => {
     if (!originalImage) return;
     const img = new Image();
@@ -1695,9 +1712,9 @@ const App = () => {
       const rotatedImage = canvas.toDataURL('image/jpeg', 0.95);
       setOriginalImage(rotatedImage);
       setUploadedFile(rotatedImage);
-      setManualActions(prev => [...prev, "Rotar 90Â°"]);
+      setManualActions(prev => [...prev, "Rotar 90°"]);
       setCurrentSettings(INITIAL_SETTINGS);
-      setStatusMessage("Imagen rotada 90Â°");
+      setStatusMessage("Imagen rotada 90°");
       setTimeout(() => setStatusMessage(""), 3000);
     };
     img.src = originalImage;
@@ -1740,9 +1757,9 @@ const App = () => {
       const rotatedImage = canvas.toDataURL('image/jpeg', 0.95);
       setOriginalImage(rotatedImage);
       setUploadedFile(rotatedImage);
-      setManualActions(prev => [...prev, `Rotar ${angle}Â°`]);
+      setManualActions(prev => [...prev, `Rotar ${angle}°`]);
       setCurrentSettings(INITIAL_SETTINGS);
-      setStatusMessage(`Imagen rotada ${angle}Â°`);
+      setStatusMessage(`Imagen rotada ${angle}°`);
       setTimeout(() => setStatusMessage(""), 3000);
     };
     img.src = originalImage;
@@ -1767,7 +1784,7 @@ const App = () => {
       setUploadedFile(borderedImage);
       setManualActions(prev => [...prev, `Marco: ${borderWidth}px`]);
       setCurrentSettings(INITIAL_SETTINGS);
-      setStatusMessage(`Marco aÃ±adido (${borderWidth}px)`);
+      setStatusMessage(`Marco añadido (${borderWidth}px)`);
       setTimeout(() => setStatusMessage(""), 3000);
     };
     img.src = originalImage;
@@ -1781,14 +1798,14 @@ const App = () => {
       canvas.height = img.height;
       const ctx = canvas.getContext('2d');
 
-      // Dibujar imagen pequeÃ±a
+      // Dibujar imagen pequeña
       const smallCanvas = document.createElement('canvas');
       smallCanvas.width = img.width / pixelSize;
       smallCanvas.height = img.height / pixelSize;
       const smallCtx = smallCanvas.getContext('2d');
       smallCtx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
 
-      // Dibujar pequeÃ±a a tamaÃ±o original (pixelado)
+      // Dibujar pequeña a tamaño original (pixelado)
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(smallCanvas, 0, 0, canvas.width, canvas.height);
       const pixelatedImage = canvas.toDataURL('image/jpeg', 0.95);
@@ -1826,7 +1843,7 @@ const App = () => {
 
     // If there are previously applied texts, offer to re-edit them
     if (lastAppliedTexts && lastAppliedTexts.length > 0 && preTextImage) {
-      const choice = confirm(`Tienes ${lastAppliedTexts.length} texto(s) aplicado(s).\n\n` + `Â¿Quieres editarlos?\n\n` + `Aceptar = Editar textos existentes\n` + `Cancelar = AÃ±adir texto nuevo`);
+      const choice = confirm(`Tienes ${lastAppliedTexts.length} texto(s) aplicado(s).\n\n` + `¿Quieres editarlos?\n\n` + `Aceptar = Editar textos existentes\n` + `Cancelar = Añadir texto nuevo`);
       if (choice) {
         // Save current image so cancel can restore it
         preReEditImageRef.current = originalImage;
@@ -1982,7 +1999,7 @@ const App = () => {
     setIsTextEditing(false);
     setTextOverlays([]);
     setSelectedTextIdx(-1);
-    setStatusMessage(textNames.length === 1 ? "Texto aÃ±adido" : `${textNames.length} textos aÃ±adidos`);
+    setStatusMessage(textNames.length === 1 ? "Texto añadido" : `${textNames.length} textos añadidos`);
     setTimeout(() => setStatusMessage(""), 3000);
   };
   const cancelTextOverlay = () => {
@@ -2215,7 +2232,7 @@ const App = () => {
     className: "font-bold text-lg text-white tracking-tight"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-light text-blue-200"
-  }, "Editor de Im\xC3\xA1genes"))), /*#__PURE__*/React.createElement("div", {
+  }, "Editor de Im\xE1genes"))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 items-center"
   }, user && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-4 mr-2"
@@ -2232,7 +2249,7 @@ const App = () => {
   }, user.email)), /*#__PURE__*/React.createElement("button", {
     onClick: () => auth.signOut(),
     className: "p-1.5 hover:bg-slate-700 rounded text-slate-400",
-    title: "Cerrar Sesi\xC3\xB3n"
+    title: "Cerrar Sesi\xF3n"
   }, /*#__PURE__*/React.createElement("i", {
     "data-lucide": "log-out",
     className: "w-4 h-4"
@@ -2276,13 +2293,13 @@ const App = () => {
     label: "Recortar",
     icon: "crop",
     func: handleOpenCropModal,
-    desc: "Recorta la imagen manualmente seleccionando el Ã¡rea deseada."
+    desc: "Recorta la imagen manualmente seleccionando el área deseada."
   }, {
     id: "Difuminar Centro",
     label: "Difuminar Centro",
     icon: "circle-dot",
     func: handleCenterBlur,
-    desc: "Difumina el centro manteniendo el fondo nÃ­tido. Efecto artÃ­stico Ãºnico."
+    desc: "Difumina el centro manteniendo el fondo nítido. Efecto artístico único."
   }, {
     id: "B&N",
     label: "B&N",
@@ -2300,19 +2317,19 @@ const App = () => {
     label: "Vintage",
     icon: "camera",
     func: () => applyFilter('vintage'),
-    desc: "Efecto vintage con tono cÃ¡lido y viÃ±eta."
+    desc: "Efecto vintage con tono cálido y viñeta."
   }, {
     id: "Noir",
     label: "Noir",
     icon: "moon",
     func: () => applyFilter('noir'),
-    desc: "Blanco y negro con alto contraste estilo pelÃ­cula negra."
+    desc: "Blanco y negro con alto contraste estilo película negra."
   }, {
     id: "Polaroid",
     label: "Polaroid",
     icon: "camera",
     func: () => applyFilter('polaroid'),
-    desc: "AÃ±ade un marco blanco estilo Polaroid."
+    desc: "Añade un marco blanco estilo Polaroid."
   }, {
     id: "Espejo H",
     label: "Espejo H",
@@ -2326,8 +2343,8 @@ const App = () => {
     func: handleFlipVertical,
     desc: "Voltea la imagen verticalmente."
   }, {
-    id: "Rotar 90Â°",
-    label: "Rotar 90Â°",
+    id: "Rotar 90°",
+    label: "Rotar 90°",
     icon: "rotate-cw",
     func: handleRotate90,
     desc: "Rota la imagen 90 grados en sentido horario."
@@ -2336,19 +2353,19 @@ const App = () => {
     label: "Redimensionar",
     icon: "maximize",
     func: () => setResizeModalOpen(true),
-    desc: "Cambia el tamaÃ±o de la imagen a dimensiones especÃ­ficas."
+    desc: "Cambia el tamaño de la imagen a dimensiones específicas."
   }, {
     id: "Rotar Libre",
     label: "Rotar Libre",
     icon: "rotate-ccw",
     func: () => setRotateModalOpen(true),
-    desc: "Rota la imagen a cualquier Ã¡ngulo personalizado."
+    desc: "Rota la imagen a cualquier ángulo personalizado."
   }, {
     id: "Marco",
     label: "Marco",
     icon: "square",
     func: () => setBorderModalOpen(true),
-    desc: "AÃ±ade un marco/borde decorativo a la imagen."
+    desc: "Añade un marco/borde decorativo a la imagen."
   }, {
     id: "Perspectiva",
     label: "Perspectiva",
@@ -2366,7 +2383,7 @@ const App = () => {
     label: "Bal. Blancos",
     icon: "sun",
     func: handleAutoWhiteBalance,
-    desc: "Ajuste automÃ¡tico de temperatura de color (Gray World)."
+    desc: "Ajuste automático de temperatura de color (Gray World)."
   }, {
     id: "Color Picker",
     label: "Color Picker",
@@ -2375,14 +2392,14 @@ const App = () => {
       setIsColorPickerActive(!isColorPickerActive);
       setStatusMessage(isColorPickerActive ? "Selector desactivado" : "Haz clic en la imagen para copiar el color");
     },
-    desc: "Selecciona un color de la imagen y cÃ³pialo. (Haz clic en la imagen)",
+    desc: "Selecciona un color de la imagen y cópialo. (Haz clic en la imagen)",
     active: isColorPickerActive
   }, {
     id: "Texto",
     label: "Texto",
     icon: "type",
     func: startTextEditing,
-    desc: "AÃ±ade texto interactivo sobre la imagen."
+    desc: "Añade texto interactivo sobre la imagen."
   }, {
     id: "Pixelar",
     label: "Pixelar",
@@ -2490,7 +2507,7 @@ const App = () => {
     onHover: label => setHoveredSlider(label),
     description: EFFECT_DESCRIPTIONS.contrast
   }), /*#__PURE__*/React.createElement(SliderControl, {
-    label: "Exposici\xC3\xB3n",
+    label: "Exposici\xF3n",
     value: currentSettings.exposure,
     min: -5,
     max: 5,
@@ -2506,7 +2523,7 @@ const App = () => {
     "data-lucide": "palette",
     className: "w-3 h-3"
   }), " Color"), /*#__PURE__*/React.createElement(SliderControl, {
-    label: "Saturaci\xC3\xB3n",
+    label: "Saturaci\xF3n",
     value: currentSettings.saturation,
     min: 0,
     max: 200,
@@ -2554,7 +2571,7 @@ const App = () => {
     onHover: label => setHoveredSlider(label),
     description: EFFECT_DESCRIPTIONS.blur
   }), /*#__PURE__*/React.createElement(SliderControl, {
-    label: "Vi\xC3\xB1eta",
+    label: "Vi\xF1eta",
     value: currentSettings.vignette,
     min: 0,
     max: 100,
@@ -2578,7 +2595,7 @@ const App = () => {
     onHover: label => setHoveredSlider(label),
     description: EFFECT_DESCRIPTIONS.clarity
   }), /*#__PURE__*/React.createElement(SliderControl, {
-    label: "Reducci\xC3\xB3n Ruido",
+    label: "Reducci\xF3n Ruido",
     value: currentSettings.noiseReduction,
     min: 0,
     max: 100,
@@ -2586,7 +2603,7 @@ const App = () => {
     onHover: label => setHoveredSlider(label),
     description: EFFECT_DESCRIPTIONS.noiseReduction
   }), /*#__PURE__*/React.createElement(SliderControl, {
-    label: "Grano Cinematogr\xC3\xA1fico",
+    label: "Grano Cinematogr\xE1fico",
     value: currentSettings.filmGrain,
     min: 0,
     max: 100,
@@ -2608,7 +2625,7 @@ const App = () => {
   }, /*#__PURE__*/React.createElement("i", {
     "data-lucide": "move",
     className: "w-3 h-3"
-  }), " Transformaci\xC3\xB3n"), /*#__PURE__*/React.createElement(SliderControl, {
+  }), " Transformaci\xF3n"), /*#__PURE__*/React.createElement(SliderControl, {
     label: "Zoom (%)",
     value: currentSettings.scale,
     min: 10,
@@ -2617,7 +2634,7 @@ const App = () => {
     onHover: label => setHoveredSlider(label),
     description: EFFECT_DESCRIPTIONS.scale
   }), /*#__PURE__*/React.createElement(SliderControl, {
-    label: "Rotaci\xC3\xB3n",
+    label: "Rotaci\xF3n",
     value: currentSettings.rotation,
     min: 0,
     max: 360,
@@ -2626,7 +2643,7 @@ const App = () => {
     description: EFFECT_DESCRIPTIONS.rotation
   }), /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] text-slate-500 italic mt-1 text-center bg-slate-800/50 rounded py-1"
-  }, "Arrastra la imagen con el rat\xC3\xB3n para moverte")), /*#__PURE__*/React.createElement("div", {
+  }, "Arrastra la imagen con el rat\xF3n para moverte")), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 text-xs uppercase font-bold text-slate-500 tracking-wider mb-2"
@@ -2686,9 +2703,9 @@ const App = () => {
     className: "text-center p-12 border-2 border-dashed border-slate-700/50 rounded-2xl bg-slate-800/30 backdrop-blur-sm max-w-md mx-auto relative z-10 pointer-events-none"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-medium text-slate-200 mb-1"
-  }, "Galer\xC3\xADa de Edici\xC3\xB3n"), /*#__PURE__*/React.createElement("p", {
+  }, "Galer\xEDa de Edici\xF3n"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-500 mb-6"
-  }, "Sube im\xC3\xA1genes, ed\xC3\xADtalas y gu\xC3\xA1rdalas en el historial."), /*#__PURE__*/React.createElement("button", {
+  }, "Sube im\xE1genes, ed\xEDtalas y gu\xE1rdalas en el historial."), /*#__PURE__*/React.createElement("button", {
     onClick: () => fileInputRef.current.click(),
     className: "pointer-events-auto px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-sm font-medium transition"
   }, "Subir imagen")), /*#__PURE__*/React.createElement("canvas", {
@@ -2732,11 +2749,11 @@ const App = () => {
   }), originalImage && hasOverlayFromHistory && previousImageBeforeEdit && /*#__PURE__*/React.createElement("button", {
     onClick: handleCancelOverlayEdit,
     className: "absolute bottom-4 right-4 px-3 py-1.5 bg-red-600/95 hover:bg-red-500 text-white text-xs font-medium rounded-full shadow-lg flex items-center gap-1 border border-red-400 z-20",
-    title: "Eliminar solo esta edici\xC3\xB3n y volver a la imagen anterior"
+    title: "Eliminar solo esta edici\xF3n y volver a la imagen anterior"
   }, /*#__PURE__*/React.createElement("i", {
     "data-lucide": "trash-2",
     className: "w-4 h-4"
-  }), /*#__PURE__*/React.createElement("span", null, "Eliminar solo esta edici\xC3\xB3n"))), /*#__PURE__*/React.createElement("aside", {
+  }), /*#__PURE__*/React.createElement("span", null, "Eliminar solo esta edici\xF3n"))), /*#__PURE__*/React.createElement("aside", {
     className: "w-64 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 z-10"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-4 border-b border-slate-800 bg-slate-900/95 backdrop-blur"
@@ -2765,7 +2782,7 @@ const App = () => {
   }, /*#__PURE__*/React.createElement("img", {
     src: item.thumbnail,
     className: "w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity",
-    alt: "Versi\xC3\xB3n guardada"
+    alt: "Versi\xF3n guardada"
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-2 z-10"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2776,7 +2793,7 @@ const App = () => {
       handleDownloadHistory(item);
     },
     className: "flex-1 flex flex-col items-center gap-1 text-[9px] text-slate-100",
-    title: "Descargar esta versi\xC3\xB3n"
+    title: "Descargar esta versi\xF3n"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-7 h-7 rounded-full bg-slate-900/90 border border-slate-500 flex items-center justify-center shadow"
   }, /*#__PURE__*/React.createElement("i", {
@@ -2788,7 +2805,7 @@ const App = () => {
       restoreFromHistory(item);
     },
     className: "flex-1 flex flex-col items-center gap-1 text-[9px] text-sky-100",
-    title: "Editar esta versi\xC3\xB3n en el lienzo"
+    title: "Editar esta versi\xF3n en el lienzo"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-7 h-7 rounded-full bg-sky-700/90 border border-sky-400 flex items-center justify-center shadow"
   }, /*#__PURE__*/React.createElement("i", {
@@ -2820,7 +2837,7 @@ const App = () => {
     className: "text-[10px] text-slate-500 font-mono"
   }, item.timestamp), /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] text-blue-400"
-  }, "Versi\xC3\xB3n guardada"))))))));
+  }, "Versi\xF3n guardada"))))))));
 };
 const SliderControl = ({
   label,
@@ -2916,7 +2933,7 @@ const CropModal = ({
       imageRef.current = img;
       setImageLoaded(true);
 
-      // Calcular tamaÃ±o del canvas para que quepa en la pantalla
+      // Calcular tamaño del canvas para que quepa en la pantalla
       const maxWidth = Math.min(window.innerWidth * 0.8, 900);
       const maxHeight = Math.min(window.innerHeight * 0.7, 600);
       let canvasWidth = img.width;
@@ -2931,7 +2948,7 @@ const CropModal = ({
         height: canvasHeight
       });
 
-      // Inicializar Ã¡rea de recorte al 80% del centro
+      // Inicializar área de recorte al 80% del centro
       const initialCropWidth = canvasWidth * 0.8;
       const initialCropHeight = canvasHeight * 0.8;
       setCropArea({
@@ -2962,13 +2979,13 @@ const CropModal = ({
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Limpiar Ã¡rea de recorte (efecto de "ventana")
+    // Limpiar área de recorte (efecto de "ventana")
     ctx.clearRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
 
-    // Dibujar imagen en el Ã¡rea de recorte
+    // Dibujar imagen en el área de recorte
     ctx.drawImage(img, cropArea.x / scaleRef.current, cropArea.y / scaleRef.current, cropArea.width / scaleRef.current, cropArea.height / scaleRef.current, cropArea.x, cropArea.y, cropArea.width, cropArea.height);
 
-    // Dibujar borde del Ã¡rea de recorte
+    // Dibujar borde del área de recorte
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 2;
     ctx.strokeRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
@@ -3020,12 +3037,12 @@ const CropModal = ({
       ctx.fillRect(handle.x, handle.y, handleSize, handleSize);
     });
 
-    // Dibujar lÃ­neas de la regla de tercios
+    // Dibujar líneas de la regla de tercios
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
 
-    // LÃ­neas verticales
+    // Líneas verticales
     ctx.beginPath();
     ctx.moveTo(cropArea.x + cropArea.width / 3, cropArea.y);
     ctx.lineTo(cropArea.x + cropArea.width / 3, cropArea.y + cropArea.height);
@@ -3033,7 +3050,7 @@ const CropModal = ({
     ctx.lineTo(cropArea.x + 2 * cropArea.width / 3, cropArea.y + cropArea.height);
     ctx.stroke();
 
-    // LÃ­neas horizontales
+    // Líneas horizontales
     ctx.beginPath();
     ctx.moveTo(cropArea.x, cropArea.y + cropArea.height / 3);
     ctx.lineTo(cropArea.x + cropArea.width, cropArea.y + cropArea.height / 3);
@@ -3098,7 +3115,7 @@ const CropModal = ({
     e.preventDefault();
     const pos = getMousePos(e);
 
-    // Verificar si estÃ¡ haciendo clic en un handle
+    // Verificar si está haciendo clic en un handle
     const handle = getHandleAtPosition(pos);
     if (handle) {
       setIsResizing(true);
@@ -3110,7 +3127,7 @@ const CropModal = ({
       return;
     }
 
-    // Verificar si estÃ¡ dentro del Ã¡rea de recorte
+    // Verificar si está dentro del área de recorte
     if (pos.x >= cropArea.x && pos.x <= cropArea.x + cropArea.width && pos.y >= cropArea.y && pos.y <= cropArea.y + cropArea.height) {
       setIsDragging(true);
       setDragStart({
@@ -3231,16 +3248,16 @@ const CropModal = ({
     const currentRatio = currentWidth / currentHeight;
     let newWidth, newHeight;
     if (currentRatio > targetRatio) {
-      // La imagen es mÃ¡s ancha que la relaciÃ³n objetivo
+      // La imagen es más ancha que la relación objetivo
       newHeight = currentHeight;
       newWidth = currentHeight * targetRatio;
     } else {
-      // La imagen es mÃ¡s alta que la relaciÃ³n objetivo
+      // La imagen es más alta que la relación objetivo
       newWidth = currentWidth;
       newHeight = currentWidth / targetRatio;
     }
 
-    // Centrar el nuevo Ã¡rea de recorte
+    // Centrar el nuevo área de recorte
     const newX = cropArea.x + (currentWidth - newWidth) / 2;
     const newY = cropArea.y + (currentHeight - newHeight) / 2;
     setCropArea({
@@ -3291,7 +3308,7 @@ const CropModal = ({
     className: "text-xl font-bold text-white"
   }, "Recortar Imagen"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400"
-  }, "Arrastra el \xC3\xA1rea seleccionada para ajustar el recorte"))), /*#__PURE__*/React.createElement("button", {
+  }, "Arrastra el \xE1rea seleccionada para ajustar el recorte"))), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     className: "p-2 hover:bg-slate-700/50 rounded-lg transition"
   }, /*#__PURE__*/React.createElement("i", {
@@ -3327,9 +3344,9 @@ const CropModal = ({
     className: "text-center text-sm text-slate-400"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-slate-300 font-medium"
-  }, Math.round(cropArea.width / scaleRef.current), " \xC3\u2014 ", Math.round(cropArea.height / scaleRef.current), " px"), /*#__PURE__*/React.createElement("span", {
+  }, Math.round(cropArea.width / scaleRef.current), " \xD7 ", Math.round(cropArea.height / scaleRef.current), " px"), /*#__PURE__*/React.createElement("span", {
     className: "mx-2"
-  }, "|"), /*#__PURE__*/React.createElement("span", null, "Relaci\xC3\xB3n: ", (cropArea.width / cropArea.height).toFixed(2)))), /*#__PURE__*/React.createElement("div", {
+  }, "|"), /*#__PURE__*/React.createElement("span", null, "Relaci\xF3n: ", (cropArea.width / cropArea.height).toFixed(2)))), /*#__PURE__*/React.createElement("div", {
     className: "px-6 py-4 border-t border-slate-700/50 flex items-center justify-between"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: resetCrop,
@@ -3404,7 +3421,7 @@ const ResizeModal = ({
     className: "text-xl font-bold text-white"
   }, "Redimensionar Imagen"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400 mt-1"
-  }, "Original: ", originalSize.width, " \xC3\u2014 ", originalSize.height, " px")), /*#__PURE__*/React.createElement("div", {
+  }, "Original: ", originalSize.width, " \xD7 ", originalSize.height, " px")), /*#__PURE__*/React.createElement("div", {
     className: "p-6 space-y-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-4"
@@ -3433,7 +3450,7 @@ const ResizeModal = ({
     className: "w-4 h-4 rounded border-slate-600"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-sm text-slate-300"
-  }, "Mantener proporci\xC3\xB3n"))), /*#__PURE__*/React.createElement("div", {
+  }, "Mantener proporci\xF3n"))), /*#__PURE__*/React.createElement("div", {
     className: "px-6 py-4 border-t border-slate-700/50 flex justify-end gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
@@ -3447,7 +3464,7 @@ const ResizeModal = ({
   }, "Aplicar"))));
 };
 
-// --- COMPONENTE: MODAL DE ROTACIÃ“N LIBRE ---
+// --- COMPONENTE: MODAL DE ROTACIÓN LIBRE ---
 const RotateModal = ({
   onClose,
   onRotate
@@ -3465,7 +3482,7 @@ const RotateModal = ({
     className: "p-6 space-y-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "text-xs text-slate-400 block mb-2"
-  }, "\xC3\x81ngulo: ", angle, "\xC2\xB0"), /*#__PURE__*/React.createElement("input", {
+  }, "\xC1ngulo: ", angle, "\xB0"), /*#__PURE__*/React.createElement("input", {
     type: "range",
     min: "-180",
     max: "180",
@@ -3474,7 +3491,7 @@ const RotateModal = ({
     className: "w-full"
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-xs text-slate-500 mt-1"
-  }, /*#__PURE__*/React.createElement("span", null, "-180\xC2\xB0"), /*#__PURE__*/React.createElement("span", null, "0\xC2\xB0"), /*#__PURE__*/React.createElement("span", null, "+180\xC2\xB0"))), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("span", null, "-180\xB0"), /*#__PURE__*/React.createElement("span", null, "0\xB0"), /*#__PURE__*/React.createElement("span", null, "+180\xB0"))), /*#__PURE__*/React.createElement("input", {
     type: "number",
     value: angle,
     onChange: e => setAngle(parseInt(e.target.value) || 0),
@@ -3508,7 +3525,7 @@ const BorderModal = ({
     className: "px-6 py-4 border-b border-slate-700/50"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-bold text-white"
-  }, "A\xC3\xB1adir Marco")), /*#__PURE__*/React.createElement("div", {
+  }, "A\xF1adir Marco")), /*#__PURE__*/React.createElement("div", {
     className: "p-6 space-y-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "text-xs text-slate-400 block mb-2"
@@ -3922,7 +3939,7 @@ const TextOverlayEditor = ({
     }
   }, "Haz clic en un texto para editarlo"), /*#__PURE__*/React.createElement("button", {
     onClick: onAdd,
-    title: "A\xC3\xB1adir otro texto",
+    title: "A\xF1adir otro texto",
     style: {
       background: '#1e40af',
       color: '#fff',
@@ -4214,11 +4231,11 @@ const ShapeOverlayEditor = ({
       maxWidth: '90%'
     }
   }, /*#__PURE__*/React.createElement("button", {
-    title: "Rect\xC3\xA1ngulo",
+    title: "Rect\xE1ngulo",
     onClick: () => onAdd('rect'),
     className: "px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold"
   }, "\xE2\xAC\u0153"), /*#__PURE__*/React.createElement("button", {
-    title: "C\xC3\xADrculo",
+    title: "C\xEDrculo",
     onClick: () => onAdd('circle'),
     className: "px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs border border-slate-600 font-bold"
   }, "\xE2\u0161\xAA"), /*#__PURE__*/React.createElement("div", {
@@ -4428,7 +4445,7 @@ const CurvesModal = ({
   onApply
 }) => {
   // Puntos de control de la curva en coordenadas de canvas (0,0 arriba-izq, 255,255 abajo-der)
-  // Un punto (x, y) significa: entrada x â†’ salida (255 - y) (porque el eje Y del canvas estÃ¡ invertido)
+  // Un punto (x, y) significa: entrada x â†’ salida (255 - y) (porque el eje Y del canvas está invertido)
   const [points, setPoints] = useState([{
     x: 0,
     y: 255
@@ -4511,14 +4528,14 @@ const CurvesModal = ({
     setPreviewUrl(canvas.toDataURL('image/jpeg', 0.85));
   }, [points]);
 
-  // Dibuja el grÃ¡fico de la curva
+  // Dibuja el gráfico de la curva
   const drawGraph = () => {
     const canvas = graphCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, 256, 256);
 
-    // LÃ­nea diagonal de referencia (sin curva = sin cambio)
+    // Línea diagonal de referencia (sin curva = sin cambio)
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
@@ -4540,7 +4557,7 @@ const CurvesModal = ({
     }
     ctx.stroke();
 
-    // Curva (interpolaciÃ³n lineal entre puntos ordenados)
+    // Curva (interpolación lineal entre puntos ordenados)
     const sorted = [...points].sort((a, b) => a.x - b.x);
     ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 2;
@@ -4563,7 +4580,7 @@ const CurvesModal = ({
     });
   };
 
-  // Eventos de ratÃ³n para el grÃ¡fico de curvas
+  // Eventos de ratón para el gráfico de curvas
   const handleGraphMouseDown = e => {
     const rect = graphCanvasRef.current.getBoundingClientRect();
     const scaleX = 256 / rect.width;
@@ -4690,7 +4707,7 @@ const CurvesModal = ({
   }, "Aceptar")))));
 };
 
-// --- COMPONENTE: MODAL DE EXPORTACIÃ“N ---
+// --- COMPONENTE: MODAL DE EXPORTACIÓN ---
 const ExportModal = ({
   imageSrc,
   onClose,
@@ -4770,7 +4787,7 @@ const ExportModal = ({
     className: "flex justify-between mb-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-sm font-medium text-slate-300"
-  }, "Calidad (Compresi\xC3\xB3n)"), /*#__PURE__*/React.createElement("span", {
+  }, "Calidad (Compresi\xF3n)"), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-blue-400 font-bold"
   }, Math.round(quality * 100), "%")), /*#__PURE__*/React.createElement("input", {
     type: "range",

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Imagenes Local</title>
+    <title>Editor de Imágenes Local</title>
     <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,20 +19,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
     <link rel="stylesheet" href="app.css">
 
-    <!-- History Manager -->
-    <script src="history-manager.js"></script>
-
+    <!-- Mejora: Precargar iconos para mejor rendimiento -->
     <script>
+        // Precargar iconos de Lucide para mejor rendimiento
         window.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) {
-                lucide.createIcons({
+                // Precargar iconos específicos que usamos en la aplicación
+lucide.createIcons({
                     icons: [
-                        'aperture', 'upload', 'wand-2', 'image-plus', 'download', 'pencil', 'trash-2', 'history', 'save', 'sun',
-                        'move', 'refresh-cw', 'x', 'crop', 'rotate-ccw', 'target', 'circle-dot', 'contrast', 'coffee',
-                        'flip-horizontal', 'flip-vertical', 'rotate-cw', 'maximize', 'square', 'type', 'grid-3x3', 'minus', 'plus',
-                        'wrench', 'palette', 'moon', 'camera'
+                        'aperture', 'upload', 'lock', 'shield', 'log-out',
+                        'download', 'pencil', 'trash-2', 'history', 'save', 'sun',
+                        'move', 'refresh-cw', 'x', 'bar-chart-3', 'users', 'badge-check',
+                        'trophy', 'edit-2', 'copy', 'check', 'crop',
+                        'rotate-ccw', 'circle-dot', 'contrast', 'coffee',
+                        'flip-horizontal', 'flip-vertical', 'rotate-cw', 'maximize',
+                        'square', 'type', 'grid-3x3', 'minus', 'plus', 'wrench', 'pipette', 'scaling', 'spline', 'camera', 'moon',
+                        'wand-2', 'eraser', 'image', 'palette', 'user', 'cloud-sun', 'film', 'plus-circle', 'zap', 'cloud-rain'
                     ]
                 });
             }
@@ -43,7 +51,15 @@
 <body class="glass-body text-slate-200 h-screen w-screen overflow-hidden select-none">
     <div id="root" class="h-full w-full"></div>
 
-    <script src="app-compiled.js?v=1"></script>
+    <script src="app-compiled.js?v=16"></script>
+    <script src="ai-tools.js?v=1"></script>
+    <script>
+        // Inicializar íconos de Lucide después de cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) window.lucide.createIcons();
+        });
+    </script>
+<script src="lightbox.js"></script>
 </body>
 
 </html>

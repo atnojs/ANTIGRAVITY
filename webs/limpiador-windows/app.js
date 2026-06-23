@@ -1,1034 +1,388 @@
-// ============================================================
-// 🧹 LIMPIADOR WINDOWS — App React (Babel)
-// Neon Glassmorphism · Antigravity Style Guide
-// ============================================================
+(function () {
+    "use strict";
 
-const { useState, useEffect, useCallback, useRef } = React;
-
-// ============================================================
-// CONFIGURACIÓN
-// ============================================================
-
-// Detectar si hay servidor PHP disponible
-const IS_FILE_PROTOCOL = window.location.protocol === 'file:';
-const PATH_PREFIX = IS_FILE_PROTOCOL
-    ? ''
-    : window.location.pathname.replace(/\/(index\.html?)?$/, '').replace(/\/$/, '');
-const API_BASE = IS_FILE_PROTOCOL
-    ? null
-    : (window.location.origin + PATH_PREFIX + '/proxy.php?action=');
-
-const STORAGE_KEY = 'limpiador_windows_history';
-const STORAGE_SIM_KEY = 'limpiador_windows_sim_state';
-const POLL_INTERVAL_MS = 3000;
-const STATUS_INTERVAL_MS = 15000;
-
-const MODES = [
-    {
-        id: 1,
-        name: 'Analizar solamente',
-        desc: 'Examina todo sin borrar nada. Ideal para ver qué ocupa espacio.',
-        icon: '🔍',
-        cssClass: 'mode-1',
-    },
-    {
-        id: 2,
-        name: 'Limpieza guiada',
-        desc: 'Analiza por secciones sin borrar. Las confirmaciones reales se activarán desde la web.',
-        icon: '🧹',
-        cssClass: 'mode-2',
-    },
-    {
-        id: 3,
-        name: 'Limpieza automática',
-        desc: 'Limpia todo sin preguntar. Perfecto para tareas programadas.',
-        icon: '⚡',
-        cssClass: 'mode-3',
-    },
-    {
-        id: 4,
-        name: 'Limpieza profunda',
-        desc: 'Modo automático + Prefetch, memory dumps, logs, Windows.old.',
-        icon: '💎',
-        cssClass: 'mode-4',
-    },
-    {
-        id: 5,
-        name: 'Solo sistema (sin apps)',
-        desc: 'Limpieza automática sin tocar navegadores ni aplicaciones.',
-        icon: '🖥️',
-        cssClass: 'mode-5',
-    },
-];
-
-// ============================================================
-// SIMULACIÓN LOCAL (cuando no hay servidor PHP)
-// ============================================================
-
-function getSimState() {
-    try {
-        const raw = localStorage.getItem(STORAGE_SIM_KEY);
-        return raw ? JSON.parse(raw) : { orders: [], results: [] };
-    } catch (e) {
-        return { orders: [], results: [] };
-    }
-}
-
-function saveSimState(state) {
-    localStorage.setItem(STORAGE_SIM_KEY, JSON.stringify(state));
-}
-
-function simApi(endpoint, method, body) {
-    const state = getSimState();
-
-    switch (endpoint) {
-        case 'status':
-            return {
-                ok: true,
-                has_pending: state.orders.some(o => o.status === 'pending'),
-                total_orders: state.orders.length,
-                total_results: state.results.length,
-                last_cleanup: state.results.length > 0
-                    ? state.results[state.results.length - 1].completed_at
-                    : null,
-            };
-
-        case 'order': {
-            if (!body || !body.mode) return { error: 'Modo inválido' };
-
-            const pending = state.orders.find(o => o.status === 'pending');
-            if (pending) return { error: 'Ya hay una limpieza en curso', pending_order: pending };
-
-            const modeNames = {
-                1: 'Analizar solamente',
-                2: 'Limpieza guiada',
-                3: 'Limpieza automática',
-                4: 'Limpieza profunda',
-                5: 'Solo sistema (sin apps)',
-            };
-
-            const order = {
-                id: 'sim_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-                mode: body.mode,
-                mode_name: modeNames[body.mode] || 'Desconocido',
-                status: 'pending',
-                created_at: new Date().toISOString(),
-                completed_at: null,
-            };
-
-            state.orders.push(order);
-            saveSimState(state);
-
-            // Simular que el agente procesa en 3 segundos
-            setTimeout(() => simCompleteOrder(order), 3000);
-
-            return { ok: true, order: order, message: 'Orden creada (simulación). El agente la procesará...' };
-        }
-
-        case 'pending':
-            // La simulación actúa como agente también
-            return {
-                ok: true,
-                has_order: state.orders.some(o => o.status === 'pending'),
-                order: state.orders.find(o => o.status === 'pending') || null,
-            };
-
-        case 'latest':
-            if (state.results.length === 0) {
-                return { ok: true, has_result: false, result: null };
-            }
-            return { ok: true, has_result: true, result: state.results[state.results.length - 1] };
-
-        case 'history':
-            return { ok: true, count: state.results.length, results: [...state.results].reverse() };
-
-        default:
-            return { error: 'Endpoint no encontrado' };
-    }
-}
-
-function simCompleteOrder(order) {
-    const state = getSimState();
-
-    // Marcar orden como completada
-    const ord = state.orders.find(o => o.id === order.id);
-    if (ord) {
-        ord.status = 'completed';
-        ord.completed_at = new Date().toISOString();
-    }
-
-    // Crear resultado simulado
-    const modesLog = {
-        1: 'Modo: Analizar (DryRun) — No se borró nada\nSimulación: los datos son de demostración.',
-        2: 'Modo: Limpieza guiada\nSimulación: los datos son de demostración.',
-        3: 'Modo: Limpieza automática\nSimulación: los datos son de demostración.',
-        4: 'Modo: Limpieza profunda\nSimulación: los datos son de demostración.',
-        5: 'Modo: Solo sistema\nSimulación: los datos son de demostración.',
+    var CONTACT = {
+        phone: "+34 922 000 000",
+        phoneHref: "tel:+34922000000",
+        whatsappHref: "https://wa.me/34922000000?text=Hola%2C%20quiero%20hacer%20una%20reserva%20en%20Terraza%20Brisa%20Cafe.",
+        email: "reservas@terrazabrisa.cafe",
+        address: "Complejo Atlantico, Avenida de la Terraza 12, Tenerife",
+        instagram: "https://www.instagram.com/",
+        facebook: "https://www.facebook.com/",
+        tripadvisor: "https://www.tripadvisor.com/",
+        mapsEmbed: "https://www.google.com/maps?q=Tenerife%20Spain&output=embed"
     };
 
-    const result = {
-        order_id: order.id,
-        mode: order.mode,
-        mode_name: order.mode_name,
-        status: 'success',
-        total_analyzed: '1.85 GB',
-        total_freed: '856 MB',
-        errors: 0,
-        log: [
-            '============================================================',
-            '  LIMPIADOR DE BASURA - Windows 10/11',
-            '============================================================',
-            '  Version    : 1.0.0',
-            '  Ejecucion  : ' + new Date().toISOString(),
-            '  Equipo     : MI-PC',
-            '  Usuario    : anton',
-            '  Admin      : Si',
-            '  Modo       : ' + order.mode_name + ' (simulacion)',
-            '  Log        : %TEMP%\\CleanJunk_sim.log',
-            '',
-            '============================================================',
-            '1. ARCHIVOS TEMPORALES DEL SISTEMA',
-            '============================================================',
-            '>> Windows Temp',
-            '   [i] Encontrado: 245.32 MB',
-            '   [+] Eliminado: 245.32 MB',
-            '',
-            '>> Temp del usuario',
-            '   [i] Encontrado: 512.18 MB',
-            '   [+] Eliminado: 512.18 MB',
-            '',
-            '============================================================',
-            '2. WINDOWS UPDATE Y DELIVERY OPTIMIZATION',
-            '============================================================',
-            '>> Windows Update cache',
-            '   [i] Encontrado: 1.02 GB',
-            '   [+] Eliminado: 1.02 GB',
-            '',
-            '============================================================',
-            '3. PAPELERA DE RECICLAJE',
-            '============================================================',
-            '>> Papelera de reciclaje',
-            '   [i] Elementos en papelera: 12 objetos',
-            '   [+] Papelera vaciada (Clear-RecycleBin)',
-            '',
-            '============================================================',
-            '4. CACHES DE NAVEGADORES',
-            '============================================================',
-            '>> Chrome Cache [Default]',
-            '   [i] Encontrado: 89.54 MB',
-            '   [+] Eliminado: 89.54 MB',
-            '',
-            '============================================================',
-            'RESUMEN DE LIMPIEZA',
-            '============================================================',
-            '  MODO: LIMPIEZA REAL',
-            '',
-            '  Total analizado   : 1.85 GB',
-            '  Total liberado    : 856 MB',
-            '  Errores           : 0',
-            '  Log guardado en   : %TEMP%\\CleanJunk_sim.log',
-            '',
-            '============================================================',
-            '⚠️ SIMULACIÓN: Estos datos son de demostración.',
-            '   Sube los archivos a Hostinger y ejecuta el agente',
-            '   en Windows para ver resultados reales.',
-            '============================================================',
-        ].join('\n'),
-        sections: [
-            'Windows Temp',
-            'Temp del usuario',
-            'Windows Update cache',
-            'Papelera de reciclaje',
-            'Chrome Cache',
-        ],
-        computer: 'MI-PC (simulación)',
-        user: 'anton',
-        is_admin: true,
-        completed_at: new Date().toISOString(),
+    var LANGUAGES = [
+        { code: "es", label: "ES", name: "Español" },
+        { code: "en", label: "EN", name: "English" },
+        { code: "de", label: "DE", name: "Deutsch" }
+    ];
+
+    var DICT = {
+        es: {
+            metaTitle: "Terraza Brisa Cafe | Terraza, deporte y musica en directo",
+            metaDescription: "Cafeteria premium con gran terraza, deportes en pantalla grande y musica en directo los fines de semana.",
+            brandPlace: "Apartment Cafe",
+            nav: ["Cafeteria", "Deportes", "Musica", "Carta", "Galeria", "Reservas"],
+            actions: { reserve: "Reservar mesa", whatsapp: "WhatsApp", call: "Llamar", menu: "Ver carta", events: "Ver eventos", send: "Enviar consulta" },
+            hero: {
+                eyebrow: "Cafe, terraza y ocio en el complejo",
+                title: "Tu terraza para desayunar, ver el partido y alargar la noche.",
+                copy: "Una cafeteria acogedora y elegante para residentes y visitantes: cafe de mañana, comidas informales, pantalla grande para deporte, copas al atardecer y musica en directo cada fin de semana.",
+                metrics: [
+                    ["3", "zonas: terraza, lounge y sala deportiva"],
+                    ["7/7", "abierto para desayunos, cenas y copas"],
+                    ["ES · EN · DE", "atencion pensada para clientes internacionales"]
+                ]
+            },
+            about: {
+                eyebrow: "Bienvenidos",
+                title: "Un punto de encuentro dentro del complejo, con ambiente de vacaciones todo el año.",
+                lead: "Terraza Brisa Cafe combina la comodidad de una cafeteria de confianza con el caracter de un local social: mesas amplias, servicio cercano, carta flexible y espacios preparados para distintos momentos del dia.",
+                labels: ["Terraza amplia", "Pantalla grande", "Musica en directo"],
+                features: [
+                    ["sun", "Gran terraza exterior", "Mesas con sombra, vegetacion y luz calida para desayunos tranquilos, comidas al aire libre y tardes largas."],
+                    ["coffee", "Dos ambientes interiores", "Un lounge relajado para conversar y una zona mas viva para deporte, grupos y eventos."],
+                    ["users", "Para residentes y turistas", "Servicio claro, acogedor y facil de entender para clientes españoles, ingleses, alemanes y otras nacionalidades."]
+                ]
+            },
+            highlights: {
+                eyebrow: "Lo esencial",
+                title: "Tres razones para volver",
+                lead: "La experiencia se organiza alrededor de terraza, deporte y musica, con una carta pensada para acompañar cada plan.",
+                items: [
+                    ["terrace", "Terraza con protagonismo", "El lugar natural para desayunar, leer, reunirse o tomar una copa cuando cae la tarde."],
+                    ["sports", "Deportes en pantalla grande", "Futbol, tenis, motor y eventos internacionales en una zona comoda y visible."],
+                    ["music", "Fines de semana con directo", "Sesiones acusticas, jazz suave y artistas locales para crear ambiente sin perder comodidad."]
+                ]
+            },
+            sports: {
+                eyebrow: "Pantalla grande",
+                title: "Tu zona deportiva para partidos, finales y grandes citas.",
+                lead: "Programamos retransmisiones destacadas durante la semana y reforzamos el ambiente en partidos clave. Si buscas un evento concreto, contacta y lo preparamos.",
+                panelTitle: "Eventos que solemos emitir",
+                panelText: "Futbol nacional e internacional, Champions, Premier League, LaLiga, torneos de tenis, Formula 1, MotoGP y competiciones especiales segun temporada.",
+                tags: ["Futbol", "Tenis", "Formula 1", "MotoGP", "Eventos privados"],
+                listTitle: "Proximas retransmisiones",
+                events: [
+                    ["Vier", "14", "Jun", "Noche de futbol europeo", "Partido destacado con sonido ambiente y reserva de mesas para grupos.", "20:30", "Zona pantalla"],
+                    ["Sab", "15", "Jun", "Tarde de tenis", "Sesion de semifinales con carta de cafes, tapas y bebidas frias.", "17:00", "Interior lounge"],
+                    ["Dom", "16", "Jun", "Gran premio en directo", "Motor en pantalla grande y menu informal para ver la carrera con calma.", "14:00", "Zona deportiva"]
+                ]
+            },
+            music: {
+                eyebrow: "Fin de semana",
+                title: "Musica en directo para cerrar el dia con otro ritmo.",
+                lead: "Cada fin de semana reservamos un espacio para actuaciones cercanas: volumen agradable, artistas locales y un ambiente perfecto para parejas, familias y amigos.",
+                events: [
+                    ["Vie", "21", "Jun", "Acoustic Sunset", "Laura Medina Duo", "20:30", "Versiones acusticas y soul suave para cena y copas."],
+                    ["Sab", "22", "Jun", "Jazz & Terrace", "Blue Palm Trio", "21:00", "Jazz calido con contrabajo, guitarra y percusion ligera."],
+                    ["Dom", "23", "Jun", "Latin Easy Night", "Mar de Fondo", "19:30", "Ritmos latinos relajados para despedir el fin de semana."]
+                ]
+            },
+            menu: {
+                eyebrow: "Carta editable",
+                title: "De la mañana a la noche",
+                lead: "Los precios y platos estan organizados por categoria para actualizar la carta con facilidad.",
+                categories: { breakfast: "Desayunos", coffee: "Cafes y bebidas", tapas: "Comidas y tapas", dinner: "Cenas", cocktails: "Cocteles" },
+                items: {
+                    breakfast: [["Tostada mediterranea", "Pan artesano, tomate natural, aceite de oliva y jamon serrano.", "6,50 €"], ["Bowl de yogur y fruta", "Yogur cremoso, fruta fresca, granola y miel.", "7,20 €"], ["Desayuno Brisa", "Cafe, zumo natural, tostada a elegir y mini bolleria.", "9,80 €"]],
+                    coffee: [["Cafe especialidad", "Espresso, cortado, latte o cappuccino con leche a elegir.", "2,20 €"], ["Iced latte terraza", "Cafe frio, leche, hielo y toque de vainilla.", "4,60 €"], ["Limonada de hierbabuena", "Limon natural, hierbabuena y agua con gas.", "4,90 €"]],
+                    tapas: [["Tabla de quesos y fruta", "Seleccion local, frutos secos y chutney suave.", "14,50 €"], ["Papas bravas Brisa", "Salsa ahumada, alioli ligero y hierbas frescas.", "8,40 €"], ["Wrap de pollo grill", "Pollo marinado, verduras, salsa yogur y ensalada.", "11,90 €"]],
+                    dinner: [["Ensalada Atlantica", "Hojas verdes, aguacate, langostinos y vinagreta citrica.", "13,80 €"], ["Burger de terraza", "Carne seleccionada, queso curado, cebolla dulce y patatas.", "15,50 €"], ["Pasta cremosa de setas", "Setas salteadas, parmesano y aceite de trufa suave.", "14,90 €"]],
+                    cocktails: [["Spritz de la casa", "Aperitivo citrico, cava, soda y naranja fresca.", "8,50 €"], ["Mojito Brisa", "Ron, lima, hierbabuena y azucar moreno.", "8,90 €"], ["Mocktail tropical", "Mango, lima, ginger ale y fruta fresca.", "6,80 €"]]
+                }
+            },
+            gallery: { eyebrow: "Galeria", title: "Espacios pensados para cada momento", lead: "Imagenes del ambiente que definen la experiencia: terraza, interior, pantalla, musica y producto.", labels: ["Terraza exterior", "Zona deportiva", "Musica en directo", "Ambiente interior", "Cafe y platos"] },
+            hours: { eyebrow: "Horarios", title: "Abierto todos los dias", lead: "Los horarios especiales para deporte y musica se anuncian en la agenda y tambien por WhatsApp.", rows: [["Lunes a jueves", "08:00 - 23:00"], ["Viernes", "08:00 - 01:00"], ["Sabado", "09:00 - 01:00"], ["Domingo", "09:00 - 23:30"], ["Eventos especiales", "Segun programacion"]] },
+            contact: {
+                eyebrow: "Reservas y contacto",
+                title: "Reserva mesa o pregunta por tu evento.",
+                lead: "Para grupos, partidos concretos o actuaciones, contacta con antelacion y preparamos la zona mas adecuada.",
+                cards: ["Telefono", "WhatsApp", "Correo", "Ubicacion"],
+                form: {
+                    title: "Enviar consulta", name: "Nombre", email: "Email", phone: "Telefono", people: "Personas", date: "Fecha", type: "Tipo de reserva", message: "Mensaje",
+                    placeholders: ["Tu nombre", "tu@email.com", "+34 ...", "2", "Cuentanos si vienes a desayunar, ver un partido, cenar o disfrutar de musica en directo."],
+                    options: ["Reserva de mesa", "Evento deportivo", "Musica en directo", "Grupo privado", "Otra consulta"],
+                    success: "Consulta preparada. Se abrira tu cliente de email para enviarla.",
+                    errors: { required: "Campo obligatorio", email: "Introduce un email valido", people: "Minimo 1 persona" }
+                }
+            },
+            reviews: { eyebrow: "Opiniones", title: "Una experiencia facil de recomendar", items: [["Nos encanta tener un sitio asi dentro del complejo. Desayuno tranquilo por la mañana y ambiente precioso por la noche.", "Marta R., residente"], ["Great terrace, friendly service and the football area was exactly what we needed for the match.", "James K., visitor"], ["Sehr angenehme Atmosphaere, gute Cocktails und Live-Musik am Wochenende. Wir kommen wieder.", "Anna M., guest"]] },
+            footer: { text: "Cafe, terraza, deporte y musica en directo dentro de un complejo de apartamentos con ambiente internacional.", contact: "Contacto", explore: "Explorar", legal: "Legal", legalLinks: ["Aviso legal", "Privacidad", "Cookies"], copyright: "© 2026 Terraza Brisa Cafe. Todos los derechos reservados.", note: "Contenido preparado para editar carta, horarios y eventos desde app.js." }
+        },
+        en: {
+            metaTitle: "Terraza Brisa Cafe | Terrace, sport and live music",
+            metaDescription: "Premium cafe with a large terrace, big-screen sports and weekend live music.",
+            brandPlace: "Apartment Cafe",
+            nav: ["Cafe", "Sports", "Music", "Menu", "Gallery", "Bookings"],
+            actions: { reserve: "Book a table", whatsapp: "WhatsApp", call: "Call", menu: "View menu", events: "View events", send: "Send enquiry" },
+            hero: {
+                eyebrow: "Cafe, terrace and leisure in the complex",
+                title: "Your terrace for breakfast, the match and a relaxed night out.",
+                copy: "A welcoming, elegant cafe for residents and visitors: morning coffee, casual dining, big-screen sport, sunset drinks and live music every weekend.",
+                metrics: [["3", "areas: terrace, lounge and sports room"], ["7/7", "open for breakfast, dinner and drinks"], ["ES · EN · DE", "service designed for international guests"]]
+            },
+            about: {
+                eyebrow: "Welcome",
+                title: "A meeting point inside the complex, with a holiday mood all year round.",
+                lead: "Terraza Brisa Cafe blends the comfort of a trusted cafe with the character of a social venue: spacious tables, warm service, a flexible menu and areas prepared for every part of the day.",
+                labels: ["Large terrace", "Big screen", "Live music"],
+                features: [["sun", "Large outdoor terrace", "Shaded tables, greenery and warm lighting for calm breakfasts, open-air lunches and long evenings."], ["coffee", "Two indoor atmospheres", "A relaxed lounge for conversation and a livelier area for sports, groups and events."], ["users", "For residents and tourists", "Clear, welcoming service for Spanish, English, German and other international guests."]]
+            },
+            highlights: { eyebrow: "Essentials", title: "Three reasons to come back", lead: "The experience is built around terrace, sport and music, with a menu that fits every plan.", items: [["terrace", "A terrace with presence", "The natural place for breakfast, reading, meeting friends or enjoying a drink at sunset."], ["sports", "Big-screen sports", "Football, tennis, motorsport and international events in a comfortable, visible area."], ["music", "Weekend live sessions", "Acoustic sets, soft jazz and local artists create atmosphere without losing comfort."]] },
+            sports: { eyebrow: "Big screen", title: "Your sports area for matches, finals and major events.", lead: "We schedule key broadcasts during the week and build the atmosphere for important fixtures. Looking for a specific event? Contact us and we will prepare it.", panelTitle: "Events we usually show", panelText: "National and international football, Champions League, Premier League, LaLiga, tennis tournaments, Formula 1, MotoGP and seasonal special competitions.", tags: ["Football", "Tennis", "Formula 1", "MotoGP", "Private events"], listTitle: "Upcoming broadcasts", events: [["Fri", "14", "Jun", "European football night", "Featured match with venue sound and table bookings for groups.", "20:30", "Screen area"], ["Sat", "15", "Jun", "Tennis afternoon", "Semi-final session with coffee, tapas and cold drinks.", "17:00", "Interior lounge"], ["Sun", "16", "Jun", "Grand prix live", "Motorsport on the big screen with an informal menu for an easy race day.", "14:00", "Sports area"]] },
+            music: { eyebrow: "Weekend", title: "Live music to end the day with a different rhythm.", lead: "Every weekend we reserve space for intimate performances: pleasant volume, local artists and an atmosphere that works for couples, families and friends.", events: [["Fri", "21", "Jun", "Acoustic Sunset", "Laura Medina Duo", "20:30", "Acoustic covers and soft soul for dinner and drinks."], ["Sat", "22", "Jun", "Jazz & Terrace", "Blue Palm Trio", "21:00", "Warm jazz with double bass, guitar and light percussion."], ["Sun", "23", "Jun", "Latin Easy Night", "Mar de Fondo", "19:30", "Relaxed Latin rhythms to close the weekend."]] },
+            menu: { eyebrow: "Editable menu", title: "From morning to night", lead: "Prices and dishes are grouped by category so the menu can be updated easily.", categories: { breakfast: "Breakfast", coffee: "Coffee and drinks", tapas: "Lunch and tapas", dinner: "Dinner", cocktails: "Cocktails" }, items: {} },
+            gallery: { eyebrow: "Gallery", title: "Spaces designed for every moment", lead: "Images of the atmosphere that defines the experience: terrace, interior, screen, music and food.", labels: ["Outdoor terrace", "Sports area", "Live music", "Indoor mood", "Coffee and dishes"] },
+            hours: { eyebrow: "Opening hours", title: "Open every day", lead: "Special hours for sport and music are announced in the agenda and via WhatsApp.", rows: [["Monday to Thursday", "08:00 - 23:00"], ["Friday", "08:00 - 01:00"], ["Saturday", "09:00 - 01:00"], ["Sunday", "09:00 - 23:30"], ["Special events", "According to schedule"]] },
+            contact: { eyebrow: "Bookings and contact", title: "Book a table or ask about your event.", lead: "For groups, specific matches or live music nights, contact us in advance and we will prepare the best area.", cards: ["Phone", "WhatsApp", "Email", "Location"], form: { title: "Send enquiry", name: "Name", email: "Email", phone: "Phone", people: "People", date: "Date", type: "Booking type", message: "Message", placeholders: ["Your name", "you@email.com", "+34 ...", "2", "Tell us whether you are coming for breakfast, a match, dinner or live music."], options: ["Table booking", "Sports event", "Live music", "Private group", "Other enquiry"], success: "Enquiry prepared. Your email client will open so you can send it.", errors: { required: "Required field", email: "Enter a valid email", people: "Minimum 1 person" } } },
+            reviews: { eyebrow: "Reviews", title: "An experience people recommend", items: [["We love having a place like this inside the complex. Calm breakfast in the morning and a beautiful mood at night.", "Marta R., resident"], ["Great terrace, friendly service and the football area was exactly what we needed for the match.", "James K., visitor"], ["Sehr angenehme Atmosphaere, gute Cocktails und Live-Musik am Wochenende. Wir kommen wieder.", "Anna M., guest"]] },
+            footer: { text: "Cafe, terrace, sport and live music inside an apartment complex with an international atmosphere.", contact: "Contact", explore: "Explore", legal: "Legal", legalLinks: ["Legal notice", "Privacy", "Cookies"], copyright: "© 2026 Terraza Brisa Cafe. All rights reserved.", note: "Content prepared for editing menu, hours and events from app.js." }
+        },
+        de: {
+            metaTitle: "Terraza Brisa Cafe | Terrasse, Sport und Live-Musik",
+            metaDescription: "Premium-Cafe mit grosser Terrasse, Sport auf Grossbildschirm und Live-Musik am Wochenende.",
+            brandPlace: "Apartment Cafe",
+            nav: ["Cafe", "Sport", "Musik", "Karte", "Galerie", "Reservieren"],
+            actions: { reserve: "Tisch reservieren", whatsapp: "WhatsApp", call: "Anrufen", menu: "Karte ansehen", events: "Events ansehen", send: "Anfrage senden" },
+            hero: { eyebrow: "Cafe, Terrasse und Freizeit im Komplex", title: "Ihre Terrasse fuer Fruehstueck, Spielabend und entspannte Naechte.", copy: "Ein einladendes, elegantes Cafe fuer Bewohner und Besucher: Kaffee am Morgen, lockeres Essen, Sport auf Grossbildschirm, Drinks zum Sonnenuntergang und jedes Wochenende Live-Musik.", metrics: [["3", "Bereiche: Terrasse, Lounge und Sportbereich"], ["7/7", "geoeffnet fuer Fruehstueck, Abendessen und Drinks"], ["ES · EN · DE", "Service fuer internationale Gaeste"]] },
+            about: { eyebrow: "Willkommen", title: "Ein Treffpunkt im Komplex, mit Urlaubsgefuehl das ganze Jahr.", lead: "Terraza Brisa Cafe verbindet den Komfort eines vertrauten Cafes mit dem Charakter eines sozialen Treffpunkts: grosszuegige Tische, herzlicher Service, flexible Karte und Bereiche fuer jede Tageszeit.", labels: ["Grosse Terrasse", "Grossbildschirm", "Live-Musik"], features: [["sun", "Grosse Aussenterrasse", "Schattige Tische, Pflanzen und warmes Licht fuer ruhiges Fruehstueck, Essen im Freien und lange Abende."], ["coffee", "Zwei Innenbereiche", "Eine ruhige Lounge fuer Gespraeche und ein lebendigerer Bereich fuer Sport, Gruppen und Events."], ["users", "Fuer Bewohner und Touristen", "Klarer, herzlicher Service fuer spanische, englische, deutsche und weitere internationale Gaeste."]] },
+            highlights: { eyebrow: "Highlights", title: "Drei Gruende wiederzukommen", lead: "Das Erlebnis dreht sich um Terrasse, Sport und Musik, mit einer Karte, die zu jedem Plan passt.", items: [["terrace", "Terrasse im Mittelpunkt", "Der natuerliche Ort fuer Fruehstueck, Lesen, Treffen oder einen Drink beim Sonnenuntergang."], ["sports", "Sport auf Grossbildschirm", "Fussball, Tennis, Motorsport und internationale Events in einem bequemen, gut sichtbaren Bereich."], ["music", "Live-Musik am Wochenende", "Akustik-Sets, sanfter Jazz und lokale Kuenstler schaffen Atmosphaere mit Komfort."]] },
+            sports: { eyebrow: "Grossbildschirm", title: "Ihr Sportbereich fuer Spiele, Finals und grosse Events.", lead: "Wir planen wichtige Uebertragungen unter der Woche und schaffen Stimmung bei besonderen Spielen. Sie suchen ein bestimmtes Event? Kontaktieren Sie uns, wir bereiten es vor.", panelTitle: "Was wir normalerweise zeigen", panelText: "Nationaler und internationaler Fussball, Champions League, Premier League, LaLiga, Tennisturniere, Formel 1, MotoGP und saisonale Spezialwettbewerbe.", tags: ["Fussball", "Tennis", "Formel 1", "MotoGP", "Private Events"], listTitle: "Naechste Uebertragungen", events: [["Fr", "14", "Jun", "Europaeischer Fussballabend", "Topspiel mit Sound im Raum und Tischreservierung fuer Gruppen.", "20:30", "Bildschirmbereich"], ["Sa", "15", "Jun", "Tennisnachmittag", "Halbfinal-Session mit Kaffee, Tapas und kalten Getraenken.", "17:00", "Innenlounge"], ["So", "16", "Jun", "Grand Prix live", "Motorsport auf Grossbildschirm mit lockerer Karte fuer einen entspannten Renntag.", "14:00", "Sportbereich"]] },
+            music: { eyebrow: "Wochenende", title: "Live-Musik, um den Tag mit anderem Rhythmus zu beenden.", lead: "Jedes Wochenende reservieren wir Raum fuer nahe, angenehme Auftritte: gute Lautstaerke, lokale Kuenstler und eine Atmosphaere fuer Paare, Familien und Freunde.", events: [["Fr", "21", "Jun", "Acoustic Sunset", "Laura Medina Duo", "20:30", "Akustische Covers und sanfter Soul fuer Abendessen und Drinks."], ["Sa", "22", "Jun", "Jazz & Terrace", "Blue Palm Trio", "21:00", "Warmer Jazz mit Kontrabass, Gitarre und leichter Percussion."], ["So", "23", "Jun", "Latin Easy Night", "Mar de Fondo", "19:30", "Entspannte Latin-Rhythmen zum Abschluss des Wochenendes."]] },
+            menu: { eyebrow: "Editierbare Karte", title: "Vom Morgen bis zur Nacht", lead: "Preise und Gerichte sind nach Kategorien geordnet, damit die Karte einfach aktualisiert werden kann.", categories: { breakfast: "Fruehstueck", coffee: "Kaffee und Getraenke", tapas: "Essen und Tapas", dinner: "Abendessen", cocktails: "Cocktails" }, items: {} },
+            gallery: { eyebrow: "Galerie", title: "Bereiche fuer jeden Moment", lead: "Bilder der Atmosphaere, die das Erlebnis praegt: Terrasse, Innenraum, Bildschirm, Musik und Speisen.", labels: ["Aussenterrasse", "Sportbereich", "Live-Musik", "Innenambiente", "Kaffee und Speisen"] },
+            hours: { eyebrow: "Oeffnungszeiten", title: "Jeden Tag geoeffnet", lead: "Spezielle Zeiten fuer Sport und Musik werden in der Agenda und per WhatsApp bekannt gegeben.", rows: [["Montag bis Donnerstag", "08:00 - 23:00"], ["Freitag", "08:00 - 01:00"], ["Samstag", "09:00 - 01:00"], ["Sonntag", "09:00 - 23:30"], ["Spezielle Events", "Laut Programm"]] },
+            contact: { eyebrow: "Reservierung und Kontakt", title: "Tisch reservieren oder Event anfragen.", lead: "Fuer Gruppen, bestimmte Spiele oder Live-Musik-Abende kontaktieren Sie uns bitte fruehzeitig, damit wir den passenden Bereich vorbereiten.", cards: ["Telefon", "WhatsApp", "E-Mail", "Standort"], form: { title: "Anfrage senden", name: "Name", email: "E-Mail", phone: "Telefon", people: "Personen", date: "Datum", type: "Art der Reservierung", message: "Nachricht", placeholders: ["Ihr Name", "sie@email.com", "+34 ...", "2", "Sagen Sie uns, ob Sie zum Fruehstueck, Spiel, Abendessen oder zur Live-Musik kommen."], options: ["Tischreservierung", "Sportevent", "Live-Musik", "Private Gruppe", "Andere Anfrage"], success: "Anfrage vorbereitet. Ihr E-Mail-Programm wird geoeffnet, damit Sie sie senden koennen.", errors: { required: "Pflichtfeld", email: "Bitte gueltige E-Mail eingeben", people: "Mindestens 1 Person" } } },
+            reviews: { eyebrow: "Bewertungen", title: "Ein Erlebnis, das man gerne empfiehlt", items: [["Wir lieben es, so einen Ort direkt im Komplex zu haben. Ruhiges Fruehstueck am Morgen und schoene Stimmung am Abend.", "Marta R., Bewohnerin"], ["Great terrace, friendly service and the football area was exactly what we needed for the match.", "James K., visitor"], ["Sehr angenehme Atmosphaere, gute Cocktails und Live-Musik am Wochenende. Wir kommen wieder.", "Anna M., Gast"]] },
+            footer: { text: "Cafe, Terrasse, Sport und Live-Musik in einem Apartmentkomplex mit internationaler Atmosphaere.", contact: "Kontakt", explore: "Entdecken", legal: "Rechtliches", legalLinks: ["Impressum", "Datenschutz", "Cookies"], copyright: "© 2026 Terraza Brisa Cafe. Alle Rechte vorbehalten.", note: "Inhalte fuer einfache Bearbeitung von Karte, Zeiten und Events in app.js vorbereitet." }
+        }
     };
 
-    state.results.push(result);
-    saveSimState(state);
-}
+    DICT.en.menu.items = {
+        breakfast: [["Mediterranean toast", "Artisan bread, fresh tomato, olive oil and serrano ham.", "6.50 €"], ["Yoghurt and fruit bowl", "Creamy yoghurt, fresh fruit, granola and honey.", "7.20 €"], ["Brisa breakfast", "Coffee, fresh juice, toast of your choice and mini pastry.", "9.80 €"]],
+        coffee: [["Specialty coffee", "Espresso, cortado, latte or cappuccino with your choice of milk.", "2.20 €"], ["Terrace iced latte", "Cold coffee, milk, ice and a touch of vanilla.", "4.60 €"], ["Mint lemonade", "Fresh lemon, mint and sparkling water.", "4.90 €"]],
+        tapas: [["Cheese and fruit board", "Local selection, nuts and a mild chutney.", "14.50 €"], ["Brisa bravas potatoes", "Smoked sauce, light aioli and fresh herbs.", "8.40 €"], ["Grilled chicken wrap", "Marinated chicken, vegetables, yoghurt sauce and salad.", "11.90 €"]],
+        dinner: [["Atlantic salad", "Green leaves, avocado, prawns and citrus vinaigrette.", "13.80 €"], ["Terrace burger", "Selected beef, mature cheese, sweet onion and potatoes.", "15.50 €"], ["Creamy mushroom pasta", "Sauteed mushrooms, parmesan and a soft truffle oil.", "14.90 €"]],
+        cocktails: [["House spritz", "Citrus aperitif, cava, soda and fresh orange.", "8.50 €"], ["Brisa mojito", "Rum, lime, mint and brown sugar.", "8.90 €"], ["Tropical mocktail", "Mango, lime, ginger ale and fresh fruit.", "6.80 €"]]
+    };
+    DICT.de.menu.items = {
+        breakfast: [["Mediterraner Toast", "Handwerksbrot, frische Tomate, Olivenoel und Serrano-Schinken.", "6,50 €"], ["Joghurt-Frucht-Bowl", "Cremiger Joghurt, frisches Obst, Granola und Honig.", "7,20 €"], ["Brisa Fruehstueck", "Kaffee, frischer Saft, Toast nach Wahl und Mini-Gebaeck.", "9,80 €"]],
+        coffee: [["Spezialitaetenkaffee", "Espresso, Cortado, Latte oder Cappuccino mit Milch nach Wahl.", "2,20 €"], ["Terrace Iced Latte", "Kalter Kaffee, Milch, Eis und ein Hauch Vanille.", "4,60 €"], ["Minz-Limonade", "Frische Zitrone, Minze und Sprudelwasser.", "4,90 €"]],
+        tapas: [["Kaese- und Fruchtplatte", "Lokale Auswahl, Nuesse und mildes Chutney.", "14,50 €"], ["Brisa Patatas Bravas", "Rauchige Sauce, leichter Aioli und frische Kraeuter.", "8,40 €"], ["Gegrillter Chicken Wrap", "Mariniertes Huhn, Gemuese, Joghurtsauce und Salat.", "11,90 €"]],
+        dinner: [["Atlantik-Salat", "Gruene Blaetter, Avocado, Garnelen und Zitrus-Vinaigrette.", "13,80 €"], ["Terrassen-Burger", "Ausgewaehltes Rindfleisch, gereifter Kaese, suesse Zwiebel und Kartoffeln.", "15,50 €"], ["Cremige Pilz-Pasta", "Gebratene Pilze, Parmesan und mildes Trueffeloel.", "14,90 €"]],
+        cocktails: [["Haus-Spritz", "Zitrus-Aperitif, Cava, Soda und frische Orange.", "8,50 €"], ["Brisa Mojito", "Rum, Limette, Minze und brauner Zucker.", "8,90 €"], ["Tropical Mocktail", "Mango, Limette, Ginger Ale und frisches Obst.", "6,80 €"]]
+    };
 
-// ============================================================
-// HOOKS
-// ============================================================
+    var navIds = ["about", "sports", "music", "menu", "gallery", "contact"];
+    var activeMenuCategory = "breakfast";
+    var currentLang = localStorage.getItem("terraza_brisa_lang") || "es";
 
-function useLocalStorage(key, initialValue) {
-    const [value, setValue] = useState(() => {
-        try {
-            const saved = localStorage.getItem(key);
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
-            }
-        } catch (e) {
-            console.warn('Error cargando localStorage:', e);
-        }
-        return initialValue;
-    });
-
-    useEffect(() => {
-        try {
-            localStorage.setItem(key, JSON.stringify(value));
-        } catch (e) {
-            console.warn('Error guardando localStorage:', e);
-        }
-    }, [key, value]);
-
-    return [value, setValue];
-}
-
-async function fetchJson(url, options = {}, timeoutMs = 5000) {
-    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutId = controller
-        ? setTimeout(() => controller.abort(), timeoutMs)
-        : null;
-
-    try {
-        const resp = await fetch(url, {
-            ...options,
-            signal: controller ? controller.signal : options.signal,
+    function esc(value) {
+        return String(value).replace(/[&<>"']/g, function (char) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char];
         });
-        return await resp.json();
-    } finally {
-        if (timeoutId) clearTimeout(timeoutId);
     }
-}
 
-// ============================================================
-// COMPONENTE: StatusBar
-// ============================================================
-
-function StatusBar({ status, lastCleanup, onRefresh, isSimulation, stalePending }) {
-    const statusConfig = {
-        idle:    { dot: 'online',  text: isSimulation ? 'Simulación activa — Pulsa un modo' : 'Conectado — Esperando orden', color: 'text-emerald' },
-        waiting: { dot: 'waiting', text: isSimulation ? 'Simulando limpieza...' : 'Agente trabajando...',       color: 'text-cyan' },
-        done:    { dot: 'online',  text: 'Limpieza completada',        color: 'text-emerald' },
-        error:   { dot: 'offline', text: isSimulation ? 'Simulación activa' : 'Agente no disponible',       color: 'text-amber' },
-    };
-
-    const cfg = statusConfig[status] || statusConfig.idle;
-
-    return (
-        <div className="status-bar glass-card">
-            <div>
-                <span className={`status-dot ${cfg.dot}`}></span>
-                <span className={cfg.color}>{cfg.text}</span>
-                {stalePending && status === 'idle' && (
-                    <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '0.15rem 0.5rem', borderRadius: '99px' }}>
-                        Orden atascada
-                    </span>
-                )}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                {isSimulation && (
-                    <span style={{ fontSize: '0.7rem', color: '#a78bfa', background: 'rgba(167,139,250,0.1)', padding: '0.15rem 0.5rem', borderRadius: '99px' }}>
-                        DEMO
-                    </span>
-                )}
-                {lastCleanup && (
-                    <span className="text-muted" style={{ fontSize: '0.75rem' }}>
-                        Última: {new Date(lastCleanup).toLocaleString('es-ES')}
-                    </span>
-                )}
-                <button className="agent-switch" onClick={onRefresh} title="Verificar estado">
-                    ↻
-                </button>
-            </div>
-        </div>
-    );
-}
-
-// ============================================================
-// COMPONENTE: ModeSelector
-// ============================================================
-
-function ModeSelector({ onSelect, disabled, activeMode, isSimulation }) {
-    return (
-        <div className="mode-selector">
-            {MODES.map((mode, idx) => (
-                <button
-                    key={mode.id}
-                    className={`mode-btn ${mode.cssClass} fade-in-up ${activeMode === mode.id ? 'processing' : ''}`}
-                    onClick={() => onSelect(mode.id)}
-                    disabled={disabled}
-                >
-                    <div className="mode-icon">
-                        {activeMode === mode.id ? (
-                            <div className="btn-spinner"></div>
-                        ) : mode.icon}
-                    </div>
-                    <div className="mode-info">
-                        <div className="mode-name">
-                            {activeMode === mode.id ? 'PROCESANDO...' : mode.name}
-                        </div>
-                        <div className="mode-desc">{isSimulation && activeMode !== mode.id ? '🟣 Demo: ' : ''}{mode.desc}</div>
-                    </div>
-                </button>
-            ))}
-        </div>
-    );
-}
-
-// ============================================================
-// COMPONENTE: LoadingOverlay
-// ============================================================
-
-function LoadingOverlay({ visible, text, subtext, onCancel }) {
-    return (
-        <div className={`loading-overlay ${visible ? '' : 'hidden'}`}>
-            <div className="spinner-triple">
-                <div className="ring ring-1"></div>
-                <div className="ring ring-2"></div>
-                <div className="ring ring-3"></div>
-            </div>
-            <p className="loading-text">{text || 'IA Generando Obra Maestra...'}</p>
-            {subtext && <p className="loading-subtext">{subtext}</p>}
-            {onCancel && (
-                <button className="btn-glass danger" onClick={onCancel} style={{ marginTop: '1rem' }}>
-                    Cancelar limpieza
-                </button>
-            )}
-        </div>
-    );
-}
-
-// ============================================================
-// COMPONENTE: ResultsPanel
-// ============================================================
-
-function GuidedApproval({ plan, onRun, disabled }) {
-    const available = (plan || []).filter(block => (block.analyzed_bytes || 0) > 0 || block.id === 'recycle_bin');
-    const [selected, setSelected] = useState(() => available.filter(block => (block.analyzed_bytes || 0) > 0).map(block => block.id));
-
-    useEffect(() => {
-        setSelected(available.filter(block => (block.analyzed_bytes || 0) > 0).map(block => block.id));
-    }, [JSON.stringify(available.map(block => [block.id, block.analyzed_bytes]))]);
-
-    if (available.length === 0) return null;
-
-    const toggle = (id) => {
-        setSelected(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
-    };
-
-    return (
-        <div className="glass-card fade-in-up" style={{ marginTop: '1rem', borderColor: 'rgba(34,211,238,0.3)' }}>
-            <h3 style={{ color: '#22d3ee', marginBottom: '0.75rem' }}>Aprobar limpieza por bloques</h3>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-                {available.map(block => (
-                    <label key={block.id} className="history-item" style={{ cursor: 'pointer' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <input
-                                type="checkbox"
-                                checked={selected.includes(block.id)}
-                                onChange={() => toggle(block.id)}
-                            />
-                            <div>
-                                <div className="hist-mode">{block.name}</div>
-                                <div className="hist-date">Encontrado: {block.total_analyzed || '0 B'}</div>
-                            </div>
-                        </div>
-                        <div className="hist-freed">{block.total_freed || '0 B'}</div>
-                    </label>
-                ))}
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <button className="btn-glass danger" disabled={disabled || selected.length === 0} onClick={() => onRun(selected)}>
-                    Limpiar bloques seleccionados
-                </button>
-                <span className="text-muted" style={{ fontSize: '0.75rem' }}>
-                    Solo se borrarán los bloques marcados.
-                </span>
-            </div>
-        </div>
-    );
-}
-
-function ResultsPanel({ result, onViewLog, isSimulation, onRunGuided, isBusy }) {
-    if (!result) return null;
-
-    const hasErrors = (result.errors || 0) > 0;
-    const canApproveGuided = result.mode === 2
-        && result.guided_plan
-        && result.guided_plan.length > 0
-        && !(result.mode_name || '').includes('bloques aprobados');
-
-    return (
-        <div className="results-panel fade-in-up">
-            <h2 className="gradient-text">Resultados de la limpieza</h2>
-
-            {isSimulation && (
-                <div style={{
-                    background: 'rgba(167,139,250,0.1)',
-                    border: '1px solid rgba(167,139,250,0.3)',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '0.75rem 1rem',
-                    marginBottom: '1rem',
-                    fontSize: '0.85rem',
-                    color: '#a78bfa',
-                }}>
-                    ⚠️ <strong>Modo demostración:</strong> Los datos son simulados. Sube los archivos a Hostinger y ejecuta el agente en Windows para resultados reales.
-                </div>
-            )}
-
-            <div className="result-stats">
-                <div className="stat-card">
-                    <div className="stat-value">{result.total_freed || '0 B'}</div>
-                    <div className="stat-label">Espacio liberado</div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-value">{result.total_analyzed || '0 B'}</div>
-                    <div className="stat-label">Analizado</div>
-                </div>
-                <div className={`stat-card ${hasErrors ? 'danger' : 'success'}`}>
-                    <div className="stat-value">{result.errors || 0}</div>
-                    <div className="stat-label">Errores</div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-value">{result.mode_name || '—'}</div>
-                    <div className="stat-label">Modo usado</div>
-                </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <button className="btn-glass" onClick={() => onViewLog(result)}>
-                    📋 Ver log completo
-                </button>
-                <span className="text-muted" style={{ fontSize: '0.75rem', alignSelf: 'center' }}>
-                    {result.computer} · {new Date(result.completed_at).toLocaleString('es-ES')}
-                </span>
-            </div>
-            {canApproveGuided && (
-                <GuidedApproval
-                    plan={result.guided_plan}
-                    onRun={onRunGuided}
-                    disabled={isBusy}
-                />
-            )}
-        </div>
-    );
-}
-
-// ============================================================
-// COMPONENTE: HistorySection
-// ============================================================
-
-function HistorySection({ history, onSelect, onClear }) {
-    if (!history || history.length === 0) return null;
-
-    return (
-        <div className="history-section fade-in-up">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h3>📜 Historial de limpiezas</h3>
-                <button className="btn-glass danger" onClick={onClear} style={{ fontSize: '0.75rem' }}>
-                    Limpiar todo
-                </button>
-            </div>
-
-            {history.map((item) => (
-                <div
-                    key={item.id}
-                    className="history-item"
-                    onClick={() => onSelect(item)}
-                >
-                    <div>
-                        <div className="hist-mode">{item.mode_name || 'Limpieza'}</div>
-                        <div className="hist-date">
-                            {new Date(item.completed_at || item.id.split('_')[0]).toLocaleString('es-ES')}
-                        </div>
-                    </div>
-                    <div className="hist-freed">{item.total_freed || '0 B'}</div>
-                </div>
-            ))}
-        </div>
-    );
-}
-
-// ============================================================
-// COMPONENTE: Lightbox
-// ============================================================
-
-function Lightbox({ visible, content, title, onClose }) {
-    useEffect(() => {
-        const handleEsc = (e) => {
-            if (e.key === 'Escape') onClose();
+    function icon(name) {
+        var paths = {
+            coffee: '<path d="M5 8h10v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M15 9h2a2 2 0 0 1 0 4h-2"/><path d="M4 20h12"/><path d="M7 4v1"/><path d="M11 4v1"/>',
+            phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6a2 2 0 0 1 1.7 2Z"/>',
+            message: '<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/>',
+            mail: '<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="m22 6-10 7L2 6"/>',
+            map: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+            calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/>',
+            screen: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/>',
+            music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+            sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/>',
+            users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/>',
+            menu: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>',
+            star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.8 1.2 6.8L12 17.7 5.8 21l1.2-6.8-5-4.8 6.9-1Z"/>',
+            instagram: '<rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>',
+            facebook: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/>'
         };
-        if (visible) {
-            document.addEventListener('keydown', handleEsc);
-        }
-        return () => document.removeEventListener('keydown', handleEsc);
-    }, [visible, onClose]);
+        return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (paths[name] || paths.coffee) + "</svg>";
+    }
 
-    return (
-        <div className={`lightbox ${visible ? '' : 'hidden'}`} onClick={onClose}>
-            <button className="lightbox-close" onClick={onClose}>✕</button>
-            <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-                {title && <h3 className="text-cyan" style={{ marginBottom: '0.75rem' }}>{title}</h3>}
-                {content}
-            </div>
-        </div>
-    );
-}
+    function langSwitcher(extraClass) {
+        return '<div class="language ' + (extraClass || "") + '" role="group">' + LANGUAGES.map(function (item) {
+            return '<button type="button" class="' + (currentLang === item.code ? "active" : "") + '" data-lang="' + item.code + '" title="' + esc(item.name) + '">' + item.label + "</button>";
+        }).join("") + "</div>";
+    }
 
-// ============================================================
-// COMPONENTE: SetupBanner (cuando no hay servidor ni demo)
-// ============================================================
+    function brand(t) {
+        return '<a href="#top" class="brand"><span class="brand-mark">' + icon("coffee") + '</span><span><span class="brand-name">Terraza Brisa</span><span class="brand-place">' + esc(t.brandPlace) + "</span></span></a>";
+    }
 
-function SetupBanner({ isSimulation, onEnableSim }) {
-    if (!IS_FILE_PROTOCOL && !isSimulation) return null;
+    function eventCard(item) {
+        return '<article class="event-card reveal"><div class="date-box"><div><span>' + esc(item[0]) + "</span><strong>" + esc(item[1]) + "</strong><span>" + esc(item[2]) + "</span></div></div><div><h3>" + esc(item[3]) + "</h3><p>" + esc(item[4]) + '</p><div class="event-meta"><span>' + esc(item[5]) + "</span><span>" + esc(item[6]) + "</span></div></div></article>";
+    }
 
-    return (
-        <div className="glass-card fade-in-up" style={{
-            marginBottom: '1.5rem',
-            borderColor: 'rgba(167,139,250,0.3)',
-            textAlign: 'center',
-        }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📦</div>
-            <h3 style={{ color: '#a78bfa', marginBottom: '0.5rem' }}>
-                {isSimulation ? 'Modo Demostración' : 'App no conectada a servidor'}
-            </h3>
-            <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>
-                {isSimulation
-                    ? 'Estás viendo datos simulados. Para usar la app de verdad:'
-                    : 'Has abierto el archivo directamente. Para que funcione necesitas:'}
-            </p>
-            <div style={{
-                display: 'flex',
-                gap: '0.75rem',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-            }}>
-                {!isSimulation && (
-                    <button className="btn-glass" onClick={onEnableSim} style={{ borderColor: 'rgba(167,139,250,0.4)' }}>
-                        🟣 Activar modo demo
-                    </button>
-                )}
-                <button className="btn-glass" onClick={() => {
-                    const cmd = IS_FILE_PROTOCOL
-                        ? 'php -S localhost:8080'
-                        : 'php -S localhost:8080 -t ' + PATH_PREFIX;
-                    alert(
-                        '🚀 Para probar en local:\n\n' +
-                        '1. Abre una terminal en la carpeta del proyecto\n' +
-                        '2. Ejecuta: php -S localhost:8080\n' +
-                        '3. Abre: http://localhost:8080\n\n' +
-                        '📤 Para usar en producción:\n' +
-                        'Sube todos los archivos a Hostinger por FTP.'
-                    );
-                }} style={{ borderColor: 'rgba(34,211,238,0.4)' }}>
-                    💡 ¿Cómo lo pongo en marcha?
-                </button>
-            </div>
-        </div>
-    );
-}
+    function renderMenuCards(t) {
+        return t.menu.items[activeMenuCategory].map(function (item) {
+            return '<article class="menu-card reveal"><header><h3>' + esc(item[0]) + '</h3><span class="price">' + esc(item[2]) + "</span></header><p>" + esc(item[1]) + "</p></article>";
+        }).join("");
+    }
 
-// ============================================================
-// COMPONENTE PRINCIPAL: App
-// ============================================================
+    function render() {
+        var t = DICT[currentLang] || DICT.es;
+        document.documentElement.lang = currentLang;
+        document.title = t.metaTitle;
+        var meta = document.querySelector('meta[name="description"]');
+        if (meta) meta.setAttribute("content", t.metaDescription);
 
-function App() {
-    const [status, setStatus] = useState(IS_FILE_PROTOCOL ? 'idle' : 'idle');
-    const [activeMode, setActiveMode] = useState(null);
-    const [currentOrder, setCurrentOrder] = useState(null);
-    const [latestResult, setLatestResult] = useState(null);
-    const [history, setHistory] = useLocalStorage(STORAGE_KEY, []);
-    const [lightbox, setLightbox] = useState({ visible: false, content: '', title: '' });
-    const [lastCleanup, setLastCleanup] = useState(null);
-    const [isSimulation, setIsSimulation] = useState(IS_FILE_PROTOCOL);
-    const [serverAvailable, setServerAvailable] = useState(!IS_FILE_PROTOCOL);
-    const [stalePendingOrder, setStalePendingOrder] = useState(null);
-    const pollingRef = useRef(null);
-    const stopPollingRef = useRef(null);
-    const statusRef = useRef(null);
+        var nav = navIds.map(function (id, index) {
+            return '<a href="#' + id + '">' + esc(t.nav[index]) + "</a>";
+        }).join("");
 
-    // ─── Verificar conexión con el servidor ──────────
-    const checkConnection = useCallback(async () => {
-        if (IS_FILE_PROTOCOL) {
-            setServerAvailable(false);
-            return;
-        }
+        var html = "";
+        html += '<header class="site-header"><div class="container header-inner">' + brand(t) + '<nav class="nav">' + nav + '</nav><div class="header-actions">' + langSwitcher("") + '<a class="icon-btn" href="' + CONTACT.phoneHref + '">' + icon("phone") + '</a><a class="btn primary" href="#contact">' + icon("calendar") + esc(t.actions.reserve) + '</a><button class="menu-toggle" type="button">' + icon("menu") + "</button></div></div></header>";
 
-        try {
-            const data = await fetchJson(API_BASE + 'status');
-            if (data.ok) {
-                setServerAvailable(true);
-                setIsSimulation(false);
-                if (data.has_pending) {
-                    setStalePendingOrder(data.pending_order || { id: 'unknown', mode_name: 'Desconocido' });
-                    setStatus('idle');
-                } else {
-                    setStalePendingOrder(null);
-                    setStatus('idle');
-                }
-                if (data.last_cleanup) {
-                    setLastCleanup(data.last_cleanup);
-                }
-                return true;
-            }
-        } catch (e) {
-            setServerAvailable(false);
-        }
-        return false;
-    }, []);
+        html += '<main><section id="top" class="hero"><div class="container hero-inner"><div class="hero-copy reveal"><p class="eyebrow">' + esc(t.hero.eyebrow) + "</p><h1>" + esc(t.hero.title) + "</h1><p>" + esc(t.hero.copy) + '</p><div class="hero-actions"><a class="btn primary" href="#contact">' + icon("calendar") + esc(t.actions.reserve) + '</a><a class="btn light" href="#menu">' + icon("coffee") + esc(t.actions.menu) + '</a><a class="btn light" href="' + CONTACT.whatsappHref + '" target="_blank" rel="noreferrer">' + icon("message") + esc(t.actions.whatsapp) + '</a></div><div class="hero-metrics">' + t.hero.metrics.map(function (m) { return '<div class="metric"><strong>' + esc(m[0]) + "</strong><span>" + esc(m[1]) + "</span></div>"; }).join("") + "</div></div></div></section>";
 
-    // ─── Inicialización ──────────────────────────────
-    useEffect(() => {
-        const init = async () => {
-            const available = await checkConnection();
-            if (!available && !IS_FILE_PROTOCOL) {
-                // Servidor no disponible → ofrecer demo
-                setStatus('error');
-            }
-        };
-        init();
-        statusRef.current = setInterval(checkConnection, STATUS_INTERVAL_MS);
-        return () => {
-            if (statusRef.current) clearInterval(statusRef.current);
-            if (pollingRef.current) clearInterval(pollingRef.current);
-        };
-    }, [checkConnection]);
+        html += '<section id="about" class="section"><div class="container intro-grid"><div class="image-stack reveal"><div class="main-photo"><span class="photo-label">' + esc(t.about.labels[0]) + '</span></div><div class="mini-row"><div class="mini-photo sports"><span class="photo-label">' + esc(t.about.labels[1]) + '</span></div><div class="mini-photo music"><span class="photo-label">' + esc(t.about.labels[2]) + '</span></div></div></div><div class="reveal"><p class="eyebrow">' + esc(t.about.eyebrow) + "</p><h2>" + esc(t.about.title) + '</h2><p class="lead">' + esc(t.about.lead) + '</p><div class="feature-list">' + t.about.features.map(function (f) { return '<article class="feature"><span class="feature-icon">' + icon(f[0]) + "</span><div><h3>" + esc(f[1]) + "</h3><p>" + esc(f[2]) + "</p></div></article>"; }).join("") + "</div></div></div></section>";
 
-    // ─── Activar modo simulación ──────────────────────
-    const handleEnableSim = () => {
-        setIsSimulation(true);
-        setStatus('idle');
-        setServerAvailable(true); // La simulación "es" el servidor
-    };
+        html += '<section class="section alt"><div class="container"><div class="section-head center reveal"><p class="eyebrow">' + esc(t.highlights.eyebrow) + "</p><h2>" + esc(t.highlights.title) + '</h2><p class="lead">' + esc(t.highlights.lead) + '</p></div><div class="highlight-grid">' + t.highlights.items.map(function (item) { return '<article class="card reveal"><div class="card-media ' + item[0] + '"></div><div class="card-body"><h3>' + esc(item[1]) + "</h3><p>" + esc(item[2]) + "</p></div></article>"; }).join("") + "</div></div></section>";
 
-    // ─── Obtener último resultado ─────────────────────
-    const fetchLatestResult = async () => {
-        if (isSimulation) {
-            const data = simApi('latest');
-            if (data.ok && data.has_result && data.result) {
-                setLatestResult(data.result);
-                setLastCleanup(data.result.completed_at);
-            }
-            return;
-        }
+        html += '<section id="sports" class="section dark"><div class="container events-layout"><aside class="screen-panel reveal"><div class="screen-image"></div><div class="screen-body"><p class="eyebrow">' + esc(t.sports.eyebrow) + "</p><h2>" + esc(t.sports.title) + "</h2><p>" + esc(t.sports.lead) + '</p><div class="pills">' + t.sports.tags.map(function (tag) { return '<span class="pill">' + icon("screen") + esc(tag) + "</span>"; }).join("") + '</div></div></aside><div><div class="section-head reveal"><div><h2>' + esc(t.sports.panelTitle) + '</h2><p class="lead">' + esc(t.sports.panelText) + '</p></div><a class="btn light" href="' + CONTACT.whatsappHref + '" target="_blank" rel="noreferrer">' + icon("message") + esc(t.actions.whatsapp) + "</a></div><h3>" + esc(t.sports.listTitle) + '</h3><div class="event-list">' + t.sports.events.map(eventCard).join("") + "</div></div></div></section>";
 
-        if (!API_BASE) return;
-        try {
-            const data = await fetchJson(API_BASE + 'latest');
-            if (data.ok && data.has_result && data.result) {
-                setLatestResult(data.result);
-                setLastCleanup(data.result.completed_at);
-            }
-        } catch (e) {
-            // Silencioso
-        }
-    };
+        html += '<section id="music" class="section"><div class="container"><div class="section-head reveal"><div><p class="eyebrow">' + esc(t.music.eyebrow) + "</p><h2>" + esc(t.music.title) + '</h2><p class="lead">' + esc(t.music.lead) + '</p></div><a class="btn ghost" href="#contact">' + icon("calendar") + esc(t.actions.reserve) + '</a></div><div class="music-grid">' + t.music.events.map(function (event) { return '<article class="card music-card reveal"><div class="music-thumb"></div><div class="card-body"><div class="date-box"><div><span>' + esc(event[0]) + "</span><strong>" + esc(event[1]) + "</strong><span>" + esc(event[2]) + "</span></div></div><h3>" + esc(event[3]) + "</h3><p><strong>" + esc(event[4]) + "</strong> · " + esc(event[5]) + "</p><p>" + esc(event[6]) + "</p></div></article>"; }).join("") + "</div></div></section>";
 
-    // ─── Polling tras crear orden ────────────────────
-    const startPolling = useCallback((orderId) => {
-        let attempts = 0;
-        const maxAttempts = 200;
+        html += '<section id="menu" class="section alt"><div class="container"><div class="section-head reveal"><div><p class="eyebrow">' + esc(t.menu.eyebrow) + "</p><h2>" + esc(t.menu.title) + '</h2><p class="lead">' + esc(t.menu.lead) + '</p></div><a class="btn dark" href="#contact">' + icon("calendar") + esc(t.actions.reserve) + '</a></div><div class="menu-toolbar reveal" role="tablist">' + Object.keys(t.menu.categories).map(function (key) { return '<button type="button" class="tab ' + (key === activeMenuCategory ? "active" : "") + '" data-menu="' + key + '">' + esc(t.menu.categories[key]) + "</button>"; }).join("") + '</div><div class="menu-grid">' + renderMenuCards(t) + "</div></div></section>";
 
-        const poll = async () => {
-            attempts++;
+        html += '<section id="gallery" class="section"><div class="container"><div class="section-head center reveal"><p class="eyebrow">' + esc(t.gallery.eyebrow) + "</p><h2>" + esc(t.gallery.title) + '</h2><p class="lead">' + esc(t.gallery.lead) + '</p></div><div class="gallery-grid">' + t.gallery.labels.map(function (label, index) { return '<div class="gallery-item reveal ' + (index === 0 ? "large" : "") + '"><span>' + esc(label) + "</span></div>"; }).join("") + "</div></div></section>";
 
-            let data;
-            if (isSimulation) {
-                data = simApi('latest');
-            } else {
-                try {
-                    data = await fetchJson(API_BASE + 'latest');
-                } catch (e) {
-                    if (attempts >= maxAttempts) {
-                        stopPolling();
-                        setStatus('error');
-                        setActiveMode(null);
-                    }
-                    return;
-                }
-            }
+        html += '<section id="contact" class="section alt"><div class="container"><div class="hours-contact"><div class="reveal"><p class="eyebrow">' + esc(t.hours.eyebrow) + "</p><h2>" + esc(t.hours.title) + '</h2><p class="lead">' + esc(t.hours.lead) + '</p><div class="hours-list">' + t.hours.rows.map(function (row) { return '<div class="hours-row"><strong>' + esc(row[0]) + "</strong><span>" + esc(row[1]) + "</span></div>"; }).join("") + '</div></div><div class="reveal"><p class="eyebrow">' + esc(t.contact.eyebrow) + "</p><h2>" + esc(t.contact.title) + '</h2><p class="lead">' + esc(t.contact.lead) + '</p><div class="contact-grid">' + contactCards(t) + '</div></div></div><div class="form-map">' + formHtml(t) + '<div id="map" class="map reveal"><iframe title="Terraza Brisa Cafe map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="' + CONTACT.mapsEmbed + '"></iframe></div></div></div></section>';
 
-            if (data && data.ok && data.has_result && data.result && data.result.order_id === orderId) {
-                stopPolling();
-                setLatestResult(data.result);
-                setStatus('done');
-                setActiveMode(null);
-                setCurrentOrder(null);
-                setLastCleanup(data.result.completed_at);
+        html += '<section class="section"><div class="container"><div class="section-head center reveal"><p class="eyebrow">' + esc(t.reviews.eyebrow) + "</p><h2>" + esc(t.reviews.title) + '</h2></div><div class="testimonial-grid">' + t.reviews.items.map(function (item) { return '<article class="testimonial reveal"><div class="stars" aria-hidden="true">' + [1, 2, 3, 4, 5].map(function () { return icon("star"); }).join("") + "</div><blockquote>“" + esc(item[0]) + "”</blockquote><cite>" + esc(item[1]) + "</cite></article>"; }).join("") + "</div></div></section></main>";
 
-                const historyItem = {
-                    id: data.result.order_id,
-                    mode_name: data.result.mode_name,
-                    total_freed: data.result.total_freed,
-                    total_analyzed: data.result.total_analyzed,
-                    errors: data.result.errors,
-                    completed_at: data.result.completed_at,
-                    computer: data.result.computer,
-                };
-                setHistory(prev => {
-                    const exists = prev.find(h => h.id === historyItem.id);
-                    if (exists) return prev;
-                    return [historyItem, ...prev].slice(0, 30);
-                });
-                return;
-            }
+        html += '<footer class="site-footer"><div class="container"><div class="footer-grid"><div>' + brand(t) + "<p>" + esc(t.footer.text) + '</p><div class="socials"><a class="social" href="' + CONTACT.instagram + '" target="_blank" rel="noreferrer" aria-label="Instagram">' + icon("instagram") + '</a><a class="social" href="' + CONTACT.facebook + '" target="_blank" rel="noreferrer" aria-label="Facebook">' + icon("facebook") + '</a><a class="social" href="' + CONTACT.tripadvisor + '" target="_blank" rel="noreferrer" aria-label="Tripadvisor">' + icon("star") + '</a></div></div><div><h3>' + esc(t.footer.contact) + '</h3><div class="footer-links"><a href="' + CONTACT.phoneHref + '">' + esc(CONTACT.phone) + '</a><a href="' + CONTACT.whatsappHref + '" target="_blank" rel="noreferrer">' + esc(t.actions.whatsapp) + '</a><a href="mailto:' + CONTACT.email + '">' + CONTACT.email + '</a></div></div><div><h3>' + esc(t.footer.explore) + '</h3><div class="footer-links">' + nav + '</div></div><div><h3>' + esc(t.footer.legal) + '</h3><div class="footer-links">' + t.footer.legalLinks.map(function (label) { return '<a href="mailto:' + CONTACT.email + '?subject=' + encodeURIComponent(label) + '">' + esc(label) + "</a>"; }).join("") + "</div>" + langSwitcher("footer-language") + '</div></div><div class="footer-bottom"><span>' + esc(t.footer.copyright) + "</span><span>" + esc(t.footer.note) + "</span></div></div></footer>";
 
-            if (attempts >= maxAttempts) {
-                stopPolling();
-                setStatus('error');
-                setActiveMode(null);
-            }
-        };
+        document.getElementById("root").innerHTML = html;
+        bindEvents();
+        reveal();
+    }
 
-        const stopPolling = () => {
-            if (pollingRef.current) {
-                clearInterval(pollingRef.current);
-                pollingRef.current = null;
-            }
-        };
+    function contactCards(t) {
+        var cards = [
+            ["phone", t.contact.cards[0], CONTACT.phone, CONTACT.phoneHref],
+            ["message", t.contact.cards[1], t.actions.whatsapp, CONTACT.whatsappHref],
+            ["mail", t.contact.cards[2], CONTACT.email, "mailto:" + CONTACT.email],
+            ["map", t.contact.cards[3], CONTACT.address, "#map"]
+        ];
+        return cards.map(function (card) {
+            var target = card[3].indexOf("http") === 0 ? ' target="_blank" rel="noreferrer"' : "";
+            return '<a class="contact-panel" href="' + card[3] + '"' + target + '><span class="contact-icon">' + icon(card[0]) + '</span><span><span>' + esc(card[1]) + "</span><strong>" + esc(card[2]) + "</strong></span></a>";
+        }).join("");
+    }
 
-        stopPollingRef.current = stopPolling;
-        stopPolling();
-        pollingRef.current = setInterval(poll, POLL_INTERVAL_MS);
-        poll();
-    }, [isSimulation, setHistory]);
+    function formHtml(t) {
+        var f = t.contact.form;
+        return '<form class="form-panel reveal" id="contactForm" novalidate><h3>' + esc(f.title) + '</h3><div class="field-grid">' +
+            field("name", f.name, "text", f.placeholders[0]) +
+            field("email", f.email, "email", f.placeholders[1]) +
+            field("phone", f.phone, "text", f.placeholders[2]) +
+            field("people", f.people, "number", f.placeholders[3], ' min="1" value="2"') +
+            field("date", f.date, "date", "", "") +
+            '<div class="field"><label for="type">' + esc(f.type) + '</label><select id="type" name="type">' + f.options.map(function (option) { return "<option>" + esc(option) + "</option>"; }).join("") + '</select><span class="error"></span></div>' +
+            '<div class="field full"><label for="message">' + esc(f.message) + '</label><textarea id="message" name="message" placeholder="' + esc(f.placeholders[4]) + '"></textarea><span class="error" data-error="message"></span></div>' +
+            '</div><button class="btn dark" type="submit">' + icon("mail") + esc(DICT[currentLang].actions.send) + '</button><p class="form-status" id="formStatus"></p></form>';
+    }
 
-    // ─── Cancelar orden pendiente ────────────────────
-    const handleCancelPending = useCallback(async () => {
-        stopPollingRef.current?.();
-        setStatus('idle');
-        setActiveMode(null);
-        setCurrentOrder(null);
-        setStalePendingOrder(null);
-        setLatestResult(null);
+    function field(id, label, type, placeholder, extra) {
+        return '<div class="field"><label for="' + id + '">' + esc(label) + '</label><input id="' + id + '" name="' + id + '" type="' + type + '" placeholder="' + esc(placeholder || "") + '"' + (extra || "") + '><span class="error" data-error="' + id + '"></span></div>';
+    }
 
-        if (isSimulation) {
-            const state = getSimState();
-            state.orders = state.orders.map(o =>
-                o.status === 'pending' ? { ...o, status: 'cancelled', completed_at: new Date().toISOString() } : o
-            );
-            saveSimState(state);
-            return;
-        }
-
-        if (!API_BASE) return;
-        try {
-            await fetchJson(API_BASE + 'cancel');
-        } catch (e) {
-            // Silencioso — el servidor puede no responder pero el frontend ya se reseteó
-        }
-    }, [isSimulation]);
-
-    // ─── Manejar selección de modo ────────────────────
-    const handleModeSelect = async (modeId, extraBody = {}) => {
-        if (activeMode) return;
-
-        // Si hay orden pendiente atascada, cancelarla primero automáticamente
-        if (stalePendingOrder) {
-            await handleCancelPending();
-        }
-
-        setActiveMode(modeId);
-        setStatus('waiting');
-        setLatestResult(null);
-
-        if (isSimulation) {
-            const data = simApi('order', 'POST', { mode: modeId });
-            if (data.ok && data.order) {
-                setCurrentOrder(data.order);
-                startPolling(data.order.id);
-            } else if (data.error) {
-                if (data.pending_order) {
-                    setCurrentOrder(data.pending_order);
-                    startPolling(data.pending_order.id);
-                } else {
-                    setStatus('error');
-                    setActiveMode(null);
-                    alert('Error: ' + data.error);
-                }
-            }
-            return;
-        }
-
-        try {
-            const data = await fetchJson(API_BASE + 'order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mode: modeId, ...extraBody }),
+    function bindEvents() {
+        document.querySelectorAll("[data-lang]").forEach(function (button) {
+            button.addEventListener("click", function () {
+                currentLang = button.getAttribute("data-lang");
+                localStorage.setItem("terraza_brisa_lang", currentLang);
+                render();
             });
-
-            if (data.ok && data.order) {
-                setCurrentOrder(data.order);
-                startPolling(data.order.id);
-            } else if (data.error) {
-                if (data.pending_order) {
-                    setCurrentOrder(data.pending_order);
-                    startPolling(data.pending_order.id);
-                } else {
-                    setStatus('error');
-                    setActiveMode(null);
-                    alert('Error del servidor: ' + data.error);
-                }
-            }
-        } catch (e) {
-            setStatus('error');
-            setActiveMode(null);
-            setServerAvailable(false);
-        }
-    };
-
-    const handleRunGuided = (guidedBlocks) => {
-        if (!guidedBlocks || guidedBlocks.length === 0) return;
-        handleModeSelect(2, { guided_blocks: guidedBlocks });
-    };
-
-    // ─── Ver log en lightbox ──────────────────────────
-    const handleViewLog = (result) => {
-        setLightbox({
-            visible: true,
-            title: `Log de limpieza — ${result.mode_name || ''}`,
-            content: result.log || 'Sin log disponible',
         });
-    };
 
-    // ─── Cargar resultado del historial ───────────────
-    const handleHistorySelect = (item) => {
-        setLatestResult({
-            order_id: item.id,
-            mode_name: item.mode_name,
-            total_freed: item.total_freed,
-            total_analyzed: item.total_analyzed,
-            errors: item.errors,
-            completed_at: item.completed_at,
-            computer: item.computer || 'Historial',
-            log: item.log || '',
-        });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    // ─── Limpiar historial ────────────────────────────
-    const handleClearHistory = () => {
-        if (confirm('¿Eliminar todo el historial de limpiezas?')) {
-            setHistory([]);
+        var menuToggle = document.querySelector(".menu-toggle");
+        var nav = document.querySelector(".nav");
+        if (menuToggle && nav) {
+            menuToggle.addEventListener("click", function () {
+                nav.classList.toggle("open");
+                document.body.classList.toggle("menu-open", nav.classList.contains("open"));
+            });
+            nav.querySelectorAll("a").forEach(function (link) {
+                link.addEventListener("click", function () {
+                    nav.classList.remove("open");
+                    document.body.classList.remove("menu-open");
+                });
+            });
         }
-    };
 
-    // ─── Refrescar estado ─────────────────────────────
-    const handleRefresh = () => {
-        checkConnection();
-        fetchLatestResult();
-    };
+        document.querySelectorAll("[data-menu]").forEach(function (button) {
+            button.addEventListener("click", function () {
+                activeMenuCategory = button.getAttribute("data-menu");
+                var t = DICT[currentLang] || DICT.es;
+                document.querySelector(".menu-grid").innerHTML = renderMenuCards(t);
+                document.querySelectorAll("[data-menu]").forEach(function (tab) {
+                    tab.classList.toggle("active", tab.getAttribute("data-menu") === activeMenuCategory);
+                });
+                reveal();
+            });
+        });
 
-    // ─── Servidor no disponible ───────────────────────
-    if (!serverAvailable && !isSimulation && !IS_FILE_PROTOCOL) {
-        return (
-            <div id="root">
-                <header className="app-header fade-in-up">
-                    <h1 className="gradient-text">🧹 Limpiador Windows</h1>
-                    <p className="subtitle">Neon Glassmorphism Edition</p>
-                    <span className="version-badge">v1.0 · Antigravity</span>
-                </header>
-
-                <SetupBanner isSimulation={false} onEnableSim={handleEnableSim} />
-            </div>
-        );
+        var form = document.getElementById("contactForm");
+        if (form) form.addEventListener("submit", submitForm);
     }
 
-    return (
-        <div id="root">
-            {/* Header */}
-            <header className="app-header fade-in-up">
-                <h1 className="gradient-text">🧹 Limpiador Windows</h1>
-                <p className="subtitle">Elimina archivos basura al instante — Neon Glassmorphism Edition</p>
-                <span className="version-badge">v1.0 · Antigravity</span>
-            </header>
+    function submitForm(event) {
+        event.preventDefault();
+        var t = DICT[currentLang] || DICT.es;
+        var f = t.contact.form;
+        var data = {
+            name: value("name"),
+            email: value("email"),
+            phone: value("phone"),
+            people: value("people"),
+            date: value("date"),
+            type: value("type"),
+            message: value("message")
+        };
+        var errors = {};
+        if (!data.name) errors.name = f.errors.required;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.email = f.errors.email;
+        if (!data.phone) errors.phone = f.errors.required;
+        if (!data.people || Number(data.people) < 1) errors.people = f.errors.people;
+        if (!data.date) errors.date = f.errors.required;
+        if (!data.message) errors.message = f.errors.required;
 
-            {/* Banner si es simulación o file:// */}
-            {(isSimulation || IS_FILE_PROTOCOL) && (
-                <SetupBanner isSimulation={isSimulation} onEnableSim={handleEnableSim} />
-            )}
+        document.querySelectorAll("[data-error]").forEach(function (node) {
+            var key = node.getAttribute("data-error");
+            node.textContent = errors[key] || "";
+        });
 
-            {/* Banner de orden pendiente atascada */}
-            {stalePendingOrder && !activeMode && (
-                <div className="glass-card fade-in-up" style={{
-                    marginBottom: '1rem',
-                    borderColor: 'rgba(251,191,36,0.4)',
-                    textAlign: 'center',
-                }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>⚠️</div>
-                    <p style={{ color: '#fbbf24', fontWeight: 600, marginBottom: '0.25rem' }}>
-                        Hay una limpieza pendiente sin completar
-                    </p>
-                    <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-                        {stalePendingOrder.mode_name} · {stalePendingOrder.id}
-                    </p>
-                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button className="btn-glass danger" onClick={handleCancelPending} style={{ fontSize: '0.8rem' }}>
-                            Cancelar y desatascar
-                        </button>
-                        <button className="btn-glass" onClick={() => {
-                            setStalePendingOrder(null);
-                            handleModeSelect(stalePendingOrder.mode || 3);
-                        }} style={{ fontSize: '0.8rem', borderColor: 'rgba(34,211,238,0.4)' }}>
-                            Reanudar con este modo
-                        </button>
-                    </div>
-                </div>
-            )}
+        if (Object.keys(errors).length) return;
 
-            {/* Estado */}
-            <StatusBar
-                status={status}
-                lastCleanup={lastCleanup}
-                onRefresh={handleRefresh}
-                isSimulation={isSimulation}
-                stalePending={!!stalePendingOrder}
-            />
+        localStorage.setItem("terraza_brisa_last_enquiry", JSON.stringify(Object.assign({}, data, { sentAt: new Date().toISOString() })));
+        document.getElementById("formStatus").textContent = f.success;
+        var subject = encodeURIComponent("Reserva Terraza Brisa Cafe - " + data.type);
+        var body = encodeURIComponent("Nombre: " + data.name + "\nEmail: " + data.email + "\nTelefono: " + data.phone + "\nPersonas: " + data.people + "\nFecha: " + data.date + "\nTipo: " + data.type + "\n\nMensaje:\n" + data.message);
+        window.location.href = "mailto:" + CONTACT.email + "?subject=" + subject + "&body=" + body;
+    }
 
-            {/* Selector de modos */}
-            <ModeSelector
-                onSelect={handleModeSelect}
-                disabled={activeMode !== null}
-                activeMode={activeMode}
-                isSimulation={isSimulation}
-            />
+    function value(id) {
+        var node = document.getElementById(id);
+        return node ? node.value.trim() : "";
+    }
 
-            {/* Resultados */}
-            {latestResult && (
-                <ResultsPanel
-                    result={latestResult}
-                    onViewLog={handleViewLog}
-                    isSimulation={isSimulation}
-                    onRunGuided={handleRunGuided}
-                    isBusy={activeMode !== null}
-                />
-            )}
+    function reveal() {
+        document.querySelectorAll(".reveal").forEach(function (element) {
+            var rect = element.getBoundingClientRect();
+            if (rect.top < window.innerHeight - 60) element.classList.add("visible");
+        });
+    }
 
-            {/* Historial */}
-            <HistorySection
-                history={history}
-                onSelect={handleHistorySelect}
-                onClear={handleClearHistory}
-            />
-
-            {/* Overlay de carga */}
-            <LoadingOverlay
-                visible={status === 'waiting' && !latestResult}
-                text={isSimulation ? 'Simulando limpieza...' : 'El agente está limpiando tu Windows...'}
-                subtext={currentOrder ? `Modo: ${currentOrder.mode_name} · Esto puede tardar unos minutos` : 'Conectando con el agente...'}
-                onCancel={handleCancelPending}
-            />
-
-            {/* Lightbox para log */}
-            <Lightbox
-                visible={lightbox.visible}
-                title={lightbox.title}
-                content={<div className="log-viewer" style={{ maxHeight: 'none' }}>{lightbox.content}</div>}
-                onClose={() => setLightbox({ visible: false, content: '', title: '' })}
-            />
-        </div>
-    );
-}
-
-// ============================================================
-// RENDER
-// ============================================================
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    window.addEventListener("scroll", reveal, { passive: true });
+    window.addEventListener("resize", reveal);
+    document.addEventListener("DOMContentLoaded", render);
+})();

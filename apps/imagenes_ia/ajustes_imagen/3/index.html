@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script id="fetch-compatibility-patch">
+      // Patch global fetch descriptor because some sandboxed browser/testing environments
+      // try to override window.fetch directly, which can throw if it only has a getter.
+      (function() {
+        try {
+          if (typeof window !== 'undefined') {
+            let currentFetch = window.fetch;
+            const patch = {
+              get() {
+                return currentFetch;
+              },
+              set(newValue) {
+                currentFetch = newValue;
+              },
+              configurable: true,
+              enumerable: true
+            };
+            Object.defineProperty(window, 'fetch', patch);
+            if (typeof Window !== 'undefined' && Window.prototype) {
+              try {
+                Object.defineProperty(Window.prototype, 'fetch', patch);
+              } catch (_) {}
+            }
+          }
+        } catch (e) {
+          console.warn("[Compatibility Patch] Could not install fetch getter/setter patch:", e);
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CON~SENTID@S Terraza & Lounge • Cafetería & Bistrot</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

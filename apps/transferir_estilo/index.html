@@ -829,6 +829,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="history-manager.js"></script>
 </head>
 
 <body>
@@ -881,6 +882,25 @@
                     setImage2(prev => prev ? { ...prev, settings: { ...prev.settings, opacity: opacity2 } } : null);
                 }
             }, [crossfade]);
+
+            // ─── Cargar historial desde HistoryManager (servidor + IndexedDB) ───
+            useEffect(() => {
+              HistoryManager.configure({ dbName: 'transferir_estilo_db' });
+              HistoryManager.init()
+                .then(() => HistoryManager.loadAll())
+                .then(items => {
+                  if (items && items.length > 0) {
+                    const loaded = items.map(i => ({
+                      id: i.id,
+                      url: i.url,
+                      timestamp: i.createdAt || Date.now(),
+                      type: 'local',
+                      config: i.config || {}
+                    }));
+                    setHistory(loaded);
+                  }
+                });
+            }, []);
 
             const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
                 const file = e.target.files?.[0];
@@ -965,16 +985,22 @@
                     const response = await fetch('proxy.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     const result = await response.json();
                     if (result.image) {
-                        const item: HistoryItem = { id: Math.random().toString(36).substr(2, 9), url: `data:image/png;base64,${result.image}`, timestamp: Date.now(), type: 'ai', config: { blendMode, opacity1: image1.settings.opacity, opacity2: image2.settings.opacity, image1: JSON.parse(JSON.stringify(image1)), image2: JSON.parse(JSON.stringify(image2)) } };
+                        const id = Math.random().toString(36).substr(2, 9);
+                        const cfg = { blendMode, opacity1: image1.settings.opacity, opacity2: image2.settings.opacity };
+                        const item: HistoryItem = { id, url: `data:image/png;base64,${result.image}`, timestamp: Date.now(), type: 'ai', config: cfg };
                         setHistory(prev => [item, ...prev]); setPreviewUrl(item.url);
+                        HistoryManager.saveItem({ id, url: item.url, prompt: 'FusionAI AI', config: cfg, createdAt: item.timestamp });
                     }
                 } catch (error) { alert("Error al procesar con IA."); } finally { setIsProcessing(false); }
             };
 
             const saveToHistory = () => {
                 if (!previewUrl || !image1 || !image2) return;
-                const item: HistoryItem = { id: Math.random().toString(36).substr(2, 9), url: previewUrl, timestamp: Date.now(), type: 'local', config: { blendMode, opacity1: image1.settings.opacity, opacity2: image2.settings.opacity, image1: JSON.parse(JSON.stringify(image1)), image2: JSON.parse(JSON.stringify(image2)) } };
+                const id = Math.random().toString(36).substr(2, 9);
+                const cfg = { blendMode, opacity1: image1.settings.opacity, opacity2: image2.settings.opacity };
+                const item: HistoryItem = { id, url: previewUrl, timestamp: Date.now(), type: 'local', config: cfg };
                 setHistory(prev => [item, ...prev]);
+                HistoryManager.saveItem({ id, url: previewUrl, prompt: 'FusionAI Studio', config: cfg, createdAt: item.timestamp });
             };
 
             const loadFromHistory = (item: HistoryItem) => { setImage1(item.config.image1); setImage2(item.config.image2); setBlendMode(item.config.blendMode); setCrossfade(item.config.opacity2 * 100); setActiveTab('edit'); };

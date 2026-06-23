@@ -1,0 +1,6 @@
+{
+  "name": "Hostinger Project Compiler",
+  "description": "Una herramienta premium para analizar, reparar, compilar y empaquetar proyectos web garantizando su óptimo despliegue en Hostinger.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

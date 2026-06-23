@@ -14,6 +14,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="history-manager.js"></script>
 
     <script>
         tailwind.config = {
@@ -293,22 +294,43 @@
             }
         };
 
-        // --- Storage helpers ---
+        // --- Storage helpers (HistoryManager server-side + localStorage fallback) ---
         const storage = {
             getInventory: () => JSON.parse(localStorage.getItem('chef_inventory') || '[]'),
             setInventory: (items) => localStorage.setItem('chef_inventory', JSON.stringify(items)),
-            getGeneratedRecipes: () => JSON.parse(localStorage.getItem('chef_recipes') || '[]'),
-            setGeneratedRecipes: (recipes) => localStorage.setItem('chef_recipes', JSON.stringify(recipes)),
-            addRecipe: (recipe) => {
-                const recipes = storage.getGeneratedRecipes();
-                recipes.unshift({ ...recipe, id: recipe.id || 'gen_' + Date.now() });
+            getGeneratedRecipes: async () => {
+              try {
+                await HistoryManager.init();
+                const items = await HistoryManager.loadAll();
+                if (items && items.length > 0) {
+                  return items.map(i => ({ id: i.id, title: i.prompt, imageUrl: i.url, ...i.data }));
+                }
+              } catch(e) {}
+              return JSON.parse(localStorage.getItem('chef_recipes') || '[]');
+            },
+            setGeneratedRecipes: (recipes) => {
+              localStorage.setItem('chef_recipes', JSON.stringify(recipes));
+            },
+            addRecipe: async (recipe) => {
+                const recipes = await storage.getGeneratedRecipes();
+                const newRecipe = { ...recipe, id: recipe.id || 'gen_' + Date.now() };
+                recipes.unshift(newRecipe);
                 storage.setGeneratedRecipes(recipes);
+                HistoryManager.saveItem({
+                  id: newRecipe.id,
+                  url: recipe.imageUrl || '',
+                  prompt: recipe.title || '',
+                  data: recipe,
+                  createdAt: Date.now()
+                });
                 return recipes;
             },
-            removeRecipe: (id) => {
-                const recipes = storage.getGeneratedRecipes().filter(r => r.id !== id);
-                storage.setGeneratedRecipes(recipes);
-                return recipes;
+            removeRecipe: async (id) => {
+                const recipes = await storage.getGeneratedRecipes();
+                const filtered = recipes.filter(r => r.id !== id);
+                storage.setGeneratedRecipes(filtered);
+                HistoryManager.deleteItem(id);
+                return filtered;
             }
         };
 
@@ -1191,7 +1213,16 @@
             // New states for web search and persistence
             const [webResults, setWebResults] = useState([]);
             const [isSearching, setIsSearching] = useState(false);
-            const [generatedRecipes, setGeneratedRecipes] = useState(() => storage.getGeneratedRecipes());
+            const [generatedRecipes, setGeneratedRecipes] = useState([]);
+            const [recipesLoaded, setRecipesLoaded] = useState(false);
+
+            useEffect(() => {
+              HistoryManager.configure({ dbName: 'recetas_app_db' });
+              storage.getGeneratedRecipes().then(recipes => {
+                setGeneratedRecipes(recipes);
+                setRecipesLoaded(true);
+              });
+            }, []);
 
             const handleRecipeSelect = (recipe) => {
                 setSelectedRecipe(recipe);
@@ -1199,8 +1230,8 @@
                 window.scrollTo(0, 0);
             };
 
-            const handleDeleteRecipe = (id) => {
-                const updated = storage.removeRecipe(id);
+            const handleDeleteRecipe = async (id) => {
+                const updated = await storage.removeRecipe(id);
                 setGeneratedRecipes(updated);
             };
 
@@ -1211,7 +1242,7 @@
                     const recipe = await apiService.extractRecipeFromUrl(query);
                     setIsLoading(false);
                     if (recipe && recipe.title) {
-                        const updated = storage.addRecipe(recipe);
+                        const updated = await storage.addRecipe(recipe);
                         setGeneratedRecipes(updated);
                         handleRecipeSelect(recipe);
                     } else {
@@ -1300,7 +1331,7 @@
                             onRecipeFromPhoto={() => triggerFileUpload(async (b64) => {
                                 const recipe = await apiService.getRecipeFromImage(b64);
                                 if (recipe && recipe.title) {
-                                    const updated = storage.addRecipe(recipe);
+                                    const updated = await storage.addRecipe(recipe);
                                     setGeneratedRecipes(updated);
                                     handleRecipeSelect(recipe);
                                 }

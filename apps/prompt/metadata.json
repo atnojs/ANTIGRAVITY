@@ -1,0 +1,8 @@
+{
+  "name": "PromptBox",
+  "description": "An elegant, lightning-fast personal prompt library with categories, variables, collections, and local-first persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -94,7 +94,7 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: (id: string) => 
 
   return (
     <div
-      className={`flex items-start gap-3 p-4 border rounded-2xl shadow-lg backdrop-blur-md ${current.bg} ${current.text}`}
+      className={`flex items-start gap-3 p-4 border rounded-2xl shadow-lg ${current.bg} ${current.text}`}
     >
       <div className="shrink-0">{current.icon}</div>
       <div className="flex-1 text-sm font-medium leading-relaxed">{toast.message}</div>
