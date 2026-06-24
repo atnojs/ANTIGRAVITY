@@ -34,8 +34,36 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// API Key
-$API_KEY = getenv('GEMINI_API_KEY') ?: 'TU_API_KEY_AQUI';
+// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$API_KEY = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $API_KEY = defined('A') ? A : '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('A');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_A');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
+    exit;
+}
 
 // ============ ACCIONES ESPECIALES (GET) ============
 $action = $_GET['action'] ?? null;

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "tools": {
+      "Bash": "allow",
+      "Glob": "allow",
+      "Grep": "allow",
+      "LS": "allow",
+      "ViewFile": "allow",
+      "EditFile": "allow",
+      "WriteFile": "allow"
+    }
+  }
+}

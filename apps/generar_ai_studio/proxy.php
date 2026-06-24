@@ -30,25 +30,25 @@ $API_KEY = '';
 $configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
-    $API_KEY = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+    $API_KEY = defined('A') ? A : '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('GEMINI_API_KEY');
+    $API_KEY = getenv('A');
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('REDIRECT_GEMINI_API_KEY');
+    $API_KEY = getenv('REDIRECT_A');
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['GEMINI_API_KEY'] ?? '';
+    $API_KEY = $_SERVER['A'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+    $API_KEY = $_SERVER['REDIRECT_A'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['GEMINI_API_KEY'] ?? '';
+    $API_KEY = $_ENV['A'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+    $API_KEY = $_ENV['REDIRECT_A'] ?? '';
 }
 if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
