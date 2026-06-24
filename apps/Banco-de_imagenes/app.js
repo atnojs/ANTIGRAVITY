@@ -1,4 +1,4 @@
-﻿const { useState, useEffect, useCallback } = React;
+const { useState, useEffect, useCallback } = React;
 
 const API_PROXY_URL = '/apps/banco_de_imagenes/proxy.php';
 const STOCK_BASE_URL = '/stock_images';
