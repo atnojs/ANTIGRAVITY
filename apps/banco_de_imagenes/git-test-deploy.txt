@@ -1,1 +1,0 @@
-Deployment test at 18:35 - June 24, 2026. If you see this, Hostinger git deployment is working!
