@@ -122,6 +122,22 @@ if (isset($req['contents'])) {
     ];
 }
 
+// Validación de tamaño en imágenes del passthrough (patrón dibujo_lineas)
+if (isset($payload['contents'])) {
+    foreach ($payload['contents'] as $content) {
+        foreach ($content['parts'] ?? [] as $part) {
+            if (!empty($part['inlineData']['data'])) {
+                $decoded = base64_decode((string)$part['inlineData']['data']);
+                if ($decoded === false || strlen($decoded) > 2500000) {
+                    http_response_code(400);
+                    echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+                    exit;
+                }
+            }
+        }
+    }
+}
+
 // Llamada a la API
 $ch = curl_init($endpoint);
 curl_setopt_array($ch, [
@@ -154,32 +170,6 @@ if ($httpcode >= 400 || isset($data['error'])) {
     exit;
 }
 
-// Extraer respuesta — imagen + texto (patrón dibujo_lineas)
-$candidates = $data['candidates'] ?? [];
-$imageData = '';
-$mimeOut = 'image/png';
-$texts = [];
-
-foreach ($candidates as $cand) {
-    foreach ($cand['content']['parts'] ?? [] as $part) {
-        if (isset($part['inlineData'])) {
-            $imageData = $part['inlineData']['data'] ?? '';
-            $mimeOut = $part['inlineData']['mimeType'] ?? 'image/png';
-        }
-        if (isset($part['text']) && !empty($part['text'])) {
-            $texts[] = $part['text'];
-        }
-    }
-}
-
-if ($imageData !== '') {
-    echo json_encode([
-        'image' => $imageData,
-        'mimeType' => $mimeOut,
-        'text' => implode("\n", $texts)
-    ]);
-} else {
-    echo json_encode([
-        'text' => implode("\n", $texts) ?: 'El modelo no generó respuesta.'
-    ]);
-}
+// Respuesta — passthrough raw Gemini (frontend espera candidates[0].content.parts)
+http_response_code((int)$httpcode);
+echo $response;
