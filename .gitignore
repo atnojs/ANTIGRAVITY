@@ -98,3 +98,7 @@ opengravity/firebase.json
 webs/limpiador-windows/agente/config.json
 webs/limpiador-windows/agente/config.example.json
 webs/limpiador-windows/data/
+
+# Excepciones: archivos necesarios para el despliegue
+!apps/banco_de_imagenes/config.php
+!apps/banco_de_imagenes/history_data/.htaccess
