@@ -868,7 +868,7 @@ function App() {
     try {
       const b64 = await fileToBase64(file);
       setSrcB64(b64);
-      setSrc(URL.createObjectURL(file));
+      setSrc(`data:${file.type || 'image/jpeg'};base64,${b64}`);
       const analysisRes = await callGemini(payloadForAnalysis(b64), "analyze");
       setAnalysis(textFromCandidate(analysisRes));
     } catch (e) {
