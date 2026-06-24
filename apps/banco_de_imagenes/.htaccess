@@ -1,5 +1,0 @@
-# Redirigir URL antigua a la versión correcta del repositorio
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^(.*)$ /apps/Banco-de_imagenes/$1 [L,R=301]
-</IfModule>
