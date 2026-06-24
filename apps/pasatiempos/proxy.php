@@ -58,7 +58,7 @@ try {
         CURLOPT_POST           => true,
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
         CURLOPT_POSTFIELDS     => json_encode($body),
-        CURLOPT_TIMEOUT        => 60,
+        CURLOPT_TIMEOUT => 120,
         CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_SSL_VERIFYPEER => false
     ]);

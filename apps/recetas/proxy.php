@@ -96,6 +96,7 @@ curl_setopt_array($ch, [
     CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     CURLOPT_TIMEOUT => 120,
+    CURLOPT_CONNECTTIMEOUT => 15,
 ]);
 
 $response = curl_exec($ch);
@@ -123,6 +124,7 @@ function fetchUrl(string $url): string
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_TIMEOUT => 15,
+    CURLOPT_CONNECTTIMEOUT => 15,
         CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         CURLOPT_HTTPHEADER => ['Accept-Language: es-ES,es;q=0.9'],
     ]);
@@ -203,6 +205,7 @@ function extractRecipeWithAI(string $html, string $url, string $apiKey): array
         CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
         CURLOPT_POSTFIELDS => json_encode($payload),
         CURLOPT_TIMEOUT => 90,
+    CURLOPT_CONNECTTIMEOUT => 15,
     ]);
 
     $response = curl_exec($ch);

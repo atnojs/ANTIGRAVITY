@@ -61,6 +61,7 @@ try {
       CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
       CURLOPT_POSTFIELDS => json_encode($body),
       CURLOPT_TIMEOUT => 120,
+    CURLOPT_CONNECTTIMEOUT => 15,
     ]);
     $resp = curl_exec($ch);
     if ($resp === false) throw new Exception("cURL: " . curl_error($ch));

@@ -67,6 +67,7 @@ try {
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_POSTFIELDS => json_encode($body),
             CURLOPT_TIMEOUT => 180,
+    CURLOPT_CONNECTTIMEOUT => 15,
             CURLOPT_SSL_VERIFYPEER => false
         ]);
 

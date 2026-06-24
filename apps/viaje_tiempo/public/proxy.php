@@ -90,6 +90,7 @@ curl_setopt_array($ch, [
     CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
     CURLOPT_POSTFIELDS => json_encode($payload),
     CURLOPT_TIMEOUT => 60,
+    CURLOPT_CONNECTTIMEOUT => 15,
     CURLOPT_SSL_VERIFYPEER => true
 ]);
 

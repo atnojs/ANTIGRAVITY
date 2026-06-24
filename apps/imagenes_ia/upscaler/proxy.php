@@ -115,6 +115,7 @@ if ($task === 'enhance') {
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
         CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         CURLOPT_TIMEOUT        => 120,
+    CURLOPT_CONNECTTIMEOUT => 15,
     ]);
     $response = curl_exec($ch);
 
@@ -211,6 +212,7 @@ curl_setopt_array($ch, [
     CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
     CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     CURLOPT_TIMEOUT        => 120,
+    CURLOPT_CONNECTTIMEOUT => 15,
 ]);
 $response = curl_exec($ch);
 if ($response === false) {

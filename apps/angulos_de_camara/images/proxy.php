@@ -1,31 +1,34 @@
 <?php
-// Proxy para Gemini. PHP 8+, cURL habilitado.
+// Proxy Gemini — PHP 8+, cURL habilitado.
+// Basado en el patrón robusto de dibujo_lineas.
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 
-register_shutdown_function(function () {
-    $e = error_get_last();
-    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-        http_response_code(500);
-        echo json_encode(['error'=>'Fallo interno en PHP','details'=>$e['message']]);
-    }
-});
+// CORS
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error'=>'MÃ©todo no permitido. Usa POST.']);
+    echo json_encode(['error' => ['message' => 'Solo POST.']]);
     exit;
 }
 
 if (!function_exists('curl_init')) {
     http_response_code(500);
-    echo json_encode(['error'=>'cURL no estÃ¡ habilitado en el servidor.']);
+    echo json_encode(['error' => ['message' => 'cURL no habilitado.']]);
     exit;
 }
 
-// 1) API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
 $API_KEY = '';
 $configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
@@ -52,77 +55,131 @@ if (!$API_KEY || empty($API_KEY)) {
 }
 if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
-    echo json_encode(['error' => ['message' => 'API key no configurada.']]);
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
     exit;
 }
 
-// 2) Entrada
-$raw = file_get_contents('php://input');
-if (!$raw) {
+// Entrada
+$requestBody = file_get_contents('php://input');
+if (empty($requestBody)) {
     http_response_code(400);
-    echo json_encode(['error'=>'Body vacÃ­o.']);
+    echo json_encode(['error' => ['message' => 'Cuerpo vacío.']]);
     exit;
 }
-$req = json_decode($raw, true);
-if (!is_array($req)) {
+
+$req = json_decode($requestBody, true);
+if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     http_response_code(400);
-    echo json_encode(['error'=>'JSON invÃ¡lido.']);
+    echo json_encode(['error' => ['message' => 'JSON inválido.']]);
     exit;
 }
 
-// 3) Permitir dos formatos:
-//    A) Passthrough con 'contents' ya construido.
-//    B) Sencillo: prompt + base64ImageData + mimeType + model
-$model = $req['model'] ?? 'gemini-3.1-flash-image-preview';
-$endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
+// Modelo
+$model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
+$endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
+// Construir payload — soporte passthrough + formato sencillo
 if (isset($req['contents'])) {
-    $payload = $req; // ya viene en formato Gemini
+    $payload = ['contents' => $req['contents']];
+    if (isset($req['generationConfig']) && is_array($req['generationConfig'])) {
+        $payload['generationConfig'] = $req['generationConfig'];
+    }
+} elseif (isset($req['payload']) && is_array($req['payload'])) {
+    $payload = $req['payload'];
 } else {
-    $prompt   = trim((string)($req['prompt'] ?? ''));
-    // CORRECCIÃ“N: El frontend envÃ­a 'base64ImageData', no 'image'.
-    $imageB64 = (string)($req['base64ImageData'] ?? '');
-    $mime     = (string)($req['mimeType'] ?? 'image/jpeg');
-    if ($prompt === '' || $imageB64 === '') {
+    $prompt   = (string)($req['prompt'] ?? '');
+    $imageB64 = (string)($req['base64ImageData'] ?? $req['image'] ?? '');
+    $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
+
+    if ($prompt === '') {
         http_response_code(400);
-        echo json_encode(['error'=>'Faltan campos: prompt o base64ImageData.']);
+        echo json_encode(['error' => ['message' => 'Falta el prompt.']]);
         exit;
     }
-    // Esquema correcto para v1beta
+
+    // Control de tamaño de imagen (heredado de dibujo_lineas)
+    if ($imageB64 !== '') {
+        $imgBinary = base64_decode($imageB64);
+        if ($imgBinary === false || strlen($imgBinary) > 2500000) {
+            http_response_code(400);
+            echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+            exit;
+        }
+    }
+
+    $parts = [];
+    if ($imageB64 !== '') {
+        $parts[] = ['inlineData' => ['mimeType' => $mimeType, 'data' => $imageB64]];
+    }
+    $parts[] = ['text' => $prompt];
+
     $payload = [
-        'contents' => [[
-            'parts' => [
-                ['text' => $prompt],
-                ['inlineData' => [
-                    'mimeType' => $mime,
-                    'data' => $imageB64
-                ]]
-            ]
-        ]],
-        'generationConfig' => ['responseModalities' => ['TEXT','IMAGE']]
+        'contents' => [['parts' => $parts]],
+        'generationConfig' => [
+            'responseModalities' => ['IMAGE', 'TEXT'],
+            'imageConfig' => ['imageSize' => '1K']
+        ]
     ];
 }
 
-// 4) cURL
+// Llamada a la API
 $ch = curl_init($endpoint);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
     CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),
-    CURLOPT_TIMEOUT => 60,
+    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+    CURLOPT_TIMEOUT => 120,
+    CURLOPT_CONNECTTIMEOUT => 15
 ]);
+
 $response = curl_exec($ch);
-if ($response === false) {
-    $err = curl_error($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+if (curl_errno($ch)) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'Error cURL: ' . curl_error($ch)]]);
     curl_close($ch);
-    http_response_code(502);
-    echo json_encode(['error'=>'Error de comunicaciÃ³n con Google','details'=>$err]);
     exit;
 }
-$code = curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 502;
+
 curl_close($ch);
 
-http_response_code($code);
-echo $response;
+$data = json_decode($response, true);
 
+if ($httpcode >= 400 || isset($data['error'])) {
+    http_response_code($httpcode ?: 500);
+    $msg = $data['error']['message'] ?? ('Error HTTP ' . $httpcode);
+    echo json_encode(['error' => ['message' => $msg]]);
+    exit;
+}
+
+// Extraer respuesta — imagen + texto (patrón dibujo_lineas)
+$candidates = $data['candidates'] ?? [];
+$imageData = '';
+$mimeOut = 'image/png';
+$texts = [];
+
+foreach ($candidates as $cand) {
+    foreach ($cand['content']['parts'] ?? [] as $part) {
+        if (isset($part['inlineData'])) {
+            $imageData = $part['inlineData']['data'] ?? '';
+            $mimeOut = $part['inlineData']['mimeType'] ?? 'image/png';
+        }
+        if (isset($part['text']) && !empty($part['text'])) {
+            $texts[] = $part['text'];
+        }
+    }
+}
+
+if ($imageData !== '') {
+    echo json_encode([
+        'image' => $imageData,
+        'mimeType' => $mimeOut,
+        'text' => implode("\n", $texts)
+    ]);
+} else {
+    echo json_encode([
+        'text' => implode("\n", $texts) ?: 'El modelo no generó respuesta.'
+    ]);
+}

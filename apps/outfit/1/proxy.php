@@ -1,92 +1,185 @@
 <?php
-// proxy.php — Outfit App
+// Proxy Gemini — PHP 8+, cURL habilitado.
+// Basado en el patrón robusto de dibujo_lineas.
+declare(strict_types=1);
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+header('Content-Type: application/json; charset=utf-8');
 
-// 1. Establecer el tipo de contenido de la respuesta a JSON.
-header('Content-Type: application/json');
+// CORS
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
 
-// 2. API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
-$apiKey = '';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => ['message' => 'Solo POST.']]);
+    exit;
+}
+
+if (!function_exists('curl_init')) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'cURL no habilitado.']]);
+    exit;
+}
+
+// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+$API_KEY = '';
 $configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
-    $apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+    $API_KEY = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
 }
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('GEMINI_API_KEY');
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('GEMINI_API_KEY');
 }
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('REDIRECT_GEMINI_API_KEY');
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_GEMINI_API_KEY');
 }
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['GEMINI_API_KEY'] ?? '';
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['GEMINI_API_KEY'] ?? '';
 }
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
 }
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['GEMINI_API_KEY'] ?? '';
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['GEMINI_API_KEY'] ?? '';
 }
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
 }
-
-// Si la clave de API no está configurada, devuelve un error.
-if (!$apiKey) {
+if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
-    echo json_encode(['error' => 'La clave de API no está configurada en el servidor.']);
-    exit();
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
+    exit;
 }
 
-// 3. Obtener los datos POST enviados desde el JavaScript.
+// Entrada
 $requestBody = file_get_contents('php://input');
-$data = json_decode($requestBody, true);
-
-// Validar que los datos recibidos son correctos.
-if (json_last_error() !== JSON_ERROR_NONE || !isset($data['targetUrl']) || !isset($data['payload'])) {
+if (empty($requestBody)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Datos de la solicitud no válidos.', 'data' => $data]);
-    exit();
+    echo json_encode(['error' => ['message' => 'Cuerpo vacío.']]);
+    exit;
 }
 
-$targetUrl = $data['targetUrl'];
-$payload = $data['payload'];
+$req = json_decode($requestBody, true);
+if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'JSON inválido.']]);
+    exit;
+}
 
-// 4. Construir la URL final de la API de Google con la clave.
-$finalApiUrl = $targetUrl . '?key=' . $apiKey;
+// Modelo
+$model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
+$endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
-// 5. Usar cURL para reenviar la solicitud a la API de Google.
-$ch = curl_init();
+// Construir payload — soporte passthrough + formato sencillo
+if (isset($req['contents'])) {
+    $payload = ['contents' => $req['contents']];
+    if (isset($req['generationConfig']) && is_array($req['generationConfig'])) {
+        $payload['generationConfig'] = $req['generationConfig'];
+    }
+} elseif (isset($req['payload']) && is_array($req['payload'])) {
+    $payload = $req['payload'];
+} else {
+    $prompt   = (string)($req['prompt'] ?? '');
+    $imageB64 = (string)($req['base64ImageData'] ?? $req['image'] ?? '');
+    $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
 
-curl_setopt($ch, CURLOPT_URL, $finalApiUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    if ($prompt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Falta el prompt.']]);
+        exit;
+    }
 
-// 6. Ejecutar la solicitud y obtener la respuesta y el código de estado.
+    // Control de tamaño de imagen (heredado de dibujo_lineas)
+    if ($imageB64 !== '') {
+        $imgBinary = base64_decode($imageB64);
+        if ($imgBinary === false || strlen($imgBinary) > 2500000) {
+            http_response_code(400);
+            echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+            exit;
+        }
+    }
+
+    $parts = [];
+    if ($imageB64 !== '') {
+        $parts[] = ['inlineData' => ['mimeType' => $mimeType, 'data' => $imageB64]];
+    }
+    $parts[] = ['text' => $prompt];
+
+    $payload = [
+        'contents' => [['parts' => $parts]],
+        'generationConfig' => [
+            'responseModalities' => ['IMAGE', 'TEXT'],
+            'imageConfig' => ['imageSize' => '1K']
+        ]
+    ];
+}
+
+// Llamada a la API
+$ch = curl_init($endpoint);
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+    CURLOPT_TIMEOUT => 120,
+    CURLOPT_CONNECTTIMEOUT => 15
+]);
+
 $response = curl_exec($ch);
 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-// Manejar errores de cURL.
 if (curl_errno($ch)) {
     http_response_code(500);
-    echo json_encode(['error' => 'Error de cURL: ' . curl_error($ch)]);
+    echo json_encode(['error' => ['message' => 'Error cURL: ' . curl_error($ch)]]);
     curl_close($ch);
-    exit();
+    exit;
 }
 
 curl_close($ch);
 
-// 7. Reenviar el código de estado y la respuesta de Google de vuelta al cliente.
-http_response_code($httpcode);
+$data = json_decode($response, true);
 
-if ($httpcode >= 400) {
+if ($httpcode >= 400 || isset($data['error'])) {
+    http_response_code($httpcode ?: 500);
+    $msg = $data['error']['message'] ?? ('Error HTTP ' . $httpcode);
+    echo json_encode(['error' => ['message' => $msg]]);
+    exit;
+}
+
+// Extraer respuesta — imagen + texto (patrón dibujo_lineas)
+$candidates = $data['candidates'] ?? [];
+$imageData = '';
+$mimeOut = 'image/png';
+$texts = [];
+
+foreach ($candidates as $cand) {
+    foreach ($cand['content']['parts'] ?? [] as $part) {
+        if (isset($part['inlineData'])) {
+            $imageData = $part['inlineData']['data'] ?? '';
+            $mimeOut = $part['inlineData']['mimeType'] ?? 'image/png';
+        }
+        if (isset($part['text']) && !empty($part['text'])) {
+            $texts[] = $part['text'];
+        }
+    }
+}
+
+if ($imageData !== '') {
     echo json_encode([
-        'error' => 'Error en la API de Google',
-        'status' => $httpcode,
-        'response' => json_decode($response)
+        'image' => $imageData,
+        'mimeType' => $mimeOut,
+        'text' => implode("\n", $texts)
     ]);
 } else {
-    echo $response;
+    echo json_encode([
+        'text' => implode("\n", $texts) ?: 'El modelo no generó respuesta.'
+    ]);
 }
-?>
