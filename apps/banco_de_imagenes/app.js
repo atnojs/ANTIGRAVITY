@@ -1,3 +1,4 @@
+// Banco de Imágenes AI Pro — v2.1
 const { useState, useEffect, useCallback } = React;
 
 const API_PROXY_URL = '/apps/banco_de_imagenes/proxy.php';
