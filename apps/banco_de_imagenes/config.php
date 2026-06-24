@@ -1,0 +1,2 @@
+<?php
+define('GEMINI_API_KEY', 'PEGA_AQUI_TU_API_KEY_DE_GEMINI');
