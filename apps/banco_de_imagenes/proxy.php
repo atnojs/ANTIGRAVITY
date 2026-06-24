@@ -35,25 +35,25 @@ $apiKey = '';
 $configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
-    $apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
+    $apiKey = defined('A') ? A : '';
 }
 if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('GEMINI_API_KEY');
+    $apiKey = getenv('A');
 }
 if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('REDIRECT_GEMINI_API_KEY');
+    $apiKey = getenv('REDIRECT_A');
 }
 if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['GEMINI_API_KEY'] ?? '';
+    $apiKey = $_SERVER['A'] ?? '';
 }
 if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['REDIRECT_GEMINI_API_KEY'] ?? '';
+    $apiKey = $_SERVER['REDIRECT_A'] ?? '';
 }
 if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['GEMINI_API_KEY'] ?? '';
+    $apiKey = $_ENV['A'] ?? '';
 }
 if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['REDIRECT_GEMINI_API_KEY'] ?? '';
+    $apiKey = $_ENV['REDIRECT_A'] ?? '';
 }
 if (!$apiKey || empty($apiKey)) {
     http_response_code(500);
