@@ -1,10 +1,27 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-ini_set('display_errors', 0);
+// Proxy Gemini + Flux — PHP 8+, cURL habilitado.
+// Basado en el patrón robusto de dibujo_lineas.
+declare(strict_types=1);
+ini_set('display_errors', '0');
 error_reporting(E_ALL);
+header('Content-Type: application/json; charset=utf-8');
+
+// CORS
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
 try {
-  if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      http_response_code(405);
+      echo json_encode(['error' => ['message' => 'Solo POST.']]);
+      exit;
+  }
 
   // API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
   $apiKey = '';
@@ -42,7 +59,29 @@ try {
 
   $input = file_get_contents('php://input');
   $json = json_decode($input, true);
-  if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
+  if (json_last_error() !== JSON_ERROR_NONE || !is_array($json)) {
+      http_response_code(400);
+      echo json_encode(['error' => ['message' => 'JSON inválido.']]);
+      exit;
+  }
+
+  // Validación de tamaño de imágenes (patrón dibujo_lineas)
+  $MAX_IMAGE_SIZE = 2500000; // 2.5MB
+  $allImages = array_merge(
+      $json['images'] ?? [],
+      isset($json['maskImage']) ? [$json['maskImage']] : [],
+      isset($json['backgroundImage']) ? [$json['backgroundImage']] : []
+  );
+  foreach ($allImages as $img) {
+      if (!empty($img['data'])) {
+          $decoded = base64_decode((string)$img['data']);
+          if ($decoded === false || strlen($decoded) > $MAX_IMAGE_SIZE) {
+              http_response_code(400);
+              echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+              exit;
+          }
+      }
+  }
 
   $task        = $json['task'] ?? '';
   $provider    = $json['provider'] ?? 'gemini'; 
@@ -235,7 +274,7 @@ try {
     }
   }
 } catch (Throwable $e) {
-  http_response_code(500);
-  echo json_encode(['error' => $e->getMessage()]);
+  $code = (int)$e->getCode();
+  http_response_code($code >= 400 ? $code : 500);
+  echo json_encode(['error' => ['message' => $e->getMessage()]]);
 }
-?>

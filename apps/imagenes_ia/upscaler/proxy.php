@@ -1,6 +1,6 @@
 <?php
-// Proxy para Google Gemini â€” PHP 8+, cURL habilitado.
-// Upscaler Pro: soporta passthrough Gemini + modo enhance (ediciÃ³n fiel)
+// Proxy Gemini — PHP 8+, cURL habilitado.
+// Upscaler Pro: enhance + passthrough. Basado en el patrón robusto de dibujo_lineas.
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -20,19 +20,19 @@ register_shutdown_function(function () {
     $e = error_get_last();
     if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
         http_response_code(500);
-        echo json_encode(['error' => 'Fallo interno en PHP', 'details' => $e['message']]);
+        echo json_encode(['error' => ['message' => 'Fallo interno en PHP', 'details' => $e['message']]]);
     }
 });
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'MÃ©todo no permitido. Usa POST.']);
+    echo json_encode(['error' => ['message' => 'Solo POST.']]);
     exit;
 }
 
 if (!function_exists('curl_init')) {
     http_response_code(500);
-    echo json_encode(['error' => 'cURL no estÃ¡ habilitado en el servidor.']);
+    echo json_encode(['error' => ['message' => 'cURL no habilitado.']]);
     exit;
 }
 
@@ -69,11 +69,31 @@ if (!$API_KEY || empty($API_KEY)) {
 
 // 2) Entrada
 $raw = file_get_contents('php://input') ?: '';
-$req = json_decode($raw, true);
-if (!is_array($req)) {
+if (empty($raw)) {
     http_response_code(400);
-    echo json_encode(['error' => 'JSON invÃ¡lido o vacÃ­o.']);
+    echo json_encode(['error' => ['message' => 'Cuerpo vacío.']]);
     exit;
+}
+$req = json_decode($raw, true);
+if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'JSON inválido.']]);
+    exit;
+}
+
+// Validación de tamaño de imágenes (patrón dibujo_lineas)
+$imageFields = ['imageData', 'base64ImageData', 'image'];
+foreach ($imageFields as $field) {
+    $imgData = (string)($req[$field] ?? '');
+    if ($imgData !== '') {
+        $decoded = base64_decode($imgData);
+        if ($decoded === false || strlen($decoded) > 2500000) {
+            http_response_code(400);
+            echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+            exit;
+        }
+        break;
+    }
 }
 
 $task = $req['task'] ?? '';
@@ -86,13 +106,13 @@ if ($task === 'enhance') {
 
     if (empty($imageData) || empty($prompt)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Faltan campos: imageData o prompt.']);
+        echo json_encode(['error' => ['message' => 'Faltan campos: imageData o prompt.']]);
         exit;
     }
 
     // Usar gemini-2.0-flash-exp o el modelo de ediciÃ³n mÃ¡s fiel disponible
     $model = 'gemini-2.5-flash-image';
-    $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
+    $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
     $payload = [
         'contents' => [[
@@ -123,7 +143,7 @@ if ($task === 'enhance') {
         $err = curl_error($ch);
         curl_close($ch);
         http_response_code(502);
-        echo json_encode(['error' => 'Error de comunicaciÃ³n con Google', 'details' => $err]);
+        echo json_encode(['error' => ['message' => 'Error cURL: ' . $err]]);
         exit;
     }
 
@@ -136,7 +156,7 @@ if ($task === 'enhance') {
     if ($code < 200 || $code >= 300) {
         http_response_code($code);
         $msg = $data['error']['message'] ?? 'Error HTTP ' . $code;
-        echo json_encode(['error' => 'API Error: ' . $msg, 'raw' => $data]);
+        echo json_encode(['error' => ['message' => 'API Error: ' . $msg]]);
         exit;
     }
 
@@ -164,7 +184,7 @@ if ($task === 'enhance') {
         }
         http_response_code(422);
         echo json_encode([
-            'error' => 'Gemini no devolviÃ³ imagen mejorada.',
+            'error' => ['message' => 'Gemini no devolvió imagen mejorada.'],
             'text' => $textResponse,
             'reason' => $data['candidates'][0]['finishReason'] ?? 'unknown'
         ]);
@@ -174,7 +194,7 @@ if ($task === 'enhance') {
 
 // --- PASSTHROUGH GENÃ‰RICO (compatibilidad con el formato anterior) ---
 $model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
-$endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
+$endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
 if (isset($req['contents'])) {
     $payload = ['contents' => $req['contents']];
@@ -190,7 +210,7 @@ if (isset($req['contents'])) {
 
     if ($prompt === '' || $imageB64 === '') {
         http_response_code(400);
-        echo json_encode(['error' => 'Faltan campos: prompt o base64ImageData.']);
+        echo json_encode(['error' => ['message' => 'Faltan campos: prompt o base64ImageData.']]);
         exit;
     }
 
@@ -219,7 +239,7 @@ if ($response === false) {
     $err = curl_error($ch);
     curl_close($ch);
     http_response_code(502);
-    echo json_encode(['error' => 'Error de comunicaciÃ³n con Google', 'details' => $err]);
+    echo json_encode(['error' => ['message' => 'Error cURL: ' . $err]]);
     exit;
 }
 $code = (int)(curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 502);
