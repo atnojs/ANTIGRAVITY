@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Edición por IA</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="app.css">
+    <style>
+        .test-canvas {
+            width: 400px;
+            height: 300px;
+            background: linear-gradient(45deg, #ff0000, #0000ff);
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="glass-body text-slate-200 h-screen w-screen overflow-hidden select-none">
+    <div class="p-4 bg-slate-800/50 rounded-lg mb-4">
+        <h1 class="text-2xl font-bold">Prueba de Edición por IA</h1>
+        <p class="text-slate-400">Simulación del flujo de trabajo de edición por IA</p>
+    </div>
+
+    <div class="flex h-4/5 gap-4 p-4">
+        <!-- Panel izquierdo - Herramientas -->
+        <div class="w-1/4 bg-slate-900/80 rounded-lg p-4 border border-slate-700">
+            <h2 class="text-lg font-bold mb-4">Herramientas de IA</h2>
+            <div class="space-y-2">
+                <button id="btnRemoveObject" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded text-left">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="eraser" class="w-4 h-4"></i>
+                        <span>Eliminar Objeto</span>
+                    </div>
+                </button>
+                <button id="btnBackgroundSwap" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded text-left">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="image" class="w-4 h-4"></i>
+                        <span>Cambiar Fondo</span>
+                    </div>
+                </button>
+                <button id="btnStyleTransfer" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded text-left">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="palette" class="w-4 h-4"></i>
+                        <span>Estilo Artístico</span>
+                    </div>
+                </button>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="font-bold mb-2">Consola de Pruebas</h3>
+                <div id="testConsole" class="bg-black/50 p-2 rounded h-32 overflow-y-auto text-sm font-mono">
+                    > Consola de pruebas<br>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área central - Canvas -->
+        <div class="flex-1 flex flex-col items-center justify-center bg-slate-800/30 rounded-lg border border-slate-700">
+            <h2 class="text-xl font-bold mb-4">Vista Previa</h2>
+            <canvas id="testCanvas" width="400" height="300" class="border border-slate-600 rounded"></canvas>
+            <div class="mt-4 flex gap-2">
+                <button id="btnLoadImage" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded">
+                    Cargar Imagen de Prueba
+                </button>
+                <button id="btnSimulateAI" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
+                    Simular Respuesta de IA
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel derecho - Historial -->
+        <div class="w-1/4 bg-slate-900/80 rounded-lg p-4 border border-slate-700">
+            <h2 class="text-lg font-bold mb-4">Historial</h2>
+            <div id="historyList" class="space-y-2">
+                <div class="bg-slate-800/50 p-2 rounded text-sm">
+                    Sin historial disponible
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de prueba -->
+    <div id="testModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="glass-modal w-full max-w-md rounded-xl">
+            <div class="p-4 border-b border-slate-700">
+                <h3 class="text-lg font-bold">Prueba de Edición por IA</h3>
+            </div>
+            <div class="p-4">
+                <p class="mb-4">¿Deseas aplicar una edición de prueba?</p>
+                <div class="flex justify-end gap-2">
+                    <button id="btnModalCancel" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 rounded">
+                        Cancelar
+                    </button>
+                    <button id="btnModalConfirm" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded">
+                        Aplicar Edición
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para registrar mensajes en la consola de pruebas
+        function logToConsole(message) {
+            const consoleElement = document.getElementById('testConsole');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            console.log(`[TEST] ${message}`);
+        }
+
+        // Inicializar el canvas con un degradado de prueba
+        function initializeCanvas() {
+            const canvas = document.getElementById('testCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Crear un degradado de prueba
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#ff0000');
+            gradient.addColorStop(0.5, '#00ff00');
+            gradient.addColorStop(1, '#0000ff');
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Añadir texto
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Imagen de Prueba', canvas.width/2, canvas.height/2);
+
+            logToConsole('Canvas inicializado con imagen de prueba');
+        }
+
+        // Cargar imagen de prueba
+        document.getElementById('btnLoadImage').addEventListener('click', function() {
+            initializeCanvas();
+            logToConsole('Imagen de prueba cargada');
+        });
+
+        // Simular respuesta de IA
+        document.getElementById('btnSimulateAI').addEventListener('click', function() {
+            logToConsole('Simulando respuesta de IA...');
+
+            // Crear una imagen modificada (cambiar el degradado)
+            const canvas = document.getElementById('testCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Crear un degradado diferente
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#ffff00');
+            gradient.addColorStop(0.5, '#ff00ff');
+            gradient.addColorStop(1, '#00ffff');
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Añadir texto modificado
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Imagen Editada por IA', canvas.width/2, canvas.height/2);
+
+            logToConsole('Imagen editada por IA aplicada');
+        });
+
+        // Eventos de los botones de IA
+        document.getElementById('btnRemoveObject').addEventListener('click', function() {
+            showTestModal('Eliminar Objeto', '¿Deseas eliminar un objeto de la imagen?');
+        });
+
+        document.getElementById('btnBackgroundSwap').addEventListener('click', function() {
+            showTestModal('Cambiar Fondo', '¿Deseas cambiar el fondo de la imagen?');
+        });
+
+        document.getElementById('btnStyleTransfer').addEventListener('click', function() {
+            showTestModal('Estilo Artístico', '¿Deseas aplicar un estilo artístico a la imagen?');
+        });
+
+        // Mostrar modal de prueba
+        function showTestModal(title, message) {
+            const modal = document.getElementById('testModal');
+            modal.querySelector('h3').textContent = title;
+            modal.querySelector('p').textContent = message;
+            modal.classList.remove('hidden');
+            logToConsole(`Modal abierto: ${title}`);
+        }
+
+        // Cerrar modal
+        document.getElementById('btnModalCancel').addEventListener('click', function() {
+            document.getElementById('testModal').classList.add('hidden');
+            logToConsole('Modal cerrado (cancelado)');
+        });
+
+        // Confirmar acción en modal
+        document.getElementById('btnModalConfirm').addEventListener('click', function() {
+            document.getElementById('testModal').classList.add('hidden');
+            logToConsole('Acción confirmada en modal');
+
+            // Simular proceso de IA
+            logToConsole('Procesando con IA...');
+            setTimeout(() => {
+                // Simular actualización de imagen
+                const canvas = document.getElementById('testCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Cambiar a un fondo negro con estrellas
+                ctx.fillStyle = 'black';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Dibujar estrellas
+                ctx.fillStyle = 'white';
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    const size = Math.random() * 3;
+                    ctx.fillRect(x, y, size, size);
+                }
+
+                // Añadir texto
+                ctx.fillStyle = 'white';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Imagen Procesada por IA', canvas.width/2, canvas.height/2);
+
+                logToConsole('✅ Proceso de IA completado');
+
+                // Disparar evento personalizado
+                window.dispatchEvent(new CustomEvent('ai-tool-update', {
+                    detail: {
+                        imageUrl: canvas.toDataURL(),
+                        tool: 'Prueba'
+                    }
+                }));
+
+                logToConsole('Evento personalizado disparado');
+            }, 2000);
+        });
+
+        // Escuchar eventos personalizados
+        window.addEventListener('ai-tool-update', function(event) {
+            logToConsole(`Evento recibido: ${event.detail.tool}`);
+            logToConsole('Imagen actualizada por IA');
+        });
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+            initializeCanvas();
+            logToConsole('Sistema de prueba inicializado');
+        });
+    </script>
+</body>
+</html>

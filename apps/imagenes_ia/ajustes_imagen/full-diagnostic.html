@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Completo - Editor de Imágenes IA</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="app.css">
+    <style>
+        .test-section {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 197, 255, 0.65);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        .console {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body class="glass-body text-slate-200 min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold mb-2">Diagnóstico Completo</h1>
+            <p class="text-slate-400">Sistema de Edición de Imágenes por IA</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Panel izquierdo -->
+            <div class="space-y-6">
+                <!-- Sección de diagnóstico del sistema -->
+                <div class="test-section">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        Diagnóstico del Sistema
+                    </h2>
+                    <div class="space-y-3">
+                        <button id="btnSystemCheck" class="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">
+                            Verificar Sistema
+                        </button>
+                        <div id="systemResults" class="console">
+                            > Esperando diagnóstico del sistema...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de prueba de API -->
+                <div class="test-section">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="wifi" class="w-5 h-5"></i>
+                        Prueba de Conectividad API
+                    </h2>
+                    <div class="space-y-3">
+                        <button id="btnApiTest" class="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition">
+                            Probar Conexión a Gemini
+                        </button>
+                        <div id="apiResults" class="console">
+                            > Esperando prueba de conectividad...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de simulación de IA -->
+                <div class="test-section">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-5 h-5"></i>
+                        Simulación de Edición por IA
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btnLoadImage" class="py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition">
+                                Cargar Imagen
+                            </button>
+                            <button id="btnSimulateAI" class="py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium transition" disabled>
+                                Simular IA
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm">Herramienta:</label>
+                            <select id="toolSelector" class="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm">
+                                <option value="">Seleccionar...</option>
+                                <option value="removeObject">Eliminar Objeto</option>
+                                <option value="backgroundSwap">Cambiar Fondo</option>
+                                <option value="styleTransfer">Estilo Artístico</option>
+                            </select>
+                        </div>
+                        <div id="simulationResults" class="console">
+                            > Esperando simulación...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel derecho -->
+            <div class="space-y-6">
+                <!-- Vista previa de imágenes -->
+                <div class="test-section">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="image" class="w-5 h-5"></i>
+                        Vista Previa
+                    </h2>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="text-sm text-slate-400 block mb-1">Imagen Original</label>
+                            <div id="originalPreview" class="h-32 bg-gradient-to-r from-red-500 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm">
+                                Sin imagen cargada
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-sm text-slate-400 block mb-1">Resultado de IA</label>
+                            <div id="resultPreview" class="h-32 bg-slate-800 rounded-lg flex items-center justify-center text-slate-500 text-sm">
+                                Sin procesar
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consola de eventos -->
+                <div class="test-section">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="terminal" class="w-5 h-5"></i>
+                        Consola de Eventos
+                    </h2>
+                    <div id="eventConsole" class="console">
+                        > Consola de eventos iniciada<br>
+                    </div>
+                </div>
+
+                <!-- Panel de control de errores -->
+                <div class="test-section">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                        Registro de Errores
+                    </h2>
+                    <div id="errorConsole" class="console">
+                        > Sistema de registro de errores activo<br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado de la aplicación
+        const appState = {
+            originalImage: null,
+            processedImage: null,
+            currentTool: null,
+            isProcessing: false
+        };
+
+        // Función para registrar mensajes en la consola
+        function logToConsole(elementId, message, type = 'info') {
+            const consoleElement = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const typeClass = type === 'success' ? 'success' :
+                             type === 'error' ? 'error' :
+                             type === 'warning' ? 'warning' : 'info';
+
+            consoleElement.innerHTML += `<span class="${typeClass}">[${timestamp}] ${message}</span><br>`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+
+            // También loguear en la consola del navegador
+            console[type === 'error' ? 'error' : type === 'warning' ? 'warn' : 'log'](`[${elementId}] ${message}`);
+        }
+
+        // Función para verificar el sistema
+        async function checkSystem() {
+            logToConsole('systemResults', 'Iniciando diagnóstico del sistema...', 'info');
+
+            try {
+                // Verificar existencia de archivos críticos
+                const files = ['config.php', 'proxy.php', 'ai-tools.js', 'app-compiled.js'];
+                let allFilesExist = true;
+
+                for (const file of files) {
+                    try {
+                        const response = await fetch(file, { method: 'HEAD' });
+                        const exists = response.ok;
+                        logToConsole('systemResults', `${file}: ${exists ? '✓' : '✗'}`, exists ? 'success' : 'error');
+                        if (!exists) allFilesExist = false;
+                    } catch (error) {
+                        logToConsole('systemResults', `${file}: ✗ (Error: ${error.message})`, 'error');
+                        allFilesExist = false;
+                    }
+                }
+
+                // Verificar PHP
+                logToConsole('systemResults', `PHP versión: ${typeof phpversion !== 'undefined' ? phpversion() : 'No disponible'}`, 'info');
+
+                // Verificar extensiones
+                const extensions = {
+                    'cURL': typeof curl_version !== 'undefined',
+                    'JSON': typeof JSON !== 'undefined',
+                    'GD': typeof imagecreate !== 'undefined'
+                };
+
+                for (const [ext, available] of Object.entries(extensions)) {
+                    logToConsole('systemResults', `${ext}: ${available ? '✓' : '✗'}`, available ? 'success' : 'warning');
+                }
+
+                logToConsole('systemResults', `Diagnóstico ${allFilesExist ? 'completado ✓' : 'con errores ⚠'}`,
+                           allFilesExist ? 'success' : 'warning');
+
+            } catch (error) {
+                logToConsole('systemResults', `Error en diagnóstico: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para probar la API de Gemini
+        async function testApi() {
+            logToConsole('apiResults', 'Iniciando prueba de conectividad con Gemini...', 'info');
+
+            try {
+                const response = await fetch('proxy.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        task: 'generateImage',
+                        provider: 'gemini',
+                        prompt: 'Test connection',
+                        images: [],
+                        aspectRatio: '1:1',
+                        modalities: ['TEXT']
+                    })
+                });
+
+                logToConsole('apiResults', `Respuesta HTTP: ${response.status}`, 'info');
+
+                if (response.ok) {
+                    logToConsole('apiResults', '✓ Conexión con API establecida', 'success');
+                } else {
+                    const errorText = await response.text();
+                    logToConsole('apiResults', `✗ Error en conexión: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                logToConsole('apiResults', `✗ Error de red: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para cargar imagen de prueba
+        function loadImage() {
+            logToConsole('simulationResults', 'Cargando imagen de prueba...', 'info');
+
+            // Crear canvas con imagen de prueba
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+
+            // Crear degradado de prueba
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#ef4444');
+            gradient.addColorStop(0.5, '#f59e0b');
+            gradient.addColorStop(1, '#10b981');
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Añadir texto
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Imagen Original', canvas.width/2, canvas.height/2);
+
+            // Guardar imagen
+            appState.originalImage = canvas.toDataURL();
+
+            // Mostrar previsualización
+            document.getElementById('originalPreview').innerHTML = `
+                <img src="${appState.originalImage}" class="w-full h-full object-contain rounded" />
+            `;
+
+            // Habilitar botón de simulación
+            document.getElementById('btnSimulateAI').disabled = false;
+
+            logToConsole('simulationResults', '✓ Imagen de prueba cargada', 'success');
+            logToConsole('eventConsole', 'Evento: Imagen cargada', 'info');
+        }
+
+        // Función para simular procesamiento por IA
+        function simulateAI() {
+            if (!appState.originalImage || !appState.currentTool) {
+                logToConsole('simulationResults', '✗ Primero carga una imagen y selecciona una herramienta', 'error');
+                return;
+            }
+
+            if (appState.isProcessing) return;
+
+            appState.isProcessing = true;
+            document.getElementById('btnSimulateAI').disabled = true;
+            logToConsole('simulationResults', `Procesando con IA: ${appState.currentTool}...`, 'info');
+
+            // Simular proceso (2 segundos)
+            setTimeout(() => {
+                // Crear imagen procesada
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+
+                // Crear resultado según la herramienta
+                let bgColor1, bgColor2, text;
+                switch(appState.currentTool) {
+                    case 'removeObject':
+                        bgColor1 = '#8b5cf6';
+                        bgColor2 = '#ec4899';
+                        text = 'Objeto Eliminado';
+                        break;
+                    case 'backgroundSwap':
+                        bgColor1 = '#06b6d4';
+                        bgColor2 = '#3b82f6';
+                        text = 'Fondo Cambiado';
+                        break;
+                    case 'styleTransfer':
+                        bgColor1 = '#f97316';
+                        bgColor2 = '#ef4444';
+                        text = 'Estilo Aplicado';
+                        break;
+                    default:
+                        bgColor1 = '#64748b';
+                        bgColor2 = '#94a3b8';
+                        text = 'Procesado';
+                }
+
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradient.addColorStop(0, bgColor1);
+                gradient.addColorStop(1, bgColor2);
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Añadir texto
+                ctx.fillStyle = 'white';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(text, canvas.width/2, canvas.height/2);
+
+                // Guardar imagen procesada
+                appState.processedImage = canvas.toDataURL();
+
+                // Mostrar resultado
+                document.getElementById('resultPreview').innerHTML = `
+                    <img src="${appState.processedImage}" class="w-full h-full object-contain rounded" />
+                `;
+
+                // Completar proceso
+                appState.isProcessing = false;
+                document.getElementById('btnSimulateAI').disabled = false;
+
+                logToConsole('simulationResults', `✓ ${text} completado`, 'success');
+                logToConsole('eventConsole', `Evento: Imagen procesada con ${appState.currentTool}`, 'info');
+
+                // Disparar evento personalizado
+                window.dispatchEvent(new CustomEvent('ai-tool-update', {
+                    detail: {
+                        imageUrl: appState.processedImage,
+                        tool: appState.currentTool
+                    }
+                }));
+
+            }, 2000);
+        }
+
+        // Registrar eventos de sistema
+        function setupEventListeners() {
+            // Botones principales
+            document.getElementById('btnSystemCheck').addEventListener('click', checkSystem);
+            document.getElementById('btnApiTest').addEventListener('click', testApi);
+            document.getElementById('btnLoadImage').addEventListener('click', loadImage);
+            document.getElementById('btnSimulateAI').addEventListener('click', simulateAI);
+
+            // Selector de herramienta
+            document.getElementById('toolSelector').addEventListener('change', function(e) {
+                appState.currentTool = e.target.value;
+                if (appState.currentTool) {
+                    logToConsole('simulationResults', `Herramienta seleccionada: ${appState.currentTool}`, 'info');
+                }
+            });
+
+            // Escuchar eventos personalizados
+            window.addEventListener('ai-tool-update', function(event) {
+                logToConsole('eventConsole', `Evento personalizado recibido: ${event.detail.tool}`, 'success');
+            });
+
+            // Capturar errores globales
+            window.addEventListener('error', function(event) {
+                logToConsole('errorConsole', `Error: ${event.message} (${event.filename}:${event.lineno})`, 'error');
+            });
+
+            window.addEventListener('unhandledrejection', function(event) {
+                logToConsole('errorConsole', `Promise rechazada: ${event.reason}`, 'error');
+            });
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar Lucide icons
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+
+            // Configurar eventos
+            setupEventListeners();
+
+            logToConsole('eventConsole', 'Sistema de diagnóstico inicializado', 'success');
+        });
+    </script>
+</body>
+</html>

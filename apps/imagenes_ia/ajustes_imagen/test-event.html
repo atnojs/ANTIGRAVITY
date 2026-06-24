@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prueba de Evento Personalizado</title>
+</head>
+<body>
+    <h1>Prueba de Evento Personalizado</h1>
+    <button id="testButton">Enviar Evento</button>
+    <p id="result">Haz clic en el botón para enviar un evento</p>
+
+    <script>
+        // Escuchar el evento personalizado
+        window.addEventListener('ai-tool-update', function(event) {
+            document.getElementById('result').innerHTML = 'Evento recibido: ' + event.detail.imageUrl;
+            console.log('Evento recibido:', event.detail);
+        });
+
+        // Enviar el evento al hacer clic
+        document.getElementById('testButton').addEventListener('click', function() {
+            window.dispatchEvent(new CustomEvent('ai-tool-update', {
+                detail: { imageUrl: 'https://example.com/test-image.jpg' }
+            }));
+        });
+    </script>
+</body>
+</html>

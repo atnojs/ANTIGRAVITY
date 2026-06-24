@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Edición IA</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-900 text-white h-screen flex flex-col">
+    <div class="p-4 bg-gray-800">
+        <h1 class="text-2xl font-bold">Debug Edición IA</h1>
+        <p class="text-gray-400">Herramienta para diagnosticar problemas con la edición por IA</p>
+    </div>
+
+    <div class="flex-1 flex flex-col md:flex-row p-4 gap-4">
+        <div class="w-full md:w-1/2 flex flex-col gap-4">
+            <div class="bg-gray-800 rounded-lg p-4">
+                <h2 class="text-lg font-bold mb-2">Prueba de API</h2>
+                <button id="testApiBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                    Probar API Gemini
+                </button>
+                <div id="apiResult" class="mt-2 p-2 bg-gray-700 rounded min-h-[100px]">
+                    Resultado aparecerá aquí...
+                </div>
+            </div>
+
+            <div class="bg-gray-800 rounded-lg p-4">
+                <h2 class="text-lg font-bold mb-2">Cargar Imagen</h2>
+                <input type="file" id="imageInput" accept="image/*" class="w-full p-2 bg-gray-700 rounded">
+                <div id="imagePreview" class="mt-2">
+                    <p class="text-gray-400">Selecciona una imagen para previsualizar</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 bg-gray-800 rounded-lg p-4">
+            <h2 class="text-lg font-bold mb-2">Consola de Depuración</h2>
+            <div id="debugConsole" class="bg-black text-green-400 p-4 rounded h-64 overflow-y-auto font-mono text-sm">
+                > Consola de depuración iniciada<br>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para registrar mensajes en la consola de depuración
+        function logToConsole(message) {
+            const consoleElement = document.getElementById('debugConsole');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            console.log(message);
+        }
+
+        // Función para probar la API de Gemini
+        async function testApi() {
+            const resultElement = document.getElementById('apiResult');
+            resultElement.innerHTML = 'Probando API...';
+            logToConsole('Iniciando prueba de API Gemini');
+
+            try {
+                // Verificar si el archivo config.php existe y tiene la clave API
+                logToConsole('Verificando configuración de API...');
+
+                const response = await fetch('proxy.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        task: 'generateImage',
+                        provider: 'gemini',
+                        prompt: 'Test image - a simple blue square',
+                        images: [],
+                        aspectRatio: '1:1',
+                        modalities: ['IMAGE']
+                    })
+                });
+
+                logToConsole(`Respuesta HTTP: ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                logToConsole('Respuesta JSON recibida');
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.image) {
+                    resultElement.innerHTML = `
+                        <p class="text-green-400">¡API funcionando correctamente!</p>
+                        <p class="text-sm text-gray-400">Imagen generada con éxito</p>
+                    `;
+                    logToConsole('Prueba de API exitosa');
+                } else {
+                    resultElement.innerHTML = `
+                        <p class="text-yellow-400">API respondió pero sin imagen</p>
+                        <p class="text-sm text-gray-400">Respuesta: ${JSON.stringify(data).substring(0, 100)}...</p>
+                    `;
+                    logToConsole('API respondió sin imagen');
+                }
+            } catch (error) {
+                resultElement.innerHTML = `
+                    <p class="text-red-400">Error en la prueba de API</p>
+                    <p class="text-sm text-gray-400">${error.message}</p>
+                `;
+                logToConsole(`Error: ${error.message}`);
+            }
+        }
+
+        // Manejar la carga de imágenes
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                logToConsole(`Imagen seleccionada: ${file.name}`);
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('imagePreview').innerHTML = `
+                        <img src="${event.target.result}" alt="Previsualización" class="max-w-full h-auto rounded">
+                        <p class="text-sm text-gray-400 mt-2">Tamaño: ${Math.round(file.size/1024)} KB</p>
+                    `;
+                    logToConsole('Imagen cargada y previsualizada');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Event listeners
+        document.getElementById('testApiBtn').addEventListener('click', testApi);
+
+        // Inicializar Lucide icons
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+
+        logToConsole('Página de debug cargada correctamente');
+    </script>
+</body>
+</html>
