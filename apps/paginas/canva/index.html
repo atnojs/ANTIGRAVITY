@@ -329,7 +329,7 @@ Provide only the two descriptions concatenated in a few sentences.
         let semanticLocationDescription = '';
         try {
             const descriptionResponse = await ai.models.generateContent({
-              model: 'gemini-3.1-flash-image-preview',
+              model: 'gemini-2.5-flash-image',
               contents: { parts: [{ text: descriptionPrompt }, markedEnvironmentImagePart] }
             });
             semanticLocationDescription = descriptionResponse.text;
@@ -370,7 +370,7 @@ The output should ONLY be the final, composed image. Do not add any text or expl
         console.log('Sending images and augmented prompt...');
         
         const response = await ai.models.generateContent({
-          model: 'gemini-3.1-flash-image-preview',
+          model: 'gemini-2.5-flash-image',
           contents: { parts: [objectImagePart, cleanEnvironmentImagePart, textPart] },
         });
 

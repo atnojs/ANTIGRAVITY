@@ -84,7 +84,7 @@ try {
         ]
       ]]
     ];
-    $data = call_gemini("gemini-3.1-flash-image-preview", $body, $apiKey);
+    $data = call_gemini("gemini-2.5-flash-image", $body, $apiKey);
     $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
     if (!$text) throw new Exception("Sin descripción");
     echo json_encode(['description' => $text], JSON_UNESCAPED_UNICODE);
@@ -103,7 +103,7 @@ try {
           ]
         ]]
       ];
-      $data = call_gemini("gemini-3.1-flash-image-preview", $body, $apiKey);
+      $data = call_gemini("gemini-2.5-flash-image", $body, $apiKey);
       $parts = $data['candidates'][0]['content']['parts'] ?? [];
       foreach ($parts as $part) {
         if (isset($part['inlineData']['data'])) {

@@ -64,7 +64,7 @@ if ($imageB64 === '') {
     exit;
 }
 
-$model = 'gemini-3.1-flash-image-preview';
+$model = 'gemini-2.5-flash-image';
 $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
 $payload = [

@@ -45,7 +45,7 @@ try {
     // TEST 4: Verificar conectividad
     if (!empty($apiKey) && extension_loaded('curl')) {
         // Intentar conectar a la API de Gemini
-        $model = 'gemini-3.1-flash-image-preview';
+        $model = 'gemini-2.5-flash-image';
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($apiKey);
 
         $testPayload = [

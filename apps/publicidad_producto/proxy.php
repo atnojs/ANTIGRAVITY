@@ -98,7 +98,7 @@ function make_request($url, $method = 'GET', $headers = [], $body = null)
 
 // ─── ACCIÓN: Generar imagen con Gemini ───────────────────────
 if ($action === 'generate_image') {
-    $model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
+    $model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
     $endpoint = "{$BASE_URL}/models/{$model}:generateContent?key={$API_KEY}";
 
     if (isset($req['contents'])) {

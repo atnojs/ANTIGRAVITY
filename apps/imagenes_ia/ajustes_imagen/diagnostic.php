@@ -52,7 +52,7 @@ try {
 
     // 5. Probar conexión básica a la API de Gemini
     if (defined('GEMINI_API_KEY') && !empty(GEMINI_API_KEY)) {
-        $testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode(GEMINI_API_KEY);
+        $testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode(GEMINI_API_KEY);
 
         $ch = curl_init($testUrl);
         curl_setopt_array($ch, [

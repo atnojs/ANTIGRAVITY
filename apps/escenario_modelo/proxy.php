@@ -40,10 +40,10 @@ if (!$API_KEY || empty($API_KEY)) {
 
 $API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
-// CAMBIO IMPORTANTE: 'gemini-3.1-flash-image-preview' no existe públicamente aún. 
-// Usamos 'gemini-3.1-flash-image-preview' que es el actual capaz de generar imágenes via API rápida,
-// o 'gemini-3.1-flash-image-preview' si solo fuera texto. Para generación de imágenes, prueba este:
-$DEFAULT_MODEL = 'gemini-3.1-flash-image-preview'; 
+// CAMBIO IMPORTANTE: 'gemini-2.5-flash-image' no existe públicamente aún. 
+// Usamos 'gemini-2.5-flash-image' que es el actual capaz de generar imágenes via API rápida,
+// o 'gemini-2.5-flash-image' si solo fuera texto. Para generación de imágenes, prueba este:
+$DEFAULT_MODEL = 'gemini-2.5-flash-image'; 
 
 $ALLOWED_MIME = ['image/jpeg','image/png','image/webp', 'image/heic'];
 $MAX_MB = 20; 

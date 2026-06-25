@@ -280,7 +280,7 @@ Esta es la variaciÃ³n nÃºmero ${variationNum}. Genera una interpretaciÃ³n 
             `;
 
             const payload = {
-                model: "gemini-3.1-flash-image-preview",
+                model: "gemini-2.5-flash-image",
                 contents: [
                     {
                         parts: [

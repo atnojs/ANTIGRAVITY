@@ -9,7 +9,7 @@ try {
   $prompt = "High-end studio photo of a green cap on gradient background, softbox lighting, clean shadows, premium catalog look";
 
   // 2) Construimos la petición (texto solo; el modelo devuelve imagen)
- $MODEL_ID = "gemini-3.1-flash-image-preview";
+ $MODEL_ID = "gemini-2.5-flash-image";
 
 $body = [
   "contents" => [[
@@ -67,7 +67,7 @@ $json = vertex_generate_content($MODEL_ID, $body);
 $txt = vertex_extract_text($json);
 if ($txt) {
   header('Content-Type: text/html; charset=utf-8');
-  echo "<h2>✅ Respuesta de gemini-3.1-flash-image-preview</h2>";
+  echo "<h2>✅ Respuesta de gemini-2.5-flash-image</h2>";
   echo "<pre>".htmlspecialchars($txt)."</pre>";
 } else {
   echo "<h2>⚠️ Respuesta sin texto</h2><pre>"

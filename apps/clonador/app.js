@@ -2,14 +2,14 @@
  * ════
  * 🧬 PROTOCOLO GEMINI v14.0 - CON HISTORIAL PERSISTENTE SERVER-SIDE
  * ════
- * Modelo: gemini-3.1-flash-image-preview
+ * Modelo: gemini-2.5-flash-image
  * Incluye: HistoryManager (IndexedDB + servidor PHP), Lightbox, Botones de acción
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONSTANTES ---
     const PROXY_URL = 'proxy.php';
-    const MODEL = 'gemini-3.1-flash-image-preview';
+    const MODEL = 'gemini-2.5-flash-image';
 
     // --- ESTADO ---
     let identityImage = null;

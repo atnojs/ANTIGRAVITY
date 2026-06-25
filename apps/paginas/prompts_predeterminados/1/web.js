@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN DE GEMINI API
     // ═══════════════════════════════════════════════════════════════
     const GEMINI_API_KEY = 'AIzaSyCabuZRWpu2W06zXu3mH8FhueLPDEiBAMU'; // ⚠️ REEMPLAZAR CON TU API KEY
-    const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent';
+    const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent';
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM

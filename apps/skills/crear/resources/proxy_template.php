@@ -53,9 +53,9 @@ if (!is_array($req)) {
 }
 
 // 3) Modelo y payload
-$model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
+$model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
 if ($model === '' || stripos($model, 'flah') !== false) {
-    $model = 'gemini-3.1-flash-image-preview'; // corrige posible typo
+    $model = 'gemini-2.5-flash-image'; // corrige posible typo
 }
 
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";

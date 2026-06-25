@@ -802,7 +802,7 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: "gemini-3.1-flash-image-preview",
+            model: "gemini-2.5-flash-image",
             contents: [{ parts: [
                 { text: promptInstructions },
                 { inlineData: { mimeType: styleData.mimeType, data: styleData.data } },

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php'; // Proxy PHP para Gemini
-    const GEMINI_MODEL = 'gemini-3.1-flash-image-preview'; // Modelo con generación de imagen fiel
+    const GEMINI_MODEL = 'gemini-2.5-flash-image'; // Modelo con generación de imagen fiel
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM

@@ -127,7 +127,7 @@ try {
     // TAREA: MEJORAR PROMPT (MULTIMODAL)
     // ═══════════════════════════════════════════════
     if ($task === 'enhancePrompt') {
-        $model = 'gemini-3.1-flash-image-preview';
+        $model = 'gemini-2.5-flash-image';
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/'
             . rawurlencode($model)
             . ':generateContent?key='
@@ -206,7 +206,7 @@ Genera 4 variantes CORTAS (máximo 2 líneas) separadas por '|||'.";
             throw new Exception('Se necesitan imágenes para combinar', 400);
         }
 
-        $model = 'gemini-3.1-flash-image-preview';
+        $model = 'gemini-2.5-flash-image';
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/'
             . rawurlencode($model)
             . ':generateContent?key='

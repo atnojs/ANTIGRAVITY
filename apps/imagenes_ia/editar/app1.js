@@ -67,7 +67,7 @@ const enhancePrompt = async (basePrompt) => {
                 }
             }
         };
-        const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+        const result = await callProxy('gemini-2.5-flash-image', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -104,7 +104,7 @@ const generateImage = async (params) => {
     }
     const contents = [{ parts }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const result = await callProxy('gemini-2.5-flash-image', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -121,7 +121,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const result = await callProxy('gemini-2.5-flash-image', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;

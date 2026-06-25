@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Llamada a backend (proxy.php)
     const callGeminiApi = async (prompt, modelImage, outfitImage) => {
-        const payload = { prompt, modelImage, outfitImage, model: 'gemini-3.1-flash-image-preview' };
+        const payload = { prompt, modelImage, outfitImage, model: 'gemini-2.5-flash-image' };
         let attempt = 0, maxAttempts = 6;
         const loadingText = document.querySelector('.loading-text');
         const defaultLoadingMsg = "IA Generando Obra Maestra...";

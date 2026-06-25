@@ -136,5 +136,5 @@ echo "<li>Verificar que las imágenes de referencia existan en la carpeta 'refer
 echo "<li>Asegurar que las rutas en la base de datos sean correctas</li>";
 echo "<li>Verificar permisos de lectura en las carpetas</li>";
 echo "<li>Probar con imágenes más pequeñas si el problema persiste</li>";
-echo "<li>Verificar que el modelo gemini-3.1-flash-image-preview esté disponible en tu región</li>";
+echo "<li>Verificar que el modelo gemini-2.5-flash-image esté disponible en tu región</li>";
 echo "</ol>";

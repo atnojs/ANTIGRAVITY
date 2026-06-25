@@ -37,7 +37,7 @@ try {
     }
 
     // CORREGIDO: Usar modelo Gemini-2.0-flash que existe
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($apiKey);
 
     $body = [
         'contents' => [

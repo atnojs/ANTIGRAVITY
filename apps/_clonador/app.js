@@ -2,7 +2,7 @@
  * ═══════════════════════════════════════════════════════════════════
  * 🧬 PROTOCOLO GEMINI v13.0 - CON HISTORIAL PERSISTENTE INDEXEDDB
  * ═══════════════════════════════════════════════════════════════════
- * Modelo: gemini-3.1-flash-image-preview
+ * Modelo: gemini-2.5-flash-image
  * Incluye: Historial IndexedDB, Lightbox, Botones de acción
  */
 
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const DB_VERSION = 1;
     const STORE_NAME = 'history';
     const PROXY_URL = 'proxy.php';
-    const MODEL = 'gemini-3.1-flash-image-preview';
+    const MODEL = 'gemini-2.5-flash-image';
 
     // --- ESTADO ---
     let identityImage = null;

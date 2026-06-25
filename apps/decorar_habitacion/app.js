@@ -2,10 +2,10 @@ const { useState, useRef, useEffect } = React;
 
 // === CONFIGURACIÓN DE MODELOS HÍBRIDA ===
 // 1. "LAS MANOS": Modelo para CREAR imágenes (El potente Gemini 3)
-const MODEL_IMAGE_GEN = "gemini-3.1-flash-image-preview";
+const MODEL_IMAGE_GEN = "gemini-2.5-flash-image";
 
 // 2. "LOS OJOS": Modelo para VER y DESCRIBIR (Flash es excelente analizando imágenes a texto)
-const MODEL_TEXT_ANALYSIS = "gemini-3.1-flash-image-preview";
+const MODEL_TEXT_ANALYSIS = "gemini-2.5-flash-image";
 
 // Asegúrate que esta URL sea la correcta en tu servidor Hostinger
 // Asegúrate que esta URL sea la correcta en tu servidor Hostinger

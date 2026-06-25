@@ -112,7 +112,7 @@ if (!is_array($req)) {
     exit;
 }
 
-$model = (string) ($req['model'] ?? 'gemini-3.1-flash-image-preview');
+$model = (string) ($req['model'] ?? 'gemini-2.5-flash-image');
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 $payload = $req['payload'] ?? $req;
@@ -224,7 +224,7 @@ function extractRecipeWithAI(string $html, string $url, string $apiKey): array
         'generationConfig' => ['temperature' => 0.1]
     ];
 
-    $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key={$apiKey}";
+    $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key={$apiKey}";
 
     $ch = curl_init($endpoint);
     curl_setopt_array($ch, [

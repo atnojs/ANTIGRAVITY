@@ -56,7 +56,7 @@ if (!is_array($req)) {
 }
 
 // 4) Modelo
-$model = $req['model'] ?? 'gemini-3.1-flash-image-preview';
+$model = $req['model'] ?? 'gemini-2.5-flash-image';
 unset($req['model']); // No enviar en el body a Gemini
 
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);

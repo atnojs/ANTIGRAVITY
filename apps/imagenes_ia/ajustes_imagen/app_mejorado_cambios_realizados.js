@@ -1496,7 +1496,7 @@ Devuelve ÚNICAMENTE un objeto JSON:
                     body: JSON.stringify({
                         task: 'generateImage',
                         provider: 'gemini',
-                        model: 'gemini-3.1-flash-image-preview', // Especificar el modelo
+                        model: 'gemini-2.5-flash-image', // Especificar el modelo
                         prompt: promptText,
                         images: [{
                             mimeType: 'image/jpeg',

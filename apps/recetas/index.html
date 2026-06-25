@@ -268,7 +268,7 @@
                     const response = await fetch('./proxy.php', {
                         method: 'POST',
                         body: JSON.stringify({
-                            model: 'gemini-3.1-flash-image-preview',
+                            model: 'gemini-2.5-flash-image',
                             contents: [{ parts: [{ text: prompt }] }],
                             generationConfig: {
                                 responseModalities: ['TEXT', 'IMAGE']

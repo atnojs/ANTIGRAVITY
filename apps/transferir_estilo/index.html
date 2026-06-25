@@ -977,7 +977,7 @@
                 try {
                     const prompt = `Fusión artística avanzada de dos imágenes. Estilo cinematográfico, transiciones suaves, combinando ${image1.name} y ${image2.name} con un enfoque equilibrado.`;
                     const payload = {
-                        model: 'gemini-3.1-flash-image-preview', prompt, contents: [
+                        model: 'gemini-2.5-flash-image', prompt, contents: [
                             { inlineData: { mimeType: 'image/png', data: image1.url.split(',')[1] } },
                             { inlineData: { mimeType: 'image/png', data: image2.url.split(',')[1] } }
                         ]
