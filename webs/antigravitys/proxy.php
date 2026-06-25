@@ -69,42 +69,30 @@ try {
     $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
 
     $sysPrompt = "
-Eres un experto en documentación técnica. Recibirás un PDF completo en Base64.
-Tu tarea es:
+Eres un analizador de documentos. Recibirás un PDF completo en Base64.
+Tu tarea:
 1. Leer y analizar TODO el contenido del PDF.
-2. Generar un resumen completo y muy detallado dividido en EXACTAMENTE estas secciones:
-
-- introduccion
-- interfaz
-- agentes
-- claude
-- claudeCode
-- testSprite
-- workflows
-- configAvanzada
-- seguridad
-- problemas
-- checklist
+2. Detectar su título real, tema principal y estructura natural (capítulos, secciones, apartados).
+3. Generar un resumen completo y fiel al contenido original, dividido en las secciones que el propio documento tenga.
 
 DEVUELVE EXCLUSIVAMENTE un JSON válido con ESTE FORMATO EXACTO, SIN TEXTO EXTRA, SIN ```json, SIN COMILLAS ALREDEDOR DEL JSON:
 
 {
-  \"sections\": {
-    \"introduccion\": \"...\",
-    \"interfaz\": \"...\",
-    \"agentes\": \"...\",
-    \"claude\": \"...\",
-    \"claudeCode\": \"...\",
-    \"testSprite\": \"...\",
-    \"workflows\": \"...\",
-    \"configAvanzada\": \"...\",
-    \"seguridad\": \"...\",
-    \"problemas\": \"...\",
-    \"checklist\": \"...\"
-  }
+  \"meta\": {
+    \"title\": \"Título real del documento\",
+    \"description\": \"Resumen de 1-2 frases del contenido\"
+  },
+  \"sections\": [
+    { \"id\": \"sec-1\", \"title\": \"Título de la primera sección\", \"content\": \"Contenido resumido de esta sección...\" },
+    { \"id\": \"sec-2\", \"title\": \"Título de la segunda sección\", \"content\": \"...\" }
+  ]
 }
 
-Solo devuelve el JSON puro.
+Reglas:
+- Usa tantas secciones como tenga realmente el PDF (mín 1, máx 20).
+- El contenido de cada sección debe ser fiel al PDF original, no inventes información.
+- Los IDs deben ser \"sec-1\", \"sec-2\", \"sec-3\", etc.
+- Solo devuelve el JSON puro.
 ";
 
     $body = [
@@ -170,11 +158,41 @@ Solo devuelve el JSON puro.
 
     $jsonExtracted = json_decode($jsonText, true);
 
-    if (!$jsonExtracted || !isset($jsonExtracted['sections'])) {
-        throw new Exception("No se encontró el campo 'sections'. JSON detectado: " . $jsonText);
+    if (!$jsonExtracted) {
+        throw new Exception("JSON inválido. Respuesta cruda: " . substr($jsonText, 0, 400));
     }
 
-    echo json_encode($jsonExtracted);
+    // Aceptar tanto el nuevo formato {meta, sections:[]} como el antiguo {sections:{...}}
+    if (!isset($jsonExtracted['sections'])) {
+        throw new Exception("No se encontró el campo 'sections'. JSON detectado: " . substr($jsonText, 0, 400));
+    }
+
+    // Si sections es un objeto asociativo (formato antiguo), convertirlo al nuevo formato de array
+    if (is_array($jsonExtracted['sections']) && !isset($jsonExtracted['sections'][0])) {
+        // Formato antiguo: {introduccion: "...", interfaz: "...", ...}
+        $oldSections = $jsonExtracted['sections'];
+        $newSections = [];
+        $i = 1;
+        foreach ($oldSections as $key => $content) {
+            $newSections[] = [
+                'id' => 'sec-' . $i,
+                'title' => ucfirst($key),
+                'content' => $content
+            ];
+            $i++;
+        }
+        $jsonExtracted['sections'] = $newSections;
+    }
+
+    // Si no hay meta, generar uno por defecto
+    if (!isset($jsonExtracted['meta']) || !is_array($jsonExtracted['meta'])) {
+        $jsonExtracted['meta'] = [
+            'title' => 'Documento analizado',
+            'description' => 'Contenido extraído y organizado automáticamente desde el PDF.'
+        ];
+    }
+
+    echo json_encode($jsonExtracted, JSON_UNESCAPED_UNICODE);
     exit;
   }
 
@@ -365,6 +383,292 @@ Solo devuelve el JSON puro.
 
         throw new Exception('Gemini no generó imagen ni texto.');
     }
+  }
+
+  /* ---------------------------------------------------------
+   *  TAREA: ANALIZAR PDF CHUNKED
+   *  Convierte cualquier PDF en contenido web con máxima fiabilidad.
+   *  Usa File API de Gemini (PDFs grandes) + 2 pasadas (índice + contenido)
+   *  + extracción de imágenes binarias con imagick (fallback a descrito).
+   * --------------------------------------------------------- */
+  if ($task === 'analyzePDFChunked') {
+
+    if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
+
+    $pdfBase64 = $json['pdf'] ?? null;
+    if (!$pdfBase64) throw new Exception('No se recibió el PDF codificado en Base64.', 400);
+
+    $filename = $json['filename'] ?? 'documento.pdf';
+
+    // Helper local para generateContent con timeout extendido (300s)
+    $callGen = function($url, $body) {
+      $ch = curl_init($url);
+      curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS     => json_encode($body),
+        CURLOPT_TIMEOUT        => 300,
+        CURLOPT_SSL_VERIFYPEER => false
+      ]);
+      $resp   = curl_exec($ch);
+      $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+      $err    = curl_error($ch);
+      curl_close($ch);
+      if ($resp === false) throw new Exception('Error conexión cURL: ' . $err, 502);
+      $data = json_decode($resp, true);
+      if (json_last_error() !== JSON_ERROR_NONE)
+        throw new Exception('Respuesta no válida del proveedor. HTTP: ' . $status . ' - ' . $resp, 502);
+      if ($status < 200 || $status >= 300) {
+        $msg = $data['error']['message'] ?? $data['detail'] ?? ('Error HTTP ' . $status);
+        throw new Exception('API Error: ' . $msg, $status);
+      }
+      return $data;
+    };
+
+    // ----------------------------------------------------
+    // 1) SUBIDA del PDF vía File API (soporta PDFs grandes)
+    // ----------------------------------------------------
+    $pdfBin = base64_decode($pdfBase64, true);
+    if ($pdfBin === false) throw new Exception('Base64 del PDF inválido.', 400);
+
+    // Escribir binario a tmpfile para crear CURLFile
+    $tmp = tmpfile();
+    if (!$tmp) throw new Exception('No se pudo crear archivo temporal.', 500);
+    fwrite($tmp, $pdfBin);
+    $tmpPath = stream_get_meta_data($tmp)['uri'];
+
+    $uploadUrl = 'https://generativelanguage.googleapis.com/upload/v1beta/files?key=' . urlencode($apiKey);
+    $cfile = new CURLFile($tmpPath, 'application/pdf', $filename);
+
+    $chUp = curl_init($uploadUrl);
+    curl_setopt_array($chUp, [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_POST           => true,
+      CURLOPT_POSTFIELDS     => ['file' => $cfile],
+      CURLOPT_TIMEOUT        => 300,
+      CURLOPT_SSL_VERIFYPEER => false,
+      // Headers recomendados por la File API de Gemini para la subida multipart
+      CURLOPT_HTTPHEADER     => [
+        'X-Goog-Upload-Protocol: multipart',
+        'X-Goog-Upload-File-Name: ' . $filename
+      ]
+    ]);
+    $upResp   = curl_exec($chUp);
+    $upStatus = curl_getinfo($chUp, CURLINFO_RESPONSE_CODE);
+    $upErr    = curl_error($chUp);
+    curl_close($chUp);
+    fclose($tmp);
+
+    if ($upResp === false) throw new Exception('Error subiendo PDF a File API: ' . $upErr, 502);
+
+    $upData = json_decode($upResp, true);
+    if (json_last_error() !== JSON_ERROR_NONE || $upStatus < 200 || $upStatus >= 300) {
+      throw new Exception('File API devolvió error. HTTP ' . $upStatus . ': ' . $upResp, 502);
+    }
+
+    $fileUri  = $upData['file']['uri'] ?? null;
+    $fileName = $upData['file']['name'] ?? null;
+    if (!$fileUri || !$fileName) throw new Exception('File API no devolvió file.uri/file.name.', 502);
+
+    // ----------------------------------------------------
+    // Poll de estado hasta ACTIVE (máx 30 intentos, sleep 2s)
+    // ----------------------------------------------------
+    $stateUrl = 'https://generativelanguage.googleapis.com/v1beta/files/' . urlencode($fileName) . '?key=' . urlencode($apiKey);
+    $active = false;
+    for ($i = 0; $i < 30; $i++) {
+      $chS = curl_init($stateUrl);
+      curl_setopt_array($chS, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_TIMEOUT        => 30
+      ]);
+      $sResp = curl_exec($chS);
+      curl_close($chS);
+      $sData = json_decode($sResp, true);
+      if (isset($sData['state']) && $sData['state'] === 'ACTIVE') {
+        $active = true;
+        break;
+      }
+      sleep(2);
+    }
+    if (!$active) throw new Exception('El PDF subido no quedó ACTIVE tras 30 intentos.', 504);
+
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . urlencode($apiKey);
+
+    // ----------------------------------------------------
+    // 2) PASADA 1 — ÍNDICE (solo estructura, sin contenido)
+    // ----------------------------------------------------
+    $indexPrompt = "Eres un analizador de documentos. Recibirás un PDF.
+Tu tarea: analizar TODO el PDF y devolver EXCLUSIVAMENTE un JSON con el ÍNDICE real del documento (sin el contenido de cada sección, solo títulos).
+
+TODO el contenido debe estar obligatoriamente en ESPAÑOL.
+
+Devuelve EXCLUSIVAMENTE este JSON, SIN texto extra, SIN ```json, SIN comillas alrededor:
+
+{
+  \"meta\": {
+    \"title\": \"Título real del documento\",
+    \"description\": \"Resumen de 1-2 frases del contenido en español\"
+  },
+  \"sections\": [
+    { \"id\": \"sec-1\", \"title\": \"Título de la primera sección\" },
+    { \"id\": \"sec-2\", \"title\": \"Título de la segunda sección\" }
+  ]
+}
+
+Reglas:
+- Usa tantas secciones como tenga realmente el PDF (mín 1, máx 20).
+- Los IDs deben ser \"sec-1\", \"sec-2\", \"sec-3\", etc.
+- No incluyas el contenido, solo el índice.
+- Todo el texto en español.";
+
+    $indexBody = [
+      'contents' => [[
+        'role' => 'user',
+        'parts' => [
+          ['text' => $indexPrompt],
+          ['fileData' => ['mimeType' => 'application/pdf', 'fileUri' => $fileUri]]
+        ]
+      ]],
+      'generationConfig' => [
+        'responseModalities' => ['TEXT'],
+        'temperature' => 0.1
+      ]
+    ];
+
+    $indexData = $callGen($modelUrl, $indexBody);
+
+    // Extraer texto devuelto por Gemini
+    $rawIndex = "";
+    if (isset($indexData['candidates'][0]['content']['parts'])) {
+      foreach ($indexData['candidates'][0]['content']['parts'] as $p) {
+        if (isset($p['text'])) $rawIndex .= $p['text'];
+      }
+    }
+    if (!$rawIndex) throw new Exception('Gemini no devolvió texto en la pasada de índice.', 500);
+
+    // Limpieza JSON (mismo patrón que analyzePDF: quitar ```json y extraer entre { y })
+    $cleanIdx = trim($rawIndex);
+    $cleanIdx = preg_replace('/```json/i', '', $cleanIdx);
+    $cleanIdx = preg_replace('/```/i', '', $cleanIdx);
+    $cleanIdx = trim($cleanIdx, " \n\r\t\"");
+    if (substr($cleanIdx, 0, 4) === "json") $cleanIdx = substr($cleanIdx, 4);
+    $cleanIdx = trim($cleanIdx);
+
+    $iStart = strpos($cleanIdx, "{");
+    $iEnd   = strrpos($cleanIdx, "}");
+    if ($iStart === false || $iEnd === false)
+      throw new Exception('No se encontró JSON en el índice. Crudo: ' . substr($rawIndex, 0, 400));
+
+    $indexJsonText = substr($cleanIdx, $iStart, $iEnd - $iStart + 1);
+    $indexExtracted = json_decode($indexJsonText, true);
+    if (!$indexExtracted) throw new Exception('JSON de índice inválido. Crudo: ' . substr($indexJsonText, 0, 400));
+
+    if (!isset($indexExtracted['sections']) || !is_array($indexExtracted['sections']))
+      throw new Exception('El índice no contiene sections válidas.', 500);
+
+    $meta = $indexExtracted['meta'] ?? ['title' => 'Documento analizado', 'description' => 'Contenido extraído del PDF.'];
+    $sections = $indexExtracted['sections'];
+
+    // ----------------------------------------------------
+    // 3) PASADA 2 — CONTENIDO POR SECCIÓN (chunking lógico)
+    // ----------------------------------------------------
+    foreach ($sections as $idx => &$sec) {
+      $secId    = $sec['id'] ?? ('sec-' . ($idx + 1));
+      $secTitle = $sec['title'] ?? ('Sección ' . ($idx + 1));
+      try {
+        $contentPrompt = "Eres un analizador de documentos. Recibirás un PDF.
+Analiza EXCLUSIVAMENTE la sección titulada \"{$secTitle}\" del documento y devuelve su contenido resumido y FIEL en formato Markdown.
+
+TODO el contenido debe estar obligatoriamente en ESPAÑOL.
+
+Formato Markdown requerido (usa lo que aplique):
+- Listas con guiones (-) o numeradas (1.).
+- **Negritas** para términos clave.
+- *Cursivas* para énfasis.
+- Encabezados de subsección con ## (y ### si hace falta).
+- Tablas GFM con formato | columna | columna |.
+
+Si en esa sección del PDF hay imágenes, diagramas, gráficos o figuras, NO intentes generar la imagen: descríbela en español usando este marcador exacto en una línea propia:
+![IMG](IMAGEN: descripción detallada en español de lo que muestra la imagen, diagrama o gráfico)
+
+Devuelve SOLO el Markdown de esa sección, SIN JSON, SIN texto extra, SIN ```markdown.
+
+Sección a procesar: \"{$secTitle}\"";
+
+        $secBody = [
+          'contents' => [[
+            'role' => 'user',
+            'parts' => [
+              ['text' => $contentPrompt],
+              ['fileData' => ['mimeType' => 'application/pdf', 'fileUri' => $fileUri]]
+            ]
+          ]],
+          'generationConfig' => [
+            'responseModalities' => ['TEXT'],
+            'temperature' => 0.2
+          ]
+        ];
+
+        $secData = $callGen($modelUrl, $secBody);
+
+        $secText = "";
+        if (isset($secData['candidates'][0]['content']['parts'])) {
+          foreach ($secData['candidates'][0]['content']['parts'] as $p) {
+            if (isset($p['text'])) $secText .= $p['text'];
+          }
+        }
+        $sec['content'] = trim($secText) ?: '[Sección sin contenido disponible.]';
+      } catch (Throwable $eSec) {
+        $sec['content'] = '[Sección no disponible: ' . $eSec->getMessage() . ']';
+      }
+    }
+    unset($sec);
+
+    // ----------------------------------------------------
+    // 4) EXTRACCIÓN DE IMÁGENES (binario real con fallback)
+    // ----------------------------------------------------
+    $images = [];
+    $imageMode = 'described';
+
+    if (extension_loaded('imagick')) {
+      try {
+        $tmpImg = tempnam(sys_get_temp_dir(), 'pdfimg_');
+        file_put_contents($tmpImg, $pdfBin);
+        $im = new Imagick();
+        $im->setResolution(150, 150);
+        $im->readImage($tmpImg);
+        $imgIndex = 0;
+        $maxPages = 20;
+        foreach ($im as $page) {
+          if ($imgIndex >= $maxPages) break;
+          $page->setImageFormat('png');
+          $pngBin = $page->getImageBlob();
+          $images[] = [
+            'id'       => 'img-' . ($imgIndex + 1),
+            'data'     => base64_encode($pngBin),
+            'mimeType' => 'image/png'
+          ];
+          $imgIndex++;
+        }
+        $im->clear();
+        $im->destroy();
+        @unlink($tmpImg);
+        if (count($images) > 0) $imageMode = 'binary';
+      } catch (Throwable $eImg) {
+        $images = [];
+        $imageMode = 'described';
+      }
+    }
+
+    echo json_encode([
+      'meta'      => $meta,
+      'sections'  => $sections,
+      'images'    => $images,
+      'imageMode' => $imageMode
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
   }
 
 } catch (Throwable $e) {

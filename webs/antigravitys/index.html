@@ -553,6 +553,131 @@
       color: var(--text-main);
     }
 
+    /* Markdown enriquecido dentro de placeholders */
+    .content-placeholder h1,
+    .content-placeholder h2,
+    .content-placeholder h3 {
+      margin: 0.6rem 0 0.4rem;
+      color: var(--text-main);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .content-placeholder h1 { font-size: 17px; }
+    .content-placeholder h2 { font-size: 15px; }
+    .content-placeholder h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+
+    .content-placeholder p {
+      margin: 0 0 0.6rem 0;
+    }
+
+    .content-placeholder ul,
+    .content-placeholder ol {
+      margin: 0 0 0.6rem 1.2rem;
+      padding-left: 0.4rem;
+    }
+    .content-placeholder li { margin-bottom: 0.2rem; }
+
+    .content-placeholder code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11.5px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #bae6fd;
+      padding: 1px 5px;
+      border-radius: 5px;
+    }
+
+    .content-placeholder strong { color: #f9fafb; font-weight: 700; }
+    .content-placeholder em { color: var(--text-main); font-style: italic; }
+
+    /* Tablas GFM */
+    .content-placeholder .table-wrap {
+      overflow-x: auto;
+      max-width: 100%;
+      margin: 0 0 0.6rem 0;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+    .content-placeholder table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+      min-width: 360px;
+    }
+    .content-placeholder th,
+    .content-placeholder td {
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 6px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .content-placeholder thead th {
+      background: rgba(56, 189, 248, 0.16);
+      color: #e0f2fe;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+    }
+    .content-placeholder tbody tr:nth-child(even) td {
+      background: rgba(148, 163, 184, 0.06);
+    }
+
+    /* Tarjeta de imagen del documento */
+    .pdf-img-card {
+      border: 1px dashed rgba(56, 189, 248, 0.7);
+      border-radius: 12px;
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.10), rgba(15, 23, 42, 0.96));
+      padding: 12px 14px;
+      margin: 0 0 0.6rem 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 100%;
+    }
+    .pdf-img-card .pdf-img-emoji {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .pdf-img-card .pdf-img-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .pdf-img-card .pdf-img-desc {
+      font-size: 12px;
+      color: var(--text-main);
+      overflow-wrap: break-word;
+    }
+    .pdf-img-card .pdf-img-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+
+    /* Botón limpiar documento */
+    .pdf-clear-btn {
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(249, 115, 115, 0.7);
+      background: radial-gradient(circle at top, rgba(249, 115, 115, 0.12), rgba(15, 23, 42, 0.98));
+      font-size: 11px;
+      font-weight: 600;
+      color: #fecaca;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease-out;
+    }
+    .pdf-clear-btn:hover {
+      box-shadow: 0 0 0 1px rgba(249, 115, 115, 0.7);
+      transform: translateY(-1px);
+    }
+
     /* Scrollbars */
     .section-list::-webkit-scrollbar,
     .sections-container::-webkit-scrollbar {
@@ -608,13 +733,13 @@
             <span>AG</span>
           </div>
           <div>
-            <div class="brand-text-title">Manual Antigravity + Claude</div>
-            <div class="brand-text-sub">Plantilla landing para guías técnicas muy extensas</div>
+            <div class="brand-text-title">Visor de documentos</div>
+            <div class="brand-text-sub">Convierte cualquier PDF en una web estructurada con IA</div>
           </div>
         </div>
         <nav>
-          <div class="nav-pill">Opción C · Landing estructurada</div>
-          <div class="nav-tag">PDF → Gemini → Web</div>
+          <div class="nav-pill">PDF → IA → Web</div>
+          <div class="nav-tag">Gemini Flash</div>
         </nav>
       </header>
 
@@ -627,21 +752,13 @@
               <span style="font-size:11px;color:var(--accent);">Navegación</span>
             </div>
             <p class="sidebar-sub">
-              Haz clic para saltar a cada sección del manual. Una vez analizado el PDF,
-              el contenido se insertará automáticamente en estas secciones.
+              Haz clic para saltar a cada sección del documento. Una vez analizado el PDF,
+              el contenido se insertará automáticamente.
             </p>
-            <ul class="section-list">
-              <li><button class="section-link active" data-target="intro"><span class="label">Introducción</span><span class="badge">01</span></button></li>
-              <li><button class="section-link" data-target="interfaz"><span class="label">Visión general de la interfaz</span><span class="badge">02</span></button></li>
-              <li><button class="section-link" data-target="agentes"><span class="label">Fundamentos de agentes</span><span class="badge">03</span></button></li>
-              <li><button class="section-link" data-target="claude"><span class="label">Modelos Claude y artefactos</span><span class="badge">04</span></button></li>
-              <li><button class="section-link" data-target="claude-code"><span class="label">Claude Code y análisis de código</span><span class="badge">05</span></button></li>
-              <li><button class="section-link" data-target="test-sprite"><span class="label">Herramientas de inspección / Test Sprite</span><span class="badge">06</span></button></li>
-              <li><button class="section-link" data-target="workflows"><span class="label">Workflows y agentes múltiples</span><span class="badge">07</span></button></li>
-              <li><button class="section-link" data-target="config-avanzada"><span class="label">Configuración avanzada de agentes</span><span class="badge">08</span></button></li>
-              <li><button class="section-link" data-target="seguridad"><span class="label">Seguridad y buenas prácticas</span><span class="badge">09</span></button></li>
-              <li><button class="section-link" data-target="problemas"><span class="label">Problemas comunes y recuperación</span><span class="badge">10</span></button></li>
-              <li><button class="section-link" data-target="checklist"><span class="label">Resumen y checklist final</span><span class="badge">11</span></button></li>
+            <ul class="section-list" id="sectionList">
+              <li style="font-size:12px;color:var(--text-soft);padding:8px;">
+                Sube un PDF para generar el índice…
+              </li>
             </ul>
           </div>
 
@@ -665,11 +782,14 @@
                   <span class="spinner" style="display:none;"></span>
                   <span id="analyzeBtnText">Analizar PDF con IA</span>
                 </button>
+                <button id="clearDocBtn" class="pdf-clear-btn" type="button" title="Borrar el documento guardado y dejar la vista vacía">
+                  Limpiar documento
+                </button>
               </div>
               <div id="pdfStatus" class="pdf-status"></div>
               <ul class="pdf-hint-list">
                 <li>Asegúrate de que <code>proxy.php</code> está en el mismo directorio que este HTML.</li>
-                <li>El proxy debe tener el task <code>analyzePDF</code> configurado con Gemini.</li>
+                <li>El proxy debe tener el task <code>analyzePDFChunked</code> configurado con Gemini.</li>
                 <li>Tras el análisis, las secciones se rellenarán de forma automática.</li>
               </ul>
             </div>
@@ -680,249 +800,33 @@
         <main class="main-content">
           <div class="main-inner">
             <section class="hero">
-              <div class="hero-eyebrow">Plantilla Opción C · Landing estructurada</div>
-              <h1 class="hero-title">
-                Convierte tu <span class="accent">PDF en un manual web técnico</span>
+              <div class="hero-eyebrow">Adaptador universal PDF → Web</div>
+              <h1 class="hero-title" id="heroTitle">
+                Convierte <span class="accent">cualquier PDF</span> en una web estructurada
               </h1>
-              <p class="hero-sub">
-                Sube un PDF largo (por ejemplo, una guía generada con NotebookLM) y deja que la IA lo analice
-                mediante tu <strong>proxy.php</strong>. El contenido se distribuirá automáticamente en las secciones
-                de este manual visual.
+              <p class="hero-sub" id="heroSub">
+                Sube un PDF y la IA lo analizará mediante <strong>proxy.php + Gemini</strong>.
+                El contenido se distribuirá automáticamente en secciones generadas a partir de la estructura real del documento.
               </p>
               <div class="hero-meta">
-                <span class="meta-pill">Soporta textos muy extensos</span>
-                <span class="meta-pill">Diseño tipo landing / documentación</span>
+                <span class="meta-pill">Compatible con cualquier PDF</span>
+                <span class="meta-pill">Secciones autodetectadas</span>
                 <span class="meta-pill">Integrado con Gemini via proxy</span>
               </div>
             </section>
 
             <div class="section-chips">
-              <span class="chip">Índice lateral interactivo</span>
-              <span class="chip">Secciones autocompletadas desde PDF</span>
+              <span class="chip">Índice lateral dinámico</span>
+              <span class="chip">Secciones autodetectadas del PDF</span>
               <span class="chip">Un único archivo HTML</span>
             </div>
 
-            <div class="sections-container">
-              <!-- INTRODUCCIÓN -->
-              <section id="intro" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Introducción al manual</h2>
-                  <span class="content-section-tag">Sección 01</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se colocará la introducción general extraída del PDF: propósito del manual, contexto, público objetivo y visión global.
-                </p>
-                <div class="content-placeholder" data-section-key="introduccion">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- INTERFAZ -->
-              <section id="interfaz" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Visión general de la interfaz de Antigravity</h2>
-                  <span class="content-section-tag">Sección 02</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se explicará cómo está organizada la interfaz de Antigravity: editor, consola, navegador integrado, panel de agentes y artefactos.
-                </p>
-                <div class="content-placeholder" data-section-key="interfaz">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- AGENTES -->
-              <section id="agentes" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Fundamentos de agentes</h2>
-                  <span class="content-section-tag">Sección 03</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí irá la explicación completa de qué es un agente en Antigravity, cómo se define su misión y cómo se supervisa con artefactos.
-                </p>
-                <div class="content-placeholder" data-section-key="agentes">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- CLAUDE -->
-              <section id="claude" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Modelos Claude y artefactos</h2>
-                  <span class="content-section-tag">Sección 04</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se detallará cómo los modelos Claude impulsan el razonamiento de los agentes y cómo se utilizan los artefactos para auditar cada paso.
-                </p>
-                <div class="content-placeholder" data-section-key="claude">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- CLAUDE CODE -->
-              <section id="claude-code" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Claude Code y análisis de código</h2>
-                  <span class="content-section-tag">Sección 05</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se explicará cómo Claude Code analiza proyectos, detecta problemas y propone mejoras dentro del entorno Antigravity.
-                </p>
-                <div class="content-placeholder" data-section-key="claudeCode">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- TEST SPRITE -->
-              <section id="test-sprite" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Herramientas de inspección / Test Sprite</h2>
-                  <span class="content-section-tag">Sección 06</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se describirán las herramientas de inspección (como Test Sprite), su función y cómo integrarlas en el flujo con agentes.
-                </p>
-                <div class="content-placeholder" data-section-key="testSprite">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- WORKFLOWS -->
-              <section id="workflows" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Workflows y agentes múltiples</h2>
-                  <span class="content-section-tag">Sección 07</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se explicará cómo coordinar varios agentes, crear workflows y supervisar interacciones en tareas complejas.
-                </p>
-                <div class="content-placeholder" data-section-key="workflows">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- CONFIGURACIÓN AVANZADA -->
-              <section id="config-avanzada" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Configuración avanzada de agentes</h2>
-                  <span class="content-section-tag">Sección 08</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se mostrarán patrones avanzados de configuración: roles especializados, límites de acción, misiones complejas, etc.
-                </p>
-                <div class="content-placeholder" data-section-key="configAvanzada">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- SEGURIDAD -->
-              <section id="seguridad" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Seguridad y buenas prácticas</h2>
-                  <span class="content-section-tag">Sección 09</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se recogerán recomendaciones de seguridad: limitación de permisos, revisión de planes, uso de entornos aislados, etc.
-                </p>
-                <div class="content-placeholder" data-section-key="seguridad">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- PROBLEMAS COMUNES -->
-              <section id="problemas" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Problemas comunes y recuperación</h2>
-                  <span class="content-section-tag">Sección 10</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se listarán errores típicos, cómo diagnosticarlos y cómo recuperar el estado del proyecto.
-                </p>
-                <div class="content-placeholder" data-section-key="problemas">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- CHECKLIST FINAL -->
-              <section id="checklist" class="content-section">
-                <div class="content-section-header">
-                  <h2 class="content-section-title">Resumen y checklist final</h2>
-                  <span class="content-section-tag">Sección 11</span>
-                </div>
-                <p class="content-section-desc">
-                  Aquí se incluirá un resumen global y una lista de verificación para que el lector compruebe si domina todos los puntos clave.
-                </p>
-                <div class="content-placeholder" data-section-key="checklist">
-                  <div class="placeholder-lines">
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line full"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line mid"></div>
-                    <div class="placeholder-line short"></div>
-                  </div>
-                </div>
-              </section>
+            <div class="sections-container" id="sectionsContainer">
+              <!-- Las secciones se generan dinámicamente al analizar un PDF -->
+              <div style="text-align:center;padding:40px 20px;color:var(--text-soft);">
+                <p style="font-size:14px;margin-bottom:8px;">📄 Sin documento analizado</p>
+                <p style="font-size:12px;">Sube un PDF en el panel lateral y haz clic en <strong>Analizar PDF con IA</strong> para ver su contenido aquí.</p>
+              </div>
             </div>
           </div>
         </main>
@@ -931,31 +835,255 @@
   </div>
 
   <script>
-    // Navegación por índice lateral
-    const links = document.querySelectorAll('.section-link');
-    links.forEach(link => {
-      link.addEventListener('click', () => {
-        const targetId = link.getAttribute('data-target');
-        const targetSection = document.getElementById(targetId);
+    // ============================================================
+    //  RENDERIZADO DINÁMICO DE SECCIONES
+    // ============================================================
 
-        links.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
+    const sectionList = document.getElementById('sectionList');
+    const sectionsContainer = document.getElementById('sectionsContainer');
+    const heroTitle = document.getElementById('heroTitle');
+    const heroSub = document.getElementById('heroSub');
 
-        if (targetSection) {
-          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    /**
+     * Convierte Markdown a HTML seguro.
+     * Orden seguro: escapar HTML primero, luego parsear bloque a bloque.
+     * Soporta: tarjetas de imagen (!IMG...), tablas GFM, listas, encabezados,
+     * negritas, cursivas, código inline y párrafos.
+     * @param {string} text
+     * @returns {string} HTML
+     */
+    function renderMarkdown(text) {
+      if (text == null) return '';
+      let src = String(text);
+
+      // 1. Escapar siempre <, >, & antes de cualquier parseo (seguridad XSS)
+      src = src.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;');
+
+      // 2. Tarjetas de imagen: ![IMG](IMAGEN: ...descripción...)
+      //    Se procesan antes que el resto para evitar que las regex de inline los toquen.
+      src = src.replace(/!\[IMG\]\(IMAGEN:\s*([^)]*)\)/gi, (m, desc) => {
+        const d = desc.trim();
+        return `\n\n<div class="pdf-img-card"><span class="pdf-img-emoji">🖼️</span><div class="pdf-img-body"><span class="pdf-img-desc">${d}</span><span class="pdf-img-tag">Imagen del documento</span></div></div>\n\n`;
       });
-    });
 
-    // Gestión de PDF + llamada al proxy
+      // 3. Dividir en bloques por líneas en blanco
+      const blocks = src.split(/\n{2,}/);
+      const htmlParts = [];
+
+      const inlineFormat = (s) => {
+        return s
+          // código inline `...`
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          // negritas **...**
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          // cursivas *...*
+          .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+      };
+
+      blocks.forEach((rawBlock) => {
+        const block = rawBlock.replace(/^\n+|\n+$/g, '');
+        if (!block) return;
+
+        // ¿Es una tarjeta de imagen generada en el paso 2?
+        if (/^<div class="pdf-img-card"/.test(block)) {
+          htmlParts.push(block);
+          return;
+        }
+
+        const lines = block.split(/\n/);
+
+        // Tabla GFM: al menos una línea con | y una línea separadora |---|
+        if (lines.length >= 2 &&
+            lines[0].includes('|') &&
+            /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[1]) &&
+            lines[1].includes('-')) {
+          const splitRow = (row) => {
+            let r = row.trim();
+            if (r.startsWith('|')) r = r.slice(1);
+            if (r.endsWith('|')) r = r.slice(0, -1);
+            return r.split('|').map(c => c.trim());
+          };
+          const headerCells = splitRow(lines[0]);
+          const bodyRows = [];
+          for (let i = 2; i < lines.length; i++) {
+            if (lines[i].trim() === '') continue;
+            bodyRows.push(splitRow(lines[i]));
+          }
+          let table = '<div class="table-wrap"><table><thead><tr>';
+          headerCells.forEach((c) => { table += `<th>${inlineFormat(c)}</th>`; });
+          table += '</tr></thead><tbody>';
+          bodyRows.forEach((row) => {
+            table += '<tr>';
+            row.forEach((c) => { table += `<td>${inlineFormat(c)}</td>`; });
+            table += '</tr>';
+          });
+          table += '</tbody></table></div>';
+          htmlParts.push(table);
+          return;
+        }
+
+        // Encabezados
+        const h = block.match(/^(#{1,3})\s+(.+)$/);
+        if (h) {
+          const level = h[1].length;
+          const tag = 'h' + level;
+          htmlParts.push(`<${tag}>${inlineFormat(h[2])}</${tag}>`);
+          return;
+        }
+
+        // Lista desordenada
+        if (lines.every((l) => /^\s*[-*]\s+/.test(l))) {
+          let list = '<ul>';
+          lines.forEach((l) => {
+            const item = l.replace(/^\s*[-*]\s+/, '');
+            list += `<li>${inlineFormat(item)}</li>`;
+          });
+          list += '</ul>';
+          htmlParts.push(list);
+          return;
+        }
+
+        // Lista ordenada
+        if (lines.every((l) => /^\s*\d+\.\s+/.test(l))) {
+          let list = '<ol>';
+          lines.forEach((l) => {
+            const item = l.replace(/^\s*\d+\.\s+/, '');
+            list += `<li>${inlineFormat(item)}</li>`;
+          });
+          list += '</ol>';
+          htmlParts.push(list);
+          return;
+        }
+
+        // Párrafo por defecto
+        const para = lines.map(inlineFormat).join('<br>');
+        htmlParts.push(`<p>${para}</p>`);
+      });
+
+      return htmlParts.join('\n');
+    }
+
+    /**
+     * Genera el DOM completo a partir de la respuesta del proxy.
+     * @param {Object} meta  - { title, description }
+     * @param {Array}  sections - [ { id, title, content }, ... ]
+     */
+    function renderSections(meta, sections) {
+      // 1. Actualizar hero
+      if (meta && meta.title) {
+        heroTitle.innerHTML = meta.title.replace(
+          /(.+)/,
+          'Documento: <span class="accent">$1</span>'
+        );
+      }
+      if (meta && meta.description) {
+        heroSub.textContent = meta.description;
+      }
+
+      // 2. Limpiar índice lateral
+      sectionList.innerHTML = '';
+
+      // 3. Limpiar contenedor de secciones
+      sectionsContainer.innerHTML = '';
+
+      // 4. Generar secciones + índice
+      sections.forEach((sec, idx) => {
+        const num = String(idx + 1).padStart(2, '0');
+
+        // --- Botón en el índice lateral ---
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.className = 'section-link';
+        btn.setAttribute('data-target', sec.id);
+        btn.innerHTML = `<span class="label">${escapeHTML(sec.title)}</span><span class="badge">${num}</span>`;
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(sec.id);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+        li.appendChild(btn);
+        sectionList.appendChild(li);
+
+        // --- Sección de contenido ---
+        const sectionEl = document.createElement('section');
+        sectionEl.id = sec.id;
+        sectionEl.className = 'content-section';
+
+        const header = document.createElement('div');
+        header.className = 'content-section-header';
+        header.innerHTML = `<h2 class="content-section-title">${escapeHTML(sec.title)}</h2><span class="content-section-tag">Sección ${num}</span>`;
+
+        const placeholder = document.createElement('div');
+        placeholder.className = 'content-placeholder filled';
+
+        // Renderizar Markdown enriquecido (tablas, listas, encabezados, imágenes…)
+        const renderedHtml = renderMarkdown(sec.content || '');
+        placeholder.innerHTML = renderedHtml;
+
+        sectionEl.appendChild(header);
+        sectionEl.appendChild(placeholder);
+        sectionsContainer.appendChild(sectionEl);
+      });
+
+      // 5. Marcar primera sección como activa
+      const firstLink = sectionList.querySelector('.section-link');
+      if (firstLink) firstLink.classList.add('active');
+
+      // 6. Reactivar scroll spy
+      setupScrollSpy();
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ============================================================
+    //  SCROLL SPY (IntersectionObserver)
+    // ============================================================
+    let scrollSpyObserver = null;
+
+    function setupScrollSpy() {
+      if (scrollSpyObserver) scrollSpyObserver.disconnect();
+
+      const links = document.querySelectorAll('.section-link');
+      const sectionIds = Array.from(links).map(l => l.getAttribute('data-target'));
+
+      scrollSpyObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            links.forEach(l => l.classList.remove('active'));
+            const activeLink = document.querySelector(`.section-link[data-target="${entry.target.id}"]`);
+            if (activeLink) activeLink.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
+
+      sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) scrollSpyObserver.observe(el);
+      });
+    }
+
+    // ============================================================
+    //  GESTIÓN DE PDF + LLAMADA AL PROXY
+    // ============================================================
     const pdfInput = document.getElementById('pdfInput');
     const pdfFileName = document.getElementById('pdfFileName');
     const analyzeBtn = document.getElementById('analyzeBtn');
     const analyzeBtnText = document.getElementById('analyzeBtnText');
-    const spinnerEl = analyzeBtn.querySelector('.spinner');
+    const spinnerEl = analyzeBtn ? analyzeBtn.querySelector('.spinner') : null;
     const pdfStatus = document.getElementById('pdfStatus');
+    const clearDocBtn = document.getElementById('clearDocBtn');
 
     let selectedPdfFile = null;
+
+    // Clave de persistencia del documento analizado
+    const STORAGE_KEY = 'antigravitys_doc';
 
     if (pdfInput) {
       pdfInput.addEventListener('change', (e) => {
@@ -975,31 +1103,13 @@
       if (!analyzeBtn) return;
       if (isLoading) {
         analyzeBtn.disabled = true;
-        spinnerEl.style.display = 'inline-block';
+        if (spinnerEl) spinnerEl.style.display = 'inline-block';
         analyzeBtnText.textContent = 'Analizando…';
       } else {
         analyzeBtn.disabled = false;
-        spinnerEl.style.display = 'none';
+        if (spinnerEl) spinnerEl.style.display = 'none';
         analyzeBtnText.textContent = 'Analizar PDF con IA';
       }
-    }
-
-    function fillSectionFromText(sectionKey, text) {
-      const placeholder = document.querySelector(`.content-placeholder[data-section-key="${sectionKey}"]`);
-      if (!placeholder) return;
-      if (!text || typeof text !== 'string') return;
-
-      placeholder.classList.add('filled');
-      placeholder.innerHTML = '';
-
-      // Convertir dobles saltos de línea en párrafos sencillos
-      const blocks = text.split(/\n\s*\n/);
-      blocks.forEach(block => {
-        const p = document.createElement('p');
-        p.style.margin = '0 0 0.6rem 0';
-        p.textContent = block.trim();
-        placeholder.appendChild(p);
-      });
     }
 
     if (analyzeBtn) {
@@ -1017,7 +1127,6 @@
 
         reader.onload = function(evt) {
           const result = evt.target.result;
-          // result = data:application/pdf;base64,xxxxx
           const base64 = result.split(',')[1];
 
           pdfStatus.textContent = 'Enviando PDF al proxy…';
@@ -1028,8 +1137,9 @@
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              task: 'analyzePDF',
-              pdf: base64
+              task: 'analyzePDFChunked',
+              pdf: base64,
+              filename: selectedPdfFile.name
             })
           })
           .then(async (res) => {
@@ -1041,25 +1151,31 @@
             return data;
           })
           .then((json) => {
-            if (!json || !json.sections) {
-              throw new Error('El proxy no devolvió el campo "sections".');
+            if (!json || !json.sections || !Array.isArray(json.sections) || json.sections.length === 0) {
+              throw new Error('El proxy no devolvió secciones válidas. Prueba con otro PDF.');
             }
 
-            const s = json.sections;
+            const meta = json.meta || {};
+            const sections = json.sections;
+            const images = Array.isArray(json.images) ? json.images : [];
+            const imageMode = json.imageMode || null;
 
-            fillSectionFromText('introduccion',  s.introduccion);
-            fillSectionFromText('interfaz',      s.interfaz);
-            fillSectionFromText('agentes',       s.agentes);
-            fillSectionFromText('claude',        s.claude);
-            fillSectionFromText('claudeCode',    s.claudeCode);
-            fillSectionFromText('testSprite',    s.testSprite);
-            fillSectionFromText('workflows',     s.workflows);
-            fillSectionFromText('configAvanzada', s.configAvanzada);
-            fillSectionFromText('seguridad',     s.seguridad);
-            fillSectionFromText('problemas',     s.problemas);
-            fillSectionFromText('checklist',     s.checklist);
+            renderSections(meta, sections);
 
-            pdfStatus.textContent = 'PDF analizado correctamente. Secciones rellenadas.';
+            // Persistencia: guardar documento para recuperar al recargar
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                meta: meta,
+                sections: sections,
+                images: images,
+                imageMode: imageMode,
+                ts: Date.now()
+              }));
+            } catch (e) {
+              console.warn('No se pudo guardar el documento en localStorage:', e);
+            }
+
+            pdfStatus.textContent = 'PDF analizado. ' + sections.length + ' secciones generadas.';
             pdfStatus.className = 'pdf-status ok';
           })
           .catch((err) => {
@@ -1079,6 +1195,62 @@
         };
 
         reader.readAsDataURL(selectedPdfFile);
+      });
+    }
+
+    // ============================================================
+    //  PERSISTENCIA: restaurar documento al cargar la página
+    // ============================================================
+    (function restoreDoc() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const data = JSON.parse(saved);
+        if (!data || !data.sections || !Array.isArray(data.sections) || data.sections.length === 0) return;
+
+        renderSections(data.meta || {}, data.sections);
+
+        const edadMs = data.ts ? (Date.now() - data.ts) : 0;
+        const edadMin = edadMs > 0 ? Math.round(edadMs / 60000) : 0;
+        const edadTxt = edadMin > 0
+          ? (' (hace ' + edadMin + ' min)')
+          : '';
+        if (pdfStatus) {
+          pdfStatus.textContent = 'Documento recuperado de la sesión anterior' + edadTxt + '.';
+          pdfStatus.className = 'pdf-status ok';
+        }
+      } catch (e) {
+        console.warn('No se pudo restaurar el documento guardado:', e);
+      }
+    })();
+
+    // ============================================================
+    //  BOTÓN LIMPIAR DOCUMENTO
+    // ============================================================
+    if (clearDocBtn) {
+      clearDocBtn.addEventListener('click', () => {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        // Resetear hero
+        if (heroTitle) {
+          heroTitle.innerHTML = 'Convierte <span class="accent">cualquier PDF</span> en una web estructurada';
+        }
+        if (heroSub) {
+          heroSub.innerHTML = 'Sube un PDF y la IA lo analizará mediante <strong>proxy.php + Gemini</strong>. El contenido se distribuirá automáticamente en secciones generadas a partir de la estructura real del documento.';
+        }
+        // Vaciar índice lateral
+        if (sectionList) {
+          sectionList.innerHTML = '<li style="font-size:12px;color:var(--text-soft);padding:8px;">Sube un PDF para generar el índice…</li>';
+        }
+        // Vaciar contenedor de secciones
+        if (sectionsContainer) {
+          sectionsContainer.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-soft);"><p style="font-size:14px;margin-bottom:8px;">📄 Sin documento analizado</p><p style="font-size:12px;">Sube un PDF en el panel lateral y haz clic en <strong>Analizar PDF con IA</strong> para ver su contenido aquí.</p></div>';
+        }
+        // Desconectar scroll spy
+        if (scrollSpyObserver) { scrollSpyObserver.disconnect(); scrollSpyObserver = null; }
+        if (pdfStatus) {
+          pdfStatus.textContent = 'Documento limpiado.';
+          pdfStatus.className = 'pdf-status';
+        }
       });
     }
   </script>

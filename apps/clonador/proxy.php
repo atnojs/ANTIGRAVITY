@@ -81,11 +81,19 @@ $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model 
 // Construir payload — soporte passthrough + formato sencillo
 if (isset($req['contents'])) {
     $payload = ['contents' => $req['contents']];
-    if (isset($req['generationConfig']) && is_array($req['generationConfig'])) {
-        $payload['generationConfig'] = $req['generationConfig'];
-    }
+    // Asegurarnos de heredar o inicializar generationConfig con las modalidades requeridas
+    $payload['generationConfig'] = isset($req['generationConfig']) && is_array($req['generationConfig']) 
+        ? $req['generationConfig'] 
+        : [];
+    
+    // Forzar las modalidades de respuesta para incluir IMAGE obligatoriamente
+    $payload['generationConfig']['responseModalities'] = ['IMAGE', 'TEXT'];
 } elseif (isset($req['payload']) && is_array($req['payload'])) {
     $payload = $req['payload'];
+    if (!isset($payload['generationConfig'])) {
+        $payload['generationConfig'] = [];
+    }
+    $payload['generationConfig']['responseModalities'] = ['IMAGE', 'TEXT'];
 } else {
     $prompt   = (string)($req['prompt'] ?? '');
     $imageB64 = (string)($req['base64ImageData'] ?? $req['image'] ?? '');

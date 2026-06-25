@@ -368,8 +368,9 @@ RESULT: The person in the second image now has the face and hair from the first 
                 ]
             }],
             generationConfig: {
+                responseModalities: ["IMAGE", "TEXT"],
                 imageConfig: {
-                aspectRatio: styleAspectRatio
+                    aspectRatio: styleAspectRatio
                 },
                 temperature: 0.1,
                 topP: 0.95,
@@ -421,7 +422,7 @@ RESULT: The person in the second image now has the face and hair from the first 
         }
 
         if (images.length === 0) {
-            throw new Error('No se generó ninguna imagen.');
+            throw new Error('No se pudo generar (Moderno): La respuesta no contiene imagen generada.');
         }
         return images;
     }
