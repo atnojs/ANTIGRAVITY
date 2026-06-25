@@ -349,7 +349,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.drawImage(img, 0, 0, width, height);
             canvas.toBlob(resolve, 'image/jpeg', 0.9);
         };
-        img.src = URL.createObjectURL(file);
+        const reader = new FileReader();
+        reader.onload = () => { img.src = reader.result; };
+        reader.readAsDataURL(file);
     });
 
     const toBase64 = blob => new Promise((resolve, reject) => {
@@ -501,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const base64 = await toBase64(resizedBlob);
                 const mimeType = 'image/jpeg';
                 fileStore({ base64, mimeType });
-                preview.src = URL.createObjectURL(resizedBlob);
+                preview.src = `data:${mimeType};base64,${base64}`;
                 preview.classList.remove('hidden');
                 promptEl.classList.add('hidden');
                 updateGenerateButtonState();

@@ -1306,9 +1306,16 @@ const App = () => {
         const MAP_REALISM = { 'Fotorrealista': 'Photorealistic', 'Hiperrealista': 'Hyperrealistic', 'Ilustración': 'Illustration', 'Anime': 'Anime style' };
         const MAP_CREATIVO = { 'Ninguno': '', 'Cinemático': 'Cinematic', 'Fantasía': 'Fantasy', 'Cyberpunk': 'Cyberpunk', 'Vintage': 'Vintage' };
 
-        const onUploadBase = (e) => {
+        const onUploadBase = async (e) => {
             if (e.target.files?.length > 0) {
-                const newFiles = Array.from(e.target.files).map(f => ({ id: Date.now() + Math.random(), file: f, url: URL.createObjectURL(f) }));
+                const files = Array.from(e.target.files);
+                const newFiles = await Promise.all(files.map(f =>
+                    new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve({ id: Date.now() + Math.random(), file: f, url: reader.result });
+                        reader.readAsDataURL(f);
+                    })
+                ));
                 setBaseImages(newFiles);
             }
             e.target.value = '';

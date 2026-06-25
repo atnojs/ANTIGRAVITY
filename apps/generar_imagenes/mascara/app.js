@@ -586,10 +586,11 @@ const App = () => {
        const onUploadBase = (e) => {
     if (e.target.files?.length > 0) {
         const file = e.target.files[0];
-        const url = URL.createObjectURL(file);
-        
-        const img = new Image();
-        img.onload = () => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = reader.result;
+            const img = new Image();
+            img.onload = () => {
             const ratio = img.width / img.height;
             let detectedAR = '1:1';
             
@@ -606,11 +607,13 @@ const App = () => {
             setAspectRatio(detectedAR);
             setOriginalAspectRatio(detectedAR);
             
-            const newFile = { id: Date.now() + Math.random(), file, url };
+            const newFile = { id: Date.now() + Math.random(), file, url: dataUrl };
             setBaseImages([newFile]);
             setOriginalBaseImage(newFile);
         };
-        img.src = url;
+        img.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
     }
     e.target.value = '';
 };

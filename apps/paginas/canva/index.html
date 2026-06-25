@@ -767,6 +767,7 @@ The output should ONLY be the final, composed image. Do not add any text or expl
         const [selectedProduct, setSelectedProduct] = useState(null);
         const [productImageFile, setProductImageFile] = useState(null);
         const [sceneImage, setSceneImage] = useState(null);
+        const [sceneImageUrl, setSceneImageUrl] = useState(null);
         const [isLoading, setIsLoading] = useState(false);
         const [error, setError] = useState(null);
         const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
@@ -808,20 +809,32 @@ The output should ONLY be the final, composed image. Do not add any text or expl
             return new File([u8arr], filename, {type:mime});
         }
 
-        const sceneImageUrl = sceneImage ? URL.createObjectURL(sceneImage) : null;
+        useEffect(() => {
+            if (sceneImage) {
+                const reader = new FileReader();
+                reader.onload = () => setSceneImageUrl(reader.result);
+                reader.readAsDataURL(sceneImage);
+            } else {
+                setSceneImageUrl(null);
+            }
+        }, [sceneImage]);
         const productImageUrl = selectedProduct ? selectedProduct.imageUrl : null;
 
         const handleProductImageUpload = useCallback((file) => {
           setError(null);
           try {
-              const imageUrl = URL.createObjectURL(file);
-              const product = {
-                  id: Date.now(),
-                  name: file.name,
-                  imageUrl: imageUrl,
+              const reader = new FileReader();
+              reader.onload = () => {
+                  const imageUrl = reader.result;
+                  const product = {
+                      id: Date.now(),
+                      name: file.name,
+                      imageUrl: imageUrl,
+                  };
+                  setProductImageFile(file);
+                  setSelectedProduct(product);
               };
-              setProductImageFile(file);
-              setSelectedProduct(product);
+              reader.readAsDataURL(file);
           } catch(err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
             setError(`Could not load the product image. Details: ${errorMessage}`);

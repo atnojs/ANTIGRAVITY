@@ -704,8 +704,12 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(thumbPrevImg.src);
         }
         if (file && !customThumbFileInput.disabled) {
-            thumbPrevImg.src = URL.createObjectURL(file);
-            thumbPrev.style.display = 'flex';
+            const reader = new FileReader();
+            reader.onload = () => {
+                thumbPrevImg.src = reader.result;
+                thumbPrev.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
         } else if (customUrl) {
             thumbPrevImg.src = customUrl;
             thumbPrev.style.display = 'flex';

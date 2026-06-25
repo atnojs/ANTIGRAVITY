@@ -991,7 +991,9 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     }
     setError("");
     setImageFile(f);
-    setPreviewUrl(URL.createObjectURL(f));
+    const reader = new FileReader();
+    reader.onload = () => setPreviewUrl(reader.result);
+    reader.readAsDataURL(f);
   };
 
   const handleSubmit = (e) => {
