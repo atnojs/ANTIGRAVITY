@@ -115,7 +115,7 @@ const ASPECT_RATIOS = [
 ];
 
 const RESOLUTION_OPTIONS = [
-    { id: '1K', label: '512px', geminiSize: '1K' },
+    { id: '512', label: '512px', geminiSize: '1K', outputMaxWidth: 512 },
     { id: '1K-hd', label: '1.024px', geminiSize: '1K' },
     { id: '2K', label: '2.048px', geminiSize: '2K' },
     { id: '4K', label: '4.096px', geminiSize: '4K' },
@@ -352,7 +352,10 @@ const generateImage = async (params) => {
     const result = await callProxy('gemini-2.5-flash-image', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+        if (part.inlineData) {
+            const generatedImage = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+            return params.outputMaxWidth ? await resizeImage(generatedImage, params.outputMaxWidth) : generatedImage;
+        }
     }
     throw new Error("No se pudo generar la imagen");
 };
@@ -693,6 +696,7 @@ const App = () => {
                 styleSuffix,
                 aspectRatio: selectedAR,
                 imageSize: imageSize.geminiSize,
+                outputMaxWidth: imageSize.outputMaxWidth,
                 sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
             });
 
@@ -704,6 +708,7 @@ const App = () => {
                 aspectRatio: selectedAR,
                 size: imageSize.label,
                 geminiSize: imageSize.geminiSize,
+                outputMaxWidth: imageSize.outputMaxWidth || null,
                 createdAt: Date.now()
             };
 
