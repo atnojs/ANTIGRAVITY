@@ -919,10 +919,10 @@ const App = () => {
                         </main>
 
                         {lightboxImage && (
-                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl p-8 cursor-zoom-out" onClick={() => setLightboxImage(null)}>
-                                <div className="relative max-w-6xl w-full h-full flex flex-col items-center justify-center gap-8">
-                                    <img src={lightboxImage.url} className="max-w-full max-h-[85vh] object-contain rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5" />
-                                    <div className="glass px-8 py-4 rounded-full flex gap-10 text-[11px] font-bold text-gray-400 tracking-widest uppercase">
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl cursor-zoom-out" onClick={() => setLightboxImage(null)}>
+                                <div className="relative w-full h-full flex flex-col items-center justify-center">
+                                    <img src={lightboxImage.url} className="w-full h-full object-contain" />
+                                    <div className="absolute bottom-8 glass px-8 py-4 rounded-full flex gap-10 text-[11px] font-bold text-gray-400 tracking-widest uppercase" onClick={(e) => e.stopPropagation()}>
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
                                         <span>RES: {lightboxImage.size}</span>
                                         <span className="text-gray-600">ID: {lightboxImage.id}</span>
