@@ -126,37 +126,55 @@ const PROMPT_FIELD_DEFINITIONS = [
         id: 'action',
         label: 'Acción',
         placeholder: 'Ej: cambiar, eliminar, añadir, transformar...',
-        help: 'Indica qué quieres que haga la IA: cambiar algo, añadir un elemento, quitarlo, mejorar la luz, transformar el estilo, etc.'
+        generateHelp: 'Define la intención principal de la imagen nueva: crear una escena, retrato, producto, personaje, paisaje o composición desde cero.',
+        generateExample: 'Crear una escena futurista de una ciudad flotante al atardecer.',
+        editHelp: 'Indica qué quieres que haga la IA sobre la imagen subida: cambiar algo, añadir un elemento, quitarlo, mejorar la luz o transformar el estilo.',
+        editExample: 'Cambiar el cielo gris por un atardecer cálido sin tocar a la persona.'
     },
     {
         id: 'targetElement',
         label: 'Elemento específico a cambiar/editar',
-        placeholder: 'Ej: el fondo, la ropa, el cielo, el objeto central...',
-        help: 'Especifica con claridad qué parte de la imagen o de la idea debe modificarse para evitar cambios innecesarios.'
+        placeholder: 'Ej: personaje principal, fondo, objeto central...',
+        generateHelp: 'Describe el sujeto o elemento principal que debe aparecer en la imagen nueva para que la IA sepa dónde poner el foco.',
+        generateExample: 'Un robot explorador pequeño en primer plano.',
+        editHelp: 'Especifica qué parte concreta de la imagen existente debe modificarse para evitar cambios innecesarios.',
+        editExample: 'Solo el fondo, manteniendo el rostro y la ropa intactos.'
     },
     {
         id: 'newElement',
         label: 'Elemento nuevo',
-        placeholder: 'Ej: un lazo rojo, una ciudad futurista, flores...',
-        help: 'Describe el nuevo elemento que quieres añadir o sustituir. Puedes dejarlo vacío si no necesitas añadir nada.'
+        placeholder: 'Ej: luces neón, flores, un castillo lejano...',
+        generateHelp: 'Añade elementos secundarios que quieras incluir en la composición nueva. Puedes dejarlo vacío si no necesitas extras.',
+        generateExample: 'Luces de neón, lluvia suave y reflejos en el suelo.',
+        editHelp: 'Describe el nuevo elemento que quieres añadir o usar como sustitución dentro de la imagen existente.',
+        editExample: 'Añadir un lazo rojo en el pelo de la niña.'
     },
     {
         id: 'visualStyle',
         label: 'Estilo',
         placeholder: 'Ej: realista, anime, acuarela, cyberpunk...',
-        help: 'Añade una dirección visual o artística si quieres un acabado concreto. También puedes usar el Panel de Estilos de abajo.'
+        generateHelp: 'Indica el estilo artístico de la imagen nueva: realista, editorial, anime, 3D, acuarela, cyberpunk, minimalista, etc.',
+        generateExample: 'Estilo 3D cinematográfico, iluminación de estudio y mucho detalle.',
+        editHelp: 'Indica si quieres conservar el estilo original o transformar la imagen a un estilo concreto. También puedes usar el Panel de Estilos de abajo.',
+        editExample: 'Convertir la foto en una ilustración acuarela manteniendo la composición.'
     },
     {
         id: 'desiredEffect',
         label: 'Efecto deseado',
-        placeholder: 'Ej: más elegante, dramático, luminoso, mágico...',
-        help: 'Explica el resultado final que buscas: sensación visual, ambiente, iluminación, color o impacto general.'
+        placeholder: 'Ej: épico, elegante, luminoso, mágico...',
+        generateHelp: 'Explica la atmósfera final de la imagen nueva: épica, elegante, tierna, dramática, luminosa, mágica, profesional, etc.',
+        generateExample: 'Ambiente épico y luminoso, con sensación de aventura.',
+        editHelp: 'Describe el resultado final que buscas al editar: cambio de luz, color, ambiente, acabado o impacto visual.',
+        editExample: 'Hacer la imagen más elegante y luminosa, con tonos dorados.'
     },
     {
         id: 'relevantDetails',
         label: 'Detalles relevantes',
-        placeholder: 'Ej: mantener el rostro igual, no cambiar composición...',
-        help: 'Añade restricciones o detalles importantes: qué conservar, qué evitar, proporciones, colores concretos o instrucciones extra.'
+        placeholder: 'Ej: formato, colores, evitar texto, conservar rasgos...',
+        generateHelp: 'Añade instrucciones importantes para la imagen nueva: colores, composición, encuadre, elementos a evitar, proporciones o texto no deseado.',
+        generateExample: 'Sin texto, composición centrada, colores azul y dorado, fondo limpio.',
+        editHelp: 'Añade restricciones para proteger partes de la imagen: qué conservar, qué no tocar, colores concretos o instrucciones extra.',
+        editExample: 'Mantener el rostro igual, no cambiar la pose y conservar el encuadre original.'
     }
 ];
 
@@ -408,8 +426,9 @@ const CustomSelect = ({ options, value, onChange, className }) => {
     );
 };
 
-const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGenerating }) => {
+const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGenerating, mode }) => {
     const hasAnyValue = PROMPT_FIELD_DEFINITIONS.some((field) => (fields[field.id] || '').trim());
+    const isEditMode = mode === 'remix';
 
     return (
         <div className="structured-prompt-panel">
@@ -427,8 +446,10 @@ const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGe
                     />
                     <div id={`prompt-help-${field.id}`} role="tooltip" className="prompt-tooltip">
                         <span className="prompt-tooltip-title">{field.label}</span>
-                        <span>{field.help}</span>
-                        <span className="prompt-tooltip-example">{field.placeholder}</span>
+                        <span>{isEditMode ? field.editHelp : field.generateHelp}</span>
+                        <span className="prompt-tooltip-example">
+                            Ejemplo {isEditMode ? 'edición' : 'generación'}: {isEditMode ? field.editExample : field.generateExample}
+                        </span>
                     </div>
                 </div>
             ))}
@@ -752,6 +773,7 @@ const App = () => {
                                     onEnhance={handleEnhance}
                                     isEnhancing={isEnhancing}
                                     isGenerating={isGenerating}
+                                    mode={mode}
                                 />
 
                                 {enhancedPrompts.length > 0 && (
