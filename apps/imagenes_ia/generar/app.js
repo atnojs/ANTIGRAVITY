@@ -123,54 +123,66 @@ const RESOLUTION_OPTIONS = [
 
 const PROMPT_FIELD_DEFINITIONS = [
     {
-        id: 'action',
-        label: 'Acción',
-        placeholder: 'Ej: cambiar, eliminar, añadir, transformar...',
-        generateHelp: 'Define la intención principal de la imagen nueva: crear una escena, retrato, producto, personaje, paisaje o composición desde cero.',
-        generateExample: 'Crear una escena futurista de una ciudad flotante al atardecer.',
+        id: 'subject',
+        generateLabel: 'Sujeto',
+        editLabel: 'Acción',
+        generatePlaceholder: 'Ej: mujer astronauta, robot, producto, paisaje...',
+        editPlaceholder: 'Ej: cambiar, eliminar, añadir, transformar...',
+        generateHelp: 'Describe el protagonista o elemento principal de la imagen que quieres crear desde cero.',
+        generateExample: 'Un robot explorador pequeño con mochila y casco transparente.',
         editHelp: 'Indica qué quieres que haga la IA sobre la imagen subida: cambiar algo, añadir un elemento, quitarlo, mejorar la luz o transformar el estilo.',
         editExample: 'Cambiar el cielo gris por un atardecer cálido sin tocar a la persona.'
     },
     {
-        id: 'targetElement',
-        label: 'Elemento específico a cambiar/editar',
-        placeholder: 'Ej: personaje principal, fondo, objeto central...',
-        generateHelp: 'Describe el sujeto o elemento principal que debe aparecer en la imagen nueva para que la IA sepa dónde poner el foco.',
-        generateExample: 'Un robot explorador pequeño en primer plano.',
+        id: 'action',
+        generateLabel: 'Acción',
+        editLabel: 'Elemento específico a cambiar/editar',
+        generatePlaceholder: 'Ej: caminando, posando, volando, explorando...',
+        editPlaceholder: 'Ej: personaje principal, fondo, objeto central...',
+        generateHelp: 'Explica qué está haciendo el sujeto o qué situación debe ocurrir en la imagen generada.',
+        generateExample: 'Caminando por una calle mojada mientras mira luces de neón.',
         editHelp: 'Especifica qué parte concreta de la imagen existente debe modificarse para evitar cambios innecesarios.',
         editExample: 'Solo el fondo, manteniendo el rostro y la ropa intactos.'
     },
     {
-        id: 'newElement',
-        label: 'Elemento nuevo',
-        placeholder: 'Ej: luces neón, flores, un castillo lejano...',
-        generateHelp: 'Añade elementos secundarios que quieras incluir en la composición nueva. Puedes dejarlo vacío si no necesitas extras.',
-        generateExample: 'Luces de neón, lluvia suave y reflejos en el suelo.',
+        id: 'background',
+        generateLabel: 'Fondo',
+        editLabel: 'Elemento nuevo',
+        generatePlaceholder: 'Ej: bosque, ciudad futurista, estudio blanco...',
+        editPlaceholder: 'Ej: luces neón, flores, un castillo lejano...',
+        generateHelp: 'Indica el entorno, escenario o contexto visual donde debe aparecer el sujeto.',
+        generateExample: 'Una ciudad futurista nocturna con lluvia y reflejos en el suelo.',
         editHelp: 'Describe el nuevo elemento que quieres añadir o usar como sustitución dentro de la imagen existente.',
         editExample: 'Añadir un lazo rojo en el pelo de la niña.'
     },
     {
         id: 'visualStyle',
-        label: 'Estilo',
-        placeholder: 'Ej: realista, anime, acuarela, cyberpunk...',
+        generateLabel: 'Estilo',
+        editLabel: 'Estilo',
+        generatePlaceholder: 'Ej: realista, anime, acuarela, cyberpunk...',
+        editPlaceholder: 'Ej: realista, anime, acuarela, cyberpunk...',
         generateHelp: 'Indica el estilo artístico de la imagen nueva: realista, editorial, anime, 3D, acuarela, cyberpunk, minimalista, etc.',
         generateExample: 'Estilo 3D cinematográfico, iluminación de estudio y mucho detalle.',
         editHelp: 'Indica si quieres conservar el estilo original o transformar la imagen a un estilo concreto. También puedes usar el Panel de Estilos de abajo.',
         editExample: 'Convertir la foto en una ilustración acuarela manteniendo la composición.'
     },
     {
-        id: 'desiredEffect',
-        label: 'Efecto deseado',
-        placeholder: 'Ej: épico, elegante, luminoso, mágico...',
-        generateHelp: 'Explica la atmósfera final de la imagen nueva: épica, elegante, tierna, dramática, luminosa, mágica, profesional, etc.',
-        generateExample: 'Ambiente épico y luminoso, con sensación de aventura.',
+        id: 'lighting',
+        generateLabel: 'Iluminación',
+        editLabel: 'Efecto deseado',
+        generatePlaceholder: 'Ej: luz dorada, neón, contraluz, estudio...',
+        editPlaceholder: 'Ej: épico, elegante, luminoso, mágico...',
+        generateHelp: 'Define la luz de la escena: hora del día, tipo de iluminación, sombras, ambiente o color dominante.',
+        generateExample: 'Luz dorada de atardecer, sombras suaves y reflejos cinematográficos.',
         editHelp: 'Describe el resultado final que buscas al editar: cambio de luz, color, ambiente, acabado o impacto visual.',
         editExample: 'Hacer la imagen más elegante y luminosa, con tonos dorados.'
     },
     {
-        id: 'relevantDetails',
-        label: 'Detalles relevantes',
-        placeholder: 'Ej: formato, colores, evitar texto, conservar rasgos...',
+        id: 'details',
+        generateLabel: 'Detalles',
+        editLabel: 'Detalles relevantes',
+        generatePlaceholder: 'Ej: formato, colores, cámara, evitar texto...',
+        editPlaceholder: 'Ej: formato, colores, evitar texto, conservar rasgos...',
         generateHelp: 'Añade instrucciones importantes para la imagen nueva: colores, composición, encuadre, elementos a evitar, proporciones o texto no deseado.',
         generateExample: 'Sin texto, composición centrada, colores azul y dorado, fondo limpio.',
         editHelp: 'Añade restricciones para proteger partes de la imagen: qué conservar, qué no tocar, colores concretos o instrucciones extra.',
@@ -179,14 +191,17 @@ const PROMPT_FIELD_DEFINITIONS = [
 ];
 
 const createInitialPromptFields = (details = '') => PROMPT_FIELD_DEFINITIONS.reduce((acc, field) => {
-    acc[field.id] = field.id === 'relevantDetails' ? details : '';
+    acc[field.id] = field.id === 'details' ? details : '';
     return acc;
 }, {});
 
-const buildStructuredPrompt = (fields) => PROMPT_FIELD_DEFINITIONS
+const getPromptFieldLabel = (field, mode) => mode === 'remix' ? field.editLabel : field.generateLabel;
+const getPromptFieldPlaceholder = (field, mode) => `${getPromptFieldLabel(field, mode)}??`;
+
+const buildStructuredPrompt = (fields, mode) => PROMPT_FIELD_DEFINITIONS
     .map((field) => {
         const value = (fields[field.id] || '').trim();
-        return value ? `${field.label}: ${value}` : '';
+        return value ? `${getPromptFieldLabel(field, mode)}: ${value}` : '';
     })
     .filter(Boolean)
     .join('\n');
@@ -440,12 +455,12 @@ const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGe
                         type="text"
                         value={fields[field.id] || ''}
                         onChange={(e) => onChange(field.id, e.target.value)}
-                        placeholder={`${field.label}??`}
+                        placeholder={getPromptFieldPlaceholder(field, mode)}
                         aria-describedby={`prompt-help-${field.id}`}
                         className="structured-prompt-input"
                     />
                     <div id={`prompt-help-${field.id}`} role="tooltip" className="prompt-tooltip">
-                        <span className="prompt-tooltip-title">{field.label}</span>
+                        <span className="prompt-tooltip-title">{getPromptFieldLabel(field, mode)}</span>
                         <span>{isEditMode ? field.editHelp : field.generateHelp}</span>
                         <span className="prompt-tooltip-example">
                             Ejemplo {isEditMode ? 'edición' : 'generación'}: {isEditMode ? field.editExample : field.generateExample}
@@ -651,7 +666,7 @@ const App = () => {
         reader.readAsDataURL(file);
     };
 
-    const currentPrompt = buildStructuredPrompt(promptFields);
+    const currentPrompt = buildStructuredPrompt(promptFields, mode);
 
     const updatePromptField = (fieldId, value) => {
         setPromptFields(prev => ({ ...prev, [fieldId]: value }));
@@ -853,7 +868,7 @@ const App = () => {
                             <div className="pt-6 order-last">
                                 <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-                                    {isGenerating ? 'PROCESANDO...' : 'GENERAR EDICIÓN'}
+                                    {isGenerating ? 'PROCESANDO...' : (mode === 'text-to-image' ? 'GENERAR IMAGEN' : 'GENERAR EDICIÓN')}
                                 </button>
                                 {error && <p className="text-red-400 text-[10px] text-center mt-4 font-bold uppercase tracking-widest">{error}</p>}
                             </div>
@@ -863,8 +878,8 @@ const App = () => {
                             <div className="max-w-7xl mx-auto space-y-16">
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
-                                        <h2 className="text-4xl font-bold tracking-tight">Historial de Imágenes Editadas</h2>
-                                        <p className="text-gray-400 font-medium">Controla y refina tus creaciones visuales en tiempo real.</p>
+                                        <h2 className="text-4xl font-bold tracking-tight">{mode === 'text-to-image' ? 'Historial de Imágenes Generadas' : 'Historial de Imágenes Editadas'}</h2>
+                                        <p className="text-gray-400 font-medium">{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
                                     </div>
                                     <button onClick={handleClearHistory} className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] font-bold uppercase tracking-widest border border-red-500/20">
                                         <Trash2 size={16} /> LIMPIAR TODO
