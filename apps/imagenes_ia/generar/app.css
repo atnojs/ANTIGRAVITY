@@ -436,8 +436,7 @@ textarea:focus-visible {
         transform: rotate(45deg);
     }
 
-    .prompt-field-wrap:hover .prompt-tooltip,
-    .prompt-field-wrap:has(.structured-prompt-input:focus-visible) .prompt-tooltip {
+    .prompt-field-wrap:hover .prompt-tooltip {
         transform: translateY(0);
     }
 }
