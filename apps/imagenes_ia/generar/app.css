@@ -299,7 +299,7 @@ select option:focus {
 }
 
 .prompt-field-wrap:hover,
-.prompt-field-wrap:focus-within {
+.prompt-field-wrap:has(.structured-prompt-input:focus-visible) {
     z-index: 120;
 }
 
@@ -362,7 +362,7 @@ select option:focus {
 }
 
 .prompt-field-wrap:hover .prompt-tooltip,
-.prompt-field-wrap:focus-within .prompt-tooltip {
+.prompt-field-wrap:has(.structured-prompt-input:focus-visible) .prompt-tooltip {
     opacity: 1;
     transform: translateY(0);
 }
@@ -439,7 +439,7 @@ textarea:focus-visible {
     }
 
     .prompt-field-wrap:hover .prompt-tooltip,
-    .prompt-field-wrap:focus-within .prompt-tooltip {
+    .prompt-field-wrap:has(.structured-prompt-input:focus-visible) .prompt-tooltip {
         transform: translateY(0);
     }
 }

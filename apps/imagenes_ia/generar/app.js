@@ -224,6 +224,7 @@ const syncToServer = async (image) => {
                 aspectRatio: image.aspectRatio,
                 size: image.size,
                 geminiSize: image.geminiSize,
+                outputMaxWidth: image.outputMaxWidth || null,
                 createdAt: image.createdAt,
                 imageData: image.url
             })
@@ -373,7 +374,10 @@ const editImageConversation = async (params) => {
     const result = await callProxy('gemini-2.5-flash-image', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+        if (part.inlineData) {
+            const editedImage = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+            return params.outputMaxWidth ? await resizeImage(editedImage, params.outputMaxWidth) : editedImage;
+        }
     }
     throw new Error("Error en la edición conversacional");
 };
@@ -453,7 +457,7 @@ const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGe
         <div className="structured-prompt-panel">
             {PROMPT_FIELD_DEFINITIONS.map((field) => (
                 <div key={field.id} className="prompt-field-wrap group/field">
-                    <label htmlFor={`prompt-${field.id}`} className="sr-only">{field.label}</label>
+                    <label htmlFor={`prompt-${field.id}`} className="sr-only">{getPromptFieldLabel(field, mode)}</label>
                     <input
                         id={`prompt-${field.id}`}
                         type="text"
@@ -744,15 +748,17 @@ const App = () => {
 
     const handleEditSubmit = async () => {
         if (!editImage || !editInstruction.trim()) return;
+        const editOutputMaxWidth = editImage.outputMaxWidth || (editImage.size === '512px' ? 512 : null);
         setIsGenerating(true);
         try {
             const updatedUrl = await editImageConversation({
                 originalImage: editImage.url,
                 instruction: editInstruction,
                 aspectRatio: editImage.aspectRatio,
-                imageSize: editImage.geminiSize || '1K'
+                imageSize: editImage.geminiSize || '1K',
+                outputMaxWidth: editOutputMaxWidth
             });
-            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, createdAt: Date.now() };
+            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, outputMaxWidth: editOutputMaxWidth, createdAt: Date.now() };
             setImages([updatedImage, ...images]);
             syncToServer(updatedImage);
             setEditImage(null);

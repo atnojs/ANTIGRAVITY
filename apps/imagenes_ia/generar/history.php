@@ -110,6 +110,7 @@ if ($method === 'POST') {
         'aspectRatio' => (string)($req['aspectRatio'] ?? '1:1'),
         'size'        => (string)($req['size'] ?? ''),
         'geminiSize'  => (string)($req['geminiSize'] ?? '1K'),
+        'outputMaxWidth' => isset($req['outputMaxWidth']) ? (int)$req['outputMaxWidth'] : null,
         'createdAt'   => (int)($req['createdAt'] ?? 0),
         'imageFile'   => $imageFile,
         'imageUrl'    => './history_data/' . $imageFile,
