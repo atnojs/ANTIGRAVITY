@@ -16,7 +16,6 @@ const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16'
 const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     return new Promise((resolve) => {
         const img = new Image();
-        img.src = base64Str;
         img.onload = () => {
             let width = img.width;
             let height = img.height;
@@ -36,6 +35,8 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
             ctx.drawImage(img, 0, 0, width, height);
             resolve(canvas.toDataURL('image/jpeg', quality));
         };
+        img.onerror = () => resolve(base64Str);
+        img.src = base64Str;
     });
 };
 
