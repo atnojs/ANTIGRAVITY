@@ -121,6 +121,58 @@ const RESOLUTION_OPTIONS = [
     { id: '4K', label: '4.096px', geminiSize: '4K' },
 ];
 
+const PROMPT_FIELD_DEFINITIONS = [
+    {
+        id: 'action',
+        label: 'Acción',
+        placeholder: 'Ej: cambiar, eliminar, añadir, transformar...',
+        help: 'Indica qué quieres que haga la IA: cambiar algo, añadir un elemento, quitarlo, mejorar la luz, transformar el estilo, etc.'
+    },
+    {
+        id: 'targetElement',
+        label: 'Elemento específico a cambiar/editar',
+        placeholder: 'Ej: el fondo, la ropa, el cielo, el objeto central...',
+        help: 'Especifica con claridad qué parte de la imagen o de la idea debe modificarse para evitar cambios innecesarios.'
+    },
+    {
+        id: 'newElement',
+        label: 'Elemento nuevo',
+        placeholder: 'Ej: un lazo rojo, una ciudad futurista, flores...',
+        help: 'Describe el nuevo elemento que quieres añadir o sustituir. Puedes dejarlo vacío si no necesitas añadir nada.'
+    },
+    {
+        id: 'visualStyle',
+        label: 'Estilo',
+        placeholder: 'Ej: realista, anime, acuarela, cyberpunk...',
+        help: 'Añade una dirección visual o artística si quieres un acabado concreto. También puedes usar el Panel de Estilos de abajo.'
+    },
+    {
+        id: 'desiredEffect',
+        label: 'Efecto deseado',
+        placeholder: 'Ej: más elegante, dramático, luminoso, mágico...',
+        help: 'Explica el resultado final que buscas: sensación visual, ambiente, iluminación, color o impacto general.'
+    },
+    {
+        id: 'relevantDetails',
+        label: 'Detalles relevantes',
+        placeholder: 'Ej: mantener el rostro igual, no cambiar composición...',
+        help: 'Añade restricciones o detalles importantes: qué conservar, qué evitar, proporciones, colores concretos o instrucciones extra.'
+    }
+];
+
+const createInitialPromptFields = (details = '') => PROMPT_FIELD_DEFINITIONS.reduce((acc, field) => {
+    acc[field.id] = field.id === 'relevantDetails' ? details : '';
+    return acc;
+}, {});
+
+const buildStructuredPrompt = (fields) => PROMPT_FIELD_DEFINITIONS
+    .map((field) => {
+        const value = (fields[field.id] || '').trim();
+        return value ? `${field.label}: ${value}` : '';
+    })
+    .filter(Boolean)
+    .join('\n');
+
 // --- SERVICES (ORIGINAL LOGIC) ---
 const PROXY_URL = './proxy.php';
 const HISTORY_URL = './history.php';
@@ -356,6 +408,45 @@ const CustomSelect = ({ options, value, onChange, className }) => {
     );
 };
 
+const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGenerating }) => {
+    const hasAnyValue = PROMPT_FIELD_DEFINITIONS.some((field) => (fields[field.id] || '').trim());
+
+    return (
+        <div className="structured-prompt-panel">
+            {PROMPT_FIELD_DEFINITIONS.map((field) => (
+                <div key={field.id} className="prompt-field-wrap group/field">
+                    <label htmlFor={`prompt-${field.id}`} className="sr-only">{field.label}</label>
+                    <input
+                        id={`prompt-${field.id}`}
+                        type="text"
+                        value={fields[field.id] || ''}
+                        onChange={(e) => onChange(field.id, e.target.value)}
+                        placeholder={`${field.label}??`}
+                        aria-describedby={`prompt-help-${field.id}`}
+                        className="structured-prompt-input"
+                    />
+                    <div id={`prompt-help-${field.id}`} role="tooltip" className="prompt-tooltip">
+                        <span className="prompt-tooltip-title">{field.label}</span>
+                        <span>{field.help}</span>
+                        <span className="prompt-tooltip-example">{field.placeholder}</span>
+                    </div>
+                </div>
+            ))}
+
+            <button
+                onClick={onEnhance}
+                disabled={isEnhancing || isGenerating || !hasAnyValue}
+                title="mejorar prompt con IA"
+                aria-label="Mejorar los campos del prompt con IA"
+                className="structured-enhance-button"
+            >
+                {isEnhancing ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
+                <span>Mejorar</span>
+            </button>
+        </div>
+    );
+};
+
 const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
     const handleDownload = (e) => {
         e.stopPropagation();
@@ -463,7 +554,7 @@ const STORAGE_KEY = 'gemini_image_studio_history';
 const App = () => {
     const [view, setView] = useState('splash');
     const [mode, setMode] = useState('text-to-image');
-    const [prompt, setPrompt] = useState('');
+    const [promptFields, setPromptFields] = useState(() => createInitialPromptFields());
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.ilustracion[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
@@ -539,16 +630,22 @@ const App = () => {
         reader.readAsDataURL(file);
     };
 
+    const currentPrompt = buildStructuredPrompt(promptFields);
+
+    const updatePromptField = (fieldId, value) => {
+        setPromptFields(prev => ({ ...prev, [fieldId]: value }));
+    };
+
     const handleEnhance = async () => {
-        if (!prompt.trim()) return;
+        if (!currentPrompt.trim()) return;
         setIsEnhancing(true);
         try {
-            const enhanced = await enhancePrompt(prompt);
+            const enhanced = await enhancePrompt(currentPrompt);
             setEnhancedPrompts(enhanced);
         } catch (err) { console.error(err); } finally { setIsEnhancing(false); }
     };
 
-    const handleGenerate = async (finalPrompt = prompt) => {
+    const handleGenerate = async (finalPrompt = currentPrompt) => {
         const effectivePrompt = finalPrompt.trim() || (mode === 'remix' && remixSource ? ' ' : '');
         if (!effectivePrompt && !(mode === 'remix' && remixSource)) return;
         setIsGenerating(true);
@@ -581,7 +678,7 @@ const App = () => {
         } finally {
             setIsGenerating(false);
             // Resetear estados post-generación (mantenemos enhancedPrompts)
-            setPrompt("");
+            setPromptFields(createInitialPromptFields());
             setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
             setSelectedAR(AspectRatio.SQUARE);
         }
@@ -593,7 +690,7 @@ const App = () => {
     };
     const handleClearHistory = () => { if (window.confirm('¿Deseas eliminar todo el historial?')) { setImages([]); try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} clearServerHistory(); } };
     const handleRegenerate = (img) => {
-        setPrompt(img.prompt);
+        setPromptFields(createInitialPromptFields(img.prompt));
         setSelectedStyle(img.style);
         setSelectedAR(img.aspectRatio);
         handleGenerate(img.prompt);
@@ -620,7 +717,7 @@ const App = () => {
         } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
     };
 
-    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim()) || (mode === 'remix' && !remixSource);
+    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !currentPrompt.trim()) || (mode === 'remix' && !remixSource);
 
     return (
         <ApiKeyChecker>
@@ -649,22 +746,13 @@ const App = () => {
 
                             <div className="space-y-4">
                                 <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Quieres añadir algo??</label>
-                                <div className="relative">
-                                    <textarea
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder="Detalla lo que deseas ver en tu imagen..."
-                                        className="w-full h-48 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none custom-scrollbar focus:border-cyan-400 transition-all shadow-inner"
-                                    />
-                                    <button
-                                        onClick={handleEnhance}
-                                        disabled={isEnhancing || !prompt.trim()}
-                                        title="mejorar prompt con IA"
-                                        className="absolute bottom-4 right-4 p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl hover:bg-cyan-500/30 transition-all z-30"
-                                    >
-                                        {isEnhancing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-                                    </button>
-                                </div>
+                                <StructuredPromptFields
+                                    fields={promptFields}
+                                    onChange={updatePromptField}
+                                    onEnhance={handleEnhance}
+                                    isEnhancing={isEnhancing}
+                                    isGenerating={isGenerating}
+                                />
 
                                 {enhancedPrompts.length > 0 && (
                                     <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-2 duration-300">
@@ -672,7 +760,7 @@ const App = () => {
                                             <button
                                                 key={i}
                                                 disabled={isGenerating}
-                                                onClick={() => setPrompt(p.text)}
+                                                onClick={() => setPromptFields(createInitialPromptFields(p.text))}
                                                 className="text-[10px] text-left p-3 glass-light border border-white/5 rounded-2xl text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all leading-tight group disabled:opacity-40 disabled:cursor-not-allowed"
                                             >
                                                 <div className="font-bold text-[9px] uppercase tracking-tighter text-gray-500 group-hover:text-cyan-500 mb-1">{p.type}</div>
