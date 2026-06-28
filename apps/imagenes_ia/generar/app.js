@@ -491,13 +491,17 @@ const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGe
     );
 };
 
-const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
+const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownload }) => {
     const handleDownload = (e) => {
         e.stopPropagation();
         const link = document.createElement('a');
         link.href = image.url;
         link.download = `gemini-studio-${image.id}.jpg`;
         link.click();
+    };
+    const handleHdDownload = (e) => {
+        e.stopPropagation();
+        onHdDownload(image);
     };
 
     return (
@@ -535,6 +539,13 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
                                 <Download className="text-slate-200" size={16} />
                             </div>
                             <span className="text-[8px] font-bold text-slate-300 uppercase tracking-tighter">Bajar</span>
+                        </button>
+
+                        <button onClick={handleHdDownload} className="flex flex-col items-center gap-1.5 group/btn">
+                            <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center group-hover/btn:bg-amber-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
+                                <Download className="text-amber-400" size={16} />
+                            </div>
+                            <span className="text-[8px] font-bold text-amber-300 uppercase tracking-tighter">HD</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onDelete(image.id); }} className="flex flex-col items-center gap-1.5 group/btn">
@@ -741,6 +752,28 @@ const App = () => {
         setSelectedAR(img.aspectRatio);
         handleGenerate(img.prompt);
     };
+    const handleHdDownload = async (img) => {
+        setIsGenerating(true);
+        setError(null);
+        try {
+            const hdUrl = await generateImage({
+                prompt: img.prompt,
+                styleSuffix: img.style?.promptSuffix || '',
+                aspectRatio: img.aspectRatio,
+                imageSize: '2K',
+                outputMaxWidth: undefined,
+                sourceImage: undefined
+            });
+            const link = document.createElement('a');
+            link.href = hdUrl;
+            link.download = `gemini-hd-${img.id}.jpg`;
+            link.click();
+        } catch (err) {
+            setError("Error HD: " + (err.message || ''));
+        } finally {
+            setIsGenerating(false);
+        }
+    };
     const handleOpenEdit = (img) => {
         setEditImage(img);
         setEditInstruction('');
@@ -911,7 +944,7 @@ const App = () => {
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
                                         {images.map((img) => (
-                                            <ImageCard key={img.id} image={img} onDelete={handleDelete} onRegenerate={handleRegenerate} onEdit={handleOpenEdit} onClick={setLightboxImage} />
+                                            <ImageCard key={img.id} image={img} onDelete={handleDelete} onRegenerate={handleRegenerate} onEdit={handleOpenEdit} onClick={setLightboxImage} onHdDownload={handleHdDownload} />
                                         ))}
                                     </div>
                                 )}
