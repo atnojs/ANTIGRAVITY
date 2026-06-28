@@ -760,7 +760,7 @@ const App = () => {
                 originalImage: img.url,
                 instruction: 'Regenera esta imagen exacta a mayor resolución. Conserva absolutamente todos y cada uno de los elementos: composición, colores, iluminación, sombras, texturas, objetos, personas, fondo, estilo. No añadas, quites, modifiques ni reinterpretes nada. Solo aumenta la resolución y nitidez. Es una operación de reescalado puro, no una edición ni transformación.',
                 aspectRatio: img.aspectRatio,
-                imageSize: '2K',
+                imageSize: '1K',
                 outputMaxWidth: undefined
             });
             const link = document.createElement('a');
