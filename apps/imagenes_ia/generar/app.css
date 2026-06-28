@@ -298,8 +298,7 @@ select option:focus {
     z-index: 1;
 }
 
-.prompt-field-wrap:hover,
-.prompt-field-wrap:has(.structured-prompt-input:focus-visible) {
+.prompt-field-wrap:hover {
     z-index: 120;
 }
 
@@ -361,8 +360,7 @@ select option:focus {
     transform: rotate(45deg);
 }
 
-.prompt-field-wrap:hover .prompt-tooltip,
-.prompt-field-wrap:has(.structured-prompt-input:focus-visible) .prompt-tooltip {
+.prompt-field-wrap:hover .prompt-tooltip {
     opacity: 1;
     transform: translateY(0);
 }

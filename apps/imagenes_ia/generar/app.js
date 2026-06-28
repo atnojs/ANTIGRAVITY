@@ -956,6 +956,10 @@ const App = () => {
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <img src={lightboxImage.url} className="w-full h-full object-contain" />
                                     <div className="absolute bottom-8 glass px-8 py-4 rounded-full flex gap-10 text-[11px] font-bold text-gray-400 tracking-widest uppercase" onClick={(e) => e.stopPropagation()}>
+                                        <button onClick={(e) => { e.stopPropagation(); handleHdDownload(lightboxImage); }} className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full hover:bg-amber-500/40 transition-all">
+                                            <Download size={12} className="text-amber-400" />
+                                            <span className="text-amber-300 text-[10px]">HD</span>
+                                        </button>
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
                                         <span>RES: {lightboxImage.size}</span>
                                         <span className="text-gray-600">ID: {lightboxImage.id}</span>
