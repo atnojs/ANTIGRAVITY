@@ -2,7 +2,7 @@
 
 async function checkPassword(inputPassword) {
   try {
-    const response = await fetch('/Paginas/pagina_privada/validar_password.php', { // La URL está bien
+    const response = await fetch('validar_password.php', { // Ruta relativa, mismo directorio
       method: 'POST',
       headers: {
         'Content-Type': 'application/json', // CAMBIO IMPORTANTE AQUÍ
