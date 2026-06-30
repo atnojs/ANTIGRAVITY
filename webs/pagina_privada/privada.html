@@ -1633,7 +1633,34 @@
       }
 
       // Función para activar modo edición
-      
+      async function activateEditMode() {
+        const password = prompt('Introduce la contraseña para activar el modo de edición:');
+        if (password === null) return;
+        try {
+          // Llamada a la función real de script.js
+          const isValid = await checkPassword(password);
+          if (isValid) {
+            isEditable = true;
+            document.body.classList.add('edit-mode');
+            setupMode(isEditable);
+            editModeBtn.textContent = 'Desactivar Modo Edición';
+
+            // Eliminar restricciones de tamaño en todas las imágenes redimensionables
+            const containers = document.querySelectorAll('.resizable-img-container');
+            containers.forEach(container => {
+              container.style.maxWidth = 'none';
+            });
+          } else {
+            alert('Contraseña incorrecta.');
+            isEditable = false;
+            document.body.classList.remove('edit-mode');
+            setupMode(false);
+          }
+        } catch (error) {
+          console.error('Error al validar contraseña:', error);
+          alert('Error de conexión. Intenta nuevamente.');
+        }
+      }
 
       // Desactivar modo edición
       function deactivateEditMode() {
