@@ -592,25 +592,30 @@
 
       // Determine audience from style
       const style = STYLES.find(s => s.id === this.selectedStyleId);
-      const audience = style.audience;
+      const audience = style.aud;
 
       // Show loading
       this.goToStep(3);
       document.getElementById('loading-state').style.display = 'block';
       document.getElementById('result-container').style.display = 'none';
-      document.getElementById('loading-detail').textContent = 'Generando infografía con IA...';
+      document.getElementById('loading-detail').textContent = 'IA generando el contenido...';
 
       try {
-        document.getElementById('loading-detail').textContent = 'Enviando a la API de generación...';
-        const imageUrl = await API.generate(this.selectedStyleId, audience, title, content, this.apiKey);
-        this.generatedImageUrl = imageUrl;
+        document.getElementById('loading-detail').textContent = 'Conectando con el modelo de IA...';
+        const infographic = await API.generate(this.selectedStyleId, audience, title, content, this.apiKey);
+        
+        // Renderizar la infografía como HTML + exportar como imagen
+        document.getElementById('loading-detail').textContent = 'Renderizando infografía...';
+        
+        const dataUrl = await this.renderInfographicToImage(infographic);
+        this.generatedImageUrl = dataUrl;
 
         // Show result
         document.getElementById('loading-state').style.display = 'none';
         document.getElementById('result-container').style.display = 'block';
 
         const img = document.getElementById('preview-img');
-        img.src = imageUrl;
+        img.src = dataUrl;
         img.onload = () => {
           AnimController.reset();
           document.getElementById('btn-anim-toggle').style.display = 'inline-flex';
@@ -625,14 +630,132 @@
         let userMsg = err.message;
         if (userMsg.includes('Failed to fetch') || userMsg.includes('CSP') || userMsg.includes('Content Security')) {
           if (window.location.protocol === 'file:') {
-            userMsg = '❌ <b>Error de conexión.</b> Estás abriendo la app desde un archivo local (file://).<br><br>📌 <b>Para probar localmente:</b> usa Live Server en VS Code o Python: <code>python -m http.server 8000</code><br>🌐 <b>Para producción:</b> sube a Hostinger y el proxy PHP funcionará automáticamente.';
+            userMsg = '❌ Error de conexión. Abre la app desde un servidor web, no desde file://.<br><br>📌 Usa: <code>python -m http.server 8000</code> en la carpeta de la app.<br>🌐 O súbela a Hostinger.';
           } else {
-            userMsg = '❌ Error de conexión con la API. Verifica que tu API Key sea correcta y que el proxy.php existe en el servidor.';
+            userMsg = '❌ Error de conexión. Verifica que tu API Key sea correcta.';
           }
         }
         this.showToast(`❌ ${userMsg}`, 'error');
         console.error(err);
       }
+    },
+
+    // Renderiza la infografía HTML a una imagen PNG via Canvas
+    async renderInfographicToImage(data) {
+      const style = STYLES.find(s => s.id === this.selectedStyleId);
+      const aspect = document.getElementById('inf-aspect').value || 'landscape';
+      const width = aspect === 'portrait' ? 800 : aspect === 'square' ? 800 : 1200;
+      const height = aspect === 'portrait' ? 1200 : aspect === 'square' ? 800 : 675;
+      const c = [style._c1, style._c2, style._c3, style._c4, style._c5];
+      
+      // Crear un canvas oculto
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      // Fondo
+      ctx.fillStyle = c[0];
+      ctx.fillRect(0, 0, width, height);
+      
+      // Gradiente de fondo
+      const grad = ctx.createLinearGradient(0, 0, width, height);
+      grad.addColorStop(0, c[0] + '44');
+      grad.addColorStop(0.5, c[4] + '22');
+      grad.addColorStop(1, c[2] + '44');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Header bar
+      const headerH = 80;
+      ctx.fillStyle = c[3] + 'CC';
+      ctx.fillRect(0, 0, width, headerH);
+      
+      // Título
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `bold ${width > 1000 ? 36 : 28}px Inter, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(data.titulo, width/2, headerH/2 + 10);
+      
+      if (data.subtitulo) {
+        ctx.font = `${width > 1000 ? 18 : 15}px Inter, sans-serif`;
+        ctx.fillStyle = '#FFFFFFCC';
+        ctx.fillText(data.subtitulo, width/2, headerH/2 + 36);
+      }
+
+      // Sections
+      const startY = headerH + 30;
+      const sectionH = (height - startY - 60) / Math.max(data.sections.length, 1);
+      
+      data.sections.forEach((sec, i) => {
+        const y = startY + i * sectionH;
+        const margin = 40;
+        
+        // Section background
+        ctx.fillStyle = i % 2 === 0 ? '#FFFFFF15' : '#00000015';
+        ctx.fillRect(margin, y + 5, width - margin * 2, sectionH - 10);
+        
+        // Section border left accent
+        ctx.fillStyle = c[(i+2) % 5] + '88';
+        ctx.fillRect(margin, y + 10, 6, sectionH - 20);
+
+        // Icon
+        ctx.font = '36px sans-serif';
+        ctx.textAlign = 'left';
+        const iconX = margin + 30;
+        const iconY = y + 50;
+        ctx.fillText(sec.icono || '📌', iconX, iconY);
+
+        // Title
+        ctx.font = `bold ${width > 1000 ? 22 : 18}px Inter, sans-serif`;
+        ctx.fillStyle = c[(i+1) % 5];
+        ctx.fillText(sec.titulo, iconX + 50, iconY);
+
+        // Dato destacado
+        if (sec.dato_destacado) {
+          ctx.font = `bold ${width > 1000 ? 28 : 22}px Inter, sans-serif`;
+          ctx.fillStyle = c[(i+3) % 5];
+          ctx.textAlign = 'right';
+          ctx.fillText(sec.dato_destacado, width - margin - 20, iconY);
+        }
+
+        // Bullet points
+        ctx.textAlign = 'left';
+        const bulletY = iconY + 30;
+        const points = sec.puntos || [];
+        points.forEach((p, j) => {
+          const px = iconX + 30 + j * (width - iconX - 100) / Math.max(points.length, 1);
+          ctx.font = `${width > 1000 ? 16 : 13}px Inter, sans-serif`;
+          ctx.fillStyle = '#FFFFFFDD';
+          // Truncar texto largo
+          let txt = '• ' + p;
+          const maxW = (width - iconX - 100) / Math.max(points.length, 1) - 20;
+          while (ctx.measureText(txt).width > maxW && txt.length > 10) {
+            txt = txt.slice(0, -4) + '...';
+          }
+          ctx.fillText(txt, iconX + 50, bulletY + j * 26);
+        });
+
+        // Línea separadora
+        if (i < data.sections.length - 1) {
+          ctx.strokeStyle = c[(i+2) % 5] + '33';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(margin + 10, y + sectionH - 5);
+          ctx.lineTo(width - margin - 10, y + sectionH - 5);
+          ctx.stroke();
+        }
+      });
+
+      // Footer
+      if (data.fuente) {
+        ctx.font = '12px Inter, sans-serif';
+        ctx.fillStyle = '#FFFFFF66';
+        ctx.textAlign = 'right';
+        ctx.fillText('Fuente: ' + data.fuente, width - 40, height - 20);
+      }
+
+      return canvas.toDataURL('image/png');
     },
 
     regenerate() {

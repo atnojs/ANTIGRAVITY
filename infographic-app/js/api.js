@@ -1,148 +1,126 @@
 // ============================================================
-// API - Generación de Infografías con IA
-// Soporta: proxy PHP (Hostinger) y fetch directo
+// API - Genera infografías con IA (texto → HTML renderizado)
+// Usa DeepSeek o OpenRouter para generar el contenido
 // ============================================================
 
 const API = {
-  provider: 'openrouter',
-  model: 'black-forest-labs/flux-1.1-pro',
+  // Proveedor configurable
+  deepseekUrl: 'https://api.deepseek.com/chat/completions',
   openrouterUrl: 'https://openrouter.ai/api/v1/chat/completions',
-  proxyUrl: 'proxy.php',
-
-  fallbackModels: [
-    'black-forest-labs/flux-1.1-pro',
-    'black-forest-labs/flux-1-schnell',
-    'stabilityai/stable-diffusion-3.5-large',
-    'openai/dall-e-3'
-  ],
 
   /**
-   * Generate an infographic image
-   * Primero intenta proxy PHP (sin CSP), luego fetch directo
+   * Genera la infografía: IA estructura el contenido, el navegador lo renderiza
    */
   async generate(styleId, audience, title, content, apiKey) {
-    if (!apiKey) {
-      throw new Error('Necesitas configurar tu API Key primero');
-    }
+    if (!apiKey) throw new Error('Necesitas configurar tu API Key');
+    
+    const style = STYLES.find(s => s.id === styleId);
+    if (!style) throw new Error('Estilo no encontrado');
 
-    const prompt = buildPrompt(styleId, audience, title, content);
-    const aud = AUDIENCE_PROMPTS[audience] || AUDIENCE_PROMPTS.adultos;
-    const aspectRatio = this.getAspectRatio(aud.aspect);
+    // Determinar idioma
+    const isSpanish = /[áéíóúñü]/i.test(title + content);
 
-    let lastError = null;
-    const models = [this.model, ...this.fallbackModels];
+    const systemPrompt = `Eres un diseñador de infografías experto. Genera una infografía estructurada en JSON.
 
-    for (const model of models) {
+REGLAS:
+- ${isSpanish ? 'Todo el texto debe estar en ESPAÑOL' : 'All text must be in English'}
+- Crea 4-6 secciones con: titulo (corto, max 3 palabras), puntos (2-4 bullets concisos), icono (un emoji), dato_destacado (un número o frase impactante)
+- Tono: ${audience === 'niños' ? 'muy simple, divertido, para niños 7-10 años' : audience === 'mayores' ? 'claro, letra grande mentalidad, accesible, para adultos mayores' : 'profesional, equilibrado, para adultos'}
+- Estilo visual: ${style.prompt}
+
+Devuelve SOLO JSON válido con este formato:
+{
+  "titulo": "Título principal",
+  "subtitulo": "Subtítulo opcional",
+  "sections": [
+    {"titulo": "Sección 1", "icono": "📊", "dato_destacado": "73%", "puntos": ["Punto 1", "Punto 2"]}
+  ],
+  "fuente": "Fuente opcional",
+  "color_fondo": "${style._c1}",
+  "color_acento": "${style._c2}"
+}`;
+
+    const userPrompt = `Crea una infografía sobre:
+TÍTULO: ${title || 'Información clave'}
+CONTENIDO: ${content || 'Datos e información relevante sobre el tema'}`;
+
+    // Intentar API directa primero (DeepSeek), luego OpenRouter
+    let data = null;
+    let provider = null;
+
+    // Intento con DeepSeek
+    try {
+      data = await this.callAPI(this.deepseekUrl, apiKey, 'deepseek-chat', systemPrompt, userPrompt);
+      provider = 'deepseek';
+    } catch (err) {
+      console.log('DeepSeek falló, intentando OpenRouter:', err.message);
       try {
-        // Intento 1: Proxy PHP (funciona siempre en Hostinger)
-        try {
-          const result = await this.callViaProxy(prompt, model, aspectRatio);
-          if (result) return result;
-        } catch (proxyErr) {
-          console.log('Proxy no disponible, intentando fetch directo:', proxyErr.message);
-        }
-
-        // Intento 2: Fetch directo (requiere CSP configurada)
-        const result = await this.callDirect(apiKey, prompt, model, aspectRatio);
-        if (result) return result;
-      } catch (err) {
-        lastError = err;
-        console.warn(`Model ${model} failed:`, err.message);
-        continue;
+        data = await this.callAPI(this.openrouterUrl, apiKey, 'deepseek/deepseek-chat', systemPrompt, userPrompt, true);
+        provider = 'openrouter';
+      } catch (err2) {
+        throw new Error('No se pudo conectar con ningún proveedor. Verifica tu API Key.');
       }
     }
 
-    throw new Error(lastError?.message || 'No se pudo generar la imagen');
-  },
+    // Extraer JSON de la respuesta
+    const jsonStr = this.extractJSON(data);
+    const infographic = JSON.parse(jsonStr);
 
-  getAspectRatio(aspect) {
-    switch(aspect) {
-      case 'portrait': return '9:16';
-      case 'landscape': return '16:9';
-      case 'square': return '1:1';
-      default: return '16:9';
+    // Validar estructura mínima
+    if (!infographic.titulo || !infographic.sections) {
+      throw new Error('La IA no generó una infografía válida');
     }
+
+    return infographic;
   },
 
   /**
-   * Llama al proxy PHP (mismo dominio → sin CSP)
+   * Llama a una API de chat (DeepSeek o OpenRouter)
    */
-  async callViaProxy(prompt, model, aspectRatio) {
-    const response = await fetch(this.proxyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, model, aspect_ratio: aspectRatio })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.error?.message || `Proxy HTTP ${response.status}`);
+  async callAPI(url, apiKey, model, system, user, isOpenRouter = false) {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    };
+    if (isOpenRouter) {
+      headers['HTTP-Referer'] = window.location.origin || 'http://localhost';
+      headers['X-Title'] = 'Infographic Generator';
     }
 
-    const data = await response.json();
-    return this.extractImage(data);
-  },
-
-  /**
-   * Llama directamente a OpenRouter (puede fallar por CSP)
-   */
-  async callDirect(apiKey, prompt, model, aspectRatio) {
-    const response = await fetch(this.openrouterUrl, {
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': window.location.origin || 'http://localhost',
-        'X-Title': 'Infographic Generator'
-      },
+      headers,
       body: JSON.stringify({
-        model: model,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: `Generate an infographic as an image. Output ONLY the image.\n\n${prompt}` }
-          ]
-        }],
-        response_format: { type: 'image' }
+        model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
       })
     });
 
     if (!response.ok) {
-      const errBody = await response.text().catch(() => '');
-      let errMsg = `HTTP ${response.status}`;
-      try { const j = JSON.parse(errBody); errMsg = j.error?.message || j.error || errMsg; } catch {}
-      throw new Error(`${model}: ${errMsg}`);
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${response.status}`);
     }
 
-    const data = await response.json();
-    return this.extractImage(data);
+    return await response.json();
   },
 
   /**
-   * Extrae la URL de la imagen de la respuesta de OpenRouter
+   * Extrae JSON de la respuesta de la IA (limpia markdown ```json)
    */
-  extractImage(data) {
-    // Formato 1: content como string (data:image)
-    if (data.choices?.[0]?.message?.content) {
-      const c = data.choices[0].message.content;
-      if (typeof c === 'string' && c.startsWith('data:image')) return c;
-      if (typeof c === 'string' && (c.startsWith('http://') || c.startsWith('https://'))) return c;
-      if (Array.isArray(c)) {
-        const img = c.find(p => p.type === 'image_url' || p.type === 'image');
-        if (img?.image_url?.url) return img.image_url.url;
-        if (img?.url) return img.url;
-        if (img?.image?.url) return img.image.url;
-      }
-    }
-
-    // Formato 2: image_url directo
-    if (data.image_url) return data.image_url;
-    if (data.url) return data.url;
-
-    // Formato 3: data array (DALL-E style)
-    if (data.data?.[0]?.url) return data.data[0].url;
-    if (data.data?.[0]?.b64_json) return `data:image/png;base64,${data.data[0].b64_json}`;
-
-    throw new Error('No se pudo extraer la imagen de la respuesta de la API');
+  extractJSON(data) {
+    const content = data.choices?.[0]?.message?.content || '';
+    // Limpiar markdown code blocks
+    let cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    // Si empieza con { y termina con }, es JSON válido
+    if (cleaned.startsWith('{') && cleaned.endsWith('}')) return cleaned;
+    // Intentar encontrar JSON embebido
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) return match[0];
+    throw new Error('La IA no devolvió JSON válido');
   }
 };
