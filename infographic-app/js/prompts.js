@@ -84,7 +84,7 @@ function buildPrompt(styleId, audience, title, content) {
 
   return `${aud.prefix}
 
-STYLE: ${style.prompt_extra}
+STYLE: ${style.prompt}
 
 LAYOUT: ${layout}
 
