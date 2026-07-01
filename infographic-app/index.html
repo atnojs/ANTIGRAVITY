@@ -326,6 +326,7 @@
 
   <!-- ===== SCRIPTS ===== -->
   <script src="js/styles-data.js"></script>
+  <script src="js/engine.js"></script>
   <script src="js/prompts.js"></script>
   <script src="js/animations.js"></script>
   <script src="js/api.js"></script>
@@ -571,11 +572,6 @@
 
     // ===== GENERATE =====
     async generate() {
-      // Validate
-      if (!this.apiKey) {
-        this.showToast('❌ Configura tu API Key primero', 'error');
-        return;
-      }
       if (!this.selectedStyleId) {
         this.showToast('❌ Selecciona un estilo primero', 'error');
         this.goToStep(1);
@@ -590,22 +586,18 @@
         return;
       }
 
-      // Determine audience from style
-      const style = STYLES.find(s => s.id === this.selectedStyleId);
-      const audience = style.aud;
-
       // Show loading
       this.goToStep(3);
       document.getElementById('loading-state').style.display = 'block';
       document.getElementById('result-container').style.display = 'none';
-      document.getElementById('loading-detail').textContent = 'IA generando el contenido...';
+      document.getElementById('loading-detail').textContent = 'Generando infografía...';
 
       try {
-        document.getElementById('loading-detail').textContent = 'Conectando con el modelo de IA...';
-        const infographic = await API.generate(this.selectedStyleId, audience, title, content, this.apiKey);
+        // Parse content → infographic structure
+        const infographic = InfographicEngine.parseContent(title, content, this.selectedStyleId);
         
-        // Renderizar la infografía como HTML + exportar como imagen
-        document.getElementById('loading-detail').textContent = 'Renderizando infografía...';
+        // Render to canvas → PNG
+        document.getElementById('loading-detail').textContent = 'Renderizando...';
         
         const dataUrl = await this.renderInfographicToImage(infographic);
         this.generatedImageUrl = dataUrl;
@@ -620,22 +612,12 @@
           AnimController.reset();
           document.getElementById('btn-anim-toggle').style.display = 'inline-flex';
           document.getElementById('btn-anim-toggle').innerHTML = '⏸️ Pausar';
-          AnimController.isPlaying = true;
         };
 
         this.showToast('✅ Infografía generada con éxito', 'success');
       } catch (err) {
         document.getElementById('loading-state').style.display = 'none';
-        document.getElementById('result-container').style.display = 'none';
-        let userMsg = err.message;
-        if (userMsg.includes('Failed to fetch') || userMsg.includes('CSP') || userMsg.includes('Content Security')) {
-          if (window.location.protocol === 'file:') {
-            userMsg = '❌ Error de conexión. Abre la app desde un servidor web, no desde file://.<br><br>📌 Usa: <code>python -m http.server 8000</code> en la carpeta de la app.<br>🌐 O súbela a Hostinger.';
-          } else {
-            userMsg = '❌ Error de conexión. Verifica que tu API Key sea correcta.';
-          }
-        }
-        this.showToast(`❌ ${userMsg}`, 'error');
+        this.showToast('❌ Error al generar: ' + err.message, 'error');
         console.error(err);
       }
     },
