@@ -233,32 +233,6 @@ audience-pill.active {
   min-height: 0;
 }
 
-/* Mock elements dentro del preview */
-.style-card .preview-canvas .mock-bar {
-  position: absolute;
-  border-radius: 2px;
-  bottom: 20%;
-}
-
-.style-card .preview-canvas .mock-circle {
-  position: absolute;
-  border-radius: 50%;
-}
-
-.style-card .preview-canvas .mock-line {
-  position: absolute;
-  height: 2px;
-  border-radius: 1px;
-}
-
-.style-card .preview-canvas .mock-grid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.08;
-  background-image: repeating-linear-gradient(0deg, transparent, transparent 12px, currentColor 12px, currentColor 13px),
-                    repeating-linear-gradient(90deg, transparent, transparent 12px, currentColor 12px, currentColor 13px);
-}
-
 /* Etiqueta del nombre en la parte inferior */
 .style-card .card-label {
   padding: 10px 12px;

@@ -460,49 +460,68 @@
       `).join('');
     },
 
-    // Genera una preview visual única para cada estilo usando CSS + colores
+    // Genera una mini infografía real como preview de cada estilo
     generatePreview(s, index) {
       const c = [s._c1, s._c2, s._c3, s._c4, s._c5];
+      const cat = s.cat;
+      const titles = {
+        infantil: ['Mis animales', 'El cuerpo humano', 'Los colores', 'Números 1-10', 'El sistema solar', 'Las estaciones', 'Los dinosaurios', 'El reciclaje', 'Las emociones', 'La granja'],
+        senior: ['Salud y bienestar', 'Medicación diaria', 'Ejercicio suave', 'Alimentación sana', 'El clima hoy', 'Días de la semana', 'Recordatorio médico', 'Teléfonos útiles', 'La receta', 'Noticias'],
+        corporativo: ['ROI 2024', 'KPI Mensuales', 'Estrategia Q3', 'Análisis Mercado', 'Plan Acción', 'Presupuesto', 'Equipo Ventas', 'Metas Anual', 'Dashboard', 'Roadmap'],
+        artistico: ['Composición', 'Color y forma', 'Texturas', 'Luz y sombra', 'Armonía', 'Perspectiva', 'Naturaleza', 'Retrato', 'Abstracto', 'Movimiento'],
+        tecnico: ['Datos 2024', 'Frecuencias', 'Resultados', 'Hipótesis', 'Variables', 'Ciclo', 'Evolución', 'Porcentajes', 'Análisis', 'Proyección']
+      };
+      const secs = {
+        infantil: ['Datos', 'Curiosidad', 'Tipos'],
+        senior: ['Importante', 'Recordar', 'Hacer'],
+        corporativo: ['Objetivo', 'Métrica', 'Acción'],
+        artistico: ['Idea', 'Técnica', 'Material'],
+        tecnico: ['Muestra', 'Resultado', 'Trend']
+      };
 
-      // Gradiente de fondo
-      const bgGrad = `linear-gradient(135deg, ${c[0]}22, ${c[1]}15)`;
+      const t = titles[cat] || titles.corporativo;
+      const sec = secs[cat] || secs.corporativo;
+      const title = t[index % t.length];
+      const bg = `linear-gradient(180deg, ${c[0]}, ${c[1]})`;
 
-      // Mock bars - 3 o 4 barras de diferentes alturas
-      const bars = [];
-      const numBars = 3 + (index % 3);
-      for (let i = 0; i < numBars; i++) {
-        const h = 20 + ((index * 7 + i * 13) % 50);
-        const w = 14 + ((index * 3 + i * 7) % 12);
-        const x = 12 + i * (140 / numBars);
-        const y2 = 60 + ((index * 5 + i * 11) % 30);
-        bars.push(`<div class="mock-bar" style="left:${x}%;width:${w}px;height:${h}px;background:${c[i % 5]}88;bottom:${y2-30}%"></div>`);
-      }
+      // Header bar
+      const header = `<div style="background:${bg};padding:6px 8px 4px;border-radius:6px 6px 0 0;display:flex;align-items:center;gap:4px;">
+        <div style="width:16px;height:16px;border-radius:4px;background:${c[4]};flex-shrink:0;"></div>
+        <div style="font-size:8px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+      </div>`;
 
-      // Mock circles - 2 círculos
-      const circles = [];
-      for (let i = 0; i < 2; i++) {
-        const size = 20 + ((index * 3 + i * 17) % 30);
-        const x = 15 + i * 55;
-        const y3 = 12 + ((index * 7 + i * 11) % 20);
-        circles.push(`<div class="mock-circle" style="left:${x}%;top:${y3}%;width:${size}px;height:${size}px;background:${c[i + 2]}44"></div>`);
-      }
+      // Section blocks
+      const sections = sec.map((sName, i) => {
+        const sBg = `${c[(i+1)%5]}22`;
+        const sBorder = `${c[(i+1)%5]}44`;
+        const barW = 30 + ((index * 7 + i * 13) % 60);
+        const barH = 3 + ((index * 3 + i * 5) % 5);
+        const smallBars = (i === 0) ? `<div style="display:flex;gap:2px;margin-top:3px;">
+          ${[40,55,30,45,35].map(b => `<div style="width:${b/6}px;height:${3+(index*i*b)%5}px;border-radius:1px;background:${c[(i+2)%5]}66;"></div>`).join('')}
+        </div>` : '';
+        return `<div style="background:${sBg};border:1px solid ${sBorder};border-radius:4px;margin:3px 4px 0;padding:3px 5px;min-height:${cat==='tecnico'?32:24}px;">
+          <div style="font-size:6px;font-weight:700;color:${c[(i+2)%5]};text-transform:uppercase;letter-spacing:0.5px;">${sName}</div>
+          <div style="font-size:5px;color:${c[(i+3)%5]}aa;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${cat==='infantil' ? '⭐ 🌈 🎨 ✨ 🦄' : cat==='senior' ? '● Información importante' : cat==='corporativo' ? '● Lorem ipsum 12.5%' : cat==='artistico' ? '● Técnica mixta sobre lienzo' : '● p=0.001 n=250'}
+          </div>
+          ${smallBars}
+        </div>`;
+      }).join('');
 
-      // Mock lines - 2 líneas horizontales
-      const lines = [];
-      for (let i = 0; i < 2; i++) {
-        const w = 30 + ((index * 5 + i * 3) % 40);
-        const y4 = 5 + i * 8;
-        lines.push(`<div class="mock-line" style="left:15%;top:${y4}%;width:${w}%;background:${c[i + 1]}66"></div>`);
-      }
+      // Mini chart/data visual para la parte inferior
+      const chartBars = [30,55,40,65,35,50,45].map((h, i) =>
+        `<div style="width:${6}px;height:${h/8}px;border-radius:1px;background:${c[i%5]}88;display:inline-block;margin:0 1px;"></div>`
+      ).join('');
 
-      // Grid pattern para algunos estilos (cada 3)
-      const gridEl = (index % 3 === 0) ? `<div class="mock-grid" style="color:${c[2]}"></div>` : '';
+      const footer = `<div style="display:flex;align-items:flex-end;gap:1px;margin:4px 4px 0;height:16px;padding:0 2px;">
+        ${chartBars}
+      </div>`;
 
-      // Mock rectángulo grande de contenido
-      const contentRect = `<div class="mock-bar" style="left:12%;bottom:8%;width:76%;height:35%;background:${c[3]}22;border-radius:6px;border:1px solid ${c[3]}33"></div>`;
-
-      // Envolver todo en un div con el gradiente como background
-      return `<div style="position:absolute;inset:0;background:${bgGrad}">${gridEl}${circles.join('')}${lines.join('')}${bars.join('')}${contentRect}</div>`;
+      return `<div style="display:flex;flex-direction:column;height:100%;background:#0a0a14;border-radius:6px;overflow:hidden;">
+        ${header}
+        ${sections}
+        ${footer}
+      </div>`;
     },
 
     // ===== STYLE SELECTION =====
