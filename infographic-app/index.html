@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infográfica AI - Generador de Infografías</title>
+  <meta name="description" content="Crea infografías profesionales con IA. 50 estilos únicos + 10 efectos de movimiento">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/animations.css">
+  <style>
+    /* ========== STEP SECTIONS ========== */
+    .step-section { display: none; }
+    .step-section.active { display: block; }
+
+    /* ========== CONFIG BAR (API Key) ========== */
+    .config-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 24px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .config-bar label { font-weight: 600; font-size: 14px; white-space: nowrap; }
+    .config-bar input { flex: 1; min-width: 200px; }
+    .config-bar .api-status {
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
+    .api-status.configured { background: #00C9A733; color: #00C9A7; }
+    .api-status.missing { background: #FF658433; color: #FF6584; }
+
+    /* ========== STEPS NAVIGATION ========== */
+    .steps-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    /* ========== EMPTY STATE ========== */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 64px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 20px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { max-width: 400px; margin: 0 auto; }
+
+    /* ========== AUDIENCE PILLS FIX ========== */
+    .audience-pills {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .audience-pill {
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      font-family: var(--font);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .audience-pill:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .audience-pill.active {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+    }
+
+    /* ========== SEARCH ========== */
+    .search-bar {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .search-bar input {
+      padding-left: 44px;
+    }
+    .search-bar .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 18px;
+      pointer-events: none;
+    }
+
+    /* ========== IMAGE CONTAINER ========== */
+    .image-container {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+    }
+    .image-container img {
+      display: block;
+      max-width: 100%;
+    }
+
+    /* ========== SELECTED STYLE INDICATOR ========== */
+    .selected-style-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 16px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .selected-style-badge .badge-emoji { font-size: 20px; }
+
+    /* ========== TOAST ========== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.4s ease;
+      font-size: 14px;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.error { border-color: var(--secondary); }
+    .toast.success { border-color: var(--accent); }
+
+    /* ========== COUNT BADGE ========== */
+    .count-badge {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* ========== DOWNLOAD BTNS ========== */
+    .download-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="#" class="logo" onclick="App.resetAll()">
+        <div class="logo-icon">📊</div>
+        <span class="logo-text">Infográfica AI</span>
+      </a>
+      <div class="header-steps">
+        <span class="step-badge active" id="step-badge-1">1. Elige estilo</span>
+        <span class="step-badge" id="step-badge-2">2. Contenido</span>
+        <span class="step-badge" id="step-badge-3">3. Generar</span>
+        <span class="step-badge" id="step-badge-4">4. Animar ✨</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="app-main">
+
+    <!-- ===== API KEY CONFIG ===== -->
+    <div class="config-bar">
+      <label>🔑 API Key:</label>
+      <input type="password" id="api-key-input" placeholder="sk-or-v1-..." value="">
+      <span class="api-status missing" id="api-status">No configurada</span>
+      <button class="btn btn-secondary" onclick="App.saveApiKey()" style="padding:10px 18px;font-size:13px;">Guardar</button>
+    </div>
+
+    <!-- ===== STEP 1: SELECT STYLE ===== -->
+    <section class="step-section active" id="step-1">
+      <h1 class="section-title">🎯 Elige un estilo de infografía</h1>
+      <p class="section-sub">Selecciona entre 50 estilos: infantil, senior, corporativo, artístico o técnico</p>
+
+      <!-- Audience filter -->
+      <div class="audience-pills">
+        <div class="audience-pill active" data-audience="todos" onclick="App.filterByAudience('todos')">🌟 Todos</div>
+        <div class="audience-pill" data-audience="niños" onclick="App.filterByAudience('niños')">🧒 Infantil</div>
+        <div class="audience-pill" data-audience="mayores" onclick="App.filterByAudience('mayores')">👴 Senior</div>
+        <div class="audience-pill" data-audience="adultos" onclick="App.filterByAudience('adultos')">👔 Adultos</div>
+      </div>
+
+      <!-- Category tabs -->
+      <div class="category-tabs" id="category-tabs"></div>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="style-search" placeholder="Buscar estilo..." oninput="App.filterStyles()">
+      </div>
+
+      <div class="count-badge" id="styles-count">50 estilos disponibles</div>
+
+      <!-- Styles Grid -->
+      <div class="styles-grid" id="styles-grid"></div>
+
+      <div class="steps-nav">
+        <span></span>
+        <button class="btn btn-primary" id="btn-to-step2" disabled onclick="App.goToStep(2)">
+          Siguiente: Contenido →
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 2: CONTENT FORM ===== -->
+    <section class="step-section" id="step-2">
+      <h2 class="section-title">✍️ Ingresa el contenido</h2>
+      <p class="section-sub">Describe qué quieres que muestre la infografía</p>
+
+      <div id="selected-style-display"></div>
+
+      <div class="form-section">
+        <div class="form-group">
+          <label>Título de la infografía</label>
+          <input type="text" id="inf-title" placeholder="Ej: Beneficios de leer 30 minutos al día" maxlength="100">
+        </div>
+
+        <div class="form-group">
+          <label>Contenido / puntos clave <span class="label-hint">(cada punto en una línea nueva)</span></label>
+          <textarea id="inf-content" placeholder="Escribe los puntos clave de tu infografía, uno por línea...&#10;&#10;Ejemplo:&#10;· Mejora la concentración un 40%&#10;· Reduce el estrés después de 6 minutos&#10;· Aumenta la empatía y comprensión&#10;· Previene el deterioro cognitivo"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Formato / orientación</label>
+          <select id="inf-aspect">
+            <option value="landscape">Horizontal (16:9) - ideal para compartir</option>
+            <option value="portrait">Vertical (9:16) - ideal para Instagram/Stories</option>
+            <option value="square">Cuadrado (1:1) - ideal para LinkedIn</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="steps-nav">
+        <button class="btn btn-secondary" onclick="App.goToStep(1)">← Atrás</button>
+        <button class="btn btn-primary" id="btn-generate" onclick="App.generate()">
+          🚀 Generar Infografía
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== STEP 3: GENERATING / RESULT ===== -->
+    <section class="step-section" id="step-3">
+      <h2 class="section-title">🖼️ Tu infografía</h2>
+      <p class="section-sub">Previsualiza el resultado y luego elige cómo animarlo</p>
+
+      <!-- Loading state -->
+      <div class="form-section" id="loading-state" style="display:none;">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <div class="loading-text">Generando infografía con IA...</div>
+          <div class="loading-text" style="font-size:13px;color:var(--text-muted);" id="loading-detail">Preparando prompt...</div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="result-container" style="display:none;">
+        <div class="preview-container">
+          <div class="preview-header">
+            <h3>📊 Vista previa</h3>
+            <div>
+              <button class="btn btn-secondary" onclick="App.regenerate()" style="padding:8px 16px;font-size:13px;">🔄 Regenerar</button>
+              <button class="btn btn-secondary" onclick="App.downloadPNG()" style="padding:8px 16px;font-size:13px;margin-left:8px;">⬇️ Descargar</button>
+            </div>
+          </div>
+          <div class="preview-body">
+            <div class="image-container" id="image-container">
+              <div class="animated-wrapper">
+                <img id="preview-img" src="" alt="Infografía generada">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Animation selector -->
+        <h3 class="section-title" style="font-size:22px;">✨ Elige un efecto de movimiento</h3>
+        <p class="section-sub">10 formas de darle vida a tu infografía</p>
+
+        <div class="anim-grid" id="anim-grid"></div>
+
+        <div class="steps-nav">
+          <button class="btn btn-secondary" onclick="App.goToStep(2)">← Editar contenido</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btn-anim-toggle" onclick="AnimController.toggle()" style="display:none;">⏸️ Pausar</button>
+            <button class="btn btn-accent" onclick="App.downloadGIF()">🎬 Descargar animación</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== TOAST ===== -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="js/styles-data.js"></script>
+  <script src="js/prompts.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+  // ============================================================
+  // APP - Main Application Logic
+  // ============================================================
+  const App = {
+    currentStep: 1,
+    selectedStyleId: null,
+    generatedImageUrl: null,
+    apiKey: '',
+
+    init() {
+      // Load saved API key
+      const saved = localStorage.getItem('infographic_api_key');
+      if (saved) {
+        this.apiKey = saved;
+        document.getElementById('api-key-input').value = saved;
+        this.updateApiStatus(true);
+      }
+
+      this.renderCategories();
+      AnimController.renderGrid('anim-grid');
+      this.filterByAudience('todos');
+
+      // Enter key on API input
+      document.getElementById('api-key-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') this.saveApiKey();
+      });
+    },
+
+    // ===== API KEY =====
+    saveApiKey() {
+      const val = document.getElementById('api-key-input').value.trim();
+      if (!val) {
+        this.showToast('Introduce una API Key válida', 'error');
+        return;
+      }
+      this.apiKey = val;
+      localStorage.setItem('infographic_api_key', val);
+      this.updateApiStatus(true);
+      this.showToast('✅ API Key guardada correctamente', 'success');
+    },
+
+    updateApiStatus(configured) {
+      const el = document.getElementById('api-status');
+      if (configured) {
+        el.textContent = '✅ Configurada';
+        el.className = 'api-status configured';
+      } else {
+        el.textContent = '❌ No configurada';
+        el.className = 'api-status missing';
+      }
+    },
+
+    // ===== CATEGORIES =====
+    renderCategories() {
+      const cats = [
+        { id: 'todas', name: 'Todas', emoji: '📋' },
+        { id: 'infantil', name: '🧒 Infantil', emoji: '' },
+        { id: 'senior', name: '👴 Senior', emoji: '' },
+        { id: 'corporativo', name: '👔 Corporativo', emoji: '' },
+        { id: 'artistico', name: '🎨 Artístico', emoji: '' },
+        { id: 'tecnico', name: '📊 Técnico', emoji: '' }
+      ];
+      const container = document.getElementById('category-tabs');
+      container.innerHTML = cats.map(c => `
+        <button class="cat-tab ${c.id === 'todas' ? 'active' : ''}" data-cat="${c.id}" onclick="App.filterByCategory('${c.id}')">
+          ${c.name}
+        </button>
+      `).join('');
+    },
+
+    // ===== FILTERS =====
+    currentAudience: 'todos',
+    currentCategory: 'todas',
+
+    filterByAudience(audience) {
+      this.currentAudience = audience;
+      document.querySelectorAll('.audience-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.audience === audience);
+      });
+      this.filterStyles();
+    },
+
+    filterByCategory(cat) {
+      this.currentCategory = cat;
+      document.querySelectorAll('.cat-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.cat === cat);
+      });
+      this.filterStyles();
+    },
+
+    filterStyles() {
+      const search = document.getElementById('style-search').value.toLowerCase().trim();
+      const filtered = STYLES.filter(s => {
+        // Audience filter
+        if (this.currentAudience !== 'todos' && s.audience !== this.currentAudience) return false;
+        // Category filter
+        if (this.currentCategory !== 'todas' && s.category !== this.currentCategory) return false;
+        // Search
+        if (search && !s.name.toLowerCase().includes(search) && !s.desc.toLowerCase().includes(search)) return false;
+        return true;
+      });
+      this.renderFiltered(filtered);
+    },
+
+    renderFiltered(styles) {
+      const grid = document.getElementById('styles-grid');
+      document.getElementById('styles-count').textContent = `${styles.length} ${styles.length === 1 ? 'estilo disponible' : 'estilos disponibles'}`;
+
+      if (styles.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="empty-icon">🔍</div>
+            <h3>Sin resultados</h3>
+            <p>Prueba con otros filtros o busca otro término</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = styles.map(s => `
+        <div class="style-card ${this.selectedStyleId === s.id ? 'selected' : ''}" onclick="App.selectStyle('${s.id}')">
+          <div class="card-header">
+            <span class="card-emoji">${s.emoji}</span>
+            <span class="card-name">${s.name}</span>
+            <span class="card-badge badge-${s.category}">${s.category}</span>
+          </div>
+          <div class="card-desc">${s.desc}</div>
+          <div class="color-dots">
+            ${s.colors.split(',').slice(0,5).map(c => `<span class="color-dot" style="background:${c}"></span>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    },
+
+    // ===== STYLE SELECTION =====
+    selectStyle(styleId) {
+      this.selectedStyleId = styleId;
+      // Update grid
+      document.querySelectorAll('.style-card').forEach(c => {
+        const cardStyleId = STYLES.find(s => s.emoji === c.querySelector('.card-emoji')?.textContent
+          && c.querySelector('.card-name')?.textContent === STYLES.find(x => x.id === styleId)?.name);
+        // Simpler: find by dataset approach - just re-render
+      });
+      // Re-render to show selection
+      this.filterStyles();
+      // Enable next button
+      document.getElementById('btn-to-step2').disabled = false;
+      document.getElementById('btn-to-step2').textContent = `Siguiente: ${STYLES.find(s => s.id === styleId)?.name} →`;
+      this.showToast(`✅ Estilo "${STYLES.find(s => s.id === styleId)?.name}" seleccionado`, 'success');
+    },
+
+    // ===== NAVIGATION =====
+    goToStep(step) {
+      this.currentStep = step;
+      document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step-${step}`).classList.add('active');
+
+      // Update step badges
+      for (let i = 1; i <= 4; i++) {
+        const badge = document.getElementById(`step-badge-${i}`);
+        if (!badge) continue;
+        badge.classList.remove('active', 'done');
+        if (i < step) badge.classList.add('done');
+        if (i === step) badge.classList.add('active');
+      }
+
+      // If going to step 2, show selected style
+      if (step === 2 && this.selectedStyleId) {
+        const style = STYLES.find(s => s.id === this.selectedStyleId);
+        document.getElementById('selected-style-display').innerHTML = `
+          <div class="selected-style-badge">
+            <span class="badge-emoji">${style.emoji}</span>
+            <span>Estilo seleccionado: <strong>${style.name}</strong></span>
+            <span class="card-badge badge-${style.category}">${style.category}</span>
+            <button onclick="App.goToStep(1)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;margin-left:8px;">✕</button>
+          </div>
+        `;
+      }
+    },
+
+    // ===== GENERATE =====
+    async generate() {
+      // Validate
+      if (!this.apiKey) {
+        this.showToast('❌ Configura tu API Key primero', 'error');
+        return;
+      }
+      if (!this.selectedStyleId) {
+        this.showToast('❌ Selecciona un estilo primero', 'error');
+        this.goToStep(1);
+        return;
+      }
+
+      const title = document.getElementById('inf-title').value.trim();
+      const content = document.getElementById('inf-content').value.trim();
+
+      if (!title && !content) {
+        this.showToast('❌ Ingresa al menos un título o contenido', 'error');
+        return;
+      }
+
+      // Determine audience from style
+      const style = STYLES.find(s => s.id === this.selectedStyleId);
+      const audience = style.audience;
+
+      // Show loading
+      this.goToStep(3);
+      document.getElementById('loading-state').style.display = 'block';
+      document.getElementById('result-container').style.display = 'none';
+      document.getElementById('loading-detail').textContent = 'Generando infografía con IA...';
+
+      try {
+        document.getElementById('loading-detail').textContent = 'Enviando a la API de generación...';
+        const imageUrl = await API.generate(this.selectedStyleId, audience, title, content, this.apiKey);
+        this.generatedImageUrl = imageUrl;
+
+        // Show result
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+
+        const img = document.getElementById('preview-img');
+        img.src = imageUrl;
+        img.onload = () => {
+          AnimController.reset();
+          document.getElementById('btn-anim-toggle').style.display = 'inline-flex';
+          document.getElementById('btn-anim-toggle').innerHTML = '⏸️ Pausar';
+          AnimController.isPlaying = true;
+        };
+
+        this.showToast('✅ Infografía generada con éxito', 'success');
+      } catch (err) {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('result-container').style.display = 'none';
+        this.showToast(`❌ Error: ${err.message}`, 'error');
+        console.error(err);
+      }
+    },
+
+    regenerate() {
+      this.generate();
+    },
+
+    // ===== DOWNLOAD =====
+    downloadPNG() {
+      const img = document.getElementById('preview-img');
+      if (!img || !img.src) {
+        this.showToast('No hay imagen para descargar', 'error');
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = img.src;
+      a.download = `infografia-${this.selectedStyleId || 'personalizada'}.png`;
+      a.click();
+      this.showToast('✅ Descargando PNG...', 'success');
+    },
+
+    downloadGIF() {
+      // For simplicity, download as PNG with animation note
+      // Real GIF generation would need a backend (gif.js, ffmpeg, etc.)
+      const img = document.getElementById('preview-img');
+      if (!img || !img.src) {
+        this.showToast('No hay imagen para descargar', 'error');
+        return;
+      }
+      // Create canvas-based animated GIF using frames
+      this.showToast('🎬 Generando animación...', 'success');
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const anim = ANIMATIONS.find(a => a.id === AnimController.selectedAnimId);
+
+      // For now, download as PNG with animation metadata
+      const a = document.createElement('a');
+      a.href = img.src;
+      const animSuffix = anim ? `-${anim.id}` : '';
+      a.download = `infografia${animSuffix}-animada.png`;
+      a.click();
+      this.showToast('✅ Imagen descargada. Para GIF animado real, se necesita backend.', 'success');
+    },
+
+    // ===== UTILS =====
+    showToast(msg, type = '') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = `toast visible ${type}`;
+      clearTimeout(this._toastTimeout);
+      this._toastTimeout = setTimeout(() => {
+        el.classList.remove('visible');
+      }, 3000);
+    },
+
+    resetAll() {
+      this.selectedStyleId = null;
+      this.generatedImageUrl = null;
+      document.getElementById('btn-to-step2').disabled = true;
+      document.getElementById('btn-to-step2').textContent = 'Siguiente: Contenido →';
+      document.getElementById('result-container').style.display = 'none';
+      document.getElementById('loading-state').style.display = 'none';
+      AnimController.reset();
+      this.goToStep(1);
+      this.filterStyles();
+    }
+  };
+
+  // ===== AnimController toggle =====
+  AnimController.toggle = function() {
+    if (this.isPlaying) {
+      this.stop();
+      document.getElementById('btn-anim-toggle').innerHTML = '▶️ Reanudar';
+    } else {
+      this.play();
+      document.getElementById('btn-anim-toggle').innerHTML = '⏸️ Pausar';
+    }
+  };
+
+  // ===== INIT =====
+  document.addEventListener('DOMContentLoaded', () => App.init());
+  </script>
+</body>
+</html>

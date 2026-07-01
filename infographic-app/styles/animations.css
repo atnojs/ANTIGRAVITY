@@ -1,0 +1,166 @@
+/* ============================================================
+   10 EFECTOS DE MOVIMIENTO PARA INFOGRAFÍAS
+   ============================================================ */
+
+/* ------ 1. REVELAR PROGRESIVO ------ */
+@keyframes revealProgresivo {
+  0% { clip-path: inset(100% 0 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+.anim-reveal-progresivo {
+  animation: revealProgresivo 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ------ 2. ZOOM SUAVE ------ */
+@keyframes zoomSuave {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+.anim-zoom-suave {
+  animation: zoomSuave 8s ease-in-out infinite alternate;
+}
+
+/* ------ 3. PAN DESLIZANTE ------ */
+@keyframes panDeslizante {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-15%); }
+}
+.anim-pan-deslizante {
+  animation: panDeslizante 10s ease-in-out infinite alternate;
+}
+.anim-pan-deslizante-wrapper {
+  width: 115%;
+  max-width: none;
+}
+
+/* ------ 4. DESTELLO POR SECCIONES ------ */
+@keyframes destelloSeccion {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.anim-destello-secciones {
+  /* Applied via JS with staggered delays on child elements */
+}
+.anim-destello-secciones > * {
+  opacity: 0;
+  animation: destelloSeccion 0.6s ease-out forwards;
+}
+
+/* ------ 5. RESPIRACIÓN SUTIL ------ */
+@keyframes respiracion {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+.anim-respiracion {
+  animation: respiracion 4s ease-in-out infinite;
+}
+
+/* ------ 6. KEN BURNS ------ */
+@keyframes kenBurns {
+  0% { transform: scale(1) translate(0, 0); transform-origin: center center; }
+  25% { transform: scale(1.05) translate(-1%, -1%); transform-origin: top left; }
+  50% { transform: scale(1.08) translate(1%, -1%); transform-origin: top right; }
+  75% { transform: scale(1.05) translate(-1%, 1%); transform-origin: bottom left; }
+  100% { transform: scale(1) translate(0, 0); transform-origin: center center; }
+}
+.anim-ken-burns {
+  animation: kenBurns 15s ease-in-out infinite;
+}
+
+/* ------ 7. PARTÍCULAS FLOTANTES ------ */
+@keyframes flotarParticula {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-100px) rotate(180deg); opacity: 0; }
+}
+.anim-particulas {
+  position: relative;
+}
+.anim-particulas::before,
+.anim-particulas::after {
+  content: '✦';
+  position: absolute;
+  font-size: 16px;
+  color: rgba(108, 99, 255, 0.4);
+  pointer-events: none;
+}
+.anim-particulas::before {
+  top: 50%;
+  left: 5%;
+  animation: flotarParticula 3s ease-in-out infinite;
+}
+.anim-particulas::after {
+  top: 30%;
+  right: 8%;
+  animation: flotarParticula 4s ease-in-out 1.5s infinite;
+  font-size: 12px;
+  color: rgba(255, 101, 132, 0.3);
+}
+/* Additional particles via JS */
+
+/* ------ 8. RESALTADO NARRATIVO ------ */
+@keyframes resaltarItem {
+  0% { opacity: 0.3; filter: blur(2px); }
+  20% { opacity: 1; filter: blur(0); }
+  80% { opacity: 1; filter: blur(0); }
+  100% { opacity: 0.3; filter: blur(2px); }
+}
+.anim-resaltado-narrativo > * {
+  opacity: 0.3;
+  filter: blur(2px);
+  transition: all 0.5s ease;
+}
+.anim-resaltado-narrativo > *.highlighted {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* ------ 9. MÁQUINA DE Escribir ------ */
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blink {
+  50% { border-color: transparent; }
+}
+.anim-maquina-escribir {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid var(--primary);
+  width: 0;
+  animation: typing 3s steps(40) forwards, blink 0.8s step-end infinite;
+}
+
+/* ------ 10. CALEIDOSCOPIO ------ */
+@keyframes caleidoscopio {
+  0% { clip-path: polygon(50% 50%, 0 0, 100% 0); opacity: 0; }
+  25% { clip-path: polygon(50% 50%, 100% 0, 100% 100%); opacity: 0.5; }
+  50% { clip-path: polygon(50% 50%, 100% 100%, 0 100%); opacity: 1; }
+  75% { clip-path: polygon(50% 50%, 0 100%, 0 0); opacity: 1; }
+  100% { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0 50%); opacity: 1; }
+}
+.anim-caleidoscopio {
+  animation: caleidoscopio 2s ease-in-out forwards;
+}
+
+/* ========== ANIMATIONS SETTINGS ========== */
+.anim-paused {
+  animation-play-state: paused !important;
+}
+
+.anim-running {
+  animation-play-state: running !important;
+}
+
+/* Motion sensitivity: reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
