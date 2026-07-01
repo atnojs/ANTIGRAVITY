@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Infográfica AI - Generador de Infografías</title>
   <meta name="description" content="Crea infografías profesionales con IA. 50 estilos únicos + 10 efectos de movimiento">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https:; connect-src 'self' https://openrouter.ai https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/main.css">
@@ -625,7 +624,11 @@
         document.getElementById('result-container').style.display = 'none';
         let userMsg = err.message;
         if (userMsg.includes('Failed to fetch') || userMsg.includes('CSP') || userMsg.includes('Content Security')) {
-          userMsg = 'Error de conexión. Si abres la app desde un archivo local (file://), algunos navegadores bloquean las llamadas a APIs externas. <br><br>✅ <b>Solución:</b> Sube la app a un servidor web (Hostinger) o usa <b>Live Server</b> en VS Code. <br>O si ya está en un servidor, verifica que tu API Key sea correcta.';
+          if (window.location.protocol === 'file:') {
+            userMsg = '❌ <b>Error de conexión.</b> Estás abriendo la app desde un archivo local (file://).<br><br>📌 <b>Para probar localmente:</b> usa Live Server en VS Code o Python: <code>python -m http.server 8000</code><br>🌐 <b>Para producción:</b> sube a Hostinger y el proxy PHP funcionará automáticamente.';
+          } else {
+            userMsg = '❌ Error de conexión con la API. Verifica que tu API Key sea correcta y que el proxy.php existe en el servidor.';
+          }
         }
         this.showToast(`❌ ${userMsg}`, 'error');
         console.error(err);
