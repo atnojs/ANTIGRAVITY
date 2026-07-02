@@ -356,8 +356,8 @@
                     return;
                 }
 
-                // Build the final prompt
-                const finalPrompt = styleData.prompt.replace(/\[tema\]/gi, topic);
+                // Build the final prompt — reemplaza cualquier placeholder entre corchetes
+                const finalPrompt = styleData.prompt.replace(/\[.*?\]/g, topic);
                 
                 // Show result section with loading
                 resultSection.classList.remove('hidden');

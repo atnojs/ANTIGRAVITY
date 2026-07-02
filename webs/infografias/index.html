@@ -494,7 +494,7 @@
                 const promptField = document.createElement('div');
                 promptField.className = 'prompt-template-field';
                 promptField.innerHTML = `
-                    <label class="text-xs text-gray-400 mb-1 block">Prompt Template (usa [tema] como placeholder):</label>
+                    <label class="text-xs text-gray-400 mb-1 block">Prompt Template (usa [...] como placeholder):</label>
                     <textarea class="prompt-textarea" data-id="${id}" rows="3" placeholder="Ej: Crea una infografía sobre [tema] con estilo corporativo...">${escapeHtml(promptTemplate)}</textarea>
                 `;
 
@@ -693,7 +693,7 @@
             function addNewImagePlaceholder() {
                 if (!isEditMode) return;
                 const id = `image-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-                const defaultPrompt = 'Crea una infografía profesional sobre [tema] con un diseño visual atractivo, colores vibrantes, y estructura clara. Incluye datos relevantes y elementos gráficos.';
+                const defaultPrompt = '[tema]';
                 const newItem = createAndAppendImageBlock(id, '', 'contain', 'Nuevo estilo', '', 'Nuevo Estilo', defaultPrompt);
                 const textEl = newItem.querySelector('.editable-text');
                 if(textEl) {
