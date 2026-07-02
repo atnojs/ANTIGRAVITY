@@ -2,15 +2,35 @@
 // Establece la cabecera de la respuesta a JSON.
 header('Content-Type: application/json');
 
-// --- CONFIGURACIÓN IMPORTANTE ---
-// Lee la clave de API desde la variable de entorno configurada en .htaccess
-$apiKey = getenv('E'); 
+// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+$apiKey = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $apiKey = defined('A') ? A : '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('A');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('REDIRECT_A');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['A'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['REDIRECT_A'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['A'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['REDIRECT_A'] ?? '';
+}
 
-// VERIFICACIÓN: Si la clave no se encuentra, detiene la ejecución con un error.
 if ($apiKey === false || empty($apiKey)) {
-    http_response_code(500); // Internal Server Error
-    // Mensaje de error para ti (el desarrollador), no para el usuario final.
-    echo json_encode(['error' => ['message' => 'Error del servidor: La clave de API no está configurada o no se pudo leer desde .htaccess.']]);
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
     exit;
 }
 

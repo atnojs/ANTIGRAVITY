@@ -4,15 +4,36 @@
 // 1. Establecer el tipo de contenido de la respuesta a JSON.
 header('Content-Type: application/json');
 
-// 2. Obtener la clave de API desde una variable de entorno por seguridad.
-// En Hostinger, puedes configurar esto en tu archivo .htaccess o a través de su hPanel.
- $apiKey = getenv('B');
+// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+$apiKey = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $apiKey = defined('A') ? A : '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('A');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = getenv('REDIRECT_A');
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['A'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_SERVER['REDIRECT_A'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['A'] ?? '';
+}
+if (!$apiKey || empty($apiKey)) {
+    $apiKey = $_ENV['REDIRECT_A'] ?? '';
+}
 
-// Si la clave de API no está configurada, devuelve un error.
-if (!$apiKey) {
+if (!$apiKey || empty($apiKey)) {
     http_response_code(500);
-    echo json_encode(['error' => 'La clave de API no está configurada en el servidor.']);
-    exit();
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
+    exit;
 }
 
 // 3. Obtener los datos POST enviados desde el JavaScript.

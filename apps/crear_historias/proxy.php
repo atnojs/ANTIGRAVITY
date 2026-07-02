@@ -21,25 +21,25 @@ try {
   $configFile = __DIR__ . '/config.php';
   if (file_exists($configFile)) {
       include $configFile;
-      $apiKey = defined('B') ? B : '';
+      $apiKey = defined('A') ? A : '';
   }
   if (!$apiKey || empty($apiKey)) {
-      $apiKey = getenv('B');
+      $apiKey = getenv('A');
   }
   if (!$apiKey || empty($apiKey)) {
-      $apiKey = getenv('REDIRECT_B');
+      $apiKey = getenv('REDIRECT_A');
   }
   if (!$apiKey || empty($apiKey)) {
-      $apiKey = $_SERVER['B'] ?? '';
+      $apiKey = $_SERVER['A'] ?? '';
   }
   if (!$apiKey || empty($apiKey)) {
-      $apiKey = $_SERVER['REDIRECT_B'] ?? '';
+      $apiKey = $_SERVER['REDIRECT_A'] ?? '';
   }
   if (!$apiKey || empty($apiKey)) {
-      $apiKey = $_ENV['B'] ?? '';
+      $apiKey = $_ENV['A'] ?? '';
   }
   if (!$apiKey || empty($apiKey)) {
-      $apiKey = $_ENV['REDIRECT_B'] ?? '';
+      $apiKey = $_ENV['REDIRECT_A'] ?? '';
   }
   if (!$apiKey || empty($apiKey)) {
       http_response_code(500);

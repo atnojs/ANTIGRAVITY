@@ -76,13 +76,21 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 
 // Modelo
 $model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
-$endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
+$action = (string)($req['action'] ?? '');
+
+// Los modelos de generación de imágenes (exp-image) usan API v1, no v1beta
+$apiVersion = (str_contains($model, 'exp-image') || str_contains($model, 'imagen')) ? 'v1' : 'v1beta';
+$endpoint = 'https://generativelanguage.googleapis.com/' . $apiVersion . '/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
 // Construir payload — soporte passthrough + formato sencillo
 if (isset($req['contents'])) {
     $payload = ['contents' => $req['contents']];
     if (isset($req['generationConfig']) && is_array($req['generationConfig'])) {
         $payload['generationConfig'] = $req['generationConfig'];
+    }
+    // Para generación de imágenes, forzar responseModalities si no viene
+    if ($action === 'generate' && !isset($payload['generationConfig']['responseModalities'])) {
+        $payload['generationConfig']['responseModalities'] = ['IMAGE', 'TEXT'];
     }
 } elseif (isset($req['payload']) && is_array($req['payload'])) {
     $payload = $req['payload'];
@@ -97,7 +105,7 @@ if (isset($req['contents'])) {
         exit;
     }
 
-    // Control de tamaño de imagen (heredado de dibujo_lineas)
+    // Control de tamaño de imagen
     if ($imageB64 !== '') {
         $imgBinary = base64_decode($imageB64);
         if ($imgBinary === false || strlen($imgBinary) > 2500000) {
@@ -116,8 +124,7 @@ if (isset($req['contents'])) {
     $payload = [
         'contents' => [['parts' => $parts]],
         'generationConfig' => [
-            'responseModalities' => ['IMAGE', 'TEXT'],
-            'imageConfig' => ['imageSize' => '1K']
+            'responseModalities' => ['IMAGE', 'TEXT']
         ]
     ];
 }

@@ -1,17 +1,35 @@
 <?php
 header('Content-Type: application/json');
 
-// 1. Obtención de la API KEY desde .htaccess (SetEnv G)
-$API_KEY = getenv('G');
-
-// Fallback por si getenv() no funciona en algunos entornos de Hostinger
-if (!$API_KEY && isset($_SERVER['G'])) {
-    $API_KEY = $_SERVER['G'];
+// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+$API_KEY = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $API_KEY = defined('A') ? A : '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('A');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_A');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_A'] ?? '';
 }
 
-if (!$API_KEY) {
+if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
-    echo json_encode(['error' => ['message' => 'API Key not found in server environment (SetEnv G).']]);
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
     exit;
 }
 

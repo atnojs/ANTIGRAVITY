@@ -45,17 +45,35 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// 1. ObtenciÃ³n de la API KEY desde .htaccess (SetEnv G)
-$API_KEY = getenv('G');
-
-// Fallback por si getenv() no funciona en algunos entornos de Hostinger
-if (!$API_KEY && isset($_SERVER['G'])) {
-    $API_KEY = $_SERVER['G'];
+// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+$API_KEY = '';
+$configFile = __DIR__ . '/config.php';
+if (file_exists($configFile)) {
+    include $configFile;
+    $API_KEY = defined('A') ? A : '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('A');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = getenv('REDIRECT_A');
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_SERVER['REDIRECT_A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['A'] ?? '';
+}
+if (!$API_KEY || empty($API_KEY)) {
+    $API_KEY = $_ENV['REDIRECT_A'] ?? '';
 }
 
-if (!$API_KEY) {
+if (!$API_KEY || empty($API_KEY)) {
     http_response_code(500);
-    echo json_encode(['error' => 'ConfiguraciÃ³n incompleta. Falta llave G en el servidor.']);
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
     exit;
 }
 
@@ -70,7 +88,7 @@ if (!$requestData) {
 }
 
 // 3. Determinar el modelo, el endpoint y los datos extras
-$model = $requestData['model'] ?? 'gemini-1.5-flash';
+$model = $requestData['model'] ?? 'gemini-2.5-flash-image';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 // 4. Preparar payload

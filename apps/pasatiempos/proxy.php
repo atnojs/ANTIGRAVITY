@@ -18,10 +18,34 @@ try {
         throw new Exception('Método no permitido. Usa POST.', 405);
     }
 
-    $apiKey = 'AIzaSyBIp4OxnGdSMTwRkGZbZKcLxanZkXLmobc';
+    // ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+    $apiKey = '';
+    $configFile = __DIR__ . '/config.php';
+    if (file_exists($configFile)) {
+        include $configFile;
+        $apiKey = defined('A') ? A : '';
+    }
+    if (!$apiKey || empty($apiKey)) {
+        $apiKey = getenv('A');
+    }
+    if (!$apiKey || empty($apiKey)) {
+        $apiKey = getenv('REDIRECT_A');
+    }
+    if (!$apiKey || empty($apiKey)) {
+        $apiKey = $_SERVER['A'] ?? '';
+    }
+    if (!$apiKey || empty($apiKey)) {
+        $apiKey = $_SERVER['REDIRECT_A'] ?? '';
+    }
+    if (!$apiKey || empty($apiKey)) {
+        $apiKey = $_ENV['A'] ?? '';
+    }
+    if (!$apiKey || empty($apiKey)) {
+        $apiKey = $_ENV['REDIRECT_A'] ?? '';
+    }
 
-    if (!$apiKey || $apiKey === 'TU_CLAVE_API_DE_GEMINI_AQUI') {
-        throw new Exception('Error de configuración: Falta la API Key en proxy.php', 500);
+    if (!$apiKey || empty($apiKey)) {
+        throw new Exception('API key de Gemini no configurada.', 500);
     }
 
     $input = file_get_contents('php://input');
