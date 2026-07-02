@@ -52,7 +52,7 @@ if (!is_array($req)) {
 // 3) Permitir dos formatos:
 //    A) Passthrough con 'contents' ya construido.
 //    B) Sencillo: prompt + base64ImageData + mimeType + model
-$model = $req['model'] ?? 'gemini-3.1-flash-image-preview';
+$model = $req['model'] ?? 'gemini-2.5-flash-image';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 if (isset($req['contents'])) {

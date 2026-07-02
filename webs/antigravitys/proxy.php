@@ -66,7 +66,7 @@ try {
     $pdfBase64 = $json['pdf'] ?? null;
     if (!$pdfBase64) throw new Exception('No se recibió el PDF codificado en Base64.', 400);
 
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($apiKey);
 
     $sysPrompt = "
 Eres un analizador de documentos. Recibirás un PDF completo en Base64.
@@ -203,7 +203,7 @@ Reglas:
 
     if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
 
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($apiKey);
     $isMaskMode = $json['isMaskMode'] ?? false;
 
     if ($isMaskMode) {
@@ -239,7 +239,7 @@ Reglas:
   if ($task === 'analyzeMaskPosition') {
       if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
 
-      $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
+      $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($apiKey);
 
       if (empty($images) || empty($images[0]['data'])) throw new Exception('No se recibió la imagen.', 400);
 
@@ -318,7 +318,7 @@ Reglas:
 
         if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
 
-        $model = 'gemini-3.1-flash-image-preview';
+        $model = 'gemini-2.5-flash-image';
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent?key=' . urlencode($apiKey);
 
         $parts = [];
