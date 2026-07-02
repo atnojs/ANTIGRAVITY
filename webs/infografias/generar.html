@@ -183,6 +183,10 @@
 
         <!-- Main content -->
         <div id="main-content" class="section-card hidden">
+            <a href="index.html" class="inline-flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-sm mb-4">
+                <i class="ri-arrow-left-line"></i> Volver
+            </a>
+
             <!-- Style preview image -->
             <div class="style-preview mb-8 max-w-sm mx-auto">
                 <img id="style-preview-img" src="" alt="Vista previa del estilo" class="w-full h-auto block object-contain" style="max-height:250px;">
@@ -433,14 +437,19 @@
             // Load style on page load
             loadStyle();
 
-            // --- LIGHTBOX ---
+            // --- LIGHTBOX (delegated click) ---
             const lightboxModal = document.getElementById('lightbox-modal');
             const lightboxImage = document.getElementById('lightbox-image');
             const lightboxClose = document.getElementById('lightbox-close');
 
-            resultImage.addEventListener('click', () => {
-                if (resultImage.src && !resultImage.src.includes('data:image/svg')) {
-                    lightboxImage.src = resultImage.src;
+            document.addEventListener('click', (e) => {
+                const img = e.target.closest('#result-image');
+                if (!img) return;
+                const src = img.getAttribute('src');
+                if (src && src.startsWith('data:')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    lightboxImage.src = src;
                     lightboxModal.classList.remove('hidden');
                     document.body.style.overflow = 'hidden';
                 }
