@@ -219,7 +219,7 @@
                 <div id="result-content" class="hidden">
                     <h3 class="text-lg font-bold text-center mb-4">✨ Infografía Generada</h3>
                     <div class="max-w-3xl mx-auto">
-                        <img id="result-image" src="" alt="Infografía generada" class="w-full h-auto">
+                        <img id="result-image" src="" alt="Infografía generada" class="w-full h-auto" style="cursor:pointer" onclick="var lb=document.getElementById('lightbox-modal');document.getElementById('lightbox-image').src=this.src;lb.classList.remove('hidden');document.body.style.overflow='hidden';return false;" title="Clic para ampliar">
                     </div>
                     <div class="flex justify-center gap-3 mt-6">
                         <a id="download-button" href="#" download="infografia.png" 
