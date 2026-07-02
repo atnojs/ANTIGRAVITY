@@ -91,5 +91,21 @@ if ($response === false) {
 $code = curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 502;
 curl_close($ch);
 
+// Si hay error, devolver mensaje limpio
+if ($code !== 200) {
+    $errData = json_decode($response, true);
+    $errMsg = 'Error de Gemini (HTTP ' . $code . ')';
+    if (is_array($errData) && isset($errData['error'])) {
+        if (is_array($errData['error']) && isset($errData['error']['message'])) {
+            $errMsg = $errData['error']['message'];
+        } elseif (is_string($errData['error'])) {
+            $errMsg = $errData['error'];
+        }
+    }
+    http_response_code($code);
+    echo json_encode(['error' => $errMsg]);
+    exit;
+}
+
 http_response_code($code);
 echo $response;

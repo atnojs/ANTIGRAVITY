@@ -376,7 +376,10 @@
 
                     if (!res.ok) {
                         const errData = await res.json().catch(() => ({}));
-                        throw new Error(errData.error || `Error HTTP ${res.status}`);
+                        const errMsg = typeof errData.error === 'object' 
+                            ? (errData.error.message || JSON.stringify(errData.error))
+                            : (errData.error || `Error HTTP ${res.status}`);
+                        throw new Error(errMsg);
                     }
 
                     const geminiResponse = await res.json();
@@ -412,8 +415,9 @@
                 } catch (e) {
                     loadingResult.classList.add('hidden');
                     resultError.classList.remove('hidden');
-                    resultErrorMessage.textContent = e.message || 'Error al generar la infografía.';
-                    showStatus('Error al generar: ' + e.message, true);
+                    const msg = typeof e.message === 'string' ? e.message : String(e);
+                    resultErrorMessage.textContent = msg || 'Error al generar la infografía.';
+                    showStatus('Error al generar: ' + msg, true);
                 } finally {
                     generateButton.disabled = false;
                     generateButton.innerHTML = '<i class="ri-magic-line ri-lg"></i> Generar Infografía';
