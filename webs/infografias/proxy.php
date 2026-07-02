@@ -92,7 +92,8 @@ $payload = [
         ]
     ]],
     'generationConfig' => [
-        'responseModalities' => ['IMAGE', 'TEXT']
+        'responseModalities' => ['IMAGE', 'TEXT'],
+        'temperature' => 0
     ]
 ];
 
