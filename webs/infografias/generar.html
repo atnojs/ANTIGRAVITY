@@ -241,9 +241,6 @@
 
             <!-- Botones de acción (siempre visibles) -->
             <div class="flex justify-center gap-3 mt-6 pt-6 border-t border-gray-700/50">
-                <button id="btn-ampliar" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-button font-medium flex items-center gap-2 border border-white/20 transition">
-                    <i class="ri-zoom-in-line"></i> Ampliar
-                </button>
                 <button id="btn-nueva" class="bg-secondary text-white px-5 py-2 rounded-button font-medium flex items-center gap-2">
                     <i class="ri-refresh-line"></i> Nueva Infografía
                 </button>
@@ -434,19 +431,7 @@
                 generateInfographic();
             });
 
-            // Event listeners for action buttons
-            document.getElementById('btn-ampliar').addEventListener('click', () => {
-                var img = document.getElementById('result-image');
-                var lb = document.getElementById('lightbox-modal');
-                if (img && lb && img.src && img.src.startsWith('data:')) {
-                    document.getElementById('lightbox-image').src = img.src;
-                    lb.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    showStatus('Genera una infografía primero.', true, 2000);
-                }
-            });
-
+            // Event listener for Nueva Infografía button
             document.getElementById('btn-nueva').addEventListener('click', () => {
                 resultSection.classList.add('hidden');
                 topicInput.value = '';

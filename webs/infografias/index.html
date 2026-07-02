@@ -259,6 +259,9 @@
     .edit-mode .generate-badge {
         display: none;
     }
+    .edit-mode .ampliar-btn {
+        display: none !important;
+    }
     </style>
 </head>
 <body>
@@ -463,9 +466,28 @@
                     <button class="image-edit-button text-xs link-btn bg-gray-600 hover:bg-gray-500 text-white font-bold py-1 px-2 rounded ${link ? 'has-link' : ''}" data-action="link" title="Enlazar imagen">Enlace</button>
                     <button class="image-edit-button text-xs delete-btn bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded" data-action="delete" title="Eliminar">Eliminar</button>
                 `;
+
+                // Ampliar button (only in view mode)
+                const ampliarBtn = document.createElement('button');
+                ampliarBtn.className = 'ampliar-btn absolute bottom-2 right-2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold items-center gap-1 z-10 transition-all opacity-0 group-hover:opacity-100';
+                ampliarBtn.innerHTML = '<i class="ri-zoom-in-line"></i> Ampliar';
+                ampliarBtn.title = 'Ver imagen en grande';
+                ampliarBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const imgEl = document.getElementById(id);
+                    const lb = document.getElementById('lightbox-modal');
+                    const lbImg = document.getElementById('lightbox-image');
+                    if (imgEl && lb && lbImg && imgEl.src && !imgEl.src.includes('data:image/svg+xml')) {
+                        lbImg.src = imgEl.src;
+                        lb.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
+                };
                 
                 container.appendChild(img);
                 container.appendChild(controls);
+                container.appendChild(ampliarBtn);
                 container.appendChild(badge);
 
                 // Prompt template field (only in edit mode)
