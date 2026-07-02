@@ -219,17 +219,21 @@
                 <div id="result-content" class="hidden">
                     <h3 class="text-lg font-bold text-center mb-4">✨ Infografía Generada</h3>
                     <div class="max-w-3xl mx-auto">
-                        <img id="result-image" src="" alt="Infografía generada" class="w-full h-auto" style="cursor:pointer" onclick="var lb=document.getElementById('lightbox-modal');document.getElementById('lightbox-image').src=this.src;lb.classList.remove('hidden');document.body.style.overflow='hidden';return false;" title="Clic para ampliar">
+                        <img id="result-image" src="" alt="Infografía generada" class="w-full h-auto">
                     </div>
-                    <div class="flex justify-center gap-3 mt-6">
+                    <div class="flex justify-center gap-3 mt-4">
+                        <button onclick="var lb=document.getElementById('lightbox-modal');var img=document.getElementById('result-image');if(img.src&&img.src.startsWith('data:')){document.getElementById('lightbox-image').src=img.src;lb.classList.remove('hidden');document.body.style.overflow='hidden';}" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-button font-medium flex items-center gap-2 border border-white/20 transition">
+                            <i class="ri-zoom-in-line"></i> Ampliar
+                        </button>
+                        <button onclick="document.getElementById('result-section').classList.add('hidden');document.getElementById('topic-input').value='';document.getElementById('topic-input').focus();" class="bg-secondary text-white px-5 py-2 rounded-button font-medium flex items-center gap-2">
+                            <i class="ri-refresh-line"></i> Nueva Infografía
+                        </button>
+                    </div>
+                    <div class="flex justify-center gap-3 mt-3">
                         <a id="download-button" href="#" download="infografia.png" 
                            class="download-btn text-white px-6 py-3 rounded-button font-medium flex items-center gap-2">
                             <i class="ri-download-line"></i> Descargar
                         </a>
-                        <button id="new-generation-button"
-                                class="bg-secondary text-white px-6 py-3 rounded-button font-medium flex items-center gap-2">
-                            <i class="ri-refresh-line"></i> Nueva Infografía
-                        </button>
                     </div>
                 </div>
 
@@ -426,12 +430,6 @@
             document.getElementById('retry-button')?.addEventListener('click', () => {
                 resultSection.classList.add('hidden');
                 generateInfographic();
-            });
-
-            document.getElementById('new-generation-button')?.addEventListener('click', () => {
-                resultSection.classList.add('hidden');
-                topicInput.value = '';
-                topicInput.focus();
             });
 
             // Load style on page load
