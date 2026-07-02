@@ -27,10 +27,10 @@ if (!function_exists('curl_init')) {
 }
 
 // 1) API Key desde .htaccess
-$API_KEY = getenv('GEMINI_KEY_ANGULOS');
+$API_KEY = getenv('A');
 if (!$API_KEY) {
     http_response_code(500);
-    echo json_encode(['error' => 'Falta la API key. Configura GEMINI_KEY_ANGULOS en .htaccess con SetEnv.']);
+    echo json_encode(['error' => 'Falta la API key. Configura SetEnv A en .htaccess.']);
     exit;
 }
 
