@@ -193,14 +193,13 @@
             </div>
 
             <!-- Input section -->
-            <div class="max-w-md mx-auto">
+            <div class="max-w-2xl mx-auto">
                 <label for="topic-input" class="block text-sm font-medium text-gray-300 mb-2">
-                    ¿Sobre qué tema quieres la infografía?
+                    Edita el prompt (rellena los corchetes):
                 </label>
-                <input type="text" id="topic-input" 
-                       placeholder="Ej: Cambio climático, Marketing digital, Historia del arte..." 
-                       class="w-full px-4 py-3 text-lg rounded-xl mb-6"
-                       autocomplete="off">
+                <textarea id="topic-input" 
+                       class="w-full px-4 py-3 text-lg rounded-xl mb-6" rows="6"
+                       autocomplete="off"></textarea>
 
                 <button id="generate-button" 
                         class="w-full text-white px-6 py-4 rounded-button font-bold text-lg shadow-md flex items-center justify-center gap-2">
@@ -324,13 +323,20 @@
                         prompt: data[`${styleId}-prompt`] || 'Crea una infografía profesional sobre [tema] con diseño atractivo.'
                     };
 
-                    // Render
+                    // Render — mostrar prompt en textarea
                     loadingState.classList.add('hidden');
                     mainContent.classList.remove('hidden');
                     stylePreviewImg.src = styleData.imageSrc || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250"><rect width="400" height="250" fill="%231e293b"/><text x="200" y="125" text-anchor="middle" fill="%2394a3b8" font-size="18">Sin vista previa</text></svg>';
+                    topicInput.value = styleData.prompt || '';
                     
-                    // Focus input
-                    setTimeout(() => topicInput.focus(), 300);
+                    // Focus y seleccionar el primer placeholder entre corchetes
+                    setTimeout(() => {
+                        topicInput.focus();
+                        const match = /\[.*?\]/.exec(topicInput.value);
+                        if (match) {
+                            topicInput.setSelectionRange(match.index, match.index + match[0].length);
+                        }
+                    }, 300);
                 } catch (e) {
                     showError(e.message);
                 }
@@ -344,21 +350,18 @@
 
             // Generate infographic
             async function generateInfographic() {
-                const topic = topicInput.value.trim();
-                if (!topic) {
-                    showStatus('Por favor, escribe un tema para la infografía.', true);
+                const promptText = topicInput.value.trim();
+                if (!promptText) {
+                    showStatus('Por favor, escribe el prompt de la infografía.', true);
                     topicInput.focus();
                     return;
                 }
 
-                if (!styleData || !styleData.prompt) {
-                    showStatus('Error: no hay prompt configurado para este estilo.', true);
+                if (!styleData) {
+                    showStatus('Error: no se ha cargado el estilo.', true);
                     return;
                 }
 
-                // Build the final prompt — reemplaza cualquier placeholder entre corchetes
-                const finalPrompt = styleData.prompt.replace(/\[.*?\]/g, topic);
-                
                 // Show result section with loading
                 resultSection.classList.remove('hidden');
                 resultContent.classList.add('hidden');
@@ -371,7 +374,7 @@
                     const res = await fetch(PROXY_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: finalPrompt })
+                        body: JSON.stringify({ prompt: promptText })
                     });
 
                     if (!res.ok) {
@@ -407,7 +410,7 @@
                     const dataUrl = `data:${imageMime};base64,${imageBase64}`;
                     resultImage.src = dataUrl;
                     downloadButton.href = dataUrl;
-                    downloadButton.download = `infografia-${topic.replace(/\s+/g, '-').toLowerCase()}.png`;
+                    downloadButton.download = 'infografia.png';
                     
                     loadingResult.classList.add('hidden');
                     resultContent.classList.remove('hidden');
