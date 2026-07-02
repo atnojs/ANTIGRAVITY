@@ -221,14 +221,6 @@
                     <div class="max-w-3xl mx-auto">
                         <img id="result-image" src="" alt="Infografía generada" class="w-full h-auto">
                     </div>
-                    <div class="flex justify-center gap-3 mt-4">
-                        <button onclick="ampliarInfografia()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-button font-medium flex items-center gap-2 border border-white/20 transition">
-                            <i class="ri-zoom-in-line"></i> Ampliar
-                        </button>
-                        <button onclick="nuevaInfografia()" class="bg-secondary text-white px-5 py-2 rounded-button font-medium flex items-center gap-2">
-                            <i class="ri-refresh-line"></i> Nueva Infografía
-                        </button>
-                    </div>
                     <div class="flex justify-center gap-3 mt-3">
                         <a id="download-button" href="#" download="infografia.png" 
                            class="download-btn text-white px-6 py-3 rounded-button font-medium flex items-center gap-2">
@@ -245,6 +237,16 @@
                         Intentar de nuevo
                     </button>
                 </div>
+            </div>
+
+            <!-- Botones de acción (siempre visibles) -->
+            <div class="flex justify-center gap-3 mt-6 pt-6 border-t border-gray-700/50">
+                <button id="btn-ampliar" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-button font-medium flex items-center gap-2 border border-white/20 transition">
+                    <i class="ri-zoom-in-line"></i> Ampliar
+                </button>
+                <button id="btn-nueva" class="bg-secondary text-white px-5 py-2 rounded-button font-medium flex items-center gap-2">
+                    <i class="ri-refresh-line"></i> Nueva Infografía
+                </button>
             </div>
         </div>
     </main>
@@ -432,6 +434,25 @@
                 generateInfographic();
             });
 
+            // Event listeners for action buttons
+            document.getElementById('btn-ampliar').addEventListener('click', () => {
+                var img = document.getElementById('result-image');
+                var lb = document.getElementById('lightbox-modal');
+                if (img && lb && img.src && img.src.startsWith('data:')) {
+                    document.getElementById('lightbox-image').src = img.src;
+                    lb.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    showStatus('Genera una infografía primero.', true, 2000);
+                }
+            });
+
+            document.getElementById('btn-nueva').addEventListener('click', () => {
+                resultSection.classList.add('hidden');
+                topicInput.value = '';
+                topicInput.focus();
+            });
+
             // Load style on page load
             loadStyle();
 
@@ -474,24 +495,6 @@
                 }
             });
         })();
-
-        // --- Funciones globales para los botones (fuera del IIFE) ---
-        function ampliarInfografia() {
-            var img = document.getElementById('result-image');
-            var lb = document.getElementById('lightbox-modal');
-            if (img && lb && img.src && img.src.startsWith('data:')) {
-                document.getElementById('lightbox-image').src = img.src;
-                lb.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function nuevaInfografia() {
-            document.getElementById('result-section').classList.add('hidden');
-            var input = document.getElementById('topic-input');
-            input.value = '';
-            input.focus();
-        }
     </script>
 </body>
 </html>
