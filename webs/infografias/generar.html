@@ -222,10 +222,10 @@
                         <img id="result-image" src="" alt="Infografía generada" class="w-full h-auto">
                     </div>
                     <div class="flex justify-center gap-3 mt-4">
-                        <button onclick="var lb=document.getElementById('lightbox-modal');var img=document.getElementById('result-image');if(img.src&&img.src.startsWith('data:')){document.getElementById('lightbox-image').src=img.src;lb.classList.remove('hidden');document.body.style.overflow='hidden';}" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-button font-medium flex items-center gap-2 border border-white/20 transition">
+                        <button onclick="ampliarInfografia()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-button font-medium flex items-center gap-2 border border-white/20 transition">
                             <i class="ri-zoom-in-line"></i> Ampliar
                         </button>
-                        <button onclick="document.getElementById('result-section').classList.add('hidden');document.getElementById('topic-input').value='';document.getElementById('topic-input').focus();" class="bg-secondary text-white px-5 py-2 rounded-button font-medium flex items-center gap-2">
+                        <button onclick="nuevaInfografia()" class="bg-secondary text-white px-5 py-2 rounded-button font-medium flex items-center gap-2">
                             <i class="ri-refresh-line"></i> Nueva Infografía
                         </button>
                     </div>
@@ -474,6 +474,24 @@
                 }
             });
         })();
+
+        // --- Funciones globales para los botones (fuera del IIFE) ---
+        function ampliarInfografia() {
+            var img = document.getElementById('result-image');
+            var lb = document.getElementById('lightbox-modal');
+            if (img && lb && img.src && img.src.startsWith('data:')) {
+                document.getElementById('lightbox-image').src = img.src;
+                lb.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function nuevaInfografia() {
+            document.getElementById('result-section').classList.add('hidden');
+            var input = document.getElementById('topic-input');
+            input.value = '';
+            input.focus();
+        }
     </script>
 </body>
 </html>
