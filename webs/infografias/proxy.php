@@ -56,7 +56,7 @@ if ($prompt === '') {
 }
 
 // 3) Modelo Gemini con capacidad de generación de imágenes
-$model = $req['model'] ?? 'gemini-2.5-flash-image-preview';
+$model = $req['model'] ?? 'gemini-2.5-flash-image';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 // 4) Construir payload - generar infografía como imagen
