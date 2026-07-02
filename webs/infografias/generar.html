@@ -148,6 +148,11 @@
     #result-image {
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,.4);
+      cursor: pointer;
+      transition: transform .15s;
+    }
+    #result-image:hover {
+      transform: scale(1.02);
     }
 
     .download-btn {
@@ -157,23 +162,9 @@
     </style>
 </head>
 <body>
-    <header class="sticky top-0 z-50 w-full sticky-header">
-        <div class="container mx-auto px-4 py-2">
-            <div class="flex justify-between items-center">
-                <a href="index.html" class="text-3xl font-pacifico text-white">Tu Diseño en Todo</a>
-                <nav class="hidden md:flex space-x-6 items-center">
-                    <a href="index.html" class="font-medium transition-colors text-gray-300 hover:text-white flex items-center gap-1">
-                        <i class="ri-arrow-left-line"></i> Volver a Estilos
-                    </a>
-                </nav>
-                <div class="md:hidden">
-                    <a href="index.html" class="font-medium transition-colors text-gray-300 hover:text-white flex items-center gap-1">
-                        <i class="ri-arrow-left-line"></i> Volver
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+    <div class="sticky top-0 z-50 w-full sticky-header text-center py-4">
+        <h1 class="text-4xl md:text-5xl font-pacifico text-white">Estilos de Infografías</h1>
+    </div>
 
     <main class="px-4">
         <!-- Loading state -->
@@ -192,11 +183,6 @@
 
         <!-- Main content -->
         <div id="main-content" class="section-card hidden">
-            <!-- Style info -->
-            <div class="mb-6 text-center">
-                <h1 id="style-name" class="text-2xl md:text-3xl font-extrabold mb-4"></h1>
-            </div>
-
             <!-- Style preview image -->
             <div class="style-preview mb-8 max-w-sm mx-auto">
                 <img id="style-preview-img" src="" alt="Vista previa del estilo" class="w-full h-auto block object-contain" style="max-height:250px;">
@@ -257,6 +243,14 @@
 
     <div id="status-message" class="fixed top-5 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-white font-semibold z-[110] shadow-md hidden transition-opacity duration-300"></div>
 
+    <!-- Lightbox for generated infographic -->
+    <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="relative rounded-3xl shadow-2xl" style="background:var(--card); border:1px solid var(--border);">
+            <img id="lightbox-image" src="" alt="Infografía ampliada" class="max-w-[95vw] md:max-w-[85vw] max-h-[90vh] object-contain block rounded-2xl p-1">
+        </div>
+        <button id="lightbox-close" class="absolute top-4 right-4 text-white text-5xl leading-none z-[210] hover:opacity-80 transition-opacity">&times;</button>
+    </div>
+
     <script>
         (function() {
             // --- DOM refs ---
@@ -264,7 +258,6 @@
             const errorState = document.getElementById('error-state');
             const errorMessage = document.getElementById('error-message');
             const mainContent = document.getElementById('main-content');
-            const styleName = document.getElementById('style-name');
             const stylePreviewImg = document.getElementById('style-preview-img');
             const topicInput = document.getElementById('topic-input');
             const generateButton = document.getElementById('generate-button');
@@ -327,7 +320,6 @@
                     // Render
                     loadingState.classList.add('hidden');
                     mainContent.classList.remove('hidden');
-                    styleName.innerHTML = styleData.name;
                     stylePreviewImg.src = styleData.imageSrc || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250"><rect width="400" height="250" fill="%231e293b"/><text x="200" y="125" text-anchor="middle" fill="%2394a3b8" font-size="18">Sin vista previa</text></svg>';
                     
                     // Focus input
@@ -440,6 +432,40 @@
 
             // Load style on page load
             loadStyle();
+
+            // --- LIGHTBOX ---
+            const lightboxModal = document.getElementById('lightbox-modal');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const lightboxClose = document.getElementById('lightbox-close');
+
+            resultImage.addEventListener('click', () => {
+                if (resultImage.src && !resultImage.src.includes('data:image/svg')) {
+                    lightboxImage.src = resultImage.src;
+                    lightboxModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+
+            function closeLightbox() {
+                lightboxModal.classList.add('hidden');
+                lightboxImage.src = '';
+                document.body.style.overflow = '';
+            }
+
+            lightboxClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeLightbox();
+            });
+
+            lightboxModal.addEventListener('click', (e) => {
+                if (e.target === lightboxModal) closeLightbox();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !lightboxModal.classList.contains('hidden')) {
+                    closeLightbox();
+                }
+            });
         })();
     </script>
 </body>

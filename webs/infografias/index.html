@@ -262,48 +262,9 @@
     </style>
 </head>
 <body>
-    <header class="sticky top-0 z-50 w-full sticky-header">
-        <div class="container mx-auto px-4 py-2">
-            <div class="flex justify-between items-center">
-                <a href="https://atnojs.es/camisetas.html" class="text-3xl font-pacifico text-white">Tu Diseño en Todo</a>
-                <nav class="hidden md:flex space-x-6 items-center">
-                    <a href="https://atnojs.es/camisetas.html" class="font-medium transition-colors">Inicio</a>
-                    <a href="https://atnojs.es/camisetas.html#servicios" class="font-medium transition-colors">Servicios</a>
-                    <a href="https://atnojs.es/camisetas.html#galeria" class="font-medium transition-colors">Galería</a>
-                    <a href="https://atnojs.es/camisetas.html#proceso" class="font-medium transition-colors">Proceso</a>
-                    <a href="https://atnojs.es/camisetas.html#faq" class="font-medium transition-colors">FAQ</a>
-                    <a href="https://atnojs.es/camisetas.html#contacto" class="font-medium transition-colors">Contacto</a>
-                    <a href="https://atnojs.es/27.html" class="bg-secondary text-white px-5 py-2 rounded-button font-medium transition-colors shadow-md whitespace-nowrap">Presupuesto</a>
-                    <button id="theme-toggle" class="ml-4 p-2 rounded-full bg-gray-700/60 hover:bg-gray-700 transition-colors text-white">
-                        <i class="ri-sun-line ri-lg dark:hidden"></i>
-                        <i class="ri-moon-line ri-lg hidden dark:block"></i>
-                    </button>
-                    <a href="https://atnojs.es/27.html" class="bg-primary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md whitespace-nowrap">Haz tu pedido</a>
-                </nav>
-                <div class="md:hidden flex items-center space-x-4">
-                    <button id="theme-toggle-mobile" class="p-2 rounded-full bg-gray-700/60 hover:bg-gray-700 transition-colors text-white">
-                        <i class="ri-sun-line ri-lg dark:hidden"></i>
-                        <i class="ri-moon-line ri-lg hidden dark:block"></i>
-                    </button>
-                    <button id="mobile-menu-button" class="w-10 h-10 flex items-center justify-center text-white">
-                        <i class="ri-menu-line ri-lg"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div id="mobile-menu" class="hidden md:hidden absolute w-full" style="background:var(--card); border-bottom:1px solid var(--border); backdrop-filter:blur(8px);">
-            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-                <a href="https://atnojs.es/camisetas.html#inicio" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Inicio</a>
-                <a href="https://atnojs.es/camisetas.html#servicios" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Servicios</a>
-                <a href="https://atnojs.es/camisetas.html#galeria" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Galería</a>
-                <a href="https://atnojs.es/camisetas.html#proceso" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Proceso</a>
-                <a href="https://atnojs.es/camisetas.html#faq" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">FAQ</a>
-                <a href="https://atnojs.es/camisetas.html#contacto" class="text-gray-200 hover:text-white font-medium py-2 transition-colors">Contacto</a>
-                <a href="https://atnojs.es/27.html" class="bg-secondary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap">Presupuesto</a>
-                <a href="https://atnojs.es/27.html" class="bg-primary text-white px-6 py-2 rounded-button font-medium transition-colors shadow-md text-center whitespace-nowrap">Haz tu pedido</a>
-            </div>
-        </div>
-    </header>
+    <div class="sticky top-0 z-50 w-full sticky-header text-center py-4">
+        <h1 class="text-4xl md:text-5xl font-pacifico text-white">Estilos de Infografías</h1>
+    </div>
 
     <button id="edit-mode-button" title="Activar/Desactivar Modo Edición" class="fixed bottom-5 right-5 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white rounded-full flex items-center justify-center z-[100] text-xl transition-all transform hover:scale-110 shadow-lg">
         <i class="ri-pencil-line"></i>
@@ -312,10 +273,6 @@
     
     <main>
         <section class="section-card">
-            <div class="editable-content-wrapper mb-8 text-center relative">
-                <h1 id="gallery-title" class="editable-content text-3xl md:text-4xl font-extrabold text-center">Estilos de Infografía</h1>
-                <button class="edit-style-btn hidden absolute -top-1 -right-1 bg-amber-400 text-amber-900 w-6 h-6 rounded-full items-center justify-center text-sm shadow-md z-10 hover:scale-110 transition-transform" data-target-element="gallery-title" title="Editar Estilo Texto">🎨</button>
-            </div>
             <div id="image-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
         </section>
     </main>
@@ -371,23 +328,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // --- HEADER & MOBILE MENU ---
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            if(mobileMenuButton) mobileMenuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-                mobileMenuButton.innerHTML = mobileMenu.classList.contains('hidden') ? '<i class="ri-menu-line ri-lg"></i>' : '<i class="ri-close-line ri-lg"></i>';
-            });
-
-            // Dark theme only
-            const themeToggleButton = document.getElementById('theme-toggle');
-            const themeToggleButtonMobile = document.getElementById('theme-toggle-mobile');
+            // --- DARK THEME ---
             document.body.classList.add('dark');
-            const toggleTheme = () => {
-                showStatus('El modo claro no está disponible en este diseño.', false, 2000);
-            };
-            if(themeToggleButton) themeToggleButton.addEventListener('click', toggleTheme);
-            if(themeToggleButtonMobile) themeToggleButtonMobile.addEventListener('click', toggleTheme);
+
 
             // --- GALLERY EDITOR ---
             const body = document.body,
