@@ -174,55 +174,55 @@ if (empty(trim($imagePrompt))) {
 
 $imagePrompt = trim($imagePrompt);
 
-// ===== FASE 2: Generación de imagen =====
+// ===== FASE 2: Generación con Imagen 3 =====
+$imagenUrl = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=' . urlencode($API_KEY);
+
 $imagePayload = [
-    'contents' => [[
-        'parts' => [
-            ['text' => $imagePrompt]
-        ]
+    'instances' => [[
+        'prompt' => $imagePrompt
     ]],
-    'generationConfig' => [
-        'responseModalities' => ['IMAGE', 'TEXT'],
-        'temperature' => 0,
-        'topK' => 1,
-        'topP' => 0
+    'parameters' => [
+        'sampleCount' => 1,
+        'negativePrompt' => 'blurry, pixelated, distorted text, misspelled words, wrong language, low quality, watermark'
     ]
 ];
 
-$phase2 = callGemini($API_KEY, 'gemini-2.5-flash-image', $imagePayload, 120);
+$ch = curl_init($imagenUrl);
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+    CURLOPT_POSTFIELDS => json_encode($imagePayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+    CURLOPT_TIMEOUT => 120,
+    CURLOPT_CONNECTTIMEOUT => 15
+]);
 
-if ($phase2['error']) {
-    http_response_code($phase2['httpcode']);
-    echo json_encode(['error' => ['message' => 'Fase 2 (imagen): ' . $phase2['message']]]);
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$curlErr = curl_error($ch);
+curl_close($ch);
+
+if ($response === false) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'Error cURL Imagen 3: ' . $curlErr]]);
     exit;
 }
 
-// Extraer imagen generada
-$imageData = '';
-$mimeOut = 'image/png';
-$candidates2 = $phase2['data']['candidates'] ?? [];
+$data = json_decode($response, true);
 
-foreach ($candidates2 as $cand) {
-    foreach ($cand['content']['parts'] ?? [] as $part) {
-        if (isset($part['inlineData'])) {
-            $imageData = $part['inlineData']['data'] ?? '';
-            $mimeOut = $part['inlineData']['mimeType'] ?? 'image/png';
-        }
-    }
+if ($httpcode >= 400 || isset($data['error'])) {
+    http_response_code($httpcode ?: 500);
+    $msg = $data['error']['message'] ?? ('Error HTTP ' . $httpcode);
+    echo json_encode(['error' => ['message' => 'Imagen 3: ' . $msg]]);
+    exit;
 }
 
+// Imagen 3 devuelve predictions[].bytesBase64Encoded
+$imageData = $data['predictions'][0]['bytesBase64Encoded'] ?? '';
+
 if ($imageData === '') {
-    // Si no hay imagen, devolver el texto generado para debug
-    $texts = [];
-    foreach ($candidates2 as $cand) {
-        foreach ($cand['content']['parts'] ?? [] as $part) {
-            if (isset($part['text'])) {
-                $texts[] = $part['text'];
-            }
-        }
-    }
     echo json_encode([
-        'text' => 'El modelo no generó imagen. Respuesta: ' . implode(' | ', $texts),
+        'text' => 'Imagen 3 no generó imagen.',
         'debug_prompt' => $imagePrompt
     ]);
     exit;
@@ -233,7 +233,7 @@ echo json_encode([
         'content' => [
             'parts' => [[
                 'inlineData' => [
-                    'mimeType' => $mimeOut,
+                    'mimeType' => 'image/png',
                     'data' => $imageData
                 ]
             ]]
