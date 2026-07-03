@@ -1,5 +1,5 @@
 <?php
-// Proxy Gemini — PHP 8+, cURL habilitado.
+// Proxy Gemini — 2 fases: investigación (texto + Google Search) → imagen
 // Basado en el patrón robusto de dibujo_lineas.
 declare(strict_types=1);
 ini_set('display_errors', '0');
@@ -28,7 +28,7 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+// API Key — cascadeo robusto
 $API_KEY = '';
 $configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
@@ -81,59 +81,128 @@ if ($prompt === '') {
     exit;
 }
 
-// Modelo
-$model = 'gemini-2.5-flash-image';
-$url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
+// ===== Función auxiliar: llamar a Gemini =====
+function callGemini(string $apiKey, string $model, array $payload, int $timeout = 120): array {
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
+    
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_CONNECTTIMEOUT => 15
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+    
+    if ($response === false) {
+        return ['error' => true, 'httpcode' => 500, 'message' => 'Error cURL: ' . $curlErr];
+    }
+    
+    $data = json_decode($response, true);
+    
+    if ($httpcode >= 400 || isset($data['error'])) {
+        $msg = $data['error']['message'] ?? ('Error HTTP ' . $httpcode);
+        return ['error' => true, 'httpcode' => $httpcode, 'message' => $msg];
+    }
+    
+    return ['error' => false, 'httpcode' => $httpcode, 'data' => $data];
+}
 
-$payload = [
+// ===== FASE 1: Investigación con modelo de texto + Google Search =====
+$researchPrompt = <<<EOT
+Actúas como un Diseñador de Infografías Senior. Tu tarea es investigar y crear el prompt perfecto para generar una infografía.
+
+TEMA SOLICITADO POR EL USUARIO:
+{$prompt}
+
+INSTRUCCIONES:
+1. Busca en la red información verídica y actualizada sobre este tema.
+2. Extrae 3-5 puntos clave o datos relevantes.
+3. Crea un prompt en español para generar una infografía. El prompt debe incluir:
+   - Estilo: "Infografía profesional, diseño editorial limpio, colores vibrantes"
+   - Los textos o títulos DEBEN ir entre comillas dobles y escritos en español impecable
+   - Describe la disposición: columnas, timeline, o estructura adecuada al tema
+   - Especifica paleta de colores apropiada al tema
+   - NO uses marcadores como \[tema\] o placeholders — incluye contenido REAL
+
+DEVUELVE ÚNICAMENTE el prompt final para el generador de imágenes, sin explicaciones adicionales.
+EOT;
+
+$textPayload = [
+    'contents' => [[
+        'parts' => [['text' => $researchPrompt]]
+    ]],
+    'tools' => [[
+        'googleSearch' => new stdClass()
+    ]],
+    'generationConfig' => [
+        'temperature' => 0,
+        'topK' => 1
+    ]
+];
+
+$phase1 = callGemini($API_KEY, 'gemini-2.5-flash', $textPayload, 90);
+
+if ($phase1['error']) {
+    http_response_code($phase1['httpcode']);
+    echo json_encode(['error' => ['message' => 'Fase 1 (investigación): ' . $phase1['message']]]);
+    exit;
+}
+
+// Extraer el prompt estructurado de la respuesta del modelo de texto
+$imagePrompt = '';
+$candidates1 = $phase1['data']['candidates'] ?? [];
+foreach ($candidates1 as $cand) {
+    foreach ($cand['content']['parts'] ?? [] as $part) {
+        if (isset($part['text']) && !empty($part['text'])) {
+            $imagePrompt .= $part['text'];
+        }
+    }
+}
+
+if (empty(trim($imagePrompt))) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'La fase de investigación no generó contenido.']]);
+    exit;
+}
+
+$imagePrompt = trim($imagePrompt);
+
+// ===== FASE 2: Generación de imagen =====
+$imagePayload = [
     'contents' => [[
         'parts' => [
-            ['text' => $prompt]
+            ['text' => $imagePrompt]
         ]
     ]],
     'generationConfig' => [
         'responseModalities' => ['IMAGE', 'TEXT'],
-        'temperature' => 0
+        'temperature' => 0,
+        'topK' => 1,
+        'topP' => 0
     ]
 ];
 
-$ch = curl_init($url);
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-    CURLOPT_POSTFIELDS => json_encode($payload),
-    CURLOPT_TIMEOUT => 120,
-    CURLOPT_CONNECTTIMEOUT => 15
-]);
+$phase2 = callGemini($API_KEY, 'gemini-2.5-flash-image', $imagePayload, 120);
 
-$response = curl_exec($ch);
-$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-if (curl_errno($ch)) {
-    http_response_code(500);
-    echo json_encode(['error' => ['message' => 'Error cURL: ' . curl_error($ch)]]);
-    curl_close($ch);
-    exit;
-}
-
-curl_close($ch);
-
-$data = json_decode($response, true);
-
-if ($httpcode >= 400 || isset($data['error'])) {
-    http_response_code($httpcode ?: 500);
-    $msg = $data['error']['message'] ?? ('Error HTTP ' . $httpcode);
-    echo json_encode(['error' => ['message' => $msg]]);
+if ($phase2['error']) {
+    http_response_code($phase2['httpcode']);
+    echo json_encode(['error' => ['message' => 'Fase 2 (imagen): ' . $phase2['message']]]);
     exit;
 }
 
 // Extraer imagen generada
-$candidates = $data['candidates'] ?? [];
 $imageData = '';
 $mimeOut = 'image/png';
+$candidates2 = $phase2['data']['candidates'] ?? [];
 
-foreach ($candidates as $cand) {
+foreach ($candidates2 as $cand) {
     foreach ($cand['content']['parts'] ?? [] as $part) {
         if (isset($part['inlineData'])) {
             $imageData = $part['inlineData']['data'] ?? '';
@@ -143,8 +212,18 @@ foreach ($candidates as $cand) {
 }
 
 if ($imageData === '') {
+    // Si no hay imagen, devolver el texto generado para debug
+    $texts = [];
+    foreach ($candidates2 as $cand) {
+        foreach ($cand['content']['parts'] ?? [] as $part) {
+            if (isset($part['text'])) {
+                $texts[] = $part['text'];
+            }
+        }
+    }
     echo json_encode([
-        'text' => 'El modelo no generó imagen.'
+        'text' => 'El modelo no generó imagen. Respuesta: ' . implode(' | ', $texts),
+        'debug_prompt' => $imagePrompt
     ]);
     exit;
 }
