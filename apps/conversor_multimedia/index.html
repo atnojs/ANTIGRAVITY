@@ -11,13 +11,13 @@
   --surface:rgba(255,255,255,0.04);
   --surface-hover:rgba(255,255,255,0.08);
   --border:rgba(255,255,255,0.08);
-  --border-active:rgba(100,200,255,0.5);
   --text:#e0e0e0;
   --text-dim:#888;
   --accent:#64c8ff;
   --accent-glow:rgba(100,200,255,0.2);
   --green:#4ade80;
   --orange:#fb923c;
+  --red:#f87171;
   --radius:14px;
   --radius-sm:8px;
   --font:'Segoe UI',system-ui,-apple-system,sans-serif;
@@ -33,7 +33,6 @@ body{padding:20px;overflow-y:auto;min-height:100vh}
 .app-header h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,#64c8ff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .app-header p{font-size:12px;color:var(--text-dim);margin-top:2px}
 
-/* tabs */
 .tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:4px;margin-bottom:16px;border:1px solid var(--border)}
 .tab-btn{flex:1;padding:9px 16px;border:none;border-radius:10px;background:transparent;color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
 .tab-btn:hover{color:var(--text);background:var(--surface-hover)}
@@ -91,20 +90,23 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .btn-green:hover{box-shadow:0 0 16px rgba(74,222,128,.3)}
 .btn-orange{background:var(--orange);color:#0a0a12}
 .btn-orange:hover{box-shadow:0 0 16px rgba(251,146,60,.3)}
+.btn-red{background:var(--red);color:#fff;padding:2px 6px;font-size:11px;border-radius:50%;position:absolute;top:-6px;right:-6px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.btn-red:hover{box-shadow:0 0 10px rgba(248,113,113,.5)}
 .btn-sm{padding:5px 12px;font-size:12px}
-.btn-group{display:flex;flex-wrap:wrap;gap:6px}
 
 .progress-bar{width:100%;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px}
 .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:2px;transition:width .2s;width:0%}
 .progress-text{font-size:11px;color:var(--text-dim);margin-top:4px;font-family:var(--mono);text-align:center}
 
-.file-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px}
-.file-item{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;text-align:center;font-size:11px;position:relative}
+.file-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px}
+.file-item{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;text-align:center;font-size:11px;position:relative}
 .file-item img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;margin-bottom:4px}
-.file-item .file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim)}
+.file-item .file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);padding:0 2px}
 .file-item .file-status{font-size:10px;margin-top:2px}
 .file-item .file-status.ok{color:var(--green)}
 .file-item .file-status.err{color:#f87171}
+.file-item .del-btn{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:2px solid var(--bg);background:var(--red);color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:5;line-height:1}
+.file-item .del-btn:hover{transform:scale(1.2);box-shadow:0 0 12px rgba(248,113,113,.6)}
 
 .result-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
 .result-table th,.result-table td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
@@ -133,7 +135,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   .tabs{flex-direction:column}
   .info-bar{font-size:11px}
   .controls-row{flex-direction:column;align-items:stretch}
-  .file-list{grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}
+  .file-list{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
 }
 </style>
 </head>
@@ -174,7 +176,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       </select>
       <input type="range" id="batch-img-quality" min="10" max="100" value="85" style="width:80px;flex:none">
       <span style="font-size:11px;color:var(--text-dim)" id="batch-quality-label">85%</span>
-      <button class="btn btn-primary" id="batch-convert-btn">⚙️ Convertir todas</button>
+      <button class="btn btn-primary" id="batch-convert-btn">⚙️ Convertir seleccionadas</button>
       <button class="btn btn-green" id="batch-zip-btn" disabled>📦 ZIP</button>
     </div>
   </div>
@@ -332,9 +334,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 <script>
 'use strict';
 
-/* ============================================================ */
-/*  UTILITIES                                                    */
-/* ============================================================ */
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const JSZip = window.JSZip;
@@ -369,14 +368,22 @@ function downloadBlob(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
-/* ============================================================ */
-/*  CANVAS COMPARTIDO (único, evita el error ctx.canvas)        */
-/* ============================================================ */
+/* Leer archivo como Data URL (base64) — respeta CSP img-src 'self' data: */
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+/* Canvas compartido */
 const procCanvas = document.createElement('canvas');
 const procCtx = procCanvas.getContext('2d');
 
 /* ============================================================ */
-/*  TAB SWITCHING                                                */
+/*  TABS                                                         */
 /* ============================================================ */
 $$('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -388,7 +395,7 @@ $$('.tab-btn').forEach(btn => {
 });
 
 /* ============================================================ */
-/*  FFMPEG LOADER (con fallo controlado)                        */
+/*  FFMPEG                                                       */
 /* ============================================================ */
 let ffmpeg = null;
 let ffLoaded = false;
@@ -412,10 +419,8 @@ async function loadFFmpeg() {
     $('#convert-audio-btn').disabled = false;
     return true;
   } catch (e) {
-    console.warn('FFmpeg no disponible:', e.message);
+    console.warn('FFmpeg:', e.message);
     setFFStatus('error', '✗ FFmpeg no disponible (CSP del servidor)');
-    $('#convert-video-btn').disabled = true;
-    $('#convert-audio-btn').disabled = true;
     return false;
   }
 }
@@ -428,20 +433,15 @@ function setFFStatus(type, text) {
 }
 
 /* ============================================================ */
-/*  IMAGE STATE                                                  */
+/*  IMÁGENES — STATE                                             */
 /* ============================================================ */
-const imgState = {
-  files: [],
-  currentFile: null,
-  currentDataUrl: null,
-  originalWidth: 0,
-  originalHeight: 0,
-  originalSize: 0,
-  currentWidth: 0,
-  currentHeight: 0,
-};
 
-/* Upload zone */
+// imgEntries = [{file, dataUrl}]
+let imgEntries = [];
+let currentIdx = -1;   // índice en imgEntries de la imagen en el editor
+let currentW = 0, currentH = 0;
+let origW = 0, origH = 0, origSize = 0;
+
 const imgZone = $('#img-zone');
 const imgInput = $('#img-input');
 
@@ -457,66 +457,125 @@ imgInput.addEventListener('change', () => {
   if (imgInput.files.length) handleImageFiles(imgInput.files);
 });
 
-function handleImageFiles(fileList) {
+async function handleImageFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
   if (!files.length) return toast('No hay imágenes en la selección','error');
-  imgState.files = files;
+
+  // Convertir a Data URLs (respeta CSP)
+  const newEntries = [];
+  for (const file of files) {
+    const dataUrl = await fileToDataURL(file);
+    newEntries.push({ file, dataUrl });
+  }
+
+  // Añadir a las existentes
+  imgEntries = imgEntries.concat(newEntries);
+
+  // Si es la primera imagen, cargarla en el editor
+  if (currentIdx === -1) {
+    currentIdx = 0;
+    loadEditorImage(imgEntries[0]);
+  }
 
   $('#img-editor-card').style.display = '';
-  $('#img-batch-card').style.display = files.length > 1 ? '' : 'none';
-  if (files.length > 1) renderBatchList(files);
-
-  // siempre carga la primera en el editor
-  loadSingleImage(files[0]);
+  renderBatchList();
 }
 
-async function loadSingleImage(file) {
-  imgState.currentFile = file;
-  imgState.originalSize = file.size;
-  imgState.currentDataUrl = URL.createObjectURL(file);
+/* ============================================================ */
+/*  BATCH LIST CON VISUALIZACIÓN Y ELIMINAR                     */
+/* ============================================================ */
+function renderBatchList() {
+  const list = $('#img-batch-list');
+  const show = imgEntries.length > 1 || (imgEntries.length === 1 && currentIdx !== -1);
+
+  if (!show) { $('#img-batch-card').style.display = 'none'; return; }
+
+  $('#img-batch-card').style.display = '';
+  $('#batch-count').textContent = imgEntries.length;
+
+  list.innerHTML = imgEntries.map((entry, i) => `
+    <div class="file-item" data-idx="${i}">
+      <img src="${entry.dataUrl}" alt="">
+      <div class="file-name">${entry.file.name}</div>
+      <div class="file-status" id="batch-status-${i}">📄 ${fmtSize(entry.file.size)}</div>
+      <button class="del-btn" data-idx="${i}" title="Eliminar">✕</button>
+    </div>
+  `).join('');
+
+  // Click en thumbnail → cargar en editor
+  list.querySelectorAll('.file-item img').forEach(img => {
+    img.style.cursor = 'pointer';
+    img.addEventListener('click', () => {
+      const idx = parseInt(img.closest('.file-item').dataset.idx);
+      currentIdx = idx;
+      loadEditorImage(imgEntries[idx]);
+    });
+  });
+
+  // Botón eliminar
+  list.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      imgEntries.splice(idx, 1);
+      if (imgEntries.length === 0) {
+        currentIdx = -1;
+        $('#img-editor-card').style.display = 'none';
+        $('#img-batch-card').style.display = 'none';
+        $('#img-results-card').style.display = 'none';
+        $('#resize-container-wrapper').style.display = 'none';
+        $('#img-preview-empty').style.display = '';
+        return;
+      }
+      // Ajustar currentIdx
+      if (currentIdx >= imgEntries.length) currentIdx = imgEntries.length - 1;
+      else if (currentIdx > idx) currentIdx--;
+      loadEditorImage(imgEntries[currentIdx]);
+      renderBatchList();
+    });
+  });
+}
+
+/* ============================================================ */
+/*  EDITOR                                                        */
+/* ============================================================ */
+async function loadEditorImage(entry) {
+  origSize = entry.file.size;
+  origW = 0; origH = 0;
 
   const img = new Image();
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = reject;
-    img.src = imgState.currentDataUrl;
+    img.src = entry.dataUrl;
   });
 
-  imgState.originalWidth = img.naturalWidth;
-  imgState.originalHeight = img.naturalHeight;
-  resetToOriginal();
+  origW = img.naturalWidth;
+  origH = img.naturalHeight;
+  currentW = origW;
+  currentH = origH;
+
+  const el = $('#resize-img');
+  el.src = entry.dataUrl;
+  el.style.width = '';
+  el.style.height = '';
+
+  $('#img-editor-card').style.display = '';
   $('#img-preview-empty').style.display = 'none';
   $('#resize-container-wrapper').style.display = '';
   $('#img-results-card').style.display = 'none';
+  updateInfo();
 }
 
-function resetToOriginal() {
-  const img = $('#resize-img');
-  img.src = imgState.currentDataUrl;
-  img.style.width = '';
-  img.style.height = '';
-  imgState.currentWidth = imgState.originalWidth;
-  imgState.currentHeight = imgState.originalHeight;
-  updateResizeInfo();
-}
-
-function updateResizeInfo() {
-  const w = imgState.currentWidth;
-  const h = imgState.currentHeight;
-  const ow = imgState.originalWidth;
-  const oh = imgState.originalHeight;
-
-  $('#info-w').textContent = w + 'px';
-  $('#info-h').textContent = h + 'px';
-
-  const pct = w > 0 && ow > 0 ? (w * h) / (ow * oh) * 100 : 0;
-  $('#info-change').textContent = pct.toFixed(1) + '%';
+function updateInfo() {
+  $('#info-w').textContent = currentW + 'px';
+  $('#info-h').textContent = currentH + 'px';
+  const pct = currentW > 0 && origW > 0 ? (currentW * currentH) / (origW * origH) * 100 : 0;
   const ch = $('#info-change');
+  ch.textContent = pct.toFixed(1) + '%';
   ch.className = 'info-value' + (pct < 50 ? ' green' : pct > 150 ? ' orange' : '');
-
-  if (w > 0 && h > 0 && ow > 0 && oh > 0) {
-    $('#info-size').textContent = fmtSize(Math.round(imgState.originalSize * (w * h) / (ow * oh)));
-  }
+  if (currentW > 0 && origW > 0)
+    $('#info-size').textContent = fmtSize(Math.round(origSize * (currentW * currentH) / (origW * origH)));
 }
 
 /* ============================================================ */
@@ -533,17 +592,15 @@ function updateResizeInfo() {
     if (!h) return;
     dragging = true; corner = h.dataset.corner;
     sx = e.clientX; sy = e.clientY;
-    sw = imgState.currentWidth;
-    sh = imgState.currentHeight;
+    sw = currentW; sh = currentH;
     ar = sw / sh;
     e.preventDefault();
   });
 
   document.addEventListener('mousemove', e => {
     if (!dragging) return;
-    const dx = e.clientX - sx;
-    const dy = e.clientY - sy;
-    const scale = imgState.originalWidth / (img.naturalWidth || img.clientWidth) || 1;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    const scale = origW / (img.naturalWidth || img.clientWidth) || 1;
     let nw, nh;
 
     if (e.shiftKey && ar) {
@@ -559,27 +616,25 @@ function updateResizeInfo() {
       else { nw = sw - dx * scale; nh = sh - dy * scale; }
     }
 
-    nw = Math.max(10, Math.min(nw, imgState.originalWidth * 5));
-    nh = Math.max(10, Math.min(nh, imgState.originalHeight * 5));
-    imgState.currentWidth = Math.round(nw);
-    imgState.currentHeight = Math.round(nh);
+    nw = Math.max(10, Math.min(nw, origW * 5));
+    nh = Math.max(10, Math.min(nh, origH * 5));
+    currentW = Math.round(nw); currentH = Math.round(nh);
 
-    const maxD = Math.min($('#img-preview-area').clientWidth - 40, 700);
-    const ds = Math.min(maxD / nw, 500 / nh, 1);
+    const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
+    const ds = Math.min(md / nw, 500 / nh, 1);
     img.style.width = Math.round(nw * ds) + 'px';
     img.style.height = Math.round(nh * ds) + 'px';
-    updateResizeInfo();
+    updateInfo();
   });
 
   document.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false;
-    // estimación real al soltar
-    const w = imgState.currentWidth, h = imgState.currentHeight;
+    const w = currentW, h = currentH;
     if (w < 5 || h < 5) return;
     procCanvas.width = w; procCanvas.height = h;
     const tmp = new Image();
-    tmp.src = imgState.currentDataUrl || $('#resize-img').src;
+    tmp.src = $('#resize-img').src;
     tmp.onload = () => {
       procCtx.drawImage(tmp, 0, 0, w, h);
       procCanvas.toBlob(blob => {
@@ -595,47 +650,47 @@ function updateResizeInfo() {
 })();
 
 /* ============================================================ */
-/*  IMAGE QUICK ACTIONS                                          */
+/*  QUICK ACTIONS                                                */
 /* ============================================================ */
-$('#action-60px').addEventListener('click', () => resizeToWidth(60));
-$('#action-25p').addEventListener('click', () => resizeToPct(25));
-$('#action-50p').addEventListener('click', () => resizeToPct(50));
-$('#action-75p').addEventListener('click', () => resizeToPct(75));
-$('#action-1920').addEventListener('click', () => resizeToWidth(1920));
-$('#action-original').addEventListener('click', resetToOriginal);
+$('#action-60px').addEventListener('click', () => resizeW(60));
+$('#action-25p').addEventListener('click', () => resizePct(25));
+$('#action-50p').addEventListener('click', () => resizePct(50));
+$('#action-75p').addEventListener('click', () => resizePct(75));
+$('#action-1920').addEventListener('click', () => resizeW(1920));
+$('#action-original').addEventListener('click', () => { currentW = origW; currentH = origH; renderResized(origW, origH); });
 
-async function resizeToWidth(target) {
-  if (!imgState.currentFile) return toast('Primero sube una imagen','error');
-  const w = Math.min(target, imgState.originalWidth);
-  const h = Math.round(w * imgState.originalHeight / imgState.originalWidth);
-  imgState.currentWidth = w; imgState.currentHeight = h;
+async function resizeW(target) {
+  if (currentIdx === -1) return toast('Sube una imagen primero','error');
+  const w = Math.min(target, origW);
+  const h = Math.round(w * origH / origW);
+  currentW = w; currentH = h;
   await renderResized(w, h);
-  toast(`Redimensionado a ${w} × ${h}px`);
+  toast(`${w} × ${h}px`);
 }
 
-async function resizeToPct(pct) {
-  if (!imgState.currentFile) return toast('Primero sube una imagen','error');
-  const w = Math.round(imgState.originalWidth * pct / 100);
-  const h = Math.round(imgState.originalHeight * pct / 100);
-  imgState.currentWidth = w; imgState.currentHeight = h;
+async function resizePct(pct) {
+  if (currentIdx === -1) return toast('Sube una imagen primero','error');
+  const w = Math.round(origW * pct / 100);
+  const h = Math.round(origH * pct / 100);
+  currentW = w; currentH = h;
   await renderResized(w, h);
-  toast(`Redimensionado al ${pct}% → ${w} × ${h}px`);
+  toast(`${pct}% → ${w} × ${h}px`);
 }
 
 async function renderResized(w, h) {
   procCanvas.width = w; procCanvas.height = h;
   const tmp = new Image();
-  tmp.src = imgState.currentDataUrl;
+  tmp.src = $('#resize-img').src;
   await new Promise(r => { tmp.onload = r; });
   procCtx.drawImage(tmp, 0, 0, w, h);
 
   const img = $('#resize-img');
   img.src = procCanvas.toDataURL('image/png');
-  const maxD = Math.min($('#img-preview-area').clientWidth - 40, 700);
-  const ds = Math.min(maxD / w, 500 / h, 1);
+  const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
+  const ds = Math.min(md / w, 500 / h, 1);
   img.style.width = Math.round(w * ds) + 'px';
   img.style.height = Math.round(h * ds) + 'px';
-  updateResizeInfo();
+  updateInfo();
 
   procCanvas.toBlob(blob => {
     if (blob) $('#info-size').textContent = fmtSize(blob.size);
@@ -653,47 +708,35 @@ $('#batch-img-quality').addEventListener('input', () => {
 });
 
 $('#convert-img-btn').addEventListener('click', async () => {
-  if (!imgState.currentFile) return toast('Primero sube una imagen','error');
+  if (currentIdx === -1) return toast('Sube una imagen primero','error');
+  const entry = imgEntries[currentIdx];
   const mime = $('#convert-img-format').value;
   const quality = parseInt($('#convert-img-quality').value) / 100;
   const ext = extFromMime(mime);
-  const w = imgState.currentWidth, h = imgState.currentHeight;
+  const w = currentW, h = currentH;
 
   procCanvas.width = w; procCanvas.height = h;
   const tmp = new Image();
-  tmp.src = imgState.currentDataUrl || $('#resize-img').src;
+  tmp.src = entry.dataUrl;
   await new Promise(r => { tmp.onload = r; });
   procCtx.drawImage(tmp, 0, 0, w, h);
 
   procCanvas.toBlob(blob => {
     if (!blob) return toast('Error al convertir','error');
-    const name = imgState.currentFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
+    const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
     downloadBlob(blob, name);
     toast(`Descargado: ${name} (${fmtSize(blob.size)})`);
   }, mime, quality);
 });
 
 /* ============================================================ */
-/*  IMAGE BATCH                                                  */
+/*  IMAGE BATCH CONVERT                                          */
 /* ============================================================ */
-function renderBatchList(files) {
-  const list = $('#img-batch-list');
-  list.innerHTML = files.map((f,i) => `
-    <div class="file-item" data-idx="${i}">
-      <img src="${URL.createObjectURL(f)}" alt="">
-      <div class="file-name">${f.name}</div>
-      <div class="file-status" id="batch-status-${i}">📄 ${fmtSize(f.size)}</div>
-    </div>
-  `).join('');
-  $('#batch-count').textContent = files.length;
-}
-
 $('#batch-convert-btn').addEventListener('click', async () => {
+  if (!imgEntries.length) return toast('No hay imágenes','error');
   const mime = $('#batch-img-format').value;
   const quality = parseInt($('#batch-img-quality').value) / 100;
   const ext = extFromMime(mime);
-  const files = imgState.files;
-  if (!files || !files.length) return toast('No hay imágenes','error');
 
   const btn = $('#batch-convert-btn');
   btn.disabled = true;
@@ -704,25 +747,29 @@ $('#batch-convert-btn').addEventListener('click', async () => {
   const cvs = document.createElement('canvas');
   const ctx = cvs.getContext('2d');
 
-  for (let i = 0; i < files.length; i++) {
+  for (let i = 0; i < imgEntries.length; i++) {
     const st = $(`#batch-status-${i}`);
     st.textContent = '⏳ Convirtiendo…';
     st.className = 'file-status';
     try {
-      const img = await loadImg(files[i]);
+      const entry = imgEntries[i];
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = entry.dataUrl; });
       cvs.width = img.naturalWidth; cvs.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
       const blob = await new Promise(r => cvs.toBlob(r, mime, quality));
-      const name = files[i].name.replace(/\.[^.]+$/, '') + '.' + ext;
-      results.push({ name, blob, size: blob.size, original: files[i].name });
-      st.textContent = `✓ ${fmtSize(blob.size)}`; st.className = 'file-status ok';
+      const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
+      results.push({ name, blob, size: blob.size, original: entry.file.name });
+      st.textContent = `✓ ${fmtSize(blob.size)}`;
+      st.className = 'file-status ok';
     } catch(e) {
-      st.textContent = '✗ Error'; st.className = 'file-status err';
+      st.textContent = '✗ Error';
+      st.className = 'file-status err';
     }
   }
 
   btn.disabled = false;
-  btn.innerHTML = '⚙️ Convertir todas';
+  btn.innerHTML = '⚙️ Convertir seleccionadas';
 
   if (!results.length) return toast('Error al convertir','error');
 
@@ -751,17 +798,8 @@ $('#batch-convert-btn').addEventListener('click', async () => {
   });
 
   $('#batch-zip-btn').disabled = false;
-  toast(`${results.length}/${files.length} imágenes convertidas`);
+  toast(`${results.length}/${imgEntries.length} imágenes convertidas`);
 });
-
-function loadImg(file) {
-  return new Promise((res, rej) => {
-    const img = new Image();
-    img.onload = () => res(img);
-    img.onerror = rej;
-    img.src = URL.createObjectURL(file);
-  });
-}
 
 /* ============================================================ */
 /*  VÍDEO                                                        */
@@ -775,7 +813,7 @@ vz.addEventListener('dragover', e => { e.preventDefault(); vz.classList.add('dra
 vz.addEventListener('dragleave', () => vz.classList.remove('dragover'));
 vz.addEventListener('drop', e => {
   e.preventDefault(); vz.classList.remove('dragover');
-  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor. Prueba desde localhost.','error');
+  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor','error');
   const f = e.dataTransfer.files[0];
   if (f && f.type.startsWith('video/')) loadVideo(f);
 });
@@ -783,7 +821,13 @@ vi.addEventListener('change', () => { if (vi.files[0]) loadVideo(vi.files[0]); }
 
 function loadVideo(file) {
   videoFile = file;
-  $('#video-preview').src = URL.createObjectURL(file);
+  // Usar URL.createObjectURL solo para video/audio preview (CSP permite blob: para media por el 'media-src' que suele heredar de 'default-src')
+  // Pero mejor usamos un blob URL local; si falla, el usuario verá el nombre nomás
+  try {
+    $('#video-preview').src = URL.createObjectURL(file);
+  } catch(e) {
+    $('#video-preview').style.display = 'none';
+  }
   $('#video-editor-card').style.display = '';
   $('#video-results-card').style.display = 'none';
   if (ffLoaded) $('#convert-video-btn').disabled = false;
@@ -838,7 +882,7 @@ az.addEventListener('dragover', e => { e.preventDefault(); az.classList.add('dra
 az.addEventListener('dragleave', () => az.classList.remove('dragover'));
 az.addEventListener('drop', e => {
   e.preventDefault(); az.classList.remove('dragover');
-  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor. Prueba desde localhost.','error');
+  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor','error');
   const f = e.dataTransfer.files[0];
   if (f && f.type.startsWith('audio/')) loadAudio(f);
 });
@@ -874,7 +918,7 @@ $('#convert-audio-btn').addEventListener('click', async () => {
     const data = ffmpeg.readFile(out);
     const mimeMap = {mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',flac:'audio/flac'};
     const blob = new Blob([data.buffer], {type: mimeMap[fmt]||'audio/mpeg'});
-    const oname = audioFile.name.replace(/\.[^.]+$/,'')+'.'+fmt;
+    const oname = audioFile.name.replace(/\.[^.]+$/, '')+'.'+fmt;
     downloadBlob(blob, oname);
     ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
     $('#audio-results-card').style.display = '';
@@ -886,10 +930,9 @@ $('#convert-audio-btn').addEventListener('click', async () => {
 });
 
 /* ============================================================ */
-/*  INIT: precarga FFmpeg en background                         */
+/*  INIT                                                         */
 /* ============================================================ */
 setTimeout(() => { if (!ffLoaded) loadFFmpeg(); }, 2000);
-
 console.log('✦ Multimedia Converter Pro ready');
 </script>
 </body>
