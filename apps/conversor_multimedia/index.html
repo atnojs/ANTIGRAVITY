@@ -107,6 +107,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .file-item .file-status.err{color:#f87171}
 .file-item .del-btn{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:2px solid var(--bg);background:var(--red);color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:5;line-height:1}
 .file-item .del-btn:hover{transform:scale(1.2);box-shadow:0 0 12px rgba(248,113,113,.6)}
+.file-item.selected{border-color:var(--accent)!important;box-shadow:0 0 14px var(--accent-glow);outline:2px solid var(--accent);outline-offset:-2px}
 
 .result-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
 .result-table th,.result-table td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
@@ -209,7 +210,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <hr class="section-divider">
     <div class="card-title" style="margin-bottom:6px">⚡ Acciones rápidas</div>
     <div class="quick-actions">
-      <button class="btn btn-orange btn-sm" id="action-60px">📐 60px</button>
+      <button class="btn btn-orange btn-sm" id="action-60px">📦 60KB</button>
       <button class="btn btn-sm" id="action-25p">25%</button>
       <button class="btn btn-sm" id="action-50p">50%</button>
       <button class="btn btn-sm" id="action-75p">75%</button>
@@ -441,6 +442,7 @@ let imgEntries = [];
 let currentIdx = -1;   // índice en imgEntries de la imagen en el editor
 let currentW = 0, currentH = 0;
 let origW = 0, origH = 0, origSize = 0;
+let lastBatchResults = [];
 
 const imgZone = $('#img-zone');
 const imgInput = $('#img-input');
@@ -494,7 +496,7 @@ function renderBatchList() {
   $('#batch-count').textContent = imgEntries.length;
 
   list.innerHTML = imgEntries.map((entry, i) => `
-    <div class="file-item" data-idx="${i}">
+    <div class="file-item${i === currentIdx ? ' selected' : ''}" data-idx="${i}">
       <img src="${entry.dataUrl}" alt="">
       <div class="file-name">${entry.file.name}</div>
       <div class="file-status" id="batch-status-${i}">📄 ${fmtSize(entry.file.size)}</div>
@@ -507,8 +509,10 @@ function renderBatchList() {
     img.style.cursor = 'pointer';
     img.addEventListener('click', () => {
       const idx = parseInt(img.closest('.file-item').dataset.idx);
+      if (idx === currentIdx) return;
       currentIdx = idx;
       loadEditorImage(imgEntries[idx]);
+      renderBatchList(); // actualiza highlight
     });
   });
 
@@ -652,20 +656,60 @@ function updateInfo() {
 /* ============================================================ */
 /*  QUICK ACTIONS                                                */
 /* ============================================================ */
-$('#action-60px').addEventListener('click', () => resizeW(60));
+$('#action-60px').addEventListener('click', () => compressToKB(60));
 $('#action-25p').addEventListener('click', () => resizePct(25));
 $('#action-50p').addEventListener('click', () => resizePct(50));
 $('#action-75p').addEventListener('click', () => resizePct(75));
-$('#action-1920').addEventListener('click', () => resizeW(1920));
+$('#action-1920').addEventListener('click', () => resizeTo(1920));
 $('#action-original').addEventListener('click', () => { currentW = origW; currentH = origH; renderResized(origW, origH); });
 
-async function resizeW(target) {
+async function resizeTo(target) {
   if (currentIdx === -1) return toast('Sube una imagen primero','error');
   const w = Math.min(target, origW);
   const h = Math.round(w * origH / origW);
   currentW = w; currentH = h;
   await renderResized(w, h);
   toast(`${w} × ${h}px`);
+}
+
+async function compressToKB(targetKB) {
+  if (currentIdx === -1) return toast('Sube una imagen primero','error');
+  const entry = imgEntries[currentIdx];
+  const btn = $('#action-60px');
+  btn.innerHTML = '<span class="spinner"></span> Comprimiendo…';
+  btn.disabled = true;
+  try {
+    const img = new Image();
+    await new Promise((r, e) => { img.onload = r; img.onerror = e; img.src = entry.dataUrl; });
+    // Reducir dimensiones si es enorme (>4000px)
+    let cw = img.naturalWidth, ch = img.naturalHeight;
+    if (cw > 4000 || ch > 4000) {
+      const scale = 4000 / Math.max(cw, ch);
+      cw = Math.round(cw * scale);
+      ch = Math.round(ch * scale);
+    }
+    procCanvas.width = cw; procCanvas.height = ch;
+    procCtx.drawImage(img, 0, 0, cw, ch);
+    // Binary search quality
+    let lo = 0.01, hi = 1.0, best = null;
+    for (let i = 0; i < 10; i++) {
+      const mid = (lo + hi) / 2;
+      const blob = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', mid));
+      if (!blob) break;
+      if (blob.size / 1024 > targetKB) { hi = mid; }
+      else { lo = mid; best = blob; }
+    }
+    if (!best) { best = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', lo)); }
+    if (!best) return toast('Error al comprimir','error');
+    const name = entry.file.name.replace(/\.[^.]+$/, '') + '_60kb.jpg';
+    downloadBlob(best, name);
+    toast(`Comprimido: ${name} (${fmtSize(best.size)})`);
+  } catch(e) {
+    console.error(e);
+    toast('Error al comprimir','error');
+  }
+  btn.innerHTML = '📦 60KB';
+  btn.disabled = false;
 }
 
 async function resizePct(pct) {
@@ -744,6 +788,7 @@ $('#batch-convert-btn').addEventListener('click', async () => {
   $('#batch-zip-btn').disabled = true;
 
   const results = [];
+  lastBatchResults = results;
   const cvs = document.createElement('canvas');
   const ctx = cvs.getContext('2d');
 
@@ -799,6 +844,16 @@ $('#batch-convert-btn').addEventListener('click', async () => {
 
   $('#batch-zip-btn').disabled = false;
   toast(`${results.length}/${imgEntries.length} imágenes convertidas`);
+});
+
+// ZIP handler para botón externo
+$('#batch-zip-btn').addEventListener('click', async () => {
+  if (!lastBatchResults.length) return toast('Convierte imágenes primero','error');
+  const zip = new JSZip();
+  lastBatchResults.forEach(r => zip.file(r.name, r.blob));
+  const zb = await zip.generateAsync({type:'blob'});
+  downloadBlob(zb, 'imagenes_convertidas.zip');
+  toast('ZIP descargado');
 });
 
 /* ============================================================ */
