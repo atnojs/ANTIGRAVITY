@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Multimedia Converter Pro</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -25,14 +24,11 @@
   --mono:'Cascadia Code','JetBrains Mono','Consolas',monospace
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5}
-body{padding:20px;overflow-y:auto}
-
-/* scrollbar */
+body{padding:20px;overflow-y:auto;min-height:100vh}
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
 
-/* header */
 .app-header{text-align:center;padding:12px 0 18px}
 .app-header h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,#64c8ff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .app-header p{font-size:12px;color:var(--text-dim);margin-top:2px}
@@ -43,29 +39,24 @@ body{padding:20px;overflow-y:auto}
 .tab-btn:hover{color:var(--text);background:var(--surface-hover)}
 .tab-btn.active{background:var(--accent-glow);color:var(--accent);box-shadow:0 0 12px var(--accent-glow)}
 
-/* panes */
 .tab-pane{display:none;animation:fadeIn .25s}
 .tab-pane.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* cards */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;backdrop-filter:blur(12px)}
 .card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:10px}
 
-/* upload zone */
 .upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:30px 20px;text-align:center;cursor:pointer;transition:.25s}
 .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-glow)}
 .upload-zone-icon{font-size:32px;margin-bottom:6px}
 .upload-zone-text{font-size:13px;color:var(--text-dim)}
 .upload-zone-text strong{color:var(--text)}
 
-/* preview area */
 .preview-area{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px}
 .preview-area img{max-width:100%;max-height:55vh;border-radius:var(--radius-sm);display:block;box-shadow:0 4px 30px rgba(0,0,0,.4)}
 .preview-area video{max-width:100%;max-height:55vh;border-radius:var(--radius-sm);display:block}
 .preview-empty{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:13px}
 
-/* resize container */
 .resize-container{position:relative;display:inline-block;line-height:0}
 .resize-container .resize-img{display:block;border-radius:var(--radius-sm);box-shadow:0 4px 30px rgba(0,0,0,.4);user-select:none;-webkit-user-drag:none}
 .resize-handle{position:absolute;width:14px;height:14px;background:var(--accent);border:2px solid #fff;border-radius:50%;box-shadow:0 0 10px var(--accent-glow);z-index:10;transition:transform .15s}
@@ -75,7 +66,6 @@ body{padding:20px;overflow-y:auto}
 .resize-handle[data-corner=ne]{top:-7px;right:-7px;cursor:nesw-resize}
 .resize-handle[data-corner=nw]{top:-7px;left:-7px;cursor:nwse-resize}
 
-/* info bar */
 .info-bar{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;padding:10px 14px;background:rgba(0,0,0,.3);border-radius:var(--radius-sm);font-family:var(--mono);font-size:12px}
 .info-bar .info-item{display:flex;align-items:center;gap:4px}
 .info-bar .info-label{color:var(--text-dim)}
@@ -83,7 +73,6 @@ body{padding:20px;overflow-y:auto}
 .info-bar .info-value.green{color:var(--green)}
 .info-bar .info-value.orange{color:var(--orange)}
 
-/* controls row */
 .controls-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .controls-row label{font-size:12px;color:var(--text-dim);white-space:nowrap}
 select,input[type=range]{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:6px 10px;font-size:13px;outline:none;transition:.2s}
@@ -93,7 +82,6 @@ input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border:none
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 6px var(--accent-glow)}
 input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:none;cursor:pointer}
 
-/* buttons */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;text-decoration:none;background:var(--surface-hover);color:var(--text)}
 .btn:hover{background:rgba(255,255,255,.12)}
 .btn-primary{background:var(--accent);color:#0a0a12}
@@ -106,12 +94,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .btn-sm{padding:5px 12px;font-size:12px}
 .btn-group{display:flex;flex-wrap:wrap;gap:6px}
 
-/* progress */
 .progress-bar{width:100%;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px}
 .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:2px;transition:width .2s;width:0%}
 .progress-text{font-size:11px;color:var(--text-dim);margin-top:4px;font-family:var(--mono);text-align:center}
 
-/* file list (batch) */
 .file-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px}
 .file-item{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;text-align:center;font-size:11px;position:relative}
 .file-item img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;margin-bottom:4px}
@@ -120,42 +106,35 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .file-item .file-status.ok{color:var(--green)}
 .file-item .file-status.err{color:#f87171}
 
-/* results table */
 .result-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
 .result-table th,.result-table td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
 .result-table th{color:var(--text-dim);font-weight:600}
 .result-table td{color:var(--text)}
 .result-table .convert-link{color:var(--accent);cursor:pointer;text-decoration:underline}
 
-/* toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(20,20,40,.95);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-size:13px;backdrop-filter:blur(12px);z-index:999;opacity:0;transition:.3s;pointer-events:none}
 .toast.show{opacity:1}
 .toast.success{border-color:var(--green)}
 .toast.error{border-color:#f87171}
 
-/* spinner */
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* responsive */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.loading{background:rgba(251,191,36,.15);color:var(--orange)}
+.badge.ready{background:rgba(74,222,128,.15);color:var(--green)}
+.badge.error{background:rgba(248,113,113,.15);color:#f87171}
+
+.quick-actions{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
+.section-divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+
 @media(max-width:600px){
   body{padding:12px}
   .tabs{flex-direction:column}
   .info-bar{font-size:11px}
   .controls-row{flex-direction:column;align-items:stretch}
-  .controls-row label{flex-shrink:0}
   .file-list{grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}
 }
-
-/* inline quick-actions row */
-.quick-actions{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
-.section-divider{border:none;border-top:1px solid var(--border);margin:12px 0}
-
-/* FFmpeg status badge */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.badge.loading{background:rgba(251,191,36,.15);color:var(--orange)}
-.badge.ready{background:rgba(74,222,128,.15);color:var(--green)}
-.badge.error{background:rgba(248,113,113,.15);color:#f87171}
 </style>
 </head>
 <body>
@@ -165,18 +144,14 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <p>Imágenes · Vídeos · Audio — conversión y edición en tu navegador</p>
 </div>
 
-<!-- Tabs -->
 <div class="tabs">
   <button class="tab-btn active" data-tab="images">🖼 Imágenes</button>
   <button class="tab-btn" data-tab="video">🎬 Vídeo</button>
   <button class="tab-btn" data-tab="audio">🎵 Audio</button>
 </div>
 
-<!-- ============================================================ -->
-<!-- IMAGES TAB -->
-<!-- ============================================================ -->
+<!-- ==================== IMÁGENES ==================== -->
 <div class="tab-pane active" id="pane-images">
-  <!-- Upload -->
   <div class="card">
     <div class="upload-zone" id="img-zone">
       <div class="upload-zone-icon">📁</div>
@@ -185,11 +160,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <input type="file" id="img-input" multiple accept="image/*" hidden>
   </div>
 
-  <!-- Batch file list (shown when >1 file) -->
   <div class="card" id="img-batch-card" style="display:none">
-    <div class="card-title">📦 Archivos cargados</div>
+    <div class="card-title">📦 Archivos cargados (<span id="batch-count">0</span>)</div>
     <div class="file-list" id="img-batch-list"></div>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
       <select id="batch-img-format" style="flex:1;min-width:120px">
         <option value="image/png">PNG</option>
         <option value="image/jpeg">JPEG</option>
@@ -199,17 +173,15 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         <option value="image/avif">AVIF</option>
       </select>
       <input type="range" id="batch-img-quality" min="10" max="100" value="85" style="width:80px;flex:none">
-      <span style="font-size:11px;color:var(--text-dim);line-height:30px" id="batch-quality-label">85%</span>
+      <span style="font-size:11px;color:var(--text-dim)" id="batch-quality-label">85%</span>
       <button class="btn btn-primary" id="batch-convert-btn">⚙️ Convertir todas</button>
-      <button class="btn btn-green" id="batch-zip-btn" disabled>📦 Descargar ZIP</button>
+      <button class="btn btn-green" id="batch-zip-btn" disabled>📦 ZIP</button>
     </div>
   </div>
 
-  <!-- Single Image Editor -->
   <div class="card" id="img-editor-card" style="display:none">
     <div class="card-title">✏️ Editor de imagen</div>
 
-    <!-- Preview with dynamic resize -->
     <div class="preview-area" id="img-preview-area">
       <div id="resize-container-wrapper" style="display:none">
         <div class="resize-container" id="resize-ctn">
@@ -219,11 +191,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           <div class="resize-handle" data-corner="ne"></div>
           <div class="resize-handle" data-corner="nw"></div>
         </div>
-        <!-- Info bar below image -->
         <div class="info-bar" id="resize-info">
           <div class="info-item"><span class="info-label">W:</span><span class="info-value" id="info-w">—</span></div>
           <div class="info-item"><span class="info-label">H:</span><span class="info-value" id="info-h">—</span></div>
-          <div class="info-item"><span class="info-label">Peso estimado:</span><span class="info-value" id="info-size">—</span></div>
+          <div class="info-item"><span class="info-label">Peso:</span><span class="info-value" id="info-size">—</span></div>
           <div class="info-item"><span class="info-label">Cambio:</span><span class="info-value" id="info-change">—</span></div>
         </div>
       </div>
@@ -234,8 +205,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
 
     <hr class="section-divider">
-
-    <!-- Quick actions -->
     <div class="card-title" style="margin-bottom:6px">⚡ Acciones rápidas</div>
     <div class="quick-actions">
       <button class="btn btn-orange btn-sm" id="action-60px">📐 60px</button>
@@ -247,8 +216,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
 
     <hr class="section-divider">
-
-    <!-- Format & quality -->
     <div class="card-title" style="margin-bottom:6px">🔄 Conversión</div>
     <div class="controls-row">
       <label>Formato:</label>
@@ -267,16 +234,13 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
   </div>
 
-  <!-- Image results -->
   <div class="card" id="img-results-card" style="display:none">
     <div class="card-title">✅ Resultados</div>
     <div id="img-results-content"></div>
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- VIDEO TAB -->
-<!-- ============================================================ -->
+<!-- ==================== VÍDEO ==================== -->
 <div class="tab-pane" id="pane-video">
   <div class="card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
@@ -288,15 +252,13 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
     <input type="file" id="video-input" accept="video/*" hidden>
   </div>
-
   <div class="card" id="video-editor-card" style="display:none">
     <div class="preview-area">
-      <video id="video-preview" controls></video>
+      <video id="video-preview" controls style="max-width:100%;border-radius:8px"></video>
     </div>
     <hr class="section-divider">
-    <div class="card-title" style="margin-bottom:6px">🔄 Convertir a</div>
     <div class="controls-row">
-      <label>Formato:</label>
+      <label>Convertir a:</label>
       <select id="convert-video-format">
         <option value="mp4">MP4</option>
         <option value="webm">WebM</option>
@@ -311,16 +273,13 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       <div class="progress-text" id="video-progress-text">0%</div>
     </div>
   </div>
-
   <div class="card" id="video-results-card" style="display:none">
     <div class="card-title">✅ Resultados</div>
     <div id="video-results-content"></div>
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- AUDIO TAB -->
-<!-- ============================================================ -->
+<!-- ==================== AUDIO ==================== -->
 <div class="tab-pane" id="pane-audio">
   <div class="card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
@@ -332,14 +291,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
     <input type="file" id="audio-input" accept="audio/*" hidden>
   </div>
-
   <div class="card" id="audio-editor-card" style="display:none">
     <div class="controls-row" style="margin-bottom:8px">
       <span style="font-size:13px;color:var(--text-dim)" id="audio-file-info">Archivo cargado</span>
     </div>
-    <div class="card-title" style="margin-bottom:6px">🔄 Convertir a</div>
     <div class="controls-row">
-      <label>Formato:</label>
+      <label>Convertir a:</label>
       <select id="convert-audio-format">
         <option value="mp3">MP3</option>
         <option value="wav">WAV</option>
@@ -361,79 +318,62 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       <div class="progress-text" id="audio-progress-text">0%</div>
     </div>
   </div>
-
   <div class="card" id="audio-results-card" style="display:none">
     <div class="card-title">✅ Resultados</div>
     <div id="audio-results-content"></div>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script type="module">
-const JSZip = window.JSZip;
+<!-- JSZip via unpkg (whitelisted en CSP de Hostinger) -->
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<script>
+'use strict';
 
 /* ============================================================ */
 /*  UTILITIES                                                    */
 /* ============================================================ */
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
-const toast = (msg, type='success') => {
+const JSZip = window.JSZip;
+
+function toast(msg, type='success') {
   const t = $('#toast');
   t.textContent = msg;
   t.className = 'toast show '+type;
   clearTimeout(t._t);
   t._t = setTimeout(() => t.classList.remove('show'), 3000);
-};
-const fmtSize = bytes => {
-  if (!bytes) return '—';
+}
+
+function fmtSize(bytes) {
+  if (!bytes || bytes === 0) return '—';
   if (bytes < 1024) return bytes+' B';
   if (bytes < 1048576) return (bytes/1024).toFixed(1)+' KB';
   return (bytes/1048576).toFixed(2)+' MB';
-};
-const extFromMime = mime => ({
-  'image/png':'png','image/jpeg':'jpg','image/webp':'webp',
-  'image/bmp':'bmp','image/gif':'gif','image/avif':'avif'
-}[mime] || 'bin');
-const mimeFromExt = ext => ({
-  png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',
-  webp:'image/webp',bmp:'image/bmp',gif:'image/gif',avif:'image/avif'
-}[ext] || '');
-
-/* ============================================================ */
-/*  FFMPEG LOADER                                                */
-/* ============================================================ */
-let _ffmpeg = null;
-let _ffLoaded = false;
-const ffStatusEls = { video: $('#ff-video-status'), audio: $('#ff-audio-status') };
-
-async function loadFFmpeg() {
-  if (_ffLoaded) return true;
-  Object.values(ffStatusEls).forEach(el => { if(el) { el.className='badge loading'; el.textContent='⏳ Cargando FFmpeg…'; } });
-  try {
-    const mod = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
-    const { FFmpeg } = mod;
-    const { toBlobURL } = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
-    _ffmpeg = new FFmpeg();
-    const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-    await _ffmpeg.load({
-      coreURL: await toBlobURL(`${base}/ffmpeg-core.js`,'text/javascript'),
-      wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`,'application/wasm'),
-    });
-    _ffLoaded = true;
-    Object.values(ffStatusEls).forEach(el => { if(el) { el.className='badge ready'; el.textContent='✓ FFmpeg listo'; } });
-    // enable buttons
-    $('#convert-video-btn').disabled = false;
-    $('#convert-audio-btn').disabled = false;
-    return true;
-  } catch(e) {
-    console.error('FFmpeg load error:', e);
-    Object.values(ffStatusEls).forEach(el => { if(el) { el.className='badge error'; el.textContent='✗ FFmpeg no disponible'; } });
-    toast('Error al cargar FFmpeg. Recarga la página.','error');
-    return false;
-  }
 }
+
+function extFromMime(mime) {
+  return ({'image/png':'png','image/jpeg':'jpg','image/webp':'webp',
+    'image/bmp':'bmp','image/gif':'gif','image/avif':'avif'}[mime] || 'bin');
+}
+
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* ============================================================ */
+/*  CANVAS COMPARTIDO (único, evita el error ctx.canvas)        */
+/* ============================================================ */
+const procCanvas = document.createElement('canvas');
+const procCtx = procCanvas.getContext('2d');
 
 /* ============================================================ */
 /*  TAB SWITCHING                                                */
@@ -444,32 +384,62 @@ $$('.tab-btn').forEach(btn => {
     $$('.tab-pane').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     $(`#pane-${btn.dataset.tab}`).classList.add('active');
-    // lazy-load FFmpeg when video or audio tab is opened
-    if ((btn.dataset.tab === 'video' || btn.dataset.tab === 'audio') && !_ffLoaded) {
-      loadFFmpeg();
-    }
   });
 });
+
+/* ============================================================ */
+/*  FFMPEG LOADER (con fallo controlado)                        */
+/* ============================================================ */
+let ffmpeg = null;
+let ffLoaded = false;
+
+async function loadFFmpeg() {
+  if (ffLoaded) return true;
+  setFFStatus('loading', '⏳ Cargando FFmpeg…');
+  try {
+    const mod = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
+    const { FFmpeg } = mod;
+    const { toBlobURL } = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
+    ffmpeg = new FFmpeg();
+    const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${base}/ffmpeg-core.js`,'text/javascript'),
+      wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`,'application/wasm'),
+    });
+    ffLoaded = true;
+    setFFStatus('ready', '✓ FFmpeg listo');
+    $('#convert-video-btn').disabled = false;
+    $('#convert-audio-btn').disabled = false;
+    return true;
+  } catch (e) {
+    console.warn('FFmpeg no disponible:', e.message);
+    setFFStatus('error', '✗ FFmpeg no disponible (CSP del servidor)');
+    $('#convert-video-btn').disabled = true;
+    $('#convert-audio-btn').disabled = true;
+    return false;
+  }
+}
+
+function setFFStatus(type, text) {
+  ['video','audio'].forEach(t => {
+    const el = $(`#ff-${t}-status`);
+    if (el) { el.className = 'badge '+type; el.textContent = text; }
+  });
+}
 
 /* ============================================================ */
 /*  IMAGE STATE                                                  */
 /* ============================================================ */
 const imgState = {
-  files: [],           // all uploaded files
-  currentFile: null,   // currently edited file
+  files: [],
+  currentFile: null,
   currentDataUrl: null,
   originalWidth: 0,
   originalHeight: 0,
   originalSize: 0,
   currentWidth: 0,
   currentHeight: 0,
-  // off-screen canvas for processing
-  canvas: document.createElement('canvas'),
-  ctx: document.createElement('canvas').getContext('2d'),
 };
-
-// swap ctx to same canvas
-imgState.ctx.canvas = imgState.canvas;
 
 /* Upload zone */
 const imgZone = $('#img-zone');
@@ -487,46 +457,34 @@ imgInput.addEventListener('change', () => {
   if (imgInput.files.length) handleImageFiles(imgInput.files);
 });
 
-async function handleImageFiles(fileList) {
+function handleImageFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
   if (!files.length) return toast('No hay imágenes en la selección','error');
   imgState.files = files;
 
-  if (files.length === 1) {
-    // single file: open in editor
-    loadSingleImage(files[0]);
-    $('#img-batch-card').style.display = 'none';
-  } else {
-    // multiple files: batch mode
-    $('#img-batch-card').style.display = '';
-    renderBatchList(files);
-    // also show first file in editor
-    loadSingleImage(files[0]);
-  }
+  $('#img-editor-card').style.display = '';
+  $('#img-batch-card').style.display = files.length > 1 ? '' : 'none';
+  if (files.length > 1) renderBatchList(files);
+
+  // siempre carga la primera en el editor
+  loadSingleImage(files[0]);
 }
 
-/* Load single image into editor */
 async function loadSingleImage(file) {
   imgState.currentFile = file;
   imgState.originalSize = file.size;
-
-  const url = URL.createObjectURL(file);
-  imgState.currentDataUrl = url;
+  imgState.currentDataUrl = URL.createObjectURL(file);
 
   const img = new Image();
   await new Promise((resolve, reject) => {
     img.onload = resolve;
     img.onerror = reject;
-    img.src = url;
+    img.src = imgState.currentDataUrl;
   });
 
   imgState.originalWidth = img.naturalWidth;
   imgState.originalHeight = img.naturalHeight;
-
-  // Reset to original
   resetToOriginal();
-
-  $('#img-editor-card').style.display = '';
   $('#img-preview-empty').style.display = 'none';
   $('#resize-container-wrapper').style.display = '';
   $('#img-results-card').style.display = 'none';
@@ -539,11 +497,10 @@ function resetToOriginal() {
   img.style.height = '';
   imgState.currentWidth = imgState.originalWidth;
   imgState.currentHeight = imgState.originalHeight;
-  updateResizeInfo(0);
+  updateResizeInfo();
 }
 
-async function updateResizeInfo(forceEncode) {
-  const img = $('#resize-img');
+function updateResizeInfo() {
   const w = imgState.currentWidth;
   const h = imgState.currentHeight;
   const ow = imgState.originalWidth;
@@ -552,190 +509,141 @@ async function updateResizeInfo(forceEncode) {
   $('#info-w').textContent = w + 'px';
   $('#info-h').textContent = h + 'px';
 
-  const pctChange = ((w * h) / (ow * oh) * 100);
-  const pctDisplay = pctChange.toFixed(1) + '%';
-  $('#info-change').textContent = pctDisplay;
-  $('#info-change').className = 'info-value' + (pctChange < 50 ? ' green' : pctChange > 150 ? ' orange' : '');
+  const pct = w > 0 && ow > 0 ? (w * h) / (ow * oh) * 100 : 0;
+  $('#info-change').textContent = pct.toFixed(1) + '%';
+  const ch = $('#info-change');
+  ch.className = 'info-value' + (pct < 50 ? ' green' : pct > 150 ? ' orange' : '');
 
-  // Estimate based on pixel ratio
   if (w > 0 && h > 0 && ow > 0 && oh > 0) {
-    const estSize = Math.round(imgState.originalSize * (w * h) / (ow * oh));
-    $('#info-size').textContent = fmtSize(estSize);
-  } else {
-    $('#info-size').textContent = '—';
+    $('#info-size').textContent = fmtSize(Math.round(imgState.originalSize * (w * h) / (ow * oh)));
   }
 }
 
 /* ============================================================ */
-/*  DYNAMIC RESIZE (corner dragging)                             */
+/*  DYNAMIC RESIZE                                               */
 /* ============================================================ */
-(function initResize() {
+(function() {
   const ctn = $('#resize-ctn');
   const img = $('#resize-img');
-  let dragging = false;
-  let corner = '';
-  let startX, startY, startW, startH, aspectRatio;
+  let dragging = false, corner = '';
+  let sx, sy, sw, sh, ar;
 
   ctn.addEventListener('mousedown', e => {
     const h = e.target.closest('.resize-handle');
     if (!h) return;
-    dragging = true;
-    corner = h.dataset.corner;
-    startX = e.clientX;
-    startY = e.clientY;
-    startW = imgState.currentWidth || imgState.originalWidth;
-    startH = imgState.currentHeight || imgState.originalHeight;
-    aspectRatio = startW / startH;
+    dragging = true; corner = h.dataset.corner;
+    sx = e.clientX; sy = e.clientY;
+    sw = imgState.currentWidth;
+    sh = imgState.currentHeight;
+    ar = sw / sh;
     e.preventDefault();
   });
 
   document.addEventListener('mousemove', e => {
     if (!dragging) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    const scale = imgState.originalWidth / img.clientWidth || 1;
-    // scale delta to original image coordinates
-    let newW, newH;
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
+    const scale = imgState.originalWidth / (img.naturalWidth || img.clientWidth) || 1;
+    let nw, nh;
 
-    const shift = e.shiftKey;
-    const absDx = Math.abs(dx * scale);
-    const absDy = Math.abs(dy * scale);
-    const useDx = absDx >= absDy;
-
-    if (shift && aspectRatio) {
-      // proportional resize
-      const maxDelta = Math.max(Math.abs(dx), Math.abs(dy));
-      const signX = dx >= 0 ? 1 : -1;
-      const signY = dy >= 0 ? 1 : -1;
-      if (corner === 'se') {
-        const d = maxDelta * scale * signX;
-        newW = startW + d * (aspectRatio >= 1 ? 1 : aspectRatio);
-        newH = newW / aspectRatio;
-      } else if (corner === 'sw') {
-        const d = maxDelta * scale * signX;
-        newW = startW - d * (aspectRatio >= 1 ? 1 : aspectRatio);
-        newH = newW / aspectRatio;
-      } else if (corner === 'ne') {
-        const d = maxDelta * scale * signY;
-        newH = startH - d * (aspectRatio >= 1 ? aspectRatio : 1);
-        newW = newH * aspectRatio;
-      } else if (corner === 'nw') {
-        const d = maxDelta * scale * signX;
-        newW = startW - d * (aspectRatio >= 1 ? 1 : aspectRatio);
-        newH = newW / aspectRatio;
-      }
+    if (e.shiftKey && ar) {
+      const d = Math.max(Math.abs(dx), Math.abs(dy)) * scale * (dx >= 0 ? 1 : -1);
+      if (corner === 'se') { nw = sw + d; nh = nw / ar; }
+      else if (corner === 'sw') { nw = sw - d; nh = nw / ar; }
+      else if (corner === 'ne') { nh = sh - d; nw = nh * ar; }
+      else { nw = sw - d; nh = nw / ar; }
     } else {
-      if (corner === 'se') { newW = startW + dx * scale; newH = startH + dy * scale; }
-      else if (corner === 'sw') { newW = startW - dx * scale; newH = startH + dy * scale; }
-      else if (corner === 'ne') { newW = startW + dx * scale; newH = startH - dy * scale; }
-      else if (corner === 'nw') { newW = startW - dx * scale; newH = startH - dy * scale; }
+      if (corner === 'se') { nw = sw + dx * scale; nh = sh + dy * scale; }
+      else if (corner === 'sw') { nw = sw - dx * scale; nh = sh + dy * scale; }
+      else if (corner === 'ne') { nw = sw + dx * scale; nh = sh - dy * scale; }
+      else { nw = sw - dx * scale; nh = sh - dy * scale; }
     }
 
-    // Clamp
-    newW = Math.max(10, Math.min(newW, imgState.originalWidth * 5));
-    newH = Math.max(10, Math.min(newH, imgState.originalHeight * 5));
+    nw = Math.max(10, Math.min(nw, imgState.originalWidth * 5));
+    nh = Math.max(10, Math.min(nh, imgState.originalHeight * 5));
+    imgState.currentWidth = Math.round(nw);
+    imgState.currentHeight = Math.round(nh);
 
-    imgState.currentWidth = Math.round(newW);
-    imgState.currentHeight = Math.round(newH);
-
-    // Apply CSS scale (fit to container)
-    const maxDisplay = Math.min($('#img-preview-area').clientWidth - 40, 700);
-    const displayScale = Math.min(maxDisplay / imgState.currentWidth, 500 / imgState.currentHeight, 1);
-    img.style.width = Math.round(imgState.currentWidth * displayScale) + 'px';
-    img.style.height = Math.round(imgState.currentHeight * displayScale) + 'px';
-
-    updateResizeInfo(false);
+    const maxD = Math.min($('#img-preview-area').clientWidth - 40, 700);
+    const ds = Math.min(maxD / nw, 500 / nh, 1);
+    img.style.width = Math.round(nw * ds) + 'px';
+    img.style.height = Math.round(nh * ds) + 'px';
+    updateResizeInfo();
   });
 
-  document.addEventListener('mouseup', async () => {
+  document.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false;
-    // Final update with actual canvas render for real size estimate
-    const w = imgState.currentWidth;
-    const h = imgState.currentHeight;
-    if (w > 0 && h > 0) {
-      imgState.canvas.width = w;
-      imgState.canvas.height = h;
-      const ctx = imgState.ctx;
-      const tempImg = new Image();
-      tempImg.src = imgState.currentDataUrl;
-      await new Promise(r => { tempImg.onload = r; });
-      ctx.drawImage(tempImg, 0, 0, w, h);
-      // estimate size by encoding to PNG first (fast)
-      const blob = await new Promise(r => imgState.canvas.toBlob(r, 'image/png', 1));
-      if (blob) {
-        const realSize = blob.size;
-        // Adjust estimation offset after drag ends
-        const el = $('#info-size');
-        el.textContent = fmtSize(realSize);
-        el.style.color = '#4ade80';
-        setTimeout(() => el.style.color = '', 1000);
-      }
-    }
+    // estimación real al soltar
+    const w = imgState.currentWidth, h = imgState.currentHeight;
+    if (w < 5 || h < 5) return;
+    procCanvas.width = w; procCanvas.height = h;
+    const tmp = new Image();
+    tmp.src = imgState.currentDataUrl || $('#resize-img').src;
+    tmp.onload = () => {
+      procCtx.drawImage(tmp, 0, 0, w, h);
+      procCanvas.toBlob(blob => {
+        if (blob) {
+          const el = $('#info-size');
+          el.textContent = fmtSize(blob.size);
+          el.style.color = '#4ade80';
+          setTimeout(() => el.style.color = '', 1000);
+        }
+      }, 'image/png', 1);
+    };
   });
 })();
 
 /* ============================================================ */
 /*  IMAGE QUICK ACTIONS                                          */
 /* ============================================================ */
-$('#action-60px').addEventListener('click', () => resizeImageToWidth(60));
-$('#action-25p').addEventListener('click', () => resizeImageToPercent(25));
-$('#action-50p').addEventListener('click', () => resizeImageToPercent(50));
-$('#action-75p').addEventListener('click', () => resizeImageToPercent(75));
-$('#action-1920').addEventListener('click', () => resizeImageToWidth(1920));
+$('#action-60px').addEventListener('click', () => resizeToWidth(60));
+$('#action-25p').addEventListener('click', () => resizeToPct(25));
+$('#action-50p').addEventListener('click', () => resizeToPct(50));
+$('#action-75p').addEventListener('click', () => resizeToPct(75));
+$('#action-1920').addEventListener('click', () => resizeToWidth(1920));
 $('#action-original').addEventListener('click', resetToOriginal);
 
-async function resizeImageToWidth(targetW) {
+async function resizeToWidth(target) {
   if (!imgState.currentFile) return toast('Primero sube una imagen','error');
-  const ow = imgState.originalWidth;
-  const oh = imgState.originalHeight;
-  const newW = Math.min(targetW, ow);
-  const newH = Math.round(newW * oh / ow);
-  imgState.currentWidth = newW;
-  imgState.currentHeight = newH;
-  await renderResizedImage(newW, newH);
-  toast(`Redimensionado a ${newW} × ${newH}px`);
+  const w = Math.min(target, imgState.originalWidth);
+  const h = Math.round(w * imgState.originalHeight / imgState.originalWidth);
+  imgState.currentWidth = w; imgState.currentHeight = h;
+  await renderResized(w, h);
+  toast(`Redimensionado a ${w} × ${h}px`);
 }
 
-async function resizeImageToPercent(pct) {
+async function resizeToPct(pct) {
   if (!imgState.currentFile) return toast('Primero sube una imagen','error');
-  const ow = imgState.originalWidth;
-  const oh = imgState.originalHeight;
-  const newW = Math.round(ow * pct / 100);
-  const newH = Math.round(oh * pct / 100);
-  imgState.currentWidth = newW;
-  imgState.currentHeight = newH;
-  await renderResizedImage(newW, newH);
-  toast(`Redimensionado al ${pct}% → ${newW} × ${newH}px`);
+  const w = Math.round(imgState.originalWidth * pct / 100);
+  const h = Math.round(imgState.originalHeight * pct / 100);
+  imgState.currentWidth = w; imgState.currentHeight = h;
+  await renderResized(w, h);
+  toast(`Redimensionado al ${pct}% → ${w} × ${h}px`);
 }
 
-async function renderResizedImage(w, h) {
+async function renderResized(w, h) {
+  procCanvas.width = w; procCanvas.height = h;
+  const tmp = new Image();
+  tmp.src = imgState.currentDataUrl;
+  await new Promise(r => { tmp.onload = r; });
+  procCtx.drawImage(tmp, 0, 0, w, h);
+
   const img = $('#resize-img');
-  imgState.canvas.width = w;
-  imgState.canvas.height = h;
-  const ctx = imgState.ctx;
-  const tempImg = new Image();
-  tempImg.src = imgState.currentDataUrl;
-  await new Promise(r => { tempImg.onload = r; });
-  ctx.drawImage(tempImg, 0, 0, w, h);
-  const dataUrl = imgState.canvas.toDataURL('image/png');
-  img.src = dataUrl;
+  img.src = procCanvas.toDataURL('image/png');
+  const maxD = Math.min($('#img-preview-area').clientWidth - 40, 700);
+  const ds = Math.min(maxD / w, 500 / h, 1);
+  img.style.width = Math.round(w * ds) + 'px';
+  img.style.height = Math.round(h * ds) + 'px';
+  updateResizeInfo();
 
-  // CSS display
-  const maxDisplay = Math.min($('#img-preview-area').clientWidth - 40, 700);
-  const displayScale = Math.min(maxDisplay / w, 500 / h, 1);
-  img.style.width = Math.round(w * displayScale) + 'px';
-  img.style.height = Math.round(h * displayScale) + 'px';
-
-  updateResizeInfo(false);
-
-  // real file size
-  const blob = await new Promise(r => imgState.canvas.toBlob(r, 'image/png', 1));
-  if (blob) $('#info-size').textContent = fmtSize(blob.size);
+  procCanvas.toBlob(blob => {
+    if (blob) $('#info-size').textContent = fmtSize(blob.size);
+  }, 'image/png', 1);
 }
 
 /* ============================================================ */
-/*  IMAGE CONVERSION & DOWNLOAD                                  */
+/*  IMAGE CONVERSION                                             */
 /* ============================================================ */
 $('#convert-img-quality').addEventListener('input', () => {
   $('#convert-quality-label').textContent = $('#convert-img-quality').value + '%';
@@ -749,33 +657,21 @@ $('#convert-img-btn').addEventListener('click', async () => {
   const mime = $('#convert-img-format').value;
   const quality = parseInt($('#convert-img-quality').value) / 100;
   const ext = extFromMime(mime);
+  const w = imgState.currentWidth, h = imgState.currentHeight;
 
-  const w = imgState.currentWidth;
-  const h = imgState.currentHeight;
+  procCanvas.width = w; procCanvas.height = h;
+  const tmp = new Image();
+  tmp.src = imgState.currentDataUrl || $('#resize-img').src;
+  await new Promise(r => { tmp.onload = r; });
+  procCtx.drawImage(tmp, 0, 0, w, h);
 
-  imgState.canvas.width = w;
-  imgState.canvas.height = h;
-  const ctx = imgState.ctx;
-  const tempImg = new Image();
-  tempImg.src = imgState.currentDataUrl || $('#resize-img').src;
-  await new Promise(r => { tempImg.onload = r; });
-  ctx.drawImage(tempImg, 0, 0, w, h);
-
-  const blob = await new Promise(r => imgState.canvas.toBlob(r, mime, quality));
-  if (!blob) return toast('Error al convertir','error');
-
-  const name = imgState.currentFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
-  downloadBlob(blob, name);
-  toast(`Descargado: ${name} (${fmtSize(blob.size)})`);
+  procCanvas.toBlob(blob => {
+    if (!blob) return toast('Error al convertir','error');
+    const name = imgState.currentFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
+    downloadBlob(blob, name);
+    toast(`Descargado: ${name} (${fmtSize(blob.size)})`);
+  }, mime, quality);
 });
-
-function downloadBlob(blob, name) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
 
 /* ============================================================ */
 /*  IMAGE BATCH                                                  */
@@ -789,6 +685,7 @@ function renderBatchList(files) {
       <div class="file-status" id="batch-status-${i}">📄 ${fmtSize(f.size)}</div>
     </div>
   `).join('');
+  $('#batch-count').textContent = files.length;
 }
 
 $('#batch-convert-btn').addEventListener('click', async () => {
@@ -801,285 +698,197 @@ $('#batch-convert-btn').addEventListener('click', async () => {
   const btn = $('#batch-convert-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
-  const zipBtn = $('#batch-zip-btn');
-  zipBtn.disabled = true;
+  $('#batch-zip-btn').disabled = true;
 
   const results = [];
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const cvs = document.createElement('canvas');
+  const ctx = cvs.getContext('2d');
 
   for (let i = 0; i < files.length; i++) {
-    const statusEl = $(`#batch-status-${i}`);
-    statusEl.textContent = '⏳ Convirtiendo…';
-    statusEl.className = 'file-status';
-
+    const st = $(`#batch-status-${i}`);
+    st.textContent = '⏳ Convirtiendo…';
+    st.className = 'file-status';
     try {
-      const img = await loadImageBitmap(files[i]);
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
+      const img = await loadImg(files[i]);
+      cvs.width = img.naturalWidth; cvs.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
-      const blob = await new Promise(r => canvas.toBlob(r, mime, quality));
+      const blob = await new Promise(r => cvs.toBlob(r, mime, quality));
       const name = files[i].name.replace(/\.[^.]+$/, '') + '.' + ext;
       results.push({ name, blob, size: blob.size, original: files[i].name });
-      statusEl.textContent = `✓ ${fmtSize(blob.size)}`;
-      statusEl.className = 'file-status ok';
-    } catch (e) {
-      statusEl.textContent = '✗ Error';
-      statusEl.className = 'file-status err';
-      console.error(e);
+      st.textContent = `✓ ${fmtSize(blob.size)}`; st.className = 'file-status ok';
+    } catch(e) {
+      st.textContent = '✗ Error'; st.className = 'file-status err';
     }
   }
 
   btn.disabled = false;
   btn.innerHTML = '⚙️ Convertir todas';
 
-  if (results.length) {
-    // Show results
-    $('#img-results-card').style.display = '';
-    $('#img-results-content').innerHTML = `
-      <table class="result-table">
-        <tr><th>Original</th><th>Nuevo</th><th>Tamaño</th><th></th></tr>
-        ${results.map(r => `<tr>
-          <td>${r.original}</td>
-          <td>${r.name}</td>
-          <td>${fmtSize(r.size)}</td>
-          <td><a class="convert-link" data-name="${r.name}" data-idx="${results.indexOf(r)}">⬇ Descargar</a></td>
-        </tr>`).join('')}
-      </table>
-      <button class="btn btn-green" id="download-all-img-btn" style="margin-top:8px">📦 Descargar todo en ZIP</button>
-    `;
+  if (!results.length) return toast('Error al convertir','error');
 
-    // wire single downloads
-    $('#img-results-content').querySelectorAll('.convert-link').forEach(el => {
-      el.addEventListener('click', () => {
-        const idx = parseInt(el.dataset.idx);
-        downloadBlob(results[idx].blob, results[idx].name);
-      });
-    });
+  $('#img-results-card').style.display = '';
+  $('#img-results-content').innerHTML = `
+    <table class="result-table">
+      <tr><th>Original</th><th>Archivo</th><th>Tamaño</th><th></th></tr>
+      ${results.map((r,i) => `<tr>
+        <td>${r.original}</td><td>${r.name}</td>
+        <td>${fmtSize(r.size)}</td>
+        <td><a class="convert-link" data-idx="${i}">⬇</a></td>
+      </tr>`).join('')}
+    </table>
+    <button class="btn btn-green" id="dl-all-zip" style="margin-top:8px">📦 Descargar ZIP</button>`;
 
-    // wire ZIP download
-    $('#download-all-img-btn').addEventListener('click', async () => {
-      const zip = new JSZip();
-      results.forEach(r => zip.file(r.name, r.blob));
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      downloadBlob(zipBlob, 'imagenes_convertidas.zip');
-      toast('ZIP descargado');
-    });
+  $('#img-results-content').querySelectorAll('.convert-link').forEach(el => {
+    el.addEventListener('click', () => downloadBlob(results[parseInt(el.dataset.idx)].blob, results[parseInt(el.dataset.idx)].name));
+  });
 
-    zipBtn.disabled = false;
-    toast(`${results.length}/${files.length} imágenes convertidas`);
-  }
+  $('#dl-all-zip').addEventListener('click', async () => {
+    const zip = new JSZip();
+    results.forEach(r => zip.file(r.name, r.blob));
+    const zb = await zip.generateAsync({type:'blob'});
+    downloadBlob(zb, 'imagenes_convertidas.zip');
+    toast('ZIP descargado');
+  });
+
+  $('#batch-zip-btn').disabled = false;
+  toast(`${results.length}/${files.length} imágenes convertidas`);
 });
 
-function loadImageBitmap(file) {
-  return new Promise((resolve, reject) => {
+function loadImg(file) {
+  return new Promise((res, rej) => {
     const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
+    img.onload = () => res(img);
+    img.onerror = rej;
     img.src = URL.createObjectURL(file);
   });
 }
 
 /* ============================================================ */
-/*  VIDEO                                                        */
+/*  VÍDEO                                                        */
 /* ============================================================ */
-const videoZone = $('#video-zone');
-const videoInput = $('#video-input');
 let videoFile = null;
+const vz = $('#video-zone');
+const vi = $('#video-input');
 
-videoZone.addEventListener('click', () => { if (_ffLoaded) videoInput.click(); else toast('Espera a que FFmpeg termine de cargar','error'); });
-videoZone.addEventListener('dragover', e => { e.preventDefault(); videoZone.classList.add('dragover'); });
-videoZone.addEventListener('dragleave', () => videoZone.classList.remove('dragover'));
-videoZone.addEventListener('drop', e => {
-  e.preventDefault(); videoZone.classList.remove('dragover');
-  if (!_ffLoaded) return toast('FFmpeg no está listo aún','error');
+vz.addEventListener('click', () => vi.click());
+vz.addEventListener('dragover', e => { e.preventDefault(); vz.classList.add('dragover'); });
+vz.addEventListener('dragleave', () => vz.classList.remove('dragover'));
+vz.addEventListener('drop', e => {
+  e.preventDefault(); vz.classList.remove('dragover');
+  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor. Prueba desde localhost.','error');
   const f = e.dataTransfer.files[0];
   if (f && f.type.startsWith('video/')) loadVideo(f);
 });
-videoInput.addEventListener('change', () => { if (videoInput.files[0]) loadVideo(videoInput.files[0]); });
+vi.addEventListener('change', () => { if (vi.files[0]) loadVideo(vi.files[0]); });
 
-async function loadVideo(file) {
+function loadVideo(file) {
   videoFile = file;
-  const url = URL.createObjectURL(file);
-  const preview = $('#video-preview');
-  preview.src = url;
+  $('#video-preview').src = URL.createObjectURL(file);
   $('#video-editor-card').style.display = '';
   $('#video-results-card').style.display = 'none';
-  $('#convert-video-btn').disabled = false;
-  toast(`Vídeo cargado: ${file.name} (${fmtSize(file.size)})`);
+  if (ffLoaded) $('#convert-video-btn').disabled = false;
+  toast(`Vídeo: ${file.name} (${fmtSize(file.size)})`);
 }
 
 $('#convert-video-btn').addEventListener('click', async () => {
-  if (!videoFile || !_ffmpeg) return;
-  const format = $('#convert-video-format').value;
+  if (!videoFile || !ffmpeg) return toast('FFmpeg no disponible','error');
+  const fmt = $('#convert-video-format').value;
   const btn = $('#convert-video-btn');
-  const progress = $('#video-progress');
-  const fill = $('#video-progress-fill');
-  const text = $('#video-progress-text');
+  const pg = $('#video-progress'), fl = $('#video-progress-fill'), tx = $('#video-progress-text');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
+  pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
 
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
-  progress.style.display = '';
-  fill.style.width = '0%';
-  text.textContent = '0%';
-
-  // Register progress
-  _ffmpeg.on('progress', ({ progress: p }) => {
-    const pct = Math.min(Math.round(p * 100), 99);
-    fill.style.width = pct + '%';
-    text.textContent = pct + '%';
+  ffmpeg.on('progress', ({progress:p}) => {
+    const pc = Math.min(Math.round(p*100),99);
+    fl.style.width = pc+'%'; tx.textContent = pc+'%';
   });
 
   try {
-    const inputName = 'input' + (videoFile.name.match(/\.[^.]+$/) || ['.mp4'])[0];
-    const outputName = 'output.' + format;
-
-    // Write input file to FFmpeg WASM FS
-    const inputData = await videoFile.arrayBuffer();
-    _ffmpeg.writeFile(inputName, new Uint8Array(inputData));
-
-    // Run conversion
-    const args = ['-i', inputName];
-    if (format === 'gif') {
-      args.push('-vf', 'fps=10,scale=480:-1:flags=lanczos', '-loop', '0');
-    }
-    args.push(outputName);
-
-    await _ffmpeg.exec(args);
-    fill.style.width = '100%';
-    text.textContent = '100%';
-
-    // Read output
-    const data = _ffmpeg.readFile(outputName);
-    const blob = new Blob([data.buffer], { type: getVideoMime(format) });
-    const outName = videoFile.name.replace(/\.[^.]+$/, '') + '.' + format;
-
-    downloadBlob(blob, outName);
-
-    // Cleanup
-    _ffmpeg.deleteFile(inputName);
-    _ffmpeg.deleteFile(outputName);
-
+    const ext = (videoFile.name.match(/\.[^.]+$/) || ['.mp4'])[0];
+    const inp = 'input'+ext, out = 'output.'+fmt;
+    ffmpeg.writeFile(inp, new Uint8Array(await videoFile.arrayBuffer()));
+    const args = ['-i', inp];
+    if (fmt === 'gif') args.push('-vf','fps=10,scale=480:-1:flags=lanczos','-loop','0');
+    args.push(out);
+    await ffmpeg.exec(args);
+    fl.style.width = '100%'; tx.textContent = '100%';
+    const data = ffmpeg.readFile(out);
+    const blob = new Blob([data.buffer], {type: ({mp4:'video/mp4',webm:'video/webm',avi:'video/x-msvideo',mov:'video/quicktime',gif:'image/gif'}[fmt]||'video/mp4')});
+    const oname = videoFile.name.replace(/\.[^.]+$/,'')+'.'+fmt;
+    downloadBlob(blob, oname);
+    ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
     $('#video-results-card').style.display = '';
-    $('#video-results-content').innerHTML = `
-      <p style="margin-bottom:6px">✓ ${outName} — ${fmtSize(blob.size)}</p>
-      <button class="btn btn-primary btn-sm" onclick="(function(){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='${outName}';a.click()})()">⬇ Descargar de nuevo</button>
-    `;
+    $('#video-results-content').innerHTML = `<p>✓ ${oname} — ${fmtSize(blob.size)}</p>`;
+    toast(`Vídeo convertido: ${oname}`);
+  } catch(e) { console.error(e); toast('Error en conversión de vídeo','error'); }
 
-    toast(`Vídeo convertido: ${outName}`);
-  } catch(e) {
-    console.error(e);
-    toast('Error en la conversión del vídeo','error');
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '⬇ Convertir';
-  _ffmpeg.off('progress');
+  btn.disabled = false; btn.innerHTML = '⬇ Convertir';
+  ffmpeg.off('progress');
 });
-
-function getVideoMime(format) {
-  const map = { mp4:'video/mp4', webm:'video/webm', avi:'video/x-msvideo', mov:'video/quicktime', gif:'image/gif' };
-  return map[format] || 'video/mp4';
-}
 
 /* ============================================================ */
 /*  AUDIO                                                        */
 /* ============================================================ */
-const audioZone = $('#audio-zone');
-const audioInput = $('#audio-input');
 let audioFile = null;
+const az = $('#audio-zone');
+const ai = $('#audio-input');
 
-audioZone.addEventListener('click', () => { if (_ffLoaded) audioInput.click(); else toast('Espera a que FFmpeg termine de cargar','error'); });
-audioZone.addEventListener('dragover', e => { e.preventDefault(); audioZone.classList.add('dragover'); });
-audioZone.addEventListener('dragleave', () => audioZone.classList.remove('dragover'));
-audioZone.addEventListener('drop', e => {
-  e.preventDefault(); audioZone.classList.remove('dragover');
-  if (!_ffLoaded) return toast('FFmpeg no está listo aún','error');
+az.addEventListener('click', () => ai.click());
+az.addEventListener('dragover', e => { e.preventDefault(); az.classList.add('dragover'); });
+az.addEventListener('dragleave', () => az.classList.remove('dragover'));
+az.addEventListener('drop', e => {
+  e.preventDefault(); az.classList.remove('dragover');
+  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor. Prueba desde localhost.','error');
   const f = e.dataTransfer.files[0];
   if (f && f.type.startsWith('audio/')) loadAudio(f);
 });
-audioInput.addEventListener('change', () => { if (audioInput.files[0]) loadAudio(audioInput.files[0]); });
+ai.addEventListener('change', () => { if (ai.files[0]) loadAudio(ai.files[0]); });
 
-async function loadAudio(file) {
+function loadAudio(file) {
   audioFile = file;
   $('#audio-file-info').textContent = `📄 ${file.name} · ${fmtSize(file.size)}`;
   $('#audio-editor-card').style.display = '';
   $('#audio-results-card').style.display = 'none';
-  $('#convert-audio-btn').disabled = false;
-  toast(`Audio cargado: ${file.name}`);
+  if (ffLoaded) $('#convert-audio-btn').disabled = false;
+  toast(`Audio: ${file.name}`);
 }
 
 $('#convert-audio-btn').addEventListener('click', async () => {
-  if (!audioFile || !_ffmpeg) return;
-  const format = $('#convert-audio-format').value;
-  const quality = $('#convert-audio-quality').value;
+  if (!audioFile || !ffmpeg) return toast('FFmpeg no disponible','error');
+  const fmt = $('#convert-audio-format').value;
+  const qual = $('#convert-audio-quality').value;
   const btn = $('#convert-audio-btn');
-  const progress = $('#audio-progress');
-  const fill = $('#audio-progress-fill');
-  const text = $('#audio-progress-text');
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
-  progress.style.display = '';
-  fill.style.width = '0%';
-  text.textContent = '0%';
-
-  _ffmpeg.on('progress', ({ progress: p }) => {
-    const pct = Math.min(Math.round(p * 100), 99);
-    fill.style.width = pct + '%';
-    text.textContent = pct + '%';
+  const pg = $('#audio-progress'), fl = $('#audio-progress-fill'), tx = $('#audio-progress-text');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
+  pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
+  ffmpeg.on('progress', ({progress:p}) => {
+    const pc = Math.min(Math.round(p*100),99);
+    fl.style.width = pc+'%'; tx.textContent = pc+'%';
   });
-
   try {
-    const inputName = 'input' + (audioFile.name.match(/\.[^.]+$/) || ['.mp3'])[0];
-    const outputName = 'output.' + format;
-
-    const inputData = await audioFile.arrayBuffer();
-    _ffmpeg.writeFile(inputName, new Uint8Array(inputData));
-
-    const args = ['-i', inputName, '-b:a', quality, outputName];
-    await _ffmpeg.exec(args);
-
-    fill.style.width = '100%';
-    text.textContent = '100%';
-
-    const data = _ffmpeg.readFile(outputName);
-    const blob = new Blob([data.buffer], { type: getAudioMime(format) });
-    const outName = audioFile.name.replace(/\.[^.]+$/, '') + '.' + format;
-
-    downloadBlob(blob, outName);
-    _ffmpeg.deleteFile(inputName);
-    _ffmpeg.deleteFile(outputName);
-
+    const ext = (audioFile.name.match(/\.[^.]+$/) || ['.mp3'])[0];
+    const inp = 'input'+ext, out = 'output.'+fmt;
+    ffmpeg.writeFile(inp, new Uint8Array(await audioFile.arrayBuffer()));
+    await ffmpeg.exec(['-i', inp, '-b:a', qual, out]);
+    fl.style.width = '100%'; tx.textContent = '100%';
+    const data = ffmpeg.readFile(out);
+    const mimeMap = {mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',flac:'audio/flac'};
+    const blob = new Blob([data.buffer], {type: mimeMap[fmt]||'audio/mpeg'});
+    const oname = audioFile.name.replace(/\.[^.]+$/,'')+'.'+fmt;
+    downloadBlob(blob, oname);
+    ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
     $('#audio-results-card').style.display = '';
-    $('#audio-results-content').innerHTML = `
-      <p>✓ ${outName} — ${fmtSize(blob.size)} (${quality})</p>
-    `;
-
-    toast(`Audio convertido: ${outName}`);
-  } catch(e) {
-    console.error(e);
-    toast('Error en la conversión del audio','error');
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '⬇ Convertir';
-  _ffmpeg.off('progress');
+    $('#audio-results-content').innerHTML = `<p>✓ ${oname} — ${fmtSize(blob.size)} (${qual})</p>`;
+    toast(`Audio convertido: ${oname}`);
+  } catch(e) { console.error(e); toast('Error en conversión de audio','error'); }
+  btn.disabled = false; btn.innerHTML = '⬇ Convertir';
+  ffmpeg.off('progress');
 });
 
-function getAudioMime(format) {
-  const map = { mp3:'audio/mpeg', wav:'audio/wav', ogg:'audio/ogg', m4a:'audio/mp4', flac:'audio/flac' };
-  return map[format] || 'audio/mpeg';
-}
-
 /* ============================================================ */
-/*  PRELOAD FFMPEG ON STARTUP (lazy via first tab click)         */
+/*  INIT: precarga FFmpeg en background                         */
 /* ============================================================ */
-// Start preloading FFmpeg in background after initial render
-setTimeout(() => {
-  // Only preload if not already done by tab switch
-  if (!_ffLoaded) loadFFmpeg();
-}, 1500);
+setTimeout(() => { if (!ffLoaded) loadFFmpeg(); }, 2000);
 
 console.log('✦ Multimedia Converter Pro ready');
 </script>
