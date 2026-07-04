@@ -208,21 +208,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
 
     <hr class="section-divider">
-    <div class="card-title" style="margin-bottom:6px">⚡ Acciones rápidas</div>
-    <div class="quick-actions">
-      <button class="btn btn-orange btn-sm" id="action-60px">📦 60KB</button>
-      <button class="btn btn-sm" id="action-25p">25%</button>
-      <button class="btn btn-sm" id="action-50p">50%</button>
-      <button class="btn btn-sm" id="action-75p">75%</button>
-      <button class="btn btn-sm" id="action-1920">1920px</button>
-      <button class="btn btn-sm" id="action-original">↩ Original</button>
-    </div>
-
-    <hr class="section-divider">
-    <div class="card-title" style="margin-bottom:6px">🔄 Conversión</div>
-    <div class="controls-row">
-      <label>Formato:</label>
-      <select id="convert-img-format">
+    <div class="card-title" style="margin-bottom:6px">⚡ Acciones</div>
+    <div class="quick-actions" style="align-items:center">
+      <select id="convert-img-format" style="width:auto">
         <option value="image/png">PNG</option>
         <option value="image/jpeg">JPEG</option>
         <option value="image/webp" selected>WebP</option>
@@ -230,10 +218,20 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         <option value="image/gif">GIF</option>
         <option value="image/avif">AVIF</option>
       </select>
-      <label style="margin-left:8px">Calidad:</label>
-      <input type="range" id="convert-img-quality" min="10" max="100" value="90" style="width:100px">
-      <span style="font-size:12px;color:var(--text-dim)" id="convert-quality-label">90%</span>
-      <button class="btn btn-primary" id="convert-img-btn">⬇ Convertir y descargar</button>
+      <input type="range" id="convert-img-quality" min="10" max="100" value="90" style="width:80px;flex:none">
+      <span style="font-size:11px;color:var(--text-dim)" id="convert-quality-label">90%</span>
+      <button class="btn btn-primary btn-sm" id="convert-img-btn">⚡ Convertir</button>
+      <button class="btn btn-orange btn-sm" id="action-60px">📦 60KB</button>
+      <button class="btn btn-sm" id="action-25p">25%</button>
+      <button class="btn btn-sm" id="action-50p">50%</button>
+      <button class="btn btn-sm" id="action-75p">75%</button>
+      <button class="btn btn-sm" id="action-1920">1920px</button>
+      <button class="btn btn-sm" id="action-original">↩ Original</button>
+    </div>
+    <!-- Resultados descargables -->
+    <div id="img-downloads" style="display:none;margin-top:10px">
+      <div class="card-title" style="margin-bottom:6px">⬇ Descargas</div>
+      <div id="img-downloads-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
   </div>
 
@@ -367,6 +365,27 @@ function downloadBlob(blob, name) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function addDownloadResult(blob, name) {
+  const downloads = $('#img-downloads');
+  const list = $('#img-downloads-list');
+  downloads.style.display = '';
+
+  const item = document.createElement('div');
+  item.style.cssText = 'background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px';
+  item.innerHTML = `
+    <span style="color:var(--text-dim);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis">${name}</span>
+    <span style="color:var(--green);font-family:var(--mono);white-space:nowrap">${fmtSize(blob.size)}</span>
+    <button class="btn btn-primary btn-sm" style="padding:3px 10px;font-size:11px">⬇</button>
+  `;
+  item.querySelector('button').addEventListener('click', () => downloadBlob(blob, name));
+  list.appendChild(item);
+
+  // Mantener máximo 6 resultados
+  while (list.children.length > 6) list.removeChild(list.firstChild);
+
+  toast(`Listo: ${name} (${fmtSize(blob.size)})`);
 }
 
 /* Leer archivo como Data URL (base64) — respeta CSP img-src 'self' data: */
@@ -679,9 +698,9 @@ async function compressToKB(targetKB) {
   btn.innerHTML = '<span class="spinner"></span> Comprimiendo…';
   btn.disabled = true;
   try {
+    const previewSrc = $('#resize-img').src;
     const img = new Image();
-    await new Promise((r, e) => { img.onload = r; img.onerror = e; img.src = entry.dataUrl; });
-    // Reducir dimensiones si es enorme (>4000px)
+    await new Promise((r, e) => { img.onload = r; img.onerror = e; img.src = previewSrc; });
     let cw = img.naturalWidth, ch = img.naturalHeight;
     if (cw > 4000 || ch > 4000) {
       const scale = 4000 / Math.max(cw, ch);
@@ -690,7 +709,7 @@ async function compressToKB(targetKB) {
     }
     procCanvas.width = cw; procCanvas.height = ch;
     procCtx.drawImage(img, 0, 0, cw, ch);
-    // Binary search quality
+
     let lo = 0.01, hi = 1.0, best = null;
     for (let i = 0; i < 10; i++) {
       const mid = (lo + hi) / 2;
@@ -701,9 +720,18 @@ async function compressToKB(targetKB) {
     }
     if (!best) { best = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', lo)); }
     if (!best) return toast('Error al comprimir','error');
+
+    // Actualizar preview
+    const dataUrl = procCanvas.toDataURL('image/jpeg', lo);
+    const previewImg = $('#resize-img');
+    previewImg.src = dataUrl;
+    const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
+    const ds = Math.min(md / cw, 500 / ch, 1);
+    previewImg.style.width = Math.round(cw * ds) + 'px';
+    previewImg.style.height = Math.round(ch * ds) + 'px';
+
     const name = entry.file.name.replace(/\.[^.]+$/, '') + '_60kb.jpg';
-    downloadBlob(best, name);
-    toast(`Comprimido: ${name} (${fmtSize(best.size)})`);
+    addDownloadResult(best, name);
   } catch(e) {
     console.error(e);
     toast('Error al comprimir','error');
@@ -765,12 +793,21 @@ $('#convert-img-btn').addEventListener('click', async () => {
   await new Promise(r => { tmp.onload = r; });
   procCtx.drawImage(tmp, 0, 0, w, h);
 
-  procCanvas.toBlob(blob => {
-    if (!blob) return toast('Error al convertir','error');
-    const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
-    downloadBlob(blob, name);
-    toast(`Descargado: ${name} (${fmtSize(blob.size)})`);
-  }, mime, quality);
+  const blob = await new Promise(r => procCanvas.toBlob(r, mime, quality));
+  if (!blob) return toast('Error al convertir','error');
+
+  // Actualizar preview con la imagen convertida
+  const dataUrl = procCanvas.toDataURL(mime, quality);
+  const img = $('#resize-img');
+  img.src = dataUrl;
+  const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
+  const ds = Math.min(md / w, 500 / h, 1);
+  img.style.width = Math.round(w * ds) + 'px';
+  img.style.height = Math.round(h * ds) + 'px';
+
+  // Añadir botón de descarga
+  const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
+  addDownloadResult(blob, name);
 });
 
 /* ============================================================ */
