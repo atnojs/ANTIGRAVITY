@@ -473,6 +473,13 @@ async function loadEditorImage(entry) {
   el.src = entry.dataUrl; el.style.width = ''; el.style.height = '';
   $('#img-preview-empty').style.display = 'none';
   $('#resize-wrapper').style.display = '';
+
+  // Auto-detectar formato de la imagen
+  const ext = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
+  const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
+  const detected = mimeByExt[ext];
+  if (detected) $('#convert-img-format').value = detected;
+
   updateInfo();
 }
 
@@ -642,9 +649,9 @@ function renderConvertGrid() {
 
       try {
         // Detect format
-        const origExt = (r.name.match(/\.[^.]+$/i) || ['.jpg'])[0].toLowerCase();
-        const fmtMap = {'.jpg':['image/jpeg','jpg'],'.jpeg':['image/jpeg','jpg'],'.webp':['image/webp','webp'],'.avif':['image/avif','avif']};
-        const [compressMime, outExt] = fmtMap[origExt] || ['image/webp','webp'];
+        const origExt = (r.name.match(/\.[^.]+$/i) || ['.jpg'])[0].toLowerCase().replace('.','');
+        const fmtMap = {jpg:['image/jpeg','jpg'],jpeg:['image/jpeg','jpg'],webp:['image/webp','webp'],avif:['image/avif','avif'],png:['image/png','png'],bmp:['image/bmp','bmp'],gif:['image/gif','gif']};
+        const [compressMime, outExt] = fmtMap[origExt] || ['image/png','png'];
 
         const img = new Image();
         await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = r.dataUrl; });
