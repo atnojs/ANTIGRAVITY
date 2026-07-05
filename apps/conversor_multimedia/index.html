@@ -334,10 +334,8 @@ async function loadFFmpeg() {
     // Parchear Worker para redirigir el worker de FFmpeg a blob local
     const RealWorker = window.Worker;
     window.Worker = function(url, opts) {
-      if (typeof url === 'string' && url.includes('/ffmpeg/') && url.includes('worker')) {
-        return new RealWorker(wkBlobURL, opts);
-      }
-      if (url instanceof URL && url.href && url.href.includes('/ffmpeg/') && url.href.includes('worker')) {
+      const urlStr = (url instanceof URL) ? url.href : String(url);
+      if (urlStr.includes('ffmpeg') && urlStr.includes('worker')) {
         return new RealWorker(wkBlobURL, opts);
       }
       return new RealWorker(url, opts);
