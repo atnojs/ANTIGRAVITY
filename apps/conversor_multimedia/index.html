@@ -218,23 +218,13 @@ body{padding:16px;max-width:1100px;margin:0 auto}
         <span class="bar-pct" id="convert-quality-label">90%</span>
         <button class="bar-btn" id="convert-img-btn">Convertir</button>
       </div>
-      <div class="img-grid" id="uploaded-img-grid">
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-      </div>
+      <div class="img-grid" id="uploaded-img-grid"></div>
     </div>
 
     <!-- RIGHT: Imágenes Generadas -->
     <div class="card">
       <div class="card-title">Imágenes generadas</div>
-      <div class="img-grid" id="convert-results-grid">
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-        <div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>
-      </div>
+      <div class="img-grid" id="convert-results-grid"></div>
       <div id="convert-results-actions" style="display:none"></div>
     </div>
   </div>
@@ -437,16 +427,14 @@ async function handleImageFiles(fileList) {
 function renderUploadedGrid() {
   const grid = $('#uploaded-img-grid');
   const items = [];
-  // Show up to 4 uploaded images as placeholders, fill rest with IMAGEN
-  for (let i = 0; i < 4; i++) {
-    if (i < imgEntries.length) {
-      items.push(`
-        <div class="img-grid-item${i === currentIdx ? '' : ''}" data-idx="${i}" style="cursor:pointer">
-          <img src="${imgEntries[i].dataUrl}" alt="">
-        </div>`);
-    } else {
-      items.push(`<div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>`);
-    }
+  for (let i = 0; i < imgEntries.length; i++) {
+    items.push(`
+      <div class="img-grid-item" data-idx="${i}" style="cursor:pointer${i === currentIdx ? ';border-color:#c2185b' : ''}">
+        <img src="${imgEntries[i].dataUrl}" alt="">
+      </div>`);
+  }
+  if (!items.length) {
+    items.push('<div class="img-grid-item"><span class="grid-placeholder">SIN IMÁGENES</span></div>');
   }
   grid.innerHTML = items.join('');
 
@@ -609,20 +597,20 @@ function renderConvertGrid() {
   const actions = $('#convert-results-actions');
 
   const items = [];
-  for (let i = 0; i < 4; i++) {
-    if (i < convertResults.length) {
-      const r = convertResults[i];
-      items.push(`
-        <div class="img-grid-item" data-ridx="${i}">
-          <img src="${r.dataUrl}" alt="">
-          <div class="img-grid-actions" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%)">
-            <button class="btn-xs dl-btn" data-ridx="${i}" data-action="dl">Descargar</button>
-            <button class="btn-xs compress-btn" data-ridx="${i}" data-action="compress">60KB</button>
-          </div>
-        </div>`);
-    } else {
-      items.push(`<div class="img-grid-item"><span class="grid-placeholder">IMAGEN</span></div>`);
-    }
+  const max = Math.max(convertResults.length, 0);
+  for (let i = 0; i < max; i++) {
+    const r = convertResults[i];
+    items.push(`
+      <div class="img-grid-item" data-ridx="${i}">
+        <img src="${r.dataUrl}" alt="">
+        <div class="img-grid-actions" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%)">
+          <button class="btn-xs dl-btn" data-ridx="${i}" data-action="dl">Descargar</button>
+          <button class="btn-xs compress-btn" data-ridx="${i}" data-action="compress">60KB</button>
+        </div>
+      </div>`);
+  }
+  if (!items.length) {
+    items.push('<div class="img-grid-item"><span class="grid-placeholder">SIN IMÁGENES</span></div>');
   }
   grid.innerHTML = items.join('');
   actions.style.display = convertResults.length ? '' : 'none';
@@ -657,25 +645,35 @@ function renderConvertGrid() {
         await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = r.dataUrl; });
 
         let cw = img.naturalWidth, ch = img.naturalHeight;
+        // Reducir dimensiones si es enorme
         if (cw > 4000 || ch > 4000) {
           const scale = 4000 / Math.max(cw, ch);
           cw = Math.round(cw * scale); ch = Math.round(ch * scale);
         }
-        procCanvas.width = cw; procCanvas.height = ch;
-        procCtx.drawImage(img, 0, 0, cw, ch);
 
-        let lo = 0.01, hi = 1.0, best = null;
-        for (let i = 0; i < 10; i++) {
-          const mid = (lo + hi) / 2;
-          const b = await new Promise(res => procCanvas.toBlob(res, compressMime, mid));
-          if (!b) break;
-          if (b.size / 1024 > 60) { hi = mid; }
-          else { lo = mid; best = b; }
+        let best = null, bestLo = 0.5;
+        // Intentar hasta 3 rondas reduciendo dimensiones si no llega a 60KB
+        for (let round = 0; round < 3; round++) {
+          procCanvas.width = cw; procCanvas.height = ch;
+          procCtx.drawImage(img, 0, 0, cw, ch);
+
+          let lo = 0.01, hi = 1.0;
+          for (let i = 0; i < 10; i++) {
+            const mid = (lo + hi) / 2;
+            const b = await new Promise(res => procCanvas.toBlob(res, compressMime, mid));
+            if (!b) break;
+            if (b.size / 1024 > 60) { hi = mid; }
+            else { lo = mid; best = b; bestLo = mid; }
+          }
+          if (best && best.size / 1024 <= 90) break; // suficientemente cerca
+          // Reducir dimensiones y reintentar
+          cw = Math.max(10, Math.round(cw * 0.7));
+          ch = Math.max(10, Math.round(ch * 0.7));
         }
-        if (!best) { best = await new Promise(res => procCanvas.toBlob(res, compressMime, lo)); }
+        if (!best) { best = await new Promise(res => procCanvas.toBlob(res, compressMime, bestLo || 0.01)); }
         if (!best) return toast('Error al comprimir','error');
 
-        const newDataUrl = procCanvas.toDataURL(compressMime, lo);
+        const newDataUrl = procCanvas.toDataURL(compressMime, bestLo);
         const newName = r.name.replace(/\.[^.]+$/i, '') + '_60kb.' + outExt;
 
         // Update result
