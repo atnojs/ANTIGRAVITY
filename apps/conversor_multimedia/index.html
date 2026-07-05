@@ -164,42 +164,6 @@ body{padding:16px;max-width:1100px;margin:0 auto}
 <!-- ====== IMAGES MODE ====== -->
 <div id="mode-images-pane">
 
-  <!-- Editor row -->
-  <div class="card" id="img-editor-card" style="display:none">
-    <div class="card-title">Editor</div>
-    <div class="editor-row">
-      <div class="editor-preview" id="img-preview-area">
-        <div id="resize-wrapper" style="display:none">
-          <div class="resize-container" id="resize-ctn">
-            <img id="resize-img" alt="preview">
-            <div class="resize-handle" data-corner="se"></div>
-            <div class="resize-handle" data-corner="sw"></div>
-            <div class="resize-handle" data-corner="ne"></div>
-            <div class="resize-handle" data-corner="nw"></div>
-          </div>
-          <div class="info-bar" id="resize-info">
-            <div class="info-item"><span class="info-label">W:</span><span class="info-value" id="info-w">—</span></div>
-            <div class="info-item"><span class="info-label">H:</span><span class="info-value" id="info-h">—</span></div>
-            <div class="info-item"><span class="info-label">Peso:</span><span class="info-value" id="info-size">—</span></div>
-            <div class="info-item"><span class="info-label">Cambio:</span><span class="info-value" id="info-change">—</span></div>
-          </div>
-        </div>
-        <div id="img-preview-empty" style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">
-          <div style="font-size:36px;margin-bottom:4px">🖼</div>
-          <div>Selecciona una imagen</div>
-        </div>
-      </div>
-    </div>
-    <hr class="section-divider">
-    <div class="quick-actions">
-      <button class="btn-sm" id="action-25p">25%</button>
-      <button class="btn-sm" id="action-50p">50%</button>
-      <button class="btn-sm" id="action-75p">75%</button>
-      <button class="btn-sm" id="action-1920">1920px</button>
-      <button class="btn-sm" id="action-original">↩ Original</button>
-    </div>
-  </div>
-
   <!-- Two columns -->
   <div class="columns">
     <!-- LEFT: Convertir Formato -->
@@ -408,7 +372,6 @@ $('#audio-input').addEventListener('change', () => { if ($('#audio-input').files
 /* ============================================================ */
 let imgEntries = [];
 let currentIdx = -1;
-let currentW = 0, currentH = 0, origW = 0, origH = 0, origSize = 0;
 
 async function handleImageFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
@@ -418,8 +381,7 @@ async function handleImageFiles(fileList) {
     newEntries.push({ file, dataUrl: await fileToDataURL(file) });
   }
   imgEntries = imgEntries.concat(newEntries);
-  if (currentIdx === -1) { currentIdx = 0; loadEditorImage(imgEntries[0]); }
-  $('#img-editor-card').style.display = '';
+  if (currentIdx === -1) { currentIdx = 0; }
   renderUploadedGrid();
 }
 
@@ -442,117 +404,16 @@ function renderUploadedGrid() {
     const idx = parseInt(img.parentElement.dataset.idx);
     img.parentElement.addEventListener('click', () => {
       currentIdx = idx;
-      loadEditorImage(imgEntries[idx]);
+      // Auto-detectar formato
+      const entry = imgEntries[idx];
+      const ext = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
+      const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
+      const detected = mimeByExt[ext];
+      if (detected) $('#convert-img-format').value = detected;
       renderUploadedGrid();
     });
     if (idx === currentIdx) img.parentElement.style.borderColor = '#c2185b';
   });
-}
-
-/* Editor */
-async function loadEditorImage(entry) {
-  origSize = entry.file.size;
-  const img = new Image();
-  await new Promise((r, e) => { img.onload = r; img.onerror = e; img.src = entry.dataUrl; });
-  origW = img.naturalWidth; origH = img.naturalHeight;
-  currentW = origW; currentH = origH;
-
-  const el = $('#resize-img');
-  el.src = entry.dataUrl; el.style.width = ''; el.style.height = '';
-  $('#img-preview-empty').style.display = 'none';
-  $('#resize-wrapper').style.display = '';
-
-  // Auto-detectar formato de la imagen
-  const ext = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
-  const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
-  const detected = mimeByExt[ext];
-  if (detected) $('#convert-img-format').value = detected;
-
-  updateInfo();
-}
-
-function updateInfo() {
-  $('#info-w').textContent = currentW + 'px';
-  $('#info-h').textContent = currentH + 'px';
-  const pct = currentW > 0 && origW > 0 ? (currentW * currentH) / (origW * origH) * 100 : 0;
-  const ch = $('#info-change');
-  ch.textContent = pct.toFixed(1) + '%';
-  $('#info-size').textContent = fmtSize(Math.round(origSize * (currentW * currentH) / (origW * origH)));
-}
-
-/* Dynamic resize */
-(function() {
-  const ctn = $('#resize-ctn'), img = $('#resize-img');
-  let dragging = false, corner = '', sx, sy, sw, sh, ar;
-
-  ctn.addEventListener('mousedown', e => {
-    const h = e.target.closest('.resize-handle');
-    if (!h) return;
-    dragging = true; corner = h.dataset.corner;
-    sx = e.clientX; sy = e.clientY;
-    sw = currentW; sh = currentH; ar = sw / sh;
-    e.preventDefault();
-  });
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const dx = e.clientX - sx, dy = e.clientY - sy;
-    const scale = origW / (img.naturalWidth || img.clientWidth) || 1;
-    let nw, nh;
-    if (e.shiftKey && ar) {
-      const d = Math.max(Math.abs(dx), Math.abs(dy)) * scale * (dx >= 0 ? 1 : -1);
-      if (corner === 'se') { nw = sw + d; nh = nw / ar; }
-      else if (corner === 'sw') { nw = sw - d; nh = nw / ar; }
-      else if (corner === 'ne') { nh = sh - d; nw = nh * ar; }
-      else { nw = sw - d; nh = nw / ar; }
-    } else {
-      if (corner === 'se') { nw = sw + dx * scale; nh = sh + dy * scale; }
-      else if (corner === 'sw') { nw = sw - dx * scale; nh = sh + dy * scale; }
-      else if (corner === 'ne') { nw = sw + dx * scale; nh = sh - dy * scale; }
-      else { nw = sw - dx * scale; nh = sh - dy * scale; }
-    }
-    nw = Math.max(10, Math.min(nw, origW * 5));
-    nh = Math.max(10, Math.min(nh, origH * 5));
-    currentW = Math.round(nw); currentH = Math.round(nh);
-    const md = Math.min($('#img-preview-area').clientWidth - 40, 500);
-    const ds = Math.min(md / nw, 300 / nh, 1);
-    img.style.width = Math.round(nw * ds) + 'px';
-    img.style.height = Math.round(nh * ds) + 'px';
-    updateInfo();
-  });
-  document.addEventListener('mouseup', () => {
-    if (!dragging) return; dragging = false;
-  });
-})();
-
-/* Quick actions */
-$('#action-25p').addEventListener('click', () => resizePct(25));
-$('#action-50p').addEventListener('click', () => resizePct(50));
-$('#action-75p').addEventListener('click', () => resizePct(75));
-$('#action-1920').addEventListener('click', () => resizeW(1920));
-$('#action-original').addEventListener('click', () => { currentW = origW; currentH = origH; renderResized(origW, origH); });
-
-async function resizeW(target) {
-  if (currentIdx === -1) return toast('Sube una imagen','error');
-  const w = Math.min(target, origW), h = Math.round(w * origH / origW);
-  currentW = w; currentH = h; await renderResized(w, h);
-}
-async function resizePct(pct) {
-  if (currentIdx === -1) return;
-  const w = Math.round(origW * pct / 100), h = Math.round(origH * pct / 100);
-  currentW = w; currentH = h; await renderResized(w, h);
-}
-async function renderResized(w, h) {
-  procCanvas.width = w; procCanvas.height = h;
-  const tmp = new Image(); tmp.src = $('#resize-img').src;
-  await new Promise(r => { tmp.onload = r; });
-  procCtx.drawImage(tmp, 0, 0, w, h);
-  const img = $('#resize-img');
-  img.src = procCanvas.toDataURL('image/png');
-  const md = Math.min($('#img-preview-area').clientWidth - 40, 500);
-  const ds = Math.min(md / w, 300 / h, 1);
-  img.style.width = Math.round(w * ds) + 'px';
-  img.style.height = Math.round(h * ds) + 'px';
-  updateInfo();
 }
 
 /* Convertir formato */
@@ -561,17 +422,24 @@ $('#convert-img-quality').addEventListener('input', () => {
 });
 
 $('#convert-img-btn').addEventListener('click', async () => {
-  if (currentIdx === -1) return toast('Sube una imagen primero','error');
+  if (currentIdx === -1) return toast('Selecciona una imagen primero','error');
   const entry = imgEntries[currentIdx];
   const mime = $('#convert-img-format').value;
   const quality = parseInt($('#convert-img-quality').value) / 100;
   const ext = extFromMime(mime);
-  const w = currentW, h = currentH;
+
+  // Detectar formato actual de la imagen
+  const imgExt = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
+  const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
+  if (mimeByExt[imgExt] === mime) return toast('El formato es el mismo que tiene la imagen','error');
+
+  // Cargar dimensiones originales
+  const img = new Image(); img.src = entry.dataUrl;
+  await new Promise(r => { img.onload = r; });
+  const w = img.naturalWidth, h = img.naturalHeight;
 
   procCanvas.width = w; procCanvas.height = h;
-  const tmp = new Image(); tmp.src = entry.dataUrl;
-  await new Promise(r => { tmp.onload = r; });
-  procCtx.drawImage(tmp, 0, 0, w, h);
+  procCtx.drawImage(img, 0, 0, w, h);
 
   const blob = await new Promise(r => procCanvas.toBlob(r, mime, quality));
   if (!blob) return toast('Error al convertir','error');
@@ -665,10 +533,11 @@ function renderConvertGrid() {
             if (b.size / 1024 > 60) { hi = mid; }
             else { lo = mid; best = b; bestLo = mid; }
           }
-          if (best && best.size / 1024 <= 90) break; // suficientemente cerca
-          // Reducir dimensiones y reintentar
-          cw = Math.max(10, Math.round(cw * 0.7));
-          ch = Math.max(10, Math.round(ch * 0.7));
+          if (best && best.size / 1024 <= 65) break; // ≤65KB, suficientemente cerca
+          // Reducir dimensiones y reintentar (más agresivo si no encuentra ≤60KB)
+          const factor = best ? 0.7 : 0.5;
+          cw = Math.max(20, Math.round(cw * factor));
+          ch = Math.max(20, Math.round(ch * factor));
         }
         if (!best) { best = await new Promise(res => procCanvas.toBlob(res, compressMime, bestLo || 0.01)); }
         if (!best) return toast('Error al comprimir','error');
