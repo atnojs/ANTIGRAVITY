@@ -158,7 +158,7 @@ body{padding:16px;max-width:1100px;margin:0 auto}
   </div>
   <input type="file" id="img-input" multiple accept="image/*" hidden>
   <input type="file" id="video-input" accept="video/*" hidden>
-  <input type="file" id="audio-input" accept="audio/*" hidden>
+  <input type="file" id="audio-input" accept="audio/*" multiple hidden>
 </div>
 
 <!-- ====== IMAGES MODE ====== -->
@@ -223,7 +223,9 @@ body{padding:16px;max-width:1100px;margin:0 auto}
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <span id="ff-audio-status" class="badge loading">⏳ FFmpeg…</span>
     </div>
-    <div style="margin-bottom:8px"><span style="font-size:13px;color:var(--text-dim)" id="audio-file-info">Sin archivo</span></div>
+    <div style="margin-bottom:8px"><span style="font-size:13px;color:var(--text-dim)" id="audio-file-info">Sin archivos</span></div>
+    <!-- Lista de audios subidos -->
+    <div id="audio-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
     <div class="controls-row">
       <label style="font-size:12px;color:var(--text-dim);font-weight:600">A:</label>
       <select id="convert-audio-format" style="border:1px solid var(--pink);border-radius:var(--radius-sm);padding:5px 10px">
@@ -308,7 +310,7 @@ $$('.top-btn').forEach(btn => {
       $('#main-upload-zone').querySelector('.upload-zone-text').innerHTML = 'Arrastra un vídeo aquí o <strong>haz clic</strong>';
       if (!ffLoaded) loadFFmpeg();
     } else {
-      $('#main-upload-zone').querySelector('.upload-zone-text').innerHTML = 'Arrastra un audio aquí o <strong>haz clic</strong>';
+      $('#main-upload-zone').querySelector('.upload-zone-text').innerHTML = 'Arrastra audios aquí o <strong>haz clic</strong>';
       if (!ffLoaded) loadFFmpeg();
     }
   });
@@ -361,11 +363,11 @@ mainZone.addEventListener('drop', e => {
   const files = e.dataTransfer.files;
   if (currentMode === 'images') handleImageFiles(files);
   else if (currentMode === 'video' && files[0]?.type.startsWith('video/')) loadVideo(files[0]);
-  else if (currentMode === 'audio' && files[0]?.type.startsWith('audio/')) loadAudio(files[0]);
+  else if (currentMode === 'audio') handleAudioFiles(files);
 });
 $('#img-input').addEventListener('change', () => { if ($('#img-input').files.length) handleImageFiles($('#img-input').files); });
 $('#video-input').addEventListener('change', () => { if ($('#video-input').files[0]) loadVideo($('#video-input').files[0]); });
-$('#audio-input').addEventListener('change', () => { if ($('#audio-input').files[0]) loadAudio($('#audio-input').files[0]); });
+$('#audio-input').addEventListener('change', () => { if ($('#audio-input').files.length) handleAudioFiles($('#audio-input').files); });
 
 /* ============================================================ */
 /*  IMÁGENES — STATE                                             */
@@ -618,17 +620,53 @@ $('#convert-video-btn').addEventListener('click', async () => {
 /* ============================================================ */
 /*  AUDIO                                                        */
 /* ============================================================ */
-let audioFile = null;
+let audioEntries = [];
+let currentAudioIdx = -1;
 
-function loadAudio(file) {
-  audioFile = file;
-  $('#audio-file-info').textContent = `📄 ${file.name} · ${fmtSize(file.size)}`;
+async function handleAudioFiles(fileList) {
+  const files = Array.from(fileList).filter(f => f.type.startsWith('audio/') || f.name.match(/\.(mp3|wav|ogg|m4a|flac|aac|wma)$/i));
+  if (!files.length) return toast('No hay audios','error');
+  audioEntries = audioEntries.concat(files);
+  if (currentAudioIdx === -1) currentAudioIdx = 0;
   if (ffLoaded) $('#convert-audio-btn').disabled = false;
-  toast(`Audio: ${file.name}`);
+  renderAudioList();
+  $('#audio-file-info').textContent = `${audioEntries.length} archivo(s) cargado(s)`;
+}
+
+function renderAudioList() {
+  const list = $('#audio-list');
+  list.innerHTML = audioEntries.map((f, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px${i === currentAudioIdx ? ';border:2px solid var(--pink)' : ';border:1px solid var(--border)'}">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${f.name}</span>
+      <span style="color:var(--text-dim);font-family:var(--mono);white-space:nowrap">${fmtSize(f.size)}</span>
+      <button class="btn btn-sm" data-aidx="${i}" data-action="select" style="padding:2px 8px;font-size:11px">Selec.</button>
+      <button class="btn btn-sm btn-red" data-aidx="${i}" data-action="del" style="padding:2px 8px;font-size:11px;background:var(--red);color:#fff;border:none">✕</button>
+    </div>
+  `).join('') || '<span style="color:var(--text-dim);font-size:12px">Sin archivos</span>';
+
+  list.querySelectorAll('[data-action="select"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentAudioIdx = parseInt(btn.dataset.aidx);
+      renderAudioList();
+    });
+  });
+  list.querySelectorAll('[data-action="del"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.aidx);
+      audioEntries.splice(idx, 1);
+      if (!audioEntries.length) { currentAudioIdx = -1; $('#convert-audio-btn').disabled = true; }
+      else if (currentAudioIdx >= audioEntries.length) currentAudioIdx = audioEntries.length - 1;
+      else if (currentAudioIdx > idx) currentAudioIdx--;
+      $('#audio-file-info').textContent = audioEntries.length ? `${audioEntries.length} archivo(s)` : 'Sin archivos';
+      renderAudioList();
+    });
+  });
 }
 
 $('#convert-audio-btn').addEventListener('click', async () => {
-  if (!audioFile || !ffmpeg) return toast('FFmpeg no disponible','error');
+  if (currentAudioIdx === -1 || !audioEntries[currentAudioIdx]) return toast('Selecciona un audio','error');
+  if (!ffmpeg) return toast('FFmpeg no disponible','error');
+  const file = audioEntries[currentAudioIdx];
   const fmt = $('#convert-audio-format').value, qual = $('#convert-audio-quality').value;
   const btn = $('#convert-audio-btn'), pg = $('#audio-progress'),
     fl = $('#audio-progress-fill'), tx = $('#audio-progress-text');
@@ -639,15 +677,15 @@ $('#convert-audio-btn').addEventListener('click', async () => {
     fl.style.width = pc+'%'; tx.textContent = pc+'%';
   });
   try {
-    const ext = (audioFile.name.match(/\.[^.]+$/) || ['.mp3'])[0];
+    const ext = (file.name.match(/\.[^.]+$/) || ['.mp3'])[0];
     const inp = 'input'+ext, out = 'output.'+fmt;
-    ffmpeg.writeFile(inp, new Uint8Array(await audioFile.arrayBuffer()));
+    ffmpeg.writeFile(inp, new Uint8Array(await file.arrayBuffer()));
     await ffmpeg.exec(['-i', inp, '-b:a', qual, out]);
     fl.style.width = '100%'; tx.textContent = '100%';
     const data = ffmpeg.readFile(out);
     const mimeMap = {mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',flac:'audio/flac'};
     const blob = new Blob([data.buffer], {type: mimeMap[fmt]||'audio/mpeg'});
-    const oname = audioFile.name.replace(/\.[^.]+$/,'')+'.'+fmt;
+    const oname = file.name.replace(/\.[^.]+$/,'')+'.'+fmt;
     downloadBlob(blob, oname);
     ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
     $('#audio-result').innerHTML = `<p style="font-size:12px;color:var(--green)">✓ ${oname} — ${fmtSize(blob.size)} (${qual})</p>`;
@@ -658,7 +696,7 @@ $('#convert-audio-btn').addEventListener('click', async () => {
 });
 
 /* Init */
-setTimeout(() => { if (!ffLoaded) loadFFmpeg(); }, 2000);
+loadFFmpeg();
 console.log('✦ Multimedia Converter Pro ready');
 </script>
 </body>
