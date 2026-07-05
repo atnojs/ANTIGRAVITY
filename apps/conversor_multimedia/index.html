@@ -519,14 +519,18 @@ function renderConvertGrid() {
           cw = Math.round(cw * scale); ch = Math.round(ch * scale);
         }
 
-        let best = null, bestLo = 0.01;
+        // Suelo de calidad por formato (no degradar de más)
+        const qFloor = { jpg:0.3, jpeg:0.3, webp:0.01, avif:0.01, png:0.5, bmp:0.5, gif:0.5 };
+        const minQ = qFloor[origExt] || 0.3;
         const isLossless = ['png','bmp','gif'].includes(origExt);
-        // Hasta 5 rondas reduciendo dimensiones si no llega a 60KB
-        for (let round = 0; round < 5; round++) {
+
+        let best = null, bestLo = minQ;
+        // Reducir dimensiones progresivamente si no cabe en 60KB
+        for (let round = 0; round < 6; round++) {
           procCanvas.width = cw; procCanvas.height = ch;
           procCtx.drawImage(img, 0, 0, cw, ch);
 
-          let lo = 0.01, hi = 1.0;
+          let lo = minQ, hi = 1.0;
           for (let i = 0; i < 10; i++) {
             const mid = (lo + hi) / 2;
             const b = await new Promise(res => procCanvas.toBlob(res, compressMime, mid));
@@ -534,22 +538,20 @@ function renderConvertGrid() {
             if (b.size / 1024 > 60) { hi = mid; }
             else { lo = mid; best = b; bestLo = mid; }
           }
-          if (best && best.size / 1024 <= 60) break; // objetivo alcanzado
-          // Reducir dimensiones: más agresivo para formatos sin pérdida
-          const factor = isLossless ? 0.4 : (best ? 0.6 : 0.5);
-          cw = Math.max(40, Math.round(cw * factor));
-          ch = Math.max(40, Math.round(ch * factor));
+          if (best && best.size / 1024 <= 60) break;
+          // Reducir dimensiones: WebP/AVIF más agresivo, JPEG/PNG moderado
+          const factor = (origExt === 'webp' || origExt === 'avif') ? 0.55 : 0.78;
+          cw = Math.max(80, Math.round(cw * factor));
+          ch = Math.max(80, Math.round(ch * factor));
         }
-        // Si tras 5 rondas no llega, un último intento drástico
+        // Si no llega, forzar la mínima calidad posible sin degradar más dimensiones
         if (!best || best.size / 1024 > 60) {
-          cw = Math.max(40, Math.round(cw * 0.4));
-          ch = Math.max(40, Math.round(ch * 0.4));
           procCanvas.width = cw; procCanvas.height = ch;
           procCtx.drawImage(img, 0, 0, cw, ch);
-          best = await new Promise(res => procCanvas.toBlob(res, compressMime, 0.01));
-          bestLo = 0.01;
-          if (!best) return toast('Error al comprimir','error');
+          best = await new Promise(res => procCanvas.toBlob(res, compressMime, minQ));
+          bestLo = minQ;
         }
+        if (!best) return toast('Error al comprimir','error');
 
         const newDataUrl = procCanvas.toDataURL(compressMime, bestLo);
         const newName = r.name.replace(/\.[^.]+$/i, '') + '_60kb.' + outExt;
