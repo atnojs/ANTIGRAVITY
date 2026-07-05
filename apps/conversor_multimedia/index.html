@@ -52,7 +52,7 @@ body{padding:20px;overflow-y:auto;min-height:100vh}
 .upload-zone-text strong{color:var(--text)}
 
 .preview-area{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px}
-.preview-area img{max-width:100%;max-height:55vh;border-radius:var(--radius-sm);display:block;box-shadow:0 4px 30px rgba(0,0,0,.4)}
+.preview-area img{max-width:100%;max-height:50vh;border-radius:var(--radius-sm);display:block;box-shadow:0 4px 30px rgba(0,0,0,.4)}
 .preview-area video{max-width:100%;max-height:55vh;border-radius:var(--radius-sm);display:block}
 .preview-empty{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:13px}
 
@@ -72,8 +72,6 @@ body{padding:20px;overflow-y:auto;min-height:100vh}
 .info-bar .info-value.green{color:var(--green)}
 .info-bar .info-value.orange{color:var(--orange)}
 
-.controls-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.controls-row label{font-size:12px;color:var(--text-dim);white-space:nowrap}
 select,input[type=range]{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:6px 10px;font-size:13px;outline:none;transition:.2s}
 select:focus{border-color:var(--accent)}
 select option{background:#1a1a2e;color:var(--text)}
@@ -90,9 +88,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .btn-green:hover{box-shadow:0 0 16px rgba(74,222,128,.3)}
 .btn-orange{background:var(--orange);color:#0a0a12}
 .btn-orange:hover{box-shadow:0 0 16px rgba(251,146,60,.3)}
-.btn-red{background:var(--red);color:#fff;padding:2px 6px;font-size:11px;border-radius:50%;position:absolute;top:-6px;right:-6px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
-.btn-red:hover{box-shadow:0 0 10px rgba(248,113,113,.5)}
+.btn-red{background:var(--red);color:#fff}
 .btn-sm{padding:5px 12px;font-size:12px}
+.btn-xs{padding:4px 10px;font-size:11px}
 
 .progress-bar{width:100%;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px}
 .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:2px;transition:width .2s;width:0%}
@@ -102,18 +100,23 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .file-item{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;text-align:center;font-size:11px;position:relative}
 .file-item img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;margin-bottom:4px}
 .file-item .file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);padding:0 2px}
-.file-item .file-status{font-size:10px;margin-top:2px}
-.file-item .file-status.ok{color:var(--green)}
-.file-item .file-status.err{color:#f87171}
+.file-item .file-size{font-size:10px;color:var(--text-dim);margin-top:1px}
 .file-item .del-btn{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:2px solid var(--bg);background:var(--red);color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:5;line-height:1}
 .file-item .del-btn:hover{transform:scale(1.2);box-shadow:0 0 12px rgba(248,113,113,.6)}
 .file-item.selected{border-color:var(--accent)!important;box-shadow:0 0 14px var(--accent-glow);outline:2px solid var(--accent);outline-offset:-2px}
 
-.result-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
-.result-table th,.result-table td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
-.result-table th{color:var(--text-dim);font-weight:600}
-.result-table td{color:var(--text)}
-.result-table .convert-link{color:var(--accent);cursor:pointer;text-decoration:underline}
+/* Tarjetas de resultado */
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:8px}
+.result-card{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;text-align:center;position:relative;display:flex;flex-direction:column;gap:6px}
+.result-card img{width:100%;aspect-ratio:4/3;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.4)}
+.result-card .result-name{font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-card .result-size{font-size:11px;color:var(--green);font-family:var(--mono)}
+.result-card .result-actions{display:flex;gap:4px;justify-content:center}
+.result-card .result-actions .btn{flex:1;min-width:0}
+.result-card.compressed{border-color:var(--green);box-shadow:0 0 8px rgba(74,222,128,.15)}
+
+.section-divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+.quick-actions{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0;align-items:center}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(20,20,40,.95);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-size:13px;backdrop-filter:blur(12px);z-index:999;opacity:0;transition:.3s;pointer-events:none}
 .toast.show{opacity:1}
@@ -128,15 +131,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .badge.ready{background:rgba(74,222,128,.15);color:var(--green)}
 .badge.error{background:rgba(248,113,113,.15);color:#f87171}
 
-.quick-actions{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
-.section-divider{border:none;border-top:1px solid var(--border);margin:12px 0}
-
 @media(max-width:600px){
   body{padding:12px}
   .tabs{flex-direction:column}
   .info-bar{font-size:11px}
-  .controls-row{flex-direction:column;align-items:stretch}
   .file-list{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+  .results-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
 </style>
 </head>
@@ -155,6 +155,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 
 <!-- ==================== IMÁGENES ==================== -->
 <div class="tab-pane active" id="pane-images">
+  <!-- Upload -->
   <div class="card">
     <div class="upload-zone" id="img-zone">
       <div class="upload-zone-icon">📁</div>
@@ -163,27 +164,15 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <input type="file" id="img-input" multiple accept="image/*" hidden>
   </div>
 
+  <!-- Batch (solo thumbnails + eliminar) -->
   <div class="card" id="img-batch-card" style="display:none">
-    <div class="card-title">📦 Archivos cargados (<span id="batch-count">0</span>)</div>
+    <div class="card-title">📦 Archivos (<span id="batch-count">0</span>)</div>
     <div class="file-list" id="img-batch-list"></div>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
-      <select id="batch-img-format" style="flex:1;min-width:120px">
-        <option value="image/png">PNG</option>
-        <option value="image/jpeg">JPEG</option>
-        <option value="image/webp">WebP</option>
-        <option value="image/bmp">BMP</option>
-        <option value="image/gif">GIF</option>
-        <option value="image/avif">AVIF</option>
-      </select>
-      <input type="range" id="batch-img-quality" min="10" max="100" value="85" style="width:80px;flex:none">
-      <span style="font-size:11px;color:var(--text-dim)" id="batch-quality-label">85%</span>
-      <button class="btn btn-primary" id="batch-convert-btn">⚙️ Convertir seleccionadas</button>
-      <button class="btn btn-green" id="batch-zip-btn" disabled>📦 ZIP</button>
-    </div>
   </div>
 
+  <!-- Editor -->
   <div class="card" id="img-editor-card" style="display:none">
-    <div class="card-title">✏️ Editor de imagen</div>
+    <div class="card-title">✏️ Editor</div>
 
     <div class="preview-area" id="img-preview-area">
       <div id="resize-container-wrapper" style="display:none">
@@ -203,13 +192,23 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       </div>
       <div class="preview-empty" id="img-preview-empty">
         <div style="font-size:40px;margin-bottom:8px">🖼</div>
-        <div>Selecciona una imagen para empezar</div>
+        <div>Selecciona una imagen</div>
       </div>
     </div>
 
     <hr class="section-divider">
-    <div class="card-title" style="margin-bottom:6px">⚡ Acciones</div>
-    <div class="quick-actions" style="align-items:center">
+    <div class="card-title" style="margin-bottom:6px">↔ Redimensionar</div>
+    <div class="quick-actions">
+      <button class="btn btn-sm" id="action-25p">25%</button>
+      <button class="btn btn-sm" id="action-50p">50%</button>
+      <button class="btn btn-sm" id="action-75p">75%</button>
+      <button class="btn btn-sm" id="action-1920">1920px</button>
+      <button class="btn btn-sm" id="action-original">↩ Original</button>
+    </div>
+
+    <hr class="section-divider">
+    <div class="card-title" style="margin-bottom:6px">🔄 Convertir formato</div>
+    <div class="quick-actions">
       <select id="convert-img-format" style="width:auto">
         <option value="image/png">PNG</option>
         <option value="image/jpeg">JPEG</option>
@@ -221,23 +220,19 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
       <input type="range" id="convert-img-quality" min="10" max="100" value="90" style="width:80px;flex:none">
       <span style="font-size:11px;color:var(--text-dim)" id="convert-quality-label">90%</span>
       <button class="btn btn-primary btn-sm" id="convert-img-btn">⚡ Convertir</button>
-      <button class="btn btn-orange btn-sm" id="action-60px">📦 60KB</button>
-      <button class="btn btn-sm" id="action-25p">25%</button>
-      <button class="btn btn-sm" id="action-50p">50%</button>
-      <button class="btn btn-sm" id="action-75p">75%</button>
-      <button class="btn btn-sm" id="action-1920">1920px</button>
-      <button class="btn btn-sm" id="action-original">↩ Original</button>
     </div>
-    <!-- Resultados descargables -->
-    <div id="img-downloads" style="display:none;margin-top:10px">
-      <div class="card-title" style="margin-bottom:6px">⬇ Descargas</div>
-      <div id="img-downloads-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+
+    <!-- Tarjetas de resultados -->
+    <div id="img-results-area" style="display:none;margin-top:12px">
+      <div class="card-title" style="margin-bottom:6px">⬇ Imágenes generadas</div>
+      <div class="results-grid" id="img-results-list"></div>
     </div>
   </div>
 
-  <div class="card" id="img-results-card" style="display:none">
-    <div class="card-title">✅ Resultados</div>
-    <div id="img-results-content"></div>
+  <!-- Resultados batch -->
+  <div class="card" id="img-batch-results-card" style="display:none">
+    <div class="card-title">✅ Resultados batch</div>
+    <div id="img-batch-results-content"></div>
   </div>
 </div>
 
@@ -245,29 +240,24 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 <div class="tab-pane" id="pane-video">
   <div class="card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <span id="ff-video-status" class="badge loading">⏳ Cargando FFmpeg…</span>
+      <span id="ff-video-status" class="badge loading">⏳ FFmpeg…</span>
     </div>
     <div class="upload-zone" id="video-zone">
       <div class="upload-zone-icon">🎬</div>
-      <div class="upload-zone-text">Arrastra un vídeo aquí o <strong>haz clic para seleccionar</strong></div>
+      <div class="upload-zone-text">Arrastra un vídeo o <strong>haz clic</strong></div>
     </div>
     <input type="file" id="video-input" accept="video/*" hidden>
   </div>
   <div class="card" id="video-editor-card" style="display:none">
-    <div class="preview-area">
-      <video id="video-preview" controls style="max-width:100%;border-radius:8px"></video>
-    </div>
+    <div class="preview-area"><video id="video-preview" controls style="max-width:100%;border-radius:8px"></video></div>
     <hr class="section-divider">
-    <div class="controls-row">
-      <label>Convertir a:</label>
+    <div class="quick-actions" style="align-items:center">
+      <label style="font-size:12px;color:var(--text-dim)">A:</label>
       <select id="convert-video-format">
-        <option value="mp4">MP4</option>
-        <option value="webm">WebM</option>
-        <option value="avi">AVI</option>
-        <option value="mov">MOV</option>
-        <option value="gif">GIF</option>
+        <option value="mp4">MP4</option><option value="webm">WebM</option>
+        <option value="avi">AVI</option><option value="mov">MOV</option><option value="gif">GIF</option>
       </select>
-      <button class="btn btn-primary" id="convert-video-btn" disabled>⬇ Convertir</button>
+      <button class="btn btn-primary btn-sm" id="convert-video-btn" disabled>⬇ Convertir</button>
     </div>
     <div id="video-progress" style="display:none">
       <div class="progress-bar"><div class="progress-bar-fill" id="video-progress-fill"></div></div>
@@ -275,8 +265,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
   </div>
   <div class="card" id="video-results-card" style="display:none">
-    <div class="card-title">✅ Resultados</div>
-    <div id="video-results-content"></div>
+    <div class="card-title">✅ Resultado</div><div id="video-results-content"></div>
   </div>
 </div>
 
@@ -284,35 +273,28 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 <div class="tab-pane" id="pane-audio">
   <div class="card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <span id="ff-audio-status" class="badge loading">⏳ Cargando FFmpeg…</span>
+      <span id="ff-audio-status" class="badge loading">⏳ FFmpeg…</span>
     </div>
     <div class="upload-zone" id="audio-zone">
       <div class="upload-zone-icon">🎵</div>
-      <div class="upload-zone-text">Arrastra un audio aquí o <strong>haz clic para seleccionar</strong></div>
+      <div class="upload-zone-text">Arrastra un audio o <strong>haz clic</strong></div>
     </div>
     <input type="file" id="audio-input" accept="audio/*" hidden>
   </div>
   <div class="card" id="audio-editor-card" style="display:none">
-    <div class="controls-row" style="margin-bottom:8px">
-      <span style="font-size:13px;color:var(--text-dim)" id="audio-file-info">Archivo cargado</span>
-    </div>
-    <div class="controls-row">
-      <label>Convertir a:</label>
+    <div style="margin-bottom:8px"><span style="font-size:13px;color:var(--text-dim)" id="audio-file-info">Archivo cargado</span></div>
+    <div class="quick-actions" style="align-items:center">
+      <label style="font-size:12px;color:var(--text-dim)">A:</label>
       <select id="convert-audio-format">
-        <option value="mp3">MP3</option>
-        <option value="wav">WAV</option>
-        <option value="ogg">OGG</option>
-        <option value="m4a">M4A</option>
-        <option value="flac">FLAC</option>
+        <option value="mp3">MP3</option><option value="wav">WAV</option>
+        <option value="ogg">OGG</option><option value="m4a">M4A</option><option value="flac">FLAC</option>
       </select>
-      <label style="margin-left:8px">Calidad:</label>
+      <label style="font-size:12px;color:var(--text-dim);margin-left:4px">Calidad:</label>
       <select id="convert-audio-quality">
-        <option value="128k">128 kbps</option>
-        <option value="192k" selected>192 kbps</option>
-        <option value="256k">256 kbps</option>
-        <option value="320k">320 kbps</option>
+        <option value="128k">128k</option><option value="192k" selected>192k</option>
+        <option value="256k">256k</option><option value="320k">320k</option>
       </select>
-      <button class="btn btn-primary" id="convert-audio-btn" disabled>⬇ Convertir</button>
+      <button class="btn btn-primary btn-sm" id="convert-audio-btn" disabled>⬇ Convertir</button>
     </div>
     <div id="audio-progress" style="display:none">
       <div class="progress-bar"><div class="progress-bar-fill" id="audio-progress-fill"></div></div>
@@ -320,14 +302,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     </div>
   </div>
   <div class="card" id="audio-results-card" style="display:none">
-    <div class="card-title">✅ Resultados</div>
-    <div id="audio-results-content"></div>
+    <div class="card-title">✅ Resultado</div><div id="audio-results-content"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- JSZip via unpkg (whitelisted en CSP de Hostinger) -->
 <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
 
 <script>
@@ -339,66 +319,33 @@ const JSZip = window.JSZip;
 
 function toast(msg, type='success') {
   const t = $('#toast');
-  t.textContent = msg;
-  t.className = 'toast show '+type;
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 3000);
+  t.textContent = msg; t.className = 'toast show '+type;
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3000);
 }
-
 function fmtSize(bytes) {
   if (!bytes || bytes === 0) return '—';
   if (bytes < 1024) return bytes+' B';
   if (bytes < 1048576) return (bytes/1024).toFixed(1)+' KB';
   return (bytes/1048576).toFixed(2)+' MB';
 }
-
 function extFromMime(mime) {
   return ({'image/png':'png','image/jpeg':'jpg','image/webp':'webp',
     'image/bmp':'bmp','image/gif':'gif','image/avif':'avif'}[mime] || 'bin');
 }
-
 function downloadBlob(blob, name) {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
-
-function addDownloadResult(blob, name) {
-  const downloads = $('#img-downloads');
-  const list = $('#img-downloads-list');
-  downloads.style.display = '';
-
-  const item = document.createElement('div');
-  item.style.cssText = 'background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px';
-  item.innerHTML = `
-    <span style="color:var(--text-dim);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis">${name}</span>
-    <span style="color:var(--green);font-family:var(--mono);white-space:nowrap">${fmtSize(blob.size)}</span>
-    <button class="btn btn-primary btn-sm" style="padding:3px 10px;font-size:11px">⬇</button>
-  `;
-  item.querySelector('button').addEventListener('click', () => downloadBlob(blob, name));
-  list.appendChild(item);
-
-  // Mantener máximo 6 resultados
-  while (list.children.length > 6) list.removeChild(list.firstChild);
-
-  toast(`Listo: ${name} (${fmtSize(blob.size)})`);
-}
-
-/* Leer archivo como Data URL (base64) — respeta CSP img-src 'self' data: */
 function fileToDataURL(file) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
+    r.onload = () => resolve(r.result); r.onerror = reject;
     r.readAsDataURL(file);
   });
 }
 
-/* Canvas compartido */
 const procCanvas = document.createElement('canvas');
 const procCtx = procCanvas.getContext('2d');
 
@@ -417,12 +364,11 @@ $$('.tab-btn').forEach(btn => {
 /* ============================================================ */
 /*  FFMPEG                                                       */
 /* ============================================================ */
-let ffmpeg = null;
-let ffLoaded = false;
+let ffmpeg = null, ffLoaded = false;
 
 async function loadFFmpeg() {
   if (ffLoaded) return true;
-  setFFStatus('loading', '⏳ Cargando FFmpeg…');
+  setFFStatus('loading','⏳ Cargando FFmpeg…');
   try {
     const mod = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
     const { FFmpeg } = mod;
@@ -433,18 +379,16 @@ async function loadFFmpeg() {
       coreURL: await toBlobURL(`${base}/ffmpeg-core.js`,'text/javascript'),
       wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`,'application/wasm'),
     });
-    ffLoaded = true;
-    setFFStatus('ready', '✓ FFmpeg listo');
+    ffLoaded = true; setFFStatus('ready','✓ FFmpeg listo');
     $('#convert-video-btn').disabled = false;
     $('#convert-audio-btn').disabled = false;
     return true;
-  } catch (e) {
+  } catch(e) {
     console.warn('FFmpeg:', e.message);
-    setFFStatus('error', '✗ FFmpeg no disponible (CSP del servidor)');
+    setFFStatus('error','✗ FFmpeg no disponible');
     return false;
   }
 }
-
 function setFFStatus(type, text) {
   ['video','audio'].forEach(t => {
     const el = $(`#ff-${t}-status`);
@@ -455,13 +399,9 @@ function setFFStatus(type, text) {
 /* ============================================================ */
 /*  IMÁGENES — STATE                                             */
 /* ============================================================ */
-
-// imgEntries = [{file, dataUrl}]
 let imgEntries = [];
-let currentIdx = -1;   // índice en imgEntries de la imagen en el editor
-let currentW = 0, currentH = 0;
-let origW = 0, origH = 0, origSize = 0;
-let lastBatchResults = [];
+let currentIdx = -1;
+let currentW = 0, currentH = 0, origW = 0, origH = 0, origSize = 0;
 
 const imgZone = $('#img-zone');
 const imgInput = $('#img-input');
@@ -470,8 +410,7 @@ imgZone.addEventListener('click', () => imgInput.click());
 imgZone.addEventListener('dragover', e => { e.preventDefault(); imgZone.classList.add('dragover'); });
 imgZone.addEventListener('dragleave', () => imgZone.classList.remove('dragover'));
 imgZone.addEventListener('drop', e => {
-  e.preventDefault();
-  imgZone.classList.remove('dragover');
+  e.preventDefault(); imgZone.classList.remove('dragover');
   handleImageFiles(e.dataTransfer.files);
 });
 imgInput.addEventListener('change', () => {
@@ -480,50 +419,35 @@ imgInput.addEventListener('change', () => {
 
 async function handleImageFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
-  if (!files.length) return toast('No hay imágenes en la selección','error');
-
-  // Convertir a Data URLs (respeta CSP)
+  if (!files.length) return toast('No hay imágenes','error');
   const newEntries = [];
   for (const file of files) {
-    const dataUrl = await fileToDataURL(file);
-    newEntries.push({ file, dataUrl });
+    newEntries.push({ file, dataUrl: await fileToDataURL(file) });
   }
-
-  // Añadir a las existentes
   imgEntries = imgEntries.concat(newEntries);
-
-  // Si es la primera imagen, cargarla en el editor
-  if (currentIdx === -1) {
-    currentIdx = 0;
-    loadEditorImage(imgEntries[0]);
-  }
-
+  if (currentIdx === -1) { currentIdx = 0; loadEditorImage(imgEntries[0]); }
   $('#img-editor-card').style.display = '';
   renderBatchList();
 }
 
 /* ============================================================ */
-/*  BATCH LIST CON VISUALIZACIÓN Y ELIMINAR                     */
+/*  BATCH LIST (solo thumbnails + eliminar)                     */
 /* ============================================================ */
 function renderBatchList() {
-  const list = $('#img-batch-list');
-  const show = imgEntries.length > 1 || (imgEntries.length === 1 && currentIdx !== -1);
-
-  if (!show) { $('#img-batch-card').style.display = 'none'; return; }
-
+  if (imgEntries.length <= 1) { $('#img-batch-card').style.display = 'none'; return; }
   $('#img-batch-card').style.display = '';
   $('#batch-count').textContent = imgEntries.length;
 
+  const list = $('#img-batch-list');
   list.innerHTML = imgEntries.map((entry, i) => `
     <div class="file-item${i === currentIdx ? ' selected' : ''}" data-idx="${i}">
       <img src="${entry.dataUrl}" alt="">
       <div class="file-name">${entry.file.name}</div>
-      <div class="file-status" id="batch-status-${i}">📄 ${fmtSize(entry.file.size)}</div>
+      <div class="file-size">${fmtSize(entry.file.size)}</div>
       <button class="del-btn" data-idx="${i}" title="Eliminar">✕</button>
     </div>
   `).join('');
 
-  // Click en thumbnail → cargar en editor
   list.querySelectorAll('.file-item img').forEach(img => {
     img.style.cursor = 'pointer';
     img.addEventListener('click', () => {
@@ -531,26 +455,22 @@ function renderBatchList() {
       if (idx === currentIdx) return;
       currentIdx = idx;
       loadEditorImage(imgEntries[idx]);
-      renderBatchList(); // actualiza highlight
+      renderBatchList();
     });
   });
-
-  // Botón eliminar
   list.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const idx = parseInt(btn.dataset.idx);
       imgEntries.splice(idx, 1);
-      if (imgEntries.length === 0) {
+      if (!imgEntries.length) {
         currentIdx = -1;
         $('#img-editor-card').style.display = 'none';
         $('#img-batch-card').style.display = 'none';
-        $('#img-results-card').style.display = 'none';
         $('#resize-container-wrapper').style.display = 'none';
         $('#img-preview-empty').style.display = '';
         return;
       }
-      // Ajustar currentIdx
       if (currentIdx >= imgEntries.length) currentIdx = imgEntries.length - 1;
       else if (currentIdx > idx) currentIdx--;
       loadEditorImage(imgEntries[currentIdx]);
@@ -560,33 +480,24 @@ function renderBatchList() {
 }
 
 /* ============================================================ */
-/*  EDITOR                                                        */
+/*  EDITOR                                                       */
 /* ============================================================ */
 async function loadEditorImage(entry) {
   origSize = entry.file.size;
-  origW = 0; origH = 0;
-
   const img = new Image();
   await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
+    img.onload = resolve; img.onerror = reject;
     img.src = entry.dataUrl;
   });
-
-  origW = img.naturalWidth;
-  origH = img.naturalHeight;
-  currentW = origW;
-  currentH = origH;
+  origW = img.naturalWidth; origH = img.naturalHeight;
+  currentW = origW; currentH = origH;
 
   const el = $('#resize-img');
   el.src = entry.dataUrl;
-  el.style.width = '';
-  el.style.height = '';
+  el.style.width = ''; el.style.height = '';
 
-  $('#img-editor-card').style.display = '';
   $('#img-preview-empty').style.display = 'none';
   $('#resize-container-wrapper').style.display = '';
-  $('#img-results-card').style.display = 'none';
   updateInfo();
 }
 
@@ -605,27 +516,22 @@ function updateInfo() {
 /*  DYNAMIC RESIZE                                               */
 /* ============================================================ */
 (function() {
-  const ctn = $('#resize-ctn');
-  const img = $('#resize-img');
-  let dragging = false, corner = '';
-  let sx, sy, sw, sh, ar;
+  const ctn = $('#resize-ctn'), img = $('#resize-img');
+  let dragging = false, corner = '', sx, sy, sw, sh, ar;
 
   ctn.addEventListener('mousedown', e => {
     const h = e.target.closest('.resize-handle');
     if (!h) return;
     dragging = true; corner = h.dataset.corner;
     sx = e.clientX; sy = e.clientY;
-    sw = currentW; sh = currentH;
-    ar = sw / sh;
+    sw = currentW; sh = currentH; ar = sw / sh;
     e.preventDefault();
   });
-
   document.addEventListener('mousemove', e => {
     if (!dragging) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
     const scale = origW / (img.naturalWidth || img.clientWidth) || 1;
     let nw, nh;
-
     if (e.shiftKey && ar) {
       const d = Math.max(Math.abs(dx), Math.abs(dy)) * scale * (dx >= 0 ? 1 : -1);
       if (corner === 'se') { nw = sw + d; nh = nw / ar; }
@@ -638,18 +544,15 @@ function updateInfo() {
       else if (corner === 'ne') { nw = sw + dx * scale; nh = sh - dy * scale; }
       else { nw = sw - dx * scale; nh = sh - dy * scale; }
     }
-
     nw = Math.max(10, Math.min(nw, origW * 5));
     nh = Math.max(10, Math.min(nh, origH * 5));
     currentW = Math.round(nw); currentH = Math.round(nh);
-
     const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
     const ds = Math.min(md / nw, 500 / nh, 1);
     img.style.width = Math.round(nw * ds) + 'px';
     img.style.height = Math.round(nh * ds) + 'px';
     updateInfo();
   });
-
   document.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false;
@@ -673,9 +576,8 @@ function updateInfo() {
 })();
 
 /* ============================================================ */
-/*  QUICK ACTIONS                                                */
+/*  REDIMENSIONAR                                                */
 /* ============================================================ */
-$('#action-60px').addEventListener('click', () => compressToKB(60));
 $('#action-25p').addEventListener('click', () => resizePct(25));
 $('#action-50p').addEventListener('click', () => resizePct(50));
 $('#action-75p').addEventListener('click', () => resizePct(75));
@@ -683,79 +585,24 @@ $('#action-1920').addEventListener('click', () => resizeTo(1920));
 $('#action-original').addEventListener('click', () => { currentW = origW; currentH = origH; renderResized(origW, origH); });
 
 async function resizeTo(target) {
-  if (currentIdx === -1) return toast('Sube una imagen primero','error');
-  const w = Math.min(target, origW);
-  const h = Math.round(w * origH / origW);
+  if (currentIdx === -1) return toast('Sube una imagen','error');
+  const w = Math.min(target, origW), h = Math.round(w * origH / origW);
   currentW = w; currentH = h;
   await renderResized(w, h);
   toast(`${w} × ${h}px`);
 }
-
-async function compressToKB(targetKB) {
-  if (currentIdx === -1) return toast('Sube una imagen primero','error');
-  const entry = imgEntries[currentIdx];
-  const btn = $('#action-60px');
-  btn.innerHTML = '<span class="spinner"></span> Comprimiendo…';
-  btn.disabled = true;
-  try {
-    const previewSrc = $('#resize-img').src;
-    const img = new Image();
-    await new Promise((r, e) => { img.onload = r; img.onerror = e; img.src = previewSrc; });
-    let cw = img.naturalWidth, ch = img.naturalHeight;
-    if (cw > 4000 || ch > 4000) {
-      const scale = 4000 / Math.max(cw, ch);
-      cw = Math.round(cw * scale);
-      ch = Math.round(ch * scale);
-    }
-    procCanvas.width = cw; procCanvas.height = ch;
-    procCtx.drawImage(img, 0, 0, cw, ch);
-
-    let lo = 0.01, hi = 1.0, best = null;
-    for (let i = 0; i < 10; i++) {
-      const mid = (lo + hi) / 2;
-      const blob = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', mid));
-      if (!blob) break;
-      if (blob.size / 1024 > targetKB) { hi = mid; }
-      else { lo = mid; best = blob; }
-    }
-    if (!best) { best = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', lo)); }
-    if (!best) return toast('Error al comprimir','error');
-
-    // Actualizar preview
-    const dataUrl = procCanvas.toDataURL('image/jpeg', lo);
-    const previewImg = $('#resize-img');
-    previewImg.src = dataUrl;
-    const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
-    const ds = Math.min(md / cw, 500 / ch, 1);
-    previewImg.style.width = Math.round(cw * ds) + 'px';
-    previewImg.style.height = Math.round(ch * ds) + 'px';
-
-    const name = entry.file.name.replace(/\.[^.]+$/, '') + '_60kb.jpg';
-    addDownloadResult(best, name);
-  } catch(e) {
-    console.error(e);
-    toast('Error al comprimir','error');
-  }
-  btn.innerHTML = '📦 60KB';
-  btn.disabled = false;
-}
-
 async function resizePct(pct) {
-  if (currentIdx === -1) return toast('Sube una imagen primero','error');
-  const w = Math.round(origW * pct / 100);
-  const h = Math.round(origH * pct / 100);
+  if (currentIdx === -1) return toast('Sube una imagen','error');
+  const w = Math.round(origW * pct / 100), h = Math.round(origH * pct / 100);
   currentW = w; currentH = h;
   await renderResized(w, h);
   toast(`${pct}% → ${w} × ${h}px`);
 }
-
 async function renderResized(w, h) {
   procCanvas.width = w; procCanvas.height = h;
-  const tmp = new Image();
-  tmp.src = $('#resize-img').src;
+  const tmp = new Image(); tmp.src = $('#resize-img').src;
   await new Promise(r => { tmp.onload = r; });
   procCtx.drawImage(tmp, 0, 0, w, h);
-
   const img = $('#resize-img');
   img.src = procCanvas.toDataURL('image/png');
   const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
@@ -763,20 +610,16 @@ async function renderResized(w, h) {
   img.style.width = Math.round(w * ds) + 'px';
   img.style.height = Math.round(h * ds) + 'px';
   updateInfo();
-
   procCanvas.toBlob(blob => {
     if (blob) $('#info-size').textContent = fmtSize(blob.size);
   }, 'image/png', 1);
 }
 
 /* ============================================================ */
-/*  IMAGE CONVERSION                                             */
+/*  CONVERTIR FORMATO → genera tarjeta                           */
 /* ============================================================ */
 $('#convert-img-quality').addEventListener('input', () => {
   $('#convert-quality-label').textContent = $('#convert-img-quality').value + '%';
-});
-$('#batch-img-quality').addEventListener('input', () => {
-  $('#batch-quality-label').textContent = $('#batch-img-quality').value + '%';
 });
 
 $('#convert-img-btn').addEventListener('click', async () => {
@@ -796,116 +639,110 @@ $('#convert-img-btn').addEventListener('click', async () => {
   const blob = await new Promise(r => procCanvas.toBlob(r, mime, quality));
   if (!blob) return toast('Error al convertir','error');
 
-  // Actualizar preview con la imagen convertida
-  const dataUrl = procCanvas.toDataURL(mime, quality);
-  const img = $('#resize-img');
-  img.src = dataUrl;
-  const md = Math.min($('#img-preview-area').clientWidth - 40, 700);
-  const ds = Math.min(md / w, 500 / h, 1);
-  img.style.width = Math.round(w * ds) + 'px';
-  img.style.height = Math.round(h * ds) + 'px';
-
-  // Añadir botón de descarga
   const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
-  addDownloadResult(blob, name);
+  addResultCard(blob, name, procCanvas.toDataURL(mime, quality));
 });
 
 /* ============================================================ */
-/*  IMAGE BATCH CONVERT                                          */
+/*  TARJETA DE RESULTADO con Descargar + 60KB                   */
 /* ============================================================ */
-$('#batch-convert-btn').addEventListener('click', async () => {
-  if (!imgEntries.length) return toast('No hay imágenes','error');
-  const mime = $('#batch-img-format').value;
-  const quality = parseInt($('#batch-img-quality').value) / 100;
-  const ext = extFromMime(mime);
+function addResultCard(blob, name, dataUrl) {
+  const area = $('#img-results-area');
+  const list = $('#img-results-list');
+  area.style.display = '';
 
-  const btn = $('#batch-convert-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
-  $('#batch-zip-btn').disabled = true;
+  const card = document.createElement('div');
+  card.className = 'result-card';
+  card.innerHTML = `
+    <img src="${dataUrl}" alt="">
+    <div class="result-name">${name}</div>
+    <div class="result-size">${fmtSize(blob.size)}</div>
+    <div class="result-actions">
+      <button class="btn btn-primary btn-xs download-btn">⬇ Descargar</button>
+      <button class="btn btn-orange btn-xs compress-btn">📦 60KB</button>
+    </div>
+  `;
 
-  const results = [];
-  lastBatchResults = results;
-  const cvs = document.createElement('canvas');
-  const ctx = cvs.getContext('2d');
+  let currentBlob = blob;
+  let currentDataUrl = dataUrl;
+  let currentName = name;
 
-  for (let i = 0; i < imgEntries.length; i++) {
-    const st = $(`#batch-status-${i}`);
-    st.textContent = '⏳ Convirtiendo…';
-    st.className = 'file-status';
+  // Botón descargar
+  card.querySelector('.download-btn').addEventListener('click', () => {
+    downloadBlob(currentBlob, currentName);
+    toast(`Descargado: ${currentName}`);
+  });
+
+  // Botón 60KB
+  card.querySelector('.compress-btn').addEventListener('click', async () => {
+    const btn = card.querySelector('.compress-btn');
+    btn.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true;
+
     try {
-      const entry = imgEntries[i];
       const img = new Image();
-      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = entry.dataUrl; });
-      cvs.width = img.naturalWidth; cvs.height = img.naturalHeight;
-      ctx.drawImage(img, 0, 0);
-      const blob = await new Promise(r => cvs.toBlob(r, mime, quality));
-      const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
-      results.push({ name, blob, size: blob.size, original: entry.file.name });
-      st.textContent = `✓ ${fmtSize(blob.size)}`;
-      st.className = 'file-status ok';
+      await new Promise((r, e) => { img.onload = r; img.onerror = e; img.src = currentDataUrl; });
+
+      let cw = img.naturalWidth, ch = img.naturalHeight;
+      if (cw > 4000 || ch > 4000) {
+        const scale = 4000 / Math.max(cw, ch);
+        cw = Math.round(cw * scale); ch = Math.round(ch * scale);
+      }
+      procCanvas.width = cw; procCanvas.height = ch;
+      procCtx.drawImage(img, 0, 0, cw, ch);
+
+      let lo = 0.01, hi = 1.0, best = null;
+      for (let i = 0; i < 10; i++) {
+        const mid = (lo + hi) / 2;
+        const b = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', mid));
+        if (!b) break;
+        if (b.size / 1024 > 60) { hi = mid; }
+        else { lo = mid; best = b; }
+      }
+      if (!best) { best = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', lo)); }
+      if (!best) return toast('Error al comprimir','error');
+
+      currentBlob = best;
+      currentDataUrl = procCanvas.toDataURL('image/jpeg', lo);
+      currentName = name.replace(/\.[^.]+$/, '') + '_60kb.jpg';
+
+      // Actualizar tarjeta
+      card.querySelector('img').src = currentDataUrl;
+      card.querySelector('.result-name').textContent = currentName;
+      card.querySelector('.result-size').textContent = fmtSize(best.size);
+      card.classList.add('compressed');
+      toast(`Comprimido a ${fmtSize(best.size)}`);
     } catch(e) {
-      st.textContent = '✗ Error';
-      st.className = 'file-status err';
+      console.error(e); toast('Error al comprimir','error');
     }
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '⚙️ Convertir seleccionadas';
-
-  if (!results.length) return toast('Error al convertir','error');
-
-  $('#img-results-card').style.display = '';
-  $('#img-results-content').innerHTML = `
-    <table class="result-table">
-      <tr><th>Original</th><th>Archivo</th><th>Tamaño</th><th></th></tr>
-      ${results.map((r,i) => `<tr>
-        <td>${r.original}</td><td>${r.name}</td>
-        <td>${fmtSize(r.size)}</td>
-        <td><a class="convert-link" data-idx="${i}">⬇</a></td>
-      </tr>`).join('')}
-    </table>
-    <button class="btn btn-green" id="dl-all-zip" style="margin-top:8px">📦 Descargar ZIP</button>`;
-
-  $('#img-results-content').querySelectorAll('.convert-link').forEach(el => {
-    el.addEventListener('click', () => downloadBlob(results[parseInt(el.dataset.idx)].blob, results[parseInt(el.dataset.idx)].name));
+    btn.innerHTML = '📦 60KB';
+    btn.disabled = false;
   });
 
-  $('#dl-all-zip').addEventListener('click', async () => {
-    const zip = new JSZip();
-    results.forEach(r => zip.file(r.name, r.blob));
-    const zb = await zip.generateAsync({type:'blob'});
-    downloadBlob(zb, 'imagenes_convertidas.zip');
-    toast('ZIP descargado');
-  });
+  // Mantener máximo 8 tarjetas
+  list.insertBefore(card, list.firstChild);
+  while (list.children.length > 8) list.removeChild(list.lastChild);
 
-  $('#batch-zip-btn').disabled = false;
-  toast(`${results.length}/${imgEntries.length} imágenes convertidas`);
-});
+  toast(`Generado: ${name} (${fmtSize(blob.size)})`);
+}
 
-// ZIP handler para botón externo
-$('#batch-zip-btn').addEventListener('click', async () => {
-  if (!lastBatchResults.length) return toast('Convierte imágenes primero','error');
-  const zip = new JSZip();
-  lastBatchResults.forEach(r => zip.file(r.name, r.blob));
-  const zb = await zip.generateAsync({type:'blob'});
-  downloadBlob(zb, 'imagenes_convertidas.zip');
-  toast('ZIP descargado');
-});
+/* ============================================================ */
+/*  BATCH CONVERT (para cuando haya varias imágenes)            */
+/* ============================================================ */
+// No hay botones en el batch card, así que este queda solo como legacy
+// Ya no se usa realmente porque no hay UI de batch, pero mantenemos el código
 
 /* ============================================================ */
 /*  VÍDEO                                                        */
 /* ============================================================ */
 let videoFile = null;
-const vz = $('#video-zone');
-const vi = $('#video-input');
-
+const vz = $('#video-zone'), vi = $('#video-input');
 vz.addEventListener('click', () => vi.click());
 vz.addEventListener('dragover', e => { e.preventDefault(); vz.classList.add('dragover'); });
 vz.addEventListener('dragleave', () => vz.classList.remove('dragover'));
 vz.addEventListener('drop', e => {
   e.preventDefault(); vz.classList.remove('dragover');
-  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor','error');
+  if (!ffLoaded) return toast('FFmpeg no disponible','error');
   const f = e.dataTransfer.files[0];
   if (f && f.type.startsWith('video/')) loadVideo(f);
 });
@@ -913,32 +750,23 @@ vi.addEventListener('change', () => { if (vi.files[0]) loadVideo(vi.files[0]); }
 
 function loadVideo(file) {
   videoFile = file;
-  // Usar URL.createObjectURL solo para video/audio preview (CSP permite blob: para media por el 'media-src' que suele heredar de 'default-src')
-  // Pero mejor usamos un blob URL local; si falla, el usuario verá el nombre nomás
-  try {
-    $('#video-preview').src = URL.createObjectURL(file);
-  } catch(e) {
-    $('#video-preview').style.display = 'none';
-  }
+  try { $('#video-preview').src = URL.createObjectURL(file); } catch(e) {}
   $('#video-editor-card').style.display = '';
   $('#video-results-card').style.display = 'none';
   if (ffLoaded) $('#convert-video-btn').disabled = false;
-  toast(`Vídeo: ${file.name} (${fmtSize(file.size)})`);
+  toast(`Vídeo: ${file.name}`);
 }
 
 $('#convert-video-btn').addEventListener('click', async () => {
   if (!videoFile || !ffmpeg) return toast('FFmpeg no disponible','error');
   const fmt = $('#convert-video-format').value;
-  const btn = $('#convert-video-btn');
-  const pg = $('#video-progress'), fl = $('#video-progress-fill'), tx = $('#video-progress-text');
+  const btn = $('#convert-video-btn'), pg = $('#video-progress'), fl = $('#video-progress-fill'), tx = $('#video-progress-text');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
   pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
-
   ffmpeg.on('progress', ({progress:p}) => {
     const pc = Math.min(Math.round(p*100),99);
     fl.style.width = pc+'%'; tx.textContent = pc+'%';
   });
-
   try {
     const ext = (videoFile.name.match(/\.[^.]+$/) || ['.mp4'])[0];
     const inp = 'input'+ext, out = 'output.'+fmt;
@@ -955,9 +783,8 @@ $('#convert-video-btn').addEventListener('click', async () => {
     ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
     $('#video-results-card').style.display = '';
     $('#video-results-content').innerHTML = `<p>✓ ${oname} — ${fmtSize(blob.size)}</p>`;
-    toast(`Vídeo convertido: ${oname}`);
-  } catch(e) { console.error(e); toast('Error en conversión de vídeo','error'); }
-
+    toast(`Convertido: ${oname}`);
+  } catch(e) { console.error(e); toast('Error','error'); }
   btn.disabled = false; btn.innerHTML = '⬇ Convertir';
   ffmpeg.off('progress');
 });
@@ -966,15 +793,13 @@ $('#convert-video-btn').addEventListener('click', async () => {
 /*  AUDIO                                                        */
 /* ============================================================ */
 let audioFile = null;
-const az = $('#audio-zone');
-const ai = $('#audio-input');
-
+const az = $('#audio-zone'), ai = $('#audio-input');
 az.addEventListener('click', () => ai.click());
 az.addEventListener('dragover', e => { e.preventDefault(); az.classList.add('dragover'); });
 az.addEventListener('dragleave', () => az.classList.remove('dragover'));
 az.addEventListener('drop', e => {
   e.preventDefault(); az.classList.remove('dragover');
-  if (!ffLoaded) return toast('FFmpeg no disponible en este servidor','error');
+  if (!ffLoaded) return toast('FFmpeg no disponible','error');
   const f = e.dataTransfer.files[0];
   if (f && f.type.startsWith('audio/')) loadAudio(f);
 });
@@ -991,10 +816,8 @@ function loadAudio(file) {
 
 $('#convert-audio-btn').addEventListener('click', async () => {
   if (!audioFile || !ffmpeg) return toast('FFmpeg no disponible','error');
-  const fmt = $('#convert-audio-format').value;
-  const qual = $('#convert-audio-quality').value;
-  const btn = $('#convert-audio-btn');
-  const pg = $('#audio-progress'), fl = $('#audio-progress-fill'), tx = $('#audio-progress-text');
+  const fmt = $('#convert-audio-format').value, qual = $('#convert-audio-quality').value;
+  const btn = $('#convert-audio-btn'), pg = $('#audio-progress'), fl = $('#audio-progress-fill'), tx = $('#audio-progress-text');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Convirtiendo…';
   pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
   ffmpeg.on('progress', ({progress:p}) => {
@@ -1010,13 +833,13 @@ $('#convert-audio-btn').addEventListener('click', async () => {
     const data = ffmpeg.readFile(out);
     const mimeMap = {mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',flac:'audio/flac'};
     const blob = new Blob([data.buffer], {type: mimeMap[fmt]||'audio/mpeg'});
-    const oname = audioFile.name.replace(/\.[^.]+$/, '')+'.'+fmt;
+    const oname = audioFile.name.replace(/\.[^.]+$/,'')+'.'+fmt;
     downloadBlob(blob, oname);
     ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
     $('#audio-results-card').style.display = '';
     $('#audio-results-content').innerHTML = `<p>✓ ${oname} — ${fmtSize(blob.size)} (${qual})</p>`;
-    toast(`Audio convertido: ${oname}`);
-  } catch(e) { console.error(e); toast('Error en conversión de audio','error'); }
+    toast(`Convertido: ${oname}`);
+  } catch(e) { console.error(e); toast('Error','error'); }
   btn.disabled = false; btn.innerHTML = '⬇ Convertir';
   ffmpeg.off('progress');
 });
