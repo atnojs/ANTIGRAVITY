@@ -331,18 +331,19 @@ async function loadFFmpeg() {
     const wkBlob = new Blob([wkCode], { type: 'application/javascript' });
     const wkBlobURL = URL.createObjectURL(wkBlob);
 
-    // Parchear Worker para redirigir el worker de FFmpeg a blob local
+    // Parchear Worker para redirigir el worker de FFmpeg a blob local (Proxy)
     const OrigWorker = Worker;
-    window.Worker = class extends OrigWorker {
-      constructor(url, opts) {
+    window.Worker = new Proxy(OrigWorker, {
+      construct(target, args) {
+        const url = args[0];
+        const opts = args[1];
         const urlStr = (url instanceof URL) ? url.href : String(url);
         if (urlStr.includes('@ffmpeg') && urlStr.includes('worker')) {
-          super(wkBlobURL, opts);
-        } else {
-          super(url, opts);
+          return Reflect.construct(target, [wkBlobURL, opts]);
         }
+        return Reflect.construct(target, args);
       }
-    };
+    });
 
     const mod = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
     const { FFmpeg } = mod;
