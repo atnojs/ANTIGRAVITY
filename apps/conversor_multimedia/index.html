@@ -332,15 +332,17 @@ async function loadFFmpeg() {
     const wkBlobURL = URL.createObjectURL(wkBlob);
 
     // Parchear Worker para redirigir el worker de FFmpeg a blob local
-    const RealWorker = window.Worker;
-    window.Worker = function(url, opts) {
-      const urlStr = (url instanceof URL) ? url.href : String(url);
-      if (urlStr.includes('ffmpeg') && urlStr.includes('worker')) {
-        return new RealWorker(wkBlobURL, opts);
+    const OrigWorker = Worker;
+    window.Worker = class extends OrigWorker {
+      constructor(url, opts) {
+        const urlStr = (url instanceof URL) ? url.href : String(url);
+        if (urlStr.includes('@ffmpeg') && urlStr.includes('worker')) {
+          super(wkBlobURL, opts);
+        } else {
+          super(url, opts);
+        }
       }
-      return new RealWorker(url, opts);
     };
-    window.Worker.prototype = RealWorker.prototype;
 
     const mod = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
     const { FFmpeg } = mod;
