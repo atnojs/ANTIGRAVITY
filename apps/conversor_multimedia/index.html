@@ -691,20 +691,28 @@ function addResultCard(blob, name, dataUrl) {
       procCanvas.width = cw; procCanvas.height = ch;
       procCtx.drawImage(img, 0, 0, cw, ch);
 
+      // Detectar formato original de la tarjeta
+      const origExt = (currentName.match(/\.[^.]+$/i) || ['.jpg'])[0].toLowerCase();
+      const fmtMap = {
+        '.jpg': ['image/jpeg', 'jpg'], '.jpeg': ['image/jpeg', 'jpg'],
+        '.webp': ['image/webp', 'webp'], '.avif': ['image/avif', 'avif']
+      };
+      const [compressMime, outExt] = fmtMap[origExt] || ['image/webp', 'webp'];
+
       let lo = 0.01, hi = 1.0, best = null;
       for (let i = 0; i < 10; i++) {
         const mid = (lo + hi) / 2;
-        const b = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', mid));
+        const b = await new Promise(r => procCanvas.toBlob(r, compressMime, mid));
         if (!b) break;
         if (b.size / 1024 > 60) { hi = mid; }
         else { lo = mid; best = b; }
       }
-      if (!best) { best = await new Promise(r => procCanvas.toBlob(r, 'image/jpeg', lo)); }
+      if (!best) { best = await new Promise(r => procCanvas.toBlob(r, compressMime, lo)); }
       if (!best) return toast('Error al comprimir','error');
 
       currentBlob = best;
-      currentDataUrl = procCanvas.toDataURL('image/jpeg', lo);
-      currentName = name.replace(/\.[^.]+$/, '') + '_60kb.jpg';
+      currentDataUrl = procCanvas.toDataURL(compressMime, lo);
+      currentName = currentName.replace(/\.[^.]+$/i, '') + '_60kb.' + outExt;
 
       // Actualizar tarjeta
       card.querySelector('img').src = currentDataUrl;
