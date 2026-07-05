@@ -391,7 +391,7 @@ function renderUploadedGrid() {
   const items = [];
   for (let i = 0; i < imgEntries.length; i++) {
     items.push(`
-      <div class="img-grid-item" data-idx="${i}" style="cursor:pointer${i === currentIdx ? ';border-color:#c2185b' : ''}">
+      <div class="img-grid-item" data-idx="${i}" style="cursor:pointer${i === currentIdx ? ';border-color:#111;box-shadow:0 0 10px rgba(233,30,99,.5)' : ''}">
         <img src="${imgEntries[i].dataUrl}" alt="">
       </div>`);
   }
@@ -519,9 +519,10 @@ function renderConvertGrid() {
           cw = Math.round(cw * scale); ch = Math.round(ch * scale);
         }
 
-        let best = null, bestLo = 0.5;
-        // Intentar hasta 3 rondas reduciendo dimensiones si no llega a 60KB
-        for (let round = 0; round < 3; round++) {
+        let best = null, bestLo = 0.01;
+        const isLossless = ['png','bmp','gif'].includes(origExt);
+        // Hasta 5 rondas reduciendo dimensiones si no llega a 60KB
+        for (let round = 0; round < 5; round++) {
           procCanvas.width = cw; procCanvas.height = ch;
           procCtx.drawImage(img, 0, 0, cw, ch);
 
@@ -533,14 +534,22 @@ function renderConvertGrid() {
             if (b.size / 1024 > 60) { hi = mid; }
             else { lo = mid; best = b; bestLo = mid; }
           }
-          if (best && best.size / 1024 <= 65) break; // ≤65KB, suficientemente cerca
-          // Reducir dimensiones y reintentar (más agresivo si no encuentra ≤60KB)
-          const factor = best ? 0.7 : 0.5;
-          cw = Math.max(20, Math.round(cw * factor));
-          ch = Math.max(20, Math.round(ch * factor));
+          if (best && best.size / 1024 <= 60) break; // objetivo alcanzado
+          // Reducir dimensiones: más agresivo para formatos sin pérdida
+          const factor = isLossless ? 0.4 : (best ? 0.6 : 0.5);
+          cw = Math.max(40, Math.round(cw * factor));
+          ch = Math.max(40, Math.round(ch * factor));
         }
-        if (!best) { best = await new Promise(res => procCanvas.toBlob(res, compressMime, bestLo || 0.01)); }
-        if (!best) return toast('Error al comprimir','error');
+        // Si tras 5 rondas no llega, un último intento drástico
+        if (!best || best.size / 1024 > 60) {
+          cw = Math.max(40, Math.round(cw * 0.4));
+          ch = Math.max(40, Math.round(ch * 0.4));
+          procCanvas.width = cw; procCanvas.height = ch;
+          procCtx.drawImage(img, 0, 0, cw, ch);
+          best = await new Promise(res => procCanvas.toBlob(res, compressMime, 0.01));
+          bestLo = 0.01;
+          if (!best) return toast('Error al comprimir','error');
+        }
 
         const newDataUrl = procCanvas.toDataURL(compressMime, bestLo);
         const newName = r.name.replace(/\.[^.]+$/i, '') + '_60kb.' + outExt;
