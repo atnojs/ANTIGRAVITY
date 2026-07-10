@@ -99,6 +99,10 @@ webs/limpiador-windows/agente/config.json
 webs/limpiador-windows/agente/config.example.json
 webs/limpiador-windows/data/
 
+# Carpetas locales de trabajo (no van al servidor)
+.hermes/
+_pruebas_img/
+
 # Excepciones: archivos necesarios para el despliegue
 !apps/banco_de_imagenes/config.php
 !apps/banco_de_imagenes/history_data/.htaccess
