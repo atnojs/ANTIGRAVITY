@@ -6,8 +6,31 @@ error_reporting(E_ALL);
 try {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
 
-  $apiKey = getenv('GEMINI_KEY_GENERAR_IMAGENES')
-    ?: ($_SERVER['GEMINI_KEY_GENERAR_IMAGENES'] ?? $_SERVER['REDIRECT_GEMINI_KEY_GENERAR_IMAGENES'] ?? null);
+  // ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+  $apiKey = '';
+  $configFile = __DIR__ . '/config.php';
+  if (file_exists($configFile)) {
+      include $configFile;
+      $apiKey = defined('A') ? A : '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = getenv('A');
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = getenv('REDIRECT_A');
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_SERVER['A'] ?? '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_SERVER['REDIRECT_A'] ?? '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_ENV['A'] ?? '';
+  }
+  if (!$apiKey || empty($apiKey)) {
+      $apiKey = $_ENV['REDIRECT_A'] ?? '';
+  }
 
   $replicateKey = getenv('REPLICATE_API_FLUX') 
     ?: ($_SERVER['REPLICATE_API_FLUX'] ?? $_SERVER['REDIRECT_REPLICATE_API_TOKEN'] ?? null);
@@ -494,7 +517,7 @@ Reglas:
     }
     if (!$active) throw new Exception('El PDF subido no quedó ACTIVE tras 30 intentos.', 504);
 
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . urlencode($apiKey);
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($apiKey);
 
     // ----------------------------------------------------
     // 2) PASADA 1 — ÍNDICE (solo estructura, sin contenido)
