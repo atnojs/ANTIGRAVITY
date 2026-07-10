@@ -228,8 +228,32 @@
       info.appendChild(p);
       info.appendChild(meta);
 
+      var actions = document.createElement("div");
+      actions.className = "g-actions";
+
+      // Editar esta imagen del historial
+      var edit = document.createElement("div");
+      edit.className = "g-btn";
+      edit.textContent = "🖌️";
+      edit.title = "Editar esta imagen";
+      edit.addEventListener("click", function (e) {
+        e.stopPropagation();
+        editarDelHistorial(it.imageUrl);
+      });
+
+      // Descargar
+      var down = document.createElement("div");
+      down.className = "g-btn";
+      down.textContent = "⬇️";
+      down.title = "Descargar";
+      down.addEventListener("click", function (e) {
+        e.stopPropagation();
+        descargarImagen(it.imageUrl, it.id);
+      });
+
+      // Eliminar
       var del = document.createElement("div");
-      del.className = "g-del";
+      del.className = "g-btn g-del";
       del.textContent = "✕";
       del.title = "Eliminar";
       del.addEventListener("click", function (e) {
@@ -237,11 +261,35 @@
         borrarItem(it.id);
       });
 
+      actions.appendChild(edit);
+      actions.appendChild(down);
+      actions.appendChild(del);
+
       card.appendChild(img);
       card.appendChild(info);
-      card.appendChild(del);
+      card.appendChild(actions);
       g.appendChild(card);
     });
+  }
+
+  // Editar una imagen concreta del historial (la carga en el modo editar)
+  function editarDelHistorial(imageUrl) {
+    setMode("editar");
+    state.imagenBase64 = imageUrl;
+    $("dropZone").innerHTML = '<img src="' + imageUrl + '" alt="imagen a editar">';
+    $("prompt").value = "";
+    $("prompt").focus();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Descargar una imagen del historial
+  function descargarImagen(imageUrl, id) {
+    var a = document.createElement("a");
+    a.href = imageUrl;
+    a.download = (id || "imagen-flux") + ".png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   function borrarItem(id) {
