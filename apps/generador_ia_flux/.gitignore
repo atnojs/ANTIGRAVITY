@@ -1,0 +1,4 @@
+# Datos de usuario generados en runtime (imágenes + metadatos)
+# Se crean en el servidor; no deben ir al repositorio.
+history_data/*
+!history_data/.gitkeep

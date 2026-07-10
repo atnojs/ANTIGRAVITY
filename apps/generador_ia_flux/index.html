@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Generador de Imágenes FLUX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand" id="brandHome">
+        <span>Estudio FLUX<span class="dot">.</span></span>
+        <small>generador de imágenes</small>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero">
+      <h1>Crea imágenes con <span class="accent">FLUX</span></h1>
+      <p>Describe lo que imaginas o edita una foto que ya tengas. Cada imagen se guarda en tu historial.</p>
+      <div class="hero-stats">
+        <div><b id="stat-total">0</b> imágenes</div>
+        <div><b id="stat-gasto">$0.00</b> gastado</div>
+      </div>
+    </div>
+
+    <div class="gen-layout">
+      <!-- PANEL IZQUIERDO: formulario -->
+      <section class="panel">
+        <div class="mode-tabs">
+          <div class="mode-tab active" id="tabCrear" data-mode="crear">✨ Crear nueva</div>
+          <div class="mode-tab" id="tabEditar" data-mode="editar">🖌️ Editar imagen</div>
+        </div>
+
+        <!-- Zona de imagen (solo modo editar) -->
+        <div id="editWrap" class="is-hidden">
+          <label class="field-label">Imagen a editar</label>
+          <div class="drop-zone" id="dropZone">
+            <div class="big">📁</div>
+            <div id="dropText">Arrastra una imagen aquí<br>o haz clic para elegir</div>
+            <input type="file" id="fileInput" accept="image/*" class="is-hidden">
+          </div>
+        </div>
+
+        <label class="field-label" id="promptLabel">Describe la imagen que quieres</label>
+        <textarea id="prompt" placeholder="Ej: un faro en un acantilado al atardecer, estilo acuarela"></textarea>
+
+        <label class="field-label">Calidad</label>
+        <div class="quality-grid">
+          <div class="quality-card" data-cal="barato">
+            <div class="q-name">Rápido</div>
+            <div class="q-price">Klein · ~1½ cént.</div>
+          </div>
+          <div class="quality-card active" data-cal="normal">
+            <div class="q-name">Pro</div>
+            <div class="q-price">FLUX.2 · ~3 cént.</div>
+          </div>
+          <div class="quality-card" data-cal="pro">
+            <div class="q-name">Máxima</div>
+            <div class="q-price">Max · ~7 cént.</div>
+          </div>
+        </div>
+
+        <button class="btn-generate" id="btnGenerate">Generar imagen</button>
+        <div class="alert is-hidden" id="errorBox"></div>
+      </section>
+
+      <!-- PANEL DERECHO: resultado -->
+      <section class="panel result-panel">
+        <h2>Resultado</h2>
+        <div id="resultEmpty" class="empty-state">
+          <div class="big">🖼️</div>
+          <p>Tu imagen aparecerá aquí</p>
+        </div>
+        <div id="resultLoader" class="loader is-hidden">
+          <div class="spinner"></div>
+          <p id="loaderText">Generando… espera unos segundos</p>
+        </div>
+        <div id="resultShow" class="is-hidden">
+          <img id="resultImg" alt="Imagen generada">
+          <div class="result-meta" id="resultMeta"></div>
+          <div class="result-actions">
+            <a id="btnDownload" download="imagen-ia.png">⬇️ Descargar</a>
+            <button id="btnEditThis">🖌️ Editar esta</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="section-title">
+      <h2>Historial</h2>
+      <span class="line"></span>
+      <span class="count" id="histCount">0</span>
+      <button class="chip" id="btnClearAll" style="margin-left:10px">🗑️ Vaciar</button>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div id="galleryEmpty" class="empty-state">
+      <div class="big">📭</div>
+      <p>Todavía no has generado ninguna imagen</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    Estudio IA · colección privada · las imágenes se guardan en el servidor
+  </footer>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <span class="lb-close" id="lbClose">✕</span>
+    <img id="lbImg" alt="">
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
