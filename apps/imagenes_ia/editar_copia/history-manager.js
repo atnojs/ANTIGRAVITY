@@ -180,7 +180,7 @@
           style: item.style || {},
           aspectRatio: item.aspectRatio || '1:1',
           size: item.size || '',
-          geminiSize: item.geminiSize || '1K',
+          calidad: item.calidad || 'pro',
           createdAt: item.createdAt || Date.now(),
           imageData: item.url || ''
         })
