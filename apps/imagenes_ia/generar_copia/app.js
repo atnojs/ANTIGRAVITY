@@ -40,6 +40,10 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     });
 };
 
+// Reduce una imagen (data URL) a un máximo de lado antes de mandarla a FLUX como
+// imagen de entrada (image-to-image). Evita exceder el tope de 4MP en la subida.
+const clampInputImage = (base64Str, maxSide = 2048) => resizeImage(base64Str, maxSide, 0.92);
+
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
     const targets = [
@@ -115,11 +119,14 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
+// Resolución de salida -> modelo FLUX + lado nativo (tope 4MP) + upscale de descarga.
+// FLUX 2 genera como máx 4 MP (~2048px lado). El 4K real (4096) se logra
+// haciendo upscale client-side x2 desde los 2048 nativos con el modelo 'max'.
 const RESOLUTION_OPTIONS = [
-    { id: '512', label: '512px', geminiSize: '1K', outputMaxWidth: 512 },
-    { id: '1K-hd', label: '1.024px', geminiSize: '1K' },
-    { id: '2K', label: '2.048px', geminiSize: '2K' },
-    { id: '4K', label: '4.096px', geminiSize: '4K' },
+    { id: '512', label: '512px', calidad: 'barato', targetPx: 512, downloadPx: 512 },
+    { id: '1K-hd', label: '1.024px', calidad: 'normal', targetPx: 1024, downloadPx: 1024 },
+    { id: '2K', label: '2.048px', calidad: 'normal', targetPx: 2048, downloadPx: 2048 },
+    { id: '4K', label: '4.096px', calidad: 'pro', targetPx: 2048, downloadPx: 4096 },
 ];
 
 const PROMPT_FIELD_DEFINITIONS = [
@@ -223,8 +230,9 @@ const syncToServer = async (image) => {
                 style: image.style,
                 aspectRatio: image.aspectRatio,
                 size: image.size,
-                geminiSize: image.geminiSize,
-                outputMaxWidth: image.outputMaxWidth || null,
+                calidad: image.calidad,
+                targetPx: image.targetPx || null,
+                downloadPx: image.downloadPx || null,
                 createdAt: image.createdAt,
                 imageData: image.url
             })
@@ -272,52 +280,52 @@ const mergeHistory = (localItems, serverItems) => {
     return Array.from(localMap.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 };
 
-const callProxy = async (model, contents, config = {}) => {
-    const payload = { model, contents, ...config };
+// Llama al proxy en modo FLUX (imágenes). Contrato: {prompt, calidad, aspectRatio, targetPx, imagen?}
+// -> {success, imageUrl (data URL), coste, modelo, calidad, width, height}
+const callFlux = async ({ prompt, calidad, aspectRatio, targetPx, imagen }) => {
+    const body = { prompt, calidad, aspectRatio, targetPx };
+    if (imagen) body.imagen = imagen;
     const response = await fetch(PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(body)
     });
     if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Error ${response.status}: ${text}`);
+        let msg = `Error ${response.status}`;
+        try { const j = await response.json(); msg = j?.error?.message || msg; }
+        catch (e) { msg = `${msg}: ${await response.text()}`; }
+        throw new Error(msg);
     }
-    return await response.json();
+    const data = await response.json();
+    if (!data.success || !data.imageUrl) {
+        throw new Error(data?.error?.message || 'FLUX no devolvió imagen');
+    }
+    return data.imageUrl;
 };
 
-const enhancePrompt = async (basePrompt) => {
-    try {
-        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÃ“N DE IMÁGENES.
-TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÃ“N DEL USUARIO.
-Instrucciones:
-1. NO inventes sujetos nuevos (ej: si pide un perro, no digas que es un Golden Retriever a menos que él lo diga).
-2. NO cambies el entorno drásticamente.
-3. Céntrate en añadir detalles técnicos de calidad (iluminación, texturas, estilo de cámara) para que el prompt sea más efectivo pero manteniendo el mensaje original intacto.
-4. Si el usuario pide un cambio pequeño (ej: "lazo rojo"), el prompt debe centrarse en ese cambio pero con mejor lenguaje técnico.
-
-Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (Descriptiva, Cinematográfica, Artística, y Minimalista) siguiendo estas reglas estrictas.`;
-        const contents = [{ parts: [{ text: systemInstructions }] }];
-        const config = {
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: { type: { type: "STRING" }, text: { type: "STRING" } },
-                        required: ["type", "text"]
-                    }
-                }
-            }
+// Upscale client-side (para la descarga 4K desde el máximo nativo de FLUX, 4MP)
+const upscaleImage = (dataUrl, targetMaxSide = 4096) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            let { width, height } = img;
+            if (width <= 0 || height <= 0) { resolve(dataUrl); return; }
+            const scale = targetMaxSide / Math.max(width, height);
+            if (scale <= 1) { resolve(dataUrl); return; } // ya es suficiente
+            const w = Math.round(width * scale);
+            const h = Math.round(height * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.95));
         };
-        const result = await callProxy('gemini-2.5-flash-image', contents, config);
-        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-        return text ? JSON.parse(text) : [];
-    } catch (e) {
-        console.error("Failed to enhance prompt", e);
-        return [];
-    }
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+    });
 };
 
 const generateImage = async (params) => {
@@ -327,59 +335,42 @@ const generateImage = async (params) => {
 
     let finalPrompt = '';
     if (params.sourceImage) {
-        const sizeInfo = `Adjust the aspect ratio to ${params.aspectRatio}.`;
         if (fullStylePrompt) {
-            finalPrompt = `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`;
+            finalPrompt = `Transform this image into the following style and content: ${fullStylePrompt}. Keep a complete, high-quality result in ${params.aspectRatio} format.`;
         } else {
-            finalPrompt = `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`;
+            finalPrompt = `Recreate this image as a complete, natural, high-quality result, maintaining its original style and context, in ${params.aspectRatio} format.`;
         }
     } else {
         finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
     }
 
-    const parts = [{ text: finalPrompt }];
-    if (params.sourceImage) {
-        const base64Data = params.sourceImage.split(',')[1];
-        parts.push({ inlineData: { data: base64Data, mimeType: "image/jpeg" } });
+    const imageUrl = await callFlux({
+        prompt: finalPrompt,
+        calidad: params.calidad || 'normal',
+        aspectRatio: params.aspectRatio,
+        targetPx: params.targetPx || 1024,
+        imagen: params.sourceImage || undefined
+    });
+
+    // Descarga a 4K real: upscale client-side desde el nativo (máx 4MP de FLUX)
+    if (params.downloadPx && params.downloadPx > (params.targetPx || 1024)) {
+        return await upscaleImage(imageUrl, params.downloadPx);
     }
-    const contents = [{ parts }];
-    const config = {
-        generationConfig: {
-            imageConfig: {
-                aspectRatio: params.aspectRatio,
-                imageSize: params.imageSize || '1K'
-            }
-        }
-    };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) {
-            const generatedImage = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-            return params.outputMaxWidth ? await resizeImage(generatedImage, params.outputMaxWidth) : generatedImage;
-        }
-    }
-    throw new Error("No se pudo generar la imagen");
+    return imageUrl;
 };
 
 const editImageConversation = async (params) => {
-    const base64Data = params.originalImage.split(',')[1];
-    const contents = [{
-        parts: [
-            { inlineData: { data: base64Data, mimeType: "image/jpeg" } },
-            { text: params.instruction }
-        ]
-    }];
-    const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio, imageSize: params.imageSize || '1K' } } };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) {
-            const editedImage = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-            return params.outputMaxWidth ? await resizeImage(editedImage, params.outputMaxWidth) : editedImage;
-        }
+    const imageUrl = await callFlux({
+        prompt: params.instruction,
+        calidad: params.calidad || 'normal',
+        aspectRatio: params.aspectRatio,
+        targetPx: params.targetPx || 1024,
+        imagen: params.originalImage
+    });
+    if (params.downloadPx && params.downloadPx > (params.targetPx || 1024)) {
+        return await upscaleImage(imageUrl, params.downloadPx);
     }
-    throw new Error("Error en la edición conversacional");
+    return imageUrl;
 };
 
 // --- COMPONENTS ---
@@ -449,8 +440,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
     );
 };
 
-const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGenerating, mode }) => {
-    const hasAnyValue = PROMPT_FIELD_DEFINITIONS.some((field) => (fields[field.id] || '').trim());
+const StructuredPromptFields = ({ fields, onChange, mode }) => {
     const isEditMode = mode === 'remix';
 
     return (
@@ -476,17 +466,6 @@ const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGe
                     </div>
                 </div>
             ))}
-
-            <button
-                onClick={onEnhance}
-                disabled={isEnhancing || isGenerating || !hasAnyValue}
-                title="mejorar prompt con IA"
-                aria-label="Mejorar los campos del prompt con IA"
-                className="structured-enhance-button"
-            >
-                {isEnhancing ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-                <span>Mejorar</span>
-            </button>
         </div>
     );
 };
@@ -496,7 +475,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
         e.stopPropagation();
         const link = document.createElement('a');
         link.href = image.url;
-        link.download = `gemini-studio-${image.id}.jpg`;
+        link.download = `flux-studio-${image.id}.jpg`;
         link.click();
     };
     const handleHdDownload = (e) => {
@@ -587,7 +566,7 @@ const Splash = ({ onSelect }) => (
                     <Wand2 size={32} />
                 </div>
                 <h2 className="text-4xl font-bold">Editar Imagen</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de Nano Banana.</p>
+                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de FLUX.</p>
             </button>
             <button onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
@@ -603,14 +582,13 @@ const Splash = ({ onSelect }) => (
     </div>
 );
 
-const STORAGE_KEY = 'gemini_image_studio_history';
+const STORAGE_KEY = 'flux_image_studio_history';
 
 // --- APP MAIN ---
 const App = () => {
     const [view, setView] = useState('splash');
     const [mode, setMode] = useState('text-to-image');
     const [promptFields, setPromptFields] = useState(() => createInitialPromptFields());
-    const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.ilustracion[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
     const [images, setImages] = useState(() => {
@@ -651,7 +629,6 @@ const App = () => {
     }, []); // solo al montar
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [isEnhancing, setIsEnhancing] = useState(false);
     const [editImage, setEditImage] = useState(null);
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
@@ -674,11 +651,13 @@ const App = () => {
         const reader = new FileReader();
         reader.onload = (f) => {
             const img = new Image();
-            img.onload = () => {
+            img.onload = async () => {
                 const detectedAR = getClosestAspectRatio(img.width, img.height);
                 setSelectedAR(detectedAR);
                 setOriginalImageAR(detectedAR);
-                setRemixSource(f.target.result);
+                // Limitar la imagen de entrada a <=2048px de lado (tope 4MP de FLUX)
+                const clamped = await clampInputImage(f.target.result, 2048);
+                setRemixSource(clamped);
             };
             img.src = f.target.result;
         };
@@ -689,15 +668,6 @@ const App = () => {
 
     const updatePromptField = (fieldId, value) => {
         setPromptFields(prev => ({ ...prev, [fieldId]: value }));
-    };
-
-    const handleEnhance = async () => {
-        if (!currentPrompt.trim()) return;
-        setIsEnhancing(true);
-        try {
-            const enhanced = await enhancePrompt(currentPrompt);
-            setEnhancedPrompts(enhanced);
-        } catch (err) { console.error(err); } finally { setIsEnhancing(false); }
     };
 
     const handleGenerate = async (finalPrompt = currentPrompt) => {
@@ -711,8 +681,9 @@ const App = () => {
                 prompt: effectivePrompt,
                 styleSuffix,
                 aspectRatio: selectedAR,
-                imageSize: imageSize.geminiSize,
-                outputMaxWidth: imageSize.outputMaxWidth,
+                calidad: imageSize.calidad,
+                targetPx: imageSize.targetPx,
+                downloadPx: imageSize.downloadPx,
                 sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
             });
 
@@ -723,8 +694,9 @@ const App = () => {
                 style: selectedStyle,
                 aspectRatio: selectedAR,
                 size: imageSize.label,
-                geminiSize: imageSize.geminiSize,
-                outputMaxWidth: imageSize.outputMaxWidth || null,
+                calidad: imageSize.calidad,
+                targetPx: imageSize.targetPx,
+                downloadPx: imageSize.downloadPx,
                 createdAt: Date.now()
             };
 
@@ -734,7 +706,7 @@ const App = () => {
             setError(err.message || "Error de generación");
         } finally {
             setIsGenerating(false);
-            // Resetear estados post-generación (mantenemos enhancedPrompts)
+            // Resetear estados post-generación
             setPromptFields(createInitialPromptFields());
             setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
             setSelectedAR(AspectRatio.SQUARE);
@@ -756,16 +728,12 @@ const App = () => {
         setIsGenerating(true);
         setError(null);
         try {
-            const hdUrl = await editImageConversation({
-                originalImage: img.url,
-                instruction: 'Regenera esta imagen exacta a mayor resolución. Conserva absolutamente todos y cada uno de los elementos: composición, colores, iluminación, sombras, texturas, objetos, personas, fondo, estilo. No añadas, quites, modifiques ni reinterpretes nada. Solo aumenta la resolución y nitidez. Es una operación de reescalado puro, no una edición ni transformación.',
-                aspectRatio: img.aspectRatio,
-                imageSize: '1K',
-                outputMaxWidth: undefined
-            });
+            // Descarga HD: upscale client-side de la imagen guardada hasta 4K (4096px lado).
+            // FLUX genera como máx 4MP (~2048); el escalado x2 entrega un 4K listo para imprimir/descargar.
+            const hdUrl = await upscaleImage(img.url, 4096);
             const link = document.createElement('a');
             link.href = hdUrl;
-            link.download = `gemini-hd-${img.id}.jpg`;
+            link.download = `flux-hd-${img.id}.jpg`;
             link.click();
         } catch (err) {
             setError("Error HD: " + (err.message || ''));
@@ -780,17 +748,17 @@ const App = () => {
 
     const handleEditSubmit = async () => {
         if (!editImage || !editInstruction.trim()) return;
-        const editOutputMaxWidth = editImage.outputMaxWidth || (editImage.size === '512px' ? 512 : null);
         setIsGenerating(true);
         try {
             const updatedUrl = await editImageConversation({
                 originalImage: editImage.url,
                 instruction: editInstruction,
                 aspectRatio: editImage.aspectRatio,
-                imageSize: editImage.geminiSize || '1K',
-                outputMaxWidth: editOutputMaxWidth
+                calidad: editImage.calidad || 'normal',
+                targetPx: editImage.targetPx || 1024,
+                downloadPx: editImage.downloadPx
             });
-            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, outputMaxWidth: editOutputMaxWidth, createdAt: Date.now() };
+            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, createdAt: Date.now() };
             setImages([updatedImage, ...images]);
             syncToServer(updatedImage);
             setEditImage(null);
@@ -829,27 +797,8 @@ const App = () => {
                                 <StructuredPromptFields
                                     fields={promptFields}
                                     onChange={updatePromptField}
-                                    onEnhance={handleEnhance}
-                                    isEnhancing={isEnhancing}
-                                    isGenerating={isGenerating}
                                     mode={mode}
                                 />
-
-                                {enhancedPrompts.length > 0 && (
-                                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-2 duration-300">
-                                        {enhancedPrompts.map((p, i) => (
-                                            <button
-                                                key={i}
-                                                disabled={isGenerating}
-                                                onClick={() => setPromptFields(createInitialPromptFields(p.text))}
-                                                className="text-[10px] text-left p-3 glass-light border border-white/5 rounded-2xl text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all leading-tight group disabled:opacity-40 disabled:cursor-not-allowed"
-                                            >
-                                                <div className="font-bold text-[9px] uppercase tracking-tighter text-gray-500 group-hover:text-cyan-500 mb-1">{p.type}</div>
-                                                <div className="line-clamp-2 italic opacity-80">{p.text}</div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
 
                             <div className="space-y-6">
