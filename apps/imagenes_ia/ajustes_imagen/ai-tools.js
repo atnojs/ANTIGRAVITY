@@ -134,6 +134,49 @@
     return { width: w, height: h };
   }
 
+  // Aplica el formato (AR) + resolución elegidos de forma LOCAL (sin IA, gratis):
+  // recorta la imagen actual al centro según el AR y la redimensiona a la resolución.
+  // Devuelve una data URL, o null si no hay imagen.
+  function applyLocalDimsToImage() {
+    return new Promise(function (resolve) {
+      var src = getOriginalImage();
+      if (!src) { resolve(null); return; }
+      var dims = computeTargetDims();
+      var targetW = dims.width, targetH = dims.height;
+      var img = new Image();
+      img.onload = function () {
+        var sw = img.width, sh = img.height;
+        var targetRatio = targetW / targetH;
+        var srcRatio = sw / sh;
+        // Center-crop de la imagen fuente para que cuadre con el AR objetivo
+        var cropW, cropH, cropX, cropY;
+        if (srcRatio > targetRatio) {
+          // fuente más ancha: recortar los lados
+          cropH = sh;
+          cropW = Math.round(sh * targetRatio);
+          cropX = Math.round((sw - cropW) / 2);
+          cropY = 0;
+        } else {
+          // fuente más alta: recortar arriba/abajo
+          cropW = sw;
+          cropH = Math.round(sw / targetRatio);
+          cropX = 0;
+          cropY = Math.round((sh - cropH) / 2);
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = targetW;
+        canvas.height = targetH;
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, targetW, targetH);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = function () { resolve(null); };
+      img.src = src;
+    });
+  }
+
   // ============================================================
   // HELPERS
   // ============================================================
@@ -509,6 +552,7 @@
           }).join('') +
         '</div>' +
       '</div>' +
+      '<button id="ai-apply-dims" title="Aplica el formato y la resolución elegidos recortando/redimensionando la imagen actual, SIN usar IA (gratis)" style="width:100%;margin-bottom:0.6rem;padding:0.4rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid #26C626;background:rgba(38,198,38,0.18);color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.04em;">Aplicar formato/resolución (sin IA)</button>' +
       '<div id="ai-tools-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.375rem;"></div>';
 
     // Insertar SIEMPRE al INICIO del contenedor scrollable (primer hijo)
@@ -536,6 +580,37 @@
 
     wireSelectorGroup('.ai-ar-btn', function (b) { selectedAR = b.getAttribute('data-ar') || '1:1'; });
     wireSelectorGroup('.ai-res-btn', function (b) { selectedRes = parseInt(b.getAttribute('data-res'), 10) || 1024; });
+
+    // Botón "Aplicar formato/resolución (sin IA)": recorta+redimensiona la imagen
+    // actual localmente (canvas, gratis) y la mete en la app como cambio real.
+    var applyBtn = section.querySelector('#ai-apply-dims');
+    if (applyBtn) {
+      applyBtn.onclick = async function () {
+        if (isProcessing) return;
+        var src = getOriginalImage();
+        if (!src) { showStatus('Primero sube una imagen.', 2500); return; }
+        isProcessing = true;
+        var prevText = applyBtn.textContent;
+        applyBtn.textContent = 'Aplicando…';
+        applyBtn.disabled = true;
+        try {
+          var dims = computeTargetDims();
+          var out = await applyLocalDimsToImage();
+          if (out) {
+            updateAppImage(out, 'Formato ' + selectedAR + ' · ' + dims.width + '×' + dims.height + 'px');
+            showStatus('✅ Formato ' + selectedAR + ' aplicado (' + dims.width + '×' + dims.height + 'px)', 4000);
+          } else {
+            showStatus('No se pudo aplicar el formato.', 3000);
+          }
+        } catch (e) {
+          showStatus('Error al aplicar formato: ' + e.message, 4000);
+        } finally {
+          isProcessing = false;
+          applyBtn.textContent = prevText;
+          applyBtn.disabled = false;
+        }
+      };
+    }
 
     // Selector de modelo (pro/max): actualiza selectedQuality y el estado visual
     var qualityBtns = section.querySelectorAll('.ai-quality-btn');
