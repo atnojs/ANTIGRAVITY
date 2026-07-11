@@ -1,5 +1,5 @@
 /**
- * AI Tools — Gemini-powered image editing (Tier 1)
+ * AI Tools — FLUX-powered image editing (Tier 1)
  * Injects AI functionality into the Ajustes Imagen app via DOM.
  * No JSX, no Babel, no dependencies on React internals.
  * v1.0 — 2026-06-07
@@ -132,19 +132,16 @@
     }
   }
 
-  async function callGeminiAPI(imageBase64, prompt) {
+  async function callFluxAPI(imageBase64, prompt) {
     const base64Data = imageBase64.includes('base64,')
       ? imageBase64.split('base64,')[1] : imageBase64;
     const mimeType = imageBase64.startsWith('data:')
       ? imageBase64.split(';')[0].replace('data:', '') : 'image/jpeg';
 
     const payload = {
-      task: 'generateImage',
-      provider: 'gemini',
-      prompt: prompt,
-      images: [{ data: base64Data, mimeType: mimeType }],
-      aspectRatio: '1:1',
-      modalities: ['IMAGE']
+      image: base64Data,
+      mimeType: mimeType,
+      prompt: prompt
     };
 
     const response = await fetch('proxy.php', {
@@ -157,17 +154,17 @@
       let errMsg = 'Error HTTP ' + response.status;
       try {
         const errData = await response.json();
-        errMsg = errData.error || errMsg;
+        errMsg = (errData.error && errData.error.message) || errData.error || errMsg;
       } catch (e) { /* ignore */ }
       throw new Error(errMsg);
     }
 
     const result = await response.json();
-    if (result.error) throw new Error(result.error);
+    if (result.error) throw new Error((result.error && result.error.message) || result.error);
     if (result.image) {
       return 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.image;
     }
-    throw new Error('La API no devolvió imagen.');
+    throw new Error('FLUX no devolvió imagen.');
   }
 
   function updateAppImage(dataUrl) {
@@ -375,7 +372,7 @@
       showStatus('IA: ' + tool.label + ' — generando... (puede tardar 5-15s)', 15000);
       console.log('[AI Tool: ' + tool.label + '] Prompt:', finalPrompt.substring(0, 100) + '...');
 
-      var resultUrl = await callGeminiAPI(image, finalPrompt);
+      var resultUrl = await callFluxAPI(image, finalPrompt);
 
       if (resultUrl) {
         // Update the image in the app
@@ -428,21 +425,15 @@
     // Create the AI tools section
     var section = document.createElement('div');
     section.id = 'ai-tools-section';
-    section.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(0,208,208,0.3);';
+    section.style.cssText = 'margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(0,208,208,0.3);';
 
     section.innerHTML =
       '<h4 style="font-size:11px;font-weight:600;color:#00D0D0;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
-      '<i data-lucide="wand-2" style="width:0.75rem;height:0.75rem;"></i> IA Gemini — 10 Herramientas</h4>' +
+      '<i data-lucide="wand-2" style="width:0.75rem;height:0.75rem;"></i> IA FLUX — 10 Herramientas</h4>' +
       '<div id="ai-tools-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.375rem;"></div>';
 
-    // Find a good insertion point — after the tools grid or before the meme editor
-    var memeSection = scrollDiv.querySelector('h3');
-    if (memeSection && memeSection.textContent.includes('Editar Meme')) {
-      scrollDiv.insertBefore(section, memeSection.parentElement);
-    } else {
-      // Append to the end of the scrollable div
-      scrollDiv.appendChild(section);
-    }
+    // Insertar SIEMPRE al INICIO del contenedor scrollable (primer hijo)
+    scrollDiv.insertBefore(section, scrollDiv.firstChild);
 
     // Add tool buttons
     var grid = document.getElementById('ai-tools-grid');
