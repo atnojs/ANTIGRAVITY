@@ -395,6 +395,30 @@ body button:disabled {
   border-color: rgba(148, 163, 184, 0.5);
 }
 
+/* ===========================
+   FIX: botones del modal "IA FLUX" (opciones de estilo/select).
+   La regla global "body button" les mete overflow:hidden + radius:999px
+   + gradiente/glow, lo que RECORTA el texto largo de las opciones
+   (se veía solo media línea). Aquí se neutraliza ese efecto para que
+   las etiquetas se lean completas, envolviendo a 2 líneas si hace falta.
+   =========================== */
+#ai-modal-overlay button.ai-option-btn {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 2.25rem !important;
+  white-space: normal !important;
+  line-height: 1.35 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+}
+#ai-modal-overlay button.ai-option-btn::before {
+  display: none !important;
+}
+
 /* Ajustes específicos para botones peligrosos (rojos) */
 body button.bg-red-600,
 body button.bg-red-600\/95,
