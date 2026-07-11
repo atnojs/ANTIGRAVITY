@@ -213,13 +213,13 @@
 
     const card = document.createElement('div');
     card.className = 'glass-modal';
-    card.style.cssText = 'width:100%;max-width:28rem;border-radius:1rem;overflow:hidden;border:1px solid rgba(99,102,241,0.3);';
+    card.style.cssText = 'width:100%;max-width:28rem;border-radius:1rem;overflow:hidden;border:1px solid rgba(0,208,208,0.3);';
 
     // Header
     const header = document.createElement('div');
-    header.style.cssText = 'padding:1rem 1.5rem;border-bottom:1px solid rgba(51,65,85,0.5);background:linear-gradient(135deg,rgba(67,56,202,0.3),rgba(15,23,42,0.9));';
+    header.style.cssText = 'padding:1rem 1.5rem;border-bottom:1px solid rgba(51,65,85,0.5);background:linear-gradient(135deg,rgba(0,176,176,0.3),rgba(15,23,42,0.9));';
     header.innerHTML = '<div style="display:flex;align-items:center;gap:0.5rem;">' +
-      '<i data-lucide="' + tool.icon + '" style="width:1.25rem;height:1.25rem;color:#818cf8;"></i>' +
+      '<i data-lucide="' + tool.icon + '" style="width:1.25rem;height:1.25rem;color:#00D0D0;"></i>' +
       '<h2 style="font-size:1.125rem;font-weight:700;color:white;">' + tool.label + '</h2></div>' +
       '<p style="font-size:0.75rem;color:#94a3b8;margin-top:0.25rem;">' + tool.desc + '</p>';
 
@@ -232,7 +232,7 @@
       inputHtml = '<label style="font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:0.5rem;">Selecciona una opción:</label>' +
         '<div style="display:flex;flex-direction:column;gap:0.375rem;max-height:15rem;overflow-y:auto;">' +
         tool.options.map(function (opt, i) {
-          return '<button class="ai-option-btn" data-value="' + opt.replace(/"/g, '&quot;') + '" style="text-align:left;padding:0.5rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;border:1px solid #334155;background:' + (i === 0 ? 'rgba(99,102,241,0.3)' : '#1e293b') + ';color:' + (i === 0 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + opt + '</button>';
+          return '<button class="ai-option-btn" data-value="' + opt.replace(/"/g, '&quot;') + '" style="text-align:left;padding:0.5rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;border:1px solid #334155;background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + opt + '</button>';
         }).join('') + '</div>';
     } else if (tool.inputType === 'text') {
       inputHtml = '<label style="font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:0.5rem;">Describe lo que quieres:</label>' +
@@ -252,13 +252,13 @@
     const execBtn = document.createElement('button');
     execBtn.id = 'ai-exec-btn';
     execBtn.textContent = 'Ejecutar IA';
-    execBtn.style.cssText = 'padding:0.625rem 1.25rem;border-radius:0.5rem;background:#4f46e5;color:white;font-size:0.875rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:0.5rem;';
+    execBtn.style.cssText = 'padding:0.625rem 1.25rem;border-radius:0.5rem;background:#00b0b0;color:white;font-size:0.875rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:0.5rem;';
     execBtn.onclick = function () {
       if (isProcessing) return;
 
       let userInput = '';
       if (tool.inputType === 'select') {
-        const selected = body.querySelector('.ai-option-btn[style*="rgba(99,102,241"]');
+        const selected = body.querySelector('.ai-option-btn[style*="rgba(0,208,208"]');
         if (selected) userInput = selected.getAttribute('data-value') || selected.textContent;
         if (!userInput && tool.options) userInput = tool.options[0]; // default to first
       } else {
@@ -275,8 +275,8 @@
     };
 
     // Hover effect
-    execBtn.onmouseenter = function () { this.style.background = '#4338ca'; };
-    execBtn.onmouseleave = function () { this.style.background = '#4f46e5'; };
+    execBtn.onmouseenter = function () { this.style.background = '#008f8f'; };
+    execBtn.onmouseleave = function () { this.style.background = '#00b0b0'; };
 
     footer.appendChild(cancelBtn);
     footer.appendChild(execBtn);
@@ -301,9 +301,9 @@
             b.style.color = '#cbd5e1';
             b.style.borderColor = '#334155';
           });
-          btn.style.background = 'rgba(99,102,241,0.3)';
+          btn.style.background = 'rgba(0,208,208,0.3)';
           btn.style.color = 'white';
-          btn.style.borderColor = '#818cf8';
+          btn.style.borderColor = '#00D0D0';
         };
       });
     }, 100);
@@ -428,10 +428,10 @@
     // Create the AI tools section
     var section = document.createElement('div');
     section.id = 'ai-tools-section';
-    section.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(99,102,241,0.3);';
+    section.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(0,208,208,0.3);';
 
     section.innerHTML =
-      '<h4 style="font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
+      '<h4 style="font-size:11px;font-weight:600;color:#00D0D0;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
       '<i data-lucide="wand-2" style="width:0.75rem;height:0.75rem;"></i> IA Gemini — 10 Herramientas</h4>' +
       '<div id="ai-tools-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.375rem;"></div>';
 
@@ -452,21 +452,21 @@
       var btn = document.createElement('button');
       btn.textContent = tool.label;
       btn.title = tool.desc;
-      btn.style.cssText = 'padding:0.375rem;font-size:10px;border-radius:0.375rem;border:1px solid rgba(99,102,241,0.3);background:rgba(67,56,202,0.2);color:#c5caf7;cursor:pointer;transition:all 0.15s;display:flex;justify-content:center;align-items:center;gap:0.25rem;';
+      btn.style.cssText = 'padding:0.375rem;font-size:10px;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.3);background:rgba(0,176,176,0.2);color:#ccffff;cursor:pointer;transition:all 0.15s;display:flex;justify-content:center;align-items:center;gap:0.25rem;';
 
       // Hover effects
       btn.onmouseenter = function () {
-        this.style.background = 'rgba(79,70,229,0.5)';
-        this.style.borderColor = '#818cf8';
+        this.style.background = 'rgba(0,208,208,0.5)';
+        this.style.borderColor = '#00D0D0';
         this.style.color = 'white';
         this.style.transform = 'scale(1.05)';
-        this.style.boxShadow = '0 0 15px rgba(99,102,241,0.4)';
+        this.style.boxShadow = '0 0 15px rgba(0,208,208,0.4)';
         this.style.zIndex = '10';
       };
       btn.onmouseleave = function () {
-        this.style.background = 'rgba(67,56,202,0.2)';
-        this.style.borderColor = 'rgba(99,102,241,0.3)';
-        this.style.color = '#c5caf7';
+        this.style.background = 'rgba(0,176,176,0.2)';
+        this.style.borderColor = 'rgba(0,208,208,0.3)';
+        this.style.color = '#ccffff';
         this.style.transform = 'scale(1)';
         this.style.boxShadow = 'none';
         this.style.zIndex = '';
