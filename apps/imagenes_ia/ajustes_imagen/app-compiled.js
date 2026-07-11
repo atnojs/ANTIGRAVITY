@@ -1059,8 +1059,10 @@ const App = () => {
       if (event.detail && event.detail.imageUrl) {
         setOriginalImage(event.detail.imageUrl);
         setUploadedFile(event.detail.imageUrl);
+        setOriginalUploadedFile(event.detail.imageUrl);
         setCurrentSettings(INITIAL_SETTINGS);
         setMemeData(null);
+        setManualActions(prev => [...prev, event.detail.tool ? ('IA FLUX: ' + event.detail.tool) : 'Edición IA FLUX']);
         setStatusMessage("Imagen actualizada por IA");
         setTimeout(() => setStatusMessage(""), 3000);
       }

@@ -222,7 +222,7 @@
     throw new Error('FLUX no devolvió imagen.');
   }
 
-  function updateAppImage(dataUrl) {
+  function updateAppImage(dataUrl, toolLabel) {
     // Try to dispatch an event that the React app listens to, or directly modify the DOM
     // Strategy: find the canvas and draw the new image onto it
     const canvas = document.querySelector('canvas');
@@ -243,10 +243,11 @@
         displayedImg.src = dataUrl;
       }
 
-      // Actualización: también actualizar el estado original de la imagen en la app
-      // Buscar y actualizar el estado en el contexto de React
+      // Actualización: también actualizar el estado original de la imagen en la app.
+      // Se pasa 'tool' para que la app registre la edición IA como acción manual
+      // y el guardado la detecte como un cambio real (evita "sin cambios").
       window.dispatchEvent(new CustomEvent('ai-tool-update', {
-        detail: { imageUrl: dataUrl }
+        detail: { imageUrl: dataUrl, tool: toolLabel || 'IA FLUX' }
       }));
     };
     img.src = dataUrl;
@@ -433,7 +434,7 @@
 
       if (resultUrl) {
         // Update the image in the app
-        var updated = updateAppImage(resultUrl);
+        var updated = updateAppImage(resultUrl, tool.label);
 
         // Also try to trigger React state update via event
         // Dispatch a custom event that the React app can listen to
