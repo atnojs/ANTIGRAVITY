@@ -119,13 +119,13 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
-// Resolución de salida -> modelo FLUX + lado nativo (tope 4MP) + upscale de descarga.
-// FLUX 2 genera como máx 4 MP (~2048px lado). El 4K real (4096) se logra
-// haciendo upscale client-side x2 desde los 2048 nativos con el modelo 'max'.
+// Resolución de salida (SOLO flux-2-max en la app de edición).
+// FLUX 2 edita como máx 4 MP (~2048px lado). El 4K real (4096) se logra
+// haciendo upscale client-side x2 desde los 2048 nativos.
 const RESOLUTION_OPTIONS = [
-    { id: '512', label: '512px', calidad: 'barato', targetPx: 512, downloadPx: 512 },
-    { id: '1K-hd', label: '1.024px', calidad: 'normal', targetPx: 1024, downloadPx: 1024 },
-    { id: '2K', label: '2.048px', calidad: 'normal', targetPx: 2048, downloadPx: 2048 },
+    { id: '512', label: '512px', calidad: 'pro', targetPx: 512, downloadPx: 512 },
+    { id: '1K-hd', label: '1.024px', calidad: 'pro', targetPx: 1024, downloadPx: 1024 },
+    { id: '2K', label: '2.048px', calidad: 'pro', targetPx: 2048, downloadPx: 2048 },
     { id: '4K', label: '4.096px', calidad: 'pro', targetPx: 2048, downloadPx: 4096 },
 ];
 
@@ -558,7 +558,7 @@ const Splash = ({ onSelect }) => (
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-            <a href="../editar_copia/" className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30 block">
+            <button onClick={() => onSelect('remix')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30">
                 <div className="absolute top-0 right-0 p-8 text-purple-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
                     <ImageIcon size={200} />
                 </div>
@@ -566,9 +566,9 @@ const Splash = ({ onSelect }) => (
                     <Wand2 size={32} />
                 </div>
                 <h2 className="text-4xl font-bold">Editar Imagen</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de FLUX.</p>
-            </a>
-            <button onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
+                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
+            </button>
+            <a href="../generar_copia/" className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 block">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
                     <Sparkles size={200} />
                 </div>
@@ -577,17 +577,17 @@ const Splash = ({ onSelect }) => (
                 </div>
                 <h2 className="text-4xl font-bold">Generar Imágenes</h2>
                 <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
-            </button>
+            </a>
         </div>
     </div>
 );
 
-const STORAGE_KEY = 'flux_generar_studio_history';
+const STORAGE_KEY = 'flux_editar_studio_history';
 
 // --- APP MAIN ---
 const App = () => {
     const [view, setView] = useState('splash');
-    const [mode, setMode] = useState('text-to-image');
+    const [mode, setMode] = useState('remix');
     const [promptFields, setPromptFields] = useState(() => createInitialPromptFields());
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.ilustracion[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
@@ -639,10 +639,10 @@ const App = () => {
     const fileInputRef = useRef(null);
 
     const handleStart = (m) => {
-        setMode(m);
+        // App de EDICIÓN: solo modo 'remix'. La generación vive en generar_copia.
+        setMode('remix');
         setView('editor');
-        if (m === 'text-to-image') setRemixSource(null);
-        if (m === 'remix') setTimeout(() => fileInputRef.current?.click(), 100);
+        setTimeout(() => fileInputRef.current?.click(), 100);
     };
 
     const handleFileUpload = (e) => {
