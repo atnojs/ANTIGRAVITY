@@ -562,7 +562,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
     );
 };
 
-const Splash = ({ onSelect }) => (
+const Splash = () => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
             <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Diseña como un Pro</h1>
@@ -571,7 +571,7 @@ const Splash = ({ onSelect }) => (
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-            <button type="button" onPointerDown={(e) => { e.preventDefault(); onSelect('remix'); }} onClick={(e) => { e.preventDefault(); onSelect('remix'); }} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30">
+            <a href="?mode=edit" className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30 block">
                 <div className="absolute top-0 right-0 p-8 text-purple-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
                     <ImageIcon size={200} />
                 </div>
@@ -580,8 +580,8 @@ const Splash = ({ onSelect }) => (
                 </div>
                 <h2 className="text-4xl font-bold">Editar Imagen</h2>
                 <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
-            </button>
-            <a href="../generar_copia/" onPointerDown={(e) => { e.preventDefault(); window.location.assign('../generar_copia/'); }} onClick={(e) => { e.preventDefault(); window.location.assign('../generar_copia/'); }} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 block">
+            </a>
+            <a href="../generar_copia/" className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 block">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
                     <Sparkles size={200} />
                 </div>
@@ -599,7 +599,9 @@ const STORAGE_KEY = 'flux_editar_studio_history';
 
 // --- APP MAIN ---
 const App = () => {
-    const [view, setView] = useState('splash');
+    // Si la URL trae ?mode=edit, entramos directos al editor (enlace nativo -> sin doble clic).
+    const _startInEditor = (typeof window !== 'undefined' && /[?&]mode=edit\b/.test(window.location.search));
+    const [view, setView] = useState(_startInEditor ? 'editor' : 'splash');
     const [mode, setMode] = useState('remix');
     const [promptFields, setPromptFields] = useState(() => createInitialPromptFields());
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.fotografico[1]);
@@ -653,6 +655,14 @@ const App = () => {
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
 
     const fileInputRef = useRef(null);
+
+    // Si entramos directos al editor por ?mode=edit, abrir el selector de archivo al montar.
+    useEffect(() => {
+        if (_startInEditor) {
+            const t = setTimeout(() => fileInputRef.current?.click(), 300);
+            return () => clearTimeout(t);
+        }
+    }, []);
 
     const handleStart = (m) => {
         // App de EDICIÓN: solo modo 'remix'. La generación vive en generar_copia.
@@ -786,12 +796,12 @@ const App = () => {
             {isGenerating && <LoadingOverlay />}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
-                    <Splash onSelect={handleStart} />
+                    <Splash />
                 ) : (
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
                             <div className="flex items-center justify-between shrink-0">
-                                <button onClick={() => setView('splash')} className="flex items-center gap-2 text-gray-400 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                                <button onClick={() => { setView('splash'); if (typeof window !== 'undefined' && window.location.search) window.history.replaceState(null, '', window.location.pathname); }} className="flex items-center gap-2 text-gray-400 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
                                     <ChevronLeft size={16} /> <span>Volver</span>
                                 </button>
                             </div>
