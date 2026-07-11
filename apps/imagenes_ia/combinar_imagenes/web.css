@@ -486,6 +486,62 @@ h3 {
     box-shadow: 0 4px 12px rgba(0, 208, 208, 0.3);
 }
 
+/* Selector de modelo FLUX (Pro / Max) */
+.model-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.model-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    padding: 0.7rem 0.9rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(0, 208, 208, 0.25);
+    border-radius: var(--radius-md);
+    color: var(--muted);
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition-main);
+    text-align: left;
+}
+
+.model-option:hover {
+    border-color: var(--acc);
+    color: var(--text);
+    box-shadow: 0 0 15px rgba(0, 208, 208, 0.15);
+}
+
+.model-option .model-name {
+    font-family: 'Electrolize', system-ui, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.model-option .model-desc {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.model-option.active {
+    background: var(--gradient-cyan-blue);
+    border-color: transparent;
+    color: #001018;
+    box-shadow: 0 4px 16px rgba(0, 208, 208, 0.35);
+}
+
+.model-option.active .model-name,
+.model-option.active .model-desc {
+    color: #001018;
+}
+
 /* Botón Generar */
 .btn-generate {
     width: 100%;

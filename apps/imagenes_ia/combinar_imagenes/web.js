@@ -88,6 +88,7 @@ const state = {
     images: new Array(CONFIG.MAX_IMAGES).fill(null), // Array fijo con tamaño máximo, lleno de nulls inicialmente
     history: [],
     selectedAR: '1:1',
+    selectedModel: 'pro', // Modelo FLUX: 'pro' o 'max'
     isGenerating: false,
     isEnhancing: false,
     currentLightboxImage: null,
@@ -99,6 +100,7 @@ const elements = {
     imageCounter: document.getElementById('imageCounter'),
     promptInput: document.getElementById('promptInput'),
     arSelector: document.getElementById('arSelector'),
+    modelSelector: document.getElementById('modelSelector'),
     btnGenerate: document.getElementById('btnGenerate'),
     btnEnhance: document.getElementById('btnEnhance'),
     btnClearPrompt: document.getElementById('btnClearPrompt'),
@@ -132,6 +134,7 @@ async function init() {
 
     renderImageSlots();
     setupARSelector();
+    setupModelSelector();
     setupPromptEnhancement();
     elements.btnGenerate.addEventListener('click', handleGenerate);
     setupLightbox();
@@ -324,7 +327,7 @@ async function handleEnhancePrompt() {
 
         const data = await response.json();
 
-        if (data.error) throw new Error(data.error);
+        if (data.error) throw new Error(data.error.message || data.error);
 
         if (data.options && data.options.length > 0) {
             state.promptOptions = data.options.slice(0, 4);
@@ -350,6 +353,18 @@ function setupARSelector() {
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             state.selectedAR = btn.dataset.ar;
+        });
+    });
+}
+
+function setupModelSelector() {
+    if (!elements.modelSelector) return;
+    const buttons = elements.modelSelector.querySelectorAll('.model-option');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.selectedModel = btn.dataset.model; // 'pro' | 'max'
         });
     });
 }
@@ -429,7 +444,8 @@ async function handleGenerate() {
             images: imagesToProcess,
             backgroundImage: backgroundImage,
             prompt: prompt,
-            aspectRatio: state.selectedAR
+            aspectRatio: state.selectedAR,
+            calidad: state.selectedModel
         };
 
         const response = await fetch(CONFIG.PROXY_URL, {
@@ -440,7 +456,7 @@ async function handleGenerate() {
 
         const data = await response.json();
 
-        if (data.error) throw new Error(data.error);
+        if (data.error) throw new Error(data.error.message || data.error);
 
         if (data.images && data.images.length > 0) {
             data.images.forEach(img => {
