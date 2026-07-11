@@ -205,8 +205,13 @@ try {
             }
         }
 
-        // ── Dimensiones: aspect ratio + lado objetivo, tope duro 4MP ──
-        $target = ($calidad === 'max') ? 2048 : 1536; // MAX apura el tope 4MP; PRO equilibrado
+        // ── Dimensiones: aspect ratio + lado objetivo (elegido por el usuario), tope duro 4MP ──
+        // El usuario elige 512/1024/2048/4096; FLUX 2 rechaza (422) resoluciones > 4MP,
+        // así que el lado efectivo se limita a 2048 y el clamp de abajo respeta los 4 MP.
+        // Para 4096 real, el reescalado final lo hace el navegador (nota en el frontend).
+        $target = (int) ($json['targetPx'] ?? 1024);
+        if ($target < 256)  $target = 256;
+        if ($target > 2048) $target = 2048; // FLUX nunca supera ~2048 de lado (tope 4MP)
         $MAX_PX = 4194304; // 4 MP: límite verificado de FLUX 2
         $parts = explode(':', $aspectRatio);
         $aw = (float) ($parts[0] ?? 1);

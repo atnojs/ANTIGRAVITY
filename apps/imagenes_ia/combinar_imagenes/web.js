@@ -89,6 +89,7 @@ const state = {
     history: [],
     selectedAR: '1:1',
     selectedModel: 'pro', // Modelo FLUX: 'pro' o 'max'
+    selectedRes: 1024, // Resolución (lado objetivo px): 512 / 1024 / 2048 / 4096
     isGenerating: false,
     isEnhancing: false,
     currentLightboxImage: null,
@@ -100,6 +101,8 @@ const elements = {
     imageCounter: document.getElementById('imageCounter'),
     promptInput: document.getElementById('promptInput'),
     arSelector: document.getElementById('arSelector'),
+    resSelector: document.getElementById('resSelector'),
+    resNote: document.getElementById('resNote'),
     modelSelector: document.getElementById('modelSelector'),
     btnGenerate: document.getElementById('btnGenerate'),
     btnEnhance: document.getElementById('btnEnhance'),
@@ -134,6 +137,7 @@ async function init() {
 
     renderImageSlots();
     setupARSelector();
+    setupResSelector();
     setupModelSelector();
     setupPromptEnhancement();
     elements.btnGenerate.addEventListener('click', handleGenerate);
@@ -369,6 +373,31 @@ function setupModelSelector() {
     });
 }
 
+function setupResSelector() {
+    if (!elements.resSelector) return;
+    const buttons = elements.resSelector.querySelectorAll('.ar-option');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.selectedRes = parseInt(btn.dataset.res, 10);
+            updateResNote();
+        });
+    });
+    updateResNote();
+}
+
+// FLUX 2 tope duro: 4 MP (~2048 px de lado). A 4096 la imagen se genera al
+// máximo nativo (4MP) y se reescala en el navegador; avisamos al usuario.
+function updateResNote() {
+    if (!elements.resNote) return;
+    if (state.selectedRes >= 4096) {
+        elements.resNote.textContent = 'FLUX genera hasta 4 MP nativos (~2048 px); 4096 se reescala en tu equipo.';
+    } else {
+        elements.resNote.textContent = '';
+    }
+}
+
 function setupPromptEnhancement() {
     elements.btnEnhance.addEventListener('click', handleEnhancePrompt);
     elements.btnClearPrompt.addEventListener('click', () => {
@@ -445,7 +474,8 @@ async function handleGenerate() {
             backgroundImage: backgroundImage,
             prompt: prompt,
             aspectRatio: state.selectedAR,
-            calidad: state.selectedModel
+            calidad: state.selectedModel,
+            targetPx: state.selectedRes
         };
 
         const response = await fetch(CONFIG.PROXY_URL, {
