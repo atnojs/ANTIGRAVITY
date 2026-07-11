@@ -571,7 +571,7 @@ const Splash = ({ onSelect }) => (
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-            <button onClick={() => onSelect('remix')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30">
+            <button type="button" onClick={() => onSelect('remix')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30">
                 <div className="absolute top-0 right-0 p-8 text-purple-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
                     <ImageIcon size={200} />
                 </div>
