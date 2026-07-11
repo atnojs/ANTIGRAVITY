@@ -4,27 +4,28 @@
    ============================================ */
 
 :root {
-    --bg1: #041847;
-    --bg2: #0c1445;
-    --acc: #22d3ee;
-    --acc2: #a78bfa;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --border: rgba(34, 211, 238, 0.2);
-    --card-bg: rgba(15, 23, 42, 0.4);
+    /* Base hoola (estilo relatos) */
+    --bg1: #001018;
+    --bg2: #0E5368;
+    --acc: #00D0D0;
+    --acc2: #26C626;
+    --text: #eaffff;
+    --muted: #99CCCC;
+    --border: rgba(0, 208, 208, 0.7);
+    --card-bg: rgba(23, 79, 122, 0.42);
     --shadow-color: rgba(0, 0, 0, 0.5);
-    --neon-cyan: #2ee8ff;
-    --neon-pink: #ff4ecd;
-    --neon-purple: #d54cff;
-    --glow-strong: rgba(46, 232, 255, 0.4);
-    --color-purple: #a78bfa;
-    --color-cyan: #22d3ee;
-    --color-emerald: #34d399;
-    --color-pink: #f472b6;
+    --neon-cyan: #00D0D0;
+    --neon-pink: #26C626;
+    --neon-purple: #26C626;
+    --glow-strong: rgba(0, 208, 208, 0.8);
+    --color-purple: #26C626;
+    --color-cyan: #00D0D0;
+    --color-emerald: #26C626;
+    --color-pink: #26C626;
     --color-red: #ef4444;
-    --main-bg-gradient: linear-gradient(135deg, #041847 0%, #0c1445 35%, #1e3a8a 75%, #00bcd4 100%);
-    --gradient-cyan-blue: linear-gradient(135deg, #06b6d4, #3b82f6);
-    --gradient-purple-pink: linear-gradient(135deg, #a78bfa, #f472b6);
+    --main-bg-gradient: linear-gradient(180deg, #001018 0%, #062f43 45%, #0E5368 100%);
+    --gradient-cyan-blue: linear-gradient(135deg, #00D0D0, #26C626);
+    --gradient-purple-pink: linear-gradient(135deg, #26C626, #00D0D0);
     --gradient-text: linear-gradient(90deg, var(--neon-cyan), var(--acc2), var(--neon-pink));
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -42,19 +43,49 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     background: var(--main-bg-gradient);
     background-attachment: fixed;
     color: var(--text);
     min-height: 100vh;
     line-height: 1.5;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Halos radiales cian del estilo relatos */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 18% 12%, rgba(0, 208, 208, 0.18), transparent 45%),
+        radial-gradient(circle at 82% 78%, rgba(0, 208, 208, 0.12), transparent 50%);
+}
+
+/* Rejilla de circuito cian (46px) con máscara radial */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(0, 208, 208, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 208, 208, 0.06) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(ellipse at 50% 40%, #000 0%, transparent 75%);
 }
 
 h1,
 h2,
 h3 {
-    font-family: 'Montserrat', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .gradient-text {
@@ -123,7 +154,7 @@ h3 {
 
 .section-title svg {
     color: var(--acc);
-    filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.3));
+    filter: drop-shadow(0 0 3px rgba(0, 208, 208, 0.3));
 }
 
 .section-desc {
@@ -141,21 +172,21 @@ h3 {
 }
 
 .badge.optional {
-    background: rgba(167, 139, 250, 0.2);
+    background: rgba(38, 198, 38, 0.2);
     color: var(--color-purple);
-    border: 1px solid rgba(167, 139, 250, 0.3);
+    border: 1px solid rgba(38, 198, 38, 0.3);
 }
 
 .badge.required {
-    background: rgba(34, 211, 238, 0.2);
+    background: rgba(0, 208, 208, 0.2);
     color: var(--color-cyan);
-    border: 1px solid rgba(34, 211, 238, 0.3);
+    border: 1px solid rgba(0, 208, 208, 0.3);
 }
 
 .badge.info {
-    background: rgba(52, 211, 153, 0.2);
+    background: rgba(38, 198, 38, 0.2);
     color: var(--color-emerald);
-    border: 1px solid rgba(52, 211, 153, 0.3);
+    border: 1px solid rgba(38, 198, 38, 0.3);
 }
 
 .counter {
@@ -181,7 +212,7 @@ h3 {
 .image-slot {
     position: relative;
     aspect-ratio: 1;
-    border: 2px dashed rgba(34, 211, 238, 0.3);
+    border: 2px dashed rgba(0, 208, 208, 0.3);
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
@@ -194,12 +225,12 @@ h3 {
 
 .image-slot:hover {
     border-color: var(--color-cyan);
-    background: rgba(34, 211, 238, 0.05);
+    background: rgba(0, 208, 208, 0.05);
 }
 
 .image-slot.dragover {
     border-color: var(--neon-cyan);
-    background: rgba(34, 211, 238, 0.15);
+    background: rgba(0, 208, 208, 0.15);
 }
 
 .image-slot.filled {
@@ -210,14 +241,14 @@ h3 {
 /* Primer slot (fondo) con estilo diferente */
 /* Primer slot (fondo) con estilo diferente */
 .image-slot.background-slot {
-    border-color: rgba(167, 139, 250, 0.4);
-    background: rgba(167, 139, 250, 0.05);
+    border-color: rgba(38, 198, 38, 0.4);
+    background: rgba(38, 198, 38, 0.05);
 }
 
 .image-slot.background-slot:hover {
     border-color: var(--color-purple);
-    background: rgba(167, 139, 250, 0.15);
-    box-shadow: 0 0 15px rgba(167, 139, 250, 0.2);
+    background: rgba(38, 198, 38, 0.15);
+    box-shadow: 0 0 15px rgba(38, 198, 38, 0.2);
 }
 
 .image-slot.background-slot.filled {
@@ -233,7 +264,7 @@ h3 {
     font-weight: 800;
     letter-spacing: 0.1em;
     color: var(--color-purple);
-    text-shadow: 0 0 15px rgba(167, 139, 250, 0.4);
+    text-shadow: 0 0 15px rgba(38, 198, 38, 0.4);
     background: transparent;
     width: 100%;
     padding: 0;
@@ -314,7 +345,7 @@ h3 {
     min-height: 70px;
     padding: 0.75rem;
     background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(148, 197, 255, 0.2);
+    border: 1px solid rgba(0, 208, 208, 0.2);
     color: white;
     border-radius: var(--radius-md);
     font-family: inherit;
@@ -359,7 +390,7 @@ h3 {
 
 .btn-enhance:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(167, 139, 250, 0.3);
+    box-shadow: 0 6px 20px rgba(38, 198, 38, 0.3);
 }
 
 .btn-enhance:disabled {
@@ -378,7 +409,7 @@ h3 {
     color: var(--muted);
     font-size: 0.8rem;
     font-weight: 500;
-    border: 1px solid rgba(148, 197, 255, 0.2);
+    border: 1px solid rgba(0, 208, 208, 0.2);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition-main);
@@ -402,7 +433,7 @@ h3 {
     min-width: 70px;
     padding: 0.5rem 0.75rem;
     background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(148, 197, 255, 0.2);
+    border: 1px solid rgba(0, 208, 208, 0.2);
     border-radius: var(--radius-sm);
     color: var(--text);
     font-size: 0.75rem;
@@ -413,12 +444,12 @@ h3 {
 }
 
 .prompt-btn:hover {
-    background: rgba(167, 139, 250, 0.2);
+    background: rgba(38, 198, 38, 0.2);
     border-color: var(--color-purple);
 }
 
 .prompt-btn.selected {
-    background: rgba(34, 211, 238, 0.2);
+    background: rgba(0, 208, 208, 0.2);
     border-color: var(--color-cyan);
     color: var(--color-cyan);
 }
@@ -433,7 +464,7 @@ h3 {
 .ar-option {
     padding: 0.5rem 0.9rem;
     background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(148, 197, 255, 0.2);
+    border: 1px solid rgba(0, 208, 208, 0.2);
     color: var(--muted);
     border-radius: var(--radius-sm);
     font-family: inherit;
@@ -452,7 +483,7 @@ h3 {
     background: var(--gradient-cyan-blue);
     border-color: transparent;
     color: white;
-    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 208, 208, 0.3);
 }
 
 /* Botón Generar */
@@ -460,8 +491,8 @@ h3 {
     width: 100%;
     padding: 1rem 1.5rem;
     background: var(--gradient-cyan-blue);
-    color: white;
-    font-family: 'Montserrat', sans-serif;
+    color: #001018;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1rem;
     font-weight: 700;
     border: none;
@@ -494,7 +525,7 @@ h3 {
 
 .btn-generate:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 208, 208, 0.4);
 }
 
 .btn-generate:disabled {
@@ -539,25 +570,25 @@ h3 {
 /* Ring 1: Outer - Cyan */
 .spinner-triple .ring-1 {
     inset: 0;
-    border-top-color: #22d3ee;
+    border-top-color: #00D0D0;
     animation: spin-loader 1.2s linear infinite;
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.4);
 }
 
 /* Ring 2: Middle - Purple (Reverse) */
 .spinner-triple .ring-2 {
     inset: 10px;
-    border-right-color: #a78bfa;
+    border-right-color: #26C626;
     animation: spin-loader-reverse 1s linear infinite;
-    box-shadow: 0 0 15px rgba(167, 139, 250, 0.4);
+    box-shadow: 0 0 15px rgba(38, 198, 38, 0.4);
 }
 
 /* Ring 3: Inner - Pink */
 .spinner-triple .ring-3 {
     inset: 20px;
-    border-bottom-color: #f472b6;
+    border-bottom-color: #00D0D0;
     animation: spin-loader 0.8s linear infinite;
-    box-shadow: 0 0 10px rgba(244, 114, 182, 0.4);
+    box-shadow: 0 0 10px rgba(0, 208, 208, 0.4);
 }
 
 .loading-text {
@@ -566,7 +597,7 @@ h3 {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    text-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+    text-shadow: 0 0 10px rgba(0, 208, 208, 0.8);
     animation: pulse-text 2s ease-in-out infinite;
 }
 
@@ -714,20 +745,20 @@ h3 {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1px solid rgba(148, 197, 255, 0.65);
+    border: 1px solid rgba(0, 208, 208, 0.65);
     background: radial-gradient(circle at 0% 0%,
-            rgba(56, 189, 248, 0.16),
+            rgba(0, 208, 208, 0.16),
             transparent 55%),
         linear-gradient(135deg,
             rgba(15, 23, 42, 0.98),
-            rgba(30, 64, 175, 0.95));
+            rgba(23, 79, 122, 0.95));
     color: #e5f0ff;
     font-size: 0.85rem;
     cursor: pointer;
     box-shadow:
         0 8px 20px rgba(3, 7, 18, 0.9),
         0 0 0 1px rgba(15, 23, 42, 1),
-        0 0 20px rgba(56, 189, 248, 0.5);
+        0 0 20px rgba(0, 208, 208, 0.5);
     transition:
         transform 0.16s ease-out,
         box-shadow 0.16s ease-out,
@@ -740,7 +771,7 @@ h3 {
     box-shadow:
         0 12px 28px rgba(3, 7, 18, 1),
         0 0 0 1px rgba(15, 23, 42, 1),
-        0 0 30px rgba(56, 189, 248, 0.8);
+        0 0 30px rgba(0, 208, 208, 0.8);
 }
 
 .card-action-btn:active {
@@ -749,13 +780,13 @@ h3 {
 
 /* Download button - Cyan accent */
 .card-action-btn.download {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.9), rgba(59, 130, 246, 0.9));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.9), rgba(0, 144, 144, 0.9));
 }
 
 .card-action-btn.download:hover {
     box-shadow:
-        0 12px 28px rgba(6, 182, 212, 0.4),
-        0 0 30px rgba(6, 182, 212, 0.7);
+        0 12px 28px rgba(0, 208, 208, 0.4),
+        0 0 30px rgba(0, 208, 208, 0.7);
 }
 
 /* Delete button - Red accent */
@@ -771,13 +802,13 @@ h3 {
 
 /* Regenerate button - Emerald accent */
 .card-action-btn.regenerate {
-    background: linear-gradient(135deg, rgba(52, 211, 153, 0.9), rgba(16, 185, 129, 0.9));
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.9), rgba(23, 120, 23, 0.9));
 }
 
 .card-action-btn.regenerate:hover {
     box-shadow:
-        0 12px 28px rgba(52, 211, 153, 0.4),
-        0 0 30px rgba(52, 211, 153, 0.7);
+        0 12px 28px rgba(38, 198, 38, 0.4),
+        0 0 30px rgba(38, 198, 38, 0.7);
 }
 
 /* Lightbox - CENTRADO Y GRANDE */
@@ -827,9 +858,9 @@ h3 {
 
     .glass-hover:hover {
         background: rgba(255, 255, 255, 0.08);
-        border-color: var(--acc, #22d3ee);
+        border-color: var(--acc, #00D0D0);
         transform: translateY(-5px) scale(1.01);
-        box-shadow: 0 15px 45px 0 rgba(46, 232, 255, 0.15);
+        box-shadow: 0 15px 45px 0 rgba(0, 208, 208, 0.15);
     }
 
     /* 3D Interactive Button - Sliding Gradient */
@@ -861,8 +892,8 @@ h3 {
     }
 
     .btn-3d:hover svg {
-        filter: drop-shadow(0 0 8px var(--acc, #22d3ee));
-        color: var(--acc, #22d3ee);
+        filter: drop-shadow(0 0 8px var(--acc, #00D0D0));
+        color: var(--acc, #00D0D0);
     }
 
     backdrop-filter: blur(10px);
@@ -887,7 +918,7 @@ h3 {
 
 .lightbox-btn:hover {
     background: var(--acc);
-    color: #041847;
+    color: #001018;
     transform: scale(1.1);
 }
 
