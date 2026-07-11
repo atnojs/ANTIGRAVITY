@@ -884,7 +884,7 @@ const App = () => {
                                         </div>
                                         <div className="space-y-2">
                                             <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imágenes aún</h3>
-                                            <p className="text-gray-600 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
+                                            <p className="text-gray-400 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
                                         </div>
                                     </div>
                                 ) : (
