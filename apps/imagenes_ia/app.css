@@ -1,45 +1,75 @@
 :root {
-    /* Base Oficial */
-    --bg1: #041847;
-    --bg2: #0c1445;
-    --acc: #22d3ee;
-    --acc2: #a78bfa;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --border: rgba(34, 211, 238, 0.2);
-    --card-bg: rgba(15, 23, 42, 0.4);
+    /* Base hoola (estilo relatos) */
+    --bg1: #001018;
+    --bg2: #0E5368;
+    --acc: #00D0D0;
+    --acc2: #26C626;
+    --text: #eaffff;
+    --muted: #99CCCC;
+    --border: rgba(0, 208, 208, 0.7);
+    --card-bg: rgba(23, 79, 122, 0.42);
     --shadow-color: rgba(0, 0, 0, 0.5);
 
     /* Neón + 3D Extensions */
-    --neon-cyan: #2ee8ff;
-    --neon-pink: #ff4ecd;
-    --neon-purple: #d54cff;
-    --glow-strong: rgba(46, 232, 255, 0.4);
-    --radius-lg: 24px;
-    --radius-md: 16px;
+    --neon-cyan: #00D0D0;
+    --neon-pink: #26C626;
+    --neon-purple: #26C626;
+    --glow-strong: rgba(0, 208, 208, 0.8);
+    --glow-soft: rgba(0, 208, 208, 0.4);
+    --radius-lg: 14px;
+    --radius-md: 14px;
     --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Gradiente de fondo global */
-    --main-bg-gradient: linear-gradient(135deg, #041847 0%, #0c1445 35%, #1e3a8a 75%, #00bcd4 100%);
+    /* Gradiente de fondo global (estilo relatos) */
+    --main-bg-gradient: linear-gradient(180deg, #001018 0%, #062f43 45%, #0E5368 100%);
 
     color-scheme: dark;
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     background: var(--main-bg-gradient);
     background-attachment: fixed;
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
+    position: relative;
+}
+
+/* Halos radiales cian del estilo relatos */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 18% 12%, rgba(0, 208, 208, 0.18), transparent 45%),
+        radial-gradient(circle at 82% 78%, rgba(0, 208, 208, 0.12), transparent 50%);
+}
+
+/* Rejilla de circuito cian (46px) con máscara radial */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(0, 208, 208, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 208, 208, 0.06) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(ellipse at 50% 40%, #000 0%, transparent 75%);
 }
 
 h1,
 h2,
 h3,
 .font-montserrat {
-    font-family: 'Montserrat', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 /* Glassmorphism CORE */
@@ -59,7 +89,7 @@ h3,
     background: rgba(255, 255, 255, 0.08);
     border-color: var(--acc);
     transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 15px 45px 0 rgba(46, 232, 255, 0.15);
+    box-shadow: 0 15px 45px 0 rgba(0, 208, 208, 0.15);
 }
 
 /* Neon Text & Shadows */
@@ -73,6 +103,7 @@ h3,
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-shadow: 0 0 18px rgba(0, 208, 208, 0.25);
 }
 
 /* 3D Interactive Buttons */
@@ -103,14 +134,14 @@ h3,
     transform: scale(0.95);
 }
 
-/* Modal de Login (estilo ajustes_imagen) */
+/* Modal de Login (estilo relatos) */
 .glass-modal {
-    background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(10, 15, 30, 0.98));
-    border: 1px solid rgba(148, 197, 255, 0.65);
+    background: linear-gradient(145deg, rgba(4, 24, 71, 0.95), rgba(0, 16, 24, 0.98));
+    border: 1px solid rgba(0, 208, 208, 0.65);
     box-shadow:
         0 25px 60px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(56, 189, 248, 0.3),
-        0 0 60px rgba(56, 189, 248, 0.15);
+        0 0 0 1px rgba(0, 208, 208, 0.3),
+        0 0 60px rgba(0, 208, 208, 0.15);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
 }
@@ -118,8 +149,8 @@ h3,
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-    background: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid rgba(148, 197, 255, 0.2) !important;
+    background: rgba(2, 6, 23, 0.6) !important;
+    border: 1px solid rgba(0, 208, 208, 0.2) !important;
     color: white !important;
     border-radius: 12px;
 }
@@ -132,7 +163,7 @@ input:focus {
 
 /* Icon Styling */
 svg {
-    filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.3));
+    filter: drop-shadow(0 0 3px rgba(0, 208, 208, 0.3));
     transition: var(--transition-main);
 }
 
@@ -140,3 +171,104 @@ button:hover svg {
     color: var(--neon-cyan) !important;
     filter: drop-shadow(0 0 8px var(--neon-cyan));
 }
+
+/* ═══════════════════════════════════════════════
+   REMAP TAILWIND -> paleta hoola (estilo relatos)
+   Las 8 tarjetas del splash usan familias de color
+   arcoíris de Tailwind. Se remapean por CSS (sin tocar
+   el JS) a los DOS acentos oficiales hoola, alternando
+   para dar variedad sin salir de la paleta:
+     CIAN  #00D0D0 -> cyan, pink, orange, amber, rose
+     VERDE #26C626 -> emerald, blue, indigo, teal, purple
+   El ROJO (red-*) se conserva para acciones destructivas.
+   ═══════════════════════════════════════════════ */
+
+/* ---------- FAMILIAS -> CIAN #00D0D0 ---------- */
+[class*="text-cyan-"]:not([class*="text-cyan-500/"]),
+[class*="text-pink-"]:not([class*="text-pink-500/"]),
+[class*="text-orange-"]:not([class*="text-orange-500/"]),
+[class*="text-amber-"]:not([class*="text-amber-500/"]),
+[class*="text-rose-"]:not([class*="text-rose-500/"]) {
+    color: #00D0D0 !important;
+}
+
+[class*="text-cyan-500/"],
+[class*="text-pink-500/"],
+[class*="text-orange-500/"],
+[class*="text-amber-500/"],
+[class*="text-rose-500/"] {
+    color: rgba(0, 208, 208, 0.12) !important;
+}
+
+[class*="bg-cyan-500/"],
+[class*="bg-pink-500/"],
+[class*="bg-orange-500/"],
+[class*="bg-amber-500/"],
+[class*="bg-rose-500/"] {
+    background-color: rgba(0, 208, 208, 0.20) !important;
+}
+
+[class*="border-cyan-"],
+[class*="border-pink-"],
+[class*="border-orange-"],
+[class*="border-amber-"],
+[class*="border-rose-"] {
+    border-color: rgba(0, 208, 208, 0.55) !important;
+}
+
+/* ---------- FAMILIAS -> VERDE #26C626 ---------- */
+[class*="text-emerald-"]:not([class*="text-emerald-500/"]),
+[class*="text-blue-"]:not([class*="text-blue-500/"]),
+[class*="text-indigo-"]:not([class*="text-indigo-500/"]),
+[class*="text-teal-"]:not([class*="text-teal-500/"]),
+[class*="text-purple-"]:not([class*="text-purple-500/"]) {
+    color: #26C626 !important;
+}
+
+[class*="text-emerald-500/"],
+[class*="text-blue-500/"],
+[class*="text-indigo-500/"],
+[class*="text-teal-500/"],
+[class*="text-purple-500/"] {
+    color: rgba(38, 198, 38, 0.12) !important;
+}
+
+[class*="bg-emerald-500/"],
+[class*="bg-blue-500/"],
+[class*="bg-indigo-500/"],
+[class*="bg-teal-500/"],
+[class*="bg-purple-500/"] {
+    background-color: rgba(38, 198, 38, 0.20) !important;
+}
+
+[class*="border-emerald-"],
+[class*="border-indigo-"],
+[class*="border-teal-"],
+[class*="border-purple-"] {
+    border-color: rgba(38, 198, 38, 0.55) !important;
+}
+
+/* border-blue-* SOLO como borde de tarjeta (Copiar Estilo);
+   NO afecta al gradiente del botón (from-cyan-600/to-blue-700). */
+[class*="border-blue-"] {
+    border-color: rgba(38, 198, 38, 0.55) !important;
+}
+
+/* ---------- FONDOS SÓLIDOS ---------- */
+.bg-cyan-500 { background-color: #00D0D0 !important; }
+.bg-cyan-600 { background-color: #00b0b0 !important; }
+.bg-purple-500 { background-color: #26C626 !important; }
+
+/* ---------- GRADIENTE botón principal (login: from-cyan-600 to-blue-700) ---------- */
+.from-cyan-600 {
+    --tw-gradient-from: #00b0b0 !important;
+    --tw-gradient-to: rgba(0, 176, 176, 0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.to-blue-700 { --tw-gradient-to: #008f8f !important; }
+.hover\:from-cyan-500:hover {
+    --tw-gradient-from: #00D0D0 !important;
+    --tw-gradient-to: rgba(0, 208, 208, 0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.hover\:to-blue-600:hover { --tw-gradient-to: #00b0b0 !important; }
