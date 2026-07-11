@@ -1,0 +1,62 @@
+[
+    {
+        "id": "jq9yqx",
+        "prompt": "elimina los tatuajes de los brazos",
+        "style": {
+            "id": "",
+            "name": "Dibujo / Ilustración",
+            "promptSuffix": ""
+        },
+        "aspectRatio": "1:1",
+        "size": "512px",
+        "geminiSize": "1K",
+        "createdAt": 1780236875683,
+        "imageFile": "jq9yqx.jpg",
+        "imageUrl": "./history_data/jq9yqx.jpg"
+    },
+    {
+        "id": "mbjtd",
+        "prompt": "eliminar a los bañistas que estan en el agua",
+        "style": {
+            "id": "",
+            "name": "Dibujo / Ilustración",
+            "promptSuffix": ""
+        },
+        "aspectRatio": "1:1",
+        "size": "512px",
+        "geminiSize": "1K",
+        "createdAt": 1780236254218,
+        "imageFile": "mbjtd.jpg",
+        "imageUrl": "./history_data/mbjtd.jpg"
+    },
+    {
+        "id": "nxgdk5",
+        "prompt": "quiero que elimines los textos",
+        "style": {
+            "id": "",
+            "name": "Dibujo / Ilustración",
+            "promptSuffix": ""
+        },
+        "aspectRatio": "1:1",
+        "size": "512px",
+        "geminiSize": "1K",
+        "createdAt": 1780236153389,
+        "imageFile": "nxgdk5.jpg",
+        "imageUrl": "./history_data/nxgdk5.jpg"
+    },
+    {
+        "id": "6oimcx",
+        "prompt": "Fotografía fotorrealista de primer plano medio de un gran camión articulado de transporte de mercancías de EE.UU. circulando por una autopista de varios carriles en el desierto del suroeste. El camión es de color blanco y plateado, con un remolque de caja larga con marcas sutiles de 'FREIGHT TRANSPORT'. La carrocería muestra ligero desgaste por el uso. La iluminación es luz diurna brillante con sombras definidas. Fondo con montañas lejanas y cielo azul claro. Texturas detalladas en el metal, los neumáticos y la carretera de asfalto con marcas de carril visibles.",
+        "style": {
+            "id": "",
+            "name": "Dibujo / Ilustración",
+            "promptSuffix": ""
+        },
+        "aspectRatio": "1:1",
+        "size": "512px",
+        "geminiSize": "1K",
+        "createdAt": 1780236054472,
+        "imageFile": "6oimcx.jpg",
+        "imageUrl": "./history_data/6oimcx.jpg"
+    }
+]
