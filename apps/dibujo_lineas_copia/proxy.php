@@ -2,29 +2,29 @@
 // ============================================================
 // PROXY PHP - Imágenes a Lineales con FLUX (Black Forest Labs)
 // Convierte una imagen subida en un dibujo lineal (página de colorear).
-// Clave FLUX en variable de entorno 'B' del .htaccess raíz (como 'A' para Gemini).
+// Clave FLUX en variable de entorno 'F' del .htaccess raíz (como 'A' para Gemini).
 // BFL es ASÍNCRONO: este proxy hace submit + polling del lado servidor.
 // ============================================================
 header('Content-Type: application/json');
 
-// ===== CLAVE FLUX (variable 'B'): cascade .htaccess raíz / entorno =====
-// (Mismo patrón que 'A' para Gemini. La clave va en SetEnv B "bfl_..." del .htaccess raíz.)
+// ===== CLAVE FLUX (variable 'F'): cascade .htaccess raíz / entorno =====
+// (Mismo patrón que 'A' para Gemini. La clave va en SetEnv F "bfl_..." del .htaccess raíz.)
 $apiKey = '';
 $configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
-    $apiKey = defined('B') ? B : '';
+    $apiKey = defined('F') ? F : '';
 }
-if (!$apiKey || empty($apiKey)) { $apiKey = getenv('B'); }
-if (!$apiKey || empty($apiKey)) { $apiKey = getenv('REDIRECT_B'); }
-if (!$apiKey || empty($apiKey)) { $apiKey = $_SERVER['B'] ?? ''; }
-if (!$apiKey || empty($apiKey)) { $apiKey = $_SERVER['REDIRECT_B'] ?? ''; }
-if (!$apiKey || empty($apiKey)) { $apiKey = $_ENV['B'] ?? ''; }
-if (!$apiKey || empty($apiKey)) { $apiKey = $_ENV['REDIRECT_B'] ?? ''; }
+if (!$apiKey || empty($apiKey)) { $apiKey = getenv('F'); }
+if (!$apiKey || empty($apiKey)) { $apiKey = getenv('REDIRECT_F'); }
+if (!$apiKey || empty($apiKey)) { $apiKey = $_SERVER['F'] ?? ''; }
+if (!$apiKey || empty($apiKey)) { $apiKey = $_SERVER['REDIRECT_F'] ?? ''; }
+if (!$apiKey || empty($apiKey)) { $apiKey = $_ENV['F'] ?? ''; }
+if (!$apiKey || empty($apiKey)) { $apiKey = $_ENV['REDIRECT_F'] ?? ''; }
 
 if (!$apiKey || empty($apiKey)) {
     http_response_code(500);
-    echo json_encode(['error' => ['message' => 'API key de FLUX (B) no configurada.']]);
+    echo json_encode(['error' => ['message' => 'API key de FLUX (F) no configurada.']]);
     exit;
 }
 
