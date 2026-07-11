@@ -107,6 +107,7 @@
   // ============================================================
   let currentTool = null;
   let isProcessing = false;
+  let selectedQuality = 'pro'; // 'pro' (flux-2-pro) o 'max' (flux-2-max), elegible por el usuario
 
   // ============================================================
   // HELPERS
@@ -141,7 +142,8 @@
     const payload = {
       image: base64Data,
       mimeType: mimeType,
-      prompt: prompt
+      prompt: prompt,
+      quality: selectedQuality
     };
 
     const response = await fetch('proxy.php', {
@@ -229,7 +231,7 @@
       inputHtml = '<label style="font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:0.5rem;">Selecciona una opción:</label>' +
         '<div style="display:flex;flex-direction:column;gap:0.375rem;max-height:15rem;overflow-y:auto;">' +
         tool.options.map(function (opt, i) {
-          return '<button class="ai-option-btn" data-value="' + opt.replace(/"/g, '&quot;') + '" style="text-align:left;padding:0.5rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;border:1px solid #334155;background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + opt + '</button>';
+          return '<button class="ai-option-btn' + (i === 0 ? ' is-selected' : '') + '" data-value="' + opt.replace(/"/g, '&quot;') + '" style="text-align:left;padding:0.5rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;border:1px solid ' + (i === 0 ? '#00D0D0' : '#334155') + ';background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + opt + '</button>';
         }).join('') + '</div>';
     } else if (tool.inputType === 'text') {
       inputHtml = '<label style="font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:0.5rem;">Describe lo que quieres:</label>' +
@@ -255,7 +257,7 @@
 
       let userInput = '';
       if (tool.inputType === 'select') {
-        const selected = body.querySelector('.ai-option-btn[style*="rgba(0,208,208"]');
+        const selected = body.querySelector('.ai-option-btn.is-selected');
         if (selected) userInput = selected.getAttribute('data-value') || selected.textContent;
         if (!userInput && tool.options) userInput = tool.options[0]; // default to first
       } else {
@@ -294,10 +296,12 @@
       optionBtns.forEach(function (btn) {
         btn.onclick = function () {
           optionBtns.forEach(function (b) {
+            b.classList.remove('is-selected');
             b.style.background = '#1e293b';
             b.style.color = '#cbd5e1';
             b.style.borderColor = '#334155';
           });
+          btn.classList.add('is-selected');
           btn.style.background = 'rgba(0,208,208,0.3)';
           btn.style.color = 'white';
           btn.style.borderColor = '#00D0D0';
@@ -430,10 +434,33 @@
     section.innerHTML =
       '<h4 style="font-size:11px;font-weight:600;color:#00D0D0;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
       '<i data-lucide="wand-2" style="width:0.75rem;height:0.75rem;"></i> IA FLUX — 10 Herramientas</h4>' +
+      '<div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
+        '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;">Modelo:</span>' +
+        '<button id="ai-quality-pro" class="ai-quality-btn is-selected" data-quality="pro" title="flux-2-pro — calidad/velocidad (~$0.03)" style="flex:1;padding:0.3rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid #00D0D0;background:rgba(0,208,208,0.3);color:white;cursor:pointer;transition:all 0.15s;text-transform:uppercase;">PRO</button>' +
+        '<button id="ai-quality-max" class="ai-quality-btn" data-quality="max" title="flux-2-max — máxima fidelidad (~$0.07)" style="flex:1;padding:0.3rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid #334155;background:#1e293b;color:#cbd5e1;cursor:pointer;transition:all 0.15s;text-transform:uppercase;">MAX</button>' +
+      '</div>' +
       '<div id="ai-tools-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.375rem;"></div>';
 
     // Insertar SIEMPRE al INICIO del contenedor scrollable (primer hijo)
     scrollDiv.insertBefore(section, scrollDiv.firstChild);
+
+    // Selector de modelo (pro/max): actualiza selectedQuality y el estado visual
+    var qualityBtns = section.querySelectorAll('.ai-quality-btn');
+    qualityBtns.forEach(function (qb) {
+      qb.onclick = function () {
+        selectedQuality = qb.getAttribute('data-quality') || 'pro';
+        qualityBtns.forEach(function (b) {
+          b.classList.remove('is-selected');
+          b.style.background = '#1e293b';
+          b.style.color = '#cbd5e1';
+          b.style.borderColor = '#334155';
+        });
+        qb.classList.add('is-selected');
+        qb.style.background = 'rgba(0,208,208,0.3)';
+        qb.style.color = 'white';
+        qb.style.borderColor = '#00D0D0';
+      };
+    });
 
     // Add tool buttons
     var grid = document.getElementById('ai-tools-grid');

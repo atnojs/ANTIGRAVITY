@@ -402,7 +402,8 @@ body button:disabled {
    (se veía solo media línea). Aquí se neutraliza ese efecto para que
    las etiquetas se lean completas, envolviendo a 2 líneas si hace falta.
    =========================== */
-#ai-modal-overlay button.ai-option-btn {
+#ai-modal-overlay button.ai-option-btn,
+#ai-tools-section button.ai-quality-btn {
   overflow: visible !important;
   height: auto !important;
   min-height: 2.25rem !important;
@@ -415,8 +416,13 @@ body button:disabled {
   display: flex !important;
   align-items: center !important;
 }
-#ai-modal-overlay button.ai-option-btn::before {
+#ai-modal-overlay button.ai-option-btn::before,
+#ai-tools-section button.ai-quality-btn::before {
   display: none !important;
+}
+#ai-tools-section button.ai-quality-btn {
+  justify-content: center !important;
+  min-height: 1.75rem !important;
 }
 
 /* Ajustes específicos para botones peligrosos (rojos) */

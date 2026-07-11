@@ -67,6 +67,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 $imageB64 = (string)($req['image'] ?? '');
 $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
 $prompt   = (string)($req['prompt'] ?? '');
+$quality  = (string)($req['quality'] ?? 'pro'); // 'pro' o 'max', elegido por el usuario
 
 if ($imageB64 === '') {
     http_response_code(400);
@@ -97,8 +98,8 @@ if (strlen($imgBinary) > 2500000) {
     exit;
 }
 
-// ===== MODELO FLUX: flux-2-pro (image-to-image, recomendado por BFL para edición) =====
-$endpoint = 'flux-2-pro';
+// ===== MODELO FLUX según la calidad elegida por el usuario (pro / max) =====
+$endpoint = ($quality === 'max') ? 'flux-2-max' : 'flux-2-pro';
 
 $payload = [
     'prompt'      => $prompt,
