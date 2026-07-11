@@ -57,6 +57,19 @@ const getClosestAspectRatio = (width, height) => {
 };
 
 const STYLE_GROUPS = {
+    fotografico: [
+        { id: 'fotografia-grupo', name: 'Fotografía / Realista', promptSuffix: '' },
+        { id: 'hiperrealista', name: 'Hiperrealista', promptSuffix: 'Hyperrealistic photograph, ultra-detailed, razor-sharp focus, natural skin textures and micro-details, physically accurate lighting, 8k resolution, shot on a full-frame DSLR with a prime lens, lifelike depth and clarity.' },
+        { id: 'fotorrealista', name: 'Fotorrealista', promptSuffix: 'Photorealistic image, true-to-life colors and lighting, realistic materials and reflections, high dynamic range, professional photography quality, natural and believable.' },
+        { id: 'cinematografico', name: 'Cinematográfico', promptSuffix: 'Cinematic film still, dramatic cinematic lighting, anamorphic lens, shallow depth of field, moody color grading, filmic contrast, movie scene aesthetic, shot on ARRI Alexa.' },
+        { id: 'retrato-estudio', name: 'Retrato de Estudio', promptSuffix: 'Professional studio portrait, softbox lighting, elegant background, sharp eyes, flattering rim light, high-end fashion photography, 85mm lens, creamy bokeh.' },
+        { id: 'fotoperiodismo', name: 'Fotoperiodismo', promptSuffix: 'Candid photojournalistic shot, natural available light, authentic real-life moment, documentary realism, 35mm reportage style, true colors.' },
+        { id: 'macro', name: 'Macro / Detalle', promptSuffix: 'Extreme macro photography, incredible fine detail, razor-thin depth of field, crisp textures, studio macro lighting, ultra-close-up realism.' },
+        { id: 'paisaje-natural', name: 'Paisaje Natural', promptSuffix: 'Breathtaking landscape photograph, golden hour natural light, vast depth of field, rich atmospheric detail, National Geographic quality, ultra-high resolution.' },
+        { id: 'nocturna', name: 'Fotografía Nocturna', promptSuffix: 'Night photography, long exposure, glowing city or star lights, deep shadows with rich detail, low-light realism, cinematic night mood.' },
+        { id: 'producto', name: 'Foto de Producto', promptSuffix: 'Commercial product photography, clean seamless background, precise studio lighting, glossy accurate reflections, sharp detail, advertising quality.' },
+        { id: 'aereo-drone', name: 'Aérea / Dron', promptSuffix: 'Aerial drone photograph, top-down or bird’s-eye view, realistic scale and perspective, crisp high-altitude detail, natural daylight, ultra-high resolution.' }
+    ],
     ilustracion: [
         { id: '', name: 'Dibujo / Ilustración', promptSuffix: '' },
         { id: 'anime', name: 'Anime Moderno', promptSuffix: 'Modern masterpiece anime style, high-quality animation aesthetic, sharp line art, vibrant cel-shading, expressive characters.' },
@@ -589,7 +602,7 @@ const App = () => {
     const [view, setView] = useState('splash');
     const [mode, setMode] = useState('text-to-image');
     const [promptFields, setPromptFields] = useState(() => createInitialPromptFields());
-    const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.ilustracion[0]);
+    const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.fotografico[1]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
     const [images, setImages] = useState(() => {
         try {
@@ -619,10 +632,13 @@ const App = () => {
                 const localItems = saved ? (JSON.parse(saved) || []) : [];
                 const serverItems = await loadFromServer();
                 if (cancelled) return;
-                const merged = mergeHistory(localItems, serverItems);
-                if (merged.length > images.length || serverItems.length > 0) {
-                    setImages(merged);
-                }
+                // Forma funcional: no captura 'images' en clausura, así este
+                // update asíncrono no compite con otros cambios de estado (p.ej. la
+                // transición splash->editor) que pisaban el primer clic.
+                setImages(prev => {
+                    const merged = mergeHistory((prev && prev.length ? prev : localItems), serverItems);
+                    return merged.length ? merged : prev;
+                });
             } catch (e) { console.warn('Error en sync inicial:', e); }
         })();
         return () => { cancelled = true; };
@@ -639,10 +655,10 @@ const App = () => {
     const fileInputRef = useRef(null);
 
     const handleStart = (m) => {
+        if (m === 'text-to-image') setRemixSource(null);
         setMode(m);
         setView('editor');
-        if (m === 'text-to-image') setRemixSource(null);
-        if (m === 'remix') setTimeout(() => fileInputRef.current?.click(), 100);
+        if (m === 'remix') setTimeout(() => fileInputRef.current?.click(), 150);
     };
 
     const handleFileUpload = (e) => {
@@ -802,6 +818,11 @@ const App = () => {
                             <div className="space-y-6">
                                 <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Panel de Estilos</label>
                                 <div className="grid grid-cols-2 gap-4">
+                                    <CustomSelect
+                                        options={STYLE_GROUPS.fotografico}
+                                        value={STYLE_GROUPS.fotografico.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
+                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.fotografico.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
+                                    />
                                     <CustomSelect
                                         options={STYLE_GROUPS.ilustracion}
                                         value={STYLE_GROUPS.ilustracion.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
