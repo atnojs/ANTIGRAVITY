@@ -403,7 +403,9 @@ body button:disabled {
    las etiquetas se lean completas, envolviendo a 2 líneas si hace falta.
    =========================== */
 #ai-modal-overlay button.ai-option-btn,
-#ai-tools-section button.ai-quality-btn {
+#ai-tools-section button.ai-quality-btn,
+#ai-tools-section button.ai-ar-btn,
+#ai-tools-section button.ai-res-btn {
   overflow: visible !important;
   height: auto !important;
   min-height: 2.25rem !important;
@@ -417,10 +419,14 @@ body button:disabled {
   align-items: center !important;
 }
 #ai-modal-overlay button.ai-option-btn::before,
-#ai-tools-section button.ai-quality-btn::before {
+#ai-tools-section button.ai-quality-btn::before,
+#ai-tools-section button.ai-ar-btn::before,
+#ai-tools-section button.ai-res-btn::before {
   display: none !important;
 }
-#ai-tools-section button.ai-quality-btn {
+#ai-tools-section button.ai-quality-btn,
+#ai-tools-section button.ai-ar-btn,
+#ai-tools-section button.ai-res-btn {
   justify-content: center !important;
   min-height: 1.75rem !important;
 }

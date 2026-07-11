@@ -68,6 +68,8 @@ $imageB64 = (string)($req['image'] ?? '');
 $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
 $prompt   = (string)($req['prompt'] ?? '');
 $quality  = (string)($req['quality'] ?? 'pro'); // 'pro' o 'max', elegido por el usuario
+$reqW     = (int)($req['width'] ?? 0);           // ancho pedido (px), 0 = por defecto
+$reqH     = (int)($req['height'] ?? 0);          // alto pedido (px), 0 = por defecto
 
 if ($imageB64 === '') {
     http_response_code(400);
@@ -101,10 +103,28 @@ if (strlen($imgBinary) > 2500000) {
 // ===== MODELO FLUX según la calidad elegida por el usuario (pro / max) =====
 $endpoint = ($quality === 'max') ? 'flux-2-max' : 'flux-2-pro';
 
+// ===== DIMENSIONES pedidas, con CLAMP al límite de FLUX 2 (4 MP = 4.194.304 px) =====
+// FLUX 2 (pro/max) rechaza (HTTP 422) resoluciones > 4MP. Si el usuario pide más
+// (p.ej. 4096x4096 = 16MP), reducimos manteniendo el aspect ratio al máximo nativo
+// soportado; el escalado a la resolución final la hace el cliente (upscale canvas).
+$MAX_PIXELS = 4194304; // 4 MP
 $payload = [
     'prompt'      => $prompt,
     'input_image' => $imageB64,
 ];
+if ($reqW > 0 && $reqH > 0) {
+    $reqW = max(256, min($reqW, 4096));
+    $reqH = max(256, min($reqH, 4096));
+    $pixels = $reqW * $reqH;
+    if ($pixels > $MAX_PIXELS) {
+        $scale = sqrt($MAX_PIXELS / $pixels);
+        $reqW = (int)floor(($reqW * $scale) / 32) * 32; // múltiplos de 32 (requisito FLUX)
+        $reqH = (int)floor(($reqH * $scale) / 32) * 32;
+    }
+    $payload['width']  = $reqW;
+    $payload['height'] = $reqH;
+}
+
 
 // ===== 1) ENVIAR TAREA =====
 $submitUrl = 'https://api.bfl.ai/v1/' . $endpoint;
@@ -202,4 +222,6 @@ if (!$imgOk || $imgBin === false || $imgBin === '') {
 echo json_encode([
     'image'    => base64_encode($imgBin),
     'mimeType' => $imgType,
+    'width'    => $payload['width'] ?? null,
+    'height'   => $payload['height'] ?? null,
 ]);

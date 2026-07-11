@@ -108,6 +108,31 @@
   let currentTool = null;
   let isProcessing = false;
   let selectedQuality = 'pro'; // 'pro' (flux-2-pro) o 'max' (flux-2-max), elegible por el usuario
+  let selectedAR = '1:1';      // aspect ratio elegido: '1:1','16:9','9:16','4:3','3:4'
+  let selectedRes = 1024;      // resolución (lado mayor px): 512, 1024, 2048, 4096
+
+  // Relaciones de aspecto disponibles (w:h)
+  const AR_RATIOS = {
+    '1:1':  [1, 1],
+    '16:9': [16, 9],
+    '9:16': [9, 16],
+    '4:3':  [4, 3],
+    '3:4':  [3, 4]
+  };
+
+  // Calcula {width,height} objetivo (lado mayor = selectedRes) según AR seleccionado,
+  // redondeando a múltiplos de 32 (requisito de FLUX).
+  function computeTargetDims() {
+    var r = AR_RATIOS[selectedAR] || [1, 1];
+    var rw = r[0], rh = r[1];
+    var longest = selectedRes;
+    var w, h;
+    if (rw >= rh) { w = longest; h = Math.round(longest * rh / rw); }
+    else { h = longest; w = Math.round(longest * rw / rh); }
+    w = Math.max(256, Math.round(w / 32) * 32);
+    h = Math.max(256, Math.round(h / 32) * 32);
+    return { width: w, height: h };
+  }
 
   // ============================================================
   // HELPERS
@@ -133,17 +158,42 @@
     }
   }
 
+  // Reescala una data URL a las dimensiones objetivo usando canvas (upscale client-side).
+  // Se usa cuando el usuario pide 4096 pero FLUX solo puede generar hasta 4MP nativos.
+  function upscaleDataUrl(dataUrl, targetW, targetH) {
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = function () {
+        if (img.width >= targetW && img.height >= targetH) { resolve(dataUrl); return; }
+        var canvas = document.createElement('canvas');
+        canvas.width = targetW;
+        canvas.height = targetH;
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, targetW, targetH);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = function () { resolve(dataUrl); };
+      img.src = dataUrl;
+    });
+  }
+
   async function callFluxAPI(imageBase64, prompt) {
     const base64Data = imageBase64.includes('base64,')
       ? imageBase64.split('base64,')[1] : imageBase64;
     const mimeType = imageBase64.startsWith('data:')
       ? imageBase64.split(';')[0].replace('data:', '') : 'image/jpeg';
 
+    const dims = computeTargetDims(); // {width, height} finales pedidos por el usuario
+
     const payload = {
       image: base64Data,
       mimeType: mimeType,
       prompt: prompt,
-      quality: selectedQuality
+      quality: selectedQuality,
+      width: dims.width,
+      height: dims.height
     };
 
     const response = await fetch('proxy.php', {
@@ -164,7 +214,10 @@
     const result = await response.json();
     if (result.error) throw new Error((result.error && result.error.message) || result.error);
     if (result.image) {
-      return 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.image;
+      var dataUrl = 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.image;
+      // Si FLUX generó a menor resolución que la pedida (clamp 4MP p.ej. 4096),
+      // escalamos client-side a las dimensiones finales solicitadas.
+      return await upscaleDataUrl(dataUrl, dims.width, dims.height);
     }
     throw new Error('FLUX no devolvió imagen.');
   }
@@ -439,10 +492,49 @@
         '<button id="ai-quality-pro" class="ai-quality-btn is-selected" data-quality="pro" title="flux-2-pro — calidad/velocidad (~$0.03)" style="flex:1;padding:0.3rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid #00D0D0;background:rgba(0,208,208,0.3);color:white;cursor:pointer;transition:all 0.15s;text-transform:uppercase;">PRO</button>' +
         '<button id="ai-quality-max" class="ai-quality-btn" data-quality="max" title="flux-2-max — máxima fidelidad (~$0.07)" style="flex:1;padding:0.3rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid #334155;background:#1e293b;color:#cbd5e1;cursor:pointer;transition:all 0.15s;text-transform:uppercase;">MAX</button>' +
       '</div>' +
+      '<div style="margin-bottom:0.4rem;">' +
+        '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.25rem;">Formato:</span>' +
+        '<div style="display:flex;gap:0.3rem;">' +
+          ['1:1', '16:9', '9:16', '4:3', '3:4'].map(function (ar, i) {
+            return '<button class="ai-ar-btn' + (i === 0 ? ' is-selected' : '') + '" data-ar="' + ar + '" style="flex:1;padding:0.3rem 0.15rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid ' + (i === 0 ? '#00D0D0' : '#334155') + ';background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + ar + '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-bottom:0.5rem;">' +
+        '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.25rem;">Resolución:</span>' +
+        '<div style="display:flex;gap:0.3rem;">' +
+          [512, 1024, 2048, 4096].map(function (res, i) {
+            return '<button class="ai-res-btn' + (res === 1024 ? ' is-selected' : '') + '" data-res="' + res + '" style="flex:1;padding:0.3rem 0.15rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid ' + (res === 1024 ? '#00D0D0' : '#334155') + ';background:' + (res === 1024 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (res === 1024 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + res + '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
       '<div id="ai-tools-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.375rem;"></div>';
 
     // Insertar SIEMPRE al INICIO del contenedor scrollable (primer hijo)
     scrollDiv.insertBefore(section, scrollDiv.firstChild);
+
+    // Helper genérico: toggle exclusivo de un grupo de botones selector (pro/max, AR, res)
+    function wireSelectorGroup(selector, onPick) {
+      var btns = section.querySelectorAll(selector);
+      btns.forEach(function (b) {
+        b.onclick = function () {
+          btns.forEach(function (x) {
+            x.classList.remove('is-selected');
+            x.style.background = '#1e293b';
+            x.style.color = '#cbd5e1';
+            x.style.borderColor = '#334155';
+          });
+          b.classList.add('is-selected');
+          b.style.background = 'rgba(0,208,208,0.3)';
+          b.style.color = 'white';
+          b.style.borderColor = '#00D0D0';
+          onPick(b);
+        };
+      });
+    }
+
+    wireSelectorGroup('.ai-ar-btn', function (b) { selectedAR = b.getAttribute('data-ar') || '1:1'; });
+    wireSelectorGroup('.ai-res-btn', function (b) { selectedRes = parseInt(b.getAttribute('data-res'), 10) || 1024; });
 
     // Selector de modelo (pro/max): actualiza selectedQuality y el estado visual
     var qualityBtns = section.querySelectorAll('.ai-quality-btn');
