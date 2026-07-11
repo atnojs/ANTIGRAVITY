@@ -657,7 +657,10 @@ const App = () => {
 
     const fileInputRef = useRef(null);
 
+    const [_diag, _setDiag] = useState('diag: esperando clic…');
+
     const handleStart = (m) => {
+        _setDiag('CLIC recibido: ' + m + ' @ ' + new Date().toLocaleTimeString());
         if (m === 'text-to-image') setRemixSource(null);
         setMode(m);
         setView('editor');
@@ -786,6 +789,9 @@ const App = () => {
 
     return (
         <ApiKeyChecker>
+            <div style={{position:'fixed',top:0,left:0,right:0,zIndex:99999,background:'#26C626',color:'#001018',fontFamily:'monospace',fontSize:'13px',fontWeight:'bold',padding:'6px 12px',textAlign:'center'}}>
+                {_diag} | vista: {view}
+            </div>
             {isGenerating && <LoadingOverlay />}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
