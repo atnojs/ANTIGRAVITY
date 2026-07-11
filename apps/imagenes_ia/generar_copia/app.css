@@ -470,3 +470,44 @@ textarea:focus-visible {
         transform: translateY(0);
     }
 }
+
+/* ═══════════════════════════════════════════════
+   REMAP TAILWIND -> paleta hoola (estilo relatos)
+   Sustituye por CSS (sin tocar el JS ni depender de
+   tailwind.config, que rompía el arranque en Hostinger):
+     cyan   -> #00D0D0  (acento principal)
+     purple -> #26C626  (acento secundario verde)
+     blue   -> cian oscuro (solo en gradientes)
+   ═══════════════════════════════════════════════ */
+
+/* --- TEXTO --- */
+[class*="text-cyan-"]:not([class*="text-cyan-500/"]) { color: #00D0D0 !important; }
+[class*="text-purple-"]:not([class*="text-purple-500/"]) { color: #26C626 !important; }
+/* textos decorativos con opacidad (iconos de fondo) */
+[class*="text-cyan-500/"] { color: rgba(0, 208, 208, 0.12) !important; }
+[class*="text-purple-500/"] { color: rgba(38, 198, 38, 0.12) !important; }
+
+/* --- FONDOS --- */
+.bg-cyan-500 { background-color: #00D0D0 !important; }
+.bg-cyan-600 { background-color: #00b0b0 !important; }
+.bg-purple-500 { background-color: #26C626 !important; }
+[class*="bg-cyan-500/"] { background-color: rgba(0, 208, 208, 0.22) !important; }
+[class*="bg-purple-500/"] { background-color: rgba(38, 198, 38, 0.22) !important; }
+
+/* --- BORDES --- */
+[class*="border-cyan-"] { border-color: rgba(0, 208, 208, 0.55) !important; }
+[class*="border-purple-"] { border-color: rgba(38, 198, 38, 0.55) !important; }
+
+/* --- GRADIENTES (botón principal Generar/Editar) --- */
+.from-cyan-600 {
+    --tw-gradient-from: #00b0b0 !important;
+    --tw-gradient-to: rgba(0, 176, 176, 0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.to-blue-700 { --tw-gradient-to: #008f8f !important; }
+.hover\:from-cyan-500:hover {
+    --tw-gradient-from: #00D0D0 !important;
+    --tw-gradient-to: rgba(0, 208, 208, 0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.hover\:to-blue-600:hover { --tw-gradient-to: #00b0b0 !important; }
