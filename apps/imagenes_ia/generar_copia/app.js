@@ -562,7 +562,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
     );
 };
 
-const Splash = () => (
+const Splash = ({ onSelect }) => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
             <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Diseña como un Pro</h1>
@@ -581,7 +581,7 @@ const Splash = () => (
                 <h2 className="text-4xl font-bold">Editar Imagen</h2>
                 <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de FLUX.</p>
             </a>
-            <a href="?mode=generate" className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 block">
+            <button type="button" onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full text-left">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
                     <Sparkles size={200} />
                 </div>
@@ -590,7 +590,7 @@ const Splash = () => (
                 </div>
                 <h2 className="text-4xl font-bold">Generar Imágenes</h2>
                 <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
-            </a>
+            </button>
         </div>
     </div>
 );
@@ -789,7 +789,7 @@ const App = () => {
             {isGenerating && <LoadingOverlay />}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
-                    <Splash />
+                    <Splash onSelect={handleStart} />
                 ) : (
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
