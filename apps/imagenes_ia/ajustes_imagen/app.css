@@ -1072,6 +1072,13 @@ button.bg-indigo-700:hover {
     overflow: visible !important;
   }
 
+  /* Reordenar en móvil: la GALERÍA DE EDICIÓN (lienzo central)
+     sube justo debajo de la cabecera "Editor de Imágenes",
+     empujando el panel de herramientas más abajo. */
+  body main > section.canvas-container { order: 1 !important; }
+  body main > aside:first-of-type       { order: 2 !important; }
+  body main > aside:last-of-type        { order: 3 !important; }
+
   /* Paneles laterales y canvas a ancho completo, SIN cristal */
   body main > aside,
   body main > section.canvas-container {
