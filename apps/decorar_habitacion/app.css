@@ -1356,17 +1356,21 @@ textarea::placeholder {
 
 .res-selector button.res-btn {
   flex: 1;
-  min-width: 72px;
-  padding: 10px 12px;
+  min-width: 64px;
+  padding: 8px 6px;
   border-radius: 12px;
   border: 2px solid var(--border);
   background: rgba(0, 16, 24, 0.35);
   color: var(--text);
   font-family: 'Electrolize', sans-serif;
   font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
 }
 
@@ -1395,6 +1399,31 @@ figure.relative ul a {
 
 figure.relative ul a:hover {
   color: var(--acc2) !important;
+}
+
+/* --- Botón "Buscar dónde comprar (por imagen)" (Google Lens) --- */
+.shop-by-image-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(0, 208, 208, 0.18), rgba(38, 198, 38, 0.18));
+  color: var(--text) !important;
+  font-family: 'Electrolize', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.shop-by-image-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--acc);
+  box-shadow: 0 8px 22px var(--shadow-light);
 }
 
 /* --- Focus visible (accesibilidad) --- */

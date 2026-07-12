@@ -23,6 +23,40 @@ const ROOM_SHOPPING = {
   patio: ["Mesa de exterior", "Sillas de jardín", "Sombrilla", "Macetas", "Iluminación exterior", "Sofá chill-out", "Suelo de madera", "Plantas"]
 };
 
+// Base pública de la app (para las imágenes guardadas en el servidor).
+// La búsqueda de compra es POR IMAGEN (Google Lens), que necesita una URL pública.
+const APP_PUBLIC_BASE = PROXY_BASE.replace(/proxy\.php.*$/i, ''); // https://atnojs.es/apps/decorar_habitacion/
+
+// Sanitiza el id igual que history.php (preg_replace /[^a-zA-Z0-9_-]/).
+function sanitizeId(id) { return String(id).replace(/[^a-zA-Z0-9_-]/g, ''); }
+
+// Extensión de archivo desde un data URL o una ruta (jpeg->jpg, como history.php).
+function extFromUri(uri) {
+  const m = String(uri || '').match(/^data:image\/([a-z0-9]+)/i);
+  if (m) return m[1].toLowerCase() === 'jpeg' ? 'jpg' : m[1].toLowerCase();
+  const m2 = String(uri || '').match(/\.([a-z0-9]+)(?:\?|#|$)/i);
+  return m2 ? m2[1].toLowerCase() : 'jpg';
+}
+
+// Convierte una ruta relativa del servidor a URL pública absoluta (data URL -> '').
+function toAbsUrl(u) {
+  if (!u) return '';
+  if (/^https?:/i.test(u)) return u;
+  if (/^data:/i.test(u)) return '';
+  return APP_PUBLIC_BASE + String(u).replace(/^\.?\/*/, '');
+}
+
+// URL pública de la imagen guardada, a partir del id + extensión.
+function publicUrlFor(id, uri) {
+  if (!id) return '';
+  return APP_PUBLIC_BASE + 'history_data/' + sanitizeId(id) + '.' + extFromUri(uri);
+}
+
+// Genera el id del historial (ya sanitizado para que coincida con el archivo del servidor).
+function makeHistoryId(style) {
+  return sanitizeId('dh_' + style + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4));
+}
+
 /* ==================== CONFIGURACIÓN DE ESTANCIAS Y ESTILOS ==================== */
 const ROOM_CONFIG = {
   salon: {
@@ -553,8 +587,12 @@ function App() {
           items.forEach(item => {
             const style = (item.style && item.style.name) || 'Personalizado';
             if (!rebuilt[style]) rebuilt[style] = [];
+            // URL pública de la imagen (para búsqueda por imagen con Google Lens).
+            const pub = toAbsUrl(item.imageUrl) || (item.id ? publicUrlFor(item.id, item.url || item.imageUrl) : '');
             rebuilt[style].push({
+              id: item.id || '',
               uri: item.url,
+              pubUrl: pub,
               ts: item.createdAt || Date.now(),
               objects: item.objects || [],
               style: style
@@ -566,11 +604,12 @@ function App() {
       .catch(e => console.warn('Error cargando historial:', e));
   }, []);
 
-  // Guardar item individual (mismo patrón que dibujo_lineas)
+  // Guarda un item. El id se pasa YA generado (makeHistoryId) para poder
+  // conocer la URL pública de la imagen (history_data/<id>.<ext>) sin adivinar.
   const saveItemToHistory = (style, item) => {
     if (typeof HistoryManager === 'undefined') return;
     HistoryManager.saveItem({
-      id: 'dh_' + style + '_' + (item.ts || Date.now()) + '_' + Math.random().toString(36).substr(2, 4),
+      id: item.id || makeHistoryId(style),
       url: item.uri || '',
       prompt: style,
       style: { name: style },
@@ -691,8 +730,11 @@ function App() {
       const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
       const objects = await detectObjectsFromImageUri(uri);
+      const id = makeHistoryId("Personalizado");
       const newItem = {
+        id,
         uri,
+        pubUrl: publicUrlFor(id, uri),
         ts: Date.now(),
         objects,
         style: "Personalizado",
@@ -721,7 +763,8 @@ function App() {
       const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
       const objects = await detectObjectsFromImageUri(uri);
-      const newItem = { uri, ts: Date.now(), objects, style };
+      const id = makeHistoryId(style);
+      const newItem = { id, uri, pubUrl: publicUrlFor(id, uri), ts: Date.now(), objects, style };
 
       setResults((prev) => ({ ...prev, [style]: [newItem, ...prev[style]] }));
       saveItemToHistory(style, newItem);
@@ -743,7 +786,8 @@ function App() {
       const uri = await callFlux(b64img, prompt, selectedQuality, dims);
 
       const objects = await detectObjectsFromImageUri(uri);
-      const newItem = { uri, ts: Date.now(), objects, style };
+      const id = makeHistoryId(style);
+      const newItem = { id, uri, pubUrl: publicUrlFor(id, uri), ts: Date.now(), objects, style };
 
       setResults((prev) => {
         const copy = { ...prev };
@@ -771,8 +815,11 @@ function App() {
 
       const objects = await detectObjectsFromImageUri(uri);
 
+      const id = makeHistoryId(style);
       const newItem = {
+        id,
         uri,
+        pubUrl: publicUrlFor(id, uri),
         ts: Date.now(),
         objects,
         style
@@ -831,8 +878,15 @@ function App() {
 
   const canGenerate = !!srcB64 && !busy && !!selectedRoom;
 
-  function shoppingUrlFor(obj, style) {
-    const q = `${obj} ${style} ${selectedRoom || 'decoracion'}`.trim();
+  // Búsqueda POR IMAGEN: Google Lens sobre la imagen generada (URL pública real).
+  // Lens analiza la foto entera y muestra productos visualmente similares a lo que
+  // aparece de verdad en la imagen. Fallback a búsqueda por texto si no hay URL pública.
+  function shoppingUrlFor(item) {
+    const pub = item && item.pubUrl ? item.pubUrl : (item && item.id ? publicUrlFor(item.id, item.uri) : '');
+    if (pub) {
+      return `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(pub)}`;
+    }
+    const q = `${(item && item.style) || ''} ${selectedRoom || 'decoracion'} decoracion`.trim();
     return `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}`;
   }
 
@@ -1213,25 +1267,23 @@ function App() {
                       </div>
                     )}
 
+                    <a
+                      href={shoppingUrlFor(r)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shop-by-image-btn"
+                      title="Buscar productos similares a esta imagen (búsqueda visual)"
+                    >
+                      🛒 Buscar dónde comprar (por imagen)
+                    </a>
+
                     {Array.isArray(r.objects) && r.objects.length > 0 ? (
                       <ul className="mt-2 text-xs text-gray-700 list-disc list-inside space-y-0.5">
                         {r.objects.map((it, i2) => (
-                          <li key={i2}>
-                            <a
-                              href={shoppingUrlFor(it, style)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline underline-offset-2 hover:opacity-80"
-                              title={`Buscar ${it} en compras`}
-                            >
-                              {it}
-                            </a>
-                          </li>
+                          <li key={i2}>{it}</li>
                         ))}
                       </ul>
-                    ) : (
-                      <p className="mt-2 text-xs text-gray-500 italic">Sin objetos</p>
-                    )}
+                    ) : null}
                   </figure>
                 ))}
               </div>
