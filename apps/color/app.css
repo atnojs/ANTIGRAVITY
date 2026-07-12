@@ -1,16 +1,16 @@
 /* app.css */
-/* === Tema "GLASS + GRADIENT" (tokens del CSS fuente) === */
+/* === Tema "GLASS + GRADIENT" (paleta hoola/relatos) === */
 :root {
-  --bg1: #0c1445;
-  --bg2: #1e3a8a;
-  --acc: #22d3ee;
-  --acc2: #a78bfa;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1e40af;
-  --card-bg: rgba(15, 23, 42, 0.3);
+  --bg1: #001018;
+  --bg2: #0E5368;
+  --acc: #00D0D0;
+  --acc2: #26C626;
+  --text: #eaffff;
+  --muted: #99CCCC;
+  --border: rgba(0, 208, 208, 0.7);
+  --card-bg: rgba(23, 79, 122, 0.42);
   --shadow-color: rgba(0, 0, 0, 0.35);
-  --shadow-light: rgba(34, 211, 238, 0.2);
+  --shadow-light: rgba(0, 208, 208, 0.2);
   --danger: #ef4444;
   --danger-hover: #dc2626;
 }
@@ -24,12 +24,12 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Electrolize', system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* base */
   color: var(--text);
-  background: linear-gradient(160deg, #0c1445 0%, #1e3a8a 25%, #0891b2 50%, #0c4a6e 75%, #1e293b 100%);
-  background-attachment: fixed;
+  background: var(--bg1);
   min-height: 100vh;
+  letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -80,7 +80,7 @@ header {
 }
 
 header h1 {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Electrolize', system-ui, sans-serif;
   font-size: clamp(2rem, 5vw, 3.5rem);
   margin-bottom: 0.5rem;
   text-shadow: 0 4px 15px var(--shadow-color);
@@ -113,7 +113,7 @@ header p {
   padding: .75rem 1rem;
   border: none;
   background: transparent;
-  color: #9CA3AF;
+  color: var(--muted);
   font-size: 1rem;
   font-weight: 600;
   border-radius: 9999px;
@@ -128,7 +128,7 @@ header p {
 
 .input-selector button:hover {
   color: #fff;
-  background: rgba(34, 211, 238, 0.2);
+  background: rgba(0, 208, 208, 0.2);
 }
 
 /* Selector de opción de texto */
@@ -142,7 +142,7 @@ header p {
 }
 
 .option-label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Electrolize', system-ui, sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--muted);
@@ -167,7 +167,7 @@ header p {
   padding: .6rem 1rem;
   border: none;
   background: transparent;
-  color: #9CA3AF;
+  color: var(--muted);
   font-size: 0.9rem;
   font-weight: 600;
   border-radius: 9999px;
@@ -178,12 +178,12 @@ header p {
 .text-selector button.active {
   background: var(--acc2);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 4px 12px rgba(38, 198, 38, 0.3);
 }
 
 .text-selector button:hover:not(.active) {
   color: #fff;
-  background: rgba(167, 139, 250, 0.1);
+  background: rgba(38, 198, 38, 0.1);
 }
 
 @keyframes fadeIn {
@@ -223,7 +223,7 @@ header p {
 #custom-text-input:focus {
   border-color: var(--acc2);
   background: rgba(31, 41, 55, 0.6);
-  box-shadow: 0 0 15px rgba(167, 139, 250, 0.2);
+  box-shadow: 0 0 15px rgba(38, 198, 38, 0.2);
 }
 
 #custom-text-input::placeholder {
@@ -252,7 +252,7 @@ header p {
 #color-input:focus {
   outline: none;
   border-color: var(--acc);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 208, 208, 0.15);
 }
 
 /* :contentReference[oaicite:9]{index=9} */
@@ -280,7 +280,7 @@ header p {
 
 /* :contentReference[oaicite:10]{index=10} */
 .image-upload-label.dragover {
-  background-color: rgba(30, 58, 138, 0.6);
+  background-color: rgba(23, 79, 122, 0.6);
   border-color: var(--acc);
   color: var(--text);
 }
@@ -299,7 +299,7 @@ header p {
 .image-upload-label svg {
   width: 3rem;
   height: 3rem;
-  color: #6B7280;
+  color: var(--muted);
   margin-bottom: 1rem;
 }
 
@@ -322,7 +322,7 @@ header p {
   border-radius: 8px;
   cursor: pointer;
   background: linear-gradient(135deg, var(--acc), var(--acc2));
-  box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 4px 15px rgba(38, 198, 38, 0.3);
   transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
   margin-top: 1rem;
   width: fit-content;
@@ -419,7 +419,7 @@ header p {
 }
 
 .result-info h3 {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Electrolize', system-ui, sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
@@ -536,7 +536,7 @@ header p {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(30, 58, 138, 0.6);
+  background: rgba(23, 79, 122, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--acc);
@@ -596,12 +596,12 @@ header p {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(34, 211, 238, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 208, 208, 0.4);
 }
 
 .download-viewer-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(34, 211, 238, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 208, 208, 0.6);
 }
 
 .download-viewer-btn svg {

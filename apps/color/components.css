@@ -24,17 +24,17 @@
     background: rgba(255, 255, 255, 0.08);
     border-color: var(--acc);
     transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 15px 45px 0 rgba(46, 232, 255, 0.15);
+    box-shadow: 0 15px 45px 0 rgba(0, 208, 208, 0.15);
 }
 
 /* Glass para modales */
 .glass-modal {
     background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(10, 15, 30, 0.98));
-    border: 1px solid rgba(148, 197, 255, 0.65);
+    border: 1px solid rgba(0, 208, 208, 0.65);
     box-shadow:
         0 25px 60px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(56, 189, 248, 0.3),
-        0 0 60px rgba(56, 189, 248, 0.15);
+        0 0 0 1px rgba(0, 208, 208, 0.3),
+        0 0 60px rgba(0, 208, 208, 0.15);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
 }
@@ -80,7 +80,7 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 1rem 2rem;
-    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    background: linear-gradient(135deg, #00D0D0, #00D0D0);
     color: white;
     font-weight: 600;
     border: none;
@@ -90,9 +90,9 @@
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #22d3ee, #60a5fa);
+    background: linear-gradient(135deg, #00D0D0, #00D0D0);
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 208, 208, 0.3);
 }
 
 .btn-primary:disabled {
@@ -140,19 +140,19 @@
 
 /* Variantes de color para cards */
 .card-interactive.purple {
-    border-color: rgba(167, 139, 250, 0.3);
+    border-color: rgba(38, 198, 38, 0.3);
 }
 
 .card-interactive.cyan {
-    border-color: rgba(34, 211, 238, 0.3);
+    border-color: rgba(0, 208, 208, 0.3);
 }
 
 .card-interactive.emerald {
-    border-color: rgba(52, 211, 153, 0.3);
+    border-color: rgba(38, 198, 38, 0.3);
 }
 
 .card-interactive.pink {
-    border-color: rgba(244, 114, 182, 0.3);
+    border-color: rgba(38, 198, 38, 0.3);
 }
 
 /* Icono de fondo decorativo */
@@ -182,21 +182,21 @@
 }
 
 .card-icon.purple {
-    background: rgba(167, 139, 250, 0.2);
-    color: #a78bfa;
-    border: 1px solid rgba(167, 139, 250, 0.3);
+    background: rgba(38, 198, 38, 0.2);
+    color: #26C626;
+    border: 1px solid rgba(38, 198, 38, 0.3);
 }
 
 .card-icon.cyan {
-    background: rgba(34, 211, 238, 0.2);
-    color: #22d3ee;
-    border: 1px solid rgba(34, 211, 238, 0.3);
+    background: rgba(0, 208, 208, 0.2);
+    color: #00D0D0;
+    border: 1px solid rgba(0, 208, 208, 0.3);
 }
 
 .card-icon.emerald {
-    background: rgba(52, 211, 153, 0.2);
-    color: #34d399;
-    border: 1px solid rgba(52, 211, 153, 0.3);
+    background: rgba(38, 198, 38, 0.2);
+    color: #26C626;
+    border: 1px solid rgba(38, 198, 38, 0.3);
 }
 
 /* ═══════════════════════════════════════════════
@@ -212,7 +212,7 @@ select {
     width: 100%;
     padding: 1rem;
     background: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid rgba(148, 197, 255, 0.2) !important;
+    border: 1px solid rgba(0, 208, 208, 0.2) !important;
     color: white !important;
     border-radius: var(--radius-md);
     font-family: inherit;
@@ -346,7 +346,7 @@ textarea::placeholder {
 }
 
 .loading-text {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
     color: white;
@@ -390,7 +390,7 @@ textarea::placeholder {
 
     50% {
         opacity: 1;
-        text-shadow: 0 0 20px rgba(46, 232, 255, 0.8);
+        text-shadow: 0 0 20px rgba(0, 208, 208, 0.8);
     }
 }
 
@@ -417,9 +417,9 @@ textarea::placeholder {
 }
 
 .alert-info {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
+    background: rgba(0, 208, 208, 0.1);
+    border: 1px solid rgba(0, 208, 208, 0.2);
+    color: #00D0D0;
 }
 
 /* ═══════════════════════════════════════════════
@@ -451,20 +451,20 @@ textarea::placeholder {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1px solid rgba(148, 197, 255, 0.65);
+    border: 1px solid rgba(0, 208, 208, 0.65);
     background: radial-gradient(circle at 0% 0%,
-            rgba(56, 189, 248, 0.16),
+            rgba(0, 208, 208, 0.16),
             transparent 55%),
         linear-gradient(135deg,
             rgba(15, 23, 42, 0.98),
-            rgba(30, 64, 175, 0.95));
+            rgba(23, 79, 122, 0.95));
     color: #e5f0ff;
     font-size: 0.85rem;
     cursor: pointer;
     box-shadow:
         0 8px 20px rgba(3, 7, 18, 0.9),
         0 0 0 1px rgba(15, 23, 42, 1),
-        0 0 20px rgba(56, 189, 248, 0.5);
+        0 0 20px rgba(0, 208, 208, 0.5);
     transition:
         transform 0.16s ease-out,
         box-shadow 0.16s ease-out,
@@ -476,7 +476,7 @@ textarea::placeholder {
     box-shadow:
         0 12px 28px rgba(3, 7, 18, 1),
         0 0 0 1px rgba(15, 23, 42, 1),
-        0 0 30px rgba(56, 189, 248, 0.8);
+        0 0 30px rgba(0, 208, 208, 0.8);
 }
 
 .action-btn:active {
@@ -486,14 +486,14 @@ textarea::placeholder {
 /* Download button - Cyan accent */
 .action-btn.btn-dl,
 .action-btn[data-tooltip="Descargar"] {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.9), rgba(59, 130, 246, 0.9));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.9), rgba(0, 208, 208, 0.9));
 }
 
 .action-btn.btn-dl:hover,
 .action-btn[data-tooltip="Descargar"]:hover {
     box-shadow:
-        0 12px 28px rgba(6, 182, 212, 0.4),
-        0 0 30px rgba(6, 182, 212, 0.7);
+        0 12px 28px rgba(0, 208, 208, 0.4),
+        0 0 30px rgba(0, 208, 208, 0.7);
 }
 
 /* Edit button - Amber/Orange accent */
@@ -525,14 +525,14 @@ textarea::placeholder {
 /* Regenerate button - Purple accent */
 .action-btn.btn-regen,
 .action-btn[data-tooltip="Regenerar"] {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(139, 92, 246, 0.9));
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.9), rgba(38, 198, 38, 0.9));
 }
 
 .action-btn.btn-regen:hover,
 .action-btn[data-tooltip="Regenerar"]:hover {
     box-shadow:
-        0 12px 28px rgba(168, 85, 247, 0.4),
-        0 0 30px rgba(168, 85, 247, 0.7);
+        0 12px 28px rgba(38, 198, 38, 0.4),
+        0 0 30px rgba(38, 198, 38, 0.7);
 }
 
 /* Container for overlay actions on cards */

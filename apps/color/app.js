@@ -581,7 +581,7 @@ La entrada del usuario es:`;
                     '<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 20 20\' fill=\'white\' width=\'16\' height=\'16\'>' +
                     '<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.75h-.75A2.25 2.25 0 0 0 3 6.75v.5c0 .414.336.75.75.75H4v6.75A2.75 2.75 0 0 0 6.75 17h6.5A2.75 2.75 0 0 0 16 14.75V8h.25A.75.75 0 0 0 17 7.25v-.5A2.25 2.25 0 0 0 14.75 4.5H14v-.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM12.5 4.5v-.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.75h5Z" clip-rule="evenodd"/></svg>' +
                     '</button></div>' +
-                    '<div class="result-info"><p style="color:#94a3b8;font-size:0.8rem;margin:0">' +
+                    '<div class="result-info"><p style="color:#99CCCC;font-size:0.8rem;margin:0">' +
                     new Date(item.createdAt).toLocaleString() + '</p></div></article>';
             }).join('');
 

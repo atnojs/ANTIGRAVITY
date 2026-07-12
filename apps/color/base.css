@@ -5,41 +5,41 @@
 
 :root {
     /* ═══════════════════════════════════════
-       COLORES BASE
+       COLORES BASE (paleta hoola/relatos)
        ═══════════════════════════════════════ */
-    --bg1: #041847;                    /* Fondo principal oscuro */
-    --bg2: #0c1445;                    /* Fondo secundario */
-    --acc: #22d3ee;                    /* Acento cyan principal */
-    --acc2: #a78bfa;                   /* Acento purple secundario */
-    --text: #e5e7eb;                   /* Texto principal */
-    --muted: #94a3b8;                  /* Texto secundario/muted */
-    --border: rgba(34, 211, 238, 0.2); /* Bordes sutiles cyan */
-    --card-bg: rgba(15, 23, 42, 0.4); /* Fondo de cards/panels */
+    --bg1: #001018;                    /* azul casi negro (arriba) */
+    --bg2: #0E5368;                    /* azul petróleo (abajo) */
+    --acc: #00D0D0;                    /* cian principal (identidad) */
+    --acc2: #26C626;                   /* verde neón secundario */
+    --text: #eaffff;                   /* Texto principal */
+    --muted: #99CCCC;                  /* Texto secundario/muted */
+    --border: rgba(0, 208, 208, 0.7);  /* Bordes cian hoola */
+    --card-bg: rgba(23, 79, 122, 0.42); /* Fondo de cards/panels (glass) */
     --shadow-color: rgba(0, 0, 0, 0.5);
 
     /* ═══════════════════════════════════════
        COLORES NEÓN
        ═══════════════════════════════════════ */
-    --neon-cyan: #2ee8ff;
-    --neon-pink: #ff4ecd;
-    --neon-purple: #d54cff;
-    --glow-strong: rgba(46, 232, 255, 0.4);
+    --neon-cyan: #00D0D0;
+    --neon-pink: #26C626;
+    --neon-purple: #26C626;
+    --glow-strong: rgba(0, 208, 208, 0.4);
 
     /* ═══════════════════════════════════════
        COLORES ADICIONALES (para botones/cards)
        ═══════════════════════════════════════ */
-    --color-purple: #a78bfa;
-    --color-cyan: #22d3ee;
-    --color-emerald: #34d399;
-    --color-pink: #f472b6;
+    --color-purple: #26C626;
+    --color-cyan: #00D0D0;
+    --color-emerald: #26C626;
+    --color-pink: #26C626;
     --color-amber: #fbbf24;
 
     /* ═══════════════════════════════════════
        GRADIENTES
        ═══════════════════════════════════════ */
-    --main-bg-gradient: linear-gradient(135deg, #041847 0%, #0c1445 35%, #1e3a8a 75%, #00bcd4 100%);
-    --gradient-cyan-blue: linear-gradient(135deg, #06b6d4, #3b82f6);
-    --gradient-purple-pink: linear-gradient(135deg, #a78bfa, #f472b6);
+    --main-bg-gradient: linear-gradient(180deg, #001018 0%, #062f43 60%, #0E5368 100%);
+    --gradient-cyan-blue: linear-gradient(135deg, #00D0D0, #26C626);
+    --gradient-purple-pink: linear-gradient(135deg, #00D0D0, #26C626);
     --gradient-text: linear-gradient(90deg, var(--neon-cyan), var(--acc2), var(--neon-pink));
 
     /* ═══════════════════════════════════════
@@ -68,22 +68,52 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background: var(--main-bg-gradient);
-    background-attachment: fixed;
+    font-family: 'Electrolize', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg1);
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
+    letter-spacing: 0.02em;
+}
+
+/* Degradado de fondo + halos cian (estilo hoola) */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(1000px 750px at 50% 5%, rgba(0, 208, 208, 0.28), transparent 60%),
+        radial-gradient(900px 650px at 15% 25%, rgba(0, 160, 168, 0.20), transparent 58%),
+        linear-gradient(180deg, #001018 0%, #062f43 60%, #0E5368 100%);
+    pointer-events: none;
+    z-index: -2;
+}
+
+/* Rejilla de circuito cian */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0, 208, 208, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 208, 208, 0.08) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+    -webkit-mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.85;
 }
 
 /* ═══════════════════════════════════════════════
    TIPOGRAFÍA
    ═══════════════════════════════════════════════ */
 h1, h2, h3, .font-montserrat {
-    font-family: 'Montserrat', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 /* Texto Neón */
@@ -116,7 +146,7 @@ h1, h2, h3, .font-montserrat {
    ICONOS SVG
    ═══════════════════════════════════════════════ */
 svg {
-    filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.3));
+    filter: drop-shadow(0 0 3px rgba(0, 208, 208, 0.3));
     transition: var(--transition-main);
 }
 
