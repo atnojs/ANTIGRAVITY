@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Estado de los selectores de salida ──────────────────
     let selectedQuality = 'pro'; // 'pro' | 'max'
-    let selectedAR = '1:1';
-    let selectedRes = 1024;
+    const selectedAR = '9:16';   // formato fijo por defecto
+    const selectedRes = 512;     // resolución fija por defecto
 
     // ─── Selectores: Calidad PRO/MAX ─────────────────────────
     const qualityBtns = document.querySelectorAll('.quality-option');
@@ -36,32 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             selectedQuality = btn.dataset.quality;
             qualityBtns.forEach(b => {
-                const on = b === btn;
-                b.classList.toggle('active', on);
-                b.setAttribute('aria-pressed', on ? 'true' : 'false');
-            });
-        });
-    });
-
-    // ─── Selectores: Formato (AR) ────────────────────────────
-    const arBtns = document.querySelectorAll('.ar-option');
-    arBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            selectedAR = btn.dataset.ar;
-            arBtns.forEach(b => {
-                const on = b === btn;
-                b.classList.toggle('active', on);
-                b.setAttribute('aria-pressed', on ? 'true' : 'false');
-            });
-        });
-    });
-
-    // ─── Selectores: Resolución ──────────────────────────────
-    const resBtns = document.querySelectorAll('.res-option');
-    resBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            selectedRes = parseInt(btn.dataset.res, 10);
-            resBtns.forEach(b => {
                 const on = b === btn;
                 b.classList.toggle('active', on);
                 b.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -447,7 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── Render de una tarjeta de propuesta ──────────────────
     function renderConceptCard(concept, imageUrl, errorMsg) {
         const title = concept.title || 'Diseño Generado';
-        const harmony = concept.harmony ? ` · ${concept.harmony}` : '';
+        // Mostrar SOLO la armonía (Complementaria / Análoga / Monocromática)
+        const heading = concept.harmony || title;
         const palette = Array.isArray(concept.palette) ? concept.palette : [];
         const fontName = concept.font?.name || 'Desconocida';
         const fontUrl = concept.font?.url || 'https://fonts.google.com/';
@@ -474,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <article class="result-card">
                 ${imageBlock}
                 <div class="result-info">
-                    <h3>${title}${harmony}</h3>
+                    <h3>${heading}</h3>
                     <div class="info-section">
                         <h4>Códigos de Color</h4>
                         <div class="color-codes">${colorBlocks}</div>

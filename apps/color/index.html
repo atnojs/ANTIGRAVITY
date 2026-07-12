@@ -6,9 +6,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Crea Paletas</title>
-  <link rel="stylesheet" href="base.css?v=2" />
-  <link rel="stylesheet" href="components.css?v=2" />
-  <link rel="stylesheet" href="app.css?v=2" />
+  <link rel="stylesheet" href="base.css?v=3" />
+  <link rel="stylesheet" href="components.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=3" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon" />
   <!-- Fuente requerida por el estilo hoola/relatos -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -73,27 +73,6 @@
               <button type="button" id="quality-max-btn" class="quality-option" data-quality="max" aria-pressed="false">MAX<small>máxima</small></button>
             </div>
           </div>
-
-          <div class="option-group">
-            <p class="option-label">Formato</p>
-            <div class="ar-selector" id="ar-selector">
-              <button type="button" class="ar-option active" data-ar="1:1" aria-pressed="true">1:1</button>
-              <button type="button" class="ar-option" data-ar="16:9" aria-pressed="false">16:9</button>
-              <button type="button" class="ar-option" data-ar="9:16" aria-pressed="false">9:16</button>
-              <button type="button" class="ar-option" data-ar="4:3" aria-pressed="false">4:3</button>
-              <button type="button" class="ar-option" data-ar="3:4" aria-pressed="false">3:4</button>
-            </div>
-          </div>
-
-          <div class="option-group">
-            <p class="option-label">Resolución</p>
-            <div class="res-selector" id="res-selector">
-              <button type="button" class="res-option" data-res="512" aria-pressed="false">512</button>
-              <button type="button" class="res-option active" data-res="1024" aria-pressed="true">1024</button>
-              <button type="button" class="res-option" data-res="2048" aria-pressed="false">2048</button>
-              <button type="button" class="res-option" data-res="4096" aria-pressed="false">4096</button>
-            </div>
-          </div>
         </div>
 
         <button type="submit" id="generate-btn" disabled>Generar Paletas de Color</button>
@@ -122,8 +101,8 @@
   <script>
   (function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();
   </script>
-  <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="history-manager.js?v=3"></script>
+  <script src="app.js?v=3"></script>
   <footer>
     <p id="footer-text">&copy; 2025 Atnojs. Todos los derechos reservados.</p>
   </footer>
