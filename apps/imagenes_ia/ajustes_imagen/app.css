@@ -1011,3 +1011,110 @@ button.bg-indigo-700:hover {
 }
 .to-cyan-300, .to-teal-600, .to-fuchsia-300, .to-blue-600 { --tw-gradient-to: #00b0b0 !important; }
 .to-violet-400, .to-violet-300, .to-purple-400 { --tw-gradient-to: #26C626 !important; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE (tablet / móvil)  —  v2 SIN backdrop-filter
+   La app usa un layout fijo de 3 columnas (aside w-80 +
+   canvas flex-1 + aside w-64) pensado para escritorio, con el
+   body en overflow-hidden. En pantallas estrechas los paneles
+   aplastan el canvas y el contenido se recorta.
+
+   IMPORTANTE: al permitir que la página crezca y haga scroll,
+   los contenedores con `backdrop-filter` (efecto cristal) se
+   pintan como un BLOQUE OPACO en Chrome/Safari de móvil (bug
+   conocido de backdrop-filter en contenedores altos/scrollables).
+   Por eso aquí, SOLO en móvil, se anula el backdrop-filter de
+   esos contenedores y se sustituye por un fondo sólido oscuro.
+   No se toca el JS.
+   ═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  /* Permitir scroll vertical de toda la página */
+  body.glass-body {
+    height: auto !important;
+    width: 100% !important;
+    min-height: 100vh;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  #root {
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* Shell principal: quitar el cristal (causa la opacidad) y
+     usar fondo sólido; dejar que crezca en alto */
+  #root > div {
+    height: auto !important;
+    min-height: 100vh;
+    padding: 6px;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #041722 !important;
+  }
+
+  /* Cabecera: sin cristal, fondo sólido, sin recortar */
+  body header {
+    flex-wrap: wrap;
+    height: auto !important;
+    min-height: 3.5rem;
+    row-gap: 0.4rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* El contenedor principal pasa de fila a columna */
+  body main {
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+
+  /* Paneles laterales y canvas a ancho completo, SIN cristal */
+  body main > aside,
+  body main > section.canvas-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #061e2c !important;
+  }
+
+  body main > aside:first-of-type {
+    border-bottom: 1px solid var(--glass-border-soft);
+  }
+  body main > aside:first-of-type > div {
+    overflow: visible !important;
+  }
+
+  /* Canvas central: altura mínima para ver la imagen */
+  body main > section.canvas-container {
+    min-height: 55vh;
+  }
+
+  /* Panel de historial (derecha): altura acotada con scroll propio */
+  body main > aside:last-of-type {
+    max-height: 45vh;
+    border-top: 1px solid var(--glass-border-soft);
+  }
+}
+
+/* Móvil estrecho: padding y separación */
+@media (max-width: 520px) {
+  body main > aside:first-of-type > div {
+    padding: 0.9rem !important;
+  }
+
+  body main > section.canvas-container {
+    min-height: 48vh;
+  }
+
+  body main > aside:first-of-type .grid-cols-2 {
+    gap: 0.4rem;
+  }
+}
