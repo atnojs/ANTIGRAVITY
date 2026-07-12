@@ -10,16 +10,26 @@
 
 
   <style>
-    /* Importar tipografías */
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400&display=swap');
-     @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+    /* Importar tipografías — estilo hoola/relatos: Electrolize */
+    @import url('https://fonts.googleapis.com/css2?family=Electrolize&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
 
+    /* ===== PALETA HOOLA / RELATOS (tokens) ===== */
+    :root {
+      --bg-top: #001018;
+      --bg-mid: #062f43;
+      --bg-bot: #0E5368;
+      --accent: #00D0D0;       /* cian identidad */
+      --accent2: #26C626;      /* verde secundario */
+      --card: rgba(23, 79, 122, 0.42);
+      --border: rgba(0, 208, 208, 0.7);
+      --glow: rgba(0, 208, 208, 0.8);
+      --glow-soft: rgba(0, 208, 208, 0.4);
+      --text: #eaffff;
+      --muted: #99CCCC;
+      --btn-text: #001018;
+      --danger: #ef4444;
+    }
 
     /* ===== RESET O AJUSTES BÁSICOS ===== */
     * {
@@ -30,14 +40,44 @@
 
     /* ===== BODY ===== */
     body {
-      font-family: 'Roboto'; /* Tipografía de los enlaces y títulos */
+      font-family: 'Electrolize', system-ui, sans-serif; /* Tipografía de los enlaces y títulos */
       min-height: 100vh;
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
+      /* Fondo hoola: gana con !important sobre el background inline que fija el JS desde el servidor */
+      background:
+        radial-gradient(1100px 700px at 80% -10%, rgba(0,208,208,0.10), transparent 60%),
+        radial-gradient(900px 600px at 10% 110%, rgba(38,198,38,0.08), transparent 60%),
+        linear-gradient(160deg, var(--bg-top) 0%, var(--bg-mid) 45%, var(--bg-bot) 100%) !important;
+      background-attachment: fixed !important;
+      background-size: cover !important;
+      background-position: center !important;
       position: relative;
-      color: #000000;
+      color: var(--text);
       touch-action: manipulation; /* Mejora para dispositivos táctiles */
+    }
+
+    /* Halos cian + rejilla de circuito (estilo hoola) */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background:
+        radial-gradient(600px 400px at 70% 15%, rgba(0,208,208,0.12), transparent 70%),
+        radial-gradient(500px 380px at 20% 80%, rgba(0,208,208,0.10), transparent 70%);
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,208,208,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,208,208,0.05) 1px, transparent 1px);
+      background-size: 46px 46px;
+      -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 80%);
+      mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 80%);
     }
 
     .container {
@@ -55,9 +95,11 @@
     .column {
       width: calc(12.5% - 11px); /* Espacio horizontal entre columnas */
       margin-bottom: 10px;
-      background: rgba(255, 255, 255, 0.1); /*Transparencia de las columnas */
+      background: var(--card); /*Transparencia de las columnas */
       backdrop-filter: blur(5px);
+      border: 2px solid var(--border);
       border-radius: 15px;
+      box-shadow: 0 0 18px var(--glow-soft), inset 0 0 20px rgba(0,208,208,0.06);
       padding: 15px;
       box-sizing: border-box;
       height: fit-content;
@@ -155,10 +197,13 @@
 
     /* ===== TÍTULOS DE COLUMNAS ===== */
     .column h2 {
-      color: #2ffeff;
+      color: var(--accent);
       font-size: 25px;
       font-weight: 800;
       text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 10px var(--glow), 0 0 4px var(--glow-soft);
       margin-bottom: 15px;
     }
 
@@ -188,7 +233,7 @@
 
     /* ===== ENLACES EN COLUMNAS ===== */
     .links-list a {
-      color: #ffffff;
+      color: var(--text);
       font-size: 16px;
       font-weight: 600;
       font-style: italic;
@@ -212,8 +257,8 @@
     }
 
     .links-list a:hover {
-      color: #C028C9;   /* COLOR DEL HOVER */
-     /* color: #EC0F16;   /* COLOR DEL HOVER */
+      color: var(--accent);   /* COLOR DEL HOVER */
+      text-shadow: 0 0 8px var(--glow), 0 0 3px var(--glow-soft);
     }
 
     /* ===== BOTONES DE EDICIÓN ===== */
@@ -236,20 +281,23 @@
     }
 
     .add-column-btn, .change-bg-btn {
-      background: #ffffff;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: var(--btn-text);
       border: none;
       padding: 15px 30px;
       border-radius: 25px;
       cursor: pointer;
       font-weight: bold;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      box-shadow: 0 0 14px var(--glow-soft);
       margin-left: 10px;
-      transition: background 0.3s ease, color 0.3s ease;
+      transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .add-column-btn:hover, .change-bg-btn:hover {
-      background: #ff00ff;
-      color: #ffffff;
+      box-shadow: 0 0 22px var(--glow);
+      color: var(--btn-text);
     }
 
     /* ===== BOTÓN DE MODO EDICIÓN ===== */
@@ -272,18 +320,18 @@
     }
 
     .edit-mode-btn:hover {
-      background: #ffffff;
-      color: #ffffff;
+      background: var(--accent);
+      color: var(--btn-text);
       opacity: 1;
     }
 
     /* ===== BOTÓN OCULTO DE AÑADIR ENLACE ===== */
     .add-link-btn {
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
+      background: rgba(0, 208, 208, 0.12);
+      border: 1px solid var(--border);
       padding: 5px 10px;
       border-radius: 5px;
-      color: #000;
+      color: var(--text);
       cursor: pointer;
       width: 100%;
       margin-top: 10px;
@@ -310,8 +358,9 @@
       margin-top: 5px;
     }
     .link-edit-buttons button {
-      background: #ffffff;
-      border: none;
+      background: rgba(0, 208, 208, 0.15);
+      color: var(--text);
+      border: 1px solid var(--border);
       padding: 5px;
       border-radius: 5px;
       cursor: pointer;
@@ -321,8 +370,8 @@
       transition: background 0.3s ease, color 0.3s ease;
     }
     .link-edit-buttons button:hover {
-      background: #ff00ff;
-      color: #fff;
+      background: var(--accent);
+      color: var(--btn-text);
     }
 
     /* ===== COLUMNAS ESPACIO (SPACER) ===== */
@@ -368,8 +417,9 @@
     }
 
     .spacer-controls button {
-      background: rgba(255, 255, 255, 0.8);
-      border: none;
+      background: rgba(0, 208, 208, 0.15);
+      color: var(--text);
+      border: 1px solid var(--border);
       padding: 5px 10px;
       border-radius: 5px;
       cursor: pointer;
@@ -384,8 +434,10 @@
     /* ===== ESTILO PARA POPUP (TOOLTIP) ===== */
     .tooltip {
       position: absolute;
-      background: rgba(251, 251, 251, 1);
-      color: #000;
+      background: rgba(6, 47, 67, 0.92);
+      backdrop-filter: blur(6px);
+      border: 2px solid var(--border);
+      color: var(--text);
       padding: 2px 12px 2px 12px; /* REDUCIDO al mínimo vertical */
       border-radius: 8px;
       font-size: 14px;
@@ -395,7 +447,7 @@
       max-height: 80vh;
       overflow-y: auto;
       z-index: 9999;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 0 24px var(--glow-soft);
       line-height: 1.1; /* Líneas más compactas */
     }
     
@@ -464,22 +516,23 @@
     }
     
     .popup-buttons button {
-      background: #ffffff;
-      border: 0.1px solid #000000; /* Grosor y color del borde */
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: var(--btn-text);
+      border: none;
       padding: 10px 16px;
       border-radius: 12px;
       cursor: pointer;
       font-weight: bold;
       font-size: 14px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      opacity: 0.8;
+      box-shadow: 0 0 12px var(--glow-soft);
+      opacity: 0.9;
       min-width: 120px; /* Ancho mínimo para mejor área táctil */
       margin-bottom: 5px;
     }
 
     .popup-buttons button:hover {
-      background: #ff00ff;
-      color: #ffffff;
+      box-shadow: 0 0 20px var(--glow);
+      color: var(--btn-text);
       opacity: 1;
     }
 
@@ -490,14 +543,17 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(6, 47, 67, 0.95);
+      backdrop-filter: blur(6px);
+      border: 2px solid var(--border);
+      color: var(--text);
       border-radius: 12px;
       padding: 20px;
       max-width: 600px;  /* Aumentado para dar más espacio */
       width: 90%;
       z-index: 2000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      font-family: 'Lato';
+      box-shadow: 0 0 28px var(--glow-soft);
+      font-family: 'Electrolize', system-ui, sans-serif;
       max-height: 90vh;
       overflow-y: auto;
     }
@@ -513,7 +569,10 @@
       margin-bottom: 15px;
       text-align: center;
       font-size: 18px;
-      color: #000;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 8px var(--glow-soft);
     }
     .form-group {
       margin-bottom: 15px;
@@ -522,14 +581,16 @@
       display: block;
       margin-bottom: 5px;
       font-weight: bold;
-      color: #000;
+      color: var(--muted);
     }
     .form-group input, .form-group textarea {
       width: 100%;
       padding: 8px;
       border-radius: 8px;
-      border: 1px solid #ccc;
-      font-family: 'Open Sans', sans-serif;
+      border: 1px solid var(--border);
+      background: rgba(0, 16, 24, 0.5);
+      color: var(--text);
+      font-family: 'Electrolize', system-ui, sans-serif;
     }
     
     @media (max-width: 576px) {
@@ -549,15 +610,16 @@
       gap: 10px;
     }
     .form-buttons button {
-      background: #ffffff;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: var(--btn-text);
       border: none;
       padding: 8px 16px;
       border-radius: 12px;
       cursor: pointer;
       font-weight: bold;
       font-size: 14px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      opacity: 0.8;
+      box-shadow: 0 0 12px var(--glow-soft);
+      opacity: 0.9;
       transition: all 0.3s ease;
     }
     
@@ -569,8 +631,8 @@
     }
     
     .form-buttons button:hover {
-      background: #ff00ff;
-      color: #fff;
+      box-shadow: 0 0 20px var(--glow);
+      color: var(--btn-text);
       opacity: 1;
     }
 
@@ -612,30 +674,38 @@
     }
 
     .password-modal-content {
-      background-color: white;
+      background-color: rgba(6, 47, 67, 0.96);
+      backdrop-filter: blur(6px);
+      border: 2px solid var(--border);
+      color: var(--text);
       padding: 20px;
       border-radius: 12px;
       max-width: 350px;
       width: 90%;
       text-align: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      font-family: 'Open Sans', sans-serif;
+      box-shadow: 0 0 28px var(--glow-soft);
+      font-family: 'Electrolize', system-ui, sans-serif;
     }
 
     .password-modal h3 {
       margin-top: 0;
       margin-bottom: 15px;
       font-size: 18px;
-      color: #000;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 8px var(--glow-soft);
     }
 
     .password-modal input {
       width: 100%;
       padding: 8px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--border);
+      background: rgba(0, 16, 24, 0.5);
+      color: var(--text);
       margin-bottom: 15px;
-      font-family: 'Open Sans', sans-serif;
+      font-family: 'Electrolize', system-ui, sans-serif;
     }
     
     @media (max-width: 576px) {
@@ -652,14 +722,15 @@
     }
 
     .password-modal-buttons button {
-      background: #ffffff;
-      border: 1px solid #000000;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: var(--btn-text);
+      border: none;
       padding: 8px 16px;
       border-radius: 12px;
       cursor: pointer;
       font-weight: bold;
       font-size: 14px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 0 12px var(--glow-soft);
       transition: all 0.3s ease;
     }
     
@@ -671,8 +742,8 @@
     }
 
     .password-modal-buttons button:hover {
-      background: #ff00ff;
-      color: #fff;
+      box-shadow: 0 0 20px var(--glow);
+      color: var(--btn-text);
     }
 
     /* Estilos para herramientas de imagen */
@@ -684,8 +755,9 @@
     }
 
     .image-tools button {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
+      background: rgba(0, 208, 208, 0.12);
+      color: var(--text);
+      border: 1px solid var(--border);
       border-radius: 4px;
       padding: 5px 10px;
       cursor: pointer;
@@ -702,7 +774,7 @@
     }
 
     .image-tools button:hover {
-      background: #e0e0e0;
+      background: rgba(0, 208, 208, 0.25);
     }
 
     /* Ocultar input de archivo */
@@ -714,12 +786,12 @@
     .description-preview {
       margin-top: 10px;
       padding: 10px;
-      border: 1px dashed #ccc;
+      border: 1px dashed var(--border);
       border-radius: 8px;
       min-height: 50px;
       max-height: 300px;
       overflow-y: auto;
-      font-family: 'Open Sans', sans-serif;
+      font-family: 'Electrolize', system-ui, sans-serif;
     }
 
     /* Estilo para imagen en vista previa */
@@ -769,7 +841,7 @@
 
     /* Estilo normal sin restricciones para edición */
     .edit-mode .resizable-img-container {
-      border: 2px dashed #ff00ff;
+      border: 2px dashed var(--accent);
       max-width: none !important; /* !important para asegurar que se aplique en edición */
     }
 
@@ -791,7 +863,7 @@
       position: absolute;
       width: 14px;
       height: 14px;
-      background: #ff00ff;
+      background: var(--accent);
       border-radius: 50%;
       z-index: 100;
       cursor: se-resize;
@@ -858,7 +930,7 @@
       max-width: 100%;
       margin: 0;
       padding: 0;
-      border: 2px dashed #ff00ff;
+      border: 2px dashed var(--accent);
       position: relative;
       vertical-align: bottom;
     }
@@ -881,17 +953,17 @@
     .paste-area {
       width: 100%;
       height: 40px;
-      border: 1px dashed #aaa;
+      border: 1px dashed var(--border);
       border-radius: 8px;
-      background-color: #f8f8f8;
+      background-color: rgba(0, 16, 24, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
       margin-top: 5px;
       cursor: pointer;
-      font-family: 'Open Sans', sans-serif;
+      font-family: 'Electrolize', system-ui, sans-serif;
       font-size: 13px;
-      color: #666;
+      color: var(--muted);
       position: relative;
     }
     
@@ -903,13 +975,13 @@
     }
 
     .paste-area:hover {
-      background-color: #f0f0f0;
+      background-color: rgba(0, 208, 208, 0.12);
     }
 
     .paste-area:focus {
       outline: none;
-      border-color: #ff00ff;
-      box-shadow: 0 0 3px rgba(255, 0, 255, 0.5);
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--glow-soft);
     }
   </style>
 </head>
