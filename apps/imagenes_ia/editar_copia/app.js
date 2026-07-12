@@ -293,10 +293,10 @@ const mergeHistory = (localItems, serverItems) => {
     return Array.from(localMap.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 };
 
-// Llama al proxy en modo FLUX (imágenes). Contrato: {prompt, calidad, aspectRatio, targetPx, imagen?}
+// Llama al proxy en modo FLUX (imágenes). Contrato: {prompt, calidad, quality, aspectRatio, targetPx, imagen?}
 // -> {success, imageUrl (data URL), coste, modelo, calidad, width, height}
-const callFlux = async ({ prompt, calidad, aspectRatio, targetPx, imagen }) => {
-    const body = { prompt, calidad, aspectRatio, targetPx };
+const callFlux = async ({ prompt, calidad, quality, aspectRatio, targetPx, imagen }) => {
+    const body = { prompt, calidad, quality, aspectRatio, targetPx };
     if (imagen) body.imagen = imagen;
     const response = await fetch(PROXY_URL, {
         method: 'POST',
@@ -360,6 +360,7 @@ const generateImage = async (params) => {
     const imageUrl = await callFlux({
         prompt: finalPrompt,
         calidad: params.calidad || 'normal',
+        quality: params.quality || 'pro',
         aspectRatio: params.aspectRatio,
         targetPx: params.targetPx || 1024,
         imagen: params.sourceImage || undefined
@@ -376,6 +377,7 @@ const editImageConversation = async (params) => {
     const imageUrl = await callFlux({
         prompt: params.instruction,
         calidad: params.calidad || 'normal',
+        quality: params.quality || 'pro',
         aspectRatio: params.aspectRatio,
         targetPx: params.targetPx || 1024,
         imagen: params.originalImage
@@ -653,22 +655,17 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
+    // Calidad del modelo FLUX elegida con los botones PRO/MAX (pro = equilibrado, max = máxima).
+    const [selectedQuality, setSelectedQuality] = useState('pro');
 
     const fileInputRef = useRef(null);
 
-    // Si entramos directos al editor por ?mode=edit, abrir el selector de archivo al montar.
-    useEffect(() => {
-        if (_startInEditor) {
-            const t = setTimeout(() => fileInputRef.current?.click(), 300);
-            return () => clearTimeout(t);
-        }
-    }, []);
-
     const handleStart = (m) => {
         // App de EDICIÓN: solo modo 'remix'. La generación vive en generar_copia.
+        // No abrimos el explorador automáticamente: el usuario ve la app y pulsa
+        // el área de subida cuando quiera buscar una imagen.
         setMode('remix');
         setView('editor');
-        setTimeout(() => fileInputRef.current?.click(), 100);
     };
 
     const handleFileUpload = (e) => {
@@ -708,6 +705,7 @@ const App = () => {
                 styleSuffix,
                 aspectRatio: selectedAR,
                 calidad: imageSize.calidad,
+                quality: selectedQuality,
                 targetPx: imageSize.targetPx,
                 downloadPx: imageSize.downloadPx,
                 sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
@@ -779,6 +777,7 @@ const App = () => {
                 instruction: editInstruction,
                 aspectRatio: editImage.aspectRatio,
                 calidad: editImage.calidad || 'normal',
+                quality: selectedQuality,
                 targetPx: editImage.targetPx || 1024,
                 downloadPx: editImage.downloadPx
             });
@@ -884,6 +883,26 @@ const App = () => {
                                             <span className="text-[10px] font-bold tracking-tighter">{res.label}</span>
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Calidad del Modelo FLUX</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={() => setSelectedQuality('pro')}
+                                        className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'pro' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
+                                    >
+                                        <span className="text-[11px] font-bold tracking-tighter">PRO</span>
+                                        <span className="text-[8px] font-medium opacity-70 tracking-tighter">Equilibrado · ~$0.03</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedQuality('max')}
+                                        className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'max' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
+                                    >
+                                        <span className="text-[11px] font-bold tracking-tighter">MAX</span>
+                                        <span className="text-[8px] font-medium opacity-70 tracking-tighter">Máxima · ~$0.07</span>
+                                    </button>
                                 </div>
                             </div>
 

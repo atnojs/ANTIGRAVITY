@@ -71,9 +71,12 @@ if (!isset($data['prompt']) || trim((string)$data['prompt']) === '') {
 
 $prompt = (string)$data['prompt'];
 
-// App de EDICIÓN: SIEMPRE flux-2-max (máxima fidelidad). No hay otros modelos.
-$endpoint = 'flux-2-max';
-$calidad  = 'pro';
+// App de EDICIÓN: modelo FLUX según el selector PRO/MAX del frontend.
+// 'pro' = flux-2-pro (~$0.03, equilibrado), 'max' = flux-2-max (~$0.07, máxima).
+// Por defecto flux-2-pro si no llega el campo (equilibrado).
+$quality = strtolower((string)($data['quality'] ?? 'pro'));
+$endpoint = ($quality === 'max') ? 'flux-2-max' : 'flux-2-pro';
+$calidad  = $quality;
 
 // ===== Dimensiones: aspect ratio + lado objetivo, con tope de 4MP =====
 $aspect  = (string)($data['aspectRatio'] ?? '1:1');

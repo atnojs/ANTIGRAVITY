@@ -80,6 +80,15 @@ $MODELOS = [
 $calidad  = (string)($data['calidad'] ?? 'normal');
 $endpoint = $MODELOS[$calidad] ?? $MODELOS['normal'];
 
+// Selector explícito PRO/MAX del frontend: tiene PRIORIDAD sobre la calidad
+// derivada de la resolución. 'pro' = flux-2-pro (~$0.03), 'max' = flux-2-max (~$0.07).
+$quality = strtolower((string)($data['quality'] ?? ''));
+if ($quality === 'pro') {
+    $endpoint = 'flux-2-pro';
+} elseif ($quality === 'max') {
+    $endpoint = 'flux-2-max';
+}
+
 // ===== Dimensiones: aspect ratio + lado objetivo, con tope de 4MP =====
 $aspect  = (string)($data['aspectRatio'] ?? '1:1');
 $target  = (int)($data['targetPx'] ?? 1024);
