@@ -165,6 +165,7 @@
     if (/video\//.test(type) || /\.(mp4|mov|avi|mkv|webm)$/.test(name)) return '🎬';
     if (/audio\//.test(type) || /\.(mp3|wav|ogg|flac|m4a)$/.test(name)) return '🎵';
     if (/pdf/.test(t)) return '📕';
+    if (/(powerpoint|presentation)/.test(t) || /\.pptx?$/.test(name)) return '📙';
     if (/(zip|rar|7z|tar|gz)/.test(t)) return '🗜️';
     if (/(word|doc)/.test(t)) return '📘';
     if (/(sheet|excel|xls|csv)/.test(t)) return '📗';
@@ -907,6 +908,46 @@
     }
   }
 
+  /* ---------- carga perezosa de librerías de previsualización (vendor local) ----------
+     Se descargan solo la 1ª vez que hace falta abrir un documento de ese tipo.
+     Todo se renderiza en el navegador desde el blob YA descifrado: el servidor
+     nunca ve el contenido (se respeta el modelo zero-knowledge). */
+  const scriptCache = {};
+  function loadScriptOnce(src) {
+    if (scriptCache[src]) return scriptCache[src];
+    scriptCache[src] = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => resolve();
+      s.onerror = () => { delete scriptCache[src]; reject(new Error('No se pudo cargar ' + src)); };
+      document.head.appendChild(s);
+    });
+    return scriptCache[src];
+  }
+  async function ensureDocx() {
+    if (typeof window.docx === 'undefined') {
+      await loadScriptOnce('vendor/jszip.min.js');
+      await loadScriptOnce('vendor/docx-preview.min.js');
+    }
+  }
+  async function ensureXlsx() {
+    if (typeof window.XLSX === 'undefined') await loadScriptOnce('vendor/xlsx.full.min.js');
+  }
+  async function ensurePptx() {
+    if (typeof window.PptxPreview === 'undefined') await loadScriptOnce('vendor/pptx-preview.bundle.js');
+  }
+
+  // Clasificación de documentos ofimáticos por MIME o extensión de nombre
+  function docKind(type, name) {
+    const t = (type || '').toLowerCase();
+    const n = (name || '').toLowerCase();
+    if (/wordprocessingml|msword/.test(t) || /\.docx?$/.test(n)) return 'word';
+    if (/spreadsheetml|ms-excel|excel/.test(t) || /\.xlsx?$/.test(n)) return 'excel';
+    if (/\.csv$/.test(n) || t === 'text/csv') return 'csv';
+    if (/presentationml|powerpoint/.test(t) || /\.pptx$/.test(n)) return 'pptx';
+    return null;
+  }
+
   /* ---------- visor grande (lightbox) con carrusel ---------- */
   let viewerUrl = null;
   let viewerCurrentId = null;
@@ -972,6 +1013,8 @@
         stage.innerHTML = `<div class="v-generic"><div class="big">🎵</div><div>${escapeHtml(f.name)}</div><audio src="${viewerUrl}" controls autoplay style="margin-top:18px"></audio></div>`;
       } else if (/pdf/.test(type)) {
         stage.innerHTML = `<iframe src="${viewerUrl}" style="width:100%;height:100%;min-height:70vh;border:none;border-radius:10px;background:#fff"></iframe>`;
+      } else if (docKind(type, f.name)) {
+        await renderDocPreview(docKind(type, f.name), plain, f, id);
       } else {
         stage.innerHTML = `<div class="v-generic"><div class="big">${iconFor(type, f.name)}</div>
           <div>Este tipo de archivo no se puede previsualizar.</div>
@@ -992,6 +1035,79 @@
     if (thumb) {
       f.thumb = thumb;
       try { await persistIndex(); renderFiles(); } catch (e) { /* ignore */ }
+    }
+  }
+
+  /* ---------- previsualización de documentos ofimáticos (Word/Excel/CSV/PPTX) ----------
+     `buf` es el ArrayBuffer YA descifrado en memoria. Nada sale del navegador. */
+  async function renderDocPreview(kind, buf, f, id) {
+    const stage = $('viewerStage');
+    const setLoading = (msg) => { stage.innerHTML = `<div class="v-loading"><span class="spinner"></span> ${msg}</div>`; };
+    const fallback = (msg) => {
+      stage.innerHTML = `<div class="v-generic"><div class="big">${iconFor(f.type, f.name)}</div>
+        <div>${escapeHtml(msg)}</div>
+        <button class="btn primary" id="vGenDl">📥 Descargar «${escapeHtml(f.name)}»</button></div>`;
+      const b = document.getElementById('vGenDl');
+      if (b) b.addEventListener('click', () => downloadFile(id));
+    };
+    try {
+      if (kind === 'word') {
+        setLoading('Abriendo documento de Word…');
+        await ensureDocx();
+        if (viewerCurrentId !== id) return;
+        const host = document.createElement('div');
+        host.className = 'doc-view doc-word';
+        stage.innerHTML = '';
+        stage.appendChild(host);
+        await window.docx.renderAsync(new Blob([buf]), host, null, {
+          inWrapper: true, ignoreWidth: false, ignoreHeight: false, breakPages: true,
+        });
+      } else if (kind === 'excel' || kind === 'csv') {
+        setLoading(kind === 'csv' ? 'Abriendo CSV…' : 'Abriendo hoja de cálculo…');
+        await ensureXlsx();
+        if (viewerCurrentId !== id) return;
+        const wb = kind === 'csv'
+          ? window.XLSX.read(new TextDecoder().decode(new Uint8Array(buf)), { type: 'string' })
+          : window.XLSX.read(buf, { type: 'array' });
+        const tabs = wb.SheetNames.map((nm, i) =>
+          `<button class="doc-tab${i === 0 ? ' active' : ''}" data-sheet="${i}">${escapeHtml(nm)}</button>`).join('');
+        const host = document.createElement('div');
+        host.className = 'doc-view doc-excel';
+        host.innerHTML =
+          `<div class="doc-tabs">${wb.SheetNames.length > 1 ? tabs : ''}</div>
+           <div class="doc-sheet" id="docSheet"></div>`;
+        stage.innerHTML = '';
+        stage.appendChild(host);
+        const showSheet = (i) => {
+          const html = window.XLSX.utils.sheet_to_html(wb.Sheets[wb.SheetNames[i]], { editable: false });
+          host.querySelector('#docSheet').innerHTML = html;
+          host.querySelectorAll('.doc-tab').forEach((t, j) => t.classList.toggle('active', j === i));
+        };
+        host.querySelectorAll('.doc-tab').forEach((t) =>
+          t.addEventListener('click', () => showSheet(parseInt(t.dataset.sheet, 10))));
+        showSheet(0);
+      } else if (kind === 'pptx') {
+        setLoading('Abriendo presentación…');
+        await ensurePptx();
+        if (viewerCurrentId !== id) return;
+        const host = document.createElement('div');
+        host.className = 'doc-view doc-pptx';
+        stage.innerHTML = '';
+        stage.appendChild(host);
+        const width = Math.min(960, Math.max(320, host.clientWidth || 800));
+        const previewer = window.PptxPreview.init(host, { width });
+        await previewer.preview(buf);
+        if (viewerCurrentId !== id) return;
+        // Si no se detectó ninguna diapositiva, ofrecer descarga en vez de un panel negro vacío
+        setTimeout(() => {
+          if (viewerCurrentId === id && (!previewer.slideCount || previewer.slideCount === 0)) {
+            fallback('No se pudo mostrar esta presentación. Puedes descargarla.');
+          }
+        }, 1200);
+      }
+    } catch (e) {
+      if (viewerCurrentId !== id) return;
+      fallback('No se pudo previsualizar el documento: ' + e.message);
     }
   }
 
