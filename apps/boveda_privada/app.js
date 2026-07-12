@@ -695,7 +695,6 @@
           </div>
           <div class="fr-actions">
             <button class="icon-btn" data-dl="${f.id}" title="Descargar">${SVG_DL}</button>
-            <button class="icon-btn" data-rn="${f.id}" title="Renombrar">${SVG_RN}</button>
             <button class="icon-btn del" data-del="${f.id}" title="Borrar">${SVG_DEL}</button>
           </div>
         </div>`).join('');
@@ -712,8 +711,6 @@
       b.addEventListener('click', (e) => { e.stopPropagation(); downloadFile(b.dataset.dl); }));
     document.querySelectorAll('#galleryGrid [data-del], #fileList [data-del]').forEach(b =>
       b.addEventListener('click', (e) => { e.stopPropagation(); askDeleteFile(b.dataset.del); }));
-    document.querySelectorAll('#fileList [data-rn]').forEach(b =>
-      b.addEventListener('click', (e) => { e.stopPropagation(); askRename(b.dataset.rn); }));
 
     // Selección (casilla)
     document.querySelectorAll('[data-sel]').forEach(b =>
