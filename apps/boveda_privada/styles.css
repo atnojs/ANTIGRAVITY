@@ -607,8 +607,13 @@ img { max-width: 100%; display: block; }
 }
 .folder-card .fc-menu:hover { color: var(--accent); border-color: var(--border); background: rgba(0,16,24,0.4); }
 
-/* --- Lista de archivos --- */
-.file-list { display: flex; flex-direction: column; gap: 10px; }
+/* --- Lista de archivos (cuadrícula: 6 por fila, centrada si no se llena) --- */
+.file-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
 
 /* --- Galería de imágenes/vídeos (5 por fila) --- */
 .gallery-grid {
@@ -705,7 +710,6 @@ body.select-mode .sel-check { opacity: 1; }
 .file-row { position: relative; }
 .file-row .sel-check { position: absolute; }
 .file-row.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 16px var(--glow-soft); }
-.file-row.selected .fr-open { padding-left: 26px; }
 
 /* Barra de selección */
 .selbar {
@@ -734,10 +738,17 @@ body.select-mode .sel-check { opacity: 1; }
 }
 
 .file-row {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  text-align: center;
+  gap: 10px;
+  padding: 16px 12px;
+  /* 6 por fila teniendo en cuenta el gap de 12px */
+  flex: 0 0 calc((100% - 5 * 12px) / 6);
+  max-width: calc((100% - 5 * 12px) / 6);
+  box-sizing: border-box;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -745,10 +756,10 @@ body.select-mode .sel-check { opacity: 1; }
   backdrop-filter: blur(4px);
 }
 .file-row:hover { border-color: var(--border-strong); background: var(--card-hover); box-shadow: 0 0 16px var(--glow-soft); }
-.file-row .fr-icon { font-size: 1.5rem; flex-shrink: 0; filter: drop-shadow(0 0 5px var(--glow-soft)); }
+.file-row .fr-icon { font-size: 2.6rem; flex-shrink: 0; filter: drop-shadow(0 0 5px var(--glow-soft)); }
 .file-row .fr-thumb {
-  width: 54px;
-  height: 54px;
+  width: 72px;
+  height: 72px;
   flex-shrink: 0;
   border-radius: 8px;
   object-fit: cover;
@@ -757,7 +768,7 @@ body.select-mode .sel-check { opacity: 1; }
   box-shadow: 0 0 8px var(--glow-soft);
 }
 .file-row .fr-thumb.vid { position: relative; }
-.fr-thumb-wrap { position: relative; flex-shrink: 0; width: 54px; height: 54px; }
+.fr-thumb-wrap { position: relative; flex-shrink: 0; width: 72px; height: 72px; }
 .fr-thumb-wrap .play-badge {
   position: absolute;
   right: 3px; bottom: 3px;
@@ -768,29 +779,43 @@ body.select-mode .sel-check { opacity: 1; }
   padding: 2px 3px;
   pointer-events: none;
 }
-.file-row .fr-main { flex: 1; min-width: 0; }
+.file-row .fr-main { width: 100%; min-width: 0; }
 .file-row .fr-name {
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   color: var(--text);
   letter-spacing: 0.02em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.file-row .fr-meta { font-size: 0.74rem; color: var(--text-faint); letter-spacing: 0.04em; margin-top: 3px; }
-.file-row .fr-actions { display: flex; gap: 7px; flex-shrink: 0; }
+.file-row .fr-meta { font-size: 0.68rem; color: var(--text-faint); letter-spacing: 0.03em; margin-top: 4px; }
+/* Botones de acción: flotan sobre la tarjeta y solo aparecen al pasar por encima */
+.file-row .fr-actions {
+  position: absolute;
+  top: 6px; right: 6px;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.18s, transform 0.18s;
+}
+.file-row:hover .fr-actions, .file-row:focus-within .fr-actions { opacity: 1; transform: none; }
+/* En táctil/móvil (sin hover) o en modo selección, mostrarlos siempre */
+body.select-mode .file-row .fr-actions { opacity: 1; transform: none; }
 .icon-btn {
-  width: 38px; height: 38px;
+  width: 34px; height: 34px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: rgba(0,16,24,0.4);
+  border: 1px solid var(--border-strong);
+  background: rgba(0,8,14,0.78);
   color: var(--accent);
   cursor: pointer;
   display: grid; place-items: center;
+  backdrop-filter: blur(2px);
   transition: all 0.15s;
 }
-.icon-btn:hover { border-color: var(--border-strong); box-shadow: 0 0 12px var(--glow-soft); }
-.icon-btn svg { width: 17px; height: 17px; stroke: currentColor; }
-.icon-btn.del { color: var(--danger); border-color: rgba(239,68,68,0.4); }
-.icon-btn.del:hover { background: rgba(239,68,68,0.12); box-shadow: 0 0 12px rgba(239,68,68,0.35); }
+.icon-btn:hover { border-color: var(--border-strong); box-shadow: 0 0 12px var(--glow-soft); background: rgba(0,16,24,0.9); }
+.icon-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+.icon-btn.del { color: var(--danger); border-color: rgba(239,68,68,0.6); }
+.icon-btn.del:hover { background: rgba(239,68,68,0.15); box-shadow: 0 0 12px rgba(239,68,68,0.35); }
 
 /* --- Dropzone --- */
 .dropzone {
@@ -1050,5 +1075,9 @@ body.select-mode .sel-check { opacity: 1; }
   .folder-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
   .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .vault-toolbar .btn { flex: 1; }
-  .file-row .fr-actions { flex-direction: column; }
+  /* Archivos: 3 por fila en móvil (coherente con la galería) */
+  .file-list { gap: 8px; }
+  .file-row { flex: 0 0 calc((100% - 2 * 8px) / 3); max-width: calc((100% - 2 * 8px) / 3); }
+  /* En táctil los botones se muestran siempre (no hay hover fiable) */
+  .file-row .fr-actions { opacity: 1; transform: none; }
 }

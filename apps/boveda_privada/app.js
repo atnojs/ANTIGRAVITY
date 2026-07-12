@@ -686,7 +686,7 @@
           Arrastra archivos o pulsa <b>Subir archivo</b>.</div>`;
     } else {
       list.innerHTML = others.map(f => `
-        <div class="file-row${sel(f.id)}" data-id="${f.id}" draggable="true">
+        <div class="file-row${sel(f.id)}" data-id="${f.id}" draggable="true" title="${escapeHtml(f.name)}">
           ${check(f.id)}
           <div class="fr-open" data-open="${f.id}">${thumbCell(f)}</div>
           <div class="fr-main fr-open" data-open="${f.id}">
