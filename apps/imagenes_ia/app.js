@@ -14,8 +14,34 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Forzar logout al cargar la página para siempre pedir login
-auth.signOut();
+// Asegura que el documento del usuario existe en Firestore
+async function ensureUserDoc(user) {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (!userDoc.exists) {
+        await db.collection('users').doc(user.uid).set({
+            email: user.email,
+            role: 'free',
+            usageCount: 0,
+            lastDate: new Date().toISOString().split('T')[0],
+            lastActive: Date.now()
+        });
+    }
+}
+
+// Gestiona el retorno del login por redirección (fallback de Google en navegadores
+// que bloquean el popup / cookies de terceros). Si NO hay redirección pendiente,
+// se fuerza el logout al cargar para pedir siempre el login.
+auth.getRedirectResult()
+    .then(async (result) => {
+        if (result && result.user) {
+            await ensureUserDoc(result.user);
+        } else {
+            await auth.signOut();
+        }
+    })
+    .catch(async () => {
+        await auth.signOut();
+    });
 
 // --- ICONOS (usando Lucide global) ---
 const Icon = ({ name, size = 24, className = "" }) => {
@@ -65,25 +91,38 @@ const LoginModal = ({ onLogin }) => {
 
     const handleGoogle = async () => {
         setLoading(true);
+        setError('');
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
             // Forzar que siempre pida seleccionar cuenta
             provider.setCustomParameters({ prompt: 'select_account' });
             const result = await auth.signInWithPopup(provider);
-            const userDoc = await db.collection('users').doc(result.user.uid).get();
-            if (!userDoc.exists) {
-                await db.collection('users').doc(result.user.uid).set({
-                    email: result.user.email,
-                    role: 'free',
-                    usageCount: 0,
-                    lastDate: new Date().toISOString().split('T')[0],
-                    lastActive: Date.now()
-                });
-            }
+            await ensureUserDoc(result.user);
             onLogin(result.user);
         } catch (err) {
+            // Si el navegador bloquea el popup / cookies de terceros
+            // (auth/operation-not-supported-in-this-environment, popup-blocked,
+            // popup-closed-by-user), reintentamos con redirección, que sí funciona.
+            const fallbackCodes = [
+                'auth/operation-not-supported-in-this-environment',
+                'auth/popup-blocked',
+                'auth/popup-closed-by-user',
+                'auth/cancelled-popup-request',
+                'auth/web-storage-unsupported'
+            ];
+            if (err && fallbackCodes.includes(err.code)) {
+                try {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    provider.setCustomParameters({ prompt: 'select_account' });
+                    await auth.signInWithRedirect(provider);
+                    return; // La página se recarga; el resultado se recoge en getRedirectResult()
+                } catch (err2) {
+                    setError('No se pudo abrir el acceso con Google. Prueba a permitir las cookies del sitio o usa email y contraseña.');
+                    setLoading(false);
+                    return;
+                }
+            }
             setError(err.message);
-        } finally {
             setLoading(false);
         }
     };
@@ -415,4 +454,4 @@ const App = () => {
 
 // --- RENDER ---
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render(<App />);
