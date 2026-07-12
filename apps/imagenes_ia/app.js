@@ -345,11 +345,8 @@ const Splash = ({ onLogout, user }) => {
                     <h2 className="text-2xl font-bold">Color</h2>
                     <p className="text-gray-400 text-sm leading-relaxed">Colorea imágenes con IA.</p>
                 </button>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-[63rem]">
                 {/* Botón Dibujo Líneas */}
-                 
                 <button
                     onClick={() => handleNavigate('https://atnojs.es/apps/dibujo_lineas/index.html')}
                     className="group glass glass-hover relative p-10 rounded-[2.5rem] text-left space-y-4 overflow-hidden border-teal-500/30"
