@@ -687,18 +687,24 @@ function App() {
     if (f) await handleUpload(f);
   }
 
-  // Detección de objetos con Gemini 2.5-flash (para los enlaces de compra).
-  // Si falla, cae a la lista típica de la estancia.
+  // Detección de objetos con Gemini 2.5-flash, CON bounding box para recortar.
+  // Devuelve array de { label, box_2d? } donde box_2d = [ymin,xmin,ymax,xmax] (0-1000).
+  // Si falla, cae a la lista típica de la estancia (sin box → búsqueda por texto).
   async function detectObjectsFromImageUri(uri) {
     try {
       const b64 = dataUriToBase64(uri);
       const res = await callGeminiVision(b64, "detect", "image/jpeg");
-      const objs = Array.isArray(res.objects) ? res.objects.filter(Boolean) : [];
-      if (objs.length) return objs.slice(0, 15);
+      const objs = Array.isArray(res.objects) ? res.objects : [];
+      const norm = objs
+        .map(o => (typeof o === 'string')
+          ? { label: o }
+          : { label: (o && (o.label || o.name)) || '', box_2d: o && o.box_2d })
+        .filter(o => o.label);
+      if (norm.length) return norm.slice(0, 15);
     } catch (e) {
       console.warn("No se pudieron detectar objetos:", e.message);
     }
-    return (ROOM_SHOPPING[selectedRoom] || []).slice();
+    return (ROOM_SHOPPING[selectedRoom] || []).map(label => ({ label }));
   }
 
   async function removeObjectsFromImage() {
@@ -881,13 +887,77 @@ function App() {
   // Búsqueda POR IMAGEN: Google Lens sobre la imagen generada (URL pública real).
   // Lens analiza la foto entera y muestra productos visualmente similares a lo que
   // aparece de verdad en la imagen. Fallback a búsqueda por texto si no hay URL pública.
-  function shoppingUrlFor(item) {
-    const pub = item && item.pubUrl ? item.pubUrl : (item && item.id ? publicUrlFor(item.id, item.uri) : '');
-    if (pub) {
-      return `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(pub)}`;
+  // Recorta el objeto (obj.box_2d) de la imagen del item con canvas.
+  // box_2d = [ymin,xmin,ymax,xmax] normalizado 0-1000 (formato Gemini 2.5).
+  // Devuelve un data URL JPEG del recorte, o null si no hay box válido.
+  function cropObjectDataUrl(uri, box) {
+    return new Promise((resolve) => {
+      if (!Array.isArray(box) || box.length !== 4) { resolve(null); return; }
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const W = img.naturalWidth, H = img.naturalHeight;
+          let [ymin, xmin, ymax, xmax] = box.map(Number);
+          // Normalizar 0-1000 -> px
+          let x = Math.round((xmin / 1000) * W);
+          let y = Math.round((ymin / 1000) * H);
+          let w = Math.round(((xmax - xmin) / 1000) * W);
+          let h = Math.round(((ymax - ymin) / 1000) * H);
+          // Margen del 8% alrededor para que el objeto no salga pegado al borde
+          const mx = Math.round(w * 0.08), my = Math.round(h * 0.08);
+          x = Math.max(0, x - mx); y = Math.max(0, y - my);
+          w = Math.min(W - x, w + mx * 2); h = Math.min(H - y, h + my * 2);
+          if (w < 8 || h < 8) { resolve(null); return; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.92));
+        } catch (e) { resolve(null); }
+      };
+      img.onerror = () => resolve(null);
+      img.src = uri;
+    });
+  }
+
+  // Sube un recorte (data URL) al proxy (rama crop) y devuelve su URL pública.
+  async function uploadCrop(dataUrl) {
+    const res = await fetch(PROXY_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "crop", image: dataUrl }),
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json || !json.url) {
+      throw new Error((json && json.error && json.error.message) || `Error ${res.status}`);
     }
-    const q = `${(item && item.style) || ''} ${selectedRoom || 'decoracion'} decoracion`.trim();
-    return `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}`;
+    return json.url;
+  }
+
+  // Al clicar un objeto: recorta SOLO ese objeto de la imagen generada,
+  // lo sube y abre Google Lens con el recorte (búsqueda por imagen del objeto).
+  async function searchObjectByImage(item, obj) {
+    // Abrir la pestaña YA (evita el bloqueador de popups); se rellena tras el await.
+    const win = window.open('about:blank', '_blank');
+    const fallbackText = () => {
+      const q = `${obj.label} ${item.style || ''} ${selectedRoom || 'decoracion'}`.trim();
+      return `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}`;
+    };
+    try {
+      const dataUrl = await cropObjectDataUrl(item.uri, obj.box_2d);
+      if (dataUrl) {
+        const cropUrl = await uploadCrop(dataUrl);
+        const lens = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(cropUrl)}`;
+        if (win) win.location = lens; else window.open(lens, '_blank');
+        return;
+      }
+      // Sin box: búsqueda por texto del objeto
+      if (win) win.location = fallbackText(); else window.open(fallbackText(), '_blank');
+    } catch (e) {
+      console.warn("Búsqueda por imagen falló, uso texto:", e.message);
+      if (win) win.location = fallbackText(); else window.open(fallbackText(), '_blank');
+    }
   }
 
   const availableStyles = selectedRoom ? ROOM_CONFIG[selectedRoom].styles : [];
@@ -1267,23 +1337,24 @@ function App() {
                       </div>
                     )}
 
-                    <a
-                      href={shoppingUrlFor(r)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shop-by-image-btn"
-                      title="Buscar productos similares a esta imagen (búsqueda visual)"
-                    >
-                      🛒 Buscar dónde comprar (por imagen)
-                    </a>
-
                     {Array.isArray(r.objects) && r.objects.length > 0 ? (
-                      <ul className="mt-2 text-xs text-gray-700 list-disc list-inside space-y-0.5">
-                        {r.objects.map((it, i2) => (
-                          <li key={i2}>{it}</li>
+                      <ul className="mt-2 text-xs text-gray-700 list-disc list-inside space-y-0.5 shop-object-list">
+                        {r.objects.map((obj, i2) => (
+                          <li key={i2}>
+                            <button
+                              type="button"
+                              className="shop-object-link"
+                              onClick={() => searchObjectByImage(r, obj)}
+                              title={`Buscar "${obj.label}" por imagen (recorta el objeto de la foto)`}
+                            >
+                              {obj.label}
+                            </button>
+                          </li>
                         ))}
                       </ul>
-                    ) : null}
+                    ) : (
+                      <p className="mt-2 text-xs text-gray-500 italic">Sin objetos</p>
+                    )}
                   </figure>
                 ))}
               </div>

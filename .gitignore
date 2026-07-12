@@ -103,6 +103,10 @@ webs/limpiador-windows/data/
 .hermes/
 _pruebas_img/
 
+# decorar_habitacion: datos de runtime (historial e recortes de compra) — no van a git
+apps/decorar_habitacion/history_data/
+apps/decorar_habitacion/crops/
+
 # Excepciones: archivos necesarios para el despliegue
 !apps/banco_de_imagenes/config.php
 !apps/banco_de_imagenes/history_data/.htaccess

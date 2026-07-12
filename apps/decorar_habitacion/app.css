@@ -1401,29 +1401,35 @@ figure.relative ul a:hover {
   color: var(--acc2) !important;
 }
 
-/* --- Botón "Buscar dónde comprar (por imagen)" (Google Lens) --- */
-.shop-by-image-btn {
-  display: block;
-  width: 100%;
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(0, 208, 208, 0.18), rgba(38, 198, 38, 0.18));
-  color: var(--text) !important;
-  font-family: 'Electrolize', sans-serif;
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+/* --- Objetos clicables: buscar cada objeto por imagen (recorte) --- */
+.shop-object-list li {
+  margin-bottom: 2px;
 }
 
-.shop-by-image-btn:hover {
-  transform: translateY(-2px);
-  border-color: var(--acc);
-  box-shadow: 0 8px 22px var(--shadow-light);
+.shop-object-link {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  color: var(--acc) !important;
+  font-family: 'Electrolize', sans-serif;
+  font-size: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color .15s ease, opacity .15s ease;
+}
+
+.shop-object-link:hover {
+  color: var(--acc2) !important;
+  opacity: 0.95;
+}
+
+.shop-object-link::before {
+  content: "🔍 ";
+  font-size: 0.85em;
 }
 
 /* --- Focus visible (accesibilidad) --- */

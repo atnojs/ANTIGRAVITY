@@ -98,13 +98,30 @@ if ($action === 'analyze' || $action === 'detect') {
         $temp = 0.4;
         $maxTok = 256;
     } else {
-        $instr = "Enumera de 8 a 15 objetos de mobiliario y decoración visibles en esta imagen, con nombres cortos en español. Devuelve SOLO una lista, un objeto por línea, con guión inicial, sin frases adicionales.";
+        // Detección de objetos CON bounding box (para poder recortar cada objeto).
+        // Gemini 2.5 devuelve box_2d como [ymin, xmin, ymax, xmax] normalizado 0-1000.
+        $instr = "Detecta de 8 a 15 objetos de mobiliario y decoración visibles en esta imagen (sofá, lámpara, mesa, alfombra, cuadro, planta, etc.). "
+            . "Para CADA objeto devuelve su nombre corto en español y su bounding box. "
+            . "Responde EXCLUSIVAMENTE con un array JSON válido, sin texto adicional ni ```. "
+            . "Formato exacto: [{\"label\":\"lámpara\",\"box_2d\":[ymin,xmin,ymax,xmax]}, ...] "
+            . "donde box_2d son enteros normalizados de 0 a 1000 (ymin,xmin esquina superior-izquierda; ymax,xmax inferior-derecha).";
         $temp = 0.2;
-        $maxTok = 220;
+        $maxTok = 1024;
     }
 
     $model = 'gemini-2.5-flash';
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
+
+    $genCfg = [
+        'temperature' => $temp,
+        'topK' => 40,
+        'topP' => 0.9,
+        'maxOutputTokens' => $maxTok,
+    ];
+    // En detect forzamos salida JSON para parsear los bounding box de forma fiable.
+    if ($action === 'detect') {
+        $genCfg['responseMimeType'] = 'application/json';
+    }
 
     $payload = [
         'contents' => [[
@@ -114,12 +131,7 @@ if ($action === 'analyze' || $action === 'detect') {
                 ['inlineData' => ['mimeType' => $mimeType, 'data' => $imageB64]],
             ],
         ]],
-        'generationConfig' => [
-            'temperature' => $temp,
-            'topK' => 40,
-            'topP' => 0.9,
-            'maxOutputTokens' => $maxTok,
-        ],
+        'generationConfig' => $genCfg,
     ];
 
     $ch = curl_init($endpoint);
@@ -159,15 +171,83 @@ if ($action === 'analyze' || $action === 'detect') {
     if ($action === 'analyze') {
         echo json_encode(['text' => $text]);
     } else {
-        $lines = preg_split('/\r?\n/', $text);
+        // Parsear el array JSON de objetos con bounding box.
+        // Devolvemos { objects:[{label, box_2d:[ymin,xmin,ymax,xmax]}], names:[...] }.
         $objects = [];
-        foreach ($lines as $ln) {
-            $ln = trim(preg_replace('/^[-•\*\d\.\)\s]+/u', '', (string)$ln));
-            if ($ln !== '') { $objects[] = $ln; }
+        $names = [];
+        $clean = trim($text);
+        // Quitar fences ```json ... ``` por si el modelo los añade
+        $clean = preg_replace('/^```(?:json)?\s*/i', '', $clean);
+        $clean = preg_replace('/\s*```$/', '', $clean);
+        $parsed = json_decode($clean, true);
+        if (is_array($parsed)) {
+            foreach ($parsed as $o) {
+                if (!is_array($o)) continue;
+                $label = trim((string)($o['label'] ?? $o['name'] ?? ''));
+                $box = $o['box_2d'] ?? $o['box'] ?? null;
+                if ($label === '') continue;
+                $item = ['label' => $label];
+                if (is_array($box) && count($box) === 4) {
+                    $item['box_2d'] = [
+                        (int)$box[0], (int)$box[1], (int)$box[2], (int)$box[3]
+                    ];
+                }
+                $objects[] = $item;
+                $names[] = $label;
+            }
         }
         $objects = array_slice($objects, 0, 15);
-        echo json_encode(['objects' => $objects, 'text' => $text]);
+        $names = array_slice($names, 0, 15);
+        echo json_encode(['objects' => $objects, 'names' => $names]);
     }
+    exit;
+}
+
+// ============================================================
+//  RAMA CROP: guarda un recorte (data URL) y devuelve su URL pública.
+//  Sirve para "buscar por imagen" SOLO el objeto recortado (Google Lens
+//  necesita una URL pública accesible, no un data URL).
+// ============================================================
+if ($action === 'crop') {
+    $imageData = (string)($req['image'] ?? '');
+    if ($imageData === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Falta la imagen del recorte.']]);
+        exit;
+    }
+    // Extraer base64 + extensión del data URL
+    if (!preg_match('#^data:image/([a-zA-Z0-9]+);base64,(.+)$#', $imageData, $m)) {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Formato de recorte no valido (data URL esperado).']]);
+        exit;
+    }
+    $ext = strtolower($m[1]) === 'jpeg' ? 'jpg' : strtolower($m[1]);
+    $bin = base64_decode($m[2], true);
+    if ($bin === false || strlen($bin) > 4000000) {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Recorte invalido o demasiado grande.']]);
+        exit;
+    }
+    // Carpeta de recortes (efímera; se puede limpiar). Se crea si no existe.
+    $cropDir = __DIR__ . '/crops';
+    if (!is_dir($cropDir)) { @mkdir($cropDir, 0755, true); }
+    // Nombre único; limpiamos recortes viejos (>1h) para no acumular.
+    foreach (glob($cropDir . '/*') as $old) {
+        if (is_file($old) && (time() - filemtime($old)) > 3600) { @unlink($old); }
+    }
+    $name = 'crop_' . bin2hex(random_bytes(6)) . '.' . $ext;
+    $path = $cropDir . '/' . $name;
+    if (file_put_contents($path, $bin, LOCK_EX) === false) {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'No se pudo guardar el recorte.']]);
+        exit;
+    }
+    // URL pública absoluta (para Google Lens)
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $dir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+    $publicUrl = $scheme . '://' . $host . $dir . '/crops/' . $name;
+    echo json_encode(['url' => $publicUrl, 'file' => $name]);
     exit;
 }
 
