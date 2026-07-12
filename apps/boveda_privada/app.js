@@ -425,7 +425,9 @@
 
   function renderFolders() {
     const cont = $('folderGrid');
-    const children = state.index.folders.filter(f => (f.parentId || null) === state.currentFolder);
+    const children = state.index.folders
+      .filter(f => (f.parentId || null) === state.currentFolder)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.createdAt || 0) - (b.createdAt || 0));
     if (!children.length) { cont.innerHTML = ''; return; }
     cont.innerHTML = children.map(f => {
       const fileCount = state.index.files.filter(x => x.folderId === f.id).length;
@@ -433,7 +435,7 @@
       const parts = [];
       if (subCount) parts.push(subCount + ' carpeta' + (subCount === 1 ? '' : 's'));
       parts.push(fileCount + ' archivo' + (fileCount === 1 ? '' : 's'));
-      return `<div class="folder-card" data-id="${f.id}">
+      return `<div class="folder-card" data-id="${f.id}" draggable="true">
         <div class="fc-icon">📁</div>
         <div class="fc-info">
           <div class="fc-name">${escapeHtml(f.name)}</div>
@@ -445,46 +447,166 @@
     cont.querySelectorAll('.folder-card').forEach(el => {
       el.addEventListener('click', (e) => {
         if (e.target.closest('[data-del]')) return;
+        if (el.classList.contains('was-dragged')) { el.classList.remove('was-dragged'); return; }
         state.currentFolder = el.dataset.id; renderVault();
       });
+      wireFolderDrag(el);
     });
     cont.querySelectorAll('[data-del]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); askDeleteFolder(b.dataset.del); });
     });
   }
 
-  function renderFiles() {
-    const list = $('fileList');
-    const files = currentFiles().slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    if (!files.length) {
-      list.innerHTML = `<div class="empty-state"><div class="big">🗂️</div>
-        ${state.currentFolder ? 'Esta carpeta está vacía.' : 'Aún no hay archivos aquí.'}<br>
-        Arrastra archivos o pulsa <b>Subir archivo</b>.</div>`;
-      return;
+  /* ---------- arrastrar carpetas: reordenar (lados) o anidar (centro) ---------- */
+  const dragCtx = { id: null, mode: null, targetId: null };
+
+  function clearDropClasses() {
+    document.querySelectorAll('.folder-card').forEach(c =>
+      c.classList.remove('drop-before', 'drop-after', 'drop-inside'));
+  }
+
+  function wireFolderDrag(el) {
+    el.addEventListener('dragstart', (e) => {
+      dragCtx.id = el.dataset.id;
+      el.classList.add('dragging');
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', el.dataset.id); } catch (ex) {}
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      clearDropClasses();
+      // marca para que el click posterior no abra la carpeta
+      el.classList.add('was-dragged');
+      setTimeout(() => el.classList.remove('was-dragged'), 300);
+      dragCtx.id = null; dragCtx.mode = null; dragCtx.targetId = null;
+    });
+    el.addEventListener('dragover', (e) => {
+      if (!dragCtx.id || dragCtx.id === el.dataset.id) return;
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const zone = rect.width * 0.3; // 30% izq / centro / 30% der
+      clearDropClasses();
+      if (x < zone) { dragCtx.mode = 'before'; el.classList.add('drop-before'); }
+      else if (x > rect.width - zone) { dragCtx.mode = 'after'; el.classList.add('drop-after'); }
+      else { dragCtx.mode = 'inside'; el.classList.add('drop-inside'); }
+      dragCtx.targetId = el.dataset.id;
+    });
+    el.addEventListener('dragleave', () => {
+      el.classList.remove('drop-before', 'drop-after', 'drop-inside');
+    });
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const srcId = dragCtx.id, tgtId = el.dataset.id, mode = dragCtx.mode;
+      clearDropClasses();
+      if (!srcId || srcId === tgtId) return;
+      handleFolderDrop(srcId, tgtId, mode);
+    });
+  }
+
+  function isDescendant(folderId, maybeAncestorId) {
+    // ¿maybeAncestorId está en la cadena de padres de folderId (o es él mismo)?
+    let cur = folderId;
+    const guard = new Set();
+    while (cur && !guard.has(cur)) {
+      if (cur === maybeAncestorId) return true;
+      guard.add(cur);
+      const f = state.index.folders.find(x => x.id === cur);
+      cur = f ? (f.parentId || null) : null;
     }
-    list.innerHTML = files.map(f => `
-      <div class="file-row" data-id="${f.id}">
-        <div class="fr-open" data-open="${f.id}">${thumbCell(f)}</div>
-        <div class="fr-main fr-open" data-open="${f.id}">
-          <div class="fr-name">${escapeHtml(f.name)}</div>
-          <div class="fr-meta">${fmtSize(f.size || 0)} · ${fmtDate(f.createdAt)}</div>
+    return false;
+  }
+
+  async function handleFolderDrop(srcId, tgtId, mode) {
+    const src = state.index.folders.find(f => f.id === srcId);
+    const tgt = state.index.folders.find(f => f.id === tgtId);
+    if (!src || !tgt) return;
+
+    if (mode === 'inside') {
+      // Meter src dentro de tgt (evitar meter una carpeta en sí misma o en su descendiente)
+      if (isDescendant(tgtId, srcId)) { toast('No puedes meter una carpeta dentro de sí misma.', 'err'); return; }
+      src.parentId = tgtId;
+      src.order = Date.now(); // al final del destino
+    } else {
+      // Reordenar: colocar src antes/después de tgt en el mismo nivel de tgt
+      const destParent = tgt.parentId || null;
+      if (isDescendant(destParent, srcId)) { toast('Movimiento no válido.', 'err'); return; }
+      src.parentId = destParent;
+      // Reconstruir el orden del nivel destino
+      const siblings = state.index.folders
+        .filter(f => (f.parentId || null) === destParent && f.id !== srcId)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.createdAt || 0) - (b.createdAt || 0));
+      const idx = siblings.findIndex(f => f.id === tgtId);
+      const insertAt = mode === 'after' ? idx + 1 : idx;
+      siblings.splice(insertAt, 0, src);
+      siblings.forEach((f, i) => { f.order = i; });
+    }
+    try { await persistIndex(); renderVault(); }
+    catch (e) { toast('Error al mover: ' + e.message, 'err'); }
+  }
+
+  // SVG reutilizables
+  const SVG_DL = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  const SVG_RN = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  const SVG_DEL = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+  function isMedia(f) { return /^image\//.test(f.type || '') || /^video\//.test(f.type || ''); }
+
+  function renderFiles() {
+    const all = currentFiles().slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    const media = all.filter(isMedia);
+    const others = all.filter(f => !isMedia(f));
+
+    // --- Galería de imágenes/vídeos (5 por fila, solo miniatura + 2 botones) ---
+    const gal = $('galleryGrid');
+    gal.innerHTML = media.map(f => {
+      const isVid = /^video\//.test(f.type || '');
+      const inner = f.thumb
+        ? `<img src="${f.thumb}" alt="" loading="lazy">`
+        : `<div class="g-placeholder">${isVid ? '🎬' : '🖼️'}</div>`;
+      return `<div class="gallery-item" data-open="${f.id}" title="${escapeHtml(f.name)}">
+        ${inner}
+        ${isVid ? '<div class="g-play">▶</div>' : ''}
+        <div class="g-actions">
+          <button class="g-btn" data-dl="${f.id}" title="Descargar">${SVG_DL}</button>
+          <button class="g-btn del" data-del="${f.id}" title="Borrar">${SVG_DEL}</button>
         </div>
-        <div class="fr-actions">
-          <button class="icon-btn" data-dl="${f.id}" title="Descargar">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </button>
-          <button class="icon-btn" data-rn="${f.id}" title="Renombrar">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-          </button>
-          <button class="icon-btn del" data-del="${f.id}" title="Borrar">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
-        </div>
-      </div>`).join('');
-    list.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openViewer(b.dataset.open)));
-    list.querySelectorAll('[data-dl]').forEach(b => b.addEventListener('click', () => downloadFile(b.dataset.dl)));
-    list.querySelectorAll('[data-rn]').forEach(b => b.addEventListener('click', () => askRename(b.dataset.rn)));
-    list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => askDeleteFile(b.dataset.del)));
+      </div>`;
+    }).join('');
+
+    // --- Lista para el resto de archivos (pdf, zip, audio, etc.) ---
+    const list = $('fileList');
+    if (!others.length) {
+      list.innerHTML = (media.length || state.index.folders.some(x => (x.parentId || null) === state.currentFolder))
+        ? ''
+        : `<div class="empty-state"><div class="big">🗂️</div>
+          ${state.currentFolder ? 'Esta carpeta está vacía.' : 'Aún no hay archivos aquí.'}<br>
+          Arrastra archivos o pulsa <b>Subir archivo</b>.</div>`;
+    } else {
+      list.innerHTML = others.map(f => `
+        <div class="file-row" data-id="${f.id}">
+          <div class="fr-open" data-open="${f.id}">${thumbCell(f)}</div>
+          <div class="fr-main fr-open" data-open="${f.id}">
+            <div class="fr-name">${escapeHtml(f.name)}</div>
+            <div class="fr-meta">${fmtSize(f.size || 0)} · ${fmtDate(f.createdAt)}</div>
+          </div>
+          <div class="fr-actions">
+            <button class="icon-btn" data-dl="${f.id}" title="Descargar">${SVG_DL}</button>
+            <button class="icon-btn" data-rn="${f.id}" title="Renombrar">${SVG_RN}</button>
+            <button class="icon-btn del" data-del="${f.id}" title="Borrar">${SVG_DEL}</button>
+          </div>
+        </div>`).join('');
+    }
+
+    // Listeners (galería + lista)
+    document.querySelectorAll('#galleryGrid [data-open], #fileList [data-open]').forEach(b =>
+      b.addEventListener('click', (e) => { if (e.target.closest('[data-dl],[data-del],[data-rn]')) return; openViewer(b.dataset.open); }));
+    document.querySelectorAll('#galleryGrid [data-dl], #fileList [data-dl]').forEach(b =>
+      b.addEventListener('click', (e) => { e.stopPropagation(); downloadFile(b.dataset.dl); }));
+    document.querySelectorAll('#galleryGrid [data-del], #fileList [data-del]').forEach(b =>
+      b.addEventListener('click', (e) => { e.stopPropagation(); askDeleteFile(b.dataset.del); }));
+    document.querySelectorAll('#fileList [data-rn]').forEach(b =>
+      b.addEventListener('click', (e) => { e.stopPropagation(); askRename(b.dataset.rn); }));
   }
 
   function escapeHtml(s) {
