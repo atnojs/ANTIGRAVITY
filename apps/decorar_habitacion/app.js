@@ -1,17 +1,24 @@
 const { useState, useRef, useEffect } = React;
 
-// === CONFIGURACIÓN DE MODELOS HÍBRIDA ===
-// 1. "LAS MANOS": Modelo para CREAR imágenes (Gemini 2.0 Flash exp-image-generation)
-const MODEL_IMAGE_GEN = "gemini-2.0-flash-exp-image-generation";
-
-// 2. "LOS OJOS": Modelo para VER y DESCRIBIR (Flash es excelente analizando imágenes a texto)
-const MODEL_TEXT_ANALYSIS = "gemini-2.5-flash-image";
-
-// Asegúrate que esta URL sea la correcta en tu servidor Hostinger
-// Asegúrate que esta URL sea la correcta en tu servidor Hostinger
+// === CONFIGURACIÓN FLUX (Black Forest Labs) ===
+// La app redecora la foto (imagen->imagen) con FLUX. Selector PRO/MAX.
+// La clave FLUX vive en SetEnv F "bfl_..." del .htaccess RAÍZ de Hostinger.
 const PROXY_BASE = "https://atnojs.es/apps/decorar_habitacion/proxy.php";
 
 const STORAGE_KEY = 'decorar_habitacion_history';
+
+// Lado largo objetivo de la imagen generada (respetando el AR de la foto).
+const TARGET_LONG_SIDE = 1536;
+const MAX_PIXELS = 4194304; // 4 MP — límite duro de FLUX 2
+
+// Objetos de decoración típicos por estancia (para los enlaces de compra).
+// FLUX no hace visión->texto, así que los objetos se derivan de la estancia.
+const ROOM_SHOPPING = {
+  salon: ["Sofá", "Mesa de centro", "Lámpara de pie", "Alfombra", "Estantería", "Cuadro decorativo", "Cortinas", "Cojines decorativos"],
+  cocina: ["Isla de cocina", "Taburetes altos", "Grifo de diseño", "Campana extractora", "Menaje", "Estantería abierta", "Iluminación LED", "Vajilla"],
+  bano: ["Lavabo", "Espejo con luz", "Toallero", "Mampara de ducha", "Grifería", "Mueble de baño", "Plantas de interior", "Alfombrilla"],
+  patio: ["Mesa de exterior", "Sillas de jardín", "Sombrilla", "Macetas", "Iluminación exterior", "Sofá chill-out", "Suelo de madera", "Plantas"]
+};
 
 /* ==================== CONFIGURACIÓN DE ESTANCIAS Y ESTILOS ==================== */
 const ROOM_CONFIG = {
@@ -87,19 +94,48 @@ const ROOM_PROMPTS = {
   }
 };
 
-/* ------------------------- Red ------------------------- */
-async function callGemini(payload, action = "generate") {
-  // LÓGICA HÍBRIDA:
-  // Si la acción es 'analyze' (descripción) o 'detect' (objetos) -> Usamos Flash (Texto)
-  // Si la acción es 'generate' (imágenes) -> Usamos Gemini 3 (Imagen)
+/* ------------------------- Red (FLUX) ------------------------- */
+// Calcula {width,height} múltiplos de 32 respetando el AR de la foto,
+// con el lado largo = TARGET_LONG_SIDE y clamp a 4MP (FLUX rechaza >4MP).
+function computeTargetDims(natW, natH) {
+  if (!natW || !natH) return null;
+  const ar = natW / natH;
+  let w, h;
+  if (ar >= 1) { w = TARGET_LONG_SIDE; h = Math.round(TARGET_LONG_SIDE / ar); }
+  else { h = TARGET_LONG_SIDE; w = Math.round(TARGET_LONG_SIDE * ar); }
+  // Clamp a 4MP preservando el AR
+  if (w * h > MAX_PIXELS) {
+    const scale = Math.sqrt(MAX_PIXELS / (w * h));
+    w = Math.round(w * scale);
+    h = Math.round(h * scale);
+  }
+  const round32 = (v) => Math.max(32, Math.round(v / 32) * 32);
+  return { width: round32(w), height: round32(h) };
+}
 
-  const modelToUse = (action === 'generate') ? MODEL_IMAGE_GEN : MODEL_TEXT_ANALYSIS;
+// Lee las dimensiones nativas de una imagen (data URI o base64 con mime).
+function imageDims(uri) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => resolve(null);
+    img.src = uri;
+  });
+}
 
+// Llama al proxy FLUX (editar imagen->imagen). Devuelve un data URI JPEG/PNG.
+// b64img: base64 PURO (sin prefijo data:). dims: {width,height} opcional.
+async function callFlux(b64img, prompt, quality, dims) {
   const body = {
-    ...payload,
-    action: action,
-    model: modelToUse
+    image: b64img,
+    mimeType: "image/jpeg",
+    prompt: prompt,
+    quality: quality || "pro",
   };
+  if (dims && dims.width && dims.height) {
+    body.width = dims.width;
+    body.height = dims.height;
+  }
 
   const res = await fetch(PROXY_BASE, {
     method: "POST",
@@ -107,11 +143,33 @@ async function callGemini(payload, action = "generate") {
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Error ${res.status}: ${txt || "sin detalle"}`);
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json) {
+    const msg = (json && json.error && json.error.message) || `Error ${res.status}`;
+    throw new Error(msg);
   }
-  return await res.json();
+  if (json.error) throw new Error(json.error.message || "Error de FLUX");
+  if (!json.image) throw new Error("FLUX no devolvió imagen.");
+  const mime = json.mimeType || "image/jpeg";
+  return `data:${mime};base64,${json.image}`;
+}
+
+// Llama al proxy en modo visión->texto (Gemini 2.5-flash).
+// action: "analyze" (descripción) | "detect" (lista de objetos).
+// b64img: base64 PURO (sin prefijo data:).
+async function callGeminiVision(b64img, action, mime = "image/jpeg") {
+  const res = await fetch(PROXY_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, image: b64img, mimeType: mime }),
+  });
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json) {
+    const msg = (json && json.error && json.error.message) || `Error ${res.status}`;
+    throw new Error(msg);
+  }
+  if (json.error) throw new Error(json.error.message || "Error de Gemini");
+  return json; // { text } o { objects, text }
 }
 
 /* ------------------------- Prompts ------------------------- */
@@ -392,53 +450,6 @@ function makeVariationNote(style, roomType) {
 - Directriz: decoración funcional y estética coherente con el espacio.`;
 }
 
-/* ------------------------- Payloads ------------------------- */
-function payloadForAnalysis(b64jpeg) {
-  return {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          { text: "Describe con precisión esta habitación en 2–3 frases: materiales dominantes, iluminación, distribución, elementos singulares y sensación general. Responde en español neutro." },
-          { inlineData: { mimeType: "image/jpeg", data: b64jpeg } },
-        ],
-      },
-    ],
-    generationConfig: { temperature: 0.4, topK: 40, topP: 0.9, maxOutputTokens: 256 },
-  };
-}
-
-function payloadForImageEdit(b64img, promptText, mime = "image/jpeg", cfg = {}) {
-  return {
-    contents: [
-      { role: "user", parts: [{ text: promptText }, { inlineData: { mimeType: mime, data: b64img } }] },
-    ],
-    generationConfig: Object.assign(
-      { temperature: 0.9, topK: 64, topP: 0.95 },
-      cfg || {}
-    ),
-  };
-}
-
-function payloadForDetectObjects(b64png) {
-  return {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          { text: "Enumera de 8 a 15 objetos visibles en esta imagen, con nombres cortos y materiales cuando sea relevante. Formato: lista con guiones, en español, sin frases extra." },
-          // Nota: Aquí el mimetype depende de lo que se le pase, pero suele ser la imagen generada.
-          // Si la imagen generada ya es jpeg, esto debería ser jpeg.
-          // Sin embargo, el backend de Gemini suele ser tolerante si le dices png pero es jpeg.
-          // Lo dejaremos genérico o lo adaptaremos en la llamada.
-          { inlineData: { mimeType: "image/jpeg", data: b64png } },
-        ],
-      },
-    ],
-    generationConfig: { temperature: 0.2, topK: 40, topP: 0.9, maxOutputTokens: 220 },
-  };
-}
-
 /* ------------------------- Conversores ------------------------- */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -450,25 +461,6 @@ function fileToBase64(file) {
 }
 
 function dataUriToBase64(uri) { return String(uri).split(",")[1] || ""; }
-
-// FUNCIÓN CORREGIDA Y RENOMBRADA PARA JPEG
-function toJPEGDataUriFromCandidate(json) {
-  try {
-    const parts = json?.candidates?.[0]?.content?.parts || [];
-    const inline = parts.find((p) => p.inlineData?.data);
-    if (!inline) return null;
-    // IMPORTANTE: Gemini devuelve JPEG, así que definimos la cabecera correcta
-    return `data:image/jpeg;base64,${inline.inlineData.data}`;
-  } catch { return null; }
-}
-
-function textFromCandidate(json) {
-  try {
-    const parts = json?.candidates?.[0]?.content?.parts || [];
-    const t = parts.find((p) => typeof p.text === "string")?.text || "";
-    return t.trim();
-  } catch { return ""; }
-}
 
 /* ------------------------- Móvil 'capture' ------------------------- */
 function useIsMobile() {
@@ -488,9 +480,10 @@ function App() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [src, setSrc] = useState(null);
   const [srcB64, setSrcB64] = useState(null);
+  const [srcDims, setSrcDims] = useState(null); // {w,h} nativos de la foto subida
   const [busy, setBusy] = useState(false);
-  const [analysis, setAnalysis] = useState("");
-  // const [showUploadMenu, setShowUploadMenu] = useState(false); // REMOVED
+  const [selectedQuality, setSelectedQuality] = useState('pro'); // 'pro' | 'max'
+  const [analysis, setAnalysis] = useState(""); // descripción (Gemini 2.5-flash)
   const [customInstruction, setCustomInstruction] = useState("");
   const [editingUserImage, setEditingUserImage] = useState(false);
 
@@ -582,13 +575,22 @@ function App() {
     setBusy(true);
     try {
       const b64 = await fileToBase64(file);
+      const uri = `data:${file.type || 'image/jpeg'};base64,${b64}`;
       setSrcB64(b64);
-      setSrc(`data:${file.type || 'image/jpeg'};base64,${b64}`);
-      const analysisRes = await callGemini(payloadForAnalysis(b64), "analyze");
-      setAnalysis(textFromCandidate(analysisRes));
+      setSrc(uri);
+      const dims = await imageDims(uri);
+      setSrcDims(dims ? { w: dims.w, h: dims.h } : null);
+      // Descripción de la estancia (Gemini 2.5-flash)
+      try {
+        const res = await callGeminiVision(b64, "analyze", file.type || "image/jpeg");
+        setAnalysis(res.text || "");
+      } catch (err) {
+        console.warn("No se pudo analizar la imagen:", err.message);
+        setAnalysis("");
+      }
     } catch (e) {
       console.error(e);
-      alert(`Error al preparar/analizar la imagen. Asegúrate de que el proxy funciona y la API Key es correcta: ${e.message}`);
+      alert(`Error al preparar la imagen. Inténtalo de nuevo: ${e.message}`);
     } finally { setBusy(false); }
   }
 
@@ -610,18 +612,18 @@ function App() {
     if (f) await handleUpload(f);
   }
 
+  // Detección de objetos con Gemini 2.5-flash (para los enlaces de compra).
+  // Si falla, cae a la lista típica de la estancia.
   async function detectObjectsFromImageUri(uri) {
     try {
       const b64 = dataUriToBase64(uri);
-      // Usamos 'detect' que enviará al modelo Flash. Payload adaptado a JPEG.
-      const resp = await callGemini(payloadForDetectObjects(b64), "detect");
-      const txt = textFromCandidate(resp);
-      const lines = txt.split(/\r?\n/)
-        .map((s) => s.replace(/^[-•\*\s]+/, "").trim())
-        .filter(Boolean)
-        .slice(0, 12);
-      return lines;
-    } catch { return []; }
+      const res = await callGeminiVision(b64, "detect", "image/jpeg");
+      const objs = Array.isArray(res.objects) ? res.objects.filter(Boolean) : [];
+      if (objs.length) return objs.slice(0, 15);
+    } catch (e) {
+      console.warn("No se pudieron detectar objetos:", e.message);
+    }
+    return (ROOM_SHOPPING[selectedRoom] || []).slice();
   }
 
   async function removeObjectsFromImage() {
@@ -629,32 +631,25 @@ function App() {
     setBusy(true);
     try {
       const prompt = buildRemoveObjectsPrompt(selectedRoom);
+      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h) : null;
 
-      let gen = await callGemini(
-        payloadForImageEdit(srcB64, prompt, "image/jpeg", { temperature: 0.95 }),
-        "generate"
-      );
-      let uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-
-      if (!uri) {
-        const altPrompt = prompt + "\n\n¡IMPORTANTE! Elimina ABSOLUTAMENTE TODO lo que no sea estructura arquitectónica. El espacio debe quedar completamente vacío. Solo JPEG.";
-        gen = await callGemini(
-          payloadForImageEdit(srcB64, altPrompt, "image/jpeg", { temperature: 0.3 }),
-          "generate"
-        );
-        uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-      }
-      if (!uri) throw new Error("La respuesta no contiene imagen generada.");
+      const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
       setSrc(uri);
-      const newB64 = dataUriToBase64(uri);
-      setSrcB64(newB64);
+      setSrcB64(dataUriToBase64(uri));
+      const nd = await imageDims(uri);
+      if (nd) setSrcDims({ w: nd.w, h: nd.h });
 
-      const analysisRes = await callGemini(payloadForAnalysis(newB64), "analyze");
-      setAnalysis(textFromCandidate(analysisRes));
+      // Re-analizar la estancia vacía (Gemini 2.5-flash)
+      try {
+        const res = await callGeminiVision(dataUriToBase64(uri), "analyze", "image/jpeg");
+        setAnalysis(res.text || "");
+      } catch (err) {
+        console.warn("No se pudo re-analizar:", err.message);
+      }
 
     } catch (e) {
-      alert(`No pudo eliminar los objetos: ${e.message}`);
+      alert(`No se pudieron eliminar los objetos: ${e.message}`);
     } finally { setBusy(false); }
   }
 
@@ -663,22 +658,9 @@ function App() {
     setBusy(true);
     try {
       const prompt = buildCustomPrompt(customInstruction, selectedRoom);
+      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h) : null;
 
-      let gen = await callGemini(
-        payloadForImageEdit(srcB64, prompt, "image/jpeg", { temperature: 0.9 }),
-        "generate"
-      );
-      let uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-
-      if (!uri) {
-        const altPrompt = prompt + "\n\n¡IMPORTANTE! Aplica exactamente la instrucción del usuario. Genera una imagen de alta calidad. Solo JPEG.";
-        gen = await callGemini(
-          payloadForImageEdit(srcB64, altPrompt, "image/jpeg", { temperature: 0.9 }),
-          "generate"
-        );
-        uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-      }
-      if (!uri) throw new Error("La respuesta no contiene imagen generada.");
+      const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
       const objects = await detectObjectsFromImageUri(uri);
       const newItem = {
@@ -704,37 +686,17 @@ function App() {
     if (!srcB64 || !selectedRoom) return;
     setBusy(true);
     try {
-      const newItems = [];
-      // Generamos 1 variante
-      for (let i = 0; i < 1; i++) {
-        const variation = makeVariationNote(style, selectedRoom);
-        const prompt = buildUniversalPrompt(style, variation, selectedRoom);
+      const variation = makeVariationNote(style, selectedRoom);
+      const prompt = buildUniversalPrompt(style, variation, selectedRoom);
+      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h) : null;
 
-        let gen = await callGemini(
-          payloadForImageEdit(srcB64, prompt, "image/jpeg", { temperature: 0.95 }),
-          "generate"
-        );
-        let uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
+      const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
-        if (!uri) {
-          const alt = buildUniversalPrompt(
-            style,
-            `${variation}\n- Reformula: composición y mobiliario totalmente nuevos. Mantén perspectiva original. Solo JPEG.`,
-            selectedRoom
-          );
-          gen = await callGemini(
-            payloadForImageEdit(srcB64, alt, "image/jpeg", { temperature: 0.95 }),
-            "generate"
-          );
-          uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-        }
-        if (!uri) throw new Error("La respuesta no contiene imagen generada.");
+      const objects = await detectObjectsFromImageUri(uri);
+      const newItem = { uri, ts: Date.now(), objects, style };
 
-        const objects = await detectObjectsFromImageUri(uri);
-        newItems.push({ uri, ts: Date.now() + i, objects, style });
-      }
-      setResults((prev) => ({ ...prev, [style]: [...newItems, ...prev[style]] }));
-      newItems.forEach(item => saveItemToHistory(style, item));
+      setResults((prev) => ({ ...prev, [style]: [newItem, ...prev[style]] }));
+      saveItemToHistory(style, newItem);
     } catch (e) {
       alert(`No se pudo generar (${style}): ${e.message}`);
     } finally { setBusy(false); }
@@ -745,33 +707,12 @@ function App() {
     if (!item || !selectedRoom) return;
     setBusy(true);
     try {
-      const b64img = dataUriToBase64(item.uri); // Obtenemos base64 de la imagen almacenada (ahora es JPEG)
+      const b64img = dataUriToBase64(item.uri);
       const prompt = buildRecompositionPrompt(style, item.objects, selectedRoom);
+      const nd = await imageDims(item.uri);
+      const dims = nd ? computeTargetDims(nd.w, nd.h) : null;
 
-      // En regenerate, la imagen de entrada ya es un JPEG generado previamente
-      let gen = await callGemini(
-        payloadForImageEdit(b64img, prompt, "image/jpeg", {
-          temperature: 0.95,
-          topK: 64,
-          topP: 0.99
-        }),
-        "generate"
-      );
-      let uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-
-      if (!uri) {
-        const prompt2 = prompt + "\n\n¡RECUERDA! La composición debe ser RADICALMENTE DIFERENTE. No te conformes con cambios menores. Solo JPEG.";
-        gen = await callGemini(
-          payloadForImageEdit(b64img, prompt2, "image/jpeg", {
-            temperature: 0.95,
-            topK: 64,
-            topP: 0.99
-          }),
-          "generate"
-        );
-        uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-      }
-      if (!uri) throw new Error("La respuesta no contiene imagen regenerada.");
+      const uri = await callFlux(b64img, prompt, selectedQuality, dims);
 
       const objects = await detectObjectsFromImageUri(uri);
       const newItem = { uri, ts: Date.now(), objects, style };
@@ -793,32 +734,12 @@ function App() {
 
     setBusy(true);
     try {
-      const b64img = dataUriToBase64(item.uri); // Input es JPEG
+      const b64img = dataUriToBase64(item.uri);
       const prompt = buildEditPrompt(style, item.objects, editInstruction, selectedRoom);
+      const nd = await imageDims(item.uri);
+      const dims = nd ? computeTargetDims(nd.w, nd.h) : null;
 
-      let gen = await callGemini(
-        payloadForImageEdit(b64img, prompt, "image/jpeg", {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.9
-        }),
-        "generate"
-      );
-      let uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-
-      if (!uri) {
-        const prompt2 = prompt + "\n\nIMPORTANTE: Aplica SOLO los cambios específicos solicitados. Mantén todo lo demás idéntico.";
-        gen = await callGemini(
-          payloadForImageEdit(b64img, prompt2, "image/jpeg", {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.9
-          }),
-          "generate"
-        );
-        uri = toJPEGDataUriFromCandidate(gen); // Actualizado a JPEG
-      }
-      if (!uri) throw new Error("La respuesta no contiene imagen editada.");
+      const uri = await callFlux(b64img, prompt, selectedQuality, dims);
 
       const objects = await detectObjectsFromImageUri(uri);
 
@@ -870,10 +791,10 @@ function App() {
     setSelectedRoom(null);
     setSrc(null);
     setSrcB64(null);
+    setSrcDims(null);
     setAnalysis("");
     setCustomInstruction("");
     setResults({});
-    // setShowUploadMenu(false); // REMOVED
     setEditInstruction("");
     setEditingItem(null);
     setEditingUserImage(false);
@@ -1104,6 +1025,35 @@ function App() {
               </p>
             </div>
           )}
+
+          <div className="bg-white rounded-xl shadow p-3 mt-4 quality-selector">
+            <h3 className="font-semibold mb-2">Calidad de generación</h3>
+            <div className="quality-toggle">
+              <button
+                type="button"
+                className={`quality-btn ${selectedQuality === 'pro' ? 'active' : ''}`}
+                onClick={() => setSelectedQuality('pro')}
+                disabled={busy}
+                aria-pressed={selectedQuality === 'pro'}
+              >
+                PRO
+                <span className="quality-sub">Equilibrada · ~$0.03</span>
+              </button>
+              <button
+                type="button"
+                className={`quality-btn ${selectedQuality === 'max' ? 'active' : ''}`}
+                onClick={() => setSelectedQuality('max')}
+                disabled={busy}
+                aria-pressed={selectedQuality === 'max'}
+              >
+                MAX
+                <span className="quality-sub">Máxima fidelidad · ~$0.07</span>
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              La decoración conserva el formato y la perspectiva de tu foto.
+            </p>
+          </div>
 
           <div className="bg-white rounded-xl shadow p-3 mt-4">
             <h3 className="font-semibold mb-2">Descripción del {ROOM_CONFIG[selectedRoom].name}</h3>

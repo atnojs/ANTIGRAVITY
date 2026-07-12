@@ -12,22 +12,22 @@ body {
   height: 100%;
 }
 
-/* ===== Tokens (colores y variables) ===== */
+/* ===== Tokens (colores y variables) — estilo hoola/relatos ===== */
 :root {
-  --bg1: #0c1445;
-  --bg2: #1e3a8a;
-  --acc: #22d3ee;
-  --acc2: #a78bfa;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1e40af;
-  --card-bg: rgba(15, 23, 42, 0.3);
-  --shadow-color: rgba(0, 0, 0, 0.35);
-  --shadow-light: rgba(34, 211, 238, 0.25);
-  --neon-cyan: #2ee8ff;
-  --neon-pink: #ff4ecd;
-  --gradient-text: linear-gradient(90deg, var(--neon-cyan), var(--acc2), var(--neon-pink));
-  --success: #22c55e;
+  --bg1: #001018;
+  --bg2: #0E5368;
+  --acc: #00D0D0;
+  --acc2: #26C626;
+  --text: #eaffff;
+  --muted: #99CCCC;
+  --border: rgba(0, 208, 208, 0.7);
+  --card-bg: rgba(23, 79, 122, 0.42);
+  --shadow-color: rgba(0, 16, 24, 0.55);
+  --shadow-light: rgba(0, 208, 208, 0.35);
+  --neon-cyan: #00D0D0;
+  --neon-pink: #26C626;
+  --gradient-text: linear-gradient(90deg, var(--neon-cyan), var(--acc2));
+  --success: #26C626;
   --warning: #d69e2e;
   --danger: #ef4444;
   color-scheme: dark;
@@ -35,18 +35,47 @@ body {
 
 /* ===== Base ===== */
 body {
-  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Electrolize', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
-  background: linear-gradient(160deg, #0c1445 0%, #1e3a8a 25%, #0891b2 50%, #0c4a6e 75%, #1e293b 100%);
+  background: linear-gradient(160deg, #001018 0%, #062f43 45%, #0E5368 100%);
   background-attachment: fixed;
   line-height: 1.6;
+  position: relative;
+  min-height: 100%;
+}
+
+/* Halos cian + rejilla de circuito (estilo hoola) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(680px circle at 12% 8%, rgba(0, 208, 208, 0.16), transparent 60%),
+    radial-gradient(720px circle at 88% 92%, rgba(38, 198, 38, 0.10), transparent 60%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 208, 208, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 208, 208, 0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
 }
 
 h1,
 h2,
 h3,
 .title {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Electrolize', sans-serif;
+  letter-spacing: 0.04em;
 }
 
 .gradient-text {
@@ -308,7 +337,7 @@ h1 {
 }
 
 .upload-box.drag-over {
-  background: rgba(34, 211, 238, 0.08);
+  background: rgba(0, 208, 208, 0.08);
   border-color: var(--acc);
 }
 
@@ -478,12 +507,12 @@ h1 {
 }
 
 .cs-option:hover {
-  background: rgba(34, 211, 238, .10);
+  background: rgba(0, 208, 208, .10);
 }
 
 .cs-option.selected {
-  background: linear-gradient(135deg, rgba(34, 211, 238, .18), rgba(167, 139, 250, .18));
-  border: 1px solid rgba(167, 139, 250, .35);
+  background: linear-gradient(135deg, rgba(0, 208, 208, .18), rgba(38, 198, 38, .18));
+  border: 1px solid rgba(38, 198, 38, .35);
   font-weight: bold;
 }
 
@@ -502,8 +531,8 @@ h1 {
   gap: 8px;
   padding: 6px 12px;
   border-radius: 99px;
-  background: linear-gradient(135deg, rgba(34, 211, 238, .18), rgba(167, 139, 250, .18));
-  border: 1px solid rgba(167, 139, 250, .35);
+  background: linear-gradient(135deg, rgba(0, 208, 208, .18), rgba(38, 198, 38, .18));
+  border: 1px solid rgba(38, 198, 38, .35);
   color: var(--text);
   font-size: .9rem;
   font-weight: 600;
@@ -573,14 +602,14 @@ button.bg-gray-900 {
   background: linear-gradient(135deg, var(--acc2), var(--acc)) !important;
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, .35) !important;
-  box-shadow: 0 10px 26px rgba(59, 130, 246, .35);
+  box-shadow: 0 10px 26px rgba(0, 208, 208, .35);
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
 
 button.bg-gray-900:hover {
   filter: brightness(1.05);
   transform: translateY(-1px);
-  box-shadow: 0 18px 42px rgba(99, 102, 241, .45);
+  box-shadow: 0 18px 42px rgba(38, 198, 38, .45);
 }
 
 button.bg-gray-900:disabled {
@@ -688,8 +717,8 @@ button.border:hover {
   padding: 10px 14px;
   border: none;
   border-radius: 10px;
-  background: rgba(167, 139, 250, 0.9);
-  color: #fff;
+  background: rgba(38, 198, 38, 0.9);
+  color: #001018;
   text-align: center;
   text-decoration: none;
   font-size: .95rem;
@@ -708,8 +737,8 @@ button.border:hover {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: #fff;
+  background: linear-gradient(135deg, #00D0D0, #26C626);
+  color: #001018;
   font-weight: 700;
   cursor: pointer;
   transition: transform .2s ease, opacity .2s ease;
@@ -730,8 +759,8 @@ button.border:hover {
   padding: 10px 20px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #0b1020;
+  background: linear-gradient(135deg, #00D0D0, #26C626);
+  color: #001018;
   font-weight: 700;
   cursor: pointer;
   transition: transform .2s ease, opacity .2s ease;
@@ -831,32 +860,32 @@ img.object-contain {
 }
 
 .download-btn {
-  background: rgba(34, 197, 94, 0.9) !important;
-  border: 1px solid rgba(34, 197, 94, 0.7) !important;
+  background: rgba(38, 198, 38, 0.92) !important;
+  border: 1px solid rgba(38, 198, 38, 0.7) !important;
 }
 
 .download-btn:hover {
-  background: rgba(34, 197, 94, 1) !important;
+  background: rgba(38, 198, 38, 1) !important;
   transform: translateY(-1px);
 }
 
 .regenerate-btn {
-  background: rgba(59, 130, 246, 0.9) !important;
-  border: 1px solid rgba(59, 130, 246, 0.7) !important;
+  background: rgba(0, 208, 208, 0.92) !important;
+  border: 1px solid rgba(0, 208, 208, 0.7) !important;
 }
 
 .regenerate-btn:hover {
-  background: rgba(59, 130, 246, 1) !important;
+  background: rgba(0, 208, 208, 1) !important;
   transform: translateY(-1px);
 }
 
 .edit-btn {
-  background: rgba(168, 85, 247, 0.9) !important;
-  border: 1px solid rgba(168, 85, 247, 0.7) !important;
+  background: rgba(0, 208, 208, 0.92) !important;
+  border: 1px solid rgba(0, 208, 208, 0.7) !important;
 }
 
 .edit-btn:hover {
-  background: rgba(168, 85, 247, 1) !important;
+  background: rgba(0, 208, 208, 1) !important;
   transform: translateY(-1px);
 }
 
@@ -931,7 +960,7 @@ img.object-contain {
 }
 
 .ring-3 {
-  border-top-color: #f472b6;
+  border-top-color: #26C626;
   animation-delay: -0.15s;
 }
 
@@ -1071,7 +1100,7 @@ img.object-contain {
   cursor: pointer !important;
   padding: 12px 16px !important;
   border-radius: 8px !important;
-  font-family: 'Poppins', sans-serif !important;
+  font-family: 'Electrolize', sans-serif !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   margin: 2px 0 !important;
@@ -1081,7 +1110,7 @@ img.object-contain {
 }
 
 .upload-menu button:hover {
-  background: rgba(34, 211, 238, 0.15) !important;
+  background: rgba(0, 208, 208, 0.15) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -1186,13 +1215,181 @@ img.object-contain {
 }
 
 .edit-user-image-btn {
-  background: rgba(168, 85, 247, 0.9) !important;
-  border: 1px solid rgba(168, 85, 247, 0.7) !important;
-  color: #0b1220 !important;
+  background: rgba(0, 208, 208, 0.92) !important;
+  border: 1px solid rgba(0, 208, 208, 0.7) !important;
+  color: #001018 !important;
   transition: all 0.2s ease;
 }
 
 .edit-user-image-btn:hover {
-  background: rgba(168, 85, 247, 1) !important;
+  background: rgba(0, 208, 208, 1) !important;
   transform: translateY(-1px);
+}
+
+/* ============================================================
+   ESTILO HOOLA — Selector PRO/MAX + remapeo Tailwind + glass
+   ============================================================ */
+
+/* --- Tarjetas glass (Tailwind bg-white / bg-white/80) --- */
+.bg-white,
+.bg-white\/80,
+.bg-white\/90 {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--text) !important;
+}
+
+.bg-gray-50 {
+  background: transparent !important;
+}
+
+/* --- Textos legibles sobre fondo oscuro (contraste) --- */
+.text-gray-600 {
+  color: #b4d8d8 !important;
+}
+
+/* --- Botones de acción azules (Aplicar/Instrucción) -> cian hoola --- */
+.bg-blue-600 {
+  background: linear-gradient(135deg, #00D0D0, #26C626) !important;
+  color: #001018 !important;
+  font-weight: 700;
+  border: none !important;
+}
+
+.bg-blue-600:hover {
+  filter: brightness(1.08);
+}
+
+/* --- Botón secundario gris (Cancelar) -> glass neutro --- */
+.bg-gray-500 {
+  background: rgba(23, 79, 122, 0.6) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* --- Panel de edición (bg-blue-50 / border-blue-200) -> glass cian --- */
+.bg-blue-50 {
+  background: rgba(0, 208, 208, 0.10) !important;
+}
+
+.border-blue-200 {
+  border-color: var(--border) !important;
+}
+
+/* --- Textareas e inputs oscuros --- */
+textarea,
+.border-gray-300 {
+  background: rgba(0, 16, 24, 0.4) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+textarea::placeholder {
+  color: var(--muted) !important;
+}
+
+.text-gray-900 {
+  color: var(--text) !important;
+}
+
+/* --- Selector de calidad PRO/MAX (hoola) --- */
+.quality-toggle {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quality-selector button.quality-btn {
+  flex: 1;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: rgba(0, 16, 24, 0.35);
+  color: var(--text);
+  font-family: 'Electrolize', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+.quality-selector button.quality-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--acc);
+  box-shadow: 0 8px 22px var(--shadow-light);
+}
+
+.quality-selector button.quality-btn.active {
+  border-color: var(--acc2);
+  background: linear-gradient(135deg, rgba(0, 208, 208, 0.20), rgba(38, 198, 38, 0.20));
+  box-shadow: 0 0 0 3px rgba(38, 198, 38, 0.30), 0 8px 22px var(--shadow-light);
+}
+
+.quality-selector button.quality-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quality-sub {
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-transform: none;
+}
+
+/* --- Enlaces de compra (objetos) --- */
+figure.relative ul a {
+  color: var(--acc) !important;
+}
+
+figure.relative ul a:hover {
+  color: var(--acc2) !important;
+}
+
+/* --- Focus visible (accesibilidad) --- */
+button:focus-visible,
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   RESPONSIVE — apilar en móvil (grid de 3 columnas -> 1)
+   ============================================================ */
+@media (max-width: 900px) {
+  main.grid.md\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .quality-toggle {
+    flex-direction: column;
+  }
+
+  .quality-selector button.quality-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .container,
+  main {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .grid.grid-cols-1.sm\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
 }
