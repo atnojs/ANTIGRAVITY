@@ -94,7 +94,6 @@ const state = {
     subjectImage: null,   // idem
     estiloJson: null,     // objeto JSON del estilo (persistente)
     history: [],
-    selectedAR: '1:1',
     selectedRes: 1024,
     selectedModel: 'pro',
     isAnalyzing: false,
@@ -111,7 +110,7 @@ function cacheEls() {
         'subjectInput', 'subjectSlot', 'subjectEmpty', 'subjectPreview', 'subjectRemove', 'subjectStatus',
         'jsonBox', 'btnCopyJson', 'btnClearJson', 'btnReanalyze',
         'promptInput', 'btnEnhance', 'btnClearPrompt', 'promptButtons',
-        'arSelector', 'resSelector', 'resNote', 'modelSelector',
+        'resSelector', 'resNote', 'modelSelector',
         'btnGenerate', 'errorMessage', 'loadingOverlay', 'loadingText',
         'historyGrid', 'historyEmpty', 'historyCount', 'btnClearHistory',
         'lightbox', 'lightboxBackdrop', 'lightboxImg', 'lightboxDownload', 'lightboxClose'
@@ -137,7 +136,6 @@ async function init() {
 
     setupUploads();
     setupJsonControls();
-    setupARSelector();
     setupResSelector();
     setupModelSelector();
     setupPromptEnhancement();
@@ -153,9 +151,11 @@ async function init() {
 // SUBIDA DE IMÁGENES
 // ═══════════════════════════════════════════════
 function setupUploads() {
-    // Estilo
-    el.styleEmpty.addEventListener('click', () => el.styleInput.click());
-    el.stylePreview.addEventListener('click', () => el.styleInput.click());
+    // Estilo — el clic se escucha en TODO el slot (el div interno tiene pointer-events:none)
+    el.styleSlot.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-remove-slot')) return; // el botón quitar gestiona su propio clic
+        el.styleInput.click();
+    });
     el.styleInput.addEventListener('change', (e) => {
         if (e.target.files.length) handleStyleFile(e.target.files[0]);
     });
@@ -163,8 +163,10 @@ function setupUploads() {
     setupDrop(el.styleSlot, (file) => handleStyleFile(file));
 
     // Sujeto
-    el.subjectEmpty.addEventListener('click', () => el.subjectInput.click());
-    el.subjectPreview.addEventListener('click', () => el.subjectInput.click());
+    el.subjectSlot.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-remove-slot')) return;
+        el.subjectInput.click();
+    });
     el.subjectInput.addEventListener('change', (e) => {
         if (e.target.files.length) handleSubjectFile(e.target.files[0]);
     });
@@ -185,9 +187,9 @@ function setupDrop(slot, cb) {
 async function handleStyleFile(file) {
     if (!CONFIG.ALLOWED_TYPES.includes(file.type)) { showError('Formato no válido. Usa JPG, PNG o WebP'); return; }
     try {
-        const resized = await resizeImage(file, CONFIG.MAX_INPUT_SIDE);
-        state.styleImage = { data: resized.split(',')[1], mimeType: 'image/jpeg', preview: resized };
-        el.stylePreview.src = resized;
+        const r = await resizeImage(file, CONFIG.MAX_INPUT_SIDE);
+        state.styleImage = { data: r.dataUrl.split(',')[1], mimeType: 'image/jpeg', preview: r.dataUrl };
+        el.stylePreview.src = r.dataUrl;
         el.stylePreview.classList.remove('hidden');
         el.styleEmpty.classList.add('hidden');
         el.styleRemove.classList.remove('hidden');
@@ -201,9 +203,10 @@ async function handleStyleFile(file) {
 async function handleSubjectFile(file) {
     if (!CONFIG.ALLOWED_TYPES.includes(file.type)) { showError('Formato no válido. Usa JPG, PNG o WebP'); return; }
     try {
-        const resized = await resizeImage(file, CONFIG.MAX_INPUT_SIDE);
-        state.subjectImage = { data: resized.split(',')[1], mimeType: 'image/jpeg', preview: resized };
-        el.subjectPreview.src = resized;
+        const r = await resizeImage(file, CONFIG.MAX_INPUT_SIDE);
+        // El resultado hereda el aspect ratio (AR) del sujeto a modificar
+        state.subjectImage = { data: r.dataUrl.split(',')[1], mimeType: 'image/jpeg', preview: r.dataUrl, width: r.width, height: r.height };
+        el.subjectPreview.src = r.dataUrl;
         el.subjectPreview.classList.remove('hidden');
         el.subjectEmpty.classList.add('hidden');
         el.subjectRemove.classList.remove('hidden');
@@ -369,13 +372,13 @@ function setEnhancing(v) {
 // ═══════════════════════════════════════════════
 // SELECTORES
 // ═══════════════════════════════════════════════
-function setupARSelector() {
-    const btns = el.arSelector.querySelectorAll('.ar-option');
-    btns.forEach(b => b.addEventListener('click', () => {
-        btns.forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        state.selectedAR = b.dataset.ar;
-    }));
+// AR: sin selector — el resultado hereda el aspect ratio de la imagen del sujeto.
+// Devuelve el AR "an:ah" de la imagen del sujeto (simplificado), o '1:1' si no hay.
+function subjectAspectRatio() {
+    if (!state.subjectImage || !state.subjectImage.width || !state.subjectImage.height) return '1:1';
+    let w = state.subjectImage.width, h = state.subjectImage.height;
+    const g = (function gcd(a, b) { return b ? gcd(b, a % b) : a; })(w, h) || 1;
+    return (w / g) + ':' + (h / g);
 }
 function setupResSelector() {
     const btns = el.resSelector.querySelectorAll('.ar-option');
@@ -413,6 +416,8 @@ async function handleGenerate() {
     setGenerating(true);
     hideError();
     try {
+        // El AR del resultado = AR real de la imagen del sujeto (sin selector)
+        const subjectAR = subjectAspectRatio();
         const res = await fetch(CONFIG.PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -421,7 +426,7 @@ async function handleGenerate() {
                 subject: state.subjectImage.data,
                 estilo: state.estiloJson,
                 prompt: el.promptInput.value.trim(),
-                aspectRatio: state.selectedAR,
+                aspectRatio: subjectAR,
                 calidad: state.selectedModel,
                 targetPx: state.selectedRes
             })
@@ -433,7 +438,7 @@ async function handleGenerate() {
         // Escalado en cliente si el usuario pidió 4096 y FLUX generó menos
         let finalUrl = data.imageUrl;
         if (state.selectedRes >= 4096) {
-            try { finalUrl = await upscaleDataUrl(data.imageUrl, state.selectedRes, state.selectedAR); }
+            try { finalUrl = await upscaleDataUrl(data.imageUrl, state.selectedRes, subjectAR); }
             catch (e) { console.warn('Upscale falló, se usa la nativa:', e); }
         }
 
@@ -442,7 +447,7 @@ async function handleGenerate() {
             url: finalUrl,
             prompt: el.promptInput.value.trim(),
             estilo: state.estiloJson,
-            aspectRatio: state.selectedAR,
+            aspectRatio: subjectAR,
             modelo: data.modelo || '',
             coste: data.coste || 0,
             createdAt: Date.now()
@@ -627,7 +632,7 @@ function resizeImage(file, maxSide) {
                 const ctx = canvas.getContext('2d');
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.92));
+                resolve({ dataUrl: canvas.toDataURL('image/jpeg', 0.92), width: width, height: height });
             };
             img.onerror = reject;
             img.src = e.target.result;
