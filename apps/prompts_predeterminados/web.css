@@ -8,30 +8,59 @@
     box-sizing: border-box;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Electrolize&display=swap');
 
 :root {
-    --bg1: #041847;
-    --main-bg-gradient: linear-gradient(135deg, #020b1f 0%, #0c1445 50%, #1e3a8a 100%);
-    --acc: #22d3ee;
-    --acc2: #a78bfa;
-    --neon-cyan: #2ee8ff;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --card-bg: rgba(15, 23, 42, 0.6);
-    --border: rgba(34, 211, 238, 0.2);
+    --bg1: #001018;
+    --main-bg-gradient: linear-gradient(135deg, #001018 0%, #062f43 50%, #0E5368 100%);
+    --acc: #00D0D0;
+    --acc2: #26C626;
+    --neon-cyan: #00D0D0;
+    --text: #eaffff;
+    --muted: #99CCCC;
+    --card-bg: rgba(23, 79, 122, 0.42);
+    --border: rgba(0, 208, 208, 0.7);
     --radius-lg: 15px;
     --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color-scheme: dark;
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     background: var(--main-bg-gradient);
     background-attachment: fixed;
     color: var(--text);
     padding-top: 100px;
     min-height: 100vh;
+    position: relative;
+    letter-spacing: 0.02em;
+}
+
+/* Halos radiales cian del estilo relatos */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(0, 208, 208, 0.18), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(38, 198, 38, 0.12), transparent 45%);
+}
+
+/* Rejilla de circuito cian con mascara radial */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(0, 208, 208, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 208, 208, 0.06) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 80%);
+    mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 80%);
 }
 
 /* ==== ESTILO GLOBAL DE BOTONES ==== */
@@ -41,14 +70,14 @@ textarea,
 .btn-save,
 .btn-cancel,
 .add-item-btn {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-weight: 600;
     border-radius: 10px;
     transition: var(--transition-main);
     border: 1px solid var(--border);
     outline: none;
     padding: 10px 20px;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(23, 79, 122, 0.8);
     color: var(--text);
 }
 
@@ -56,18 +85,18 @@ button:hover,
 .add-item-btn:hover,
 .btn-save:hover {
     border-color: var(--acc);
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 15px rgba(0, 208, 208, 0.4);
     transform: translateY(-2px);
     color: var(--neon-cyan);
 }
 
 .btn-save {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(167, 139, 250, 0.2));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.2), rgba(38, 198, 38, 0.2));
     border-color: var(--acc);
 }
 
 .btn-neon {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(167, 139, 250, 0.15));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.15), rgba(38, 198, 38, 0.15));
     border: 1px solid var(--acc);
     color: var(--neon-cyan);
     font-weight: 700;
@@ -76,8 +105,8 @@ button:hover,
 }
 
 .btn-neon:hover {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(167, 139, 250, 0.3));
-    box-shadow: 0 0 25px rgba(34, 211, 238, 0.5);
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.3), rgba(38, 198, 38, 0.3));
+    box-shadow: 0 0 25px rgba(0, 208, 208, 0.5);
 }
 
 /* ==== TOPBAR ==== */
@@ -86,7 +115,7 @@ button:hover,
     top: 0;
     width: 100%;
     z-index: 1001;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(23, 79, 122, 0.8);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     padding: 15px 30px;
@@ -96,12 +125,15 @@ button:hover,
 }
 
 .brand {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-weight: 800;
     font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     background: linear-gradient(90deg, var(--neon-cyan), var(--acc2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 12px rgba(0, 208, 208, 0.55));
     display: flex;
     align-items: center;
     gap: 12px;
@@ -141,7 +173,7 @@ button:hover,
     align-items: center;
     gap: 10px;
     padding: 12px 20px;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(23, 79, 122, 0.8);
     border: 1px solid var(--border);
     border-radius: 25px;
     cursor: pointer;
@@ -151,18 +183,18 @@ button:hover,
 
 .category-btn:hover {
     border-color: var(--acc);
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.3);
     transform: translateY(-2px);
 }
 
 .category-btn.active {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(167, 139, 250, 0.2));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.2), rgba(38, 198, 38, 0.2));
     border-color: var(--acc);
-    box-shadow: 0 0 25px rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 25px rgba(0, 208, 208, 0.4);
 }
 
 .category-title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
     background: linear-gradient(90deg, #fff, var(--acc2));
@@ -171,7 +203,7 @@ button:hover,
 }
 
 .category-count {
-    background: rgba(34, 211, 238, 0.2);
+    background: rgba(0, 208, 208, 0.2);
     color: var(--neon-cyan);
     padding: 2px 8px;
     border-radius: 12px;
@@ -181,12 +213,12 @@ button:hover,
 
 .special-cat-btn {
     border-color: var(--neon-cyan);
-    background: rgba(46, 232, 255, 0.1);
+    background: rgba(0, 208, 208, 0.1);
 }
 
 .special-cat-btn:hover {
-    background: rgba(46, 232, 255, 0.2);
-    box-shadow: 0 0 25px rgba(46, 232, 255, 0.4);
+    background: rgba(0, 208, 208, 0.2);
+    box-shadow: 0 0 25px rgba(0, 208, 208, 0.4);
 }
 
 .category-edit-buttons {
@@ -241,7 +273,7 @@ body.edit-mode .category-edit-buttons {
 
 .tile-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 40px rgba(34, 211, 238, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 208, 208, 0.2);
     border-color: var(--acc);
 }
 
@@ -281,14 +313,14 @@ body.edit-mode .category-edit-buttons {
     width: 100%;
     padding: 10px 15px;
     font-size: 0.85rem;
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(167, 139, 250, 0.1));
-    border: 1px solid rgba(34, 211, 238, 0.3);
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.1), rgba(38, 198, 38, 0.1));
+    border: 1px solid rgba(0, 208, 208, 0.3);
     color: var(--text);
     cursor: pointer;
 }
 
 .copy-prompt-btn:hover {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(167, 139, 250, 0.25));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.25), rgba(38, 198, 38, 0.25));
 }
 
 .use-prompt-btn {
@@ -296,13 +328,13 @@ body.edit-mode .category-edit-buttons {
     padding: 8px 12px;
     font-size: 0.8rem;
     margin-top: 8px;
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(236, 72, 153, 0.15));
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.15), rgba(38, 198, 38, 0.15));
     border: 1px solid var(--acc2);
     color: var(--acc2);
 }
 
 .use-prompt-btn:hover {
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(236, 72, 153, 0.3));
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.3), rgba(38, 198, 38, 0.3));
     color: #fff;
 }
 
@@ -349,7 +381,7 @@ body.edit-mode .category-edit-buttons {
 }
 
 .modal-content {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 58, 138, 0.9));
+    background: linear-gradient(135deg, rgba(23, 79, 122, 0.95), rgba(14, 83, 104, 0.9));
     padding: 30px;
     border-radius: 20px;
     border: 1px solid var(--acc);
@@ -359,7 +391,7 @@ body.edit-mode .category-edit-buttons {
 
 .modal-content h3 {
     color: var(--neon-cyan);
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     margin-bottom: 20px;
 }
 
@@ -484,7 +516,7 @@ body.edit-mode .category-btn:active {
     display: inline-block;
     padding: 10px 20px;
     cursor: pointer;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(23, 79, 122, 0.8);
     border: 1px solid var(--border);
     border-radius: 10px;
     transition: var(--transition-main);
@@ -492,7 +524,7 @@ body.edit-mode .category-btn:active {
 
 .custom-file-upload:hover {
     border-color: var(--acc);
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 15px rgba(0, 208, 208, 0.4);
 }
 
 #form-file-input {
@@ -554,7 +586,7 @@ body.edit-mode .category-btn:active {
 }
 
 .generator-header h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1.8rem;
     background: linear-gradient(90deg, #fff, var(--neon-cyan));
     -webkit-background-clip: text;
@@ -600,12 +632,12 @@ body.edit-mode .category-btn:active {
     cursor: pointer;
     transition: var(--transition-main);
     position: relative;
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(23, 79, 122, 0.5);
 }
 
 .gen-upload-area:hover {
     border-color: var(--acc);
-    background: rgba(34, 211, 238, 0.05);
+    background: rgba(0, 208, 208, 0.05);
 }
 
 .gen-upload-area .upload-icon {
@@ -644,7 +676,7 @@ body.edit-mode .category-btn:active {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(167, 139, 250, 0.3));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.3), rgba(38, 198, 38, 0.3));
     border: 2px solid var(--acc);
     color: #fff;
     cursor: pointer;
@@ -668,7 +700,7 @@ body.edit-mode .category-btn:active {
 }
 
 .btn-generate:hover {
-    box-shadow: 0 0 30px rgba(34, 211, 238, 0.5);
+    box-shadow: 0 0 30px rgba(0, 208, 208, 0.5);
     transform: translateY(-2px);
 }
 
@@ -693,7 +725,7 @@ body.edit-mode .category-btn:active {
 
 .gen-result-placeholder {
     aspect-ratio: 1;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(23, 79, 122, 0.6);
     border: 1px dashed var(--border);
     border-radius: 15px;
     display: flex;
@@ -765,7 +797,7 @@ body.edit-mode .category-btn:active {
     width: 100%;
     margin-bottom: 30px;
     padding: 20px;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(23, 79, 122, 0.6);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
 }
@@ -779,7 +811,7 @@ body.edit-mode .category-btn:active {
 
 .history-header h3 {
     color: var(--neon-cyan);
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1.2rem;
     display: flex;
     align-items: center;
@@ -815,7 +847,7 @@ body.edit-mode .category-btn:active {
 .history-item:hover {
     border-color: var(--acc);
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(34, 211, 238, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 208, 208, 0.2);
 }
 
 .history-item img {
@@ -867,7 +899,7 @@ body.edit-mode .category-btn:active {
     position: fixed;
     inset: 0;
     z-index: 20000;
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(23, 79, 122, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     display: none;
@@ -928,13 +960,13 @@ body.edit-mode .category-btn:active {
 /* Aro Interior - Pink */
 .spinner-triple .ring-3 {
     inset: 30px;
-    border-bottom-color: #ec4899;
+    border-bottom-color: #26C626;
     animation: spin 2s linear infinite;
-    filter: drop-shadow(0 0 8px #ec4899);
+    filter: drop-shadow(0 0 8px #26C626);
 }
 
 .loading-text {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
     color: white;
@@ -1001,7 +1033,7 @@ body.edit-mode .category-btn:active {
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(167, 139, 250, 0.15));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.15), rgba(38, 198, 38, 0.15));
     border: 1px solid var(--acc);
     border-radius: 25px;
     color: var(--neon-cyan);
@@ -1011,20 +1043,20 @@ body.edit-mode .category-btn:active {
 }
 
 .btn-user-auth:hover {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(167, 139, 250, 0.3));
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.3), rgba(38, 198, 38, 0.3));
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.4);
     transform: translateY(-2px);
 }
 
 .btn-user-auth.logged-in {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 211, 238, 0.15));
-    border-color: #22c55e;
-    color: #4ade80;
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.15), rgba(0, 208, 208, 0.15));
+    border-color: #26C626;
+    color: #26C626;
 }
 
 .btn-user-auth.logged-in:hover {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(34, 211, 238, 0.3));
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.3), rgba(0, 208, 208, 0.3));
+    box-shadow: 0 0 20px rgba(38, 198, 38, 0.4);
 }
 
 /* Modal de Autenticación */
@@ -1049,7 +1081,7 @@ body.edit-mode .category-btn:active {
 }
 
 .auth-header h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1.5rem;
     background: linear-gradient(90deg, #fff, var(--neon-cyan));
     -webkit-background-clip: text;
@@ -1080,7 +1112,7 @@ body.edit-mode .category-btn:active {
 .auth-modal .form-group input {
     width: 100%;
     padding: 12px 15px;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(23, 79, 122, 0.8);
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text);
@@ -1091,7 +1123,7 @@ body.edit-mode .category-btn:active {
 .auth-modal .form-group input:focus {
     outline: none;
     border-color: var(--acc);
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+    box-shadow: 0 0 15px rgba(0, 208, 208, 0.3);
 }
 
 .auth-error {
@@ -1117,7 +1149,7 @@ body.edit-mode .category-btn:active {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(167, 139, 250, 0.3));
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.3), rgba(38, 198, 38, 0.3));
     border: 2px solid var(--acc);
     color: #fff;
     border-radius: 12px;
@@ -1127,8 +1159,8 @@ body.edit-mode .category-btn:active {
 }
 
 .btn-auth-login:hover {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.5), rgba(167, 139, 250, 0.5));
-    box-shadow: 0 0 25px rgba(34, 211, 238, 0.4);
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.5), rgba(38, 198, 38, 0.5));
+    box-shadow: 0 0 25px rgba(0, 208, 208, 0.4);
     transform: translateY(-2px);
 }
 
@@ -1145,9 +1177,9 @@ body.edit-mode .category-btn:active {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 211, 238, 0.2));
-    border: 2px solid #22c55e;
-    color: #4ade80;
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.2), rgba(0, 208, 208, 0.2));
+    border: 2px solid #26C626;
+    color: #26C626;
     border-radius: 12px;
     cursor: pointer;
     transition: var(--transition-main);
@@ -1155,8 +1187,8 @@ body.edit-mode .category-btn:active {
 }
 
 .btn-auth-register:hover {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.4), rgba(34, 211, 238, 0.4));
-    box-shadow: 0 0 25px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, rgba(38, 198, 38, 0.4), rgba(0, 208, 208, 0.4));
+    box-shadow: 0 0 25px rgba(38, 198, 38, 0.4);
     transform: translateY(-2px);
 }
 
@@ -1243,7 +1275,7 @@ body.edit-mode .category-btn:active {
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--acc);
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.4);
 }
 
 .user-initial {
@@ -1265,7 +1297,7 @@ body.edit-mode .category-btn:active {
 }
 
 .user-name {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--neon-cyan);
