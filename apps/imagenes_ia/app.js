@@ -298,21 +298,6 @@ const Splash = ({ onLogout, user }) => {
                     <p className="text-gray-400 text-sm leading-relaxed">Fusiona varias imágenes con IA.</p>
                 </button>
 
-                {/* Botón Copiar Estilo (NUEVO - 5TO BOTÓN) */}
-                <button
-                    onClick={() => handleNavigate('https://atnojs.es/apps/imagenes_ia/copiar_estilo/index.html')}
-                    className="group glass glass-hover relative p-10 rounded-[2.5rem] text-left space-y-4 overflow-hidden border-blue-500/30"
-                >
-                    <div className="absolute top-0 right-0 p-6 text-blue-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
-                    </div>
-                    <div className="bg-blue-500/20 w-14 h-14 rounded-2xl flex items-center justify-center text-blue-400 mb-4 border border-blue-500/30">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
-                    </div>
-                    <h2 className="text-2xl font-bold">Copiar Estilo</h2>
-                    <p className="text-gray-400 text-sm leading-relaxed">Transfiere estilos visuales.</p>
-                </button>
-
                 {/* Botón Illusion Diffusion (NUEVO - 6TO BOTÓN) */}
                 <button
                     onClick={() => handleNavigate('https://atnojs.es/apps/imagenes_ia/illusion_diffusion/index.html')}
@@ -379,20 +364,6 @@ const Splash = ({ onLogout, user }) => {
                     <p className="text-gray-400 text-sm leading-relaxed">Arte lineal desde fotos.</p>
                 </button>
 
-                {/* Botón Clonador */}
-                <button
-                    onClick={() => handleNavigate('https://atnojs.es/apps/clonador/index.html')}
-                    className="group glass glass-hover relative p-10 rounded-[2.5rem] text-left space-y-4 overflow-hidden border-rose-500/30"
-                >
-                    <div className="absolute top-0 right-0 p-6 text-rose-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                    </div>
-                    <div className="bg-rose-500/20 w-14 h-14 rounded-2xl flex items-center justify-center text-rose-400 mb-4 border border-rose-500/30">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                    </div>
-                    <h2 className="text-2xl font-bold">Clonador</h2>
-                    <p className="text-gray-400 text-sm leading-relaxed">Face swap con IA.</p>
-                </button>
             </div>
 
             {/* Info de usuario */}
