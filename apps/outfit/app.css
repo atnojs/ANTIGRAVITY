@@ -58,12 +58,68 @@ body::after {
 
 /* ===== APP CONTAINER ===== */
 .outfit-app {
-  max-width: var(--maxw);
+  max-width: calc(var(--maxw) + 300px);
   margin: 0 auto;
   padding: 16px 14px 50px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* ===== MAIN LAYOUT: contenido izq + historial der ===== */
+.main-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.main-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ===== HISTORIAL (panel derecho) ===== */
+.history-panel {
+  flex: 0 0 280px;
+  width: 280px;
+  max-height: calc(100vh - 130px);
+  overflow-y: auto;
+  position: sticky;
+  top: 16px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: 0 0 16px var(--glow-soft), inset 0 0 18px rgba(0,208,208,0.06);
+}
+
+.history-panel .section-title {
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+}
+
+.history-panel .history-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.history-panel .history-item-wrapper {
+  aspect-ratio: 2/3;
+}
+
+.history-panel .btn-square {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+.history-panel .btn-square svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* ===== HEADER ===== */
@@ -766,6 +822,15 @@ body::after {
    RESPONSIVE
    ================================================================ */
 @media (max-width: 860px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .history-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: 500px;
+    position: static;
+  }
   .row-viewer {
     flex-direction: column;
     gap: 10px;

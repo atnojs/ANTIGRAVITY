@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="app.css?v=4" />
+  <link rel="stylesheet" href="app.css?v=5" />
 </head>
 <body>
 
@@ -21,151 +21,142 @@
     <p class="app-subtitle">Sube una foto y reinventa el estilo</p>
   </header>
 
-  <!-- ===== FILA 1: CATEGORÍAS LATERALES (2×2) + VISOR + CATEGORÍAS LATERALES (2×2) ===== -->
-  <section class="row-viewer">
-    <!-- Izquierda: 2 filas × 2 columnas -->
-    <div class="cats-side cats-left" id="cats-left"></div>
+  <!-- ===== LAYOUT PRINCIPAL: contenido izq + historial der ===== -->
+  <div class="main-layout">
 
-    <!-- VISOR CENTRAL (más estrecho) -->
-    <div class="viewer-central" id="image-viewer">
-      <label for="file-input" id="drag-area" class="viewer-dropzone">
-        <input type="file" id="file-input" class="hidden" accept="image/*" />
-        <div id="upload-placeholder" class="viewer-placeholder-inner">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-          <p>Arrastra tu foto<br><span>o haz click</span></p>
-        </div>
-        <img id="uploaded-image-preview" src="" class="hidden" alt="Preview" />
-      </label>
+    <!-- COLUMNA IZQUIERDA: todo el contenido -->
+    <div class="main-col">
 
-      <div id="comparison-container" class="comparison-container hidden">
-        <img id="image-before" src="" alt="Original" class="comparison-img-base">
-        <img id="image-after" src="" alt="Generado" class="comparison-img-overlay">
-        <div id="comparison-slider" class="comparison-slider-bar">
-          <div class="comparison-slider-knob"><span>◂</span><span>▸</span></div>
-        </div>
-      </div>
+      <!-- ===== FILA 1: CATEGORÍAS LATERALES + VISOR + CATEGORÍAS LATERALES ===== -->
+      <section class="row-viewer">
+        <div class="cats-side cats-left" id="cats-left"></div>
 
-      <div id="viewer-placeholder" class="viewer-empty">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V6.5L15.5 2z"/><path d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8"/><path d="M15 2v5h5"/></svg>
-        <p>La imagen generada<br>aparecerá aquí</p>
-      </div>
-
-      <button id="download-btn" class="btn-download hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-        Descargar
-      </button>
-    </div>
-
-    <!-- Derecha: 2 filas × 2 columnas -->
-    <div class="cats-side cats-right" id="cats-right"></div>
-  </section>
-
-  <!-- ===== FILA 2-3: CATEGORÍAS INFERIORES (2 filas × 8 columnas) ===== -->
-  <section class="cats-below" id="cats-below"></section>
-
-  <!-- ===== SUBCATEGORÍAS (aparecen al clicar una categoría) ===== -->
-  <div class="subcats-section" id="subcategory-section">
-    <div class="subcats-grid" id="subcategory-container"></div>
-  </div>
-
-  <!-- ===== FILA 4: PERSONALIZA + CONTROLES (misma línea) ===== -->
-  <section class="row-bottom">
-    <!-- PERSONALIZA (izquierda) -->
-    <div class="section-card section-personaliza" id="section-personaliza">
-      <h2 class="section-title">🎨 PERSONALIZA</h2>
-      <div class="prompt-wrap">
-        <textarea id="custom-prompt" class="prompt-input" rows="3" placeholder="Describe el outfit que quieres..."></textarea>
-        <div class="prompt-actions">
-          <button id="enhance-prompt-btn" class="action-chip">
-            <span id="enhance-prompt-icon">🪄 Mejorar</span>
-            <div id="enhance-prompt-spinner" class="spinner hidden"></div>
-          </button>
-          <button id="idea-generator-btn" class="action-chip">
-            <span id="idea-generator-icon">✨ Idea</span>
-            <div id="idea-generator-spinner" class="spinner hidden"></div>
+        <div class="viewer-central" id="image-viewer">
+          <label for="file-input" id="drag-area" class="viewer-dropzone">
+            <input type="file" id="file-input" class="hidden" accept="image/*" />
+            <div id="upload-placeholder" class="viewer-placeholder-inner">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <p>Arrastra tu foto<br><span>o haz click</span></p>
+            </div>
+            <img id="uploaded-image-preview" src="" class="hidden" alt="Preview" />
+          </label>
+          <div id="comparison-container" class="comparison-container hidden">
+            <img id="image-before" src="" alt="Original" class="comparison-img-base">
+            <img id="image-after" src="" alt="Generado" class="comparison-img-overlay">
+            <div id="comparison-slider" class="comparison-slider-bar">
+              <div class="comparison-slider-knob"><span>◂</span><span>▸</span></div>
+            </div>
+          </div>
+          <div id="viewer-placeholder" class="viewer-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V6.5L15.5 2z"/><path d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8"/><path d="M15 2v5h5"/></svg>
+            <p>La imagen generada<br>aparecerá aquí</p>
+          </div>
+          <button id="download-btn" class="btn-download hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Descargar
           </button>
         </div>
-      </div>
-      <div class="checks-row">
-        <label class="check-item">
-          <input id="keep-colors-checkbox" type="checkbox" class="check-box"><span>Mantener colores</span>
-        </label>
-        <label class="check-item">
-          <input id="change-background-checkbox" type="checkbox" class="check-box"><span>Cambiar fondo</span>
-        </label>
-        <label class="check-item">
-          <input id="change-pose-checkbox" type="checkbox" class="check-box"><span>Modificar postura</span>
-        </label>
-      </div>
-    </div>
 
-    <!-- CONTROLES (derecha): 3 líneas → AR, Resolución, Modelos -->
-    <div class="section-card section-controls" id="section-controls">
-      <div class="controls-stack">
-        <!-- Línea 1: AR (Formato) -->
-        <div class="control-line">
-          <span class="control-line-label">Formato</span>
-          <div class="toggle-row" id="ar-selector">
-            <button class="toggle-btn active" data-ar="1:1">1:1</button>
-            <button class="toggle-btn" data-ar="16:9">16:9</button>
-            <button class="toggle-btn" data-ar="9:16">9:16</button>
-            <button class="toggle-btn" data-ar="4:3">4:3</button>
-            <button class="toggle-btn" data-ar="3:4">3:4</button>
+        <div class="cats-side cats-right" id="cats-right"></div>
+      </section>
+
+      <!-- ===== CATEGORÍAS INFERIORES ===== -->
+      <section class="cats-below" id="cats-below"></section>
+
+      <!-- ===== SUBCATEGORÍAS ===== -->
+      <div class="subcats-section" id="subcategory-section">
+        <div class="subcats-grid" id="subcategory-container"></div>
+      </div>
+
+      <!-- ===== PERSONALIZA + CONTROLES ===== -->
+      <section class="row-bottom">
+        <div class="section-card section-personaliza" id="section-personaliza">
+          <h2 class="section-title">🎨 PERSONALIZA</h2>
+          <div class="prompt-wrap">
+            <textarea id="custom-prompt" class="prompt-input" rows="3" placeholder="Describe el outfit que quieres..."></textarea>
+            <div class="prompt-actions">
+              <button id="enhance-prompt-btn" class="action-chip">
+                <span id="enhance-prompt-icon">🪄 Mejorar</span>
+                <div id="enhance-prompt-spinner" class="spinner hidden"></div>
+              </button>
+              <button id="idea-generator-btn" class="action-chip">
+                <span id="idea-generator-icon">✨ Idea</span>
+                <div id="idea-generator-spinner" class="spinner hidden"></div>
+              </button>
+            </div>
+          </div>
+          <div class="checks-row">
+            <label class="check-item"><input id="keep-colors-checkbox" type="checkbox" class="check-box"><span>Mantener colores</span></label>
+            <label class="check-item"><input id="change-background-checkbox" type="checkbox" class="check-box"><span>Cambiar fondo</span></label>
+            <label class="check-item"><input id="change-pose-checkbox" type="checkbox" class="check-box"><span>Modificar postura</span></label>
           </div>
         </div>
 
-        <!-- Línea 2: Resolución -->
-        <div class="control-line">
-          <span class="control-line-label">Resolución</span>
-          <div class="toggle-row" id="res-selector">
-            <button class="toggle-btn" data-res="512">512</button>
-            <button class="toggle-btn active" data-res="1024">1024</button>
-            <button class="toggle-btn" data-res="2048">2048</button>
-            <button class="toggle-btn" data-res="4096">4096</button>
+        <div class="section-card section-controls" id="section-controls">
+          <div class="controls-stack">
+            <div class="control-line">
+              <span class="control-line-label">Formato</span>
+              <div class="toggle-row" id="ar-selector">
+                <button class="toggle-btn active" data-ar="1:1">1:1</button>
+                <button class="toggle-btn" data-ar="16:9">16:9</button>
+                <button class="toggle-btn" data-ar="9:16">9:16</button>
+                <button class="toggle-btn" data-ar="4:3">4:3</button>
+                <button class="toggle-btn" data-ar="3:4">3:4</button>
+              </div>
+            </div>
+            <div class="control-line">
+              <span class="control-line-label">Resolución</span>
+              <div class="toggle-row" id="res-selector">
+                <button class="toggle-btn" data-res="512">512</button>
+                <button class="toggle-btn active" data-res="1024">1024</button>
+                <button class="toggle-btn" data-res="2048">2048</button>
+                <button class="toggle-btn" data-res="4096">4096</button>
+              </div>
+            </div>
+            <div class="control-line">
+              <span class="control-line-label">Modelo</span>
+              <div class="toggle-row" id="quality-selector">
+                <button id="quality-pro" class="toggle-btn active" data-quality="pro">PRO</button>
+                <button id="quality-max" class="toggle-btn" data-quality="max">MAX</button>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <!-- Línea 3: Modelos (PRO/MAX) -->
-        <div class="control-line">
-          <span class="control-line-label">Modelo</span>
-          <div class="toggle-row" id="quality-selector">
-            <button id="quality-pro" class="toggle-btn active" data-quality="pro">PRO</button>
-            <button id="quality-max" class="toggle-btn" data-quality="max">MAX</button>
-          </div>
-        </div>
+      <!-- ===== GENERAR ===== -->
+      <section class="section-generate">
+        <button id="generate-btn" class="btn-generate">
+          <span id="generate-btn-text">GENERAR OUTFIT</span>
+          <div id="loader" class="spinner-generate hidden"></div>
+        </button>
+      </section>
+
+      <!-- ===== DESCRIBIR ESTILO ===== -->
+      <div id="style-description-section" class="section-card hidden">
+        <button id="describe-style-btn" class="btn-describe">
+          <span id="describe-btn-text">✨ Describe mi Estilo</span>
+          <div id="describe-loader" class="spinner hidden"></div>
+        </button>
+        <div id="style-description-output" class="style-desc-output hidden"></div>
       </div>
-    </div>
-  </section>
 
-  <!-- ===== GENERAR ===== -->
-  <section class="section-generate">
-    <button id="generate-btn" class="btn-generate">
-      <span id="generate-btn-text">GENERAR OUTFIT</span>
-      <div id="loader" class="spinner-generate hidden"></div>
-    </button>
-  </section>
+    </div><!-- /main-col -->
 
-  <!-- ===== DESCRIBIR ESTILO ===== -->
-  <div id="style-description-section" class="section-card hidden">
-    <button id="describe-style-btn" class="btn-describe">
-      <span id="describe-btn-text">✨ Describe mi Estilo</span>
-      <div id="describe-loader" class="spinner hidden"></div>
-    </button>
-    <div id="style-description-output" class="style-desc-output hidden"></div>
-  </div>
+    <!-- COLUMNA DERECHA: HISTORIAL -->
+    <aside id="history-section" class="history-panel hidden">
+      <h2 class="section-title">📸 Historial</h2>
+      <div id="history-container" class="history-grid"></div>
+    </aside>
 
-  <!-- ===== HISTORIAL ===== -->
-  <section id="history-section" class="section-card hidden">
-    <h2 class="section-title">📸 Historial</h2>
-    <div id="history-container" class="history-grid"></div>
-  </section>
+  </div><!-- /main-layout -->
 
 </div>
 
 <!-- Toast -->
 <div id="toast" class="toast-bar"><p id="toast-message"></p></div>
 
-<script src="history-manager.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="history-manager.js?v=5"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
