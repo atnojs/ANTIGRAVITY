@@ -576,6 +576,29 @@
         await auth.signInWithPopup(provider);
         if (onClose) setTimeout(onClose, 100);
       } catch (err) {
+        // Si el navegador bloquea el popup / cookies de terceros, reintenta con redirección.
+        const fallbackCodes = [
+          "auth/operation-not-supported-in-this-environment",
+          "auth/popup-blocked",
+          "auth/popup-closed-by-user",
+          "auth/cancelled-popup-request",
+          "auth/web-storage-unsupported"
+        ];
+        if (err && fallbackCodes.includes(err.code)) {
+          try {
+            // La redirección necesita persistencia que sobreviva al round-trip
+            // (Persistence.NONE la perdería). El useEffect recoge el retorno.
+            await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+            const provider2 = new firebase.auth.GoogleAuthProvider();
+            provider2.setCustomParameters({ prompt: "select_account" });
+            await auth.signInWithRedirect(provider2);
+            return;
+          } catch (err2) {
+            setError("No se pudo abrir el acceso con Google. Permite las cookies del sitio o usa email y contraseña.");
+            setLoading(false);
+            return;
+          }
+        }
         setError(err.message);
       } finally {
         setLoading(false);
@@ -947,8 +970,20 @@ const App = () => {
     const [authModalOpen, setAuthModalOpen] = useState(false);
 
     useEffect(() => {
-      auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
-      auth.signOut();
+      // Si volvemos de un login por redirección (fallback de Google), NO cerramos
+      // sesión; dejamos que onAuthStateChanged recoja al usuario. Si no hay redirect
+      // pendiente, comportamiento original: persistencia NONE + logout al cargar.
+      auth.getRedirectResult()
+        .then((result) => {
+          if (!(result && result.user)) {
+            auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+            auth.signOut();
+          }
+        })
+        .catch(() => {
+          auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+          auth.signOut();
+        });
       const unsubscribe = auth.onAuthStateChanged(async (u) => {
         setUser(u);
         if (!u) {
@@ -992,13 +1027,13 @@ const App = () => {
     const MAP_REALISM = {
       Fotorrealista: "Photorealistic",
       Hiperrealista: "Hyperrealistic",
-      IlustraciÃ³n: "Illustration",
+      "IlustraciÃ³n": "Illustration",
       Anime: "Anime style"
     };
     const MAP_CREATIVO = {
       Ninguno: "",
-      CinemÃ¡tico: "Cinematic",
-      FantasÃ­a: "Fantasy",
+      "CinemÃ¡tico": "Cinematic",
+      "FantasÃ­a": "Fantasy",
       Cyberpunk: "Cyberpunk",
       Vintage: "Vintage"
     };

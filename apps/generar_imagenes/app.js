@@ -21,12 +21,34 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Forzar logout al cargar la pÃ¡gina para siempre pedir login (solo se ejecuta 1 vez)
-    auth.signOut();
-
     /* ==== USER MANAGEMENT ==== */
     const ADMIN_EMAIL = 'atnojs@gmail.com';
     const DAILY_LIMIT = 8;
+
+    // Crea el doc del usuario en Firestore si no existe (reutilizable en popup y redirect).
+    const ensureUserDoc = async (user) => {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+            await db.collection('users').doc(user.uid).set({
+                email: user.email,
+                displayName: user.displayName || user.email.split('@')[0],
+                role: user.email === ADMIN_EMAIL ? 'admin' : 'free',
+                usage: { date: new Date().toISOString().split('T')[0], count: 0 },
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    };
+
+    // Retorno del login por redirección (fallback de Google cuando el navegador
+    // bloquea el popup / cookies de terceros). Si NO hay redirect pendiente, se
+    // fuerza el logout al cargar para pedir siempre login (como antes).
+    auth.getRedirectResult()
+        .then(async (result) => {
+            if (result && result.user) { await ensureUserDoc(result.user); }
+            else { await auth.signOut(); }
+        })
+        .catch(async () => { await auth.signOut(); });
+
     // IndexedDB — soporta imágenes grandes (localStorage solo 5MB)
     const DB_NAME = 'generar_imagenes_db';
     const DB_VERSION = 1;
@@ -556,19 +578,30 @@
                 const provider = new firebase.auth.GoogleAuthProvider();
                 provider.setCustomParameters({ prompt: 'select_account' });
                 const result = await auth.signInWithPopup(provider);
-                // Crear documento si no existe
-                const userDoc = await db.collection('users').doc(result.user.uid).get();
-                if (!userDoc.exists) {
-                    await db.collection('users').doc(result.user.uid).set({
-                        email: result.user.email,
-                        displayName: result.user.displayName || result.user.email.split('@')[0],
-                        role: result.user.email === ADMIN_EMAIL ? 'admin' : 'free',
-                        usage: { date: new Date().toISOString().split('T')[0], count: 0 },
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
+                await ensureUserDoc(result.user);
                 onLogin(result.user);
             } catch (err) {
+                // Si el navegador bloquea el popup / cookies de terceros, reintenta con
+                // redirección (funciona aunque estén bloqueadas las cookies de terceros).
+                const fallbackCodes = [
+                    'auth/operation-not-supported-in-this-environment',
+                    'auth/popup-blocked',
+                    'auth/popup-closed-by-user',
+                    'auth/cancelled-popup-request',
+                    'auth/web-storage-unsupported'
+                ];
+                if (err && fallbackCodes.includes(err.code)) {
+                    try {
+                        const provider = new firebase.auth.GoogleAuthProvider();
+                        provider.setCustomParameters({ prompt: 'select_account' });
+                        await auth.signInWithRedirect(provider);
+                        return; // la página se recarga; el retorno lo recoge getRedirectResult()
+                    } catch (err2) {
+                        setError('No se pudo abrir el acceso con Google. Permite las cookies del sitio o usa email y contraseña.');
+                        setLoading(false);
+                        return;
+                    }
+                }
                 setError(err.message);
             } finally {
                 setLoading(false);

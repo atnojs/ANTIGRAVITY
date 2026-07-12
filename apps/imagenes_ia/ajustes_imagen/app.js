@@ -97,7 +97,9 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- HELPERS FIREBASE ---
+// Recoge el retorno del login por redirección (fallback de Google cuando el
+// navegador bloquea el popup / cookies de terceros). onAuthStateChanged hace el resto.
+auth.getRedirectResult().catch((e) => { console.warn('getRedirectResult:', e); });
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 
@@ -568,6 +570,25 @@ const AuthModal = () => {
         try {
             await auth.signInWithPopup(provider);
         } catch (err) {
+            // Si el navegador bloquea el popup / cookies de terceros, reintenta con
+            // redirección (funciona aunque estén bloqueadas las cookies de terceros).
+            const fallbackCodes = [
+                'auth/operation-not-supported-in-this-environment',
+                'auth/popup-blocked',
+                'auth/popup-closed-by-user',
+                'auth/cancelled-popup-request',
+                'auth/web-storage-unsupported'
+            ];
+            if (err && fallbackCodes.includes(err.code)) {
+                try {
+                    await auth.signInWithRedirect(provider);
+                    return; // la página se recarga; el retorno lo recoge getRedirectResult()
+                } catch (err2) {
+                    setError('No se pudo abrir el acceso con Google. Permite las cookies del sitio o usa email y contraseña.');
+                    setLoading(false);
+                    return;
+                }
+            }
             setError(err.message);
         } finally {
             setLoading(false);
