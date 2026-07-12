@@ -532,6 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderSubcategories = (subcategories) => {
         subcategoryContainer.innerHTML = '';
+        const section = document.getElementById('subcategory-section');
         subcategories.forEach(subCat => {
             const btn = document.createElement('button');
             btn.className = 'subcategory-btn';
@@ -543,6 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             subcategoryContainer.appendChild(btn);
         });
+        if (section) section.style.display = 'block';
     };
 
     const handleCategoryClick = (btn, category) => {
