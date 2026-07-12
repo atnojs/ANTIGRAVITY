@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoading = false;
     let activeCategory = null;
 
+    // Selectores FLUX
+    let selectedQuality = 'pro';
+    let selectedAR = '1:1';
+    let selectedRes = 1024;
+
     // State para regeneración
     let imageToRegenerate = null;
     let regenModal = null;
@@ -391,6 +396,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
+    function computeTargetDims(ar, resolution) {
+        const ratios = { '1:1': [1,1], '16:9': [16,9], '9:16': [9,16], '4:3': [4,3], '3:4': [3,4] };
+        const [rw, rh] = ratios[ar] || [1, 1];
+        const ratio = rw / rh;
+        let width, height;
+        if (ratio >= 1) {
+            width = resolution;
+            height = Math.round(resolution / ratio);
+        } else {
+            height = resolution;
+            width = Math.round(resolution * ratio);
+        }
+        // Redondear a múltiplos de 32 (requisito FLUX)
+        width = Math.max(32, Math.round(width / 32) * 32);
+        height = Math.max(32, Math.round(height / 32) * 32);
+        return { width, height };
+    }
+
     function composePrePrompt(userPrompt, ctx = {}) {
         // Reforzamos el prompt para evitar bloqueos de seguridad
         return "Generate a high-quality, photorealistic fashion image. The goal is to showcase a specific outfit style. " + (userPrompt || "") + " Ensure the result is safe, artistic, and suitable for a general audience.";
@@ -410,12 +433,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const init = () => {
         renderCategories();
         setupEventListeners();
+        setupSelectors();
         injectDownloadAllButton();
         injectRegenModal();
         injectGlobalLoader();
         injectLightbox();
         ensureStyleDescClose();
         setupComparisonSlider();
+    };
+
+    const setupSelectors = () => {
+        // Calidad PRO/MAX
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedQuality = btn.dataset.quality;
+            });
+        });
+        // Formato AR
+        document.querySelectorAll('.ar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.ar-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedAR = btn.dataset.ar;
+            });
+        });
+        // Resolución
+        document.querySelectorAll('.res-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.res-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedRes = parseInt(btn.dataset.res);
+            });
+        });
     };
 
     const renderCategories = () => {
@@ -755,168 +806,88 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Promise(r => { if (window.JSZip) return r(); const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'; s.onload = r; document.head.appendChild(s); });
     }
 
-    const callApiWithExponentialBackoff = async (url, payload) => {
+    const callApi = async (payload) => {
         let response;
         for (let i = 0; i < 3; i++) {
             try {
-                response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (response.ok) return response.json();
-                await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-            } catch (e) { if (i === 2) throw e; }
+                response = await fetch('proxy.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (response.ok && data.success) return data;
+                if (data.error && data.error.message) throw new Error(data.error.message);
+                throw new Error('API Error: ' + response.status);
+            } catch (e) {
+                if (i === 2) throw e;
+                await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+            }
         }
-        throw new Error("API Failed");
+        throw new Error("API Failed after retries");
     };
 
     const callTextAPI = async (prompt) => {
-        const proxyUrl = 'proxy.php';
-        // CAMBIO DE MODELO A GEMINI 3 PRO PREVIEW (Si está disponible)
-        const targetApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent';
-        const finalPrompt = composePrePrompt(prompt, { integration: false });
-
-        const safetySettings = [
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-        ];
-
-        const proxyPayload = {
-            targetUrl: targetApiUrl,
-            payload: {
-                contents: [{ parts: [{ text: finalPrompt }] }],
-                safetySettings: safetySettings
-            }
-        };
-        const result = await callApiWithExponentialBackoff(proxyUrl, proxyPayload);
-        return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const data = await callApi({
+            action: 'text',
+            prompt: prompt
+        });
+        return data.text || '';
     };
 
     const callMultimodalAPI = async (prompt, base64Image) => {
-        const proxyUrl = 'proxy.php';
-        // CAMBIO DE MODELO A GEMINI 3 PRO PREVIEW
-        const targetApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent';
-
-        const cleanBase64 = base64Image.split(',')[1];
-        const finalPrompt = composePrePrompt(prompt, { integration: false });
-
-        const safetySettings = [
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-        ];
-
-        const payload = {
-            contents: [{
-                parts: [
-                    { text: finalPrompt },
-                    {
-                        inlineData: {
-                            mimeType: "image/jpeg",
-                            data: cleanBase64
-                        }
-                    }
-                ]
-            }],
-            safetySettings: safetySettings
-        };
-
-        const data = await callApiWithExponentialBackoff(proxyUrl, {
-            targetUrl: targetApiUrl,
-            payload
+        const data = await callApi({
+            action: 'vision',
+            prompt: prompt,
+            image: base64Image,
+            mimeType: 'image/jpeg'
         });
+        return data.text || '';
+    };
 
-        const parts =
-            (data?.candidates?.[0]?.content?.parts && Array.isArray(data.candidates[0].content.parts))
-                ? data.candidates[0].content.parts
-                : (Array.isArray(data?.parts) ? data.parts : []);
-
-        const textPart = parts.find(p => p.text);
-        return textPart?.text || "";
+    const upscaleDataUrl = async (dataUrl, targetW, targetH) => {
+        if (!targetW || !targetH) return dataUrl;
+        const img = await new Promise((res, rej) => {
+            const im = new Image(); im.crossOrigin = 'anonymous';
+            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
+        });
+        if (img.naturalWidth >= targetW && img.naturalHeight >= targetH) return dataUrl;
+        const c = document.createElement('canvas');
+        c.width = targetW;
+        c.height = targetH;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, targetW, targetH);
+        return c.toDataURL('image/png', 0.92);
     };
 
     const callImageAPI = async (base64Image, prompt) => {
-        const proxyUrl = 'proxy.php';
-        // CAMBIO DE MODELO A GEMINI 3 PRO PREVIEW
-        // NOTA: Si este modelo no soporta imagen, fallará.
-        const targetApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent';
+        const dims = computeTargetDims(selectedAR, selectedRes);
+        const needsUpscale = selectedRes === 4096;
 
-        const cleanBase64 = base64Image.split(',')[1];
-        const finalPrompt = composePrePrompt(prompt);
-
-        const safetySettings = [
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-        ];
-
-        const payload = {
-            contents: [{
-                parts: [
-                    { text: finalPrompt },
-                    {
-                        inlineData: {
-                            mimeType: "image/jpeg",
-                            data: cleanBase64
-                        }
-                    }
-                ]
-            }],
-            safetySettings: safetySettings,
-            generationConfig: {
-                candidateCount: 1,
-                maxOutputTokens: 2048,
-                temperature: 0.7,
-                topP: 1,
-                topK: 32
-            }
-        };
-
-        // Llamada vía proxy
-        const data = await callApiWithExponentialBackoff(proxyUrl, {
-            targetUrl: targetApiUrl,
-            payload,
-            method: 'POST'
+        const data = await callApi({
+            action: 'generate',
+            image: base64Image,
+            prompt: prompt,
+            quality: selectedQuality,
+            width: dims.width,
+            height: dims.height
         });
 
-        console.log("Respuesta API:", data);
-
-        // Manejo de respuesta
-        const parts = data?.candidates?.[0]?.content?.parts || [];
-        let imageData = null;
-
-        // Buscamos la imagen en inlineData (SDK/Camel) o inline_data (REST/Snake)
-        for (const p of parts) {
-            if (p.inlineData?.data) {
-                imageData = p.inlineData.data;
-                break;
-            }
-            if (p.inline_data?.data) {
-                imageData = p.inline_data.data;
-                break;
-            }
+        if (!data.image) {
+            throw new Error("La API no devolvió imagen.");
         }
 
-        if (!imageData) {
-            // Verificamos si fue bloqueado por seguridad
-            const finishReason = data?.candidates?.[0]?.finishReason;
-            if (finishReason) {
-                console.warn("Finish Reason:", finishReason);
-                if (finishReason === 'SAFETY' || finishReason === 'IMAGE_OTHER') {
-                    throw new Error("La imagen fue bloqueada por filtros de seguridad. Intenta con otra foto o prompt.");
-                }
-            }
+        let resultUrl = `data:${data.mimeType || 'image/png'};base64,${data.image}`;
+        resultUrl = await postProcessDataURL(resultUrl);
 
-            // Si el modelo no soporta imagen, probablemente devuelva texto o error 400/404
-            if (data.error) {
-                 throw new Error("Error de API: " + data.error.message);
-            }
-
-            throw new Error("La API no devolvió imagen. Revisa la consola.");
+        // Upscale cliente si pidió 4096
+        if (needsUpscale) {
+            const targetDims = computeTargetDims(selectedAR, 4096);
+            resultUrl = await upscaleDataUrl(resultUrl, targetDims.width, targetDims.height);
         }
 
-        return await postProcessDataURL(`data:image/png;base64,${imageData}`);
+        return resultUrl;
     };
 
     init();

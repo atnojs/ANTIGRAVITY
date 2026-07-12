@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cambio de Outfit</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="app.css?v=2" />
 </head>
 <body>
   <div id="app" class="min-h-screen p-4 sm:p-6 lg:p-8">
@@ -74,6 +76,44 @@
     </div>
     </div>
 
+    <!-- ===== SELECTORES FLUX ===== -->
+    <div>
+    <h2 class="section-title mb-2">4. Calidad y Formato</h2>
+    
+    <div class="quality-section">
+    <span class="quality-label">Modelo</span>
+    <div id="quality-selector" class="quality-selector">
+      <button id="quality-pro" class="quality-btn active" data-quality="pro">
+        PRO<span class="quality-cost">~$0.03</span>
+      </button>
+      <button id="quality-max" class="quality-btn" data-quality="max">
+        MAX<span class="quality-cost">~$0.07</span>
+      </button>
+    </div>
+    </div>
+
+    <div class="ar-section mt-3">
+    <span class="ar-label">Formato</span>
+    <div id="ar-selector" class="ar-selector">
+      <button class="ar-btn active" data-ar="1:1">1:1</button>
+      <button class="ar-btn" data-ar="16:9">16:9</button>
+      <button class="ar-btn" data-ar="9:16">9:16</button>
+      <button class="ar-btn" data-ar="4:3">4:3</button>
+      <button class="ar-btn" data-ar="3:4">3:4</button>
+    </div>
+    </div>
+
+    <div class="res-section mt-2">
+    <span class="res-label">Resolución</span>
+    <div id="res-selector" class="res-selector">
+      <button class="res-btn" data-res="512">512</button>
+      <button class="res-btn active" data-res="1024">1024</button>
+      <button class="res-btn" data-res="2048">2048</button>
+      <button class="res-btn" data-res="4096">4096</button>
+    </div>
+    </div>
+    </div>
+
     <div class="mt-auto pt-4 border-t border-glass space-y-3 action-group">
     <button id="generate-btn" class="btn-primary w-full py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
     <span id="generate-btn-text">Generar Outfit</span>
@@ -127,7 +167,7 @@
     <p id="toast-message"></p>
     </div>
   </div>
-  <script src="history-manager.js"></script>
-  <script src="app.js"></script>
+  <script src="history-manager.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
