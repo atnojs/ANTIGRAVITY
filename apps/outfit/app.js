@@ -23,7 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadPlaceholder = document.getElementById('upload-placeholder');
     const uploadedImagePreview = document.getElementById('uploaded-image-preview');
 
-    const categoryContainer = document.getElementById('category-container');
+    const categoryContainer = document.getElementById('category-container');  // legacy (puede no existir)
+    const categoryContainerLeft  = document.getElementById('category-container-left');
+    const categoryContainerRight = document.getElementById('category-container-right');
+    const categoryContainerMore  = document.getElementById('category-container-more');
     const subcategoryContainer = document.getElementById('subcategory-container');
 
     const customPromptInput = document.getElementById('custom-prompt');
@@ -470,14 +473,30 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderCategories = () => {
-        categoryContainer.innerHTML = '';
-        categories.forEach((cat, index) => {
+        // Limpiar todos los contenedores
+        if (categoryContainerLeft) categoryContainerLeft.innerHTML = '';
+        if (categoryContainerRight) categoryContainerRight.innerHTML = '';
+        if (categoryContainerMore) categoryContainerMore.innerHTML = '';
+
+        const createCatBtn = (cat, index) => {
             const btn = document.createElement('button');
             btn.className = 'category-btn';
-            btn.innerHTML = `<span class="text-2xl">${cat.icon}</span><span class="text-xs font-medium">${cat.name}</span>`;
+            btn.innerHTML = `<span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span>`;
             btn.dataset.index = index;
             btn.addEventListener('click', () => handleCategoryClick(btn, cat));
-            categoryContainer.appendChild(btn);
+            return btn;
+        };
+
+        // Dividir: 2 izquierda + 3 derecha (primera fila), resto abajo
+        categories.forEach((cat, index) => {
+            const btn = createCatBtn(cat, index);
+            if (index < 2 && categoryContainerLeft) {
+                categoryContainerLeft.appendChild(btn);
+            } else if (index < 5 && categoryContainerRight) {
+                categoryContainerRight.appendChild(btn);
+            } else if (categoryContainerMore) {
+                categoryContainerMore.appendChild(btn);
+            }
         });
     };
 
@@ -526,8 +545,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showToast = (message) => {
         toastMessage.textContent = message;
-        toast.classList.remove('opacity-0', 'translate-y-3');
-        setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-3'); }, 3000);
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 3000);
     };
 
     const handleFile = (file) => {

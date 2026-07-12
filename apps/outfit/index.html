@@ -9,165 +9,189 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="app.css?v=2" />
+  <link rel="stylesheet" href="app.css?v=3" />
 </head>
 <body>
-  <div id="app" class="min-h-screen p-4 sm:p-6 lg:p-8">
-    <div class="main-grid max-w-7xl mx-auto">
-    <aside class="control-panel p-6 flex flex-col gap-6 overflow-y-auto">
-    <header class="text-center">
-    <h1 class="app-title">Cambio de Outfit</h1>
-    <p class="text-sm text-secondary mt-1">Sube una foto y reinventa el estilo.</p>
-    </header>
 
-    <div>
-    <h2 class="section-title mb-3">1. Sube tu Foto</h2>
-    <label for="file-input" id="drag-area" class="drag-area p-6 text-center cursor-pointer" style="display:block">
-    <input type="file" id="file-input" class="hidden" accept="image/*" />
-    <div id="upload-placeholder">
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-    <p class="mt-2 text-sm text-secondary">Arrastra y suelta una imagen o <span class="font-semibold text-accent">haz click</span></p>
-    </div>
-    <img id="uploaded-image-preview" src="" class="hidden max-h-28 mx-auto rounded-md" alt="Uploaded Preview" />
-    </div>
-    </div>
+<div id="outfit-app" class="outfit-app">
 
-    <div>
-    <h2 class="section-title mb-3">2. Elige un Estilo</h2>
-    <div id="category-container" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
-    <div id="subcategory-container" class="mt-4 flex flex-wrap gap-2"></div>
-    </div>
-    
-    <div>
-    <h2 class="section-title mb-3">3. Personaliza</h2>
-    <div class="space-y-4">
-    <div class="relative">
-    <textarea id="custom-prompt" class="w-full input-glass border rounded-md px-3 py-2 text-sm focus:outline-none pr-20 resize-none" rows="3" placeholder="Ej: vestido rojo con flores."></textarea>
-    <div class="absolute right-2 bottom-2 flex items-center space-x-2">
-    <button id="enhance-prompt-btn" class="icon-btn text-lg" title="Mejorar descripción con IA">
-    <span id="enhance-prompt-icon">🪄</span>
-    <div id="enhance-prompt-spinner" class="spinner hidden"></div>
-    </button>
-    <button id="idea-generator-btn" class="icon-btn text-lg" title="Generar idea de outfit">
-    <span id="idea-generator-icon">✨</span>
-    <div id="idea-generator-spinner" class="spinner hidden"></div>
-    </button>
-    </div>
-    </div>
-    
-    <div>
-    <label for="intensity-slider" class="text-sm font-medium text-secondary">Intensidad del cambio: <span id="intensity-value" class="font-bold text-accent">50</span>%</label>
-    <input id="intensity-slider" type="range" min="10" max="100" value="50" class="w-full h-2 mt-2">
-    </div>
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <h1 class="app-title">
+      <span class="title-dot">●</span> Cambio de Outfit
+    </h1>
+    <p class="app-subtitle">Sube una foto y reinventa el estilo</p>
+  </header>
 
-    <div class="flex items-center">
-    <input id="keep-colors-checkbox" type="checkbox" class="checkbox-ui">
-    <label for="keep-colors-checkbox" class="ml-2 block text-sm text-secondary">Mantener colores originales</label>
-    </div>
+  <!-- ===== FILA 1: Categorías + VISOR CENTRAL + Categorías ===== -->
+  <section class="row-viewer">
+    <!-- Categorías izquierda -->
+    <div class="cats-side cats-left" id="category-container-left"></div>
 
-    <div class="flex items-center">
-    <input id="change-background-checkbox" type="checkbox" class="checkbox-ui">
-    <label for="change-background-checkbox" class="ml-2 block text-sm text-secondary">Cambiar también el fondo</label>
-    </div>
-    <div class="flex items-center">
-    <input id="change-pose-checkbox" type="checkbox" class="checkbox-ui">
-    <label for="change-pose-checkbox" class="ml-2 block text-sm text-secondary">Modificar la postura</label>
-    </div>
-    </div>
-    </div>
+    <!-- VISOR CENTRAL -->
+    <div class="viewer-central" id="image-viewer">
+      <!-- Upload / Placeholder -->
+      <label for="file-input" id="drag-area" class="viewer-dropzone">
+        <input type="file" id="file-input" class="hidden" accept="image/*" />
+        <div id="upload-placeholder" class="viewer-placeholder-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="viewer-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          <p>Arrastra tu foto aquí<br><span>o haz click para subir</span></p>
+        </div>
+        <img id="uploaded-image-preview" src="" class="hidden" alt="Preview" />
+      </label>
 
-    <!-- ===== SELECTORES FLUX ===== -->
-    <div>
-    <h2 class="section-title mb-2">4. Calidad y Formato</h2>
-    
-    <div class="quality-section">
-    <span class="quality-label">Modelo</span>
-    <div id="quality-selector" class="quality-selector">
-      <button id="quality-pro" class="quality-btn active" data-quality="pro">
-        PRO<span class="quality-cost">~$0.03</span>
-      </button>
-      <button id="quality-max" class="quality-btn" data-quality="max">
-        MAX<span class="quality-cost">~$0.07</span>
+      <!-- Comparación before/after -->
+      <div id="comparison-container" class="comparison-container hidden">
+        <img id="image-before" src="" alt="Original" class="comparison-img-base">
+        <img id="image-after" src="" alt="Generado" class="comparison-img-overlay">
+        <div id="comparison-slider" class="comparison-slider-bar">
+          <div class="comparison-slider-knob">
+            <span>◂</span><span>▸</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder inicial -->
+      <div id="viewer-placeholder" class="viewer-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="viewer-empty-icon"><path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V6.5L15.5 2z"/><path d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8"/><path d="M15 2v5h5"/></svg>
+        <p>La imagen generada aparecerá aquí</p>
+      </div>
+
+      <!-- Descargar -->
+      <button id="download-btn" class="btn-download hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+        Descargar
       </button>
     </div>
-    </div>
 
-    <div class="ar-section mt-3">
-    <span class="ar-label">Formato</span>
-    <div id="ar-selector" class="ar-selector">
-      <button class="ar-btn active" data-ar="1:1">1:1</button>
-      <button class="ar-btn" data-ar="16:9">16:9</button>
-      <button class="ar-btn" data-ar="9:16">9:16</button>
-      <button class="ar-btn" data-ar="4:3">4:3</button>
-      <button class="ar-btn" data-ar="3:4">3:4</button>
-    </div>
-    </div>
+    <!-- Categorías derecha -->
+    <div class="cats-side cats-right" id="category-container-right"></div>
+  </section>
 
-    <div class="res-section mt-2">
-    <span class="res-label">Resolución</span>
-    <div id="res-selector" class="res-selector">
-      <button class="res-btn" data-res="512">512</button>
-      <button class="res-btn active" data-res="1024">1024</button>
-      <button class="res-btn" data-res="2048">2048</button>
-      <button class="res-btn" data-res="4096">4096</button>
-    </div>
-    </div>
-    </div>
+  <!-- Categorías extra (si hay más de 5) -->
+  <div class="cats-more" id="category-container-more"></div>
 
-    <div class="mt-auto pt-4 border-t border-glass space-y-3 action-group">
-    <button id="generate-btn" class="btn-primary w-full py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-    <span id="generate-btn-text">Generar Outfit</span>
-    <div id="loader" class="loader hidden ml-2"></div>
-    </button>
-    <button id="random-btn" class="btn-secondary w-full py-2 px-4 rounded-lg transition-all duration-200">
-    ✨ ¡Sorpréndeme!
-    </button>
-    </div>
-    </aside>
-
-    <main class="flex flex-col gap-6">
-    <div id="image-viewer" class="viewer-glass w-full h-[60vh] max-h-[600px] rounded-xl flex items-center justify-center p-4">
-    <div id="viewer-placeholder" class="text-center text-secondary">
-    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto opacity-50"><path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V6.5L15.5 2z"/><path d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8"/><path d="M15 2v5h5"/></svg>
-    <p class="mt-4 font-light">La imagen generada aparecerá aquí</p>
-    </div>
-    <div id="comparison-container" class="comparison-container w-full h-full hidden">
-    <img id="image-before" src="" alt="Original" class="w-full h-full object-contain">
-    <img id="image-after" src="" alt="Generated" class="comparison-image-after">
-    <div id="comparison-slider" class="comparison-slider">
-    <div class="comparison-slider-handle">
-    <span class="slider-arrow">&lt;</span><span class="slider-arrow">&gt;</span>
-    </div>
-    </div>
-    </div>
-    </div>
-
-    <div class="flex items-center justify-end">
-    <button id="download-btn" class="btn-success font-bold py-2 px-5 rounded-lg flex items-center gap-2 transition-all duration-200 hidden">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-    Descargar
-    </button>
-    </div>
-
-    <div id="style-description-section" class="hidden">
-    <button id="describe-style-btn" class="btn-outline w-full py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all duration-200">
-    <span id="describe-btn-text">✨ Describe mi Estilo</span>
-    <div id="describe-loader" class="loader hidden"></div>
-    </button>
-    <div id="style-description-output" class="mt-4 p-4 rounded-lg text-secondary text-sm italic hidden glass-box"></div>
-    </div>
-
-    <div id="history-section" class="hidden">
-    <h2 class="section-title mb-3">Historial Reciente</h2>
-    <div id="history-container" class="grid grid-cols-5 md:grid-cols-10 gap-2"></div>
-    </div>
-    </main>
-    </div>
-    <div id="toast" class="fixed bottom-5 right-5 text-white py-2 px-5 rounded-lg shadow-lg opacity-0 translate-y-3 transition-all duration-300">
-    <p id="toast-message"></p>
-    </div>
+  <!-- ===== SUB CATEGORÍAS (hasta 4 por fila) ===== -->
+  <div class="subcats-section" id="subcategory-section">
+    <div class="subcats-grid" id="subcategory-container"></div>
   </div>
-  <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+
+  <!-- ===== SECCIÓN: PERSONALIZA ===== -->
+  <section class="section-card section-personaliza" id="section-personaliza">
+    <h2 class="section-title">🎨 PERSONALIZA</h2>
+    
+    <!-- Prompt -->
+    <div class="prompt-wrap">
+      <textarea id="custom-prompt" class="prompt-input" rows="2" placeholder="Describe el outfit que quieres... Ej: vestido rojo con flores"></textarea>
+      <div class="prompt-actions">
+        <button id="enhance-prompt-btn" class="action-chip" title="Mejorar descripción">
+          <span id="enhance-prompt-icon">🪄 Mejorar</span>
+          <div id="enhance-prompt-spinner" class="spinner hidden"></div>
+        </button>
+        <button id="idea-generator-btn" class="action-chip" title="Generar idea">
+          <span id="idea-generator-icon">✨ Idea</span>
+          <div id="idea-generator-spinner" class="spinner hidden"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Slider intensidad -->
+    <div class="control-row">
+      <label for="intensity-slider" class="control-label">Intensidad: <span id="intensity-value" class="control-value">50</span>%</label>
+      <input id="intensity-slider" type="range" min="10" max="100" value="50" class="range-slider">
+    </div>
+
+    <!-- Checkboxes -->
+    <div class="checks-row">
+      <label class="check-item">
+        <input id="keep-colors-checkbox" type="checkbox" class="check-box">
+        <span>Mantener colores</span>
+      </label>
+      <label class="check-item">
+        <input id="change-background-checkbox" type="checkbox" class="check-box">
+        <span>Cambiar fondo</span>
+      </label>
+      <label class="check-item">
+        <input id="change-pose-checkbox" type="checkbox" class="check-box">
+        <span>Modificar postura</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- ===== FILA 6: CONTROLES (calidad, formato, resolución) ===== -->
+  <section class="section-card section-controls" id="section-controls">
+    <div class="controls-grid">
+      <!-- Calidad -->
+      <div class="control-group">
+        <span class="control-group-label">Modelo</span>
+        <div class="toggle-row" id="quality-selector">
+          <button id="quality-pro" class="toggle-btn active" data-quality="pro">PRO</button>
+          <button id="quality-max" class="toggle-btn" data-quality="max">MAX</button>
+        </div>
+      </div>
+
+      <!-- Formato -->
+      <div class="control-group">
+        <span class="control-group-label">Formato</span>
+        <div class="toggle-row" id="ar-selector">
+          <button class="toggle-btn active" data-ar="1:1">1:1</button>
+          <button class="toggle-btn" data-ar="16:9">16:9</button>
+          <button class="toggle-btn" data-ar="9:16">9:16</button>
+          <button class="toggle-btn" data-ar="4:3">4:3</button>
+          <button class="toggle-btn" data-ar="3:4">3:4</button>
+        </div>
+      </div>
+
+      <!-- Resolución -->
+      <div class="control-group">
+        <span class="control-group-label">Resolución</span>
+        <div class="toggle-row" id="res-selector">
+          <button class="toggle-btn" data-res="512">512</button>
+          <button class="toggle-btn active" data-res="1024">1024</button>
+          <button class="toggle-btn" data-res="2048">2048</button>
+          <button class="toggle-btn" data-res="4096">4096</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FILA 7: GENERAR ===== -->
+  <section class="section-generate">
+    <button id="generate-btn" class="btn-generate">
+      <span id="generate-btn-text">GENERAR OUTFIT</span>
+      <div id="loader" class="spinner-generate hidden"></div>
+    </button>
+    <button id="random-btn" class="btn-surprise hidden">
+      ✨ ¡Sorpréndeme!
+    </button>
+  </section>
+
+  <!-- ===== DESCRIBIR ESTILO ===== -->
+  <div id="style-description-section" class="section-card hidden">
+    <button id="describe-style-btn" class="btn-describe">
+      <span id="describe-btn-text">✨ Describe mi Estilo</span>
+      <div id="describe-loader" class="spinner hidden"></div>
+    </button>
+    <div id="style-description-output" class="style-desc-output hidden"></div>
+  </div>
+
+  <!-- ===== HISTORIAL ===== -->
+  <section id="history-section" class="section-card hidden">
+    <h2 class="section-title">📸 Historial</h2>
+    <div id="history-container" class="history-grid"></div>
+  </section>
+
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast-bar">
+  <p id="toast-message"></p>
+</div>
+
+<!-- ===== MODALES INYECTADOS POR JS ===== -->
+<!-- (El JS los crea dinámicamente: global-loader, regen-modal, lightbox) -->
+
+<script src="history-manager.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
