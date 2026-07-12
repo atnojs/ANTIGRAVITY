@@ -26,6 +26,7 @@
     currentFolder: null, // id de carpeta actual o null (raíz)
     limitBytes: 0,
     idleTimer: null,
+    selected: new Set(), // ids de archivos seleccionados para mover por lotes
   };
 
   /* ---------- utilidades base64 / hex ---------- */
@@ -380,7 +381,20 @@
     });
     bc.innerHTML = html;
     bc.querySelectorAll('[data-go]').forEach(el => {
-      el.addEventListener('click', () => { state.currentFolder = el.dataset.go || null; renderVault(); });
+      el.addEventListener('click', () => { state.selected.clear(); state.currentFolder = el.dataset.go || null; renderVault(); });
+      // Soltar archivos sobre un tramo de la ruta = moverlos a esa carpeta (o a Inicio)
+      el.addEventListener('dragover', (e) => {
+        if (fileDragCtx.ids && fileDragCtx.ids.length) { e.preventDefault(); el.classList.add('crumb-drop'); }
+      });
+      el.addEventListener('dragleave', () => el.classList.remove('crumb-drop'));
+      el.addEventListener('drop', (e) => {
+        el.classList.remove('crumb-drop');
+        if (fileDragCtx.ids && fileDragCtx.ids.length) {
+          e.preventDefault(); e.stopPropagation();
+          moveFilesToFolder(fileDragCtx.ids, el.dataset.go || null);
+          fileDragCtx.ids = null;
+        }
+      });
     });
 
     // Stats
@@ -448,6 +462,7 @@
       el.addEventListener('click', (e) => {
         if (e.target.closest('[data-del]')) return;
         if (el.classList.contains('was-dragged')) { el.classList.remove('was-dragged'); return; }
+        state.selected.clear();
         state.currentFolder = el.dataset.id; renderVault();
       });
       wireFolderDrag(el);
@@ -457,55 +472,90 @@
     });
   }
 
-  /* ---------- arrastrar carpetas: reordenar (lados) o anidar (centro) ---------- */
-  const dragCtx = { id: null, mode: null, targetId: null };
+  /* ---------- arrastrar carpetas: reordenar (lados, en vivo) o anidar (centro) ---------- */
+  const dragCtx = { id: null, el: null, mode: null, targetId: null };
+  const fileDragCtx = { ids: null };
 
   function clearDropClasses() {
     document.querySelectorAll('.folder-card').forEach(c =>
-      c.classList.remove('drop-before', 'drop-after', 'drop-inside'));
+      c.classList.remove('drop-inside'));
   }
 
   function wireFolderDrag(el) {
     el.addEventListener('dragstart', (e) => {
       dragCtx.id = el.dataset.id;
-      el.classList.add('dragging');
+      dragCtx.el = el;
+      dragCtx.mode = 'reorder';
+      dragCtx.targetId = null;
+      setTimeout(() => el.classList.add('dragging'), 0);
       try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', el.dataset.id); } catch (ex) {}
     });
     el.addEventListener('dragend', () => {
       el.classList.remove('dragging');
       clearDropClasses();
-      // marca para que el click posterior no abra la carpeta
       el.classList.add('was-dragged');
       setTimeout(() => el.classList.remove('was-dragged'), 300);
-      dragCtx.id = null; dragCtx.mode = null; dragCtx.targetId = null;
+      commitFolderOrder();
+      dragCtx.id = null; dragCtx.el = null; dragCtx.mode = null; dragCtx.targetId = null;
     });
     el.addEventListener('dragover', (e) => {
+      // ¿Estoy arrastrando archivos? -> la carpeta es zona de destino
+      if (fileDragCtx.ids && fileDragCtx.ids.length) {
+        e.preventDefault();
+        clearDropClasses();
+        document.querySelectorAll('.folder-card').forEach(c => c.classList.remove('drop-files'));
+        el.classList.add('drop-files');
+        return;
+      }
       if (!dragCtx.id || dragCtx.id === el.dataset.id) return;
       e.preventDefault();
       const rect = el.getBoundingClientRect();
       const x = e.clientX - rect.left;
-      const zone = rect.width * 0.3; // 30% izq / centro / 30% der
-      clearDropClasses();
-      if (x < zone) { dragCtx.mode = 'before'; el.classList.add('drop-before'); }
-      else if (x > rect.width - zone) { dragCtx.mode = 'after'; el.classList.add('drop-after'); }
-      else { dragCtx.mode = 'inside'; el.classList.add('drop-inside'); }
-      dragCtx.targetId = el.dataset.id;
+      const centerZone = rect.width * 0.34; // tercio central = anidar
+      const inCenter = x > centerZone && x < rect.width - centerZone;
+
+      if (inCenter) {
+        // Modo ANIDAR: resaltar destino en verde, no mover nada
+        dragCtx.mode = 'inside';
+        dragCtx.targetId = el.dataset.id;
+        clearDropClasses();
+        el.classList.add('drop-inside');
+      } else {
+        // Modo REORDENAR EN VIVO: mover la carpeta arrastrada a este hueco
+        dragCtx.mode = 'reorder';
+        dragCtx.targetId = null;
+        clearDropClasses();
+        const cont = $('folderGrid');
+        const after = x > rect.width / 2;
+        if (after) {
+          if (el.nextSibling !== dragCtx.el) cont.insertBefore(dragCtx.el, el.nextSibling);
+        } else {
+          if (el.previousSibling !== dragCtx.el) cont.insertBefore(dragCtx.el, el);
+        }
+      }
     });
-    el.addEventListener('dragleave', () => {
-      el.classList.remove('drop-before', 'drop-after', 'drop-inside');
-    });
+    el.addEventListener('dragleave', () => { el.classList.remove('drop-inside', 'drop-files'); });
     el.addEventListener('drop', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const srcId = dragCtx.id, tgtId = el.dataset.id, mode = dragCtx.mode;
-      clearDropClasses();
-      if (!srcId || srcId === tgtId) return;
-      handleFolderDrop(srcId, tgtId, mode);
+      // Soltar ARCHIVOS en la carpeta
+      if (fileDragCtx.ids && fileDragCtx.ids.length) {
+        el.classList.remove('drop-files');
+        moveFilesToFolder(fileDragCtx.ids, el.dataset.id);
+        fileDragCtx.ids = null;
+        return;
+      }
+      if (dragCtx.mode === 'inside' && dragCtx.targetId) {
+        const srcId = dragCtx.id, tgtId = dragCtx.targetId;
+        clearDropClasses();
+        dragCtx.mode = 'done';
+        nestFolder(srcId, tgtId);
+      }
+      // Si es reorden, el commit se hace en dragend leyendo el DOM
     });
   }
 
   function isDescendant(folderId, maybeAncestorId) {
-    // ¿maybeAncestorId está en la cadena de padres de folderId (o es él mismo)?
     let cur = folderId;
     const guard = new Set();
     while (cur && !guard.has(cur)) {
@@ -517,33 +567,79 @@
     return false;
   }
 
-  async function handleFolderDrop(srcId, tgtId, mode) {
+  // Guarda el nuevo orden leyendo la secuencia actual del DOM (tras reordenar en vivo)
+  async function commitFolderOrder() {
+    if (dragCtx.mode !== 'reorder') return;
+    const cont = $('folderGrid');
+    const ids = Array.from(cont.querySelectorAll('.folder-card')).map(c => c.dataset.id);
+    let changed = false;
+    ids.forEach((id, i) => {
+      const f = state.index.folders.find(x => x.id === id);
+      if (f && f.order !== i) { f.order = i; changed = true; }
+    });
+    if (!changed) return;
+    try { await persistIndex(); }
+    catch (e) { toast('Error al reordenar: ' + e.message, 'err'); renderVault(); }
+  }
+
+  async function nestFolder(srcId, tgtId) {
+    if (!srcId || srcId === tgtId) return;
     const src = state.index.folders.find(f => f.id === srcId);
     const tgt = state.index.folders.find(f => f.id === tgtId);
     if (!src || !tgt) return;
-
-    if (mode === 'inside') {
-      // Meter src dentro de tgt (evitar meter una carpeta en sí misma o en su descendiente)
-      if (isDescendant(tgtId, srcId)) { toast('No puedes meter una carpeta dentro de sí misma.', 'err'); return; }
-      src.parentId = tgtId;
-      src.order = Date.now(); // al final del destino
-    } else {
-      // Reordenar: colocar src antes/después de tgt en el mismo nivel de tgt
-      const destParent = tgt.parentId || null;
-      if (isDescendant(destParent, srcId)) { toast('Movimiento no válido.', 'err'); return; }
-      src.parentId = destParent;
-      // Reconstruir el orden del nivel destino
-      const siblings = state.index.folders
-        .filter(f => (f.parentId || null) === destParent && f.id !== srcId)
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.createdAt || 0) - (b.createdAt || 0));
-      const idx = siblings.findIndex(f => f.id === tgtId);
-      const insertAt = mode === 'after' ? idx + 1 : idx;
-      siblings.splice(insertAt, 0, src);
-      siblings.forEach((f, i) => { f.order = i; });
-    }
-    try { await persistIndex(); renderVault(); }
+    if (isDescendant(tgtId, srcId)) { toast('No puedes meter una carpeta dentro de sí misma.', 'err'); return; }
+    src.parentId = tgtId;
+    src.order = Date.now();
+    try { await persistIndex(); renderVault(); toast('Carpeta movida dentro de «' + tgt.name + '».', 'ok'); }
     catch (e) { toast('Error al mover: ' + e.message, 'err'); }
   }
+
+  /* ---------- mover archivos (por lotes) a una carpeta ---------- */
+  async function moveFilesToFolder(ids, folderId) {
+    if (!ids || !ids.length) return;
+    const dest = folderId ? state.index.folders.find(f => f.id === folderId) : null;
+    const destName = dest ? dest.name : 'Inicio';
+    let moved = 0;
+    ids.forEach(id => {
+      const f = state.index.files.find(x => x.id === id);
+      if (f && (f.folderId || null) !== (folderId || null)) { f.folderId = folderId || null; moved++; }
+    });
+    if (!moved) { toast('Esos archivos ya están en esa carpeta.', null); return; }
+    try {
+      await persistIndex();
+      state.selected.clear();
+      renderVault();
+      toast(moved + ' archivo' + (moved === 1 ? '' : 's') + ' movido' + (moved === 1 ? '' : 's') + ' a «' + destName + '».', 'ok');
+    } catch (e) { toast('Error al mover: ' + e.message, 'err'); }
+  }
+
+  // Selector de carpeta destino (para el botón "Mover a…")
+  function askMoveSelection() {
+    if (!state.selected.size) return;
+    // Opciones: Inicio + todas las carpetas (con ruta), excepto la carpeta actual como destino redundante
+    const opts = [{ id: '', label: '🏠 Inicio' }];
+    state.index.folders
+      .slice()
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .forEach(f => {
+        const trail = folderTrail(f.id).map(x => x.name).join(' › ');
+        opts.push({ id: f.id, label: '📁 ' + trail });
+      });
+    const rows = opts.map(o =>
+      `<button class="btn small ghost move-opt" data-dest="${o.id}" style="width:100%;justify-content:flex-start;margin-bottom:6px">${escapeHtml(o.label)}</button>`
+    ).join('');
+    openModal(`
+      <h3>Mover ${state.selected.size} archivo(s)</h3>
+      <p>Elige la carpeta de destino:</p>
+      <div style="max-height:46vh;overflow:auto;margin:-4px 0 8px">${rows}</div>
+      <div class="modal-actions">
+        <button class="btn ghost small" id="mCancel">Cancelar</button>
+      </div>`);
+    $('mCancel').addEventListener('click', closeModal);
+    $('modalBox').querySelectorAll('.move-opt').forEach(b =>
+      b.addEventListener('click', () => { const dest = b.dataset.dest || null; closeModal(); moveFilesToFolder(Array.from(state.selected), dest); }));
+  }
+
 
   // SVG reutilizables
   const SVG_DL = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
@@ -552,10 +648,14 @@
 
   function isMedia(f) { return /^image\//.test(f.type || '') || /^video\//.test(f.type || ''); }
 
+  const SVG_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
   function renderFiles() {
     const all = currentFiles().slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     const media = all.filter(isMedia);
     const others = all.filter(f => !isMedia(f));
+    const sel = (id) => state.selected.has(id) ? ' selected' : '';
+    const check = (id) => `<div class="sel-check" data-sel="${id}">${state.selected.has(id) ? SVG_CHECK : ''}</div>`;
 
     // --- Galería de imágenes/vídeos (5 por fila, solo miniatura + 2 botones) ---
     const gal = $('galleryGrid');
@@ -564,7 +664,8 @@
       const inner = f.thumb
         ? `<img src="${f.thumb}" alt="" loading="lazy">`
         : `<div class="g-placeholder">${isVid ? '🎬' : '🖼️'}</div>`;
-      return `<div class="gallery-item" data-open="${f.id}" title="${escapeHtml(f.name)}">
+      return `<div class="gallery-item${sel(f.id)}" data-id="${f.id}" data-open="${f.id}" draggable="true" title="${escapeHtml(f.name)}">
+        ${check(f.id)}
         ${inner}
         ${isVid ? '<div class="g-play">▶</div>' : ''}
         <div class="g-actions">
@@ -584,7 +685,8 @@
           Arrastra archivos o pulsa <b>Subir archivo</b>.</div>`;
     } else {
       list.innerHTML = others.map(f => `
-        <div class="file-row" data-id="${f.id}">
+        <div class="file-row${sel(f.id)}" data-id="${f.id}" draggable="true">
+          ${check(f.id)}
           <div class="fr-open" data-open="${f.id}">${thumbCell(f)}</div>
           <div class="fr-main fr-open" data-open="${f.id}">
             <div class="fr-name">${escapeHtml(f.name)}</div>
@@ -598,15 +700,53 @@
         </div>`).join('');
     }
 
-    // Listeners (galería + lista)
+    // Listeners de acción
     document.querySelectorAll('#galleryGrid [data-open], #fileList [data-open]').forEach(b =>
-      b.addEventListener('click', (e) => { if (e.target.closest('[data-dl],[data-del],[data-rn]')) return; openViewer(b.dataset.open); }));
+      b.addEventListener('click', (e) => { if (e.target.closest('[data-dl],[data-del],[data-rn],[data-sel]')) return; openViewer(b.dataset.open); }));
     document.querySelectorAll('#galleryGrid [data-dl], #fileList [data-dl]').forEach(b =>
       b.addEventListener('click', (e) => { e.stopPropagation(); downloadFile(b.dataset.dl); }));
     document.querySelectorAll('#galleryGrid [data-del], #fileList [data-del]').forEach(b =>
       b.addEventListener('click', (e) => { e.stopPropagation(); askDeleteFile(b.dataset.del); }));
     document.querySelectorAll('#fileList [data-rn]').forEach(b =>
       b.addEventListener('click', (e) => { e.stopPropagation(); askRename(b.dataset.rn); }));
+
+    // Selección (casilla)
+    document.querySelectorAll('[data-sel]').forEach(b =>
+      b.addEventListener('click', (e) => { e.stopPropagation(); toggleSelect(b.dataset.sel); }));
+
+    // Arrastre de archivos (para mover a carpetas, por lotes)
+    document.querySelectorAll('#galleryGrid .gallery-item, #fileList .file-row').forEach(el =>
+      wireFileDrag(el));
+
+    updateSelbar();
+  }
+
+  /* ---------- selección múltiple de archivos ---------- */
+  function toggleSelect(id) {
+    if (state.selected.has(id)) state.selected.delete(id);
+    else state.selected.add(id);
+    renderFiles();
+  }
+  function clearSelection() { state.selected.clear(); renderFiles(); }
+
+  function updateSelbar() {
+    const n = state.selected.size;
+    const bar = $('selbar');
+    if (n > 0) { bar.classList.add('show'); $('selCount').textContent = n + ' seleccionado' + (n === 1 ? '' : 's'); }
+    else bar.classList.remove('show');
+  }
+
+  // Arrastrar archivo(s): si el que arrastro está seleccionado, muevo todos los seleccionados
+  function wireFileDrag(el) {
+    el.addEventListener('dragstart', (e) => {
+      const id = el.dataset.id;
+      // Si arrastro algo no seleccionado, la operación afecta solo a ese archivo
+      const ids = state.selected.has(id) ? Array.from(state.selected) : [id];
+      fileDragCtx.ids = ids;
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'files:' + ids.join(',')); } catch (ex) {}
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', () => { el.classList.remove('dragging'); fileDragCtx.ids = null; });
   }
 
   function escapeHtml(s) {
@@ -943,6 +1083,8 @@
     $('btnLock').addEventListener('click', lock);
     $('btnNewFolder').addEventListener('click', askNewFolder);
     $('btnUpload').addEventListener('click', () => $('fileInput').click());
+    $('btnMoveSel').addEventListener('click', askMoveSelection);
+    $('btnClearSel').addEventListener('click', clearSelection);
     $('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
     $('modalBackdrop').addEventListener('click', e => { if (e.target === $('modalBackdrop')) closeModal(); });
     document.addEventListener('keydown', e => {
