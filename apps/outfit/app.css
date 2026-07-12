@@ -115,7 +115,7 @@ body::after {
    ================================================================ */
 .row-viewer {
   display: flex;
-  gap: 10px;
+  gap: 4px;
   align-items: stretch;
 }
 
@@ -124,8 +124,8 @@ body::after {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 8px;
-  flex: 0 0 160px;
+  gap: 6px;
+  flex: 0 0 180px;
 }
 .cats-side:empty { display: none; }
 
@@ -175,7 +175,7 @@ body::after {
 /* ===== VISOR CENTRAL (más estrecho) ===== */
 .viewer-central {
   flex: 1;
-  max-width: 420px;
+  max-width: 400px;
   position: relative;
   background: rgba(0,0,0,0.3);
   border: 2px solid var(--border);
