@@ -11,8 +11,7 @@
 const CONFIG = {
     ALLOWED_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
     PROXY_URL: 'proxy.php',
-    MAX_INPUT_SIDE: 2048, // Clamp de entrada (4MP) para no romper FLUX
-    JSON_STORAGE_KEY: 'estilo_json_estilo_guardado'
+    MAX_INPUT_SIDE: 2048 // Clamp de entrada (4MP) para no romper FLUX
 };
 
 // --- HISTORIAL PERSISTENTE (IndexedDB + servidor) ---
@@ -125,14 +124,8 @@ async function init() {
     try { await openDatabase(); state.history = await loadHistoryFromStorage(); }
     catch (e) { console.warn('Error init historial:', e); state.history = []; }
 
-    // Recuperar JSON de estilo guardado (persistente entre sesiones)
-    try {
-        const saved = localStorage.getItem(CONFIG.JSON_STORAGE_KEY);
-        if (saved) {
-            state.estiloJson = JSON.parse(saved);
-            renderJson();
-        }
-    } catch (e) { console.warn('No se pudo recuperar JSON guardado:', e); }
+    // El JSON de estilo NO persiste: al refrescar la app se empieza en limpio.
+    // (El historial de resultados sí es persistente.)
 
     setupUploads();
     setupJsonControls();
@@ -258,7 +251,6 @@ async function analizarEstilo() {
         if (!data.estilo) throw new Error('No se recibió el JSON de estilo');
 
         state.estiloJson = data.estilo;
-        try { localStorage.setItem(CONFIG.JSON_STORAGE_KEY, JSON.stringify(data.estilo)); } catch (e) {}
         renderJson();
         updateStatuses();
     } catch (err) {
@@ -290,7 +282,6 @@ function setupJsonControls() {
     });
     el.btnClearJson.addEventListener('click', () => {
         state.estiloJson = null;
-        try { localStorage.removeItem(CONFIG.JSON_STORAGE_KEY); } catch (e) {}
         renderJson();
         updateStatuses();
     });

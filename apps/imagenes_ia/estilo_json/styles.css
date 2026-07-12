@@ -1273,7 +1273,38 @@ h3 {
 .btn-generate > span,
 .btn-generate > svg { pointer-events: none; }
 
-/* Responsive: móvil */
+/* =========================================
+   CUADRÍCULA DE CONTROLES (según captura)
+   Fila 1: REFERENCIA | SUJETO
+   Fila 2: JSON | INSTRUCCIONES EXTRA
+   Apilados a lo ancho: RESOLUCIÓN, MODELO, GENERAR
+   ========================================= */
+.controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1rem;
+    align-items: start;
+}
+.controls-grid .grid-cell {
+    margin-bottom: 0;
+    min-width: 0;
+}
+/* Celdas que ocupan las 2 columnas (apilados) */
+.controls-grid .grid-cell.full {
+    grid-column: 1 / -1;
+}
+/* Dentro de la cuadrícula, la imagen no crece descontrolada */
+.controls-grid .single-slot { min-height: 160px; }
+.controls-grid .slot-img { max-height: 240px; }
+/* El botón generar ya no necesita margen superior extra dentro de la cuadrícula */
+.controls-grid .btn-generate { margin-top: 0; }
+
+/* Responsive: móvil — todo a 1 columna */
+@media (max-width: 700px) {
+    .controls-grid { grid-template-columns: 1fr; }
+    .controls-grid .grid-cell.full { grid-column: 1 / -1; }
+}
+
 @media (max-width: 600px) {
     .single-slot { min-height: 150px; }
     .slot-img { max-height: 240px; }
