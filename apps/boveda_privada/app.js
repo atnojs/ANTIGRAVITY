@@ -702,7 +702,11 @@
 
     // Listeners de acción
     document.querySelectorAll('#galleryGrid [data-open], #fileList [data-open]').forEach(b =>
-      b.addEventListener('click', (e) => { if (e.target.closest('[data-dl],[data-del],[data-rn],[data-sel]')) return; openViewer(b.dataset.open); }));
+      b.addEventListener('click', (e) => {
+        if (e.target.closest('[data-dl],[data-del],[data-rn],[data-sel]')) return;
+        if (document.body.classList.contains('select-mode')) { toggleSelect(b.dataset.open); return; }
+        openViewer(b.dataset.open);
+      }));
     document.querySelectorAll('#galleryGrid [data-dl], #fileList [data-dl]').forEach(b =>
       b.addEventListener('click', (e) => { e.stopPropagation(); downloadFile(b.dataset.dl); }));
     document.querySelectorAll('#galleryGrid [data-del], #fileList [data-del]').forEach(b =>
@@ -722,6 +726,13 @@
   }
 
   /* ---------- selección múltiple de archivos ---------- */
+  function toggleSelectMode() {
+    const on = document.body.classList.toggle('select-mode');
+    $('btnSelectMode').classList.toggle('primary', on);
+    if (!on) state.selected.clear();
+    renderFiles();
+    toast(on ? 'Modo selección: toca los archivos para marcarlos.' : 'Modo selección desactivado.', 'ok');
+  }
   function toggleSelect(id) {
     if (state.selected.has(id)) state.selected.delete(id);
     else state.selected.add(id);
@@ -896,24 +907,51 @@
     }
   }
 
-  /* ---------- visor grande (lightbox) ---------- */
+  /* ---------- visor grande (lightbox) con carrusel ---------- */
   let viewerUrl = null;
   let viewerCurrentId = null;
+  let viewerList = [];   // ids de media (imágenes/vídeos) navegables de la carpeta actual
 
   function closeViewer() {
     $('viewerBackdrop').classList.remove('show');
     $('viewerStage').innerHTML = '';
     if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
     viewerCurrentId = null;
+    viewerList = [];
+  }
+
+  // Salta a la imagen/vídeo anterior (-1) o siguiente (+1) del carrusel
+  function viewerStep(dir) {
+    if (!viewerList.length || !viewerCurrentId) return;
+    const i = viewerList.indexOf(viewerCurrentId);
+    if (i === -1) return;
+    const next = (i + dir + viewerList.length) % viewerList.length;
+    openViewer(viewerList[next]);
+  }
+
+  function updateViewerNav() {
+    const multiple = viewerList.length > 1;
+    $('viewerPrev').classList.toggle('hidden', !multiple);
+    $('viewerNext').classList.toggle('hidden', !multiple);
+    const i = viewerList.indexOf(viewerCurrentId);
+    $('viewerCounter').textContent = (multiple && i !== -1) ? `${i + 1} / ${viewerList.length}` : '';
   }
 
   async function openViewer(id) {
     const f = state.index.files.find(x => x.id === id);
     if (!f) return;
     viewerCurrentId = id;
+    // Construir la lista navegable = media (imagen/vídeo) de la carpeta actual, en el orden mostrado
+    viewerList = currentFiles()
+      .filter(isMedia)
+      .slice()
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .map(x => x.id);
+    if (!viewerList.includes(id)) viewerList = [id]; // p.ej. un PDF abierto desde la lista
     $('viewerTitle').textContent = f.name;
     $('viewerStage').innerHTML = '<div class="v-loading"><span class="spinner"></span> Descifrando…</div>';
     $('viewerBackdrop').classList.add('show');
+    updateViewerNav();
     const type = f.type || '';
 
     try {
@@ -927,7 +965,6 @@
       const stage = $('viewerStage');
       if (/^image\//.test(type)) {
         stage.innerHTML = `<img src="${viewerUrl}" alt="${escapeHtml(f.name)}">`;
-        // Regenerar miniatura para imágenes antiguas que no la tienen
         if (!f.thumb) { regenThumbFromBlob(f, blob).catch(() => {}); }
       } else if (/^video\//.test(type)) {
         stage.innerHTML = `<video src="${viewerUrl}" controls autoplay playsinline></video>`;
@@ -1083,21 +1120,27 @@
     $('btnLock').addEventListener('click', lock);
     $('btnNewFolder').addEventListener('click', askNewFolder);
     $('btnUpload').addEventListener('click', () => $('fileInput').click());
+    $('btnSelectMode').addEventListener('click', toggleSelectMode);
     $('btnMoveSel').addEventListener('click', askMoveSelection);
     $('btnClearSel').addEventListener('click', clearSelection);
     $('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
     $('modalBackdrop').addEventListener('click', e => { if (e.target === $('modalBackdrop')) closeModal(); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        if ($('viewerBackdrop').classList.contains('show')) closeViewer();
-        else closeModal();
+      if ($('viewerBackdrop').classList.contains('show')) {
+        if (e.key === 'Escape') closeViewer();
+        else if (e.key === 'ArrowLeft') viewerStep(-1);
+        else if (e.key === 'ArrowRight') viewerStep(1);
+        return;
       }
+      if (e.key === 'Escape') closeModal();
     });
 
-    // Visor grande
+    // Visor grande + carrusel
     $('viewerClose').addEventListener('click', closeViewer);
     $('viewerBackdrop').addEventListener('click', e => { if (e.target === $('viewerBackdrop')) closeViewer(); });
     $('viewerDownload').addEventListener('click', () => { if (viewerCurrentId) downloadFile(viewerCurrentId); });
+    $('viewerPrev').addEventListener('click', (e) => { e.stopPropagation(); viewerStep(-1); });
+    $('viewerNext').addEventListener('click', (e) => { e.stopPropagation(); viewerStep(1); });
 
     // Dropzone
     const dz = $('dropzone');

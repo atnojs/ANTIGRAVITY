@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 
@@ -56,6 +56,7 @@
       <div class="vault-toolbar">
         <div class="breadcrumb" id="breadcrumb"></div>
         <div class="spacer"></div>
+        <button class="btn small" id="btnSelectMode">☑ Seleccionar</button>
         <button class="btn small" id="btnNewFolder">📁 Nueva carpeta</button>
         <button class="btn small primary" id="btnUpload">⬆ Subir archivo</button>
       </div>
@@ -89,10 +90,13 @@
   <div class="viewer-backdrop" id="viewerBackdrop">
     <div class="viewer-topbar">
       <div class="v-title" id="viewerTitle"></div>
+      <span class="v-counter" id="viewerCounter"></span>
       <button class="btn small" id="viewerDownload">📥 Descargar</button>
       <button class="viewer-close" id="viewerClose" aria-label="Cerrar">✕</button>
     </div>
     <div class="viewer-stage" id="viewerStage"></div>
+    <button class="viewer-nav prev" id="viewerPrev" aria-label="Anterior">‹</button>
+    <button class="viewer-nav next" id="viewerNext" aria-label="Siguiente">›</button>
   </div>
 
   <!-- ============ MODAL ============ -->
@@ -107,6 +111,6 @@
     <div class="wrap">Bóveda Privada · Cifrado AES-256 en tu navegador · Zero-knowledge</div>
   </footer>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
