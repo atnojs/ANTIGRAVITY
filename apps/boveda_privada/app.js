@@ -367,17 +367,21 @@
   }
 
   function renderVault() {
-    // Breadcrumb
+    // Breadcrumb con ruta completa (jerárquico)
     const bc = $('breadcrumb');
-    if (state.currentFolder) {
-      const folder = state.index.folders.find(f => f.id === state.currentFolder);
-      bc.innerHTML = `<span class="crumb" data-root="1">🏠 Inicio</span>
-        <span class="sep-arrow">›</span>
-        <span class="current">📁 ${escapeHtml(folder ? folder.name : '¿?')}</span>`;
-      bc.querySelector('[data-root]').addEventListener('click', () => { state.currentFolder = null; renderVault(); });
-    } else {
-      bc.innerHTML = `<span class="current">🏠 Inicio</span>`;
-    }
+    const trail = folderTrail(state.currentFolder); // [] en raíz, o [abuela, madre, actual]
+    let html = `<span class="crumb" data-go="">🏠 Inicio</span>`;
+    trail.forEach((f, i) => {
+      const last = i === trail.length - 1;
+      html += ` <span class="sep-arrow">›</span> `;
+      html += last
+        ? `<span class="current">📁 ${escapeHtml(f.name)}</span>`
+        : `<span class="crumb" data-go="${f.id}">📁 ${escapeHtml(f.name)}</span>`;
+    });
+    bc.innerHTML = html;
+    bc.querySelectorAll('[data-go]').forEach(el => {
+      el.addEventListener('click', () => { state.currentFolder = el.dataset.go || null; renderVault(); });
+    });
 
     // Stats
     const totalFiles = state.index.files.length;
@@ -386,24 +390,54 @@
     $('statFiles').textContent = totalFiles;
     $('statSize').textContent = fmtSize(totalSize);
 
-    // Botón "nueva carpeta" solo en raíz (un nivel de carpetas)
-    $('btnNewFolder').style.display = state.currentFolder ? 'none' : '';
+    // "Nueva carpeta" disponible en cualquier nivel (permite subcarpetas)
+    $('btnNewFolder').style.display = '';
 
     renderFolders();
     renderFiles();
   }
 
+  // Devuelve la ruta de carpetas desde la raíz hasta la carpeta dada
+  function folderTrail(folderId) {
+    const trail = [];
+    let cur = folderId;
+    const guard = new Set(); // evita bucles si hubiera datos corruptos
+    while (cur && !guard.has(cur)) {
+      guard.add(cur);
+      const f = state.index.folders.find(x => x.id === cur);
+      if (!f) break;
+      trail.unshift(f);
+      cur = f.parentId || null;
+    }
+    return trail;
+  }
+
+  // IDs de todas las subcarpetas (recursivo) incluyendo la propia
+  function collectFolderIds(rootId) {
+    const ids = [rootId];
+    let i = 0;
+    while (i < ids.length) {
+      const pid = ids[i++];
+      state.index.folders.forEach(f => { if ((f.parentId || null) === pid) ids.push(f.id); });
+    }
+    return ids;
+  }
+
   function renderFolders() {
     const cont = $('folderGrid');
-    if (state.currentFolder) { cont.innerHTML = ''; return; } // dentro de carpeta no mostramos subcarpetas
-    if (!state.index.folders.length) { cont.innerHTML = ''; return; }
-    cont.innerHTML = state.index.folders.map(f => {
-      const count = state.index.files.filter(x => x.folderId === f.id).length;
+    const children = state.index.folders.filter(f => (f.parentId || null) === state.currentFolder);
+    if (!children.length) { cont.innerHTML = ''; return; }
+    cont.innerHTML = children.map(f => {
+      const fileCount = state.index.files.filter(x => x.folderId === f.id).length;
+      const subCount = state.index.folders.filter(x => x.parentId === f.id).length;
+      const parts = [];
+      if (subCount) parts.push(subCount + ' carpeta' + (subCount === 1 ? '' : 's'));
+      parts.push(fileCount + ' archivo' + (fileCount === 1 ? '' : 's'));
       return `<div class="folder-card" data-id="${f.id}">
         <div class="fc-icon">📁</div>
         <div class="fc-info">
           <div class="fc-name">${escapeHtml(f.name)}</div>
-          <div class="fc-count">${count} archivo${count === 1 ? '' : 's'}</div>
+          <div class="fc-count">${parts.join(' · ')}</div>
         </div>
         <button class="fc-menu" data-del="${f.id}" title="Borrar carpeta">🗑</button>
       </div>`;
@@ -471,14 +505,23 @@
 
   /* ---------- generación de miniaturas (en cliente) ---------- */
   // Devuelve un data URL JPEG pequeño (máx ~160px) o null si no aplica/falla.
-  function makeThumbFromImage(file) {
+  async function makeThumbFromImage(file) {
+    // Método preferido: createImageBitmap (no usa blob: URL, inmune a la CSP)
+    if (typeof createImageBitmap === 'function') {
+      try {
+        const bmp = await createImageBitmap(file);
+        const durl = drawThumb(bmp, bmp.width, bmp.height);
+        if (bmp.close) bmp.close();
+        if (durl) return durl;
+      } catch (e) { /* cae al método clásico */ }
+    }
+    // Fallback: objectURL + <img> (requiere blob: permitido en la CSP)
     return new Promise((resolve) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
-        try {
-          resolve(drawThumb(img, img.naturalWidth, img.naturalHeight));
-        } catch (e) { resolve(null); }
+        try { resolve(drawThumb(img, img.naturalWidth, img.naturalHeight)); }
+        catch (e) { resolve(null); }
         URL.revokeObjectURL(url);
       };
       img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
@@ -663,9 +706,11 @@
   function closeModal() { $('modalBackdrop').classList.remove('show'); $('modalBox').innerHTML = ''; }
 
   function askNewFolder() {
+    const here = folderTrail(state.currentFolder);
+    const loc = here.length ? escapeHtml(here[here.length - 1].name) : 'Inicio';
     openModal(`
       <h3>Nueva carpeta</h3>
-      <p>Ponle un nombre para organizar tus archivos.</p>
+      <p>Se creará dentro de <b>${loc}</b>.</p>
       <div class="field"><input type="text" id="mFolderName" placeholder="Ej: Documentos" maxlength="60"></div>
       <div class="modal-actions">
         <button class="btn ghost small" id="mCancel">Cancelar</button>
@@ -675,7 +720,7 @@
     const submit = async () => {
       const name = $('mFolderName').value.trim();
       if (!name) return;
-      state.index.folders.push({ id: uid('f'), name, createdAt: Date.now() });
+      state.index.folders.push({ id: uid('f'), name, parentId: state.currentFolder, createdAt: Date.now() });
       try { await persistIndex(); closeModal(); renderVault(); toast('Carpeta creada.', 'ok'); }
       catch (e) { toast('Error: ' + e.message, 'err'); }
     };
@@ -729,10 +774,16 @@
   function askDeleteFolder(id) {
     const folder = state.index.folders.find(f => f.id === id);
     if (!folder) return;
-    const inside = state.index.files.filter(f => f.folderId === id);
+    const allFolderIds = collectFolderIds(id); // carpeta + subcarpetas (recursivo)
+    const inside = state.index.files.filter(f => allFolderIds.includes(f.folderId));
+    const subCount = allFolderIds.length - 1;
+    const extras = [];
+    if (subCount) extras.push(`<b>${subCount}</b> subcarpeta(s)`);
+    if (inside.length) extras.push(`<b>${inside.length}</b> archivo(s)`);
+    const extraTxt = extras.length ? ' y ' + extras.join(' y ') : '';
     openModal(`
       <h3>Borrar carpeta</h3>
-      <p>¿Borrar la carpeta <b>${escapeHtml(folder.name)}</b>${inside.length ? ` y sus <b>${inside.length}</b> archivo(s)` : ''}? No se puede deshacer.</p>
+      <p>¿Borrar la carpeta <b>${escapeHtml(folder.name)}</b>${extraTxt}? No se puede deshacer.</p>
       <div class="modal-actions">
         <button class="btn ghost small" id="mCancel">Cancelar</button>
         <button class="btn danger small" id="mOk">Borrar</button>
@@ -742,8 +793,13 @@
       const btn = $('mOk'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
       try {
         for (const f of inside) { await apiJSON('delete_blob', { auth: state.dekHashHex, id: f.id }); }
-        state.index.files = state.index.files.filter(f => f.folderId !== id);
-        state.index.folders = state.index.folders.filter(f => f.id !== id);
+        state.index.files = state.index.files.filter(f => !allFolderIds.includes(f.folderId));
+        state.index.folders = state.index.folders.filter(f => !allFolderIds.includes(f.id));
+        // Si estábamos dentro de una carpeta borrada, subir a un ancestro válido
+        if (allFolderIds.includes(state.currentFolder)) {
+          const parent = folder.parentId || null;
+          state.currentFolder = state.index.folders.find(f => f.id === parent) ? parent : null;
+        }
         await persistIndex();
         closeModal(); renderVault(); toast('Carpeta borrada.', 'ok');
       } catch (e) { toast('Error: ' + e.message, 'err'); btn.disabled = false; btn.textContent = 'Borrar'; }
