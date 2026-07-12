@@ -154,40 +154,44 @@ try {
                 'properties' => $props,
                 'required' => ['estilo_general', 'iluminacion', 'paleta_colores', 'composicion', 'prompt_estilo'],
             ];
-            // Alias 'gemini-flash-latest': el 2.5-flash directo da 404 a cuentas nuevas
-            $model = 'gemini-flash-latest';
-            $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model
-                . ':generateContent?key=' . urlencode($gemKey);
-            [$status, $data, $raw] = $callApi(
-                $url,
-                [
-                    'contents' => [[
-                        'parts' => [
-                            ['text' => $instruccion],
-                            ['inline_data' => ['mime_type' => $mimeType, 'data' => $pureB64]],
-                        ],
-                    ]],
-                    'generationConfig' => [
-                        'responseMimeType' => 'application/json',
-                        'responseSchema' => $schema,
-                        'temperature' => 0.4,
+            $gemBody = [
+                'contents' => [[
+                    'parts' => [
+                        ['text' => $instruccion],
+                        ['inline_data' => ['mime_type' => $mimeType, 'data' => $pureB64]],
                     ],
+                ]],
+                'generationConfig' => [
+                    'responseMimeType' => 'application/json',
+                    'responseSchema' => $schema,
+                    'temperature' => 0.4,
                 ],
-                ['Content-Type: application/json'],
-                90
-            );
-            if ($status >= 200 && $status < 300) {
-                $text = (string) ($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
-                if ($text !== '') {
-                    $parsed = json_decode($text, true);
-                    if (is_array($parsed)) $estilo = $parsed;
+            ];
+            // Varios modelos como respaldo: el 2.5-flash directo da 404 a cuentas nuevas;
+            // si uno está saturado (429/503) probamos el siguiente automáticamente.
+            $gemModelos = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash-lite'];
+            $lastMsg = '';
+            $lastStatus = 502;
+            foreach ($gemModelos as $model) {
+                $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model
+                    . ':generateContent?key=' . urlencode($gemKey);
+                [$status, $data] = $callApi($url, $gemBody, ['Content-Type: application/json'], 90);
+                if ($status >= 200 && $status < 300) {
+                    $text = (string) ($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+                    if ($text !== '') {
+                        $parsed = json_decode($text, true);
+                        if (is_array($parsed)) { $estilo = $parsed; break; }
+                    }
                 }
+                $lastStatus = $status ?: 502;
+                $lastMsg = $data['error']['message'] ?? ('HTTP ' . $status);
+                if (is_array($lastMsg)) $lastMsg = json_encode($lastMsg);
+                // Solo seguimos probando otros modelos si fue sobrecarga/no disponible
+                if (!in_array($status, [429, 500, 503, 404], true)) break;
             }
-            // Si Gemini falló y NO hay OpenRouter, informamos con el error real de Gemini
+            // Si Gemini falló del todo y NO hay OpenRouter, informamos con el error real
             if ($estilo === null && empty($orKey)) {
-                $msg = $data['error']['message'] ?? ('HTTP ' . $status);
-                if (is_array($msg)) $msg = json_encode($msg);
-                throw new Exception('Gemini (análisis de estilo): ' . $msg, $status ?: 502);
+                throw new Exception('Gemini (análisis de estilo): ' . $lastMsg, $lastStatus);
             }
         }
 
