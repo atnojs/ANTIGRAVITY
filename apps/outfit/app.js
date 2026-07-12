@@ -24,9 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadedImagePreview = document.getElementById('uploaded-image-preview');
 
     const categoryContainer = document.getElementById('category-container');  // legacy (puede no existir)
-    const categoryContainerLeft  = document.getElementById('category-container-left');
-    const categoryContainerRight = document.getElementById('category-container-right');
-    const categoryContainerMore  = document.getElementById('category-container-more');
+    const catsLeft  = document.getElementById('cats-left');
+    const catsRight = document.getElementById('cats-right');
+    const catsBelow = document.getElementById('cats-below');
     const subcategoryContainer = document.getElementById('subcategory-container');
 
     const customPromptInput = document.getElementById('custom-prompt');
@@ -473,10 +473,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderCategories = () => {
-        // Limpiar todos los contenedores
-        if (categoryContainerLeft) categoryContainerLeft.innerHTML = '';
-        if (categoryContainerRight) categoryContainerRight.innerHTML = '';
-        if (categoryContainerMore) categoryContainerMore.innerHTML = '';
+        // Limpiar
+        if (catsLeft) catsLeft.innerHTML = '';
+        if (catsRight) catsRight.innerHTML = '';
+        if (catsBelow) catsBelow.innerHTML = '';
 
         const createCatBtn = (cat, index) => {
             const btn = document.createElement('button');
@@ -487,17 +487,47 @@ document.addEventListener('DOMContentLoaded', () => {
             return btn;
         };
 
-        // Dividir: 2 izquierda + 3 derecha (primera fila), resto abajo
-        categories.forEach((cat, index) => {
-            const btn = createCatBtn(cat, index);
-            if (index < 2 && categoryContainerLeft) {
-                categoryContainerLeft.appendChild(btn);
-            } else if (index < 5 && categoryContainerRight) {
-                categoryContainerRight.appendChild(btn);
-            } else if (categoryContainerMore) {
-                categoryContainerMore.appendChild(btn);
+        const createEmptyBtn = () => {
+            const btn = document.createElement('button');
+            btn.className = 'category-btn category-btn-empty';
+            btn.innerHTML = `<span class="cat-icon">—</span><span class="cat-name">vacío</span>`;
+            btn.disabled = true;
+            return btn;
+        };
+
+        // Sides: 2 filas × 2 columnas = 4 slots cada lado
+        // catsLeft → top-left, catsRight → top-right en layout
+        // Dividimos: índices 0-3 → left, 4-7 → right
+        const leftSlots = 4;
+        const rightSlots = 4;
+
+        // Left (4 slots: 2 rows × 2 cols)
+        if (catsLeft) {
+            for (let i = 0; i < leftSlots; i++) {
+                const btn = i < categories.length ? createCatBtn(categories[i], i) : createEmptyBtn();
+                catsLeft.appendChild(btn);
             }
-        });
+        }
+
+        // Right (4 slots: 2 rows × 2 cols)
+        if (catsRight) {
+            for (let i = 0; i < rightSlots; i++) {
+                const idx = leftSlots + i;
+                const btn = idx < categories.length ? createCatBtn(categories[idx], idx) : createEmptyBtn();
+                catsRight.appendChild(btn);
+            }
+        }
+
+        // Below: 2 filas × 8 columnas = 16 slots
+        if (catsBelow) {
+            const belowStart = leftSlots + rightSlots; // 8
+            const belowSlots = 16;
+            for (let i = 0; i < belowSlots; i++) {
+                const idx = belowStart + i;
+                const btn = idx < categories.length ? createCatBtn(categories[idx], idx) : createEmptyBtn();
+                catsBelow.appendChild(btn);
+            }
+        }
     };
 
     const renderSubcategories = (subcategories) => {
@@ -530,11 +560,13 @@ document.addEventListener('DOMContentLoaded', () => {
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => dragArea.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); }));
         dragArea.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
 
-        intensitySlider.addEventListener('input', (e) => {
-            intensityValue.textContent = e.target.value;
-            e.target.style.setProperty('--val', e.target.value + '%');
-        });
-        intensitySlider.style.setProperty('--val', intensitySlider.value + '%');
+        if (intensitySlider) {
+            intensitySlider.addEventListener('input', (e) => {
+                intensityValue.textContent = e.target.value;
+                e.target.style.setProperty('--val', e.target.value + '%');
+            });
+            intensitySlider.style.setProperty('--val', intensitySlider.value + '%');
+        }
 
         generateBtn.addEventListener('click', handleGenerateClick);
 
