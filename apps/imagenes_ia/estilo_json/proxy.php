@@ -42,6 +42,7 @@ try {
 
     // ── Claves API (config.php local → env → REDIRECT_ → $_SERVER → $_ENV) ──
     $fluxKey = '';
+    $gemKey  = '';
     $orKey   = '';
     $dsKey   = '';
     $configFile = __DIR__ . '/config.php';
@@ -49,6 +50,8 @@ try {
         include $configFile;
         if (defined('F')) $fluxKey = F;
         elseif (defined('BFL_API_KEY')) $fluxKey = BFL_API_KEY;
+        if (defined('A')) $gemKey = A;
+        elseif (defined('GEMINI_API_KEY')) $gemKey = GEMINI_API_KEY;
         if (defined('OPENROUTER_API_KEY')) $orKey = OPENROUTER_API_KEY;
         if (defined('DEEPSEEK_API_KEY')) $dsKey = DEEPSEEK_API_KEY;
     }
@@ -57,7 +60,12 @@ try {
         if (!empty($fluxKey)) break;
         $fluxKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
     }
-    // OpenRouter (visión) — OPENROUTER_API_KEY o la letra corta 'C' si Antonio la usa
+    // Gemini (visión, para analizar el estilo -> JSON) — clave 'A' del .htaccess raíz
+    foreach (['A', 'REDIRECT_A', 'GEMINI_API_KEY', 'REDIRECT_GEMINI_API_KEY'] as $v) {
+        if (!empty($gemKey)) break;
+        $gemKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
+    }
+    // OpenRouter (visión, respaldo si no hay Gemini) — OPENROUTER_API_KEY o 'C'
     foreach (['OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
         if (!empty($orKey)) break;
         $orKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
@@ -103,11 +111,14 @@ try {
     };
 
     // ═══════════════════════════════════════════════
-    // TAREA 1: ANALIZAR ESTILO (imagen -> JSON)  ·  OpenRouter gpt-4o-mini (visión)
+    // TAREA 1: ANALIZAR ESTILO (imagen -> JSON)
+    // Preferente: Gemini con responseSchema (JSON ESTRICTO garantizado).
+    // Respaldo:   OpenRouter gpt-4o-mini (json_object) si no hay clave Gemini.
+    // Gemini SOLO LEE la imagen para el JSON; las imágenes se GENERAN con FLUX.
     // ═══════════════════════════════════════════════
     if ($task === 'analizarEstilo') {
-        if (empty($orKey)) {
-            throw new Exception('API Key de OpenRouter no configurada (para analizar el estilo).', 401);
+        if (empty($gemKey) && empty($orKey)) {
+            throw new Exception('Falta la clave de análisis (Gemini "A" o OpenRouter) en el servidor.', 401);
         }
 
         $imageB64 = (string) ($json['image'] ?? '');
@@ -115,73 +126,121 @@ try {
         if ($imageB64 === '') {
             throw new Exception('Falta la imagen de referencia.', 400);
         }
-        // Aceptar tanto data URL como base64 puro; normalizar a data URL
-        $dataUrl = (strpos($imageB64, 'data:') === 0)
-            ? $imageB64
-            : ('data:' . $mimeType . ';base64,' . $imageB64);
+        // Base64 puro (sin prefijo data:) para Gemini inline_data
+        $pureB64 = $imageB64;
+        if (strpos($pureB64, ',') !== false && strpos($pureB64, 'data:') === 0) {
+            $pureB64 = substr($pureB64, strpos($pureB64, ',') + 1);
+        }
 
-        $sysText = "Eres un analista visual experto. Analizas EXCLUSIVAMENTE el ESTILO "
-            . "visual de una imagen (nunca el sujeto ni su identidad concreta), para poder "
-            . "recrear ese mismo estilo aplicándolo a OTRO sujeto distinto. "
-            . "Responde SIEMPRE en español salvo el campo prompt_estilo (en inglés). "
-            . "Devuelve ÚNICAMENTE un objeto JSON válido con EXACTAMENTE estas claves: "
-            . "estilo_general, composicion, iluminacion, paleta_colores, texturas_materiales, "
-            . "fondo_profundidad, atmosfera, post_procesado, prompt_estilo. "
-            . "El campo prompt_estilo es una frase en INGLÉS, lista para un generador de "
-            . "imágenes, que capture el estilo/iluminación/composición/paleta SIN describir "
-            . "el sujeto concreto (para que sirva con cualquier sujeto nuevo).";
+        // Claves que EXIGIMOS en el JSON de estilo
+        $CLAVES = ['estilo_general', 'composicion', 'iluminacion', 'paleta_colores',
+            'texturas_materiales', 'fondo_profundidad', 'atmosfera', 'post_procesado', 'prompt_estilo'];
 
-        [$status, $data] = $callApi(
-            'https://openrouter.ai/api/v1/chat/completions',
-            [
-                'model' => 'openai/gpt-4o-mini',
-                'response_format' => ['type' => 'json_object'],
-                'messages' => [
-                    ['role' => 'system', 'content' => $sysText],
-                    ['role' => 'user', 'content' => [
-                        ['type' => 'text', 'text' => 'Analiza el ESTILO visual de esta imagen y devuelve el JSON pedido.'],
-                        ['type' => 'image_url', 'image_url' => ['url' => $dataUrl]],
+        $instruccion = 'Analiza EXCLUSIVAMENTE el ESTILO visual de esta imagen (nunca el sujeto ni '
+            . 'su identidad concreta), para recrear ese mismo estilo aplicándolo a OTRO sujeto distinto. '
+            . 'Rellena TODOS los campos en español, salvo prompt_estilo que va en INGLÉS: una frase lista '
+            . 'para un generador de imágenes que capture estilo, iluminación, composición y paleta SIN '
+            . 'describir el sujeto concreto (para que sirva con cualquier sujeto nuevo).';
+
+        $estilo = null;
+        $cost = 0.0;
+
+        // ---- Vía preferente: GEMINI con responseSchema (JSON estricto) ----
+        if (!empty($gemKey)) {
+            $props = [];
+            foreach ($CLAVES as $c) { $props[$c] = ['type' => 'STRING']; }
+            $schema = [
+                'type' => 'OBJECT',
+                'properties' => $props,
+                'required' => ['estilo_general', 'iluminacion', 'paleta_colores', 'composicion', 'prompt_estilo'],
+            ];
+            // Alias 'gemini-flash-latest': el 2.5-flash directo da 404 a cuentas nuevas
+            $model = 'gemini-flash-latest';
+            $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model
+                . ':generateContent?key=' . urlencode($gemKey);
+            [$status, $data, $raw] = $callApi(
+                $url,
+                [
+                    'contents' => [[
+                        'parts' => [
+                            ['text' => $instruccion],
+                            ['inline_data' => ['mime_type' => $mimeType, 'data' => $pureB64]],
+                        ],
                     ]],
+                    'generationConfig' => [
+                        'responseMimeType' => 'application/json',
+                        'responseSchema' => $schema,
+                        'temperature' => 0.4,
+                    ],
                 ],
-                'max_tokens' => 700,
-                'temperature' => 0.4,
-            ],
-            [
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $orKey,
-                'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
-                'X-Title: Estilo JSON',
-            ],
-            90
-        );
-
-        if ($status < 200 || $status >= 300) {
-            $msg = $data['error']['message'] ?? ('HTTP ' . $status);
-            if (is_array($msg)) $msg = json_encode($msg);
-            throw new Exception('OpenRouter: ' . $msg, $status);
-        }
-
-        $text = (string) ($data['choices'][0]['message']['content'] ?? '');
-        if ($text === '') {
-            throw new Exception('El modelo de visión no devolvió respuesta.', 502);
-        }
-
-        // Sanear: quitar fences ```json ... ``` si los hubiera
-        $clean = trim($text);
-        $clean = preg_replace('/^```(?:json)?\s*/i', '', $clean);
-        $clean = preg_replace('/\s*```$/', '', $clean);
-        $estilo = json_decode($clean, true);
-        if (!is_array($estilo)) {
-            // Fallback: intentar extraer el primer bloque {...}
-            if (preg_match('/\{.*\}/s', $clean, $m)) {
-                $estilo = json_decode($m[0], true);
+                ['Content-Type: application/json'],
+                90
+            );
+            if ($status >= 200 && $status < 300) {
+                $text = (string) ($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+                if ($text !== '') {
+                    $parsed = json_decode($text, true);
+                    if (is_array($parsed)) $estilo = $parsed;
+                }
+            }
+            // Si Gemini falló y NO hay OpenRouter, informamos con el error real de Gemini
+            if ($estilo === null && empty($orKey)) {
+                $msg = $data['error']['message'] ?? ('HTTP ' . $status);
+                if (is_array($msg)) $msg = json_encode($msg);
+                throw new Exception('Gemini (análisis de estilo): ' . $msg, $status ?: 502);
             }
         }
+
+        // ---- Respaldo: OpenRouter gpt-4o-mini (json_object) ----
+        if ($estilo === null && !empty($orKey)) {
+            $dataUrl = 'data:' . $mimeType . ';base64,' . $pureB64;
+            $sysText = 'Eres un analista visual experto. ' . $instruccion
+                . ' Devuelve ÚNICAMENTE un objeto JSON con EXACTAMENTE estas claves: '
+                . implode(', ', $CLAVES) . '.';
+            [$status, $data] = $callApi(
+                'https://openrouter.ai/api/v1/chat/completions',
+                [
+                    'model' => 'openai/gpt-4o-mini',
+                    'response_format' => ['type' => 'json_object'],
+                    'messages' => [
+                        ['role' => 'system', 'content' => $sysText],
+                        ['role' => 'user', 'content' => [
+                            ['type' => 'text', 'text' => 'Analiza el ESTILO visual y devuelve el JSON.'],
+                            ['type' => 'image_url', 'image_url' => ['url' => $dataUrl]],
+                        ]],
+                    ],
+                    'max_tokens' => 700,
+                    'temperature' => 0.4,
+                ],
+                [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $orKey,
+                    'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+                    'X-Title: Estilo JSON',
+                ],
+                90
+            );
+            if ($status < 200 || $status >= 300) {
+                $msg = $data['error']['message'] ?? ('HTTP ' . $status);
+                if (is_array($msg)) $msg = json_encode($msg);
+                throw new Exception('OpenRouter: ' . $msg, $status);
+            }
+            $text = (string) ($data['choices'][0]['message']['content'] ?? '');
+            $clean = trim($text);
+            $clean = preg_replace('/^```(?:json)?\s*/i', '', $clean);
+            $clean = preg_replace('/\s*```$/', '', $clean);
+            $parsed = json_decode($clean, true);
+            if (!is_array($parsed) && preg_match('/\{.*\}/s', $clean, $m)) {
+                $parsed = json_decode($m[0], true);
+            }
+            if (is_array($parsed)) $estilo = $parsed;
+            $cost = (float) ($data['usage']['cost'] ?? 0);
+        }
+
         if (!is_array($estilo)) {
             throw new Exception('No se pudo interpretar el JSON de estilo devuelto.', 502);
         }
 
-        $cost = (float) ($data['usage']['cost'] ?? 0);
         echo json_encode(['success' => true, 'estilo' => $estilo, 'coste' => $cost]);
         exit;
     }
