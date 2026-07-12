@@ -430,7 +430,7 @@
     }
     list.innerHTML = files.map(f => `
       <div class="file-row" data-id="${f.id}">
-        <div class="fr-icon">${iconFor(f.type, f.name)}</div>
+        ${thumbCell(f)}
         <div class="fr-main">
           <div class="fr-name">${escapeHtml(f.name)}</div>
           <div class="fr-meta">${fmtSize(f.size || 0)} · ${fmtDate(f.createdAt)}</div>
@@ -456,6 +456,76 @@
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  // Celda visual de un archivo: miniatura si la hay, si no un icono
+  function thumbCell(f) {
+    if (f.thumb) {
+      const isVid = /^video\//.test(f.type || '');
+      return `<div class="fr-thumb-wrap">
+        <img class="fr-thumb${isVid ? ' vid' : ''}" src="${f.thumb}" alt="${escapeHtml(f.name)}" loading="lazy">
+        ${isVid ? '<span class="play-badge">▶</span>' : ''}
+      </div>`;
+    }
+    return `<div class="fr-icon">${iconFor(f.type, f.name)}</div>`;
+  }
+
+  /* ---------- generación de miniaturas (en cliente) ---------- */
+  // Devuelve un data URL JPEG pequeño (máx ~160px) o null si no aplica/falla.
+  function makeThumbFromImage(file) {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          resolve(drawThumb(img, img.naturalWidth, img.naturalHeight));
+        } catch (e) { resolve(null); }
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    });
+  }
+
+  function makeThumbFromVideo(file) {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const video = document.createElement('video');
+      let done = false;
+      const finish = (val) => { if (done) return; done = true; URL.revokeObjectURL(url); resolve(val); };
+      video.muted = true;
+      video.preload = 'metadata';
+      video.addEventListener('loadeddata', () => {
+        // Saltar a un fotograma representativo
+        try { video.currentTime = Math.min(1, (video.duration || 2) / 2); } catch (e) { /* ignore */ }
+      });
+      video.addEventListener('seeked', () => {
+        try { finish(drawThumb(video, video.videoWidth, video.videoHeight)); }
+        catch (e) { finish(null); }
+      });
+      video.addEventListener('error', () => finish(null));
+      setTimeout(() => finish(null), 8000); // salvavidas
+      video.src = url;
+    });
+  }
+
+  function drawThumb(source, w, h) {
+    if (!w || !h) return null;
+    const MAX = 160;
+    const scale = Math.min(1, MAX / Math.max(w, h));
+    const cw = Math.max(1, Math.round(w * scale));
+    const ch = Math.max(1, Math.round(h * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = cw; canvas.height = ch;
+    canvas.getContext('2d').drawImage(source, 0, 0, cw, ch);
+    return canvas.toDataURL('image/jpeg', 0.7); // data URL compacto
+  }
+
+  async function buildThumb(file) {
+    const type = file.type || '';
+    if (/^image\//.test(type)) return makeThumbFromImage(file);
+    if (/^video\//.test(type)) return makeThumbFromVideo(file);
+    return null;
+  }
+
   /* ---------- subir archivos ---------- */
   async function handleFiles(fileList) {
     const files = Array.from(fileList);
@@ -472,6 +542,9 @@
       }
       try {
         barSpan.style.width = Math.round((done / files.length) * 100) + '%';
+        // Miniatura (imagen/vídeo) generada en el navegador antes de cifrar
+        let thumb = null;
+        try { thumb = await buildThumb(file); } catch (e) { thumb = null; }
         const buf = await file.arrayBuffer();
         const { iv, data } = await encryptBytes(state.dek, buf);
         const id = uid('blob');
@@ -481,6 +554,7 @@
           id, folderId: state.currentFolder, name: file.name,
           type: file.type || 'application/octet-stream',
           size: file.size, iv, createdAt: Date.now(),
+          thumb: thumb || null,
         });
         await persistIndex();
         done++;
