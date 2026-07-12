@@ -14,7 +14,7 @@
      <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
      <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-     <link rel="stylesheet" href="web.css">
+     <link rel="stylesheet" href="web.css?v=2">
 </head>
 
 <body>
@@ -198,6 +198,21 @@
                                    placeholder="Describe el estilo o cambios que deseas aplicar..."></textarea>
                          </div>
 
+                         <!-- SELECTOR DE CALIDAD FLUX PRO / MAX -->
+                         <div class="gen-section quality-section">
+                              <h4><i class="fa fa-gem"></i> Calidad FLUX</h4>
+                              <div class="quality-selector" id="quality-selector">
+                                   <button type="button" class="quality-option active" data-quality="pro" aria-pressed="true">
+                                        <span class="q-name">PRO</span>
+                                        <span class="q-desc">Equilibrado · ~$0.03</span>
+                                   </button>
+                                   <button type="button" class="quality-option" data-quality="max" aria-pressed="false">
+                                        <span class="q-name">MAX</span>
+                                        <span class="q-desc">Máxima calidad · ~$0.07</span>
+                                   </button>
+                              </div>
+                         </div>
+
                          <!-- GENERATE BUTTON -->
                          <button id="gen-submit-btn" class="btn-generate">
                               <i class="fa fa-wand-magic-sparkles"></i> GENERAR IMAGEN
@@ -226,7 +241,7 @@
                <div class="ring ring-2"></div>
                <div class="ring ring-3"></div>
           </div>
-           <p class="loading-text">Generando con Gemini...</p>
+           <p class="loading-text">Generando con FLUX...</p>
       </div>
      </div><!-- /app-container -->
  
@@ -234,8 +249,8 @@
        <script src="firebase-app.js"></script>
       <script src="firebase-auth.js"></script>
       <script src="history-manager.js"></script>
-      <script src="web.js"></script>
-<script src="lightbox.js"></script>
+      <script src="web.js?v=2"></script>
+<script src="lightbox.js?v=2"></script>
 </body>
 
 </html>

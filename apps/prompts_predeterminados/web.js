@@ -44,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
-    const PROXY_URL = 'proxy.php'; // Proxy PHP para Gemini
-    const GEMINI_MODEL = 'gemini-2.5-flash-image'; // Nano Banana Pro - Modelo para generación de imágenes
+    const PROXY_URL = 'proxy.php'; // Proxy PHP para FLUX (Black Forest Labs)
+    let selectedQuality = 'pro'; // Calidad FLUX: 'pro' (~$0.03) | 'max' (~$0.07)
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
@@ -1178,8 +1178,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ═══════════════════════════════════════════════════════════════
-    // LLAMADA A GEMINI API
+    // LLAMADA A FLUX (Black Forest Labs)
     // ═══════════════════════════════════════════════════════════════
+
+    // Selector de calidad PRO / MAX
+    const qualitySelector = document.getElementById('quality-selector');
+    if (qualitySelector) {
+        qualitySelector.addEventListener('click', (e) => {
+            const btn = e.target.closest('.quality-option');
+            if (!btn) return;
+            selectedQuality = btn.dataset.quality || 'pro';
+            qualitySelector.querySelectorAll('.quality-option').forEach((b) => {
+                const isActive = (b === btn);
+                b.classList.toggle('active', isActive);
+                b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        });
+    }
 
     genSubmitBtn.onclick = async () => {
         const prompt = genPromptInput.value.trim();
@@ -1255,15 +1270,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Modo normal: llamar a Gemini API
+        // Modo normal: llamar a FLUX (Black Forest Labs) vía proxy
         genResults.innerHTML = '';
         genLoading.classList.remove('hidden');
         genSubmitBtn.disabled = true;
 
         try {
             try {
-                // Generar 1 imagen con IA
-                const imageData = await generateWithGemini(prompt, genBaseImage, [], []);
+                // Generar 1 imagen con IA (FLUX)
+                const imageData = await generateWithFlux(prompt, genBaseImage);
 
                 genLoading.classList.add('hidden');
                 genResults.innerHTML = '';
@@ -1331,80 +1346,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    async function generateWithGemini(prompt, baseImage, contentImagesArray = [], strengthsArray = []) {
+    async function generateWithFlux(prompt, baseImage) {
+        // Enriquecer el prompt para edición imagen→imagen (aplicar estilo a la foto).
         let finalPrompt = prompt;
-        const parts = [];
+        let imageB64 = '';
+        let mimeType = 'image/jpeg';
 
-        // Lógica de Prompt para Illusion Diffusion (Si hay imágenes de contenido)
-        if (contentImagesArray && contentImagesArray.length > 0) {
-
-            // Construir descripción de inputs
-            let inputDesc = "";
-            contentImagesArray.forEach((_, idx) => {
-                inputDesc += `- INPUT ${idx + 2} (Content Image ${idx + 1}): Opacity/Influence ${strengthsArray[idx] || 80}%.\n`;
-            });
-
-            finalPrompt = `DOUBLE EXPOSURE / ILLUSION DIFFUSION COMPOSITION
-
-**CRITICAL: IMAGE ROLES - DO NOT INVENT OR MODIFY**
-- IMAGE 1 is your SILHOUETTE SOURCE. Use EXACTLY the outline/shape of the subject in IMAGE 1. Do NOT create or invent a different silhouette.
-- IMAGE 2${contentImagesArray.length > 1 ? ' and IMAGE 3' : ''}: OVERLAY content to blend on top.
-
-STEP-BY-STEP PROCESS:
-1. Look at IMAGE 1 - identify the main subject (person, object, etc.)
-2. Extract the EXACT silhouette/outline of that subject from IMAGE 1 - do NOT invent a different shape
-3. The silhouette boundary comes from IMAGE 1's actual content
-4. Fill the inside with IMAGE 1's content but HEAVILY BLURRED
-5. Place IMAGE 2${contentImagesArray.length > 1 ? ' and IMAGE 3' : ''} on top, blending naturally inside the silhouette
-
-**NON-NEGOTIABLE RULES:**
-- The silhouette shape MUST match IMAGE 1's subject exactly
-- Do NOT create a generic or invented silhouette shape
-- PURE WHITE background outside the silhouette - nothing visible
-- **NEGATIVE SPACES MUST BE WHITE**: Any gaps or holes in the silhouette (space between arms and torso, between legs, etc.) must be PURE WHITE, not filled with content
-- All content clipped at the silhouette edges - including internal gaps
-
-STYLE:
-- Dreamy, ethereal double exposure effect
-- Clean, PURE WHITE exterior
-- Cool color palette inside
-- Professional editorial photography finish
-
-USER STYLE: ${prompt}`;
-
-            parts.push({ text: finalPrompt });
-
-            // 1. Imagen Base (Contenedor)
-            const base64Data = baseImage.split(',')[1];
-            const mimeType = baseImage.match(/data:(.*?);/)?.[1] || 'image/jpeg';
-            parts.push({ inlineData: { mimeType: mimeType, data: base64Data } });
-
-            // 2. Imágenes de Contenido (Loop)
-            contentImagesArray.forEach(img => {
-                const contentBase64 = img.split(',')[1];
-                const contentMime = img.match(/data:(.*?);/)?.[1] || 'image/jpeg';
-                parts.push({ inlineData: { mimeType: contentMime, data: contentBase64 } });
-            });
-
-        } else {
-            // Lógica Standard (Solo base + prompt)
-            parts.push({ text: prompt });
-
-            const base64Data = baseImage.split(',')[1];
-            const mimeType = baseImage.match(/data:(.*?);/)?.[1] || 'image/jpeg';
-            parts.push({ inlineData: { mimeType: mimeType, data: base64Data } });
+        if (baseImage) {
+            // base64 PURO (sin prefijo data:) para BFL
+            imageB64 = baseImage.includes(',') ? baseImage.split(',')[1] : baseImage;
+            mimeType = baseImage.match(/data:(.*?);/)?.[1] || 'image/jpeg';
+            finalPrompt = `Apply the following artistic style/transformation to the provided input image, keeping its main subject, pose and composition recognizable: ${prompt}`;
         }
 
-        // Usar formato 'contents' universal para el proxy
         const requestBody = {
-            model: GEMINI_MODEL,
-            contents: [{ parts: parts }],
-            generationConfig: {
-                responseModalities: ['IMAGE', 'TEXT']
-            }
+            prompt: finalPrompt,
+            image: imageB64,
+            mimeType: mimeType,
+            quality: selectedQuality
         };
 
-        console.log('Request a Gemini:', JSON.stringify(requestBody).substring(0, 500) + '...');
+        console.log('Request a FLUX:', JSON.stringify({ ...requestBody, image: imageB64 ? '[base64]' : '' }).substring(0, 300) + '...');
 
         const response = await fetch(PROXY_URL, {
             method: 'POST',
@@ -1414,31 +1376,21 @@ USER STYLE: ${prompt}`;
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            // Extraer mensaje de error de la estructura de Google API
             const errorMsg = errorData?.error?.message
-                || errorData?.error?.status
                 || errorData?.error
-                || errorData?.details
                 || `Error HTTP ${response.status}`;
             throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
         }
 
         const data = await response.json();
-        console.log('Respuesta de Gemini:', JSON.stringify(data).substring(0, 1000));
+        console.log('Respuesta de FLUX:', JSON.stringify({ ...data, imageUrl: data.imageUrl ? '[dataURL]' : '' }).substring(0, 300));
 
-        // Buscar la imagen en la respuesta
-        const responseParts = data.candidates?.[0]?.content?.parts || [];
-        for (const part of responseParts) {
-            if (part.inlineData?.data) {
-                const mime = part.inlineData.mimeType || 'image/png';
-                return `data:${mime};base64,${part.inlineData.data}`;
-            }
+        if (data.success && data.imageUrl) {
+            return data.imageUrl; // data URL lista para el frontend/historial
         }
 
-        // Si no hay imagen, mostrar lo que devolvió la API
-        const textResponse = responseParts.find(p => p.text)?.text || 'Sin respuesta de texto';
-        console.error('Sin imagen. Respuesta de texto:', textResponse);
-        throw new Error(`No se recibió imagen. API respondió: ${textResponse.substring(0, 200)}`);
+        const msg = data?.error?.message || 'No se recibió imagen de FLUX.';
+        throw new Error(msg);
     }
 
     function downloadImage(dataUrl, filename) {

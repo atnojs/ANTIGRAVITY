@@ -1352,3 +1352,59 @@ body.edit-mode .category-btn:active {
         display: none;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   💎 SELECTOR DE CALIDAD FLUX (PRO / MAX)
+   ═══════════════════════════════════════════════════════════════════ */
+.quality-selector {
+    display: flex;
+    gap: 12px;
+}
+
+.quality-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 10px;
+    background: rgba(23, 79, 122, 0.42);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition-main);
+    text-align: center;
+}
+
+.quality-option > * {
+    pointer-events: none;
+}
+
+.quality-option .q-name {
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+}
+
+.quality-option .q-desc {
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+.quality-option:hover {
+    border-color: var(--acc);
+    box-shadow: 0 0 15px rgba(0, 208, 208, 0.35);
+    transform: translateY(-2px);
+}
+
+.quality-option.active {
+    background: linear-gradient(135deg, rgba(0, 208, 208, 0.18), rgba(38, 198, 38, 0.18));
+    border-color: var(--acc2);
+    box-shadow: 0 0 20px rgba(38, 198, 38, 0.4);
+}
+
+.quality-option.active .q-name {
+    color: var(--acc2);
+}
