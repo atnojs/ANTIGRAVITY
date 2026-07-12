@@ -608,3 +608,116 @@ header p {
   width: 20px;
   height: 20px;
 }
+
+/* ═══════════════════════════════════════════════
+   SELECTORES DE SALIDA (Calidad PRO/MAX + Formato + Resolución)
+   Estilo hoola: bordes cian, verde en activo
+   ═══════════════════════════════════════════════ */
+#output-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 0.5rem 0 0.5rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quality-selector,
+.ar-selector,
+.res-selector {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.quality-option,
+.ar-option,
+.res-option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 64px;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--border);
+  background: rgba(23, 79, 122, 0.35);
+  color: var(--muted);
+  font-family: 'Electrolize', system-ui, sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* El texto interno no debe interceptar el clic (regla 1a hoola) */
+.quality-option *,
+.ar-option *,
+.res-option * {
+  pointer-events: none;
+}
+
+.quality-option small {
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  color: var(--faint, #669999);
+  text-transform: none;
+}
+
+.quality-option:hover,
+.ar-option:hover,
+.res-option:hover {
+  border-color: var(--acc);
+  color: var(--text);
+  box-shadow: 0 0 12px var(--shadow-light);
+}
+
+.quality-option.active,
+.ar-option.active,
+.res-option.active {
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  border-color: var(--acc2);
+  color: #001018;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(38, 198, 38, 0.35);
+}
+
+.quality-option.active small {
+  color: #001018;
+}
+
+/* ═══════════════════════════════════════════════
+   MENSAJES DE ERROR
+   ═══════════════════════════════════════════════ */
+.error-message {
+  width: 100%;
+  text-align: center;
+  padding: 1rem 1.25rem;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--radius, 14px);
+  font-size: 0.95rem;
+}
+
+.image-error {
+  width: 100%;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.08);
+  font-size: 0.85rem;
+}
