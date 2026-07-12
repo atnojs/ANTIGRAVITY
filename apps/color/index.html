@@ -6,9 +6,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Crea Paletas</title>
-  <link rel="stylesheet" href="base.css" />
-  <link rel="stylesheet" href="components.css" />
-  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="base.css?v=2" />
+  <link rel="stylesheet" href="components.css?v=2" />
+  <link rel="stylesheet" href="app.css?v=2" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon" />
   <!-- Fuente requerida por el estilo hoola/relatos -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -57,7 +57,7 @@
           <p class="option-label">¿Incluir texto sugerido?</p>
           <div class="text-selector">
             <button type="button" id="with-text-btn" aria-pressed="false">Con Texto</button>
-            <button type="button" id="no-text-btn" aria-pressed="false">Sin Texto</button>
+            <button type="button" id="no-text-btn" class="active" aria-pressed="true">Sin Texto</button>
             <button type="button" id="custom-text-btn" aria-pressed="false">Personalizado</button>
           </div>
           <div id="custom-text-wrapper" class="hidden">
@@ -122,8 +122,8 @@
   <script>
   (function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();
   </script>
-  <script src="history-manager.js"></script>
-  <script src="app.js"></script>
+  <script src="history-manager.js?v=2"></script>
+  <script src="app.js?v=2"></script>
   <footer>
     <p id="footer-text">&copy; 2025 Atnojs. Todos los derechos reservados.</p>
   </footer>

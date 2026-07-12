@@ -71,13 +71,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setInputMode(mode) {
         currentMode = mode;
-        textChoice = null;
+        textChoice = false; // por defecto: "Sin Texto"
         updateGenerateButtonState();
 
-        // Mostrar botones de texto
+        // Mostrar botones de texto ("Sin Texto" activo por defecto)
         withTextBtn.classList.remove('active');
-        noTextBtn.classList.remove('active');
+        withTextBtn.setAttribute('aria-pressed', 'false');
+        noTextBtn.classList.add('active');
+        noTextBtn.setAttribute('aria-pressed', 'true');
         customTextBtn.classList.remove('active');
+        customTextBtn.setAttribute('aria-pressed', 'false');
         textOptionContainer.classList.remove('hidden');
         customTextWrapper.classList.add('hidden');
         customTextInput.value = '';
