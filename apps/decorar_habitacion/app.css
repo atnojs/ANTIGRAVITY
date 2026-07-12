@@ -1347,6 +1347,47 @@ textarea::placeholder {
   text-transform: none;
 }
 
+/* --- Selector de resolución (hoola) --- */
+.res-toggle {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.res-selector button.res-btn {
+  flex: 1;
+  min-width: 72px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: rgba(0, 16, 24, 0.35);
+  color: var(--text);
+  font-family: 'Electrolize', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+.res-selector button.res-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--acc);
+  box-shadow: 0 8px 22px var(--shadow-light);
+}
+
+.res-selector button.res-btn.active {
+  border-color: var(--acc2);
+  background: linear-gradient(135deg, rgba(0, 208, 208, 0.20), rgba(38, 198, 38, 0.20));
+  box-shadow: 0 0 0 3px rgba(38, 198, 38, 0.30), 0 8px 22px var(--shadow-light);
+}
+
+.res-selector button.res-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* --- Enlaces de compra (objetos) --- */
 figure.relative ul a {
   color: var(--acc) !important;

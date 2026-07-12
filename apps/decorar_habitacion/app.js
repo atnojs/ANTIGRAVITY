@@ -7,8 +7,11 @@ const PROXY_BASE = "https://atnojs.es/apps/decorar_habitacion/proxy.php";
 
 const STORAGE_KEY = 'decorar_habitacion_history';
 
-// Lado largo objetivo de la imagen generada (respetando el AR de la foto).
-const TARGET_LONG_SIDE = 1536;
+// Resoluciones disponibles (lado largo, en px). FLUX 2 rechaza >4MP, así que
+// las resoluciones que superen 4MP (p.ej. 4096) se generan al máximo nativo
+// permitido y se escalan en el cliente con canvas a la resolución pedida.
+const RES_OPTIONS = [512, 1024, 2048, 4096];
+const DEFAULT_RES = 1024;
 const MAX_PIXELS = 4194304; // 4 MP — límite duro de FLUX 2
 
 // Objetos de decoración típicos por estancia (para los enlaces de compra).
@@ -95,22 +98,56 @@ const ROOM_PROMPTS = {
 };
 
 /* ------------------------- Red (FLUX) ------------------------- */
-// Calcula {width,height} múltiplos de 32 respetando el AR de la foto,
-// con el lado largo = TARGET_LONG_SIDE y clamp a 4MP (FLUX rechaza >4MP).
-function computeTargetDims(natW, natH) {
+// Calcula las dimensiones respetando el AR de la foto, con el lado largo = res.
+// Devuelve { target:{w,h} pedidas, flux:{width,height} clampeadas a 4MP, upscale:bool }.
+// Si la resolución pedida supera 4MP, FLUX genera al máximo nativo y el cliente escala.
+function computeTargetDims(natW, natH, res) {
   if (!natW || !natH) return null;
   const ar = natW / natH;
-  let w, h;
-  if (ar >= 1) { w = TARGET_LONG_SIDE; h = Math.round(TARGET_LONG_SIDE / ar); }
-  else { h = TARGET_LONG_SIDE; w = Math.round(TARGET_LONG_SIDE * ar); }
-  // Clamp a 4MP preservando el AR
-  if (w * h > MAX_PIXELS) {
-    const scale = Math.sqrt(MAX_PIXELS / (w * h));
-    w = Math.round(w * scale);
-    h = Math.round(h * scale);
-  }
+  const long = res || DEFAULT_RES;
+  let tw, th;
+  if (ar >= 1) { tw = long; th = Math.round(long / ar); }
+  else { th = long; tw = Math.round(long * ar); }
+
   const round32 = (v) => Math.max(32, Math.round(v / 32) * 32);
-  return { width: round32(w), height: round32(h) };
+  const targetW = round32(tw);
+  const targetH = round32(th);
+
+  // Dimensiones para FLUX (clamp a 4MP)
+  let fw = targetW, fh = targetH;
+  let upscale = false;
+  if (fw * fh > MAX_PIXELS) {
+    const scale = Math.sqrt(MAX_PIXELS / (fw * fh));
+    fw = round32(fw * scale);
+    fh = round32(fh * scale);
+    upscale = true;
+  }
+  return {
+    target: { w: targetW, h: targetH },
+    flux: { width: fw, height: fh },
+    upscale
+  };
+}
+
+// Escala un data URI a wxh con canvas (imageSmoothingQuality alto). Para 4096 (>4MP).
+function upscaleDataUrl(uri, w, h) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.95));
+      } catch (e) { resolve(uri); }
+    };
+    img.onerror = () => resolve(uri);
+    img.src = uri;
+  });
 }
 
 // Lee las dimensiones nativas de una imagen (data URI o base64 con mime).
@@ -124,17 +161,18 @@ function imageDims(uri) {
 }
 
 // Llama al proxy FLUX (editar imagen->imagen). Devuelve un data URI JPEG/PNG.
-// b64img: base64 PURO (sin prefijo data:). dims: {width,height} opcional.
-async function callFlux(b64img, prompt, quality, dims) {
+// b64img: base64 PURO (sin prefijo data:).
+// dimsInfo: resultado de computeTargetDims -> { flux:{width,height}, target:{w,h}, upscale }.
+async function callFlux(b64img, prompt, quality, dimsInfo) {
   const body = {
     image: b64img,
     mimeType: "image/jpeg",
     prompt: prompt,
     quality: quality || "pro",
   };
-  if (dims && dims.width && dims.height) {
-    body.width = dims.width;
-    body.height = dims.height;
+  if (dimsInfo && dimsInfo.flux && dimsInfo.flux.width && dimsInfo.flux.height) {
+    body.width = dimsInfo.flux.width;
+    body.height = dimsInfo.flux.height;
   }
 
   const res = await fetch(PROXY_BASE, {
@@ -151,7 +189,13 @@ async function callFlux(b64img, prompt, quality, dims) {
   if (json.error) throw new Error(json.error.message || "Error de FLUX");
   if (!json.image) throw new Error("FLUX no devolvió imagen.");
   const mime = json.mimeType || "image/jpeg";
-  return `data:${mime};base64,${json.image}`;
+  let uri = `data:${mime};base64,${json.image}`;
+
+  // Si la resolución pedida supera 4MP, FLUX generó al máximo nativo -> escalar en cliente.
+  if (dimsInfo && dimsInfo.upscale && dimsInfo.target) {
+    uri = await upscaleDataUrl(uri, dimsInfo.target.w, dimsInfo.target.h);
+  }
+  return uri;
 }
 
 // Llama al proxy en modo visión->texto (Gemini 2.5-flash).
@@ -483,7 +527,7 @@ function App() {
   const [srcDims, setSrcDims] = useState(null); // {w,h} nativos de la foto subida
   const [busy, setBusy] = useState(false);
   const [selectedQuality, setSelectedQuality] = useState('pro'); // 'pro' | 'max'
-  const [analysis, setAnalysis] = useState(""); // descripción (Gemini 2.5-flash)
+  const [selectedRes, setSelectedRes] = useState(DEFAULT_RES); // 512 | 1024 | 2048 | 4096
   const [customInstruction, setCustomInstruction] = useState("");
   const [editingUserImage, setEditingUserImage] = useState(false);
 
@@ -580,14 +624,6 @@ function App() {
       setSrc(uri);
       const dims = await imageDims(uri);
       setSrcDims(dims ? { w: dims.w, h: dims.h } : null);
-      // Descripción de la estancia (Gemini 2.5-flash)
-      try {
-        const res = await callGeminiVision(b64, "analyze", file.type || "image/jpeg");
-        setAnalysis(res.text || "");
-      } catch (err) {
-        console.warn("No se pudo analizar la imagen:", err.message);
-        setAnalysis("");
-      }
     } catch (e) {
       console.error(e);
       alert(`Error al preparar la imagen. Inténtalo de nuevo: ${e.message}`);
@@ -631,7 +667,7 @@ function App() {
     setBusy(true);
     try {
       const prompt = buildRemoveObjectsPrompt(selectedRoom);
-      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h) : null;
+      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
       const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
@@ -639,14 +675,6 @@ function App() {
       setSrcB64(dataUriToBase64(uri));
       const nd = await imageDims(uri);
       if (nd) setSrcDims({ w: nd.w, h: nd.h });
-
-      // Re-analizar la estancia vacía (Gemini 2.5-flash)
-      try {
-        const res = await callGeminiVision(dataUriToBase64(uri), "analyze", "image/jpeg");
-        setAnalysis(res.text || "");
-      } catch (err) {
-        console.warn("No se pudo re-analizar:", err.message);
-      }
 
     } catch (e) {
       alert(`No se pudieron eliminar los objetos: ${e.message}`);
@@ -658,7 +686,7 @@ function App() {
     setBusy(true);
     try {
       const prompt = buildCustomPrompt(customInstruction, selectedRoom);
-      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h) : null;
+      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
       const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
@@ -688,7 +716,7 @@ function App() {
     try {
       const variation = makeVariationNote(style, selectedRoom);
       const prompt = buildUniversalPrompt(style, variation, selectedRoom);
-      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h) : null;
+      const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
       const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
 
@@ -710,7 +738,7 @@ function App() {
       const b64img = dataUriToBase64(item.uri);
       const prompt = buildRecompositionPrompt(style, item.objects, selectedRoom);
       const nd = await imageDims(item.uri);
-      const dims = nd ? computeTargetDims(nd.w, nd.h) : null;
+      const dims = nd ? computeTargetDims(nd.w, nd.h, selectedRes) : null;
 
       const uri = await callFlux(b64img, prompt, selectedQuality, dims);
 
@@ -737,7 +765,7 @@ function App() {
       const b64img = dataUriToBase64(item.uri);
       const prompt = buildEditPrompt(style, item.objects, editInstruction, selectedRoom);
       const nd = await imageDims(item.uri);
-      const dims = nd ? computeTargetDims(nd.w, nd.h) : null;
+      const dims = nd ? computeTargetDims(nd.w, nd.h, selectedRes) : null;
 
       const uri = await callFlux(b64img, prompt, selectedQuality, dims);
 
@@ -792,7 +820,6 @@ function App() {
     setSrc(null);
     setSrcB64(null);
     setSrcDims(null);
-    setAnalysis("");
     setCustomInstruction("");
     setResults({});
     setEditInstruction("");
@@ -1055,10 +1082,24 @@ function App() {
             </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow p-3 mt-4">
-            <h3 className="font-semibold mb-2">Descripción del {ROOM_CONFIG[selectedRoom].name}</h3>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {analysis || "Se generará una breve descripción al subir la imagen."}
+          <div className="bg-white rounded-xl shadow p-3 mt-4 res-selector">
+            <h3 className="font-semibold mb-2">Resolución de la imagen</h3>
+            <div className="res-toggle">
+              {RES_OPTIONS.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`res-btn ${selectedRes === r ? 'active' : ''}`}
+                  onClick={() => setSelectedRes(r)}
+                  disabled={busy}
+                  aria-pressed={selectedRes === r}
+                >
+                  {r}px
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Lado largo de la imagen (se mantiene el formato de tu foto). 4096px se genera al máximo y se reescala en tu equipo.
             </p>
           </div>
         </section>

@@ -38,17 +38,11 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// ===== config.php opcional (puede definir F y/o G) =====
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-}
-
-// Cascade de clave por letra: config.php (const) -> env -> REDIRECT_ -> $_SERVER -> $_ENV
+// Cascade de clave por letra: env -> REDIRECT_ -> $_SERVER -> $_ENV.
+// La fuente real es SetEnv <letra> "..." del .htaccess RAÍZ de Hostinger.
+// (Sin config.php: las claves NUNCA se guardan en un archivo del repo.)
 function readKey(string $letter): string {
-    $k = '';
-    if (defined($letter) && constant($letter)) { $k = (string)constant($letter); }
-    if (!$k) { $k = getenv($letter) ?: ''; }
+    $k = getenv($letter) ?: '';
     if (!$k) { $k = getenv('REDIRECT_' . $letter) ?: ''; }
     if (!$k) { $k = $_SERVER[$letter] ?? ''; }
     if (!$k) { $k = $_SERVER['REDIRECT_' . $letter] ?? ''; }
