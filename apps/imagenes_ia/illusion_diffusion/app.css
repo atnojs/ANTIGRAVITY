@@ -1,26 +1,26 @@
 :root {
-    /* Base Oficial */
-    --bg1: #041847;
-    --bg2: #0c1445;
-    --acc: #22d3ee;
-    --acc2: #a78bfa;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --border: rgba(34, 211, 238, 0.2);
-    --card-bg: rgba(15, 23, 42, 0.4);
+    /* Base Oficial — paleta hoola/relatos */
+    --bg1: #001018;
+    --bg2: #0E5368;
+    --acc: #00D0D0;
+    --acc2: #26C626;
+    --text: #eaffff;
+    --muted: #99CCCC;
+    --border: rgba(0, 208, 208, 0.55);
+    --card-bg: rgba(23, 79, 122, 0.42);
     --shadow-color: rgba(0, 0, 0, 0.5);
 
-    /* Neón + 3D Extensions */
-    --neon-cyan: #2ee8ff;
-    --neon-pink: #ff4ecd;
-    --neon-purple: #d54cff;
-    --glow-strong: rgba(46, 232, 255, 0.4);
+    /* Neón + 3D Extensions (hoola) */
+    --neon-cyan: #00D0D0;
+    --neon-pink: #26C626;
+    --neon-purple: #26C626;
+    --glow-strong: rgba(0, 208, 208, 0.4);
     --radius-lg: 24px;
     --radius-md: 16px;
     --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Gradiente de fondo global */
-    --main-bg-gradient: linear-gradient(135deg, #041847 0%, #0c1445 35%, #1e3a8a 75%, #00bcd4 100%);
+    /* Gradiente de fondo global (hoola) */
+    --main-bg-gradient: linear-gradient(135deg, #001018 0%, #062f43 35%, #0E5368 100%);
 
     color-scheme: dark;
 }
@@ -32,20 +32,55 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     background: var(--main-bg-gradient);
     background-attachment: fixed;
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
+    position: relative;
+}
+
+/* Halos radiales cian (hoola) */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(0, 208, 208, 0.12), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(0, 208, 208, 0.10), transparent 45%);
+}
+
+/* Rejilla de circuito cian (hoola) */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        linear-gradient(rgba(0, 208, 208, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 208, 208, 0.05) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+}
+
+/* El contenido va por encima de los pseudo-fondos */
+.app-layout {
+    position: relative;
+    z-index: 1;
 }
 
 h1,
 h2,
 h3,
 .font-montserrat {
-    font-family: 'Montserrat', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 /* Glassmorphism CORE */
@@ -65,7 +100,7 @@ h3,
     background: rgba(255, 255, 255, 0.08);
     border-color: var(--acc);
     transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 15px 45px 0 rgba(46, 232, 255, 0.15);
+    box-shadow: 0 15px 45px 0 rgba(0, 208, 208, 0.15);
 }
 
 /* Neon Text & Shadows */
@@ -158,8 +193,8 @@ h3,
 
 .upload-area:hover {
     border-color: var(--neon-cyan);
-    background: rgba(34, 211, 238, 0.08);
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+    background: rgba(0, 208, 208, 0.08);
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.2);
 }
 
 .upload-area.has-image {
@@ -254,13 +289,13 @@ h3,
 }
 
 .label-badge {
-    background: rgba(34, 211, 238, 0.1);
+    background: rgba(0, 208, 208, 0.1);
     color: var(--acc);
     padding: 1px 7px;
     border-radius: 10px;
     font-weight: 600;
     font-size: 0.7rem;
-    border: 1px solid rgba(34, 211, 238, 0.2);
+    border: 1px solid rgba(0, 208, 208, 0.2);
 }
 
 /* Sliders */
@@ -370,8 +405,10 @@ input[type="range"]::-webkit-slider-thumb:hover {
     padding: 0.875rem 2rem;
     font-size: 1rem;
     font-weight: 600;
-    font-family: 'Montserrat', sans-serif;
-    color: white;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #001018;
     background: linear-gradient(135deg, var(--acc), var(--acc2));
     border: none;
     border-radius: var(--radius-md);
@@ -402,7 +439,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .generate-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(34, 211, 238, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 208, 208, 0.3);
 }
 
 .generate-btn:disabled {
@@ -550,7 +587,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .history-item .download-btn {
-    background: rgba(34, 211, 238, 0.8);
+    background: rgba(0, 208, 208, 0.8);
     color: white;
 }
 
@@ -667,10 +704,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
     flex: 1;
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--acc) 0%, var(--acc2) 100%);
+    color: #001018;
     border: none;
-    border-radius: 6px;
+    border-radius: 999px;
     cursor: pointer;
     transition: opacity 0.2s, transform 0.2s;
 }
