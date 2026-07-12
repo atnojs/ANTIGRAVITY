@@ -430,8 +430,8 @@
     }
     list.innerHTML = files.map(f => `
       <div class="file-row" data-id="${f.id}">
-        ${thumbCell(f)}
-        <div class="fr-main">
+        <div class="fr-open" data-open="${f.id}">${thumbCell(f)}</div>
+        <div class="fr-main fr-open" data-open="${f.id}">
           <div class="fr-name">${escapeHtml(f.name)}</div>
           <div class="fr-meta">${fmtSize(f.size || 0)} · ${fmtDate(f.createdAt)}</div>
         </div>
@@ -447,6 +447,7 @@
           </button>
         </div>
       </div>`).join('');
+    list.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openViewer(b.dataset.open)));
     list.querySelectorAll('[data-dl]').forEach(b => b.addEventListener('click', () => downloadFile(b.dataset.dl)));
     list.querySelectorAll('[data-rn]').forEach(b => b.addEventListener('click', () => askRename(b.dataset.rn)));
     list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => askDeleteFile(b.dataset.del)));
@@ -590,6 +591,68 @@
     }
   }
 
+  /* ---------- visor grande (lightbox) ---------- */
+  let viewerUrl = null;
+  let viewerCurrentId = null;
+
+  function closeViewer() {
+    $('viewerBackdrop').classList.remove('show');
+    $('viewerStage').innerHTML = '';
+    if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
+    viewerCurrentId = null;
+  }
+
+  async function openViewer(id) {
+    const f = state.index.files.find(x => x.id === id);
+    if (!f) return;
+    viewerCurrentId = id;
+    $('viewerTitle').textContent = f.name;
+    $('viewerStage').innerHTML = '<div class="v-loading"><span class="spinner"></span> Descifrando…</div>';
+    $('viewerBackdrop').classList.add('show');
+    const type = f.type || '';
+
+    try {
+      const ct = await apiGetBlob(id);
+      const plain = await decryptBytes(state.dek, ct, f.iv);
+      if (viewerCurrentId !== id) return; // se cerró/cambió mientras cargaba
+      if (viewerUrl) { URL.revokeObjectURL(viewerUrl); viewerUrl = null; }
+      const blob = new Blob([plain], { type: type || 'application/octet-stream' });
+      viewerUrl = URL.createObjectURL(blob);
+
+      const stage = $('viewerStage');
+      if (/^image\//.test(type)) {
+        stage.innerHTML = `<img src="${viewerUrl}" alt="${escapeHtml(f.name)}">`;
+        // Regenerar miniatura para imágenes antiguas que no la tienen
+        if (!f.thumb) { regenThumbFromBlob(f, blob).catch(() => {}); }
+      } else if (/^video\//.test(type)) {
+        stage.innerHTML = `<video src="${viewerUrl}" controls autoplay playsinline></video>`;
+      } else if (/^audio\//.test(type)) {
+        stage.innerHTML = `<div class="v-generic"><div class="big">🎵</div><div>${escapeHtml(f.name)}</div><audio src="${viewerUrl}" controls autoplay style="margin-top:18px"></audio></div>`;
+      } else if (/pdf/.test(type)) {
+        stage.innerHTML = `<iframe src="${viewerUrl}" style="width:100%;height:100%;min-height:70vh;border:none;border-radius:10px;background:#fff"></iframe>`;
+      } else {
+        stage.innerHTML = `<div class="v-generic"><div class="big">${iconFor(type, f.name)}</div>
+          <div>Este tipo de archivo no se puede previsualizar.</div>
+          <button class="btn primary" id="vGenDl">📥 Descargar «${escapeHtml(f.name)}»</button></div>`;
+        const b = document.getElementById('vGenDl');
+        if (b) b.addEventListener('click', () => downloadFile(id));
+      }
+    } catch (e) {
+      if (viewerCurrentId !== id) return;
+      $('viewerStage').innerHTML = `<div class="v-generic"><div class="big">⚠️</div><div>No se pudo abrir: ${escapeHtml(e.message)}</div></div>`;
+    }
+  }
+
+  // Genera miniatura a partir de un blob ya descifrado (imágenes antiguas)
+  async function regenThumbFromBlob(f, blob) {
+    const file = new File([blob], f.name, { type: f.type });
+    const thumb = await buildThumb(file);
+    if (thumb) {
+      f.thumb = thumb;
+      try { await persistIndex(); renderFiles(); } catch (e) { /* ignore */ }
+    }
+  }
+
   /* ---------- modales genéricos ---------- */
   function openModal(html) {
     $('modalBox').innerHTML = html;
@@ -704,7 +767,17 @@
     $('btnUpload').addEventListener('click', () => $('fileInput').click());
     $('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
     $('modalBackdrop').addEventListener('click', e => { if (e.target === $('modalBackdrop')) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if ($('viewerBackdrop').classList.contains('show')) closeViewer();
+        else closeModal();
+      }
+    });
+
+    // Visor grande
+    $('viewerClose').addEventListener('click', closeViewer);
+    $('viewerBackdrop').addEventListener('click', e => { if (e.target === $('viewerBackdrop')) closeViewer(); });
+    $('viewerDownload').addEventListener('click', () => { if (viewerCurrentId) downloadFile(viewerCurrentId); });
 
     // Dropzone
     const dz = $('dropzone');
