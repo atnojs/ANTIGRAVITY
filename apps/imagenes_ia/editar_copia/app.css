@@ -518,13 +518,9 @@ textarea:focus-visible {
      escalan en hover) NO deben capturar el clic -> pointer-events:none.
    - El contenido interno tampoco intercepta el evento del botón/enlace.
    ═══════════════════════════════════════════════ */
+/* Solo los iconos decorativos no reciben eventos. Los enlaces y controles
+   conservan sus objetivos de clic nativos, incluso en el primer clic. */
 .group.glass-hover > .absolute,
-.group.glass-hover svg {
+.group.glass-hover > .absolute svg {
     pointer-events: none;
-}
-.group.glass-hover * {
-    pointer-events: none;
-}
-.group.glass-hover {
-    pointer-events: auto;
 }
