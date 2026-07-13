@@ -12,7 +12,7 @@ Configurar una comunicación segura entre una aplicación web alojada en Hosting
 ## Inputs esperados
 
 - `app_directory`: ruta absoluta de la aplicación en el servidor.
-- `api_key_constant`: nombre de la constante a utilizar. Valor recomendado por defecto: `GEMINI_API_KEY`.
+- `api_key_constant`: nombre de la constante a utilizar. Valor recomendado por defecto: `F`.
 
 ## 1. Regla crítica de seguridad
 
@@ -31,7 +31,7 @@ Antes de modificar nada, diagnosticar el estado actual:
 
 1. Localizar el archivo PHP que realiza peticiones cURL a la API (normalmente `proxy.php`).
 2. Identificar cómo obtiene la API Key actualmente (buscar `getenv()`, constantes, `$_SERVER`).
-3. Identificar el nombre de la variable/constante usada (`GEMINI_API_KEY`, `A`, etc.).
+3. Identificar el nombre de la variable/constante usada (`F`, `A`, etc.).
 4. Verificar si existe `.htaccess` en la carpeta con directivas `SetEnv`.
 
 ## 3. Generación del archivo de aislamiento
@@ -107,7 +107,7 @@ if (!$apiKey || empty($apiKey)) {
 Si hay un archivo `.htaccess` en la carpeta de la app:
 
 1. Verificar que la directiva `SetEnv` usa el nombre correcto de variable.
-2. Ejemplo: `SetEnv GEMINI_API_KEY "AQUI_TU_API_KEY"` o `SetEnv A "AQUI_TU_API_KEY"`.
+2. Ejemplo: `SetEnv F "AQUI_TU_API_KEY"` o `SetEnv A "AQUI_TU_API_KEY"`.
 3. Si NO existe `.htaccess`, no crearlo — `config.php` actúa como fuente primaria.
 
 ## 6. Reglas para proxy seguro

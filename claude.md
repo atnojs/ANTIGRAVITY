@@ -46,7 +46,7 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 ### history-server
 
-Úsala para dar historial persistente en el servidor (PHP en Hostinger), en lugar de localStorage.
+Úsala para dar historial persistente mediante PHP en Hostinger.
 
 ### mejorar-prompt
 
@@ -54,11 +54,11 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 ## Reglas críticas del proyecto
 
-- Las imágenes se generan/editan SIEMPRE con FLUX (Black Forest Labs). NUNCA con Gemini.
+- Las imágenes se generan/editan SIEMPRE con FLUX (Black Forest Labs).
 - El estilo es SIEMPRE hoola/relatos: cian `#00D0D0` + verde `#26C626`, tipografía Electrolize, glassmorphism.
 - Todo lo que se cree o edite debe ser RESPONSIVE (se ve y funciona bien en móvil, tablet y escritorio).
 - Las apps que generen/editen imagen deben llevar selectores PRO/MAX + formato (AR) + resolución (512/1024/2048/4096).
-- El historial es SIEMPRE persistente en el servidor (PHP), nunca solo en localStorage.
+- El historial es SIEMPRE persistente en el servidor mediante PHP en Hostinger.
 - No reescribas archivos completos desde cero si ya existen archivos del usuario. Modifica únicamente los bloques necesarios.
 - Antes de editar código, lee y comprende el archivo original.
 - Conserva las funcionalidades, rutas, nombres de archivos, IDs, clases y funciones existentes salvo petición expresa.

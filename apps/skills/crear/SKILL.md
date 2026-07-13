@@ -62,7 +62,7 @@ Defino la estructura técnica basándome en el estándar **Antigravity**:
 - **Backend**: `proxy.php` (Siempre oculto, template estándar).
 - **Frontend**: `index.html` + `app.js` (React/Babel).
 - **Estilo**: `app.css` (Neon Glassmorphism estricto).
-- **Modelo AI**: `gemini-3-pro-image-preview` (para lógica interna).
+- **Modelo AI**: `FLUX` (Black Forest Labs).
 
 ### Paso 3: Ejecución (Scaffolding)
 Genero los archivos físicos en `e:/ANTIGRAVITY/<nombre-proyecto>/`:
@@ -71,96 +71,20 @@ Genero los archivos físicos en `e:/ANTIGRAVITY/<nombre-proyecto>/`:
 3.  Copio `resources/css_template.css` -> `app.css` (e inyecto estilos extra si hiciera falta).
 4.  Escribo `app.js` implementando la lógica visada en el Paso 1.
 
-#### ⚠️ ESTÁNDAR UX: ESTADO "PENSANDO" (OBLIGATORIO)
-Cualquier interacción que llame a la IA (generar, editar, analiar) debe replicar **exactamente** este comportamiento visual:
-- **Estado Inicial**: Botón normal con icono (ej: Sparkles) y texto "GENERAR".
-- **Estado Cargando**:
-    - El botón se deshabilita (`disabled={true}`).
-    - La opacidad baja (`disabled:opacity-20`).
-    - El icono cambia a un Spinner giratorio (`<Loader2 className="animate-spin" />`).
-    - El texto cambia a **"PROCESANDO..."** (Mayúsculas).
-- **Código de Referencia**:
-  ```jsx
-  <button disabled={isGenerating} className="...">
-      {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles />}
-      {isGenerating ? 'PROCESANDO...' : 'GENERAR'}
-  </button>
-  ```
+#### ⚠️ ESTÁNDAR UX: HISTORIAL PERSISTENTE EN PHP (OBLIGATORIO)
 
-### Paso 4: Revisión Visual y Funcional (OBLIGATORIO) 🕵️
-**Antes de entregar**, DEBO usar mi navegador para verificar el resultado real.
+Cualquier app que genere contenido debe persistir su historial con `history.php` y `history-manager.js` en el servidor Hostinger.
 
-1.  **Abrir en Navegador**: Lanzo el `browser_subagent` contra el `index.html`.
-2.  **Auditoría en Vivo**:
-    - Compruebo Glassmorphism.
-    - **PRUEBO EL BOTÓN**: Hago click y verifico que cambia a "PROCESANDO..." y muestra el spinner.
-    - Verifico que no hay errores rojos en consola.
-3.  **Corrección Inmediata**: Si el estado de carga no se ve como el estándar, lo corrijo.
+```javascript
+const hm = new HistoryManager('nombre_app');
 
-#### ⚠️ ESTÁNDAR UX: HISTORIAL PERSISTENTE (OBLIGATORIO)
-Cualquier app que genere contenido (imágenes, textos, resultados) **DEBE** implementar un historial que persista entre recargas usando `localStorage`.
-
-**Patrón de Código (React):**
-```jsx
-// 1. Constante con clave única por app
-const STORAGE_KEY = 'nombre_app_history';
-
-// 2. Estado del historial
-const [history, setHistory] = useState([]);
-
-// 3. Cargar historial al montar (useEffect con array vacío)
-useEffect(() => {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed)) {
-                setHistory(parsed);
-            }
-        }
-    } catch (e) {
-        console.warn('Error cargando historial:', e);
-    }
-}, []);
-
-// 4. Guardar historial cuando cambia
-useEffect(() => {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-    } catch (e) {
-        console.warn('Error guardando historial:', e);
-    }
-}, [history]);
-
-// 5. Añadir al historial (ejemplo)
-const addToHistory = (item) => {
-    const newItem = {
-        id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        data: item,
-        createdAt: Date.now()
-    };
-    setHistory(prev => [newItem, ...prev]);
-};
-
-// 6. Eliminar del historial
-const removeFromHistory = (id) => {
-    setHistory(prev => prev.filter(item => item.id !== id));
-};
-
-// 7. Limpiar todo el historial
-const clearHistory = () => {
-    if (confirm('¿Eliminar todo el historial?')) {
-        setHistory([]);
-    }
-};
+await hm.load();
+await hm.save({ type: 'image', data: resultado });
+await hm.delete(id);
+await hm.clear();
 ```
 
-**Componentes UI Requeridos:**
-- Panel lateral o sección de historial visible.
-- Cada item debe tener botones de **Descargar** y **Eliminar**.
-- Botón global de **Limpiar todo** con confirmación.
-- Cursor `zoom-in` para indicar que se puede ampliar.
-
+La interfaz debe mostrar el historial, permitir descargar y eliminar cada elemento, y pedir confirmación antes de limpiar todo.
 #### ⚠️ ESTÁNDAR UX: LIGHTBOX/ZOOM DE IMÁGENES (OBLIGATORIO)
 Cualquier app que muestre imágenes generadas **DEBE** implementar un lightbox para verlas amplificadas.
 

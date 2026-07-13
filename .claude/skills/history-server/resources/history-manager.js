@@ -1,7 +1,7 @@
 /**
  * HistoryManager — Gestor de historial server-side para apps Antigravity
  *
- * Reemplaza localStorage (límite 5MB, solo local) por almacenamiento
+ * Gestiona almacenamiento
  * en servidor PHP (sin límite, accesible desde cualquier navegador).
  *
  * Uso:

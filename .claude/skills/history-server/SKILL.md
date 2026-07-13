@@ -1,6 +1,6 @@
 ---
 name: history-server
-description: "Sistema de historial persistente server-side para apps Antigravity. Reemplaza localStorage (límite 5MB, solo local) por almacenamiento PHP en servidor Hostinger sin límite de tamaño y accesible desde cualquier navegador."
+description: "Sistema de historial persistente server-side para apps Antigravity. Proporciona almacenamiento PHP persistente en Hostinger, accesible desde cualquier navegador."
 ---
 
 # History Server — Historial Persistente Server-Side
@@ -8,7 +8,7 @@ description: "Sistema de historial persistente server-side para apps Antigravity
 ## Objetivo
 
 Proporcionar un sistema de historial para apps web alojadas en Hostinger que:
-- **No tiene límite de 5MB** (a diferencia de localStorage)
+- **No tiene límite de tamaño práctico para el uso de la aplicación**
 - **Es accesible desde cualquier navegador/dispositivo** (los datos viven en el servidor)
 - **Persiste entre sesiones y dispositivos**
 - **Usa PHP como backend** (compatible con Hostinger)
@@ -127,7 +127,7 @@ async function onDelete(id) {
     "data": {
         "url": "https://...",
         "prompt": "una casa en el bosque",
-        "model": "gemini-3.1-flash-image-preview"
+        "model": "flux-2-pro"
     },
     "createdAt": "2026-06-04T12:00:00+02:00"
 }
@@ -143,15 +143,11 @@ Al implementar el historial, la interfaz debe incluir:
 - **cursor: zoom-in** en imágenes del historial
 - Lightbox para ver imágenes ampliadas (ver skill `style_guide_skill`)
 
-## 7. Ventajas sobre localStorage
+## 7. Ventajas del historial PHP
 
-| Característica | localStorage | History Server |
-|---------------|-------------|----------------|
-| Límite de tamaño | 5MB | Sin límite (disco) |
-| Alcance | Solo este navegador | Cualquier navegador |
-| Persistencia | Se pierde al limpiar datos | Archivo en servidor |
-| Sincronización | No | Sí (mismo servidor) |
-| Backups | Manual | Se incluye en backups del hosting |
+- Persistencia entre sesiones y dispositivos.
+- Almacenamiento centralizado en Hostinger.
+- Incluido en las copias de seguridad del hosting.
 
 ## 8. Reglas críticas
 

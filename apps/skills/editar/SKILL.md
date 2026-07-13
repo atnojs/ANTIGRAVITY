@@ -76,45 +76,16 @@ Uso herramientas de edición (`replace_file_content`).
     - Reviso consola por errores.
 3.  **Iteración**: Si la verificación falla, vuelvo al Paso 2.
 
-### Paso 5: Añadir Historial Persistente (SI APLICA)
-Si la app genera contenido y **NO tiene historial local**, debo añadirlo.
+### Paso 5: Historial Persistente en PHP (SI APLICA)
+Si la app genera contenido, verificar que utiliza `history.php` y `history-manager.js` mediante `HistoryManager`.
 
-**Diagnóstico Rápido:**
-1. Buscar `localStorage` en el código.
-2. Si no existe → Añadir el patrón estándar.
-
-**Patrón de Código a Inyectar (React):**
-```jsx
-// Constante única
-const STORAGE_KEY = 'nombre_app_history';
-
-// Estado
-const [history, setHistory] = useState([]);
-
-// Cargar al montar
-useEffect(() => {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed)) setHistory(parsed);
-        }
-    } catch (e) { console.warn('Error cargando historial:', e); }
-}, []);
-
-// Guardar cuando cambia
-useEffect(() => {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-    } catch (e) { console.warn('Error guardando historial:', e); }
-}, [history]);
+```javascript
+const hm = new HistoryManager('nombre_app');
+await hm.load();
+await hm.save({ type: 'image', data: resultado });
 ```
 
-**UI Mínima a Añadir:**
-- Sidebar o sección con grid de items del historial.
-- Botones de descarga/eliminar por item.
-- Botón "Limpiar todo" con `confirm()`.
-
+El historial debe mostrar elementos, permitir descargarlos/eliminarlos y confirmar el borrado total.
 ### Paso 6: Añadir Lightbox/Zoom (SI APLICA)
 Si la app muestra imágenes generadas, debo añadir el lightbox estándar.
 

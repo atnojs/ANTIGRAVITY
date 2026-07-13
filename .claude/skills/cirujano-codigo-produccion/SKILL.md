@@ -51,7 +51,7 @@ Aplicar edición quirúrgica reemplazando únicamente el bloque afectado:
 ### Paso 5: Verificar Historial Persistente
 
 **Diagnóstico rápido:**
-1. Buscar `localStorage` o `HistoryManager` en el código.
+1. Verificar la integración de `HistoryManager` en el código.
 2. Si la app genera contenido y **NO tiene historial server-side** → añadir sistema `history-server`.
 
 **Patrón a inyectar:**

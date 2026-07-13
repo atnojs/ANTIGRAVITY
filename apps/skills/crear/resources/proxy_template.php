@@ -1,122 +1,78 @@
 <?php
-// Proxy para Google Gemini — PHP 8+, cURL habilitado.
+// Proxy FLUX/BFL para Hostinger: usa la clave F definida fuera de Git.
 declare(strict_types=1);
 ini_set('display_errors', '0');
-error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
-
-// CORS básico (ajusta Origin si quieres restringirlo)
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
-
-register_shutdown_function(function () {
-    $e = error_get_last();
-    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
-        http_response_code(500);
-        echo json_encode(['error' => 'Fallo interno en PHP', 'details' => $e['message']]);
-    }
-});
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !function_exists('curl_init')) {
     http_response_code(405);
-    echo json_encode(['error' => 'Método no permitido. Usa POST.']);
+    echo json_encode(['error' => 'Solo se admiten peticiones POST con cURL habilitado.']);
     exit;
 }
 
-if (!function_exists('curl_init')) {
-    http_response_code(500);
-    echo json_encode(['error' => 'cURL no está habilitado en el servidor.']);
-    exit;
-}
-
-// 1) API Key desde variable de entorno (.htaccess -> SetEnv)
-$API_KEY = getenv('GEMINI_API_KEY');
-if (!$API_KEY) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Falta la API key. Configura GEMINI_API_KEY en .htaccess.']);
-    exit;
-}
-
-// 2) Entrada
-$raw = file_get_contents('php://input') ?: '';
-$req = json_decode($raw, true);
-if (!is_array($req)) {
+$apiKey = getenv('F') ?: getenv('REDIRECT_F') ?: ($_SERVER['F'] ?? '') ?: ($_SERVER['REDIRECT_F'] ?? '');
+$req = json_decode(file_get_contents('php://input') ?: '', true);
+if (!$apiKey || !is_array($req)) {
     http_response_code(400);
-    echo json_encode(['error' => 'JSON inválido o vacío.']);
+    echo json_encode(['error' => 'Falta la clave F de FLUX o el cuerpo JSON es inválido.']);
     exit;
 }
 
-// 3) Modelo y payload
-$model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
-if ($model === '' || stripos($model, 'flah') !== false) {
-    $model = 'gemini-2.5-flash-image'; // corrige posible typo
+$prompt = trim((string)($req['prompt'] ?? ''));
+$image = (string)($req['image'] ?? '');
+$quality = (string)($req['quality'] ?? 'pro');
+$width = max(32, (int)($req['width'] ?? 1024));
+$height = max(32, (int)($req['height'] ?? 1024));
+if ($prompt === '') {
+    http_response_code(400);
+    echo json_encode(['error' => 'Falta el prompt.']);
+    exit;
+}
+if (str_contains($image, 'base64,')) { $image = substr($image, strpos($image, 'base64,') + 7); }
+
+$endpoint = 'https://api.bfl.ai/v1/' . ($quality === 'max' ? 'flux-2-max' : 'flux-2-pro');
+$payload = ['prompt' => $prompt, 'width' => $width, 'height' => $height];
+if ($image !== '') { $payload['input_image'] = $image; }
+
+$ch = curl_init($endpoint);
+curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'accept: application/json', 'x-key: ' . $apiKey], CURLOPT_POSTFIELDS => json_encode($payload), CURLOPT_TIMEOUT => 30]);
+$response = curl_exec($ch);
+$code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$error = curl_error($ch);
+curl_close($ch);
+if ($response === false || $code >= 400) {
+    http_response_code($code ?: 502);
+    echo json_encode(['error' => $error ?: 'FLUX rechazó la solicitud.']);
+    exit;
 }
 
-$endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
-
-if (isset($req['contents'])) {
-    // A) Passthrough completo en formato Gemini
-    $payload = ['contents' => $req['contents']];
-    // Opcionalmente pasa generationConfig si viene
-    if (isset($req['generationConfig']) && is_array($req['generationConfig'])) {
-        $payload['generationConfig'] = $req['generationConfig'];
-    }
-} elseif (isset($req['payload']) && is_array($req['payload'])) {
-    // A2) Passthrough vía 'payload'
-    $payload = $req['payload'];
-} else {
-    // B) Formato sencillo: prompt + base64ImageData + mimeType
-    $prompt   = trim((string)($req['prompt'] ?? ''));
-    $imageB64 = (string)($req['base64ImageData'] ?? '');
-    $mime     = (string)($req['mimeType'] ?? 'image/jpeg');
-
-    if ($prompt === '' || $imageB64 === '') {
-        http_response_code(400);
-        echo json_encode(['error' => 'Faltan campos: prompt o base64ImageData.']);
+$data = json_decode($response, true);
+$pollingUrl = (string)($data['polling_url'] ?? '');
+if ($pollingUrl === '') {
+    http_response_code(502);
+    echo json_encode(['error' => 'FLUX no devolvió una URL de seguimiento.']);
+    exit;
+}
+for ($i = 0; $i < 60; $i++) {
+    usleep(1500000);
+    $poll = curl_init($pollingUrl);
+    curl_setopt_array($poll, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => ['accept: application/json', 'x-key: ' . $apiKey], CURLOPT_TIMEOUT => 20]);
+    $result = curl_exec($poll);
+    curl_close($poll);
+    $status = json_decode((string)$result, true);
+    if (($status['status'] ?? '') === 'Ready') {
+        echo json_encode(['success' => true, 'imageUrl' => $status['result']['sample'] ?? '']);
         exit;
     }
-
-    $payload = [
-        'contents' => [[
-            'parts' => [
-                ['text' => $prompt],
-                ['inlineData' => [
-                    'mimeType' => $mime,
-                    'data' => $imageB64
-                ]]
-            ]
-        ]],
-        // TEXT+IMAGE por si el modelo devuelve ambos
-        'generationConfig' => ['responseModalities' => ['TEXT', 'IMAGE']]
-    ];
+    if (in_array($status['status'] ?? '', ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
+        http_response_code(422);
+        echo json_encode(['error' => 'FLUX no pudo completar la solicitud.']);
+        exit;
+    }
 }
-
-// 4) Llamada a la API
-$ch = curl_init($endpoint);
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-    CURLOPT_TIMEOUT => 60,
-]);
-$response = curl_exec($ch);
-if ($response === false) {
-    $err = curl_error($ch);
-    curl_close($ch);
-    http_response_code(502);
-    echo json_encode(['error' => 'Error de comunicación con Google', 'details' => $err]);
-    exit;
-}
-$code = (int)(curl_getinfo($ch, CURLINFO_HTTP_CODE) ?: 502);
-curl_close($ch);
-
-http_response_code($code);
-echo $response;
-
+http_response_code(504);
+echo json_encode(['error' => 'FLUX tardó demasiado en responder.']);

@@ -8,13 +8,13 @@ description: Realiza un análisis visual hiperpreciso de imágenes para permitir
 ## Cuándo usar esta habilidad
 - Cuando el usuario suba una imagen y pida "analízala", "descríbela para clonar" o "saca el prompt".
 - Cuando se necesite recrear un estilo visual exacto utilizando otra IA generativa.
-- Cuando el usuario mencione "Protocolo Gemini" o "Clonador".
+- Cuando el usuario mencione "Protocolo FLUX" o "Clonador".
 
 ## Inputs necesarios
 1.  **Imagen**: El archivo visual a analizar.
 2.  **Objetivo**: Confirmar si es para clonación exacta o solo inspiración.
 
-## Reglas de Calidad (Protocolo Gemini)
+## Reglas de Calidad (Protocolo FLUX)
 - **Precisión Quirúrgica**: No omitas ningún detalle visible.
 - **Objetividad Total**: Evita interpretaciones ("parece triste"), describe hechos ("cejas inclinadas hacia abajo").
 - **Estructura Fija**: Usa siempre las 8 secciones del protocolo.

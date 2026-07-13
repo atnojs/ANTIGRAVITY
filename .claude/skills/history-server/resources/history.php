@@ -2,7 +2,7 @@
 /**
  * History Server — API de historial persistente para apps Antigravity
  *
- * Almacena historial en servidor (sin límite de 5MB de localStorage).
+ * Almacena historial en servidor.
  * Accesible desde cualquier navegador/dispositivo.
  *
  * Uso:

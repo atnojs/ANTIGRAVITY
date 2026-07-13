@@ -104,7 +104,7 @@ Alejabot escribe en `broadcast.msg` para dar directrices globales:
 ```json
 {
   "id": 1,
-  "title": "Migrar proxy a Gemini 2.5",
+  "title": "Migrar proxy a FLUX",
   "status": "PENDING",
   "plan_approved": false,
   "assigned_to": "Especialista",

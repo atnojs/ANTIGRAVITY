@@ -13,7 +13,7 @@ Actuar como Director de Producto que coordina las skills especializadas para gar
 
 1. **Idioma español estricto**: NUNCA generar texto ni audio en otro idioma. Todo prompt a IA debe incluir: *"todo texto o audio generado debe estar obligatoriamente en español."*
 2. **No regenerar desde cero**: si hay archivos base, modificarlos quirúrgicamente (ver `cirujano-codigo-produccion`).
-3. **Modelo IA por defecto**: `gemini-3.1-flash-image-preview`.
+3. **Modelo IA por defecto**: `FLUX` (Black Forest Labs).
 
 ## 🧠 Skills integradas
 
@@ -107,10 +107,10 @@ Cada botón que llame a la IA debe implementar:
 
 ### ⚠️ Historial Persistente Server-Side (OBLIGATORIO)
 
-Toda app que genere contenido debe usar `history-server`, NO localStorage:
+Toda app que genere contenido debe usar `history-server` con PHP:
 
 ```javascript
-// Usar HistoryManager en lugar de localStorage
+// Usar HistoryManager con historial PHP en servidor
 const hm = new HistoryManager('nombre_app');
 await hm.load();
 
