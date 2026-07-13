@@ -494,22 +494,19 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
             return btn;
         };
-
-        // Sides: 2 filas × 2 columnas = 4 slots cada lado
+        // Sides: 2 rows x 3 columns = 6 slots on each side
         // catsLeft → top-left, catsRight → top-right en layout
-        // Dividimos: índices 0-3 → left, 4-7 → right
-        const leftSlots = 4;
-        const rightSlots = 4;
-
-        // Left (4 slots: 2 rows × 2 cols)
+        // Categories 0-5 go on the left; 6-11 go on the right
+        const leftSlots = 6;
+        const rightSlots = 6;
+        // Left: 6 slots (2 rows x 3 columns)
         if (catsLeft) {
             for (let i = 0; i < leftSlots; i++) {
                 const btn = i < categories.length ? createCatBtn(categories[i], i) : createEmptyBtn();
                 catsLeft.appendChild(btn);
             }
         }
-
-        // Right (4 slots: 2 rows × 2 cols)
+        // Right: 6 slots (2 rows x 3 columns)
         if (catsRight) {
             for (let i = 0; i < rightSlots; i++) {
                 const idx = leftSlots + i;
@@ -520,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Below: 2 filas × 8 columnas = 16 slots
         if (catsBelow) {
-            const belowStart = leftSlots + rightSlots; // 8
+            const belowStart = leftSlots + rightSlots; // 12
             const belowSlots = 16;
             for (let i = 0; i < belowSlots; i++) {
                 const idx = belowStart + i;

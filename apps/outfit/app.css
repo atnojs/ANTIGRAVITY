@@ -178,10 +178,10 @@ body::after {
 /* Columnas laterales — 2 filas × 2 columnas */
 .cats-side {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: 1fr 1fr;
-  gap: 4px;
-  flex: 0 0 190px;
+  gap: 8px;
+  flex: 0 0 420px;
   min-height: 340px;
 }
 .cats-side:empty { display: none; }
@@ -836,8 +836,8 @@ body::after {
     gap: 10px;
   }
   .cats-side {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr 1fr;
     flex: 0 0 auto;
   }
   .cats-below {
@@ -854,7 +854,7 @@ body::after {
 
 @media (max-width: 500px) {
   .cats-side {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     grid-template-rows: 1fr 1fr;
   }
   .cats-below {
