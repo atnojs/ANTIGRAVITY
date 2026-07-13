@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Selectores de elementos del DOM
+    // ===== SELECTORES DOM =====
     const modelDropZone = document.getElementById('model-drop-zone');
     const modelInput = document.getElementById('model-input');
     const modelPreview = document.getElementById('model-preview');
@@ -22,12 +22,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyGrid = document.getElementById('history-grid');
     const clearHistoryBtn = document.getElementById('clear-history-btn');
 
-    // Estado
+    // ===== ESTADO =====
     let modelFile = null;
     let outfitFile = null;
     let selectedCompositions = [];
     let isProcessing = false;
     const usedSurpriseStyles = new Set();
+    let history = [];
+
+    // Calidad FLUX: pro | max
+    let selectedQuality = 'pro';
+
+    // Formato (AR)
+    let selectedAR = '1:1';
+
+    // Resolución
+    let selectedRes = 1024;
+
+    // ===== DB HISTORIAL (IndexedDB local + HistoryManager servidor) =====
     const DB_NAME = 'vestir_modelo_db';
     const DB_VERSION = 1;
     const STORE_NAME = 'history';
@@ -110,10 +122,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    let history = [];
+    // Sincronizar con servidor (HistoryManager)
+    const syncToServer = async (item) => {
+        try {
+            if (window.HistoryManager) {
+                await HistoryManager.init();
+                await HistoryManager.saveItem({
+                    id: item.id,
+                    url: item.image,
+                    prompt: item.title || '',
+                    createdAt: item.createdAt || Date.now(),
+                    style: { compositions: item.compositions || [] },
+                    aspectRatio: selectedAR,
+                    size: String(selectedRes),
+                    geminiSize: '1K'
+                });
+            }
+        } catch (e) {
+            console.warn('Error sync servidor:', e);
+        }
+    };
 
     async function loadHistory() {
         history = await loadHistoryFromDb();
+        // Intentar cargar del servidor también
+        try {
+            if (window.HistoryManager) {
+                HistoryManager.configure({ dbName: DB_NAME });
+                await HistoryManager.init();
+                const serverItems = await HistoryManager.loadFromServer();
+                if (serverItems && serverItems.length > 0) {
+                    const localIds = new Set(history.map(h => h.id));
+                    for (const s of serverItems) {
+                        if (!localIds.has(s.id)) {
+                            const item = {
+                                id: s.id,
+                                image: s.imageUrl || s.url || '',
+                                title: s.prompt || '',
+                                compositions: s.style?.compositions || [],
+                                createdAt: s.createdAt || 0
+                            };
+                            history.push(item);
+                        }
+                    }
+                    history.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                }
+            }
+        } catch (e) {
+            console.warn('Error cargando historial servidor:', e);
+        }
         renderHistory();
     }
 
@@ -121,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderHistory() {
         if (history.length === 0) {
             historySection.classList.remove('hidden');
-            historyGrid.innerHTML = '<p class="text-sm text-gray-400 text-center col-span-2">Aun no hay imagenes en el historial.</p>';
+            historyGrid.innerHTML = '<p class="text-sm text-gray-400 text-center col-span-2">Aún no hay imágenes en el historial.</p>';
             clearHistoryBtn.classList.add('hidden');
             return;
         }
@@ -149,7 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
             historyGrid.appendChild(card);
         });
 
-        // Eventos para las imágenes del historial
         historyGrid.querySelectorAll('.history-card img').forEach(img => {
             img.addEventListener('click', (e) => {
                 lightboxImg.src = e.target.src;
@@ -157,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Eventos para botones
         historyGrid.querySelectorAll('.download-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -197,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Limpiar historial
     clearHistoryBtn.addEventListener('click', async () => {
         if (confirm('¿Estás seguro de que quieres borrar todo el historial?')) {
             await clearHistoryFromDb();
@@ -206,25 +260,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Estilos/composiciones
+    // ===== CALIDAD FLUX (PRO/MAX) =====
+    document.querySelectorAll('.quality-toggle button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.quality-toggle button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedQuality = btn.dataset.quality;
+        });
+    });
+
+    // ===== FORMATO (AR) =====
+    document.querySelectorAll('.ar-selector button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.ar-selector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedAR = btn.dataset.ar;
+        });
+    });
+
+    // ===== RESOLUCIÓN =====
+    document.querySelectorAll('.res-selector button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.res-selector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedRes = parseInt(btn.dataset.res);
+        });
+    });
+
+    // ===== COMPUTE TARGET DIMS (múltiplos de 32) =====
+    const computeTargetDims = () => {
+        const [wRatio, hRatio] = selectedAR.split(':').map(Number);
+        const maxDim = selectedRes;
+
+        let width, height;
+        const ratio = wRatio / hRatio;
+
+        if (ratio >= 1) {
+            width = maxDim;
+            height = Math.round(maxDim / ratio);
+        } else {
+            height = maxDim;
+            width = Math.round(maxDim * ratio);
+        }
+
+        // Redondear a múltiplos de 32
+        width = Math.round(width / 32) * 32;
+        height = Math.round(height / 32) * 32;
+        width = Math.max(256, width);
+        height = Math.max(256, height);
+
+        return { width, height };
+    };
+
+    // ===== UPSCALE CLIENTE (para 4096) =====
+    const upscaleDataUrl = async (dataUrl, targetW, targetH) => {
+        if (!targetW || !targetH) return dataUrl;
+        const img = await new Promise((res, rej) => {
+            const im = new Image(); im.crossOrigin = 'anonymous';
+            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
+        });
+        if (img.naturalWidth >= targetW && img.naturalHeight >= targetH) return dataUrl;
+        const c = document.createElement('canvas');
+        c.width = targetW; c.height = targetH;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, targetW, targetH);
+        return c.toDataURL('image/png', 0.92);
+    };
+
+    // ===== ESTILOS / COMPOSICIONES =====
     const compositions = [
-        { id: 'full-body', title: 'Estudio Profesional', description: 'Cuerpo completo en estudio.', prompt: "Genera una imagen de una fotografía de moda de cuerpo completo: la modelo de la segunda imagen lleva la prenda de la primera de forma estilizada. Fondo de estudio blanco y limpio, iluminación profesional, pose elegante." },
-        { id: 'urban-editorial', title: 'Editorial Urbano', description: 'Sesión en entorno de ciudad.', prompt: "Genera una imagen de una fotografía editorial de moda: la modelo de la segunda imagen lleva la prenda de la primera en una calle urbana moderna. Pose dinámica, estilo cinematográfico." },
-        { id: 'neon-night', title: 'Neón y Noche', description: 'Ciudad de noche, luces de neón.', prompt: "Genera una imagen de una fotografía de moda: la modelo de la segunda imagen lleva la prenda de la primera en una azotea con ciudad iluminada por neón. Estética moderna, ambiente sofisticado." },
-        { id: 'majestic-interior', title: 'Interior Majestuoso', description: 'Museo, biblioteca, hotel de lujo.', prompt: "Genera una imagen de una sesión de moda: la modelo de la segunda imagen lleva la prenda de la primera en un museo o hotel de lujo. Iluminación dramática, opulencia." },
-        { id: 'park-walk', title: 'Paseo por el Parque', description: 'Estilo casual y espontáneo.', prompt: "Genera una imagen de una fotografía de street style: la modelo de la segunda imagen lleva la prenda de la primera paseando por un parque urbano. Look natural, luz del día." },
-        { id: 'beach-minimalism', title: 'Minimalismo en Playa', description: 'Amanecer/atardecer, colores suaves.', prompt: "Genera una imagen de una composición de moda minimalista: la modelo de la segunda imagen lleva la prenda de la primera en una playa al atardecer. Colores suaves, luz difusa." },
-        { id: 'industrial-contrast', title: 'Contraste Industrial', description: 'Fábrica, grafitis, vanguardista.', prompt: "Genera una imagen de una sesión de fotos vanguardista: la modelo de la segunda imagen lleva la prenda de la primera en una fábrica con grafitis. Contraste rudo y moda." },
-        { id: 'cafe-atmosphere', title: 'Ambiente de Cafetería', description: 'Escena íntima y cotidiana.', prompt: "Genera una imagen de una escena de lifestyle: la modelo de la segunda imagen lleva la prenda de la primera en una cafetería. Iluminación acogedora." },
-        { id: 'pub-atmosphere', title: 'Ambiente de Pub', description: 'Escena tomando una copa.', prompt: "Genera una imagen de una escena de lifestyle: la modelo de la segunda imagen lleva la prenda de la primera en un pub. Iluminación alegre, ambiente joven." },
+        { id: 'full-body', title: 'Estudio Profesional', description: 'Cuerpo completo en estudio.', prompt: "Genera una imagen de una fotografía de moda de cuerpo completo: la modelo de la imagen de referencia lleva la prenda descrita de forma estilizada. Fondo de estudio blanco y limpio, iluminación profesional, pose elegante." },
+        { id: 'urban-editorial', title: 'Editorial Urbano', description: 'Sesión en entorno de ciudad.', prompt: "Genera una imagen de una fotografía editorial de moda: la modelo lleva la prenda descrita en una calle urbana moderna. Pose dinámica, estilo cinematográfico." },
+        { id: 'neon-night', title: 'Neón y Noche', description: 'Ciudad de noche, luces de neón.', prompt: "Genera una imagen de una fotografía de moda: la modelo lleva la prenda descrita en una azotea con ciudad iluminada por neón. Estética moderna, ambiente sofisticado." },
+        { id: 'majestic-interior', title: 'Interior Majestuoso', description: 'Museo, biblioteca, hotel de lujo.', prompt: "Genera una imagen de una sesión de moda: la modelo lleva la prenda descrita en un museo o hotel de lujo. Iluminación dramática, opulencia." },
+        { id: 'park-walk', title: 'Paseo por el Parque', description: 'Estilo casual y espontáneo.', prompt: "Genera una imagen de una fotografía de street style: la modelo lleva la prenda descrita paseando por un parque urbano. Look natural, luz del día." },
+        { id: 'beach-minimalism', title: 'Minimalismo en Playa', description: 'Amanecer/atardecer, colores suaves.', prompt: "Genera una imagen de una composición de moda minimalista: la modelo lleva la prenda descrita en una playa al atardecer. Colores suaves, luz difusa." },
+        { id: 'industrial-contrast', title: 'Contraste Industrial', description: 'Fábrica, grafitis, vanguardista.', prompt: "Genera una imagen de una sesión de fotos vanguardista: la modelo lleva la prenda descrita en una fábrica con grafitis. Contraste rudo y moda." },
+        { id: 'cafe-atmosphere', title: 'Ambiente de Cafetería', description: 'Escena íntima y cotidiana.', prompt: "Genera una imagen de una escena de lifestyle: la modelo lleva la prenda descrita en una cafetería. Iluminación acogedora." },
+        { id: 'pub-atmosphere', title: 'Ambiente de Pub', description: 'Escena tomando una copa.', prompt: "Genera una imagen de una escena de lifestyle: la modelo lleva la prenda descrita en un pub. Iluminación alegre, ambiente joven." },
     ];
 
     const fallbackSurpriseStyles = [
         'Brutalismo digital editorial',
-        'Fotografia cinetica futurista',
+        'Fotografía cinética futurista',
         'Neo-noir lluvioso con reflejos',
         'Bauhaus experimental de moda',
-        'Dreamcore analogico con grano',
+        'Dreamcore analógico con grano',
         'Editorial retrofuturista 70s',
         'Minimalismo zen con sombras duras',
         'Color blocking avant-garde'
@@ -238,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
 
         const aggregated = [];
-
         for (const url of sources) {
             try {
                 const sep = url.includes('?') ? '&' : '?';
@@ -253,19 +374,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     .filter((title) => !/^category:/i.test(title))
                     .filter((title) => !/^categor[ií]a:/i.test(title))
                     .filter((title) => !/^list of /i.test(title));
-                if (cleaned.length > 0) {
-                    aggregated.push(...cleaned);
-                }
+                if (cleaned.length > 0) aggregated.push(...cleaned);
             } catch (err) {
                 console.warn('No se pudo leer estilos de la web:', err);
             }
         }
 
-        if (aggregated.length === 0) {
-            console.warn('Usando fallbackSurpriseStyles debido a fallo en la red.');
-            return fallbackSurpriseStyles;
-        }
-
+        if (aggregated.length === 0) return fallbackSurpriseStyles;
         return Array.from(new Set(aggregated));
     };
 
@@ -280,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const webCandidates = await fetchStyleCandidatesFromWeb();
         if (webCandidates.length === 0) {
-            throw new Error('No se pudieron obtener estilos desde la web. Revisa la conexion e intentalo de nuevo.');
+            throw new Error('No se pudieron obtener estilos desde la web. Revisa la conexión e inténtalo de nuevo.');
         }
 
         const uniqueWeb = webCandidates.filter((style) => {
@@ -292,15 +407,14 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error('No quedan estilos sorpresa nuevos en este momento. Vuelve a intentarlo en unos minutos.');
         }
 
-        const pool = uniqueWeb;
-        const picked = pool[Math.floor(Math.random() * pool.length)];
+        const picked = uniqueWeb[Math.floor(Math.random() * uniqueWeb.length)];
         usedSurpriseStyles.add(picked.toLowerCase());
 
         return {
             id: `surprise-${Date.now()}`,
             title: `Sorpresa: ${picked}`,
-            description: 'Estilo sorpresa elegido automaticamente desde referencias de la red.',
-            prompt: `Genera una fotografia editorial de moda donde la modelo de la segunda imagen lleve la prenda de la primera. El estilo visual debe ser ${picked}. Evita replicar estilos comunes de estudio, urbano, neon, interior lujoso, parque, playa, industrial, cafeteria o pub. Busca una direccion creativa inesperada y profesional.`
+            description: 'Estilo sorpresa elegido automáticamente desde referencias de la red.',
+            prompt: `Genera una fotografía editorial de moda donde la modelo lleve la prenda descrita. El estilo visual debe ser ${picked}. Evita replicar estilos comunes de estudio, urbano, neón, interior lujoso, parque, playa, industrial, cafetería o pub. Busca una dirección creativa inesperada y profesional.`
         };
     };
 
@@ -332,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGenerateButtonState();
     }
 
-    // Utilidades
+    // ===== UTILIDADES =====
     const resizeImage = (file, maxSize = 1024) => new Promise((resolve) => {
         const img = new Image();
         const canvas = document.createElement('canvas');
@@ -340,9 +454,9 @@ document.addEventListener('DOMContentLoaded', () => {
         img.onload = () => {
             let { width, height } = img;
             if (width > height) {
-                if (width > maxSize) height = (height * maxSize) / width, width = maxSize;
+                if (width > maxSize) { height = (height * maxSize) / width; width = maxSize; }
             } else {
-                if (height > maxSize) width = (width * maxSize) / height, height = maxSize;
+                if (height > maxSize) { width = (width * maxSize) / height; height = maxSize; }
             }
             canvas.width = width;
             canvas.height = height;
@@ -363,17 +477,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateGenerateButtonState = () => {
         const hasImages = Boolean(modelFile && outfitFile);
-        // Habilitar si hay imágenes, sin importar si hay estilos seleccionados (ahora es opcional)
         generateBtn.disabled = isProcessing || !hasImages;
         surpriseBtn.disabled = isProcessing || !hasImages;
     };
 
     const showError = (msg) => {
-        if (msg.includes('Respuesta de texto en vez de imagen')) {
-            msg += ' Tip: El modelo devolvió texto. Usa imágenes más claras o simplifica el estilo. Intenta de nuevo.';
-        } else if (msg.includes('IMAGE_OTHER')) {
-            msg += ' Tip: Puede ser un bug de la API. Usa imágenes pequeñas/sin rostros o genera 1 estilo.';
-        }
         errorMessage.textContent = msg;
         errorSection.classList.remove('hidden');
         loadingSection.classList.add('hidden');
@@ -384,26 +492,33 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGenerateButtonState();
     };
 
-    // Llamada a backend (proxy.php)
-    const callGeminiApi = async (prompt, modelImage, outfitImage) => {
-        const payload = { prompt, modelImage, outfitImage, model: 'gemini-2.5-flash-image' };
-        let attempt = 0, maxAttempts = 6;
+    // ===== LLAMADA API FLUX =====
+    const callFluxApi = async (prompt, modelImageData) => {
+        const { width, height } = computeTargetDims();
+        const payload = {
+            prompt,
+            image: `data:image/jpeg;base64,${modelImageData.base64}`,
+            quality: selectedQuality,
+            width,
+            height
+        };
+
+        let attempt = 0;
+        const maxAttempts = 3;
         const loadingText = document.querySelector('.loading-text');
-        const defaultLoadingMsg = "IA Generando Obra Maestra...";
+        const defaultLoadingMsg = 'FLUX Generando Obra Maestra...';
 
         while (attempt < maxAttempts) {
             try {
-                if (loadingText && loadingText.textContent.includes('Pausando')) {
-                    loadingText.textContent = defaultLoadingMsg;
-                }
+                if (loadingText) loadingText.textContent = defaultLoadingMsg;
 
                 const res = await fetch('proxy.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 });
-                const text = await res.text();
 
+                const text = await res.text();
                 let data;
                 try {
                     data = JSON.parse(text);
@@ -412,78 +527,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Respuesta inválida del servidor.');
                 }
 
-                if (!res.ok) {
-                    const msg = data?.error?.message || data?.error || `Error HTTP ${res.status}`;
-                    // Special handling for rate limits that tell us how long to wait
-                    if (msg.includes('retry in')) {
-                        const match = msg.match(/retry in ([\d\.]+)s/);
-                        if (match && match[1]) {
-                            const delayMs = Math.ceil(parseFloat(match[1]) * 1000) + 1000;
-                            const delaySecs = Math.ceil(delayMs / 1000);
-                            console.warn(`Límite de cuota excedido. La API pide esperar ${match[1]}s. Esperando ${delayMs}ms...`);
-
-                            attempt++;
-                            if (attempt >= maxAttempts) throw new Error(msg);
-
-                            if (loadingText) {
-                                let remaining = delaySecs;
-                                loadingText.textContent = `Pausando ${remaining}s por límite de cuota IA...`;
-                                // Update countdown every second
-                                const countdownInterval = setInterval(() => {
-                                    remaining--;
-                                    if (remaining > 0) {
-                                        loadingText.textContent = `Pausando ${remaining}s por límite de cuota IA...`;
-                                    }
-                                }, 1000);
-
-                                await new Promise(r => setTimeout(r, delayMs));
-                                clearInterval(countdownInterval);
-                            } else {
-                                await new Promise(r => setTimeout(r, delayMs));
-                            }
-                            continue; // Retry without falling into the generic catch block
-                        }
-                    }
+                if (!res.ok || !data.success) {
+                    const msg = data?.error?.message || `Error HTTP ${res.status}`;
                     throw new Error(msg);
                 }
 
-                if (data.promptFeedback && data.promptFeedback.blockReason) {
-                    throw new Error(`Bloqueado por seguridad: ${data.promptFeedback.blockReason}`);
-                }
-                if (!data.candidates || data.candidates.length === 0) {
-                    console.error('Respuesta sin "candidates":', data);
-                    throw new Error("La respuesta de la API no contiene 'candidates'.");
-                }
-                const candidate = data.candidates[0];
-                if (candidate.finishReason && candidate.finishReason !== 'STOP') {
-                    console.error('Generación detenida:', candidate.finishReason, data);
-                    throw new Error(`Generación detenida: ${candidate.finishReason}`);
-                }
-                const imagePart = candidate.content?.parts?.find(p => p.inlineData);
-                if (imagePart?.inlineData?.data) {
-                    const imageData = `data:image/png;base64,${imagePart.inlineData.data}`;
-                    return imageData;
+                let imageData = data.imageUrl;
+                if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
+
+                // Upscale si es 4096
+                if (selectedRes === 4096) {
+                    const { width: tw, height: th } = computeTargetDims();
+                    imageData = await upscaleDataUrl(imageData, tw, th);
                 }
 
-                const textPart = candidate.content?.parts?.find(p => p.text);
-                if (textPart?.text) throw new Error(`Respuesta de texto en vez de imagen: "${textPart.text}"`);
+                return imageData;
 
-                console.error('Sin datos de imagen:', data);
-                throw new Error('No se encontró imagen en la respuesta.');
             } catch (err) {
-                // If the error was already handled by the continue statement, this catch might not hit
-                // But for generic errors (network timeout, 500 etc), we do an exponential backoff
                 console.error(`Intento ${attempt + 1} fallido:`, err);
                 attempt++;
                 if (attempt >= maxAttempts) throw err;
-
-                // We use a base smaller delay if it's not a clear quota error
                 await new Promise(r => setTimeout(r, 3000 * attempt));
             }
         }
     };
 
-    // Dropzones
+    // ===== DROPZONES =====
     const setupDropZone = (dropZone, input, preview, promptEl, fileStore) => {
         dropZone.addEventListener('click', () => input.click());
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev =>
@@ -518,6 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDropZone(modelDropZone, modelInput, modelPreview, modelPrompt, data => modelFile = data);
     setupDropZone(outfitDropZone, outfitInput, outfitPreview, outfitPrompt, data => outfitFile = data);
 
+    // ===== AGREGAR AL HISTORIAL =====
     const addGeneratedImageToHistory = async (src, styleMeta) => {
         const historyItem = {
             id: Math.random().toString(36).slice(2),
@@ -530,9 +600,11 @@ document.addEventListener('DOMContentLoaded', () => {
         await saveHistoryItemToDb(historyItem);
         history.unshift(historyItem);
         renderHistory();
+        // Sync al servidor
+        syncToServer(historyItem);
     };
 
-    // Principal: generar 2 imágenes por estilo, en secuencia global
+    // ===== GENERAR (2 imágenes por estilo) =====
     generateBtn.addEventListener('click', async () => {
         if (!modelFile || !outfitFile) return;
 
@@ -542,13 +614,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const customPromptText = customPromptArea ? customPromptArea.value.trim() : '';
 
-        // Si no hay estilos seleccionados, creamos uno dinámico sobre la marcha
         let selectedToGenerate = selectedCompositions.map(id => compositions.find(c => c.id === id));
 
         if (selectedToGenerate.length === 0) {
-            let dynPrompt = "Genera una fotografía realista donde la modelo de la segunda imagen lleve puesta exactamente la prenda de la primera imagen. Mantén la pose y ambiente original o uno neutro.";
+            let dynPrompt = "Genera una fotografía realista donde la persona de la imagen de referencia lleve puesta exactamente la prenda de ropa descrita. Mantén la pose y el aspecto físico de la persona, cambiando únicamente la ropa. Ambiente neutro y profesional.";
             if (customPromptText !== '') {
-                dynPrompt += " Sigue EXTREMADAMENTE BIEN estas instrucciones adicionales del usuario para el entorno o la pose (son mas importantes que las de por defecto): " + customPromptText;
+                dynPrompt += " Sigue estas instrucciones adicionales del usuario para el entorno o la pose: " + customPromptText;
             }
 
             selectedToGenerate.push({
@@ -558,24 +629,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 prompt: dynPrompt
             });
         } else {
-            // Si eligió estilos y también puso texto extra, modificamos esos estilos al vuelo
             if (customPromptText !== '') {
-                selectedToGenerate = selectedToGenerate.map(comp => {
-                    return {
-                        ...comp,
-                        prompt: comp.prompt + " IMPORTANTE: ADEMÁS de este estilo, aplica también estas instrucciones del usuario: " + customPromptText
-                    };
-                });
+                selectedToGenerate = selectedToGenerate.map(comp => ({
+                    ...comp,
+                    prompt: comp.prompt + " IMPORTANTE: ADEMÁS de este estilo, aplica también estas instrucciones del usuario: " + customPromptText
+                }));
             }
         }
+
         try {
             for (const comp of selectedToGenerate) {
                 for (let copy = 1; copy <= 2; copy++) {
                     try {
-                        // Esperar a que termine antes de pasar a la siguiente
-                        const src = await callGeminiApi(comp.prompt, modelFile, outfitFile);
+                        const src = await callFluxApi(comp.prompt, modelFile);
                         await addGeneratedImageToHistory(src, comp);
-                        setupLightbox();
                     } catch (err) {
                         console.error(`Fallo generando ${comp.title} #${copy}:`, err);
                         showError(`Error al generar "${comp.title}" #${copy}: ${err.message}`);
@@ -585,11 +652,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             loadingSection.classList.add('hidden');
             const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = "IA Generando Obra Maestra...";
+            if (loadingText) loadingText.textContent = 'FLUX Generando Obra Maestra...';
             setProcessing(false);
         }
     });
 
+    // ===== MODO SORPRESA =====
     surpriseBtn.addEventListener('click', async () => {
         if (!modelFile || !outfitFile) {
             showError('Primero sube la foto de la modelo y la prenda para usar el modo sorpresa.');
@@ -604,9 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const surpriseStyle = await buildSurpriseStyle();
             for (let copy = 1; copy <= 2; copy++) {
                 try {
-                    const src = await callGeminiApi(surpriseStyle.prompt, modelFile, outfitFile);
+                    const src = await callFluxApi(surpriseStyle.prompt, modelFile);
                     await addGeneratedImageToHistory(src, surpriseStyle);
-                    setupLightbox();
                 } catch (err) {
                     console.error(`Fallo en modo sorpresa #${copy}:`, err);
                     showError(`Error en modo sorpresa #${copy}: ${err.message}`);
@@ -618,29 +685,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             loadingSection.classList.add('hidden');
             const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = "IA Generando Obra Maestra...";
+            if (loadingText) loadingText.textContent = 'FLUX Generando Obra Maestra...';
             setProcessing(false);
         }
     });
 
-    // Lightbox
-    function setupLightbox() {
-        // Las imágenes del historial ya tienen su propio evento en renderHistory
-    }
+    // ===== LIGHTBOX =====
     const closeLightboxHandler = () => {
         lightbox.classList.add('hidden');
         lightboxImg.src = '';
     };
     closeLightbox.addEventListener('click', closeLightboxHandler);
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightboxHandler(); });
-
-    // Cerrar lightbox con Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeLightboxHandler();
     });
 
-    // Inicialización
+    // ===== INICIALIZACIÓN =====
     renderCompositionSelector();
     loadHistory();
 });
-
