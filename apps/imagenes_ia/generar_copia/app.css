@@ -518,13 +518,13 @@ textarea:focus-visible {
      escalan en hover) NO deben capturar el clic -> pointer-events:none.
    - El contenido interno tampoco intercepta el evento del botón/enlace.
    ═══════════════════════════════════════════════ */
-.group.glass-hover > .absolute,
-.group.glass-hover svg {
-    pointer-events: none;
-}
-.group.glass-hover * {
-    pointer-events: none;
-}
-.group.glass-hover {
+/* Las tarjetas usan un enlace superpuesto: todo el rectángulo abre la acción
+   correspondiente en el primer clic, incluso sobre iconos o texto. */
+.splash-card-link {
     pointer-events: auto;
+    cursor: pointer;
+}
+.group.glass-hover > .absolute,
+.group.glass-hover > .absolute svg {
+    pointer-events: none;
 }

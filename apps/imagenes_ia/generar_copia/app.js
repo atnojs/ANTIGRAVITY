@@ -564,7 +564,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
     );
 };
 
-const Splash = ({ onSelect }) => (
+const Splash = () => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
             <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Diseña como un Pro</h1>
@@ -573,7 +573,8 @@ const Splash = ({ onSelect }) => (
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-            <a href="../editar_copia/" className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30 block">
+            <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30 w-full">
+                <a href="../editar_copia/?mode=edit" aria-label="Editar imagen" className="splash-card-link absolute inset-0 z-30"></a>
                 <div className="absolute top-0 right-0 p-8 text-purple-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
                     <ImageIcon size={200} />
                 </div>
@@ -582,8 +583,9 @@ const Splash = ({ onSelect }) => (
                 </div>
                 <h2 className="text-4xl font-bold">Editar Imagen</h2>
                 <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de FLUX.</p>
-            </a>
-            <button type="button" onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full text-left">
+            </div>
+            <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full">
+                <a href="?mode=generate" aria-label="Generar imágenes" className="splash-card-link absolute inset-0 z-30"></a>
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
                     <Sparkles size={200} />
                 </div>
@@ -592,11 +594,10 @@ const Splash = ({ onSelect }) => (
                 </div>
                 <h2 className="text-4xl font-bold">Generar Imágenes</h2>
                 <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
-            </button>
+            </div>
         </div>
     </div>
 );
-
 const STORAGE_KEY = 'flux_generar_studio_history';
 
 // --- APP MAIN ---
@@ -660,16 +661,6 @@ const App = () => {
     const [selectedQuality, setSelectedQuality] = useState('pro');
 
     const fileInputRef = useRef(null);
-
-    const [_diag, _setDiag] = useState('diag: esperando clic…');
-
-    const handleStart = (m) => {
-        _setDiag('CLIC recibido: ' + m + ' @ ' + new Date().toLocaleTimeString());
-        if (m === 'text-to-image') setRemixSource(null);
-        setMode(m);
-        setView('editor');
-        if (m === 'remix') setTimeout(() => fileInputRef.current?.click(), 150);
-    };
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
@@ -795,13 +786,11 @@ const App = () => {
 
     return (
         <ApiKeyChecker>
-            <div style={{position:'fixed',top:0,left:0,right:0,zIndex:99999,background:'#26C626',color:'#001018',fontFamily:'monospace',fontSize:'13px',fontWeight:'bold',padding:'6px 12px',textAlign:'center'}}>
-                {_diag} | vista: {view}
-            </div>
+
             {isGenerating && <LoadingOverlay />}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
-                    <Splash onSelect={handleStart} />
+                    <Splash />
                 ) : (
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
