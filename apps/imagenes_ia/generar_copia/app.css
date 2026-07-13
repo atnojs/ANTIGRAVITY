@@ -524,7 +524,7 @@ textarea:focus-visible {
     pointer-events: auto;
     cursor: pointer;
 }
-.group.glass-hover > .absolute,
-.group.glass-hover > .absolute svg {
+.group.glass-hover > .absolute:not(.splash-card-link),
+.group.glass-hover > .absolute:not(.splash-card-link) svg {
     pointer-events: none;
 }
