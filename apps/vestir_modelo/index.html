@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;">
 
-  <title>Vestir Modelo — FLUX</title>
+  <title>Vestir Modelo — FLUX VTO</title>
   <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -15,13 +15,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet"/>
 
-  <link rel="stylesheet" href="app.css?v=2"/>
+  <link rel="stylesheet" href="app.css?v=3"/>
 </head>
 <body class="text-gray-200 bg-gray-900">
   <div class="container mx-auto p-4 md:p-8">
     <header class="text-center mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold gradient-text">Viste a un/a Modelo con FLUX</h1>
-      <p class="text-gray-400 mt-2 max-w-2xl mx-auto">Sube una foto de un/a modelo, una prenda y elige el estilo que desees.</p>
+      <h1 class="text-3xl md:text-4xl font-bold gradient-text">Viste a un/a Modelo con FLUX VTO</h1>
+      <p class="text-gray-400 mt-2 max-w-2xl mx-auto">Sube una foto de un/a modelo, una prenda y FLUX Virtual Try-On se la pondrá.</p>
     </header>
 
     <div id="workspace-layout">
@@ -51,29 +51,6 @@
           </div>
           <img id="outfit-preview" class="hidden mx-auto rounded-lg mt-4 object-contain max-h-48" alt="Vista previa de la prenda">
         </div>
-      </div>
-
-      <!-- Selectores de calidad FLUX -->
-      <div class="quality-toggle">
-        <button id="quality-pro" class="active" data-quality="pro">FLUX PRO (~$0.03)</button>
-        <button id="quality-max" data-quality="max">FLUX MAX (~$0.07)</button>
-      </div>
-
-      <!-- Selectores de formato (AR) -->
-      <div class="ar-selector">
-        <button class="active" data-ar="1:1">1:1</button>
-        <button data-ar="16:9">16:9</button>
-        <button data-ar="9:16">9:16</button>
-        <button data-ar="4:3">4:3</button>
-        <button data-ar="3:4">3:4</button>
-      </div>
-
-      <!-- Selectores de resolución -->
-      <div class="res-selector">
-        <button data-res="512">512</button>
-        <button class="active" data-res="1024">1024</button>
-        <button data-res="2048">2048</button>
-        <button data-res="4096">4096</button>
       </div>
 
       <div class="text-center mb-8">
@@ -121,7 +98,7 @@
       <div class="ring ring-2"></div>
       <div class="ring ring-3"></div>
     </div>
-    <p class="loading-text">FLUX Generando Obra Maestra...</p>
+    <p class="loading-text">FLUX VTO Probando Prenda...</p>
   </div>
 
   <div id="lightbox" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
@@ -130,6 +107,6 @@
   </div>
 
   <script src="history-manager.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

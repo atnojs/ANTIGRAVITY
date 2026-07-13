@@ -1,12 +1,13 @@
 <?php
 // ============================================================
-// PROXY PHP - Vestir Modelo con FLUX (Black Forest Labs)
-// Oculta la clave BFL del frontend. Submit + polling del lado servidor.
+// PROXY PHP - Vestir Modelo con FLUX Virtual Try-On (VTO)
+// Usa el endpoint flux-tools/vto-v1 para transferir prendas.
 // Clave FLUX en variable de entorno 'F' del .htaccess raíz.
+// Async: submit + polling del lado servidor.
 // ============================================================
 declare(strict_types=1);
 ini_set('display_errors', '0');
-error_reporting(E_ALL);
+error_report(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -60,63 +61,54 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     exit;
 }
 
-$prompt = (string)($req['prompt'] ?? '');
-$imageB64 = (string)($req['image'] ?? ''); // modelo (data URL o base64 puro)
+$prompt  = (string)($req['prompt'] ?? '');
+$personB64  = (string)($req['person'] ?? '');  // modelo (base64 puro o data URL)
+$garmentB64 = (string)($req['garment'] ?? ''); // prenda (base64 puro o data URL)
 
 if ($prompt === '') {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Falta el prompt.']]);
     exit;
 }
-
-// ===== MODELO FLUX según calidad (PRO vs MAX) =====
-$quality = (string)($req['quality'] ?? 'pro');
-$endpoint = ($quality === 'max') ? 'flux-2-max' : 'flux-2-pro';
-
-// ===== DIMENSIONES (máximo 4MP) =====
-$width  = (int)($req['width']  ?? 1024);
-$height = (int)($req['height'] ?? 1024);
-
-// Validar y clamp a múltiplos de 32
-$width  = max(256, min(2048, $width));
-$height = max(256, min(2048, $height));
-$width  = (int)(round($width  / 32) * 32);
-$height = (int)(round($height / 32) * 32);
-
-// Clamp 4MP (4,194,304 px): FLUX 2 rechaza >4MP con HTTP 422
-$pixels = $width * $height;
-if ($pixels > 4194304) {
-    $scale = sqrt(4194304.0 / $pixels);
-    $width  = (int)(round(($width  * $scale) / 32) * 32);
-    $height = (int)(round(($height * $scale) / 32) * 32);
+if ($personB64 === '' || $garmentB64 === '') {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'Falta la imagen de la modelo o de la prenda.']]);
+    exit;
 }
 
-// ===== CONSTRUIR PAYLOAD =====
-$payload = [
-    'prompt' => $prompt,
-    'width'  => $width,
-    'height' => $height,
-];
-
-// Imagen de entrada: modelo (base64 puro, sin prefijo data:)
-if ($imageB64 !== '') {
-    $b64 = $imageB64;
-    // Quitar prefijo data URL si viene con él
+// Quitar prefijo data URL si viene con él
+$cleanB64 = function(string $b64): string {
     if (strpos($b64, ',') !== false) {
         $b64 = substr($b64, strpos($b64, ',') + 1);
     }
-    // Control de tamaño
-    $imgBinary = base64_decode($b64);
-    if ($imgBinary === false || strlen($imgBinary) > 2500000) {
+    return $b64;
+};
+$personB64  = $cleanB64($personB64);
+$garmentB64 = $cleanB64($garmentB64);
+
+// Control de tamaño (~2.5MB cada una)
+foreach (['modelo' => $personB64, 'prenda' => $garmentB64] as $label => $b64) {
+    $binary = base64_decode($b64);
+    if ($binary === false || strlen($binary) > 2500000) {
         http_response_code(400);
-        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+        echo json_encode(['error' => ['message' => "Imagen de $label demasiado grande (máximo 2.5MB)."]]);
         exit;
     }
-    $payload['input_image'] = $b64;
 }
 
-// ===== 1) ENVIAR TAREA A FLUX =====
+// ===== ENDPOINT VTO =====
+$endpoint = 'flux-tools/vto-v1';
 $submitUrl = 'https://api.bfl.ai/v1/' . $endpoint;
+
+$payload = [
+    'prompt'  => $prompt,
+    'person'  => $personB64,
+    'garment' => $garmentB64,
+    'safety_tolerance' => 2,
+    'output_format' => 'jpeg',
+];
+
+// ===== 1) ENVIAR TAREA A FLUX VTO =====
 $ch = curl_init($submitUrl);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
@@ -138,7 +130,7 @@ curl_close($ch);
 
 if ($submitErr) {
     http_response_code(502);
-    echo json_encode(['error' => ['message' => 'Error de conexión con FLUX: ' . $submitErr]]);
+    echo json_encode(['error' => ['message' => 'Error de conexión con FLUX VTO: ' . $submitErr]]);
     exit;
 }
 if ($submitCode >= 400) {
@@ -146,7 +138,7 @@ if ($submitCode >= 400) {
     $em = $eb['detail'] ?? ('HTTP ' . $submitCode);
     if (is_array($em)) $em = json_encode($em);
     http_response_code($submitCode);
-    echo json_encode(['error' => ['message' => 'FLUX: ' . $em]]);
+    echo json_encode(['error' => ['message' => 'FLUX VTO: ' . $em]]);
     exit;
 }
 
@@ -157,7 +149,7 @@ $cost = $costCreditos * 0.01; // 1 crédito BFL = $0.01 USD
 
 if ($pollUrl === '') {
     http_response_code(502);
-    echo json_encode(['error' => ['message' => 'FLUX no devolvió polling_url']]);
+    echo json_encode(['error' => ['message' => 'FLUX VTO no devolvió polling_url']]);
     exit;
 }
 
@@ -187,14 +179,14 @@ for ($i = 0; $i < $maxIntentos; $i++) {
     }
     if (in_array($status, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
         http_response_code(422);
-        echo json_encode(['error' => ['message' => 'FLUX rechazó la tarea: ' . $status]]);
+        echo json_encode(['error' => ['message' => 'FLUX VTO rechazó la tarea: ' . $status]]);
         exit;
     }
 }
 
 if ($imageUrl === '') {
     http_response_code(504);
-    echo json_encode(['error' => ['message' => 'FLUX tardó demasiado. Inténtalo de nuevo.']]);
+    echo json_encode(['error' => ['message' => 'FLUX VTO tardó demasiado. Inténtalo de nuevo.']]);
     exit;
 }
 
@@ -206,7 +198,7 @@ curl_setopt_array($ch, [
     CURLOPT_SSL_VERIFYPEER => true,
 ]);
 $imgBin = curl_exec($ch);
-$imgType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/png';
+$imgType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/jpeg';
 $imgOk = (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200);
 curl_close($ch);
 
@@ -217,7 +209,6 @@ if (!$imgOk || $imgBin === false || $imgBin === '') {
         'imageUrl' => $imageUrl,
         'coste'    => $cost,
         'modelo'   => $endpoint,
-        'calidad'  => $quality,
     ]);
     exit;
 }
@@ -229,5 +220,4 @@ echo json_encode([
     'imageUrl' => $dataUrl,
     'coste'    => $cost,
     'modelo'   => $endpoint,
-    'calidad'  => $quality,
 ]);

@@ -30,15 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const usedSurpriseStyles = new Set();
     let history = [];
 
-    // Calidad FLUX: pro | max
-    let selectedQuality = 'pro';
-
-    // Formato (AR)
-    let selectedAR = '1:1';
-
-    // Resolución
-    let selectedRes = 1024;
-
     // ===== DB HISTORIAL (IndexedDB local + HistoryManager servidor) =====
     const DB_NAME = 'vestir_modelo_db';
     const DB_VERSION = 1;
@@ -133,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     prompt: item.title || '',
                     createdAt: item.createdAt || Date.now(),
                     style: { compositions: item.compositions || [] },
-                    aspectRatio: selectedAR,
-                    size: String(selectedRes),
+                    aspectRatio: '1:1',
+                    size: '',
                     geminiSize: '1K'
                 });
             }
@@ -145,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadHistory() {
         history = await loadHistoryFromDb();
-        // Intentar cargar del servidor también
         try {
             if (window.HistoryManager) {
                 HistoryManager.configure({ dbName: DB_NAME });
@@ -260,85 +250,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ===== CALIDAD FLUX (PRO/MAX) =====
-    document.querySelectorAll('.quality-toggle button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.quality-toggle button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedQuality = btn.dataset.quality;
-        });
-    });
-
-    // ===== FORMATO (AR) =====
-    document.querySelectorAll('.ar-selector button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.ar-selector button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedAR = btn.dataset.ar;
-        });
-    });
-
-    // ===== RESOLUCIÓN =====
-    document.querySelectorAll('.res-selector button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.res-selector button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedRes = parseInt(btn.dataset.res);
-        });
-    });
-
-    // ===== COMPUTE TARGET DIMS (múltiplos de 32) =====
-    const computeTargetDims = () => {
-        const [wRatio, hRatio] = selectedAR.split(':').map(Number);
-        const maxDim = selectedRes;
-
-        let width, height;
-        const ratio = wRatio / hRatio;
-
-        if (ratio >= 1) {
-            width = maxDim;
-            height = Math.round(maxDim / ratio);
-        } else {
-            height = maxDim;
-            width = Math.round(maxDim * ratio);
-        }
-
-        // Redondear a múltiplos de 32
-        width = Math.round(width / 32) * 32;
-        height = Math.round(height / 32) * 32;
-        width = Math.max(256, width);
-        height = Math.max(256, height);
-
-        return { width, height };
-    };
-
-    // ===== UPSCALE CLIENTE (para 4096) =====
-    const upscaleDataUrl = async (dataUrl, targetW, targetH) => {
-        if (!targetW || !targetH) return dataUrl;
-        const img = await new Promise((res, rej) => {
-            const im = new Image(); im.crossOrigin = 'anonymous';
-            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
-        });
-        if (img.naturalWidth >= targetW && img.naturalHeight >= targetH) return dataUrl;
-        const c = document.createElement('canvas');
-        c.width = targetW; c.height = targetH;
-        const ctx = c.getContext('2d');
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, targetW, targetH);
-        return c.toDataURL('image/png', 0.92);
-    };
-
     // ===== ESTILOS / COMPOSICIONES =====
     const compositions = [
-        { id: 'full-body', title: 'Estudio Profesional', description: 'Cuerpo completo en estudio.', prompt: "Genera una imagen de una fotografía de moda de cuerpo completo: la modelo de la imagen de referencia lleva la prenda descrita de forma estilizada. Fondo de estudio blanco y limpio, iluminación profesional, pose elegante." },
-        { id: 'urban-editorial', title: 'Editorial Urbano', description: 'Sesión en entorno de ciudad.', prompt: "Genera una imagen de una fotografía editorial de moda: la modelo lleva la prenda descrita en una calle urbana moderna. Pose dinámica, estilo cinematográfico." },
-        { id: 'neon-night', title: 'Neón y Noche', description: 'Ciudad de noche, luces de neón.', prompt: "Genera una imagen de una fotografía de moda: la modelo lleva la prenda descrita en una azotea con ciudad iluminada por neón. Estética moderna, ambiente sofisticado." },
-        { id: 'majestic-interior', title: 'Interior Majestuoso', description: 'Museo, biblioteca, hotel de lujo.', prompt: "Genera una imagen de una sesión de moda: la modelo lleva la prenda descrita en un museo o hotel de lujo. Iluminación dramática, opulencia." },
-        { id: 'park-walk', title: 'Paseo por el Parque', description: 'Estilo casual y espontáneo.', prompt: "Genera una imagen de una fotografía de street style: la modelo lleva la prenda descrita paseando por un parque urbano. Look natural, luz del día." },
-        { id: 'beach-minimalism', title: 'Minimalismo en Playa', description: 'Amanecer/atardecer, colores suaves.', prompt: "Genera una imagen de una composición de moda minimalista: la modelo lleva la prenda descrita en una playa al atardecer. Colores suaves, luz difusa." },
-        { id: 'industrial-contrast', title: 'Contraste Industrial', description: 'Fábrica, grafitis, vanguardista.', prompt: "Genera una imagen de una sesión de fotos vanguardista: la modelo lleva la prenda descrita en una fábrica con grafitis. Contraste rudo y moda." },
-        { id: 'cafe-atmosphere', title: 'Ambiente de Cafetería', description: 'Escena íntima y cotidiana.', prompt: "Genera una imagen de una escena de lifestyle: la modelo lleva la prenda descrita en una cafetería. Iluminación acogedora." },
-        { id: 'pub-atmosphere', title: 'Ambiente de Pub', description: 'Escena tomando una copa.', prompt: "Genera una imagen de una escena de lifestyle: la modelo lleva la prenda descrita en un pub. Iluminación alegre, ambiente joven." },
+        { id: 'full-body', title: 'Estudio Profesional', description: 'Cuerpo completo en estudio.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Full body fashion photograph, clean white studio background, professional lighting, elegant pose." },
+        { id: 'urban-editorial', title: 'Editorial Urbano', description: 'Sesión en entorno de ciudad.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Fashion editorial in a modern urban street. Dynamic pose, cinematic style." },
+        { id: 'neon-night', title: 'Neón y Noche', description: 'Ciudad de noche, luces de neón.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. On a rooftop with neon-lit city skyline. Modern aesthetic, sophisticated atmosphere." },
+        { id: 'majestic-interior', title: 'Interior Majestuoso', description: 'Museo, biblioteca, hotel de lujo.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. In a museum or luxury hotel interior. Dramatic lighting, opulence." },
+        { id: 'park-walk', title: 'Paseo por el Parque', description: 'Estilo casual y espontáneo.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Street style walking through an urban park. Natural look, daylight." },
+        { id: 'beach-minimalism', title: 'Minimalismo en Playa', description: 'Amanecer/atardecer, colores suaves.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Minimalist fashion composition on a beach at sunset. Soft colors, diffused light." },
+        { id: 'industrial-contrast', title: 'Contraste Industrial', description: 'Fábrica, grafitis, vanguardista.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Avant-garde photoshoot in a factory with graffiti. Rough contrast and fashion." },
+        { id: 'cafe-atmosphere', title: 'Ambiente de Cafetería', description: 'Escena íntima y cotidiana.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Lifestyle scene in a cozy café. Warm lighting." },
+        { id: 'pub-atmosphere', title: 'Ambiente de Pub', description: 'Escena tomando una copa.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Lifestyle scene in a pub. Cheerful lighting, young atmosphere." },
     ];
 
     const fallbackSurpriseStyles = [
@@ -414,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: `surprise-${Date.now()}`,
             title: `Sorpresa: ${picked}`,
             description: 'Estilo sorpresa elegido automáticamente desde referencias de la red.',
-            prompt: `Genera una fotografía editorial de moda donde la modelo lleve la prenda descrita. El estilo visual debe ser ${picked}. Evita replicar estilos comunes de estudio, urbano, neón, interior lujoso, parque, playa, industrial, cafetería o pub. Busca una dirección creativa inesperada y profesional.`
+            prompt: `TRY-ON: The person of image 1 wearing the garments of image 2. Editorial fashion photography with ${picked} visual style. Avoid common styles like studio, urban, neon, luxury interior, park, beach, industrial, café or pub. Seek an unexpected and professional creative direction.`
         };
     };
 
@@ -492,21 +414,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGenerateButtonState();
     };
 
-    // ===== LLAMADA API FLUX =====
-    const callFluxApi = async (prompt, modelImageData) => {
-        const { width, height } = computeTargetDims();
+    // ===== LLAMADA API FLUX VTO =====
+    const callFluxVto = async (prompt, modelImageData, outfitImageData) => {
         const payload = {
             prompt,
-            image: `data:image/jpeg;base64,${modelImageData.base64}`,
-            quality: selectedQuality,
-            width,
-            height
+            person: `data:image/jpeg;base64,${modelImageData.base64}`,
+            garment: `data:image/jpeg;base64,${outfitImageData.base64}`
         };
 
         let attempt = 0;
         const maxAttempts = 3;
         const loadingText = document.querySelector('.loading-text');
-        const defaultLoadingMsg = 'FLUX Generando Obra Maestra...';
+        const defaultLoadingMsg = 'FLUX VTO Probando Prenda...';
 
         while (attempt < maxAttempts) {
             try {
@@ -532,14 +451,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(msg);
                 }
 
-                let imageData = data.imageUrl;
+                const imageData = data.imageUrl;
                 if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
-
-                // Upscale si es 4096
-                if (selectedRes === 4096) {
-                    const { width: tw, height: th } = computeTargetDims();
-                    imageData = await upscaleDataUrl(imageData, tw, th);
-                }
 
                 return imageData;
 
@@ -600,7 +513,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await saveHistoryItemToDb(historyItem);
         history.unshift(historyItem);
         renderHistory();
-        // Sync al servidor
         syncToServer(historyItem);
     };
 
@@ -617,9 +529,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let selectedToGenerate = selectedCompositions.map(id => compositions.find(c => c.id === id));
 
         if (selectedToGenerate.length === 0) {
-            let dynPrompt = "Genera una fotografía realista donde la persona de la imagen de referencia lleve puesta exactamente la prenda de ropa descrita. Mantén la pose y el aspecto físico de la persona, cambiando únicamente la ropa. Ambiente neutro y profesional.";
+            let dynPrompt = "TRY-ON: The person of image 1 wearing the garments of image 2. Realistic fashion photograph, natural pose, professional lighting, neutral background.";
             if (customPromptText !== '') {
-                dynPrompt += " Sigue estas instrucciones adicionales del usuario para el entorno o la pose: " + customPromptText;
+                dynPrompt = `TRY-ON: The person of image 1 wearing the garments of image 2. ${customPromptText}`;
             }
 
             selectedToGenerate.push({
@@ -632,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (customPromptText !== '') {
                 selectedToGenerate = selectedToGenerate.map(comp => ({
                     ...comp,
-                    prompt: comp.prompt + " IMPORTANTE: ADEMÁS de este estilo, aplica también estas instrucciones del usuario: " + customPromptText
+                    prompt: comp.prompt + ' Additional user instructions: ' + customPromptText
                 }));
             }
         }
@@ -641,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const comp of selectedToGenerate) {
                 for (let copy = 1; copy <= 2; copy++) {
                     try {
-                        const src = await callFluxApi(comp.prompt, modelFile);
+                        const src = await callFluxVto(comp.prompt, modelFile, outfitFile);
                         await addGeneratedImageToHistory(src, comp);
                     } catch (err) {
                         console.error(`Fallo generando ${comp.title} #${copy}:`, err);
@@ -652,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             loadingSection.classList.add('hidden');
             const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = 'FLUX Generando Obra Maestra...';
+            if (loadingText) loadingText.textContent = 'FLUX VTO Probando Prenda...';
             setProcessing(false);
         }
     });
@@ -672,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const surpriseStyle = await buildSurpriseStyle();
             for (let copy = 1; copy <= 2; copy++) {
                 try {
-                    const src = await callFluxApi(surpriseStyle.prompt, modelFile);
+                    const src = await callFluxVto(surpriseStyle.prompt, modelFile, outfitFile);
                     await addGeneratedImageToHistory(src, surpriseStyle);
                 } catch (err) {
                     console.error(`Fallo en modo sorpresa #${copy}:`, err);
@@ -685,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             loadingSection.classList.add('hidden');
             const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = 'FLUX Generando Obra Maestra...';
+            if (loadingText) loadingText.textContent = 'FLUX VTO Probando Prenda...';
             setProcessing(false);
         }
     });
