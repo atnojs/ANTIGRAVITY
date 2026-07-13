@@ -66,6 +66,8 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 $prompt     = isset($req['prompt']) ? (string)$req['prompt'] : '';
 $personB64  = isset($req['person']) ? (string)$req['person'] : '';
 $garmentB64 = isset($req['garment']) ? (string)$req['garment'] : '';
+$width      = isset($req['width']) ? (int)$req['width'] : 0;
+$height     = isset($req['height']) ? (int)$req['height'] : 0;
 
 if ($prompt === '') {
     http_response_code(400);
@@ -126,6 +128,11 @@ $payload = array(
     'safety_tolerance' => 2,
     'output_format'    => 'jpeg',
 );
+// Añadir dimensiones si vienen del frontend
+if ($width > 0 && $height > 0) {
+    $payload['width'] = $width;
+    $payload['height'] = $height;
+}
 
 // ===== 1) ENVIAR TAREA A FLUX VTO =====
 $ch = curl_init($submitUrl);

@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const usedSurpriseStyles = new Set();
     let history = [];
 
+    // Formato (AR) y Resolución
+    let selectedAR = '1:1';
+    let selectedRes = 1024;
+
     // ===== DB HISTORIAL (IndexedDB local + HistoryManager servidor) =====
     const DB_NAME = 'vestir_modelo_db';
     const DB_VERSION = 1;
@@ -250,6 +254,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ===== SELECTORES AR + RESOLUCIÓN =====
+    document.querySelectorAll('.ar-selector button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.ar-selector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedAR = btn.dataset.ar;
+        });
+    });
+    document.querySelectorAll('.res-selector button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.res-selector button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedRes = parseInt(btn.dataset.res);
+        });
+    });
+
     // ===== ESTILOS / COMPOSICIONES =====
     const compositions = [
         { id: 'full-body', title: 'Estudio Profesional', description: 'Cuerpo completo en estudio.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Full body fashion photograph, clean white studio background, professional lighting, elegant pose." },
@@ -414,12 +434,43 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGenerateButtonState();
     };
 
+    // ===== DIMENSIONES (AR + Resolución) =====
+    const computeTargetDims = () => {
+        const [wRatio, hRatio] = selectedAR.split(':').map(Number);
+        const maxDim = selectedRes;
+        let width, height;
+        const ratio = wRatio / hRatio;
+        if (ratio >= 1) { width = maxDim; height = Math.round(maxDim / ratio); }
+        else { height = maxDim; width = Math.round(maxDim * ratio); }
+        width = Math.max(256, Math.round(width / 32) * 32);
+        height = Math.max(256, Math.round(height / 32) * 32);
+        return { width, height };
+    };
+
+    const upscaleDataUrl = async (dataUrl, targetW, targetH) => {
+        if (!targetW || !targetH) return dataUrl;
+        const img = await new Promise((res, rej) => {
+            const im = new Image(); im.crossOrigin = 'anonymous';
+            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
+        });
+        if (img.naturalWidth >= targetW && img.naturalHeight >= targetH) return dataUrl;
+        const c = document.createElement('canvas');
+        c.width = targetW; c.height = targetH;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, targetW, targetH);
+        return c.toDataURL('image/png', 0.92);
+    };
+
     // ===== LLAMADA API FLUX VTO =====
     const callFluxVto = async (prompt, modelImageData, outfitImageData) => {
+        const { width, height } = computeTargetDims();
         const payload = {
             prompt,
             person: `data:image/jpeg;base64,${modelImageData.base64}`,
-            garment: `data:image/jpeg;base64,${outfitImageData.base64}`
+            garment: `data:image/jpeg;base64,${outfitImageData.base64}`,
+            width,
+            height
         };
 
         let attempt = 0;
@@ -451,8 +502,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(msg);
                 }
 
-                const imageData = data.imageUrl;
+                let imageData = data.imageUrl;
                 if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
+
+                // Upscale si es 4096
+                if (selectedRes === 4096) {
+                    imageData = await upscaleDataUrl(imageData, width, height);
+                }
 
                 return imageData;
 
