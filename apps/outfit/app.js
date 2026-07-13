@@ -758,25 +758,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const setupSelectors = () => {
         // Calidad PRO/MAX
-        document.querySelectorAll('.quality-btn').forEach(btn => {
+        document.querySelectorAll('#quality-selector .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#quality-selector .toggle-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 selectedQuality = btn.dataset.quality;
             });
         });
         // Formato AR
-        document.querySelectorAll('.ar-btn').forEach(btn => {
+        document.querySelectorAll('#ar-selector .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.ar-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#ar-selector .toggle-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 selectedAR = btn.dataset.ar;
             });
         });
         // Resolución
-        document.querySelectorAll('.res-btn').forEach(btn => {
+        document.querySelectorAll('#res-selector .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.res-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#res-selector .toggle-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 selectedRes = parseInt(btn.dataset.res);
             });
