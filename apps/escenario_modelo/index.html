@@ -1,4 +1,4 @@
-<!-- index.html -->
+<!-- index.html — Composición Escenario (FLUX) — Antigravity -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,18 +7,17 @@
   <title>Composición Escenario</title>
   <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 
-  <!-- Fuentes -->
+  <!-- Fuentes: Electrolize (Hoola/Relatos) + Poppins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="app.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="app.css?v=2"/>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>Crea Composiciones Impactantes con IA</h1>
-      <!-- <p class="subtitle">Crea composiciones visuales impactantes con IA</p> -->
     </header>
 
     <section class="upload-section">
@@ -83,7 +82,7 @@
       </div>
     </section>
 
-    <!-- NUEVO: 3 desplegables por similitud -->
+    <!-- 3 desplegables por similitud -->
     <section class="composition-selectors-3">
       <h2>Selecciona las composiciones (máximo 3 en total)</h2>
       <div class="selectors-grid">
@@ -111,43 +110,14 @@
       </div>
     </section>
 
+    <!-- Legacy composition selector (oculto por CSS) -->
     <section class="composition-selector">
       <h2>Selecciona los tipos de composición (máximo 2)</h2>
-      <div class="composition-options">
-        <div class="composition-option" data-type="artistic">
-          <h3>Composición Artística Publicitaria</h3>
-          <p>Una imagen con composición artística e intención publicitaria.</p>
-        </div>
-        <div class="composition-option" data-type="expositive">
-          <h3>Composición Expositiva</h3>
-          <p>Una imagen más ordenada que permite identificar claramente los elementos.</p>
-        </div>
-        <div class="composition-option" data-type="social">
-          <h3>Publicación para Redes Sociales</h3>
-          <p>Formato vertical 9:16 optimizado para Instagram, TikTok, etc.</p>
-        </div>
-        <div class="composition-option" data-type="product">
-          <h3>Bodegón de Producto (Flat Lay)</h3>
-          <p>Enfoque en los productos sin distracciones del modelo.</p>
-        </div>
-        <div class="composition-option" data-type="behind">
-          <h3>Estilo "Entre Bastidores"</h3>
-          <p>Una toma cándida que muestra un momento natural durante la sesión.</p>
-        </div>
-        <div class="composition-option" data-type="banner">
-          <h3>Banner Publicitario Horizontal</h3>
-          <p>Formato panorámico con espacio para logo y eslogan.</p>
-        </div>
-      </div>
+      <div class="composition-options"></div>
       <p class="selection-info" id="selection-info-legacy" aria-hidden="true">Seleccionados: 0/2</p>
     </section>
 
     <button class="generate-btn" id="generate-btn" disabled>Generar Imágenes</button>
-
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p>Generando tus imágenes. Esto puede tardar unos segundos...</p>
-    </div>
 
     <section class="results-section" id="results-section">
       <h2>Resultados de la Composición</h2>
@@ -157,10 +127,11 @@
     </section>
 
     <section id="history-section" style="margin-top:3rem">
-      <h2 id="history-title" style="color:var(--text);margin-bottom:1rem;display:none">Historial</h2>
+      <h2 id="history-title" style="color:var(--cyan);margin-bottom:1rem;display:none;font-family:'Electrolize',sans-serif">Historial</h2>
       <div id="history-grid"></div>
       <button id="history-clear-btn" style="display:none;margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem">Limpiar Historial</button>
     </section>
+
     <footer>
       <p>Atnojs © 2025 - Todos los derechos reservados</p>
     </footer>
@@ -173,21 +144,32 @@
     <img class="modal-content" id="modal-image" alt="">
   </div>
 
-  <!-- Loading Overlay -->
-  <div id="loading-overlay" class="loading-overlay hidden" style="display:none">
+  <!-- Loading Overlay (3 aros + barra de progreso) -->
+  <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
     <div class="spinner-triple">
-      <div class="ring ring-1"></div><div class="ring ring-2"></div><div class="ring ring-3"></div>
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
     </div>
-    <p id="loading-text" class="loading-text">IA Generando Obra Maestra...</p>
+    <p id="loading-text" class="loading-text">IA generando lo solicitado...</p>
+    <div class="progress-panel">
+      <div class="progress-bar-track">
+        <div id="progress-bar" class="progress-bar-fill indeterminate" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      <p id="progress-percent" class="progress-percent" style="display:none"></p>
+      <p id="secondary-status" class="secondary-status"></p>
+    </div>
   </div>
+
+  <!-- Ocultar inmediatamente si el script de carga rápida no se ejecutó -->
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 
   <!-- Iconos Feather -->
   <script src="https://unpkg.com/feather-icons"></script>
   <!-- Librerías JS -->
   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="history-manager.js"></script>
-  <script src="app.js"></script>
+  <script src="history-manager.js?v=2"></script>
+  <script src="app.js?v=2"></script>
   <!-- Inicializar iconos -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {

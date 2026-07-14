@@ -1,97 +1,93 @@
-// app.js - Lógica de la aplicación con correcciones para evitar timeout (502)
+// app.js — Composición de Escenario con FLUX vía proxy canónico Antigravity
+// ========================================================================
+// Usa el proxy canónico con acción 'generate' para FLUX.
+// Historial gestionado por HistoryManager (clase, no estático).
 
-// ===== INYECCIÓN GLOBAL: composePrePrompt =====
-function composePrePrompt(userPrompt, ctx = {}) {
-  const PRE = [
-    "Photorealistic rendering with premium catalog quality.",
-    "Soft diffused daylight, balanced exposure, neutral-warm white balance.",
-    "Filmic soft S-curve: rich blacks, smooth highlight roll-off, gentle midtone contrast.",
-    "Perceived gamma around 1.03; micro-sharpening only, no halos.",
-    "Cinematic depth of field with natural bokeh.",
-    "No text, no extra objects, no watermarks.",
-    "If a base image is provided, strictly preserve existing logos and brand marks.",
-    "Camera reference: Phase One IQ4 150MP."
-  ].join(" ");
-  const INTEGRATION = ctx.integration === true
-    ? "Photorealistic compositing of provided assets: use scenario as background plate; synthesize the model with coherent pose and skin tones; transfer garment onto the model with physically plausible cloth drape and occlusions; attach accessory with correct scale, reflections and contact shadows; match lighting and color temperature to the scenario; unify grade with the filmic profile."
-    : "";
-  return [PRE, INTEGRATION, userPrompt || ""].map(s => String(s||"").trim()).filter(Boolean).join(" ");
-}
+// ===== PROMPT BUILDER PARA FLUX =====
+function buildCompositionPrompt(compKey, compMeta, styleText, variant, compDesc) {
+  const title = compMeta?.title || compKey;
+  const desc = compDesc || compMeta?.description || '';
+  const base = [
+    `Professional advertising photography composition.`,
+    `Style: ${styleText}.`,
+    `Composition type: ${title}. ${desc}`,
+    `Integrate the reference images: use the background scene, place the model naturally within it, dress the model with the clothing item, and add the accessory with correct scale, contact shadows, and occlusions.`,
+    `Match lighting, color temperature, and perspective to the background scene.`,
+    `Photorealistic rendering, catalog quality, soft diffused daylight.`,
+    `No text, no watermarks, no logos overlaid.`,
+  ];
 
-// ===== INYECCIÓN GLOBAL: postProcessDataURL (OBLIGATORIO) =====
-async function postProcessDataURL(dataURL, opts = {}) {
-  // Verificación de seguridad por si dataURL no es válido
-  if (!dataURL || typeof dataURL !== 'string' || !dataURL.startsWith('data:image')) {
-      console.warn("postProcessDataURL recibió datos inválidos", dataURL);
-      return dataURL; 
+  if (variant > 1) {
+    base.push(`Variant ${variant}: Different camera angle, pose, or lighting variation from previous generations.`);
   }
 
-  const cfg = Object.assign({
-    gamma: 1.015,
-    sCurve: 0.20,
-    sat: 1.02,
-    warmHi: 0.10,
-    unsharpAmt: 0.22,
-    unsharpRadius: 1.4
-  }, opts);
+  base.push(`4K, highly detailed, premium product photography.`);
 
+  return base.join(' ');
+}
+
+// ===== POST-PROCESADO (conservado de la versión anterior) =====
+async function postProcessDataURL(dataURL, opts = {}) {
+  if (!dataURL || typeof dataURL !== 'string' || !dataURL.startsWith('data:image')) {
+    console.warn('postProcessDataURL recibió datos inválidos', dataURL);
+    return dataURL;
+  }
+  const cfg = Object.assign({
+    gamma: 1.015, sCurve: 0.20, sat: 1.02, warmHi: 0.10,
+    unsharpAmt: 0.22, unsharpRadius: 1.4
+  }, opts);
   try {
     const img = await new Promise((res, rej) => {
-        const im = new Image(); 
-        im.crossOrigin = 'anonymous';
-        im.onload = () => res(im); 
-        im.onerror = (e) => rej(e); 
-        im.src = dataURL;
+      const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => res(im); im.onerror = (e) => rej(e); im.src = dataURL;
     });
-    
     const w = img.naturalWidth, h = img.naturalHeight;
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const x = c.getContext('2d'); x.drawImage(img, 0, 0, w, h);
-
     const id = x.getImageData(0, 0, w, h), d = id.data;
-    const pow = (v,g)=>Math.pow(Math.max(0,Math.min(1,v)),1/g);
-    const sCurve = (v,k)=>{ const X=v-0.5; return Math.max(0,Math.min(1,0.5+(X*(1+k))/(1+k*Math.abs(X)*2))); };
-    const clamp = v => v<0?0:v>255?255:v;
-
-    for (let i=0;i<d.length;i+=4){
-        let r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255;
-        const Y = 0.2627*r + 0.678*g + 0.0593*b;
-        r=sCurve(pow(r,cfg.gamma),cfg.sCurve);
-        g=sCurve(pow(g,cfg.gamma),cfg.sCurve);
-        b=sCurve(pow(b,cfg.gamma),cfg.sCurve);
-        const mean=(r+g+b)/3; const k=cfg.sat-1;
-        r=mean+(r-mean)*(1+k); g=mean+(g-mean)*(1+k); b=mean+(b-mean)*(1+k);
-        if (Y>0.6){ const wamt=cfg.warmHi*(Y-0.6)/0.4; r+=0.8*wamt; b-=0.8*wamt; }
-        d[i]=clamp(r*255); d[i+1]=clamp(g*255); d[i+2]=clamp(b*255);
+    const pow = (v, g) => Math.pow(Math.max(0, Math.min(1, v)), 1 / g);
+    const sCurve = (v, k) => { const X = v - 0.5; return Math.max(0, Math.min(1, 0.5 + (X * (1 + k)) / (1 + k * Math.abs(X) * 2))); };
+    const clamp = v => v < 0 ? 0 : v > 255 ? 255 : v;
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
+      const Y = 0.2627 * r + 0.678 * g + 0.0593 * b;
+      r = sCurve(pow(r, cfg.gamma), cfg.sCurve);
+      g = sCurve(pow(g, cfg.gamma), cfg.sCurve);
+      b = sCurve(pow(b, cfg.gamma), cfg.sCurve);
+      const mean = (r + g + b) / 3; const k = cfg.sat - 1;
+      r = mean + (r - mean) * (1 + k); g = mean + (g - mean) * (1 + k); b = mean + (b - mean) * (1 + k);
+      if (Y > 0.6) { const wamt = cfg.warmHi * (Y - 0.6) / 0.4; r += 0.8 * wamt; b -= 0.8 * wamt; }
+      d[i] = clamp(r * 255); d[i + 1] = clamp(g * 255); d[i + 2] = clamp(b * 255);
     }
-    x.putImageData(id,0,0);
-
-    if (cfg.unsharpAmt>0){
-        const bc=document.createElement('canvas'); bc.width=w; bc.height=h;
-        const bx=bc.getContext('2d'); bx.filter=`blur(${cfg.unsharpRadius}px)`; bx.drawImage(c,0,0);
-        const src=x.getImageData(0,0,w,h), blr=bx.getImageData(0,0,w,h);
-        const sd=src.data, bd=blr.data;
-        for (let i=0;i<sd.length;i+=4){
-        sd[i]   = clamp(sd[i]   + (sd[i]   - bd[i])   * cfg.unsharpAmt);
-        sd[i+1] = clamp(sd[i+1] + (sd[i+1] - bd[i+1]) * cfg.unsharpAmt);
-        sd[i+2] = clamp(sd[i+2] + (sd[i+2] - bd[i+2]) * cfg.unsharpAmt);
-        }
-        x.putImageData(src,0,0);
+    x.putImageData(id, 0, 0);
+    if (cfg.unsharpAmt > 0) {
+      const bc = document.createElement('canvas'); bc.width = w; bc.height = h;
+      const bx = bc.getContext('2d'); bx.filter = `blur(${cfg.unsharpRadius}px)`; bx.drawImage(c, 0, 0);
+      const src = x.getImageData(0, 0, w, h), blr = bx.getImageData(0, 0, w, h);
+      const sd = src.data, bd = blr.data;
+      for (let i = 0; i < sd.length; i += 4) {
+        sd[i] = clamp(sd[i] + (sd[i] - bd[i]) * cfg.unsharpAmt);
+        sd[i + 1] = clamp(sd[i + 1] + (sd[i + 1] - bd[i + 1]) * cfg.unsharpAmt);
+        sd[i + 2] = clamp(sd[i + 2] + (sd[i + 2] - bd[i + 2]) * cfg.unsharpAmt);
+      }
+      x.putImageData(src, 0, 0);
     }
     return c.toDataURL('image/jpeg', 0.95);
   } catch (e) {
-      console.error("Error en post-procesado:", e);
-      return dataURL; // Devolver original si falla el procesado
+    console.error('Error en post-procesado:', e);
+    return dataURL;
   }
 }
 
-// Variables globales
+// ===== ESTADO GLOBAL =====
 let uploadedImages = { scenario: null, model: null, clothing: null, accessory: null };
+let uploadedDataURLs = { scenario: null, model: null, clothing: null, accessory: null };
 let selectedCompositions = [];
 let currentBox = null;
-let generatedImages = []; 
+let generatedImages = [];
+let history; // instancia de HistoryManager
 
-// Elementos del DOM
+// ===== ELEMENTOS DEL DOM =====
 const fileInput = document.getElementById('file-input');
 const generateBtn = document.getElementById('generate-btn');
 const styleSelect = document.getElementById('style-select');
@@ -99,16 +95,15 @@ const selectionInfo = document.getElementById('selection-info');
 const resultsSection = document.getElementById('results-section');
 const resultsGrid = document.getElementById('results-grid');
 const loadingElement = document.getElementById('loading');
-const loadingText = loadingElement.querySelector('p');
+const loadingTextEl = loadingElement.querySelector('p');
 const downloadAllBtn = document.getElementById('download-all');
 const newCompositionBtn = document.getElementById('new-composition');
 
-// Selectores
 const compSelectA = document.getElementById('comp-select-a');
 const compSelectB = document.getElementById('comp-select-b');
 const compSelectC = document.getElementById('comp-select-c');
 
-// --- DATOS DE COMPOSICIONES ---
+// ===== DATOS DE COMPOSICIONES =====
 const COMPOSITION_MAP = {
   artistic: { title: 'Composición Artística Publicitaria', description: 'Una imagen con composición artística e intención publicitaria.' },
   expositive: { title: 'Composición Expositiva', description: 'Una imagen más ordenada que permite identificar claramente los elementos.' },
@@ -154,9 +149,11 @@ const GROUPS = {
   C: ['artistic', 'conceptual', 'abstract', 'collage', 'typographic', 'storytelling', 'surreal', 'interactive', 'contrast', 'handcrafted', 'social', 'collaborative']
 };
 
-// --- INICIALIZACIÓN DE LA APP ---
-document.addEventListener('DOMContentLoaded', () => {
-  HistoryManager.configure({ dbName: 'escenario_modelo_db' });
+// ===== INICIALIZACIÓN =====
+document.addEventListener('DOMContentLoaded', async () => {
+  // Historial persistente (nuevo HistoryManager basado en clases)
+  history = new HistoryManager('escenario_modelo');
+
   initDragAndDrop();
   initThreeSelects();
   attachSelectEvents();
@@ -169,12 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const modal = document.getElementById('image-modal');
   const modalClose = document.querySelector('.modal-close');
-  if(modalClose) modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
-  if(modal) modal.addEventListener('click', (e) => {
+  if (modalClose) modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
+  if (modal) modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.style.display = 'none';
   });
-  
-  // contenedor de tags
+
+  // Contenedores de tags
   document.querySelectorAll('.select-group').forEach(group => {
     const container = document.createElement('div');
     container.className = 'cs-tags-container';
@@ -182,67 +179,94 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const container = document.querySelector('.container');
-  if(container) container.addEventListener('click', handleTagDeletion);
+  if (container) container.addEventListener('click', handleTagDeletion);
   updateAllTagsUI();
 
-  // ─── Historial ────────────────────────────────────────────
-  function loadAndRenderHistory() {
-      HistoryManager.loadAll().then(function(items) {
-          var grid = document.getElementById('history-grid');
-          var title = document.getElementById('history-title');
-          var clearBtn = document.getElementById('history-clear-btn');
-          if (!grid) return;
-          if (!items || !items.length) {
-              grid.innerHTML = '';
-              if (title) title.style.display = 'none';
-              if (clearBtn) clearBtn.style.display = 'none';
-              return;
-          }
-          if (title) title.style.display = 'block';
-          if (clearBtn) clearBtn.style.display = 'inline-block';
-          grid.innerHTML = items.map(function(item) {
-              return '<div style="position:relative;border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden">' +
-                  '<img src="' + item.url + '" style="width:100%;display:block;cursor:pointer" onclick="window._openLightbox(\'' + item.url + '\')" alt="Historial">' +
-                  '<button style="position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.8);color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px" ' +
-                  'onclick="event.stopPropagation();window._deleteHistoryItem(\'' + item.id + '\')">🗑️</button>' +
-                  '<p style="padding:0.5rem;color:#94a3b8;font-size:0.75rem;margin:0">' + new Date(item.createdAt).toLocaleString() + '</p>' +
-                  '</div>';
-          }).join('');
-      });
-  }
+  // ─── Cargar historial ─────────────────────────────────────
+  await loadAndRenderHistory();
 
-  window._deleteHistoryItem = function(id) {
-      if (confirm('¿Eliminar del historial?')) {
-          HistoryManager.deleteItem(id).then(function() { loadAndRenderHistory(); });
-      }
-  };
-  window._openLightbox = function(url) {
-      var lb = document.getElementById('antigravity-lightbox');
-      if (!lb) {
-          lb = document.createElement('div');
-          lb.id = 'antigravity-lightbox';
-          lb.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
-          lb.onclick = function() { lb.style.display = 'none'; };
-          var img = document.createElement('img');
-          img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px';
-          lb.appendChild(img);
-          document.body.appendChild(lb);
-      }
-      lb.querySelector('img').src = url;
-      lb.style.display = 'flex';
-  };
-
-  document.getElementById('history-clear-btn').addEventListener('click', function() {
-      if (confirm('¿Eliminar todo el historial?')) {
-          HistoryManager.clearAll().then(function() { loadAndRenderHistory(); });
-      }
-  });
-
-  HistoryManager.init().then(function() { loadAndRenderHistory(); });
+  // Listener para cambios en el historial
+  history.onChange(() => renderHistoryFromState());
 });
 
-// --- LÓGICA PRINCIPAL ---
+// ===== HISTORIAL =====
+async function loadAndRenderHistory() {
+  try {
+    await history.load();
+    renderHistoryFromState();
+  } catch (e) {
+    console.warn('Error cargando historial:', e);
+  }
+}
 
+function renderHistoryFromState() {
+  const grid = document.getElementById('history-grid');
+  const title = document.getElementById('history-title');
+  const clearBtn = document.getElementById('history-clear-btn');
+  if (!grid) return;
+
+  const items = history.getAll();
+
+  if (!items || !items.length) {
+    grid.innerHTML = '';
+    if (title) title.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
+    return;
+  }
+  if (title) title.style.display = 'block';
+  if (clearBtn) clearBtn.style.display = 'inline-block';
+
+  grid.innerHTML = items.map(item => {
+    const url = item.imageUrl || (item.data && item.data.url) || '';
+    const prompt = (item.data && item.data.prompt) || '';
+    const createdAt = item.createdAt || '';
+
+    return `<div style="position:relative;border:1px solid rgba(0,208,208,0.15);border-radius:12px;overflow:hidden;background:rgba(0,208,208,0.03)">
+      <img src="${url}" style="width:100%;display:block;cursor:pointer" onclick="window._openLightbox('${url}')" alt="Historial" loading="lazy">
+      <button style="position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.8);color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px"
+        onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">🗑️</button>
+      <p style="padding:0.5rem;color:#94a3b8;font-size:0.75rem;margin:0">${new Date(createdAt).toLocaleString()}</p>
+    </div>`;
+  }).join('');
+}
+
+window._deleteHistoryItem = async function (id) {
+  if (confirm('¿Eliminar del historial?')) {
+    try {
+      await history.delete(id);
+    } catch (e) {
+      console.warn('Error eliminando del historial:', e);
+    }
+  }
+};
+
+window._openLightbox = function (url) {
+  let lb = document.getElementById('antigravity-lightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'antigravity-lightbox';
+    lb.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+    lb.onclick = function () { lb.style.display = 'none'; };
+    const img = document.createElement('img');
+    img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px';
+    lb.appendChild(img);
+    document.body.appendChild(lb);
+  }
+  lb.querySelector('img').src = url;
+  lb.style.display = 'flex';
+};
+
+document.getElementById('history-clear-btn').addEventListener('click', async function () {
+  if (confirm('¿Eliminar todo el historial?')) {
+    try {
+      await history.clear();
+    } catch (e) {
+      console.warn('Error limpiando historial:', e);
+    }
+  }
+});
+
+// ===== DRAG & DROP =====
 function initDragAndDrop() {
   const boxes = document.querySelectorAll('.upload-box');
   boxes.forEach(box => {
@@ -270,6 +294,7 @@ function handleImageUpload(file, boxId) {
   reader.onload = e => {
     const imageType = boxId.split('-')[0];
     uploadedImages[imageType] = file;
+    uploadedDataURLs[imageType] = e.target.result;
     const previewElement = document.getElementById(`${imageType}-preview`);
     if (previewElement) {
       previewElement.src = e.target.result;
@@ -280,6 +305,7 @@ function handleImageUpload(file, boxId) {
   reader.readAsDataURL(file);
 }
 
+// ===== SELECTORES DE COMPOSICIÓN =====
 function initThreeSelects() {
   populateSelect(compSelectA, GROUPS.A);
   populateSelect(compSelectB, GROUPS.B);
@@ -310,7 +336,6 @@ function attachSelectEvents() {
         }
       }
     });
-
     selectedCompositions = Array.from(selections.keys());
     selectionInfo.textContent = `Seleccionados: ${selectedCompositions.length}/3`;
     updateOptionChecks();
@@ -349,20 +374,36 @@ function checkGenerateButtonState() {
   generateBtn.disabled = !(uploadedCount >= 1 && styleSelect.value && selectedCompositions.length > 0);
 }
 
-// --- GENERACIÓN DE IMÁGENES ---
+// ===== GENERACIÓN DE IMÁGENES CON FLUX =====
 async function generateImages() {
   if (generateBtn.disabled) return;
 
   const numVariants = 2;
   const totalImages = Math.min(selectedCompositions.length * numVariants, 6);
   let currentImage = 0;
+  let successCount = 0;
 
-  loadingElement.style.display = 'block';
-  var overlay = document.getElementById('loading-overlay');
-  if (overlay) { overlay.classList.remove('hidden'); overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  // Overlay de carga
+  const overlay = document.getElementById('loading-overlay');
+  const loadingTextOverlay = document.getElementById('loading-text');
+  const progressBar = document.getElementById('progress-bar');
+  const progressPercent = document.getElementById('progress-percent');
+  const secondaryStatus = document.getElementById('secondary-status');
+
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  if (loadingTextOverlay) loadingTextOverlay.textContent = 'IA generando lo solicitado...';
+  if (progressPercent) progressPercent.style.display = 'none';
+  if (progressBar) {
+    progressBar.style.width = '100%';
+    progressBar.classList.add('indeterminate');
+  }
+
   generateBtn.disabled = true;
   downloadAllBtn.disabled = true;
-  loadingText.textContent = `Preparando para generar ${totalImages} imágenes...`;
   resultsSection.classList.add('active');
   resultsSection.scrollIntoView({ behavior: 'smooth' });
 
@@ -371,127 +412,106 @@ async function generateImages() {
       for (let v = 1; v <= numVariants; v++) {
         if (currentImage >= totalImages) break;
         currentImage++;
-        loadingText.textContent = `Generando imagen ${currentImage} de ${totalImages}...`;
+        if (secondaryStatus) secondaryStatus.textContent = `Generando imagen ${currentImage} de ${totalImages}...`;
 
-        const formData = new FormData();
-        formData.append('style', styleSelect.value);
-        formData.append('compositions', JSON.stringify([comp])); // Enviamos UNA composición a la vez para evitar 502
-        
-        // Metadatos de composición + instrucción creativa
-        const originalCompMeta = COMPOSITION_MAP[comp];
-        const creativeInstruction = "CRITICAL INSTRUCTION: As a creative director, your task is to generate a completely unique and novel image concept. You MUST NOT repeat poses, camera angles, lighting, or compositions from previous generations.";
-        const compMeta = { 
-          [comp]: { 
-            ...originalCompMeta,
-            description: `${originalCompMeta?.description || ''}. ${creativeInstruction}`
-          } 
-        };
-        formData.append('composition_meta', JSON.stringify(compMeta));
-        formData.append('variant', v);
-        formData.append('seed', Date.now() + Math.random());
+        const compMeta = COMPOSITION_MAP[comp];
+        const styleName = styleSelect.options[styleSelect.selectedIndex]?.textContent || styleSelect.value || 'Cinemático';
+        const prompt = buildCompositionPrompt(comp, compMeta, styleName, v, compMeta?.description);
 
-        // ===== PREPROMPT + CONTEXTO DE INTEGRACIÓN =====
-        const hasScenario = !!uploadedImages.scenario;
-        const hasModel = !!uploadedImages.model;
-        const hasGarment = !!uploadedImages.clothing;
-        const hasAccessory = !!uploadedImages.accessory;
-
-        const styleName = styleSelect.options[styleSelect.selectedIndex]?.textContent || styleSelect.value || 'Estilo';
-        const compTitle = originalCompMeta?.title || comp;
-        const compDesc = originalCompMeta?.description || '';
-        const userPrompt = [
-          `Style: ${styleName}.`,
-          `Composition: ${compTitle}.`,
-          compDesc
-        ].join(' ');
-
-        const integrationFlag = (hasScenario && hasModel && hasGarment && hasAccessory) === true;
-        const finalPrompt = composePrePrompt(userPrompt, { integration: integrationFlag });
-        formData.append('finalPrompt', finalPrompt);
-
-        // Mapeo de parts en orden [scenario(base), model(ref), clothing(ref), accessory(ref)]
+        // Construir array de imágenes: [scenario, model, clothing, accessory]
         const orderedKeys = ['scenario', 'model', 'clothing', 'accessory'];
+        const imageList = [];
         orderedKeys.forEach(key => {
-          const file = uploadedImages[key];
-          if (file) formData.append(key, file);
+          if (uploadedDataURLs[key]) imageList.push(uploadedDataURLs[key]);
         });
 
-        // Llamada real al proxy
-        const response = await fetch('proxy.php', {
-          method: 'POST',
-          body: formData
-        });
+        if (imageList.length === 0) continue;
 
-        // Manejo de errores 502/500
-        if (!response.ok) {
-          const statusText = response.status === 502 ? "Timeout / Error de Servidor (502)" : response.status;
-          console.error(`Error HTTP para ${comp} v${v}: ${response.status}`);
-          // No mostramos alert para no bloquear el flujo si solo falla una, pero lo logueamos
-          // alert(`Error al generar la imagen para ${comp} (variante ${v}). Código: ${statusText}`);
-          continue; 
-        }
+        // Body para el proxy canónico (JSON)
+        const body = {
+          action: 'generate',
+          prompt: prompt,
+          quality: 'pro',
+          aspectRatio: '1:1',
+          resolution: 1024,
+          output_format: 'png',
+          seed: Date.now() + Math.floor(Math.random() * 100000),
+        };
 
-        const data = await response.json();
-
-        if (data.success && data.images && data.images[comp]) {
-          const raw = data.images[comp];
-          // Verificamos si vino imagen o texto de error
-          if(raw.error) {
-             console.error(`API Error for ${comp}: ${raw.error}`);
-             continue;
-          }
-          
-          let srcRaw = null;
-          if (raw.mimeType && raw.image) {
-            srcRaw = `data:${raw.mimeType};base64,${raw.image}`;
-          } else if (typeof raw === 'string' && raw.startsWith('data:')) {
-            srcRaw = raw;
-          }
-
-          if (srcRaw) {
-              const src = await postProcessDataURL(srcRaw); // post-procesado
-              const imgKey = `${comp}_${v}`;
-              const imgObj = { key: imgKey, data: src };
-              generatedImages.unshift(imgObj);
-              // Guardar en historial persistente
-              HistoryManager.saveItem({
-                id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
-                url: imgObj.data,
-                prompt: 'Composición: ' + (COMPOSITION_MAP[comp]?.title || comp),
-                aspectRatio: '1:1',
-                size: '',
-                geminiSize: '1K',
-                style: {},
-                createdAt: Date.now()
-              }).then(function() { loadAndRenderHistory(); })
-                .catch(function(e) { console.warn('Error guardando historial:', e); });
-              addResultCard(imgObj.key, imgObj.data);
-          } else {
-               console.warn("La respuesta no contenía datos de imagen válidos", raw);
-          }
-
+        if (imageList.length === 1) {
+          body.image = imageList[0];
         } else {
-          console.error(`Error del servidor para ${comp} v${v}:`, data.error || 'Respuesta inválida');
+          body.images = imageList;
         }
-        
+
+        try {
+          const response = await fetch('proxy.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          const data = await response.json();
+
+          if (data.success && data.dataUrl) {
+            const processed = await postProcessDataURL(data.dataUrl);
+            const imgKey = `${comp}_${v}`;
+            generatedImages.unshift({ key: imgKey, data: processed });
+            addResultCard(imgKey, processed, comp);
+
+            // Guardar en historial
+            const histId = 'h_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
+            try {
+              await history.save({
+                id: histId,
+                type: 'composition',
+                data: {
+                  url: processed,
+                  prompt: prompt,
+                  composition: comp,
+                  variant: v,
+                  style: styleSelect.value
+                },
+                imageData: processed,
+                createdAt: new Date().toISOString()
+              });
+            } catch (e) {
+              console.warn('Error guardando en historial:', e);
+            }
+
+            successCount++;
+          } else {
+            console.error(`Error FLUX para ${comp} v${v}:`, data.error || 'Respuesta inválida');
+            if (secondaryStatus) secondaryStatus.textContent = `Error en imagen ${currentImage}. Continuando...`;
+          }
+        } catch (fetchErr) {
+          console.error(`Error de conexión para ${comp} v${v}:`, fetchErr);
+          if (secondaryStatus) secondaryStatus.textContent = `Error de conexión en imagen ${currentImage}.`;
+        }
+
         checkDownloadAllState();
       }
     }
   } catch (error) {
-    console.error('Error de conexión o en la generación de imágenes:', error);
-    alert(`Ocurrió un error de conexión. Asegúrate de que el servidor (proxy.php) está funcionando. Error: ${error.message}`);
+    console.error('Error general en generación:', error);
+    alert(`Ocurrió un error: ${error.message}`);
   } finally {
-    loadingElement.style.display = 'none';
-    var overlay = document.getElementById('loading-overlay');
-    if (overlay) { overlay.classList.add('hidden'); overlay.style.display = 'none'; document.body.style.overflow = ''; }
+    // Ocultar overlay
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    if (progressBar) progressBar.classList.remove('indeterminate');
     generateBtn.disabled = false;
+    if (secondaryStatus && successCount > 0) {
+      secondaryStatus.textContent = `Completado: ${successCount} imágenes generadas.`;
+    }
   }
 }
 
-
-// --- GESTIÓN DE RESULTADOS ---
-
-function addResultCard(compKey, imgData) {
+// ===== RESULTADOS =====
+function addResultCard(compKey, imgData, comp) {
   const match = compKey.match(/^(.*)_(\d+)$/);
   const baseKey = match ? match[1] : compKey;
   const variantNum = match ? match[2] : '1';
@@ -499,33 +519,49 @@ function addResultCard(compKey, imgData) {
   const card = document.createElement('div');
   card.className = 'result-card animate-in';
   card.dataset.key = compKey;
-  const filename = `${baseKey.replace(/[^a-z0-9]/gi, '-')}_variant${variantNum}.png`;
-  
-  // Seguridad XSS en href
+
   const safeTitle = (COMPOSITION_MAP[baseKey]?.title || baseKey).replace(/"/g, '&quot;');
-  
+  const filename = `${baseKey.replace(/[^a-z0-9]/gi, '-')}_variant${variantNum}.png`;
+
   card.innerHTML = `
-    <img src="${imgData}" class="result-image" alt="Resultado ${safeTitle}" onclick="openModal(this.src)">
+    <div class="image-container">
+      <img src="${imgData}" class="result-image" alt="Resultado ${safeTitle}" onclick="openModal(this.src)" loading="lazy">
+      <div class="image-toolbar">
+        <button class="tool-btn download-btn-icon" onclick="event.stopPropagation();downloadSingleImage('${compKey}')" title="Descargar" aria-label="Descargar imagen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button class="tool-btn delete-btn-icon" onclick="event.stopPropagation();deleteImage(this)" title="Eliminar" aria-label="Eliminar imagen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
     <div class="result-info">
       <h3>${safeTitle}${variantText}</h3>
       <p>${COMPOSITION_MAP[baseKey]?.description || 'Composición generada.'}</p>
-      <a href="${imgData}" download="${filename}" class="download-btn">Descargar PNG</a>
-      <button class="delete-btn" onclick="deleteImage(this)" aria-label="Eliminar">&times;</button>
     </div>
   `;
   resultsGrid.insertBefore(card, resultsGrid.firstChild);
   setTimeout(() => card.classList.remove('animate-in'), 300);
 }
 
+function downloadSingleImage(compKey) {
+  const img = generatedImages.find(g => g.key === compKey);
+  if (!img) return;
+  const a = document.createElement('a');
+  a.href = img.data;
+  a.download = `${compKey.replace(/[^a-z0-9]/gi, '-')}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 function deleteImage(buttonEl) {
   const card = buttonEl.closest('.result-card');
   if (!card) return;
-
   const compKey = card.dataset.key;
   if (compKey) {
     generatedImages = generatedImages.filter(img => img.key !== compKey);
   }
-  
   card.remove();
   checkDownloadAllState();
 }
@@ -533,9 +569,9 @@ function deleteImage(buttonEl) {
 function openModal(src) {
   const modal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-image');
-  if(modalImg && modal) {
-      modalImg.src = src;
-      modal.style.display = 'flex';
+  if (modalImg && modal) {
+    modalImg.src = src;
+    modal.style.display = 'flex';
   }
 }
 
@@ -555,10 +591,9 @@ async function downloadAllImages() {
   for (const imgObj of generatedImages) {
     const { key, data } = imgObj;
     if (typeof data !== 'string' || !data.startsWith('data:image/')) continue;
-
     try {
       const base64Data = data.split(',')[1];
-      const match = key.match(/^(.*)_(\d+)$/);
+      const match = key.match(/^(.*)_(\\d+)$/);
       const baseKey = match ? match[1] : key;
       const variantNum = match ? match[2] : '1';
       const filename = `${baseKey.replace(/[^a-z0-9]/gi, '-')}_variant${variantNum}.png`;
@@ -591,13 +626,14 @@ async function downloadAllImages() {
 }
 
 function checkDownloadAllState() {
-  downloadAllBtn.disabled = resultsGrid.children.length === 0;
+  downloadAllBtn.disabled = generatedImages.length === 0;
 }
 
 function resetComposition() {
   uploadedImages = { scenario: null, model: null, clothing: null, accessory: null };
+  uploadedDataURLs = { scenario: null, model: null, clothing: null, accessory: null };
   document.querySelectorAll('.preview-image').forEach(p => { p.src = ''; p.style.display = 'none'; });
-  [styleSelect, compSelectA, compSelectB, compSelectC].forEach(sel => { if(sel) sel.value = ''; });
+  [styleSelect, compSelectA, compSelectB, compSelectC].forEach(sel => { if (sel) sel.value = ''; });
   selectedCompositions = [];
   generatedImages = [];
   selectionInfo.textContent = 'Seleccionados: 0/3';
@@ -610,29 +646,26 @@ function resetComposition() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- LÓGICA DE TAGS DE SELECCIÓN ---
+// ===== TAGS DE SELECCIÓN =====
 function updateAllTagsUI() {
   [styleSelect, compSelectA, compSelectB, compSelectC].forEach(sel => {
     if (!sel) return;
     const group = sel.closest('.select-group, .selectors-grid');
     const container = group.querySelector('.cs-tags-container');
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     if (sel.value) {
       const selectedOption = sel.options[sel.selectedIndex];
       if (!selectedOption || selectedOption.value === '') return;
-
       const tag = document.createElement('div');
       tag.className = 'cs-tag';
-      
       const tagName = selectedOption.textContent.replace(/^✓\s*/, '');
       tag.innerHTML = `
         <span>${tagName}</span>
         <button class="cs-tag-delete" data-select-id="${sel.id}" aria-label="Eliminar selección">&times;</button>
       `;
-      
       container.appendChild(tag);
     }
   });
@@ -640,18 +673,15 @@ function updateAllTagsUI() {
 
 function handleTagDeletion(e) {
   if (!e.target.matches('.cs-tag-delete')) return;
-  
   const selectId = e.target.dataset.selectId;
   const selectToClear = document.getElementById(selectId);
-  
   if (selectToClear) {
     selectToClear.value = '';
     selectToClear.dispatchEvent(new Event('change', { bubbles: true }));
   }
 }
 
-
-// --- LÓGICA DE SELECTORES PERSONALIZADOS ---
+// ===== SELECTORES PERSONALIZADOS =====
 let csLayer;
 function initCustomSelects() {
   csLayer = document.createElement('div');

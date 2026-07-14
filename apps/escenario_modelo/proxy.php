@@ -1,282 +1,238 @@
 <?php
-// Aumentar límites para evitar el error 502 y 504
-set_time_limit(300); // 5 minutos de ejecución
-ini_set('memory_limit', '1024M'); // 1GB de memoria para procesar imágenes grandes
-ignore_user_abort(true); // Seguir ejecutando aunque el usuario cierre el navegador
+/**
+ * Proxy canónico Antigravity.
+ * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
+ */
+declare(strict_types=1);
 
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+set_time_limit(130);
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS, GET');
-header('Access-Control-Allow-Headers: Content-Type');
+header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
+const MAX_REQUEST_BYTES = 32 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
+const MAX_PROMPT_BYTES = 12000;
+const MAX_OUTPUT_PIXELS = 4194304;
 
-/* ===== Config ===== */
-// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
-$API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('A');
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('REDIRECT_A');
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['A'] ?? '';
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['REDIRECT_A'] ?? '';
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['A'] ?? '';
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['REDIRECT_A'] ?? '';
+function respond(int $status, array $payload): void {
+    http_response_code($status);
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
 }
 
-$API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
-
-// CAMBIO IMPORTANTE: 'gemini-2.5-flash-image' no existe públicamente aún. 
-// Usamos 'gemini-2.5-flash-image' que es el actual capaz de generar imágenes via API rápida,
-// o 'gemini-2.5-flash-image' si solo fuera texto. Para generación de imágenes, prueba este:
-$DEFAULT_MODEL = 'gemini-2.5-flash-image'; 
-
-$ALLOWED_MIME = ['image/jpeg','image/png','image/webp', 'image/heic'];
-$MAX_MB = 20; 
-$MAX_BYTES = $MAX_MB * 1024 * 1024;
-
-// Intentar configurar PHP (aunque puede depender del hosting)
-@ini_set('post_max_size', ($MAX_MB + 10).'M');
-@ini_set('upload_max_filesize', $MAX_MB.'M');
-
-function fail($c,$m,$x=[]){ 
-    http_response_code($c); 
-    echo json_encode(array_merge(['success'=>false,'error'=>$m],$x),JSON_UNESCAPED_UNICODE); 
-    exit; 
-}
-function ok($d){ 
-    echo json_encode(array_merge(['success'=>true],$d),JSON_UNESCAPED_UNICODE); 
-    exit; 
-}
-
-function safe_mime($p){
-  if (function_exists('mime_content_type')) { $m=@mime_content_type($p); if($m) return $m; }
-  if (function_exists('finfo_open')) { $f=@finfo_open(FILEINFO_MIME_TYPE); if($f){ $m=@finfo_file($f,$p); @finfo_close($f); if($m) return $m; } }
-  return 'image/jpeg';
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'GET') ok(['message'=>'proxy.php OK','default_model'=>$DEFAULT_MODEL]);
-if (!function_exists('curl_init')) fail(500,'cURL no disponible.');
-if (!$API_KEY) fail(500,'API Key no configurada. Revisa tu archivo .env o .htaccess');
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail(405,'Usa POST.');
-
-/* ===== Inputs ===== */
-// Limpieza del buffer de salida para evitar que errores de PHP rompan el JSON
-ob_start();
-
-if (empty($_POST['style'])) fail(400,'Falta style.');
-if (empty($_POST['compositions'])) fail(400,'Faltan composiciones.');
-
-$comps = json_decode($_POST['compositions'], true);
-if (!is_array($comps) || !count($comps)) fail(400,'Composiciones inválidas.');
-
-$model = isset($_POST['model']) && is_string($_POST['model']) && !empty($_POST['model']) ? trim($_POST['model']) : $DEFAULT_MODEL;
-$variant = isset($_POST['variant']) ? (int)$_POST['variant'] : 1;
-
-$styleMap = [
-  'cinematic'=>'Cinemático (Estilo Película)','high-key'=>'High-Key (Luminoso y Optimista)',
-  'low-key'=>'Low-Key (Clarooscuro Dramático)','street-style'=>'Street Style (Urbano y Desenfado)',
-  'minimalist'=>'Minimalista y Conceptual','surreal'=>'Surrealista y Onírico',
-  'grunge'=>'Grunge y Raw','vintage'=>'Fotografía analógica Vintage',
-  'bw'=>'Blanco y Negro alto contraste','pastel'=>'Tonos Pastel',
-  'cyberpunk'=>'Futurista / Ciberpunk','baroque'=>'Barroco / Pictórico'
-];
-$style = $_POST['style'];
-$styleText = $styleMap[$style] ?? $style;
-
-$NO_TEXT = "Do not render any text or lettering of any kind: no overlaid text, captions, UI, brand names, signage, labels, hangtags, or watermarks. If any source asset contains text or logos, remove/blank them and keep only texture/color.";
-
-$promptsBase = [
-  'artistic' => "Create a high-end advertising composition that integrates the provided assets: use the background image as the scene, composite the model cutout wearing the clothing item, and place the accessory with correct contact, scale, and occlusion. Style: %s. Photorealistic integration, consistent lighting. {$NO_TEXT}",
-  'expositive' => "Create a clean, expository composition clearly showcasing the clothing item and accessory on the provided model within the provided background. Style: %s. Neutral studio lighting feel. {$NO_TEXT}",
-  'social' => "Generate a vertical 9:16, social-ready image. Style: %s. Composite the model wearing the clothing item with the accessory. Bold composition. {$NO_TEXT}",
-  'product' => "Generate a premium flat-lay product shot focusing on the clothing item and the accessory only; do not show the model. Style: %s. Top-down perspective. {$NO_TEXT}",
-  'behind' => "Generate a behind-the-scenes candid look, integrating the model wearing the clothing and holding the accessory. Style: %s. Documentary vibe. {$NO_TEXT}",
-  'banner' => "Generate a 16:9 banner integrating the background, model, clothing and accessory. Reserve negative space. Style: %s. {$NO_TEXT}"
-];
-
-/* ===== Meta opcional ===== */
-$compMeta = [];
-if (!empty($_POST['composition_meta'])) {
-  $tmp = json_decode($_POST['composition_meta'], true);
-  if (is_array($tmp)) $compMeta = $tmp;
-}
-
-/* ===== Procesamiento de Imágenes ===== */
-$imageParts = [];
-// Mapeo estricto de claves
-$requiredSlots = ['scenario', 'model', 'clothing', 'accessory'];
-
-foreach ($requiredSlots as $slot) {
-  if (!isset($_FILES[$slot]) || $_FILES[$slot]['error'] !== UPLOAD_ERR_OK) continue;
-  
-  $tmp = $_FILES[$slot]['tmp_name'];
-  if (!is_uploaded_file($tmp)) continue;
-  
-  // Verificación básica de tamaño
-  if (filesize($tmp) > $MAX_BYTES) {
-      ob_end_clean();
-      fail(413,'Archivo demasiado grande: '.$slot);
-  }
-
-  $mime = safe_mime($tmp);
-  // Permitimos más tipos de imagen por si acaso
-  if (!in_array($mime, $ALLOWED_MIME, true) && strpos($mime, 'image/') !== 0) {
-      ob_end_clean();
-      fail(400,'Tipo no permitido en '.$slot.': '.$mime);
-  }
-  
-  $b64 = base64_encode(file_get_contents($tmp));
-  
-  // Estructura compatible con Gemini Vision / Imagen
-  $imageParts[] = [
-      'inline_data' => [ // Usar snake_case para v1beta REST
-          'mime_type' => $mime,
-          'data' => $b64
-      ]
-  ];
-}
-
-if (!count($imageParts)) {
-    ob_end_clean();
-    fail(400,'No se han subido imágenes válidas o pesan demasiado.');
-}
-
-/* ===== Llamada API ===== */
-function gemini_call_v1beta($apiKey,$apiBase,$model,$prompt,$imageParts){
-  // Configuración de generación específica para evitar timeouts en el lado de Google
-  $generationConfig = [
-      "temperature" => 0.4,
-      "topP" => 0.95,
-      "topK" => 40,
-      "maxOutputTokens" => 2048,
-      "responseMimeType" => "application/json" // Forzar JSON si el modelo lo soporta, o texto
-  ];
-
-  // Construir payload
-  $contents = [
-      [
-          'role' => 'user',
-          'parts' => array_merge([['text' => $prompt]], $imageParts)
-      ]
-  ];
-
-  $payload = [
-      'contents' => $contents
-      // Omitimos generationConfig estricto para evitar errores si el modelo no soporta ciertos parámetros
-  ];
-
-  $url = "{$apiBase}/models/{$model}:generateContent?key={$apiKey}";
-  
-  $ch = curl_init($url);
-  curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),
-    CURLOPT_TIMEOUT => 180, // Aumentado a 180 segundos para cURL
-    CURLOPT_CONNECTTIMEOUT => 30,
-    // CORRECCIÓN SSL PARA EVITAR 502 EN ALGUNOS HOSTINGS
-    CURLOPT_SSL_VERIFYPEER => false, 
-    CURLOPT_SSL_VERIFYHOST => 0,
-    CURLOPT_FAILONERROR => false // Queremos recibir el cuerpo del error de Google
-  ]);
-  
-  $resp = curl_exec($ch);
-  $err = curl_error($ch);
-  $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-  curl_close($ch);
-
-  if ($err) return ['error' => 'cURL Error: ' . $err];
-  
-  if ($http < 200 || $http >= 300) {
-    $body = json_decode($resp,true);
-    $msg = $body['error']['message'] ?? 'Error desconocido de la API de Google';
-    return ['error' => "API Error ($http): $msg"];
-  }
-
-  $data = json_decode($resp,true);
-  
-  // Analizar respuesta
-  $candidates = $data['candidates'][0] ?? null;
-  if (!$candidates) return ['error' => 'No candidates returned'];
-
-  $parts = $candidates['content']['parts'] ?? [];
-  
-  foreach ($parts as $p) {
-    // Buscar imagen en linea
-    if (isset($p['inline_data']['data'])) {
-       return [
-           'mimeType' => $p['inline_data']['mime_type'] ?? 'image/png',
-           'image' => $p['inline_data']['data']
-       ];
+function getSecret(string $name): string {
+    $config = __DIR__ . '/config.php';
+    if (is_file($config)) {
+        include_once $config;
+        if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
+            return trim((string)constant($name));
+        }
     }
-    if (isset($p['inlineData']['data'])) {
-       return [
-           'mimeType' => $p['inlineData']['mimeType'] ?? 'image/png',
-           'image' => $p['inlineData']['data']
-       ];
+    $values = [
+        getenv($name), getenv('REDIRECT_' . $name),
+        $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '',
+        $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? '',
+    ];
+    foreach ($values as $value) {
+        if (is_string($value) && trim($value) !== '') return trim($value);
     }
-  }
-  
-  // Si no hay imagen, devolver texto
-  $text = [];
-  foreach ($parts as $p) if (isset($p['text'])) $text[] = $p['text'];
-  return ['__text__' => trim(implode("\n",$text))];
+    return '';
 }
 
-/* ===== Builder de prompt ===== */
-function build_prompt($key, $styleText, $promptsBase, $compMeta, $noText, $variant) {
-    $baseP = $promptsBase[$key] ?? "Advertising composition {$key}. Style: {$styleText}.";
-    if (isset($compMeta[$key]['description'])) {
-        $baseP .= " " . $compMeta[$key]['description'];
+function readJsonBody(): array {
+    if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > MAX_REQUEST_BYTES) {
+        respond(413, ['success' => false, 'error' => 'La solicitud supera el tamaño permitido.']);
     }
-    
-    $integration = " INTEGRATION INSTRUCTIONS: Use the 'scenario' image as the background. Place the 'model' person into this scene with a new pose that fits the perspective. Clothe the model with the 'clothing' item. Add the 'accessory' item. Photorealistic blending, matching lighting, shadows, and color grading. Output ONLY the image.";
-    
-    $boost = " 4K, highly detailed, professional photography.";
-    
-    if ($variant > 1) {
-        $boost .= " Variant {$variant}: Slightly different camera angle or pose.";
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw ?: '', true);
+    if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
+        respond(400, ['success' => false, 'error' => 'El cuerpo no contiene JSON válido.']);
     }
-
-    return $baseP . $integration . $boost . " " . $noText;
+    return $data;
 }
 
-/* ===== Generación ===== */
-$generated = [];
-// El script ahora está preparado para recibir un array, pero recomendamos enviar de 1 en 1 desde el JS
-foreach ($comps as $comp) {
-  $prompt = build_prompt($comp, $styleText, $promptsBase, $compMeta, $NO_TEXT, $variant);
-  
-  $result = gemini_call_v1beta($API_KEY, $API_BASE, $model, $prompt, $imageParts);
-  
-  if (isset($result['error'])) {
-      // Si falla una, no matamos todo el proceso, pero reportamos error
-      fail(502, "Error generando $comp: " . $result['error']);
-  }
-  
-  $generated[$comp] = $result;
-  
-  // Pequeña pausa para no saturar rate limits si hay múltiples
-  if (count($comps) > 1) sleep(1);
+function requestJson(string $url, string $method, array $headers, ?array $body = null, int $timeout = 45): array {
+    $ch = curl_init($url);
+    $options = [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_FOLLOWLOCATION => false,
+    ];
+    if ($body !== null) {
+        $encoded = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($encoded === false) respond(500, ['success' => false, 'error' => 'No se pudo preparar la solicitud.']);
+        $options[CURLOPT_POSTFIELDS] = $encoded;
+    }
+    curl_setopt_array($ch, $options);
+    $raw = curl_exec($ch);
+    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    if ($raw === false) respond(502, ['success' => false, 'error' => 'Error conectando con el proveedor.', 'detail' => $error]);
+    $json = json_decode($raw, true);
+    if (!is_array($json)) respond(502, ['success' => false, 'error' => 'El proveedor devolvió una respuesta no válida.']);
+    return [$status, $json];
 }
 
-ob_end_clean(); // Limpiar cualquier salida previa
-ok(['images'=>$generated, 'model_used'=>$model, 'variant_used'=>$variant]);
-?>
+function round32(float $value): int {
+    return max(256, (int)(round($value / 32) * 32));
+}
 
+function dimensions(array $request): array {
+    $allowed = [512, 1024, 2048, 4096];
+    $resolution = (int)($request['resolution'] ?? 1024);
+    if (!in_array($resolution, $allowed, true)) $resolution = 1024;
+    $ratios = ['1:1'=>[1,1], '16:9'=>[16,9], '9:16'=>[9,16], '4:3'=>[4,3], '3:4'=>[3,4], '3:2'=>[3,2], '2:3'=>[2,3]];
+    $ratio = (string)($request['aspectRatio'] ?? '1:1');
+    [$rw, $rh] = $ratios[$ratio] ?? $ratios['1:1'];
+    if (isset($request['width'], $request['height'])) {
+        $width = round32((float)$request['width']);
+        $height = round32((float)$request['height']);
+    } elseif ($rw >= $rh) {
+        $width = $resolution;
+        $height = round32($resolution * $rh / $rw);
+    } else {
+        $height = $resolution;
+        $width = round32($resolution * $rw / $rh);
+    }
+    $adjusted = false;
+    if ($width * $height > MAX_OUTPUT_PIXELS) {
+        $scale = sqrt(MAX_OUTPUT_PIXELS / ($width * $height));
+        $width = round32($width * $scale);
+        $height = round32($height * $scale);
+        while ($width * $height > MAX_OUTPUT_PIXELS) {
+            if ($width >= $height) $width -= 32; else $height -= 32;
+        }
+        $adjusted = true;
+    }
+    return [$width, $height, $ratio, $resolution, $adjusted];
+}
+
+function base64Image(string $value): string {
+    $value = trim($value);
+    if (preg_match('#^data:image/(?:png|jpe?g|webp);base64,#i', $value) === 1) {
+        $value = substr($value, strpos($value, ',') + 1);
+    }
+    $binary = base64_decode($value, true);
+    if ($binary === false) respond(400, ['success' => false, 'error' => 'Una imagen no contiene base64 válido.']);
+    if (strlen($binary) > MAX_IMAGE_BYTES) respond(413, ['success' => false, 'error' => 'Una imagen supera 20 MB.']);
+    return $value;
+}
+
+function handleOpenRouter(array $request): void {
+    $key = getSecret('R');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave de OpenRouter no está configurada.']);
+    $messages = $request['messages'] ?? null;
+    if (!is_array($messages) || $messages === []) {
+        $prompt = trim((string)($request['prompt'] ?? ''));
+        if ($prompt === '') respond(400, ['success' => false, 'error' => 'Faltan messages o prompt.']);
+        if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
+        $messages = [];
+        $system = trim((string)($request['system'] ?? ''));
+        if ($system !== '') $messages[] = ['role' => 'system', 'content' => $system];
+        $messages[] = ['role' => 'user', 'content' => $prompt];
+    }
+    if (count($messages) > 100) respond(400, ['success' => false, 'error' => 'Demasiados mensajes.']);
+    foreach ($messages as $message) {
+        if (!is_array($message) || !in_array((string)($message['role'] ?? ''), ['system','user','assistant','tool'], true) || !array_key_exists('content', $message)) {
+            respond(400, ['success' => false, 'error' => 'La estructura de messages no es válida.']);
+        }
+    }
+    $payload = ['messages' => array_values($messages), 'stream' => false];
+    $model = trim((string)($request['model'] ?? ''));
+    if ($model !== '') {
+        if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
+        $payload['model'] = $model;
+    }
+    if (isset($request['temperature']) && is_numeric($request['temperature'])) $payload['temperature'] = max(0.0, min(2.0, (float)$request['temperature']));
+    if (isset($request['max_tokens']) && is_numeric($request['max_tokens'])) $payload['max_tokens'] = max(1, min(32768, (int)$request['max_tokens']));
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
+        'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
+    ], $payload, 120);
+    if ($status < 200 || $status >= 300 || isset($response['error'])) {
+        $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
+        respond($status >= 400 && $status < 600 ? $status : 502, ['success'=>false, 'error'=>'OpenRouter no pudo completar la solicitud.', 'detail'=>$detail]);
+    }
+    respond(200, [
+        'success'=>true, 'provider'=>'openrouter', 'model'=>(string)($response['model'] ?? $model),
+        'text'=>(string)($response['choices'][0]['message']['content'] ?? ''),
+        'usage'=>$response['usage'] ?? null, 'response'=>$response,
+    ]);
+}
+
+function handleFlux(array $request): void {
+    $key = getSecret('F');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
+    $prompt = trim((string)($request['prompt'] ?? ''));
+    if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
+    if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
+    $quality = strtolower((string)($request['quality'] ?? 'pro'));
+    $models = ['pro'=>'flux-2-pro', 'max'=>'flux-2-max'];
+    if (!isset($models[$quality])) respond(400, ['success' => false, 'error' => 'La calidad debe ser PRO o MAX.']);
+    $format = strtolower((string)($request['output_format'] ?? 'png'));
+    if (!in_array($format, ['png','jpeg','webp'], true)) respond(400, ['success' => false, 'error' => 'Formato no permitido.']);
+    [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
+    $payload = ['prompt'=>$prompt, 'width'=>$width, 'height'=>$height, 'output_format'=>$format];
+    $images = [];
+    if (isset($request['image']) && is_string($request['image']) && trim($request['image']) !== '') $images[] = $request['image'];
+    if (isset($request['images']) && is_array($request['images'])) {
+        foreach ($request['images'] as $image) if (is_string($image) && trim($image) !== '') $images[] = $image;
+    }
+    if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Máximo ocho imágenes de referencia.']);
+    foreach ($images as $i => $image) $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = base64Image($image);
+    if (isset($request['seed']) && is_numeric($request['seed'])) $payload['seed'] = (int)$request['seed'];
+    $headers = ['accept: application/json', 'Content-Type: application/json', 'x-key: ' . $key];
+    [$status, $submit] = requestJson('https://api.bfl.ai/v1/' . $models[$quality], 'POST', $headers, $payload);
+    if ($status < 200 || $status >= 300) respond($status ?: 502, ['success'=>false, 'error'=>'FLUX rechazó la solicitud.', 'detail'=>$submit['detail'] ?? $submit]);
+    $pollUrl = (string)($submit['polling_url'] ?? '');
+    $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
+    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) respond(502, ['success'=>false, 'error'=>'URL de seguimiento FLUX no válida.']);
+    $resultUrl = '';
+    $last = 'Pending';
+    for ($i = 0; $i < 90; $i++) {
+        usleep(1000000);
+        [$pollStatus, $poll] = requestJson($pollUrl, 'GET', ['accept: application/json', 'x-key: ' . $key], null, 20);
+        if ($pollStatus !== 200) continue;
+        $last = (string)($poll['status'] ?? 'Pending');
+        if ($last === 'Ready') { $resultUrl = (string)($poll['result']['sample'] ?? ''); break; }
+        if (in_array($last, ['Error','Failed','Request Moderated','Content Moderated'], true)) respond(422, ['success'=>false, 'error'=>'FLUX no pudo completar la tarea.', 'status'=>$last]);
+    }
+    if ($resultUrl === '' || parse_url($resultUrl, PHP_URL_SCHEME) !== 'https') respond(504, ['success'=>false, 'error'=>'FLUX tardó demasiado.', 'status'=>$last]);
+    $ch = curl_init($resultUrl);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_CONNECTTIMEOUT=>15, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_MAXREDIRS=>3]);
+    $binary = curl_exec($ch);
+    $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $mime = (string)(curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/png');
+    curl_close($ch);
+    if ($binary === false || $binary === '' || $downloadStatus !== 200) respond(502, ['success'=>false, 'error'=>'No se pudo descargar el resultado.']);
+    $base64 = base64_encode($binary);
+    respond(200, [
+        'success'=>true, 'provider'=>'flux', 'model'=>$models[$quality], 'quality'=>$quality,
+        'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
+        'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
+        'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
+    ]);
+}
+
+$method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+if ($method === 'OPTIONS') { http_response_code(204); exit; }
+if ($method === 'GET') respond(200, [
+    'success'=>true, 'service'=>'antigravity-ai-proxy',
+    'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
+    'actions'=>['generate','openrouter','text','health'],
+    'fluxModels'=>['pro'=>'flux-2-pro', 'max'=>'flux-2-max'],
+]);
+if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
+if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
+$request = readJsonBody();
+$action = strtolower((string)($request['action'] ?? 'generate'));
+if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
+if ($action === 'generate') handleFlux($request);
+respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
