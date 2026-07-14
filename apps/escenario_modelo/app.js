@@ -101,6 +101,10 @@ const compSelectA = document.getElementById('comp-select-a');
 const compSelectB = document.getElementById('comp-select-b');
 const compSelectC = document.getElementById('comp-select-c');
 
+const qualitySelect = document.getElementById('quality-select');
+const arSelect = document.getElementById('ar-select');
+const resolutionSelect = document.getElementById('resolution-select');
+
 // ===== DATOS DE COMPOSICIONES =====
 const COMPOSITION_MAP = {
   artistic: { title: 'Composición Artística Publicitaria', description: 'Una imagen con composición artística e intención publicitaria.' },
@@ -433,9 +437,9 @@ async function generateImages() {
         const body = {
           action: 'generate',
           prompt: prompt,
-          quality: 'pro',
-          aspectRatio: '1:1',
-          resolution: 1024,
+          quality: qualitySelect.value || 'pro',
+          aspectRatio: arSelect.value || '1:1',
+          resolution: parseInt(resolutionSelect.value) || 1024,
           output_format: 'png',
           seed: Date.now() + Math.floor(Math.random() * 100000),
         };

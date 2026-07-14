@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=2"/>
+  <link rel="stylesheet" href="app.css?v=3"/>
 </head>
 <body>
   <div class="container">
@@ -20,117 +20,158 @@
       <h1>Crea Composiciones Impactantes con IA</h1>
     </header>
 
-    <section class="upload-section">
-      <div class="upload-box" id="scenario-box">
-        <span class="icon" aria-hidden="true">🌆</span>
-        <h3>Escenario</h3>
-        <p>Añade el fondo de la imagen</p>
-        <div class="preview-container">
-          <img class="preview-image" id="scenario-preview" alt="Vista previa del escenario">
-        </div>
-      </div>
+    <!-- Layout 2 columnas: principal + historial lateral -->
+    <div class="main-layout">
 
-      <div class="upload-box" id="model-box">
-        <span class="icon" aria-hidden="true">👤</span>
-        <h3>Modelo</h3>
-        <p>Añade el/la modelo</p>
-        <div class="preview-container">
-          <img class="preview-image" id="model-preview" alt="Vista previa del modelo">
-        </div>
-      </div>
+      <!-- Columna principal -->
+      <div class="main-col">
 
-      <div class="upload-box" id="clothing-box">
-        <span class="icon" aria-hidden="true">👕</span>
-        <h3>Prenda de ropa</h3>
-        <p>Añade la prenda</p>
-        <div class="preview-container">
-          <img class="preview-image" id="clothing-preview" alt="Vista previa de la prenda">
-        </div>
-      </div>
+        <section class="upload-section">
+          <div class="upload-box" id="scenario-box">
+            <span class="icon" aria-hidden="true">🌆</span>
+            <h3>Escenario</h3>
+            <p>Añade el fondo de la imagen</p>
+            <div class="preview-container">
+              <img class="preview-image" id="scenario-preview" alt="Vista previa del escenario">
+            </div>
+          </div>
+          <div class="upload-box" id="model-box">
+            <span class="icon" aria-hidden="true">👤</span>
+            <h3>Modelo</h3>
+            <p>Añade el/la modelo</p>
+            <div class="preview-container">
+              <img class="preview-image" id="model-preview" alt="Vista previa del modelo">
+            </div>
+          </div>
+          <div class="upload-box" id="clothing-box">
+            <span class="icon" aria-hidden="true">👕</span>
+            <h3>Prenda de ropa</h3>
+            <p>Añade la prenda</p>
+            <div class="preview-container">
+              <img class="preview-image" id="clothing-preview" alt="Vista previa de la prenda">
+            </div>
+          </div>
+          <div class="upload-box" id="accessory-box">
+            <span class="icon" aria-hidden="true">👜</span>
+            <h3>Complemento</h3>
+            <p>Añade el complemento</p>
+            <div class="preview-container">
+              <img class="preview-image" id="accessory-preview" alt="Vista previa del complemento">
+            </div>
+          </div>
+        </section>
 
-      <div class="upload-box" id="accessory-box">
-        <span class="icon" aria-hidden="true">👜</span>
-        <h3>Complemento</h3>
-        <p>Añade el complemento</p>
-        <div class="preview-container">
-          <img class="preview-image" id="accessory-preview" alt="Vista previa del complemento">
-        </div>
-      </div>
-    </section>
+        <section class="style-selector">
+          <h2>Selecciona un estilo fotográfico</h2>
+          <div class="selectors-grid single-selector">
+            <div class="select-group">
+              <label for="style-select" class="visually-hidden">Estilo fotográfico</label>
+              <select id="style-select">
+                <option value="">-- Selecciona un estilo --</option>
+                <option value="cinematic">Cinemático (Estilo Película)</option>
+                <option value="high-key">High-Key (Luminoso y Optimista)</option>
+                <option value="low-key">Low-Key (Clarooscuro Dramático)</option>
+                <option value="street-style">Street Style (Urbano y Desenfocado)</option>
+                <option value="minimalist">Minimalista y Conceptual</option>
+                <option value="surreal">Surrealista y Onírico</option>
+                <option value="grunge">Grunge y Raw (Estética Cruda)</option>
+                <option value="vintage">Fotografía analógica Vintage</option>
+                <option value="bw">Blanco y Negro de Alto Contraste</option>
+                <option value="pastel">Tonos Pastel y Ensueño</option>
+                <option value="cyberpunk">Estética Futurista / Ciberpunk</option>
+                <option value="baroque">Barroco / Pictórico</option>
+              </select>
+            </div>
+          </div>
+        </section>
 
-    <section class="style-selector">
-      <h2>Selecciona un estilo fotográfico</h2>
-      <div class="selectors-grid single-selector">
-        <div class="select-group">
-          <label for="style-select" class="visually-hidden">Estilo fotográfico</label>
-          <select id="style-select">
-            <option value="">-- Selecciona un estilo --</option>
-            <option value="cinematic">Cinemático (Estilo Película)</option>
-            <option value="high-key">High-Key (Luminoso y Optimista)</option>
-            <option value="low-key">Low-Key (Clarooscuro Dramático)</option>
-            <option value="street-style">Street Style (Urbano y Desenfocado)</option>
-            <option value="minimalist">Minimalista y Conceptual</option>
-            <option value="surreal">Surrealista y Onírico</option>
-            <option value="grunge">Grunge y Raw (Estética Cruda)</option>
-            <option value="vintage">Fotografía analógica Vintage</option>
-            <option value="bw">Blanco y Negro de Alto Contraste</option>
-            <option value="pastel">Tonos Pastel y Ensueño</option>
-            <option value="cyberpunk">Estética Futurista / Ciberpunk</option>
-            <option value="baroque">Barroco / Pictórico</option>
-          </select>
-        </div>
-      </div>
-    </section>
+        <!-- NUEVO: Ajustes de imagen (PRO/MAX + AR + Resolución) -->
+        <section class="style-selector">
+          <h2>Ajustes de imagen</h2>
+          <div class="selectors-grid">
+            <div class="select-group">
+              <label for="quality-select">Calidad</label>
+              <select id="quality-select">
+                <option value="pro">PRO (flux-2-pro)</option>
+                <option value="max">MAX (flux-2-max)</option>
+              </select>
+            </div>
+            <div class="select-group">
+              <label for="ar-select">Relación de aspecto</label>
+              <select id="ar-select">
+                <option value="1:1">1:1 — Cuadrado</option>
+                <option value="16:9">16:9 — Panorámico</option>
+                <option value="9:16">9:16 — Vertical</option>
+                <option value="4:3">4:3 — Clásico</option>
+                <option value="3:4">3:4 — Retrato</option>
+                <option value="3:2">3:2 — Fotografía</option>
+                <option value="2:3">2:3 — Retrato largo</option>
+              </select>
+            </div>
+            <div class="select-group">
+              <label for="resolution-select">Resolución</label>
+              <select id="resolution-select">
+                <option value="512">512 px</option>
+                <option value="1024" selected>1024 px</option>
+                <option value="2048">2048 px</option>
+                <option value="4096">4096 px</option>
+              </select>
+            </div>
+          </div>
+        </section>
 
-    <!-- 3 desplegables por similitud -->
-    <section class="composition-selectors-3">
-      <h2>Selecciona las composiciones (máximo 3 en total)</h2>
-      <div class="selectors-grid">
-        <div class="select-group">
-          <label for="comp-select-a">Producto y realistas</label>
-          <select id="comp-select-a">
-            <option value="">Elige alguna opción</option>
-          </select>
-        </div>
-        <div class="select-group">
-          <label for="comp-select-b">Cine y dirección de arte</label>
-          <select id="comp-select-b">
-            <option value="">Elige alguna opción</option>
-          </select>
-        </div>
-        <div class="select-group">
-          <label for="comp-select-c">Conceptual y gráfico</label>
-          <select id="comp-select-c">
-            <option value="">Elige alguna opción</option>
-          </select>
-        </div>
-        <div class="select-status">
-          <span id="selection-info">Seleccionados: 0/3</span>
-        </div>
-      </div>
-    </section>
+        <section class="composition-selectors-3">
+          <h2>Selecciona las composiciones (máximo 3 en total)</h2>
+          <div class="selectors-grid">
+            <div class="select-group">
+              <label for="comp-select-a">Producto y realistas</label>
+              <select id="comp-select-a">
+                <option value="">Elige alguna opción</option>
+              </select>
+            </div>
+            <div class="select-group">
+              <label for="comp-select-b">Cine y dirección de arte</label>
+              <select id="comp-select-b">
+                <option value="">Elige alguna opción</option>
+              </select>
+            </div>
+            <div class="select-group">
+              <label for="comp-select-c">Conceptual y gráfico</label>
+              <select id="comp-select-c">
+                <option value="">Elige alguna opción</option>
+              </select>
+            </div>
+            <div class="select-status">
+              <span id="selection-info">Seleccionados: 0/3</span>
+            </div>
+          </div>
+        </section>
 
-    <!-- Legacy composition selector (oculto por CSS) -->
-    <section class="composition-selector">
-      <h2>Selecciona los tipos de composición (máximo 2)</h2>
-      <div class="composition-options"></div>
-      <p class="selection-info" id="selection-info-legacy" aria-hidden="true">Seleccionados: 0/2</p>
-    </section>
+        <section class="composition-selector" style="display:none">
+          <h2>Selecciona los tipos de composición (máximo 2)</h2>
+          <div class="composition-options"></div>
+          <p class="selection-info" id="selection-info-legacy" aria-hidden="true">Seleccionados: 0/2</p>
+        </section>
 
-    <button class="generate-btn" id="generate-btn" disabled>Generar Imágenes</button>
+        <button class="generate-btn" id="generate-btn" disabled>Generar Imágenes</button>
 
-    <section class="results-section" id="results-section">
-      <h2>Resultados de la Composición</h2>
-      <div class="results-grid" id="results-grid"></div>
-      <button class="download-all" id="download-all">Descargar Todas las Imágenes (ZIP)</button>
-      <button class="new-composition" id="new-composition">Crear Nueva Composición</button>
-    </section>
+        <section class="results-section" id="results-section">
+          <h2>Resultados de la Composición</h2>
+          <div class="results-grid" id="results-grid"></div>
+          <button class="download-all" id="download-all">Descargar Todas las Imágenes (ZIP)</button>
+          <button class="new-composition" id="new-composition">Crear Nueva Composición</button>
+        </section>
 
-    <section id="history-section" style="margin-top:3rem">
-      <h2 id="history-title" style="color:var(--cyan);margin-bottom:1rem;display:none;font-family:'Electrolize',sans-serif">Historial</h2>
-      <div id="history-grid"></div>
-      <button id="history-clear-btn" style="display:none;margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem">Limpiar Historial</button>
-    </section>
+      </div><!-- /main-col -->
+
+      <!-- Columna lateral: Historial -->
+      <aside class="history-col" id="history-section">
+        <h2 id="history-title" style="color:var(--cyan);margin-bottom:1rem;display:none;font-family:'Electrolize',sans-serif">Historial</h2>
+        <div id="history-grid"></div>
+        <button id="history-clear-btn" style="display:none;margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem">Limpiar Historial</button>
+      </aside>
+
+    </div><!-- /main-layout -->
 
     <footer>
       <p>Atnojs © 2025 - Todos los derechos reservados</p>
@@ -161,20 +202,14 @@
     </div>
   </div>
 
-  <!-- Ocultar inmediatamente si el script de carga rápida no se ejecutó -->
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 
-  <!-- Iconos Feather -->
   <script src="https://unpkg.com/feather-icons"></script>
-  <!-- Librerías JS -->
   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=2"></script>
-  <!-- Inicializar iconos -->
+  <script src="history-manager.js?v=3"></script>
+  <script src="app.js?v=3"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      feather.replace();
-    });
+    document.addEventListener('DOMContentLoaded', () => { feather.replace(); });
   </script>
 </body>
 </html>
