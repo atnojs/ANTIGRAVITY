@@ -208,7 +208,7 @@ body::after {
   border-color: var(--cian);
   color: #fff;
   box-shadow: 0 0 18px var(--glow-soft);
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg);
 }
 .category-btn.active {
   background: rgba(0,208,208,0.18);
@@ -379,7 +379,7 @@ body::after {
   transition: all 0.2s;
   backdrop-filter: blur(4px);
 }
-.subcategory-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--cian); color: #fff; }
+.subcategory-btn:hover { background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg); border-color: var(--cian); color: #fff; }
 .subcategory-btn.active {
   background: var(--cian);
   color: #001018;
@@ -449,7 +449,7 @@ body::after {
   transition: all 0.2s;
 }
 .action-chip:hover {
-  background: rgba(255,255,255,0.08);
+  background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg);
   border-color: var(--cian);
   box-shadow: 0 0 14px var(--glow-soft);
 }
@@ -523,7 +523,7 @@ body::after {
   text-transform: uppercase;
 }
 .toggle-btn:hover {
-  background: rgba(255,255,255,0.08);
+  background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg);
   border-color: var(--cian);
   color: #fff;
   box-shadow: 0 0 14px var(--glow-soft);

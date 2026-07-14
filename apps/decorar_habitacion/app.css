@@ -195,7 +195,7 @@ header.sticky h1 {
 }
 
 .room-button:hover {
-  background: rgba(255,255,255,0.08);
+  background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg);
   transform: translateY(-4px);
   box-shadow: 0 12px 32px var(--shadow-color), 0 0 0 4px var(--shadow-light);
   border-color: var(--acc);
