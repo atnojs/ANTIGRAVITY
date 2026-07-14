@@ -90,6 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 lightboxImg.style.maxHeight = 'none';
                 lightboxImg.style.width = 'auto';
                 lightboxImg.style.height = 'auto';
+                lightboxImg.style.transform = 'scale(2)';
+                lightboxImg.style.transformOrigin = 'top left';
                 lightboxImg.style.cursor = 'zoom-out';
                 lightbox.style.overflow = 'auto';
                 lightbox.classList.remove('hidden');
@@ -383,12 +385,19 @@ document.addEventListener('DOMContentLoaded', () => {
             lightboxImg.style.objectFit = 'none';
             lightboxImg.style.maxWidth = 'none';
             lightboxImg.style.maxHeight = 'none';
+            lightboxImg.style.width = 'auto';
+            lightboxImg.style.height = 'auto';
+            lightboxImg.style.transform = 'scale(2)';
+            lightboxImg.style.transformOrigin = 'top left';
+            lightboxImg.style.cursor = 'zoom-out';
             lightbox.style.overflow = 'auto';
         } else {
             lightboxImg.dataset.zoom = 'fit';
             lightboxImg.style.objectFit = 'contain';
             lightboxImg.style.maxWidth = '95vw';
             lightboxImg.style.maxHeight = '95vh';
+            lightboxImg.style.transform = 'none';
+            lightboxImg.style.cursor = 'zoom-in';
             lightbox.style.overflow = 'hidden';
         }
     });
