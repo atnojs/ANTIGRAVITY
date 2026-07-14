@@ -94,8 +94,6 @@ const styleSelect = document.getElementById('style-select');
 const selectionInfo = document.getElementById('selection-info');
 const resultsSection = document.getElementById('results-section');
 const resultsGrid = document.getElementById('results-grid');
-const loadingElement = document.getElementById('loading');
-const loadingTextEl = loadingElement.querySelector('p');
 const downloadAllBtn = document.getElementById('download-all');
 const newCompositionBtn = document.getElementById('new-composition');
 
