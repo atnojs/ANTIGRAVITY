@@ -92,10 +92,9 @@ header p {
   transition: var(--transition-main);
 }
 .glass-hover:hover {
-  background: rgba(0, 208, 208, 0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-color: var(--cyan);
-  transform: translateY(-3px);
-  box-shadow: 0 15px 45px 0 var(--cyan-glow);
+  box-shadow: 0 8px 32px rgba(0,208,208,0.4), inset 0 0 20px rgba(0,208,208,0.1);
 }
 
 /* === Upload / Drop Zone === */
@@ -169,9 +168,10 @@ header p {
   font-size: 0.9rem;
 }
 .shot-option:hover {
-  background-color: rgba(0, 208, 208, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,208,208,.3);
   border-color: var(--cyan);
-  transform: translateY(-2px);
+  background: rgba(255,255,255,0.08);
 }
 .shot-option.selected {
   background: var(--gradient-cyan-green);
@@ -201,7 +201,8 @@ header p {
 }
 .quality-btn:hover {
   border-color: var(--cyan);
-  background: rgba(0, 208, 208, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 14px rgba(0,208,208,0.3);
 }
 .quality-btn.active {
   background: var(--gradient-cyan-green);
