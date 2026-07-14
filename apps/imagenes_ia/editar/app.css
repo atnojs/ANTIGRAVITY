@@ -3,48 +3,99 @@
    (base.css + components.css ya cubren el sistema de diseño)
    ═══════════════════════════════════════════════ */
 
-/* Progress Bar (from copiar_estilo) */
+/* Progress bar - HOOLA/Relatos style */
 .progress-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(0, 16, 24, 0.72);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(34, 211, 238, 0.2);
-    border-radius: 24px;
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 208, 208, 0.45);
+    border-radius: 16px;
     padding: 20px 30px;
     min-width: 280px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 24px rgba(0, 208, 208, 0.16);
 }
 .progress-percentage {
     font-family: 'Montserrat', sans-serif;
     font-size: 2rem;
     font-weight: 800;
-    color: var(--neon-cyan, #2ee8ff);
-    text-shadow: 0 0 15px rgba(46, 232, 255, 0.5);
+    color: #00D0D0;
+    text-shadow: 0 0 15px rgba(0, 208, 208, 0.65);
     line-height: 1;
 }
 .progress-bar-track {
     width: 100%;
     height: 8px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(234, 255, 255, 0.12);
     border-radius: 4px;
     overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #2ee8ff, #a78bfa, #ff4ecd);
+    background: linear-gradient(90deg, #00D0D0, #26C626);
     border-radius: 4px;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 10px rgba(46, 232, 255, 0.4);
+    box-shadow: 0 0 12px rgba(0, 208, 208, 0.55);
 }
 .progress-status {
     font-family: 'Poppins', sans-serif;
     font-size: 0.8rem;
-    color: #94a3b8;
+    color: #99CCCC;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+}
+
+/* Loader and blur from vestir_modelo */
+.loading-overlay {
+    background: rgba(0, 16, 24, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    gap: 1.5rem;
+}
+
+.spinner-triple {
+    width: 80px;
+    height: 80px;
+}
+
+.spinner-triple .ring {
+    border: 3px solid transparent;
+    filter: none;
+}
+
+.spinner-triple .ring-1 {
+    inset: 0;
+    border-top-color: #00D0D0;
+    animation: spin-loader 1.2s linear infinite;
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.4);
+}
+
+.spinner-triple .ring-2 {
+    inset: 10px;
+    border-right-color: #26C626;
+    animation: spin-loader-reverse 1s linear infinite;
+    box-shadow: 0 0 15px rgba(38, 198, 38, 0.4);
+}
+
+.spinner-triple .ring-3 {
+    inset: 20px;
+    border-bottom-color: #00D0D0;
+    animation: spin-loader 0.8s linear infinite;
+    box-shadow: 0 0 10px rgba(0, 208, 208, 0.4);
+}
+
+@keyframes spin-loader {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spin-loader-reverse {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
 }
 
 /* Custom Scrollbar */
