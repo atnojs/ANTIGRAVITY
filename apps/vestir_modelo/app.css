@@ -212,25 +212,27 @@ h2, h3, h4 {
 
 /* ===== TARJETAS DE ESTILOS / COMPOSICIONES ===== */
 .composition-card {
-  background: var(--card-bg);
-  border: 2px solid var(--border);
-  border-radius: 12px;
+  background: rgba(23, 79, 122, 0.42);
+  border: 2px solid rgba(0, 208, 208, 0.7);
+  border-radius: 14px;
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   padding: 12px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 0 18px rgba(0, 208, 208, 0.2), inset 0 0 20px rgba(0, 208, 208, 0.05);
 }
 .composition-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px var(--shadow-color), 0 0 24px rgba(0, 208, 208, 0.5);
+  box-shadow: 0 0 32px rgba(0, 208, 208, 0.55), inset 0 0 30px rgba(0, 208, 208, 0.08);
   border-color: #00D0D0;
 }
 .composition-card.selected {
-  border-color: var(--acc);
-  background: rgba(0, 208, 208, 0.12);
+  border-color: #00D0D0;
+  background: rgba(0, 208, 208, 0.15);
+  box-shadow: 0 0 24px rgba(0, 208, 208, 0.35), inset 0 0 15px rgba(0, 208, 208, 0.06);
 }
 .composition-card h4 { color: var(--text); }
 .composition-card p { color: var(--muted); text-transform: none; letter-spacing: 0.02em; }

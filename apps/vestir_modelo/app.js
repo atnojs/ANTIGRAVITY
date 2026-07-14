@@ -338,6 +338,53 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGenerateButtonState();
     };
 
+    // ===== DIMENSIONES Y AJUSTE AR =====
+    const computeTargetDims = () => {
+        const [wRatio, hRatio] = selectedAR.split(':').map(Number);
+        const maxDim = selectedRes;
+        let width, height;
+        const ratio = wRatio / hRatio;
+        if (ratio >= 1) { width = maxDim; height = Math.round(maxDim / ratio); }
+        else { height = maxDim; width = Math.round(maxDim * ratio); }
+        width = Math.max(256, Math.round(width / 32) * 32);
+        height = Math.max(256, Math.round(height / 32) * 32);
+        return { width, height };
+    };
+
+    // Ajusta al AR sin recortar (contain: modelo entero, bandas negras)
+    const fitToTargetAR = async (dataUrl) => {
+        const { width: tw, height: th } = computeTargetDims();
+        const img = await new Promise((res, rej) => {
+            const im = new Image(); im.crossOrigin = 'anonymous';
+            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
+        });
+        const srcW = img.naturalWidth;
+        const srcH = img.naturalHeight;
+        const targetRatio = tw / th;
+        const srcRatio = srcW / srcH;
+        let drawW, drawH, dx, dy;
+        if (srcRatio > targetRatio) {
+            drawH = th;
+            drawW = Math.round(th * srcRatio);
+            dx = Math.round((tw - drawW) / 2);
+            dy = 0;
+        } else {
+            drawW = tw;
+            drawH = Math.round(tw / srcRatio);
+            dx = 0;
+            dy = Math.round((th - drawH) / 2);
+        }
+        const c = document.createElement('canvas');
+        c.width = tw;
+        c.height = th;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, tw, th);
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, srcW, srcH, dx, dy, drawW, drawH);
+        return c.toDataURL('image/jpeg', 0.92);
+    };
+
     // ===== LLAMADA API FLUX VTO =====
     const callFluxVto = async (prompt, modelImageData, outfitImageData) => {
         // Inyectar el AR en el prompt para que VTO lo intente respetar
@@ -370,9 +417,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok || !data.success) {
                     throw new Error(data?.error?.message || `Error HTTP ${res.status}`);
                 }
-                const imageData = data.imageUrl;
+                let imageData = data.imageUrl;
                 if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
-                // Devolver tal cual — sin crop, sin contain, sin modificar
+                // Ajustar al AR exacto sin recortar (contain + bandas negras)
+                imageData = await fitToTargetAR(imageData);
                 return imageData;
             } catch (err) {
                 console.error(`Intento ${attempt + 1} fallido:`, err);
