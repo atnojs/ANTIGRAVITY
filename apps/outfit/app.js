@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==== State ====
     let originalImageBase64 = null;
     let generatedImageBase64 = null;
-    let history = [];
+    let historyManager;
     let isLoading = false;
     let activeCategory = null;
 
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const label = mode === 'bg' ? 'Fondo Nuevo' : 'Editado';
-            addToHistory(
+            await addToHistory(
                 generatedImageBase64,
                 { style: label, subcategory: 'Personalizado' },
                 finalPrompt
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==== Init ====
-    const init = () => {
+    const init = async () => {
         renderCategories();
         setupEventListeners();
         setupSelectors();
@@ -754,6 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         injectLightbox();
         ensureStyleDescClose();
         setupComparisonSlider();
+        await initHistory();
     };
 
     const setupSelectors = () => {
@@ -982,7 +983,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const iterations = 2;
+            const iterations = 1;
             let lastResult = null;
 
             for (let i = 0; i < iterations; i++) {
@@ -991,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (i > 0) await new Promise(r => setTimeout(r, 2000));
                     const resultBase64 = await callImageAPI(originalImageBase64, prompt);
                     lastResult = resultBase64;
-                    addToHistory(resultBase64, currentStyle, prompt);
+                    await addToHistory(resultBase64, currentStyle, prompt);
                 } catch (innerError) {
                     console.warn(`Generación ${i + 1} falló:`, innerError);
                     // Si falla la primera, intentamos seguir, pero si es la última y no hay resultado, lanzamos error
@@ -1005,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 styleDescriptionSection.classList.remove('hidden');
                 styleDescriptionOutput.classList.add('hidden');
                 resetComparisonSlider();
-                showToast(`¡${iterations} outfits generados!`);
+                showToast('¡Outfit generado!');
             }
 
         } catch (error) {
@@ -1079,16 +1080,52 @@ document.addEventListener('DOMContentLoaded', () => {
         imageAfter.style.clipPath = 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)';
     };
 
-    const addToHistory = (imageBase64, styleInfo, promptUsed) => {
-        const historyItem = { image: imageBase64, style: styleInfo, prompt: promptUsed };
-        history.unshift(historyItem);
-        renderHistory();
+    const initHistory = async () => {
+        historyManager = new HistoryManager('outfit');
+        historyManager.onChange(() => renderHistory());
+        try {
+            await historyManager.load();
+            if (historyManager.getAll().length) renderHistory();
+        } catch (error) {
+            console.warn('No se pudo cargar el historial persistente:', error);
+        }
+    };
+
+    const addToHistory = async (imageBase64, styleInfo, promptUsed) => {
+        if (!historyManager) return;
+        const id = `outfit_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        try {
+            await historyManager.save({
+                id,
+                type: 'image',
+                data: {
+                    prompt: promptUsed || '',
+                    style: styleInfo || { style: 'Personalizado', subcategory: 'Generado' },
+                    original: originalImageBase64,
+                    aspectRatio: selectedAR,
+                    size: String(selectedRes)
+                },
+                imageData: imageBase64,
+                createdAt: new Date().toISOString()
+            });
+        } catch (error) {
+            console.warn('No se pudo guardar el historial:', error);
+        }
     };
 
     const renderHistory = () => {
+        if (!historyManager) return;
+        const items = historyManager.getAll();
+        if (!items.length) {
+            historySection.classList.add('hidden');
+            return;
+        }
         historySection.classList.remove('hidden');
         historyContainer.innerHTML = '';
-        history.forEach((item, index) => {
+        items.forEach((entry) => {
+            // Mapear de formato HistoryManager al formato interno
+            const item = mapHistoryEntry(entry);
+
             const wrapper = document.createElement('div');
             wrapper.className = 'history-item-wrapper';
 
@@ -1110,7 +1147,13 @@ document.addEventListener('DOMContentLoaded', () => {
             actions.appendChild(createBtn('btn-sq-green',
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
                 'Descargar',
-                () => { const a = document.createElement('a'); a.href = item.image; a.download = `outfit_${index}.png`; a.click(); }
+                () => { const a = document.createElement('a'); a.href = item.image; a.download = `outfit_${item.id}.png`; a.click(); }
+            ));
+
+            actions.appendChild(createBtn('btn-sq-white',
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
+                'Ver en grande',
+                () => openLightbox(item.image)
             ));
 
             // 2. Reintentar
@@ -1121,7 +1164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showGlobalLoader("Regenerando la Imagen");
                     try {
                         const res = await callImageAPI(originalImageBase64, item.prompt || constructPrompt());
-                        addToHistory(res, item.style, item.prompt);
+                        await addToHistory(res, item.style, item.prompt);
                         generatedImageBase64 = res; imageAfter.src = res;
                     } catch (e) { showToast("Error"); } finally { hideGlobalLoader(); }
                 }
@@ -1145,7 +1188,13 @@ document.addEventListener('DOMContentLoaded', () => {
             actions.appendChild(createBtn('btn-sq-red',
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
                 'Eliminar',
-                () => { history.splice(index, 1); renderHistory(); }
+                async () => {
+                    try {
+                        await historyManager.delete(item.id);
+                    } catch (error) {
+                        console.warn('No se pudo eliminar del historial:', error);
+                    }
+                }
             ));
 
             wrapper.onclick = () => openLightbox(item.image);
@@ -1154,11 +1203,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const mapHistoryEntry = (entry) => ({
+        id: entry.id,
+        image: entry.imageData || entry.imageUrl || (entry.data && entry.data.url) || '',
+        original: (entry.data && entry.data.original) || null,
+        style: (entry.data && entry.data.style) || { style: 'Personalizado', subcategory: 'Generado' },
+        prompt: (entry.data && entry.data.prompt) || '',
+        createdAt: entry.createdAt ? new Date(entry.createdAt).getTime() : Date.now(),
+        aspectRatio: (entry.data && entry.data.aspectRatio) || '1:1',
+        size: (entry.data && entry.data.size) || '1024'
+    });
+
     async function handleDownloadAll() {
-        if (!history.length) return;
+        if (!historyManager || !historyManager.getAll().length) return;
         await ensureJSZip();
         const zip = new JSZip();
-        history.forEach((it, i) => zip.file(`outfit_${i}.png`, it.image.split(',')[1], { base64: true }));
+        historyManager.getAll().forEach((entry, i) => {
+            const img = entry.imageData || entry.imageUrl || (entry.data && entry.data.url) || '';
+            if (img && img.includes(',')) zip.file(`outfit_${i}.png`, img.split(',')[1], { base64: true });
+        });
         const c = await zip.generateAsync({ type: 'blob' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(c); a.download = 'outfits.zip'; a.click();
     }
