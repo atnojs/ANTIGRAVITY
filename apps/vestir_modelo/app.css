@@ -63,9 +63,10 @@ body::after {
 }
 
 #workspace-layout {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
+  align-items: start;
 }
 
 /* ===== TARJETAS GLASS ===== */
@@ -449,7 +450,8 @@ h2, h3, h4 {
   box-shadow: 0 10px 30px var(--shadow-color), 0 0 18px var(--shadow-light);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  width: 100%;
+  position: sticky;
+  top: 1.25rem;
 }
 #history-section h2 {
   font-family: 'Electrolize', sans-serif;
@@ -458,8 +460,8 @@ h2, h3, h4 {
 
 .history-grid {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 1rem;
 }
 .history-card {
@@ -513,9 +515,12 @@ h2, h3, h4 {
 .clear-history-btn:hover { background: var(--danger-hover); }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .history-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (max-width: 900px) {
+  #workspace-layout {
+    grid-template-columns: 1fr;
+  }
+  #history-section {
+    position: static;
   }
 }
 

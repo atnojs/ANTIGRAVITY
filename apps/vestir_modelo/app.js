@@ -462,8 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return c.toDataURL('image/png', 0.92);
     };
 
-    // Recorta y reescala la imagen al AR + resolución exactos (cover centrado)
-    const cropToTargetAR = async (dataUrl) => {
+    // Ajusta la imagen al AR + resolución SIN recortar (contain: la modelo se ve entera)
+    const fitToTargetAR = async (dataUrl) => {
         const { width: tw, height: th } = computeTargetDims();
         const img = await new Promise((res, rej) => {
             const im = new Image(); im.crossOrigin = 'anonymous';
@@ -474,27 +474,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetRatio = tw / th;
         const srcRatio = srcW / srcH;
 
-        let sx, sy, sw, sh;
+        // Modo contain: la imagen entera cabe dentro, sin recortes
+        let drawW, drawH, dx, dy;
         if (srcRatio > targetRatio) {
-            // Imagen más ancha que el target → recortar laterales
-            sh = srcH;
-            sw = Math.round(srcH * targetRatio);
-            sx = Math.round((srcW - sw) / 2);
-            sy = 0;
+            // Imagen más ancha → ajustar por altura, centrar horizontal
+            drawH = th;
+            drawW = Math.round(th * srcRatio);
+            dx = Math.round((tw - drawW) / 2);
+            dy = 0;
         } else {
-            // Imagen más alta que el target → recortar arriba/abajo
-            sw = srcW;
-            sh = Math.round(srcW / targetRatio);
-            sx = 0;
-            sy = Math.round((srcH - sh) / 2);
+            // Imagen más alta → ajustar por anchura, centrar vertical
+            drawW = tw;
+            drawH = Math.round(tw / srcRatio);
+            dx = 0;
+            dy = Math.round((th - drawH) / 2);
         }
 
         const c = document.createElement('canvas');
         c.width = tw;
         c.height = th;
         const ctx = c.getContext('2d');
+        // Fondo negro para las bandas
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, tw, th);
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, tw, th);
+        ctx.drawImage(img, 0, 0, srcW, srcH, dx, dy, drawW, drawH);
         return c.toDataURL('image/jpeg', 0.92);
     };
 
@@ -538,8 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 let imageData = data.imageUrl;
                 if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
 
-                // Aplicar AR + resolución (crop+resize en cliente)
-                imageData = await cropToTargetAR(imageData);
+                // Ajustar AR + resolución (contain: sin recortar la modelo)
+                imageData = await fitToTargetAR(imageData);
 
                 return imageData;
 
