@@ -6,210 +6,215 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Composición Escenario</title>
   <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
-
-  <!-- Fuentes: Electrolize (Hoola/Relatos) + Poppins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="app.css?v=3"/>
+  <link rel="stylesheet" href="app.css?v=4"/>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Crea Composiciones Impactantes con IA</h1>
-    </header>
 
-    <!-- Layout 2 columnas: principal + historial lateral -->
-    <div class="main-layout">
+<div class="container">
 
-      <!-- Columna principal -->
-      <div class="main-col">
+  <!-- ===== HEADER ===== -->
+  <header>
+    <h1>Crea Composiciones Impactantes con IA</h1>
+  </header>
 
-        <section class="upload-section">
-          <div class="upload-box" id="scenario-box">
-            <span class="icon" aria-hidden="true">🌆</span>
-            <h3>Escenario</h3>
-            <p>Añade el fondo de la imagen</p>
-            <div class="preview-container">
-              <img class="preview-image" id="scenario-preview" alt="Vista previa del escenario">
+  <!-- ===== LAYOUT PRINCIPAL ===== -->
+  <div class="main-layout">
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="main-col">
+
+      <!-- UPLOAD BOXES -->
+      <section class="upload-section">
+        <div class="upload-box" id="scenario-box">
+          <span class="icon" aria-hidden="true">🌆</span>
+          <h3>Escenario</h3>
+          <p>Añade el fondo</p>
+          <div class="preview-container">
+            <img class="preview-image" id="scenario-preview" alt="Vista previa del escenario">
+          </div>
+        </div>
+        <div class="upload-box" id="model-box">
+          <span class="icon" aria-hidden="true">👤</span>
+          <h3>Modelo</h3>
+          <p>Añade el/la modelo</p>
+          <div class="preview-container">
+            <img class="preview-image" id="model-preview" alt="Vista previa del modelo">
+          </div>
+        </div>
+        <div class="upload-box" id="clothing-box">
+          <span class="icon" aria-hidden="true">👕</span>
+          <h3>Prenda de ropa</h3>
+          <p>Añade la prenda</p>
+          <div class="preview-container">
+            <img class="preview-image" id="clothing-preview" alt="Vista previa de la prenda">
+          </div>
+        </div>
+        <div class="upload-box" id="accessory-box">
+          <span class="icon" aria-hidden="true">👜</span>
+          <h3>Complemento</h3>
+          <p>Añade el complemento</p>
+          <div class="preview-container">
+            <img class="preview-image" id="accessory-preview" alt="Vista previa del complemento">
+          </div>
+        </div>
+      </section>
+
+      <!-- ESTILO FOTOGRÁFICO -->
+      <section class="section-card">
+        <h2 class="section-title">Estilo fotográfico</h2>
+        <div class="select-group">
+          <select id="style-select">
+            <option value="">-- Selecciona un estilo --</option>
+            <option value="cinematic">Cinemático (Estilo Película)</option>
+            <option value="high-key">High-Key (Luminoso y Optimista)</option>
+            <option value="low-key">Low-Key (Clarooscuro Dramático)</option>
+            <option value="street-style">Street Style (Urbano y Desenfocado)</option>
+            <option value="minimalist">Minimalista y Conceptual</option>
+            <option value="surreal">Surrealista y Onírico</option>
+            <option value="grunge">Grunge y Raw (Estética Cruda)</option>
+            <option value="vintage">Fotografía analógica Vintage</option>
+            <option value="bw">Blanco y Negro de Alto Contraste</option>
+            <option value="pastel">Tonos Pastel y Ensueño</option>
+            <option value="cyberpunk">Estética Futurista / Ciberpunk</option>
+            <option value="baroque">Barroco / Pictórico</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- CONTROLES: formato, resolución, modelo (TOGGLE BUTTONS) -->
+      <section class="section-card" id="section-controls">
+        <h2 class="section-title">Ajustes de imagen</h2>
+        <div class="controls-stack">
+          <div class="control-line">
+            <span class="control-line-label">Formato</span>
+            <div class="toggle-row" id="ar-selector">
+              <button class="toggle-btn active" data-ar="1:1">1:1</button>
+              <button class="toggle-btn" data-ar="16:9">16:9</button>
+              <button class="toggle-btn" data-ar="9:16">9:16</button>
+              <button class="toggle-btn" data-ar="4:3">4:3</button>
+              <button class="toggle-btn" data-ar="3:4">3:4</button>
+              <button class="toggle-btn" data-ar="3:2">3:2</button>
+              <button class="toggle-btn" data-ar="2:3">2:3</button>
             </div>
           </div>
-          <div class="upload-box" id="model-box">
-            <span class="icon" aria-hidden="true">👤</span>
-            <h3>Modelo</h3>
-            <p>Añade el/la modelo</p>
-            <div class="preview-container">
-              <img class="preview-image" id="model-preview" alt="Vista previa del modelo">
+          <div class="control-line">
+            <span class="control-line-label">Resolución</span>
+            <div class="toggle-row" id="res-selector">
+              <button class="toggle-btn" data-res="512">512</button>
+              <button class="toggle-btn active" data-res="1024">1024</button>
+              <button class="toggle-btn" data-res="2048">2048</button>
+              <button class="toggle-btn" data-res="4096">4096</button>
             </div>
           </div>
-          <div class="upload-box" id="clothing-box">
-            <span class="icon" aria-hidden="true">👕</span>
-            <h3>Prenda de ropa</h3>
-            <p>Añade la prenda</p>
-            <div class="preview-container">
-              <img class="preview-image" id="clothing-preview" alt="Vista previa de la prenda">
+          <div class="control-line">
+            <span class="control-line-label">Modelo</span>
+            <div class="toggle-row" id="quality-selector">
+              <button class="toggle-btn active" data-quality="pro">PRO</button>
+              <button class="toggle-btn" data-quality="max">MAX</button>
             </div>
           </div>
-          <div class="upload-box" id="accessory-box">
-            <span class="icon" aria-hidden="true">👜</span>
-            <h3>Complemento</h3>
-            <p>Añade el complemento</p>
-            <div class="preview-container">
-              <img class="preview-image" id="accessory-preview" alt="Vista previa del complemento">
-            </div>
+        </div>
+      </section>
+
+      <!-- COMPOSICIONES -->
+      <section class="section-card" id="composition-card">
+        <h2 class="section-title">Composiciones (máx. 3)</h2>
+        <div class="selectors-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+          <div class="select-group">
+            <label for="comp-select-a" style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block;">Producto y realistas</label>
+            <select id="comp-select-a">
+              <option value="">Elige alguna opción</option>
+            </select>
           </div>
-        </section>
-
-        <section class="style-selector">
-          <h2>Selecciona un estilo fotográfico</h2>
-          <div class="selectors-grid single-selector">
-            <div class="select-group">
-              <label for="style-select" class="visually-hidden">Estilo fotográfico</label>
-              <select id="style-select">
-                <option value="">-- Selecciona un estilo --</option>
-                <option value="cinematic">Cinemático (Estilo Película)</option>
-                <option value="high-key">High-Key (Luminoso y Optimista)</option>
-                <option value="low-key">Low-Key (Clarooscuro Dramático)</option>
-                <option value="street-style">Street Style (Urbano y Desenfocado)</option>
-                <option value="minimalist">Minimalista y Conceptual</option>
-                <option value="surreal">Surrealista y Onírico</option>
-                <option value="grunge">Grunge y Raw (Estética Cruda)</option>
-                <option value="vintage">Fotografía analógica Vintage</option>
-                <option value="bw">Blanco y Negro de Alto Contraste</option>
-                <option value="pastel">Tonos Pastel y Ensueño</option>
-                <option value="cyberpunk">Estética Futurista / Ciberpunk</option>
-                <option value="baroque">Barroco / Pictórico</option>
-              </select>
-            </div>
+          <div class="select-group">
+            <label for="comp-select-b" style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block;">Cine y dirección de arte</label>
+            <select id="comp-select-b">
+              <option value="">Elige alguna opción</option>
+            </select>
           </div>
-        </section>
-
-        <!-- NUEVO: Ajustes de imagen (PRO/MAX + AR + Resolución) -->
-        <section class="style-selector">
-          <h2>Ajustes de imagen</h2>
-          <div class="selectors-grid">
-            <div class="select-group">
-              <label for="quality-select">Calidad</label>
-              <select id="quality-select">
-                <option value="pro">PRO (flux-2-pro)</option>
-                <option value="max">MAX (flux-2-max)</option>
-              </select>
-            </div>
-            <div class="select-group">
-              <label for="ar-select">Relación de aspecto</label>
-              <select id="ar-select">
-                <option value="1:1">1:1 — Cuadrado</option>
-                <option value="16:9">16:9 — Panorámico</option>
-                <option value="9:16">9:16 — Vertical</option>
-                <option value="4:3">4:3 — Clásico</option>
-                <option value="3:4">3:4 — Retrato</option>
-                <option value="3:2">3:2 — Fotografía</option>
-                <option value="2:3">2:3 — Retrato largo</option>
-              </select>
-            </div>
-            <div class="select-group">
-              <label for="resolution-select">Resolución</label>
-              <select id="resolution-select">
-                <option value="512">512 px</option>
-                <option value="1024" selected>1024 px</option>
-                <option value="2048">2048 px</option>
-                <option value="4096">4096 px</option>
-              </select>
-            </div>
+          <div class="select-group">
+            <label for="comp-select-c" style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block;">Conceptual y gráfico</label>
+            <select id="comp-select-c">
+              <option value="">Elige alguna opción</option>
+            </select>
           </div>
-        </section>
+        </div>
+        <p style="text-align:center;margin-top:8px;color:var(--cian);font-size:0.8rem;font-weight:600;">
+          <span id="selection-info">Seleccionados: 0/3</span>
+        </p>
+      </section>
 
-        <section class="composition-selectors-3">
-          <h2>Selecciona las composiciones (máximo 3 en total)</h2>
-          <div class="selectors-grid">
-            <div class="select-group">
-              <label for="comp-select-a">Producto y realistas</label>
-              <select id="comp-select-a">
-                <option value="">Elige alguna opción</option>
-              </select>
-            </div>
-            <div class="select-group">
-              <label for="comp-select-b">Cine y dirección de arte</label>
-              <select id="comp-select-b">
-                <option value="">Elige alguna opción</option>
-              </select>
-            </div>
-            <div class="select-group">
-              <label for="comp-select-c">Conceptual y gráfico</label>
-              <select id="comp-select-c">
-                <option value="">Elige alguna opción</option>
-              </select>
-            </div>
-            <div class="select-status">
-              <span id="selection-info">Seleccionados: 0/3</span>
-            </div>
-          </div>
-        </section>
+      <!-- BOTÓN GENERAR -->
+      <section class="section-generate">
+        <button id="generate-btn" class="btn-generate" disabled>
+          <span id="generate-btn-text">GENERAR IMÁGENES</span>
+          <div id="loader" class="spinner-generate hidden" style="display:none;"></div>
+        </button>
+      </section>
 
-        <section class="composition-selector" style="display:none">
-          <h2>Selecciona los tipos de composición (máximo 2)</h2>
-          <div class="composition-options"></div>
-          <p class="selection-info" id="selection-info-legacy" aria-hidden="true">Seleccionados: 0/2</p>
-        </section>
+      <!-- RESULTADOS -->
+      <section class="results-section" id="results-section">
+        <h2 class="section-title">Resultados</h2>
+        <div class="results-grid" id="results-grid"></div>
+        <div class="download-all-wrap">
+          <button class="btn-secondary" id="download-all">Descargar ZIP</button>
+          <button class="btn-secondary" id="new-composition" style="background:linear-gradient(135deg,#d69e2e,#b7791f);color:#fff;">Nueva Composición</button>
+        </div>
+      </section>
 
-        <button class="generate-btn" id="generate-btn" disabled>Generar Imágenes</button>
+    </div><!-- /main-col -->
 
-        <section class="results-section" id="results-section">
-          <h2>Resultados de la Composición</h2>
-          <div class="results-grid" id="results-grid"></div>
-          <button class="download-all" id="download-all">Descargar Todas las Imágenes (ZIP)</button>
-          <button class="new-composition" id="new-composition">Crear Nueva Composición</button>
-        </section>
+    <!-- COLUMNA DERECHA: HISTORIAL -->
+    <aside class="history-col" id="history-section">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <button id="history-clear-btn" style="display:none;margin-top:8px;padding:4px 10px;border-radius:999px;border:1px solid #ef4444;background:rgba(239,68,68,0.2);color:#ef4444;cursor:pointer;font-size:0.65rem;font-family:var(--font);text-transform:uppercase;letter-spacing:0.06em;">Limpiar</button>
+    </aside>
 
-      </div><!-- /main-col -->
+  </div><!-- /main-layout -->
 
-      <!-- Columna lateral: Historial -->
-      <aside class="history-col" id="history-section">
-        <h2 id="history-title" style="color:var(--cyan);margin-bottom:1rem;display:none;font-family:'Electrolize',sans-serif">Historial</h2>
-        <div id="history-grid"></div>
-        <button id="history-clear-btn" style="display:none;margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem">Limpiar Historial</button>
-      </aside>
+  <footer>
+    <p>Atnojs © 2025 - Todos los derechos reservados</p>
+  </footer>
 
-    </div><!-- /main-layout -->
+</div><!-- /container -->
 
-    <footer>
-      <p>Atnojs © 2025 - Todos los derechos reservados</p>
-    </footer>
+<input type="file" id="file-input" accept="image/*" hidden>
+
+<!-- MODAL -->
+<div id="image-modal" class="modal">
+  <span class="modal-close" aria-label="Cerrar modal">&times;</span>
+  <img class="modal-content" id="modal-image" alt="">
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
+  <div class="spinner-triple">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
   </div>
-
-  <input type="file" id="file-input" accept="image/*" hidden>
-
-  <div id="image-modal" class="modal">
-    <span class="modal-close" aria-label="Cerrar modal">&times;</span>
-    <img class="modal-content" id="modal-image" alt="">
-  </div>
-
-  <!-- Loading Overlay (3 aros + barra de progreso) -->
-  <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
-    <div class="spinner-triple">
-      <div class="ring ring-1"></div>
-      <div class="ring ring-2"></div>
-      <div class="ring ring-3"></div>
+  <p id="loading-text" class="loading-text">IA generando lo solicitado...</p>
+  <div class="progress-panel">
+    <div class="progress-bar-track">
+      <div id="progress-bar" class="progress-bar-fill indeterminate" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
-    <p id="loading-text" class="loading-text">IA generando lo solicitado...</p>
-    <div class="progress-panel">
-      <div class="progress-bar-track">
-        <div id="progress-bar" class="progress-bar-fill indeterminate" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-      </div>
-      <p id="progress-percent" class="progress-percent" style="display:none"></p>
-      <p id="secondary-status" class="secondary-status"></p>
-    </div>
+    <p id="progress-percent" class="progress-percent" style="display:none"></p>
+    <p id="secondary-status" class="secondary-status"></p>
   </div>
+</div>
 
-  <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
+<script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 
-  <script src="https://unpkg.com/feather-icons"></script>
-  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="history-manager.js?v=3"></script>
-  <script src="app.js?v=3"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => { feather.replace(); });
-  </script>
+<script src="https://unpkg.com/feather-icons"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="history-manager.js?v=4"></script>
+<script src="app.js?v=4"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => { feather.replace(); });
+</script>
 </body>
 </html>

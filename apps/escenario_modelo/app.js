@@ -101,9 +101,10 @@ const compSelectA = document.getElementById('comp-select-a');
 const compSelectB = document.getElementById('comp-select-b');
 const compSelectC = document.getElementById('comp-select-c');
 
-const qualitySelect = document.getElementById('quality-select');
-const arSelect = document.getElementById('ar-select');
-const resolutionSelect = document.getElementById('resolution-select');
+// Toggle buttons (como outfit)
+let selectedQuality = 'pro';
+let selectedAR = '1:1';
+let selectedRes = 1024;
 
 // ===== DATOS DE COMPOSICIONES =====
 const COMPOSITION_MAP = {
@@ -160,6 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDragAndDrop();
   initThreeSelects();
   attachSelectEvents();
+  initToggleButtons();
   checkGenerateButtonState();
   initCustomSelects();
 
@@ -220,18 +222,16 @@ function renderHistoryFromState() {
     return;
   }
   if (title) title.style.display = 'block';
-  if (clearBtn) clearBtn.style.display = 'inline-block';
+  if (clearBtn) clearBtn.style.display = 'block';
 
   grid.innerHTML = items.map(item => {
     const url = item.imageUrl || (item.data && item.data.url) || '';
-    const prompt = (item.data && item.data.prompt) || '';
     const createdAt = item.createdAt || '';
 
-    return `<div style="position:relative;border:1px solid rgba(0,208,208,0.15);border-radius:12px;overflow:hidden;background:rgba(0,208,208,0.03)">
-      <img src="${url}" style="width:100%;display:block;cursor:pointer" onclick="window._openLightbox('${url}')" alt="Historial" loading="lazy">
-      <button style="position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.8);color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px"
-        onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">🗑️</button>
-      <p style="padding:0.5rem;color:#94a3b8;font-size:0.75rem;margin:0">${new Date(createdAt).toLocaleString()}</p>
+    return `<div class="history-item-wrap">
+      <img src="${url}" alt="Historial" loading="lazy" onclick="window._openLightbox('${url}')">
+      <button class="btn-square" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">✕</button>
+      <span class="history-date">${new Date(createdAt).toLocaleString()}</span>
     </div>`;
   }).join('');
 }
@@ -380,6 +380,31 @@ function checkGenerateButtonState() {
   generateBtn.disabled = !(uploadedCount >= 1 && styleSelect.value && selectedCompositions.length > 0);
 }
 
+// ===== TOGGLE BUTTONS (formato, resolución, modelo) =====
+function initToggleButtons() {
+  document.getElementById('ar-selector').addEventListener('click', e => {
+    const btn = e.target.closest('.toggle-btn');
+    if (!btn) return;
+    document.querySelectorAll('#ar-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedAR = btn.dataset.ar;
+  });
+  document.getElementById('res-selector').addEventListener('click', e => {
+    const btn = e.target.closest('.toggle-btn');
+    if (!btn) return;
+    document.querySelectorAll('#res-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedRes = parseInt(btn.dataset.res);
+  });
+  document.getElementById('quality-selector').addEventListener('click', e => {
+    const btn = e.target.closest('.toggle-btn');
+    if (!btn) return;
+    document.querySelectorAll('#quality-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedQuality = btn.dataset.quality;
+  });
+}
+
 // ===== GENERACIÓN DE IMÁGENES CON FLUX =====
 async function generateImages() {
   if (generateBtn.disabled) return;
@@ -437,9 +462,9 @@ async function generateImages() {
         const body = {
           action: 'generate',
           prompt: prompt,
-          quality: qualitySelect.value || 'pro',
-          aspectRatio: arSelect.value || '1:1',
-          resolution: parseInt(resolutionSelect.value) || 1024,
+          quality: selectedQuality,
+          aspectRatio: selectedAR,
+          resolution: selectedRes,
           output_format: 'png',
           seed: Date.now() + Math.floor(Math.random() * 100000),
         };
