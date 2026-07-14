@@ -419,8 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 let imageData = data.imageUrl;
                 if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
-                // Ajustar al AR exacto sin recortar (contain + bandas negras)
-                imageData = await fitToTargetAR(imageData);
+                // Entregar tal cual — el prompt guía el AR, sin post-procesado
                 return imageData;
             } catch (err) {
                 console.error(`Intento ${attempt + 1} fallido:`, err);

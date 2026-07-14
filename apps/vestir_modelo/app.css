@@ -210,24 +210,25 @@ h2, h3, h4 {
   50% { opacity: 0.5; }
 }
 
-/* ===== TARJETAS DE ESTILOS / COMPOSICIONES ===== */
+/* ===== TARJETAS DE ESTILOS / COMPOSICIONES (hover skill estilo-web-relatos) ===== */
 .composition-card {
   background: rgba(23, 79, 122, 0.42);
   border: 2px solid rgba(0, 208, 208, 0.7);
   border-radius: 14px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
   cursor: pointer;
   position: relative;
   padding: 12px;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  box-shadow: 0 0 18px rgba(0, 208, 208, 0.2), inset 0 0 20px rgba(0, 208, 208, 0.05);
+  box-shadow: 0 0 18px rgba(0, 208, 208, 0.4), 0 0 6px rgba(0, 208, 208, 0.4), inset 0 0 20px rgba(0, 208, 208, 0.12);
 }
 .composition-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 0 32px rgba(0, 208, 208, 0.55), inset 0 0 30px rgba(0, 208, 208, 0.08);
   border-color: #00D0D0;
+  background: rgba(30, 100, 150, 0.55);
+  box-shadow: 0 0 34px rgba(0, 208, 208, 0.8), 0 0 12px rgba(0, 208, 208, 0.8), inset 0 0 30px rgba(0, 208, 208, 0.2);
 }
 .composition-card.selected {
   border-color: #00D0D0;
