@@ -462,15 +462,48 @@ document.addEventListener('DOMContentLoaded', () => {
         return c.toDataURL('image/png', 0.92);
     };
 
+    // Recorta y reescala la imagen al AR + resolución exactos (cover centrado)
+    const cropToTargetAR = async (dataUrl) => {
+        const { width: tw, height: th } = computeTargetDims();
+        const img = await new Promise((res, rej) => {
+            const im = new Image(); im.crossOrigin = 'anonymous';
+            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
+        });
+        const srcW = img.naturalWidth;
+        const srcH = img.naturalHeight;
+        const targetRatio = tw / th;
+        const srcRatio = srcW / srcH;
+
+        let sx, sy, sw, sh;
+        if (srcRatio > targetRatio) {
+            // Imagen más ancha que el target → recortar laterales
+            sh = srcH;
+            sw = Math.round(srcH * targetRatio);
+            sx = Math.round((srcW - sw) / 2);
+            sy = 0;
+        } else {
+            // Imagen más alta que el target → recortar arriba/abajo
+            sw = srcW;
+            sh = Math.round(srcW / targetRatio);
+            sx = 0;
+            sy = Math.round((srcH - sh) / 2);
+        }
+
+        const c = document.createElement('canvas');
+        c.width = tw;
+        c.height = th;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, tw, th);
+        return c.toDataURL('image/jpeg', 0.92);
+    };
+
     // ===== LLAMADA API FLUX VTO =====
     const callFluxVto = async (prompt, modelImageData, outfitImageData) => {
-        const { width, height } = computeTargetDims();
         const payload = {
             prompt,
             person: `data:image/jpeg;base64,${modelImageData.base64}`,
-            garment: `data:image/jpeg;base64,${outfitImageData.base64}`,
-            width,
-            height
+            garment: `data:image/jpeg;base64,${outfitImageData.base64}`
         };
 
         let attempt = 0;
@@ -505,10 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 let imageData = data.imageUrl;
                 if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
 
-                // Upscale si es 4096
-                if (selectedRes === 4096) {
-                    imageData = await upscaleDataUrl(imageData, width, height);
-                }
+                // Aplicar AR + resolución (crop+resize en cliente)
+                imageData = await cropToTargetAR(imageData);
 
                 return imageData;
 
