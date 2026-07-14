@@ -34,141 +34,64 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
-    // ===== DB HISTORIAL (IndexedDB local + HistoryManager servidor) =====
-    const DB_NAME = 'vestir_modelo_db';
-    const DB_VERSION = 1;
-    const STORE_NAME = 'history';
-    let historyDb = null;
+    // ===== HISTORY MANAGER (servidor persistente) =====
+    HistoryManager.configure({ dbName: 'vestir_modelo_db', historyUrl: './history.php' });
 
-    const openHistoryDb = () => new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => { historyDb = request.result; resolve(historyDb); };
-        request.onupgradeneeded = (e) => {
-            const database = e.target.result;
-            if (!database.objectStoreNames.contains(STORE_NAME)) {
-                database.createObjectStore(STORE_NAME, { keyPath: 'id' });
-            }
-        };
-    });
-
-    const loadHistoryFromDb = async () => {
+    const loadHistory = async () => {
         try {
-            if (!historyDb) await openHistoryDb();
-            return await new Promise((resolve, reject) => {
-                const tx = historyDb.transaction(STORE_NAME, 'readonly');
-                const store = tx.objectStore(STORE_NAME);
-                const req = store.getAll();
-                req.onsuccess = () => {
-                    const items = req.result || [];
-                    items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                    resolve(items);
-                };
-                req.onerror = () => reject(req.error);
-            });
+            await HistoryManager.init();
+            const items = await HistoryManager.loadAll();
+            history = items.map(item => ({
+                id: item.id,
+                image: item.url || item.imageUrl || '',
+                title: item.prompt || '',
+                compositions: item.style?.compositions || [],
+                createdAt: item.createdAt || 0
+            }));
+            history.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         } catch (e) {
             console.warn('Error cargando historial:', e);
-            return [];
-        }
-    };
-
-    const saveHistoryItemToDb = async (item) => {
-        try {
-            if (!historyDb) await openHistoryDb();
-            return await new Promise((resolve, reject) => {
-                const tx = historyDb.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                const req = store.put(item);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        } catch (e) {
-            console.warn('Error guardando item:', e);
-        }
-    };
-
-    const deleteHistoryItemFromDb = async (id) => {
-        try {
-            if (!historyDb) await openHistoryDb();
-            return await new Promise((resolve, reject) => {
-                const tx = historyDb.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                const req = store.delete(id);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        } catch (e) {
-            console.warn('Error eliminando item:', e);
-        }
-    };
-
-    const clearHistoryFromDb = async () => {
-        try {
-            if (!historyDb) await openHistoryDb();
-            return await new Promise((resolve, reject) => {
-                const tx = historyDb.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                const req = store.clear();
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        } catch (e) {
-            console.warn('Error limpiando historial:', e);
-        }
-    };
-
-    // Sincronizar con servidor (HistoryManager)
-    const syncToServer = async (item) => {
-        try {
-            if (window.HistoryManager) {
-                await HistoryManager.init();
-                await HistoryManager.saveItem({
-                    id: item.id,
-                    url: item.image,
-                    prompt: item.title || '',
-                    createdAt: item.createdAt || Date.now(),
-                    style: { compositions: item.compositions || [] },
-                    aspectRatio: '1:1',
-                    size: '',
-                    geminiSize: '1K'
-                });
-            }
-        } catch (e) {
-            console.warn('Error sync servidor:', e);
-        }
-    };
-
-    async function loadHistory() {
-        history = await loadHistoryFromDb();
-        try {
-            if (window.HistoryManager) {
-                HistoryManager.configure({ dbName: DB_NAME });
-                await HistoryManager.init();
-                const serverItems = await HistoryManager.loadFromServer();
-                if (serverItems && serverItems.length > 0) {
-                    const localIds = new Set(history.map(h => h.id));
-                    for (const s of serverItems) {
-                        if (!localIds.has(s.id)) {
-                            const item = {
-                                id: s.id,
-                                image: s.imageUrl || s.url || '',
-                                title: s.prompt || '',
-                                compositions: s.style?.compositions || [],
-                                createdAt: s.createdAt || 0
-                            };
-                            history.push(item);
-                        }
-                    }
-                    history.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                }
-            }
-        } catch (e) {
-            console.warn('Error cargando historial servidor:', e);
+            history = [];
         }
         renderHistory();
-    }
+    };
 
-    // Renderizar historial
+    const saveHistoryItem = async (item) => {
+        try {
+            await HistoryManager.init();
+            await HistoryManager.saveItem({
+                id: item.id,
+                url: item.image,
+                prompt: item.title || '',
+                createdAt: item.createdAt || Date.now(),
+                style: { compositions: item.compositions || [] },
+                aspectRatio: selectedAR,
+                size: String(selectedRes)
+            });
+        } catch (e) {
+            console.warn('Error guardando en servidor:', e);
+        }
+    };
+
+    const deleteHistoryItem = async (id) => {
+        try {
+            await HistoryManager.init();
+            await HistoryManager.deleteItem(id);
+        } catch (e) {
+            console.warn('Error eliminando del servidor:', e);
+        }
+    };
+
+    const clearAllHistory = async () => {
+        try {
+            await HistoryManager.init();
+            await HistoryManager.clearAll();
+        } catch (e) {
+            console.warn('Error limpiando servidor:', e);
+        }
+    };
+
+    // ===== RENDER HISTORIAL =====
     function renderHistory() {
         if (history.length === 0) {
             historySection.classList.remove('hidden');
@@ -184,13 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'history-card';
             card.innerHTML = `
-                <img src="${item.image}" alt="${item.title}" data-id="${item.id}">
+                <img src="${item.image}" alt="${item.title}" data-id="${item.id}" loading="lazy">
                 <div class="history-card-actions">
                     <button class="download-btn" data-id="${item.id}" title="Descargar">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13 8a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L13 11.586V8z" /><path d="M3 14a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" /></svg>
-                    </button>
-                    <button class="edit-btn" data-id="${item.id}" title="Re-editar">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
                     </button>
                     <button class="delete-btn" data-id="${item.id}" title="Eliminar">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
@@ -200,9 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
             historyGrid.appendChild(card);
         });
 
+        // Click en miniatura → lightbox
         historyGrid.querySelectorAll('.history-card img').forEach(img => {
-            img.addEventListener('click', (e) => {
-                lightboxImg.src = e.target.src;
+            img.addEventListener('click', () => {
+                lightboxImg.src = img.src;
+                lightboxImg.dataset.zoom = 'fit';
+                lightboxImg.style.objectFit = 'contain';
+                lightboxImg.style.maxWidth = '98vw';
+                lightboxImg.style.maxHeight = '98vh';
+                lightboxImg.style.width = 'auto';
+                lightboxImg.style.height = 'auto';
                 lightbox.classList.remove('hidden');
             });
         });
@@ -210,8 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         historyGrid.querySelectorAll('.download-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const itemId = btn.dataset.id;
-                const item = history.find(h => h.id === itemId);
+                const item = history.find(h => h.id === btn.dataset.id);
                 if (!item) return;
                 const link = document.createElement('a');
                 link.href = item.image;
@@ -220,35 +146,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        historyGrid.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const itemId = btn.dataset.id;
-                const item = history.find(h => h.id === itemId);
-                if (!item) return;
-                if (item.compositions && item.compositions.length > 0) {
-                    selectedCompositions = [item.compositions[0]];
-                    renderCompositionSelector();
-                }
-                updateGenerateButtonState();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        });
-
         historyGrid.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const itemId = btn.dataset.id;
-                await deleteHistoryItemFromDb(itemId);
+                await deleteHistoryItem(itemId);
                 history = history.filter(h => h.id !== itemId);
                 renderHistory();
             });
         });
     }
 
+    // ===== LIMPIAR HISTORIAL =====
     clearHistoryBtn.addEventListener('click', async () => {
         if (confirm('¿Estás seguro de que quieres borrar todo el historial?')) {
-            await clearHistoryFromDb();
+            await clearAllHistory();
             history = [];
             renderHistory();
         }
@@ -272,15 +184,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== ESTILOS / COMPOSICIONES =====
     const compositions = [
-        { id: 'full-body', title: 'Estudio Profesional', description: 'Cuerpo completo en estudio.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Full body fashion photograph, clean white studio background, professional lighting, elegant pose." },
-        { id: 'urban-editorial', title: 'Editorial Urbano', description: 'Sesión en entorno de ciudad.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Fashion editorial in a modern urban street. Dynamic pose, cinematic style." },
-        { id: 'neon-night', title: 'Neón y Noche', description: 'Ciudad de noche, luces de neón.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. On a rooftop with neon-lit city skyline. Modern aesthetic, sophisticated atmosphere." },
-        { id: 'majestic-interior', title: 'Interior Majestuoso', description: 'Museo, biblioteca, hotel de lujo.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. In a museum or luxury hotel interior. Dramatic lighting, opulence." },
-        { id: 'park-walk', title: 'Paseo por el Parque', description: 'Estilo casual y espontáneo.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Street style walking through an urban park. Natural look, daylight." },
-        { id: 'beach-minimalism', title: 'Minimalismo en Playa', description: 'Amanecer/atardecer, colores suaves.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Minimalist fashion composition on a beach at sunset. Soft colors, diffused light." },
-        { id: 'industrial-contrast', title: 'Contraste Industrial', description: 'Fábrica, grafitis, vanguardista.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Avant-garde photoshoot in a factory with graffiti. Rough contrast and fashion." },
-        { id: 'cafe-atmosphere', title: 'Ambiente de Cafetería', description: 'Escena íntima y cotidiana.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Lifestyle scene in a cozy café. Warm lighting." },
-        { id: 'pub-atmosphere', title: 'Ambiente de Pub', description: 'Escena tomando una copa.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Lifestyle scene in a pub. Cheerful lighting, young atmosphere." },
+        { id: 'full-body', title: 'Estudio Profesional', description: 'Cuerpo completo en estudio.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Full body fashion photograph, clean white studio background, professional lighting, elegant pose. Show the ENTIRE person from head to toe, do NOT crop any part of the body." },
+        { id: 'urban-editorial', title: 'Editorial Urbano', description: 'Sesión en entorno de ciudad.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Fashion editorial in a modern urban street. Dynamic pose, cinematic style. Show the ENTIRE person, full body, no cropping." },
+        { id: 'neon-night', title: 'Neón y Noche', description: 'Ciudad de noche, luces de neón.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. On a rooftop with neon-lit city skyline. Modern aesthetic, sophisticated atmosphere. Full body, no cropping." },
+        { id: 'majestic-interior', title: 'Interior Majestuoso', description: 'Museo, biblioteca, hotel de lujo.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. In a museum or luxury hotel interior. Dramatic lighting, opulence. Show the ENTIRE person, head to toe." },
+        { id: 'park-walk', title: 'Paseo por el Parque', description: 'Estilo casual y espontáneo.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Street style walking through an urban park. Natural look, daylight. Full body, no cropping." },
+        { id: 'beach-minimalism', title: 'Minimalismo en Playa', description: 'Amanecer/atardecer, colores suaves.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Minimalist fashion composition on a beach at sunset. Soft colors, diffused light. Full body shot, no cropping." },
+        { id: 'industrial-contrast', title: 'Contraste Industrial', description: 'Fábrica, grafitis, vanguardista.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Avant-garde photoshoot in a factory with graffiti. Rough contrast and fashion. Show the ENTIRE person, full body." },
+        { id: 'cafe-atmosphere', title: 'Ambiente de Cafetería', description: 'Escena íntima y cotidiana.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Lifestyle scene in a cozy café. Warm lighting. Full body, no cropping." },
+        { id: 'pub-atmosphere', title: 'Ambiente de Pub', description: 'Escena tomando una copa.', prompt: "TRY-ON: The person of image 1 wearing the garments of image 2. Lifestyle scene in a pub. Cheerful lighting, young atmosphere. Full body, no cropping." },
     ];
 
     const fallbackSurpriseStyles = [
@@ -300,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
             'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Photographic_styles&cmlimit=200&format=json&origin=*',
             'https://es.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Categor%C3%ADa:Movimientos_art%C3%ADsticos&cmlimit=200&format=json&origin=*'
         ];
-
         const aggregated = [];
         for (const url of sources) {
             try {
@@ -321,7 +232,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('No se pudo leer estilos de la web:', err);
             }
         }
-
         if (aggregated.length === 0) return fallbackSurpriseStyles;
         return Array.from(new Set(aggregated));
     };
@@ -334,33 +244,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const raw = h.title.replace(/^sorpresa:\s*/i, '').trim().toLowerCase();
                 if (raw) usedSurpriseStyles.add(raw);
             });
-
         const webCandidates = await fetchStyleCandidatesFromWeb();
         if (webCandidates.length === 0) {
-            throw new Error('No se pudieron obtener estilos desde la web. Revisa la conexión e inténtalo de nuevo.');
+            throw new Error('No se pudieron obtener estilos desde la web.');
         }
-
         const uniqueWeb = webCandidates.filter((style) => {
             const normalized = style.toLowerCase();
             return !existingTitles.has(normalized) && !usedSurpriseStyles.has(normalized);
         });
-
         if (uniqueWeb.length === 0) {
-            throw new Error('No quedan estilos sorpresa nuevos en este momento. Vuelve a intentarlo en unos minutos.');
+            throw new Error('No quedan estilos sorpresa nuevos.');
         }
-
         const picked = uniqueWeb[Math.floor(Math.random() * uniqueWeb.length)];
         usedSurpriseStyles.add(picked.toLowerCase());
-
         return {
             id: `surprise-${Date.now()}`,
             title: `Sorpresa: ${picked}`,
-            description: 'Estilo sorpresa elegido automáticamente desde referencias de la red.',
-            prompt: `TRY-ON: The person of image 1 wearing the garments of image 2. Editorial fashion photography with ${picked} visual style. Avoid common styles like studio, urban, neon, luxury interior, park, beach, industrial, café or pub. Seek an unexpected and professional creative direction.`
+            description: 'Estilo sorpresa desde referencias de la red.',
+            prompt: `TRY-ON: The person of image 1 wearing the garments of image 2. Editorial fashion photography with ${picked} visual style. Show the ENTIRE person from head to toe, full body, no cropping.`
         };
     };
 
-    // Render selector de composiciones
     function renderCompositionSelector() {
         compositionSelector.innerHTML = '';
         compositions.forEach(comp => {
@@ -434,78 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGenerateButtonState();
     };
 
-    // ===== DIMENSIONES (AR + Resolución) =====
-    const computeTargetDims = () => {
-        const [wRatio, hRatio] = selectedAR.split(':').map(Number);
-        const maxDim = selectedRes;
-        let width, height;
-        const ratio = wRatio / hRatio;
-        if (ratio >= 1) { width = maxDim; height = Math.round(maxDim / ratio); }
-        else { height = maxDim; width = Math.round(maxDim * ratio); }
-        width = Math.max(256, Math.round(width / 32) * 32);
-        height = Math.max(256, Math.round(height / 32) * 32);
-        return { width, height };
-    };
-
-    const upscaleDataUrl = async (dataUrl, targetW, targetH) => {
-        if (!targetW || !targetH) return dataUrl;
-        const img = await new Promise((res, rej) => {
-            const im = new Image(); im.crossOrigin = 'anonymous';
-            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
-        });
-        if (img.naturalWidth >= targetW && img.naturalHeight >= targetH) return dataUrl;
-        const c = document.createElement('canvas');
-        c.width = targetW; c.height = targetH;
-        const ctx = c.getContext('2d');
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, targetW, targetH);
-        return c.toDataURL('image/png', 0.92);
-    };
-
-    // Ajusta la imagen al AR + resolución SIN recortar (contain: la modelo se ve entera)
-    const fitToTargetAR = async (dataUrl) => {
-        const { width: tw, height: th } = computeTargetDims();
-        const img = await new Promise((res, rej) => {
-            const im = new Image(); im.crossOrigin = 'anonymous';
-            im.onload = () => res(im); im.onerror = rej; im.src = dataUrl;
-        });
-        const srcW = img.naturalWidth;
-        const srcH = img.naturalHeight;
-        const targetRatio = tw / th;
-        const srcRatio = srcW / srcH;
-
-        // Modo contain: la imagen entera cabe dentro, sin recortes
-        let drawW, drawH, dx, dy;
-        if (srcRatio > targetRatio) {
-            // Imagen más ancha → ajustar por altura, centrar horizontal
-            drawH = th;
-            drawW = Math.round(th * srcRatio);
-            dx = Math.round((tw - drawW) / 2);
-            dy = 0;
-        } else {
-            // Imagen más alta → ajustar por anchura, centrar vertical
-            drawW = tw;
-            drawH = Math.round(tw / srcRatio);
-            dx = 0;
-            dy = Math.round((th - drawH) / 2);
-        }
-
-        const c = document.createElement('canvas');
-        c.width = tw;
-        c.height = th;
-        const ctx = c.getContext('2d');
-        // Fondo negro para las bandas
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, tw, th);
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, srcW, srcH, dx, dy, drawW, drawH);
-        return c.toDataURL('image/jpeg', 0.92);
-    };
-
     // ===== LLAMADA API FLUX VTO =====
     const callFluxVto = async (prompt, modelImageData, outfitImageData) => {
+        // Inyectar el AR en el prompt para que VTO lo intente respetar
+        const arPrompt = `${prompt} IMPORTANT: The final image must be in ${selectedAR} aspect ratio. Show the ENTIRE person from head to toe without any cropping.`;
         const payload = {
-            prompt,
+            prompt: arPrompt,
             person: `data:image/jpeg;base64,${modelImageData.base64}`,
             garment: `data:image/jpeg;base64,${outfitImageData.base64}`
         };
@@ -518,35 +356,24 @@ document.addEventListener('DOMContentLoaded', () => {
         while (attempt < maxAttempts) {
             try {
                 if (loadingText) loadingText.textContent = defaultLoadingMsg;
-
                 const res = await fetch('proxy.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 });
-
                 const text = await res.text();
                 let data;
-                try {
-                    data = JSON.parse(text);
-                } catch {
-                    console.error('Respuesta no JSON del servidor:', text);
+                try { data = JSON.parse(text); } catch {
+                    console.error('Respuesta no JSON:', text);
                     throw new Error('Respuesta inválida del servidor.');
                 }
-
                 if (!res.ok || !data.success) {
-                    const msg = data?.error?.message || `Error HTTP ${res.status}`;
-                    throw new Error(msg);
+                    throw new Error(data?.error?.message || `Error HTTP ${res.status}`);
                 }
-
-                let imageData = data.imageUrl;
+                const imageData = data.imageUrl;
                 if (!imageData) throw new Error('No se encontró imagen en la respuesta.');
-
-                // Ajustar AR + resolución (contain: sin recortar la modelo)
-                imageData = await fitToTargetAR(imageData);
-
+                // Devolver tal cual — sin crop, sin contain, sin modificar
                 return imageData;
-
             } catch (err) {
                 console.error(`Intento ${attempt + 1} fallido:`, err);
                 attempt++;
@@ -568,7 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ['dragleave', 'drop'].forEach(ev =>
             dropZone.addEventListener(ev, () => dropZone.classList.remove('dragover'), false)
         );
-
         const handleFile = async (file) => {
             if (file && file.type.startsWith('image/')) {
                 hideError();
@@ -592,70 +418,60 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDropZone(outfitDropZone, outfitInput, outfitPreview, outfitPrompt, data => outfitFile = data);
 
     // ===== AGREGAR AL HISTORIAL =====
-    const addGeneratedImageToHistory = async (src, styleMeta) => {
+    const addToHistory = async (src, styleMeta) => {
         const historyItem = {
-            id: Math.random().toString(36).slice(2),
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             image: src,
             title: styleMeta.title,
             description: styleMeta.description,
             compositions: [styleMeta.id],
             createdAt: Date.now()
         };
-        await saveHistoryItemToDb(historyItem);
+        await saveHistoryItem(historyItem);
         history.unshift(historyItem);
         renderHistory();
-        syncToServer(historyItem);
     };
 
-    // ===== GENERAR (2 imágenes por estilo) =====
+    // ===== GENERAR (1 imagen por estilo) =====
     generateBtn.addEventListener('click', async () => {
         if (!modelFile || !outfitFile) return;
-
         hideError();
         setProcessing(true);
         loadingSection.classList.remove('hidden');
 
         const customPromptText = customPromptArea ? customPromptArea.value.trim() : '';
-
         let selectedToGenerate = selectedCompositions.map(id => compositions.find(c => c.id === id));
 
         if (selectedToGenerate.length === 0) {
-            let dynPrompt = "TRY-ON: The person of image 1 wearing the garments of image 2. Realistic fashion photograph, natural pose, professional lighting, neutral background.";
+            let dynPrompt = "TRY-ON: The person of image 1 wearing the garments of image 2. Realistic fashion photograph, natural pose, professional lighting, neutral background. Show the ENTIRE person from head to toe, no cropping.";
             if (customPromptText !== '') {
-                dynPrompt = `TRY-ON: The person of image 1 wearing the garments of image 2. ${customPromptText}`;
+                dynPrompt = `TRY-ON: The person of image 1 wearing the garments of image 2. ${customPromptText}. Show the ENTIRE person, full body, no cropping.`;
             }
-
             selectedToGenerate.push({
-                id: 'custom-generation-' + Date.now(),
+                id: 'custom-' + Date.now(),
                 title: customPromptText !== '' ? 'Generación Personalizada' : 'Generación Directa (Base)',
                 description: customPromptText !== '' ? customPromptText.substring(0, 50) + '...' : 'Usando el prompt base automático.',
                 prompt: dynPrompt
             });
-        } else {
-            if (customPromptText !== '') {
-                selectedToGenerate = selectedToGenerate.map(comp => ({
-                    ...comp,
-                    prompt: comp.prompt + ' Additional user instructions: ' + customPromptText
-                }));
-            }
+        } else if (customPromptText !== '') {
+            selectedToGenerate = selectedToGenerate.map(comp => ({
+                ...comp,
+                prompt: comp.prompt + ' Additional instructions: ' + customPromptText
+            }));
         }
 
         try {
             for (const comp of selectedToGenerate) {
-                for (let copy = 1; copy <= 2; copy++) {
-                    try {
-                        const src = await callFluxVto(comp.prompt, modelFile, outfitFile);
-                        await addGeneratedImageToHistory(src, comp);
-                    } catch (err) {
-                        console.error(`Fallo generando ${comp.title} #${copy}:`, err);
-                        showError(`Error al generar "${comp.title}" #${copy}: ${err.message}`);
-                    }
+                try {
+                    const src = await callFluxVto(comp.prompt, modelFile, outfitFile);
+                    await addToHistory(src, comp);
+                } catch (err) {
+                    console.error(`Fallo generando ${comp.title}:`, err);
+                    showError(`Error al generar "${comp.title}": ${err.message}`);
                 }
             }
         } finally {
             loadingSection.classList.add('hidden');
-            const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = 'FLUX VTO Probando Prenda...';
             setProcessing(false);
         }
     });
@@ -663,37 +479,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== MODO SORPRESA =====
     surpriseBtn.addEventListener('click', async () => {
         if (!modelFile || !outfitFile) {
-            showError('Primero sube la foto de la modelo y la prenda para usar el modo sorpresa.');
+            showError('Primero sube la foto de la modelo y la prenda.');
             return;
         }
-
         hideError();
         setProcessing(true);
         loadingSection.classList.remove('hidden');
-
         try {
             const surpriseStyle = await buildSurpriseStyle();
-            for (let copy = 1; copy <= 2; copy++) {
-                try {
-                    const src = await callFluxVto(surpriseStyle.prompt, modelFile, outfitFile);
-                    await addGeneratedImageToHistory(src, surpriseStyle);
-                } catch (err) {
-                    console.error(`Fallo en modo sorpresa #${copy}:`, err);
-                    showError(`Error en modo sorpresa #${copy}: ${err.message}`);
-                }
-            }
+            const src = await callFluxVto(surpriseStyle.prompt, modelFile, outfitFile);
+            await addToHistory(src, surpriseStyle);
         } catch (err) {
-            console.error('Fallo preparando modo sorpresa:', err);
-            showError(`No se pudo preparar el estilo sorpresa: ${err.message}`);
+            console.error('Fallo en modo sorpresa:', err);
+            showError(`Error en modo sorpresa: ${err.message}`);
         } finally {
             loadingSection.classList.add('hidden');
-            const loadingText = document.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = 'FLUX VTO Probando Prenda...';
             setProcessing(false);
         }
     });
 
-    // ===== LIGHTBOX =====
+    // ===== LIGHTBOX CON ZOOM TOGGLE =====
+    lightboxImg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (lightboxImg.dataset.zoom === 'fit') {
+            // Cambiar a tamaño real (zoom máximo)
+            lightboxImg.dataset.zoom = 'full';
+            lightboxImg.style.objectFit = 'none';
+            lightboxImg.style.maxWidth = 'none';
+            lightboxImg.style.maxHeight = 'none';
+            lightboxImg.style.width = 'auto';
+            lightboxImg.style.height = 'auto';
+            lightboxImg.style.cursor = 'zoom-out';
+            lightbox.style.overflow = 'auto';
+        } else {
+            // Volver a fit
+            lightboxImg.dataset.zoom = 'fit';
+            lightboxImg.style.objectFit = 'contain';
+            lightboxImg.style.maxWidth = '98vw';
+            lightboxImg.style.maxHeight = '98vh';
+            lightboxImg.style.width = 'auto';
+            lightboxImg.style.height = 'auto';
+            lightboxImg.style.cursor = 'zoom-in';
+            lightbox.style.overflow = 'hidden';
+        }
+    });
+
     const closeLightboxHandler = () => {
         lightbox.classList.add('hidden');
         lightboxImg.src = '';

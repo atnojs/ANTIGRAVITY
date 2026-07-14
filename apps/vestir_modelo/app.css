@@ -224,9 +224,9 @@ h2, h3, h4 {
   -webkit-backdrop-filter: blur(6px);
 }
 .composition-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px var(--shadow-color), 0 0 18px rgba(0, 208, 208, 0.35);
-  border-color: var(--acc);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px var(--shadow-color), 0 0 24px rgba(0, 208, 208, 0.5);
+  border-color: #00D0D0;
 }
 .composition-card.selected {
   border-color: var(--acc);
@@ -478,7 +478,13 @@ h2, h3, h4 {
   cursor: zoom-in;
   transition: transform 0.3s ease;
 }
-.history-card img:hover { transform: scale(1.02); }
+.history-card img:hover { transform: scale(1.03); }
+.history-card:hover {
+  border-color: #00D0D0;
+  box-shadow: 0 8px 25px rgba(0, 208, 208, 0.25);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
 .history-card-actions {
   display: flex;
   justify-content: space-around;
