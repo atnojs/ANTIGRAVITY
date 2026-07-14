@@ -409,8 +409,8 @@ function initToggleButtons() {
 async function generateImages() {
   if (generateBtn.disabled) return;
 
-  const numVariants = 2;
-  const totalImages = Math.min(selectedCompositions.length * numVariants, 6);
+  const numVariants = 1;
+  const totalImages = Math.min(selectedCompositions.length * numVariants, 4);
   let currentImage = 0;
   let successCount = 0;
 

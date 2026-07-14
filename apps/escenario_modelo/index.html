@@ -62,32 +62,59 @@
         </div>
       </section>
 
-      <!-- ESTILO FOTOGRÁFICO -->
+      <!-- ESTILO FOTOGRÁFICO + COMPOSICIONES (unificados) -->
       <section class="section-card">
-        <h2 class="section-title">Estilo fotográfico</h2>
-        <div class="select-group">
-          <select id="style-select">
-            <option value="">-- Selecciona un estilo --</option>
-            <option value="cinematic">Cinemático (Estilo Película)</option>
-            <option value="high-key">High-Key (Luminoso y Optimista)</option>
-            <option value="low-key">Low-Key (Clarooscuro Dramático)</option>
-            <option value="street-style">Street Style (Urbano y Desenfocado)</option>
-            <option value="minimalist">Minimalista y Conceptual</option>
-            <option value="surreal">Surrealista y Onírico</option>
-            <option value="grunge">Grunge y Raw (Estética Cruda)</option>
-            <option value="vintage">Fotografía analógica Vintage</option>
-            <option value="bw">Blanco y Negro de Alto Contraste</option>
-            <option value="pastel">Tonos Pastel y Ensueño</option>
-            <option value="cyberpunk">Estética Futurista / Ciberpunk</option>
-            <option value="baroque">Barroco / Pictórico</option>
-          </select>
+        <h2 class="section-title">Estilo y composiciones</h2>
+
+        <!-- Fila 1: Estilo fotográfico (ancho completo) -->
+        <div style="margin-bottom:14px;">
+          <label style="display:block;color:var(--text-dim);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">Estilo fotográfico</label>
+          <div class="select-group" style="max-width:420px;">
+            <select id="style-select">
+              <option value="">-- Selecciona un estilo --</option>
+              <option value="cinematic">Cinemático (Estilo Película)</option>
+              <option value="high-key">High-Key (Luminoso y Optimista)</option>
+              <option value="low-key">Low-Key (Clarooscuro Dramático)</option>
+              <option value="street-style">Street Style (Urbano y Desenfocado)</option>
+              <option value="minimalist">Minimalista y Conceptual</option>
+              <option value="surreal">Surrealista y Onírico</option>
+              <option value="grunge">Grunge y Raw (Estética Cruda)</option>
+              <option value="vintage">Fotografía analógica Vintage</option>
+              <option value="bw">Blanco y Negro de Alto Contraste</option>
+              <option value="pastel">Tonos Pastel y Ensueño</option>
+              <option value="cyberpunk">Estética Futurista / Ciberpunk</option>
+              <option value="baroque">Barroco / Pictórico</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fila 2: Composiciones (máx. 3, en grid de 3 columnas) -->
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="color:var(--text-dim);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;">Composiciones</span>
+            <span id="selection-info" style="color:var(--cian);font-size:0.68rem;font-weight:600;">0/3</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+            <div class="select-group">
+              <label for="comp-select-a" style="color:var(--text-faint);font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;display:block;">Producto y realistas</label>
+              <select id="comp-select-a"><option value="">Elige alguna opción</option></select>
+            </div>
+            <div class="select-group">
+              <label for="comp-select-b" style="color:var(--text-faint);font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;display:block;">Cine y dirección de arte</label>
+              <select id="comp-select-b"><option value="">Elige alguna opción</option></select>
+            </div>
+            <div class="select-group">
+              <label for="comp-select-c" style="color:var(--text-faint);font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;display:block;">Conceptual y gráfico</label>
+              <select id="comp-select-c"><option value="">Elige alguna opción</option></select>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- CONTROLES: formato, resolución, modelo (TOGGLE BUTTONS) -->
+      <!-- CONTROLES: formato, resolución, modelo (EN UNA SOLA FILA) -->
       <section class="section-card" id="section-controls">
         <h2 class="section-title">Ajustes de imagen</h2>
-        <div class="controls-stack">
+        <div class="controls-stack controls-row">
           <div class="control-line">
             <span class="control-line-label">Formato</span>
             <div class="toggle-row" id="ar-selector">
@@ -100,6 +127,7 @@
               <button class="toggle-btn" data-ar="2:3">2:3</button>
             </div>
           </div>
+          <span class="control-sep" aria-hidden="true"></span>
           <div class="control-line">
             <span class="control-line-label">Resolución</span>
             <div class="toggle-row" id="res-selector">
@@ -109,6 +137,7 @@
               <button class="toggle-btn" data-res="4096">4096</button>
             </div>
           </div>
+          <span class="control-sep" aria-hidden="true"></span>
           <div class="control-line">
             <span class="control-line-label">Modelo</span>
             <div class="toggle-row" id="quality-selector">
@@ -117,34 +146,6 @@
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- COMPOSICIONES -->
-      <section class="section-card" id="composition-card">
-        <h2 class="section-title">Composiciones (máx. 3)</h2>
-        <div class="selectors-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
-          <div class="select-group">
-            <label for="comp-select-a" style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block;">Producto y realistas</label>
-            <select id="comp-select-a">
-              <option value="">Elige alguna opción</option>
-            </select>
-          </div>
-          <div class="select-group">
-            <label for="comp-select-b" style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block;">Cine y dirección de arte</label>
-            <select id="comp-select-b">
-              <option value="">Elige alguna opción</option>
-            </select>
-          </div>
-          <div class="select-group">
-            <label for="comp-select-c" style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block;">Conceptual y gráfico</label>
-            <select id="comp-select-c">
-              <option value="">Elige alguna opción</option>
-            </select>
-          </div>
-        </div>
-        <p style="text-align:center;margin-top:8px;color:var(--cian);font-size:0.8rem;font-weight:600;">
-          <span id="selection-info">Seleccionados: 0/3</span>
-        </p>
       </section>
 
       <!-- BOTÓN GENERAR -->
