@@ -87,9 +87,6 @@ let currentBox = null;
 let generatedImages = [];
 let history; // instancia de HistoryManager
 
-// Marcador de diagnóstico
-window.__escenario_modelo_loaded = true;
-
 // ===== ELEMENTOS DEL DOM =====
 const fileInput = document.getElementById('file-input');
 const generateBtn = document.getElementById('generate-btn');
@@ -152,7 +149,6 @@ const GROUPS = {
 
 // ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', async () => {
-  window.__escenario_modelo_domready = true;
   try {
   // Historial persistente (nuevo HistoryManager basado en clases)
   history = new HistoryManager('escenario_modelo');
