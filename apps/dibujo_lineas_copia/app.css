@@ -127,7 +127,7 @@ h1{
 }
 .upload-label:hover{
   transform:translateY(-2px);
-  background:var(--card-hover);
+  background:rgba(255,255,255,0.08);
   box-shadow:0 0 28px var(--glow),0 0 0 3px var(--glow-soft);
   border-color:var(--border-strong);
 }
@@ -213,7 +213,7 @@ h1{
   text-shadow:0 0 8px var(--glow);
   padding:.85rem 2rem;font-size:1rem
 }
-.button-start:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 30px var(--glow)}
+.button-start:hover:not(:disabled){background:rgba(255,255,255,0.08);transform:translateY(-2px);box-shadow:0 0 30px var(--glow)}
 .button-start:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 
 .download-single-btn{
@@ -223,7 +223,7 @@ h1{
   box-shadow:0 0 12px rgba(38,198,38,0.25);
   font-size:.8rem;padding:.6rem 1rem
 }
-.download-single-btn:hover{transform:translateY(-2px);box-shadow:0 0 20px rgba(38,198,38,0.5)}
+.download-single-btn:hover{background:rgba(255,255,255,0.08);transform:translateY(-2px);box-shadow:0 0 20px rgba(38,198,38,0.5)}
 
 /* Galería de resultados */
 .gallery-title{
@@ -251,7 +251,7 @@ h1{
   border-top:1px solid var(--border);
   background:var(--card-bg)
 }
-.gallery-item:hover{transform:translateY(-6px);border-color:var(--border-strong);box-shadow:0 0 34px var(--glow),inset 0 0 30px rgba(0,208,208,0.2);background:rgba(255,255,255,0.04)}
+.gallery-item:hover{transform:translateY(-6px);border-color:var(--border-strong);box-shadow:0 0 34px var(--glow),inset 0 0 30px rgba(0,208,208,0.2);background:rgba(255,255,255,0.08)}
 
 /* Mensajes de error */
 .error-message{
