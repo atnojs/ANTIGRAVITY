@@ -84,10 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
         historyGrid.querySelectorAll('.history-card img').forEach(img => {
             img.addEventListener('click', () => {
                 lightboxImg.src = img.src;
-                lightboxImg.dataset.zoom = 'fit';
-                lightboxImg.style.objectFit = 'contain';
-                lightboxImg.style.maxWidth = '95vw';
-                lightboxImg.style.maxHeight = '95vh';
+                lightboxImg.dataset.zoom = 'full';
+                lightboxImg.style.objectFit = 'none';
+                lightboxImg.style.maxWidth = 'none';
+                lightboxImg.style.maxHeight = 'none';
+                lightboxImg.style.width = 'auto';
+                lightboxImg.style.height = 'auto';
+                lightboxImg.style.cursor = 'zoom-out';
+                lightbox.style.overflow = 'auto';
                 lightbox.classList.remove('hidden');
             });
         });
