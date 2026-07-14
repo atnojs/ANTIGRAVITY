@@ -127,7 +127,7 @@ h1 {
 .upload-box:hover {
   border-color: var(--border-hover);
   box-shadow: var(--shadow), 0 0 14px var(--glow-hover);
-  background: var(--bg-panel-hover);
+  background: rgba(255, 255, 255, 0.08);
 }
 .upload-box.drag-over {
   background: rgba(0,208,208,0.08);
@@ -158,8 +158,9 @@ h1 {
   transition: border-color .2s, box-shadow .2s;
 }
 .cs-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
   border-color: var(--border-hover);
-  box-shadow: var(--shadow), 0 0 12px var(--glow-hover);
+  box-shadow: var(--shadow), 0 0 14px var(--glow-hover);
 }
 .cs-btn svg { color: var(--cian); flex-shrink: 0; }
 .cs-label { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -183,7 +184,7 @@ h1 {
   transition: background .15s, color .15s;
 }
 .cs-option.is-none { color: var(--text-faint); }
-.cs-option:hover { background: rgba(0,208,208,0.08); color: #fff; }
+.cs-option:hover { background: rgba(255,255,255,0.08); color: #fff; }
 .cs-option.selected {
   background: rgba(0,208,208,0.12);
   border: 1px solid rgba(0,208,208,0.4);
@@ -245,9 +246,10 @@ h1 {
   white-space: nowrap;
 }
 .toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
   border-color: var(--border-hover);
   color: #fff;
-  box-shadow: 0 0 6px var(--glow-soft);
+  box-shadow: 0 0 14px var(--glow-hover);
 }
 .toggle-btn.active {
   background: linear-gradient(135deg, var(--cian), var(--verde));
@@ -330,7 +332,7 @@ h1 {
   transition: background .15s, color .15s; padding: 0;
 }
 .tool-btn svg { width: 15px; height: 15px; stroke-width: 2; }
-.tool-btn:hover { background: rgba(255,255,255,0.1); color: var(--cian); }
+.tool-btn:hover { background: rgba(255,255,255,0.08); color: var(--cian); }
 .tool-btn.delete-btn-icon:hover { color: #ef4444; }
 .tool-btn.download-btn-icon:hover { color: var(--verde); }
 
@@ -382,7 +384,7 @@ h1 {
   background: rgba(0,0,0,0.25);
   transition: border-color .2s;
 }
-.history-item-wrap:hover { border-color: var(--border-hover); }
+.history-item-wrap:hover { border-color: var(--border-hover); box-shadow: 0 0 16px var(--glow-soft); }
 .history-item-wrap img {
   width: 100%; height: 100%; object-fit: cover; cursor: pointer;
   transition: transform .2s;
@@ -585,7 +587,7 @@ h1 {
 }
 .upload-box:hover {
   transform: translateY(-3px); border-color: var(--cian);
-  background: var(--bg-panel); box-shadow: 0 0 20px var(--glow-soft);
+  background: rgba(255, 255, 255, 0.08); box-shadow: 0 0 20px var(--glow-soft);
 }
 .upload-box.drag-over { background: rgba(0,208,208,0.1); border: 2px solid var(--cian); }
 .upload-box .icon { font-size: 1.8rem; margin-bottom: 8px; filter: none; }
@@ -599,14 +601,14 @@ h1 {
   background: var(--bg-panel); font-size: 0.82rem;
   box-shadow: 0 0 12px var(--glow-soft);
 }
-.cs-btn:hover { border-color: var(--cian); box-shadow: 0 0 16px var(--glow-soft); }
+.cs-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--cian); box-shadow: 0 0 16px var(--glow-soft); }
 .cs-popup {
   background: linear-gradient(160deg, rgba(0,16,24,0.97), rgba(6,47,67,0.97));
   border: 2px solid var(--border-hover); border-radius: var(--radius-sm);
   box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px var(--glow-soft);
 }
 .cs-option { padding: 9px 12px; border-radius: 8px; font-size: 0.82rem; }
-.cs-option:hover { background: rgba(0,208,208,0.12); }
+.cs-option:hover { background: rgba(255,255,255,0.08); }
 .cs-option.selected {
   background: linear-gradient(135deg, rgba(0,208,208,0.22), rgba(38,198,38,0.16));
   border: 1px solid var(--border-hover); color: #fff;
@@ -621,7 +623,7 @@ h1 {
   padding: 6px 13px; border: 1px solid var(--border);
   background: rgba(0,0,0,0.3); font-size: 0.7rem;
 }
-.toggle-btn:hover { border-color: var(--cian); box-shadow: 0 0 8px var(--glow-soft); }
+.toggle-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--cian); box-shadow: 0 0 14px var(--glow-soft); }
 .toggle-btn.active {
   background: var(--cian); color: #001018; border-color: var(--cian);
   box-shadow: 0 0 14px var(--glow-hover);
@@ -636,7 +638,7 @@ h1 {
   background: var(--bg-panel); border: 2px solid var(--border);
   box-shadow: 0 0 14px var(--glow-soft);
 }
-.result-card:hover { border-color: var(--border); box-shadow: 0 0 24px var(--glow-soft); }
+.result-card:hover { border-color: var(--cian); box-shadow: 0 0 24px var(--glow-soft); }
 .image-container { height: 260px; }
 .btn-secondary { border-color: var(--border-hover); box-shadow: 0 0 10px var(--glow-soft); }
 

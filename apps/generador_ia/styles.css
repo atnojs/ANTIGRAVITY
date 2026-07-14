@@ -197,7 +197,7 @@ img { max-width: 100%; display: block; }
   transition: box-shadow 0.2s, transform 0.15s, background 0.2s;
   flex-shrink: 0;
 }
-.theme-toggle:hover { background: var(--card-hover); transform: translateY(-1px); box-shadow: 0 0 14px var(--glow-soft); }
+.theme-toggle:hover { background: rgba(255,255,255,0.08); transform: translateY(-1px); box-shadow: 0 0 14px var(--glow-soft); }
 
 /* ---------- Hero ---------- */
 .hero {
@@ -341,7 +341,7 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-.chip:hover { border-color: var(--border-strong); color: var(--accent); box-shadow: 0 0 12px var(--glow-soft); }
+.chip:hover { background: rgba(255,255,255,0.08); border-color: var(--border-strong); color: var(--accent); box-shadow: 0 0 12px var(--glow-soft); }
 .chip.active {
   background: linear-gradient(135deg, var(--teal-3), var(--teal-2));
   color: var(--cyan);
@@ -674,7 +674,7 @@ img { max-width: 100%; display: block; }
   font-family: inherit; font-size: 0.82rem; letter-spacing: 0.06em;
   text-transform: uppercase; transition: all 0.18s;
 }
-.mode-tab:hover { border-color: var(--border-strong); color: var(--accent); }
+.mode-tab:hover { background: rgba(255,255,255,0.08); border-color: var(--border-strong); color: var(--accent); }
 .mode-tab.active {
   background: linear-gradient(135deg, var(--teal-3), var(--teal-2));
   color: var(--cyan); border-color: var(--border-strong);
@@ -716,7 +716,7 @@ select option { background: var(--fondo-sup); color: var(--text); }
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: var(--card); transition: all 0.18s;
 }
-.quality-card:hover { border-color: var(--border-strong); box-shadow: 0 0 12px var(--glow-soft); }
+.quality-card:hover { background: rgba(255,255,255,0.08); border-color: var(--border-strong); box-shadow: 0 0 12px var(--glow-soft); }
 .quality-card.active {
   border-color: var(--border-strong); background: var(--card-hover);
   box-shadow: 0 0 18px var(--glow-soft);
@@ -747,7 +747,7 @@ select option { background: var(--fondo-sup); color: var(--text); }
   background: var(--card); border: 1px solid var(--border-strong);
   border-radius: 999px; box-shadow: 0 0 12px var(--glow-soft); transition: all 0.2s;
 }
-.result-actions a:hover, .result-actions button:hover { background: var(--card-hover); box-shadow: 0 0 20px var(--glow); }
+.result-actions a:hover, .result-actions button:hover { background: rgba(255,255,255,0.08); box-shadow: 0 0 20px var(--glow); }
 
 .result-meta { margin-top: 14px; color: var(--text-faint); font-size: 0.8rem; letter-spacing: 0.04em; }
 .result-meta b { color: var(--accent); font-weight: 400; }

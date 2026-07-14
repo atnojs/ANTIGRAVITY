@@ -17,7 +17,7 @@
   --glow-soft: rgba(0, 208, 208, 0.3);
   --radius: 14px;
   --radius-sm: 9px;
-  --maxw: 1100px;
+  --maxw: 1800px;
   --font: 'Electrolize', system-ui, -apple-system, sans-serif;
 }
 
@@ -58,7 +58,7 @@ body::after {
 
 /* ===== APP CONTAINER ===== */
 .outfit-app {
-  max-width: calc(var(--maxw) + 300px);
+  max-width: var(--maxw);
   margin: 0 auto;
   padding: 16px 14px 50px;
   display: flex;
@@ -69,7 +69,7 @@ body::after {
 /* ===== MAIN LAYOUT: contenido izq + historial der ===== */
 .main-layout {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   align-items: flex-start;
 }
 
@@ -83,8 +83,8 @@ body::after {
 
 /* ===== HISTORIAL (panel derecho) ===== */
 .history-panel {
-  flex: 0 0 380px;
-  width: 380px;
+  flex: 0 0 clamp(420px, 27vw, 520px);
+  width: clamp(420px, 27vw, 520px);
   max-height: calc(100vh - 130px);
   overflow-y: auto;
   position: sticky;
@@ -181,7 +181,7 @@ body::after {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: 1fr 1fr;
   gap: 8px;
-  flex: 0 0 420px;
+  flex: 0 0 390px;
   min-height: 340px;
 }
 .cats-side:empty { display: none; }
@@ -207,8 +207,8 @@ body::after {
 .category-btn:hover:not(:disabled) {
   border-color: var(--cian);
   color: #fff;
-  box-shadow: 0 0 12px var(--glow-soft);
-  background: rgba(30, 100, 150, 0.55);
+  box-shadow: 0 0 18px var(--glow-soft);
+  background: rgba(255, 255, 255, 0.08);
 }
 .category-btn.active {
   background: rgba(0,208,208,0.18);
@@ -231,8 +231,9 @@ body::after {
 
 /* ===== VISOR CENTRAL (más estrecho) ===== */
 .viewer-central {
-  flex: 1;
-  max-width: 400px;
+  flex: 1 1 0;
+  min-width: 360px;
+  max-width: none;
   position: relative;
   background: rgba(0,0,0,0.3);
   border: 2px solid var(--border);
@@ -242,7 +243,7 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  margin: 0;
   box-shadow: 0 0 20px var(--glow-soft), inset 0 0 20px rgba(0,208,208,0.06);
 }
 
@@ -378,7 +379,7 @@ body::after {
   transition: all 0.2s;
   backdrop-filter: blur(4px);
 }
-.subcategory-btn:hover { border-color: var(--cian); color: #fff; }
+.subcategory-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--cian); color: #fff; }
 .subcategory-btn.active {
   background: var(--cian);
   color: #001018;
@@ -448,8 +449,9 @@ body::after {
   transition: all 0.2s;
 }
 .action-chip:hover {
+  background: rgba(255,255,255,0.08);
   border-color: var(--cian);
-  box-shadow: 0 0 10px var(--glow-soft);
+  box-shadow: 0 0 14px var(--glow-soft);
 }
 
 .checks-row {
@@ -521,8 +523,10 @@ body::after {
   text-transform: uppercase;
 }
 .toggle-btn:hover {
+  background: rgba(255,255,255,0.08);
   border-color: var(--cian);
   color: #fff;
+  box-shadow: 0 0 14px var(--glow-soft);
 }
 .toggle-btn.active {
   background: var(--cian);
@@ -679,6 +683,7 @@ body::after {
 .btn-sq-purple { --btn-glow: rgba(128,0,128,0.55); color: #f0e9ff; }
 .btn-sq-orange { --btn-glow: rgba(249,115,22,0.55); color: #ffe9d5; }
 .btn-sq-red    { --btn-glow: rgba(239,68,68,0.55); color: #ffe3e3; }
+.btn-sq-white  { --btn-glow: rgba(255,255,255,0.55); color: #ffffff; }
 
 .btn-tooltip {
   position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%);
@@ -781,7 +786,10 @@ body::after {
 }
 .lightbox-overlay.show { opacity: 1; pointer-events: auto; }
 .lightbox-content {
-  max-height: 98vh; max-width: 98vw;
+  width: min(88vw, 1400px);
+  height: min(90vh, 1100px);
+  max-height: calc(100vh - 48px);
+  max-width: calc(100vw - 48px);
   object-fit: contain;
   border: 2px solid var(--cian);
   border-radius: 8px;
