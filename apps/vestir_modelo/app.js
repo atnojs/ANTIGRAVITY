@@ -244,13 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const hideError = () => { errorSection.classList.add('hidden'); };
     const showLoading = () => {
         loadingSection.classList.remove('hidden');
-        progressPanel.classList.add('hidden');
-        progressFill.style.width = '0%';
-        progressPercent.textContent = '0%';
-        progressPanel.setAttribute('aria-hidden', 'true');
+        progressPanel.classList.remove('hidden');
+        progressPercent.classList.add('hidden');
+        progressFill.style.width = '100%';
+        progressPanel.setAttribute('aria-hidden', 'false');
         loadingSection.setAttribute('aria-busy', 'true');
     };
-    const hideLoading = () => { loadingSection.classList.add('hidden'); loadingSection.setAttribute('aria-busy', 'false'); };
+    const hideLoading = () => {
+        loadingSection.classList.add('hidden');
+        progressPanel.classList.add('hidden');
+        loadingSection.setAttribute('aria-busy', 'false');
+    };
     const setProcessing = v => { isProcessing = v; updateButtons(); };
 
     // ===== LLAMADA AL PROXY CANÓNICO =====
