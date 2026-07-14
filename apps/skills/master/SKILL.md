@@ -55,3 +55,24 @@ Cuando crees un skill, tu respuesta final debe confirmar la creación de:
 3.  Archivos adicionales en `recursos/` (si aplica).
 
 No expliques cómo funciona el skill, solo confirma que está creado y listo para usar.
+
+## Patron reutilizable: loader HOOLA para apps de imagen
+
+Usa este patron, con libertad baja, cuando una app de Antigravity necesite un overlay de generacion con tres aros, estado y porcentaje de progreso.
+
+1. Carga la fuente Electrolize desde Google Fonts junto a las fuentes existentes:
+   `https://fonts.googleapis.com/css2?family=Electrolize&display=swap`
+2. Conserva la logica existente de progreso. El porcentaje debe seguir actualizando `width: ${progress}%` y el texto `${progress}%`; no simules el avance solo para el diseno.
+3. Aplica el overlay de Vestir Modelo:
+   - Fondo: `rgba(0, 16, 24, 0.75)` (capa al 75%).
+   - Difuminado: `backdrop-filter: blur(6px)` y prefijo `-webkit-`.
+   - Separacion vertical: `1.5rem`.
+   - Spinner: 80 x 80 px, borde de 3 px, tres aros con cyan `#00D0D0`, verde `#26C626` y duraciones 1.2 s, 1 s inversa y 0.8 s.
+4. Aplica Electrolize a `.loading-text`, `.progress-percentage` y `.progress-status`. El texto de carga debe usar 14 px, peso 400 y `letter-spacing: 0.18em`.
+5. Aplica la barra HOOLA/Relatos:
+   - Contenedor: `width: min(360px, calc(100vw - 48px))`, `padding: 18px 24px`, fondo oscuro, borde cyan y radio de 16 px.
+   - Track: 5 px de alto, radio `999px`, fondo claro translcido e inset shadow.
+   - Fill: gradiente `#00D0D0` a `#26C626`, radio `999px` y glow cyan.
+   - Estado: 0.72 rem, color `#99CCCC` y `letter-spacing: 0.14em`.
+6. No cambies el JSX/HTML estructural salvo la carga de fuente; reutiliza las clases ya presentes (`loading-overlay`, `spinner-triple`, `ring-*`, `progress-*`).
+7. Antes de publicar, revisa el diff y valida que solo se incluyan los archivos de la app objetivo. Haz commit y push a `main` para que el usuario pueda comprobar el resultado desde Hostinger.
