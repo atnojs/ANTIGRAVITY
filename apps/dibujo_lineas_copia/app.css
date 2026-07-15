@@ -303,3 +303,12 @@ h1{
 .loading-text { color: var(--text); font-size: 1.125rem; font-weight: 400; letter-spacing:0.06em; text-transform:uppercase; text-align: center; text-shadow:0 0 12px var(--glow-soft); }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes spin-reverse { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+/* Hover canonico visible: capa blanca al 8%, borde aclarado y halo reforzado */
+.upload-label:hover{background:var(--card-hover);color:#fff;border-color:#99ffff;transform:translateY(-4px) scale(1.035);filter:brightness(1.14);box-shadow:0 0 0 2px rgba(153,255,255,.5),0 0 42px var(--glow),inset 0 0 0 999px rgba(255,255,255,.08)}
+.preview-item:hover,.gallery-item:hover{background:var(--card-hover);border-color:#99ffff;transform:translateY(-7px) scale(1.025);filter:brightness(1.12);box-shadow:0 0 0 2px rgba(153,255,255,.45),0 0 44px var(--glow),inset 0 0 0 999px rgba(255,255,255,.08)}
+.gallery-item:hover .gallery-item-actions{background:linear-gradient(rgba(255,255,255,.08),rgba(255,255,255,.08)),var(--card-bg)}
+.button-start:hover:not(:disabled){color:#fff;border-color:#bfffff;transform:translateY(-4px) scale(1.035);filter:brightness(1.14);box-shadow:0 0 0 2px rgba(191,255,255,.5),0 0 46px var(--glow),inset 0 0 0 999px rgba(255,255,255,.08)}
+.download-single-btn:hover{background:var(--card-hover);color:#fff;border-color:#8aff8a;transform:translateY(-4px) scale(1.05);filter:brightness(1.14);box-shadow:0 0 0 2px rgba(138,255,138,.35),0 0 34px rgba(38,198,38,.75),inset 0 0 0 999px rgba(255,255,255,.08)}
+.history-clear-btn:hover{background:rgba(239,68,68,.34);color:#fff;border-color:#ffb0b0;transform:translateY(-4px) scale(1.035);filter:brightness(1.14);box-shadow:0 0 0 2px rgba(255,176,176,.35),0 0 34px rgba(239,68,68,.75),inset 0 0 0 999px rgba(255,255,255,.08)}
+.download-single-btn[style*="background:rgba(239,68,68,0.8)"]:hover{background:rgba(239,68,68,.92)!important;border:1px solid #ffb0b0!important;box-shadow:0 0 0 2px rgba(255,176,176,.4),0 0 36px rgba(239,68,68,.8),inset 0 0 0 999px rgba(255,255,255,.08)!important}
+@media (prefers-reduced-motion:reduce){.upload-label:hover,.preview-item:hover,.gallery-item:hover,.button-start:hover:not(:disabled),.download-single-btn:hover,.history-clear-btn:hover{transform:none}}
