@@ -10,6 +10,22 @@
 (function () {
   'use strict';
 
+  // Overlay universal (SKILL_MAESTRA)
+  function showOverlay(statusMsg) {
+    var t = document.getElementById('loading-text');
+    var s = document.getElementById('secondary-status');
+    var o = document.getElementById('loading-overlay');
+    if (t) t.textContent = 'IA generando lo solicitado...';
+    if (s) s.textContent = statusMsg || 'Procesando solicitud...';
+    if (o) o.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function hideOverlay() {
+    var o = document.getElementById('loading-overlay');
+    if (o) o.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
   // ── Estado ────────────────────────────────────────────
   var state = {
     mode: 'generar',          // 'generar' | 'editar'
@@ -138,6 +154,7 @@
     el.btnMejorar.disabled = true;
     var original = el.btnMejorar.innerHTML;
     el.btnMejorar.innerHTML = 'Mejorando…';
+    showOverlay('Mejorando prompt...');
 
     callProxy({ action: 'mejorar', prompt: prompt })
       .then(function (data) {
@@ -151,6 +168,7 @@
       .catch(function (e) { toast('Error al mejorar: ' + e.message); })
       .finally(function () {
         el.btnMejorar.innerHTML = original;
+        hideOverlay();
         updateGenerateEnabled();
       });
   }
@@ -172,6 +190,7 @@
     state.generating = true;
     updateGenerateEnabled();
     renderLoading();
+    showOverlay(state.mode === 'editar' ? 'Editando imagen...' : 'Generando imagen...');
 
     var payload = {
       action: state.mode,     // 'generar' | 'editar'
@@ -208,6 +227,7 @@
       .catch(function (e) { renderError(e.message); })
       .finally(function () {
         state.generating = false;
+        hideOverlay();
         updateGenerateEnabled();
       });
   }

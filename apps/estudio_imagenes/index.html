@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
 </head>
 <body>
@@ -123,7 +123,23 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <!-- Loading Overlay Universal (SKILL_MAESTRA) -->
+  <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner-triple">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+    </div>
+    <p id="loading-text" class="loading-text">IA generando lo solicitado...</p>
+    <div class="progress-panel">
+      <div class="progress-bar-track">
+        <div id="overlay-progress-bar" class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      <p id="secondary-status" class="secondary-status">Procesando solicitud...</p>
+    </div>
+  </div>
+
   <script src="history-manager.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
