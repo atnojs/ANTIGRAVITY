@@ -312,3 +312,5 @@ h1{
 .history-clear-btn:hover{background:rgba(239,68,68,.34);color:#fff;border-color:#ffb0b0;transform:translateY(-4px) scale(1.035);filter:brightness(1.14);box-shadow:0 0 0 2px rgba(255,176,176,.35),0 0 34px rgba(239,68,68,.75),inset 0 0 0 999px rgba(255,255,255,.08)}
 .download-single-btn[style*="background:rgba(239,68,68,0.8)"]:hover{background:rgba(239,68,68,.92)!important;border:1px solid #ffb0b0!important;box-shadow:0 0 0 2px rgba(255,176,176,.4),0 0 36px rgba(239,68,68,.8),inset 0 0 0 999px rgba(255,255,255,.08)!important}
 @media (prefers-reduced-motion:reduce){.upload-label:hover,.preview-item:hover,.gallery-item:hover,.button-start:hover:not(:disabled),.download-single-btn:hover,.history-clear-btn:hover{transform:none}}
+/* El control desactivado mantiene respuesta visual sin parecer accionable */
+.button-start:hover:disabled{opacity:.62;background:linear-gradient(135deg,var(--contenedor),var(--acc));color:#efffff;border-color:#99ffff;filter:brightness(1.08);transform:none;box-shadow:0 0 0 2px rgba(153,255,255,.35),0 0 30px var(--glow-soft),inset 0 0 0 999px rgba(255,255,255,.08);cursor:not-allowed}
