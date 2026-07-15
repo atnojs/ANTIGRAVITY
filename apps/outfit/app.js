@@ -68,18 +68,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==== INYECCIONES DOM ====
 
-    // 1. LOADER GLOBAL
+    // 1. LOADER GLOBAL (Overlay universal SKILL_MAESTRA)
     const injectGlobalLoader = () => {
         if (document.getElementById('global-loader')) return;
         const div = document.createElement('div');
         div.id = 'global-loader';
         div.className = 'global-loader';
+        div.setAttribute('role', 'status');
+        div.setAttribute('aria-live', 'polite');
+        div.setAttribute('aria-busy', 'true');
         div.innerHTML = `
-    <div class="spinner-container">
-    <div class="spinner-outer"></div>
-    <div class="spinner-inner"></div>
+    <div class="spinner-triple">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
     </div>
-    <div class="loader-text" id="global-loader-text">Procesando...</div>
+    <p class="loading-text">IA generando lo solicitado...</p>
+    <div class="progress-panel">
+    <div class="progress-bar-track">
+    <div class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <p class="secondary-status" id="global-loader-text">Procesando solicitud...</p>
+    </div>
     `;
         document.body.appendChild(div);
         globalLoader = div;
@@ -87,12 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showGlobalLoader = (text) => {
         const txt = document.getElementById('global-loader-text');
-        if (txt) txt.textContent = text;
+        if (txt) txt.textContent = text || 'Procesando solicitud...';
         if (globalLoader) globalLoader.classList.add('show');
+        document.body.style.overflow = 'hidden';
     };
 
     const hideGlobalLoader = () => {
         if (globalLoader) globalLoader.classList.remove('show');
+        document.body.style.overflow = '';
     };
 
     // 2. Botón Descargar Todo
@@ -957,6 +969,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (closeBtn) styleDescriptionOutput.appendChild(closeBtn);
         try {
             const prompt = "Describe en español, breve y con gancho, el outfit de la imagen. Nombra el estilo.";
+            showGlobalLoader('Analizando estilo...');
             const description = await callMultimodalAPI(prompt, generatedImageBase64);
             styleDescriptionOutput.innerHTML = `<div style="padding-right:40px;">${description}</div>`;
             ensureStyleDescClose();
@@ -965,6 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ensureStyleDescClose();
             console.error(e);
         } finally {
+            hideGlobalLoader();
             describeBtnText.classList.remove('hidden');
             describeLoader.classList.add('hidden');
             describeStyleBtn.disabled = false;
@@ -1019,10 +1033,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleGenerateIdea = async () => {
         ideaGeneratorIcon.classList.add('hidden'); ideaGeneratorSpinner.classList.remove('hidden'); ideaGeneratorBtn.disabled = true;
+        showGlobalLoader('Generando idea...');
         try {
             const prompt = "Generate a short, creative outfit idea in spanish. No extra text.";
             const idea = await callTextAPI(prompt); customPromptInput.value = idea.replace(/[\"*]/g, '').trim();
         } catch (error) { showToast('Error al generar idea.'); } finally {
+            hideGlobalLoader();
             ideaGeneratorIcon.classList.remove('hidden'); ideaGeneratorSpinner.classList.add('hidden'); ideaGeneratorBtn.disabled = false;
         }
     };
@@ -1031,10 +1047,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const current = customPromptInput.value.trim();
         if (!current) { showToast("Escribe una idea."); return; }
         enhancePromptIcon.classList.add('hidden'); enhancePromptSpinner.classList.remove('hidden'); enhancePromptBtn.disabled = true;
+        showGlobalLoader('Mejorando prompt...');
         try {
             const prompt = `Eres un experto en prompts. Mejora esta idea de outfit en español: '${current}'`;
             const out = await callTextAPI(prompt); customPromptInput.value = out.replace(/["*]/g, '').trim();
         } catch (e) { showToast('Error al mejorar.'); } finally {
+            hideGlobalLoader();
             enhancePromptIcon.classList.remove('hidden'); enhancePromptSpinner.classList.add('hidden'); enhancePromptBtn.disabled = false;
         }
     };
