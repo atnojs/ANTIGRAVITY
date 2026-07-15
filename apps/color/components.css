@@ -277,96 +277,123 @@ textarea::placeholder {
 }
 
 /* ═══════════════════════════════════════════════
-   SPINNER NEON TRIPLE (Global Premium)
+   LOADING OVERLAY UNIVERSAL (SKILL_MAESTRA)
    ═══════════════════════════════════════════════ */
 .loading-overlay {
     position: fixed;
     inset: 0;
     z-index: 20000;
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 30px;
-    overflow: hidden;
+    gap: 1.5rem;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(0, 40, 60, 0.92) 0%, rgba(0, 12, 20, 0.96) 55%),
+        radial-gradient(ellipse at 70% 80%, rgba(0, 60, 60, 0.55) 0%, rgba(0, 8, 14, 0.9) 60%);
+    backdrop-filter: blur(8px) saturate(1.8);
+    -webkit-backdrop-filter: blur(8px) saturate(1.8);
 }
 
-/* Div para fondo dinámico (se establece via JS) */
-.loading-bg-image {
-    position: absolute;
-    inset: -20px;
-    background-size: cover;
-    background-position: center;
-    filter: blur(30px) brightness(0.4);
-    z-index: -1;
-    opacity: 0.7;
-    transition: opacity 0.5s ease;
+.loading-overlay.hidden {
+    display: none;
 }
 
 .spinner-triple {
-    width: 120px;
-    height: 120px;
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 80px;
+    height: 80px;
 }
 
 .spinner-triple .ring {
     position: absolute;
     border-radius: 50%;
-    border: 4px solid transparent;
+    border: 3px solid transparent;
 }
 
-/* Aro Exterior - Cyan */
 .spinner-triple .ring-1 {
     inset: 0;
-    border-top-color: var(--neon-cyan);
+    border-top-color: #00D0D0;
     animation: spin 1.2s linear infinite;
-    filter: drop-shadow(0 0 8px var(--neon-cyan));
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.5);
 }
 
-/* Aro Medio - Purple */
 .spinner-triple .ring-2 {
-    inset: 15px;
-    border-right-color: var(--acc2);
-    animation: spin 1.5s linear infinite reverse;
-    filter: drop-shadow(0 0 8px var(--acc2));
+    inset: 10px;
+    border-right-color: #26C626;
+    animation: spin-reverse 1s linear infinite;
+    box-shadow: 0 0 15px rgba(38, 198, 38, 0.4);
 }
 
-/* Aro Interior - Pink */
 .spinner-triple .ring-3 {
-    inset: 30px;
-    border-bottom-color: var(--neon-pink);
-    animation: spin 2s linear infinite;
-    filter: drop-shadow(0 0 8px var(--neon-pink));
+    inset: 20px;
+    border-bottom-color: #00D0D0;
+    animation: spin 0.8s linear infinite;
+    box-shadow: 0 0 10px rgba(0, 208, 208, 0.4);
 }
 
 .loading-text {
+    color: #00D0D0;
     font-family: 'Electrolize', system-ui, sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: white;
+    font-size: 1.125rem;
+    font-weight: 400;
+    letter-spacing: .06em;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
-    text-shadow: 0 0 15px var(--neon-cyan);
-    animation: textPulse 2s ease-in-out infinite;
+    text-align: center;
+    text-shadow: 0 0 12px rgba(0, 208, 208, 0.4);
 }
 
-@keyframes textPulse {
+.progress-panel {
+    width: min(360px, 85vw);
+    border: 2px solid rgba(0, 208, 208, .75);
+    border-radius: 9px;
+    background: rgba(6, 16, 24, .8);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    padding: 12px 14px;
+    box-shadow: 0 0 18px rgba(0, 208, 208, 0.4);
+}
 
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+.progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, .08);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
 
-    50% {
-        opacity: 0.7;
-        transform: scale(0.98);
+.progress-bar-fill {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, #00D0D0, #26C626);
+    border-radius: 999px;
+    animation: indeterminateBar 2.5s ease-in-out infinite;
+}
+
+.secondary-status {
+    text-align: center;
+    color: #99CCCC;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    font-size: .72rem;
+    letter-spacing: .04em;
+}
+
+@keyframes spin-reverse {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes indeterminateBar {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(150%); }
+    100% { transform: translateX(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner-triple .ring,
+    .progress-bar-fill {
+        animation: none;
     }
 }
 

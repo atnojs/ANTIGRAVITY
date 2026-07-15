@@ -387,13 +387,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function setLoading(isLoading, message) {
         const overlay = document.getElementById('loading-overlay');
         const loadingText = document.getElementById('loading-text');
+        const secondaryStatus = document.getElementById('secondary-status');
         if (isLoading) {
             generateBtn.disabled = true;
             if (overlay) {
                 overlay.classList.remove('hidden');
                 overlay.style.display = 'flex';
             }
-            if (loadingText) loadingText.textContent = message || 'IA Generando Obra Maestra...';
+            if (loadingText) loadingText.textContent = 'IA generando lo solicitado...';
+            if (secondaryStatus) secondaryStatus.textContent = message || 'Procesando solicitud...';
             document.body.style.overflow = 'hidden';
             resultsContainer.classList.remove('hidden');
         } else {
