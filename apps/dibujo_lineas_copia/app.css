@@ -270,10 +270,9 @@ h1{
 .loading-overlay {
   position: fixed; inset: 0; z-index: 9999;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
-  background: radial-gradient(circle at 0% 0%, rgba(0,208,208,0.3), transparent 55%),
-              radial-gradient(circle at 100% 100%, rgba(0,16,24,0.97), rgba(0,16,24,1));
-  backdrop-filter: blur(32px) saturate(1.8);
-  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  background: rgba(0,16,24,.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 .loading-overlay.hidden { display: none; }
 .spinner-triple { position: relative; width: 80px; height: 80px; }
