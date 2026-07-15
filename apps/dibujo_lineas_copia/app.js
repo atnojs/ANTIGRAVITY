@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const galleryTitle = document.querySelector('.gallery-title');
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
+    const loadingStatus = document.getElementById('secondary-status');
 
     let imageQueue = [];
 
@@ -43,14 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
         processingSection.classList.remove('hidden');
         spinnerContainer.classList.remove('hidden');
         if (loadingOverlay) { loadingOverlay.classList.remove('hidden'); loadingOverlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-        if (loadingText) loadingText.textContent = 'Convirtiendo a Dibujo Lineal...';
+        if (loadingText) loadingText.textContent = 'IA generando lo solicitado...';
         galleryTitle.classList.remove('hidden');
         resultsGallery.innerHTML = '';
         const total = imageQueue.length;
+        if (loadingStatus) loadingStatus.textContent = `Preparando ${total} ${total === 1 ? 'imagen' : 'im\u00e1genes'}...`;
 
         for (let i = 0; i < total; i++) {
             const file = imageQueue[i];
             progressText.innerText = `Procesando ${i + 1} de ${total}...`;
+            if (loadingStatus) loadingStatus.textContent = `Generando imagen ${i + 1} de ${total}...`;
             progressBar.style.width = `${((i + 1) / total) * 100}%`;
 
             try {
@@ -120,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         spinnerContainer.classList.add('hidden');
+        if (loadingStatus) loadingStatus.textContent = 'Finalizando resultados...';
         if (loadingOverlay) { loadingOverlay.classList.add('hidden'); loadingOverlay.style.display = 'none'; document.body.style.overflow = ''; }
         progressText.innerText = 'Procesamiento Finalizado';
         loadAndRenderHistory();
