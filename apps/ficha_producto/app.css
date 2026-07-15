@@ -305,24 +305,21 @@ button[type="submit"]:hover,.btn-primary:hover,[data-variant="primary"]:hover{
   color:#fecaca!important;box-shadow:0 6px 20px var(--shadow-color)
 }
 
-/* ===== LOADER TRIPLE ===== */
+/* ===== LOADING OVERLAY UNIVERSAL (SKILL_MAESTRA) ===== */
 .loading-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 20000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  background: radial-gradient(circle at 0% 0%,
-          rgba(0, 208, 208, 0.25),
-          transparent 55%),
-      radial-gradient(circle at 100% 100%,
-          rgba(0, 16, 24, 0.95),
-          rgba(0, 16, 24, 1));
-  backdrop-filter: blur(32px) saturate(1.8);
-  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(0, 40, 60, 0.92) 0%, rgba(0, 12, 20, 0.96) 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 60, 60, 0.55) 0%, rgba(0, 8, 14, 0.9) 60%);
+  backdrop-filter: blur(8px) saturate(1.8);
+  -webkit-backdrop-filter: blur(8px) saturate(1.8);
 }
 
 .spinner-triple {
@@ -341,7 +338,7 @@ button[type="submit"]:hover,.btn-primary:hover,[data-variant="primary"]:hover{
   inset: 0;
   border-top-color: #00D0D0;
   animation: spin 1.2s linear infinite;
-  box-shadow: 0 0 20px rgba(0, 208, 208, 0.4);
+  box-shadow: 0 0 20px rgba(0, 208, 208, 0.5);
 }
 
 .spinner-triple .ring-2 {
@@ -369,12 +366,63 @@ button[type="submit"]:hover,.btn-primary:hover,[data-variant="primary"]:hover{
 }
 
 .loading-text {
-  color: #eaffff;
+  color: #00D0D0;
   font-size: 1.125rem;
-  font-weight: 500;
+  font-weight: 400;
+  letter-spacing: .06em;
+  text-transform: uppercase;
   text-align: center;
   font-family: 'Electrolize', sans-serif;
-  text-shadow: 0 0 10px rgba(0, 208, 208, 0.3);
+  text-shadow: 0 0 12px rgba(0, 208, 208, 0.4);
+}
+
+.progress-panel {
+  width: min(360px, 85vw);
+  border: 2px solid rgba(0, 208, 208, .75);
+  border-radius: 9px;
+  background: rgba(6, 16, 24, .8);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  padding: 12px 14px;
+  box-shadow: 0 0 18px rgba(0, 208, 208, 0.4);
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, .08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, #00D0D0, #26C626);
+  border-radius: 999px;
+  animation: indeterminateBar 2.5s ease-in-out infinite;
+}
+
+.secondary-status {
+  text-align: center;
+  color: #99CCCC;
+  font-family: 'Electrolize', sans-serif;
+  font-size: .72rem;
+  letter-spacing: .04em;
+}
+
+@keyframes indeterminateBar {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(150%); }
+  100% { transform: translateX(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner-triple .ring,
+  .progress-bar-fill {
+    animation: none;
+  }
 }
 
 /* Utilidades */

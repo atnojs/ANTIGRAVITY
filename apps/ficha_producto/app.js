@@ -876,16 +876,28 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
     </svg>
   );
 
-  const Loader = ({ message }) => (
-    <div className="loading-overlay">
-      <div className="spinner-triple">
-        <div className="ring ring-1"></div>
-        <div className="ring ring-2"></div>
-        <div className="ring ring-3"></div>
+  const Loader = ({ message }) => {
+    React.useEffect(() => {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }, []);
+    return (
+      <div className="loading-overlay" role="status" aria-live="polite" aria-busy="true">
+        <div className="spinner-triple">
+          <div className="ring ring-1"></div>
+          <div className="ring ring-2"></div>
+          <div className="ring ring-3"></div>
+        </div>
+        <p className="loading-text">IA generando lo solicitado...</p>
+        <div className="progress-panel">
+          <div className="progress-bar-track">
+            <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <p className="secondary-status">{message || 'Procesando solicitud...'}</p>
+        </div>
       </div>
-      <p className="loading-text">{message}</p>
-    </div>
-  );
+    );
+  };
 
   const ZoomModal = ({ src, onClose }) => {
     const modalRef = React.useRef(null);
