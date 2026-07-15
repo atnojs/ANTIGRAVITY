@@ -560,6 +560,11 @@ function App() {
   const [srcB64, setSrcB64] = useState(null);
   const [srcDims, setSrcDims] = useState(null); // {w,h} nativos de la foto subida
   const [busy, setBusy] = useState(false);
+  // Overlay universal (SKILL_MAESTRA): bloquear scroll mientras la IA trabaja
+  useEffect(() => {
+    document.body.style.overflow = busy ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [busy]);
   const [selectedQuality, setSelectedQuality] = useState('pro'); // 'pro' | 'max'
   const [selectedRes, setSelectedRes] = useState(DEFAULT_RES); // 512 | 1024 | 2048 | 4096
   const [customInstruction, setCustomInstruction] = useState("");
@@ -974,13 +979,19 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 text-gray-900 relative">
         {busy && (
-          <div className="loading-overlay">
+          <div className="loading-overlay" role="status" aria-live="polite" aria-busy="true">
             <div className="spinner-triple">
               <div className="ring ring-1"></div>
               <div className="ring ring-2"></div>
               <div className="ring ring-3"></div>
             </div>
-            <p className="loading-text">IA Diseñando tu espacio...</p>
+            <p className="loading-text">IA generando lo solicitado...</p>
+            <div className="progress-panel">
+              <div className="progress-bar-track">
+                <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <p className="secondary-status">Diseñando tu espacio...</p>
+            </div>
           </div>
         )}
 
@@ -1031,13 +1042,19 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 relative">
       {busy && (
-        <div className="loading-overlay">
+        <div className="loading-overlay" role="status" aria-live="polite" aria-busy="true">
           <div className="spinner-triple">
             <div className="ring ring-1"></div>
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
           </div>
-          <p className="loading-text">IA Transformando tu Estancia...</p>
+          <p className="loading-text">IA generando lo solicitado...</p>
+          <div className="progress-panel">
+            <div className="progress-bar-track">
+              <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p className="secondary-status">Transformando tu estancia...</p>
+          </div>
         </div>
       )}
 

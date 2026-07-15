@@ -916,19 +916,21 @@ img.object-contain {
   display: none;
 }
 
-/* Loading Overlay 3-Ring Standard */
+/* ===== LOADING OVERLAY UNIVERSAL (SKILL_MAESTRA) ===== */
 .loading-overlay {
   position: fixed;
   inset: 0;
   z-index: 50000;
-  background: rgba(0, 0, 0, 0.30);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
+  gap: 1.5rem;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(0, 40, 60, 0.92) 0%, rgba(0, 12, 20, 0.96) 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 60, 60, 0.55) 0%, rgba(0, 8, 14, 0.9) 60%);
+  backdrop-filter: blur(8px) saturate(1.8);
+  -webkit-backdrop-filter: blur(8px) saturate(1.8);
 }
 
 .loading-overlay.hidden {
@@ -937,61 +939,104 @@ img.object-contain {
 
 .spinner-triple {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
 }
 
-.ring {
+.spinner-triple .ring {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 4px solid transparent;
   border-radius: 50%;
-  animation: spin-triple 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border: 3px solid transparent;
 }
 
-.ring-1 {
-  border-top-color: var(--acc);
-  animation-delay: -0.45s;
+.spinner-triple .ring-1 {
+  inset: 0;
+  border-top-color: #00D0D0;
+  animation: overlay-spin 1.2s linear infinite;
+  box-shadow: 0 0 20px rgba(0, 208, 208, 0.5);
 }
 
-.ring-2 {
-  border-top-color: var(--acc2);
-  animation-delay: -0.3s;
+.spinner-triple .ring-2 {
+  inset: 10px;
+  border-right-color: #26C626;
+  animation: overlay-spin-reverse 1s linear infinite;
+  box-shadow: 0 0 15px rgba(38, 198, 38, 0.4);
 }
 
-.ring-3 {
-  border-top-color: #26C626;
-  animation-delay: -0.15s;
-}
-
-@keyframes spin-triple {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+.spinner-triple .ring-3 {
+  inset: 20px;
+  border-bottom-color: #00D0D0;
+  animation: overlay-spin 0.8s linear infinite;
+  box-shadow: 0 0 10px rgba(0, 208, 208, 0.4);
 }
 
 .loading-text {
-  margin-top: 20px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  animation: pulse 2s infinite;
+  color: #00D0D0;
+  font-family: 'Electrolize', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 0 12px rgba(0, 208, 208, 0.4);
 }
 
-@keyframes pulse {
+.progress-panel {
+  width: min(360px, 85vw);
+  border: 2px solid rgba(0, 208, 208, .75);
+  border-radius: 9px;
+  background: rgba(6, 16, 24, .8);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  padding: 12px 14px;
+  box-shadow: 0 0 18px rgba(0, 208, 208, 0.4);
+}
 
-  0%,
-  100% {
-    opacity: 1;
-  }
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, .08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
 
-  50% {
-    opacity: 0.7;
+.progress-bar-fill {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, #00D0D0, #26C626);
+  border-radius: 999px;
+  animation: indeterminateBar 2.5s ease-in-out infinite;
+}
+
+.secondary-status {
+  text-align: center;
+  color: #99CCCC;
+  font-family: 'Electrolize', system-ui, sans-serif;
+  font-size: .72rem;
+  letter-spacing: .04em;
+}
+
+@keyframes overlay-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes overlay-spin-reverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes indeterminateBar {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(150%); }
+  100% { transform: translateX(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner-triple .ring,
+  .progress-bar-fill {
+    animation: none;
   }
 }
 
