@@ -456,6 +456,7 @@
           <div class="fc-name">${escapeHtml(f.name)}</div>
           <div class="fc-count">${parts.join(' · ')}</div>
         </div>
+        <button class="fc-menu fc-rename" data-ren="${f.id}" title="Renombrar carpeta">✏️</button>
         <button class="fc-menu" data-del="${f.id}" title="Borrar carpeta">🗑</button>
       </div>`;
     }).join('');
@@ -470,6 +471,9 @@
     });
     cont.querySelectorAll('[data-del]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); askDeleteFolder(b.dataset.del); });
+    });
+    cont.querySelectorAll('[data-ren]').forEach(b => {
+      b.addEventListener('click', (e) => { e.stopPropagation(); askRenameFolder(b.dataset.ren); });
     });
   }
 
@@ -1216,6 +1220,28 @@
         closeModal(); renderVault(); toast('Carpeta borrada.', 'ok');
       } catch (e) { toast('Error: ' + e.message, 'err'); btn.disabled = false; btn.textContent = 'Borrar'; }
     });
+  }
+
+  function askRenameFolder(id) {
+    const folder = state.index.folders.find(f => f.id === id);
+    if (!folder) return;
+    openModal(`
+      <h3>Renombrar carpeta</h3>
+      <div class="field"><input type="text" id="mName" maxlength="60" value="${escapeHtml(folder.name)}"></div>
+      <div class="modal-actions">
+        <button class="btn ghost small" id="mCancel">Cancelar</button>
+        <button class="btn primary small" id="mOk">Guardar</button>
+      </div>`);
+    $('mCancel').addEventListener('click', closeModal);
+    const submit = async () => {
+      const name = $('mName').value.trim();
+      if (!name) return;
+      folder.name = name;
+      try { await persistIndex(); closeModal(); renderVault(); toast('Carpeta renombrada.', 'ok'); }
+      catch (e) { toast('Error: ' + e.message, 'err'); }
+    };
+    $('mOk').addEventListener('click', submit);
+    $('mName').addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
   }
 
   /* ---------- cableado inicial ---------- */

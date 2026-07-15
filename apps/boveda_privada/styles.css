@@ -606,6 +606,7 @@ img { max-width: 100%; display: block; }
   transition: all 0.15s;
 }
 .folder-card .fc-menu:hover { color: var(--accent); border-color: var(--border); background: rgba(0,16,24,0.4); }
+.folder-card .fc-rename { right: 44px; }
 
 /* --- Lista de archivos (cuadrícula: 6 por fila, centrada si no se llena) --- */
 .file-list {
