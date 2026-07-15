@@ -14,7 +14,7 @@
      <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
      <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-     <link rel="stylesheet" href="web.css?v=2">
+     <link rel="stylesheet" href="web.css?v=3">
 </head>
 
 <body>
@@ -233,15 +233,20 @@
           </div>
      </div>
 
-     <!-- GLOBAL LOADING OVERLAY -->
-     <div id="loading-overlay" class="loading-overlay hidden">
-          <div class="loading-bg-image"></div>
+     <!-- GLOBAL LOADING OVERLAY UNIVERSAL (SKILL_MAESTRA) -->
+     <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
           <div class="spinner-triple">
                <div class="ring ring-1"></div>
                <div class="ring ring-2"></div>
                <div class="ring ring-3"></div>
           </div>
-           <p class="loading-text">Generando con FLUX...</p>
+           <p id="loading-text" class="loading-text">IA generando lo solicitado...</p>
+           <div class="progress-panel">
+                <div class="progress-bar-track">
+                     <div id="overlay-progress-bar" class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p id="secondary-status" class="secondary-status">Procesando solicitud...</p>
+           </div>
       </div>
      </div><!-- /app-container -->
  
@@ -249,7 +254,7 @@
        <script src="firebase-app.js"></script>
       <script src="firebase-auth.js"></script>
       <script src="history-manager.js"></script>
-      <script src="web.js?v=2"></script>
+      <script src="web.js?v=3"></script>
 <script src="lightbox.js?v=2"></script>
 </body>
 

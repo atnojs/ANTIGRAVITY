@@ -90,6 +90,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const genLoading = document.getElementById('loading-overlay');
     const genUploadArea = document.getElementById('gen-upload-area');
 
+    // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
+    function showGenLoading(statusMsg) {
+        const txt = document.getElementById('loading-text');
+        const sec = document.getElementById('secondary-status');
+        if (txt) txt.textContent = 'IA generando lo solicitado...';
+        if (sec) sec.textContent = statusMsg || 'Procesando solicitud...';
+        genLoading.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    function hideGenLoading() {
+        genLoading.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
     // Historial de imágenes generadas
     const historySection = document.getElementById('generated-history');
     const historyGrid = document.getElementById('history-grid');
@@ -934,7 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        genLoading.classList.add('hidden');
+        hideGenLoading();
     }
 
     // Placeholder para resultados (modo normal)
@@ -1272,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Modo normal: llamar a FLUX (Black Forest Labs) vía proxy
         genResults.innerHTML = '';
-        genLoading.classList.remove('hidden');
+        showGenLoading('Generando imagen...');
         genSubmitBtn.disabled = true;
 
         try {
@@ -1280,7 +1294,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Generar 1 imagen con IA (FLUX)
                 const imageData = await generateWithFlux(prompt, genBaseImage);
 
-                genLoading.classList.add('hidden');
+                hideGenLoading();
                 genResults.innerHTML = '';
 
                 if (imageData) {
@@ -1330,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error('Error generando:', error);
-                genLoading.classList.add('hidden');
+                hideGenLoading();
                 genResults.innerHTML = `
                 <div class="gen-result-placeholder" style="grid-column: 1/-1; color: #f87171;">
                     <i class="fa fa-exclamation-triangle"></i>
@@ -1340,7 +1354,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (outerError) {
             console.error("Critical Error", outerError);
-            genLoading.classList.add('hidden');
+            hideGenLoading();
         } finally {
             genSubmitBtn.disabled = false;
         }
