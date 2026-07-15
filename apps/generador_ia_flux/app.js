@@ -7,6 +7,20 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
+  // Overlay universal (SKILL_MAESTRA)
+  function showOverlay(statusMsg) {
+    var t = $("loading-text"), s = $("secondary-status"), o = $("loading-overlay");
+    if (t) t.textContent = "IA generando lo solicitado...";
+    if (s) s.textContent = statusMsg || "Procesando solicitud...";
+    if (o) o.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+  function hideOverlay() {
+    var o = $("loading-overlay");
+    if (o) o.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
   var state = {
     mode: "crear",      // "crear" | "editar"
     calidad: "normal",
@@ -113,6 +127,7 @@
     $("resultShow").classList.add("is-hidden");
     $("resultLoader").classList.remove("is-hidden");
     $("loaderText").textContent = state.mode === "editar" ? "Editando con FLUX… puede tardar hasta 1 minuto" : "Generando con FLUX… puede tardar hasta 1 minuto";
+    showOverlay(state.mode === "editar" ? "Editando imagen con FLUX..." : "Generando imagen con FLUX...");
     $("btnGenerate").disabled = true;
 
     var payload = { prompt: prompt, calidad: state.calidad };
@@ -126,6 +141,7 @@
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
         $("btnGenerate").disabled = false;
+        hideOverlay();
         $("resultLoader").classList.add("is-hidden");
         if (!res.ok || !res.j || res.j.error) {
           var m = (res.j && res.j.error && res.j.error.message) ? res.j.error.message : "Error desconocido";
@@ -137,6 +153,7 @@
       })
       .catch(function (err) {
         $("btnGenerate").disabled = false;
+        hideOverlay();
         $("resultLoader").classList.add("is-hidden");
         $("resultEmpty").classList.remove("is-hidden");
         showError("Fallo de conexión: " + err.message);
