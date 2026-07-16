@@ -140,7 +140,7 @@ body{padding:16px;max-width:1100px;margin:0 auto}
 @font-face{font-family:'Electrolize';src:url('./vendor/electrolize.ttf') format('truetype');font-display:swap}
 :root{--cyan:#00d0d0;--green:#26c626;--ink:#001018;--panel:rgba(23,79,122,.42);--border-cyan:rgba(0,208,208,.45);--text:#f4ffff;--text-dim:#b9d3dc;--bg:#001018;--card-bg:var(--panel);--pink:var(--cyan);--pink-light:rgba(0,208,208,.12);--pink-glow:rgba(0,208,208,.3);--radius:14px;--radius-sm:9px;--font:'Electrolize','Segoe UI',system-ui,sans-serif;--red:#ff6b6b}
 html,body{background:linear-gradient(180deg,#001018 0%,#062f43 60%,#0e5368 100%) fixed;color:var(--text)}
-body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50% -10%,rgba(0,208,208,.26),transparent 34%),radial-gradient(circle at 100% 55%,rgba(38,198,38,.16),transparent 35%),linear-gradient(rgba(0,208,208,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(0,208,208,.18) 1px,transparent 1px);background-size:auto,auto,46px 46px,46px 46px;background-attachment:fixed}
+body{max-width:920px;margin:0 auto;padding:16px;background-image:radial-gradient(circle at 50% -10%,rgba(0,208,208,.26),transparent 34%),radial-gradient(circle at 100% 55%,rgba(38,198,38,.16),transparent 35%),linear-gradient(rgba(0,208,208,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(0,208,208,.18) 1px,transparent 1px);background-size:auto,auto,46px 46px,46px 46px;background-attachment:fixed}
 .app-header{padding:12px 0 18px}.app-header h1{color:var(--cyan);font-family:var(--font);font-size:clamp(1.25rem,2.4vw,1.75rem);letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 14px rgba(0,208,208,.55)}.app-header p{color:var(--text-dim);font-size:.8rem;margin-top:6px}
 .top-btn,.card,.media-card{background:var(--panel);border-color:var(--border-cyan);box-shadow:inset 0 0 20px rgba(0,208,208,.08),0 0 16px rgba(0,208,208,.12);backdrop-filter:blur(12px)}
 .top-btn{color:var(--cyan)}.top-btn:hover,.top-btn:focus-visible{background:rgba(255,255,255,.08);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,208,208,.35)}.top-btn.active,.btn-primary,.format-bar .bar-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018;border-color:transparent}
@@ -149,6 +149,7 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
 .img-grid-item{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.quick-actions .btn-sm,.img-grid-actions .btn-xs.compress-btn{background:rgba(0,16,24,.58);border-color:var(--border-cyan);color:var(--cyan)}.img-grid-actions .btn-xs.dl-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018}.btn-primary:hover,.format-bar .bar-btn:hover{background:linear-gradient(135deg,#1cf2f2,#41e541);color:#001018}.toast{background:#062f43;color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(0,208,208,.35)}.progress-bar{background:rgba(255,255,255,.12)}.progress-bar-fill{background:linear-gradient(90deg,var(--cyan),var(--green))}.badge.loading{background:rgba(0,208,208,.12);color:var(--cyan)}.badge.ready{background:rgba(38,198,38,.13);color:#82f782}.badge.error{background:rgba(255,105,105,.15);color:#ffb6b6}
 .batch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 10px;padding:9px 11px;border:1px solid var(--border-cyan);border-radius:var(--radius-sm);background:rgba(0,16,24,.5)}.batch-select-all,.batch-actions{display:flex;align-items:center;gap:7px}.batch-select-all{color:var(--cyan);font-weight:700;cursor:pointer}.batch-actions{justify-content:flex-end;flex-wrap:wrap}.batch-select-all input,.audio-check{width:18px;height:18px;accent-color:var(--green);cursor:pointer}.batch-delete-btn{background:rgba(255,107,107,.14);color:#ffd7d7;border:1px solid #ff7b7b}.batch-delete-btn:hover:not(:disabled){background:var(--red);color:#001018}.batch-delete-btn:disabled{opacity:.45;cursor:not-allowed}.audio-row.is-checked{background:rgba(0,208,208,.1)!important}.audio-row.has-error{border-color:#ff7b7b!important;background:rgba(180,35,35,.2)!important}.audio-error{color:#ffd0d0;font-size:11px;line-height:1.25;flex:1 1 100%;padding-left:26px}.audio-check{flex:0 0 auto}#audio-selection-count{color:var(--text-dim);font-size:12px}button:focus-visible,select:focus-visible,input:focus-visible,.upload-zone:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .img-select-check{position:absolute;top:7px;left:7px;z-index:3;width:19px;height:19px;accent-color:var(--green);cursor:pointer}.img-grid-item.is-selected{box-shadow:0 0 0 2px var(--green),0 0 12px rgba(38,198,38,.35)!important}.video-row.is-selected{background:rgba(0,208,208,.1)!important}.video-row.is-active{border-color:var(--pink)!important;box-shadow:0 0 10px var(--pink-glow)}
+.history-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 8px}.history-heading .card-title{margin:0;text-align:left}.history-clear-btn{background:transparent;color:var(--cyan);border:1px solid var(--border-cyan);border-radius:var(--radius-sm);padding:5px 9px;font:600 11px var(--font);cursor:pointer}.history-clear-btn:hover:not(:disabled){background:var(--pink-light)}.history-clear-btn:disabled{opacity:.45;cursor:not-allowed}.history-empty{margin:0;padding:12px;border:1px dashed var(--border-cyan);border-radius:var(--radius-sm);color:var(--text-dim);font-size:12px;text-align:center}.video-history-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.history-media-item{position:relative;overflow:hidden;border:1px solid var(--border-cyan);border-radius:var(--radius-sm);background:rgba(0,16,24,.5);padding:8px}.history-media-item video,.history-media-item img{display:block;width:100%;height:126px;object-fit:contain;background:#001018;border-radius:6px}.history-media-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:7px 0 5px;color:var(--text-dim);font-size:11px}.history-item-actions{display:flex;gap:6px;justify-content:flex-end}.history-item-actions .btn-xs{padding:4px 8px;font-size:10px;border-radius:var(--radius-sm);cursor:pointer;font-weight:600}.history-delete-btn{border:1px solid #ff7b7b;background:rgba(255,107,107,.14);color:#ffd7d7}.history-delete-btn:hover{background:var(--red);color:#001018}@media(max-width:520px){.video-history-list{grid-template-columns:1fr}.history-heading{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
@@ -212,6 +213,12 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
       <div class="card-title">Imágenes generadas</div>
       <div class="img-grid" id="convert-results-grid" aria-live="polite"></div>
       <div id="convert-results-actions" style="display:none"></div>
+      <hr class="section-divider">
+      <div class="history-heading">
+        <div class="card-title">Historial persistente de imágenes</div>
+        <button type="button" class="history-clear-btn" id="clear-image-history-btn" disabled>Limpiar historial</button>
+      </div>
+      <div class="img-grid" id="image-history-grid" aria-live="polite"></div>
     </div>
   </div>
 </div>
@@ -246,6 +253,13 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
     </div>
     <div id="video-result" style="margin-top:8px" aria-live="polite"></div>
   </div>
+  <section class="media-card" aria-labelledby="video-history-title">
+    <div class="history-heading">
+      <div class="card-title" id="video-history-title">Historial persistente de vídeos</div>
+      <button type="button" class="history-clear-btn" id="clear-video-history-btn" disabled>Limpiar historial</button>
+    </div>
+    <div class="video-history-list" id="video-history-list" aria-live="polite"></div>
+  </section>
 </div>
 
 <!-- ====== AUDIO MODE ====== -->
@@ -289,6 +303,7 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="./history-manager.js"></script>
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
@@ -324,6 +339,164 @@ function fileToDataURL(file) {
 
 const procCanvas = document.createElement('canvas');
 const procCtx = procCanvas.getContext('2d');
+
+const mediaHistory = typeof HistoryManager === 'function' ? new HistoryManager('conversor_multimedia') : null;
+
+function historyEntries(type) {
+  return mediaHistory ? mediaHistory.getAll().filter(entry => entry.type === type) : [];
+}
+
+function historyData(entry) {
+  return entry && entry.data && typeof entry.data === 'object' ? entry.data : {};
+}
+
+function historyName(entry) {
+  return String(historyData(entry).name || 'archivo-convertido');
+}
+
+function historyUrl(entry) {
+  const data = historyData(entry);
+  return String(entry.imageUrl || entry.videoUrl || data.dataUrl || '');
+}
+
+function historyPlaceholder(message) {
+  return '<p class="history-empty">' + escapeHtml(message) + '</p>';
+}
+
+async function downloadHistoryEntry(entry) {
+  const url = historyUrl(entry);
+  if (!url) throw new Error('El archivo del historial ya no está disponible.');
+  const response = await fetch(url, { cache: 'no-store' });
+  if (!response.ok) throw new Error('No se pudo recuperar el archivo guardado.');
+  downloadBlob(await response.blob(), historyName(entry));
+}
+
+function wireHistoryButtons(container) {
+  container.querySelectorAll('[data-history-download]').forEach(button => button.addEventListener('click', async () => {
+    const entry = historyEntries(button.dataset.historyType).find(item => item.id === button.dataset.historyId);
+    if (!entry) return toast('Ese archivo ya no está en el historial', 'error');
+    try {
+      await downloadHistoryEntry(entry);
+      toast('Descargado: ' + historyName(entry));
+    } catch (error) {
+      toast(error.message || 'No se pudo descargar el archivo', 'error');
+    }
+  }));
+  container.querySelectorAll('[data-history-delete]').forEach(button => button.addEventListener('click', async () => {
+    if (!mediaHistory) return;
+    try {
+      await mediaHistory.delete(button.dataset.historyId);
+      toast('Archivo eliminado del historial');
+    } catch (error) {
+      toast(error.message || 'No se pudo eliminar el archivo', 'error');
+    }
+  }));
+}
+
+function renderImageHistory() {
+  const grid = $('#image-history-grid');
+  const clear = $('#clear-image-history-btn');
+  if (!grid || !clear) return;
+  const entries = historyEntries('image');
+  clear.disabled = entries.length === 0;
+  if (!entries.length) {
+    grid.innerHTML = historyPlaceholder('Las imágenes convertidas aparecerán aquí incluso después de recargar.');
+    return;
+  }
+  grid.innerHTML = entries.map(entry => {
+    const url = historyUrl(entry);
+    return '<div class="img-grid-item">' +
+      '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(historyName(entry)) + '">' +
+      '<div class="img-grid-actions" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%)">' +
+      '<button type="button" class="btn-xs dl-btn" data-history-download data-history-type="image" data-history-id="' + escapeHtml(entry.id) + '">Descargar</button>' +
+      '<button type="button" class="btn-xs history-delete-btn" data-history-delete data-history-id="' + escapeHtml(entry.id) + '">Eliminar</button>' +
+      '</div></div>';
+  }).join('');
+  wireHistoryButtons(grid);
+}
+
+function renderVideoHistory() {
+  const list = $('#video-history-list');
+  const clear = $('#clear-video-history-btn');
+  if (!list || !clear) return;
+  const entries = historyEntries('video');
+  clear.disabled = entries.length === 0;
+  if (!entries.length) {
+    list.innerHTML = historyPlaceholder('Los vídeos convertidos aparecerán aquí incluso después de recargar.');
+    return;
+  }
+  list.innerHTML = entries.map(entry => {
+    const data = historyData(entry);
+    const url = historyUrl(entry);
+    const preview = data.mime === 'image/gif'
+      ? '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(historyName(entry)) + '">'
+      : '<video controls preload="metadata" src="' + escapeHtml(url) + '"></video>';
+    return '<article class="history-media-item">' + preview +
+      '<span class="history-media-name" title="' + escapeHtml(historyName(entry)) + '">' + escapeHtml(historyName(entry)) + ' · ' + escapeHtml(fmtSize(Number(data.size) || 0)) + '</span>' +
+      '<div class="history-item-actions">' +
+      '<button type="button" class="btn-xs dl-btn" data-history-download data-history-type="video" data-history-id="' + escapeHtml(entry.id) + '">Descargar</button>' +
+      '<button type="button" class="btn-xs history-delete-btn" data-history-delete data-history-id="' + escapeHtml(entry.id) + '">Eliminar</button>' +
+      '</div></article>';
+  }).join('');
+  wireHistoryButtons(list);
+}
+
+async function clearHistoryType(type) {
+  if (!mediaHistory) return;
+  const entries = historyEntries(type);
+  if (!entries.length) return;
+  try {
+    for (const entry of entries) await mediaHistory.delete(entry.id);
+    toast(entries.length === 1 ? 'Historial eliminado' : 'Historial eliminado: ' + entries.length + ' archivos');
+  } catch (error) {
+    toast(error.message || 'No se pudo limpiar el historial', 'error');
+  }
+}
+
+async function persistImageResult(result) {
+  if (!mediaHistory) throw new Error('El historial persistente no está disponible.');
+  return mediaHistory.save({
+    type: 'image',
+    data: { name: result.name, mime: result.blob.type, size: result.blob.size },
+    imageData: result.dataUrl
+  });
+}
+
+async function persistVideoResult(blob, name) {
+  if (!mediaHistory) throw new Error('El historial persistente no está disponible.');
+  return mediaHistory.save({
+    type: 'video',
+    data: { name, mime: blob.type, size: blob.size },
+    videoData: await fileToDataURL(blob)
+  });
+}
+
+async function initializeMediaHistory() {
+  if (!mediaHistory) {
+    const message = 'El historial persistente no está disponible.';
+    const imageGrid = $('#image-history-grid');
+    const videoList = $('#video-history-list');
+    if (imageGrid) imageGrid.innerHTML = historyPlaceholder(message);
+    if (videoList) videoList.innerHTML = historyPlaceholder(message);
+    return;
+  }
+  mediaHistory.onChange(() => {
+    renderImageHistory();
+    renderVideoHistory();
+  });
+  try {
+    await mediaHistory.load();
+  } catch (error) {
+    const message = error.message || 'No se pudo cargar el historial persistente.';
+    const imageGrid = $('#image-history-grid');
+    const videoList = $('#video-history-list');
+    if (imageGrid) imageGrid.innerHTML = historyPlaceholder(message);
+    if (videoList) videoList.innerHTML = historyPlaceholder(message);
+  }
+}
+
+$('#clear-image-history-btn').addEventListener('click', () => clearHistoryType('image'));
+$('#clear-video-history-btn').addEventListener('click', () => clearHistoryType('video'));
 
 /* ============================================================ */
 /*  MODE SWITCHING                                               */
@@ -426,6 +599,7 @@ $('#audio-input').addEventListener('change', () => { if ($('#audio-input').files
 let imgEntries = [];
 let currentIdx = -1;
 let selectedImageIndexes = new Set();
+let imageConversionActive = false;
 
 async function handleImageFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
@@ -445,12 +619,17 @@ function syncImageUI() {
   const all = $('#img-select-all');
   all.checked = total > 0 && count === total;
   all.indeterminate = count > 0 && count < total;
-  all.disabled = total === 0;
+  all.disabled = total === 0 || imageConversionActive;
   $('#img-selection-count').textContent = count + (count === 1 ? ' seleccionada' : ' seleccionadas');
   const remove = $('#delete-selected-img-btn');
-  remove.disabled = count === 0;
+  remove.disabled = count === 0 || imageConversionActive;
   remove.setAttribute('aria-disabled', String(remove.disabled));
   remove.textContent = count > 1 ? 'Eliminar ' + count + ' seleccionadas' : count === 1 ? 'Eliminar seleccionada' : 'Eliminar seleccionadas';
+  document.querySelectorAll('.img-select-check').forEach(check => { check.disabled = imageConversionActive; });
+  const convert = $('#convert-img-btn');
+  convert.disabled = count === 0 || imageConversionActive;
+  convert.setAttribute('aria-disabled', String(convert.disabled));
+  convert.textContent = imageConversionActive ? 'Convirtiendo…' : count > 1 ? 'Convertir ' + count + ' seleccionadas' : 'Convertir seleccionada';
 }
 
 function setCurrentImage(index) {
@@ -480,7 +659,7 @@ function renderUploadedGrid() {
   for (let i = 0; i < imgEntries.length; i++) {
     const selected = selectedImageIndexes.has(i);
     const active = i === currentIdx;
-    items.push('<div class="img-grid-item ' + (selected ? 'is-selected' : '') + '" data-idx="' + i + '" style="cursor:pointer' + (active ? ';border-color:#111;box-shadow:0 0 10px rgba(233,30,99,.5)' : '') + '"><input type="checkbox" class="img-select-check" data-idx="' + i + '" aria-label="Seleccionar ' + escapeHtml(imgEntries[i].file.name) + '" ' + (selected ? 'checked' : '') + '><img src="' + imgEntries[i].dataUrl + '" alt=""></div>');
+    items.push('<div class="img-grid-item ' + (selected ? 'is-selected' : '') + '" data-idx="' + i + '" style="cursor:pointer' + (active ? ';border-color:#111;box-shadow:0 0 10px rgba(233,30,99,.5)' : '') + '"><input type="checkbox" class="img-select-check" data-idx="' + i + '" aria-label="Seleccionar ' + escapeHtml(imgEntries[i].file.name) + '" ' + (selected ? 'checked' : '') + (imageConversionActive ? ' disabled' : '') + '><img src="' + imgEntries[i].dataUrl + '" alt=""></div>');
   }
   if (!items.length) items.push('<div class="img-grid-item"><span class="grid-placeholder">SIN IMÁGENES</span></div>');
   grid.innerHTML = items.join('');
@@ -507,59 +686,98 @@ $('#convert-img-quality').addEventListener('input', () => {
   $('#convert-quality-label').textContent = $('#convert-img-quality').value + '%';
 });
 
-$('#convert-img-btn').addEventListener('click', async () => {
-  if (currentIdx === -1) return toast('Selecciona una imagen primero','error');
-  const entry = imgEntries[currentIdx];
-  const mime = $('#convert-img-format').value;
-  const quality = parseInt($('#convert-img-quality').value) / 100;
+async function convertImageEntry(entry, mime, quality, token) {
   const ext = extFromMime(mime);
-
-  // Detectar formato actual de la imagen
   const imgExt = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
   const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
-  if (mimeByExt[imgExt] === mime) return toast('El formato es el mismo que tiene la imagen','error');
+  if (mimeByExt[imgExt] === mime) return { skipped: true };
 
-  // Cargar dimensiones originales
-  const img = new Image(); img.src = entry.dataUrl;
-  await new Promise(r => { img.onload = r; });
-  const w = img.naturalWidth, h = img.naturalHeight;
+  const img = new Image();
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+    img.src = entry.dataUrl;
+  });
+  procCanvas.width = img.naturalWidth;
+  procCanvas.height = img.naturalHeight;
+  procCtx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
 
-  procCanvas.width = w; procCanvas.height = h;
-  procCtx.drawImage(img, 0, 0, w, h);
-
-  let blob = await new Promise(r => procCanvas.toBlob(r, mime, quality));
+  let blob = await new Promise(resolve => procCanvas.toBlob(resolve, mime, quality));
   if (!blob || blob.type !== mime) {
-    if (!['image/bmp','image/gif'].includes(mime)) return toast('Formato no compatible en este navegador','error');
-    if (!await loadFFmpeg()) return;
+    if (!['image/bmp','image/gif'].includes(mime)) throw new Error('Formato no compatible');
+    if (!await loadFFmpeg()) throw new Error('Motor no disponible');
     const inputExt = (entry.file.name.match(/\.([^.]+)$/) || [,'png'])[1];
-    const inputName = 'image-input.' + inputExt;
-    const outputName = 'image-output.' + ext;
+    const inputName = 'image-input-' + token + '.' + inputExt;
+    const outputName = 'image-output-' + token + '.' + ext;
     try {
       await ffmpeg.writeFile(inputName, new Uint8Array(await entry.file.arrayBuffer()));
       await ffmpeg.exec(['-i', inputName, outputName]);
       const data = await ffmpeg.readFile(outputName);
       blob = new Blob([data.buffer], { type: mime });
-      await ffmpeg.deleteFile(inputName);
-      await ffmpeg.deleteFile(outputName);
-    } catch (_) {
-      return toast('No se pudo convertir a ' + ext.toUpperCase(),'error');
+    } finally {
+      try { await ffmpeg.deleteFile(inputName); } catch (_) {}
+      try { await ffmpeg.deleteFile(outputName); } catch (_) {}
     }
   }
-
   const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
-  addConvertResult(blob, name, await fileToDataURL(blob));
+  return { blob, name, dataUrl: await fileToDataURL(blob) };
+}
+
+$('#convert-img-btn').addEventListener('click', async () => {
+  const selected = [...selectedImageIndexes].filter(index => imgEntries[index]).sort((a, b) => a - b);
+  if (!selected.length) return toast('Selecciona al menos una imagen primero', 'error');
+  const mime = $('#convert-img-format').value;
+  const quality = parseInt($('#convert-img-quality').value, 10) / 100;
+  let converted = 0;
+  let skipped = 0;
+  let failures = 0;
+  let historyFailures = 0;
+  imageConversionActive = true;
+  syncImageUI();
+  try {
+    for (let position = 0; position < selected.length; position++) {
+      try {
+        const result = await convertImageEntry(imgEntries[selected[position]], mime, quality, Date.now() + '-' + position);
+        if (result.skipped) {
+          skipped++;
+          continue;
+        }
+        addConvertResult(result.blob, result.name, result.dataUrl, true);
+        try {
+          await persistImageResult(result);
+        } catch (_) {
+          historyFailures++;
+        }
+        converted++;
+      } catch (_) {
+        failures++;
+      }
+    }
+    if (converted) {
+      let message = converted === 1 ? '1 imagen convertida' : converted + ' imágenes convertidas';
+      if (skipped) message += ' · ' + skipped + ' ya tenían ese formato';
+      if (failures) message += ' · ' + failures + ' con error';
+      if (historyFailures) message += ' · ' + historyFailures + ' sin guardar en el historial';
+      toast(message, failures || historyFailures ? 'error' : 'success');
+    } else if (skipped) {
+      toast('Las imágenes seleccionadas ya tenían ese formato', 'error');
+    } else {
+      toast('No se pudo convertir ninguna imagen', 'error');
+    }
+  } finally {
+    imageConversionActive = false;
+    syncImageUI();
+  }
 });
 
-/* Add result to left grid */
+/* Add result */
 let convertResults = []; // {blob, name, dataUrl}
 
-function addConvertResult(blob, name, dataUrl) {
-  // Store result
+function addConvertResult(blob, name, dataUrl, silent = false) {
   const result = { blob, name, dataUrl };
   convertResults.unshift(result);
-  if (convertResults.length > 4) convertResults.length = 4;
   renderConvertGrid();
-  toast(`Generado: ${name} (${fmtSize(blob.size)})`);
+  if (!silent) toast('Generado: ' + name + ' (' + fmtSize(blob.size) + ')');
 }
 
 function renderConvertGrid() {
@@ -804,9 +1022,15 @@ $('#convert-video-btn').addEventListener('click', async () => {
     const blob = new Blob([data.buffer], {type: mimeMap[fmt]||'video/mp4'});
     const oname = videoFile.name.replace(/\.[^.]+$/,'')+'.'+fmt;
     downloadBlob(blob, oname);
+    let historyError = '';
+    try {
+      await persistVideoResult(blob, oname);
+    } catch (error) {
+      historyError = error.message || 'No se pudo guardar en el historial';
+    }
     await ffmpeg.deleteFile(inp); await ffmpeg.deleteFile(out);
-    $('#video-result').innerHTML = `<p style="font-size:12px;color:var(--green)">✓ ${escapeHtml(oname)} — ${fmtSize(blob.size)}</p>`;
-    toast(`Convertido: ${oname}`);
+    $('#video-result').innerHTML = '<p style="font-size:12px;color:var(--green)">✓ ' + escapeHtml(oname) + ' — ' + fmtSize(blob.size) + '</p>' + (historyError ? '<p style="font-size:12px;color:var(--red)">El vídeo se convirtió, pero no se pudo guardar en el historial: ' + escapeHtml(historyError) + '</p>' : '');
+    toast(historyError ? 'Vídeo convertido, pero sin historial' : 'Convertido: ' + oname, historyError ? 'error' : 'success');
   } catch(e) { toast('Error','error'); }
   videoConversionActive = false;
   syncVideoUI();
@@ -1036,6 +1260,7 @@ $('#convert-audio-btn').addEventListener('click', async () => {
 });
 
 /* Init */
+initializeMediaHistory();
 loadFFmpeg();
 </script>
 </body>
