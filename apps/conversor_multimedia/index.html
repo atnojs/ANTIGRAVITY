@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multimedia Converter Pro</title>
+<title>Conversor multimedia local</title>
+<meta name="description" content="Convierte imágenes, vídeos y audios directamente en tu navegador, sin subir tus archivos a ningún servidor.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>🔄</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -134,25 +135,39 @@ body{padding:16px;max-width:1100px;margin:0 auto}
 .badge.error{background:rgba(244,67,54,.1);color:#c62828}
 
 .section-divider{border:none;border-top:1px solid var(--border);margin:10px 0}
+
+/* Sistema visual Hoola/Relatos */
+@font-face{font-family:'Electrolize';src:url('./vendor/electrolize.ttf') format('truetype');font-display:swap}
+:root{--cyan:#00d0d0;--green:#26c626;--ink:#001018;--panel:rgba(23,79,122,.42);--border-cyan:rgba(0,208,208,.45);--text:#f4ffff;--text-dim:#b9d3dc;--bg:#001018;--card-bg:var(--panel);--pink:var(--cyan);--pink-light:rgba(0,208,208,.12);--pink-glow:rgba(0,208,208,.3);--radius:14px;--radius-sm:9px;--font:'Electrolize','Segoe UI',system-ui,sans-serif;--red:#ff6b6b}
+html,body{background:linear-gradient(180deg,#001018 0%,#062f43 60%,#0e5368 100%) fixed;color:var(--text)}
+body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50% -10%,rgba(0,208,208,.26),transparent 34%),radial-gradient(circle at 100% 55%,rgba(38,198,38,.16),transparent 35%),linear-gradient(rgba(0,208,208,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(0,208,208,.18) 1px,transparent 1px);background-size:auto,auto,46px 46px,46px 46px;background-attachment:fixed}
+.app-header{padding:12px 0 18px}.app-header h1{color:var(--cyan);font-family:var(--font);font-size:clamp(1.25rem,2.4vw,1.75rem);letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 14px rgba(0,208,208,.55)}.app-header p{color:var(--text-dim);font-size:.8rem;margin-top:6px}
+.top-btn,.card,.media-card{background:var(--panel);border-color:var(--border-cyan);box-shadow:inset 0 0 20px rgba(0,208,208,.08),0 0 16px rgba(0,208,208,.12);backdrop-filter:blur(12px)}
+.top-btn{color:var(--cyan)}.top-btn:hover,.top-btn:focus-visible{background:rgba(255,255,255,.08);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,208,208,.35)}.top-btn.active,.btn-primary,.format-bar .bar-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018;border-color:transparent}
+.card-title{color:var(--cyan)}.upload-zone,.format-bar{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.upload-zone-text,.info-bar .info-label,.progress-text{color:var(--text-dim)}.upload-zone-text strong,.info-bar .info-value{color:var(--cyan)}
+.format-bar select,.media-card select{background:rgba(0,16,24,.72)!important;color:var(--cyan)!important;border-color:var(--border-cyan)!important;font-family:var(--font)}
+.img-grid-item{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.quick-actions .btn-sm,.img-grid-actions .btn-xs.compress-btn{background:rgba(0,16,24,.58);border-color:var(--border-cyan);color:var(--cyan)}.img-grid-actions .btn-xs.dl-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018}.btn-primary:hover,.format-bar .bar-btn:hover{background:linear-gradient(135deg,#1cf2f2,#41e541);color:#001018}.toast{background:#062f43;color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(0,208,208,.35)}.progress-bar{background:rgba(255,255,255,.12)}.progress-bar-fill{background:linear-gradient(90deg,var(--cyan),var(--green))}.badge.loading{background:rgba(0,208,208,.12);color:var(--cyan)}.badge.ready{background:rgba(38,198,38,.13);color:#82f782}.badge.error{background:rgba(255,105,105,.15);color:#ffb6b6}
+button:focus-visible,select:focus-visible,input:focus-visible,.upload-zone:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
 
 <div class="app-header">
-  <h1>Multimedia Converter Pro</h1>
-  <p>Cambia formatos, reduce peso, redimensiona — todo en tu navegador</p>
+  <h1>Conversor multimedia</h1>
+  <p>Convierte y comprime tus archivos de forma privada · todo ocurre en tu navegador</p>
 </div>
 
+<main id="main-content">
 <!-- Top buttons -->
 <div class="top-buttons">
-  <button class="top-btn active" id="mode-images">SUBIR IMÁGENES</button>
-  <button class="top-btn" id="mode-video">SUBIR VÍDEOS</button>
-  <button class="top-btn" id="mode-audio">SUBIR AUDIOS</button>
+  <button type="button" class="top-btn active" id="mode-images" aria-controls="mode-images-pane" aria-selected="true">SUBIR IMÁGENES</button>
+  <button type="button" class="top-btn" id="mode-video" aria-controls="mode-video-pane" aria-selected="false">SUBIR VÍDEOS</button>
+  <button type="button" class="top-btn" id="mode-audio" aria-controls="mode-audio-pane" aria-selected="false">SUBIR AUDIOS</button>
 </div>
 
 <!-- Upload zone -->
 <div class="card" id="upload-card">
-  <div class="upload-zone" id="main-upload-zone">
+  <div class="upload-zone" id="main-upload-zone" role="button" tabindex="0" aria-label="Seleccionar archivos">
     <div class="upload-zone-icon">📁</div>
     <div class="upload-zone-text">Arrastra archivos aquí o <strong>haz clic</strong></div>
   </div>
@@ -170,15 +185,14 @@ body{padding:16px;max-width:1100px;margin:0 auto}
     <div class="card">
       <div class="card-title">Convertir formato</div>
       <div class="format-bar">
-        <select id="convert-img-format">
+        <select id="convert-img-format" aria-label="Formato de imagen de salida">
           <option value="image/webp" selected>Webp</option>
           <option value="image/png">PNG</option>
           <option value="image/jpeg">JPEG</option>
-          <option value="image/avif">AVIF</option>
           <option value="image/bmp">BMP</option>
           <option value="image/gif">GIF</option>
         </select>
-        <input type="range" id="convert-img-quality" min="10" max="100" value="90">
+        <input type="range" id="convert-img-quality" min="10" max="100" value="90" aria-label="Calidad de imagen">
         <span class="bar-pct" id="convert-quality-label">90%</span>
         <button class="bar-btn" id="convert-img-btn">Convertir</button>
       </div>
@@ -188,7 +202,7 @@ body{padding:16px;max-width:1100px;margin:0 auto}
     <!-- RIGHT: Imágenes Generadas -->
     <div class="card">
       <div class="card-title">Imágenes generadas</div>
-      <div class="img-grid" id="convert-results-grid"></div>
+      <div class="img-grid" id="convert-results-grid" aria-live="polite"></div>
       <div id="convert-results-actions" style="display:none"></div>
     </div>
   </div>
@@ -198,12 +212,12 @@ body{padding:16px;max-width:1100px;margin:0 auto}
 <div id="mode-video-pane" style="display:none">
   <div class="media-card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span id="ff-video-status" class="badge loading">⏳ FFmpeg…</span>
+      <span id="ff-video-status" class="badge loading" role="status" aria-live="polite">⏳ Preparando motor local…</span>
     </div>
     <div class="preview-area"><video id="video-preview" controls></video></div>
     <div class="controls-row">
       <label style="font-size:12px;color:var(--text-dim);font-weight:600">Convertir a:</label>
-      <select id="convert-video-format" style="border:1px solid var(--pink);border-radius:var(--radius-sm);padding:5px 10px">
+      <select id="convert-video-format" aria-label="Formato de vídeo de salida" style="border:1px solid var(--pink);border-radius:var(--radius-sm);padding:5px 10px">
         <option value="mp4">MP4</option><option value="webm">WebM</option>
         <option value="avi">AVI</option><option value="mov">MOV</option><option value="gif">GIF</option>
       </select>
@@ -213,7 +227,7 @@ body{padding:16px;max-width:1100px;margin:0 auto}
       <div class="progress-bar"><div class="progress-bar-fill" id="video-progress-fill"></div></div>
       <div class="progress-text" id="video-progress-text">0%</div>
     </div>
-    <div id="video-result" style="margin-top:8px"></div>
+    <div id="video-result" style="margin-top:8px" aria-live="polite"></div>
   </div>
 </div>
 
@@ -221,19 +235,19 @@ body{padding:16px;max-width:1100px;margin:0 auto}
 <div id="mode-audio-pane" style="display:none">
   <div class="media-card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span id="ff-audio-status" class="badge loading">⏳ FFmpeg…</span>
+      <span id="ff-audio-status" class="badge loading" role="status" aria-live="polite">⏳ Preparando motor local…</span>
     </div>
     <div style="margin-bottom:8px"><span style="font-size:13px;color:var(--text-dim)" id="audio-file-info">Sin archivos</span></div>
     <!-- Lista de audios subidos -->
     <div id="audio-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
     <div class="controls-row">
       <label style="font-size:12px;color:var(--text-dim);font-weight:600">A:</label>
-      <select id="convert-audio-format" style="border:1px solid var(--pink);border-radius:var(--radius-sm);padding:5px 10px">
+      <select id="convert-audio-format" aria-label="Formato de audio de salida" style="border:1px solid var(--pink);border-radius:var(--radius-sm);padding:5px 10px">
         <option value="mp3">MP3</option><option value="wav">WAV</option>
         <option value="ogg">OGG</option><option value="m4a">M4A</option><option value="flac">FLAC</option>
       </select>
       <label style="font-size:12px;color:var(--text-dim);font-weight:600;margin-left:4px">Calidad:</label>
-      <select id="convert-audio-quality" style="border:1px solid var(--pink);border-radius:var(--radius-sm);padding:5px 10px">
+      <select id="convert-audio-quality" aria-label="Calidad de audio" style="border:1px solid var(--pink);border-radius:var(--radius-sm);padding:5px 10px">
         <option value="128k">128k</option><option value="192k" selected>192k</option>
         <option value="256k">256k</option><option value="320k">320k</option>
       </select>
@@ -243,18 +257,19 @@ body{padding:16px;max-width:1100px;margin:0 auto}
       <div class="progress-bar"><div class="progress-bar-fill" id="audio-progress-fill"></div></div>
       <div class="progress-text" id="audio-progress-text">0%</div>
     </div>
-    <div id="audio-result" style="margin-top:8px"></div>
+    <div id="audio-result" style="margin-top:8px" aria-live="polite"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+</main>
 
-<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
+const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
 function toast(msg, type='success') {
   const t = $('#toast'); t.textContent = msg; t.className = 'toast show '+type;
@@ -294,8 +309,9 @@ const modes = ['images','video','audio'];
 
 $$('.top-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    $$('.top-btn').forEach(b => b.classList.remove('active'));
+    $$('.top-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
     btn.classList.add('active');
+    btn.setAttribute('aria-selected','true');
     const mode = btn.id.replace('mode-','');
     currentMode = mode;
     modes.forEach(m => {
@@ -319,29 +335,35 @@ $$('.top-btn').forEach(btn => {
 /* ============================================================ */
 /*  FFMPEG                                                       */
 /* ============================================================ */
-let ffmpeg = null, ffLoaded = false;
+let ffmpeg = null, ffLoaded = false, ffLoadingPromise = null;
 
 async function loadFFmpeg() {
   if (ffLoaded) return true;
-  setFFStatus('loading','⏳ FFmpeg…');
-  try {
-    const mod = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
-    const { FFmpeg } = mod;
-    const { toBlobURL } = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
-    ffmpeg = new FFmpeg();
-    await ffmpeg.load({
-      coreURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js','text/javascript'),
-      wasmURL: await toBlobURL('https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm','application/wasm'),
-    });
-    ffLoaded = true; setFFStatus('ready','✓ FFmpeg listo');
-    $('#convert-video-btn').disabled = false;
-    $('#convert-audio-btn').disabled = false;
-    return true;
-  } catch(e) {
-    console.warn('FFmpeg:', e.message);
-    setFFStatus('error','✗ Solo local');
-    return false;
-  }
+  if (ffLoadingPromise) return ffLoadingPromise;
+  setFFStatus('loading','⏳ Preparando motor local…');
+  ffLoadingPromise = (async () => {
+    try {
+      const { FFmpeg } = await import('./vendor/ffmpeg/index.js');
+      ffmpeg = new FFmpeg();
+      await ffmpeg.load({
+        coreURL: new URL('./vendor/ffmpeg-core.js', location.href).href,
+        wasmURL: new URL('./vendor/ffmpeg-core.wasm', location.href).href,
+      });
+      ffLoaded = true;
+      setFFStatus('ready','✓ Motor listo · proceso privado');
+      $('#convert-video-btn').disabled = !videoFile;
+      $('#convert-audio-btn').disabled = currentAudioIdx === -1;
+      return true;
+    } catch (_) {
+      ffmpeg = null;
+      setFFStatus('error','✕ No se pudo cargar el motor');
+      toast('No se pudo iniciar el conversor multimedia. Recarga para reintentar.','error');
+      return false;
+    } finally {
+      ffLoadingPromise = null;
+    }
+  })();
+  return ffLoadingPromise;
 }
 function setFFStatus(type, text) {
   ['video','audio'].forEach(t => {
@@ -357,6 +379,9 @@ mainZone.addEventListener('click', () => {
   if (currentMode === 'images') $('#img-input').click();
   else if (currentMode === 'video') $('#video-input').click();
   else $('#audio-input').click();
+});
+mainZone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mainZone.click(); }
 });
 mainZone.addEventListener('dragover', e => { e.preventDefault(); mainZone.classList.add('dragover'); });
 mainZone.addEventListener('dragleave', () => mainZone.classList.remove('dragover'));
@@ -445,11 +470,27 @@ $('#convert-img-btn').addEventListener('click', async () => {
   procCanvas.width = w; procCanvas.height = h;
   procCtx.drawImage(img, 0, 0, w, h);
 
-  const blob = await new Promise(r => procCanvas.toBlob(r, mime, quality));
-  if (!blob) return toast('Error al convertir','error');
+  let blob = await new Promise(r => procCanvas.toBlob(r, mime, quality));
+  if (!blob || blob.type !== mime) {
+    if (!['image/bmp','image/gif'].includes(mime)) return toast('Formato no compatible en este navegador','error');
+    if (!await loadFFmpeg()) return;
+    const inputExt = (entry.file.name.match(/\.([^.]+)$/) || [,'png'])[1];
+    const inputName = 'image-input.' + inputExt;
+    const outputName = 'image-output.' + ext;
+    try {
+      await ffmpeg.writeFile(inputName, new Uint8Array(await entry.file.arrayBuffer()));
+      await ffmpeg.exec(['-i', inputName, outputName]);
+      const data = await ffmpeg.readFile(outputName);
+      blob = new Blob([data.buffer], { type: mime });
+      await ffmpeg.deleteFile(inputName);
+      await ffmpeg.deleteFile(outputName);
+    } catch (_) {
+      return toast('No se pudo convertir a ' + ext.toUpperCase(),'error');
+    }
+  }
 
   const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
-  addConvertResult(blob, name, procCanvas.toDataURL(mime, quality));
+  addConvertResult(blob, name, await fileToDataURL(blob));
 });
 
 /* Add result to left grid */
@@ -510,7 +551,7 @@ function renderConvertGrid() {
       try {
         // Detect format
         const origExt = (r.name.match(/\.[^.]+$/i) || ['.jpg'])[0].toLowerCase().replace('.','');
-        const fmtMap = {jpg:['image/jpeg','jpg'],jpeg:['image/jpeg','jpg'],webp:['image/webp','webp'],avif:['image/avif','avif'],png:['image/png','png'],bmp:['image/bmp','bmp'],gif:['image/gif','gif']};
+        const fmtMap = {jpg:['image/jpeg','jpg'],jpeg:['image/jpeg','jpg'],webp:['image/webp','webp'],avif:['image/webp','webp'],png:['image/png','png'],bmp:['image/webp','webp'],gif:['image/webp','webp']};
         const [compressMime, outExt] = fmtMap[origExt] || ['image/png','png'];
 
         const img = new Image();
@@ -567,7 +608,7 @@ function renderConvertGrid() {
         renderConvertGrid();
         toast(`Comprimido: ${newName} (${fmtSize(best.size)})`);
       } catch(e) {
-        console.error(e); toast('Error al comprimir','error');
+        toast('Error al comprimir','error');
         compressBtn.textContent = '60KB'; compressBtn.disabled = false;
       }
     });
@@ -593,30 +634,31 @@ $('#convert-video-btn').addEventListener('click', async () => {
     fl = $('#video-progress-fill'), tx = $('#video-progress-text');
   btn.disabled = true; btn.textContent = 'Convirtiendo…';
   pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
-  ffmpeg.on('progress', ({progress:p}) => {
+  const progressHandler = ({progress:p}) => {
     const pc = Math.min(Math.round(p*100),99);
     fl.style.width = pc+'%'; tx.textContent = pc+'%';
-  });
+  };
+  ffmpeg.on('progress', progressHandler);
   try {
     const ext = (videoFile.name.match(/\.[^.]+$/) || ['.mp4'])[0];
     const inp = 'input'+ext, out = 'output.'+fmt;
-    ffmpeg.writeFile(inp, new Uint8Array(await videoFile.arrayBuffer()));
+    await ffmpeg.writeFile(inp, new Uint8Array(await videoFile.arrayBuffer()));
     const args = ['-i', inp];
     if (fmt === 'gif') args.push('-vf','fps=10,scale=480:-1:flags=lanczos','-loop','0');
     args.push(out);
     await ffmpeg.exec(args);
     fl.style.width = '100%'; tx.textContent = '100%';
-    const data = ffmpeg.readFile(out);
+    const data = await ffmpeg.readFile(out);
     const mimeMap = {mp4:'video/mp4',webm:'video/webm',avi:'video/x-msvideo',mov:'video/quicktime',gif:'image/gif'};
     const blob = new Blob([data.buffer], {type: mimeMap[fmt]||'video/mp4'});
     const oname = videoFile.name.replace(/\.[^.]+$/,'')+'.'+fmt;
     downloadBlob(blob, oname);
-    ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
-    $('#video-result').innerHTML = `<p style="font-size:12px;color:var(--green)">✓ ${oname} — ${fmtSize(blob.size)}</p>`;
+    await ffmpeg.deleteFile(inp); await ffmpeg.deleteFile(out);
+    $('#video-result').innerHTML = `<p style="font-size:12px;color:var(--green)">✓ ${escapeHtml(oname)} — ${fmtSize(blob.size)}</p>`;
     toast(`Convertido: ${oname}`);
-  } catch(e) { console.error(e); toast('Error','error'); }
+  } catch(e) { toast('Error','error'); }
   btn.disabled = false; btn.textContent = 'Convertir';
-  ffmpeg.off('progress');
+  ffmpeg.off('progress', progressHandler);
 });
 
 /* ============================================================ */
@@ -655,9 +697,9 @@ function renderAudioList() {
     const sel = i === currentAudioIdx;
     html += `
       <div class="audio-row" data-aidx="${i}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;${sel ? 'border:2px solid var(--pink);font-weight:600' : 'border:1px solid var(--border)'}">
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${f.name}</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${escapeHtml(f.name)}</span>
         <span style="color:var(--text-dim);font-family:var(--mono);white-space:nowrap">${fmtSize(f.size)}</span>
-        <button class="audio-del-btn" data-aidx="${i}" style="background:var(--red);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1">✕</button>
+        <button class="audio-del-btn" data-aidx="${i}" aria-label="Eliminar ${escapeHtml(f.name)}" style="background:var(--red);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1">✕</button>
       </div>`;
   }
   list.innerHTML = html;
@@ -701,39 +743,41 @@ $('#convert-audio-btn').addEventListener('click', async () => {
   btn.disabled = true; btn.textContent = 'Convirtiendo…';
   pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
 
-  ffmpeg.on('progress', function onProg({ progress: p }) {
+  const progressHandler = ({ progress: p }) => {
     const pc = Math.min(99, Math.round(p * 100));
     fl.style.width = pc + '%'; tx.textContent = pc + '%';
-  });
+  };
+  ffmpeg.on('progress', progressHandler);
 
   try {
     const ext = (file.name.match(/\.[^.]+$/) || ['.mp3'])[0];
     const inp = 'input' + ext;
     const out = 'output.' + fmt;
     const buf = await file.arrayBuffer();
-    ffmpeg.writeFile(inp, new Uint8Array(buf));
-    await ffmpeg.exec(['-i', inp, '-b:a', qual, out]);
+    await ffmpeg.writeFile(inp, new Uint8Array(buf));
+    const audioArgs = ['-i', inp];
+    if (!['wav','flac'].includes(fmt)) audioArgs.push('-b:a', qual);
+    audioArgs.push(out);
+    await ffmpeg.exec(audioArgs);
     fl.style.width = '100%'; tx.textContent = '100%';
-    const data = ffmpeg.readFile(out);
+    const data = await ffmpeg.readFile(out);
     const mimeMap = { mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4', flac: 'audio/flac' };
     const blob = new Blob([data.buffer], { type: mimeMap[fmt] || 'audio/mpeg' });
     const oname = file.name.replace(/\.[^.]+$/, '') + '.' + fmt;
     downloadBlob(blob, oname);
-    ffmpeg.deleteFile(inp); ffmpeg.deleteFile(out);
-    $('#audio-result').innerHTML = '<p style="font-size:12px;color:var(--green)">✓ ' + oname + ' — ' + fmtSize(blob.size) + ' (' + qual + ')</p>';
+    await ffmpeg.deleteFile(inp); await ffmpeg.deleteFile(out);
+    $('#audio-result').innerHTML = '<p style="font-size:12px;color:var(--green)">✓ ' + escapeHtml(oname) + ' — ' + fmtSize(blob.size) + ' (' + qual + ')</p>';
     toast('Convertido: ' + oname);
   } catch (e) {
-    console.error(e);
     toast('Error al convertir','error');
   }
   btn.disabled = false;
   btn.textContent = 'Convertir';
-  try { ffmpeg.off('progress'); } catch (_) {}
+  try { ffmpeg.off('progress', progressHandler); } catch (_) {}
 });
 
 /* Init */
 loadFFmpeg();
-console.log('✦ Multimedia Converter Pro ready');
 </script>
 </body>
 </html>
