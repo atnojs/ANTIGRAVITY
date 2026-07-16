@@ -212,6 +212,13 @@ body{max-width:1250px;margin:0 auto;padding:16px;background:transparent}
         <button class="res-btn" data-res="512" role="radio" aria-checked="false">512px</button>
         <button class="res-btn" data-res="60" role="radio" aria-checked="false">60px</button>
       </div>
+      <div class="res-bar" role="radiogroup" aria-label="Peso máximo de salida">
+        <button class="res-btn" data-kb="500" role="radio" aria-checked="false">500 KB</button>
+        <button class="res-btn" data-kb="200" role="radio" aria-checked="false">200 KB</button>
+        <button class="res-btn" data-kb="100" role="radio" aria-checked="false">100 KB</button>
+        <button class="res-btn" data-kb="50" role="radio" aria-checked="false">50 KB</button>
+        <button class="res-btn" data-kb="10" role="radio" aria-checked="false">10 KB</button>
+      </div>
       <div class="batch-toolbar media-selection-toolbar">
         <label class="batch-select-all"><input type="checkbox" id="img-select-all" disabled> <span>Seleccionar todo</span></label>
         <div class="batch-actions">
@@ -615,6 +622,7 @@ let currentIdx = -1;
 let selectedImageIndexes = new Set();
 let imageConversionActive = false;
 let imageResizeWidth = 0; // 0 = original, or target width (4096, 2048, 1024, 512, 60)
+let imageTargetKB = 0; // 0 = sin límite, or target KB (500, 200, 100, 50, 10)
 
 async function handleImageFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
@@ -701,11 +709,11 @@ $('#convert-img-quality').addEventListener('input', () => {
   $('#convert-quality-label').textContent = $('#convert-img-quality').value + '%';
 });
 
-async function convertImageEntry(entry, mime, quality, resizeWidth, token) {
+async function convertImageEntry(entry, mime, quality, resizeWidth, targetKB, token) {
   const ext = extFromMime(mime);
   const imgExt = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
   const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
-  if (mimeByExt[imgExt] === mime && !resizeWidth) return { skipped: true };
+  if (mimeByExt[imgExt] === mime && !resizeWidth && !targetKB) return { skipped: true };
 
   const img = new Image();
   await new Promise((resolve, reject) => {
@@ -748,7 +756,28 @@ async function convertImageEntry(entry, mime, quality, resizeWidth, token) {
       try { await ffmpeg.deleteFile(outputName); } catch (_) {}
     }
   }
-  const name = entry.file.name.replace(/\.[^.]+$/, '') + '.' + ext;
+
+  // Binary search for target KB (only for canvas-toBlob path, not FFmpeg)
+  if (targetKB > 0 && blob && blob.type === mime && !['image/bmp','image/gif'].includes(mime)) {
+    const maxBytes = targetKB * 1024;
+    if (blob.size > maxBytes) {
+      let lo = 0.01, hi = quality, bestBlob = null;
+      for (let iter = 0; iter < 12; iter++) {
+        const mid = (lo + hi) / 2;
+        const testBlob = await new Promise(resolve => procCanvas.toBlob(resolve, mime, mid));
+        if (testBlob && testBlob.size <= maxBytes) {
+          bestBlob = testBlob;
+          lo = mid; // try higher quality
+        } else {
+          hi = mid; // too big, lower quality
+        }
+        if (hi - lo < 0.005) break;
+      }
+      if (bestBlob) blob = bestBlob;
+    }
+  }
+
+  const name = entry.file.name.replace(/\.([^.]+)$/, '') + '.' + ext;
   return { blob, name, dataUrl: await fileToDataURL(blob) };
 }
 
@@ -766,7 +795,7 @@ $('#convert-img-btn').addEventListener('click', async () => {
   try {
     for (let position = 0; position < selected.length; position++) {
       try {
-        const result = await convertImageEntry(imgEntries[selected[position]], mime, quality, imageResizeWidth, Date.now() + '-' + position);
+        const result = await convertImageEntry(imgEntries[selected[position]], mime, quality, imageResizeWidth, imageTargetKB, Date.now() + '-' + position);
         if (result.skipped) {
           skipped++;
           continue;
@@ -800,10 +829,10 @@ $('#convert-img-btn').addEventListener('click', async () => {
 });
 
 /* Resolution buttons */
-document.querySelectorAll('.res-btn').forEach(btn => {
+document.querySelectorAll('.res-btn[data-res]').forEach(btn => {
   btn.addEventListener('click', () => {
     const wasActive = btn.classList.contains('active');
-    document.querySelectorAll('.res-btn').forEach(b => {
+    document.querySelectorAll('.res-btn[data-res]').forEach(b => {
       b.classList.remove('active');
       b.setAttribute('aria-checked', 'false');
     });
@@ -813,6 +842,24 @@ document.querySelectorAll('.res-btn').forEach(btn => {
       btn.classList.add('active');
       btn.setAttribute('aria-checked', 'true');
       imageResizeWidth = parseInt(btn.dataset.res, 10);
+    }
+  });
+});
+
+/* KB target buttons */
+document.querySelectorAll('.res-btn[data-kb]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const wasActive = btn.classList.contains('active');
+    document.querySelectorAll('.res-btn[data-kb]').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-checked', 'false');
+    });
+    if (wasActive) {
+      imageTargetKB = 0;
+    } else {
+      btn.classList.add('active');
+      btn.setAttribute('aria-checked', 'true');
+      imageTargetKB = parseInt(btn.dataset.kb, 10);
     }
   });
 });
