@@ -147,7 +147,7 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
 .card-title{color:var(--cyan)}.upload-zone,.format-bar{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.upload-zone-text,.info-bar .info-label,.progress-text{color:var(--text-dim)}.upload-zone-text strong,.info-bar .info-value{color:var(--cyan)}
 .format-bar select,.media-card select{background:rgba(0,16,24,.72)!important;color:var(--cyan)!important;border-color:var(--border-cyan)!important;font-family:var(--font)}
 .img-grid-item{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.quick-actions .btn-sm,.img-grid-actions .btn-xs.compress-btn{background:rgba(0,16,24,.58);border-color:var(--border-cyan);color:var(--cyan)}.img-grid-actions .btn-xs.dl-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018}.btn-primary:hover,.format-bar .bar-btn:hover{background:linear-gradient(135deg,#1cf2f2,#41e541);color:#001018}.toast{background:#062f43;color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(0,208,208,.35)}.progress-bar{background:rgba(255,255,255,.12)}.progress-bar-fill{background:linear-gradient(90deg,var(--cyan),var(--green))}.badge.loading{background:rgba(0,208,208,.12);color:var(--cyan)}.badge.ready{background:rgba(38,198,38,.13);color:#82f782}.badge.error{background:rgba(255,105,105,.15);color:#ffb6b6}
-button:focus-visible,select:focus-visible,input:focus-visible,.upload-zone:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.batch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 10px;padding:9px 11px;border:1px solid var(--border-cyan);border-radius:var(--radius-sm);background:rgba(0,16,24,.5)}.batch-select-all{display:flex;align-items:center;gap:7px;color:var(--cyan);font-weight:700;cursor:pointer}.batch-select-all input,.audio-check{width:18px;height:18px;accent-color:var(--green);cursor:pointer}.audio-row.is-checked{background:rgba(0,208,208,.1)!important}.audio-check{flex:0 0 auto}#audio-selection-count{color:var(--text-dim);font-size:12px}button:focus-visible,select:focus-visible,input:focus-visible,.upload-zone:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -238,6 +238,10 @@ button:focus-visible,select:focus-visible,input:focus-visible,.upload-zone:focus
       <span id="ff-audio-status" class="badge loading" role="status" aria-live="polite">⏳ Preparando motor local…</span>
     </div>
     <div style="margin-bottom:8px"><span style="font-size:13px;color:var(--text-dim)" id="audio-file-info">Sin archivos</span></div>
+    <div class="batch-toolbar">
+      <label class="batch-select-all"><input type="checkbox" id="audio-select-all"> <span>Seleccionar todo</span></label>
+      <span id="audio-selection-count" aria-live="polite">0 seleccionados</span>
+    </div>
     <!-- Lista de audios subidos -->
     <div id="audio-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
     <div class="controls-row">
@@ -352,7 +356,7 @@ async function loadFFmpeg() {
       ffLoaded = true;
       setFFStatus('ready','✓ Motor listo · proceso privado');
       $('#convert-video-btn').disabled = !videoFile;
-      $('#convert-audio-btn').disabled = currentAudioIdx === -1;
+      syncAudioUI();
       return true;
     } catch (_) {
       ffmpeg = null;
@@ -666,114 +670,166 @@ $('#convert-video-btn').addEventListener('click', async () => {
 /* ============================================================ */
 let audioEntries = [];
 let currentAudioIdx = -1;
+let selectedAudioIndexes = new Set();
+let audioConversionActive = false;
+
+function syncAudioUI() {
+  const total = audioEntries.length;
+  const count = [...selectedAudioIndexes].filter(i => audioEntries[i]).length;
+  const all = $('#audio-select-all');
+  if (all) {
+    all.checked = total > 0 && count === total;
+    all.indeterminate = count > 0 && count < total;
+    all.disabled = total === 0 || audioConversionActive;
+  }
+  const counter = $('#audio-selection-count');
+  if (counter) counter.textContent = count + (count === 1 ? ' seleccionado' : ' seleccionados');
+  const btn = $('#convert-audio-btn');
+  btn.disabled = !ffLoaded || count === 0 || audioConversionActive;
+  btn.setAttribute('aria-disabled', String(btn.disabled));
+  btn.textContent = audioConversionActive ? 'Convirtiendo lote…' : count > 1 ? 'Convertir ' + count + ' seleccionados' : 'Convertir seleccionado';
+}
 
 function handleAudioFiles(fileList) {
-  const files = [];
-  for (let i = 0; i < fileList.length; i++) {
-    const f = fileList[i];
-    if (f.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac|aac|wma)$/i.test(f.name)) {
-      files.push(f);
-    }
-  }
+  const files = Array.from(fileList).filter(f => f.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac|aac|wma)$/i.test(f.name));
   if (!files.length) return toast('No hay audios válidos','error');
-  audioEntries = audioEntries.concat(files);
+  const offset = audioEntries.length;
+  audioEntries.push(...files);
+  files.forEach((_, i) => selectedAudioIndexes.add(offset + i));
   if (currentAudioIdx === -1) currentAudioIdx = 0;
-  if (ffLoaded) $('#convert-audio-btn').disabled = false;
   renderAudioList();
-  $('#audio-file-info').textContent = audioEntries.length + ' archivo(s)';
 }
 
 function renderAudioList() {
   const list = $('#audio-list');
-  if (!list) return;
+  $('#audio-file-info').textContent = audioEntries.length ? audioEntries.length + ' archivo(s)' : 'Sin archivos';
   if (!audioEntries.length) {
     list.innerHTML = '<span style="color:var(--text-dim);font-size:12px">Sin archivos</span>';
+    syncAudioUI();
     return;
   }
+  list.innerHTML = audioEntries.map((f, i) => {
+    const checked = selectedAudioIndexes.has(i);
+    const focused = i === currentAudioIdx;
+    return `<div class="audio-row ${checked ? 'is-checked' : ''}" data-aidx="${i}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;${focused ? 'border:2px solid var(--pink);font-weight:600' : 'border:1px solid var(--border)'}">
+      <input type="checkbox" class="audio-check" data-aidx="${i}" aria-label="Seleccionar ${escapeHtml(f.name)}" ${checked ? 'checked' : ''}>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${escapeHtml(f.name)}</span>
+      <span style="color:var(--text-dim);font-family:var(--mono);white-space:nowrap">${fmtSize(f.size)}</span>
+      <button type="button" class="audio-del-btn" data-aidx="${i}" aria-label="Eliminar ${escapeHtml(f.name)}" style="background:var(--red);color:#001018;border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1">✕</button>
+    </div>`;
+  }).join('');
 
-  let html = '';
-  for (let i = 0; i < audioEntries.length; i++) {
-    const f = audioEntries[i];
-    const sel = i === currentAudioIdx;
-    html += `
-      <div class="audio-row" data-aidx="${i}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;${sel ? 'border:2px solid var(--pink);font-weight:600' : 'border:1px solid var(--border)'}">
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎵 ${escapeHtml(f.name)}</span>
-        <span style="color:var(--text-dim);font-family:var(--mono);white-space:nowrap">${fmtSize(f.size)}</span>
-        <button class="audio-del-btn" data-aidx="${i}" aria-label="Eliminar ${escapeHtml(f.name)}" style="background:var(--red);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1">✕</button>
-      </div>`;
+  list.querySelectorAll('.audio-row').forEach(row => row.addEventListener('click', e => {
+    if (e.target.closest('.audio-check,.audio-del-btn')) return;
+    currentAudioIdx = Number(row.dataset.aidx);
+    renderAudioList();
+  }));
+  list.querySelectorAll('.audio-check').forEach(check => check.addEventListener('change', e => {
+    e.stopPropagation();
+    const idx = Number(check.dataset.aidx);
+    if (check.checked) selectedAudioIndexes.add(idx); else selectedAudioIndexes.delete(idx);
+    currentAudioIdx = idx;
+    renderAudioList();
+  }));
+  list.querySelectorAll('.audio-del-btn').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const idx = Number(btn.dataset.aidx);
+    audioEntries.splice(idx, 1);
+    const remapped = new Set();
+    selectedAudioIndexes.forEach(value => { if (value < idx) remapped.add(value); else if (value > idx) remapped.add(value - 1); });
+    selectedAudioIndexes = remapped;
+    if (!audioEntries.length) currentAudioIdx = -1;
+    else if (currentAudioIdx >= audioEntries.length) currentAudioIdx = audioEntries.length - 1;
+    else if (currentAudioIdx > idx) currentAudioIdx--;
+    renderAudioList();
+  }));
+  syncAudioUI();
+}
+
+$('#audio-select-all').addEventListener('change', e => {
+  selectedAudioIndexes = e.target.checked ? new Set(audioEntries.map((_, i) => i)) : new Set();
+  renderAudioList();
+});
+
+function uniqueAudioName(file, fmt, used) {
+  const base = file.name.replace(/\.[^.]+$/, '') || 'audio';
+  let name = base + '.' + fmt;
+  let suffix = 2;
+  while (used.has(name.toLowerCase())) name = base + '-' + suffix++ + '.' + fmt;
+  used.add(name.toLowerCase());
+  return name;
+}
+
+async function convertAudioFile(file, fmt, qual, token) {
+  const ext = (file.name.match(/\.[^.]+$/) || ['.audio'])[0].toLowerCase();
+  const input = 'audio-input-' + token + ext;
+  const output = 'audio-output-' + token + '.' + fmt;
+  try {
+    await ffmpeg.writeFile(input, new Uint8Array(await file.arrayBuffer()));
+    const args = ['-i', input];
+    if (!['wav','flac'].includes(fmt)) args.push('-b:a', qual);
+    args.push(output);
+    await ffmpeg.exec(args);
+    const data = await ffmpeg.readFile(output);
+    return new Uint8Array(data);
+  } finally {
+    try { await ffmpeg.deleteFile(input); } catch (_) {}
+    try { await ffmpeg.deleteFile(output); } catch (_) {}
   }
-  list.innerHTML = html;
-
-  // Click en fila → seleccionar
-  list.querySelectorAll('.audio-row').forEach(row => {
-    row.addEventListener('click', e => {
-      if (e.target.classList.contains('audio-del-btn')) return; // no seleccionar si clic en ✕
-      currentAudioIdx = parseInt(row.dataset.aidx);
-      if (ffLoaded) $('#convert-audio-btn').disabled = false;
-      renderAudioList();
-    });
-  });
-
-  // Botón eliminar
-  list.querySelectorAll('.audio-del-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const idx = parseInt(btn.dataset.aidx);
-      audioEntries.splice(idx, 1);
-      if (!audioEntries.length) { currentAudioIdx = -1; $('#convert-audio-btn').disabled = true; }
-      else if (currentAudioIdx >= audioEntries.length) currentAudioIdx = audioEntries.length - 1;
-      else if (currentAudioIdx > idx) currentAudioIdx--;
-      $('#audio-file-info').textContent = audioEntries.length ? audioEntries.length + ' archivo(s)' : 'Sin archivos';
-      renderAudioList();
-    });
-  });
 }
 
 $('#convert-audio-btn').addEventListener('click', async () => {
-  if (currentAudioIdx === -1 || !audioEntries[currentAudioIdx]) return toast('Selecciona un audio','error');
-  if (!ffmpeg || !ffLoaded) return toast('FFmpeg no disponible. Prueba desde localhost.','error');
-  const file = audioEntries[currentAudioIdx];
+  const selected = [...selectedAudioIndexes].filter(i => audioEntries[i]).sort((a,b) => a-b);
+  if (!selected.length) return toast('Selecciona al menos un audio','error');
+  if (!ffmpeg || !ffLoaded) return toast('El motor multimedia aún no está listo','error');
   const fmt = $('#convert-audio-format').value;
   const qual = $('#convert-audio-quality').value;
-  const btn = $('#convert-audio-btn');
-  const pg = $('#audio-progress');
-  const fl = $('#audio-progress-fill');
-  const tx = $('#audio-progress-text');
-
-  btn.disabled = true; btn.textContent = 'Convirtiendo…';
-  pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
-
-  const progressHandler = ({ progress: p }) => {
-    const pc = Math.min(99, Math.round(p * 100));
-    fl.style.width = pc + '%'; tx.textContent = pc + '%';
+  const pg = $('#audio-progress'), fl = $('#audio-progress-fill'), tx = $('#audio-progress-text');
+  const files = {}, usedNames = new Set(), failures = [];
+  let position = 0;
+  audioConversionActive = true;
+  syncAudioUI();
+  pg.style.display = '';
+  fl.style.width = '0%';
+  const progressHandler = ({progress}) => {
+    const overall = Math.min(99, Math.round(((position + Math.max(0, progress)) / selected.length) * 100));
+    fl.style.width = overall + '%';
   };
   ffmpeg.on('progress', progressHandler);
-
   try {
-    const ext = (file.name.match(/\.[^.]+$/) || ['.mp3'])[0];
-    const inp = 'input' + ext;
-    const out = 'output.' + fmt;
-    const buf = await file.arrayBuffer();
-    await ffmpeg.writeFile(inp, new Uint8Array(buf));
-    const audioArgs = ['-i', inp];
-    if (!['wav','flac'].includes(fmt)) audioArgs.push('-b:a', qual);
-    audioArgs.push(out);
-    await ffmpeg.exec(audioArgs);
-    fl.style.width = '100%'; tx.textContent = '100%';
-    const data = await ffmpeg.readFile(out);
-    const mimeMap = { mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4', flac: 'audio/flac' };
-    const blob = new Blob([data.buffer], { type: mimeMap[fmt] || 'audio/mpeg' });
-    const oname = file.name.replace(/\.[^.]+$/, '') + '.' + fmt;
-    downloadBlob(blob, oname);
-    await ffmpeg.deleteFile(inp); await ffmpeg.deleteFile(out);
-    $('#audio-result').innerHTML = '<p style="font-size:12px;color:var(--green)">✓ ' + escapeHtml(oname) + ' — ' + fmtSize(blob.size) + ' (' + qual + ')</p>';
-    toast('Convertido: ' + oname);
-  } catch (e) {
-    toast('Error al convertir','error');
+    for (position = 0; position < selected.length; position++) {
+      const file = audioEntries[selected[position]];
+      tx.textContent = 'Convirtiendo ' + (position + 1) + ' de ' + selected.length + ': ' + file.name;
+      try {
+        const data = await convertAudioFile(file, fmt, qual, Date.now() + '-' + position);
+        files[uniqueAudioName(file, fmt, usedNames)] = data;
+      } catch (_) {
+        failures.push(file.name);
+      }
+    }
+    const names = Object.keys(files);
+    if (!names.length) throw new Error('No se pudo convertir ningún archivo');
+    if (names.length === 1) {
+      const mimeMap = {mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',m4a:'audio/mp4',flac:'audio/flac'};
+      downloadBlob(new Blob([files[names[0]]], {type:mimeMap[fmt] || 'application/octet-stream'}), names[0]);
+    } else {
+      tx.textContent = 'Preparando ZIP…';
+      const { zipSync } = await import('./vendor/fflate.js');
+      const zip = zipSync(files, { level: 0 });
+      downloadBlob(new Blob([zip], {type:'application/zip'}), 'audios_convertidos_' + fmt + '.zip');
+    }
+    fl.style.width = '100%';
+    tx.textContent = failures.length ? names.length + ' convertidos · ' + failures.length + ' con error' : names.length + ' archivos convertidos';
+    $('#audio-result').innerHTML = '<p style="font-size:12px;color:var(--green)">✓ ' + names.length + ' archivo(s) convertidos a ' + escapeHtml(fmt.toUpperCase()) + (failures.length ? ' · ' + failures.length + ' no pudieron procesarse' : '') + '</p>';
+    toast(failures.length ? 'Lote completado con avisos' : 'Lote convertido correctamente', failures.length ? 'error' : 'success');
+  } catch (_) {
+    tx.textContent = 'No se pudo completar el lote';
+    toast('No se pudo convertir el lote de audios','error');
+  } finally {
+    try { ffmpeg.off('progress', progressHandler); } catch (_) {}
+    audioConversionActive = false;
+    syncAudioUI();
   }
-  btn.disabled = false;
-  btn.textContent = 'Convertir';
-  try { ffmpeg.off('progress', progressHandler); } catch (_) {}
 });
 
 /* Init */
