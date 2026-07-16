@@ -705,7 +705,7 @@ async function convertImageEntry(entry, mime, quality, resizeWidth, token) {
   const ext = extFromMime(mime);
   const imgExt = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
   const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
-  if (mimeByExt[imgExt] === mime) return { skipped: true };
+  if (mimeByExt[imgExt] === mime && !resizeWidth) return { skipped: true };
 
   const img = new Image();
   await new Promise((resolve, reject) => {
