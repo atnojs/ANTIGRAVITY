@@ -753,23 +753,43 @@ async function convertImageEntry(entry, mime, quality, resizeWidth, targetKB, to
     }
   }
 
-  // Binary search for target KB (only for canvas-toBlob path, not FFmpeg)
-  if (targetKB > 0 && blob && blob.type === mime && !['image/bmp','image/gif'].includes(mime)) {
+  // Binary search for target KB: always use JPEG (respects quality), then convert to target format
+  if (targetKB > 0 && blob && !['image/bmp','image/gif'].includes(mime)) {
     const maxBytes = targetKB * 1024;
     if (blob.size > maxBytes) {
-      let lo = 0.01, hi = quality, bestBlob = null;
+      const searchMime = 'image/jpeg';
+      let lo = 0.01, hi = quality, bestJpeg = null;
       for (let iter = 0; iter < 12; iter++) {
         const mid = (lo + hi) / 2;
-        const testBlob = await new Promise(resolve => procCanvas.toBlob(resolve, mime, mid));
+        const testBlob = await new Promise(resolve => procCanvas.toBlob(resolve, searchMime, mid));
         if (testBlob && testBlob.size <= maxBytes) {
-          bestBlob = testBlob;
+          bestJpeg = testBlob;
           lo = mid; // try higher quality
         } else {
           hi = mid; // too big, lower quality
         }
         if (hi - lo < 0.005) break;
       }
-      if (bestBlob) blob = bestBlob;
+      if (bestJpeg) {
+        if (mime === 'image/jpeg') {
+          blob = bestJpeg;
+        } else {
+          // Re-draw compressed JPEG and convert to target format (PNG, WebP, etc.)
+          const jpegUrl = URL.createObjectURL(bestJpeg);
+          const img2 = new Image();
+          await new Promise((resolve, reject) => {
+            img2.onload = resolve;
+            img2.onerror = reject;
+            img2.src = jpegUrl;
+          });
+          procCanvas.width = img2.naturalWidth;
+          procCanvas.height = img2.naturalHeight;
+          procCtx.drawImage(img2, 0, 0);
+          URL.revokeObjectURL(jpegUrl);
+          const convMime = mime === 'image/png' ? 'image/png' : mime;
+          blob = await new Promise(resolve => procCanvas.toBlob(resolve, convMime, 1));
+        }
+      }
     }
   }
 
