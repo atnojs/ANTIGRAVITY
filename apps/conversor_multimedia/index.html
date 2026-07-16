@@ -148,6 +148,7 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
 .format-bar select,.media-card select{background:rgba(0,16,24,.72)!important;color:var(--cyan)!important;border-color:var(--border-cyan)!important;font-family:var(--font)}
 .img-grid-item{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.quick-actions .btn-sm,.img-grid-actions .btn-xs.compress-btn{background:rgba(0,16,24,.58);border-color:var(--border-cyan);color:var(--cyan)}.img-grid-actions .btn-xs.dl-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018}.btn-primary:hover,.format-bar .bar-btn:hover{background:linear-gradient(135deg,#1cf2f2,#41e541);color:#001018}.toast{background:#062f43;color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(0,208,208,.35)}.progress-bar{background:rgba(255,255,255,.12)}.progress-bar-fill{background:linear-gradient(90deg,var(--cyan),var(--green))}.badge.loading{background:rgba(0,208,208,.12);color:var(--cyan)}.badge.ready{background:rgba(38,198,38,.13);color:#82f782}.badge.error{background:rgba(255,105,105,.15);color:#ffb6b6}
 .batch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 10px;padding:9px 11px;border:1px solid var(--border-cyan);border-radius:var(--radius-sm);background:rgba(0,16,24,.5)}.batch-select-all,.batch-actions{display:flex;align-items:center;gap:7px}.batch-select-all{color:var(--cyan);font-weight:700;cursor:pointer}.batch-actions{justify-content:flex-end;flex-wrap:wrap}.batch-select-all input,.audio-check{width:18px;height:18px;accent-color:var(--green);cursor:pointer}.batch-delete-btn{background:rgba(255,107,107,.14);color:#ffd7d7;border:1px solid #ff7b7b}.batch-delete-btn:hover:not(:disabled){background:var(--red);color:#001018}.batch-delete-btn:disabled{opacity:.45;cursor:not-allowed}.audio-row.is-checked{background:rgba(0,208,208,.1)!important}.audio-row.has-error{border-color:#ff7b7b!important;background:rgba(180,35,35,.2)!important}.audio-error{color:#ffd0d0;font-size:11px;line-height:1.25;flex:1 1 100%;padding-left:26px}.audio-check{flex:0 0 auto}#audio-selection-count{color:var(--text-dim);font-size:12px}button:focus-visible,select:focus-visible,input:focus-visible,.upload-zone:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.img-select-check{position:absolute;top:7px;left:7px;z-index:3;width:19px;height:19px;accent-color:var(--green);cursor:pointer}.img-grid-item.is-selected{box-shadow:0 0 0 2px var(--green),0 0 12px rgba(38,198,38,.35)!important}.video-row.is-selected{background:rgba(0,208,208,.1)!important}.video-row.is-active{border-color:var(--pink)!important;box-shadow:0 0 10px var(--pink-glow)}
 </style>
 </head>
 <body>
@@ -172,7 +173,7 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
     <div class="upload-zone-text">Arrastra archivos aquí o <strong>haz clic</strong></div>
   </div>
   <input type="file" id="img-input" multiple accept="image/*" hidden>
-  <input type="file" id="video-input" accept="video/*" hidden>
+  <input type="file" id="video-input" accept="video/*" multiple hidden>
   <input type="file" id="audio-input" accept="audio/*" multiple hidden>
 </div>
 
@@ -196,6 +197,13 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
         <span class="bar-pct" id="convert-quality-label">90%</span>
         <button class="bar-btn" id="convert-img-btn">Convertir</button>
       </div>
+      <div class="batch-toolbar media-selection-toolbar">
+        <label class="batch-select-all"><input type="checkbox" id="img-select-all" disabled> <span>Seleccionar todo</span></label>
+        <div class="batch-actions">
+          <span id="img-selection-count" aria-live="polite">0 seleccionadas</span>
+          <button type="button" class="btn btn-sm batch-delete-btn" id="delete-selected-img-btn" disabled aria-disabled="true">Eliminar seleccionadas</button>
+        </div>
+      </div>
       <div class="img-grid" id="uploaded-img-grid"></div>
     </div>
 
@@ -214,6 +222,15 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <span id="ff-video-status" class="badge loading" role="status" aria-live="polite">⏳ Preparando motor local…</span>
     </div>
+    <div style="margin-bottom:8px"><span style="font-size:13px;color:var(--text-dim)" id="video-file-info">Sin vídeos</span></div>
+    <div class="batch-toolbar media-selection-toolbar">
+      <label class="batch-select-all"><input type="checkbox" id="video-select-all" disabled> <span>Seleccionar todo</span></label>
+      <div class="batch-actions">
+        <span id="video-selection-count" aria-live="polite">0 seleccionados</span>
+        <button type="button" class="btn btn-sm batch-delete-btn" id="delete-selected-video-btn" disabled aria-disabled="true">Eliminar seleccionados</button>
+      </div>
+    </div>
+    <div id="video-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
     <div class="preview-area"><video id="video-preview" controls></video></div>
     <div class="controls-row">
       <label style="font-size:12px;color:var(--text-dim);font-weight:600">Convertir a:</label>
@@ -221,7 +238,7 @@ body{max-width:1800px;padding:16px;background-image:radial-gradient(circle at 50
         <option value="mp4">MP4</option><option value="webm">WebM</option>
         <option value="avi">AVI</option><option value="mov">MOV</option><option value="gif">GIF</option>
       </select>
-      <button class="btn btn-primary btn-sm" id="convert-video-btn" disabled>Convertir</button>
+      <button class="btn btn-primary btn-sm" id="convert-video-btn" disabled>Convertir vídeo activo</button>
     </div>
     <div id="video-progress" style="display:none">
       <div class="progress-bar"><div class="progress-bar-fill" id="video-progress-fill"></div></div>
@@ -330,7 +347,7 @@ $$('.top-btn').forEach(btn => {
       $('#img-input').accept = 'image/*';
       $('#main-upload-zone').querySelector('.upload-zone-text').innerHTML = 'Arrastra imágenes aquí o <strong>haz clic</strong>';
     } else if (mode === 'video') {
-      $('#main-upload-zone').querySelector('.upload-zone-text').innerHTML = 'Arrastra un vídeo aquí o <strong>haz clic</strong>';
+      $('#main-upload-zone').querySelector('.upload-zone-text').innerHTML = 'Arrastra vídeos aquí o <strong>haz clic</strong>';
       if (!ffLoaded) loadFFmpeg();
     } else {
       $('#main-upload-zone').querySelector('.upload-zone-text').innerHTML = 'Arrastra audios aquí o <strong>haz clic</strong>';
@@ -358,7 +375,7 @@ async function loadFFmpeg() {
       });
       ffLoaded = true;
       setFFStatus('ready','✓ Motor listo · proceso privado');
-      $('#convert-video-btn').disabled = !videoFile;
+      syncVideoUI();
       syncAudioUI();
       return true;
     } catch (_) {
@@ -396,11 +413,11 @@ mainZone.addEventListener('drop', e => {
   e.preventDefault(); mainZone.classList.remove('dragover');
   const files = e.dataTransfer.files;
   if (currentMode === 'images') handleImageFiles(files);
-  else if (currentMode === 'video' && files[0]?.type.startsWith('video/')) loadVideo(files[0]);
+  else if (currentMode === 'video') handleVideoFiles(files);
   else if (currentMode === 'audio') handleAudioFiles(files);
 });
 $('#img-input').addEventListener('change', () => { if ($('#img-input').files.length) handleImageFiles($('#img-input').files); });
-$('#video-input').addEventListener('change', () => { if ($('#video-input').files[0]) loadVideo($('#video-input').files[0]); });
+$('#video-input').addEventListener('change', () => { if ($('#video-input').files.length) handleVideoFiles($('#video-input').files); });
 $('#audio-input').addEventListener('change', () => { if ($('#audio-input').files.length) handleAudioFiles($('#audio-input').files); });
 
 /* ============================================================ */
@@ -408,49 +425,82 @@ $('#audio-input').addEventListener('change', () => { if ($('#audio-input').files
 /* ============================================================ */
 let imgEntries = [];
 let currentIdx = -1;
+let selectedImageIndexes = new Set();
 
 async function handleImageFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
   if (!files.length) return toast('No hay imágenes','error');
   const newEntries = [];
-  for (const file of files) {
-    newEntries.push({ file, dataUrl: await fileToDataURL(file) });
-  }
+  for (const file of files) newEntries.push({ file, dataUrl: await fileToDataURL(file) });
+  const offset = imgEntries.length;
   imgEntries = imgEntries.concat(newEntries);
-  if (currentIdx === -1) { currentIdx = 0; }
+  newEntries.forEach((_, index) => selectedImageIndexes.add(offset + index));
+  if (currentIdx === -1) currentIdx = 0;
   renderUploadedGrid();
 }
 
-/* Right column: uploaded images grid */
+function syncImageUI() {
+  const total = imgEntries.length;
+  const count = [...selectedImageIndexes].filter(index => imgEntries[index]).length;
+  const all = $('#img-select-all');
+  all.checked = total > 0 && count === total;
+  all.indeterminate = count > 0 && count < total;
+  all.disabled = total === 0;
+  $('#img-selection-count').textContent = count + (count === 1 ? ' seleccionada' : ' seleccionadas');
+  const remove = $('#delete-selected-img-btn');
+  remove.disabled = count === 0;
+  remove.setAttribute('aria-disabled', String(remove.disabled));
+  remove.textContent = count > 1 ? 'Eliminar ' + count + ' seleccionadas' : count === 1 ? 'Eliminar seleccionada' : 'Eliminar seleccionadas';
+}
+
+function setCurrentImage(index) {
+  currentIdx = index;
+  const entry = imgEntries[index];
+  const ext = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
+  const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
+  if (mimeByExt[ext]) $('#convert-img-format').value = mimeByExt[ext];
+  renderUploadedGrid();
+}
+
+function removeSelectedImages() {
+  const selected = [...selectedImageIndexes].filter(index => imgEntries[index]).sort((a, b) => a - b);
+  if (!selected.length) return toast('Selecciona al menos una imagen para eliminar', 'error');
+  const currentEntry = imgEntries[currentIdx];
+  const selectedEntries = new Set(selected.map(index => imgEntries[index]));
+  imgEntries = imgEntries.filter(entry => !selectedEntries.has(entry));
+  selectedImageIndexes = new Set();
+  currentIdx = imgEntries.length ? Math.max(0, imgEntries.indexOf(currentEntry)) : -1;
+  renderUploadedGrid();
+  toast(selected.length === 1 ? 'Imagen eliminada de la lista' : selected.length + ' imágenes eliminadas de la lista', 'success');
+}
+
 function renderUploadedGrid() {
   const grid = $('#uploaded-img-grid');
   const items = [];
   for (let i = 0; i < imgEntries.length; i++) {
-    items.push(`
-      <div class="img-grid-item" data-idx="${i}" style="cursor:pointer${i === currentIdx ? ';border-color:#111;box-shadow:0 0 10px rgba(233,30,99,.5)' : ''}">
-        <img src="${imgEntries[i].dataUrl}" alt="">
-      </div>`);
+    const selected = selectedImageIndexes.has(i);
+    const active = i === currentIdx;
+    items.push('<div class="img-grid-item ' + (selected ? 'is-selected' : '') + '" data-idx="' + i + '" style="cursor:pointer' + (active ? ';border-color:#111;box-shadow:0 0 10px rgba(233,30,99,.5)' : '') + '"><input type="checkbox" class="img-select-check" data-idx="' + i + '" aria-label="Seleccionar ' + escapeHtml(imgEntries[i].file.name) + '" ' + (selected ? 'checked' : '') + '><img src="' + imgEntries[i].dataUrl + '" alt=""></div>');
   }
-  if (!items.length) {
-    items.push('<div class="img-grid-item"><span class="grid-placeholder">SIN IMÁGENES</span></div>');
-  }
+  if (!items.length) items.push('<div class="img-grid-item"><span class="grid-placeholder">SIN IMÁGENES</span></div>');
   grid.innerHTML = items.join('');
-
-  grid.querySelectorAll('.img-grid-item img').forEach(img => {
-    const idx = parseInt(img.parentElement.dataset.idx);
-    img.parentElement.addEventListener('click', () => {
-      currentIdx = idx;
-      // Auto-detectar formato
-      const entry = imgEntries[idx];
-      const ext = (entry.file.name.match(/\.([^.]+)$/i) || [,'jpg'])[1].toLowerCase();
-      const mimeByExt = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', bmp:'image/bmp', gif:'image/gif', avif:'image/avif' };
-      const detected = mimeByExt[ext];
-      if (detected) $('#convert-img-format').value = detected;
-      renderUploadedGrid();
-    });
-    if (idx === currentIdx) img.parentElement.style.borderColor = '#c2185b';
-  });
+  grid.querySelectorAll('.img-grid-item[data-idx]').forEach(item => item.addEventListener('click', event => {
+    if (event.target.closest('.img-select-check')) return;
+    setCurrentImage(Number(item.dataset.idx));
+  }));
+  grid.querySelectorAll('.img-select-check').forEach(check => check.addEventListener('change', () => {
+    const index = Number(check.dataset.idx);
+    if (check.checked) selectedImageIndexes.add(index); else selectedImageIndexes.delete(index);
+    renderUploadedGrid();
+  }));
+  syncImageUI();
 }
+
+$('#img-select-all').addEventListener('change', event => {
+  selectedImageIndexes = event.target.checked ? new Set(imgEntries.map((_, index) => index)) : new Set();
+  renderUploadedGrid();
+});
+$('#delete-selected-img-btn').addEventListener('click', removeSelectedImages);
 
 /* Convertir formato */
 $('#convert-img-quality').addEventListener('input', () => {
@@ -626,20 +676,114 @@ function renderConvertGrid() {
 /*  VÍDEO                                                        */
 /* ============================================================ */
 let videoFile = null;
+let videoEntries = [];
+let currentVideoIdx = -1;
+let selectedVideoIndexes = new Set();
+let videoConversionActive = false;
 
-function loadVideo(file) {
-  videoFile = file;
-  try { $('#video-preview').src = URL.createObjectURL(file); } catch(e) {}
-  if (ffLoaded) $('#convert-video-btn').disabled = false;
-  toast(`Vídeo: ${file.name} (${fmtSize(file.size)})`);
+function syncVideoUI() {
+  const total = videoEntries.length;
+  const count = [...selectedVideoIndexes].filter(index => videoEntries[index]).length;
+  const all = $('#video-select-all');
+  if (all) {
+    all.checked = total > 0 && count === total;
+    all.indeterminate = count > 0 && count < total;
+    all.disabled = total === 0 || videoConversionActive;
+  }
+  const counter = $('#video-selection-count');
+  if (counter) counter.textContent = count + (count === 1 ? ' seleccionado' : ' seleccionados');
+  const remove = $('#delete-selected-video-btn');
+  if (remove) {
+    remove.disabled = count === 0 || videoConversionActive;
+    remove.setAttribute('aria-disabled', String(remove.disabled));
+    remove.textContent = count > 1 ? 'Eliminar ' + count + ' seleccionados' : count === 1 ? 'Eliminar seleccionado' : 'Eliminar seleccionados';
+  }
+  document.querySelectorAll('.video-check').forEach(check => { check.disabled = videoConversionActive; });
+  const convert = $('#convert-video-btn');
+  if (convert) {
+    convert.disabled = !ffLoaded || !videoFile || videoConversionActive;
+    convert.setAttribute('aria-disabled', String(convert.disabled));
+    convert.textContent = videoConversionActive ? 'Convirtiendo…' : 'Convertir vídeo activo';
+  }
 }
 
+function updateVideoPreview() {
+  videoFile = videoEntries[currentVideoIdx] || null;
+  const preview = $('#video-preview');
+  if (videoFile) {
+    try { preview.src = URL.createObjectURL(videoFile); } catch (_) {}
+  } else {
+    preview.removeAttribute('src');
+    try { preview.load(); } catch (_) {}
+  }
+}
+
+function handleVideoFiles(fileList) {
+  const files = Array.from(fileList).filter(file => file.type.startsWith('video/') || /\.(mp4|webm|avi|mov|mkv|m4v|wmv)$/i.test(file.name));
+  if (!files.length) return toast('No hay vídeos válidos', 'error');
+  const offset = videoEntries.length;
+  videoEntries.push(...files);
+  files.forEach((_, index) => selectedVideoIndexes.add(offset + index));
+  if (currentVideoIdx === -1) currentVideoIdx = 0;
+  updateVideoPreview();
+  renderVideoList();
+  toast(files.length === 1 ? 'Vídeo añadido a la lista' : files.length + ' vídeos añadidos a la lista', 'success');
+}
+
+function removeSelectedVideos() {
+  const selected = [...selectedVideoIndexes].filter(index => videoEntries[index]).sort((a, b) => a - b);
+  if (!selected.length) return toast('Selecciona al menos un vídeo para eliminar', 'error');
+  const currentFile = videoEntries[currentVideoIdx];
+  const selectedFiles = new Set(selected.map(index => videoEntries[index]));
+  videoEntries = videoEntries.filter(file => !selectedFiles.has(file));
+  selectedVideoIndexes = new Set();
+  currentVideoIdx = videoEntries.length ? Math.max(0, videoEntries.indexOf(currentFile)) : -1;
+  updateVideoPreview();
+  renderVideoList();
+  toast(selected.length === 1 ? 'Vídeo eliminado de la lista' : selected.length + ' vídeos eliminados de la lista', 'success');
+}
+
+function renderVideoList() {
+  const list = $('#video-list');
+  $('#video-file-info').textContent = videoEntries.length ? videoEntries.length + ' vídeo(s)' : 'Sin vídeos';
+  if (!videoEntries.length) {
+    list.innerHTML = '<span style="color:var(--text-dim);font-size:12px">Sin vídeos</span>';
+    syncVideoUI();
+    return;
+  }
+  list.innerHTML = videoEntries.map((file, index) => {
+    const selected = selectedVideoIndexes.has(index);
+    const active = index === currentVideoIdx;
+    return '<div class="video-row ' + (selected ? 'is-selected' : '') + ' ' + (active ? 'is-active' : '') + '" data-vidx="' + index + '" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;border:1px solid var(--border)"><input type="checkbox" class="video-check" data-vidx="' + index + '" aria-label="Seleccionar ' + escapeHtml(file.name) + '" ' + (selected ? 'checked' : '') + ' ' + (videoConversionActive ? 'disabled' : '') + '><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 ' + escapeHtml(file.name) + '</span><span style="color:var(--text-dim);font-family:var(--mono);white-space:nowrap">' + fmtSize(file.size) + '</span></div>';
+  }).join('');
+  list.querySelectorAll('.video-row').forEach(row => row.addEventListener('click', event => {
+    if (event.target.closest('.video-check')) return;
+    currentVideoIdx = Number(row.dataset.vidx);
+    updateVideoPreview();
+    renderVideoList();
+  }));
+  list.querySelectorAll('.video-check').forEach(check => check.addEventListener('change', () => {
+    const index = Number(check.dataset.vidx);
+    if (check.checked) selectedVideoIndexes.add(index); else selectedVideoIndexes.delete(index);
+    renderVideoList();
+  }));
+  syncVideoUI();
+}
+
+$('#video-select-all').addEventListener('change', event => {
+  selectedVideoIndexes = event.target.checked ? new Set(videoEntries.map((_, index) => index)) : new Set();
+  renderVideoList();
+});
+$('#delete-selected-video-btn').addEventListener('click', () => {
+  if (!videoConversionActive) removeSelectedVideos();
+});
 $('#convert-video-btn').addEventListener('click', async () => {
   if (!videoFile || !ffmpeg) return toast('FFmpeg no disponible','error');
   const fmt = $('#convert-video-format').value;
   const btn = $('#convert-video-btn'), pg = $('#video-progress'),
     fl = $('#video-progress-fill'), tx = $('#video-progress-text');
-  btn.disabled = true; btn.textContent = 'Convirtiendo…';
+  videoConversionActive = true;
+  syncVideoUI();
   pg.style.display = ''; fl.style.width = '0%'; tx.textContent = '0%';
   const progressHandler = ({progress:p}) => {
     const pc = Math.min(Math.round(p*100),99);
@@ -664,7 +808,8 @@ $('#convert-video-btn').addEventListener('click', async () => {
     $('#video-result').innerHTML = `<p style="font-size:12px;color:var(--green)">✓ ${escapeHtml(oname)} — ${fmtSize(blob.size)}</p>`;
     toast(`Convertido: ${oname}`);
   } catch(e) { toast('Error','error'); }
-  btn.disabled = false; btn.textContent = 'Convertir';
+  videoConversionActive = false;
+  syncVideoUI();
   ffmpeg.off('progress', progressHandler);
 });
 
