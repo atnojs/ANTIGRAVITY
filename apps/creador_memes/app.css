@@ -72,18 +72,21 @@ body::after {
   display: flex; flex-direction: column; gap: 10px;
 }
 
-/* ===== HEADER ===== */
+/* ===== HEADER (estilo dibujo_lineas_copia) ===== */
 .app-header { text-align: center; padding: 2px 0 0; }
 .app-title {
   font-family: var(--font); font-weight: 400;
-  font-size: clamp(1.2rem, 3vw, 1.6rem);
-  text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  text-transform: uppercase; letter-spacing: 0.04em;
   color: var(--cian);
-  text-shadow: 0 0 12px var(--glow), 0 0 30px var(--glow-soft);
+  text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
+  margin-bottom: 0.5rem;
 }
 .app-subtitle {
-  color: var(--text-dim); font-size: 0.65rem;
-  letter-spacing: 0.06em; margin-top: 1px;
+  color: var(--text-dim);
+  margin-bottom: 1.2rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
 }
 
 /* ===== CARD GENÉRICA ===== */
