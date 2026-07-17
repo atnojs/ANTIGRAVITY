@@ -41,6 +41,7 @@
     fontSize: 48,
     enhancedPrompt: "",
     generatedImage: null,
+    cleanFluxImage: null,    // FLUX base image without text (for reuse)
     memeDataUrl: null
   };
 
@@ -289,6 +290,7 @@
       hideOverlay();
 
       if (data && data.success && data.dataUrl) {
+        state.cleanFluxImage = data.dataUrl;  // keep clean image for reuse
         var img = new Image();
         img.onload = function () {
           state.generatedImage = img;
@@ -445,7 +447,8 @@
         bottomText: $("bottom-text").value,
         aspectRatio: state.aspectRatio,
         resolution: state.resolution,
-        quality: state.quality
+        quality: state.quality,
+        cleanFluxImage: dataUrl
       },
       imageData: memeDataUrl
     }).then(function () {
@@ -462,6 +465,33 @@
         $("history-section").classList.remove("hidden");
       }
     }).catch(function () {});
+  }
+
+  // Load clean FLUX image from history (without text) for reuse
+  function reuseImage(item) {
+    var cleanUrl = (item.data && item.data.cleanFluxImage) ? item.data.cleanFluxImage : "";
+    if (!cleanUrl) {
+      // Fallback: use the stored image (may have old text, but user can overwrite)
+      cleanUrl = item.imageUrl || "";
+    }
+    if (!cleanUrl) { showToast("No se puede recuperar la imagen base.", false); return; }
+
+    var reuseImg = new Image();
+    reuseImg.onload = function () {
+      state.generatedImage = reuseImg;
+      state.cleanFluxImage = cleanUrl;
+      // Clear text fields so user writes new text
+      $("top-text").value = "";
+      $("bottom-text").value = "";
+      drawMemeOnCanvas();
+      $("result-section").classList.remove("hidden");
+      $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast("Imagen cargada. Escribe el nuevo texto del meme.", true);
+    };
+    reuseImg.onerror = function () {
+      showToast("Error al cargar la imagen base.", false);
+    };
+    reuseImg.src = cleanUrl;
   }
 
   function renderHistory(items) {
@@ -506,6 +536,16 @@
       var actions = document.createElement("div");
       actions.className = "history-item-actions";
 
+      // Reuse button — loads clean FLUX image for new text
+      var reuseBtn = document.createElement("button");
+      reuseBtn.className = "btn-square btn-sq-blue";
+      reuseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
+      reuseBtn.title = "Reutilizar imagen";
+      reuseBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        reuseImage(item);
+      });
+
       var downBtn = document.createElement("button");
       downBtn.className = "btn-square btn-sq-green";
       downBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>';
@@ -529,6 +569,7 @@
         history.delete(item.id).then(function () { loadHistory(); }).catch(function () {});
       });
 
+      actions.appendChild(reuseBtn);
       actions.appendChild(downBtn);
       actions.appendChild(delBtn);
       wrapper.appendChild(img);
