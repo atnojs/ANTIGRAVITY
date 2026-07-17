@@ -251,26 +251,26 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
 }
 
-/* Hue slider — rainbow track */
-.hue-slider {
+/* Spectrum slider — white → colors → black */
+.color-spectrum-slider {
   background: linear-gradient(to right,
-    hsl(0,100%,50%), hsl(30,100%,50%), hsl(60,100%,50%),
-    hsl(120,100%,50%), hsl(180,100%,50%), hsl(240,100%,50%),
-    hsl(270,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%)
+    #ffffff,
+    #ff0000, #ff8800, #ffff00, #88ff00,
+    #00ff00, #00ffcc, #00ccff, #0066ff,
+    #4400ff, #aa00ff, #ff00cc, #000000
   ) !important;
   border: 1px solid var(--border) !important;
 }
-.hue-slider::-webkit-slider-thumb {
-  background: #fff !important;
-  box-shadow: 0 0 14px rgba(255,255,255,0.7);
+.color-spectrum-slider::-webkit-slider-thumb {
+  background: var(--thumb-color, #ffffff) !important;
+  box-shadow: 0 0 14px var(--thumb-color, #ffffff);
+  border: 2px solid #001018;
+  transition: background 0.05s, box-shadow 0.05s;
 }
-.hue-slider::-moz-range-thumb { background: #fff !important; }
-
-.color-preview-dot {
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid var(--border);
-  box-shadow: 0 0 8px var(--glow-soft);
-  flex-shrink: 0;
+.color-spectrum-slider::-moz-range-thumb {
+  background: var(--thumb-color, #ffffff) !important;
+  box-shadow: 0 0 14px var(--thumb-color, #ffffff);
+  border: 2px solid #001018;
 }
 
 /* ===== BOTTOM ROW ===== */

@@ -37,9 +37,7 @@
     aspectRatio: "1:1",
     resolution: 1024,
     quality: "pro",
-    textHue: 0,              // 0-360 HSL hue
-    textSaturation: 100,     // fixed
-    textLightness: 50,       // fixed
+    textColor: "rgb(0,255,255)",   // default cyan (position 50 on slider)
     fontSize: 120,
     lineSpacing: 1.15,       // multiplier
     enhancedPrompt: "",
@@ -66,12 +64,47 @@
   initToggleGroup("res-selector", function (btn) { state.resolution = parseInt(btn.getAttribute("data-res"), 10); });
   initToggleGroup("quality-selector", function (btn) { state.quality = btn.getAttribute("data-quality"); });
 
-  // ===== SLIDERS (live preview) =====
+  // ===== COLOR SLIDER (0=white → 50=red → 100=black through full spectrum) =====
   var colorSlider = $("color-slider");
-  var colorPreview = $("color-preview");
+
+  // Map slider position (0-100) to a color: white → colors → black
+  function sliderToColor(val) {
+    // Segments: 0=white, 10=red, 20=orange, 30=yellow, 40=green, 50=cyan, 60=blue, 70=purple, 80=magenta, 90=dark red, 100=black
+    var stops = [
+      { pos: 0,   r: 255, g: 255, b: 255 }, // white
+      { pos: 10,  r: 255, g: 0,   b: 0   }, // red
+      { pos: 20,  r: 255, g: 136, b: 0   }, // orange
+      { pos: 30,  r: 255, g: 255, b: 0   }, // yellow
+      { pos: 40,  r: 0,   g: 255, b: 0   }, // green
+      { pos: 50,  r: 0,   g: 255, b: 255 }, // cyan
+      { pos: 60,  r: 0,   g: 0,   b: 255 }, // blue
+      { pos: 70,  r: 128, g: 0,   b: 255 }, // purple
+      { pos: 80,  r: 255, g: 0,   b: 255 }, // magenta
+      { pos: 90,  r: 128, g: 0,   b: 0   }, // dark red
+      { pos: 100, r: 0,   g: 0,   b: 0   }  // black
+    ];
+
+    // Find two nearest stops
+    var lower = stops[0], upper = stops[stops.length - 1];
+    for (var i = 0; i < stops.length - 1; i++) {
+      if (val >= stops[i].pos && val <= stops[i + 1].pos) {
+        lower = stops[i]; upper = stops[i + 1]; break;
+      }
+    }
+    var range = upper.pos - lower.pos;
+    var t = range === 0 ? 0 : (val - lower.pos) / range;
+    var r = Math.round(lower.r + (upper.r - lower.r) * t);
+    var g = Math.round(lower.g + (upper.g - lower.g) * t);
+    var b = Math.round(lower.b + (upper.b - lower.b) * t);
+    return { r: r, g: g, b: b, hex: "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1) };
+  }
+
   colorSlider.addEventListener("input", function () {
-    state.textHue = parseInt(colorSlider.value, 10);
-    if (colorPreview) colorPreview.style.background = "hsl(" + state.textHue + ",100%,50%)";
+    var val = parseInt(colorSlider.value, 10);
+    var color = sliderToColor(val);
+    state.textColor = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+    // Update thumb color via CSS variable
+    colorSlider.style.setProperty("--thumb-color", color.hex);
     if (state.generatedImage) drawMemeOnCanvas();
   });
 
@@ -323,8 +356,8 @@
     var ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Text color from HSL
-    var textColor = "hsl(" + state.textHue + ",100%,50%)";
+    // Text color from state (set by slider)
+    var textColor = state.textColor;
 
     // Zone boundaries: top 20%, bottom 20%
     var topZone = canvas.height * 0.20;
@@ -543,6 +576,12 @@
   // ===== INIT =====
   document.addEventListener("DOMContentLoaded", function () {
     window.__creador_memes_loaded = true;
+
+    // Init color slider thumb
+    var initColor = sliderToColor(50);
+    colorSlider.style.setProperty("--thumb-color", initColor.hex);
+    state.textColor = "rgb(" + initColor.r + "," + initColor.g + "," + initColor.b + ")";
+
     try { loadHistory(); window.__creador_memes_domready = true; }
     catch (e) { console.error("Error inicializando creador_memes:", e); }
   });
