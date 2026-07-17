@@ -147,7 +147,9 @@
         drawMemeOnCanvas();
         $("result-section").classList.remove("hidden");
         $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
-        showToast("¡Imagen cargada! Escribe el texto del meme.", true);
+        // Save uploaded image to history for reuse
+        saveToHistory(dataUrl, "(Imagen subida)");
+        showToast("¡Imagen cargada y guardada en historial!", true);
       };
       img.src = dataUrl;
     };
@@ -379,30 +381,30 @@
       return lines;
     }
 
-    // Fit text within a zone height
+    // Fit text within a zone height — max 3 lines, wrap to fill width
     function fitText(text, maxWidth, zoneHeight, baseSize) {
       var fs = baseSize;
       ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       var lines = wrapText(ctx, text, maxWidth);
       var totalH = lines.length * fs * state.lineSpacing;
 
-      // Reduce until fits in zone
-      while (totalH > zoneHeight * 0.92 && fs > 16) {
+      // If text overflows zone height, reduce font until fits (max 3 lines)
+      while ((totalH > zoneHeight * 0.95 || lines.length > 3) && fs > 16) {
         fs -= 2;
         ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
         lines = wrapText(ctx, text, maxWidth);
         totalH = lines.length * fs * state.lineSpacing;
       }
-      // Reduce if any word wider than maxWidth
-      var allFit = false;
-      while (!allFit && fs > 12) {
-        allFit = true;
+      // Ensure no single word wider than maxWidth
+      var ok = false;
+      while (!ok && fs > 12) {
+        ok = true;
         ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
-        var checkLines = wrapText(ctx, text, maxWidth);
-        for (var l = 0; l < checkLines.length; l++) {
-          if (ctx.measureText(checkLines[l]).width > maxWidth) { allFit = false; break; }
+        var ck = wrapText(ctx, text, maxWidth);
+        for (var l = 0; l < ck.length; l++) {
+          if (ctx.measureText(ck[l]).width > maxWidth) { ok = false; break; }
         }
-        if (!allFit) fs -= 1;
+        if (!ok) fs -= 1;
       }
       ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       return { lines: wrapText(ctx, text, maxWidth), fontSize: fs };
