@@ -8,7 +8,6 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
-const FIXED_NAMESPACE = 'prompt_copilot_premium';
 const MAX_ITEMS = 100;
 const MAX_FILE_BYTES = 2_000_000;
 
@@ -40,7 +39,16 @@ function cleanText(mixed $value, int $maxLength): string
     return textSubstr($value, 0, $maxLength);
 }
 
-function clientHistoryKey(): string
+function validateNamespace(string $raw): string
+{
+    $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '', $raw) ?? '';
+    if (strlen($sanitized) < 3 || strlen($sanitized) > 64) {
+        respond(400, ['ok' => false, 'error' => 'Namespace de historial no válido.']);
+    }
+    return $sanitized;
+}
+
+function clientHistoryKey(string $namespace): string
 {
     $cookieName = 'psp_history_id';
     $token = $_COOKIE[$cookieName] ?? '';
@@ -57,16 +65,16 @@ function clientHistoryKey(): string
         ]);
         $_COOKIE[$cookieName] = $token;
     }
-    return hash('sha256', FIXED_NAMESPACE . ':' . $token);
+    return hash('sha256', $namespace . ':' . $token);
 }
 
-function dataPath(): string
+function dataPath(string $namespace): string
 {
     $directory = __DIR__ . '/history_data';
     if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
         respond(500, ['ok' => false, 'error' => 'No se pudo preparar la carpeta del historial.']);
     }
-    return $directory . '/' . FIXED_NAMESPACE . '_' . clientHistoryKey() . '.json';
+    return $directory . '/' . $namespace . '_' . clientHistoryKey($namespace) . '.json';
 }
 
 function readItemsLocked($handle): array
@@ -113,16 +121,18 @@ try {
     respond(400, ['ok' => false, 'error' => 'El JSON enviado no es válido.']);
 }
 
-if (!is_array($input) || ($input['namespace'] ?? '') !== FIXED_NAMESPACE) {
+if (!is_array($input)) {
     respond(400, ['ok' => false, 'error' => 'Historial no válido.']);
 }
+
+$namespace = validateNamespace((string)($input['namespace'] ?? ''));
 
 $action = is_string($input['action'] ?? null) ? $input['action'] : '';
 if (!in_array($action, ['load', 'save', 'delete', 'clear'], true)) {
     respond(400, ['ok' => false, 'error' => 'Acción no válida.']);
 }
 
-$path = dataPath();
+$path = dataPath($namespace);
 $handle = fopen($path, 'c+');
 if ($handle === false) {
     respond(500, ['ok' => false, 'error' => 'No se pudo abrir el historial.']);
