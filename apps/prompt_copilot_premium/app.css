@@ -108,9 +108,6 @@ select:focus-visible, summary:focus-visible, a:focus-visible {
   justify-content: space-between;
   margin-bottom: 16px;
   padding: 18px 22px;
-  max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
   background: linear-gradient(135deg, rgba(8, 46, 68, 0.84), rgba(18, 91, 120, 0.38));
   border: 2px solid var(--cyan-border);
   border-radius: var(--radius-panel);
@@ -161,7 +158,7 @@ select:focus-visible, summary:focus-visible, a:focus-visible {
 /* ── LAYOUT ── */
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
