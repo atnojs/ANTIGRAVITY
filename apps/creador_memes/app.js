@@ -120,7 +120,6 @@
       "- Los textos deben ser graciosos, actuales, con gancho viral.",
       "- La idea visual debe ser FOTORREALISTA, apta para generar con FLUX.",
       "- El prompt de imagen NO debe incluir los textos del meme, solo describir la escena.",
-      "- Especifica que la imagen debe tener zonas superior e inferior despejadas para superponer texto.",
       "- Incluye al final del prompt visual: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
       "- NO uses personajes famosos ni marcas registradas.",
       "",
@@ -211,12 +210,11 @@
       "",
       "REGLAS OBLIGATORIAS:",
       "1. Describe la escena completa en español: sujeto, acción, entorno, iluminación, estilo.",
-      "2. Especifica que la imagen debe tener espacios superior e inferior despejados para texto.",
-      "3. Añade al final: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
-      "4. Estilo fotorrealista o semi-fotorrealista, NUNCA cartoon.",
-      "5. NO incluyas el texto del meme en el prompt de imagen. Solo la escena base.",
-      "6. Entrega ÚNICAMENTE el prompt final en español, sin comillas, sin introducción.",
-      "7. Máximo 250 palabras."
+      "2. Añade al final: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
+      "3. Estilo fotorrealista o semi-fotorrealista, NUNCA cartoon.",
+      "4. NO incluyas el texto del meme en el prompt de imagen. Solo la escena base.",
+      "5. Entrega ÚNICAMENTE el prompt final en español, sin comillas, sin introducción.",
+      "6. Máximo 250 palabras."
     ].join("\n");
 
     fetch("proxy.php", {
@@ -316,43 +314,114 @@
     });
   });
 
-  // ===== CANVAS MEME =====
+  // ===== CANVAS MEME (texto se adapta al ancho, divide en filas si es necesario) =====
   function drawMemeOnCanvas() {
     if (!state.generatedImage) return;
 
     var canvas = $("meme-canvas");
     var img = state.generatedImage;
-    var topText = $("top-text").value.trim().toUpperCase();
-    var bottomText = $("bottom-text").value.trim().toUpperCase();
+    var topTextRaw = $("top-text").value.trim().toUpperCase();
+    var bottomTextRaw = $("bottom-text").value.trim().toUpperCase();
 
-    var maxWidth = 550;
-    var scale = Math.min(maxWidth / img.naturalWidth, 1);
+    // Scale canvas to fit viewport: max width = container width, max height = 70vh
+    var container = $("meme-canvas-container");
+    var maxW = Math.min(container.clientWidth || 550, img.naturalWidth);
+    var maxH = Math.min(window.innerHeight * 0.7, img.naturalHeight);
+    var scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
     canvas.width = Math.round(img.naturalWidth * scale);
     canvas.height = Math.round(img.naturalHeight * scale);
 
     var ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    var fontSize = state.fontSize * scale;
-    ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+    // Auto-fit text: wrap lines to fit canvas width
+    var baseFontSize = state.fontSize * scale;
+    var padding = canvas.width * 0.06; // 6% padding on each side
+    var maxTextWidth = canvas.width - padding * 2;
+
+    function wrapText(ctx, text, maxWidth) {
+      var words = text.split(" ");
+      var lines = [];
+      var currentLine = "";
+      for (var i = 0; i < words.length; i++) {
+        var testLine = currentLine ? currentLine + " " + words[i] : words[i];
+        var metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && currentLine !== "") {
+          lines.push(currentLine);
+          currentLine = words[i];
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines;
+    }
+
+    // Find optimal font size: start with base, reduce if text doesn't fit
+    function findFittingFont(ctx, text, maxWidth, baseSize) {
+      var fontSize = baseSize;
+      ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+      var lines = wrapText(ctx, text, maxWidth);
+      // Reduce font size if too many lines or text too wide
+      var maxLines = 4;
+      while ((lines.length > maxLines) && fontSize > 12) {
+        fontSize -= 2;
+        ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+        lines = wrapText(ctx, text, maxWidth);
+      }
+      // Ensure no single line exceeds maxWidth
+      var allFit = false;
+      while (!allFit && fontSize > 10) {
+        allFit = true;
+        ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+        var checkLines = wrapText(ctx, text, maxWidth);
+        for (var l = 0; l < checkLines.length; l++) {
+          if (ctx.measureText(checkLines[l]).width > maxWidth) {
+            allFit = false;
+            break;
+          }
+        }
+        if (!allFit) fontSize -= 1;
+      }
+      ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+      return { lines: wrapText(ctx, text, maxWidth), fontSize: fontSize };
+    }
+
     ctx.fillStyle = state.textColor;
     ctx.strokeStyle = "#000000";
-    ctx.lineWidth = Math.max(3, fontSize * 0.08);
     ctx.textAlign = "center";
-    ctx.shadowColor = "rgba(0,0,0,0.8)";
-    ctx.shadowBlur = 8;
+    ctx.textBaseline = "top";
 
-    if (topText) {
-      var topY = fontSize * 1.1;
-      ctx.strokeText(topText, canvas.width / 2, topY);
-      ctx.fillText(topText, canvas.width / 2, topY);
+    // Top text
+    if (topTextRaw) {
+      var topResult = findFittingFont(ctx, topTextRaw, maxTextWidth, baseFontSize);
+      ctx.font = "900 " + topResult.fontSize + "px Impact, 'Arial Black', sans-serif";
+      ctx.lineWidth = Math.max(2, topResult.fontSize * 0.08);
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 6;
+      var topStartY = padding * 0.6;
+      for (var i = 0; i < topResult.lines.length; i++) {
+        var y = topStartY + i * (topResult.fontSize * 1.15);
+        ctx.strokeText(topResult.lines[i], canvas.width / 2, y);
+        ctx.fillText(topResult.lines[i], canvas.width / 2, y);
+      }
     }
 
-    if (bottomText) {
-      var bottomY = canvas.height - fontSize * 0.4;
-      ctx.strokeText(bottomText, canvas.width / 2, bottomY);
-      ctx.fillText(bottomText, canvas.width / 2, bottomY);
+    // Bottom text
+    if (bottomTextRaw) {
+      var bottomResult = findFittingFont(ctx, bottomTextRaw, maxTextWidth, baseFontSize);
+      ctx.font = "900 " + bottomResult.fontSize + "px Impact, 'Arial Black', sans-serif";
+      ctx.lineWidth = Math.max(2, bottomResult.fontSize * 0.08);
+      ctx.shadowBlur = 6;
+      var totalBottomHeight = bottomResult.lines.length * (bottomResult.fontSize * 1.15);
+      var bottomStartY = canvas.height - padding * 0.5 - totalBottomHeight;
+      for (var j = 0; j < bottomResult.lines.length; j++) {
+        var y2 = bottomStartY + j * (bottomResult.fontSize * 1.15);
+        ctx.strokeText(bottomResult.lines[j], canvas.width / 2, y2);
+        ctx.fillText(bottomResult.lines[j], canvas.width / 2, y2);
+      }
     }
+    ctx.shadowBlur = 0;
 
     state.memeDataUrl = canvas.toDataURL("image/jpeg", 0.92);
   }
