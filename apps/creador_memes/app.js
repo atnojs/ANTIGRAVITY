@@ -119,8 +119,9 @@
       "- TODO debe estar en ESPAÑOL.",
       "- Los textos deben ser graciosos, actuales, con gancho viral.",
       "- La idea visual debe ser FOTORREALISTA, apta para generar con FLUX.",
-      "- El prompt de imagen NO debe incluir los textos del meme, solo describir la escena.",
-      "- Incluye al final del prompt visual: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
+      "- IMPORTANTE: La imagen NO debe contener NINGÚN texto, letra, palabra ni rótulo. La imagen debe estar completamente libre de texto.",
+      "- El prompt de imagen NO debe incluir los textos del meme, solo describir la escena visual.",
+      "- Incluye al final del prompt visual: 'no text, no words, no letters, no labels, no signs, clean image, meme format, viral style, high contrast, bold composition, dramatic lighting'.",
       "- NO uses personajes famosos ni marcas registradas.",
       "",
       "FORMATO DE RESPUESTA (respeta EXACTAMENTE este JSON):",
@@ -210,9 +211,9 @@
       "",
       "REGLAS OBLIGATORIAS:",
       "1. Describe la escena completa en español: sujeto, acción, entorno, iluminación, estilo.",
-      "2. Añade al final: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
-      "3. Estilo fotorrealista o semi-fotorrealista, NUNCA cartoon.",
-      "4. NO incluyas el texto del meme en el prompt de imagen. Solo la escena base.",
+      "2. IMPORTANTE: La imagen NO debe contener NINGÚN texto, letra ni palabra. Imagen completamente limpia.",
+      "3. Añade al final: 'no text, no words, no labels, clean image, meme format, viral style, high contrast, bold composition, dramatic lighting'.",
+      "4. Estilo fotorrealista o semi-fotorrealista, NUNCA cartoon.",
       "5. Entrega ÚNICAMENTE el prompt final en español, sin comillas, sin introducción.",
       "6. Máximo 250 palabras."
     ].join("\n");
@@ -314,7 +315,7 @@
     });
   });
 
-  // ===== CANVAS MEME (texto se adapta al ancho, divide en filas si es necesario) =====
+  // ===== CANVAS MEME (render a resolución completa, CSS escala para pantalla) =====
   function drawMemeOnCanvas() {
     if (!state.generatedImage) return;
 
@@ -323,20 +324,16 @@
     var topTextRaw = $("top-text").value.trim().toUpperCase();
     var bottomTextRaw = $("bottom-text").value.trim().toUpperCase();
 
-    // Scale canvas to fit viewport: max width = container width, max height = 70vh
-    var container = $("meme-canvas-container");
-    var maxW = Math.min(container.clientWidth || 550, img.naturalWidth);
-    var maxH = Math.min(window.innerHeight * 0.7, img.naturalHeight);
-    var scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
-    canvas.width = Math.round(img.naturalWidth * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
+    // Render canvas at FULL image resolution (CSS max-width/max-height scales display)
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
 
     var ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Auto-fit text: wrap lines to fit canvas width
-    var baseFontSize = state.fontSize * scale;
-    var padding = canvas.width * 0.06; // 6% padding on each side
+    // Text uses full image width — fontSize is pixel size at native resolution
+    var baseFontSize = state.fontSize;
+    var padding = canvas.width * 0.05;
     var maxTextWidth = canvas.width - padding * 2;
 
     function wrapText(ctx, text, maxWidth) {
@@ -345,8 +342,7 @@
       var currentLine = "";
       for (var i = 0; i < words.length; i++) {
         var testLine = currentLine ? currentLine + " " + words[i] : words[i];
-        var metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && currentLine !== "") {
+        if (ctx.measureText(testLine).width > maxWidth && currentLine !== "") {
           lines.push(currentLine);
           currentLine = words[i];
         } else {
@@ -357,68 +353,65 @@
       return lines;
     }
 
-    // Find optimal font size: start with base, reduce if text doesn't fit
-    function findFittingFont(ctx, text, maxWidth, baseSize) {
-      var fontSize = baseSize;
-      ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+    // Find font size: start with base, reduce only if >4 lines or single word overflows
+    function calcFont(text, maxWidth, baseSize) {
+      var fs = baseSize;
+      ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       var lines = wrapText(ctx, text, maxWidth);
-      // Reduce font size if too many lines or text too wide
-      var maxLines = 4;
-      while ((lines.length > maxLines) && fontSize > 12) {
-        fontSize -= 2;
-        ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+      // Reduce if >4 lines
+      while (lines.length > 4 && fs > 14) {
+        fs -= 2;
+        ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
         lines = wrapText(ctx, text, maxWidth);
       }
-      // Ensure no single line exceeds maxWidth
-      var allFit = false;
-      while (!allFit && fontSize > 10) {
-        allFit = true;
-        ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
-        var checkLines = wrapText(ctx, text, maxWidth);
-        for (var l = 0; l < checkLines.length; l++) {
-          if (ctx.measureText(checkLines[l]).width > maxWidth) {
-            allFit = false;
-            break;
-          }
+      // Reduce if any single word wider than maxWidth
+      var ok = false;
+      while (!ok && fs > 12) {
+        ok = true;
+        ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
+        var testLines = wrapText(ctx, text, maxWidth);
+        for (var l = 0; l < testLines.length; l++) {
+          if (ctx.measureText(testLines[l]).width > maxWidth) { ok = false; break; }
         }
-        if (!allFit) fontSize -= 1;
+        if (!ok) fs -= 1;
       }
-      ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
-      return { lines: wrapText(ctx, text, maxWidth), fontSize: fontSize };
+      ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
+      return { lines: wrapText(ctx, text, maxWidth), fontSize: fs };
     }
 
+    // Shadow settings
     ctx.fillStyle = state.textColor;
     ctx.strokeStyle = "#000000";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
+    ctx.shadowColor = "rgba(0,0,0,0.85)";
 
     // Top text
     if (topTextRaw) {
-      var topResult = findFittingFont(ctx, topTextRaw, maxTextWidth, baseFontSize);
-      ctx.font = "900 " + topResult.fontSize + "px Impact, 'Arial Black', sans-serif";
-      ctx.lineWidth = Math.max(2, topResult.fontSize * 0.08);
-      ctx.shadowColor = "rgba(0,0,0,0.8)";
-      ctx.shadowBlur = 6;
-      var topStartY = padding * 0.6;
-      for (var i = 0; i < topResult.lines.length; i++) {
-        var y = topStartY + i * (topResult.fontSize * 1.15);
-        ctx.strokeText(topResult.lines[i], canvas.width / 2, y);
-        ctx.fillText(topResult.lines[i], canvas.width / 2, y);
+      var topR = calcFont(topTextRaw, maxTextWidth, baseFontSize);
+      ctx.font = "900 " + topR.fontSize + "px Impact, 'Arial Black', sans-serif";
+      ctx.lineWidth = Math.max(2, topR.fontSize * 0.08);
+      ctx.shadowBlur = topR.fontSize * 0.15;
+      var topY = padding * 0.5;
+      for (var i = 0; i < topR.lines.length; i++) {
+        var y = topY + i * (topR.fontSize * 1.15);
+        ctx.strokeText(topR.lines[i], canvas.width / 2, y);
+        ctx.fillText(topR.lines[i], canvas.width / 2, y);
       }
     }
 
     // Bottom text
     if (bottomTextRaw) {
-      var bottomResult = findFittingFont(ctx, bottomTextRaw, maxTextWidth, baseFontSize);
-      ctx.font = "900 " + bottomResult.fontSize + "px Impact, 'Arial Black', sans-serif";
-      ctx.lineWidth = Math.max(2, bottomResult.fontSize * 0.08);
-      ctx.shadowBlur = 6;
-      var totalBottomHeight = bottomResult.lines.length * (bottomResult.fontSize * 1.15);
-      var bottomStartY = canvas.height - padding * 0.5 - totalBottomHeight;
-      for (var j = 0; j < bottomResult.lines.length; j++) {
-        var y2 = bottomStartY + j * (bottomResult.fontSize * 1.15);
-        ctx.strokeText(bottomResult.lines[j], canvas.width / 2, y2);
-        ctx.fillText(bottomResult.lines[j], canvas.width / 2, y2);
+      var botR = calcFont(bottomTextRaw, maxTextWidth, baseFontSize);
+      ctx.font = "900 " + botR.fontSize + "px Impact, 'Arial Black', sans-serif";
+      ctx.lineWidth = Math.max(2, botR.fontSize * 0.08);
+      ctx.shadowBlur = botR.fontSize * 0.15;
+      var totalH = botR.lines.length * (botR.fontSize * 1.15);
+      var botY = canvas.height - padding * 0.5 - totalH;
+      for (var j = 0; j < botR.lines.length; j++) {
+        var y2 = botY + j * (botR.fontSize * 1.15);
+        ctx.strokeText(botR.lines[j], canvas.width / 2, y2);
+        ctx.fillText(botR.lines[j], canvas.width / 2, y2);
       }
     }
     ctx.shadowBlur = 0;

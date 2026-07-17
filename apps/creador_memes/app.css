@@ -346,15 +346,18 @@ body::after {
   animation: spin 0.7s linear infinite;
 }
 
-/* ===== RESULTADO ===== */
+/* ===== RESULTADO (canvas a resolución nativa, CSS escala display) ===== */
 .meme-canvas-container {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow: auto;
   background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 #meme-canvas {
   max-width: 100%;
@@ -362,7 +365,6 @@ body::after {
   width: auto;
   height: auto;
   display: block;
-  margin: 0 auto;
   object-fit: contain;
 }
 .result-actions {
