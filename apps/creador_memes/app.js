@@ -381,31 +381,22 @@
       return lines;
     }
 
-    // Fit text — priority: fill width, max 3 lines, zone height is soft limit
-    function fitText(text, maxWidth, zoneHeight, baseSize) {
+    // Fit text — only constraint: max 3 lines + no word overflows width
+    function fitText(text, maxWidth, baseSize) {
       var fs = baseSize;
       ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       var lines = wrapText(ctx, text, maxWidth);
 
-      // If more than 3 lines, reduce font until exactly 3 lines (or fewer)
-      while (lines.length > 3 && fs > 16) {
-        fs -= 2;
+      // Reduce if > 3 lines
+      while (lines.length > 3 && fs > 14) {
+        fs -= 1;
         ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
         lines = wrapText(ctx, text, maxWidth);
       }
 
-      // If 3 lines overflow zone too much (>1.4x), reduce a bit more
-      var totalH = lines.length * fs * state.lineSpacing;
-      if (totalH > zoneHeight * 1.5 && fs > 18) {
-        var targetFs = Math.floor(zoneHeight * 1.5 / (lines.length * state.lineSpacing));
-        fs = Math.max(18, Math.min(fs, targetFs));
-        ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
-        lines = wrapText(ctx, text, maxWidth);
-      }
-
-      // Ensure no single word wider than maxWidth
+      // Ensure every word fits within maxWidth (single-word overflow)
       var ok = false;
-      while (!ok && fs > 12) {
+      while (!ok && fs > 10) {
         ok = true;
         ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
         var ck = wrapText(ctx, text, maxWidth);
@@ -436,18 +427,18 @@
       }
     }
 
-    // Top text — constrained to top 20%
+    // Top text — fills width, max 3 lines, extends beyond 20% zone if needed
     if (topTextRaw) {
-      var topFit = fitText(topTextRaw, canvas.width - paddingH * 2, topZone, state.fontSize);
+      var topFit = fitText(topTextRaw, canvas.width - paddingH * 2, state.fontSize);
       var topTotalH = topFit.lines.length * topFit.fontSize * state.lineSpacing;
       var topCenteredY = (topZone - topTotalH) / 2;
       if (topCenteredY < paddingH * 0.3) topCenteredY = paddingH * 0.3;
       drawTextLines(topFit.lines, topFit.fontSize, topCenteredY);
     }
 
-    // Bottom text — constrained to bottom 20%
+    // Bottom text — fills width, max 3 lines, extends above 80% zone if needed
     if (bottomTextRaw) {
-      var botFit = fitText(bottomTextRaw, canvas.width - paddingH * 2, canvas.height - bottomZoneStart, state.fontSize);
+      var botFit = fitText(bottomTextRaw, canvas.width - paddingH * 2, state.fontSize);
       var botTotalH = botFit.lines.length * botFit.fontSize * state.lineSpacing;
       var botZoneH = canvas.height - bottomZoneStart;
       var botCenteredY = bottomZoneStart + (botZoneH - botTotalH) / 2;
