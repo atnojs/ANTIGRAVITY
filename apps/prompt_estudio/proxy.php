@@ -163,13 +163,131 @@ function loadSkill(string $mode): string
         ? 'SKILL_MEJORADOR_PROMPT.md'
         : 'SKILL_METODO_COPILOTO.md';
 
-    $path = __DIR__ . '/skills/' . $filename;
-    $content = is_file($path) ? file_get_contents($path) : false;
+    // Intentar múltiples rutas (Hostinger a veces cambia __DIR__ o no copia subdirectorios)
+    $paths = [
+        __DIR__ . '/skills/' . $filename,
+        __DIR__ . '/../skills/' . $filename,
+        __DIR__ . '/../../skills/' . $filename,
+        dirname(__DIR__, 2) . '/skills/' . $filename,
+    ];
+
+    $content = false;
+    $triedPaths = [];
+    foreach ($paths as $path) {
+        $normalized = str_replace(['\\', '//'], '/', $path);
+        $triedPaths[] = $normalized;
+        if (is_file($normalized)) {
+            $content = file_get_contents($normalized);
+            if ($content !== false && trim($content) !== '') {
+                break;
+            }
+        }
+    }
+
+    // Fallback: si los archivos .md no están desplegados en el servidor, usar versión inline mínima
     if ($content === false || trim($content) === '') {
-        respond(500, ['ok' => false, 'error' => 'No se pudo cargar la skill seleccionada.']);
+        $content = getInlineSkill($mode);
+    }
+
+    if ($content === false || trim($content) === '') {
+        $detail = 'Archivo: ' . $filename . '. Rutas probadas: ' . implode(' | ', $triedPaths);
+        respond(500, [
+            'ok' => false,
+            'error' => 'No se pudo cargar la skill. Asegúrate de que skills/' . $filename . ' existe en el servidor.',
+            'debug' => $detail,
+        ]);
     }
 
     return $content;
+}
+
+function getInlineSkill(string $mode): string
+{
+    if ($mode === 'improver') {
+        return <<<'SKILL'
+# Mejorador profesional de prompts
+
+Convierte la entrada del usuario en el prompt más útil, preciso y proporcionado para producir el resultado deseado.
+Preserva la intención original, elimina ambigüedad y añade solo el contexto, estructura y criterios que mejoren la ejecución.
+
+## Principios
+1. FIDELIDAD: conservar objetivo, materiales, restricciones, tono, público, formato y elementos protegidos.
+2. UTILIDAD: cada instrucción debe mejorar el resultado; eliminar relleno, repetición y frases ornamentales.
+3. PRECISIÓN: convertir deseos vagos en requisitos observables y criterios verificables.
+4. MÍNIMA INTERVENCIÓN: no añadir requisitos nuevos salvo que resuelvan ambigüedad o eviten fallo probable.
+5. PROPORCIONALIDAD: no imponer plantilla larga a tarea simple.
+6. VERIFICABILIDAD: incluir criterios de aceptación cuando ayuden a comprobar la calidad.
+
+## Estructura del prompt mejorado
+1. Rol y objetivo (1-2 frases).
+2. Tarea principal concreta (qué debe hacer, no cómo).
+3. Materiales, formato de entrada y salida.
+4. Restricciones: qué SÍ y qué NO debe hacer.
+5. Criterios de aceptación verificables.
+6. Formato de salida (JSON, Markdown, tabla, texto libre, etc.).
+
+## Métricas de evaluación (0-100)
+- claridad: ¿se entiende sin ambigüedad?
+- contexto: ¿tiene suficiente información de fondo?
+- restricciones: ¿están definidos los límites?
+- formato: ¿está especificada la salida?
+- verificacion: ¿hay criterios para comprobar el resultado?
+
+No ejecutes la tarea descrita en el prompt. Tu trabajo es mejorar el prompt que otra IA ejecutará.
+SKILL;
+    }
+
+    // Método Copiloto (default)
+    return <<<'SKILL'
+# Método Copiloto — NextGen IA Hub
+
+Convierte ideas en prompts profesionales mediante: descubrir → estructurar → redactar → validar → entregar.
+
+## Fases
+A. DEFINIR: entender objetivo, contexto, usuario, materiales, restricciones y resultado esperado.
+B. CREAR PROMPT: redactar prompt final con estructura profesional, criterios de aceptación y supuestos explícitos.
+C. ENTREGAR: entregar el prompt listo para copiar. No ejecutar la tarea final.
+
+## Plantillas de prompt profesional
+Elegir la estructura más adecuada según el tipo de tarea:
+
+### Plantilla 1 — App o herramienta
+```
+[CABECERA]: tipo de usuario + objetivo principal
+[ALCANCE]: qué incluye y qué no
+[REQUISITOS TÉCNICOS]: stack, hosting, APIs, formato de archivos
+[INTERFAZ]: pantallas, componentes clave, flujo principal
+[COMPORTAMIENTO]: interacciones, estados (vacío, carga, error), validaciones
+[CRITERIOS DE ACEPTACIÓN]: 3-7 condiciones medibles
+```
+
+### Plantilla 2 — Investigación o análisis
+```
+[OBJETIVO]: qué se quiere saber o decidir
+[CONTEXTO]: antecedentes y restricciones
+[FUENTES]: tipo de fuentes esperadas
+[ENTREGABLE]: formato y profundidad
+[CRITERIOS DE CALIDAD]: qué hace que la respuesta sea útil
+```
+
+### Plantilla 3 — Imagen, diseño o creatividad
+```
+[CONCEPTO]: qué debe representar la imagen/diseño
+[ESTILO]: referencias visuales, paleta, atmósfera
+[COMPOSICIÓN]: elementos, planos, jerarquía
+[FORMATO]: dimensiones, orientación, resolución
+[RESTRICCIONES]: qué evitar (marcas, texto, personas reales...)
+```
+
+## Métricas de evaluación (0-100)
+- claridad: ¿se entiende el objetivo sin ambigüedad?
+- contexto: ¿hay suficiente información para ejecutar?
+- restricciones: ¿están los límites bien definidos?
+- formato: ¿está clara la salida esperada?
+- verificacion: ¿se puede comprobar si el resultado es correcto?
+
+No ejecutes la tarea. Entrega el prompt profesional listo para copiar y usar.
+SKILL;
 }
 
 function siteUrl(): string
