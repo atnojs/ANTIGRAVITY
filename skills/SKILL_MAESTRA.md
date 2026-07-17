@@ -142,13 +142,16 @@ Usar `apps/outfit` como referencia visual canónica. Aplicar sus tokens, profund
    - Mantener el contraste de capas: fondo profundo, panel azul translúcido y controles más oscuros o destacados; no sustituirlos por tarjetas casi negras, bordes de 1 px sin presencia o sombras grises genéricas.
 
 3. **Campos y controles**
-   - Diseñar selectores, chips y controles con la misma superficie de vidrio, borde cian y tipografía Electrolize. Al pasar el cursor, aumentar el halo y aclarar el borde sin alterar la paleta.
+   - Diseñar selectores, chips y controles con la misma superficie de vidrio, borde cian y tipografía Electrolize. Al pasar el cursor, aplicar una capa blanca translúcida al 8 % (`background: rgba(255, 255, 255, 0.08)`), aumentar el halo y aclarar el borde sin alterar la paleta.
    - Usar cian sólido para selecciones activas y un gradiente cian-verde para la acción primaria. Usar texto azul muy oscuro en esos estados.
    - Mantener botones secundarios y herramientas con borde cian, fondo azul oscuro/translúcido y halo contenido; evitar componentes blancos, violetas, rosas o estilos ajenos a esta paleta.
 
 4. **Composición**
    - Usar una anchura máxima de 1800 px, relleno exterior de 16 px y separaciones principales de 14 a 20 px. Mantener una interfaz compacta y clara, sin grandes zonas vacías ni tarjetas sobredimensionadas.
-   - Centrar una cabecera ligera, en mayúsculas, cian y con resplandor suave; no convertirla en una tarjeta independiente salvo que el flujo lo justifique.
+   - **Cabecera (header) obligatoria** — usar exactamente estos valores, copiados de `apps/dibujo_lineas_copia`:
+     - Título (`h1` o `.app-title`): `font-size: clamp(2rem, 5vw, 3.2rem)`, `font-weight: 400`, `letter-spacing: 0.04em`, `text-transform: uppercase`, `margin-bottom: 0.5rem`.
+     - Sombra del título: `text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft)` (triple halo cian).
+     - Subtítulo (`.app-subtitle`): `font-size: 1.05rem`, `letter-spacing: 0.03em`, `margin-bottom: 1.2rem`, color `var(--text-dim)`.
    - Adaptar el historial al contenido disponible sin reservar espacio inútil. En escritorio puede ser lateral y fijo; en móvil debe pasar al flujo normal a ancho completo.
 
 5. **Coherencia y validación visual**
@@ -168,13 +171,22 @@ Toda interfaz debe:
 
 ### Estado universal mientras trabaja la IA
 
-Toda llamada a un modelo debe usar exactamente el overlay de carga de referencia de `apps/escenario_modelo`, adaptando solo los nombres de clases o IDs cuando el stack lo requiera:
+Toda llamada a un modelo debe usar exactamente el overlay de carga de referencia de `apps/dibujo_lineas_copia`, adaptando solo los nombres de clases o IDs cuando el stack lo requiera:
 
-- Overlay a pantalla completa, centrado, con `gap: 1.5rem`, fondo de dos degradados radiales oscuros con cian, y `backdrop-filter: blur(32px) saturate(1.8)`.
+- Overlay a pantalla completa, centrado, con `gap: 1.5rem`.
+- **Fondo semi-transparente** (se ve el contenido detrás): usar este degradado exacto:
+  ```css
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(0, 40, 60, 0.32) 0%, rgba(0, 12, 20, 0.38) 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 60, 60, 0.20) 0%, rgba(0, 8, 14, 0.28) 60%);
+  backdrop-filter: blur(14px) saturate(1.8);
+  -webkit-backdrop-filter: blur(14px) saturate(1.8);
+  ```
+  Las opacidades clave son `0.32 / 0.38` y `0.20 / 0.28`. Si se quiere más transparencia bajar los 4 números; si se quiere más opacidad subirlos. El blur es `14px`.
 - Spinner de tres aros de 80 × 80 px y bordes de 3 px: aro exterior cian con giro de 1.2 s, aro medio verde con giro inverso de 1 s y aro interior cian con giro de 0.8 s; cada aro conserva su halo de color.
 - Texto principal exacto: `IA generando lo solicitado...`, en Electrolize, mayúsculas y color cian `#00D0D0`.
-- Panel de progreso de `min(360px, 85vw)`, borde cian, fondo `rgba(6, 16, 24, 0.8)`, desenfoque de 10 px y halo cian suave.
-- Barra de 6 px, redondeada, con fondo blanco al 8 % y relleno con gradiente cian-verde. Debe usar el movimiento indeterminado de la referencia: ancho del 40 % y animación de traslación de 1.5 s (`-100 % → 150 % → -100 %`).
+- Panel de progreso de `min(360px, 85vw)`, borde cian, fondo `rgba(6, 16, 24, 0.8)`, desenfoque de 0 px y halo cian suave.
+- Barra de 6 px, redondeada, con fondo blanco al 8 % y relleno con gradiente cian-verde. Debe usar el movimiento indeterminado de la referencia: ancho del 40 % y animación de traslación de 2.5 s (`-100 % → 150 % → -100 %`).
 - No mostrar porcentaje. El progreso se expresa siempre mediante la barra indeterminada y un estado secundario centrado y adaptado a la operación, por ejemplo: `Generando imagen 1 de 2...`, `Procesando solicitud...` o `Guardando resultado...`.
 - El contenedor usa `role="status"`, `aria-live="polite"` y `aria-busy="true"`; la barra conserva `role="progressbar"` con mínimo 0 y máximo 100.
 - Al iniciar, mostrar el overlay, bloquear el scroll del documento y deshabilitar la acción que duplicaría la petición. Al terminar o fallar, ocultarlo, restaurar el scroll y los controles, y mostrar el resultado o un error comprensible.
