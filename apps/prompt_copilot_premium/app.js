@@ -526,6 +526,25 @@
     } catch { toast('No se pudo leer el archivo.', 'error'); }
   }
 
+  // ── HISTORY: load item back into editor for rework ──
+  function loadHistoryItem(item) {
+    // Populate the textarea with the original request
+    E.userRequest.value = item.original || '';
+    updateCounter();
+
+    // Set the mode to match the saved item
+    const mode = item.mode || state.detectedMode;
+    selectMode(mode);
+
+    // Show result panel with the saved prompt
+    renderResult(item, false);
+
+    // Focus the textarea so user can start editing immediately
+    E.userRequest.focus();
+
+    toast('Prompt cargado. Puedes editarlo y volver a generar.');
+  }
+
   // ── HISTORY ITEM DELETE ──
   async function deleteHistoryItem(id) {
     try {
@@ -613,13 +632,13 @@
     E.referenceFile.addEventListener('change', () => importReferenceFile(E.referenceFile.files?.[0]));
     E.helpBtn.addEventListener('click', () => E.helpDialog.showModal());
 
-    // History list delegation
+    // History list delegation — click loads item into editor for rework
     E.historyList.addEventListener('click', (e) => {
       const openBtn = e.target.closest('.history-open');
       const delBtn = e.target.closest('.history-delete');
       if (openBtn) {
         const item = state.items.find((c) => c.id === openBtn.dataset.id);
-        if (item) renderResult(item);
+        if (item) loadHistoryItem(item);
       }
       if (delBtn) deleteHistoryItem(delBtn.dataset.id);
     });
