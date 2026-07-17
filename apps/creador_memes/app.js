@@ -103,8 +103,8 @@
     var val = parseInt(colorSlider.value, 10);
     var color = sliderToColor(val);
     state.textColor = "rgb(" + color.r + "," + color.g + "," + color.b + ")";
-    // Update thumb color via CSS variable
     colorSlider.style.setProperty("--thumb-color", color.hex);
+    var cv = $("color-val"); if (cv) cv.textContent = val;
     if (state.generatedImage) drawMemeOnCanvas();
   });
 
