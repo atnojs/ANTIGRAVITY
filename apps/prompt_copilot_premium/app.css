@@ -10,12 +10,13 @@
   --panel: rgba(23, 79, 122, 0.42);
   --panel-strong: rgba(5, 28, 42, 0.78);
   --control: rgba(2, 24, 36, 0.72);
-  --text: #efffff;
-  --text-dim: #a8d4dc;
+  --text: #eaffff;
+  --text-dim: #99CCCC;
+  --text-faint: #669999;
   --danger: #ff7676;
   --warning: #ffd166;
-  --glow: rgba(0, 208, 208, 0.72);
-  --glow-soft: rgba(0, 208, 208, 0.28);
+  --glow: rgba(0, 208, 208, 0.8);
+  --glow-soft: rgba(0, 208, 208, 0.4);
   --shadow: 0 18px 55px rgba(0, 8, 15, 0.42);
   --radius-panel: 14px;
   --radius-control: 9px;
@@ -23,38 +24,47 @@
 }
 
 /* ── RESET & BASE ── */
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  min-height: 100%;
-  background: var(--canvas-top);
   scroll-behavior: smooth;
 }
 
 body {
   min-height: 100vh;
-  margin: 0;
   color: var(--text);
   font-family: var(--font);
-  background:
-    radial-gradient(circle at 18% 2%, rgba(0, 208, 208, 0.22), transparent 31rem),
-    radial-gradient(circle at 86% 58%, rgba(0, 104, 128, 0.3), transparent 36rem),
-    linear-gradient(180deg, #001018 0%, #062f43 60%, #0e5368 100%);
+  letter-spacing: 0.02em;
+  background: linear-gradient(180deg, #001018 0%, #062f43 60%, #0E5368 100%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
 
+/* Halos cian sobre el degradado */
 body::before {
+  content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
-  content: "";
+  background:
+    radial-gradient(1000px 750px at 50% 5%, rgba(0, 208, 208, 0.25), transparent 60%),
+    radial-gradient(900px 650px at 15% 25%, rgba(0, 160, 168, 0.18), transparent 58%);
   pointer-events: none;
+  z-index: -2;
+}
+
+/* Rejilla cian */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
   background-image:
-    linear-gradient(rgba(0, 208, 208, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 208, 208, 0.15) 1px, transparent 1px);
+    linear-gradient(rgba(0, 208, 208, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 208, 208, 0.06) 1px, transparent 1px);
   background-size: 46px 46px;
-  mask-image: radial-gradient(circle at 50% 30%, #000 12%, rgba(0, 0, 0, 0.85) 45%, transparent 88%);
+  mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+  pointer-events: none;
+  z-index: -1;
   opacity: 0.85;
 }
 
@@ -127,12 +137,13 @@ select:focus-visible, summary:focus-visible, a:focus-visible {
   letter-spacing: 0.04em;
   line-height: 1;
   text-transform: uppercase;
+  color: var(--cyan);
   text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
 }
 
 .app-subtitle {
   max-width: 780px;
-  margin: 0 0 0;
+  margin: 0 0 1.2rem;
   color: var(--text-dim);
   font-size: 1.05rem;
   letter-spacing: 0.03em;
@@ -223,6 +234,9 @@ select:focus-visible, summary:focus-visible, a:focus-visible {
 .landing-title {
   margin: 0 0 8px;
   font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 400;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
 }
 
 .landing-subtitle {
