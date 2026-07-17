@@ -1,6 +1,6 @@
 /* =========================================================
-   Creador de Memes IA — app.js v2
-   Nuevo: Idea aleatoria, textos en español, layout compacto
+   Creador de Memes IA — app.js v4
+   Sliders color/tamaño/interlineado, 20%-60%-20%, subir imagen
    ========================================================= */
 (function () {
   "use strict";
@@ -37,11 +37,14 @@
     aspectRatio: "1:1",
     resolution: 1024,
     quality: "pro",
-    textColor: "#ffffff",
+    textHue: 0,              // 0-360 HSL hue
+    textSaturation: 100,     // fixed
+    textLightness: 50,       // fixed
     fontSize: 120,
+    lineSpacing: 1.15,       // multiplier
     enhancedPrompt: "",
     generatedImage: null,
-    cleanFluxImage: null,    // FLUX base image without text (for reuse)
+    cleanFluxImage: null,
     memeDataUrl: null
   };
 
@@ -59,45 +62,65 @@
     });
   }
 
-  initToggleGroup("ar-selector", function (btn) {
-    state.aspectRatio = btn.getAttribute("data-ar");
-  });
-  initToggleGroup("res-selector", function (btn) {
-    state.resolution = parseInt(btn.getAttribute("data-res"), 10);
-  });
-  initToggleGroup("quality-selector", function (btn) {
-    state.quality = btn.getAttribute("data-quality");
+  initToggleGroup("ar-selector", function (btn) { state.aspectRatio = btn.getAttribute("data-ar"); });
+  initToggleGroup("res-selector", function (btn) { state.resolution = parseInt(btn.getAttribute("data-res"), 10); });
+  initToggleGroup("quality-selector", function (btn) { state.quality = btn.getAttribute("data-quality"); });
+
+  // ===== SLIDERS (live preview) =====
+  var colorSlider = $("color-slider");
+  var colorPreview = $("color-preview");
+  colorSlider.addEventListener("input", function () {
+    state.textHue = parseInt(colorSlider.value, 10);
+    if (colorPreview) colorPreview.style.background = "hsl(" + state.textHue + ",100%,50%)";
+    if (state.generatedImage) drawMemeOnCanvas();
   });
 
-  // Color chips
-  var colorContainer = document.querySelector(".color-options");
-  if (colorContainer) {
-    colorContainer.addEventListener("click", function (e) {
-      var chip = e.target.closest(".color-chip");
-      if (!chip) return;
-      document.querySelectorAll(".color-chip").forEach(function (c) { c.classList.remove("active"); });
-      chip.classList.add("active");
-      state.textColor = chip.getAttribute("data-color");
-      if (state.generatedImage) drawMemeOnCanvas();
-    });
-  }
+  var sizeSlider = $("size-slider");
+  var sizeVal = $("size-val");
+  sizeSlider.addEventListener("input", function () {
+    state.fontSize = parseInt(sizeSlider.value, 10);
+    if (sizeVal) sizeVal.textContent = state.fontSize + "px";
+    if (state.generatedImage) drawMemeOnCanvas();
+  });
 
-  // Size buttons
-  var sizeContainer = document.querySelector(".size-options");
-  if (sizeContainer) {
-    sizeContainer.addEventListener("click", function (e) {
-      var btn = e.target.closest(".size-btn");
-      if (!btn) return;
-      document.querySelectorAll(".size-btn").forEach(function (b) { b.classList.remove("active"); });
-      btn.classList.add("active");
-      state.fontSize = parseInt(btn.getAttribute("data-size"), 10);
-      if (state.generatedImage) drawMemeOnCanvas();
-    });
-  }
+  var spacingSlider = $("spacing-slider");
+  var spacingVal = $("spacing-val");
+  spacingSlider.addEventListener("input", function () {
+    state.lineSpacing = parseInt(spacingSlider.value, 10) / 100;
+    if (spacingVal) spacingVal.textContent = Math.round(state.lineSpacing * 100) + "%";
+    if (state.generatedImage) drawMemeOnCanvas();
+  });
 
   // Text inputs re-render canvas on change
   $("top-text").addEventListener("input", function () { if (state.generatedImage) drawMemeOnCanvas(); });
   $("bottom-text").addEventListener("input", function () { if (state.generatedImage) drawMemeOnCanvas(); });
+
+  // ===== FILE UPLOAD =====
+  $("file-input").addEventListener("change", function () {
+    var file = this.files && this.files[0];
+    if (!file) return;
+    if (!file.type.match(/image\//)) { showToast("Selecciona un archivo de imagen.", false); return; }
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var dataUrl = e.target.result;
+      var img = new Image();
+      img.onload = function () {
+        state.generatedImage = img;
+        state.cleanFluxImage = dataUrl;
+        $("meme-idea").value = "(Imagen subida desde tu PC)";
+        $("final-prompt").value = "";
+        $("enhanced-prompt-area").classList.add("hidden");
+        drawMemeOnCanvas();
+        $("result-section").classList.remove("hidden");
+        $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
+        showToast("¡Imagen cargada! Escribe el texto del meme.", true);
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+    this.value = ""; // allow re-upload same file
+  });
 
   // ===== IDEA ALEATORIA =====
   $("random-idea-btn").addEventListener("click", function () {
@@ -152,65 +175,53 @@
     .then(function (data) {
       btn.disabled = false;
       btn.textContent = originalText;
-
       if (data && data.success && data.text) {
         try {
-          // Try to parse JSON from response
           var raw = data.text.trim();
-          // Remove markdown code fences if present
           raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
           var parsed = JSON.parse(raw);
-
-          // Fill the fields
           $("meme-idea").value = parsed.idea || "";
           $("final-prompt").value = parsed.prompt_imagen || "";
           $("top-text").value = parsed.texto_superior || "";
           $("bottom-text").value = parsed.texto_inferior || "";
           $("enhanced-prompt-area").classList.remove("hidden");
           state.enhancedPrompt = parsed.prompt_imagen || "";
-
           status.textContent = "✅ ¡Idea generada!";
           setTimeout(function () { status.textContent = ""; }, 4000);
         } catch (e) {
-          // Fallback: use raw text to fill idea and try to extract prompt
           $("meme-idea").value = raw;
           $("final-prompt").value = raw;
           $("enhanced-prompt-area").classList.remove("hidden");
           state.enhancedPrompt = raw;
-          $("top-text").value = "";
-          $("bottom-text").value = "";
+          $("top-text").value = ""; $("bottom-text").value = "";
           status.textContent = "✅ Idea generada (edita el prompt)";
           setTimeout(function () { status.textContent = ""; }, 4000);
         }
       } else {
-        var err = (data && data.error) ? data.error : "Error desconocido";
-        showToast("Error al generar idea: " + err, false);
+        var errMsg = (data && data.error) ? data.error : "Error desconocido";
+        showToast("Error al generar idea: " + errMsg, false);
         status.textContent = "❌ Error";
       }
     })
     .catch(function (err) {
-      btn.disabled = false;
-      btn.textContent = originalText;
+      btn.disabled = false; btn.textContent = originalText;
       showToast("Fallo de conexión: " + err.message, false);
-      status.textContent = "❌ Error de conexión";
+      status.textContent = "❌ Error";
     });
   });
 
-  // ===== PROMPT ENHANCEMENT (Copiloto — siempre en español) =====
+  // ===== PROMPT ENHANCEMENT =====
   $("enhance-prompt-btn").addEventListener("click", function () {
     var idea = $("meme-idea").value.trim();
     if (!idea) { showToast("Escribe primero la idea del meme.", false); return; }
-
-    var btn = $("enhance-prompt-btn");
-    var status = $("enhance-status");
-    btn.disabled = true;
-    status.textContent = "Mejorando prompt...";
+    var btn = $("enhance-prompt-btn"), status = $("enhance-status");
+    btn.disabled = true; status.textContent = "Mejorando prompt...";
 
     var systemPrompt = [
       "Eres un experto en crear prompts para generación de imágenes con FLUX AI.",
-      "Tu trabajo es convertir una idea de meme en un prompt detallado y profesional en ESPAÑOL.",
+      "Convierte la idea en un prompt detallado en ESPAÑOL.",
       "",
-      "REGLAS OBLIGATORIAS:",
+      "REGLAS:",
       "1. Describe la escena completa en español: sujeto, acción, entorno, iluminación, estilo.",
       "2. IMPORTANTE: La imagen NO debe contener NINGÚN texto, letra ni palabra. Imagen completamente limpia.",
       "3. Añade al final: 'no text, no words, no labels, clean image, meme format, viral style, high contrast, bold composition, dramatic lighting'.",
@@ -227,8 +238,7 @@
         system: systemPrompt,
         prompt: "Convierte esta idea en un prompt en español para FLUX:\\n\\n\"" + idea + "\"\\n\\nEntrega solo el prompt final.",
         model: "openai/gpt-4o-mini",
-        temperature: 0.7,
-        max_tokens: 600
+        temperature: 0.7, max_tokens: 600
       })
     })
     .then(function (r) { return r.json(); })
@@ -241,8 +251,7 @@
         status.textContent = "✅ Prompt mejorado";
         setTimeout(function () { status.textContent = ""; }, 3000);
       } else {
-        var err = (data && data.error) ? data.error : "Error desconocido";
-        showToast("Error al mejorar prompt: " + err, false);
+        showToast("Error al mejorar prompt: " + ((data && data.error) || "Error desconocido"), false);
         status.textContent = "❌ Error";
       }
     })
@@ -256,41 +265,28 @@
   // ===== GENERATE MEME =====
   $("generate-btn").addEventListener("click", function () {
     var prompt = $("final-prompt").value.trim() || $("meme-idea").value.trim();
-    if (!prompt) {
-      showToast("Escribe una idea o genera una aleatoria primero.", false);
-      return;
-    }
+    if (!prompt) { showToast("Escribe una idea o genera una aleatoria primero.", false); return; }
 
-    var btn = $("generate-btn");
-    var btnText = $("generate-btn-text");
-    var spinner = $("generate-spinner");
-    btn.disabled = true;
-    btnText.textContent = "GENERANDO...";
-    spinner.classList.remove("hidden");
-
+    var btn = $("generate-btn"), btnText = $("generate-btn-text"), spinner = $("generate-spinner");
+    btn.disabled = true; btnText.textContent = "GENERANDO..."; spinner.classList.remove("hidden");
     showOverlay("Generando imagen base con FLUX...");
 
     fetch("proxy.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        action: "generate",
-        prompt: prompt,
-        quality: state.quality,
-        aspectRatio: state.aspectRatio,
-        resolution: state.resolution,
-        output_format: "jpeg"
+        action: "generate", prompt: prompt,
+        quality: state.quality, aspectRatio: state.aspectRatio,
+        resolution: state.resolution, output_format: "jpeg"
       })
     })
     .then(function (r) { return r.json(); })
     .then(function (data) {
-      btn.disabled = false;
-      btnText.textContent = "GENERAR MEME";
-      spinner.classList.add("hidden");
-      hideOverlay();
+      btn.disabled = false; btnText.textContent = "GENERAR MEME";
+      spinner.classList.add("hidden"); hideOverlay();
 
       if (data && data.success && data.dataUrl) {
-        state.cleanFluxImage = data.dataUrl;  // keep clean image for reuse
+        state.cleanFluxImage = data.dataUrl;
         var img = new Image();
         img.onload = function () {
           state.generatedImage = img;
@@ -299,25 +295,20 @@
           $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
           saveToHistory(data.dataUrl, prompt);
         };
-        img.onerror = function () {
-          showToast("Error al cargar la imagen generada.", false);
-        };
+        img.onerror = function () { showToast("Error al cargar la imagen generada.", false); };
         img.src = data.dataUrl;
       } else {
-        var err = (data && data.error) ? data.error : "Error desconocido";
-        showToast("Error al generar: " + err, false);
+        showToast("Error al generar: " + ((data && data.error) || "Error desconocido"), false);
       }
     })
     .catch(function (err) {
-      btn.disabled = false;
-      btnText.textContent = "GENERAR MEME";
-      spinner.classList.add("hidden");
-      hideOverlay();
+      btn.disabled = false; btnText.textContent = "GENERAR MEME";
+      spinner.classList.add("hidden"); hideOverlay();
       showToast("Fallo de conexión: " + err.message, false);
     });
   });
 
-  // ===== CANVAS MEME (render a resolución completa, CSS escala para pantalla) =====
+  // ===== CANVAS MEME (20% top, 60% middle free, 20% bottom) =====
   function drawMemeOnCanvas() {
     if (!state.generatedImage) return;
 
@@ -326,17 +317,19 @@
     var topTextRaw = $("top-text").value.trim().toUpperCase();
     var bottomTextRaw = $("bottom-text").value.trim().toUpperCase();
 
-    // Render canvas at FULL image resolution (CSS max-width/max-height scales display)
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
 
     var ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Text uses full image width — fontSize is pixel size at native resolution
-    var baseFontSize = state.fontSize;
-    var padding = canvas.width * 0.05;
-    var maxTextWidth = canvas.width - padding * 2;
+    // Text color from HSL
+    var textColor = "hsl(" + state.textHue + ",100%,50%)";
+
+    // Zone boundaries: top 20%, bottom 20%
+    var topZone = canvas.height * 0.20;
+    var bottomZoneStart = canvas.height * 0.80;
+    var paddingH = canvas.width * 0.04;
 
     function wrapText(ctx, text, maxWidth) {
       var words = text.split(" ");
@@ -347,77 +340,78 @@
         if (ctx.measureText(testLine).width > maxWidth && currentLine !== "") {
           lines.push(currentLine);
           currentLine = words[i];
-        } else {
-          currentLine = testLine;
-        }
+        } else { currentLine = testLine; }
       }
       if (currentLine) lines.push(currentLine);
       return lines;
     }
 
-    // Find font size: start with base, reduce only if >4 lines or single word overflows
-    function calcFont(text, maxWidth, baseSize) {
+    // Fit text within a zone height
+    function fitText(text, maxWidth, zoneHeight, baseSize) {
       var fs = baseSize;
       ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       var lines = wrapText(ctx, text, maxWidth);
-      // Reduce if >4 lines
-      while (lines.length > 4 && fs > 14) {
+      var totalH = lines.length * fs * state.lineSpacing;
+
+      // Reduce until fits in zone
+      while (totalH > zoneHeight * 0.92 && fs > 16) {
         fs -= 2;
         ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
         lines = wrapText(ctx, text, maxWidth);
+        totalH = lines.length * fs * state.lineSpacing;
       }
-      // Reduce if any single word wider than maxWidth
-      var ok = false;
-      while (!ok && fs > 12) {
-        ok = true;
+      // Reduce if any word wider than maxWidth
+      var allFit = false;
+      while (!allFit && fs > 12) {
+        allFit = true;
         ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
-        var testLines = wrapText(ctx, text, maxWidth);
-        for (var l = 0; l < testLines.length; l++) {
-          if (ctx.measureText(testLines[l]).width > maxWidth) { ok = false; break; }
+        var checkLines = wrapText(ctx, text, maxWidth);
+        for (var l = 0; l < checkLines.length; l++) {
+          if (ctx.measureText(checkLines[l]).width > maxWidth) { allFit = false; break; }
         }
-        if (!ok) fs -= 1;
+        if (!allFit) fs -= 1;
       }
       ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       return { lines: wrapText(ctx, text, maxWidth), fontSize: fs };
     }
 
-    // Shadow settings
-    ctx.fillStyle = state.textColor;
+    ctx.fillStyle = textColor;
     ctx.strokeStyle = "#000000";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.shadowColor = "rgba(0,0,0,0.85)";
 
-    // Top text
+    function drawTextLines(lines, fontSize, startY) {
+      ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
+      ctx.lineWidth = Math.max(2, fontSize * 0.08);
+      ctx.shadowBlur = fontSize * 0.14;
+      for (var i = 0; i < lines.length; i++) {
+        var y = startY + i * (fontSize * state.lineSpacing);
+        ctx.strokeText(lines[i], canvas.width / 2, y);
+        ctx.fillText(lines[i], canvas.width / 2, y);
+      }
+    }
+
+    // Top text — constrained to top 20%
     if (topTextRaw) {
-      var topR = calcFont(topTextRaw, maxTextWidth, baseFontSize);
-      ctx.font = "900 " + topR.fontSize + "px Impact, 'Arial Black', sans-serif";
-      ctx.lineWidth = Math.max(2, topR.fontSize * 0.08);
-      ctx.shadowBlur = topR.fontSize * 0.15;
-      var topY = padding * 0.5;
-      for (var i = 0; i < topR.lines.length; i++) {
-        var y = topY + i * (topR.fontSize * 1.15);
-        ctx.strokeText(topR.lines[i], canvas.width / 2, y);
-        ctx.fillText(topR.lines[i], canvas.width / 2, y);
-      }
+      var topFit = fitText(topTextRaw, canvas.width - paddingH * 2, topZone, state.fontSize);
+      var topTotalH = topFit.lines.length * topFit.fontSize * state.lineSpacing;
+      var topCenteredY = (topZone - topTotalH) / 2;
+      if (topCenteredY < paddingH * 0.3) topCenteredY = paddingH * 0.3;
+      drawTextLines(topFit.lines, topFit.fontSize, topCenteredY);
     }
 
-    // Bottom text
+    // Bottom text — constrained to bottom 20%
     if (bottomTextRaw) {
-      var botR = calcFont(bottomTextRaw, maxTextWidth, baseFontSize);
-      ctx.font = "900 " + botR.fontSize + "px Impact, 'Arial Black', sans-serif";
-      ctx.lineWidth = Math.max(2, botR.fontSize * 0.08);
-      ctx.shadowBlur = botR.fontSize * 0.15;
-      var totalH = botR.lines.length * (botR.fontSize * 1.15);
-      var botY = canvas.height - padding * 0.5 - totalH;
-      for (var j = 0; j < botR.lines.length; j++) {
-        var y2 = botY + j * (botR.fontSize * 1.15);
-        ctx.strokeText(botR.lines[j], canvas.width / 2, y2);
-        ctx.fillText(botR.lines[j], canvas.width / 2, y2);
-      }
+      var botFit = fitText(bottomTextRaw, canvas.width - paddingH * 2, canvas.height - bottomZoneStart, state.fontSize);
+      var botTotalH = botFit.lines.length * botFit.fontSize * state.lineSpacing;
+      var botZoneH = canvas.height - bottomZoneStart;
+      var botCenteredY = bottomZoneStart + (botZoneH - botTotalH) / 2;
+      if (botCenteredY < bottomZoneStart) botCenteredY = bottomZoneStart + 2;
+      drawTextLines(botFit.lines, botFit.fontSize, botCenteredY);
     }
-    ctx.shadowBlur = 0;
 
+    ctx.shadowBlur = 0;
     state.memeDataUrl = canvas.toDataURL("image/jpeg", 0.92);
   }
 
@@ -427,9 +421,7 @@
     var a = document.createElement("a");
     a.href = state.memeDataUrl;
     a.download = "meme_" + Date.now() + ".jpg";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
   });
 
   // ===== HISTORY =====
@@ -438,7 +430,6 @@
   function saveToHistory(dataUrl, prompt) {
     var canvas = $("meme-canvas");
     var memeDataUrl = canvas ? canvas.toDataURL("image/jpeg", 0.85) : dataUrl;
-
     history.save({
       type: "meme",
       data: {
@@ -451,46 +442,31 @@
         cleanFluxImage: dataUrl
       },
       imageData: memeDataUrl
-    }).then(function () {
-      loadHistory();
-    }).catch(function (err) {
-      console.error("Error guardando historial:", err);
-    });
+    }).then(function () { loadHistory(); })
+    .catch(function (err) { console.error("Error guardando historial:", err); });
   }
 
   function loadHistory() {
     history.load().then(function (items) {
       renderHistory(items);
-      if (items.length > 0) {
-        $("history-section").classList.remove("hidden");
-      }
+      if (items.length > 0) $("history-section").classList.remove("hidden");
     }).catch(function () {});
   }
 
-  // Load clean FLUX image from history (without text) for reuse
   function reuseImage(item) {
-    var cleanUrl = (item.data && item.data.cleanFluxImage) ? item.data.cleanFluxImage : "";
-    if (!cleanUrl) {
-      // Fallback: use the stored image (may have old text, but user can overwrite)
-      cleanUrl = item.imageUrl || "";
-    }
+    var cleanUrl = (item.data && item.data.cleanFluxImage) ? item.data.cleanFluxImage : (item.imageUrl || "");
     if (!cleanUrl) { showToast("No se puede recuperar la imagen base.", false); return; }
-
     var reuseImg = new Image();
     reuseImg.onload = function () {
       state.generatedImage = reuseImg;
       state.cleanFluxImage = cleanUrl;
-      // Clear text fields so user writes new text
-      $("top-text").value = "";
-      $("bottom-text").value = "";
+      $("top-text").value = ""; $("bottom-text").value = "";
       drawMemeOnCanvas();
       $("result-section").classList.remove("hidden");
       $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
       showToast("Imagen cargada. Escribe el nuevo texto del meme.", true);
     };
-    reuseImg.onerror = function () {
-      showToast("Error al cargar la imagen base.", false);
-    };
+    reuseImg.onerror = function () { showToast("Error al cargar la imagen base.", false); };
     reuseImg.src = cleanUrl;
   }
 
@@ -498,11 +474,7 @@
     var container = $("history-container");
     if (!container) return;
     container.innerHTML = "";
-
-    if (!items || items.length === 0) {
-      $("history-section").classList.add("hidden");
-      return;
-    }
+    if (!items || items.length === 0) { $("history-section").classList.add("hidden"); return; }
     $("history-section").classList.remove("hidden");
 
     items.forEach(function (item) {
@@ -510,14 +482,9 @@
       if (!imageUrl && item.imageFile) {
         imageUrl = "./history_data/" + encodeURIComponent(item.imageFile + ".jpg");
       }
-
-      var wrapper = document.createElement("div");
-      wrapper.className = "history-item-wrapper";
-
+      var wrapper = document.createElement("div"); wrapper.className = "history-item-wrapper";
       var img = document.createElement("img");
-      img.src = imageUrl;
-      img.alt = "Meme generado";
-      img.loading = "lazy";
+      img.src = imageUrl; img.alt = "Meme generado"; img.loading = "lazy";
       img.addEventListener("click", function () {
         var memeImg = new Image();
         memeImg.onload = function () {
@@ -533,18 +500,13 @@
         memeImg.src = imageUrl;
       });
 
-      var actions = document.createElement("div");
-      actions.className = "history-item-actions";
+      var actions = document.createElement("div"); actions.className = "history-item-actions";
 
-      // Reuse button — loads clean FLUX image for new text
       var reuseBtn = document.createElement("button");
       reuseBtn.className = "btn-square btn-sq-blue";
       reuseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
       reuseBtn.title = "Reutilizar imagen";
-      reuseBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        reuseImage(item);
-      });
+      reuseBtn.addEventListener("click", function (e) { e.stopPropagation(); reuseImage(item); });
 
       var downBtn = document.createElement("button");
       downBtn.className = "btn-square btn-sq-green";
@@ -552,60 +514,37 @@
       downBtn.title = "Descargar";
       downBtn.addEventListener("click", function (e) {
         e.stopPropagation();
-        var a = document.createElement("a");
-        a.href = imageUrl;
+        var a = document.createElement("a"); a.href = imageUrl;
         a.download = "meme_" + item.id + ".jpg";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
       });
 
       var delBtn = document.createElement("button");
       delBtn.className = "btn-square btn-sq-red";
       delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
       delBtn.title = "Eliminar";
-      delBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        history.delete(item.id).then(function () { loadHistory(); }).catch(function () {});
-      });
+      delBtn.addEventListener("click", function (e) { e.stopPropagation(); history.delete(item.id).then(function () { loadHistory(); }).catch(function () {}); });
 
-      actions.appendChild(reuseBtn);
-      actions.appendChild(downBtn);
-      actions.appendChild(delBtn);
-      wrapper.appendChild(img);
-      wrapper.appendChild(actions);
+      actions.appendChild(reuseBtn); actions.appendChild(downBtn); actions.appendChild(delBtn);
+      wrapper.appendChild(img); wrapper.appendChild(actions);
       container.appendChild(wrapper);
     });
   }
 
   $("history-clear-btn").addEventListener("click", function () {
     if (!confirm("¿Seguro que quieres borrar todo el historial de memes?")) return;
-    history.clear().then(function () {
-      $("history-section").classList.add("hidden");
-      loadHistory();
-    }).catch(function () {
-      showToast("Error al limpiar historial.", false);
-    });
+    history.clear().then(function () { $("history-section").classList.add("hidden"); loadHistory(); })
+    .catch(function () { showToast("Error al limpiar historial.", false); });
   });
 
-  // Refresh history button
   var refreshBtn = $("history-refresh-btn");
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", function () {
-      loadHistory();
-      showToast("Historial actualizado", true);
-    });
-  }
+  if (refreshBtn) refreshBtn.addEventListener("click", function () { loadHistory(); showToast("Historial actualizado", true); });
 
   // ===== INIT =====
   document.addEventListener("DOMContentLoaded", function () {
     window.__creador_memes_loaded = true;
-    try {
-      loadHistory();
-      window.__creador_memes_domready = true;
-    } catch (e) {
-      console.error("Error inicializando creador_memes:", e);
-    }
+    try { loadHistory(); window.__creador_memes_domready = true; }
+    catch (e) { console.error("Error inicializando creador_memes:", e); }
   });
 
 })();

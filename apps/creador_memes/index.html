@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=4" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -35,6 +35,8 @@
           <div class="prompt-actions">
             <button id="enhance-prompt-btn" class="action-chip">🪄 Mejorar prompt</button>
             <button id="random-idea-btn" class="action-chip">🎲 Idea aleatoria</button>
+            <label id="upload-image-btn" class="action-chip" for="file-input" title="Subir imagen desde tu PC">📁 Mi imagen</label>
+            <input type="file" id="file-input" accept="image/*" hidden />
             <span id="enhance-status" class="enhance-status"></span>
           </div>
         </div>
@@ -57,19 +59,23 @@
             <input type="text" id="bottom-text" class="text-input" placeholder="Y EL JEFE TE PIDE QUEDARTE" maxlength="100" />
           </div>
         </div>
-        <div class="text-options-row">
-          <div class="color-options">
-            <span class="option-label">Color:</span>
-            <button class="color-chip active" data-color="#ffffff" style="background:#fff"></button>
-            <button class="color-chip" data-color="#000000" style="background:#000;border:1px solid #555"></button>
-            <button class="color-chip" data-color="#ffff00" style="background:#ff0"></button>
-            <button class="color-chip" data-color="#ff0000" style="background:#f00"></button>
+
+        <!-- SLIDERS ROW -->
+        <div class="sliders-row">
+          <div class="slider-group">
+            <span class="slider-label">Color</span>
+            <input type="range" id="color-slider" class="hue-slider" min="0" max="360" value="0" />
+            <span id="color-preview" class="color-preview-dot" style="background:hsl(0,100%,50%)"></span>
           </div>
-          <div class="size-options">
-            <span class="option-label">Tamaño:</span>
-            <button class="toggle-btn size-btn active" data-size="120">Grande</button>
-            <button class="toggle-btn size-btn" data-size="80">Mediano</button>
-            <button class="toggle-btn size-btn" data-size="52">Pequeño</button>
+          <div class="slider-group">
+            <span class="slider-label">Tamaño</span>
+            <input type="range" id="size-slider" class="range-slider" min="30" max="180" value="120" />
+            <span class="slider-val" id="size-val">120px</span>
+          </div>
+          <div class="slider-group">
+            <span class="slider-label">Interlineado</span>
+            <input type="range" id="spacing-slider" class="range-slider" min="80" max="200" value="115" />
+            <span class="slider-val" id="spacing-val">115%</span>
           </div>
         </div>
       </section>
@@ -165,6 +171,6 @@
 
 <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 <script src="history-manager.js?v=1"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
