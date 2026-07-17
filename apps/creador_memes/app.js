@@ -381,20 +381,28 @@
       return lines;
     }
 
-    // Fit text within a zone height — max 3 lines, wrap to fill width
+    // Fit text — priority: fill width, max 3 lines, zone height is soft limit
     function fitText(text, maxWidth, zoneHeight, baseSize) {
       var fs = baseSize;
       ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       var lines = wrapText(ctx, text, maxWidth);
-      var totalH = lines.length * fs * state.lineSpacing;
 
-      // If text overflows zone height, reduce font until fits (max 3 lines)
-      while ((totalH > zoneHeight * 0.95 || lines.length > 3) && fs > 16) {
+      // If more than 3 lines, reduce font until exactly 3 lines (or fewer)
+      while (lines.length > 3 && fs > 16) {
         fs -= 2;
         ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
         lines = wrapText(ctx, text, maxWidth);
-        totalH = lines.length * fs * state.lineSpacing;
       }
+
+      // If 3 lines overflow zone too much (>1.4x), reduce a bit more
+      var totalH = lines.length * fs * state.lineSpacing;
+      if (totalH > zoneHeight * 1.5 && fs > 18) {
+        var targetFs = Math.floor(zoneHeight * 1.5 / (lines.length * state.lineSpacing));
+        fs = Math.max(18, Math.min(fs, targetFs));
+        ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
+        lines = wrapText(ctx, text, maxWidth);
+      }
+
       // Ensure no single word wider than maxWidth
       var ok = false;
       while (!ok && fs > 12) {
@@ -406,6 +414,7 @@
         }
         if (!ok) fs -= 1;
       }
+
       ctx.font = "900 " + fs + "px Impact, 'Arial Black', sans-serif";
       return { lines: wrapText(ctx, text, maxWidth), fontSize: fs };
     }
