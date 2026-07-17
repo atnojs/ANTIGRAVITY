@@ -1,5 +1,6 @@
 /* =========================================================
-   Creador de Memes IA — app.js
+   Creador de Memes IA — app.js v2
+   Nuevo: Idea aleatoria, textos en español, layout compacto
    ========================================================= */
 (function () {
   "use strict";
@@ -39,8 +40,8 @@
     textColor: "#ffffff",
     fontSize: 48,
     enhancedPrompt: "",
-    generatedImage: null,  // Image element with the FLUX result
-    memeDataUrl: null      // Final canvas data URL
+    generatedImage: null,
+    memeDataUrl: null
   };
 
   // ===== TOGGLE BUTTONS =====
@@ -68,30 +69,133 @@
   });
 
   // Color chips
-  document.querySelector(".color-options").addEventListener("click", function (e) {
-    var chip = e.target.closest(".color-chip");
-    if (!chip) return;
-    document.querySelectorAll(".color-chip").forEach(function (c) { c.classList.remove("active"); });
-    chip.classList.add("active");
-    state.textColor = chip.getAttribute("data-color");
-    if (state.generatedImage) drawMemeOnCanvas();
-  });
+  var colorContainer = document.querySelector(".color-options");
+  if (colorContainer) {
+    colorContainer.addEventListener("click", function (e) {
+      var chip = e.target.closest(".color-chip");
+      if (!chip) return;
+      document.querySelectorAll(".color-chip").forEach(function (c) { c.classList.remove("active"); });
+      chip.classList.add("active");
+      state.textColor = chip.getAttribute("data-color");
+      if (state.generatedImage) drawMemeOnCanvas();
+    });
+  }
 
   // Size buttons
-  document.querySelector(".size-options").addEventListener("click", function (e) {
-    var btn = e.target.closest(".size-btn");
-    if (!btn) return;
-    document.querySelectorAll(".size-btn").forEach(function (b) { b.classList.remove("active"); });
-    btn.classList.add("active");
-    state.fontSize = parseInt(btn.getAttribute("data-size"), 10);
-    if (state.generatedImage) drawMemeOnCanvas();
-  });
+  var sizeContainer = document.querySelector(".size-options");
+  if (sizeContainer) {
+    sizeContainer.addEventListener("click", function (e) {
+      var btn = e.target.closest(".size-btn");
+      if (!btn) return;
+      document.querySelectorAll(".size-btn").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      state.fontSize = parseInt(btn.getAttribute("data-size"), 10);
+      if (state.generatedImage) drawMemeOnCanvas();
+    });
+  }
 
   // Text inputs re-render canvas on change
   $("top-text").addEventListener("input", function () { if (state.generatedImage) drawMemeOnCanvas(); });
   $("bottom-text").addEventListener("input", function () { if (state.generatedImage) drawMemeOnCanvas(); });
 
-  // ===== PROMPT ENHANCEMENT (Copiloto Method) =====
+  // ===== IDEA ALEATORIA =====
+  $("random-idea-btn").addEventListener("click", function () {
+    var btn = $("random-idea-btn");
+    var status = $("enhance-status");
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "⏳ Generando...";
+    status.textContent = "Creando idea aleatoria...";
+
+    var systemPrompt = [
+      "Eres un asistente creativo especializado en generar ideas de memes virales en español.",
+      "",
+      "Tu tarea: inventar un meme COMPLETO incluyendo:",
+      "1. Una idea/concepto visual para la imagen base (describe la escena que FLUX debe generar).",
+      "2. El texto superior del meme (frase corta e impactante, máximo 10 palabras).",
+      "3. El texto inferior del meme (frase corta que remata, máximo 10 palabras).",
+      "",
+      "REGLAS OBLIGATORIAS:",
+      "- TODO debe estar en ESPAÑOL.",
+      "- Los textos deben ser graciosos, actuales, con gancho viral.",
+      "- La idea visual debe ser FOTORREALISTA, apta para generar con FLUX.",
+      "- El prompt de imagen NO debe incluir los textos del meme, solo describir la escena.",
+      "- Especifica que la imagen debe tener zonas superior e inferior despejadas para superponer texto.",
+      "- Incluye al final del prompt visual: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
+      "- NO uses personajes famosos ni marcas registradas.",
+      "",
+      "FORMATO DE RESPUESTA (respeta EXACTAMENTE este JSON):",
+      "{",
+      '  "idea": "descripción breve de la idea (1-2 frases)",',
+      '  "prompt_imagen": "prompt detallado para FLUX (en español, 100-250 palabras)",',
+      '  "texto_superior": "FRASE SUPERIOR EN MAYÚSCULAS",',
+      '  "texto_inferior": "FRASE INFERIOR EN MAYÚSCULAS"',
+      "}",
+      "",
+      "Responde ÚNICAMENTE con el JSON, sin markdown, sin explicaciones."
+    ].join("\n");
+
+    fetch("proxy.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "openrouter",
+        system: systemPrompt,
+        prompt: "Genera una idea de meme viral completamente nueva y original. Sé creativo, sorprendente. Elige un tema actual o una situación cotidiana relatable. Todo en español.",
+        model: "openai/gpt-4o-mini",
+        temperature: 1.0,
+        max_tokens: 800
+      })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+
+      if (data && data.success && data.text) {
+        try {
+          // Try to parse JSON from response
+          var raw = data.text.trim();
+          // Remove markdown code fences if present
+          raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
+          var parsed = JSON.parse(raw);
+
+          // Fill the fields
+          $("meme-idea").value = parsed.idea || "";
+          $("final-prompt").value = parsed.prompt_imagen || "";
+          $("top-text").value = parsed.texto_superior || "";
+          $("bottom-text").value = parsed.texto_inferior || "";
+          $("enhanced-prompt-area").classList.remove("hidden");
+          state.enhancedPrompt = parsed.prompt_imagen || "";
+
+          status.textContent = "✅ ¡Idea generada!";
+          setTimeout(function () { status.textContent = ""; }, 4000);
+        } catch (e) {
+          // Fallback: use raw text to fill idea and try to extract prompt
+          $("meme-idea").value = raw;
+          $("final-prompt").value = raw;
+          $("enhanced-prompt-area").classList.remove("hidden");
+          state.enhancedPrompt = raw;
+          $("top-text").value = "";
+          $("bottom-text").value = "";
+          status.textContent = "✅ Idea generada (edita el prompt)";
+          setTimeout(function () { status.textContent = ""; }, 4000);
+        }
+      } else {
+        var err = (data && data.error) ? data.error : "Error desconocido";
+        showToast("Error al generar idea: " + err, false);
+        status.textContent = "❌ Error";
+      }
+    })
+    .catch(function (err) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      showToast("Fallo de conexión: " + err.message, false);
+      status.textContent = "❌ Error de conexión";
+    });
+  });
+
+  // ===== PROMPT ENHANCEMENT (Copiloto — siempre en español) =====
   $("enhance-prompt-btn").addEventListener("click", function () {
     var idea = $("meme-idea").value.trim();
     if (!idea) { showToast("Escribe primero la idea del meme.", false); return; }
@@ -101,20 +205,18 @@
     btn.disabled = true;
     status.textContent = "Mejorando prompt...";
 
-    // Copiloto methodology: convert a rough idea into a detailed FLUX prompt
     var systemPrompt = [
       "Eres un experto en crear prompts para generación de imágenes con FLUX AI.",
-      "Tu trabajo es convertir una idea vaga de un meme en un prompt detallado y profesional para FLUX.",
+      "Tu trabajo es convertir una idea de meme en un prompt detallado y profesional en ESPAÑOL.",
       "",
       "REGLAS OBLIGATORIAS:",
-      "1. Describe la escena completa: sujeto, acción, entorno, iluminación, estilo visual.",
-      "2. El prompt debe ser en español, descriptivo y específico.",
-      "3. Especifica que la imagen debe tener espacio para texto de meme (zonas superior e inferior con fondo liso o degradado oscuro donde se pueda leer texto blanco).",
-      "4. Añade al final del prompt: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
-      "5. El estilo debe ser fotorrealista o semi-fotorrealista, nunca cartoon o dibujo.",
-      "6. NO describas el texto del meme en el prompt de imagen. Solo describe la escena/imagen base.",
-      "7. Entrega ÚNICAMENTE el prompt final en español, sin comillas, sin introducción, sin comentarios.",
-      "8. Longitud máxima: 300 palabras."
+      "1. Describe la escena completa en español: sujeto, acción, entorno, iluminación, estilo.",
+      "2. Especifica que la imagen debe tener espacios superior e inferior despejados para texto.",
+      "3. Añade al final: 'meme format, viral style, high contrast, bold composition, dramatic lighting'.",
+      "4. Estilo fotorrealista o semi-fotorrealista, NUNCA cartoon.",
+      "5. NO incluyas el texto del meme en el prompt de imagen. Solo la escena base.",
+      "6. Entrega ÚNICAMENTE el prompt final en español, sin comillas, sin introducción.",
+      "7. Máximo 250 palabras."
     ].join("\n");
 
     fetch("proxy.php", {
@@ -123,7 +225,7 @@
       body: JSON.stringify({
         action: "openrouter",
         system: systemPrompt,
-        prompt: "Convierte esta idea en un prompt para FLUX que genere la imagen base de un meme:\n\n\"" + idea + "\"\n\nEntrega solo el prompt final.",
+        prompt: "Convierte esta idea en un prompt en español para FLUX:\\n\\n\"" + idea + "\"\\n\\nEntrega solo el prompt final.",
         model: "openai/gpt-4o-mini",
         temperature: 0.7,
         max_tokens: 600
@@ -147,7 +249,7 @@
     .catch(function (err) {
       btn.disabled = false;
       showToast("Fallo de conexión: " + err.message, false);
-      status.textContent = "❌ Error de conexión";
+      status.textContent = "❌ Error";
     });
   });
 
@@ -155,11 +257,8 @@
   $("generate-btn").addEventListener("click", function () {
     var prompt = $("final-prompt").value.trim() || $("meme-idea").value.trim();
     if (!prompt) {
-      // Try to use enhanced prompt or raw idea
-      var rawIdea = $("meme-idea").value.trim();
-      if (!rawIdea) { showToast("Escribe la idea del meme y mejora el prompt primero.", false); return; }
-      // Use raw idea if no enhanced prompt
-      prompt = "Meme image: " + rawIdea + ". Photorealistic, high contrast, dramatic lighting, meme format with space for text overlay, bold composition.";
+      showToast("Escribe una idea o genera una aleatoria primero.", false);
+      return;
     }
 
     var btn = $("generate-btn");
@@ -191,15 +290,12 @@
       hideOverlay();
 
       if (data && data.success && data.dataUrl) {
-        // Load the generated image
         var img = new Image();
         img.onload = function () {
           state.generatedImage = img;
           drawMemeOnCanvas();
           $("result-section").classList.remove("hidden");
-          // Scroll to result
           $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
-          // Save to history
           saveToHistory(data.dataUrl, prompt);
         };
         img.onerror = function () {
@@ -214,7 +310,7 @@
     .catch(function (err) {
       btn.disabled = false;
       btnText.textContent = "GENERAR MEME";
-      spinner.classList.remove("hidden");
+      spinner.classList.add("hidden");
       hideOverlay();
       showToast("Fallo de conexión: " + err.message, false);
     });
@@ -229,17 +325,14 @@
     var topText = $("top-text").value.trim().toUpperCase();
     var bottomText = $("bottom-text").value.trim().toUpperCase();
 
-    // Set canvas size to match image aspect ratio, max width 600
-    var maxWidth = 600;
+    var maxWidth = 550;
     var scale = Math.min(maxWidth / img.naturalWidth, 1);
     canvas.width = Math.round(img.naturalWidth * scale);
     canvas.height = Math.round(img.naturalHeight * scale);
 
     var ctx = canvas.getContext("2d");
-    // Draw image
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Text settings
     var fontSize = state.fontSize * scale;
     ctx.font = "900 " + fontSize + "px Impact, 'Arial Black', sans-serif";
     ctx.fillStyle = state.textColor;
@@ -249,21 +342,18 @@
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 8;
 
-    // Top text
     if (topText) {
       var topY = fontSize * 1.1;
       ctx.strokeText(topText, canvas.width / 2, topY);
       ctx.fillText(topText, canvas.width / 2, topY);
     }
 
-    // Bottom text
     if (bottomText) {
       var bottomY = canvas.height - fontSize * 0.4;
       ctx.strokeText(bottomText, canvas.width / 2, bottomY);
       ctx.fillText(bottomText, canvas.width / 2, bottomY);
     }
 
-    // Store meme data URL
     state.memeDataUrl = canvas.toDataURL("image/jpeg", 0.92);
   }
 
@@ -337,7 +427,6 @@
       img.alt = "Meme generado";
       img.loading = "lazy";
       img.addEventListener("click", function () {
-        // Load this meme back
         var memeImg = new Image();
         memeImg.onload = function () {
           state.generatedImage = memeImg;
@@ -355,7 +444,6 @@
       var actions = document.createElement("div");
       actions.className = "history-item-actions";
 
-      // Download button
       var downBtn = document.createElement("button");
       downBtn.className = "btn-square btn-sq-green";
       downBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>';
@@ -370,7 +458,6 @@
         document.body.removeChild(a);
       });
 
-      // Delete button
       var delBtn = document.createElement("button");
       delBtn.className = "btn-square btn-sq-red";
       delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
@@ -393,10 +480,19 @@
     history.clear().then(function () {
       $("history-section").classList.add("hidden");
       loadHistory();
-    }).catch(function (err) {
+    }).catch(function () {
       showToast("Error al limpiar historial.", false);
     });
   });
+
+  // Refresh history button
+  var refreshBtn = $("history-refresh-btn");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", function () {
+      loadHistory();
+      showToast("Historial actualizado", true);
+    });
+  }
 
   // ===== INIT =====
   document.addEventListener("DOMContentLoaded", function () {

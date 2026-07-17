@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=1" />
+  <link rel="stylesheet" href="app.css?v=2" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -27,21 +27,20 @@
     <!-- COLUMNA IZQUIERDA -->
     <div class="main-col">
 
-      <!-- CONCEPTO DEL MEME -->
+      <!-- IDEA DEL MEME -->
       <section class="section-card section-concepto">
         <h2 class="section-title">🎯 Idea del Meme</h2>
         <div class="prompt-wrap">
-          <textarea id="meme-idea" class="prompt-input" rows="3" placeholder="Ej: Un gato con corbata en una oficina, mirando fijamente a cámara, con cara de 'es lunes otra vez'..."></textarea>
+          <textarea id="meme-idea" class="prompt-input" rows="2" placeholder="Ej: Un gato con corbata en una oficina, con cara de 'es lunes otra vez'..."></textarea>
           <div class="prompt-actions">
-            <button id="enhance-prompt-btn" class="action-chip">
-              🪄 Mejorar prompt con IA
-            </button>
+            <button id="enhance-prompt-btn" class="action-chip">🪄 Mejorar prompt</button>
+            <button id="random-idea-btn" class="action-chip">🎲 Idea aleatoria</button>
             <span id="enhance-status" class="enhance-status"></span>
           </div>
         </div>
         <div id="enhanced-prompt-area" class="enhanced-prompt-area hidden">
           <label class="field-label">Prompt mejorado (editable):</label>
-          <textarea id="final-prompt" class="prompt-input" rows="4" placeholder="El prompt mejorado aparecerá aquí..."></textarea>
+          <textarea id="final-prompt" class="prompt-input" rows="3" placeholder="El prompt mejorado aparecerá aquí..."></textarea>
         </div>
       </section>
 
@@ -50,24 +49,24 @@
         <h2 class="section-title">💬 Texto del Meme</h2>
         <div class="meme-text-inputs">
           <div class="text-field">
-            <label class="field-label">Texto superior:</label>
-            <input type="text" id="top-text" class="text-input" placeholder="CUANDO ES VIERNES..." maxlength="80" />
+            <label class="field-label">Texto superior</label>
+            <input type="text" id="top-text" class="text-input" placeholder="CUANDO ES VIERNES..." maxlength="100" />
           </div>
           <div class="text-field">
-            <label class="field-label">Texto inferior:</label>
-            <input type="text" id="bottom-text" class="text-input" placeholder="Y EL JEFE TE PIDE QUEDARTE" maxlength="80" />
+            <label class="field-label">Texto inferior</label>
+            <input type="text" id="bottom-text" class="text-input" placeholder="Y EL JEFE TE PIDE QUEDARTE" maxlength="100" />
           </div>
         </div>
         <div class="text-options-row">
           <div class="color-options">
-            <span class="field-label">Color texto:</span>
+            <span class="option-label">Color:</span>
             <button class="color-chip active" data-color="#ffffff" style="background:#fff"></button>
-            <button class="color-chip" data-color="#000000" style="background:#000;border:1px solid #444"></button>
+            <button class="color-chip" data-color="#000000" style="background:#000;border:1px solid #555"></button>
             <button class="color-chip" data-color="#ffff00" style="background:#ff0"></button>
             <button class="color-chip" data-color="#ff0000" style="background:#f00"></button>
           </div>
           <div class="size-options">
-            <span class="field-label">Tamaño:</span>
+            <span class="option-label">Tamaño:</span>
             <button class="toggle-btn size-btn active" data-size="48">Grande</button>
             <button class="toggle-btn size-btn" data-size="36">Mediano</button>
             <button class="toggle-btn size-btn" data-size="24">Pequeño</button>
@@ -75,56 +74,55 @@
         </div>
       </section>
 
-      <!-- CONTROLES -->
-      <section class="section-card section-controls">
-        <div class="controls-stack">
-          <div class="control-line">
-            <span class="control-line-label">Formato</span>
-            <div class="toggle-row" id="ar-selector">
-              <button class="toggle-btn active" data-ar="1:1">1:1</button>
-              <button class="toggle-btn" data-ar="16:9">16:9</button>
-              <button class="toggle-btn" data-ar="9:16">9:16</button>
-              <button class="toggle-btn" data-ar="4:3">4:3</button>
-              <button class="toggle-btn" data-ar="3:4">3:4</button>
+      <!-- CONTROLES + GENERAR (misma fila compacta) -->
+      <div class="bottom-row">
+        <section class="section-card section-controls">
+          <div class="controls-inline">
+            <div class="control-item">
+              <span class="control-label">AR</span>
+              <div class="toggle-row-inline" id="ar-selector">
+                <button class="toggle-btn active" data-ar="1:1">1:1</button>
+                <button class="toggle-btn" data-ar="16:9">16:9</button>
+                <button class="toggle-btn" data-ar="9:16">9:16</button>
+                <button class="toggle-btn" data-ar="4:3">4:3</button>
+                <button class="toggle-btn" data-ar="3:4">3:4</button>
+              </div>
+            </div>
+            <div class="control-sep"></div>
+            <div class="control-item">
+              <span class="control-label">Modelo</span>
+              <div class="toggle-row-inline" id="quality-selector">
+                <button class="toggle-btn active" data-quality="pro">PRO</button>
+                <button class="toggle-btn" data-quality="max">MAX</button>
+              </div>
+            </div>
+            <div class="control-sep"></div>
+            <div class="control-item">
+              <span class="control-label">Resolución</span>
+              <div class="toggle-row-inline" id="res-selector">
+                <button class="toggle-btn" data-res="512">512</button>
+                <button class="toggle-btn active" data-res="1024">1024</button>
+                <button class="toggle-btn" data-res="2048">2048</button>
+                <button class="toggle-btn" data-res="4096">4096</button>
+              </div>
             </div>
           </div>
-          <div class="control-line">
-            <span class="control-line-label">Resolución</span>
-            <div class="toggle-row" id="res-selector">
-              <button class="toggle-btn" data-res="512">512</button>
-              <button class="toggle-btn active" data-res="1024">1024</button>
-              <button class="toggle-btn" data-res="2048">2048</button>
-              <button class="toggle-btn" data-res="4096">4096</button>
-            </div>
-          </div>
-          <div class="control-line">
-            <span class="control-line-label">Modelo</span>
-            <div class="toggle-row" id="quality-selector">
-              <button class="toggle-btn active" data-quality="pro">PRO</button>
-              <button class="toggle-btn" data-quality="max">MAX</button>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- GENERAR -->
-      <section class="section-generate">
         <button id="generate-btn" class="btn-generate">
           <span id="generate-btn-text">GENERAR MEME</span>
           <div id="generate-spinner" class="spinner-generate hidden"></div>
         </button>
-      </section>
+      </div>
 
-      <!-- RESULTADO (canvas meme) -->
+      <!-- RESULTADO -->
       <section id="result-section" class="section-card hidden">
         <h2 class="section-title">🖼️ Resultado</h2>
         <div id="meme-canvas-container" class="meme-canvas-container">
           <canvas id="meme-canvas"></canvas>
         </div>
         <div class="result-actions">
-          <button id="download-btn" class="btn-generate" style="max-width:220px;font-size:0.8rem;padding:10px 20px">
-            ⬇ Descargar Meme
-          </button>
+          <button id="download-btn" class="btn-download-meme">⬇ Descargar Meme</button>
         </div>
       </section>
 
@@ -135,6 +133,9 @@
       <div class="history-header">
         <h2 class="section-title">📸 Historial</h2>
         <button id="history-clear-btn" class="action-chip" style="font-size:0.6rem;padding:4px 10px">Limpiar</button>
+      </div>
+      <div class="history-header-actions">
+        <button id="history-refresh-btn" class="action-chip" style="font-size:0.55rem;padding:3px 8px">↻ Refrescar</button>
       </div>
       <div id="history-container" class="history-grid"></div>
     </aside>
@@ -164,6 +165,6 @@
 
 <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 <script src="history-manager.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>
