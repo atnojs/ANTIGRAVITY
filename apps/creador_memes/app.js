@@ -38,7 +38,7 @@
     resolution: 1024,
     quality: "pro",
     textColor: "#ffffff",
-    fontSize: 48,
+    fontSize: 120,
     enhancedPrompt: "",
     generatedImage: null,
     cleanFluxImage: null,    // FLUX base image without text (for reuse)
