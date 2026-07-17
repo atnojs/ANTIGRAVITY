@@ -438,6 +438,11 @@
     a.href = state.memeDataUrl;
     a.download = "meme_" + Date.now() + ".jpg";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    // Also save to history so the new text version is persisted
+    var baseImage = state.cleanFluxImage || state.memeDataUrl;
+    var prompt = $("meme-idea").value || "(Meme descargado)";
+    saveToHistory(baseImage, prompt);
+    showToast("Meme descargado y guardado en historial.", true);
   });
 
   // ===== HISTORY =====
