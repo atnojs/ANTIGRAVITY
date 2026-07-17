@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Convierte ideas en prompts profesionales o mejora los que ya tienes. Sin conocimientos de IA.">
+  <meta name="theme-color" content="#001018">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <title>Prompt Copilot Premium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Saltar al contenido</a>
+
+  <div class="app-shell">
+    <!-- ── HEADER ── -->
+    <header class="app-header" aria-labelledby="appTitle">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">PC</div>
+        <div>
+          <h1 id="appTitle" class="app-title">Prompt Copilot Premium</h1>
+          <p class="app-subtitle">Convierte lo que tienes en la cabeza en una instrucción que cualquier IA entiende a la primera.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="helpBtn" class="button button-secondary" type="button" aria-haspopup="dialog">
+          <span aria-hidden="true">?</span> Cómo funciona
+        </button>
+        <button id="resetBtn" class="button button-secondary" type="button">
+          <span aria-hidden="true">＋</span> Empezar de nuevo
+        </button>
+      </div>
+    </header>
+
+    <!-- ── MAIN ── -->
+    <main id="mainContent" class="workspace">
+      <!-- HISTORY PANEL -->
+      <aside class="history-panel glass-panel" aria-labelledby="historyTitle">
+        <div class="panel-heading compact-heading">
+          <div>
+            <p class="eyebrow">Tu biblioteca</p>
+            <h2 id="historyTitle">Historial</h2>
+          </div>
+          <button id="clearHistoryBtn" class="icon-button" type="button" title="Vaciar historial" aria-label="Vaciar historial">
+            <span aria-hidden="true">⌫</span>
+          </button>
+        </div>
+        <label class="search-field" for="historySearch">
+          <span class="sr-only">Buscar en el historial</span>
+          <span aria-hidden="true">⌕</span>
+          <input id="historySearch" type="search" placeholder="Buscar prompt...">
+        </label>
+        <div id="historyStatus" class="inline-status" aria-live="polite"></div>
+        <div id="historyList" class="history-list" role="list"></div>
+        <div id="historyEmpty" class="empty-state">
+          <div class="empty-icon" aria-hidden="true">◇</div>
+          <p>Aquí aparecerán tus prompts guardados.</p>
+        </div>
+      </aside>
+
+      <!-- MAIN COLUMN -->
+      <div class="main-column">
+        <!-- ── STEP 1: LANDING ── -->
+        <section id="landingPanel" class="landing-panel" aria-labelledby="landingTitle">
+          <h2 id="landingTitle" class="landing-title">¿Qué necesitas hacer?</h2>
+          <p class="landing-subtitle">Elige una opción. Si no lo tienes claro, la app lo detecta automáticamente.</p>
+
+          <div class="landing-cards">
+            <button id="landingCopilot" class="landing-card" type="button" aria-describedby="copilotDesc">
+              <span class="landing-icon" aria-hidden="true">◎</span>
+              <span class="landing-card-body">
+                <strong>Tengo una idea y necesito convertirla en un buen prompt</strong>
+                <small id="copilotDesc">Describe en lenguaje normal lo que quieres conseguir. Prompt Copilot lo convierte en una instrucción profesional lista para usar.</small>
+              </span>
+              <span class="landing-arrow" aria-hidden="true">→</span>
+            </button>
+
+            <button id="landingImprover" class="landing-card" type="button" aria-describedby="improverDesc">
+              <span class="landing-icon" aria-hidden="true">↟</span>
+              <span class="landing-card-body">
+                <strong>Ya tengo un prompt y quiero mejorarlo</strong>
+                <small id="improverDesc">Pega tu prompt actual. El Mejorador conserva tu intención y corrige estructura, precisión y formato.</small>
+              </span>
+              <span class="landing-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+
+          <p class="landing-auto-hint">
+            <span aria-hidden="true">✦</span>
+            También puedes empezar a escribir directamente. La app detecta si necesita crear o mejorar.
+          </p>
+        </section>
+
+        <!-- ── STEP 2: INPUT PANEL ── -->
+        <section id="inputPanel" class="input-panel glass-panel" aria-labelledby="inputTitle" hidden>
+          <!-- Detection badge -->
+          <div id="detectionBadge" class="detection-badge" aria-live="polite" hidden>
+            <span class="detection-badge-icon" aria-hidden="true">✦</span>
+            <span id="detectionText">Modo automático</span>
+            <button id="switchModeBtn" class="detection-switch" type="button">Cambiar a Mejorador</button>
+          </div>
+
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow" id="stepEyebrow">Paso 1</p>
+              <h2 id="inputTitle">Cuéntame qué necesitas</h2>
+              <p id="inputHint">Escríbelo como se lo explicarías a un compañero. No necesitas saber de inteligencia artificial.</p>
+            </div>
+            <span id="charCounter" class="character-counter">0 / 12.000</span>
+          </div>
+
+          <!-- TASK TYPE CHIPS (visible in copilot mode) -->
+          <div id="taskTypeRow" class="task-type-row" aria-label="Tipo de tarea">
+            <span class="task-type-label">Tipo de tarea:</span>
+            <div class="task-type-chips" role="radiogroup" aria-label="Selecciona el tipo de tarea">
+              <button class="task-chip is-active" type="button" data-type="auto" role="radio" aria-checked="true">Automático</button>
+              <button class="task-chip" type="button" data-type="app_web" role="radio" aria-checked="false">App / Web</button>
+              <button class="task-chip" type="button" data-type="investigacion" role="radio" aria-checked="false">Investigación</button>
+              <button class="task-chip" type="button" data-type="asistente" role="radio" aria-checked="false">Asistente</button>
+              <button class="task-chip" type="button" data-type="imagen" role="radio" aria-checked="false">Imagen</button>
+              <button class="task-chip" type="button" data-type="redaccion" role="radio" aria-checked="false">Redacción</button>
+              <button class="task-chip" type="button" data-type="programacion" role="radio" aria-checked="false">Programación</button>
+            </div>
+          </div>
+
+          <!-- QUICK EXAMPLES -->
+          <div class="quick-examples" id="quickExamples" aria-label="Ejemplos rápidos">
+            <button class="example-chip" type="button" data-example="Quiero crear una app sencilla para organizar pedidos de productos personalizados, con clientes, estado del pedido, importes y envío del resumen por WhatsApp.">App de pedidos</button>
+            <button class="example-chip" type="button" data-example="Mejora este prompt: crea una imagen publicitaria de una sudadera personalizada con aspecto profesional.">Prompt de imagen</button>
+            <button class="example-chip" type="button" data-example="Necesito investigar qué modelo de inteligencia artificial es más barato para analizar imágenes y devolver un JSON fiable.">Investigación</button>
+            <button class="example-chip" type="button" data-example="Configura un asistente que me ayude a revisar contratos de alquiler, señalando cláusulas abusivas y explicando cada punto en lenguaje claro.">Asistente legal</button>
+            <button class="example-chip" type="button" data-example="Redacta un email para clientes anunciando el lanzamiento de una nueva colección de verano, tono cercano pero profesional, con un descuento del 15% por tiempo limitado.">Email marketing</button>
+          </div>
+
+          <form id="promptForm" novalidate>
+            <div class="field-group primary-field">
+              <label for="userRequest" id="requestLabel">Tu idea o prompt</label>
+              <textarea id="userRequest" name="userRequest" rows="8" maxlength="12000" required
+                placeholder="Ejemplo: Quiero una app sencilla para organizar pedidos de camisetas personalizadas y enviar el resumen por WhatsApp."></textarea>
+              <div id="requestError" class="field-error" aria-live="polite"></div>
+            </div>
+
+            <!-- ADVANCED OPTIONS (collapsed by default) -->
+            <details class="advanced-panel">
+              <summary>
+                <span>Ajustes avanzados</span>
+                <small>Herramienta de destino, audiencia, restricciones...</small>
+              </summary>
+              <div class="advanced-grid">
+                <div class="field-group">
+                  <label for="targetTool">¿Dónde vas a usarlo?</label>
+                  <select id="targetTool" name="targetTool">
+                    <option value="universal">Universal / No lo sé</option>
+                    <option value="chatgpt">ChatGPT / OpenAI</option>
+                    <option value="claude">Claude</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="image">Flux / herramienta de imagen</option>
+                    <option value="coding">Agente de programación</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label for="depth">Nivel de detalle</label>
+                  <select id="depth" name="depth">
+                    <option value="profesional">Profesional</option>
+                    <option value="rapido">Rápido y compacto</option>
+                    <option value="exhaustivo">Máxima precisión</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label for="audience">¿Para quién es?</label>
+                  <input id="audience" name="audience" type="text" maxlength="300" placeholder="Ej.: personas mayores, clientes, programadores...">
+                </div>
+                <div class="field-group">
+                  <label for="desiredFormat">Formato final</label>
+                  <input id="desiredFormat" name="desiredFormat" type="text" maxlength="300" placeholder="Ej.: JSON, tabla, imagen 16:9...">
+                </div>
+                <div class="field-group full-width">
+                  <label for="constraints">Qué debe respetar o evitar</label>
+                  <textarea id="constraints" name="constraints" rows="3" maxlength="2500" placeholder="Ej.: no modificar el logo, responder en español, no inventar datos..."></textarea>
+                </div>
+                <div class="field-group full-width">
+                  <label for="context">Contexto adicional</label>
+                  <textarea id="context" name="context" rows="3" maxlength="5000" placeholder="Incluye datos, ejemplos o información que la IA deba conocer."></textarea>
+                </div>
+                <div class="field-group full-width">
+                  <label for="referenceFile">Importar texto desde un archivo</label>
+                  <input id="referenceFile" type="file" accept=".txt,.md,.json,.csv,text/plain,text/markdown,application/json,text/csv">
+                  <small class="field-help">El archivo se lee en tu navegador. Máximo 1 MB.</small>
+                </div>
+              </div>
+            </details>
+
+            <div class="privacy-note">
+              <span aria-hidden="true">▣</span>
+              <p>Tu clave de OpenRouter permanece en el servidor. Esta página nunca la recibe ni la muestra.</p>
+            </div>
+
+            <button id="generateBtn" class="button button-primary generate-button" type="submit">
+              <span aria-hidden="true">✦</span>
+              <span id="generateBtnText">Crear prompt premium</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- ── RESULT PANEL ── -->
+        <section id="resultPanel" class="result-panel glass-panel" aria-labelledby="resultTitle" hidden>
+          <div class="result-header">
+            <div>
+              <p class="eyebrow">Resultado</p>
+              <h2 id="resultTitle">Tu prompt está listo</h2>
+              <p id="resultMeta">Procesado con el modo automático.</p>
+            </div>
+            <div class="score-card" aria-label="Puntuación de calidad">
+              <div class="score-ring" id="scoreRing">
+                <strong id="qualityScore">0</strong>
+                <span>/100</span>
+              </div>
+              <div>
+                <small>Calidad estimada</small>
+                <strong id="scoreLabel">Pendiente</strong>
+              </div>
+            </div>
+          </div>
+
+          <div id="metricsGrid" class="metrics-grid" aria-label="Métricas del prompt"></div>
+
+          <!-- ORIGINAL VS IMPROVED (improver mode) -->
+          <div id="comparisonPanel" class="comparison-panel" hidden>
+            <div class="comparison-col">
+              <h3 class="comparison-title original-title">Prompt original</h3>
+              <div id="originalContent" class="comparison-box original-box"></div>
+            </div>
+            <div class="comparison-divider" aria-hidden="true">
+              <span>→</span>
+            </div>
+            <div class="comparison-col">
+              <h3 class="comparison-title improved-title">Prompt mejorado</h3>
+              <div id="improvedContent" class="comparison-box improved-box"></div>
+            </div>
+          </div>
+
+          <div class="result-tabs" role="tablist" aria-label="Secciones del resultado">
+            <button id="promptTab" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="promptPane" data-tab="promptPane">Prompt final</button>
+            <button id="changesTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="changesPane" data-tab="changesPane">Mejoras</button>
+            <button id="assumptionsTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="assumptionsPane" data-tab="assumptionsPane">Supuestos</button>
+            <button id="validationTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="validationPane" data-tab="validationPane">Validación</button>
+          </div>
+
+          <div id="promptPane" class="tab-pane is-active" role="tabpanel" aria-labelledby="promptTab">
+            <label class="sr-only" for="finalPrompt">Prompt final</label>
+            <textarea id="finalPrompt" class="result-editor" spellcheck="false"></textarea>
+          </div>
+          <div id="changesPane" class="tab-pane" role="tabpanel" aria-labelledby="changesTab" hidden>
+            <div id="changesContent" class="rich-result"></div>
+          </div>
+          <div id="assumptionsPane" class="tab-pane" role="tabpanel" aria-labelledby="assumptionsTab" hidden>
+            <div id="assumptionsContent" class="rich-result"></div>
+          </div>
+          <div id="validationPane" class="tab-pane" role="tabpanel" aria-labelledby="validationTab" hidden>
+            <div id="validationContent" class="rich-result"></div>
+          </div>
+
+          <div class="result-actions">
+            <button id="copyPromptBtn" class="button button-primary" type="button">Copiar prompt</button>
+            <button id="downloadPromptBtn" class="button button-secondary" type="button">Descargar .md</button>
+            <button id="saveEditedBtn" class="button button-secondary" type="button">Guardar cambios</button>
+          </div>
+          <div id="resultStatus" class="inline-status" aria-live="polite"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── HELP DIALOG ── -->
+  <dialog id="helpDialog" class="help-dialog">
+    <form method="dialog">
+      <button class="dialog-close" type="submit" aria-label="Cerrar">×</button>
+      <p class="eyebrow">Guía rápida</p>
+      <h2>No necesitas saber de inteligencia artificial</h2>
+      <ol class="help-steps">
+        <li><strong>Explica tu objetivo</strong><span>Utiliza lenguaje normal. La app detecta si crear o mejorar.</span></li>
+        <li><strong>Confirma el tipo de tarea</strong><span>Los chips azules ayudan a afinar el resultado.</span></li>
+        <li><strong>Copia el resultado</strong><span>Pégalo en ChatGPT, Claude, Gemini, Flux o tu herramienta habitual.</span></li>
+      </ol>
+      <div class="help-callout">
+        <strong>¿Copiloto o Mejorador?</strong>
+        <p>Copiloto construye una instrucción desde cero a partir de tu idea. El Mejorador optimiza un prompt que ya tienes escrito.</p>
+      </div>
+      <button class="button button-primary" type="submit">Entendido</button>
+    </form>
+  </dialog>
+
+  <!-- ── LOADING OVERLAY ── -->
+  <div id="aiOverlay" class="ai-overlay" hidden>
+    <div class="ai-loader" role="status" aria-live="polite" aria-busy="true">
+      <div class="triple-spinner" aria-hidden="true">
+        <span class="spinner-ring ring-outer"></span>
+        <span class="spinner-ring ring-middle"></span>
+        <span class="spinner-ring ring-inner"></span>
+      </div>
+      <p class="loader-title">IA generando lo solicitado...</p>
+      <div class="progress-panel">
+        <div class="indeterminate-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <span></span>
+        </div>
+        <p id="overlayStatus">Analizando tu solicitud...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST REGION ── -->
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="history-manager.js"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
