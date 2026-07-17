@@ -395,8 +395,8 @@ body::after {
   background:
     radial-gradient(ellipse at 30% 20%, rgba(0, 40, 60, 0.92) 0%, rgba(0, 12, 20, 0.96) 55%),
     radial-gradient(ellipse at 70% 80%, rgba(0, 60, 60, 0.55) 0%, rgba(0, 8, 14, 0.9) 60%);
-  backdrop-filter: blur(8px) saturate(1.8);
-  -webkit-backdrop-filter: blur(8px) saturate(1.8);
+  backdrop-filter: blur(14px) saturate(1.8);
+  -webkit-backdrop-filter: blur(14px) saturate(1.8);
 }
 .loading-overlay.hidden { display: none; }
 .spinner-triple { position: relative; width: 80px; height: 80px; }
