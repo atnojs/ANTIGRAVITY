@@ -185,11 +185,13 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== LOADING OVERLAY =====
-function showLoadingOverlay() {
+function showLoadingOverlay(subtext = '') {
   if (loadingOverlay) {
     loadingOverlay.classList.remove('hidden');
     loadingOverlay.setAttribute('aria-busy', 'true');
     document.body.style.overflow = 'hidden';
+    const subEl = document.getElementById('loadingSubtext');
+    if (subEl) subEl.textContent = subtext;
   }
 }
 function hideLoadingOverlay() {
@@ -197,8 +199,30 @@ function hideLoadingOverlay() {
     loadingOverlay.classList.add('hidden');
     loadingOverlay.setAttribute('aria-busy', 'false');
     document.body.style.overflow = '';
+    const subEl = document.getElementById('loadingSubtext');
+    if (subEl) subEl.textContent = '';
   }
 }
+
+// ===== BOTONES DE PLANO (toggle selección) =====
+let selectedShots = new Set(['general', 'medium', 'close-up', 'side', 'top-down']); // todos por defecto
+
+shotOptions.forEach(btn => {
+  // Marcar todos como seleccionados al inicio
+  btn.classList.add('selected');
+  btn.addEventListener('click', () => {
+    const shot = btn.dataset.shot;
+    if (btn.classList.contains('selected')) {
+      btn.classList.remove('selected');
+      selectedShots.delete(shot);
+    } else {
+      btn.classList.add('selected');
+      selectedShots.add(shot);
+    }
+    // Si no hay ninguno seleccionado, deshabilitar generar
+    generateBtn.disabled = (selectedShots.size === 0 || !currentImageData);
+  });
+});
 
 // ===== SELECTORES DE CALIDAD =====
 qualityBtns.forEach(btn => {
@@ -259,10 +283,17 @@ generateBtn.addEventListener('click', async () => {
 
 async function generateAllShots() {
   resultsContainer.classList.remove('hidden');
-  const allShots = Object.keys(prompts);
+  const allShots = Object.keys(prompts).filter(s => selectedShots.has(s));
   const total = allShots.length;
 
-  showLoadingOverlay();
+  if (total === 0) {
+    hideLoadingOverlay();
+    generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generar Imágenes';
+    generateBtn.disabled = false;
+    return;
+  }
+
+  showLoadingOverlay(`Preparando ${total} plano${total > 1 ? 's' : ''}...`);
 
   const bgOption = getToggleValue(backgroundToggles) || 'different-realistic';
   let commonBg = '';
@@ -275,6 +306,8 @@ async function generateAllShots() {
     const title = shotTypes[shotType];
     const progressText = `Generando ${i + 1} de ${total}`;
     generateBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${progressText}`;
+    const subEl = document.getElementById('loadingSubtext');
+    if (subEl) subEl.textContent = `${shotTypes[shotType]} (${i + 1}/${total})`;
 
     // Buscar o crear tarjeta
     let card = Array.from(galleryStrip.children).find(child => {
