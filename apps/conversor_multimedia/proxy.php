@@ -233,6 +233,8 @@ if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cUR
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
 if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if ($action === 'diagnose') handleDiagnose();
+if ($action === 'setup_ytdlp') handleSetupYtDlp();
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') handleFlux($request);
 if ($action === 'download_url') handleDownloadUrl($request);
@@ -359,16 +361,80 @@ function downloadViaGeneric(string $url, string $platform): ?array {
 function detectYtDlp(): ?string {
     static $path = false;
     if ($path !== false) return $path;
-    $candidates = ['yt-dlp', 'yt-dl', '/usr/local/bin/yt-dlp', '/usr/bin/yt-dlp', 'python3 -m yt_dlp', 'python -m yt_dlp'];
+    $candidates = ['yt-dlp', 'yt-dl', '/usr/local/bin/yt-dlp', '/usr/bin/yt-dlp',
+        'python3 -m yt_dlp', 'python -m yt_dlp',
+        '$HOME/.local/bin/yt-dlp', getenv('HOME') . '/.local/bin/yt-dlp'];
     foreach ($candidates as $cmd) {
-        $test = @shell_exec(escapeshellcmd($cmd) . ' --version 2>&1');
+        // Expandir $HOME si es necesario
+        $expanded = str_replace('$HOME', (string)getenv('HOME'), $cmd);
+        $test = @shell_exec(escapeshellcmd($expanded) . ' --version 2>&1');
         if (is_string($test) && preg_match('/\d{4}\.\d{2}\.\d{2}/', $test)) {
-            $path = $cmd;
+            $path = $expanded;
             return $path;
         }
     }
     $path = null;
     return null;
+}
+
+function handleDiagnose(): void {
+    $info = [
+        'success' => true,
+        'shell_exec_available' => function_exists('shell_exec') && is_callable('shell_exec'),
+        'python' => null,
+        'python3' => null,
+        'pip' => null,
+        'yt_dlp' => detectYtDlp() ?: 'no encontrado',
+        'home' => getenv('HOME') ?: 'no disponible',
+        'user' => getenv('USER') ?: get_current_user(),
+        'uname' => php_uname('s') . ' ' . php_uname('r'),
+        'php_version' => PHP_VERSION,
+    ];
+    if ($info['shell_exec_available']) {
+        $python3 = @shell_exec('python3 --version 2>&1');
+        $python = @shell_exec('python --version 2>&1');
+        $pip3 = @shell_exec('python3 -m pip --version 2>&1');
+        $info['python3'] = is_string($python3) ? trim($python3) : 'error';
+        $info['python'] = is_string($python) ? trim($python) : 'error';
+        $info['pip'] = is_string($pip3) ? trim($pip3) : 'error';
+    }
+    respond(200, $info);
+}
+
+function handleSetupYtDlp(): void {
+    if (!function_exists('shell_exec') || !is_callable('shell_exec')) {
+        respond(500, ['success' => false, 'error' => 'shell_exec no está disponible en este hosting. No se puede instalar yt-dlp automáticamente.']);
+    }
+    // Verificar Python
+    $python3 = trim((string)@shell_exec('python3 --version 2>&1'));
+    $pythonBin = '';
+    if (preg_match('/Python 3/', $python3)) {
+        $pythonBin = 'python3';
+    } else {
+        $python = trim((string)@shell_exec('python --version 2>&1'));
+        if (preg_match('/Python 3/', $python)) {
+            $pythonBin = 'python';
+        }
+    }
+    if ($pythonBin === '') {
+        respond(500, ['success' => false, 'error' => 'Python 3 no está disponible en el servidor.', 'python3' => $python3]);
+    }
+    // Instalar yt-dlp con pip --user
+    $cmd = $pythonBin . ' -m pip install --user yt-dlp 2>&1';
+    $output = @shell_exec($cmd);
+    // Verificar instalación
+    $ytdlp = detectYtDlp();
+    if ($ytdlp !== null) {
+        respond(200, ['success' => true, 'yt_dlp' => $ytdlp, 'message' => 'yt-dlp instalado correctamente.', 'output' => is_string($output) ? trim($output) : '']);
+    }
+    // Intentar con --break-system-packages
+    $cmd2 = $pythonBin . ' -m pip install --user --break-system-packages yt-dlp 2>&1';
+    $output2 = @shell_exec($cmd2);
+    $ytdlp2 = detectYtDlp();
+    if ($ytdlp2 !== null) {
+        respond(200, ['success' => true, 'yt_dlp' => $ytdlp2, 'message' => 'yt-dlp instalado con --break-system-packages.', 'output' => is_string($output2) ? trim($output2) : '']);
+    }
+    respond(500, ['success' => false, 'error' => 'No se pudo instalar yt-dlp.', 'pip_output' => is_string($output) ? trim($output) : '(sin salida)', 'pip2_output' => is_string($output2) ? trim($output2) : '(sin salida)']);
 }
 
 function proxyDownloadBinary(string $videoUrl): ?string {
