@@ -144,11 +144,11 @@ body{padding:16px;max-width:1100px;margin:0 auto}
 
 /* Sistema visual Hoola/Relatos */
 @font-face{font-family:'Electrolize';src:url('./vendor/electrolize.ttf') format('truetype');font-display:swap}
-:root{--cyan:#00d0d0;--green:#26c626;--ink:#001018;--panel:rgba(23,79,122,.42);--border-cyan:rgba(0,208,208,.45);--text:#f4ffff;--text-dim:#b9d3dc;--bg:#001018;--card-bg:var(--panel);--pink:var(--cyan);--pink-light:rgba(0,208,208,.12);--pink-glow:rgba(0,208,208,.3);--radius:14px;--radius-sm:9px;--font:'Electrolize','Segoe UI',system-ui,sans-serif;--red:#ff6b6b}
+:root{--cyan:#00d0d0;--green:#26c626;--ink:#001018;--panel:rgba(23,79,122,.42);--border-cyan:rgba(0,208,208,.45);--text:#f4ffff;--text-dim:#b9d3dc;--bg:#001018;--card-bg:var(--panel);--pink:var(--cyan);--pink-light:rgba(0,208,208,.12);--pink-glow:rgba(0,208,208,.3);--glow:rgba(0,208,208,.8);--glow-soft:rgba(0,208,208,.4);--muted:#99CCCC;--radius:14px;--radius-sm:9px;--font:'Electrolize','Segoe UI',system-ui,sans-serif;--red:#ff6b6b}
 html,body{color:var(--text)}
 html{background:radial-gradient(circle at 50% -10%,rgba(0,208,208,.26),transparent 34%),radial-gradient(circle at 100% 55%,rgba(38,198,38,.16),transparent 35%),linear-gradient(rgba(0,208,208,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(0,208,208,.18) 1px,transparent 1px),linear-gradient(180deg,#001018 0%,#062f43 60%,#0e5368 100%);background-size:auto,auto,46px 46px,46px 46px,auto;background-attachment:fixed}
 body{max-width:1250px;margin:0 auto;padding:16px;background:transparent}
-.app-header{padding:12px 0 18px}.app-header h1{color:var(--cyan);font-family:var(--font);font-size:clamp(1.25rem,2.4vw,1.75rem);letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 14px rgba(0,208,208,.55)}.app-header p{color:var(--text-dim);font-size:.8rem;margin-top:6px}
+.app-header{padding:12px 0 18px;text-align:center}.app-header h1{color:var(--cyan);font-family:var(--font);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 0 10px var(--glow),0 0 24px var(--glow),0 0 44px var(--glow-soft);margin-bottom:.5rem}.app-header p{color:var(--muted);font-size:.95rem;letter-spacing:.03em;margin-top:0}
 .top-btn,.card,.media-card{background:var(--panel);border-color:var(--border-cyan);box-shadow:inset 0 0 20px rgba(0,208,208,.08),0 0 16px rgba(0,208,208,.12);backdrop-filter:blur(12px)}
 .top-btn{color:var(--cyan)}.top-btn:hover,.top-btn:focus-visible{background:rgba(255,255,255,.08);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,208,208,.35)}.top-btn.active,.btn-primary,.format-bar .bar-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018;border-color:transparent}
 .card-title{color:var(--cyan)}.upload-zone,.format-bar{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.upload-zone-text,.info-bar .info-label,.progress-text{color:var(--text-dim)}.upload-zone-text strong,.info-bar .info-value{color:var(--cyan)}
@@ -246,6 +246,11 @@ body{max-width:1250px;margin:0 auto;padding:16px;background:transparent}
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <span id="ff-video-status" class="badge loading" role="status" aria-live="polite">⏳ Preparando motor local…</span>
     </div>
+    <div class="url-input-row" style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <input type="url" id="video-url-input" placeholder="Pega URL de YouTube, Instagram, TikTok, X…" style="flex:1;padding:8px 12px;border:1px solid var(--border-cyan);border-radius:var(--radius-sm);background:rgba(0,16,24,.72);color:var(--text);font-family:var(--font);font-size:13px" aria-label="URL de vídeo online">
+      <button type="button" class="btn btn-primary btn-sm" id="download-url-btn" disabled>Descargar</button>
+    </div>
+    <div id="url-download-status" style="display:none;margin-bottom:8px;font-size:12px;color:var(--text-dim)" aria-live="polite"></div>
     <div style="margin-bottom:8px"><span style="font-size:13px;color:var(--text-dim)" id="video-file-info">Sin vídeos</span></div>
     <div class="batch-toolbar media-selection-toolbar">
       <label class="batch-select-all"><input type="checkbox" id="video-select-all" disabled> <span>Seleccionar todo</span></label>
@@ -1372,6 +1377,60 @@ $('#convert-audio-btn').addEventListener('click', async () => {
 /* Init */
 initializeMediaHistory();
 loadFFmpeg();
+
+/* ============================================================ */
+/*  URL VIDEO DOWNLOAD                                           */
+/* ============================================================ */
+const urlInput = $('#video-url-input');
+const urlBtn = $('#download-url-btn');
+const urlStatus = $('#url-download-status');
+
+urlInput.addEventListener('input', () => {
+  urlBtn.disabled = !urlInput.value.trim() || videoConversionActive;
+});
+
+async function downloadVideoFromUrl() {
+  const rawUrl = urlInput.value.trim();
+  if (!rawUrl) return toast('Pega una URL primero', 'error');
+  urlBtn.disabled = true;
+  urlStatus.style.display = '';
+  urlStatus.textContent = '⏳ Consultando servidor de descarga…';
+  try {
+    const proxyResp = await fetch('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'download_url', url: rawUrl })
+    });
+    const proxyData = await proxyResp.json();
+    if (!proxyData.success || !proxyData.downloadUrl) {
+      throw new Error(proxyData.error || 'No se pudo obtener el enlace de descarga');
+    }
+    urlStatus.textContent = '⬇ Descargando vídeo…';
+    const videoResp = await fetch(proxyData.downloadUrl);
+    if (!videoResp.ok) throw new Error('Error al descargar el vídeo (' + videoResp.status + ')');
+    const blob = await videoResp.blob();
+    if (!blob.type.startsWith('video/') && blob.type !== 'image/gif') {
+      throw new Error('El archivo descargado no es un vídeo');
+    }
+    const filename = proxyData.filename || 'video_descargado.mp4';
+    const file = new File([blob], filename, { type: blob.type, lastModified: Date.now() });
+    handleVideoFiles([file]);
+    urlInput.value = '';
+    urlBtn.disabled = true;
+    urlStatus.style.display = 'none';
+    toast('Vídeo descargado: ' + filename, 'success');
+  } catch (error) {
+    urlStatus.textContent = '✕ ' + (error.message || 'Error desconocido');
+    toast(error.message || 'Error al descargar', 'error');
+  } finally {
+    urlBtn.disabled = !urlInput.value.trim();
+  }
+}
+
+urlBtn.addEventListener('click', downloadVideoFromUrl);
+urlInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); if (!urlBtn.disabled) downloadVideoFromUrl(); }
+});
 </script>
 </body>
 </html>

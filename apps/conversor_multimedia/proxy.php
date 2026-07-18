@@ -225,7 +225,7 @@ if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
     'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
-    'actions'=>['generate','openrouter','text','health'],
+    'actions'=>['generate','openrouter','text','download_url','health'],
     'fluxModels'=>['pro'=>'flux-2-pro', 'max'=>'flux-2-max'],
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
@@ -235,4 +235,44 @@ $action = strtolower((string)($request['action'] ?? 'generate'));
 if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') handleFlux($request);
+if ($action === 'download_url') handleDownloadUrl($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
+
+function handleDownloadUrl(array $request): void {
+    $url = trim((string)($request['url'] ?? ''));
+    if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+        respond(400, ['success' => false, 'error' => 'URL no válida.']);
+    }
+    $allowedHosts = ['youtube.com','www.youtube.com','youtu.be','m.youtube.com',
+        'instagram.com','www.instagram.com',
+        'tiktok.com','www.tiktok.com','vm.tiktok.com','vt.tiktok.com',
+        'x.com','twitter.com','www.x.com','www.twitter.com',
+        'vimeo.com','www.vimeo.com',
+        'reddit.com','www.reddit.com',
+        'facebook.com','www.facebook.com','fb.watch'];
+    $host = strtolower((string)parse_url($url, PHP_URL_HOST));
+    $allowed = false;
+    foreach ($allowedHosts as $allowedHost) {
+        if ($host === $allowedHost || str_ends_with($host, '.' . $allowedHost)) { $allowed = true; break; }
+    }
+    if (!$allowed) {
+        respond(400, ['success' => false, 'error' => 'Plataforma no soportada. Usa YouTube, Instagram, TikTok, X, Vimeo, Reddit o Facebook.']);
+    }
+    [$status, $response] = requestJson('https://api.cobalt.tools/api/json', 'POST', [
+        'Accept: application/json', 'Content-Type: application/json'
+    ], ['url' => $url], 60);
+    if ($status < 200 || $status >= 300 || empty($response['url'] ?? '')) {
+        $detail = $response['text'] ?? $response['error'] ?? ('HTTP ' . $status);
+        respond(502, ['success' => false, 'error' => 'No se pudo obtener el vídeo.', 'detail' => $detail]);
+    }
+    $downloadUrl = (string)$response['url'];
+    if (filter_var($downloadUrl, FILTER_VALIDATE_URL) === false) {
+        respond(502, ['success' => false, 'error' => 'URL de descarga no válida.']);
+    }
+    respond(200, [
+        'success' => true,
+        'downloadUrl' => $downloadUrl,
+        'filename' => (string)($response['filename'] ?? 'video_descargado.mp4'),
+        'service' => 'cobalt'
+    ]);
+}
