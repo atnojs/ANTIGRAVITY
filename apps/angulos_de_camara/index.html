@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
   <!-- CSS Hoola -->
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=2">
 </head>
 <body>
 
@@ -28,6 +28,7 @@
     </header>
 
     <main class="app-container glass-hover">
+      <div class="main-content">
       <div id="upload-container">
         <!-- Drop zone -->
         <div id="drop-zone" class="drop-zone">
@@ -55,46 +56,52 @@
             <button class="quality-btn" data-quality="max">MAX</button>
           </div>
 
-          <!-- Formato + Resolución -->
+          <!-- Formato + Resolución + Tipo en fila única -->
           <div class="format-row">
+            <!-- Formato (toggle buttons) -->
             <div class="format-group">
-              <label for="aspect-ratio">Formato</label>
-              <select id="aspect-ratio">
-                <option value="1:1">1:1 Cuadrado</option>
-                <option value="16:9">16:9 Horizontal</option>
-                <option value="9:16">9:16 Vertical</option>
-                <option value="4:3">4:3</option>
-                <option value="3:4">3:4</option>
-                <option value="3:2">3:2</option>
-                <option value="2:3">2:3</option>
-              </select>
+              <label>Formato</label>
+              <div class="toggle-row" id="aspect-ratio-toggles">
+                <button class="toggle-btn" data-value="1:1">1:1</button>
+                <button class="toggle-btn" data-value="16:9">16:9</button>
+                <button class="toggle-btn" data-value="9:16">9:16</button>
+                <button class="toggle-btn" data-value="4:3">4:3</button>
+                <button class="toggle-btn" data-value="3:4">3:4</button>
+                <button class="toggle-btn" data-value="3:2">3:2</button>
+                <button class="toggle-btn active" data-value="2:3">2:3</button>
+              </div>
             </div>
+
+            <!-- Resolución (toggle buttons, fila horizontal) -->
             <div class="format-group">
-              <label for="resolution">Resolución</label>
-              <select id="resolution">
-                <option value="512">512</option>
-                <option value="1024" selected>1024</option>
-                <option value="2048">2048</option>
-                <option value="4096">4096</option>
-              </select>
+              <label>Resolución</label>
+              <div class="toggle-row" id="resolution-toggles">
+                <button class="toggle-btn" data-value="512">512</button>
+                <button class="toggle-btn active" data-value="1024">1024</button>
+                <button class="toggle-btn" data-value="2048">2048</button>
+                <button class="toggle-btn" data-value="4096">4096</button>
+              </div>
             </div>
+
+            <!-- Tipo de archivo (toggle buttons) -->
             <div class="format-group">
-              <label for="output-format">Tipo</label>
-              <select id="output-format">
-                <option value="png">PNG</option>
-                <option value="jpeg">JPEG</option>
-                <option value="webp">WebP</option>
-              </select>
+              <label>Tipo</label>
+              <div class="toggle-row" id="output-format-toggles">
+                <button class="toggle-btn active" data-value="png">PNG</button>
+                <button class="toggle-btn" data-value="jpeg">JPEG</button>
+                <button class="toggle-btn" data-value="webp">WebP</button>
+              </div>
             </div>
           </div>
 
-          <!-- Fondo -->
-          <div class="background-selector">
-            <select id="background-option">
-              <option value="solid">Fondo liso (todas las imágenes)</option>
-              <option value="same-realistic">Fondo fotorrealista igual</option>
-              <option value="different-realistic" selected>Fondo diferente por imagen</option>
-            </select>
+          <!-- Fondo (toggle buttons) -->
+          <div class="format-group" style="width:100%;max-width:500px;">
+            <label>Fondo</label>
+            <div class="toggle-row" id="background-toggles">
+              <button class="toggle-btn" data-value="solid">Liso</button>
+              <button class="toggle-btn" data-value="same-realistic">Igual</button>
+              <button class="toggle-btn active" data-value="different-realistic">Aleatorio</button>
+            </div>
           </div>
 
           <div class="action-buttons">
@@ -127,6 +134,8 @@
         </section>
         <div id="image-grid"></div>
       </div>
+
+      </div><!-- /main-content -->
 
       <!-- Historial Persistente (servidor) -->
       <div id="history-container" class="hidden">
@@ -167,6 +176,6 @@
   <!-- HistoryManager canónico (servidor) -->
   <script src="history-manager.js"></script>
   <!-- Lógica de la app -->
-  <script src="app.js" defer></script>
+  <script src="app.js?v=2" defer></script>
 </body>
 </html>

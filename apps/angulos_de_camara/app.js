@@ -18,12 +18,35 @@ const clearHistoryBtn = document.getElementById('clear-history-btn');
 const showHistoryBtn = document.getElementById('show-history-btn');
 const loadingOverlay = document.getElementById('loadingOverlay');
 
-// Selectores de calidad / formato / resolución
+// Selectores de calidad / formato / resolución (toggles)
 const qualityBtns = document.querySelectorAll('.quality-btn');
-const aspectRatioSelect = document.getElementById('aspect-ratio');
-const resolutionSelect = document.getElementById('resolution');
-const outputFormatSelect = document.getElementById('output-format');
-const backgroundOptionSelect = document.getElementById('background-option');
+const aspectRatioToggles = document.getElementById('aspect-ratio-toggles');
+const resolutionToggles = document.getElementById('resolution-toggles');
+const outputFormatToggles = document.getElementById('output-format-toggles');
+const backgroundToggles = document.getElementById('background-toggles');
+
+// Helper: obtener valor activo de un grupo toggle
+function getToggleValue(container) {
+  const active = container.querySelector('.toggle-btn.active');
+  return active ? active.dataset.value : null;
+}
+
+// Helper: configurar listeners de toggle
+function setupToggleGroup(container) {
+  if (!container) return;
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.toggle-btn');
+    if (!btn) return;
+    container.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+}
+
+// Inicializar toggles
+setupToggleGroup(aspectRatioToggles);
+setupToggleGroup(resolutionToggles);
+setupToggleGroup(outputFormatToggles);
+setupToggleGroup(backgroundToggles);
 
 // === Lightbox ===
 const lightbox = document.getElementById('lightbox');
@@ -241,7 +264,7 @@ async function generateAllShots() {
 
   showLoadingOverlay();
 
-  const bgOption = backgroundOptionSelect.value;
+  const bgOption = getToggleValue(backgroundToggles) || 'different-realistic';
   let commonBg = '';
   if (bgOption === 'same-realistic') {
     commonBg = getRandomBackground();
@@ -322,7 +345,7 @@ function addActionButtons(container, shotType, cardId) {
   regen.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
   regen.addEventListener('click', async () => {
     generateBtn.disabled = true;
-    const bgOption = backgroundOptionSelect.value;
+    const bgOption = getToggleValue(backgroundToggles) || 'different-realistic';
     let bgOverride = '';
     if (bgOption === 'solid') bgOverride = ' Ignore background. Solid neutral background.';
     else if (bgOption === 'same-realistic') bgOverride = ` Place in ${getRandomBackground()}, photorealistic.`;
@@ -369,9 +392,9 @@ async function callFluxAPI(cardId, shotType, backgroundOverride) {
   const basePrompt = prompts[shotType];
   const finalPrompt = composePrePrompt(basePrompt) + backgroundOverride;
 
-  const aspectRatio = aspectRatioSelect.value;
-  const resolution = parseInt(resolutionSelect.value);
-  const outputFormat = outputFormatSelect.value;
+  const aspectRatio = getToggleValue(aspectRatioToggles) || '2:3';
+  const resolution = parseInt(getToggleValue(resolutionToggles)) || 1024;
+  const outputFormat = getToggleValue(outputFormatToggles) || 'png';
 
   const payload = {
     action: 'generate',
