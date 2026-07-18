@@ -272,17 +272,6 @@ function handleDownloadUrl(array $request): void {
     }
 
     if ($result !== null) {
-        // Si el backend nos dio una URL externa (que puede fallar por CORS), descargamos el binario aquí
-        if (!empty($result['downloadUrl']) && !isset($result['dataUrl'])) {
-            $binary = proxyDownloadBinary($result['downloadUrl']);
-            if ($binary !== null && strlen($binary) < MAX_REQUEST_BYTES) {
-                $mime = $result['mimeType'] ?? 'video/mp4';
-                $result['dataUrl'] = 'data:' . $mime . ';base64,' . base64_encode($binary);
-                $result['size'] = strlen($binary);
-                unset($result['downloadUrl']); // ya no se necesita, va embebido
-            }
-            // Si falla la descarga o es muy grande, dejamos la URL (el frontend usará el proxy de descarga)
-        }
         respond(200, $result);
     }
 
@@ -406,15 +395,23 @@ function proxyDownloadBinary(string $videoUrl): ?string {
 function handleProxyDownload(array $request): void {
     $url = trim((string)($request['url'] ?? ''));
     if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
-        respond(400, ['success' => false, 'error' => 'URL no válida.']);
+        http_response_code(400);
+        header('Content-Type: text/plain');
+        echo 'URL no válida';
+        exit;
     }
     $binary = proxyDownloadBinary($url);
-    if ($binary === null || strlen($binary) > MAX_REQUEST_BYTES) {
-        respond(502, ['success' => false, 'error' => 'No se pudo descargar el archivo o es demasiado grande.']);
+    if ($binary === null) {
+        http_response_code(502);
+        header('Content-Type: text/plain');
+        echo 'No se pudo descargar el archivo';
+        exit;
     }
-    respond(200, [
-        'success' => true,
-        'dataUrl' => 'data:video/mp4;base64,' . base64_encode($binary),
-        'size' => strlen($binary)
-    ]);
+    // Streaming: devolver binario crudo, sin JSON, sin límite de tamaño
+    header('Content-Type: video/mp4');
+    header('Content-Length: ' . strlen($binary));
+    header('Cache-Control: no-store');
+    header('Access-Control-Allow-Origin: *');
+    echo $binary;
+    exit;
 }
