@@ -1402,15 +1402,46 @@ async function downloadVideoFromUrl() {
       body: JSON.stringify({ action: 'download_url', url: rawUrl })
     });
     const proxyData = await proxyResp.json();
-    if (!proxyData.success || !proxyData.downloadUrl) {
+    if (!proxyData.success) {
       const reason = proxyData.error || 'No se pudo obtener el enlace de descarga';
       const detail = proxyData.detail ? ' — ' + proxyData.detail : '';
       throw new Error(reason + detail);
     }
-    urlStatus.textContent = '⬇ Descargando vídeo…';
-    const videoResp = await fetch(proxyData.downloadUrl);
-    if (!videoResp.ok) throw new Error('Error al descargar el vídeo (' + videoResp.status + ')');
-    const blob = await videoResp.blob();
+
+    let blob;
+    let filename = proxyData.filename || 'video_descargado.mp4';
+
+    if (proxyData.dataUrl) {
+      // El proxy ya descargó el vídeo y lo devolvió embebido (evita CORS)
+      urlStatus.textContent = '⬇ Procesando vídeo descargado…';
+      const resp = await fetch(proxyData.dataUrl);
+      blob = await resp.blob();
+    } else if (proxyData.downloadUrl) {
+      // Intentar descarga directa (puede fallar por CORS)
+      urlStatus.textContent = '⬇ Descargando vídeo…';
+      try {
+        const videoResp = await fetch(proxyData.downloadUrl);
+        if (!videoResp.ok) throw new Error('HTTP ' + videoResp.status);
+        blob = await videoResp.blob();
+      } catch (fetchError) {
+        // Fallback: descargar a través del proxy
+        urlStatus.textContent = '⬇ Descargando vía proxy…';
+        const proxyDownloadResp = await fetch('proxy.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'proxy_download', url: proxyData.downloadUrl })
+        });
+        if (!proxyDownloadResp.ok) throw new Error('Error en proxy de descarga (' + proxyDownloadResp.status + ')');
+        const proxyDownloadData = await proxyDownloadResp.json();
+        if (!proxyDownloadData.success || !proxyDownloadData.dataUrl) {
+          throw new Error(proxyDownloadData.error || 'Error en proxy de descarga');
+        }
+        const fallbackResp = await fetch(proxyDownloadData.dataUrl);
+        blob = await fallbackResp.blob();
+      }
+    } else {
+      throw new Error('No se recibió ningún enlace de descarga');
+    }
     if (!blob.type.startsWith('video/') && blob.type !== 'image/gif') {
       throw new Error('El archivo descargado no es un vídeo');
     }

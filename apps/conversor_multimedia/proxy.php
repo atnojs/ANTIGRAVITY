@@ -236,6 +236,7 @@ if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') handleFlux($request);
 if ($action === 'download_url') handleDownloadUrl($request);
+if ($action === 'proxy_download') handleProxyDownload($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
 
 function handleDownloadUrl(array $request): void {
@@ -271,6 +272,17 @@ function handleDownloadUrl(array $request): void {
     }
 
     if ($result !== null) {
+        // Si el backend nos dio una URL externa (que puede fallar por CORS), descargamos el binario aquí
+        if (!empty($result['downloadUrl']) && !isset($result['dataUrl'])) {
+            $binary = proxyDownloadBinary($result['downloadUrl']);
+            if ($binary !== null && strlen($binary) < MAX_REQUEST_BYTES) {
+                $mime = $result['mimeType'] ?? 'video/mp4';
+                $result['dataUrl'] = 'data:' . $mime . ';base64,' . base64_encode($binary);
+                $result['size'] = strlen($binary);
+                unset($result['downloadUrl']); // ya no se necesita, va embebido
+            }
+            // Si falla la descarga o es muy grande, dejamos la URL (el frontend usará el proxy de descarga)
+        }
         respond(200, $result);
     }
 
@@ -368,4 +380,41 @@ function detectYtDlp(): ?string {
     }
     $path = null;
     return null;
+}
+
+function proxyDownloadBinary(string $videoUrl): ?string {
+    $ch = curl_init($videoUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 45,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        CURLOPT_HTTPHEADER => [
+            'Referer: https://www.tiktok.com/',
+            'Accept: video/*,*/*;q=0.8',
+        ],
+    ]);
+    $binary = curl_exec($ch);
+    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($binary === false || $binary === '' || $status < 200 || $status >= 400) return null;
+    return $binary;
+}
+
+function handleProxyDownload(array $request): void {
+    $url = trim((string)($request['url'] ?? ''));
+    if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+        respond(400, ['success' => false, 'error' => 'URL no válida.']);
+    }
+    $binary = proxyDownloadBinary($url);
+    if ($binary === null || strlen($binary) > MAX_REQUEST_BYTES) {
+        respond(502, ['success' => false, 'error' => 'No se pudo descargar el archivo o es demasiado grande.']);
+    }
+    respond(200, [
+        'success' => true,
+        'dataUrl' => 'data:video/mp4;base64,' . base64_encode($binary),
+        'size' => strlen($binary)
+    ]);
 }
