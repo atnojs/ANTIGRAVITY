@@ -243,69 +243,129 @@ function handleDownloadUrl(array $request): void {
     if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
         respond(400, ['success' => false, 'error' => 'URL no válida.']);
     }
-    $allowedHosts = ['youtube.com','www.youtube.com','youtu.be','m.youtube.com',
-        'instagram.com','www.instagram.com',
-        'tiktok.com','www.tiktok.com','vm.tiktok.com','vt.tiktok.com',
-        'x.com','twitter.com','www.x.com','www.twitter.com',
-        'vimeo.com','www.vimeo.com',
-        'reddit.com','www.reddit.com',
-        'facebook.com','www.facebook.com','fb.watch'];
+
     $host = strtolower((string)parse_url($url, PHP_URL_HOST));
-    $allowed = false;
-    foreach ($allowedHosts as $allowedHost) {
-        if ($host === $allowedHost || str_ends_with($host, '.' . $allowedHost)) { $allowed = true; break; }
+
+    // Intentar backends específicos por plataforma
+    $result = null;
+
+    // TikTok → tikwm.com
+    if (preg_match('/(^|\\.)(tiktok\\.com|vm\\.tiktok\\.com|vt\\.tiktok\\.com)$/', $host)) {
+        $result = downloadViaTikwm($url);
     }
-    if (!$allowed) {
-        respond(400, ['success' => false, 'error' => 'Plataforma no soportada. Usa YouTube, Instagram, TikTok, X, Vimeo, Reddit o Facebook.']);
+    // Instagram
+    elseif (preg_match('/(^|\\.)instagram\\.com$/', $host)) {
+        $result = downloadViaGeneric($url, 'Instagram');
+    }
+    // YouTube
+    elseif (preg_match('/(^|\\.)(youtube\\.com|youtu\\.be)$/', $host)) {
+        $result = downloadViaGeneric($url, 'YouTube');
+    }
+    // X / Twitter
+    elseif (preg_match('/(^|\\.)(x\\.com|twitter\\.com)$/', $host)) {
+        $result = downloadViaGeneric($url, 'X/Twitter');
+    }
+    // Resto
+    else {
+        $result = downloadViaGeneric($url, parse_url($url, PHP_URL_HOST));
     }
 
-    // Llamada directa con curl — más tolerante que requestJson
-    $ch = curl_init('https://api.cobalt.tools/api/json');
-    $body = json_encode(['url' => $url], JSON_UNESCAPED_SLASHES);
+    if ($result !== null) {
+        respond(200, $result);
+    }
+
+    respond(502, ['success' => false, 'error' => 'No se pudo descargar el vídeo desde esa URL con ningún backend disponible.']);
+}
+
+function curlGet(string $url, int $timeout = 30): array {
+    $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $body,
-        CURLOPT_HTTPHEADER => [
-            'Accept: application/json',
-            'Content-Type: application/json',
-            'User-Agent: Antigravity/1.0'
-        ],
-        CURLOPT_CONNECTTIMEOUT => 15,
-        CURLOPT_TIMEOUT => 60,
-        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     ]);
     $raw = curl_exec($ch);
     $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
+    $error = curl_error($ch);
+    $contentType = (string)(curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: '');
     curl_close($ch);
+    return [$raw, $status, $error, $contentType];
+}
 
-    if ($raw === false || $raw === '') {
-        $detail = $curlError ?: 'Respuesta vacía del servidor';
-        respond(502, ['success' => false, 'error' => 'No se pudo contactar con el servicio de descarga.', 'detail' => $detail]);
-    }
-
-    $response = json_decode($raw, true);
-    if (!is_array($response)) {
-        // Intentar decodificar como objeto stdClass
-        $obj = json_decode($raw);
-        $preview = is_string($raw) ? substr($raw, 0, 300) : 'respuesta no JSON';
-        respond(502, ['success' => false, 'error' => 'El servicio de descarga devolvió una respuesta inesperada.', 'detail' => 'HTTP ' . $status . ' — ' . $preview]);
-    }
-
-    if ($status < 200 || $status >= 300 || empty($response['url'] ?? '')) {
-        $detail = $response['text'] ?? $response['error'] ?? ('HTTP ' . $status . ': ' . substr($raw, 0, 200));
-        respond(502, ['success' => false, 'error' => 'No se pudo obtener el vídeo desde esa URL.', 'detail' => $detail]);
-    }
-
-    $downloadUrl = (string)$response['url'];
-    if (filter_var($downloadUrl, FILTER_VALIDATE_URL) === false) {
-        respond(502, ['success' => false, 'error' => 'El servicio devolvió una URL de descarga no válida.']);
-    }
-    respond(200, [
+function downloadViaTikwm(string $url): ?array {
+    $apiUrl = 'https://tikwm.com/api/?url=' . urlencode($url);
+    [$raw, $status, $error, $_] = curlGet($apiUrl, 20);
+    if ($raw === false || $status !== 200) return null;
+    $data = json_decode($raw, true);
+    if (!is_array($data) || ($data['code'] ?? -1) !== 0) return null;
+    $videoUrl = (string)($data['data']['play'] ?? '');
+    if ($videoUrl === '' || filter_var($videoUrl, FILTER_VALIDATE_URL) === false) return null;
+    $title = trim((string)($data['data']['title'] ?? ''));
+    $id = (string)($data['data']['id'] ?? '');
+    $filename = ($title !== '' ? $title : 'tiktok_' . $id) . '.mp4';
+    // Limpiar nombre de archivo
+    $filename = preg_replace('/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ _\\.-]/u', '', $filename);
+    $filename = trim($filename) !== '' ? trim($filename) : 'tiktok_video.mp4';
+    return [
         'success' => true,
-        'downloadUrl' => $downloadUrl,
-        'filename' => (string)($response['filename'] ?? 'video_descargado.mp4'),
-        'service' => 'cobalt'
-    ]);
+        'downloadUrl' => $videoUrl,
+        'filename' => $filename,
+        'service' => 'tikwm'
+    ];
+}
+
+function downloadViaGeneric(string $url, string $platform): ?array {
+    // Intento 1: ¿Es ya un enlace directo a un vídeo?
+    $ext = strtolower(pathinfo((string)parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION));
+    $videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', 'gif'];
+    if (in_array($ext, $videoExts, true)) {
+        $filename = basename((string)parse_url($url, PHP_URL_PATH));
+        if ($filename === '' || $filename === '.') $filename = 'video_descargado.' . $ext;
+        return [
+            'success' => true,
+            'downloadUrl' => $url,
+            'filename' => $filename,
+            'service' => 'direct'
+        ];
+    }
+
+    // Intento 2: Intentar con yt-dlp si está disponible en el servidor
+    $ytdlp = detectYtDlp();
+    if ($ytdlp !== null) {
+        $cmd = escapeshellcmd($ytdlp) . ' -f best --get-url --no-playlist ' . escapeshellarg($url) . ' 2>&1';
+        $output = @shell_exec($cmd);
+        if (is_string($output) && filter_var(trim($output), FILTER_VALIDATE_URL)) {
+            $videoUrl = trim($output);
+            $cmdName = escapeshellcmd($ytdlp) . ' --print filename --no-playlist ' . escapeshellarg($url) . ' 2>&1';
+            $filename = @shell_exec($cmdName);
+            $filename = is_string($filename) ? trim($filename) : 'video_descargado.mp4';
+            if ($filename === '') $filename = 'video_descargado.mp4';
+            return [
+                'success' => true,
+                'downloadUrl' => $videoUrl,
+                'filename' => $filename,
+                'service' => 'yt-dlp'
+            ];
+        }
+    }
+
+    return null;
+}
+
+function detectYtDlp(): ?string {
+    static $path = false;
+    if ($path !== false) return $path;
+    $candidates = ['yt-dlp', 'yt-dl', '/usr/local/bin/yt-dlp', '/usr/bin/yt-dlp', 'python3 -m yt_dlp', 'python -m yt_dlp'];
+    foreach ($candidates as $cmd) {
+        $test = @shell_exec(escapeshellcmd($cmd) . ' --version 2>&1');
+        if (is_string($test) && preg_match('/\d{4}\.\d{2}\.\d{2}/', $test)) {
+            $path = $cmd;
+            return $path;
+        }
+    }
+    $path = null;
+    return null;
 }
