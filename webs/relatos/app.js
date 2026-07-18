@@ -1,4 +1,4 @@
-/* App de la biblioteca de relatos — SPA con hash routing, sin dependencias. */
+/* App de la biblioteca de relatos — SPA con hash routing, sin dependencias. v2 */
 (function () {
   "use strict";
 
