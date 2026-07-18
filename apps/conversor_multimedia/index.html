@@ -1445,7 +1445,6 @@ async function downloadVideoFromUrl() {
     if (!blob.type.startsWith('video/') && blob.type !== 'image/gif') {
       throw new Error('El archivo descargado no es un vídeo');
     }
-    const filename = proxyData.filename || 'video_descargado.mp4';
     const file = new File([blob], filename, { type: blob.type, lastModified: Date.now() });
     handleVideoFiles([file]);
     urlInput.value = '';
