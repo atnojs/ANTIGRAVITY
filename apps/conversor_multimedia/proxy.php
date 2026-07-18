@@ -361,15 +361,19 @@ function downloadViaGeneric(string $url, string $platform): ?array {
 function detectYtDlp(): ?string {
     static $path = false;
     if ($path !== false) return $path;
+    if (!function_exists('shell_exec') || !is_callable('shell_exec')) {
+        $path = null;
+        return null;
+    }
+    $home = (string)getenv('HOME');
     $candidates = ['yt-dlp', 'yt-dl', '/usr/local/bin/yt-dlp', '/usr/bin/yt-dlp',
         'python3 -m yt_dlp', 'python -m yt_dlp',
-        '$HOME/.local/bin/yt-dlp', getenv('HOME') . '/.local/bin/yt-dlp'];
+        $home . '/.local/bin/yt-dlp'];
     foreach ($candidates as $cmd) {
-        // Expandir $HOME si es necesario
-        $expanded = str_replace('$HOME', (string)getenv('HOME'), $cmd);
-        $test = @shell_exec(escapeshellcmd($expanded) . ' --version 2>&1');
+        if ($cmd === '') continue;
+        $test = @shell_exec(escapeshellcmd($cmd) . ' --version 2>&1');
         if (is_string($test) && preg_match('/\d{4}\.\d{2}\.\d{2}/', $test)) {
-            $path = $expanded;
+            $path = $cmd;
             return $path;
         }
     }
@@ -378,19 +382,21 @@ function detectYtDlp(): ?string {
 }
 
 function handleDiagnose(): void {
+    $shellAvailable = function_exists('shell_exec') && is_callable('shell_exec');
     $info = [
         'success' => true,
-        'shell_exec_available' => function_exists('shell_exec') && is_callable('shell_exec'),
+        'shell_exec_available' => $shellAvailable,
         'python' => null,
         'python3' => null,
         'pip' => null,
-        'yt_dlp' => detectYtDlp() ?: 'no encontrado',
-        'home' => getenv('HOME') ?: 'no disponible',
-        'user' => getenv('USER') ?: get_current_user(),
-        'uname' => php_uname('s') . ' ' . php_uname('r'),
+        'yt_dlp' => 'no encontrado',
+        'home' => (string)getenv('HOME') ?: 'no disponible',
         'php_version' => PHP_VERSION,
     ];
-    if ($info['shell_exec_available']) {
+    // Solo intentar detectYtDlp si shell_exec está disponible
+    if ($shellAvailable) {
+        $yt = detectYtDlp();
+        $info['yt_dlp'] = $yt ?: 'no encontrado';
         $python3 = @shell_exec('python3 --version 2>&1');
         $python = @shell_exec('python --version 2>&1');
         $pip3 = @shell_exec('python3 -m pip --version 2>&1');
