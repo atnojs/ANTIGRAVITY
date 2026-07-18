@@ -678,6 +678,7 @@ header p {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 22px;
   overflow: hidden;
 }
 .loading-overlay:not(.hidden) { display: flex; }
@@ -694,21 +695,21 @@ header p {
   transition: opacity 0.5s ease;
 }
 
-/* Tarjeta glass centrada */
+/* Tarjeta glass SOLO para la barra de progreso */
 .loading-card {
   background: rgba(10, 26, 26, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 2rem 2.5rem;
+  padding: 1.2rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 10px;
   box-shadow: 0 8px 40px rgba(0,208,208,0.2), 0 0 60px rgba(0,0,0,0.5);
-  max-width: 420px;
-  width: 90%;
+  max-width: 460px;
+  width: 88%;
 }
 
 /* Spinner canónico 3 aros: 80×80px, 3px, cian #00D0D0 + verde #26C626 */
