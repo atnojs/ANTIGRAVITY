@@ -190,7 +190,7 @@ function showLoadingOverlay(subtext = '') {
     loadingOverlay.classList.remove('hidden');
     loadingOverlay.setAttribute('aria-busy', 'true');
     document.body.style.overflow = 'hidden';
-    const subEl = document.getElementById('loadingSubtext');
+    const subEl = document.getElementById('secondary-status');
     if (subEl) subEl.textContent = subtext;
   }
 }
@@ -199,7 +199,7 @@ function hideLoadingOverlay() {
     loadingOverlay.classList.add('hidden');
     loadingOverlay.setAttribute('aria-busy', 'false');
     document.body.style.overflow = '';
-    const subEl = document.getElementById('loadingSubtext');
+    const subEl = document.getElementById('secondary-status');
     if (subEl) subEl.textContent = '';
   }
 }
@@ -306,7 +306,7 @@ async function generateAllShots() {
     const title = shotTypes[shotType];
     const progressText = `Generando ${i + 1} de ${total}`;
     generateBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${progressText}`;
-    const subEl = document.getElementById('loadingSubtext');
+    const subEl = document.getElementById('secondary-status');
     if (subEl) subEl.textContent = `${shotTypes[shotType]} (${i + 1}/${total})`;
 
     // Buscar o crear tarjeta

@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
   <!-- CSS Hoola -->
-  <link rel="stylesheet" href="app.css?v=4">
+  <link rel="stylesheet" href="app.css?v=5">
 </head>
 <body>
 
@@ -154,21 +154,19 @@
     </main>
   </div>
 
-  <!-- ===== LOADING OVERLAY CANÓNICO ===== -->
+  <!-- ===== LOADING OVERLAY CANÓNICO (dibujo_lineas_copia) ===== -->
   <div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="false">
-    <div class="loading-bg-image"></div>
     <div class="spinner-triple">
       <div class="ring ring-1"></div>
       <div class="ring ring-2"></div>
       <div class="ring ring-3"></div>
     </div>
     <p class="loading-text">IA generando lo solicitado...</p>
-    <div class="loading-card">
-      <div class="progress-bar-indeterminate">
-        <div class="progress-bar-slider"></div>
-        <div class="progress-bar-glow"></div>
+    <div class="progress-panel">
+      <div class="progress-bar-track">
+        <div id="overlay-progress-bar" class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
       </div>
-      <p class="loading-subtext" id="loadingSubtext"></p>
+      <p id="secondary-status" class="secondary-status"></p>
     </div>
   </div>
 
@@ -183,6 +181,6 @@
   <!-- HistoryManager canónico (servidor) -->
   <script src="history-manager.js"></script>
   <!-- Lógica de la app -->
-  <script src="app.js?v=4" defer></script>
+  <script src="app.js?v=5" defer></script>
 </body>
 </html>
