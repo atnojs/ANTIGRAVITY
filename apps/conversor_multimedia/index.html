@@ -148,7 +148,7 @@ body{padding:16px;max-width:1100px;margin:0 auto}
 html,body{color:var(--text)}
 html{background:radial-gradient(circle at 50% -10%,rgba(0,208,208,.26),transparent 34%),radial-gradient(circle at 100% 55%,rgba(38,198,38,.16),transparent 35%),linear-gradient(rgba(0,208,208,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(0,208,208,.18) 1px,transparent 1px),linear-gradient(180deg,#001018 0%,#062f43 60%,#0e5368 100%);background-size:auto,auto,46px 46px,46px 46px,auto;background-attachment:fixed}
 body{max-width:1250px;margin:0 auto;padding:16px;background:transparent}
-.app-header{padding:12px 0 18px;text-align:center}.app-header h1{color:var(--cyan);font-family:var(--font);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 0 10px var(--glow),0 0 24px var(--glow),0 0 44px var(--glow-soft);margin-bottom:.5rem}.app-header p{color:var(--muted);font-size:.95rem;letter-spacing:.03em;margin-top:0}
+.app-header{padding:12px 0 18px;text-align:center}.app-header h1{color:var(--cyan);font-family:var(--font);font-size:clamp(2rem,5vw,3.2rem);font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-shadow:0 0 10px var(--glow),0 0 24px var(--glow),0 0 44px var(--glow-soft);margin-bottom:.5rem}.app-header p{color:var(--muted);font-size:.95rem;letter-spacing:.03em;margin-top:0}
 .top-btn,.card,.media-card{background:var(--panel);border-color:var(--border-cyan);box-shadow:inset 0 0 20px rgba(0,208,208,.08),0 0 16px rgba(0,208,208,.12);backdrop-filter:blur(12px)}
 .top-btn{color:var(--cyan)}.top-btn:hover,.top-btn:focus-visible{background:rgba(255,255,255,.08);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,208,208,.35)}.top-btn.active,.btn-primary,.format-bar .bar-btn{background:linear-gradient(135deg,var(--cyan),var(--green));color:#001018;border-color:transparent}
 .card-title{color:var(--cyan)}.upload-zone,.format-bar{background:rgba(0,16,24,.5);border-color:var(--border-cyan)}.upload-zone-text,.info-bar .info-label,.progress-text{color:var(--text-dim)}.upload-zone-text strong,.info-bar .info-value{color:var(--cyan)}
@@ -1403,7 +1403,9 @@ async function downloadVideoFromUrl() {
     });
     const proxyData = await proxyResp.json();
     if (!proxyData.success || !proxyData.downloadUrl) {
-      throw new Error(proxyData.error || 'No se pudo obtener el enlace de descarga');
+      const reason = proxyData.error || 'No se pudo obtener el enlace de descarga';
+      const detail = proxyData.detail ? ' — ' + proxyData.detail : '';
+      throw new Error(reason + detail);
     }
     urlStatus.textContent = '⬇ Descargando vídeo…';
     const videoResp = await fetch(proxyData.downloadUrl);

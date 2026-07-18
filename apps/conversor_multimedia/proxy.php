@@ -258,16 +258,49 @@ function handleDownloadUrl(array $request): void {
     if (!$allowed) {
         respond(400, ['success' => false, 'error' => 'Plataforma no soportada. Usa YouTube, Instagram, TikTok, X, Vimeo, Reddit o Facebook.']);
     }
-    [$status, $response] = requestJson('https://api.cobalt.tools/api/json', 'POST', [
-        'Accept: application/json', 'Content-Type: application/json'
-    ], ['url' => $url], 60);
-    if ($status < 200 || $status >= 300 || empty($response['url'] ?? '')) {
-        $detail = $response['text'] ?? $response['error'] ?? ('HTTP ' . $status);
-        respond(502, ['success' => false, 'error' => 'No se pudo obtener el vídeo.', 'detail' => $detail]);
+
+    // Llamada directa con curl — más tolerante que requestJson
+    $ch = curl_init('https://api.cobalt.tools/api/json');
+    $body = json_encode(['url' => $url], JSON_UNESCAPED_SLASHES);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $body,
+        CURLOPT_HTTPHEADER => [
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'User-Agent: Antigravity/1.0'
+        ],
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_FOLLOWLOCATION => false,
+    ]);
+    $raw = curl_exec($ch);
+    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($raw === false || $raw === '') {
+        $detail = $curlError ?: 'Respuesta vacía del servidor';
+        respond(502, ['success' => false, 'error' => 'No se pudo contactar con el servicio de descarga.', 'detail' => $detail]);
     }
+
+    $response = json_decode($raw, true);
+    if (!is_array($response)) {
+        // Intentar decodificar como objeto stdClass
+        $obj = json_decode($raw);
+        $preview = is_string($raw) ? substr($raw, 0, 300) : 'respuesta no JSON';
+        respond(502, ['success' => false, 'error' => 'El servicio de descarga devolvió una respuesta inesperada.', 'detail' => 'HTTP ' . $status . ' — ' . $preview]);
+    }
+
+    if ($status < 200 || $status >= 300 || empty($response['url'] ?? '')) {
+        $detail = $response['text'] ?? $response['error'] ?? ('HTTP ' . $status . ': ' . substr($raw, 0, 200));
+        respond(502, ['success' => false, 'error' => 'No se pudo obtener el vídeo desde esa URL.', 'detail' => $detail]);
+    }
+
     $downloadUrl = (string)$response['url'];
     if (filter_var($downloadUrl, FILTER_VALIDATE_URL) === false) {
-        respond(502, ['success' => false, 'error' => 'URL de descarga no válida.']);
+        respond(502, ['success' => false, 'error' => 'El servicio devolvió una URL de descarga no válida.']);
     }
     respond(200, [
         'success' => true,
