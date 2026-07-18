@@ -130,17 +130,18 @@ body::after {
 .app-title {
   font-family: var(--font);
   font-weight: 400;
-  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-size: clamp(2rem, 5vw, 3.2rem);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
   color: var(--cian);
   text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
 }
 .app-subtitle {
   color: var(--text-dim);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  margin-top: 2px;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 2rem;
 }
 
 /* ===== CARD GENÉRICA ===== */
