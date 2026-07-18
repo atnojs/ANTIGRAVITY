@@ -129,7 +129,7 @@ Reglas:
 
 1. **Estilo**: copiar los tokens `:root` y el fondo (`body::before` + `body::after`) exactamente como están en `dibujo_lineas_copia/app.css`. Usar sus mismas clases y variables; no improvisar colores, grosores de borde, radios ni sombras.
 2. **Overlay de carga**: copiar la estructura HTML (`.loading-overlay`, `.spinner-triple`, `.loading-text`, `.progress-panel`, `.progress-bar-track`, `.progress-bar-fill`, `.secondary-status`) y el CSS completo del overlay de `dibujo_lineas_copia`. El texto "IA generando lo solicitado..." y la barra de progreso indeterminada son obligatorios.
-3. **Cabecera**: usar el mismo `h1` con triple glow cian (`text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft)`), uppercase, y subtítulo con tracking amplio.
+3. **Cabecera**: usar el mismo `h1`: uppercase, font-size `clamp(2rem, 5vw, 3.2rem)`, letter-spacing `0.04em`, margin-bottom `0.5rem`, y `text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft)`. Subtítulo: font-size `1.05rem`, letter-spacing `0.03em`, margin-bottom `2rem`.
 4. **Adaptación**: conservar las clases y funcionalidades propias de cada app, pero aplicarles los tokens de `dibujo_lineas_copia`. Si una app existente usa otra paleta, retematizarla sustituyendo `:root` y el fondo; luego barrer cualquier color hardcodeado que no coincida con la paleta canónica.
 
 ### Accesibilidad y usabilidad
