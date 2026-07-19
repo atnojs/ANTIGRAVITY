@@ -205,13 +205,13 @@ h1 {
   border-bottom: 1px solid var(--border);
 }
 .cookie-preview.has-image {
-  aspect-ratio: auto;
   background: #000;
 }
 .cookie-preview-img {
-  display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: contain;
   background: #000;
 }

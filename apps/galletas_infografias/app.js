@@ -180,13 +180,53 @@
   }
 
   function triggerPreviewUpload(cookieId) {
+    if (!isAuthenticated()) {
+      askPassword().then(ok => {
+        if (ok) {
+          pendingUploadCookieId = cookieId;
+          document.getElementById('preview-image-input').click();
+        }
+      });
+      return;
+    }
     pendingUploadCookieId = cookieId;
     document.getElementById('preview-image-input').click();
+  }
+
+  // ═══════════════════════════════════════════
+  // AUTENTICACIÓN PARA SUBIR IMÁGENES
+  // ═══════════════════════════════════════════
+  const ADMIN_PASSWORD = 'hoola2026';
+
+  function isAuthenticated() {
+    try { return sessionStorage.getItem('gi_auth') === '1'; } catch (e) { return false; }
+  }
+
+  function askPassword() {
+    return new Promise((resolve) => {
+      const input = prompt('🔐 Introduce la contraseña para gestionar imágenes:');
+      if (input === null) { resolve(false); return; }
+      if (input === ADMIN_PASSWORD) {
+        try { sessionStorage.setItem('gi_auth', '1'); } catch (e) {}
+        resolve(true);
+      } else {
+        alert('❌ Contraseña incorrecta.');
+        resolve(false);
+      }
+    });
   }
 
   function handlePreviewRightClick(e, cookieId) {
     e.preventDefault();
     if (!getCookieImage(cookieId)) return;
+    if (!isAuthenticated()) {
+      askPassword().then(ok => { if (ok) removeImage(cookieId); });
+      return;
+    }
+    removeImage(cookieId);
+  }
+
+  function removeImage(cookieId) {
     if (confirm('¿Quitar la imagen de esta galleta?')) {
       removeCookieImage(cookieId);
       renderCookies();
