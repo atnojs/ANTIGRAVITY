@@ -429,7 +429,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
+                className={`btn-canon w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
             >
                 <span className={isPlaceholder ? 'text-gray-500' : 'text-gray-200'}>{selectedOption.name}</span>
                 <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -446,7 +446,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
                                     onChange(opt.id);
                                     setIsOpen(false);
                                 }}
-                                className={`w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
+                                className={`btn-canon w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
                                     ? 'bg-cyan-500/20 text-cyan-400 border-l-2 border-cyan-400'
                                     : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 border-l-2 border-transparent'
                                     }`}
@@ -507,7 +507,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
     return (
         <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
             <div className="absolute top-4 left-4 z-10">
-                <div className="px-3 py-1 glass rounded-full text-[9px] font-bold uppercase tracking-widest text-white/90 border-white/5 backdrop-blur-md">
+                <div className="px-3 py-1 glass rounded-full text-[9px] uppercase text-white/90 border-white/5 backdrop-blur-md btn-canon">
                     {image.style.name} | {image.aspectRatio}
                 </div>
             </div>
@@ -524,45 +524,45 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
                             <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center group-hover/btn:bg-cyan-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <RefreshCw className="text-cyan-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-cyan-200 uppercase tracking-tighter">Nuevas</span>
+                            <span className="btn-canon text-[8px] text-cyan-200">Nuevas</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onEdit(image); }} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center group-hover/btn:bg-purple-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <MessageSquare className="text-purple-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-purple-200 uppercase tracking-tighter">Variar</span>
+                            <span className="btn-canon text-[8px] text-purple-200">Variar</span>
                         </button>
 
                         <button onClick={handleDownload} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center group-hover/btn:bg-slate-700 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Download className="text-slate-200" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-slate-300 uppercase tracking-tighter">Bajar</span>
+                            <span className="btn-canon text-[8px] text-slate-300">Bajar</span>
                         </button>
 
                         <button onClick={handleHdDownload} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center group-hover/btn:bg-amber-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Download className="text-amber-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-amber-300 uppercase tracking-tighter">HD</span>
+                            <span className="btn-canon text-[8px] text-amber-300">HD</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onDelete(image.id); }} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-red-900/40 border border-red-500/50 flex items-center justify-center group-hover/btn:bg-red-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Trash2 className="text-red-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-red-300 uppercase tracking-tighter">Quitar</span>
+                            <span className="btn-canon text-[8px] text-red-300">Quitar</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
-                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight italic">
+                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight btn-canon" style="font-style:italic;text-transform:none">
                     {image.prompt}
                 </p>
-                <div className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-1">
+                <div className="text-[9px] text-gray-600 uppercase mt-1 btn-canon">
                     {new Date(image.createdAt).toLocaleTimeString()}
                 </div>
             </div>
@@ -587,8 +587,8 @@ const Splash = () => (
                 <div className="bg-purple-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-purple-400 mb-6 border border-purple-500/30">
                     <Wand2 size={32} />
                 </div>
-                <h2 className="text-4xl card-title">Editar Imagen</h2>
-                <p className="text-lg card-desc">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
+                <h2 className="card-title" style="font-size:1.8rem">Editar Imagen</h2>
+                <p className="card-desc">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
             </div>
             <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full">
                 <a href="../generar_copia/?mode=generate" aria-label="Generar imágenes" className="splash-card-link absolute inset-0 z-30"></a>
@@ -598,8 +598,8 @@ const Splash = () => (
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="text-4xl card-title">Generar Imágenes</h2>
-                <p className="text-lg card-desc">Genera imágenes desde una descripción de texto.</p>
+                <h2 className="card-title" style="font-size:1.8rem">Generar Imágenes</h2>
+                <p className="card-desc">Genera imágenes desde una descripción de texto.</p>
             </div>
         </div>
     </div>
@@ -808,7 +808,7 @@ const App = () => {
                                 <div className="space-y-4 animate-in">
                                     <label className="btn-canon text-[11px] text-purple-400">Imagen a Editar</label>
                                     <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-purple-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-purple-500 transition-all">
-                                        {remixSource ? <img src={remixSource} className="w-full h-full object-cover" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="text-[10px] font-bold uppercase">Sube Imagen</span></div>}
+                                        {remixSource ? <img src={remixSource} className="w-full h-full object-cover" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="btn-canon text-[10px]">Sube Imagen</span></div>}
                                     </div>
                                     <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                                 </div>
@@ -864,7 +864,7 @@ const App = () => {
                                             className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${selectedAR === ar.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-500/40 hover:text-cyan-300'}`}
                                         >
                                             <div className="flex items-center justify-center">{ar.icon}</div>
-                                            <span className="text-[9px] font-bold tracking-tighter">{ar.name}</span>
+                                            <span className="btn-canon text-[9px]">{ar.name}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -879,7 +879,7 @@ const App = () => {
                                             onClick={() => setImageSize(res)}
                                             className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${imageSize.id === res.id ? 'border-purple-500 bg-purple-500/10 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-500/40 hover:text-cyan-300'}`}
                                         >
-                                            <span className="text-[10px] font-bold tracking-tighter">{res.label}</span>
+                                            <span className="btn-canon text-[10px]">{res.label}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -892,25 +892,25 @@ const App = () => {
                                         onClick={() => setSelectedQuality('pro')}
                                         className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'pro' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
                                     >
-                                        <span className="text-[11px] font-bold tracking-tighter">PRO</span>
-                                        <span className="text-[8px] font-medium opacity-70 tracking-tighter">Equilibrado · ~$0.03</span>
+                                        <span className="btn-canon text-[11px]">PRO</span>
+                                        <span className="btn-canon text-[8px] opacity-70">Equilibrado · ~$0.03</span>
                                     </button>
                                     <button
                                         onClick={() => setSelectedQuality('max')}
                                         className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'max' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
                                     >
-                                        <span className="text-[11px] font-bold tracking-tighter">MAX</span>
-                                        <span className="text-[8px] font-medium opacity-70 tracking-tighter">Máxima · ~$0.07</span>
+                                        <span className="btn-canon text-[11px]">MAX</span>
+                                        <span className="btn-canon text-[8px] opacity-70">Máxima · ~$0.07</span>
                                     </button>
                                 </div>
                             </div>
 
                             <div className="pt-6 order-last">
-                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
                                     {isGenerating ? 'PROCESANDO...' : (mode === 'text-to-image' ? 'GENERAR IMAGEN' : 'GENERAR EDICIÓN')}
                                 </button>
-                                {error && <p className="text-red-400 text-[10px] text-center mt-4 font-bold uppercase tracking-widest">{error}</p>}
+                                {error && <p className="btn-canon text-red-400 text-[11px] text-center mt-4">{error}</p>}
                             </div>
                         </aside>
 
@@ -950,7 +950,7 @@ const App = () => {
                             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl cursor-zoom-out" onClick={() => setLightboxImage(null)}>
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <img src={lightboxImage.url} className="w-full h-full object-contain" />
-                                    <div className="absolute bottom-8 glass px-8 py-4 rounded-full flex gap-10 text-[11px] font-bold text-gray-400 tracking-widest uppercase" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute bottom-8 glass px-8 py-4 rounded-full flex gap-10 text-[11px] text-gray-400 uppercase btn-canon" onClick={(e) => e.stopPropagation()}>
                                         <button onClick={(e) => { e.stopPropagation(); handleHdDownload(lightboxImage); }} className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full hover:bg-amber-500/40 transition-all">
                                             <Download size={12} className="text-amber-400" />
                                             <span className="text-amber-300 text-[10px]">HD</span>
@@ -978,7 +978,7 @@ const App = () => {
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between space-y-8">
                                             <div className="space-y-4">
-                                                <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 font-medium">
+                                                <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 btn-canon">
                                                     Indica modificaciones puntuales (luz, color, expansión) para aplicar sobre la base actual manteniendo la coherencia estructural.
                                                 </div>
                                                 <textarea
@@ -988,7 +988,7 @@ const App = () => {
                                                     className="w-full h-44 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none focus:border-cyan-400 transition-all shadow-inner"
                                                 />
                                             </div>
-                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                                 {isGenerating ? <Loader2 className="animate-spin" /> : <Send size={20} />}
                                                 Aplicar Cambios
                                             </button>

@@ -339,23 +339,23 @@ select option:focus {
 
 /* ===== SPLASH TITLE CANÓNICO (skill_maestra) ===== */
 .splash-title {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: clamp(2rem, 5vw, 3.2rem) !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
     margin-bottom: 0.5rem;
-    color: #00D0D0;
+    color: #00D0D0 !important;
     text-shadow: 0 0 10px rgba(0, 208, 208, 0.8), 0 0 24px rgba(0, 208, 208, 0.8), 0 0 44px rgba(0, 208, 208, 0.4);
 }
 
 .splash-subtitle,
 .section-subtitle {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-size: 1.05rem;
-    font-weight: 400;
-    color: #99CCCC;
-    letter-spacing: 0.03em;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: 1.05rem !important;
+    font-weight: 400 !important;
+    color: #99CCCC !important;
+    letter-spacing: 0.03em !important;
     margin-bottom: 2rem;
     max-width: 36rem;
     margin-left: auto;
@@ -364,58 +364,59 @@ select option:focus {
 
 /* ===== SECTION TITLE CANÓNICO h2 (skill_maestra) ===== */
 .section-title {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
     margin: 1.5rem 0;
-    color: #eaffff;
+    color: #eaffff !important;
     text-shadow: 0 0 10px rgba(0, 208, 208, 0.4);
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-size: clamp(1.2rem, 3vw, 1.8rem) !important;
 }
 
 /* ===== EMPTY STATE (skill_maestra) ===== */
 .empty-title {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #99CCCC;
-    font-size: 1.2rem;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: #99CCCC !important;
+    font-size: 1.2rem !important;
     text-shadow: 0 0 8px rgba(0, 208, 208, 0.2);
 }
 
 .empty-subtitle {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-size: 0.95rem;
-    color: #669999;
-    letter-spacing: 0.03em;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    color: #669999 !important;
+    letter-spacing: 0.03em !important;
 }
 
 /* ===== BOTÓN CANÓNICO (skill_maestra) ===== */
 .btn-canon {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
 }
 
 /* ===== CARD TITLE (tarjetas Splash) ===== */
 .card-title {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #eaffff;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #eaffff !important;
     text-shadow: 0 0 8px rgba(0, 208, 208, 0.3);
 }
 
 .card-desc {
-    font-family: 'Electrolize', system-ui, sans-serif;
-    font-size: 0.95rem;
-    font-weight: 400;
-    color: #99CCCC;
-    letter-spacing: 0.03em;
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    color: #99CCCC !important;
+    letter-spacing: 0.03em !important;
     line-height: 1.6;
 }
 
