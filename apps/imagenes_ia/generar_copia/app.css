@@ -223,14 +223,14 @@ select option:focus {
     position: fixed;
     inset: 0;
     z-index: 20000;
-    background: rgba(0, 0, 0, 0.30);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(0, 16, 24, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 1.5rem;
     overflow: hidden;
 }
 
@@ -272,12 +272,12 @@ select option:focus {
 
 .loading-text {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: white;
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: #00D0D0;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
-    text-shadow: 0 0 15px var(--neon-cyan);
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 12px rgba(0, 208, 208, 0.4);
     animation: textPulse 2s ease-in-out infinite;
 }
 
@@ -285,9 +285,146 @@ select option:focus {
     to { transform: rotate(360deg); }
 }
 
+@keyframes spin-reverse {
+    to { transform: rotate(-360deg); }
+}
+
 @keyframes textPulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.7; transform: scale(0.98); }
+}
+
+@keyframes indeterminateBar {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(150%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* ===== PROGRESS PANEL (canónico skill_maestra) ===== */
+.progress-panel {
+    width: min(360px, 85vw);
+    border: 2px solid rgba(0, 208, 208, 0.75);
+    border-radius: 9px;
+    background: rgba(6, 16, 24, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 12px 14px;
+    box-shadow: 0 0 18px rgba(0, 208, 208, 0.4);
+}
+
+.progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, #00D0D0, #26C626);
+    border-radius: 999px;
+    animation: indeterminateBar 1.5s ease-in-out infinite;
+}
+
+.secondary-status {
+    text-align: center;
+    color: #99CCCC;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+/* ===== SPLASH TITLE CANÓNICO (skill_maestra) ===== */
+.splash-title {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: clamp(2rem, 5vw, 3.2rem) !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    margin-bottom: 0.5rem;
+    color: #00D0D0 !important;
+    text-shadow: 0 0 10px rgba(0, 208, 208, 0.8), 0 0 24px rgba(0, 208, 208, 0.8), 0 0 44px rgba(0, 208, 208, 0.4);
+}
+
+.splash-subtitle,
+.section-subtitle {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: 1.05rem !important;
+    font-weight: 400 !important;
+    color: #99CCCC !important;
+    letter-spacing: 0.03em !important;
+    margin-bottom: 2rem;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ===== SECTION TITLE CANÓNICO h2 (skill_maestra) ===== */
+.section-title {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    margin: 1.5rem 0;
+    color: #eaffff !important;
+    text-shadow: 0 0 10px rgba(0, 208, 208, 0.4);
+    font-size: clamp(1.2rem, 3vw, 1.8rem) !important;
+}
+
+/* ===== EMPTY STATE (skill_maestra) ===== */
+.empty-title {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: #99CCCC !important;
+    font-size: 1.2rem !important;
+    text-shadow: 0 0 8px rgba(0, 208, 208, 0.2);
+}
+
+.empty-subtitle {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    color: #669999 !important;
+    letter-spacing: 0.03em !important;
+}
+
+/* ===== BOTÓN CANÓNICO (skill_maestra) ===== */
+.btn-canon {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+}
+
+/* ===== CARD TITLE (tarjetas Splash) ===== */
+.card-title {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #eaffff !important;
+    text-shadow: 0 0 8px rgba(0, 208, 208, 0.3);
+}
+
+.card-desc {
+    font-family: 'Electrolize', system-ui, sans-serif !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    color: #99CCCC !important;
+    letter-spacing: 0.03em !important;
+    line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner-triple .ring,
+    .progress-bar-fill {
+        animation: none;
+    }
 }
 
 /* Glass ligero para sugerencias y elementos secundarios */
