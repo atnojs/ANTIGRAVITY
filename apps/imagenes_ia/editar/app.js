@@ -695,7 +695,7 @@ const App = () => {
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
                             <div className="flex items-center justify-between shrink-0">
-                                <h1 className="text-2xl font-bold gradient-text flex items-center gap-3">
+                                <h1 className="splash-title flex items-center gap-3" style={{fontSize:'1.8rem'}}>
                                     <Wand2 className="text-purple-400" size={28} />
                                     Editor de Imágenes
                                 </h1>
