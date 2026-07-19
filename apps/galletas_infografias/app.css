@@ -383,14 +383,32 @@ h1 {
   box-shadow: 0 0 14px var(--glow-soft);
   background: rgba(255,255,255,0.08);
 }
+/* Zona preview/imagen del modal (arriba) */
 .modal-preview {
   width: 100%;
-  aspect-ratio: 4/3;
   position: relative;
   overflow: hidden;
-  background: var(--bg1);
   border-bottom: 2px solid var(--border);
   border-radius: 16px 16px 0 0;
+  background: var(--bg1);
+  min-height: 0;
+  transition: min-height 0.3s ease;
+}
+.modal-preview:empty,
+.modal-preview:has(.result-image-hidden) {
+  min-height: 0;
+  border-bottom: none;
+}
+#result-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 55vh;
+  object-fit: contain;
+  background: var(--bg1);
+}
+#result-image.result-image-hidden {
+  display: none;
 }
 .modal-body {
   padding: 1.5rem 1.8rem 1.8rem;
@@ -562,30 +580,10 @@ h1 {
   transform: translateY(0);
 }
 
-/* Sección de Resultado */
+/* Sección de Resultado (solo botón descargar, la imagen va en modal-preview) */
 .result-section {
-  margin-top: 1.5rem;
-  background: rgba(6,16,24,0.6);
-  border: 1px solid rgba(0,208,208,0.3);
-  border-radius: 12px;
-  padding: 1rem;
+  margin-top: 1rem;
   text-align: center;
-}
-.result-image-wrapper {
-  width: 100%;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid rgba(0,208,208,0.25);
-  background: rgba(0,0,0,0.3);
-  margin-bottom: 0.8rem;
-}
-.result-image-wrapper img {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: 50vh;
-  object-fit: contain;
-  background: transparent;
 }
 
 /* Botón Descargar */

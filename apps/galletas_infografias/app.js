@@ -224,7 +224,11 @@
     currentModalCookie = cookie;
     generatedImageDataUrl = null;
 
-    document.getElementById('modal-preview').innerHTML = generatePreviewHTML(cookie);
+    // Limpiar zona de preview (sin CSS preview, esperando imagen generada)
+    const resultImg = document.getElementById('result-image');
+    resultImg.classList.add('result-image-hidden');
+    resultImg.src = '';
+
     document.getElementById('modal-category').textContent =
       (CATEGORIES[cookie.category]?.icon || '') + ' ' + (CATEGORIES[cookie.category]?.label || cookie.category);
     document.getElementById('modal-title').textContent = cookie.title;
@@ -237,7 +241,6 @@
     // Resetear resultado
     const result = document.getElementById('result-section');
     result.classList.add('hidden');
-    document.getElementById('result-image').src = '';
     document.getElementById('btn-download').classList.add('hidden');
 
     // Resetear estado de traducción
@@ -274,8 +277,8 @@
     }
 
     const promptText = document.getElementById('modal-prompt').value;
-    // Combinar prompt base con el objeto
-    const fullPrompt = promptText + ' El tema específico es: ' + subject + '.';
+    // Combinar prompt base con el objeto y forzar español
+    const fullPrompt = promptText + ' El tema específico es: ' + subject + '. IMPORTANTE: Todos los textos, etiquetas, datos, leyendas y cualquier palabra visible en la infografía deben estar en español.';
 
     // Mostrar loading overlay
     const loading = document.getElementById('loading-overlay');
@@ -307,10 +310,11 @@
         throw new Error(data.error?.message || 'Error desconocido al generar la infografía');
       }
 
-      // Mostrar resultado
+      // Mostrar resultado en la zona superior del modal
       generatedImageDataUrl = data.imageUrl;
       const resultImg = document.getElementById('result-image');
       resultImg.src = data.imageUrl;
+      resultImg.classList.remove('result-image-hidden');
       document.getElementById('result-section').classList.remove('hidden');
       document.getElementById('btn-download').classList.remove('hidden');
 

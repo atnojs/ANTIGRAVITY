@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=4" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -43,8 +43,9 @@
   <div id="cookie-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-card">
       <button class="modal-close" id="modal-close" aria-label="Cerrar">&times;</button>
+      <!-- Zona superior: vacía al abrir, muestra la infografía generada -->
       <div class="modal-preview" id="modal-preview">
-        <!-- CSS mini-infographic preview -->
+        <img id="result-image" class="result-image-hidden" alt="Infografía generada" loading="lazy" />
       </div>
       <div class="modal-body">
         <span class="modal-category" id="modal-category"></span>
@@ -68,11 +69,8 @@
           </button>
         </div>
 
-        <!-- RESULTADO -->
+        <!-- RESULTADO: solo botón descargar (la imagen va arriba en modal-preview) -->
         <div id="result-section" class="result-section hidden">
-          <div class="result-image-wrapper">
-            <img id="result-image" alt="Infografía generada" loading="lazy" />
-          </div>
           <button class="btn-download" id="btn-download" title="Descargar infografía">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
             Descargar Infografía
@@ -100,6 +98,6 @@
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
