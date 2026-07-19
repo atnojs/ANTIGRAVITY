@@ -587,8 +587,8 @@ const Splash = () => (
                 <div className="bg-purple-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-purple-400 mb-6 border border-purple-500/30">
                     <Wand2 size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Editar Imagen</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
+                <h2 className="text-4xl card-title">Editar Imagen</h2>
+                <p className="text-lg card-desc">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
             </div>
             <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full">
                 <a href="../generar_copia/?mode=generate" aria-label="Generar imágenes" className="splash-card-link absolute inset-0 z-30"></a>
@@ -598,8 +598,8 @@ const Splash = () => (
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Generar Imágenes</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
+                <h2 className="text-4xl card-title">Generar Imágenes</h2>
+                <p className="text-lg card-desc">Genera imágenes desde una descripción de texto.</p>
             </div>
         </div>
     </div>
@@ -799,14 +799,14 @@ const App = () => {
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
                             <div className="flex items-center justify-between shrink-0">
-                                <button onClick={() => { setView('splash'); if (typeof window !== 'undefined' && window.location.search) window.history.replaceState(null, '', window.location.pathname); }} className="flex items-center gap-2 text-gray-400 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                                <button onClick={() => { setView('splash'); if (typeof window !== 'undefined' && window.location.search) window.history.replaceState(null, '', window.location.pathname); }} className="btn-canon flex items-center gap-2 text-gray-400 hover:text-white transition-all text-[11px]">
                                     <ChevronLeft size={16} /> <span>Volver</span>
                                 </button>
                             </div>
 
                             {mode === 'remix' && (
                                 <div className="space-y-4 animate-in">
-                                    <label className="text-[11px] font-bold text-purple-400 uppercase tracking-widest">Imagen a Editar</label>
+                                    <label className="btn-canon text-[11px] text-purple-400">Imagen a Editar</label>
                                     <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-purple-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-purple-500 transition-all">
                                         {remixSource ? <img src={remixSource} className="w-full h-full object-cover" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="text-[10px] font-bold uppercase">Sube Imagen</span></div>}
                                     </div>
@@ -815,7 +815,7 @@ const App = () => {
                             )}
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Describe tu imagen</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Describe tu imagen</label>
                                 <StructuredPromptFields
                                     fields={promptFields}
                                     onChange={updatePromptField}
@@ -824,7 +824,7 @@ const App = () => {
                             </div>
 
                             <div className="space-y-6">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Panel de Estilos</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Panel de Estilos</label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <CustomSelect
                                         options={STYLE_GROUPS.fotografico}
@@ -855,7 +855,7 @@ const App = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Formato de Salida</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Formato de Salida</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {ASPECT_RATIOS.map((ar) => (
                                         <button
@@ -871,7 +871,7 @@ const App = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Resolución de Salida</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Resolución de Salida</label>
                                 <div className="grid grid-cols-4 gap-2">
                                     {RESOLUTION_OPTIONS.map((res) => (
                                         <button
@@ -886,7 +886,7 @@ const App = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Calidad del Modelo FLUX</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Calidad del Modelo FLUX</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={() => setSelectedQuality('pro')}
@@ -906,7 +906,7 @@ const App = () => {
                             </div>
 
                             <div className="pt-6 order-last">
-                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
                                     {isGenerating ? 'PROCESANDO...' : (mode === 'text-to-image' ? 'GENERAR IMAGEN' : 'GENERAR EDICIÓN')}
                                 </button>
@@ -918,10 +918,10 @@ const App = () => {
                             <div className="max-w-7xl mx-auto space-y-16">
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
-                                        <h2 className="text-4xl font-bold tracking-tight">{mode === 'text-to-image' ? 'Historial de Imágenes Generadas' : 'Historial de Imágenes Editadas'}</h2>
-                                        <p className="text-gray-400 font-medium">{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
+                                        <h2 className="section-title">{mode === 'text-to-image' ? 'Historial de Imágenes Generadas' : 'Historial de Imágenes Editadas'}</h2>
+                                        <p className="section-subtitle" style="text-align:left;margin-left:0;margin-right:0">{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
                                     </div>
-                                    <button onClick={handleClearHistory} className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] font-bold uppercase tracking-widest border border-red-500/20">
+                                    <button onClick={handleClearHistory} className="btn-canon flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] border border-red-500/20">
                                         <Trash2 size={16} /> LIMPIAR TODO
                                     </button>
                                 </div>
@@ -932,8 +932,8 @@ const App = () => {
                                             <ImageIcon size={48} />
                                         </div>
                                         <div className="space-y-2">
-                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imágenes aún</h3>
-                                            <p className="text-gray-400 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
+                                            <h3 className="empty-title">No hay imágenes aún</h3>
+                                            <p className="empty-subtitle">Comienza por describir tu idea en el panel lateral.</p>
                                         </div>
                                     </div>
                                 ) : (
@@ -967,7 +967,7 @@ const App = () => {
                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-950/80 backdrop-blur-md animate-in">
                                 <div className="glass max-w-4xl w-full rounded-[3.5rem] overflow-hidden flex flex-col shadow-2xl border border-white/10">
                                     <div className="p-10 border-b border-white/5 flex items-center justify-between">
-                                        <h3 className="text-2xl font-bold flex items-center gap-4">
+                                        <h3 className="card-title flex items-center gap-4" style="font-size:1.5rem">
                                             <Wand2 size={24} className="text-purple-400" /> Refinar Proyecto
                                         </h3>
                                         <button onClick={() => setEditImage(null)} className="p-2 text-gray-500 hover:text-white transition-all"><X size={24} /></button>
@@ -988,7 +988,7 @@ const App = () => {
                                                     className="w-full h-44 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none focus:border-cyan-400 transition-all shadow-inner"
                                                 />
                                             </div>
-                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                                 {isGenerating ? <Loader2 className="animate-spin" /> : <Send size={20} />}
                                                 Aplicar Cambios
                                             </button>
