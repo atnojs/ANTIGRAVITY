@@ -192,7 +192,7 @@ function handleFlux(array $request): void {
     if ($status < 200 || $status >= 300) respond($status ?: 502, ['success'=>false, 'error'=>'FLUX rechazó la solicitud.', 'detail'=>$submit['detail'] ?? $submit]);
     $pollUrl = (string)($submit['polling_url'] ?? '');
     $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
-    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) respond(502, ['success'=>false, 'error'=>'URL de seguimiento FLUX no válida.']);
+    if ($pollUrl === '' || preg_match('/(^|\\.)bfl\\.ai$/', $host) !== 1) respond(502, ['success'=>false, 'error'=>'URL de seguimiento FLUX no válida.']);
     $resultUrl = '';
     $last = 'Pending';
     for ($i = 0; $i < 90; $i++) {
@@ -216,7 +216,36 @@ function handleFlux(array $request): void {
         'success'=>true, 'provider'=>'flux', 'model'=>$models[$quality], 'quality'=>$quality,
         'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
         'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
-        'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
+        'mimeType'=>$mime, 'image'=>$base64, 'imageUrl'=>'data:' . $mime . ';base64,' . $base64,
+    ]);
+}
+
+function handleTranslate(array $request): void {
+    $key = getSecret('R');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave de OpenRouter no está configurada.']);
+    $text = trim((string)($request['text'] ?? ''));
+    if ($text === '') respond(400, ['success' => false, 'error' => 'Falta el texto a traducir.']);
+    if (strlen($text) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El texto es demasiado largo.']);
+    $target = trim((string)($request['target'] ?? 'en'));
+    if (!in_array($target, ['en','es','fr','de','pt','it'], true)) $target = 'en';
+    $systemPrompt = 'You are a professional translator. Translate the following text from Spanish to English. Return ONLY the translated text, nothing else. Do not add explanations, notes, or markdown. Keep the same formatting, line breaks, and style.';
+    $messages = [
+        ['role' => 'system', 'content' => $systemPrompt],
+        ['role' => 'user', 'content' => $text]
+    ];
+    $payload = ['messages' => $messages, 'stream' => false, 'model' => 'openai/gpt-4o-mini', 'temperature' => 0.2, 'max_tokens' => 4096];
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
+        'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
+    ], $payload, 120);
+    if ($status < 200 || $status >= 300 || isset($response['error'])) {
+        $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
+        respond($status >= 400 && $status < 600 ? $status : 502, ['success'=>false, 'error'=>'Error al traducir.', 'detail'=>$detail]);
+    }
+    $translated = trim((string)($response['choices'][0]['message']['content'] ?? ''));
+    if ($translated === '') respond(502, ['success' => false, 'error' => 'La traducción devolvió un resultado vacío.']);
+    respond(200, [
+        'success' => true, 'translated' => $translated,
+        'original' => $text, 'target' => $target, 'model' => (string)($response['model'] ?? 'openai/gpt-4o-mini')
     ]);
 }
 
