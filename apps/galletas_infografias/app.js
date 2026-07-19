@@ -83,6 +83,23 @@
     try { localStorage.removeItem(IMG_PREFIX + cookieId); } catch (e) {}
   }
 
+  // Persistencia de prompts editados
+  const PROMPT_PREFIX = 'gi_prompt_';
+
+  function getCookiePrompt(cookieId, fallback) {
+    try {
+      const saved = localStorage.getItem(PROMPT_PREFIX + cookieId);
+      return saved !== null ? saved : fallback;
+    } catch (e) { return fallback; }
+  }
+
+  function setCookiePrompt(cookieId, prompt) {
+    try { localStorage.setItem(PROMPT_PREFIX + cookieId, prompt); return true; } catch (e) {
+      alert('No se pudo guardar el prompt. Almacenamiento local lleno.');
+      return false;
+    }
+  }
+
   function compressImage(file, maxWidth, quality) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -378,7 +395,20 @@
     info.appendChild(desc);
     const footer = document.createElement('div');
     footer.className = 'cookie-footer';
-    footer.innerHTML = '<span class=\"prompt-len\">📝 ' + cookie.prompt.length + ' chars</span><span>🍪 Abrir</span>';
+    const promptLen = getCookiePrompt(cookie.id, cookie.prompt).length;
+    footer.innerHTML = '<span class=\"prompt-len\">📝 ' + promptLen + ' chars</span><span>🍪 Abrir</span>';
+
+    // Botón editar prompt (protegido con contraseña)
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-edit-prompt';
+    editBtn.title = 'Editar prompt (requiere contraseña)';
+    editBtn.innerHTML = '✏️';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      askPassword().then(ok => { if (ok) openPromptEditor(cookie); });
+    });
+    footer.appendChild(editBtn);
+
     info.appendChild(footer);
 
     // CLIC EN INFO (pie de galleta): siempre abre el modal
@@ -455,6 +485,17 @@
     lb.addEventListener('click', (e) => {
       if (e.target === lb) closeLightbox();
     });
+
+    // Editor de prompt
+    document.getElementById('btn-editor-save').addEventListener('click', savePromptEdit);
+    document.getElementById('btn-editor-cancel').addEventListener('click', closePromptEditor);
+    const peOverlay = document.getElementById('prompt-editor-overlay');
+    peOverlay.addEventListener('click', (e) => {
+      if (e.target === peOverlay) closePromptEditor();
+    });
+    document.getElementById('prompt-editor-textarea').addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePromptEditor();
+    });
   }
 
   // ═══════════════════════════════════════════
@@ -475,6 +516,39 @@
     document.body.style.overflow = '';
   }
 
+  // ═══════════════════════════════════════════
+  // EDITOR DE PROMPT
+  // ═══════════════════════════════════════════
+  let editingCookieId = null;
+
+  function openPromptEditor(cookie) {
+    editingCookieId = cookie.id;
+    const currentPrompt = getCookiePrompt(cookie.id, cookie.prompt);
+    document.getElementById('prompt-editor-textarea').value = currentPrompt;
+    document.getElementById('prompt-editor-overlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('prompt-editor-textarea').focus();
+  }
+
+  function closePromptEditor() {
+    document.getElementById('prompt-editor-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    editingCookieId = null;
+  }
+
+  function savePromptEdit() {
+    if (!editingCookieId) return;
+    const newPrompt = document.getElementById('prompt-editor-textarea').value.trim();
+    if (!newPrompt) {
+      alert('El prompt no puede estar vacío.');
+      return;
+    }
+    if (setCookiePrompt(editingCookieId, newPrompt)) {
+      closePromptEditor();
+      renderCookies(); // Refrescar para mostrar nuevo char count y prompt actualizado
+    }
+  }
+
   function openModal(cookie) {
     currentModalCookie = cookie;
     generatedImageDataUrl = null;
@@ -488,7 +562,7 @@
       (CATEGORIES[cookie.category]?.icon || '') + ' ' + (CATEGORIES[cookie.category]?.label || cookie.category);
     document.getElementById('modal-title').textContent = cookie.title;
     document.getElementById('modal-desc').textContent = cookie.desc;
-    document.getElementById('modal-prompt').value = cookie.prompt;
+    document.getElementById('modal-prompt').value = getCookiePrompt(cookie.id, cookie.prompt);
 
     // Resetear campo objeto
     document.getElementById('input-subject').value = '';
@@ -615,7 +689,7 @@
 
     // Si ya está en inglés, restaurar al español original
     if (btn.classList.contains('translated')) {
-      document.getElementById('modal-prompt').value = currentModalCookie.prompt;
+      document.getElementById('modal-prompt').value = getCookiePrompt(currentModalCookie.id, currentModalCookie.prompt);
       btn.textContent = '🌐 Traducir a Inglés';
       btn.classList.remove('translated');
       return;
