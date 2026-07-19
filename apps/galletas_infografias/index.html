@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=4" />
+  <link rel="stylesheet" href="app.css?v=5" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -46,6 +46,13 @@
       <!-- Zona superior: vacía al abrir, muestra la infografía generada -->
       <div class="modal-preview" id="modal-preview">
         <img id="result-image" class="result-image-hidden" alt="Infografía generada" loading="lazy" />
+        <!-- Botón descargar justo debajo de la imagen -->
+        <div id="result-section" class="result-section hidden">
+          <button class="btn-download" id="btn-download" title="Descargar infografía">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Descargar Infografía
+          </button>
+        </div>
       </div>
       <div class="modal-body">
         <span class="modal-category" id="modal-category"></span>
@@ -59,6 +66,35 @@
           <button class="btn-translate" id="btn-translate" title="Traducir prompt a inglés">🌐 Traducir a Inglés</button>
         </div>
 
+        <!-- AJUSTES DE GENERACIÓN (AR, Resolución, Modelo) -->
+        <div class="modal-settings-box">
+          <label>Formato · Resolución · Modelo</label>
+          <div class="toggle-row">
+            <span class="toggle-label">AR</span>
+            <div class="toggle-group" id="ar-toggles">
+              <button class="toggle-btn active" data-value="4:3">4:3</button>
+              <button class="toggle-btn" data-value="1:1">1:1</button>
+              <button class="toggle-btn" data-value="16:9">16:9</button>
+            </div>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Res</span>
+            <div class="toggle-group" id="res-toggles">
+              <button class="toggle-btn" data-value="512">512</button>
+              <button class="toggle-btn active" data-value="1024">1024</button>
+              <button class="toggle-btn" data-value="2048">2048</button>
+              <button class="toggle-btn" data-value="4096">4096</button>
+            </div>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Modelo</span>
+            <div class="toggle-group" id="model-toggles">
+              <button class="toggle-btn active" data-value="pro">PRO</button>
+              <button class="toggle-btn" data-value="max">MAX</button>
+            </div>
+          </div>
+        </div>
+
         <!-- CAMPO OBJETO -->
         <div class="modal-subject-box">
           <label for="input-subject">¿Sobre qué quieres la infografía?</label>
@@ -66,14 +102,6 @@
           <button class="btn-generate" id="btn-generate">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             Generar Infografía
-          </button>
-        </div>
-
-        <!-- RESULTADO: solo botón descargar (la imagen va arriba en modal-preview) -->
-        <div id="result-section" class="result-section hidden">
-          <button class="btn-download" id="btn-download" title="Descargar infografía">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-            Descargar Infografía
           </button>
         </div>
       </div>
@@ -98,6 +126,6 @@
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

@@ -580,11 +580,82 @@ h1 {
   transform: translateY(0);
 }
 
-/* Sección de Resultado (solo botón descargar, la imagen va en modal-preview) */
-.result-section {
+/* === AJUSTES DE GENERACIÓN (toggles AR / Res / Modelo) === */
+.modal-settings-box {
+  background: rgba(6,16,24,0.6);
+  border: 1px solid rgba(0,208,208,0.3);
+  border-radius: 12px;
+  padding: 1rem;
   margin-top: 1rem;
+}
+.modal-settings-box > label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 0.7rem;
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.toggle-row:last-child {
+  margin-bottom: 0;
+}
+.toggle-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  min-width: 42px;
+  text-align: right;
+}
+.toggle-group {
+  display: flex;
+  gap: 0.35rem;
+  flex: 1;
+}
+.toggle-btn {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  background: var(--card-bg);
+  color: var(--muted);
+  border: 1px solid rgba(0,208,208,0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  white-space: nowrap;
+  user-select: none;
+}
+.toggle-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: 0 0 12px var(--glow-soft);
+}
+.toggle-btn.active {
+  background: linear-gradient(135deg, var(--acc2), var(--acc));
+  color: #061018;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 16px var(--glow);
+  font-weight: 700;
+}
+
+/* Sección de Resultado (botón descargar debajo de la imagen) */
+.result-section {
+  padding: 0.7rem 1rem 0.9rem;
   text-align: center;
 }
+.result-section.hidden { display: none; }
 
 /* Botón Descargar */
 .btn-download {

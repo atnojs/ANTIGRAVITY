@@ -84,7 +84,44 @@
     renderCategories();
     renderCookies();
     setupModal();
+    setupToggleGroups();
     window.__galletas_domready = true;
+  }
+
+  // ═══════════════════════════════════════════
+  // TOGGLE GROUPS (AR, Resolución, Modelo)
+  // ═══════════════════════════════════════════
+  function setupToggleGroups() {
+    document.querySelectorAll('.toggle-group').forEach(group => {
+      group.addEventListener('click', (e) => {
+        const btn = e.target.closest('.toggle-btn');
+        if (!btn) return;
+        group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  }
+
+  function getToggleValue(groupId) {
+    const active = document.querySelector('#' + groupId + ' .toggle-btn.active');
+    return active ? active.dataset.value : '';
+  }
+
+  function resetToggleGroups() {
+    // AR: restaurar a 4:3
+    setToggle('ar-toggles', '4:3');
+    // Res: restaurar a 1024
+    setToggle('res-toggles', '1024');
+    // Modelo: restaurar a pro
+    setToggle('model-toggles', 'pro');
+  }
+
+  function setToggle(groupId, value) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.toggle-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === value);
+    });
   }
 
   // ═══════════════════════════════════════════
@@ -247,6 +284,9 @@
     document.getElementById('btn-translate').textContent = '🌐 Traducir a Inglés';
     document.getElementById('btn-translate').classList.remove('translated');
 
+    // Resetear toggles a defaults
+    resetToggleGroups();
+
     const overlay = document.getElementById('cookie-modal');
     overlay.classList.remove('hidden');
     overlay.setAttribute('aria-hidden', 'false');
@@ -280,12 +320,17 @@
     // Combinar prompt base con el objeto y forzar español
     const fullPrompt = promptText + ' El tema específico es: ' + subject + '. IMPORTANTE: Todos los textos, etiquetas, datos, leyendas y cualquier palabra visible en la infografía deben estar en español.';
 
+    // Leer ajustes de los toggles
+    const ar = getToggleValue('ar-toggles') || '4:3';
+    const resolution = parseInt(getToggleValue('res-toggles')) || 1024;
+    const quality = getToggleValue('model-toggles') || 'pro';
+
     // Mostrar loading overlay
     const loading = document.getElementById('loading-overlay');
     loading.classList.remove('hidden');
     loading.style.display = 'flex';
     document.getElementById('loading-text').textContent = 'IA generando lo solicitado...';
-    document.getElementById('secondary-status').textContent = 'Creando infografía con FLUX...';
+    document.getElementById('secondary-status').textContent = 'Creando infografía con FLUX (' + quality.toUpperCase() + ') a ' + resolution + 'px...';
 
     // Ocultar resultado anterior
     document.getElementById('result-section').classList.add('hidden');
@@ -298,9 +343,9 @@
         body: JSON.stringify({
           service: 'flux',
           prompt: fullPrompt,
-          width: 1024,
-          height: 768,
-          quality: 'pro'
+          aspectRatio: ar,
+          resolution: resolution,
+          quality: quality
         })
       });
 
