@@ -260,8 +260,9 @@ if ($method === 'GET') respond(200, [
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
-$action = strtolower((string)($request['action'] ?? 'generate'));
+$action = strtolower((string)($request['action'] ?? $request['service'] ?? 'generate'));
 if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
-if ($action === 'generate') handleFlux($request);
+if ($action === 'generate' || $action === 'flux') handleFlux($request);
+if ($action === 'translate') handleTranslate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
