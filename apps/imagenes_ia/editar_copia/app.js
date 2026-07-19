@@ -559,7 +559,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
             </div>
 
             <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
-                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight btn-canon" style="font-style:italic;text-transform:none">
+                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight btn-canon" style={{fontStyle:'italic', textTransform:'none'}}>
                     {image.prompt}
                 </p>
                 <div className="text-[9px] text-gray-600 uppercase mt-1 btn-canon">
@@ -587,7 +587,7 @@ const Splash = () => (
                 <div className="bg-purple-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-purple-400 mb-6 border border-purple-500/30">
                     <Wand2 size={32} />
                 </div>
-                <h2 className="card-title" style="font-size:1.8rem">Editar Imagen</h2>
+                <h2 className="card-title" style={{fontSize:'1.8rem'}}>Editar Imagen</h2>
                 <p className="card-desc">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
             </div>
             <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full">
@@ -598,7 +598,7 @@ const Splash = () => (
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="card-title" style="font-size:1.8rem">Generar Imágenes</h2>
+                <h2 className="card-title" style={{fontSize:'1.8rem'}}>Generar Imágenes</h2>
                 <p className="card-desc">Genera imágenes desde una descripción de texto.</p>
             </div>
         </div>
@@ -919,7 +919,7 @@ const App = () => {
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
                                         <h2 className="section-title">{mode === 'text-to-image' ? 'Historial de Imágenes Generadas' : 'Historial de Imágenes Editadas'}</h2>
-                                        <p className="section-subtitle" style="text-align:left;margin-left:0;margin-right:0">{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
+                                        <p className="section-subtitle" style={{textAlign:'left', marginLeft:0, marginRight:0}}>{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
                                     </div>
                                     <button onClick={handleClearHistory} className="btn-canon flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] border border-red-500/20">
                                         <Trash2 size={16} /> LIMPIAR TODO
@@ -967,7 +967,7 @@ const App = () => {
                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-950/80 backdrop-blur-md animate-in">
                                 <div className="glass max-w-4xl w-full rounded-[3.5rem] overflow-hidden flex flex-col shadow-2xl border border-white/10">
                                     <div className="p-10 border-b border-white/5 flex items-center justify-between">
-                                        <h3 className="card-title flex items-center gap-4" style="font-size:1.5rem">
+                                        <h3 className="card-title flex items-center gap-4" style={{fontSize:'1.5rem'}}>
                                             <Wand2 size={24} className="text-purple-400" /> Refinar Proyecto
                                         </h3>
                                         <button onClick={() => setEditImage(null)} className="p-2 text-gray-500 hover:text-white transition-all"><X size={24} /></button>
