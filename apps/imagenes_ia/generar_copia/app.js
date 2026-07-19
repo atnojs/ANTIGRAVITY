@@ -398,7 +398,13 @@ const LoadingOverlay = () => (
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <p className="loading-text">IA Generando Obra Maestra...</p>
+        <p className="loading-text">IA generando lo solicitado...</p>
+        <div className="progress-panel">
+            <div className="progress-bar-track">
+                <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p className="secondary-status">Procesando solicitud...</p>
+        </div>
     </div>
 );
 
@@ -423,7 +429,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
+                className={`btn-canon w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
             >
                 <span className={isPlaceholder ? 'text-gray-500' : 'text-gray-200'}>{selectedOption.name}</span>
                 <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -440,7 +446,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
                                     onChange(opt.id);
                                     setIsOpen(false);
                                 }}
-                                className={`w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
+                                className={`btn-canon w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
                                     ? 'bg-cyan-500/20 text-cyan-400 border-l-2 border-cyan-400'
                                     : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 border-l-2 border-transparent'
                                     }`}
@@ -501,7 +507,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
     return (
         <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
             <div className="absolute top-4 left-4 z-10">
-                <div className="px-3 py-1 glass rounded-full text-[9px] font-bold uppercase tracking-widest text-white/90 border-white/5 backdrop-blur-md">
+                <div className="px-3 py-1 glass rounded-full text-[9px] uppercase text-white/90 border-white/5 backdrop-blur-md btn-canon">
                     {image.style.name} | {image.aspectRatio}
                 </div>
             </div>
@@ -518,45 +524,45 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
                             <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center group-hover/btn:bg-cyan-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <RefreshCw className="text-cyan-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-cyan-200 uppercase tracking-tighter">Nuevas</span>
+                            <span className="btn-canon text-[8px] text-cyan-200">Nuevas</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onEdit(image); }} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center group-hover/btn:bg-purple-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <MessageSquare className="text-purple-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-purple-200 uppercase tracking-tighter">Variar</span>
+                            <span className="btn-canon text-[8px] text-purple-200">Variar</span>
                         </button>
 
                         <button onClick={handleDownload} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center group-hover/btn:bg-slate-700 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Download className="text-slate-200" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-slate-300 uppercase tracking-tighter">Bajar</span>
+                            <span className="btn-canon text-[8px] text-slate-300">Bajar</span>
                         </button>
 
                         <button onClick={handleHdDownload} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center group-hover/btn:bg-amber-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Download className="text-amber-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-amber-300 uppercase tracking-tighter">HD</span>
+                            <span className="btn-canon text-[8px] text-amber-300">HD</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onDelete(image.id); }} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-red-900/40 border border-red-500/50 flex items-center justify-center group-hover/btn:bg-red-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Trash2 className="text-red-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-red-300 uppercase tracking-tighter">Quitar</span>
+                            <span className="btn-canon text-[8px] text-red-300">Quitar</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
-                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight italic">
+                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight btn-canon" style={{fontStyle:'italic', textTransform:'none'}}>
                     {image.prompt}
                 </p>
-                <div className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-1">
+                <div className="text-[9px] text-gray-600 uppercase mt-1 btn-canon">
                     {new Date(image.createdAt).toLocaleTimeString()}
                 </div>
             </div>
@@ -567,9 +573,9 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
 const Splash = () => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
-            <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Diseña como un Pro</h1>
-            <p className="text-gray-300 text-lg md:text-2xl font-light max-w-2xl mx-auto">
-                <span className="neon-text font-semibold">Edición/Generación de Imágenes</span>
+            <h1 className="splash-title">Diseña como un Pro</h1>
+            <p className="splash-subtitle">
+                Edición y Generación de Imágenes con IA
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
@@ -581,8 +587,8 @@ const Splash = () => (
                 <div className="bg-purple-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-purple-400 mb-6 border border-purple-500/30">
                     <Wand2 size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Editar Imagen</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de FLUX.</p>
+                <h2 className="card-title" style={{fontSize:'1.8rem'}}>Editar Imagen</h2>
+                <p className="card-desc">Edita imágenes existentes con la potencia de FLUX (flux-2-max).</p>
             </div>
             <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full">
                 <a href="?mode=generate" aria-label="Generar imágenes" className="splash-card-link absolute inset-0 z-30"></a>
@@ -592,8 +598,8 @@ const Splash = () => (
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Generar Imágenes</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
+                <h2 className="card-title" style={{fontSize:'1.8rem'}}>Generar Imágenes</h2>
+                <p className="card-desc">Genera imágenes desde una descripción de texto.</p>
             </div>
         </div>
     </div>
@@ -795,23 +801,23 @@ const App = () => {
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
                             <div className="flex items-center justify-between shrink-0">
-                                <button onClick={() => { setView('splash'); if (typeof window !== 'undefined' && window.location.search) window.history.replaceState(null, '', window.location.pathname); }} className="flex items-center gap-2 text-gray-400 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                                <button onClick={() => { setView('splash'); if (typeof window !== 'undefined' && window.location.search) window.history.replaceState(null, '', window.location.pathname); }} className="btn-canon flex items-center gap-2 text-gray-400 hover:text-white transition-all text-[11px]">
                                     <ChevronLeft size={16} /> <span>Volver</span>
                                 </button>
                             </div>
 
                             {mode === 'remix' && (
                                 <div className="space-y-4 animate-in">
-                                    <label className="text-[11px] font-bold text-purple-400 uppercase tracking-widest">Imagen a Editar</label>
+                                    <label className="btn-canon text-[11px] text-purple-400">Imagen a Editar</label>
                                     <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-purple-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-purple-500 transition-all">
-                                        {remixSource ? <img src={remixSource} className="w-full h-full object-cover" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="text-[10px] font-bold uppercase">Sube Imagen</span></div>}
+                                        {remixSource ? <img src={remixSource} className="w-full h-full object-cover" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="btn-canon text-[10px]">Sube Imagen</span></div>}
                                     </div>
                                     <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                                 </div>
                             )}
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Quieres añadir algo??</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Describe tu imagen</label>
                                 <StructuredPromptFields
                                     fields={promptFields}
                                     onChange={updatePromptField}
@@ -820,7 +826,7 @@ const App = () => {
                             </div>
 
                             <div className="space-y-6">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Panel de Estilos</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Panel de Estilos</label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <CustomSelect
                                         options={STYLE_GROUPS.fotografico}
@@ -851,7 +857,7 @@ const App = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Formato de Salida</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Formato de Salida</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {ASPECT_RATIOS.map((ar) => (
                                         <button
@@ -860,14 +866,14 @@ const App = () => {
                                             className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${selectedAR === ar.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-500/40 hover:text-cyan-300'}`}
                                         >
                                             <div className="flex items-center justify-center">{ar.icon}</div>
-                                            <span className="text-[9px] font-bold tracking-tighter">{ar.name}</span>
+                                            <span className="btn-canon text-[9px]">{ar.name}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Resolución de Salida</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Resolución de Salida</label>
                                 <div className="grid grid-cols-4 gap-2">
                                     {RESOLUTION_OPTIONS.map((res) => (
                                         <button
@@ -875,38 +881,38 @@ const App = () => {
                                             onClick={() => setImageSize(res)}
                                             className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${imageSize.id === res.id ? 'border-purple-500 bg-purple-500/10 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-500/40 hover:text-cyan-300'}`}
                                         >
-                                            <span className="text-[10px] font-bold tracking-tighter">{res.label}</span>
+                                            <span className="btn-canon text-[10px]">{res.label}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Calidad del Modelo FLUX</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Calidad del Modelo FLUX</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={() => setSelectedQuality('pro')}
                                         className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'pro' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
                                     >
-                                        <span className="text-[11px] font-bold tracking-tighter">PRO</span>
-                                        <span className="text-[8px] font-medium opacity-70 tracking-tighter">Equilibrado · ~$0.03</span>
+                                        <span className="btn-canon text-[11px]">PRO</span>
+                                        <span className="btn-canon text-[8px] opacity-70">Equilibrado · ~$0.03</span>
                                     </button>
                                     <button
                                         onClick={() => setSelectedQuality('max')}
                                         className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'max' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
                                     >
-                                        <span className="text-[11px] font-bold tracking-tighter">MAX</span>
-                                        <span className="text-[8px] font-medium opacity-70 tracking-tighter">Máxima · ~$0.07</span>
+                                        <span className="btn-canon text-[11px]">MAX</span>
+                                        <span className="btn-canon text-[8px] opacity-70">Máxima · ~$0.07</span>
                                     </button>
                                 </div>
                             </div>
 
                             <div className="pt-6 order-last">
-                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
                                     {isGenerating ? 'PROCESANDO...' : (mode === 'text-to-image' ? 'GENERAR IMAGEN' : 'GENERAR EDICIÓN')}
                                 </button>
-                                {error && <p className="text-red-400 text-[10px] text-center mt-4 font-bold uppercase tracking-widest">{error}</p>}
+                                {error && <p className="btn-canon text-red-400 text-[11px] text-center mt-4">{error}</p>}
                             </div>
                         </aside>
 
@@ -914,10 +920,10 @@ const App = () => {
                             <div className="max-w-7xl mx-auto space-y-16">
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
-                                        <h2 className="text-4xl font-bold tracking-tight">{mode === 'text-to-image' ? 'Historial de Imágenes Generadas' : 'Historial de Imágenes Editadas'}</h2>
-                                        <p className="text-gray-400 font-medium">{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
+                                        <h2 className="section-title">{mode === 'text-to-image' ? 'Historial de Imágenes Generadas' : 'Historial de Imágenes Editadas'}</h2>
+                                        <p className="section-subtitle" style={{textAlign:'left', marginLeft:0, marginRight:0}}>{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
                                     </div>
-                                    <button onClick={handleClearHistory} className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] font-bold uppercase tracking-widest border border-red-500/20">
+                                    <button onClick={handleClearHistory} className="btn-canon flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] border border-red-500/20">
                                         <Trash2 size={16} /> LIMPIAR TODO
                                     </button>
                                 </div>
@@ -928,8 +934,8 @@ const App = () => {
                                             <ImageIcon size={48} />
                                         </div>
                                         <div className="space-y-2">
-                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imágenes aún</h3>
-                                            <p className="text-gray-400 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
+                                            <h3 className="empty-title">No hay imágenes aún</h3>
+                                            <p className="empty-subtitle">Comienza por describir tu idea en el panel lateral.</p>
                                         </div>
                                     </div>
                                 ) : (
@@ -946,7 +952,7 @@ const App = () => {
                             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl cursor-zoom-out" onClick={() => setLightboxImage(null)}>
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <img src={lightboxImage.url} className="w-full h-full object-contain" />
-                                    <div className="absolute bottom-8 glass px-8 py-4 rounded-full flex gap-10 text-[11px] font-bold text-gray-400 tracking-widest uppercase" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute bottom-8 glass px-8 py-4 rounded-full flex gap-10 text-[11px] text-gray-400 uppercase btn-canon" onClick={(e) => e.stopPropagation()}>
                                         <button onClick={(e) => { e.stopPropagation(); handleHdDownload(lightboxImage); }} className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full hover:bg-amber-500/40 transition-all">
                                             <Download size={12} className="text-amber-400" />
                                             <span className="text-amber-300 text-[10px]">HD</span>
@@ -963,7 +969,7 @@ const App = () => {
                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-950/80 backdrop-blur-md animate-in">
                                 <div className="glass max-w-4xl w-full rounded-[3.5rem] overflow-hidden flex flex-col shadow-2xl border border-white/10">
                                     <div className="p-10 border-b border-white/5 flex items-center justify-between">
-                                        <h3 className="text-2xl font-bold flex items-center gap-4">
+                                        <h3 className="card-title flex items-center gap-4" style={{fontSize:'1.5rem'}}>
                                             <Wand2 size={24} className="text-purple-400" /> Refinar Proyecto
                                         </h3>
                                         <button onClick={() => setEditImage(null)} className="p-2 text-gray-500 hover:text-white transition-all"><X size={24} /></button>
@@ -974,7 +980,7 @@ const App = () => {
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between space-y-8">
                                             <div className="space-y-4">
-                                                <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 font-medium">
+                                                <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 btn-canon">
                                                     Indica modificaciones puntuales (luz, color, expansión) para aplicar sobre la base actual manteniendo la coherencia estructural.
                                                 </div>
                                                 <textarea
@@ -984,7 +990,7 @@ const App = () => {
                                                     className="w-full h-44 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none focus:border-cyan-400 transition-all shadow-inner"
                                                 />
                                             </div>
-                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                                 {isGenerating ? <Loader2 className="animate-spin" /> : <Send size={20} />}
                                                 Aplicar Cambios
                                             </button>
