@@ -60,6 +60,50 @@
   let historyManager = null;
   let currentModalCookie = null;
   let generatedImageDataUrl = null;
+  let pendingUploadCookieId = null;
+
+  // ═══════════════════════════════════════════
+  // GESTIÓN DE IMÁGENES EN PREVIEWS (localStorage)
+  // ═══════════════════════════════════════════
+  const IMG_PREFIX = 'gi_img_';
+
+  function getCookieImage(cookieId) {
+    try { return localStorage.getItem(IMG_PREFIX + cookieId); } catch (e) { return null; }
+  }
+
+  function setCookieImage(cookieId, dataUrl) {
+    try { localStorage.setItem(IMG_PREFIX + cookieId, dataUrl); } catch (e) {
+      alert('No se pudo guardar la imagen. El almacenamiento local está lleno. Prueba con una imagen más pequeña.');
+      return false;
+    }
+    return true;
+  }
+
+  function removeCookieImage(cookieId) {
+    try { localStorage.removeItem(IMG_PREFIX + cookieId); } catch (e) {}
+  }
+
+  function compressImage(file, maxWidth, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
 
   // ═══════════════════════════════════════════
   // INICIALIZACIÓN
@@ -85,7 +129,68 @@
     renderCookies();
     setupModal();
     setupToggleGroups();
+    setupPreviewImageUpload();
     window.__galletas_domready = true;
+  }
+
+  // ═══════════════════════════════════════════
+  // UPLOAD DE IMÁGENES EN PREVIEWS
+  // ═══════════════════════════════════════════
+  function setupPreviewImageUpload() {
+    const input = document.getElementById('preview-image-input');
+    input.addEventListener('change', async function() {
+      if (!this.files || !this.files[0] || !pendingUploadCookieId) return;
+      const file = this.files[0];
+      try {
+        const dataUrl = await compressImage(file, 800, 0.75);
+        if (setCookieImage(pendingUploadCookieId, dataUrl)) {
+          // Actualizar TODAS las previews de esta cookie (por si hay varias)
+          document.querySelectorAll('.cookie-preview[data-cookie-id="' + pendingUploadCookieId + '"]').forEach(preview => {
+            updatePreviewImage(preview, dataUrl);
+          });
+        }
+      } catch (err) {
+        console.error('Error al procesar la imagen:', err);
+        alert('Error al procesar la imagen. Prueba con otro archivo.');
+      }
+      pendingUploadCookieId = null;
+      this.value = '';
+    });
+  }
+
+  function updatePreviewImage(preview, dataUrl) {
+    // Quitar CSS preview y poner imagen
+    preview.querySelector('.preview-inner')?.remove();
+    let img = preview.querySelector('.cookie-preview-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'cookie-preview-img';
+      img.alt = 'Preview de infografía';
+      img.loading = 'lazy';
+      // Insertar antes del overlay
+      const overlay = preview.querySelector('.preview-upload-overlay');
+      if (overlay) {
+        preview.insertBefore(img, overlay);
+      } else {
+        preview.appendChild(img);
+      }
+    }
+    img.src = dataUrl;
+    preview.classList.add('has-image');
+  }
+
+  function triggerPreviewUpload(cookieId) {
+    pendingUploadCookieId = cookieId;
+    document.getElementById('preview-image-input').click();
+  }
+
+  function handlePreviewRightClick(e, cookieId) {
+    e.preventDefault();
+    if (!getCookieImage(cookieId)) return;
+    if (confirm('¿Quitar la imagen de esta galleta?')) {
+      removeCookieImage(cookieId);
+      renderCookies();
+    }
   }
 
   // ═══════════════════════════════════════════
@@ -108,8 +213,8 @@
   }
 
   function resetToggleGroups() {
-    // AR: restaurar a 4:3
-    setToggle('ar-toggles', '4:3');
+    // AR: restaurar a 1:1
+    setToggle('ar-toggles', '1:1');
     // Res: restaurar a 1024
     setToggle('res-toggles', '1024');
     // Modelo: restaurar a pro
@@ -175,9 +280,48 @@
     card.setAttribute('tabindex', '0');
     card.setAttribute('role', 'button');
     card.setAttribute('aria-label', 'Abrir galleta: ' + cookie.title);
+
     const preview = document.createElement('div');
     preview.className = 'cookie-preview';
-    preview.innerHTML = generatePreviewHTML(cookie);
+    preview.setAttribute('data-cookie-id', cookie.id);
+
+    // Comprobar si hay imagen guardada
+    const savedImage = getCookieImage(cookie.id);
+    if (savedImage) {
+      preview.classList.add('has-image');
+      const img = document.createElement('img');
+      img.className = 'cookie-preview-img';
+      img.src = savedImage;
+      img.alt = 'Preview de: ' + cookie.title;
+      img.loading = 'lazy';
+      preview.appendChild(img);
+    } else {
+      preview.innerHTML = generatePreviewHTML(cookie);
+    }
+
+    // Overlay de upload (siempre visible)
+    const uploadOverlay = document.createElement('div');
+    uploadOverlay.className = 'preview-upload-overlay';
+    uploadOverlay.title = 'Clic para subir imagen · Clic derecho para quitar';
+    uploadOverlay.innerHTML = '<span class="preview-upload-icon">🖼️</span>';
+    uploadOverlay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerPreviewUpload(cookie.id);
+    });
+    uploadOverlay.addEventListener('contextmenu', (e) => {
+      e.stopPropagation();
+      handlePreviewRightClick(e, cookie.id);
+    });
+    preview.appendChild(uploadOverlay);
+
+    // También permitir clic derecho en todo el preview
+    preview.addEventListener('contextmenu', (e) => {
+      if (getCookieImage(cookie.id)) {
+        e.stopPropagation();
+        handlePreviewRightClick(e, cookie.id);
+      }
+    });
+
     card.appendChild(preview);
     const info = document.createElement('div');
     info.className = 'cookie-info';
@@ -321,7 +465,7 @@
     const fullPrompt = promptText + ' El tema específico es: ' + subject + '. IMPORTANTE: Todos los textos, etiquetas, datos, leyendas y cualquier palabra visible en la infografía deben estar en español.';
 
     // Leer ajustes de los toggles
-    const ar = getToggleValue('ar-toggles') || '4:3';
+    const ar = getToggleValue('ar-toggles') || '1:1';
     const resolution = parseInt(getToggleValue('res-toggles')) || 1024;
     const quality = getToggleValue('model-toggles') || 'pro';
 

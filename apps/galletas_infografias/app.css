@@ -195,7 +195,7 @@ h1 {
   outline-offset: 2px;
 }
 
-/* Preview visual (mini-infografía CSS) */
+/* Preview visual (mini-infografía CSS o imagen subida) */
 .cookie-preview {
   width: 100%;
   aspect-ratio: 4/3;
@@ -203,6 +203,51 @@ h1 {
   overflow: hidden;
   background: var(--bg1);
   border-bottom: 1px solid var(--border);
+}
+.cookie-preview.has-image {
+  aspect-ratio: auto;
+  background: #000;
+}
+.cookie-preview-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: #000;
+}
+/* Overlay de upload en previews */
+.preview-upload-overlay {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0,16,24,0.65);
+  border: 1px solid rgba(0,208,208,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  z-index: 2;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.cookie-preview:hover .preview-upload-overlay,
+.cookie-preview.has-image .preview-upload-overlay {
+  opacity: 1;
+}
+.preview-upload-overlay:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 12px var(--glow-soft);
+  background: rgba(0,208,208,0.2);
+}
+.preview-upload-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+  pointer-events: none;
 }
 .cookie-preview .preview-inner {
   width: 100%;
