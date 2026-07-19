@@ -398,7 +398,13 @@ const LoadingOverlay = () => (
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <p className="loading-text">IA Generando Obra Maestra...</p>
+        <p className="loading-text">IA generando lo solicitado...</p>
+        <div className="progress-panel">
+            <div className="progress-bar-track">
+                <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p className="secondary-status">Procesando solicitud...</p>
+        </div>
     </div>
 );
 
@@ -567,9 +573,9 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
 const Splash = () => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
-            <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Diseña como un Pro</h1>
-            <p className="text-gray-300 text-lg md:text-2xl font-light max-w-2xl mx-auto">
-                <span className="neon-text font-semibold">Edición/Generación de Imágenes</span>
+            <h1 className="splash-title">Diseña como un Pro</h1>
+            <p className="splash-subtitle">
+                Edición y Generación de Imágenes con IA
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
@@ -809,7 +815,7 @@ const App = () => {
                             )}
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Quieres añadir algo??</label>
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Describe tu imagen</label>
                                 <StructuredPromptFields
                                     fields={promptFields}
                                     onChange={updatePromptField}
