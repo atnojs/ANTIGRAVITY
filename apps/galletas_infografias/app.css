@@ -363,6 +363,57 @@ h1 {
 .cookie-footer .prompt-len {
   opacity: 0.7;
 }
+/* Hover sutil en info (zona cliqueable para abrir modal) */
+.cookie-info:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+/* === LIGHTBOX (imagen ampliada) === */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.2s ease;
+  cursor: pointer;
+}
+.lightbox-overlay.hidden { display: none; }
+.lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  z-index: 2;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: var(--font-ui);
+}
+.lightbox-close:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: #fff;
+}
+#lightbox-image {
+  max-width: 92vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0 60px rgba(0,208,208,0.2);
+  cursor: default;
+}
 
 /* === ESTADO VACÍO === */
 .empty-state {

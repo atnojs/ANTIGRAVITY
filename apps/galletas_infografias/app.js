@@ -348,7 +348,20 @@
       }
     });
 
+    // CLIC EN PREVIEW: si hay imagen → lightbox; si no → abrir modal
+    preview.addEventListener('click', (e) => {
+      const saved = getCookieImage(cookie.id);
+      if (saved) {
+        e.stopPropagation();
+        openLightbox(saved);
+      } else {
+        openModal(cookie);
+      }
+    });
+
     card.appendChild(preview);
+
+    // Info de la galleta (pie)
     const info = document.createElement('div');
     info.className = 'cookie-info';
     const catTag = document.createElement('span');
@@ -365,10 +378,19 @@
     info.appendChild(desc);
     const footer = document.createElement('div');
     footer.className = 'cookie-footer';
-    footer.innerHTML = '<span class="prompt-len">📝 ' + cookie.prompt.length + ' chars</span><span>🍪 Abrir</span>';
+    footer.innerHTML = '<span class=\"prompt-len\">📝 ' + cookie.prompt.length + ' chars</span><span>🍪 Abrir</span>';
     info.appendChild(footer);
+
+    // CLIC EN INFO (pie de galleta): siempre abre el modal
+    info.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openModal(cookie);
+    });
+    info.style.cursor = 'pointer';
+
     card.appendChild(info);
-    card.addEventListener('click', () => openModal(cookie));
+
+    // Accesibilidad con teclado sobre la card completa
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -412,8 +434,9 @@
       if (e.target === overlay) closeModal();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
-        closeModal();
+      if (e.key === 'Escape') {
+        if (!overlay.classList.contains('hidden')) closeModal();
+        else closeLightbox();
       }
     });
 
@@ -425,6 +448,31 @@
 
     // Botón Descargar
     document.getElementById('btn-download').addEventListener('click', downloadResult);
+
+    // Lightbox
+    const lb = document.getElementById('image-lightbox');
+    document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+    lb.addEventListener('click', (e) => {
+      if (e.target === lb) closeLightbox();
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // LIGHTBOX (imagen ampliada)
+  // ═══════════════════════════════════════════
+  function openLightbox(src) {
+    const lb = document.getElementById('image-lightbox');
+    document.getElementById('lightbox-image').src = src;
+    lb.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById('image-lightbox');
+    lb.classList.add('hidden');
+    document.getElementById('lightbox-image').src = '';
+    if (!document.getElementById('cookie-modal').classList.contains('hidden')) return;
+    document.body.style.overflow = '';
   }
 
   function openModal(cookie) {

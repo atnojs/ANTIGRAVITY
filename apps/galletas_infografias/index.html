@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=7" />
+  <link rel="stylesheet" href="app.css?v=8" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -108,6 +108,12 @@
     </div>
   </div>
 
+  <!-- Lightbox: imagen ampliada al clicar preview -->
+  <div id="image-lightbox" class="lightbox-overlay hidden" role="dialog" aria-modal="true" aria-label="Vista ampliada">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Cerrar">&times;</button>
+    <img id="lightbox-image" alt="Vista ampliada de la infografía" />
+  </div>
+
   <!-- Loading Overlay (canónico Hoola) -->
   <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
     <div class="spinner-triple">
@@ -127,6 +133,6 @@
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <input type="file" id="preview-image-input" accept="image/*" style="display:none" />
   <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
