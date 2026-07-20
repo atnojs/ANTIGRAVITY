@@ -8,7 +8,8 @@
   // ═══════════════════════════════════════════
   // CATÁLOGO DE GALLETAS (prompts en español)
   // ═══════════════════════════════════════════
-  const CATALOG = [
+  // CATÁLOGO SEMILLA (solo para primer inicio, luego se carga del servidor)
+  const CATALOG_SEED = [
     // ── ANIMALES ──
     { id:'animales-01',category:'animales',title:'Los 5 Felinos Más Rápidos del Planeta',desc:'Comparativa visual de velocidad, hábitat y tamaño de los felinos más veloces del mundo.',prompt:'Crea una infografía vibrante comparando los 5 felinos más rápidos del planeta: guepardo, león, tigre, leopardo y puma. Incluye: velocidad máxima en km/h con medidores estilo velocímetro, rango de peso, iconos de mapa de hábitat y un podio de clasificación. Estilo: colorido, apto para niños, con iconos de siluetas de animales. Paleta de colores: naranja, dorado, marrón, crema. Diseño plano moderno con tarjetas redondeadas. SIN texto artificial en la imagen.',colors:['#F59E0B','#EA580C','#D97706','#FCD34D','#92400E']},
     { id:'animales-02',category:'animales',title:'Guía de Aves Migratorias',desc:'Rutas, distancias y temporadas de las principales aves migratorias del mundo.',prompt:'Diseña una infografía elegante sobre aves migratorias: charrán ártico, golondrina común, colibrí garganta de rubí y aguja colipinta. Muestra las rutas de migración en un mapamundi simplificado con líneas punteadas, distancia en kilómetros, línea de tiempo estacional y comparación de envergaduras. Estilo: sensación de acuarela suave, paleta azul cielo y blanco con acentos de plumas. SIN texto artificial en la imagen.',colors:['#38BDF8','#7DD3FC','#BAE6FD','#0284C7','#E0F2FE']},
@@ -58,9 +59,15 @@
   // ═══════════════════════════════════════════
   let activeCategory = 'todas';
   let historyManager = null;
+  let catalogHM = null;
+  let catalog = [];
   let currentModalCookie = null;
   let generatedImageDataUrl = null;
   let pendingUploadCookieId = null;
+  let editingCatalogId = null;  // ID de galleta del catálogo en edición (null = nueva)
+
+  // Clave secreta para el catálogo (para no contaminar localStorage)
+  const CATALOG_CACHE_KEY = 'gi_catalog_cache';
 
   // ═══════════════════════════════════════════
   // GESTIÓN DE IMÁGENES EN PREVIEWS (localStorage)
@@ -137,14 +144,19 @@
   async function initApp() {
     try {
       historyManager = new HistoryManager('galletas_infografias');
-      await historyManager.init();
+      await historyManager.load();
       historyManager.onChange(() => {});
     } catch (e) {
       console.warn('Historial no disponible (esperado en local sin PHP):', e.message);
     }
+
+    // Cargar catálogo desde el servidor
+    await loadCatalog();
+
     renderCategories();
     renderCookies();
     setupModal();
+    setupCookieEditor();
     setupToggleGroups();
     setupPreviewImageUpload();
     window.__galletas_domready = true;
@@ -173,6 +185,210 @@
       pendingUploadCookieId = null;
       this.value = '';
     });
+  }
+
+  // ═══════════════════════════════════════════
+  // GESTIÓN DEL CATÁLOGO (CRUD persistente)
+  // ═══════════════════════════════════════════
+
+  async function loadCatalog() {
+    // Intentar cargar del servidor primero
+    let serverData = null;
+    try {
+      catalogHM = new HistoryManager('galletas_catalog');
+      await catalogHM.load();
+      serverData = catalogHM.getAll();
+    } catch (e) {
+      console.warn('Catálogo servidor no disponible:', e.message);
+    }
+
+    // Si hay datos del servidor, usarlos
+    if (serverData && serverData.length > 0) {
+      catalog = serverData
+        .filter(entry => entry && entry.data && entry.data.title)
+        .map(entry => ({
+          id: entry.id,
+          category: entry.data.category || 'ciencia',
+          title: entry.data.title || '',
+          desc: entry.data.desc || '',
+          prompt: entry.data.prompt || '',
+          colors: Array.isArray(entry.data.colors) ? entry.data.colors : []
+        }));
+      // Cache local por si el servidor no responde después
+      try { localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(catalog)); } catch(e) {}
+      return;
+    }
+
+    // Intentar cache local
+    try {
+      const cached = localStorage.getItem(CATALOG_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          catalog = parsed;
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // Seed: sembrar catálogo inicial desde los datos hardcodeados
+    catalog = CATALOG_SEED.map(c => ({...c}));
+    await persistCatalog();
+  }
+
+  async function persistCatalog() {
+    // Guardar en localStorage como caché
+    try { localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(catalog)); } catch(e) {}
+
+    // Guardar en servidor
+    if (!catalogHM) return;
+    try {
+      // Primero borramos las entradas antiguas que ya no existan
+      const serverEntries = catalogHM.getAll();
+      const currentIds = new Set(catalog.map(c => c.id));
+      for (const entry of serverEntries) {
+        if (!currentIds.has(entry.id)) {
+          try { await catalogHM.delete(entry.id); } catch(e) {}
+        }
+      }
+      // Guardar cada cookie
+      for (const cookie of catalog) {
+        await catalogHM.save({
+          id: cookie.id,
+          type: 'cookie',
+          data: {
+            category: cookie.category,
+            title: cookie.title,
+            desc: cookie.desc,
+            prompt: cookie.prompt,
+            colors: cookie.colors || []
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('No se pudo persistir el catálogo en el servidor:', e.message);
+    }
+  }
+
+  function findCookieIndex(id) {
+    return catalog.findIndex(c => c.id === id);
+  }
+
+  function generateCookieId(category) {
+    const prefix = category.slice(0, 6);
+    const suffix = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5);
+    return prefix + '-' + suffix;
+  }
+
+  // ═══════════════════════════════════════════
+  // EDITOR DE GALLETA (CRUD modal)
+  // ═══════════════════════════════════════════
+
+  function setupCookieEditor() {
+    const overlay = document.getElementById('cookie-editor-overlay');
+    document.getElementById('btn-ce-save').addEventListener('click', saveCookie);
+    document.getElementById('btn-ce-cancel').addEventListener('click', closeCookieEditor);
+    document.getElementById('btn-editor-delete').addEventListener('click', deleteCookieFromCatalog);
+    document.getElementById('btn-add-cookie').addEventListener('click', () => {
+      askPassword().then(ok => { if (ok) openCookieEditor(null); });
+    });
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeCookieEditor();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+        closeCookieEditor();
+      }
+    });
+  }
+
+  function openCookieEditor(cookie) {
+    const overlay = document.getElementById('cookie-editor-overlay');
+    const titleEl = document.getElementById('cookie-editor-title');
+    const deleteBtn = document.getElementById('btn-editor-delete');
+
+    if (cookie) {
+      // Modo edición
+      editingCatalogId = cookie.id;
+      titleEl.textContent = '✏️ Editar Galleta';
+      deleteBtn.classList.remove('hidden');
+      document.getElementById('ce-category').value = cookie.category;
+      document.getElementById('ce-title').value = cookie.title;
+      document.getElementById('ce-desc').value = cookie.desc;
+      document.getElementById('ce-prompt').value = cookie.prompt;
+      document.getElementById('ce-colors').value = (cookie.colors || []).join(', ');
+    } else {
+      // Modo nueva
+      editingCatalogId = null;
+      titleEl.textContent = '🆕 Nueva Galleta';
+      deleteBtn.classList.add('hidden');
+      document.getElementById('ce-category').value = 'ciencia';
+      document.getElementById('ce-title').value = '';
+      document.getElementById('ce-desc').value = '';
+      document.getElementById('ce-prompt').value = '';
+      document.getElementById('ce-colors').value = '';
+    }
+
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('ce-title').focus();
+  }
+
+  function closeCookieEditor() {
+    document.getElementById('cookie-editor-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    editingCatalogId = null;
+  }
+
+  async function saveCookie() {
+    const category = document.getElementById('ce-category').value.trim();
+    const title = document.getElementById('ce-title').value.trim();
+    const desc = document.getElementById('ce-desc').value.trim();
+    const prompt = document.getElementById('ce-prompt').value.trim();
+    const colorsRaw = document.getElementById('ce-colors').value.trim();
+
+    if (!title) { alert('El título es obligatorio.'); return; }
+    if (!desc) { alert('La descripción es obligatoria.'); return; }
+    if (!prompt) { alert('El prompt es obligatorio.'); return; }
+    if (!category) { alert('Selecciona una categoría.'); return; }
+
+    const colors = colorsRaw
+      ? colorsRaw.split(',').map(c => c.trim()).filter(c => /^#[0-9A-Fa-f]{3,8}$/.test(c))
+      : [];
+
+    if (editingCatalogId) {
+      // Actualizar existente
+      const idx = findCookieIndex(editingCatalogId);
+      if (idx === -1) { alert('Error: galleta no encontrada.'); return; }
+      catalog[idx].category = category;
+      catalog[idx].title = title;
+      catalog[idx].desc = desc;
+      catalog[idx].prompt = prompt;
+      catalog[idx].colors = colors;
+    } else {
+      // Nueva galleta
+      const id = generateCookieId(category);
+      catalog.push({ id, category, title, desc, prompt, colors });
+    }
+
+    await persistCatalog();
+    closeCookieEditor();
+    renderCategories();
+    renderCookies();
+  }
+
+  async function deleteCookieFromCatalog() {
+    if (!editingCatalogId) return;
+    const cookie = catalog.find(c => c.id === editingCatalogId);
+    if (!cookie) return;
+    if (!confirm('¿Eliminar permanentemente la galleta "' + cookie.title + '"?\n\nEsta acción no se puede deshacer.')) return;
+
+    catalog = catalog.filter(c => c.id !== editingCatalogId);
+    removeCookieImage(editingCatalogId);
+    await persistCatalog();
+    closeCookieEditor();
+    renderCategories();
+    renderCookies();
   }
 
   function updatePreviewImage(preview, dataUrl) {
@@ -280,8 +496,8 @@
     container.innerHTML = '';
     Object.entries(CATEGORIES).forEach(([key, cat]) => {
       const count = key === 'todas'
-        ? CATALOG.length
-        : CATALOG.filter(c => c.category === key).length;
+        ? catalog.length
+        : catalog.filter(c => c.category === key).length;
       const chip = document.createElement('button');
       chip.className = 'chip' + (key === activeCategory ? ' active' : '');
       chip.setAttribute('data-category', key);
@@ -302,8 +518,8 @@
     const grid = document.getElementById('cookies-grid');
     const empty = document.getElementById('empty-state');
     const filtered = activeCategory === 'todas'
-      ? CATALOG
-      : CATALOG.filter(c => c.category === activeCategory);
+      ? catalog
+      : catalog.filter(c => c.category === activeCategory);
     if (filtered.length === 0) {
       grid.innerHTML = '';
       empty.classList.remove('hidden');
@@ -408,6 +624,37 @@
       askPassword().then(ok => { if (ok) openPromptEditor(cookie); });
     });
     footer.appendChild(editBtn);
+
+    // Botón editar galleta (CRUD)
+    const editCookieBtn = document.createElement('button');
+    editCookieBtn.className = 'btn-edit-cookie';
+    editCookieBtn.title = 'Editar galleta (requiere contraseña)';
+    editCookieBtn.innerHTML = '⚙️';
+    editCookieBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      askPassword().then(ok => { if (ok) openCookieEditor(cookie); });
+    });
+    footer.appendChild(editCookieBtn);
+
+    // Botón eliminar galleta (CRUD)
+    const deleteCookieBtn = document.createElement('button');
+    deleteCookieBtn.className = 'btn-delete-cookie';
+    deleteCookieBtn.title = 'Eliminar galleta (requiere contraseña)';
+    deleteCookieBtn.innerHTML = '🗑️';
+    deleteCookieBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      askPassword().then(ok => {
+        if (!ok) return;
+        if (!confirm('¿Eliminar permanentemente la galleta "' + cookie.title + '"?\n\nEsta acción no se puede deshacer.')) return;
+        catalog = catalog.filter(c => c.id !== cookie.id);
+        removeCookieImage(cookie.id);
+        persistCatalog().then(() => {
+          renderCategories();
+          renderCookies();
+        });
+      });
+    });
+    footer.appendChild(deleteCookieBtn);
 
     info.appendChild(footer);
 

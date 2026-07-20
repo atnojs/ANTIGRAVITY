@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=9" />
+  <link rel="stylesheet" href="app.css?v=10" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -19,6 +19,10 @@
     <header class="app-header">
       <h1>🍪 Galletas de Infografías</h1>
       <p class="subtitle">Elige un estilo, escribe tu tema y genera infografías espectaculares con IA.</p>
+      <button class="btn-add-cookie" id="btn-add-cookie" title="Añadir nueva galleta (requiere contraseña)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva Galleta
+      </button>
     </header>
 
     <!-- Filtro de categorías -->
@@ -126,6 +130,36 @@
     </div>
   </div>
 
+  <!-- Editor de galleta (modal CRUD: añadir/editar/eliminar) -->
+  <div id="cookie-editor-overlay" class="cookie-editor-overlay hidden" role="dialog" aria-modal="true" aria-label="Editor de galleta">
+    <div class="cookie-editor-card">
+      <h3 id="cookie-editor-title">✏️ Editar Galleta</h3>
+      <div class="cookie-editor-fields">
+        <label for="ce-category">Categoría</label>
+        <select id="ce-category" aria-label="Categoría">
+          <option value="animales">🐾 Animales</option>
+          <option value="vehiculos">🚗 Vehículos</option>
+          <option value="ciencia">🔬 Ciencia y Tecnología</option>
+          <option value="naturaleza">🌿 Naturaleza</option>
+          <option value="comida">🍔 Comida</option>
+        </select>
+        <label for="ce-title">Título</label>
+        <input type="text" id="ce-title" placeholder="Ej: Guía Visual de las Setas" aria-label="Título de la galleta" maxlength="120" />
+        <label for="ce-desc">Descripción</label>
+        <input type="text" id="ce-desc" placeholder="Breve descripción de qué muestra la infografía" aria-label="Descripción" maxlength="200" />
+        <label for="ce-prompt">Prompt</label>
+        <textarea id="ce-prompt" rows="5" aria-label="Prompt de la galleta" placeholder="Instrucciones detalladas para FLUX..."></textarea>
+        <label for="ce-colors">Colores (hex separados por comas, 5 recomendados)</label>
+        <input type="text" id="ce-colors" placeholder="#F59E0B, #EA580C, #D97706, #FCD34D, #92400E" aria-label="Paleta de colores" maxlength="200" />
+      </div>
+      <div class="cookie-editor-actions">
+        <button class="btn-editor-delete hidden" id="btn-editor-delete" title="Eliminar esta galleta permanentemente">🗑️ Eliminar</button>
+        <button class="btn-editor-cancel" id="btn-ce-cancel">Cancelar</button>
+        <button class="btn-editor-save" id="btn-ce-save">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Loading Overlay (canónico Hoola) -->
   <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
     <div class="spinner-triple">
@@ -145,6 +179,6 @@
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <input type="file" id="preview-image-input" accept="image/*" style="display:none" />
   <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>
