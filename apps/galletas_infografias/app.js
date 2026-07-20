@@ -45,7 +45,8 @@
   // ═══════════════════════════════════════════
   // CATEGORÍAS
   // ═══════════════════════════════════════════
-  const CATEGORIES = {
+  // CATEGORÍAS (dinámicas, persistidas en localStorage + servidor)
+  const CATEGORIES_SEED = {
     'todas':  { label: 'Todas', icon: '🍪' },
     'animales': { label: 'Animales', icon: '🐾' },
     'vehiculos': { label: 'Vehículos', icon: '🚗' },
@@ -53,6 +54,8 @@
     'naturaleza': { label: 'Naturaleza', icon: '🌿' },
     'comida':   { label: 'Comida', icon: '🍔' }
   };
+
+  let CATEGORIES = {};
 
   // ═══════════════════════════════════════════
   // ESTADO
@@ -90,22 +93,7 @@
     try { localStorage.removeItem(IMG_PREFIX + cookieId); } catch (e) {}
   }
 
-  // Persistencia de prompts editados
-  const PROMPT_PREFIX = 'gi_prompt_';
-
-  function getCookiePrompt(cookieId, fallback) {
-    try {
-      const saved = localStorage.getItem(PROMPT_PREFIX + cookieId);
-      return saved !== null ? saved : fallback;
-    } catch (e) { return fallback; }
-  }
-
-  function setCookiePrompt(cookieId, prompt) {
-    try { localStorage.setItem(PROMPT_PREFIX + cookieId, prompt); return true; } catch (e) {
-      alert('No se pudo guardar el prompt. Almacenamiento local lleno.');
-      return false;
-    }
-  }
+  // Persistencia de imágenes en previews (localStorage) - prompts van en el catálogo
 
   function compressImage(file, maxWidth, quality) {
     return new Promise((resolve, reject) => {
@@ -152,11 +140,13 @@
 
     // Cargar catálogo desde el servidor
     await loadCatalog();
+    loadCategories();
 
     renderCategories();
     renderCookies();
     setupModal();
     setupCookieEditor();
+    setupCategoryEditor();
     setupToggleGroups();
     setupPreviewImageUpload();
     window.__galletas_domready = true;
@@ -306,6 +296,17 @@
     const overlay = document.getElementById('cookie-editor-overlay');
     const titleEl = document.getElementById('cookie-editor-title');
     const deleteBtn = document.getElementById('btn-editor-delete');
+    const catSelect = document.getElementById('ce-category');
+
+    // Poblar selector de categorías dinámicamente
+    catSelect.innerHTML = '';
+    Object.entries(CATEGORIES).forEach(([key, cat]) => {
+      if (key === 'todas') return;
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = (cat.icon || '') + ' ' + cat.label;
+      catSelect.appendChild(opt);
+    });
 
     if (cookie) {
       // Modo edición
@@ -389,6 +390,144 @@
     closeCookieEditor();
     renderCategories();
     renderCookies();
+  }
+
+  // ═══════════════════════════════════════════
+  // GESTIÓN DE CATEGORÍAS (CRUD)
+  // ═══════════════════════════════════════════
+  const CATS_CACHE_KEY = 'gi_categories_cache';
+
+  function loadCategories() {
+    try {
+      const cached = localStorage.getItem(CATS_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          CATEGORIES = parsed;
+          if (!CATEGORIES['todas']) CATEGORIES['todas'] = { label: 'Todas', icon: '🍪' };
+          return;
+        }
+      }
+    } catch (e) {}
+    CATEGORIES = JSON.parse(JSON.stringify(CATEGORIES_SEED));
+    persistCategories();
+  }
+
+  function persistCategories() {
+    try { localStorage.setItem(CATS_CACHE_KEY, JSON.stringify(CATEGORIES)); } catch(e) {}
+  }
+
+  function setupCategoryEditor() {
+    document.getElementById('btn-manage-cats').addEventListener('click', () => {
+      askPassword().then(ok => { if (ok) openCategoryEditor(); });
+    });
+    document.getElementById('btn-cecat-save').addEventListener('click', addCategory);
+    document.getElementById('btn-cecat-cancel').addEventListener('click', closeCategoryEditor);
+    const overlay = document.getElementById('category-editor-overlay');
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeCategoryEditor();
+    });
+  }
+
+  function openCategoryEditor() {
+    const overlay = document.getElementById('category-editor-overlay');
+    const list = document.getElementById('category-editor-list');
+    document.getElementById('cecat-key').value = '';
+    document.getElementById('cecat-label').value = '';
+    document.getElementById('cecat-icon').value = '';
+
+    list.innerHTML = '';
+    const entries = Object.entries(CATEGORIES).filter(([k]) => k !== 'todas');
+    entries.forEach(([key, cat]) => {
+      const row = document.createElement('div');
+      row.className = 'cat-edit-row';
+      row.innerHTML =
+        '<span class="cat-icon">' + escapeHTML(cat.icon || '') + '</span>' +
+        '<span class="cat-label">' + escapeHTML(cat.label || '') + '</span>' +
+        '<span class="cat-key">(' + escapeHTML(key) + ')</span>' +
+        '<button class="btn-cat-edit" title="Editar" data-key="' + escapeHTML(key) + '">✏️</button>' +
+        '<button class="btn-cat-delete" title="Eliminar" data-key="' + escapeHTML(key) + '">🗑️</button>';
+      list.appendChild(row);
+    });
+
+    list.querySelectorAll('.btn-cat-edit').forEach(btn => {
+      btn.addEventListener('click', () => editCategoryRow(btn.dataset.key, btn.closest('.cat-edit-row')));
+    });
+    list.querySelectorAll('.btn-cat-delete').forEach(btn => {
+      btn.addEventListener('click', () => deleteCategory(btn.dataset.key));
+    });
+
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCategoryEditor() {
+    document.getElementById('category-editor-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function addCategory() {
+    const key = document.getElementById('cecat-key').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const label = document.getElementById('cecat-label').value.trim();
+    const icon = document.getElementById('cecat-icon').value.trim();
+
+    if (!key) { alert('La clave es obligatoria (solo letras, números, guiones).'); return; }
+    if (!label) { alert('La etiqueta es obligatoria.'); return; }
+    if (key === 'todas') { alert('No se puede usar "todas" como clave (está reservada).'); return; }
+    if (CATEGORIES[key]) { alert('Ya existe una categoría con la clave "' + key + '".'); return; }
+
+    CATEGORIES[key] = { label: label, icon: icon || '📌' };
+    persistCategories();
+    openCategoryEditor();
+    renderCategories();
+  }
+
+  function editCategoryRow(key, row) {
+    const cat = CATEGORIES[key];
+    if (!cat) return;
+    row.innerHTML =
+      '<input type="text" class="cat-edit-icon-input" value="' + escapeHTML(cat.icon || '') + '" placeholder="Icono" maxlength="4" style="width:50px;flex:none" />' +
+      '<input type="text" class="cat-edit-label-input" value="' + escapeHTML(cat.label || '') + '" placeholder="Etiqueta" />' +
+      '<span class="cat-key" style="flex:none">(' + escapeHTML(key) + ')</span>' +
+      '<button class="btn-cat-save" title="Guardar">💾</button>' +
+      '<button class="btn-cat-cancel" title="Cancelar">✖️</button>';
+
+    row.querySelector('.btn-cat-save').addEventListener('click', () => {
+      const newIcon = row.querySelector('.cat-edit-icon-input').value.trim();
+      const newLabel = row.querySelector('.cat-edit-label-input').value.trim();
+      if (!newLabel) { alert('La etiqueta no puede quedar vacía.'); return; }
+      CATEGORIES[key] = { label: newLabel, icon: newIcon || '📌' };
+      persistCategories();
+      openCategoryEditor();
+      renderCategories();
+    });
+    row.querySelector('.btn-cat-cancel').addEventListener('click', () => openCategoryEditor());
+  }
+
+  function deleteCategory(key) {
+    if (key === 'todas') { alert('No se puede eliminar la categoría "Todas".'); return; }
+    const cat = CATEGORIES[key];
+    if (!cat) return;
+    const cookieCount = catalog.filter(c => c.category === key).length;
+    const msg = cookieCount > 0
+      ? 'La categoría "' + cat.label + '" tiene ' + cookieCount + ' galleta(s). Al eliminarla, pasarán a la categoría "ciencia". ¿Continuar?'
+      : '¿Eliminar la categoría "' + cat.label + '"?';
+    if (!confirm(msg)) return;
+    // Reasignar cookies a una categoría existente (preferiblemente ciencia)
+    const fallbackCat = CATEGORIES['ciencia'] ? 'ciencia' : Object.keys(CATEGORIES).find(k => k !== 'todas' && k !== key) || 'ciencia';
+    catalog.forEach(c => { if (c.category === key) c.category = fallbackCat; });
+    persistCatalog();
+    delete CATEGORIES[key];
+    persistCategories();
+    openCategoryEditor();
+    renderCategories();
+    renderCookies();
+  }
+
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
   function updatePreviewImage(preview, dataUrl) {
@@ -611,19 +750,8 @@
     info.appendChild(desc);
     const footer = document.createElement('div');
     footer.className = 'cookie-footer';
-    const promptLen = getCookiePrompt(cookie.id, cookie.prompt).length;
+    const promptLen = cookie.prompt.length;
     footer.innerHTML = '<span class=\"prompt-len\">📝 ' + promptLen + ' chars</span><span>🍪 Abrir</span>';
-
-    // Botón editar prompt (protegido con contraseña)
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn-edit-prompt';
-    editBtn.title = 'Editar prompt (requiere contraseña)';
-    editBtn.innerHTML = '✏️';
-    editBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      askPassword().then(ok => { if (ok) openPromptEditor(cookie); });
-    });
-    footer.appendChild(editBtn);
 
     // Botón editar galleta (CRUD)
     const editCookieBtn = document.createElement('button');
@@ -733,16 +861,7 @@
       if (e.target === lb) closeLightbox();
     });
 
-    // Editor de prompt
-    document.getElementById('btn-editor-save').addEventListener('click', savePromptEdit);
-    document.getElementById('btn-editor-cancel').addEventListener('click', closePromptEditor);
-    const peOverlay = document.getElementById('prompt-editor-overlay');
-    peOverlay.addEventListener('click', (e) => {
-      if (e.target === peOverlay) closePromptEditor();
-    });
-    document.getElementById('prompt-editor-textarea').addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closePromptEditor();
-    });
+    // Editor de galleta (ya incluye el prompt, no hace falta editor separado)
   }
 
   // ═══════════════════════════════════════════
@@ -764,37 +883,7 @@
   }
 
   // ═══════════════════════════════════════════
-  // EDITOR DE PROMPT
-  // ═══════════════════════════════════════════
-  let editingCookieId = null;
-
-  function openPromptEditor(cookie) {
-    editingCookieId = cookie.id;
-    const currentPrompt = getCookiePrompt(cookie.id, cookie.prompt);
-    document.getElementById('prompt-editor-textarea').value = currentPrompt;
-    document.getElementById('prompt-editor-overlay').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('prompt-editor-textarea').focus();
-  }
-
-  function closePromptEditor() {
-    document.getElementById('prompt-editor-overlay').classList.add('hidden');
-    document.body.style.overflow = '';
-    editingCookieId = null;
-  }
-
-  function savePromptEdit() {
-    if (!editingCookieId) return;
-    const newPrompt = document.getElementById('prompt-editor-textarea').value.trim();
-    if (!newPrompt) {
-      alert('El prompt no puede estar vacío.');
-      return;
-    }
-    if (setCookiePrompt(editingCookieId, newPrompt)) {
-      closePromptEditor();
-      renderCookies(); // Refrescar para mostrar nuevo char count y prompt actualizado
-    }
-  }
+  // APERTURA DEL MODAL
 
   function openModal(cookie) {
     currentModalCookie = cookie;
@@ -809,7 +898,7 @@
       (CATEGORIES[cookie.category]?.icon || '') + ' ' + (CATEGORIES[cookie.category]?.label || cookie.category);
     document.getElementById('modal-title').textContent = cookie.title;
     document.getElementById('modal-desc').textContent = cookie.desc;
-    document.getElementById('modal-prompt').value = getCookiePrompt(cookie.id, cookie.prompt);
+    document.getElementById('modal-prompt').value = cookie.prompt;
 
     // Resetear campo objeto
     document.getElementById('input-subject').value = '';
@@ -936,7 +1025,7 @@
 
     // Si ya está en inglés, restaurar al español original
     if (btn.classList.contains('translated')) {
-      document.getElementById('modal-prompt').value = getCookiePrompt(currentModalCookie.id, currentModalCookie.prompt);
+      document.getElementById('modal-prompt').value = currentModalCookie.prompt;
       btn.textContent = '🌐 Traducir a Inglés';
       btn.classList.remove('translated');
       return;

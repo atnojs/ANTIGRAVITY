@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=10" />
+  <link rel="stylesheet" href="app.css?v=11" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -30,6 +30,7 @@
       <div id="category-chips" class="chips-row">
         <!-- JS rellena -->
       </div>
+      <button class="btn-manage-cats" id="btn-manage-cats" title="Gestionar categorías (requiere contraseña)">⚙️ Categorías</button>
     </nav>
 
     <!-- Grid de galletas -->
@@ -118,18 +119,6 @@
     <img id="lightbox-image" alt="Vista ampliada de la infografía" />
   </div>
 
-  <!-- Editor de prompt (mini-modal) -->
-  <div id="prompt-editor-overlay" class="prompt-editor-overlay hidden" role="dialog" aria-modal="true" aria-label="Editar prompt">
-    <div class="prompt-editor-card">
-      <h3>✏️ Editar Prompt</h3>
-      <textarea id="prompt-editor-textarea" rows="6" aria-label="Texto del prompt"></textarea>
-      <div class="prompt-editor-actions">
-        <button class="btn-editor-cancel" id="btn-editor-cancel">Cancelar</button>
-        <button class="btn-editor-save" id="btn-editor-save">💾 Guardar</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Editor de galleta (modal CRUD: añadir/editar/eliminar) -->
   <div id="cookie-editor-overlay" class="cookie-editor-overlay hidden" role="dialog" aria-modal="true" aria-label="Editor de galleta">
     <div class="cookie-editor-card">
@@ -160,6 +149,25 @@
     </div>
   </div>
 
+  <!-- Editor de categorías (modal CRUD) -->
+  <div id="category-editor-overlay" class="category-editor-overlay hidden" role="dialog" aria-modal="true" aria-label="Editor de categorías">
+    <div class="category-editor-card">
+      <h3 id="category-editor-title">🏷️ Gestionar Categorías</h3>
+      <div class="category-editor-list" id="category-editor-list">
+        <!-- JS rellena: cada categoría con editar/eliminar -->
+      </div>
+      <div class="category-editor-add">
+        <input type="text" id="cecat-key" placeholder="Clave (ej: deportes)" aria-label="Clave de categoría" maxlength="30" />
+        <input type="text" id="cecat-label" placeholder="Etiqueta (ej: Deportes)" aria-label="Etiqueta visible" maxlength="40" />
+        <input type="text" id="cecat-icon" placeholder="Icono (ej: ⚽)" aria-label="Emoji o icono" maxlength="4" style="width:70px;flex:none" />
+      </div>
+      <div class="category-editor-actions">
+        <button class="btn-editor-cancel" id="btn-cecat-cancel">Cerrar</button>
+        <button class="btn-editor-save" id="btn-cecat-save">➕ Añadir Categoría</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Loading Overlay (canónico Hoola) -->
   <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
     <div class="spinner-triple">
@@ -179,6 +187,6 @@
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <input type="file" id="preview-image-input" accept="image/*" style="display:none" />
   <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>
