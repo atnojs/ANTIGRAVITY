@@ -140,7 +140,7 @@
 
     // Cargar catálogo desde el servidor
     await loadCatalog();
-    loadCategories();
+    await loadCategories();
 
     renderCategories();
     renderCookies();
@@ -393,11 +393,36 @@
   }
 
   // ═══════════════════════════════════════════
-  // GESTIÓN DE CATEGORÍAS (CRUD)
+  // GESTIÓN DE CATEGORÍAS (CRUD + persistencia servidor)
   // ═══════════════════════════════════════════
   const CATS_CACHE_KEY = 'gi_categories_cache';
+  let categoriesHM = null;
 
-  function loadCategories() {
+  async function loadCategories() {
+    // 1. Intentar servidor
+    try {
+      categoriesHM = new HistoryManager('galletas_categories');
+      await categoriesHM.load();
+      const serverEntries = categoriesHM.getAll();
+      if (serverEntries && serverEntries.length > 0) {
+        const cats = {};
+        serverEntries.forEach(entry => {
+          if (entry && entry.data && entry.data.key && entry.data.label) {
+            cats[entry.data.key] = { label: entry.data.label, icon: entry.data.icon || '📌' };
+          }
+        });
+        if (Object.keys(cats).length > 0) {
+          if (!cats['todas']) cats['todas'] = { label: 'Todas', icon: '🍪' };
+          CATEGORIES = cats;
+          persistCategoriesLocal();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Categorías servidor no disponibles:', e.message);
+    }
+
+    // 2. Intentar localStorage
     try {
       const cached = localStorage.getItem(CATS_CACHE_KEY);
       if (cached) {
@@ -405,16 +430,48 @@
         if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
           CATEGORIES = parsed;
           if (!CATEGORIES['todas']) CATEGORIES['todas'] = { label: 'Todas', icon: '🍪' };
+          // Migrar al servidor si está disponible
+          if (categoriesHM) persistCategoriesServer();
           return;
         }
       }
     } catch (e) {}
+
+    // 3. Seed
     CATEGORIES = JSON.parse(JSON.stringify(CATEGORIES_SEED));
-    persistCategories();
+    persistCategoriesLocal();
+    if (categoriesHM) persistCategoriesServer();
   }
 
-  function persistCategories() {
+  function persistCategoriesLocal() {
     try { localStorage.setItem(CATS_CACHE_KEY, JSON.stringify(CATEGORIES)); } catch(e) {}
+  }
+
+  async function persistCategoriesServer() {
+    if (!categoriesHM) return;
+    try {
+      // Borrar entradas antiguas
+      const serverEntries = categoriesHM.getAll();
+      for (const entry of serverEntries) {
+        try { await categoriesHM.delete(entry.id); } catch(e) {}
+      }
+      // Guardar cada categoría (excepto 'todas')
+      for (const [key, cat] of Object.entries(CATEGORIES)) {
+        if (key === 'todas') continue;
+        await categoriesHM.save({
+          id: 'cat_' + key,
+          type: 'category',
+          data: { key, label: cat.label, icon: cat.icon }
+        });
+      }
+    } catch (e) {
+      console.warn('No se pudo persistir categorías en servidor:', e.message);
+    }
+  }
+
+  async function persistCategories() {
+    persistCategoriesLocal();
+    await persistCategoriesServer();
   }
 
   function setupCategoryEditor() {
