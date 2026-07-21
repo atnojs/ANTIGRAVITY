@@ -110,3 +110,12 @@ apps/decorar_habitacion/crops/
 # Excepciones: archivos necesarios para el despliegue
 !apps/banco_de_imagenes/config.php
 !apps/banco_de_imagenes/history_data/.htaccess
+
+# Ignorar historiales e imágenes generadas
+**/history_data/
+*.jpg
+*.png
+
+# Ignorar copias de seguridad y pruebas temporales
+copias_de_seguridad_de_archivos/
+*.backup_*
