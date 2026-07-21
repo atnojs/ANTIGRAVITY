@@ -15,7 +15,7 @@
     const lightbox = document.createElement('div');
     lightbox.id = 'lightbox-antigravity';
     lightbox.className = 'lightbox hidden';
-    lightbox.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:90000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    lightbox.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:90000;align-items:center;justify-content:center;cursor:zoom-out;';
     lightbox.innerHTML = `
       <div style="position:absolute;top:20px;right:20px;display:flex;gap:12px;z-index:10;">
         <button id="lb-download" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Descargar">
@@ -42,16 +42,16 @@
         a.download = 'imagen-generada.png';
         a.click();
       };
-      lb.classList.remove('hidden');
+      lb.style.display = 'flex';
     }
-    function closeLightbox() { lb.classList.add('hidden'); }
+    function closeLightbox() { lb.style.display = 'none'; lbImg.src = ''; }
 
     lb.addEventListener('click', function (e) {
       if (e.target === lb || e.target === lbImg) closeLightbox();
     });
     lbClose.addEventListener('click', closeLightbox);
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !lb.classList.contains('hidden')) closeLightbox();
+      if (e.key === 'Escape' && lb.style.display === 'flex') closeLightbox();
     });
 
     // Exponer globalmente

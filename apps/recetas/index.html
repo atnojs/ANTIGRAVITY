@@ -1265,7 +1265,7 @@
                 const recipe = await apiService.extractRecipeFromUrl(url);
                 setIsLoading(false);
                 if (recipe && recipe.title) {
-                    const updated = storage.addRecipe(recipe);
+                    const updated = await storage.addRecipe(recipe);
                     setGeneratedRecipes(updated);
                     handleRecipeSelect(recipe);
                 } else {
