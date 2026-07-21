@@ -1,21 +1,75 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
-import * as Lucide from 'lucide-react';
+const ReactObj = window.React || {};
+const { useState, useRef, useEffect, Fragment } = ReactObj;
+const ReactDOM = window.ReactDOM || {};
 
-const {
-    Sparkles, Wand2, ChevronLeft, X, Upload, Send,
-    Loader2, LayoutGrid, History, Info, Image: ImageIcon,
-    Square, RectangleHorizontal, RectangleVertical,
-    Monitor, Smartphone, Key, ExternalLink,
-    Trash2, RefreshCw, MessageSquare, Download, Share2
-} = Lucide;
+// --- Lucide Icon Wrapper ---
+const toPascal = (kebab) => kebab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+const Icon = ({ name, size = 24, className = '', ...rest }) => {
+    const ref = useRef(null);
+    useEffect(() => {
+        if (!ref.current || !window.lucide) return;
+        ref.current.innerHTML = '';
+        try {
+            const iconData = window.lucide.icons[toPascal(name)];
+            if (iconData) {
+                const svg = window.lucide.createElement(iconData);
+                if (svg) {
+                    svg.setAttribute('width', size);
+                    svg.setAttribute('height', size);
+                    if (className) {
+                        className.split(/\s+/).filter(Boolean).forEach(c => svg.classList.add(c));
+                    }
+                    ref.current.appendChild(svg);
+                }
+            }
+        } catch (e) {}
+    }, [name, size, className]);
+    return <span ref={ref} style={{ display: 'inline-flex', width: size, height: size }} {...rest} />;
+};
 
-// --- CONSTANTES (ORIGINAL) ---
+const Sparkles = (p) => <Icon name="sparkles" {...p} />;
+const Wand2 = (p) => <Icon name="wand-2" {...p} />;
+const ChevronLeft = (p) => <Icon name="chevron-left" {...p} />;
+const X = (p) => <Icon name="x" {...p} />;
+const Upload = (p) => <Icon name="upload" {...p} />;
+const Send = (p) => <Icon name="send" {...p} />;
+const Loader2 = (p) => <Icon name="loader-2" {...p} />;
+const LayoutGrid = (p) => <Icon name="layout-grid" {...p} />;
+const History = (p) => <Icon name="history" {...p} />;
+const Info = (p) => <Icon name="info" {...p} />;
+const ImageIcon = (p) => <Icon name="image" {...p} />;
+const Square = (p) => <Icon name="square" {...p} />;
+const RectangleHorizontal = (p) => <Icon name="rectangle-horizontal" {...p} />;
+const RectangleVertical = (p) => <Icon name="rectangle-vertical" {...p} />;
+const Monitor = (p) => <Icon name="monitor" {...p} />;
+const Smartphone = (p) => <Icon name="smartphone" {...p} />;
+const Key = (p) => <Icon name="key" {...p} />;
+const ExternalLink = (p) => <Icon name="external-link" {...p} />;
+const Trash2 = (p) => <Icon name="trash-2" {...p} />;
+const RefreshCw = (p) => <Icon name="refresh-cw" {...p} />;
+const MessageSquare = (p) => <Icon name="message-square" {...p} />;
+const Download = (p) => <Icon name="download" {...p} />;
+const Share2 = (p) => <Icon name="share-2" {...p} />;
+
+// --- CONSTANTES ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
+
+const getClosestAspectRatio = (width, height) => {
+    const ratio = width / height;
+    const targets = [
+        { id: AspectRatio.SQUARE, val: 1 },
+        { id: AspectRatio.PORTRAIT, val: 3 / 4 },
+        { id: AspectRatio.WIDE, val: 16 / 9 },
+        { id: AspectRatio.TALL, val: 9 / 16 },
+        { id: AspectRatio.ULTRAWIDE, val: 21 / 9 }
+    ];
+    return targets.reduce((prev, curr) => Math.abs(curr.val - ratio) < Math.abs(prev.val - ratio) ? curr : prev).id;
+};
 
 const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     return new Promise((resolve) => {
         const img = new Image();
+        img.src = base64Str;
         img.onload = () => {
             let width = img.width;
             let height = img.height;
@@ -35,43 +89,12 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
             ctx.drawImage(img, 0, 0, width, height);
             resolve(canvas.toDataURL('image/jpeg', quality));
         };
-        img.onerror = () => resolve(base64Str);
-        img.src = base64Str;
     });
 };
 
-// Reduce una imagen (data URL) a un máximo de lado antes de mandarla a FLUX como
-// imagen de entrada (image-to-image). Evita exceder el tope de 4MP en la subida.
-const clampInputImage = (base64Str, maxSide = 2048) => resizeImage(base64Str, maxSide, 0.92);
-
-const getClosestAspectRatio = (width, height) => {
-    const ratio = width / height;
-    const targets = [
-        { id: AspectRatio.SQUARE, val: 1 },
-        { id: AspectRatio.PORTRAIT, val: 3 / 4 },
-        { id: AspectRatio.WIDE, val: 16 / 9 },
-        { id: AspectRatio.TALL, val: 9 / 16 },
-        { id: AspectRatio.ULTRAWIDE, val: 21 / 9 }
-    ];
-    return targets.reduce((prev, curr) => Math.abs(curr.val - ratio) < Math.abs(prev.val - ratio) ? curr : prev).id;
-};
-
 const STYLE_GROUPS = {
-    fotografico: [
-        { id: 'fotografia-grupo', name: 'Fotografía / Realista', promptSuffix: '' },
-        { id: 'hiperrealista', name: 'Hiperrealista', promptSuffix: 'Hyperrealistic photograph, ultra-detailed, razor-sharp focus, natural skin textures and micro-details, physically accurate lighting, 8k resolution, shot on a full-frame DSLR with a prime lens, lifelike depth and clarity.' },
-        { id: 'fotorrealista', name: 'Fotorrealista', promptSuffix: 'Photorealistic image, true-to-life colors and lighting, realistic materials and reflections, high dynamic range, professional photography quality, natural and believable.' },
-        { id: 'cinematografico', name: 'Cinematográfico', promptSuffix: 'Cinematic film still, dramatic cinematic lighting, anamorphic lens, shallow depth of field, moody color grading, filmic contrast, movie scene aesthetic, shot on ARRI Alexa.' },
-        { id: 'retrato-estudio', name: 'Retrato de Estudio', promptSuffix: 'Professional studio portrait, softbox lighting, elegant background, sharp eyes, flattering rim light, high-end fashion photography, 85mm lens, creamy bokeh.' },
-        { id: 'fotoperiodismo', name: 'Fotoperiodismo', promptSuffix: 'Candid photojournalistic shot, natural available light, authentic real-life moment, documentary realism, 35mm reportage style, true colors.' },
-        { id: 'macro', name: 'Macro / Detalle', promptSuffix: 'Extreme macro photography, incredible fine detail, razor-thin depth of field, crisp textures, studio macro lighting, ultra-close-up realism.' },
-        { id: 'paisaje-natural', name: 'Paisaje Natural', promptSuffix: 'Breathtaking landscape photograph, golden hour natural light, vast depth of field, rich atmospheric detail, National Geographic quality, ultra-high resolution.' },
-        { id: 'nocturna', name: 'Fotografía Nocturna', promptSuffix: 'Night photography, long exposure, glowing city or star lights, deep shadows with rich detail, low-light realism, cinematic night mood.' },
-        { id: 'producto', name: 'Foto de Producto', promptSuffix: 'Commercial product photography, clean seamless background, precise studio lighting, glossy accurate reflections, sharp detail, advertising quality.' },
-        { id: 'aereo-drone', name: 'Aérea / Dron', promptSuffix: 'Aerial drone photograph, top-down or bird’s-eye view, realistic scale and perspective, crisp high-altitude detail, natural daylight, ultra-high resolution.' }
-    ],
     ilustracion: [
-        { id: '', name: 'Dibujo / Ilustración', promptSuffix: '' },
+        { id: '', name: '🖌️ Dibujo / Ilustración', promptSuffix: '' },
         { id: 'anime', name: 'Anime Moderno', promptSuffix: 'Modern masterpiece anime style, high-quality animation aesthetic, sharp line art, vibrant cel-shading, expressive characters.' },
         { id: 'comic', name: 'Cómic Americano', promptSuffix: 'Classic American comic book style, Marvel/DC aesthetic, bold black ink outlines, heroic anatomy, vibrant colors, Ben-Day dots and halftone shading.' },
         { id: 'mortadelo', name: 'Mortadelo y Filemón', promptSuffix: 'Unmistakable Francisco Ibañez cartoon style, slapstick aesthetic, humorous caricatures. Include ONE or TWO small, clean speech bubbles with a very short, satirical and funny Spanish phrase strictly related to the main characters and their absurd situation. Keep text minimal and sharp.' },
@@ -84,11 +107,11 @@ const STYLE_GROUPS = {
         { id: 'ink', name: 'Dibujo a Tinta', promptSuffix: 'Intricate black ink drawing, artistic cross-hatching, stippling techniques, fine detail, high-contrast pen and ink aesthetic.' }
     ],
     pictorico: [
-        { id: '', name: 'Arte / Tradicional', promptSuffix: '' },
+        { id: '', name: '🎨 Arte / Tradicional', promptSuffix: '' },
         { id: 'acuarela', name: 'Acuarela Artística', promptSuffix: 'Exquisite watercolor painting, soft dreamlike color bleeds, realistic wet-on-wet technique, textured cold-press paper background, delicate artistic touch.' },
-        { id: 'oleo', name: 'Pintura al Ã“leo', promptSuffix: 'Masterpiece oil painting on canvas, visible thick impasto brushstrokes, rich oil textures, dramatic chiaroscuro lighting, traditional fine art aesthetic.' },
+        { id: 'oleo', name: 'Pintura al Óleo', promptSuffix: 'Masterpiece oil painting on canvas, visible thick impasto brushstrokes, rich oil textures, dramatic chiaroscuro lighting, traditional fine art aesthetic.' },
         { id: 'vintage', name: 'Vintage / Retro', promptSuffix: 'Authentic retro vintage aesthetic, 1970s film grain, faded nostalgic colors, analog photography look, warm lighting, distressed texture.' },
-        { id: 'fantasia', name: 'Fantasía Ã‰pica', promptSuffix: 'High fantasy concept art, magical glowing elements, legendary creatures, intricate gold armor, cinematic atmospheric lighting, epic scale.' },
+        { id: 'fantasia', name: 'Fantasía Épica', promptSuffix: 'High fantasy concept art, magical glowing elements, legendary creatures, intricate gold armor, cinematic atmospheric lighting, epic scale.' },
         { id: 'surrealista', name: 'Surrealismo', promptSuffix: 'Surrealist masterpiece, dreamlike impossible landscape, melting objects, bizarre proportions, Dalí-esque subconscious imagery, thought-provoking.' },
         { id: 'gouache', name: 'Gouache Vibrante', promptSuffix: 'Vibrant gouache painting, flat opaque colors, hand-painted matte textures, charming book illustration aesthetic, bold and colorful.' },
         { id: 'acrilico', name: 'Acrílico Moderno', promptSuffix: 'Modern acrylic painting style, bold expressive colors, textured brushwork, high contrast, contemporary art gallery aesthetic.' },
@@ -97,7 +120,7 @@ const STYLE_GROUPS = {
         { id: 'impresionismo', name: 'Impresionismo', promptSuffix: 'Impressionist masterpiece, small thin visible brushstrokes, emphasis on light qualities, vibrant unmixed colors, capturing the fleeting movement.' }
     ],
     digital: [
-        { id: '', name: 'Digital / 3D', promptSuffix: '' },
+        { id: '', name: '💻 Digital / 3D', promptSuffix: '' },
         { id: '3d-render', name: '3D Hyper-Render', promptSuffix: 'Professional 3D render, Octane rendering engine, 8k resolution, realistic ray-tracing, cinematic studio lighting, hyper-detailed textures.' },
         { id: 'lego', name: 'Estilo LEGO', promptSuffix: 'Constructed from high-quality LEGO bricks and minifigures, detailed plastic block textures, toy photography aesthetic, vibrant primary colors.' },
         { id: 'clay', name: 'Plastilina / Clay', promptSuffix: 'Handcrafted claymation style, tactile plasticine textures, fingerprints on material surface, stop-motion animation look, charming and organic.' },
@@ -110,7 +133,7 @@ const STYLE_GROUPS = {
         { id: 'maqueta', name: 'Maqueta 3D', promptSuffix: 'Architectural scale model style, clean white materials, precision laser-cut details, professional 3D presentation aesthetic.' }
     ],
     grafico: [
-        { id: '', name: 'Gráfico / Moderno', promptSuffix: '' },
+        { id: '', name: '📐 Gráfico / Moderno', promptSuffix: '' },
         { id: 'neon', name: 'Luces de Neón', promptSuffix: 'Vibrant neon light aesthetic, glowing electric colors, dark atmospheric background, synthwave cyberpunk vibe.' },
         { id: 'pop-art', name: 'Pop Art Clásico', promptSuffix: 'Iconic Pop Art style, Andy Warhol and Roy Lichtenstein aesthetic, bold solid colors, Ben-Day dots, high-impact graphic culture.' },
         { id: 'minimalista', name: 'Minimalismo Puro', promptSuffix: 'Minimalist graphic design, clean simple shapes, strategic use of negative space, restricted elegant color palette, essentialist aesthetic.' },
@@ -132,213 +155,136 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
-// Resolución de salida (SOLO flux-2-max en la app de edición).
-// FLUX 2 edita como máx 4 MP (~2048px lado). El 4K real (4096) se logra
-// haciendo upscale client-side x2 desde los 2048 nativos.
-const RESOLUTION_OPTIONS = [
-    { id: '512', label: '512px', calidad: 'pro', targetPx: 512, downloadPx: 512 },
-    { id: '1K-hd', label: '1.024px', calidad: 'pro', targetPx: 1024, downloadPx: 1024 },
-    { id: '2K', label: '2.048px', calidad: 'pro', targetPx: 2048, downloadPx: 2048 },
-    { id: '4K', label: '4.096px', calidad: 'pro', targetPx: 2048, downloadPx: 4096 },
-];
+// --- HISTORIAL PERSISTENTE CON INDEXEDDB FILTRADO POR MODO ---
+const DB_NAME = 'editar_imagenes_db';
+const DB_VERSION = 1;
+const STORE_NAME = 'history';
 
-const PROMPT_FIELD_DEFINITIONS = [
-    {
-        id: 'subject',
-        generateLabel: 'Sujeto',
-        editLabel: 'Acción',
-        generatePlaceholder: 'Ej: mujer astronauta, robot, producto, paisaje...',
-        editPlaceholder: 'Ej: cambiar, eliminar, añadir, transformar...',
-        generateHelp: 'Describe el protagonista o elemento principal de la imagen que quieres crear desde cero.',
-        generateExample: 'Un robot explorador pequeño con mochila y casco transparente.',
-        editHelp: 'Indica qué quieres que haga la IA sobre la imagen subida: cambiar algo, añadir un elemento, quitarlo, mejorar la luz o transformar el estilo.',
-        editExample: 'Cambiar el cielo gris por un atardecer cálido sin tocar a la persona.'
-    },
-    {
-        id: 'action',
-        generateLabel: 'Acción',
-        editLabel: 'Elemento específico a cambiar/editar',
-        generatePlaceholder: 'Ej: caminando, posando, volando, explorando...',
-        editPlaceholder: 'Ej: personaje principal, fondo, objeto central...',
-        generateHelp: 'Explica qué está haciendo el sujeto o qué situación debe ocurrir en la imagen generada.',
-        generateExample: 'Caminando por una calle mojada mientras mira luces de neón.',
-        editHelp: 'Especifica qué parte concreta de la imagen existente debe modificarse para evitar cambios innecesarios.',
-        editExample: 'Solo el fondo, manteniendo el rostro y la ropa intactos.'
-    },
-    {
-        id: 'background',
-        generateLabel: 'Fondo',
-        editLabel: 'Elemento nuevo',
-        generatePlaceholder: 'Ej: bosque, ciudad futurista, estudio blanco...',
-        editPlaceholder: 'Ej: luces neón, flores, un castillo lejano...',
-        generateHelp: 'Indica el entorno, escenario o contexto visual donde debe aparecer el sujeto.',
-        generateExample: 'Una ciudad futurista nocturna con lluvia y reflejos en el suelo.',
-        editHelp: 'Describe el nuevo elemento que quieres añadir o usar como sustitución dentro de la imagen existente.',
-        editExample: 'Añadir un lazo rojo en el pelo de la niña.'
-    },
-    {
-        id: 'visualStyle',
-        generateLabel: 'Estilo',
-        editLabel: 'Estilo',
-        generatePlaceholder: 'Ej: realista, anime, acuarela, cyberpunk...',
-        editPlaceholder: 'Ej: realista, anime, acuarela, cyberpunk...',
-        generateHelp: 'Indica el estilo artístico de la imagen nueva: realista, editorial, anime, 3D, acuarela, cyberpunk, minimalista, etc.',
-        generateExample: 'Estilo 3D cinematográfico, iluminación de estudio y mucho detalle.',
-        editHelp: 'Indica si quieres conservar el estilo original o transformar la imagen a un estilo concreto. También puedes usar el Panel de Estilos de abajo.',
-        editExample: 'Convertir la foto en una ilustración acuarela manteniendo la composición.'
-    },
-    {
-        id: 'lighting',
-        generateLabel: 'Iluminación',
-        editLabel: 'Efecto deseado',
-        generatePlaceholder: 'Ej: luz dorada, neón, contraluz, estudio...',
-        editPlaceholder: 'Ej: épico, elegante, luminoso, mágico...',
-        generateHelp: 'Define la luz de la escena: hora del día, tipo de iluminación, sombras, ambiente o color dominante.',
-        generateExample: 'Luz dorada de atardecer, sombras suaves y reflejos cinematográficos.',
-        editHelp: 'Describe el resultado final que buscas al editar: cambio de luz, color, ambiente, acabado o impacto visual.',
-        editExample: 'Hacer la imagen más elegante y luminosa, con tonos dorados.'
-    },
-    {
-        id: 'details',
-        generateLabel: 'Detalles',
-        editLabel: 'Detalles relevantes',
-        generatePlaceholder: 'Ej: formato, colores, cámara, evitar texto...',
-        editPlaceholder: 'Ej: formato, colores, evitar texto, conservar rasgos...',
-        generateHelp: 'Añade instrucciones importantes para la imagen nueva: colores, composición, encuadre, elementos a evitar, proporciones o texto no deseado.',
-        generateExample: 'Sin texto, composición centrada, colores azul y dorado, fondo limpio.',
-        editHelp: 'Añade restricciones para proteger partes de la imagen: qué conservar, qué no tocar, colores concretos o instrucciones extra.',
-        editExample: 'Mantener el rostro igual, no cambiar la pose y conservar el encuadre original.'
-    }
-];
+let historyDb = null;
 
-const createInitialPromptFields = (details = '') => PROMPT_FIELD_DEFINITIONS.reduce((acc, field) => {
-    acc[field.id] = field.id === 'details' ? details : '';
-    return acc;
-}, {});
-
-const getPromptFieldLabel = (field, mode) => mode === 'remix' ? field.editLabel : field.generateLabel;
-const getPromptFieldPlaceholder = (field, mode) => `${getPromptFieldLabel(field, mode)}??`;
-
-const buildStructuredPrompt = (fields, mode) => PROMPT_FIELD_DEFINITIONS
-    .map((field) => {
-        const value = (fields[field.id] || '').trim();
-        return value ? `${getPromptFieldLabel(field, mode)}: ${value}` : '';
-    })
-    .filter(Boolean)
-    .join('\n');
-
-// --- SERVICES (ORIGINAL LOGIC) ---
-const PROXY_URL = './proxy.php';
-const HISTORY_URL = './history.php';
-
-// --- SERVER PERSISTENCE (sync híbrido: localStorage caché + servidor fuente) ---
-const syncToServer = async (image) => {
-    try {
-        const res = await fetch(HISTORY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: image.id,
-                prompt: image.prompt,
-                style: image.style,
-                aspectRatio: image.aspectRatio,
-                size: image.size,
-                calidad: image.calidad,
-                targetPx: image.targetPx || null,
-                downloadPx: image.downloadPx || null,
-                createdAt: image.createdAt,
-                imageData: image.url
-            })
-        });
-        if (!res.ok) console.warn('Sync server falló:', res.status);
-    } catch (e) { console.warn('Error syncing al servidor:', e); }
-};
-
-const deleteFromServer = async (id) => {
-    try {
-        await fetch(HISTORY_URL, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
-        });
-    } catch (e) { console.warn('Error eliminando del servidor:', e); }
-};
-
-const clearServerHistory = async () => {
-    try {
-        await fetch(HISTORY_URL, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clearAll: true })
-        });
-    } catch (e) { console.warn('Error limpiando servidor:', e); }
-};
-
-const loadFromServer = async () => {
-    try {
-        const res = await fetch(HISTORY_URL);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data?.items || [];
-    } catch (e) { console.warn('Error cargando del servidor:', e); return []; }
-};
-
-const mergeHistory = (localItems, serverItems) => {
-    const localMap = new Map(localItems.map(item => [item.id, item]));
-    for (const s of serverItems) {
-        if (!localMap.has(s.id)) {
-            localMap.set(s.id, { ...s, url: s.imageUrl || s.url });
+const openHistoryDb = () => new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => { historyDb = request.result; resolve(historyDb); };
+    request.onupgradeneeded = (e) => {
+        const database = e.target.result;
+        if (!database.objectStoreNames.contains(STORE_NAME)) {
+            database.createObjectStore(STORE_NAME, { keyPath: 'id' });
         }
-    }
-    return Array.from(localMap.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    };
+});
+
+const loadHistoryFromDb = async (mode) => {
+    try {
+        if (!historyDb) await openHistoryDb();
+        return new Promise((resolve, reject) => {
+            const tx = historyDb.transaction(STORE_NAME, 'readonly');
+            const store = tx.objectStore(STORE_NAME);
+            const req = store.getAll();
+            req.onsuccess = () => {
+                const items = (req.result || []).filter(item => (item.mode || 'remix') === mode);
+                items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                resolve(items);
+            };
+            req.onerror = () => reject(req.error);
+        });
+    } catch (e) { console.warn('Error cargando historial:', e); return []; }
 };
 
-// Llama al proxy en modo FLUX (imágenes). Contrato: {prompt, calidad, quality, aspectRatio, targetPx, imagen?}
-// -> {success, imageUrl (data URL), coste, modelo, calidad, width, height}
-const callFlux = async ({ prompt, calidad, quality, aspectRatio, targetPx, imagen }) => {
-    const body = { prompt, calidad, quality, aspectRatio, targetPx };
-    if (imagen) body.imagen = imagen;
+const saveHistoryItemToDb = async (item) => {
+    try {
+        if (!historyDb) await openHistoryDb();
+        return new Promise((resolve, reject) => {
+            const tx = historyDb.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            const req = store.put(item);
+            req.onsuccess = () => resolve();
+            req.onerror = () => reject(req.error);
+        });
+    } catch (e) { console.warn('Error guardando item:', e); }
+};
+
+const deleteHistoryItemFromDb = async (id) => {
+    try {
+        if (!historyDb) await openHistoryDb();
+        return new Promise((resolve, reject) => {
+            const tx = historyDb.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            const req = store.delete(id);
+            req.onsuccess = () => resolve();
+            req.onerror = () => reject(req.error);
+        });
+    } catch (e) { console.warn('Error eliminando item:', e); }
+};
+
+const clearHistoryFromDb = async (mode) => {
+    try {
+        if (!historyDb) await openHistoryDb();
+        const allItems = await new Promise((resolve) => {
+            const tx = historyDb.transaction(STORE_NAME, 'readonly');
+            const req = tx.objectStore(STORE_NAME).getAll();
+            req.onsuccess = () => resolve(req.result || []);
+        });
+        const txDelete = historyDb.transaction(STORE_NAME, 'readwrite');
+        const store = txDelete.objectStore(STORE_NAME);
+        allItems.filter(i => (i.mode || 'remix') === mode).forEach(i => store.delete(i.id));
+    } catch (e) { console.warn('Error limpiando historial:', e); }
+};
+
+// --- SERVICES CORREGIDOS ---
+const PROXY_URL = './proxy.php';
+
+const callProxy = async (model, contents, config = {}, promptText = '') => {
+    // Garantizamos que el objeto enviado siempre lleve el parámetro 'prompt'
+    const payload = { 
+        model, 
+        prompt: promptText,
+        contents, 
+        ...config 
+    };
     const response = await fetch(PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(payload)
     });
     if (!response.ok) {
-        let msg = `Error ${response.status}`;
-        try { const j = await response.json(); msg = j?.error?.message || msg; }
-        catch (e) { msg = `${msg}: ${await response.text()}`; }
-        throw new Error(msg);
+        const text = await response.text();
+        throw new Error(`Error ${response.status}: ${text}`);
     }
-    const data = await response.json();
-    if (!data.success || !data.imageUrl) {
-        throw new Error(data?.error?.message || 'FLUX no devolvió imagen');
-    }
-    return data.imageUrl;
+    return await response.json();
 };
 
-// Upscale client-side (para la descarga 4K desde el máximo nativo de FLUX, 4MP)
-const upscaleImage = (dataUrl, targetMaxSide = 4096) => {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-            let { width, height } = img;
-            if (width <= 0 || height <= 0) { resolve(dataUrl); return; }
-            const scale = targetMaxSide / Math.max(width, height);
-            if (scale <= 1) { resolve(dataUrl); return; } // ya es suficiente
-            const w = Math.round(width * scale);
-            const h = Math.round(height * scale);
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.95));
+const enhancePrompt = async (basePrompt) => {
+    try {
+        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÓN DE IMÁGENES.
+TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÓN DEL USUARIO.
+Instrucciones:
+1. NO inventes sujetos nuevos.
+2. NO cambies el entorno drásticamente.
+3. Céntrate en añadir detalles técnicos de calidad para que el prompt sea más efectivo.
+
+Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (Descriptiva, Cinematográfica, Artística, y Minimalista) siguiendo estas reglas estrictas.`;
+        const contents = [{ parts: [{ text: systemInstructions }] }];
+        const config = {
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: { type: { type: "STRING" }, text: { type: "STRING" } },
+                        required: ["type", "text"]
+                    }
+                }
+            }
         };
-        img.onerror = () => resolve(dataUrl);
-        img.src = dataUrl;
-    });
+        const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        return text ? JSON.parse(text) : [];
+    } catch (e) {
+        console.error("Failed to enhance prompt", e);
+        return [];
+    }
 };
 
 const generateImage = async (params) => {
@@ -348,62 +294,73 @@ const generateImage = async (params) => {
 
     let finalPrompt = '';
     if (params.sourceImage) {
+        const sizeInfo = `Adjust the aspect ratio to ${params.aspectRatio}.`;
         if (fullStylePrompt) {
-            finalPrompt = `Transform this image into the following style and content: ${fullStylePrompt}. Keep a complete, high-quality result in ${params.aspectRatio} format.`;
+            finalPrompt = `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`;
         } else {
-            finalPrompt = `Recreate this image as a complete, natural, high-quality result, maintaining its original style and context, in ${params.aspectRatio} format.`;
+            finalPrompt = `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`;
         }
     } else {
         finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
     }
 
-    const imageUrl = await callFlux({
-        prompt: finalPrompt,
-        calidad: params.calidad || 'normal',
-        quality: params.quality || 'pro',
-        aspectRatio: params.aspectRatio,
-        targetPx: params.targetPx || 1024,
-        imagen: params.sourceImage || undefined
-    });
-
-    // Descarga a 4K real: upscale client-side desde el nativo (máx 4MP de FLUX)
-    if (params.downloadPx && params.downloadPx > (params.targetPx || 1024)) {
-        return await upscaleImage(imageUrl, params.downloadPx);
+    const parts = [{ text: finalPrompt }];
+    if (params.sourceImage) {
+        const base64Data = params.sourceImage.split(',')[1];
+        parts.push({ inlineData: { data: base64Data, mimeType: "image/jpeg" } });
     }
-    return imageUrl;
+    const contents = [{ parts }];
+    const config = {
+        generationConfig: {
+            imageConfig: {
+                aspectRatio: params.aspectRatio
+            }
+        }
+    };
+
+    // Pasamos 'finalPrompt' como parámetro explícito
+    const result = await callProxy('gemini-2.5-flash-image', contents, config, finalPrompt);
+    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
+    for (const part of partsResponse) {
+        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    }
+    throw new Error("No se pudo generar la imagen");
 };
 
 const editImageConversation = async (params) => {
-    const imageUrl = await callFlux({
-        prompt: params.instruction,
-        calidad: params.calidad || 'normal',
-        quality: params.quality || 'pro',
-        aspectRatio: params.aspectRatio,
-        targetPx: params.targetPx || 1024,
-        imagen: params.originalImage
-    });
-    if (params.downloadPx && params.downloadPx > (params.targetPx || 1024)) {
-        return await upscaleImage(imageUrl, params.downloadPx);
+    const base64Data = params.originalImage.split(',')[1];
+    const contents = [{
+        parts: [
+            { inlineData: { data: base64Data, mimeType: "image/jpeg" } },
+            { text: params.instruction }
+        ]
+    }];
+    const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
+    const result = await callProxy('gemini-2.5-flash-image', contents, config);
+    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
+    for (const part of partsResponse) {
+        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
     }
-    return imageUrl;
+    throw new Error("Error en la edición conversacional");
 };
 
 // --- COMPONENTS ---
 const ApiKeyChecker = ({ children }) => <>{children}</>;
 
-const LoadingOverlay = () => (
+const LoadingOverlay = ({ progress = 0, status = '' }) => (
     <div className="loading-overlay">
         <div className="spinner-triple">
             <div className="ring ring-1"></div>
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <p className="loading-text">IA generando lo solicitado...</p>
-        <div className="progress-panel">
+        <p className="loading-text">IA Generando Obra Maestra...</p>
+        <div className="progress-container">
+            <div className="progress-percentage">{progress}%</div>
             <div className="progress-bar-track">
-                <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
             </div>
-            <p className="secondary-status">Procesando solicitud...</p>
+            <div className="progress-status">{status || 'Iniciando...'}</div>
         </div>
     </div>
 );
@@ -429,7 +386,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`btn-canon w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
+                className={`w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
             >
                 <span className={isPlaceholder ? 'text-gray-500' : 'text-gray-200'}>{selectedOption.name}</span>
                 <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -446,7 +403,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
                                     onChange(opt.id);
                                     setIsOpen(false);
                                 }}
-                                className={`btn-canon w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
+                                className={`w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
                                     ? 'bg-cyan-500/20 text-cyan-400 border-l-2 border-cyan-400'
                                     : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 border-l-2 border-transparent'
                                     }`}
@@ -461,54 +418,20 @@ const CustomSelect = ({ options, value, onChange, className }) => {
     );
 };
 
-const StructuredPromptFields = ({ fields, onChange, mode }) => {
-    const isEditMode = mode === 'remix';
-
-    return (
-        <div className="structured-prompt-panel">
-            {PROMPT_FIELD_DEFINITIONS.map((field) => (
-                <div key={field.id} className="prompt-field-wrap group/field">
-                    <label htmlFor={`prompt-${field.id}`} className="sr-only">{getPromptFieldLabel(field, mode)}</label>
-                    <input
-                        id={`prompt-${field.id}`}
-                        type="text"
-                        value={fields[field.id] || ''}
-                        onChange={(e) => onChange(field.id, e.target.value)}
-                        placeholder={getPromptFieldPlaceholder(field, mode)}
-                        aria-describedby={`prompt-help-${field.id}`}
-                        className="structured-prompt-input"
-                    />
-                    <div id={`prompt-help-${field.id}`} role="tooltip" className="prompt-tooltip">
-                        <span className="prompt-tooltip-title">{getPromptFieldLabel(field, mode)}</span>
-                        <span>{isEditMode ? field.editHelp : field.generateHelp}</span>
-                        <span className="prompt-tooltip-example">
-                            Ejemplo {isEditMode ? 'edición' : 'generación'}: {isEditMode ? field.editExample : field.generateExample}
-                        </span>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownload }) => {
+const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
     const handleDownload = (e) => {
         e.stopPropagation();
         const link = document.createElement('a');
         link.href = image.url;
-        link.download = `flux-studio-${image.id}.jpg`;
+        link.download = `gemini-studio-${image.id}.jpg`;
         link.click();
-    };
-    const handleHdDownload = (e) => {
-        e.stopPropagation();
-        onHdDownload(image);
     };
 
     return (
         <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
             <div className="absolute top-4 left-4 z-10">
                 <div className="px-3 py-1 glass rounded-full text-[9px] uppercase text-white/90 border-white/5 backdrop-blur-md btn-canon">
-                    {image.style.name} | {image.aspectRatio}
+                    {image.style ? image.style.name : 'Estilo'} | {image.aspectRatio}
                 </div>
             </div>
             <div className="relative aspect-square bg-slate-950 overflow-hidden flex items-center justify-center">
@@ -528,24 +451,17 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onEdit(image); }} className="flex flex-col items-center gap-1.5 group/btn">
-                            <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center group-hover/btn:bg-purple-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
-                                <MessageSquare className="text-purple-400" size={16} />
-                            </div>
-                            <span className="btn-canon text-[8px] text-purple-200">Variar</span>
-                        </button>
+    <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center group-hover/btn:bg-cyan-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
+        <MessageSquare className="text-cyan-400" size={16} />
+    </div>
+    <span className="btn-canon text-[8px] text-cyan-200">Variar</span>
+</button>
 
                         <button onClick={handleDownload} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center group-hover/btn:bg-slate-700 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Download className="text-slate-200" size={16} />
                             </div>
                             <span className="btn-canon text-[8px] text-slate-300">Bajar</span>
-                        </button>
-
-                        <button onClick={handleHdDownload} className="flex flex-col items-center gap-1.5 group/btn">
-                            <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center group-hover/btn:bg-amber-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
-                                <Download className="text-amber-400" size={16} />
-                            </div>
-                            <span className="btn-canon text-[8px] text-amber-300">HD</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onDelete(image.id); }} className="flex flex-col items-center gap-1.5 group/btn">
@@ -559,7 +475,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
             </div>
 
             <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
-                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight btn-canon" style={{fontStyle:'italic', textTransform:'none'}}>
+                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight italic">
                     {image.prompt}
                 </p>
                 <div className="text-[9px] text-gray-600 uppercase mt-1 btn-canon">
@@ -570,102 +486,84 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
     );
 };
 
-const Splash = () => (
+const Splash = ({ onSelect }) => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
-            <h1 className="splash-title">Diseña como un Pro</h1>
+            <h1 className="splash-title">Edita como un Pro</h1>
             <p className="splash-subtitle">
                 Edición y Generación de Imágenes con IA
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-            <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30 w-full">
-                <a href="?mode=edit" aria-label="Editar imagen" className="splash-card-link absolute inset-0 z-30"></a>
-                <div className="absolute top-0 right-0 p-8 text-purple-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
+            {/* Tarjeta 1: Editar Imagen */}
+            <button onClick={() => onSelect('remix')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
+                <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
                     <ImageIcon size={200} />
                 </div>
-                <div className="bg-purple-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-purple-400 mb-6 border border-purple-500/30">
+                <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Wand2 size={32} />
                 </div>
-                <h2 className="card-title" style={{fontSize:'1.8rem'}}>Editar Imagen</h2>
-                <p className="card-desc">Edita imágenes existentes con la máxima calidad de FLUX (flux-2-max).</p>
-            </div>
-            <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full">
-                <a href="../generar_copia/?mode=generate" aria-label="Generar imágenes" className="splash-card-link absolute inset-0 z-30"></a>
+                <h2 className="btn-editar-imagen">Editar Imagen</h2>
+                <p className="card-desc">Edita imágenes existentes con la potencia de Nano Banana.</p>
+            </button>
+
+            {/* Tarjeta 2: Generar Imágenes */}
+            <button onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
                     <Sparkles size={200} />
                 </div>
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="card-title" style={{fontSize:'1.8rem'}}>Generar Imágenes</h2>
+                <h2 className="btn-generar-imagenes">Generar Imágenes</h2>
                 <p className="card-desc">Genera imágenes desde una descripción de texto.</p>
-            </div>
+            </button>
         </div>
     </div>
 );
-const STORAGE_KEY = 'flux_editar_studio_history';
+
 
 // --- APP MAIN ---
 const App = () => {
-    // Si la URL trae ?mode=edit, entramos directos al editor (enlace nativo -> sin doble clic).
-    const _startInEditor = (typeof window !== 'undefined' && /[?&]mode=edit\b/.test(window.location.search));
-    const [view, setView] = useState(_startInEditor ? 'editor' : 'splash');
+    const [view, setView] = useState('splash');
     const [mode, setMode] = useState('remix');
-    const [promptFields, setPromptFields] = useState(() => createInitialPromptFields());
-    const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.fotografico[1]);
+    const [prompt, setPrompt] = useState('');
+    const [enhancedPrompts, setEnhancedPrompts] = useState([]);
+    const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.ilustracion[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
-    const [images, setImages] = useState(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-            }
-        } catch (e) { console.warn('Error cargando historial:', e); }
-        return [];
-    });
-
-    // Persistencia: guardar historial al cambiar (máx 50 items en local)
-    useEffect(() => {
-        try {
-            const toSave = images.slice(0, 50);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-        } catch (e) { console.warn('Error guardando historial:', e); }
-    }, [images]);
-
-    // Al montar: cargar del servidor y fusionar con localStorage
-    useEffect(() => {
-        let cancelled = false;
-        (async () => {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                const localItems = saved ? (JSON.parse(saved) || []) : [];
-                const serverItems = await loadFromServer();
-                if (cancelled) return;
-                // Forma funcional: no captura 'images' en clausura, así este
-                // update asíncrono no compite con otros cambios de estado (p.ej. la
-                // transición splash->editor) que pisaban el primer clic.
-                setImages(prev => {
-                    const merged = mergeHistory((prev && prev.length ? prev : localItems), serverItems);
-                    return merged.length ? merged : prev;
-                });
-            } catch (e) { console.warn('Error en sync inicial:', e); }
-        })();
-        return () => { cancelled = true; };
-    }, []); // solo al montar
+    const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isEnhancing, setIsEnhancing] = useState(false);
     const [editImage, setEditImage] = useState(null);
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
-    const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
-    const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
-    // Calidad del modelo FLUX elegida con los botones PRO/MAX (pro = equilibrado, max = máxima).
-    const [selectedQuality, setSelectedQuality] = useState('pro');
+
+    const [progress, setProgress] = useState(0);
+    const [progressStatus, setProgressStatus] = useState('');
 
     const fileInputRef = useRef(null);
+
+    // Cargar historial desacoplado por modo activo
+    useEffect(() => {
+        const loadHistory = async () => {
+            try {
+                const items = await loadHistoryFromDb(mode);
+                setImages(items);
+            } catch (e) { console.warn('Error cargando historial:', e); }
+        };
+        if (view === 'editor') {
+            loadHistory();
+        }
+    }, [view, mode]);
+
+    const handleStart = (m) => {
+        setMode(m);
+        setView('editor');
+        if (m === 'text-to-image') setRemixSource(null);
+        setError(null);
+    };
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
@@ -673,95 +571,115 @@ const App = () => {
         const reader = new FileReader();
         reader.onload = (f) => {
             const img = new Image();
-            img.onload = async () => {
+            img.onload = () => {
                 const detectedAR = getClosestAspectRatio(img.width, img.height);
                 setSelectedAR(detectedAR);
-                setOriginalImageAR(detectedAR);
-                // Limitar la imagen de entrada a <=2048px de lado (tope 4MP de FLUX)
-                const clamped = await clampInputImage(f.target.result, 2048);
-                setRemixSource(clamped);
+                setRemixSource(f.target.result);
             };
             img.src = f.target.result;
         };
         reader.readAsDataURL(file);
     };
 
-    const currentPrompt = buildStructuredPrompt(promptFields, mode);
-
-    const updatePromptField = (fieldId, value) => {
-        setPromptFields(prev => ({ ...prev, [fieldId]: value }));
+    const handleEnhance = async () => {
+        if (!prompt.trim()) return;
+        setIsEnhancing(true);
+        try {
+            const enhanced = await enhancePrompt(prompt);
+            setEnhancedPrompts(enhanced);
+        } catch (err) { console.error(err); } finally { setIsEnhancing(false); }
     };
 
-    const handleGenerate = async (finalPrompt = currentPrompt) => {
-        const effectivePrompt = finalPrompt.trim() || (mode === 'remix' && remixSource ? ' ' : '');
-        if (!effectivePrompt && !(mode === 'remix' && remixSource)) return;
+    const handleGenerate = async (finalPrompt = prompt) => {
+        const effectivePrompt = (typeof finalPrompt === 'string' ? finalPrompt : prompt).trim();
+        
+        if (mode === 'text-to-image' && !effectivePrompt) {
+            setError("Escribe una descripción antes de generar.");
+            return;
+        }
+        if (mode === 'remix' && !remixSource) {
+            setError("Sube una imagen para poder editarla.");
+            return;
+        }
+
         setIsGenerating(true);
         setError(null);
+        setProgress(0);
+        setProgressStatus('Preparando...');
         try {
             const styleSuffix = selectedStyle.promptSuffix;
-            const imageUrl = await generateImage({
-                prompt: effectivePrompt,
-                styleSuffix,
-                aspectRatio: selectedAR,
-                calidad: imageSize.calidad,
-                quality: selectedQuality,
-                targetPx: imageSize.targetPx,
-                downloadPx: imageSize.downloadPx,
-                sourceImage: mode === 'remix' ? (remixSource || undefined) : undefined
-            });
+            let finalSourceImage = mode === 'remix' ? (remixSource || undefined) : undefined;
 
-            const newImage = {
+            if (finalSourceImage) {
+                finalSourceImage = await resizeImage(finalSourceImage, 1024, 0.85);
+            }
+
+            setProgress(10);
+            setProgressStatus('Generando imagen 1 de 2...');
+
+            const results = await Promise.all([
+                generateImage({
+                    prompt: effectivePrompt,
+                    styleSuffix,
+                    aspectRatio: selectedAR,
+                    sourceImage: finalSourceImage
+                }).then(url => { setProgress(40); setProgressStatus('Generando imagen 2 de 2...'); return url; }),
+                generateImage({
+                    prompt: effectivePrompt + (mode === 'remix' ? " (Alternative detailed variation)" : " --variation distinct composition"),
+                    styleSuffix,
+                    aspectRatio: selectedAR,
+                    sourceImage: finalSourceImage
+                }).then(url => { setProgress(70); setProgressStatus('Finalizando...'); return url; })
+            ]);
+
+            setProgress(90);
+            setProgressStatus('Guardando...');
+
+            const newHistoryImages = results.map(imageUrl => ({
                 id: Math.random().toString(36).substring(7),
                 url: imageUrl,
-                prompt: effectivePrompt || 'Remezcla',
+                prompt: effectivePrompt || 'Edición de imagen',
                 style: selectedStyle,
                 aspectRatio: selectedAR,
-                size: imageSize.label,
-                calidad: imageSize.calidad,
-                targetPx: imageSize.targetPx,
-                downloadPx: imageSize.downloadPx,
+                size: '1K',
+                mode: mode,
                 createdAt: Date.now()
-            };
+            }));
 
-            setImages(prev => [newImage, ...prev]);
-            syncToServer(newImage); // persistir en servidor (fuego-y-olvido)
+            for (const img of newHistoryImages) {
+                await saveHistoryItemToDb(img);
+            }
+
+            setProgress(100);
+            setImages(prev => [...newHistoryImages, ...prev]);
         } catch (err) {
             setError(err.message || "Error de generación");
         } finally {
-            setIsGenerating(false);
-            // Se conservan los campos del prompt, estilo y formato para poder
-            // repetir con el mismo prompt cambiando otras opciones.
+            setTimeout(() => { setIsGenerating(false); setProgress(0); setProgressStatus(''); }, 400);
+            setPrompt("");
+            setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
+            setSelectedAR(AspectRatio.SQUARE);
         }
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
+        await deleteHistoryItemFromDb(id);
         setImages(images.filter(img => img.id !== id));
-        deleteFromServer(id);
     };
-    const handleClearHistory = () => { if (window.confirm('¿Deseas eliminar todo el historial?')) { setImages([]); try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} clearServerHistory(); } };
+
+    const handleClearHistory = async () => {
+        if (!confirm('¿Estás seguro de que quieres eliminar el historial de este modo?')) return;
+        await clearHistoryFromDb(mode);
+        setImages([]);
+    };
+
     const handleRegenerate = (img) => {
-        setPromptFields(createInitialPromptFields(img.prompt));
-        setSelectedStyle(img.style);
+        setPrompt(img.prompt);
+        if (img.style) setSelectedStyle(img.style);
         setSelectedAR(img.aspectRatio);
         handleGenerate(img.prompt);
     };
-    const handleHdDownload = async (img) => {
-        setIsGenerating(true);
-        setError(null);
-        try {
-            // Descarga HD: upscale client-side de la imagen guardada hasta 4K (4096px lado).
-            // FLUX genera como máx 4MP (~2048); el escalado x2 entrega un 4K listo para imprimir/descargar.
-            const hdUrl = await upscaleImage(img.url, 4096);
-            const link = document.createElement('a');
-            link.href = hdUrl;
-            link.download = `flux-hd-${img.id}.jpg`;
-            link.click();
-        } catch (err) {
-            setError("Error HD: " + (err.message || ''));
-        } finally {
-            setIsGenerating(false);
-        }
-    };
+
     const handleOpenEdit = (img) => {
         setEditImage(img);
         setEditInstruction('');
@@ -771,66 +689,93 @@ const App = () => {
         if (!editImage || !editInstruction.trim()) return;
         setIsGenerating(true);
         try {
+            const compressedOriginal = await resizeImage(editImage.url, 1024, 0.85);
             const updatedUrl = await editImageConversation({
-                originalImage: editImage.url,
+                originalImage: compressedOriginal,
                 instruction: editInstruction,
-                aspectRatio: editImage.aspectRatio,
-                calidad: editImage.calidad || 'normal',
-                quality: selectedQuality,
-                targetPx: editImage.targetPx || 1024,
-                downloadPx: editImage.downloadPx
+                aspectRatio: editImage.aspectRatio
             });
-            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, createdAt: Date.now() };
+            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, mode: mode, createdAt: Date.now() };
+            await saveHistoryItemToDb(updatedImage);
             setImages([updatedImage, ...images]);
-            syncToServer(updatedImage);
             setEditImage(null);
         } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
     };
 
-    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !currentPrompt.trim()) || (mode === 'remix' && !remixSource);
+    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim()) || (mode === 'remix' && !remixSource);
 
     return (
         <ApiKeyChecker>
-            {isGenerating && <LoadingOverlay />}
+            {isGenerating && <LoadingOverlay progress={progress} status={progressStatus} />}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
-                    <Splash />
+                    <Splash onSelect={handleStart} />
                 ) : (
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
                             <div className="flex items-center justify-between shrink-0">
-                                <button onClick={() => { setView('splash'); if (typeof window !== 'undefined' && window.location.search) window.history.replaceState(null, '', window.location.pathname); }} className="btn-canon flex items-center gap-2 text-gray-400 hover:text-white transition-all text-[11px]">
-                                    <ChevronLeft size={16} /> <span>Volver</span>
-                                </button>
-                            </div>
-
+    <h1 onClick={() => setView('splash')} className="aside-title flex items-center gap-3 cursor-pointer">
+        <Wand2 className="text-cyan-400" size={28} />
+        {mode === 'remix' ? 'Editar Imagen' : 'Generar Imágenes'}
+    </h1>
+</div>
                             {mode === 'remix' && (
-                                <div className="space-y-4 animate-in">
-                                    <label className="btn-canon text-[11px] text-purple-400">Imagen a Editar</label>
-                                    <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-purple-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-purple-500 transition-all">
-                                        {remixSource ? <img src={remixSource} className="w-full h-full object-cover" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="btn-canon text-[10px]">Sube Imagen</span></div>}
-                                    </div>
-                                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
-                                </div>
-                            )}
+    <div className="space-y-4 animate-in">
+        <label className="btn-canon text-[11px] text-cyan-400">Imagen a Editar</label>
+        <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-cyan-400 transition-all">
+            {remixSource ? (
+                <img src={remixSource} className="w-full h-full object-contain" />
+            ) : (
+                <div className="text-cyan-400 flex flex-col items-center gap-2">
+                    <Upload size={24} />
+                    <span className="btn-canon text-[10px]">Sube Imagen</span>
+                </div>
+            )}
+        </div>
+        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
+    </div>
+)}
 
                             <div className="space-y-4">
                                 <label className="btn-canon text-[11px] text-cyan-400">Describe tu imagen</label>
-                                <StructuredPromptFields
-                                    fields={promptFields}
-                                    onChange={updatePromptField}
-                                    mode={mode}
-                                />
+                                <div className="relative">
+                                    <textarea
+    value={prompt}
+    onChange={(e) => setPrompt(e.target.value)}
+    placeholder="Detalla lo que deseas ver en tu imagen..."
+    className="w-full h-48 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none custom-scrollbar focus:border-cyan-400 placeholder:text-cyan-400 transition-all shadow-inner"
+/>
+                                    <button
+                                        onClick={handleEnhance}
+                                        disabled={isEnhancing || !prompt.trim()}
+                                        title="mejorar prompt con IA"
+                                        className="absolute bottom-4 right-4 p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl hover:bg-cyan-500/30 transition-all z-30"
+                                    >
+                                        {isEnhancing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                                    </button>
+                                </div>
+
+                                {enhancedPrompts.length > 0 && (
+                                    <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-top-2 duration-300">
+                                        {enhancedPrompts.map((p, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => {
+                                                    setPrompt(p.text);
+                                                }}
+                                                className="text-[10px] text-left p-3 glass-light border border-white/5 rounded-2xl text-gray-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all leading-tight group"
+                                            >
+                                                <div className="font-bold text-[9px] uppercase tracking-tighter text-gray-500 group-hover:text-cyan-500 mb-1">{p.type}</div>
+                                                <div className="line-clamp-2 italic opacity-80">{p.text}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-6">
                                 <label className="btn-canon text-[11px] text-cyan-400">Panel de Estilos</label>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <CustomSelect
-                                        options={STYLE_GROUPS.fotografico}
-                                        value={STYLE_GROUPS.fotografico.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
-                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.fotografico.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
-                                    />
                                     <CustomSelect
                                         options={STYLE_GROUPS.ilustracion}
                                         value={STYLE_GROUPS.ilustracion.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
@@ -861,7 +806,7 @@ const App = () => {
                                         <button
                                             key={ar.id}
                                             onClick={() => setSelectedAR(ar.id)}
-                                            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${selectedAR === ar.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-500/40 hover:text-cyan-300'}`}
+                                            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${selectedAR === ar.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
                                         >
                                             <div className="flex items-center justify-center">{ar.icon}</div>
                                             <span className="btn-canon text-[9px]">{ar.name}</span>
@@ -870,45 +815,10 @@ const App = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <label className="btn-canon text-[11px] text-cyan-400">Resolución de Salida</label>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {RESOLUTION_OPTIONS.map((res) => (
-                                        <button
-                                            key={res.id}
-                                            onClick={() => setImageSize(res)}
-                                            className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${imageSize.id === res.id ? 'border-purple-500 bg-purple-500/10 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-500/40 hover:text-cyan-300'}`}
-                                        >
-                                            <span className="btn-canon text-[10px]">{res.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="btn-canon text-[11px] text-cyan-400">Calidad del Modelo FLUX</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => setSelectedQuality('pro')}
-                                        className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'pro' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
-                                    >
-                                        <span className="btn-canon text-[11px]">PRO</span>
-                                        <span className="btn-canon text-[8px] opacity-70">Equilibrado · ~$0.03</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedQuality('max')}
-                                        className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'max' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
-                                    >
-                                        <span className="btn-canon text-[11px]">MAX</span>
-                                        <span className="btn-canon text-[8px] opacity-70">Máxima · ~$0.07</span>
-                                    </button>
-                                </div>
-                            </div>
-
                             <div className="pt-6 order-last">
                                 <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-                                    {isGenerating ? 'PROCESANDO...' : (mode === 'text-to-image' ? 'GENERAR IMAGEN' : 'GENERAR EDICIÓN')}
+                                    {isGenerating ? 'PROCESANDO...' : (mode === 'remix' ? 'GENERAR EDICIÓN' : 'GENERAR IMAGEN')}
                                 </button>
                                 {error && <p className="btn-canon text-red-400 text-[11px] text-center mt-4">{error}</p>}
                             </div>
@@ -918,12 +828,14 @@ const App = () => {
                             <div className="max-w-7xl mx-auto space-y-16">
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
-                                        <h2 className="section-title">{mode === 'text-to-image' ? 'Historial de Imágenes Generadas' : 'Historial de Imágenes Editadas'}</h2>
-                                        <p className="section-subtitle" style={{textAlign:'left', marginLeft:0, marginRight:0}}>{mode === 'text-to-image' ? 'Controla y revisa tus creaciones visuales generadas en tiempo real.' : 'Controla y refina tus creaciones visuales en tiempo real.'}</p>
+                                        <h2 className="section-title">{mode === 'remix' ? 'Historial de Imágenes Editadas' : 'Historial de Imágenes Generadas'}</h2>
+                                        <p className="empty-subtitle" style={{textAlign:'left', marginLeft:0, marginRight:0}}>Controla y refina tus creaciones visuales en tiempo real.</p>
                                     </div>
-                                    <button onClick={handleClearHistory} className="btn-canon flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl transition-all text-[11px] border border-red-500/20">
-                                        <Trash2 size={16} /> LIMPIAR TODO
-                                    </button>
+                                    {images.length > 0 && (
+                                        <button onClick={handleClearHistory} className="px-4 py-2 glass rounded-2xl text-xs text-gray-400 hover:text-red-400 hover:border-red-500/30 transition-all flex items-center gap-2">
+                                            <Trash2 size={14} /> Limpiar
+                                        </button>
+                                    )}
                                 </div>
 
                                 {images.length === 0 ? (
@@ -939,7 +851,7 @@ const App = () => {
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
                                         {images.map((img) => (
-                                            <ImageCard key={img.id} image={img} onDelete={handleDelete} onRegenerate={handleRegenerate} onEdit={handleOpenEdit} onClick={setLightboxImage} onHdDownload={handleHdDownload} />
+                                            <ImageCard key={img.id} image={img} onDelete={handleDelete} onRegenerate={handleRegenerate} onEdit={handleOpenEdit} onClick={setLightboxImage} />
                                         ))}
                                     </div>
                                 )}
@@ -947,14 +859,10 @@ const App = () => {
                         </main>
 
                         {lightboxImage && (
-                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl cursor-zoom-out" onClick={() => setLightboxImage(null)}>
-                                <div className="relative w-full h-full flex flex-col items-center justify-center">
-                                    <img src={lightboxImage.url} className="w-full h-full object-contain" />
-                                    <div className="absolute bottom-8 glass px-8 py-4 rounded-full flex gap-10 text-[11px] text-gray-400 uppercase btn-canon" onClick={(e) => e.stopPropagation()}>
-                                        <button onClick={(e) => { e.stopPropagation(); handleHdDownload(lightboxImage); }} className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full hover:bg-amber-500/40 transition-all">
-                                            <Download size={12} className="text-amber-400" />
-                                            <span className="text-amber-300 text-[10px]">HD</span>
-                                        </button>
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl p-8 cursor-zoom-out" onClick={() => setLightboxImage(null)}>
+                                <div className="relative max-w-6xl w-full h-full flex flex-col items-center justify-center gap-8">
+                                    <img src={lightboxImage.url} className="max-w-full max-h-[85vh] object-contain rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5" />
+                                    <div className="glass px-8 py-4 rounded-full flex gap-10 text-[11px] text-gray-400 uppercase btn-canon" onClick={(e) => e.stopPropagation()}>
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
                                         <span>RES: {lightboxImage.size}</span>
                                         <span className="text-gray-600">ID: {lightboxImage.id}</span>
@@ -967,7 +875,7 @@ const App = () => {
                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-950/80 backdrop-blur-md animate-in">
                                 <div className="glass max-w-4xl w-full rounded-[3.5rem] overflow-hidden flex flex-col shadow-2xl border border-white/10">
                                     <div className="p-10 border-b border-white/5 flex items-center justify-between">
-                                        <h3 className="card-title flex items-center gap-4" style={{fontSize:'1.5rem'}}>
+                                        <h3 className="text-2xl font-bold flex items-center gap-4">
                                             <Wand2 size={24} className="text-purple-400" /> Refinar Proyecto
                                         </h3>
                                         <button onClick={() => setEditImage(null)} className="p-2 text-gray-500 hover:text-white transition-all"><X size={24} /></button>
@@ -978,7 +886,7 @@ const App = () => {
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between space-y-8">
                                             <div className="space-y-4">
-                                                <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 btn-canon">
+                                                <div className="bg-cyan-500/10 p-5 rounded-2xl text-[11px] text-cyan-300 leading-relaxed border border-cyan-500/20 font-medium">
                                                     Indica modificaciones puntuales (luz, color, expansión) para aplicar sobre la base actual manteniendo la coherencia estructural.
                                                 </div>
                                                 <textarea
@@ -1004,6 +912,5 @@ const App = () => {
     );
 };
 
-const root = createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
-

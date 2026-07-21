@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Crea y mejora prompts profesionales sin conocimientos de inteligencia artificial.">
+  <meta name="theme-color" content="#001018">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <title>Prompt Studio Premium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Saltar al área de trabajo</a>
+
+  <div class="app-shell">
+    <header class="app-header" aria-labelledby="app-title">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">PS</div>
+        <div>
+          <h1 id="app-title" class="app-title">Prompt Studio Premium</h1>
+          <p class="app-subtitle">Convierte una idea sencilla en una instrucción profesional lista para usar.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="openHelpBtn" class="button button-secondary" type="button" aria-haspopup="dialog">
+          <span aria-hidden="true">?</span> Cómo funciona
+        </button>
+        <button id="newPromptBtn" class="button button-secondary" type="button">
+          <span aria-hidden="true">＋</span> Nuevo
+        </button>
+      </div>
+    </header>
+
+    <main id="workspace" class="workspace">
+      <aside class="history-panel glass-panel" aria-labelledby="historyTitle">
+        <div class="panel-heading compact-heading">
+          <div>
+            <p class="eyebrow">Biblioteca personal</p>
+            <h2 id="historyTitle">Historial</h2>
+          </div>
+          <button id="clearHistoryBtn" class="icon-button" type="button" title="Vaciar historial" aria-label="Vaciar historial">
+            <span aria-hidden="true">⌫</span>
+          </button>
+        </div>
+
+        <label class="search-field" for="historySearch">
+          <span class="sr-only">Buscar en el historial</span>
+          <span aria-hidden="true">⌕</span>
+          <input id="historySearch" type="search" placeholder="Buscar por título o contenido">
+        </label>
+
+        <div id="historyStatus" class="inline-status" aria-live="polite"></div>
+        <div id="historyList" class="history-list" role="list"></div>
+
+        <div id="historyEmpty" class="empty-state">
+          <div class="empty-icon" aria-hidden="true">◇</div>
+          <p>Aquí aparecerán tus prompts guardados.</p>
+        </div>
+      </aside>
+
+      <section class="main-column">
+        <section class="mode-selector glass-panel" aria-labelledby="modeTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Paso 1</p>
+              <h2 id="modeTitle">¿Qué necesitas hacer?</h2>
+              <p>La app puede decidir por ti. También puedes elegir el método manualmente.</p>
+            </div>
+            <div class="skill-badges" aria-label="Skills disponibles">
+              <span class="skill-badge">Método Copiloto</span>
+              <span class="skill-badge">Mejorador</span>
+            </div>
+          </div>
+
+          <div class="mode-grid" role="radiogroup" aria-label="Modo de trabajo">
+            <label class="mode-card is-selected">
+              <input type="radio" name="mode" value="auto" checked>
+              <span class="mode-icon" aria-hidden="true">✦</span>
+              <span class="mode-copy">
+                <strong>Modo automático</strong>
+                <small>La app detecta si debe construir o mejorar.</small>
+              </span>
+              <span class="recommended-chip">Recomendado</span>
+            </label>
+
+            <label class="mode-card">
+              <input type="radio" name="mode" value="copilot">
+              <span class="mode-icon" aria-hidden="true">◎</span>
+              <span class="mode-copy">
+                <strong>Crear desde cero</strong>
+                <small>Convierte una idea en un prompt profesional.</small>
+              </span>
+            </label>
+
+            <label class="mode-card">
+              <input type="radio" name="mode" value="improver">
+              <span class="mode-icon" aria-hidden="true">↟</span>
+              <span class="mode-copy">
+                <strong>Mejorar un prompt</strong>
+                <small>Optimiza un texto que ya tienes escrito.</small>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <section class="input-panel glass-panel" aria-labelledby="inputTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Paso 2</p>
+              <h2 id="inputTitle">Describe lo que quieres conseguir</h2>
+              <p id="inputHint">Escríbelo como lo explicarías a otra persona. No necesitas utilizar palabras técnicas.</p>
+            </div>
+            <span id="charCounter" class="character-counter">0 / 12.000</span>
+          </div>
+
+          <form id="promptForm" novalidate>
+            <div class="field-group primary-field">
+              <label for="userRequest">Tu idea o prompt</label>
+              <textarea id="userRequest" name="userRequest" rows="10" maxlength="12000" required placeholder="Ejemplo: Quiero una app sencilla para organizar pedidos de camisetas personalizadas y enviar el resumen por WhatsApp."></textarea>
+              <div id="requestError" class="field-error" aria-live="polite"></div>
+            </div>
+
+            <div class="quick-examples" aria-label="Ejemplos rápidos">
+              <button class="example-chip" type="button" data-example="Quiero crear una app sencilla para organizar pedidos de productos personalizados, con clientes, estado del pedido, importes y envío del resumen por WhatsApp.">App de pedidos</button>
+              <button class="example-chip" type="button" data-example="Mejora este prompt: crea una imagen publicitaria de una sudadera personalizada con aspecto profesional.">Prompt de imagen</button>
+              <button class="example-chip" type="button" data-example="Necesito investigar qué modelo de inteligencia artificial es más barato para analizar imágenes y devolver un JSON fiable.">Investigación</button>
+            </div>
+
+            <div class="settings-grid">
+              <div class="field-group">
+                <label for="targetTool">¿Dónde vas a usarlo?</label>
+                <select id="targetTool" name="targetTool">
+                  <option value="universal">Universal / No lo sé</option>
+                  <option value="chatgpt">ChatGPT / OpenAI</option>
+                  <option value="claude">Claude</option>
+                  <option value="gemini">Gemini</option>
+                  <option value="image">Flux / herramienta de imagen</option>
+                  <option value="coding">Agente de programación</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="depth">Nivel de detalle</label>
+                <select id="depth" name="depth">
+                  <option value="standard">Profesional</option>
+                  <option value="compact">Rápido y compacto</option>
+                  <option value="exhaustive">Máxima precisión</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="outputMode">Qué quieres recibir</label>
+                <select id="outputMode" name="outputMode">
+                  <option value="prompt_changes">Prompt + mejoras</option>
+                  <option value="prompt_only">Solo el prompt</option>
+                  <option value="diagnostic">Prompt + diagnóstico</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="qualityModel">Calidad del modelo</label>
+                <select id="qualityModel" name="qualityModel">
+                  <option value="auto">Automática · la app decide</option>
+                  <option value="balanced">Equilibrada · menor coste</option>
+                  <option value="premium">Máxima calidad · mayor coste</option>
+                </select>
+              </div>
+            </div>
+
+            <details class="advanced-panel">
+              <summary>
+                <span>Más información opcional</span>
+                <small>Ayuda a conseguir un resultado todavía más preciso</small>
+              </summary>
+
+              <div class="advanced-grid">
+                <div class="field-group">
+                  <label for="audience">¿Para quién es?</label>
+                  <input id="audience" name="audience" type="text" maxlength="300" placeholder="Ej.: personas mayores, clientes, programadores...">
+                </div>
+
+                <div class="field-group">
+                  <label for="desiredFormat">Formato final</label>
+                  <input id="desiredFormat" name="desiredFormat" type="text" maxlength="300" placeholder="Ej.: JSON, tabla, imagen 16:9, archivo completo...">
+                </div>
+
+                <div class="field-group full-width">
+                  <label for="constraints">Qué debe respetar o evitar</label>
+                  <textarea id="constraints" name="constraints" rows="4" maxlength="2500" placeholder="Ej.: no modificar el logo, responder en español, no inventar datos..."></textarea>
+                </div>
+
+                <div class="field-group full-width">
+                  <label for="context">Contexto adicional</label>
+                  <textarea id="context" name="context" rows="4" maxlength="5000" placeholder="Incluye datos, ejemplos, antecedentes o información que la IA deba conocer."></textarea>
+                </div>
+
+                <div class="field-group full-width">
+                  <label for="referenceFile">Importar texto desde un archivo</label>
+                  <input id="referenceFile" type="file" accept=".txt,.md,.json,.csv,text/plain,text/markdown,application/json,text/csv">
+                  <small class="field-help">El archivo se lee en tu navegador. Tamaño máximo: 1 MB.</small>
+                </div>
+              </div>
+            </details>
+
+            <div class="privacy-note">
+              <span aria-hidden="true">▣</span>
+              <p>Tu clave de OpenRouter permanece en el servidor. Esta página nunca la recibe ni la muestra.</p>
+            </div>
+
+            <button id="generateBtn" class="button button-primary generate-button" type="submit">
+              <span aria-hidden="true">✦</span>
+              Crear prompt premium
+            </button>
+          </form>
+        </section>
+
+        <section id="resultPanel" class="result-panel glass-panel" aria-labelledby="resultTitle" hidden>
+          <div class="result-header">
+            <div>
+              <p class="eyebrow">Resultado</p>
+              <h2 id="resultTitle">Tu prompt está listo</h2>
+              <p id="resultMeta">Procesado con el modo automático.</p>
+            </div>
+
+            <div class="score-card" aria-label="Puntuación de calidad">
+              <div class="score-ring" id="scoreRing">
+                <strong id="qualityScore">0</strong>
+                <span>/100</span>
+              </div>
+              <div>
+                <small>Calidad estimada</small>
+                <strong id="scoreLabel">Pendiente</strong>
+              </div>
+            </div>
+          </div>
+
+          <div id="metricsGrid" class="metrics-grid" aria-label="Métricas del prompt"></div>
+
+          <div class="result-tabs" role="tablist" aria-label="Secciones del resultado">
+            <button id="promptTab" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="promptPane" data-tab="promptPane">Prompt final</button>
+            <button id="changesTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="changesPane" data-tab="changesPane">Mejoras</button>
+            <button id="assumptionsTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="assumptionsPane" data-tab="assumptionsPane">Supuestos</button>
+            <button id="validationTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="validationPane" data-tab="validationPane">Validación</button>
+          </div>
+
+          <div id="promptPane" class="tab-pane is-active" role="tabpanel" aria-labelledby="promptTab">
+            <label class="sr-only" for="finalPrompt">Prompt final</label>
+            <textarea id="finalPrompt" class="result-editor" spellcheck="false"></textarea>
+          </div>
+
+          <div id="changesPane" class="tab-pane" role="tabpanel" aria-labelledby="changesTab" hidden>
+            <div id="changesContent" class="rich-result"></div>
+          </div>
+
+          <div id="assumptionsPane" class="tab-pane" role="tabpanel" aria-labelledby="assumptionsTab" hidden>
+            <div id="assumptionsContent" class="rich-result"></div>
+          </div>
+
+          <div id="validationPane" class="tab-pane" role="tabpanel" aria-labelledby="validationTab" hidden>
+            <div id="validationContent" class="rich-result"></div>
+          </div>
+
+          <div class="result-actions">
+            <button id="copyPromptBtn" class="button button-primary" type="button">Copiar prompt</button>
+            <button id="downloadPromptBtn" class="button button-secondary" type="button">Descargar .md</button>
+            <button id="saveEditedBtn" class="button button-secondary" type="button">Guardar cambios</button>
+          </div>
+
+          <div id="resultStatus" class="inline-status" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="helpDialog" class="help-dialog">
+    <form method="dialog">
+      <button class="dialog-close" type="submit" aria-label="Cerrar">×</button>
+      <p class="eyebrow">Guía rápida</p>
+      <h2>No necesitas saber de inteligencia artificial</h2>
+      <ol class="help-steps">
+        <li><strong>Elige un modo</strong><span>Automático funciona bien en la mayoría de los casos.</span></li>
+        <li><strong>Explica tu objetivo</strong><span>Utiliza lenguaje normal. La app estructura el contenido por ti.</span></li>
+        <li><strong>Copia el resultado</strong><span>Pégalo en ChatGPT, Claude, Gemini, Flux o tu herramienta habitual.</span></li>
+      </ol>
+      <div class="help-callout">
+        <strong>¿Qué hace cada skill?</strong>
+        <p>Método Copiloto construye una petición desde cero. El Mejorador optimiza un prompt que ya existe.</p>
+      </div>
+      <button class="button button-primary" type="submit">Entendido</button>
+    </form>
+  </dialog>
+
+  <div id="aiOverlay" class="ai-overlay" hidden>
+    <div class="ai-loader" role="status" aria-live="polite" aria-busy="true">
+      <div class="triple-spinner" aria-hidden="true">
+        <span class="spinner-ring ring-outer"></span>
+        <span class="spinner-ring ring-middle"></span>
+        <span class="spinner-ring ring-inner"></span>
+      </div>
+      <p class="loader-title">IA generando lo solicitado...</p>
+      <div class="progress-panel">
+        <div class="indeterminate-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <span></span>
+        </div>
+        <p id="overlayStatus">Analizando tu solicitud...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="history-manager.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

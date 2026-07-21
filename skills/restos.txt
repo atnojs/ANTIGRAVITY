@@ -1,0 +1,65 @@
+Contenido separado de SKILL_CREATOR.md por no pertenecer a la creación de skills.
+
+Patrón reutilizable: loader HOOLA universal para apps y webs con IA
+
+Usar este patrón, con libertad baja, cuando una app de Antigravity necesite un overlay de trabajo con tres aros, estado y porcentaje de progreso.
+
+1. Cargar la fuente Electrolize desde Google Fonts junto a las fuentes existentes:
+   `https://fonts.googleapis.com/css2?family=Electrolize&display=swap`
+2. Conservar la lógica existente de progreso. El porcentaje debe actualizar el ancho y el texto con el progreso real; no simular el avance solo para el diseño.
+3. Aplicar el overlay de referencia:
+   - Fondo: `rgba(0, 16, 24, 0.75)`.
+   - Difuminado: `backdrop-filter: blur(6px)` y prefijo `-webkit-`.
+   - Separación vertical: `1.5rem`.
+   - Spinner: 80 x 80 px, borde de 3 px, tres aros con cian `#00D0D0`, verde `#26C626` y duraciones 1.2 s, 1 s inversa y 0.8 s.
+   - Texto semántico obligatorio: `IA generando lo solicitado...`; mostrarlo en mayúsculas con CSS si se quiere reproducir la referencia visual.
+4. Aplicar Electrolize a `.loading-text`, `.progress-percentage` y `.progress-status`. El texto de carga debe usar 14 px, peso 400 y `letter-spacing: 0.18em`.
+5. Aplicar la barra HOOLA/Relatos:
+   - Contenedor: `width: min(360px, calc(100vw - 48px))`, `padding: 18px 24px`, fondo oscuro, borde cian y radio de 16 px.
+   - Track: 5 px de alto, radio `999px`, fondo claro translúcido e inset shadow.
+   - Fill: gradiente `#00D0D0` a `#26C626`, radio `999px` y glow cian.
+   - Estado: 0.72 rem, color `#99CCCC` y `letter-spacing: 0.14em`. Describir la fase real, por ejemplo `Procesando solicitud...` o `Generando elemento 1 de 2...`.
+   - Si no existe progreso real, usar una barra indeterminada y ocultar el porcentaje; no inventar un avance.
+6. Reutilizar las clases ya presentes (`loading-overlay`, `spinner-triple`, `ring-*`, `progress-*`) cuando existan y añadir semántica accesible.
+7. Antes de publicar, revisar el diff y validar que solo se incluyan los archivos de la app objetivo. Hacer commit y push a la rama de despliegue detectada para comprobar el resultado desde Hostinger.
+
+======================================================================
+MATERIAL REVISADO QUE NO SE INTEGRA EN SKILL_MAESTRA.md
+======================================================================
+
+1. Orquestación multiagente con archivos `.lock`, buzones `.msg`, `tasks.json`, roles fijos y el script `team_manager.py`.
+   Motivo: es una infraestructura especializada y dependiente del entorno.
+   Origen conservado: `SKILL_director-orquestador-multiagente.md`.
+
+2. Formato exacto de brainstorming con 23 ideas divididas en cuatro tandas y una tabla TOP 5.
+   Motivo: resulta excesivo para cada creación.
+   Origen conservado: `SKILL_brainstorming-pro.md`.
+
+3. Planificación formal con estimaciones, margen fijo del 20 %, máximo de cuatro fases y matriz completa de riesgos.
+   Motivo: es útil para hojas de ruta, pero ralentiza cambios pequeños.
+   Origen conservado: `SKILL_planificacion-pro.md`.
+
+4. Protocolo visual de ocho secciones para clonar fotografías.
+   Motivo: pertenece al análisis y clonación de imágenes.
+   Origen conservado: `SKILL_analista-visual-pro.md`.
+
+5. Informe exhaustivo de auditoría con puntuaciones cerradas.
+   Motivo: la maestra absorbe los controles obligatorios sin forzar el mismo informe.
+   Origen conservado: `SKILL_AUDITOR.md`.
+
+6. Snippets concretos de React con `Loader2`, `Sparkles`, `useEffect` y una implementación fija de lightbox.
+   Motivo: son dependientes del framework.
+   Origen conservado: `SKILL_CREAR.md` y `SKILL_EDITAR_cirujano-codigo-produccion.md`.
+
+7. Sistema antiguo que obligaba a crear archivos llamados exactamente `SKILL.md`.
+   Motivo: contradice la convención `SKILL_<nombre-descriptivo>.md`.
+   Origen conservado temporalmente: `SKILL_CREATOR_1.md`.
+
+8. Publicación automática con `git add .` y `git pull --rebase origin main` sin comprobar cambios ajenos ni rama real.
+   Motivo: puede incluir archivos no relacionados o alterar trabajo existente.
+
+9. Tabla de contraste precalculada exclusivamente contra el fondo `#041847`.
+   Motivo: solo es correcta para ese fondo.
+
+10. El antiguo `proxy.php` era una skill Markdown incompleta y no código PHP.
+    Elementos recuperados: cascada segura para claves, validación de métodos/JSON, cURL controlado y prohibición de exponer secretos.
