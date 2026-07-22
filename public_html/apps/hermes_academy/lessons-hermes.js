@@ -2,7 +2,7 @@
  * Hermes Academy — Datos de lecciones en español.
  * Basado en la documentación oficial de hermes-agent.nousresearch.com/docs
  */
-const LESSONS_HERMES = [
+var LESSONS_HERMES = [
   {
     "id": "l1",
     "level": 1,
@@ -610,7 +610,7 @@ const LESSONS_HERMES = [
   }
 ];
 
-const GLOSSARY_HERMES = [
+var GLOSSARY_HERMES = [
   {
     "command": "hermes setup --portal",
     "lesson": "l1",

@@ -1,7 +1,7 @@
 /**
  * Hermes Academy — Configuración de plataformas.
  */
-const PLATFORMS = {
+var PLATFORMS = {
   hermes: {
     id: 'hermes',
     name: 'Hermes Agent',
@@ -44,7 +44,7 @@ const PLATFORMS = {
   }
 };
 
-const LEVELS = [
+var LEVELS = [
   { id: 1, name: 'Principiante', icon: '🌱', desc: 'Fundamentos: instalación, primeros pasos y conceptos básicos' },
   { id: 2, name: 'Intermedio', icon: '⚡', desc: 'Configuración, herramientas, seguridad y flujos de trabajo' },
   { id: 3, name: 'Avanzado', icon: '🚀', desc: 'MCP, delegación, hooks, cron, API y despliegues' }

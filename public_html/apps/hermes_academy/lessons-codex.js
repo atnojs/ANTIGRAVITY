@@ -1,4 +1,4 @@
-const LESSONS_CODEX = [
+var LESSONS_CODEX = [
   {
     "id": "cx1",
     "level": 1,
@@ -309,7 +309,7 @@ const LESSONS_CODEX = [
   }
 ];
 
-const GLOSSARY_CODEX = [
+var GLOSSARY_CODEX = [
   {
     "command": "npm install -g @openai/codex",
     "lesson": "cx1",

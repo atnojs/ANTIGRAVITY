@@ -1,4 +1,4 @@
-const LESSONS_ANTIGRAVITY = [
+var LESSONS_ANTIGRAVITY = [
   {
     "id": "ag1",
     "level": 1,
@@ -273,4 +273,4 @@ const LESSONS_ANTIGRAVITY = [
   }
 ];
 
-const GLOSSARY_ANTIGRAVITY = [];
+var GLOSSARY_ANTIGRAVITY = [];

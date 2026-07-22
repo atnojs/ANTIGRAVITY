@@ -1,4 +1,4 @@
-const LESSONS_CLAUDE = [
+var LESSONS_CLAUDE = [
   {
     "id": "cl1",
     "level": 1,
@@ -402,7 +402,7 @@ const LESSONS_CLAUDE = [
   }
 ];
 
-const GLOSSARY_CLAUDE = [
+var GLOSSARY_CLAUDE = [
   {
     "command": "claude",
     "lesson": "cl1",
