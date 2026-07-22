@@ -424,11 +424,30 @@
   }
 
   // ---- Alias (selector de usuario) ----
-  function showAliasOverlay() {
+  const PROTECTED_ALIAS = 'Antonio';
+  const PROTECTED_PASS = '01';
+
+  function isProtectedAlias(alias) {
+    return alias.toLowerCase() === PROTECTED_ALIAS.toLowerCase();
+  }
+
+  function showAliasOverlay(prefill) {
     const overlay = document.getElementById('aliasOverlay');
     if (overlay) overlay.classList.remove('hidden');
     const input = document.getElementById('aliasInput');
-    if (input) { input.value = ''; setTimeout(function() { input.focus(); }, 100); }
+    const pass = document.getElementById('aliasPass');
+    const err = document.getElementById('aliasError');
+    if (input) {
+      input.value = prefill || '';
+      if (prefill && isProtectedAlias(prefill)) {
+        if (pass) { pass.classList.remove('hidden'); pass.value = ''; }
+        setTimeout(function() { if (pass) pass.focus(); }, 150);
+      } else {
+        if (pass) { pass.classList.add('hidden'); pass.value = ''; }
+        setTimeout(function() { input.focus(); }, 100);
+      }
+    }
+    if (err) err.classList.add('hidden');
   }
 
   function hideAliasOverlay() {
@@ -436,10 +455,33 @@
     if (overlay) overlay.classList.add('hidden');
   }
 
+  function showAliasError(msg) {
+    const err = document.getElementById('aliasError');
+    if (err) { err.textContent = msg; err.classList.remove('hidden'); }
+  }
+
   async function handleAliasEnter() {
     const input = document.getElementById('aliasInput');
+    const pass = document.getElementById('aliasPass');
     const raw = (input && input.value) ? input.value : '';
     const alias = sanitizeAlias(raw);
+
+    // No vacío
+    if (!raw.trim()) {
+      showAliasError('Escribe tu nombre para continuar.');
+      return;
+    }
+
+    // Alias protegido: requiere contraseña
+    if (isProtectedAlias(alias)) {
+      const passVal = (pass && pass.value) ? pass.value : '';
+      if (passVal !== PROTECTED_PASS) {
+        showAliasError('Contraseña incorrecta.');
+        if (pass) { pass.value = ''; pass.focus(); }
+        return;
+      }
+    }
+
     setAlias(alias);
     hideAliasOverlay();
     await initHistory();
@@ -458,9 +500,16 @@
   async function startApp() {
     const alias = getAlias();
     if (alias) {
-      hideAliasOverlay();
-      await initHistory();
-      route();
+      if (isProtectedAlias(alias)) {
+        // Antonio: pedir siempre contraseña
+        showAliasOverlay(alias);
+        switchView('view-home');
+        renderHome();
+      } else {
+        hideAliasOverlay();
+        await initHistory();
+        route();
+      }
     } else {
       showAliasOverlay();
       switchView('view-home');
@@ -478,9 +527,28 @@
     const aliasEnter = document.getElementById('aliasEnter');
     if (aliasEnter) aliasEnter.addEventListener('click', handleAliasEnter);
     const aliasInput = document.getElementById('aliasInput');
-    if (aliasInput) aliasInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') handleAliasEnter();
-    });
+    if (aliasInput) {
+      aliasInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') handleAliasEnter();
+      });
+      // Mostrar/ocultar campo contraseña según el alias escrito
+      aliasInput.addEventListener('input', function() {
+        const pass = document.getElementById('aliasPass');
+        const raw = aliasInput.value || '';
+        const alias = sanitizeAlias(raw);
+        if (isProtectedAlias(alias)) {
+          if (pass) pass.classList.remove('hidden');
+        } else {
+          if (pass) { pass.classList.add('hidden'); pass.value = ''; }
+        }
+      });
+    }
+    const aliasPass = document.getElementById('aliasPass');
+    if (aliasPass) {
+      aliasPass.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') handleAliasEnter();
+      });
+    }
     const userBtn = document.getElementById('userBtn');
     if (userBtn) userBtn.addEventListener('click', handleUserSwitch);
 
