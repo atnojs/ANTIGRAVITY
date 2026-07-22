@@ -3,41 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hermes Academy — Aprende Agentes de IA de 0 a Pro</title>
+  <title>Academia de Agentes IA</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=4" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon" />
 </head>
 <body>
   <main class="container">
-    <!-- ===== SPLASH SCREEN ===== -->
-    <div id="splash-screen">
+    <!-- ===== SPLASH: SOLO 4 BOTONES DE PLATAFORMA ===== -->
+    <div id="platform-select">
       <h1 class="splash-title">Academia de Agentes IA</h1>
-      <p class="splash-subtitle">Domina las 4 plataformas de agentes de IA desde cero hasta nivel profesional</p>
-      <p class="splash-desc">Hermes Agent · Codex · Claude Code · Antigravity — Lecciones interactivas basadas en la documentación oficial de cada plataforma.</p>
+      <p class="splash-subtitle">Elige la plataforma que quieres dominar</p>
 
-      <!-- Platform Selector -->
-      <div class="platform-toggles" id="platform-toggles">
-        <button class="platform-toggle active" data-platform="hermes">
-          <span class="platform-icon">🧠</span>
-          <span>Hermes Agent</span>
+      <div class="platform-cards" id="platform-cards">
+        <button class="platform-card" data-platform="hermes">
+          <span class="platform-card-icon">🧠</span>
+          <span class="platform-card-name">Hermes Agent</span>
+          <span class="platform-card-desc">Agente autónomo de Nous Research — 27 lecciones</span>
+          <span class="platform-card-badge">27 temas</span>
         </button>
-        <button class="platform-toggle" data-platform="codex">
-          <span class="platform-icon">🤖</span>
-          <span>Codex</span>
+        <button class="platform-card" data-platform="codex">
+          <span class="platform-card-icon">🤖</span>
+          <span class="platform-card-name">Codex</span>
+          <span class="platform-card-desc">Agente de OpenAI — CLI, IDE, proyectos — 16 lecciones</span>
+          <span class="platform-card-badge">16 temas</span>
         </button>
-        <button class="platform-toggle" data-platform="claude">
-          <span class="platform-icon">💎</span>
-          <span>Claude Code</span>
+        <button class="platform-card" data-platform="claude">
+          <span class="platform-card-icon">💎</span>
+          <span class="platform-card-name">Claude Code</span>
+          <span class="platform-card-desc">Agente de Anthropic — 20 lecciones</span>
+          <span class="platform-card-badge">20 temas</span>
         </button>
-        <button class="platform-toggle" data-platform="antigravity">
-          <span class="platform-icon">🌌</span>
-          <span>Antigravity</span>
+        <button class="platform-card" data-platform="antigravity">
+          <span class="platform-card-icon">🌌</span>
+          <span class="platform-card-name">Antigravity</span>
+          <span class="platform-card-desc">Entorno de Google — 16 lecciones</span>
+          <span class="platform-card-badge">16 temas</span>
         </button>
+      </div>
+    </div>
+
+    <!-- ===== CONTENIDO PRINCIPAL (oculto hasta elegir plataforma) ===== -->
+    <div id="main-content" class="hidden">
+      <!-- Platform header -->
+      <div class="platform-header">
+        <button class="back-btn" id="change-platform-btn">← Cambiar de plataforma</button>
+        <span class="platform-header-title" id="platform-header-title"></span>
       </div>
 
       <!-- Search -->
@@ -65,7 +80,7 @@
         </div>
       </div>
 
-      <!-- Search results container -->
+      <!-- Search results -->
       <div id="search-results" class="hidden"></div>
 
       <!-- Lesson grid -->
@@ -80,7 +95,7 @@
 
     <!-- ===== LESSON DETAIL VIEW ===== -->
     <div id="lesson-view" class="hidden">
-      <button class="back-btn" id="back-btn">← Volver al inicio</button>
+      <button class="back-btn" id="back-btn">← Volver a las lecciones</button>
       <div id="lesson-detail-content"></div>
     </div>
   </main>
@@ -108,6 +123,6 @@
   <script src="lessons-claude.js"></script>
   <script src="lessons-antigravity.js"></script>
   <script src="history-manager.js"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

@@ -1,67 +1,83 @@
 /**
- * Hermes Academy — app.js v3
- * Plataforma multi-agente: Hermes Agent, Codex, Claude Code y Antigravity.
- * Estilo Hoola/Relatos + persistencia de progreso vía HistoryManager.
+ * Academia de Agentes IA — app.js v4
+ * Flujo: elegir plataforma → ver lecciones.
+ * Soporte multi-agente con carga robusta de datos.
  */
 
 (function () {
   'use strict';
 
-  // ===== DOM REFS =====
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
 
-  const splashScreen = $('#splash-screen');
+  // ===== DOM REFS =====
+  const platformSelect = $('#platform-select');
+  const mainContent = $('#main-content');
   const lessonView = $('#lesson-view');
   const lessonsGrid = $('#lessons-grid');
   const searchInput = $('#search-input');
   const searchResults = $('#search-results');
   const levelToggles = $('#level-toggles');
-  const platformToggles = $('#platform-toggles');
   const progressBar = $('#progress-bar');
   const progressCount = $('#progress-count');
   const progressPercent = $('#progress-percent');
   const glossaryPanel = $('#glossary-panel');
   const glossaryToggleBtn = $('#glossary-toggle-btn');
   const backBtn = $('#back-btn');
+  const changePlatformBtn = $('#change-platform-btn');
+  const platformHeaderTitle = $('#platform-header-title');
   const lessonDetailContent = $('#lesson-detail-content');
   const loadingOverlay = $('#loading-overlay');
 
   // ===== STATE =====
-  let currentPlatform = 'hermes';
+  let currentPlatform = null;
   let currentLevel = 'all';
   let completedLessons = {};
   let historyManager = null;
   let glossaryVisible = false;
 
-  // ===== DATA ACCESS =====
+  // ===== DATA ACCESS (robusto) =====
   function getPlatformData() {
-    return window[PLATFORMS[currentPlatform].dataVar] || [];
+    if (!currentPlatform) return [];
+    const cfg = PLATFORMS[currentPlatform];
+    if (!cfg) return [];
+    const data = window[cfg.dataVar];
+    if (!Array.isArray(data)) {
+      console.warn('[Academia] No se encontraron datos para', currentPlatform, 'var:', cfg.dataVar);
+      return [];
+    }
+    return data;
   }
 
   function getGlossaryData() {
-    return window[PLATFORMS[currentPlatform].glossaryVar] || [];
+    if (!currentPlatform) return [];
+    const cfg = PLATFORMS[currentPlatform];
+    if (!cfg) return [];
+    const data = window[cfg.glossaryVar];
+    return Array.isArray(data) ? data : [];
   }
 
   function getCompletedKey() {
-    return currentPlatform + '_completed';
+    return currentPlatform ? currentPlatform + '_completed' : '';
   }
 
   // ===== INIT =====
   function init() {
+    // Mostrar solo los botones de plataforma al inicio
+    platformSelect.classList.remove('hidden');
+    mainContent.classList.add('hidden');
+    lessonView.classList.add('hidden');
+
     try {
       historyManager = new HistoryManager('academia_agentes');
       loadProgress().then(() => {
-        renderAll();
-        bindEvents();
         hideLoading();
       });
     } catch (err) {
       console.error('[Academia] Init error:', err);
       hideLoading();
-      renderAll();
-      bindEvents();
     }
+    bindEvents();
   }
 
   function hideLoading() {
@@ -129,6 +145,7 @@
 
   function toggleComplete(lessonId) {
     const key = getCompletedKey();
+    if (!key) return;
     if (!completedLessons[key]) completedLessons[key] = new Set();
     if (completedLessons[key].has(lessonId)) {
       completedLessons[key].delete(lessonId);
@@ -166,8 +183,8 @@
     }
   }
 
-  // ===== PLATFORM SWITCH =====
-  function switchPlatform(platform) {
+  // ===== PLATFORM SELECTION =====
+  function selectPlatform(platform) {
     currentPlatform = platform;
     currentLevel = 'all';
     searchInput.value = '';
@@ -176,17 +193,30 @@
     glossaryVisible = false;
     glossaryToggleBtn.textContent = '📋 Glosario de Comandos';
 
-    // Update platform toggles
-    $$('.platform-toggle').forEach(b => {
-      b.classList.toggle('active', b.dataset.platform === platform);
-    });
+    // Update header
+    const cfg = PLATFORMS[platform];
+    platformHeaderTitle.textContent = (cfg ? cfg.icon + ' ' + cfg.name : platform);
 
     // Reset level toggles
     $$('.level-toggle').forEach(b => {
       b.classList.toggle('active', b.dataset.level === 'all');
     });
 
+    // Switch views
+    platformSelect.classList.add('hidden');
+    mainContent.classList.remove('hidden');
+    lessonView.classList.add('hidden');
+
     renderAll();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToPlatformSelect() {
+    currentPlatform = null;
+    platformSelect.classList.remove('hidden');
+    mainContent.classList.add('hidden');
+    lessonView.classList.add('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ===== FILTER LESSONS =====
@@ -216,13 +246,24 @@
 
   // ===== RENDER =====
   function renderAll() {
+    const lessons = getPlatformData();
+    if (lessons.length === 0) {
+      lessonsGrid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem">
+          <h2 class="empty-title">Sin lecciones disponibles</h2>
+          <p class="empty-subtitle">Estamos cargando el contenido. Si el problema persiste, recarga la página.</p>
+        </div>`;
+      progressCount.textContent = '0 / 0 completadas';
+      progressPercent.textContent = '0%';
+      progressBar.style.width = '0%';
+      return;
+    }
     renderLessons();
     updateProgressUI();
   }
 
   function renderLessons() {
     const lessons = getFilteredLessons();
-    const platform = PLATFORMS[currentPlatform];
 
     if (lessons.length === 0) {
       lessonsGrid.innerHTML = `
@@ -239,8 +280,7 @@
       return `
         <div class="lesson-card${done ? ' completed' : ''}"
              data-lesson-id="${l.id}"
-             onclick="window._haOpenLesson('${l.id}')"
-             style="${platform.color ? '--lesson-accent:' + platform.color + ';' : ''}">
+             onclick="window._haOpenLesson('${l.id}')">
           <div class="lesson-card-check">✓</div>
           <div class="lesson-card-header">
             <span class="lesson-icon">${l.icon || '📖'}</span>
@@ -255,7 +295,7 @@
   // ===== LESSON DETAIL =====
   window._haOpenLesson = function (lessonId) {
     renderLessonDetail(lessonId);
-    splashScreen.classList.add('hidden');
+    mainContent.classList.add('hidden');
     lessonView.classList.remove('hidden');
     lessonView.dataset.currentLesson = lessonId;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -297,6 +337,7 @@
       </div>`;
     }
 
+    const cfg = PLATFORMS[currentPlatform];
     html += `
       <div class="lesson-detail-section">
         <h3>✏️ Ejercicio Práctico</h3>
@@ -315,10 +356,12 @@
   };
 
   function generateExercise(lesson) {
+    const cfg = PLATFORMS[currentPlatform];
+    const name = cfg ? cfg.name : 'esta plataforma';
     if (lesson.commands && lesson.commands.length > 0) {
-      return `Prueba al menos 3 de los comandos mostrados arriba en tu terminal. Experimenta con las opciones y flags que aparecen en la documentación oficial de ${PLATFORMS[currentPlatform].name}.`;
+      return `Prueba al menos 3 de los comandos mostrados arriba en tu terminal. Experimenta con las opciones y flags que aparecen en la documentación oficial de ${name}.`;
     }
-    return `Lee el contenido de esta lección y explora la documentación oficial de ${PLATFORMS[currentPlatform].name} en ${PLATFORMS[currentPlatform].url} para profundizar en el tema. Intenta aplicar al menos un concepto en tu configuración.`;
+    return `Lee el contenido de esta lección y explora la documentación oficial de ${name} para profundizar en el tema. Intenta aplicar al menos un concepto en tu flujo de trabajo.`;
   }
 
   // ===== SEARCH =====
@@ -339,7 +382,6 @@
         ...(lesson.commands || []),
         ...(lesson.tips || [])
       ].join(' ').toLowerCase();
-
       if (haystack.includes(query)) {
         let context = '';
         for (const p of (lesson.paragraphs || [])) {
@@ -395,19 +437,21 @@
       const q = filterText.toLowerCase();
       items = items.filter(g => g.command.toLowerCase().includes(q) || g.lessonTitle.toLowerCase().includes(q));
     }
+    const cfg = PLATFORMS[currentPlatform];
+    const name = cfg ? cfg.name : '';
 
     glossaryPanel.innerHTML = `
-      <h2>📋 Glosario de Comandos — ${PLATFORMS[currentPlatform].name}</h2>
+      <h2>📋 Glosario — ${name}</h2>
       <div class="glossary-search">
         <input type="text" id="glossary-filter" placeholder="Filtrar comandos..." value="${escapeHtml(filterText || '')}" />
       </div>
       <div class="glossary-list">
+        ${items.length === 0 ? '<p style="color:var(--muted);text-align:center;padding:1rem">Esta plataforma no tiene comandos en el glosario.</p>' : ''}
         ${items.slice(0, 80).map(g => `
           <div class="glossary-item">
             <span class="glossary-cmd">${escapeHtml(g.command)}</span>
             <span class="glossary-ref" onclick="window._haOpenLesson('${g.lesson}')">→ ${escapeHtml(g.lessonTitle)}</span>
           </div>`).join('')}
-        ${items.length === 0 ? '<p style="color:var(--muted);text-align:center;padding:1rem">Sin resultados.</p>' : ''}
         ${items.length > 80 ? `<p style="color:var(--faint);text-align:center;padding:0.5rem">Mostrando 80 de ${items.length} comandos.</p>` : ''}
       </div>`;
 
@@ -418,9 +462,9 @@
   }
 
   // ===== NAVIGATION =====
-  function goBack() {
+  function goBackToLessons() {
     lessonView.classList.add('hidden');
-    splashScreen.classList.remove('hidden');
+    mainContent.classList.remove('hidden');
     searchResults.classList.add('hidden');
     searchInput.value = '';
     renderAll();
@@ -429,12 +473,15 @@
 
   // ===== EVENTS =====
   function bindEvents() {
-    // Platform toggles
-    platformToggles.addEventListener('click', (e) => {
-      const btn = e.target.closest('.platform-toggle');
-      if (!btn) return;
-      switchPlatform(btn.dataset.platform);
+    // Platform cards
+    $('#platform-cards').addEventListener('click', (e) => {
+      const card = e.target.closest('.platform-card');
+      if (!card) return;
+      selectPlatform(card.dataset.platform);
     });
+
+    // Change platform button
+    changePlatformBtn.addEventListener('click', goToPlatformSelect);
 
     // Level toggles
     levelToggles.addEventListener('click', (e) => {
@@ -464,13 +511,13 @@
     // Glossary toggle
     glossaryToggleBtn.addEventListener('click', toggleGlossary);
 
-    // Back button
-    backBtn.addEventListener('click', goBack);
+    // Back from lesson detail
+    backBtn.addEventListener('click', goBackToLessons);
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !lessonView.classList.contains('hidden')) {
-        goBack();
+        goBackToLessons();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();

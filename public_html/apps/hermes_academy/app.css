@@ -80,8 +80,104 @@ body::after {
   z-index: 1;
 }
 
-/* ===== SPLASH SCREEN ===== */
-#splash-screen { text-align: center; }
+/* ===== PLATFORM SELECT (SPLASH) ===== */
+#platform-select {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+}
+
+.platform-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+  max-width: 1000px;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.platform-card {
+  font-family: var(--font-ui);
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--text);
+  text-align: center;
+}
+
+.platform-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-strong);
+  box-shadow: 0 0 34px var(--glow);
+  background: var(--card-hover);
+}
+
+.platform-card-icon {
+  font-size: 3rem;
+  transition: transform 0.3s;
+}
+
+.platform-card:hover .platform-card-icon {
+  transform: scale(1.15);
+}
+
+.platform-card-name {
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--acc);
+  text-shadow: 0 0 10px var(--glow-soft);
+}
+
+.platform-card-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+}
+
+.platform-card-badge {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--faint);
+  margin-top: 0.3rem;
+}
+
+/* ===== PLATFORM HEADER ===== */
+.platform-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.platform-header-title {
+  font-family: var(--font-ui);
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--acc);
+  text-shadow: 0 0 8px var(--glow-soft);
+}
+
+/* ===== SPLASH SCREEN (legacy - now only for titles) ===== */
 
 .splash-title {
   font-family: var(--font-ui);
