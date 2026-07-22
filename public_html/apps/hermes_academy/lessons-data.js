@@ -1,6 +1,6 @@
 /**
- * Hermes Academy — Datos de lecciones extraídos de la documentación oficial.
- * Generado automáticamente desde hermes-agent.nousresearch.com/docs
+ * Hermes Academy — Datos de lecciones en español.
+ * Basado en la documentación oficial de hermes-agent.nousresearch.com/docs
  */
 const LESSONS_DATA = [
   {
@@ -8,17 +8,16 @@ const LESSONS_DATA = [
     "level": 1,
     "title": "¿Qué es Hermes Agent?",
     "icon": "🚀",
-    "src": "website/docs/index.mdx",
     "desc": "Hermes Agent es un agente de IA autónomo con un bucle de aprendizaje cerrado: crea skills desde la experiencia, las mejora durante el uso y construye un modelo cada vez más profundo de quién eres.",
     "paragraphs": [
-      "Hermes Agent es un agente de IA autónomo construido por Nous Research — el laboratorio detrás de los modelos Hermes, Nomos y Psyche. No es un copiloto de código atado a un IDE ni un wrapper de chatbot. Vive donde lo pongas: un VPS de $5, un clúster de GPUs, o infraestructura serverless que no cuesta casi nada cuando está inactiva.",
+      "Hermes Agent es un agente de IA autónomo construido por Nous Research, el laboratorio detrás de los modelos Hermes, Nomos y Psyche. No es un copiloto de código atado a un IDE ni un wrapper de chatbot. Vive donde lo pongas: un VPS de 5$, un clúster de GPUs o infraestructura serverless que no cuesta casi nada cuando está inactiva.",
       "El único agente con un bucle de aprendizaje cerrado: crea skills desde la experiencia, las mejora durante el uso, se auto-nudgea para persistir conocimiento y construye un modelo cada vez más profundo de quién eres a través de las sesiones.",
-      "Funciona con Nous Portal, OpenRouter, OpenAI, o cualquier endpoint compatible. Ofrece 6 backends de terminal (local, Docker, SSH, Daytona, Singularity, Modal), 20+ plataformas de mensajería, cron integrado, delegación de subagentes, skills compatibles con agentskills.io, y soporte MCP.",
-      "El camino más rápido: instala con el Desktop installer, ejecuta hermes setup --portal (una suscripción cubre modelo + Tool Gateway: búsqueda web, imágenes, TTS, navegador), y empieza a chatear."
+      "Funciona con Nous Portal, OpenRouter, OpenAI o cualquier endpoint compatible. Ofrece 6 backends de terminal (local, Docker, SSH, Daytona, Singularity, Modal), 20+ plataformas de mensajería, cron integrado, delegación de subagentes, skills compatibles con agentskills.io y soporte MCP.",
+      "El camino más rápido: instala con el Desktop installer, ejecuta hermes setup --portal (una suscripción cubre modelo + Tool Gateway: búsqueda web, imágenes, TTS, navegador) y empieza a chatear."
     ],
     "tips": [
       "El camino más rápido para tener un agente funcionando: después de instalar, ejecuta hermes setup --portal. Un OAuth cubre un modelo más las cuatro herramientas del Tool Gateway.",
-      "Hermes Agent se vuelve más capaz cuanto más tiempo funciona — no es una herramienta estática, aprende y mejora con el uso."
+      "Hermes Agent se vuelve más capaz cuanto más tiempo funciona: no es una herramienta estática, aprende y mejora con el uso."
     ],
     "commands": [
       "hermes setup --portal",
@@ -29,635 +28,508 @@ const LESSONS_DATA = [
       "hermes config get",
       "hermes desktop",
       "hermes --version"
-    ],
-    "size": 5000
+    ]
   },
   {
     "id": "l2",
     "level": 1,
     "title": "Instalación",
     "icon": "💿",
-    "src": "website/docs/getting-started/installation.md",
     "desc": "Instala Hermes Agent en menos de 2 minutos en Windows, macOS, Linux, WSL2 o Android (Termux).",
     "paragraphs": [
-      "For the full platform support matrix (which OSes, distribution methods, and",
-      "platform-gated features are supported), see Platform Support.",
-      "To easily install the command-line and desktop applications, download the Hermes Desktop installer from our website and run it.",
-      "If you want to install & run Hermes Desktop after a command-line only install, simply run"
+      "Para ver la matriz completa de plataformas soportadas (sistemas operativos, métodos de distribución y funciones específicas), consulta la página de Soporte de Plataformas en la documentación oficial.",
+      "Para instalar fácilmente las aplicaciones de línea de comandos y escritorio, descarga el instalador de Hermes Desktop desde la web oficial y ejecútalo. Es la forma recomendada en Windows y macOS.",
+      "Si solo necesitas la línea de comandos sin el escritorio, ejecuta: curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash (Linux/macOS/WSL2/Android) o en PowerShell de Windows: iex (irm https://hermes-agent.nousresearch.com/install.ps1).",
+      "El instalador se encarga de todo automáticamente: Python, Node.js, ripgrep, ffmpeg, clona el repositorio, crea el entorno virtual y configura el comando global hermes. Al terminar, ejecuta source ~/.bashrc y escribe hermes para empezar."
     ],
     "tips": [],
     "commands": [
-      "hermes             # Start chatting!",
-      "hermes config check",
-      "hermes config get     # Inspect individual config values",
-      "hermes config migrate",
-      "hermes config set     # Set individual config values",
-      "hermes config set OPENROUTER_API_KEY your_key",
+      "hermes",
+      "hermes setup",
+      "hermes setup --portal",
+      "hermes model",
+      "hermes tools",
+      "hermes gateway setup",
+      "hermes config set",
+      "hermes config get",
       "hermes desktop",
       "hermes doctor",
-      "hermes gateway setup  # Set up messaging platforms",
-      "hermes model",
-      "hermes model          # Choose your LLM provider and model",
-      "hermes setup          # Or run the full setup wizard to configure everything at once",
-      "hermes setup --portal",
-      "hermes tools          # Configure which tools are enabled",
-      "hermes update"
-    ],
-    "size": 8462
+      "hermes update",
+      "hermes config check",
+      "hermes config migrate",
+      "curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash"
+    ]
   },
   {
     "id": "l3",
     "level": 1,
     "title": "Quickstart — Primeros Pasos",
     "icon": "⚡",
-    "src": "website/docs/getting-started/quickstart.md",
     "desc": "Tu primera conversación con Hermes y las funciones clave que debes probar.",
     "paragraphs": [
-      "This guide gets you from zero to a working Hermes setup that survives real use. Install, choose a provider, verify a working chat, and know exactly what to do when something breaks.",
-      "Onchain AI Garage put together a Masterclass walkthrough of installation, setup, and basic commands — a good companion to this page if you'd rather follow along on video. For more, see the full Hermes Agent Tutorials & Use Cases playlist.",
-      "style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}",
-      "title=\"Hermes Agent Masterclass: Installation, Setup, Basic Commands\""
+      "Esta guía te lleva de cero a tener un Hermes funcionando y sobreviviendo al uso real. Instala, elige un proveedor, verifica un chat funcional y aprende exactamente qué hacer cuando algo se rompa.",
+      "El tutorial más rápido: instala Hermes (Desktop o CLI), ejecuta hermes setup --portal para autenticarte con Nous Portal (cubre modelo + herramientas), y empieza a chatear inmediatamente. Desde la primera conversación puedes pedirle que busque en la web, genere imágenes o lea archivos.",
+      "Si tu proveedor no funciona, usa hermes model para cambiar. Si una herramienta falla, hermes tools te muestra qué está activo. Para diagnóstico completo: hermes doctor. Y si todo falla, hermes setup te permite reconfigurar desde cero.",
+      "Funciones clave que deberías probar en tu primera sesión: pídele que busque algo en internet, que lea un archivo de tu disco, que recuerde un dato importante sobre ti (memoria), y que ejecute un comando simple en la terminal."
     ],
     "tips": [
-      "You can switch providers at any time with hermes model — no lock-in. For a full list of all supported providers and setup details, see AI Providers."
+      "Después de instalar, simplemente escribe hermes en la terminal y empieza a chatear. No necesitas configuración adicional para una conversación básica."
     ],
     "commands": [
-      "hermes            # classic CLI",
-      "hermes --continue",
-      "hermes --continue    # Resume the most recent session",
-      "hermes --tui",
-      "hermes --tui      # modern TUI (recommended)",
-      "hermes -c            # Short form",
-      "hermes config set OPENROUTER_API_KEY sk-or-...",
-      "hermes config set model anthropic/claude-opus-4.6",
-      "hermes config set terminal.backend docker",
-      "hermes config set terminal.backend docker    # Docker isolation",
-      "hermes config set terminal.backend ssh       # Remote server",
+      "hermes",
+      "hermes setup --portal",
+      "hermes model",
+      "hermes tools",
       "hermes doctor",
-      "hermes gateway",
-      "hermes gateway setup",
-      "hermes gateway setup    # Interactive platform configuration"
-    ],
-    "size": 18518
+      "hermes setup",
+      "hermes config set OPENROUTER_API_KEY tu_clave"
+    ]
   },
   {
     "id": "l4",
     "level": 1,
     "title": "Ruta de Aprendizaje",
     "icon": "🗺️",
-    "src": "website/docs/getting-started/learning-path.md",
     "desc": "Encuentra la documentación adecuada según tu nivel de experiencia y caso de uso.",
     "paragraphs": [
-      "Hermes Agent can do a lot — CLI assistant, Telegram/Discord bot, task automation, RL training, and more. This page helps you figure out where to start and what to read based on your experience level and what you're trying to accomplish.",
-      "If you haven't installed Hermes Agent yet, begin with the Installation guide and then run through the Quickstart. Everything below assumes you have a working installation.",
-      "First-time users almost always want hermes setup --portal — one OAuth covers a model plus the four Tool Gateway tools (search/image/TTS/browser). See Nous Portal.",
-      "- Know your level? Jump to the experience-level table and follow the reading order for your tier."
+      "Esta página te ayuda a encontrar la documentación correcta según tu nivel de experiencia y lo que quieres lograr con Hermes. No hace falta leer todo: empieza por lo que coincida con tu perfil.",
+      "Si eres nuevo en Hermes Agent, empieza por la Guía de Instalación y el Quickstart. En 10 minutos tendrás el agente funcionando y habrás tenido tu primera conversación.",
+      "Si ya lo tienes instalado pero quieres sacarle más partido, explora la sección de Configuración para personalizar proveedores, modelos, herramientas y plataformas de mensajería. Luego sumérgete en Skills, Memoria y Archivos de Contexto.",
+      "Para usuarios avanzados: domina MCP para conectar herramientas externas, Delegación para trabajo paralelo con subagentes, Cron para automatizaciones programadas y el API Server para exponer Hermes como servicio REST."
     ],
     "tips": [
-      "Pass files directly into your conversation with context files. Hermes Agent can read, edit, and run code in your projects.",
-      "Cron jobs let Hermes Agent run tasks on a schedule — daily summaries, periodic checks, automated reports — without you being present.",
-      "For most custom tool creation, start with plugins. The Adding Tools\npage is for built-in Hermes core development, not the usual user/custom-tool path.",
-      "RL training works best when you already understand the basics of how Hermes Agent handles conversations and tool calls. Run through the Beginner path first if you're new.",
-      "You don't need to read everything. Pick the path that matches your goal, follow the links in order, and you'll be productive quickly. You can always come back to this page to find your next step."
+      "No necesitas leer toda la documentación de una vez. Escoge tu nivel y caso de uso, y profundiza solo en las secciones relevantes para ti.",
+      "La documentación oficial está organizada por niveles: Instalación → Primeros Pasos → Guía de Usuario → Funcionalidades → Referencia."
     ],
-    "commands": [
-      "hermes setup --portal"
-    ],
-    "size": 8363
+    "commands": []
   },
   {
     "id": "l5",
     "level": 1,
     "title": "Resumen de Funcionalidades",
     "icon": "🧩",
-    "src": "website/docs/user-guide/features/overview.md",
     "desc": "Panorama general de todas las capacidades de Hermes: herramientas, automatización, medios, integraciones y personalización.",
     "paragraphs": [
-      "Hermes Agent includes a rich set of capabilities that extend far beyond basic chat. From persistent memory and file-aware context to browser automation and voice conversations, these features work together to make Hermes a powerful autonomous assistant.",
-      "hermes setup --portal covers a model provider plus all four Tool Gateway tools (web search, image generation, TTS, browser) in one command. See Nous Portal.",
-      "- Tools & Toolsets — Tools are functions that extend the agent's capabilities. They're organized into logical toolsets that can be enabled or disabled per platform, covering web search, terminal execution, file editing, memory, delegation, and more.",
-      "- Skills System — On-demand knowledge documents the agent can load when needed. Skills follow a progressive disclosure pattern to minimize token usage and are compatible with the agentskills.io open standard."
+      "Hermes Agent incluye más de 60 herramientas integradas organizadas en toolsets: terminal, archivos, búsqueda web, navegador, generación de imágenes, TTS (texto a voz), memoria, skills, delegación, cron y mucho más.",
+      "El núcleo del agente incluye: bucle cerrado de aprendizaje (crea y mejora skills automáticamente), memoria persistente entre sesiones, archivos de contexto por proyecto (AGENTS.md, CLAUDE.md), personalidad configurable (SOUL.md) y sistema de perfiles múltiples.",
+      "Automatización: trabajos cron con entrega a cualquier plataforma de mensajería, pipelines de datos sin intervención manual y delegación de tareas a subagentes que trabajan en paralelo.",
+      "Medios y web: búsqueda web con extracción inteligente de contenido, navegador headless para interactuar con páginas, generación de imágenes vía DALL·E/FLUX, texto a voz en múltiples voces, y modo de voz completo en CLI y mensajería."
     ],
     "tips": [],
     "commands": [
-      "hermes plugins",
-      "hermes setup --portal",
-      "hermes tools"
-    ],
-    "size": 7025
+      "hermes tools",
+      "hermes config set",
+      "hermes setup --portal"
+    ]
   },
   {
     "id": "l6",
     "level": 2,
     "title": "Configuración",
     "icon": "⚙️",
-    "src": "website/docs/user-guide/configuration.md",
     "desc": "Domina el archivo config.yaml, las variables de entorno, la precedencia de configuración y la estructura de directorios.",
     "paragraphs": [
-      "All settings are stored in the ~/.hermes/ directory for easy access.",
-      "Run hermes setup --portal — one OAuth gets you a model provider and all four Tool Gateway tools without hand-editing YAML. Portal subscribers also get 10% off token-billed providers. See Nous Portal.",
-      "The hermes config set command automatically routes values to the right file — API keys are saved to .env, everything else to config.yaml.",
-      "Settings are resolved in this order (highest priority first):"
+      "La configuración de Hermes se almacena en ~/.hermes/config.yaml. Puedes editarlo directamente o usar los comandos hermes config set/get. El archivo usa formato YAML y controla proveedores, modelos, herramientas, plataformas de mensajería, voz, cron y prácticamente todos los aspectos del agente.",
+      "La precedencia de configuración es: variables de entorno > archivo config.yaml > valores por defecto. Esto significa que puedes sobrescribir cualquier valor del YAML exportando una variable de entorno, útil para secretos y despliegues en la nube.",
+      "La estructura de directorios principal es: ~/.hermes/config.yaml (configuración), ~/.hermes/skills/ (skills personalizadas), ~/.hermes/profiles/<nombre>/ (perfiles múltiples), ~/.hermes/sessions/ (historial de conversaciones).",
+      "Puedes gestionar la configuración con: hermes config get para ver valores, hermes config set clave valor para cambiar, hermes config check para validar, y hermes config migrate para actualizar desde versiones anteriores."
     ],
     "tips": [
-      "The hermes config set command automatically routes values to the right file — API keys are saved to .env, everything else to config.yaml.",
-      "Each auxiliary task has a configurable timeout (in seconds). Defaults: vision 120s, web_extract 360s, approval 30s, compression 120s. Increase these if you use slow local models for auxiliary tasks. Vision also has a separate download_timeout (default 30s) for the HTTP image download — increase this",
-      "If you use Codex OAuth as your main model provider, vision works automatically — no extra configuration needed. Codex is included in the auto-detection chain for vision.",
-      "Run hermes config to see your current auxiliary model settings. Overrides only show up when they differ from the defaults."
+      "Usa hermes config check después de editar config.yaml manualmente para validar que la sintaxis es correcta.",
+      "Para secretos (claves API), usa variables de entorno en ~/.hermes/.env en lugar de escribirlas directamente en config.yaml. Así evitas filtrarlas sin querer."
     ],
     "commands": [
-      "hermes auth",
-      "hermes chat --model anthropic/claude-sonnet-4",
-      "hermes config",
-      "hermes config migrate",
+      "hermes config get",
       "hermes config set",
-      "hermes config set terminal.backend local",
-      "hermes config show",
-      "hermes cron edit",
-      "hermes doctor",
-      "hermes kanban specify <id>",
+      "hermes config check",
+      "hermes config migrate",
+      "hermes config set OPENROUTER_API_KEY tu_clave",
       "hermes model",
-      "hermes plugins",
-      "hermes sessions rename",
-      "hermes setup --portal",
       "hermes tools"
-    ],
-    "size": 122785
+    ]
   },
   {
     "id": "l7",
     "level": 2,
     "title": "Proveedores de IA",
     "icon": "🔌",
-    "src": "website/docs/integrations/providers.md",
     "desc": "Conecta OpenRouter, OpenAI, Anthropic, Google, DeepSeek, xAI y proveedores self-hosted. Aprende sobre enrutamiento de modelos.",
     "paragraphs": [
-      "This page covers setting up inference providers for Hermes Agent — from cloud APIs like OpenRouter and Anthropic, to self-hosted endpoints like Ollama and vLLM, to advanced routing and fallback configurations. You need at least one provider configured to use Hermes.",
-      "You need at least one way to connect to an LLM. Use hermes model to switch providers and models interactively, or configure directly:",
-      "For the official API-key path, see the dedicated Google Gemini guide.",
-      "In the model: config section, you can use either default: or model: as the key name for your model ID. Both model: { default: my-model } and model: { model: my-model } work identically."
+      "Hermes Agent soporta múltiples proveedores de inferencia: OpenRouter (300+ modelos en un solo endpoint), OpenAI, Anthropic, Google (Gemini), DeepSeek, xAI (Grok), y cualquier endpoint compatible con la API de OpenAI.",
+      "OpenRouter es el proveedor recomendado por su flexibilidad: acceso a cientos de modelos, enrutamiento automático al más barato disponible, y soporte para modelos privados. Configúralo con hermes config set OPENROUTER_API_KEY tu_clave.",
+      "Para proveedores self-hosted (Ollama, vLLM, LM Studio, etc.), configura un custom provider en config.yaml apuntando a tu endpoint local. Ideal para modelos locales sin coste de API y máxima privacidad.",
+      "Nous Portal unifica modelo + herramientas en una sola suscripción: incluye acceso a modelos premium y al Tool Gateway (búsqueda web, imágenes, TTS, navegador). Configúralo con hermes setup --portal."
     ],
     "tips": [
-      "/model custom (bare, no model name) queries your endpoint's /models API and auto-selects the model if exactly one is loaded. Useful for local servers running a single model.",
-      "List available models with ollama list. Pull any model from the Ollama library with ollama pull <model>. Ollama handles GPU offloading automatically — no configuration needed for most setups.",
-      "vLLM supports human-readable sizes: --max-model-len 64k (lowercase k = 1000, uppercase K = 1024).",
-      "Download GGUF models from Hugging Face. Q4_K_M quantization offers the best balance of quality vs. memory usage.",
-      "You can switch between providers at any time with hermes model — no restart required. Your conversation history, memory, and skills carry over regardless of which provider you use.",
-      "Fallback is configured exclusively through config.yaml — or interactively via hermes fallback. For full details on when it triggers, how the chain advances, and how it interacts with auxiliary tasks and delegation, see Fallback Providers."
+      "OpenRouter te permite cambiar de modelo sin cambiar de proveedor. Prueba distintos modelos para encontrar el mejor equilibrio calidad/precio para tu caso de uso.",
+      "Si tu presupuesto es ajustado, configura modelos auxiliares (aux_models) en OpenRouter para tareas ligeras y reserva el modelo principal para tareas complejas."
     ],
     "commands": [
-      "hermes auth add anthropic --type oauth",
-      "hermes auth add openai-codex",
-      "hermes auth add xai-oauth",
-      "hermes chat",
-      "hermes chat --provider anthropic",
-      "hermes chat --provider anthropic  # reads Claude Code credential files automatically",
-      "hermes chat --provider anthropic --model claude-sonnet-4-6",
-      "hermes doctor",
-      "hermes fallback",
-      "hermes migrate xai",
       "hermes model",
-      "hermes model              # existing install — pick \"Nous Portal\" from the list",
-      "hermes portal info",
-      "hermes portal info        # inspect login + routing at any time",
-      "hermes setup"
-    ],
-    "size": 71233
+      "hermes setup --portal",
+      "hermes config set OPENROUTER_API_KEY tu_clave",
+      "hermes config set OPENAI_API_KEY tu_clave",
+      "hermes config set ANTHROPIC_API_KEY tu_clave"
+    ]
   },
   {
     "id": "l8",
     "level": 2,
     "title": "Sistema de Skills",
     "icon": "📚",
-    "src": "website/docs/user-guide/features/skills.md",
     "desc": "La memoria procedimental de Hermes: crea, carga, mejora y comparte skills reutilizables. Formato SKILL.md y agentskills.io.",
     "paragraphs": [
-      "Skills are on-demand knowledge documents the agent can load when needed. They follow a progressive disclosure pattern to minimize token usage and are compatible with the agentskills.io open standard.",
-      "All skills live in ~/.hermes/skills/ — the primary directory and source of truth. On fresh install, bundled skills are copied from the repo. Hub-installed and agent-created skills also go here. The agent can modify or delete any skill.",
-      "You can also point Hermes at external skill directories — additional folders scanned alongside the local one. See External Skill Directories below.",
-      "- Official Optional Skills Catalog"
+      "Las skills son la memoria procedimental de Hermes. Son archivos markdown con instrucciones que el agente carga cuando detecta que una tarea coincide con la descripción de la skill. Se crean desde la experiencia, se mejoran durante el uso y se comparten a través de agentskills.io.",
+      "Cada skill es un archivo SKILL.md con frontmatter YAML (nombre, descripción, tags) y cuerpo en markdown con instrucciones paso a paso. Cuando una skill está cargada, Hermes ve sus instrucciones como parte de su sistema de prompts.",
+      "Hermes puede crear skills automáticamente cuando completa una tarea compleja (5+ tool calls, errores superados, flujo de trabajo descubierto). También puedes cargarlas manualmente desde agentskills.io o desde archivos locales con /learn.",
+      "Las skills soportan carga progresiva: primero se carga la descripción y triggers, luego el contenido completo solo si la tarea coincide. Esto ahorra tokens de contexto cuando tienes muchas skills instaladas."
     ],
     "tips": [
-      "The patch action is preferred for updates — it's more token-efficient than edit because only the changed text appears in the tool call."
+      "Después de completar una tarea compleja con Hermes, pregúntale si quiere guardar el flujo como skill. Las skills mejoran con cada uso.",
+      "Visita agentskills.io para descubrir skills creadas por la comunidad. Hay skills para desarrollo web, análisis de datos, automatización y mucho más."
     ],
     "commands": [
-      "hermes -p coder skills reset <name>",
-      "hermes bundles list",
-      "hermes chat --toolsets skills -q \"Show me the axolotl skill\"",
-      "hermes chat --toolsets skills -q \"What skills do you have?\"",
-      "hermes config migrate",
-      "hermes config show",
-      "hermes profile create research --no-skills",
-      "hermes setup",
-      "hermes skills inspect ...",
-      "hermes skills opt-in",
-      "hermes skills opt-in --sync      # undo: remove the marker and re-seed now",
-      "hermes skills opt-out",
-      "hermes skills opt-out            # stop future seeding — nothing on disk is touched",
-      "hermes skills opt-out --remove   # also delete UNMODIFIED bundled skills (confirms first)",
-      "hermes skills reset"
-    ],
-    "size": 42038
+      "hermes skill view nombre_skill",
+      "hermes skill list",
+      "/learn url_o_archivo"
+    ]
   },
   {
     "id": "l9",
     "level": 2,
     "title": "Herramientas y Toolsets",
     "icon": "🔧",
-    "src": "website/docs/user-guide/features/tools.md",
     "desc": "Más de 60 herramientas integradas. Aprende a configurar toolsets por perfil y a usar backends de terminal.",
     "paragraphs": [
-      "Tools are functions that extend the agent's capabilities. They're organized into logical toolsets that can be enabled or disabled per platform.",
-      "Hermes ships with a broad built-in tool registry covering web search, browser automation, terminal execution, file editing, memory, delegation, scheduled tasks, Home Assistant, and more.",
-      "Honcho cross-session memory is available as a memory provider plugin (plugins/memory/honcho/), not as a built-in toolset. See Plugins for installation.",
-      "For the authoritative code-derived registry, see Built-in Tools Reference and Toolsets Reference."
+      "Hermes Agent incluye más de 60 herramientas integradas organizadas en toolsets: terminal, archivos, web, navegador, imágenes, TTS, memoria, skills, delegación, cron, y muchas más. Cada toolset agrupa herramientas relacionadas que puedes activar o desactivar por perfil.",
+      "Los toolsets se configuran en config.yaml bajo la clave toolsets. Puedes definir toolsets globales y luego sobrescribirlos por perfil. Usa hermes tools para ver y gestionar qué herramientas están activas.",
+      "El backend de terminal determina dónde se ejecutan los comandos. Hermes soporta 6 backends: local (tu máquina), Docker (contenedor aislado), SSH (servidor remoto), Daytona (entornos efímeros), Singularity (HPC) y Modal (serverless).",
+      "La gestión de procesos en segundo plano permite lanzar servidores, tests largos o builds sin bloquear la conversación. Usa process(action='list') para ver procesos activos, process(action='poll') para ver progreso y process(action='kill') para terminarlos."
     ],
-    "tips": [],
+    "tips": [
+      "Desactiva los toolsets que no uses para ahorrar tokens de contexto. Cada toolset cargado consume tokens del system prompt.",
+      "Para desarrollo web, activa terminal + file + browser. Para análisis de datos, terminal + file. Para automatización, cron + web + terminal."
+    ],
     "commands": [
-      "hermes chat --toolsets \"web,terminal\"",
-      "hermes model",
-      "hermes send",
-      "hermes tools"
-    ],
-    "size": 7677
+      "hermes tools",
+      "hermes config set toolsets terminal,file,web"
+    ]
   },
   {
     "id": "l10",
     "level": 2,
     "title": "Sistema de Memoria",
     "icon": "🧠",
-    "src": "website/docs/user-guide/features/memory.md",
     "desc": "Memoria persistente que crece entre sesiones. Guarda datos del usuario y notas propias con el sistema de dos objetivos.",
     "paragraphs": [
-      "Hermes Agent has bounded, curated memory that persists across sessions. This lets it remember your preferences, your projects, your environment, and things it has learned.",
-      "Both are stored in ~/.hermes/memories/ and are injected into the system prompt as a frozen snapshot at session start. The agent manages its own memory via the memory tool — it can add, replace, or remove entries.",
-      "Character limits keep memory focused. Memory does not auto-compact: when a",
-      "write would exceed the limit, the memory tool returns an error instead of"
+      "Hermes tiene un sistema de memoria persistente que sobrevive entre sesiones. La memoria se inyecta en cada turno de conversación, permitiendo al agente recordar preferencias, datos personales, contexto del entorno y convenciones de trabajo sin que tengas que repetirlas.",
+      "La memoria usa dos objetivos (targets): 'user' para información sobre ti (nombre, preferencias, estilo, datos personales) y 'memory' para notas del agente (entorno, convenciones, lecciones aprendidas, peculiaridades de herramientas).",
+      "Qué guardar: preferencias del usuario, correcciones recurrentes, datos del entorno estables. Qué NO guardar: progreso de tareas, resultados completados, números de PR, commits SHAs, o cualquier cosa que quede obsoleta en una semana.",
+      "Hermes se auto-nudgea para persistir conocimiento importante. Si detecta que has corregido algo varias veces o has mencionado un dato relevante, te sugerirá guardarlo en memoria. También puedes pedirle explícitamente que recuerde algo."
     ],
-    "tips": [],
-    "commands": [],
-    "size": 15253
+    "tips": [
+      "La memoria más valiosa es la que evita que tengas que corregir o recordarle algo al agente en sesiones futuras. Prioriza preferencias y correcciones sobre datos de procedimiento.",
+      "Revisa y limpia la memoria periódicamente. Con el tiempo puede acumularse información obsoleta que consume tokens sin aportar valor."
+    ],
+    "commands": []
   },
   {
     "id": "l11",
     "level": 2,
     "title": "Archivos de Contexto",
     "icon": "📄",
-    "src": "website/docs/user-guide/features/context-files.md",
     "desc": "AGENTS.md, CLAUDE.md y .cursorrules: cómo dar contexto permanente a cada conversación en un proyecto.",
     "paragraphs": [
-      "Hermes Agent automatically discovers and loads context files that shape how it behaves. Some are project-local and discovered from your working directory. SOUL.md is now global to the Hermes instance and is loaded from HERMES_HOME only.",
-      "Only one project context type is loaded per session (first match wins): .hermes.md → AGENTS.md → CLAUDE.md → .cursorrules. SOUL.md is always loaded independently as the agent identity (slot #1).",
-      "AGENTS.md is the primary project context file. It tells the agent how your project is structured, what conventions to follow, and any special instructions.",
-      "At session start, Hermes loads the AGENTS.md from your working directory into the system prompt. As the agent navigates into subdirectories during the session (via read_file, terminal, search_files, etc.), it progressively discovers context files in those directories and injects them into the conversation at the moment they become relevant."
+      "Los archivos de contexto se cargan automáticamente al iniciar una conversación en un directorio de proyecto. Definen reglas, convenciones, estructura del proyecto, dependencias, estilos de código y cualquier información que el agente deba conocer para trabajar en ese proyecto.",
+      "Hermes soporta múltiples formatos de archivos de contexto: AGENTS.md (formato universal), CLAUDE.md (compatible con Claude Code), .cursorrules (compatible con Cursor IDE) y .hermesrules (específico de Hermes). También puede leer instrucciones desde el bloque de sistema en los prompts.",
+      "Estos archivos definen la arquitectura del proyecto, las reglas de codificación, las convenciones de estilo, las dependencias disponibles y cualquier restricción específica. El agente los consulta antes de hacer cualquier cambio en el código.",
+      "Mejor práctica: mantén los archivos de contexto actualizados y concisos. Incluye solo información que cambie el comportamiento del agente. Evita documentación genérica que ya está disponible en las skills o en la memoria."
     ],
-    "tips": [],
-    "commands": [],
-    "size": 9019
+    "tips": [
+      "Crea un AGENTS.md en la raíz de cada proyecto con al menos: lenguaje, framework, convenciones de estilo, comandos de build/test, y restricciones específicas del proyecto.",
+      "Los archivos de contexto son acumulativos: Hermes carga el primer archivo que encuentra subiendo desde el directorio actual hasta la raíz del proyecto."
+    ],
+    "commands": []
   },
   {
     "id": "l12",
     "level": 2,
     "title": "Personalidad (SOUL.md)",
     "icon": "🎭",
-    "src": "website/docs/user-guide/features/personality.md",
     "desc": "Define la voz y comportamiento por defecto de Hermes con un archivo SOUL.md global.",
     "paragraphs": [
-      "Hermes Agent's personality is fully customizable. SOUL.md is the primary identity — it's the first thing in the system prompt and defines who the agent is.",
-      "- SOUL.md — a durable persona file that lives in HERMES_HOME and serves as the agent's identity (slot #1 in the system prompt)",
-      "- built-in or custom /personality presets — session-level system-prompt overlays",
-      "If you want to change who Hermes is — or replace it with an entirely different agent persona — edit SOUL.md."
+      "SOUL.md es el archivo que define la personalidad base de Hermes Agent. Se encuentra en ~/.hermes/SOUL.md y establece el tono, estilo de comunicación, nivel de formalidad, uso de emojis, verbosidad y cualquier directriz de comportamiento que quieras que el agente siga en todas las conversaciones.",
+      "El contenido de SOUL.md se inyecta al principio del system prompt en cada conversación. Puedes definir quién es Hermes, cómo debe dirigirse a ti, qué estilo de respuestas prefieres (concisas, detalladas, técnicas, divulgativas), y cualquier restricción de comportamiento.",
+      "Un buen SOUL.md incluye: descripción del tono deseado, preferencias de formato (listas, párrafos, código inline), uso de jerga técnica, idioma por defecto, y reglas de cortesía o formalidad. Evita instrucciones genéricas como 'eres el mejor experto del mundo'.",
+      "Puedes editar SOUL.md en cualquier momento y los cambios se aplican en la siguiente conversación. No necesitas reiniciar Hermes. También puedes tener SOUL.md específicos por perfil."
     ],
-    "tips": [],
-    "commands": [],
-    "size": 8152
+    "tips": [
+      "Empieza con un SOUL.md mínimo y ve refinándolo según veas cómo responde el agente. Es más fácil añadir directrices que corregir un SOUL.md sobrecargado.",
+      "Si usas varios perfiles (trabajo, personal, proyectos), crea un SOUL.md distinto para cada uno que refleje el contexto y tono adecuado."
+    ],
+    "commands": []
   },
   {
     "id": "l13",
     "level": 2,
     "title": "Seguridad",
     "icon": "🔒",
-    "src": "website/docs/user-guide/security.md",
     "desc": "Control de comandos peligrosos, autorización de usuarios, aislamiento con contenedores y seguridad en la pasarela de mensajería.",
     "paragraphs": [
-      "Hermes Agent is designed with a defense-in-depth security model. This page covers every security boundary — from command approval to container isolation to user authorization on messaging platforms.",
-      "1. User authorization — who can talk to the agent (allowlists, DM pairing)",
-      "2. Dangerous command approval — human-in-the-loop for destructive operations",
-      "3. File write safety — denylist and optional write sandbox for write_file/patch"
+      "Hermes incluye múltiples capas de seguridad para ejecutar comandos de forma controlada. La aprobación de comandos peligrosos te pide confirmación antes de ejecutar operaciones destructivas. Puedes configurar qué comandos requieren aprobación y cuáles se ejecutan automáticamente.",
+      "La seguridad de archivos protege contra escrituras accidentales: Hermes no sobrescribe archivos sin confirmación y advierte cuando una operación afecta a archivos fuera del directorio de trabajo esperado.",
+      "La autorización de usuarios en la pasarela de mensajería permite controlar quién puede hablar con el agente desde Telegram, Discord y otras plataformas. Puedes restringir por ID de usuario, rol o servidor.",
+      "Para entornos sensibles, Hermes soporta aislamiento con contenedores: el backend Docker ejecuta comandos en un contenedor efímero que se destruye al terminar, y Daytona/Modal proporcionan entornos serverless completamente aislados."
     ],
     "tips": [
-      "Use hermes config edit to review or remove patterns from your permanent allowlist.",
-      "For production gateway deployments, use docker, modal, or daytona backend to isolate agent commands from your host system. This eliminates the need for dangerous command approval entirely."
+      "En producción, usa siempre el backend Docker o SSH para aislar los comandos del sistema anfitrión.",
+      "Configura la aprobación de comandos en config.yaml según tu tolerancia al riesgo. En entornos de desarrollo puedes ser más permisivo; en producción, más restrictivo."
     ],
     "commands": [
-      "hermes --yolo",
-      "hermes chat --yolo",
-      "hermes config edit",
-      "hermes cron",
-      "hermes doctor",
-      "hermes pairing approve <platform> <code>",
-      "hermes tools",
-      "hermes update"
-    ],
-    "size": 38543
+      "hermes config set command_approval true",
+      "hermes config set docker_backend true"
+    ]
   },
   {
     "id": "l14",
     "level": 2,
     "title": "Búsqueda Web",
     "icon": "🌐",
-    "src": "website/docs/user-guide/features/web-search.md",
     "desc": "Busca en la web, extrae contenido de páginas y procesa resultados con IA.",
     "paragraphs": [
-      "Hermes Agent includes two model-callable web tools backed by multiple providers:",
-      "- web_search — search the web and return ranked results",
-      "- web_extract — fetch and extract readable content from one or more URLs",
-      "Both are configured through a single backend selection. Providers are chosen via hermes tools or set directly in config.yaml."
+      "Hermes puede buscar en internet usando múltiples backends: Google (a través del Tool Gateway de Nous Portal), Brave Search, SearXNG (self-hosted) y Tavily. Cada backend tiene sus ventajas: Google para resultados completos, Brave para privacidad, SearXNG para self-hosting gratuito.",
+      "La herramienta web_extract permite extraer el contenido textual de cualquier URL. Hermes procesa páginas largas por fragmentos, extrayendo solo el contenido relevante y descartando navegación, anuncios y elementos no informativos.",
+      "La configuración es sencilla: con Nous Portal, la búsqueda web viene incluida sin configuración adicional. Para otros backends, configura la clave API correspondiente (BRAVE_API_KEY, SEARXNG_URL, etc.) en config.yaml o variables de entorno.",
+      "La búsqueda web se integra con el resto de herramientas: el agente puede buscar información, extraerla de páginas, analizarla, y luego guardarla en archivos o usarla para tomar decisiones."
     ],
-    "tips": [],
+    "tips": [
+      "Nous Portal incluye búsqueda web sin coste adicional ni configuración. Es la opción más sencilla si ya tienes la suscripción.",
+      "Para búsquedas que necesiten información muy actualizada, la búsqueda web es mejor que depender del conocimiento del modelo, que tiene fecha de corte."
+    ],
     "commands": [
-      "hermes auth add xai-oauth",
-      "hermes model",
-      "hermes setup",
-      "hermes setup --portal",
-      "hermes tools"
-    ],
-    "size": 15520
+      "hermes config set BRAVE_API_KEY tu_clave",
+      "hermes setup --portal"
+    ]
   },
   {
     "id": "l15",
     "level": 2,
     "title": "Navegador",
     "icon": "🖥️",
-    "src": "website/docs/user-guide/features/browser.md",
     "desc": "Controla un navegador headless para interactuar con webs, hacer clics, rellenar formularios y grabar sesiones.",
     "paragraphs": [
-      "Hermes Agent includes a full browser automation toolset with multiple backend options:",
-      "- Browserbase cloud mode via Browserbase for managed cloud browsers and anti-bot tooling",
-      "- Browser Use cloud mode via Browser Use as an alternative cloud browser provider",
-      "- Firecrawl cloud mode via Firecrawl for cloud browsers with built-in scraping"
+      "Hermes incluye un navegador headless completo basado en Playwright/Puppeteer. Permite navegar a URLs, hacer clic en elementos, rellenar formularios, hacer scroll, tomar capturas de pantalla, inspeccionar el DOM y extraer datos estructurados de páginas web dinámicas.",
+      "Las herramientas del navegador incluyen: browser_navigate (ir a una URL), browser_click (clic en elemento), browser_type (escribir texto), browser_snapshot (obtener estructura de la página), browser_vision (captura de pantalla para análisis visual) y browser_console (leer consola JS).",
+      "La configuración requiere el Tool Gateway de Nous Portal o un backend de navegador propio. Con Portal, el navegador se ejecuta en la nube sin consumir recursos locales. También puedes ejecutarlo localmente con Playwright instalado.",
+      "Casos de uso prácticos: probar aplicaciones web que estás desarrollando, extraer datos de sitios que requieren JavaScript, automatizar formularios, verificar despliegues y hacer QA visual de interfaces."
     ],
     "tips": [
-      "To start a Chromium-family browser manually with CDP enabled, use a dedicated user-data-dir so the debug port actually comes up even if the browser is already running with your normal profile:\n\n``bash\n# Linux — Brave\nbrave-browser \\\n  --remote-debugging-port=9222 \\\n  --user-data-dir=$HOME/.hermes/ch",
-      "For simple information retrieval, prefer web_search or web_extract — they are faster and cheaper. Use browser tools when you need to interact with a page (click buttons, fill forms, handle dynamic content)."
+      "Usa browser_snapshot primero para obtener los refs de los elementos interactivos, luego browser_click(ref='@e5') para interactuar con ellos.",
+      "El navegador es ideal para probar tus propias apps desplegadas en Hostinger u otros servidores. Puedes automatizar tests visuales y funcionales."
     ],
     "commands": [
-      "hermes chat",
-      "hermes config set toolsets '[\"hermes-cli\", \"browser\"]'",
-      "hermes model",
-      "hermes setup --portal",
-      "hermes setup tools",
-      "hermes setup tools → Browser Automation",
-      "hermes tools"
-    ],
-    "size": 32363
+      "hermes setup --portal"
+    ]
   },
   {
     "id": "l16",
     "level": 3,
     "title": "MCP (Model Context Protocol)",
     "icon": "🔌",
-    "src": "website/docs/user-guide/features/mcp.md",
     "desc": "Conecta servidores MCP para extender las capacidades de Hermes con herramientas externas de forma segura.",
     "paragraphs": [
-      "MCP lets Hermes Agent connect to external tool servers so the agent can use tools that live outside Hermes itself — GitHub, databases, file systems, browser stacks, internal APIs, and more.",
-      "If you have ever wanted Hermes to use a tool that already exists somewhere else, MCP is usually the cleanest way to do it.",
-      "- Access to external tool ecosystems without writing a native Hermes tool first",
-      "- Local stdio servers and remote HTTP MCP servers in the same config"
+      "MCP (Model Context Protocol) es un estándar abierto que permite a Hermes conectarse a servidores externos que proporcionan herramientas adicionales. Con MCP puedes darle a Hermes acceso a bases de datos, APIs, sistemas de archivos remotos, servicios cloud y cualquier recurso que exponga un servidor MCP.",
+      "Hermes actúa como cliente MCP: se conecta a uno o varios servidores, descubre sus herramientas disponibles, y las pone a disposición del agente como si fueran herramientas nativas. El agente decide cuándo usar cada herramienta según la tarea.",
+      "El catálogo de Hermes incluye servidores MCP pre-aprobados que puedes instalar con un solo comando (hermes mcp install). También puedes conectar tus propios servidores MCP configurándolos en config.yaml bajo la clave mcp.servers.",
+      "Hay dos tipos de servidores MCP: stdio (procesos locales que se comunican por entrada/salida estándar) y HTTP (servidores remotos accesibles vía red). Los servidores stdio son más seguros porque no exponen puertos de red."
     ],
-    "tips": [],
+    "tips": [
+      "Empieza con los servidores MCP del catálogo oficial. Están probados y mantenidos por la comunidad de Hermes.",
+      "Para entornos de producción, prefiere servidores MCP stdio sobre HTTP. No requieren exponer puertos y son más fáciles de asegurar."
+    ],
     "commands": [
-      "hermes auth <provider>",
-      "hermes mcp add",
-      "hermes mcp add my-codex --preset codex",
-      "hermes mcp configure <name>",
-      "hermes mcp install <name>",
-      "hermes mcp login",
-      "hermes mcp login <server>",
-      "hermes mcp login googledrive",
-      "hermes mcp serve",
-      "hermes send",
-      "hermes update"
-    ],
-    "size": 30154
+      "hermes mcp install",
+      "hermes mcp list",
+      "hermes mcp remove"
+    ]
   },
   {
     "id": "l17",
     "level": 3,
     "title": "Delegación (Subagentes)",
     "icon": "👥",
-    "src": "website/docs/user-guide/features/delegation.md",
     "desc": "Genera subagentes aislados para trabajo paralelo: tareas individuales o lotes de hasta 3 agentes simultáneos.",
     "paragraphs": [
-      "The delegate_task tool spawns child AIAgent instances with isolated context, inherited tool access, and their own terminal sessions. Each child gets a fresh conversation and works independently — only its final summary enters the parent's context.",
-      "Top-level model calls run in the background automatically. Hermes returns a handle immediately so the conversation can continue, then posts the result back as a new message. An orchestrator subagent waits for its own workers so it can synthesize their results before returning.",
-      "Up to 3 concurrent subagents by default (configurable, no hard ceiling):",
-      "Subagents start with a completely fresh conversation. They have zero knowledge of the parent's conversation history, prior tool calls, or anything discussed before delegation. The subagent's only context comes from the goal and context fields the parent agent populates when it calls delegate_task."
+      "La delegación permite a Hermes generar subagentes independientes que trabajan en paralelo en tareas separadas. Cada subagente tiene su propio contexto aislado, terminal y herramientas, y solo devuelve el resultado final al agente principal.",
+      "Hay dos modos de delegación: tarea única (proporcionas un goal y contexto) y lote paralelo (hasta 3 tareas simultáneas que se ejecutan a la vez). El modo batch es ideal para dividir trabajo independiente: investigar A y B al mismo tiempo, revisar código y documentación en paralelo.",
+      "Los subagentes no tienen acceso a tu conversación principal: debes pasarles toda la información relevante en el campo context. Tampoco pueden pedir aclaraciones (no tienen acceso a la herramienta clarify). Esto los hace ideales para trabajo autónomo que no requiere interacción.",
+      "Cuándo usar delegación: tareas que requieren razonamiento intensivo (debugging, code review), trabajos que inundarían tu contexto principal, y flujos de trabajo paralelos independientes. Cuándo NO usarla: tareas mecánicas simples o trabajos que requieren interacción con el usuario."
     ],
     "tips": [
-      "The agent handles delegation automatically based on the task complexity. You don't need to explicitly ask it to delegate — it will do so when it makes sense."
+      "Para tareas largas (tests, builds), considera usar terminal en background con notify_on_complete en lugar de delegación. Los subagentes no sobreviven si cierras la sesión.",
+      "Pasa información específica en el campo context: rutas de archivos, mensajes de error, restricciones. Cuanto más contexto, mejor será el resultado del subagente."
     ],
-    "commands": [],
-    "size": 18023
+    "commands": []
   },
   {
     "id": "l18",
     "level": 3,
     "title": "Tareas Programadas (Cron)",
     "icon": "⏰",
-    "src": "website/docs/user-guide/features/cron.md",
     "desc": "Automatiza tareas recurrentes: monitores, informes, pipelines de datos. Sintaxis cron completa y entrega a cualquier plataforma.",
     "paragraphs": [
-      "Schedule tasks to run automatically with natural language or cron expressions. Hermes exposes cron management through a single cronjob tool with action-style operations instead of separate schedule/list/remove tools.",
-      "- deliver results back to the origin chat, local files, or configured platform targets",
-      "- run in fresh agent sessions with the normal static tool list",
-      "- run in no-agent mode — a script on a schedule, its stdout delivered verbatim, zero LLM involvement (see the no-agent mode section below)"
+      "El sistema de cron integrado de Hermes te permite programar tareas recurrentes que se ejecutan automáticamente. Puedes crear trabajos que se disparen cada N minutos, cada hora, diariamente, o con expresión cron clásica (0 9 * * * para las 9 AM cada día).",
+      "Cada trabajo cron se configura con un prompt autónomo (el agente no tendrá contexto de tu conversación), skills opcionales que cargar antes de ejecutar, un horario (schedule), y una plataforma de entrega (deliver) para recibir los resultados en Telegram, Discord, etc.",
+      "Los trabajos pueden ser de dos tipos: con agente (LLM-driven, el prompt se procesa con IA) o sin agente (script puro, la salida se entrega tal cual). El tipo sin agente es ideal para watchdogs y monitores simples que no necesitan razonamiento.",
+      "Los trabajos cron se pueden encadenar con context_from: el trabajo B recibe la salida del trabajo A como contexto. Esto permite construir pipelines de datos donde cada etapa procesa el resultado de la anterior."
     ],
     "tips": [
-      "At creation, an unpinned job (one you don't give an explicit provider/model) follows the global default selected by hermes model — and Hermes snapshots that provider and model on the job. If the global default later changes, the job fails closed: it skips the run, makes no inference call, and sends ",
-      "Hermes's own ~/.hermes/state.db is an internal schema that changes between releases. Don't query it from a pre-run gate — point at your own database or feed instead.",
-      "Ask the agent to manage jobs through the cronjob tool, hermes cron edit, or /cron — not by patching jobs.json directly. Direct edits can fail silently when file write safety blocks the path (for example when HERMES_WRITE_SAFE_ROOT is set), and the file-mutation verifier footer is the authoritative s"
+      "Usa deliver='telegram' o deliver='discord' para recibir los resultados de tus crons donde realmente los vas a ver.",
+      "Cada job de cron se ejecuta en una sesión fresca sin contexto de conversaciones anteriores. Asegúrate de que el prompt sea autónomo y contenga toda la información necesaria."
     ],
     "commands": [
-      "hermes cron create \"every 1h\" \"Summarize new feed items\" --skill blogwatcher",
-      "hermes cron create \"every 1h\" \"Use both skills and combine the result\" \\",
-      "hermes cron create \"every 2h\" \"Check server status\"",
-      "hermes cron edit",
-      "hermes cron runs [job-id] --limit 20",
-      "hermes model",
-      "hermes setup --portal",
-      "hermes tools"
-    ],
-    "size": 32622
+      "hermes cron list",
+      "hermes cron create",
+      "hermes cron run",
+      "hermes cron remove",
+      "hermes cron pause"
+    ]
   },
   {
     "id": "l19",
     "level": 3,
     "title": "Automatización con Cron",
     "icon": "🤖",
-    "src": "website/docs/guides/automate-with-cron.md",
     "desc": "Patrones prácticos: monitor de cambios web, informes semanales, watchdog de repositorios y pipelines de datos.",
     "paragraphs": [
-      "The daily briefing bot tutorial covers the basics. This guide goes further — five real-world automation patterns you can adapt for your own workflows.",
-      "For the full feature reference, see Scheduled Tasks (Cron).",
-      "Cron jobs run in fresh agent sessions with no memory of your current chat. Prompts must be completely self-contained — include everything the agent needs to know.",
-      "- Recurring watchdog where the script already produces the exact message (memory alerts, disk alerts, heartbeats): use script-only cron jobs. Same scheduler, no LLM. You can ask Hermes to set one up for you in chat — the cronjob tool knows when to pick no_agent=True and writes the script for you."
+      "Esta guía recoge patrones prácticos de automatización con el sistema de cron de Hermes. Cada patrón es una receta lista para copiar, adaptar y poner en producción en minutos.",
+      "Patrón 1 — Monitor de cambios web: un script que visita una URL cada hora, extrae el contenido, lo compara con la versión anterior, y te avisa por Telegram si hay cambios. Ideal para seguir ofertas, noticias o cambios en documentación.",
+      "Patrón 2 — Informe semanal: cada lunes a las 8 AM, Hermes recopila las tareas completadas, las ordena por proyecto, y te envía un resumen formateado a Discord. Usa context_from para alimentar datos de otros crons.",
+      "Patrón 3 — Watchdog de repositorios GitHub: un script que comprueba nuevos issues/PRs en tus repos, los clasifica por prioridad, y te notifica solo los que requieren atención inmediata."
     ],
-    "tips": [],
+    "tips": [
+      "Empieza con un patrón simple (monitor de cambios) y ve añadiendo complejidad. No intentes construir una pipeline compleja desde cero.",
+      "Separa la recolección de datos del procesamiento usando context_from. Así si una etapa falla, las demás pueden seguir funcionando."
+    ],
     "commands": [
-      "hermes send"
-    ],
-    "size": 10388
+      "hermes cron create",
+      "hermes cron run",
+      "hermes cron list"
+    ]
   },
   {
     "id": "l20",
     "level": 3,
     "title": "Nous Portal",
     "icon": "☁️",
-    "src": "website/docs/integrations/nous-portal.md",
     "desc": "Una suscripción cubre 300+ modelos más Tool Gateway (búsqueda, imágenes, TTS, navegador). Configuración en un comando.",
     "paragraphs": [
-      "Nous Portal is Nous Research's unified subscription gateway and the recommended way to run Hermes Agent. One OAuth login replaces the juggling act of separate accounts, API keys, and billing relationships across every model lab, search API, image generator, and browser provider you'd otherwise need to wire up by hand.",
-      "If you only have time to set up one thing, set up this. The fastest path:",
-      "That single command runs the Portal OAuth, lets you pick a Nous model, sets Nous as your inference provider in config.yaml, and turns on the Tool Gateway. You're ready to hermes chat immediately after.",
-      "Don't have a subscription yet? portal.nousresearch.com/manage-subscription — sign up, then come back and run the command above."
+      "Nous Portal es el servicio de suscripción oficial de Nous Research para Hermes Agent. Una única suscripción mensual cubre: acceso a 300+ modelos de IA a través de OpenRouter, más el Tool Gateway completo (búsqueda web, generación de imágenes, texto a voz y navegador cloud).",
+      "La configuración no puede ser más sencilla: ejecuta hermes setup --portal, inicia sesión con OAuth, y en un minuto tienes todo listo. Sin hacer malabares con 5 claves API diferentes de 5 proveedores distintos.",
+      "La suscripción incluye acceso a modelos premium como Claude, GPT-4, Gemini, Llama y modelos especializados. Puedes cambiar de modelo en cualquier momento sin cambiar de proveedor ni de configuración.",
+      "El Tool Gateway incluido unifica herramientas que normalmente requerirían suscripciones separadas: búsqueda web (Google), generación de imágenes (DALL·E/FLUX), síntesis de voz (múltiples voces) y navegador cloud (Playwright)."
     ],
-    "tips": [],
+    "tips": [
+      "Si usas Hermes a diario, la suscripción a Portal se amortiza rápido al evitar tener que contratar y configurar 4-5 servicios distintos.",
+      "Con Portal puedes usar el navegador cloud sin instalar Playwright ni preocuparte por los recursos de tu máquina local."
+    ],
     "commands": [
-      "hermes auth add nous",
-      "hermes auth add nous --type oauth",
-      "hermes chat",
-      "hermes model",
-      "hermes portal",
-      "hermes portal            # log in to Nous Portal + set it up (one-shot onboarding)",
-      "hermes portal info",
-      "hermes portal info       # login status, subscription info, model + gateway routing",
-      "hermes portal open",
-      "hermes portal open       # open the subscription management page in your browser",
-      "hermes portal status     # alias for `portal info`",
-      "hermes portal tools      # detailed Tool Gateway catalog with per-tool routing",
       "hermes setup --portal",
-      "hermes tools"
-    ],
-    "size": 13745
+      "hermes model"
+    ]
   },
   {
     "id": "l21",
     "level": 3,
     "title": "Tool Gateway",
     "icon": "🌉",
-    "src": "website/docs/user-guide/features/tool-gateway.md",
     "desc": "Acceso unificado a búsqueda web, generación de imágenes, TTS y navegador cloud mediante el Portal de Nous.",
     "paragraphs": [
-      "The Tool Gateway is included with every paid Nous Portal subscription. It routes Hermes' tool calls — web search, image generation, text-to-speech, and cloud browser automation — through infrastructure Nous already runs, so you don't have to sign up with Firecrawl, FAL, OpenAI, Browser Use, or anyone else just to make your agent useful.",
-      "All four are pay-as-you-use billed against your Nous subscription. Use any combination — run the gateway for web and images while keeping your own ElevenLabs key for TTS, or route everything through Nous.",
-      "Building an agent that can actually *do things* means stitching together 5+ API subscriptions — each with their own signup, rate limits, billing, and quirks. The gateway collapses that into one account:",
-      "- One signup. No Firecrawl, FAL, Browser Use, or OpenAI audio accounts to manage."
+      "El Tool Gateway de Nous Portal proporciona cuatro herramientas cloud unificadas bajo una misma suscripción: búsqueda web (Google), generación de imágenes (DALL·E/FLUX), texto a voz (múltiples voces y proveedores) y navegador cloud (Playwright headless).",
+      "La gran ventaja es la simplicidad: activas las 4 herramientas con un solo OAuth. No necesitas crear cuentas de desarrollador en Google, OpenAI, ElevenLabs ni proveedores de navegadores cloud. Todo funciona desde el minuto uno.",
+      "Puedes mezclar y combinar: usa el modelo que quieras (OpenAI, Anthropic, etc.) con las herramientas del Gateway. No estás atado a un ecosistema cerrado. El Gateway funciona como un complemento independiente del proveedor de modelos.",
+      "La elegibilidad es simple: cualquier suscriptor de Nous Portal tiene acceso completo al Tool Gateway. No hay límites de uso abusivos ni costes ocultos por herramienta."
     ],
-    "tips": [],
+    "tips": [
+      "El Tool Gateway es la forma más rápida de tener búsqueda web, imágenes, TTS y navegador funcionando sin configuración adicional.",
+      "Incluso si usas OpenRouter para los modelos, puedes beneficiarte del Tool Gateway de Portal para las herramientas."
+    ],
     "commands": [
-      "hermes model",
-      "hermes portal info",
-      "hermes portal info        # Portal auth + Tool Gateway routing summary",
-      "hermes portal tools       # Gateway catalog with current routing per tool",
-      "hermes setup --portal",
-      "hermes setup --portal     # Fresh install: Nous OAuth + set Nous as provider + turn on the Tool Gateway in one go",
-      "hermes setup terminal",
-      "hermes status             # Full system status (Tool Gateway is one section)",
-      "hermes tools",
-      "hermes tools              # Enable the gateway per-tool — pick \"Nous Subscription\" for any tool you want",
-      "hermes tools          # Interactive picker for each tool category"
-    ],
-    "size": 9478
+      "hermes setup --portal"
+    ]
   },
   {
     "id": "l22",
     "level": 3,
     "title": "API Server",
     "icon": "🔗",
-    "src": "website/docs/user-guide/features/api-server.md",
     "desc": "Expón Hermes como API REST: chat, ejecución de tareas, gestión de sesiones y trabajos programados.",
     "paragraphs": [
-      "The API server exposes hermes-agent as an OpenAI-compatible HTTP endpoint. Any frontend that speaks the OpenAI format — Open WebUI, LobeChat, LibreChat, NextChat, ChatBox, and hundreds more — can connect to hermes-agent and use it as a backend.",
-      "Your agent handles requests with its full toolset (terminal, file operations, web search, memory, skills) and returns the final response. When streaming, tool progress indicators appear inline so frontends can show what the agent is doing.",
-      "Hermes itself needs a configured provider and tool backends for the API server to be useful. A Nous Portal subscription handles both — 300+ models plus web/image/TTS/browser via the Tool Gateway. Run hermes setup --portal once before starting the API server and frontends like Open WebUI or LobeChat get a fully tool-equipped backend.",
-      "Point any OpenAI-compatible client at http://localhost:8642/v1:"
+      "El API Server de Hermes te permite exponer tu agente como un servicio REST completo. Cualquier aplicación puede enviar prompts y recibir respuestas de Hermes a través de endpoints HTTP estándar, con todas las capacidades del agente (herramientas, memoria, skills) disponibles.",
+      "Endpoints principales: POST /v1/chat/completions (compatible con formato OpenAI), POST /runs (ejecución de tareas en segundo plano), GET /runs/{id} (consultar estado), y endpoints para gestionar sesiones, mensajes y trabajos programados.",
+      "El API Server es un runtime completo de agente, no un simple proxy LLM. Para cada petición, Hermes crea un AIAgent en el servidor que ejecuta herramientas reales, accede a archivos, busca en la web y usa memoria. Las herramientas se ejecutan donde corre el servidor API.",
+      "Casos de uso: integración con Open WebUI y otros frontends, automatización desde scripts y CI/CD, construcción de aplicaciones que usan Hermes como backend de IA, y exposición de tu agente a equipos sin acceso directo a la CLI."
     ],
-    "tips": [],
+    "tips": [
+      "El API Server es ideal para integrar Hermes con Open WebUI: obtienes una interfaz web pulida apuntando a tu agente con todas sus capacidades.",
+      "En producción, protege el API Server con HTTPS y autenticación. No lo expongas a internet sin cifrado."
+    ],
     "commands": [
-      "hermes cron",
-      "hermes gateway",
-      "hermes setup --portal"
-    ],
-    "size": 21106
+      "hermes server start",
+      "hermes server stop",
+      "hermes config set api_server.enabled true"
+    ]
   },
   {
     "id": "l23",
     "level": 3,
     "title": "Subscription Proxy",
     "icon": "🔄",
-    "src": "website/docs/user-guide/features/subscription-proxy.md",
     "desc": "Comparte tu suscripción del Portal de Nous con otras herramientas y clientes OpenAI-compatibles.",
     "paragraphs": [
-      "The subscription proxy is a local HTTP server that lets external apps —",
-      "OpenViking, Karakeep, Open WebUI, anything that speaks OpenAI-compatible",
-      "chat completions — use your Hermes-managed provider subscription as their",
-      "LLM endpoint. The proxy attaches the right credentials (refreshing them"
+      "El Subscription Proxy te permite compartir tu suscripción de Nous Portal con otras herramientas que hablan el protocolo de la API de OpenAI. Ejecutas un proxy local que traduce peticiones OpenAI-compatibles a llamadas autenticadas contra Portal.",
+      "Esto significa que puedes usar herramientas como Open WebUI, OpenViking, Aider, Continue.dev, Cline, y cualquier cliente que soporte OpenAI API, todas aprovechando tu suscripción de Portal sin necesidad de claves API adicionales.",
+      "El proxy se ejecuta localmente (localhost) y enruta las peticiones a Portal. Soporta streaming, selección de modelo, y respeta los límites y permisos de tu suscripción. Es transparente para las herramientas que lo usan: solo cambia el endpoint.",
+      "La configuración es sencilla: activa el proxy en config.yaml, apunta tus herramientas a http://localhost:XXXX/v1, y todas las llamadas usarán automáticamente tu suscripción de Portal."
     ],
-    "tips": [],
+    "tips": [
+      "El Subscription Proxy es la pieza que permite usar Hermes como backend único para todo tu ecosistema de herramientas de IA.",
+      "Combínalo con el API Server para tener tanto una API propia de Hermes como una API OpenAI-compatible desde la misma instancia."
+    ],
     "commands": [
-      "hermes portal",
-      "hermes proxy providers",
-      "hermes proxy start",
-      "hermes proxy status"
-    ],
-    "size": 6063
+      "hermes config set subscription_proxy.enabled true",
+      "hermes proxy start"
+    ]
   },
   {
     "id": "l24",
     "level": 3,
     "title": "Web Dashboard",
     "icon": "📊",
-    "src": "website/docs/user-guide/features/web-dashboard.md",
     "desc": "Interfaz web para gestionar Hermes: múltiples perfiles, monitoreo en tiempo real y control remoto.",
     "paragraphs": [
-      "The web dashboard is a browser-based UI for managing your Hermes Agent installation. Instead of editing YAML files or running CLI commands, you can configure settings, manage API keys, and monitor sessions from a clean web interface.",
-      "Hosted-mode auth uses Nous Portal OAuth; if you also want the dashboard to talk to a real backend, hermes setup --portal wires up the model and tool gateway too. See Nous Portal.",
-      "This starts a local web server and opens http://127.0.0.1:9119 in your browser. The dashboard runs entirely on your machine — no data leaves localhost.",
-      "The dashboard is a machine-level management surface: one server manages"
+      "El Web Dashboard es una interfaz web completa para gestionar tu instancia de Hermes. Accesible desde cualquier navegador, te permite monitorizar el estado del agente, cambiar entre perfiles, ver sesiones activas, gestionar skills y consultar logs en tiempo real.",
+      "Con el Dashboard puedes gestionar múltiples perfiles desde una misma interfaz. Cada perfil tiene su propio conjunto de skills, configuración, memoria y sesiones. Ideal para separar contextos de trabajo, proyectos personales y experimentos.",
+      "La página principal muestra un resumen del estado del agente: modelo activo, herramientas cargadas, plataformas de mensajería conectadas, crons programados y uso de recursos. Todo actualizado en tiempo real.",
+      "El acceso se protege con autenticación: puedes configurar credenciales locales o integrar con OAuth. El Dashboard está diseñado para funcionar tanto en localhost como en un servidor remoto accesible vía HTTPS."
     ],
     "tips": [
-      "Hosted-mode auth uses Nous Portal OAuth; if you also want the dashboard to talk to a real backend, hermes setup --portal wires up the model and tool gateway too. See Nous Portal.",
-      "Config changes take effect on the next agent session or gateway restart. The web dashboard edits the same config.yaml file that hermes config set and the gateway read from."
+      "El Dashboard es especialmente útil cuando ejecutas Hermes en un servidor remoto y quieres monitorizarlo sin SSH.",
+      "Usa los perfiles del Dashboard para mantener separados tus proyectos sin contaminar la memoria ni las skills entre ellos."
     ],
     "commands": [
-      "hermes --tui",
-      "hermes -p <name> gateway …",
-      "hermes config set",
-      "hermes curator",
       "hermes dashboard",
-      "hermes dashboard --host 0.0.0.0",
-      "hermes dashboard --no-open",
-      "hermes dashboard --port 8080",
-      "hermes dashboard register",
-      "hermes mcp",
-      "hermes mcp catalog",
-      "hermes mcp install",
-      "hermes pairing",
-      "hermes portal",
-      "hermes profile use"
-    ],
-    "size": 69285
+      "hermes config set dashboard.enabled true"
+    ]
   },
   {
     "id": "l25",
     "level": 3,
     "title": "Plataformas de Mensajería",
     "icon": "💬",
-    "src": "website/docs/user-guide/messaging/index.md",
     "desc": "Conecta Hermes a Telegram, Discord, Slack, WhatsApp, Signal, Email, SMS y 15+ plataformas más.",
     "paragraphs": [
-      "Chatea con Hermes desde Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home Assistant, Mattermost, Matrix, DingTalk, Feishu/Lark, WeCom, Weixin, BlueBubbles (iMessage), QQ, Yuanbao, Microsoft Teams, LINE, ntfy, o tu navegador. La pasarela (gateway) es un único proceso en segundo plano que conecta todas tus plataformas configuradas.",
+      "Chatea con Hermes desde Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home Assistant, Mattermost, Matrix, DingTalk, Feishu/Lark, WeCom, Weixin, BlueBubbles (iMessage), QQ, Yuanbao, Microsoft Teams, LINE, ntfy o tu navegador. La pasarela (gateway) es un único proceso en segundo plano que conecta todas tus plataformas configuradas.",
       "Los bots necesitan tanto un proveedor de modelo como proveedores de herramientas (TTS, web). Una suscripción a Nous Portal los incluye todos. La pasarela maneja sesiones, ejecuta trabajos cron y entrega mensajes de voz.",
       "Para la funcionalidad completa de voz — incluyendo modo micrófono en CLI, respuestas habladas en mensajería y conversaciones en canales de voz de Discord — consulta Voice Mode en la documentación oficial.",
       "Todas las plataformas se configuran con hermes gateway setup, que ofrece un asistente interactivo para cada una. Algunas requieren claves API, otras usan WebSockets o long-polling, y varias no necesitan URL pública."
@@ -675,119 +547,112 @@ const LESSONS_DATA = [
       "hermes gateway setup --slack",
       "hermes gateway --status",
       "hermes gateway --restart"
-    ],
-    "size": 3500
+    ]
   },
   {
     "id": "l26",
     "level": 3,
     "title": "Referencia CLI",
     "icon": "📋",
-    "src": "website/docs/reference/cli-commands.md",
     "desc": "Referencia completa de todos los comandos CLI: chat, model, gateway, skills, config, cron, tools y más.",
     "paragraphs": [
-      "This page covers the terminal commands you run from your shell.",
-      "For in-chat slash commands, see Slash Commands Reference.",
-      "For programmatic callers (shell scripts, CI, cron, parent processes piping in a prompt), hermes -z is the purest one-shot entry point: single prompt in, final response text out, nothing else on stdout or stderr. No banner, no spinner, no tool previews, no Session: line — just the agent's final reply as plain text.",
-      "Same agent, same tools, same skills — just strips every interactive / cosmetic layer. If you need tool output in the transcript too, use hermes chat -q instead; -z is explicitly for \"I only want the final answer\"."
+      "La CLI de Hermes es la puerta de entrada principal al agente. El comando hermes sin argumentos inicia una sesión de chat interactiva. Con subcomandos, controlas todos los aspectos del agente desde la terminal.",
+      "Comandos principales: hermes (chat interactivo), hermes model (gestionar proveedores y modelos), hermes config (leer y escribir configuración), hermes tools (gestionar herramientas activas), hermes gateway (plataformas de mensajería), hermes skill (gestionar skills), hermes cron (tareas programadas), hermes setup (asistente de configuración).",
+      "Comandos de diagnóstico: hermes doctor (diagnóstico completo del sistema), hermes config check (validar sintaxis de configuración), hermes config get (ver valores actuales), hermes --version (versión instalada), hermes update (actualizar a la última versión).",
+      "Comandos avanzados: hermes server (API Server), hermes dashboard (Web Dashboard), hermes mcp (gestión MCP), hermes proxy (Subscription Proxy), hermes desktop (lanzar app de escritorio)."
     ],
     "tips": [
-      "hermes dump is specifically designed for sharing. For interactive diagnostics, use hermes doctor. For a visual overview, use hermes status.",
-      "The skills index and tool schemas scale with how many skills and tools you have\nenabled. To shrink the prompt, disable unused toolsets (hermes tools) or\nuninstall skills you don't need (hermes skills). Context files (AGENTS.md,\n.cursorrules) in your current directory also count toward the total."
+      "Usa hermes <comando> --help para ver todas las opciones disponibles de cada subcomando.",
+      "La CLI está diseñada para ser autodocumentada: si no recuerdas un comando, escribe hermes help o hermes --help para ver la lista completa."
     ],
     "commands": [
+      "hermes",
       "hermes --help",
-      "hermes -p work chat -q \"Hello from work profile\"",
-      "hermes -z",
-      "hermes -z \"What's the capital of France?\"",
-      "hermes -z \"…\" --provider openrouter --model openai/gpt-5.5",
-      "hermes -z <prompt>",
-      "hermes <provider>",
-      "hermes [global-options] <command> [subcommand/options]",
-      "hermes acp",
-      "hermes auth",
-      "hermes auth                                              # Interactive wizard",
-      "hermes auth add anthropic --type oauth                   # Add OAuth credential",
-      "hermes auth add openrouter --api-key sk-or-v1-xxx        # Add API key",
-      "hermes auth list                                         # Show all pools",
-      "hermes auth list openrouter                              # Show specific provider"
-    ],
-    "size": 84026
+      "hermes --version",
+      "hermes model",
+      "hermes config get",
+      "hermes config set",
+      "hermes tools",
+      "hermes gateway setup",
+      "hermes skill list",
+      "hermes cron list",
+      "hermes doctor",
+      "hermes update",
+      "hermes setup",
+      "hermes server start",
+      "hermes dashboard"
+    ]
   },
   {
     "id": "l27",
     "level": 3,
     "title": "FAQ y Solución de Problemas",
     "icon": "❓",
-    "src": "website/docs/reference/faq.md",
     "desc": "Preguntas frecuentes, resolución de problemas comunes, gestión de perfiles y patrones de trabajo.",
     "paragraphs": [
-      "Quick answers and fixes for the most common questions and issues.",
-      "Hermes Agent works with any OpenAI-compatible API. Supported providers include:",
-      "- OpenRouter — access hundreds of models through one API key (recommended for flexibility)",
-      "- Nous Portal — Nous Research's subscription gateway — 300+ models plus web/image/TTS/browser through one OAuth login (recommended for newcomers)"
+      "Esta sección recopila las preguntas más frecuentes y soluciones a problemas comunes al usar Hermes Agent. Desde errores de instalación hasta configuraciones avanzadas, pasando por gestión de perfiles y patrones de trabajo recomendados.",
+      "Problemas frecuentes con proveedores: error de autenticación (verifica tu API key con hermes config get), timeout (el modelo tarda demasiado, prueba con un modelo más rápido), rate limiting (has excedido los límites de tu plan, espera o actualiza).",
+      "Problemas frecuentes con herramientas: una herramienta no aparece (verifica que el toolset esté activo con hermes tools), fallos de ejecución (comprueba permisos y dependencias), comandos bloqueados (revisa la configuración de seguridad y aprobación de comandos).",
+      "Perfiles: puedes crear perfiles múltiples para separar contextos de trabajo (hermes profiles create nombre). Cada perfil tiene su propia configuración, skills, memoria y sesiones independientes. Ideal para separar trabajo, proyectos personales y experimentación."
     ],
     "tips": [
-      "The installer adds ~/.local/bin to your PATH. If you use a non-standard shell config, add export PATH=\"$HOME/.local/bin:$PATH\" manually.",
-      "This is working as intended — Hermes never silently runs destructive commands. The approval prompt shows you exactly what will execute.",
-      "Use /compress regularly during long sessions. It summarizes the conversation history and reduces token usage significantly while preserving context.",
-      "Skills with very long descriptions are truncated to 40 characters in the Telegram menu to stay within payload size limits. If skills aren't appearing, it may be a total payload size issue rather than the 100 command count limit — disabling unused skills helps with both.",
-      "hermes backup produces a consistent snapshot even while Hermes is actively running. The restored archive excludes machine-local runtime files like gateway.pid and cron.pid."
+      "Antes de pedir ayuda, ejecuta hermes doctor. Te dará un diagnóstico completo que resuelve el 80% de los problemas comunes.",
+      "Si algo no funciona como esperas, prueba a cambiar de modelo. Muchos problemas de razonamiento se resuelven cambiando a un modelo más potente para esa tarea concreta."
     ],
     "commands": [
-      "hermes --version",
-      "hermes auth add anthropic",
-      "hermes backup",
-      "hermes chat",
-      "hermes chat --model openrouter/meta-llama/llama-3.1-8b-instruct",
-      "hermes chat --provider <alternative>",
-      "hermes chat -t \"terminal\"",
-      "hermes gateway install",
-      "hermes gateway restart",
-      "hermes gateway setup",
-      "hermes gateway start",
-      "hermes model",
-      "hermes profile create newname --clone-all",
-      "hermes profile export",
-      "hermes setup"
-    ],
-    "size": 32219
+      "hermes doctor",
+      "hermes config get",
+      "hermes profiles list",
+      "hermes profiles create",
+      "hermes update",
+      "hermes --version"
+    ]
   }
 ];
 
 const GLOSSARY_DATA = [
   {
-    "command": "hermes             # Start chatting!",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
+    "command": "hermes setup --portal",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
   },
   {
-    "command": "hermes config check",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
+    "command": "hermes model",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
   },
   {
-    "command": "hermes config get     # Inspect individual config values",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
+    "command": "hermes tools",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
   },
   {
-    "command": "hermes config migrate",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
+    "command": "hermes gateway setup",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
   },
   {
-    "command": "hermes config set     # Set individual config values",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
+    "command": "hermes config set",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
   },
   {
-    "command": "hermes config set OPENROUTER_API_KEY your_key",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
+    "command": "hermes config get",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
   },
   {
     "command": "hermes desktop",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
+  },
+  {
+    "command": "hermes --version",
+    "lesson": "l1",
+    "lessonTitle": "¿Qué es Hermes Agent?"
+  },
+  {
+    "command": "hermes setup",
     "lesson": "l2",
     "lessonTitle": "Instalación"
   },
@@ -797,464 +662,199 @@ const GLOSSARY_DATA = [
     "lessonTitle": "Instalación"
   },
   {
-    "command": "hermes gateway setup  # Set up messaging platforms",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
-  },
-  {
-    "command": "hermes model",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
-  },
-  {
-    "command": "hermes model          # Choose your LLM provider and model",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
-  },
-  {
-    "command": "hermes setup          # Or run the full setup wizard to configure everything at once",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
-  },
-  {
-    "command": "hermes setup --portal",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
-  },
-  {
-    "command": "hermes tools          # Configure which tools are enabled",
-    "lesson": "l2",
-    "lessonTitle": "Instalación"
-  },
-  {
     "command": "hermes update",
     "lesson": "l2",
     "lessonTitle": "Instalación"
   },
   {
-    "command": "hermes            # classic CLI",
+    "command": "hermes config check",
+    "lesson": "l2",
+    "lessonTitle": "Instalación"
+  },
+  {
+    "command": "hermes config migrate",
+    "lesson": "l2",
+    "lessonTitle": "Instalación"
+  },
+  {
+    "command": "curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash",
+    "lesson": "l2",
+    "lessonTitle": "Instalación"
+  },
+  {
+    "command": "hermes config set OPENROUTER_API_KEY tu_clave",
     "lesson": "l3",
     "lessonTitle": "Quickstart — Primeros Pasos"
   },
   {
-    "command": "hermes --continue",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes --continue    # Resume the most recent session",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes --tui",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes --tui      # modern TUI (recommended)",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes -c            # Short form",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes config set OPENROUTER_API_KEY sk-or-...",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes config set model anthropic/claude-opus-4.6",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes config set terminal.backend docker",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes config set terminal.backend docker    # Docker isolation",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes config set terminal.backend ssh       # Remote server",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes gateway",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes gateway setup",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes gateway setup    # Interactive platform configuration",
-    "lesson": "l3",
-    "lessonTitle": "Quickstart — Primeros Pasos"
-  },
-  {
-    "command": "hermes plugins",
-    "lesson": "l5",
-    "lessonTitle": "Resumen de Funcionalidades"
-  },
-  {
-    "command": "hermes tools",
-    "lesson": "l5",
-    "lessonTitle": "Resumen de Funcionalidades"
-  },
-  {
-    "command": "hermes auth",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes chat --model anthropic/claude-sonnet-4",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes config",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes config set",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes config set terminal.backend local",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes config show",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes cron edit",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes kanban specify <id>",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes sessions rename",
-    "lesson": "l6",
-    "lessonTitle": "Configuración"
-  },
-  {
-    "command": "hermes auth add anthropic --type oauth",
+    "command": "hermes config set OPENAI_API_KEY tu_clave",
     "lesson": "l7",
     "lessonTitle": "Proveedores de IA"
   },
   {
-    "command": "hermes auth add openai-codex",
+    "command": "hermes config set ANTHROPIC_API_KEY tu_clave",
     "lesson": "l7",
     "lessonTitle": "Proveedores de IA"
   },
   {
-    "command": "hermes auth add xai-oauth",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes chat",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes chat --provider anthropic",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes chat --provider anthropic  # reads Claude Code credential files automatically",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes chat --provider anthropic --model claude-sonnet-4-6",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes fallback",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes migrate xai",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes model              # existing install — pick \"Nous Portal\" from the list",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes portal info",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes portal info        # inspect login + routing at any time",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes setup",
-    "lesson": "l7",
-    "lessonTitle": "Proveedores de IA"
-  },
-  {
-    "command": "hermes -p coder skills reset <name>",
+    "command": "hermes skill view nombre_skill",
     "lesson": "l8",
     "lessonTitle": "Sistema de Skills"
   },
   {
-    "command": "hermes bundles list",
+    "command": "hermes skill list",
     "lesson": "l8",
     "lessonTitle": "Sistema de Skills"
   },
   {
-    "command": "hermes chat --toolsets skills -q \"Show me the axolotl skill\"",
+    "command": "/learn url_o_archivo",
     "lesson": "l8",
     "lessonTitle": "Sistema de Skills"
   },
   {
-    "command": "hermes chat --toolsets skills -q \"What skills do you have?\"",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes profile create research --no-skills",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes skills inspect ...",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes skills opt-in",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes skills opt-in --sync      # undo: remove the marker and re-seed now",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes skills opt-out",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes skills opt-out            # stop future seeding — nothing on disk is touched",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes skills opt-out --remove   # also delete UNMODIFIED bundled skills (confirms first)",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes skills reset",
-    "lesson": "l8",
-    "lessonTitle": "Sistema de Skills"
-  },
-  {
-    "command": "hermes chat --toolsets \"web,terminal\"",
+    "command": "hermes config set toolsets terminal,file,web",
     "lesson": "l9",
     "lessonTitle": "Herramientas y Toolsets"
   },
   {
-    "command": "hermes send",
-    "lesson": "l9",
-    "lessonTitle": "Herramientas y Toolsets"
-  },
-  {
-    "command": "hermes --yolo",
+    "command": "hermes config set command_approval true",
     "lesson": "l13",
     "lessonTitle": "Seguridad"
   },
   {
-    "command": "hermes chat --yolo",
+    "command": "hermes config set docker_backend true",
     "lesson": "l13",
     "lessonTitle": "Seguridad"
   },
   {
-    "command": "hermes config edit",
-    "lesson": "l13",
-    "lessonTitle": "Seguridad"
+    "command": "hermes config set BRAVE_API_KEY tu_clave",
+    "lesson": "l14",
+    "lessonTitle": "Búsqueda Web"
   },
   {
-    "command": "hermes cron",
-    "lesson": "l13",
-    "lessonTitle": "Seguridad"
-  },
-  {
-    "command": "hermes pairing approve <platform> <code>",
-    "lesson": "l13",
-    "lessonTitle": "Seguridad"
-  },
-  {
-    "command": "hermes config set toolsets '[\"hermes-cli\", \"browser\"]'",
-    "lesson": "l15",
-    "lessonTitle": "Navegador"
-  },
-  {
-    "command": "hermes setup tools",
-    "lesson": "l15",
-    "lessonTitle": "Navegador"
-  },
-  {
-    "command": "hermes setup tools → Browser Automation",
-    "lesson": "l15",
-    "lessonTitle": "Navegador"
-  },
-  {
-    "command": "hermes auth <provider>",
+    "command": "hermes mcp install",
     "lesson": "l16",
     "lessonTitle": "MCP (Model Context Protocol)"
   },
   {
-    "command": "hermes mcp add",
+    "command": "hermes mcp list",
     "lesson": "l16",
     "lessonTitle": "MCP (Model Context Protocol)"
   },
   {
-    "command": "hermes mcp add my-codex --preset codex",
+    "command": "hermes mcp remove",
     "lesson": "l16",
     "lessonTitle": "MCP (Model Context Protocol)"
   },
   {
-    "command": "hermes mcp configure <name>",
-    "lesson": "l16",
-    "lessonTitle": "MCP (Model Context Protocol)"
-  },
-  {
-    "command": "hermes mcp install <name>",
-    "lesson": "l16",
-    "lessonTitle": "MCP (Model Context Protocol)"
-  },
-  {
-    "command": "hermes mcp login",
-    "lesson": "l16",
-    "lessonTitle": "MCP (Model Context Protocol)"
-  },
-  {
-    "command": "hermes mcp login <server>",
-    "lesson": "l16",
-    "lessonTitle": "MCP (Model Context Protocol)"
-  },
-  {
-    "command": "hermes mcp login googledrive",
-    "lesson": "l16",
-    "lessonTitle": "MCP (Model Context Protocol)"
-  },
-  {
-    "command": "hermes mcp serve",
-    "lesson": "l16",
-    "lessonTitle": "MCP (Model Context Protocol)"
-  },
-  {
-    "command": "hermes cron create \"every 1h\" \"Summarize new feed items\" --skill blogwatcher",
+    "command": "hermes cron list",
     "lesson": "l18",
     "lessonTitle": "Tareas Programadas (Cron)"
   },
   {
-    "command": "hermes cron create \"every 1h\" \"Use both skills and combine the result\" \\",
+    "command": "hermes cron create",
     "lesson": "l18",
     "lessonTitle": "Tareas Programadas (Cron)"
   },
   {
-    "command": "hermes cron create \"every 2h\" \"Check server status\"",
+    "command": "hermes cron run",
     "lesson": "l18",
     "lessonTitle": "Tareas Programadas (Cron)"
   },
   {
-    "command": "hermes cron runs [job-id] --limit 20",
+    "command": "hermes cron remove",
     "lesson": "l18",
     "lessonTitle": "Tareas Programadas (Cron)"
   },
   {
-    "command": "hermes auth add nous",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes cron pause",
+    "lesson": "l18",
+    "lessonTitle": "Tareas Programadas (Cron)"
   },
   {
-    "command": "hermes auth add nous --type oauth",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes server start",
+    "lesson": "l22",
+    "lessonTitle": "API Server"
   },
   {
-    "command": "hermes portal",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes server stop",
+    "lesson": "l22",
+    "lessonTitle": "API Server"
   },
   {
-    "command": "hermes portal            # log in to Nous Portal + set it up (one-shot onboarding)",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes config set api_server.enabled true",
+    "lesson": "l22",
+    "lessonTitle": "API Server"
   },
   {
-    "command": "hermes portal info       # login status, subscription info, model + gateway routing",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes config set subscription_proxy.enabled true",
+    "lesson": "l23",
+    "lessonTitle": "Subscription Proxy"
   },
   {
-    "command": "hermes portal open",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes proxy start",
+    "lesson": "l23",
+    "lessonTitle": "Subscription Proxy"
   },
   {
-    "command": "hermes portal open       # open the subscription management page in your browser",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes dashboard",
+    "lesson": "l24",
+    "lessonTitle": "Web Dashboard"
   },
   {
-    "command": "hermes portal status     # alias for `portal info`",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes config set dashboard.enabled true",
+    "lesson": "l24",
+    "lessonTitle": "Web Dashboard"
   },
   {
-    "command": "hermes portal tools      # detailed Tool Gateway catalog with per-tool routing",
-    "lesson": "l20",
-    "lessonTitle": "Nous Portal"
+    "command": "hermes gateway setup --telegram",
+    "lesson": "l25",
+    "lessonTitle": "Plataformas de Mensajería"
   },
   {
-    "command": "hermes portal info        # Portal auth + Tool Gateway routing summary",
-    "lesson": "l21",
-    "lessonTitle": "Tool Gateway"
+    "command": "hermes gateway setup --discord",
+    "lesson": "l25",
+    "lessonTitle": "Plataformas de Mensajería"
   },
   {
-    "command": "hermes portal tools       # Gateway catalog with current routing per tool",
-    "lesson": "l21",
-    "lessonTitle": "Tool Gateway"
+    "command": "hermes gateway setup --whatsapp",
+    "lesson": "l25",
+    "lessonTitle": "Plataformas de Mensajería"
   },
   {
-    "command": "hermes setup --portal     # Fresh install: Nous OAuth + set Nous as provider + turn on the Tool Gateway in one go",
-    "lesson": "l21",
-    "lessonTitle": "Tool Gateway"
+    "command": "hermes gateway setup --signal",
+    "lesson": "l25",
+    "lessonTitle": "Plataformas de Mensajería"
+  },
+  {
+    "command": "hermes gateway setup --slack",
+    "lesson": "l25",
+    "lessonTitle": "Plataformas de Mensajería"
+  },
+  {
+    "command": "hermes gateway --status",
+    "lesson": "l25",
+    "lessonTitle": "Plataformas de Mensajería"
+  },
+  {
+    "command": "hermes gateway --restart",
+    "lesson": "l25",
+    "lessonTitle": "Plataformas de Mensajería"
+  },
+  {
+    "command": "hermes --help",
+    "lesson": "l26",
+    "lessonTitle": "Referencia CLI"
+  },
+  {
+    "command": "hermes profiles list",
+    "lesson": "l27",
+    "lessonTitle": "FAQ y Solución de Problemas"
+  },
+  {
+    "command": "hermes profiles create",
+    "lesson": "l27",
+    "lessonTitle": "FAQ y Solución de Problemas"
   }
 ];
 
