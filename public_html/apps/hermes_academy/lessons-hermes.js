@@ -857,9 +857,3 @@ var GLOSSARY_HERMES = [
     "lessonTitle": "FAQ y Solución de Problemas"
   }
 ];
-
-const LEVELS = [
-  { id: 1, name: 'Principiante', icon: '🌱', desc: 'Fundamentos: instalación, primeros pasos y conceptos básicos' },
-  { id: 2, name: 'Intermedio', icon: '⚡', desc: 'Configuración, providers, skills, herramientas y seguridad' },
-  { id: 3, name: 'Avanzado', icon: '🚀', desc: 'MCP, delegación, cron, API, dashboard y despliegues' }
-];
