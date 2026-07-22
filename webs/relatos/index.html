@@ -22,9 +22,21 @@
         <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="search" id="search" placeholder="Buscar por título, tema, personaje…" autocomplete="off" aria-label="Buscar relatos">
       </div>
+      <button class="user-btn" id="userBtn" title="Cambiar de usuario" aria-label="Cambiar de usuario">👤</button>
       <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
     </div>
   </header>
+
+  <!-- Selector de alias -->
+  <div class="alias-overlay" id="aliasOverlay">
+    <div class="alias-card">
+      <div class="alias-icon">📖</div>
+      <h2>¿Quién eres?</h2>
+      <p>Cada persona tiene su propio historial de lecturas. Escribe tu nombre para empezar (o continuar donde lo dejaste).</p>
+      <input type="text" id="aliasInput" placeholder="Tu nombre o alias…" maxlength="30" autocomplete="off" autofocus>
+      <button id="aliasEnter" class="alias-btn">Entrar</button>
+    </div>
+  </div>
 
   <main class="wrap">
     <!-- HOME -->
@@ -77,6 +89,6 @@
 
   <script src="data.js"></script>
   <script src="history-manager.js?v=1"></script>
-  <script src="app.js?v=1"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

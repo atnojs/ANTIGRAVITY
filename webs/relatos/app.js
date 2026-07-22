@@ -44,8 +44,28 @@
   let readSet = new Set();
   let historyManager;
 
+  const ALIAS_KEY = 'relatos-alias';
+
+  function getAlias() {
+    try { return localStorage.getItem(ALIAS_KEY) || ''; } catch (_) { return ''; }
+  }
+
+  function setAlias(alias) {
+    try { localStorage.setItem(ALIAS_KEY, alias); } catch (_) {}
+  }
+
+  function clearAlias() {
+    try { localStorage.removeItem(ALIAS_KEY); } catch (_) {}
+  }
+
+  function sanitizeAlias(raw) {
+    return raw.replace(/[^a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ _-]/g, '').trim().slice(0, 30) || 'anonimo';
+  }
+
   async function initHistory() {
-    historyManager = new HistoryManager('relatos-read');
+    const alias = getAlias();
+    if (!alias) return;
+    historyManager = new HistoryManager('relatos-read-' + sanitizeAlias(alias));
     try {
       await historyManager.load();
       readSet.clear();
@@ -403,12 +423,67 @@
     };
   }
 
+  // ---- Alias (selector de usuario) ----
+  function showAliasOverlay() {
+    const overlay = document.getElementById('aliasOverlay');
+    if (overlay) overlay.classList.remove('hidden');
+    const input = document.getElementById('aliasInput');
+    if (input) { input.value = ''; setTimeout(function() { input.focus(); }, 100); }
+  }
+
+  function hideAliasOverlay() {
+    const overlay = document.getElementById('aliasOverlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
+
+  async function handleAliasEnter() {
+    const input = document.getElementById('aliasInput');
+    const raw = (input && input.value) ? input.value : '';
+    const alias = sanitizeAlias(raw);
+    setAlias(alias);
+    hideAliasOverlay();
+    await initHistory();
+    renderHome();
+    window.scrollTo(0, 0);
+  }
+
+  function handleUserSwitch() {
+    clearAlias();
+    readSet.clear();
+    if (historyManager) historyManager = null;
+    switchView('view-home');
+    showAliasOverlay();
+  }
+
+  async function startApp() {
+    const alias = getAlias();
+    if (alias) {
+      hideAliasOverlay();
+      await initHistory();
+      route();
+    } else {
+      showAliasOverlay();
+      switchView('view-home');
+      renderHome();
+    }
+  }
+
   // ---- Init ----
   window.addEventListener("hashchange", route);
-  document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", function() {
     initTheme();
     initSearch();
-    await initHistory();
-    route();
+
+    // Wire alias UI
+    const aliasEnter = document.getElementById('aliasEnter');
+    if (aliasEnter) aliasEnter.addEventListener('click', handleAliasEnter);
+    const aliasInput = document.getElementById('aliasInput');
+    if (aliasInput) aliasInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleAliasEnter();
+    });
+    const userBtn = document.getElementById('userBtn');
+    if (userBtn) userBtn.addEventListener('click', handleUserSwitch);
+
+    startApp();
   });
 })();
