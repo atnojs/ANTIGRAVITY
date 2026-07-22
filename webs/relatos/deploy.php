@@ -22,6 +22,8 @@ $FILES = [
     'webs/relatos/app.js',
     'webs/relatos/styles.css',
     'webs/relatos/data.js',
+    'webs/relatos/history.php',
+    'webs/relatos/history-manager.js',
 ];
 
 // --- VALIDACIÓN DEL WEBHOOK ---

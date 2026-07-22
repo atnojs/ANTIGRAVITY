@@ -40,15 +40,53 @@
   };
   const esc = (s) => (s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  // ---- Relatos leídos (localStorage) ----
-  const READ_KEY = "relatos-leidos";
-  function getRead() {
-    try { return new Set(JSON.parse(localStorage.getItem(READ_KEY) || "[]")); }
-    catch (e) { return new Set(); }
+  // ---- Relatos leídos (persistencia en servidor vía HistoryManager) ----
+  let readSet = new Set();
+  let historyManager;
+
+  async function initHistory() {
+    historyManager = new HistoryManager('relatos-read');
+    try {
+      await historyManager.load();
+      readSet.clear();
+      const entries = historyManager.getAll();
+      entries.forEach(function(entry) {
+        if (entry.type === 'read' && entry.data && entry.data.storyId) {
+          readSet.add(entry.data.storyId);
+        }
+      });
+      // Migración única desde localStorage si el servidor está vacío
+      if (readSet.size === 0) {
+        try {
+          const local = JSON.parse(localStorage.getItem('relatos-leidos') || '[]');
+          if (local.length > 0) {
+            for (const id of local) {
+              readSet.add(id);
+              await historyManager.save({ id: id, type: 'read', data: { storyId: id } });
+            }
+            localStorage.removeItem('relatos-leidos');
+          }
+        } catch (_) { /* ignorar errores de migración */ }
+      }
+    } catch (e) {
+      console.warn('Servidor de historial no disponible:', e);
+    }
   }
-  function markRead(id) {
-    const s = getRead();
-    if (!s.has(id)) { s.add(id); localStorage.setItem(READ_KEY, JSON.stringify([...s])); }
+
+  function getRead() {
+    return readSet;
+  }
+
+  async function markRead(id) {
+    if (readSet.has(id)) return;
+    readSet.add(id);
+    if (historyManager) {
+      try {
+        await historyManager.save({ id: id, type: 'read', data: { storyId: id } });
+      } catch (e) {
+        console.warn('No se pudo guardar en el servidor:', e);
+      }
+    }
   }
   const CHECK_SVG = '<svg fill="none" viewBox="0 0 24 24" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>';
 
@@ -283,9 +321,9 @@
         ? CHECK_SVG_BIG + "Leído"
         : CIRCLE_SVG + "Marcar como leído";
     };
-    btn.onclick = () => {
+    btn.onclick = async () => {
       if (getRead().has(id)) return; // ya leído: no hace nada
-      markRead(id);
+      await markRead(id);
       paint();
     };
     paint();
@@ -367,9 +405,10 @@
 
   // ---- Init ----
   window.addEventListener("hashchange", route);
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     initTheme();
     initSearch();
+    await initHistory();
     route();
   });
 })();
