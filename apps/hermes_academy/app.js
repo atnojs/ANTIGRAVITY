@@ -1,6 +1,6 @@
 /**
- * Hermes Academy — app.js
- * Plataforma interactiva de aprendizaje de Hermes Agent.
+ * Hermes Academy — app.js v3
+ * Plataforma multi-agente: Hermes Agent, Codex, Claude Code y Antigravity.
  * Estilo Hoola/Relatos + persistencia de progreso vía HistoryManager.
  */
 
@@ -17,6 +17,7 @@
   const searchInput = $('#search-input');
   const searchResults = $('#search-results');
   const levelToggles = $('#level-toggles');
+  const platformToggles = $('#platform-toggles');
   const progressBar = $('#progress-bar');
   const progressCount = $('#progress-count');
   const progressPercent = $('#progress-percent');
@@ -27,23 +28,36 @@
   const loadingOverlay = $('#loading-overlay');
 
   // ===== STATE =====
+  let currentPlatform = 'hermes';
   let currentLevel = 'all';
-  let completedLessons = new Set();
+  let completedLessons = {};
   let historyManager = null;
   let glossaryVisible = false;
+
+  // ===== DATA ACCESS =====
+  function getPlatformData() {
+    return window[PLATFORMS[currentPlatform].dataVar] || [];
+  }
+
+  function getGlossaryData() {
+    return window[PLATFORMS[currentPlatform].glossaryVar] || [];
+  }
+
+  function getCompletedKey() {
+    return currentPlatform + '_completed';
+  }
 
   // ===== INIT =====
   function init() {
     try {
-      // Init history for progress persistence
-      historyManager = new HistoryManager('hermes_academy');
+      historyManager = new HistoryManager('academia_agentes');
       loadProgress().then(() => {
         renderAll();
         bindEvents();
         hideLoading();
       });
     } catch (err) {
-      console.error('[Hermes Academy] Init error:', err);
+      console.error('[Academia] Init error:', err);
       hideLoading();
       renderAll();
       bindEvents();
@@ -62,54 +76,64 @@
     try {
       await historyManager.load();
       const items = historyManager.getAll();
-      // Look for progress entries
       for (const item of items) {
-        if (item.type === 'progress' && item.data && item.data.completed) {
-          for (const id of item.data.completed) {
-            completedLessons.add(id);
+        if (item.type === 'academia_progress' && item.data) {
+          for (const [key, ids] of Object.entries(item.data)) {
+            if (!completedLessons[key]) completedLessons[key] = new Set();
+            ids.forEach(id => completedLessons[key].add(id));
           }
         }
       }
     } catch (e) {
-      console.warn('[Hermes Academy] Could not load progress:', e.message);
-      // Fallback: try localStorage
+      console.warn('[Academia] Could not load progress:', e.message);
       try {
-        const saved = localStorage.getItem('ha_progress');
+        const saved = localStorage.getItem('academia_progress');
         if (saved) {
-          const arr = JSON.parse(saved);
-          arr.forEach(id => completedLessons.add(id));
+          const data = JSON.parse(saved);
+          for (const [key, ids] of Object.entries(data)) {
+            completedLessons[key] = new Set(ids);
+          }
         }
       } catch (_) {}
     }
   }
 
   async function saveProgress() {
-    const completed = Array.from(completedLessons);
-    // Save to server
+    const data = {};
+    for (const [key, ids] of Object.entries(completedLessons)) {
+      data[key] = Array.from(ids);
+    }
     try {
       await historyManager.save({
-        type: 'progress',
-        data: { completed },
-        id: 'progress_main'
+        type: 'academia_progress',
+        data: data,
+        id: 'academia_progress_main'
       });
     } catch (e) {
-      console.warn('[Hermes Academy] Could not save progress to server:', e.message);
+      console.warn('[Academia] Could not save to server:', e.message);
     }
-    // Always save to localStorage as fallback
     try {
-      localStorage.setItem('ha_progress', JSON.stringify(completed));
+      localStorage.setItem('academia_progress', JSON.stringify(data));
     } catch (_) {}
   }
 
   function isCompleted(lessonId) {
-    return completedLessons.has(lessonId);
+    const key = getCompletedKey();
+    return completedLessons[key] ? completedLessons[key].has(lessonId) : false;
+  }
+
+  function getCompletedCount() {
+    const key = getCompletedKey();
+    return completedLessons[key] ? completedLessons[key].size : 0;
   }
 
   function toggleComplete(lessonId) {
-    if (completedLessons.has(lessonId)) {
-      completedLessons.delete(lessonId);
+    const key = getCompletedKey();
+    if (!completedLessons[key]) completedLessons[key] = new Set();
+    if (completedLessons[key].has(lessonId)) {
+      completedLessons[key].delete(lessonId);
     } else {
-      completedLessons.add(lessonId);
+      completedLessons[key].add(lessonId);
     }
     saveProgress();
     updateProgressUI();
@@ -118,8 +142,9 @@
 
   // ===== PROGRESS UI =====
   function updateProgressUI() {
-    const total = LESSONS_DATA.length;
-    const done = completedLessons.size;
+    const lessons = getPlatformData();
+    const total = lessons.length;
+    const done = getCompletedCount();
     const pct = total > 0 ? Math.round((done / total) * 100) : 0;
     progressCount.textContent = `${done} / ${total} completadas`;
     progressPercent.textContent = `${pct}%`;
@@ -127,7 +152,6 @@
   }
 
   function refreshLessonCards() {
-    // Update all lesson cards in the DOM
     $$('.lesson-card').forEach(card => {
       const id = card.dataset.lessonId;
       if (isCompleted(id)) {
@@ -136,25 +160,45 @@
         card.classList.remove('completed');
       }
     });
-    // Also refresh detail view if visible
     if (!lessonView.classList.contains('hidden')) {
       const currentId = lessonView.dataset.currentLesson;
       if (currentId) renderLessonDetail(currentId);
     }
   }
 
+  // ===== PLATFORM SWITCH =====
+  function switchPlatform(platform) {
+    currentPlatform = platform;
+    currentLevel = 'all';
+    searchInput.value = '';
+    searchResults.classList.add('hidden');
+    glossaryPanel.classList.add('hidden');
+    glossaryVisible = false;
+    glossaryToggleBtn.textContent = '📋 Glosario de Comandos';
+
+    // Update platform toggles
+    $$('.platform-toggle').forEach(b => {
+      b.classList.toggle('active', b.dataset.platform === platform);
+    });
+
+    // Reset level toggles
+    $$('.level-toggle').forEach(b => {
+      b.classList.toggle('active', b.dataset.level === 'all');
+    });
+
+    renderAll();
+  }
+
   // ===== FILTER LESSONS =====
   function getFilteredLessons() {
     const query = searchInput.value.trim().toLowerCase();
-    let lessons = LESSONS_DATA;
+    let lessons = getPlatformData();
 
-    // Filter by level
     if (currentLevel !== 'all') {
       const lvl = parseInt(currentLevel);
       lessons = lessons.filter(l => l.level === lvl);
     }
 
-    // Filter by search query
     if (query.length > 0) {
       lessons = lessons.filter(l => {
         const haystack = [
@@ -178,6 +222,7 @@
 
   function renderLessons() {
     const lessons = getFilteredLessons();
+    const platform = PLATFORMS[currentPlatform];
 
     if (lessons.length === 0) {
       lessonsGrid.innerHTML = `
@@ -192,7 +237,10 @@
       const done = isCompleted(l.id);
       const levelNames = ['', 'Principiante', 'Intermedio', 'Avanzado'];
       return `
-        <div class="lesson-card${done ? ' completed' : ''}" data-lesson-id="${l.id}" onclick="window._haOpenLesson('${l.id}')">
+        <div class="lesson-card${done ? ' completed' : ''}"
+             data-lesson-id="${l.id}"
+             onclick="window._haOpenLesson('${l.id}')"
+             style="${platform.color ? '--lesson-accent:' + platform.color + ';' : ''}">
           <div class="lesson-card-check">✓</div>
           <div class="lesson-card-header">
             <span class="lesson-icon">${l.icon || '📖'}</span>
@@ -214,7 +262,8 @@
   };
 
   function renderLessonDetail(lessonId) {
-    const lesson = LESSONS_DATA.find(l => l.id === lessonId);
+    const lessons = getPlatformData();
+    const lesson = lessons.find(l => l.id === lessonId);
     if (!lesson) return;
 
     const done = isCompleted(lessonId);
@@ -226,14 +275,12 @@
         <div class="lesson-detail-level">${lesson.icon || ''} Nivel ${lesson.level} — ${levelName}</div>
         <h1 class="lesson-detail-title">${lesson.title}</h1>
       </div>
-
       <div class="lesson-detail-section">
         <h3>📖 Teoría</h3>
         <p>${lesson.desc}</p>
         ${(lesson.paragraphs || []).map(p => `<p>${p}</p>`).join('')}
       </div>`;
 
-    // Tips
     if (lesson.tips && lesson.tips.length > 0) {
       html += `
       <div class="lesson-detail-section">
@@ -242,7 +289,6 @@
       </div>`;
     }
 
-    // Commands / Examples
     if (lesson.commands && lesson.commands.length > 0) {
       html += `
       <div class="lesson-detail-section">
@@ -251,15 +297,11 @@
       </div>`;
     }
 
-    // Exercise
     html += `
       <div class="lesson-detail-section">
         <h3>✏️ Ejercicio Práctico</h3>
         <p>${generateExercise(lesson)}</p>
-      </div>`;
-
-    // Complete button
-    html += `
+      </div>
       <button class="complete-btn${done ? ' done' : ''}" onclick="window._haToggleComplete('${lessonId}')">
         ${done ? '✓ Completada' : '☐ Marcar como completada'}
       </button>`;
@@ -273,18 +315,10 @@
   };
 
   function generateExercise(lesson) {
-    const exercises = {
-      l1: 'Abre la documentación oficial de Hermes Agent en hermes-agent.nousresearch.com/docs y explora al menos 3 secciones del menú lateral. Anota qué funcionalidad te llama más la atención.',
-      l2: 'Si aún no tienes Hermes instalado, sigue la guía de instalación para tu sistema operativo. Si ya lo tienes, ejecuta `hermes --version` y verifica la versión instalada.',
-      l3: 'Abre Hermes y ten tu primera conversación. Pregúntale "¿qué herramientas tienes disponibles?" y "¿cómo puedo configurar un proveedor de IA?".',
-    };
-    if (exercises[lesson.id]) return exercises[lesson.id];
-
     if (lesson.commands && lesson.commands.length > 0) {
-      return `Prueba al menos 3 de los comandos mostrados arriba en tu terminal. Experimenta con las opciones y flags que aparecen en la documentación.`;
+      return `Prueba al menos 3 de los comandos mostrados arriba en tu terminal. Experimenta con las opciones y flags que aparecen en la documentación oficial de ${PLATFORMS[currentPlatform].name}.`;
     }
-
-    return `Lee el contenido de esta lección y explora la documentación oficial en hermes-agent.nousresearch.com/docs para profundizar en el tema. Intenta aplicar al menos un concepto en tu configuración de Hermes.`;
+    return `Lee el contenido de esta lección y explora la documentación oficial de ${PLATFORMS[currentPlatform].name} en ${PLATFORMS[currentPlatform].url} para profundizar en el tema. Intenta aplicar al menos un concepto en tu configuración.`;
   }
 
   // ===== SEARCH =====
@@ -296,9 +330,9 @@
       return;
     }
 
-    // Search across all lessons
+    const lessons = getPlatformData();
     const results = [];
-    for (const lesson of LESSONS_DATA) {
+    for (const lesson of lessons) {
       const haystack = [
         lesson.title, lesson.desc,
         ...(lesson.paragraphs || []),
@@ -307,7 +341,6 @@
       ].join(' ').toLowerCase();
 
       if (haystack.includes(query)) {
-        // Find context snippet
         let context = '';
         for (const p of (lesson.paragraphs || [])) {
           const idx = p.toLowerCase().indexOf(query);
@@ -320,10 +353,7 @@
         }
         if (!context && lesson.commands) {
           for (const c of lesson.commands) {
-            if (c.toLowerCase().includes(query)) {
-              context = c;
-              break;
-            }
+            if (c.toLowerCase().includes(query)) { context = c; break; }
           }
         }
         results.push({ lesson, context: context || lesson.desc });
@@ -332,10 +362,7 @@
 
     if (results.length === 0) {
       searchResults.classList.remove('hidden');
-      searchResults.innerHTML = `
-        <div style="text-align:center;padding:1rem;color:var(--muted)">
-          No se encontraron resultados para "<strong>${escapeHtml(query)}</strong>".
-        </div>`;
+      searchResults.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--muted)">No se encontraron resultados para "<strong>${escapeHtml(query)}</strong>".</div>`;
       lessonsGrid.innerHTML = '';
       return;
     }
@@ -346,8 +373,6 @@
         <div class="search-result-title">${r.lesson.icon || ''} ${r.lesson.title}</div>
         <div class="search-result-context">${escapeHtml(r.context)}</div>
       </div>`).join('');
-
-    // Also update grid
     renderLessons();
   }
 
@@ -365,17 +390,14 @@
   }
 
   function renderGlossary(filterText) {
-    let items = GLOSSARY_DATA || [];
+    let items = getGlossaryData();
     if (filterText) {
       const q = filterText.toLowerCase();
-      items = items.filter(g =>
-        g.command.toLowerCase().includes(q) ||
-        g.lessonTitle.toLowerCase().includes(q)
-      );
+      items = items.filter(g => g.command.toLowerCase().includes(q) || g.lessonTitle.toLowerCase().includes(q));
     }
 
     glossaryPanel.innerHTML = `
-      <h2>📋 Glosario de Comandos CLI</h2>
+      <h2>📋 Glosario de Comandos — ${PLATFORMS[currentPlatform].name}</h2>
       <div class="glossary-search">
         <input type="text" id="glossary-filter" placeholder="Filtrar comandos..." value="${escapeHtml(filterText || '')}" />
       </div>
@@ -386,15 +408,12 @@
             <span class="glossary-ref" onclick="window._haOpenLesson('${g.lesson}')">→ ${escapeHtml(g.lessonTitle)}</span>
           </div>`).join('')}
         ${items.length === 0 ? '<p style="color:var(--muted);text-align:center;padding:1rem">Sin resultados.</p>' : ''}
-        ${items.length > 80 ? `<p style="color:var(--faint);text-align:center;padding:0.5rem">Mostrando 80 de ${items.length} comandos. Usa el filtro para afinar.</p>` : ''}
+        ${items.length > 80 ? `<p style="color:var(--faint);text-align:center;padding:0.5rem">Mostrando 80 de ${items.length} comandos.</p>` : ''}
       </div>`;
 
-    // Bind glossary filter
     const filterInput = $('#glossary-filter');
     if (filterInput) {
-      filterInput.addEventListener('input', () => {
-        renderGlossary(filterInput.value);
-      });
+      filterInput.addEventListener('input', () => renderGlossary(filterInput.value));
     }
   }
 
@@ -410,6 +429,13 @@
 
   // ===== EVENTS =====
   function bindEvents() {
+    // Platform toggles
+    platformToggles.addEventListener('click', (e) => {
+      const btn = e.target.closest('.platform-toggle');
+      if (!btn) return;
+      switchPlatform(btn.dataset.platform);
+    });
+
     // Level toggles
     levelToggles.addEventListener('click', (e) => {
       const btn = e.target.closest('.level-toggle');
@@ -468,7 +494,6 @@
     init();
   }
 
-  // Set global flag for diagnostics
-  window.__hermes_academy_loaded = true;
-  window.__hermes_academy_domready = true;
+  window.__academia_loaded = true;
+  window.__academia_domready = true;
 })();

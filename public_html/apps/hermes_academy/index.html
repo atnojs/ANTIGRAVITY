@@ -3,22 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hermes Academy — Aprende Hermes Agent de 0 a Pro</title>
+  <title>Hermes Academy — Aprende Agentes de IA de 0 a Pro</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="app.css?v=2" />
+  <link rel="stylesheet" href="app.css?v=3" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon" />
 </head>
 <body>
   <main class="container">
     <!-- ===== SPLASH SCREEN ===== -->
     <div id="splash-screen">
-      <h1 class="splash-title">Hermes Academy</h1>
-      <p class="splash-subtitle">Domina Hermes Agent desde cero hasta nivel profesional</p>
-      <p class="splash-desc">27 lecciones interactivas basadas en la documentación oficial. Con ejemplos reales, ejercicios prácticos y glosario de comandos.</p>
+      <h1 class="splash-title">Academia de Agentes IA</h1>
+      <p class="splash-subtitle">Domina las 4 plataformas de agentes de IA desde cero hasta nivel profesional</p>
+      <p class="splash-desc">Hermes Agent · Codex · Claude Code · Antigravity — Lecciones interactivas basadas en la documentación oficial de cada plataforma.</p>
+
+      <!-- Platform Selector -->
+      <div class="platform-toggles" id="platform-toggles">
+        <button class="platform-toggle active" data-platform="hermes">
+          <span class="platform-icon">🧠</span>
+          <span>Hermes Agent</span>
+        </button>
+        <button class="platform-toggle" data-platform="codex">
+          <span class="platform-icon">🤖</span>
+          <span>Codex</span>
+        </button>
+        <button class="platform-toggle" data-platform="claude">
+          <span class="platform-icon">💎</span>
+          <span>Claude Code</span>
+        </button>
+        <button class="platform-toggle" data-platform="antigravity">
+          <span class="platform-icon">🌌</span>
+          <span>Antigravity</span>
+        </button>
+      </div>
 
       <!-- Search -->
       <div class="search-bar">
@@ -37,7 +57,7 @@
       <!-- Progress -->
       <div class="progress-section">
         <div class="progress-info">
-          <span id="progress-count">0 / 27 completadas</span>
+          <span id="progress-count">0 / 0 completadas</span>
           <span class="progress-percent" id="progress-percent">0%</span>
         </div>
         <div class="progress-outer">
@@ -52,9 +72,7 @@
       <div id="lessons-grid" class="lessons-grid"></div>
 
       <!-- Glossary toggle -->
-      <button class="glossary-toggle" id="glossary-toggle-btn">
-        📋 Glosario de Comandos
-      </button>
+      <button class="glossary-toggle" id="glossary-toggle-btn">📋 Glosario de Comandos</button>
 
       <!-- Glossary panel -->
       <div id="glossary-panel" class="hidden"></div>
@@ -79,13 +97,17 @@
       <div class="progress-bar-track">
         <div class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
       </div>
-      <p class="secondary-status">Cargando Academia Hermes...</p>
+      <p class="secondary-status">Cargando Academia...</p>
     </div>
   </div>
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
-  <script src="lessons-data.js"></script>
+  <script src="config-platforms.js"></script>
+  <script src="lessons-hermes.js"></script>
+  <script src="lessons-codex.js"></script>
+  <script src="lessons-claude.js"></script>
+  <script src="lessons-antigravity.js"></script>
   <script src="history-manager.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
