@@ -34,6 +34,8 @@
       <h2>¿Quién eres?</h2>
       <p>Cada persona tiene su propio historial de lecturas. Escribe tu nombre para empezar (o continuar donde lo dejaste).</p>
       <input type="text" id="aliasInput" placeholder="Tu nombre o alias…" maxlength="30" autocomplete="off" autofocus>
+      <input type="password" id="aliasPass" class="hidden" placeholder="Contraseña" maxlength="20" autocomplete="off">
+      <div class="alias-error hidden" id="aliasError"></div>
       <button id="aliasEnter" class="alias-btn">Entrar</button>
     </div>
   </div>
@@ -89,6 +91,6 @@
 
   <script src="data.js"></script>
   <script src="history-manager.js?v=1"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

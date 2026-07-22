@@ -715,6 +715,15 @@ img { max-width: 100%; display: block; }
   border-color: var(--border-strong);
   box-shadow: 0 0 0 3px var(--glow-soft), 0 0 20px var(--glow-soft);
 }
+.alias-card input.hidden { display: none; }
+.alias-error {
+  color: #e0483d;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+  margin-top: -8px;
+}
+.alias-error.hidden { display: none; }
 .alias-btn {
   width: 100%;
   height: 50px;
