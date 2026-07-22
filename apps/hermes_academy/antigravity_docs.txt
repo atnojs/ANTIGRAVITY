@@ -1,40 +1,12 @@
+================================================================================
+ANTIGRAVITY DOCUMENTATION - Full Content Extraction
+Generated: 2026-07-22
+Total URLs: 16 (15 successful, 1 not found)
+================================================================================
+
+
 <!-- source: https://antigravity.google/docs/overview?app=antigravity -->
 
-Home
-Antigravity 2.0
-v2.3.1
-keyboard_arrow_right
-Overview
-Getting Started
-Build with Google
-Feature Overview
-Models
-Projects
-Settings
-keyboard_arrow_right
-Customizations
-keyboard_arrow_right
-Agent Capabilities
-keyboard_arrow_right
-Artifacts
-keyboard_arrow_right
-Antigravity CLI
-v1.1.5
-keyboard_arrow_right
-Antigravity SDK
-v0.1.7
-keyboard_arrow_right
-Antigravity IDE
-v2.1.1
-keyboard_arrow_right
-Migration
-keyboard_arrow_right
-Enterprise
-Plans
-FAQ
-Antigravity 2.0
->
-Overview
 Antigravity 2.0
 Overview
 
@@ -56,6 +28,10 @@ Whether you are performing deep research or building new applications, Antigravi
 
 Getting Started
 Ready to dive in? Check out the Getting Started guide to install Antigravity 2.0 and start your first project.
+
+
+<!-- source: https://antigravity.google/docs/editor -->
+STATUS: 404 Not Found - This page does not exist.
 
 
 <!-- source: https://antigravity.google/docs/features -->
@@ -103,3 +79,745 @@ We reworked the browser subagent in Antigravity 2.0.
 - Chrome DevTools integration: The browser subagent also integrates natively with Chrome DevTools MCP.
 - Video recording: Now supports recordings as webm videos.
 
+
+<!-- source: https://antigravity.google/docs/projects -->
+
+Projects
+
+In Antigravity 2.0, we are transitioning from the legacy repository-centric workspace model to a more flexible and secure Project-centric model. This document outlines what Projects are, how they work, and how they differ from the original workspace structure.
+
+What is a Project?
+A Project is a configuration of folders defining the environment and the scope of your agent. Instead of forcing an agent to operate within a single folder, a project can work with one folder or multiple folders (e.g., a frontend and a backend repo), providing your agents with all of the context required for your codebase. All projects have their own isolated agent settings, allowing you to customize different projects' security settings independently.
+
+Key Differences: Workspace vs. Projects
+
+| Feature | Original Model (Workspace) | New Model (Project) |
+|---|---|---|
+| Organization Scope | Tightly coupled to a single local repository. | Projects are a configuration of all of the context and folders that your agents should work with. |
+| Directory Boundaries | Agent is strictly confined to one folder structure. | A single Project can span multiple folders at once. |
+| Settings Isolation | Settings inherited globally from the machine. | Projects have their own settings. Agents in a project use the project's settings. |
+| Permissions | Broad, global permissions. | Global permissions are inherited. Projects can have their own permissions in addition to global permissions. |
+| Customizations | Skills/MCPs managed globally or per-workspace. | Reusable skills, MCPs, and hooks are managed globally. |
+
+Core Project Concepts
+
+1. Folders - A Project is composed of folders, which define the directories and repositories the agent is allowed to access:
+- Local Folders: A folder that doesn't have git configured.
+- Local Git Checkout: A folder that is a Git repository checkout.
+
+2. Worktree Selection (Local vs. New Worktree) - When starting a new conversation in a Project, you choose how the agent should interact with your folders via the worktree selector:
+- Local Mode: The agent works directly in your active local folders or Git checkouts. (Best for quick, interactive edits in your current working folder).
+- New Worktree Mode: Creates a new Git worktree for the conversation. (Best for complex tasks, keeping your active working folder untouched and preventing parallel subagents from conflicting).
+
+3. Scoped Settings and Permissions - Settings and permissions are both scoped at the project level:
+- Settings: When a Project is created, it always starts with the default security preset where it has read and write access to all of your project's folders and will ask for permission to run all terminal commands. These settings can be modified and apply to all agents within this project.
+- Permissions: Projects inherit global permissions but allow you to augment them at the Project level, ensuring agents only have the exact access required for that specific project's tasks.
+
+Workflows using Projects
+- Working in a Single Folder: Create a project with a folder and then configure its settings.
+- Working in Multiple Folders: Add all related folders into a single Project so the agent has full context across your codebases.
+- Running Parallel Agents on the Same Folder: Choose Local Mode when starting an agent so that all of your agents work in the same active folders.
+- Isolating Concurrent Agents: Choose New Worktree Mode when starting an agent so that separate, isolated Git worktrees are provisioned for each agent session, avoiding conflicts between agents.
+- Mixed Checkouts & Local Folders: Working locally operates directly in the existing folders. Using "New Worktree Mode" will spawn a new Git worktree for all active Git checkouts, allowing the agent to operate inside the new worktrees and the existing non-git local folders simultaneously.
+
+
+<!-- source: https://antigravity.google/docs/settings -->
+
+Settings
+
+Antigravity 2.0 Settings
+Antigravity 2.0 features a hierarchical settings architecture designed to give you granular control over your development environment. Settings are split between Global application preferences and isolated Project-level boundaries to ensure robust security and flexible workspace configurations.
+
+Accessing Settings
+You can open the Settings panel in Antigravity 2.0 using the following methods:
+- Keyboard Shortcut: Press Cmd + , on any active surface inside the application.
+- Sidebar Navigation: Click Settings at the bottom of the left sidebar.
+- Project Settings: Click the Gear Icon located next to a specific project.
+
+Note: By default, if you have an active project open, clicking Settings will automatically open the configurations for that specific project. Otherwise, it will open the global settings.
+
+The Four Settings Categories
+Settings are organized into four distinct scopes to keep configurations clean and isolated:
+
+1. Global Settings
+These are global settings that apply to everything:
+- Account Settings: Manage authentication sessions and toggle Telemetry (enable/disable sharing interaction logs to improve models).
+- Global Permissions: Centralized default tool boundaries that apply to all conversations.
+- Appearance: Customize visual themes and panel layouts.
+- Browser Integration: Configure how the agent interacts with web surfaces.
+- Model Usage: Choose and configure default reasoning models.
+- Customizations: Manage Model Context Protocol (MCP) servers, custom skills, and "Build with Google" plugins.
+
+2. Project Settings
+These settings apply exclusively within the scope of a specific Project:
+- Folders: Define the list of local folders associated with the project. Antigravity automatically detects Git configurations for these folders to handle conversation targets:
+  - Local: Select this in the new conversation view to work directly in the existing folders.
+  - Worktree: Select this to start a new worktree in the folders. (Note: If a folder does not have Git, the existing local folder is used instead).
+- Agent Settings: Configure project-specific agent behaviors:
+  - Terminal Execution Policy: Control how the agent runs shell commands.
+  - Outside of Folder File Access Policy: Define how the agent accesses files outside the project boundary (Always Allow, Always Ask, or Always Deny).
+  - Sandbox Mode: Toggle the terminal sandbox container on or off within the custom security preset.
+- Project-level Permissions: Configure permissions at the project level. As you interact with an agent, you will accumulate permission requests that can be automatically added to the project permissions.
+- Customizations: Derived from both global customizations and project-specific ones. You can view all skills originating from each folder added to the project.
+
+3. Conversations Outside of a Project
+You can also start conversations outside of a project (standalone conversations):
+- Behavior: These conversations do not have a configurable folder and instead run in a local scratch directory.
+- Settings: They can have their own settings (such as terminal execution, file access policies, and permissions) similar to projects, but operate independently of any project structure.
+
+4. Miscellaneous
+- Shortcuts: View and customize keyboard shortcut configurations.
+- Feedback: Access the feedback form to send reports directly to the team.
+
+Data Collection Settings
+The "Enable Telemetry" setting can be found in the Settings panel under the "Account" section. When toggled on, Antigravity collects interactions for use in evaluating, developing, and improving Antigravity and models that support Antigravity.
+
+
+<!-- source: https://antigravity.google/docs/permissions -->
+
+Agent Permissions
+
+Antigravity uses a robust, unified permission engine to secure your environment while enabling autonomous workflows. Every sensitive operation the Agent performs is represented as a permission resource formatted as action(target).
+
+Permissions are evaluated across three distinct access lists:
+- Deny: The action is blocked immediately.
+- Ask: The Agent pauses and prompts for your explicit approval before proceeding.
+- Allow: The action is auto-approved without prompting.
+
+Precedence Rule: Conflicting rules are strictly evaluated in priority order: Deny > Ask > Allow.
+
+Supported Actions & Matching Rules
+
+| Action | Target Format | Matching Behavior | Default Fallback |
+|---|---|---|---|
+| read_file | read_file(/path), read_file(dir), or read_file(*) | Matches absolute paths or paths relative to project workspace roots. Grants recursive read access to all contained files/folders. read_file(*) matches all files on the system. | Ask (Auto-allowed in workspace) |
+| write_file | write_file(/path) or write_file(*) | Same as read_file. Implicitly grants read_file for the exact same target path. | Ask (Auto-allowed in workspace) |
+| read_url | read_url(domain) or read_url(*) | Matches hostnames and subdomains (e.g., google.com covers mail.google.com). Ignores URL path segments. read_url(*) matches any domain. | Ask |
+| execute_url | execute_url(domain) or execute_url(*) | Actuating on web elements (clicking, typing) or driving interactive browser workflows on a domain. | Ask |
+| command | command(prefix), command(regex), or command(*) | Matches by exact word/token prefix. Each whitespace-separated token is evaluated as an anchored regular expression. E.g., command(npm run (build.*)) matches npm run build and npm run build-prod. | Ask |
+| unsandboxed | unsandboxed(prefix), unsandboxed(regex), or unsandboxed(*) | Matches commands by exact word/token prefix. Commands matching this grant will be executed outside of container isolation. | Ask |
+| mcp | mcp(server/tool), mcp(server/*), or mcp(*) | Matches exact MCP tools or all tools on a specified server. mcp(*) matches any tool. | Ask |
+
+Global Wildcard Syntax (*): Across all supported action types, passing the global wildcard * matches all targets within that entire action namespace.
+
+Understanding read_url vs execute_url Across the Platform
+The read_url permission governs outbound web connectivity across three distinct areas of Antigravity:
+- The read_url Tool: When the Agent uses the internal read_url_content tool to fetch web page markdown for research, it checks your read_url grants.
+- Browser Subagent & Tool: When driving Chrome sessions, read_url authorizes loading and viewing the target domain. However, interactive UI actuation (clicking buttons, typing text) is governed independently by execute_url.
+- Terminal Sandboxing: In sandbox mode, any domain granted under read_url is compiled directly into the container's outbound network allowlist (AllowedDomains).
+
+Cross-Platform Command & Path Matching
+Antigravity ensures your permission rules work flawlessly whether you are developing on macOS, Linux, or Windows. On macOS and Linux, paths use standard forward slashes (/). On Windows, Antigravity automatically normalizes paths prior to rule evaluation by stripping drive letters (e.g., C:) and converting all backslashes (\) to forward slashes (/).
+
+Implicit Permission Rules
+- Write implies Read: Allowing write_file on a path automatically grants read_file on that path.
+- Deny Read implies Deny Write: Denying read_file on a path immediately blocks write_file on that path.
+
+Interactive Permission Prompts
+When the Agent encounters an operation requiring approval (Ask mode), an interactive card appears in your editor. Before clicking Allow for file, URL, or MCP permissions, you can directly edit the target string in the prompt card to expand the granted scope. Antigravity validates that your edited target safely covers the operation and applies the expanded grant for the remainder of the turn.
+
+Terminal Sandboxing (Preview)
+Permission grants also apply to commands when sandbox is enabled:
+- Paths granted under read_file dynamically populate the sandbox's read-only filesystem allowlist.
+- Paths granted under write_file dynamically populate the sandbox's read-write filesystem allowlist.
+- Domains granted under read_url define outbound network access policies.
+Note: Terminal sandboxing is currently in preview on macOS / Linux, and coming soon to Windows.
+
+Default System Behaviors & Guardrails
+- Web Browsing Defaults to Ask: Actions for read_url and execute_url default to Ask.
+- Workspaces are Auto-Allowed: In standard operation, reading and writing files inside your active project directory is automatically allowed. All other unconfigured actions default to Ask.
+
+Configuration Examples
+
+Allow list:
+  command(git)
+  command(npm run (build|lint|test))
+  unsandboxed(git push)
+  read_file(/var/log/app)
+  write_file(src/)
+  read_url(google.com)
+  mcp(linter/*)
+
+Deny list:
+  command(rm -rf)
+  command(curl .*)
+  command(sudo)
+  write_file(.git/)
+  write_file(/home/user/.ssh)
+
+Ask list:
+  command(*)
+  execute_url(aws.amazon.com)
+  mcp(sql/execute_mutation)
+
+
+<!-- source: https://antigravity.google/docs/plans -->
+
+Plans
+
+Google Antigravity is available with terms to individual accounts derived from Google's terms of service, and available to teams under Google Cloud terms through the Gemini Enterprise Agent Platform.
+
+Rate limits and model availability differs based on usage of Google AI plans.
+
+Baseline Quota
+All plans receive a baseline of:
+- Use of Gemini models including Gemini 3.1 Pro, Gemini 3.5 Flash, and other offered Gemini Enterprise Agent Platform models as the core agent model
+- Unlimited Tab completions
+- Access to all product features, such as the Scheduled Tasks and the CLI
+
+Users on Google AI Ultra receive:
+- The highest, most generous quota, refreshed every five hours
+- Highest weekly rate limits
+- Access to third-party models
+
+Users on Google AI Pro receive:
+- High, generous quota, refreshed every five hours until weekly limit reached
+- Higher weekly rate limit
+
+Users not on AI Pro and Ultra plans receive:
+- Meaningful quota, refreshed weekly
+- Weekly rate limit
+
+The baseline rate limits are primarily determined to the degree we have capacity, and exist to prevent abuse. Under the hood, the rate limits are correlated with the amount of work done by the agent, which can differ from prompt to prompt.
+
+Usage limits for this service are subject to modification. These adjustments may be necessary to manage system capacity and maintain service stability.
+
+Overages
+Users on Google AI Pro or Ultra plans can utilize purchased AI credits (or any one-time promotional credits) for additional overage usage above the baseline provided quota. AI credits are consumed at standard Gemini Enterprise Agent Platform consumption pricing.
+
+Usage of credits once the baseline quota is exhausted for any particular model is controlled by the "AI Credit Overages" user setting:
+- Never: Never use AI credits automatically, wait until the baseline quota refreshes before using this model further
+- Always: Always use AI credits when the baseline quota is exhausted
+
+Baseline quota usage across models can be viewed in the settings page.
+
+Other
+There is currently no support for:
+- Bring-your-own-key or bring-your-own-endpoint for additional rate limits
+- Organizational tiers via contract
+
+
+<!-- source: https://antigravity.google/docs/faq -->
+
+FAQ
+
+Why can I not authenticate into Google Antigravity?
+Google Antigravity is currently available for personal Google accounts in approved geographies. Please try using an @gmail.com email address if having challenges with Workspace Google accounts.
+
+Why is my age unverified?
+At the moment, Antigravity is unavailable to under-18 users. If you do meet the minimum age requirement, you may verify your age to continue using Antigravity.
+
+What is Google Antigravity's geographical availability?
+Google Antigravity is available in the following countries and territories:
+Americas: American Samoa, Anguilla, Antigua and Barbuda, Argentina, Aruba, The Bahamas, Barbados, Belize, Bermuda, Bolivia, Brazil, British Virgin Islands, Canada, Caribbean Netherlands, Cayman Islands, Chile, Colombia, Costa Rica, Curaçao, Dominica, Dominican Republic, Ecuador, El Salvador, Falkland Islands (Islas Malvinas), Greenland, Grenada, Guatemala, Guyana, Haiti, Honduras, Jamaica, Mexico, Montserrat, Nicaragua, Panama, Paraguay, Peru, Puerto Rico, Saint Barthélemy, Saint Kitts and Nevis, Saint Lucia, Saint Pierre and Miquelon, Saint Vincent and the Grenadines, South Georgia and the South Sandwich Islands, Suriname, Trinidad and Tobago, Turks and Caicos Islands, United States, Uruguay, U.S. Virgin Islands, Venezuela
+
+Europe: Albania, Armenia, Austria, Azerbaijan, Belgium, Bosnia and Herzegovina, Bulgaria, Croatia, Cyprus, Czech Republic, Denmark, Estonia, Faroe Islands, Finland, France, Georgia, Germany, Gibraltar, Greece, Guernsey, Hungary, Iceland, Ireland, Isle of Man, Italy, Jersey, Kosovo, Latvia, Liechtenstein, Lithuania, Luxembourg, Malta, Montenegro, Netherlands, North Macedonia, Norway, Poland, Portugal, Romania, Serbia, Slovakia, Slovenia, Spain, Sweden, Switzerland, Ukrainian territories (except Crimea, DNR, LNR), United Kingdom
+
+Africa: Algeria, Angola, Benin, Botswana, Burkina Faso, Burundi, Cabo Verde, Cameroon, Central African Republic, Chad, Comoros, Côte d'Ivoire, Democratic Republic of the Congo, Djibouti, Egypt, Equatorial Guinea, Eritrea, Eswatini, Ethiopia, Gabon, The Gambia, Ghana, Guinea, Guinea-Bissau, Kenya, Lesotho, Liberia, Libya, Madagascar, Malawi, Mali, Mauritania, Mauritius, Morocco, Mozambique, Namibia, Niger, Nigeria, Republic of the Congo, Rwanda, Saint Helena, São Tomé and Príncipe, Senegal, Seychelles, Sierra Leone, Somalia, South Africa, South Sudan, Sudan, Tanzania, Togo, Tunisia, Uganda, Western Sahara, Zambia, Zimbabwe
+
+Asia: Bahrain, Bangladesh, Bhutan, British Indian Ocean Territory, Brunei, Cambodia, Christmas Island, Cocos (Keeling) Islands, India, Indonesia, Iraq, Israel, Japan, Jordan, Kazakhstan, Kuwait, Kyrgyzstan, Laos, Lebanon, Malaysia, Maldives, Mongolia, Nepal, Oman, Pakistan, Palestine, Philippines, Qatar, Saudi Arabia, Singapore, South Korea, Sri Lanka, Taiwan, Tajikistan, Thailand, Timor-Leste, Türkiye, Turkmenistan, United Arab Emirates, Uzbekistan, Vietnam, Yemen
+
+Oceania: Australia, Cook Islands, Fiji, Guam, Heard Island and McDonald Islands, Kiribati, Marshall Islands, Micronesia, Nauru, New Caledonia, New Zealand, Niue, Norfolk Island, Northern Mariana Islands, Palau, Papua New Guinea, Pitcairn Islands, Samoa, Solomon Islands, Tokelau, Tonga, Tuvalu, United States Minor Outlying Islands, Vanuatu, Wallis and Futuna
+
+Antarctica: Antarctica
+
+Why am I ineligible for a Google One AI plan?
+The following regions do not currently have access to Google One AI plans: Antarctica, Brunei, Caribbean Netherlands, Curaçao, Democratic Republic of the Congo, Eswatini, Falkland Islands (Islas Malvinas), Faroe Islands, Greenland, Guernsey, Heard Island and McDonald Islands, Isle of Man, Jersey, Kosovo, Montenegro, New Caledonia, Pitcairn Islands, Republic of the Congo, Saint Barthélemy, Saint Helena, Saint Kitts and Nevis, Saint Vincent and the Grenadines, São Tomé and Príncipe, South Georgia and the South Sandwich Islands, South Sudan, Sudan, The Gambia, Türkiye, United States Minor Outlying Islands, U.S. Virgin Islands, Wallis and Futuna
+
+What is Google Antigravity's stance on data collection?
+Please refer to the Terms of Service. You may opt out of data collection at any point from the Settings panel.
+
+How do I sign in with a GCP project?
+Follow the steps in the Enterprise Page to learn how to sign in with GCP.
+
+How do I get support?
+Check out the communities on our Support page.
+
+What are the model rate limits?
+Please see more details in the docs on Plans.
+
+Why can't I use third party software (e.g. Claude Code, OpenClaw, OpenCode) with my Antigravity login?
+Using third party software, tools, or services to access Antigravity is a violation of our Terms of Service, and severely degrades the experience for legitimate product users. Such actions may be grounds for suspension or termination of your account. If you would like to use a third party coding agent with Gemini, we recommend using a Vertex or AI Studio API key.
+
+Does Google Antigravity currently support worktrees?
+Yes, you can use worktrees in Antigravity 2.0.
+
+What happens when my computer goes to sleep?
+If an agent is running, Antigravity will prevent your computer from sleeping.
+
+
+<!-- source: https://antigravity.google/docs/artifacts?app=antigravity -->
+
+Artifacts
+
+An Artifact is a structured deliverable created by the agent to accomplish its task and communicate its progress and thinking to the human user. Artifacts include rich markdown plans (Implementation Plans), code diffs, architecture diagrams, images, and browser recordings.
+
+As agents become more autonomous and execute complex tasks over longer periods, Artifacts enable asynchronous collaboration. You do not need to carefully monitor every individual tool call or step synchronously; instead, you review high-level deliverables at key milestones.
+
+Reviewing Artifacts Across Surfaces
+Artifacts are primarily generated during the agent's Planning Mode and are accessible across both Antigravity 2.0 and the Antigravity CLI.
+
+Antigravity 2.0
+The desktop app features a visual sidebar and review pane specifically optimized for displaying, organizing, and managing rich Artifacts.
+- Capabilities: You can inspect interactive plans, review visual code diffs, and play back browser recordings of the agent's UI actions directly within the app interface.
+
+Antigravity CLI
+In the lightweight terminal interface, Artifacts are managed using a fast, keyboard-driven review panel.
+- Workflow: When the agent generates or modifies files that require your approval, a notification appears in your terminal status bar.
+
+Interactive Steering and Feedback
+Feedback is a core mechanism of the Artifact workflow. Depending on your configuration, the agent will pause at intermediate milestones and request review on its plans or code edits before executing them.
+- Steering the Agent: If an artifact (like an Implementation Plan) does not align with your goal, you can provide inline text feedback to steer the agent's thinking in the proper direction before it modifies any local files.
+- Granular Control: This approval loop ensures that you remain in the driver's seat, allowing the agent to operate with high autonomy while maintaining strict human-in-the-loop validation.
+
+
+<!-- source: https://antigravity.google/docs/walkthrough -->
+
+Walkthrough
+
+Agent creates walkthrough artifacts when it has completed task implementation; this type of artifact includes a concise summary of the changes that have been made to remind the user of what has happened in the active conversation. This is a great way to get up to speed with the state of your codebase after Agent has made its changes in case you were not strictly following it the whole time.
+
+For browser tasks, walkthroughs often contain screenshots and screen recordings of what Agent has built or created in the browser!
+
+
+<!-- source: https://antigravity.google/docs/browser -->
+
+Browser Overview
+
+Google Antigravity can open, read, and actuate a local Chrome browser, enabling you to test development websites, read documentation sources, and automate a variety of browser tasks.
+
+Core Mechanisms
+Using the specialized Browser Subagent, Antigravity operates on browser tabs as needed, capturing screenshots and saving action videos as interactive artifacts.
+
+To completely disable browser tools, you can toggle the Browser Tools setting in the "Browser" section of the User Settings.
+
+Deep Dive
+Explore the key security and privacy features of Antigravity's browser integration:
+- Allowlist & Denylist: Learn about the two-layer security model (Denylist and Allowlist) used to control URL access.
+- Isolated Profile: Understand how the agent executes inside a completely separate Chrome profile to protect your personal data.
+
+
+<!-- source: https://antigravity.google/docs/skills -->
+
+Agent Skills
+
+Skills are an open standard for extending agent capabilities. A skill is a folder containing a SKILL.md file with instructions that the agent can follow when working on specific tasks.
+
+What are skills?
+Skills are reusable packages of knowledge that extend what the agent can do. Each skill contains:
+- Instructions for how to approach a specific type of task
+- Best practices and conventions to follow
+- Optional scripts and resources the agent can use
+
+When you start a conversation, the agent sees a list of available skills with their names and descriptions. If a skill looks relevant to your task, the agent reads the full instructions and follows them.
+
+Where skills live
+Antigravity supports two types of skills:
+
+| Location | Scope |
+|---|---|
+| <workspace-root>/.agents/skills/<skill-folder>/ | Workspace-specific |
+| ~/.gemini/config/skills/<skill-folder>/ | Global (all workspaces) |
+
+Workspace skills are great for project-specific workflows, like your team's deployment process or testing conventions.
+Global skills work across all your projects. Use these for personal utilities or general-purpose tools you want everywhere.
+
+Note: Antigravity now defaults to .agents/skills, but still maintains backward support for .agent/skills.
+
+Creating a skill
+To create a skill:
+1. Create a folder for your skill in one of the skill directories
+2. Add a SKILL.md file inside that folder
+
+.agents/skills/
+└─── my-skill/
+    └─── SKILL.md
+
+Every skill needs a SKILL.md file with YAML frontmatter at the top:
+---
+name: my-skill
+description: Helps with a specific task. Use when you need to do X or Y.
+---
+
+# My Skill
+Detailed instructions for the agent go here.
+
+Frontmatter fields:
+
+| Field | Required | Description |
+|---|---|---|
+| name | No | A unique identifier for the skill (lowercase, hyphens for spaces). Defaults to the folder name if not provided. |
+| description | Yes | A clear description of what the skill does and when to use it. This is what the agent sees when deciding whether to apply the skill. |
+
+Tip: Write your description in third person and include keywords that help the agent recognize when the skill is relevant.
+
+Skill folder structure
+While SKILL.md is the only required file, you can include additional resources:
+.agents/skills/my-skill/
+├─── SKILL.md       # Main instructions (required)
+├─── scripts/       # Helper scripts (optional)
+├─── examples/      # Reference implementations (optional)
+└─── resources/     # Templates and other assets (optional)
+
+How the agent uses skills
+Skills follow a progressive disclosure pattern:
+- Discovery: When a conversation starts, the agent sees a list of available skills with their names and descriptions
+- Activation: If a skill looks relevant to your task, the agent reads the full SKILL.md content
+- Execution: The agent follows the skill's instructions while working on your task
+
+You don't need to explicitly tell the agent to use a skill—it decides based on context.
+
+Best practices
+- Keep skills focused: Each skill should do one thing well.
+- Write clear descriptions: The description is how the agent decides whether to use your skill.
+- Use scripts as black boxes: Encourage the agent to run them with --help first.
+- Include decision trees: For complex skills, add a section that helps the agent choose the right approach.
+
+Example: A code review skill
+---
+name: code-review
+description: Reviews code changes for bugs, style issues, and best practices. Use when reviewing PRs or checking code quality.
+---
+# Code Review Skill
+## Review checklist
+1. Correctness
+2. Edge cases
+3. Style
+4. Performance
+
+
+<!-- source: https://antigravity.google/docs/mcp -->
+
+Model Context Protocol (MCP)
+
+Antigravity supports the Model Context Protocol (MCP), an open standard that lets AI agents and editors securely connect to local developer tools, databases, file parsers, and external remote APIs. This integration provides the AI model with real-time context and execution capabilities beyond your immediate workspace.
+
+What is MCP?
+MCP acts as a universal bridge between Antigravity and your broader development environment. Instead of manually copying and pasting database schemas, logs, or API specifications into prompts or chat panels, MCP lets Antigravity fetch structured context directly or execute safe actions on your behalf when needed.
+
+Add Context
+With MCP, Antigravity can use live data from connected MCP servers:
+- When writing a SQL query, Antigravity can inspect your live Neon, Supabase, or AlloyDB schema to suggest correct table and column names.
+- When debugging deployment failures, Antigravity can pull recent build logs directly from Netlify or Heroku.
+
+Add Custom Tools
+With MCP, Antigravity can execute specific, safe actions defined by your connected servers:
+- Create a Linear issue for this TODO.
+- Search Notion or GitHub for authentication patterns.
+
+Antigravity 2.0
+In Antigravity 2.0, you can manage your MCP servers through the Installed MCP Servers section of your Settings.
+- Click the Settings button found on the bottom left of your screen.
+- Select Customizations and review the Installed MCP Servers section.
+- Click Add MCP to connect to the MCP Store.
+- Manage: Uninstall (trash icon), Disable/enable (toggle), Refresh.
+
+Antigravity IDE
+In Antigravity IDE, use the built-in MCP Store to browse, discover, and install supported MCP servers. Custom servers can be added via mcp_config.json.
+Config location: ~/.gemini/config/mcp_config.json (global) or .agents/mcp_config.json (workspace).
+
+Antigravity CLI
+Antigravity CLI supports both local stdio processes and remote host MCP server configurations. Type /mcp inside the prompt panel to open the interactive MCP Manager.
+- Global server setups: ~/.gemini/config/mcp_config.json
+- Workspace local setups: .agents/mcp_config.json
+
+Antigravity SDK
+In Python applications built using the Antigravity SDK, MCP servers (stdio, SSE, or HTTP) can be connected programmatically.
+
+MCP Configuration Structure
+{
+  "mcpServers": {
+    "sqlite-explorer": {
+      "command": "node",
+      "args": ["/usr/local/bin/sqlite-mcp-server.js"],
+      "env": { "SQLITE_DB_PATH": "/var/data/app.db" }
+    },
+    "my-remote-server": {
+      "serverUrl": "https://api.example.com/mcp/",
+      "headers": { "Authorization": "Bearer YOUR_API_TOKEN" }
+    }
+  }
+}
+
+MCP Configuration Properties:
+Transport (one required):
+- command (string): Path to executable for stdio transport.
+- serverUrl (string): URL for remote Streamable HTTP or SSE servers.
+
+Optional:
+- args (string[]): Command-line arguments.
+- env (object): Environment variables.
+- cwd (string): Working directory.
+- headers (object): Custom HTTP headers.
+- authProviderType (string): "google_credentials" for ADC.
+- oauth (object): OAuth client credentials (clientId, clientSecret).
+- disabled (boolean): Temporarily disable a server.
+- disabledTools (string[]): Tool names to withhold.
+
+MCP Authentication
+- Google Credentials: Set authProviderType to "google_credentials" for ADC. Run: gcloud auth application-default login
+- OAuth: Automatic handling for servers supporting DCR. Manual client credentials supported.
+- Custom Headers: Add API keys or bearer tokens via headers object.
+- Redirect URI: https://antigravity.google/oauth-callback
+- Tokens stored in: ~/.gemini/antigravity/mcp_oauth_tokens.json
+
+MCP Permissions and Access Control
+- mcp(server/tool): Matches a specific tool.
+- mcp(server/*): Matches all tools on a server.
+- mcp(*): Global wildcard for any MCP tool.
+
+Supported MCP Servers (partial list):
+Airweave, AlloyDB, Antimetal, Arize, Atlassian, BigQuery, Bigtable, Chrome DevTools, ClickHouse, Cloud SQL, Dart, Dataplex, Figma Dev Mode, Firebase, GitHub, GitLab Orbit, Google Cloud Quotas, Harness, Heroku, Linear, Locofy, Looker, MCP Toolbox for Databases, MongoDB, Neon, Netlify, Notion, PayPal, Perplexity Ask, Pinecone, PostHog, Postman, Prisma, Redis, Sequential Thinking, SonarQube, Spanner, Stripe, Supabase, Windsor AI
+
+
+<!-- source: https://antigravity.google/docs/subagents -->
+
+Asynchronous Subagents
+
+Subagents are an excellent way to parallelize complex tasks and preserve the context of your main agent. Instead of executing every step serially, an agent can delegate tasks—such as running tests or performing extensive codebase searches—to dedicated subagents. This architecture frees the parent agent to continue working on other tasks in parallel and prevents its context window from being polluted by the details of a subagent's work.
+
+Invoking Subagents
+The parent agent calls the invoke_subagent tool to spawn a new concurrent session with a dedicated role and initial prompt.
+- Workspace Options: The subagent can either inherit the same workspace as its parent or create an isolated Git worktree.
+- Context Isolation: The subagent runs using the same model as its parent but does not inherit the parent's existing conversation history (context window), starting with a clean slate.
+- Execution: Once invoked, the subagent immediately begins executing its task. A parent agent can invoke multiple subagents at any time.
+- Monitoring: You can directly monitor the progress of any subagent by clicking into its conversation via the subagent panel.
+
+Subagent Lifecycle and States
+
+1. Running
+The subagent is actively executing its task, calling tools, and generating responses.
+- Cancellation: You can cancel a running subagent by clicking the Stop Subagent button in the subagent panel.
+- Parent Control: The parent agent can also interrupt a subagent (by sending a message) or kill it entirely.
+
+2. Idle
+The subagent has completed its task, sent a message containing the results to its parent agent, and stopped execution.
+- Re-awakening: An idle agent can be awoken and return to the Running state upon receiving a message from another agent.
+- Context Retention: When awoken, the agent retains all context from its prior work.
+
+3. Killed
+The subagent is permanently terminated and cannot be re-awoken.
+- Cleanup: Any temporary Git worktrees generated for the subagent are automatically cleaned up.
+- Visibility: You and other agents can still view the historical conversation transcript of a killed subagent.
+
+Inter-Agent Communication
+Agents communicate by sending messages to each other using unique agent IDs.
+- Flexible Routing: Agents can communicate not only with their direct parents or subagents, but also with any other active agent whose ID is known.
+- Auto-Wake: If an idle agent receives a message, it is automatically re-awakened to process the new information.
+- Shared Transcripts: Agents can view each other's conversation transcripts.
+
+Built-In vs. Custom Subagents
+
+Built-In Subagents
+- research: Optimized for codebase research, navigation, and exploration.
+- browser: Operates sandboxed web browsers to perform interactive browser tasks (invoked exclusively via the /browser slash command).
+- self: A direct clone of the calling agent, sharing the identical system prompt and toolsets.
+
+Custom Subagents
+Agents can define their own custom subagents dynamically using the define_subagent tool.
+- Configuration: Define a custom system prompt and specific toolsets for read-only, write (including running terminal commands), and subagent delegation capabilities.
+- Scope: Once defined, the custom subagent can be invoked repeatedly for the remainder of the conversation.
+
+Delegation Hierarchy and Limits
+Subagents can invoke their own subagents, enabling multiple layers of delegation and hierarchical team structures.
+Warning: A maximum nesting depth of 10 levels (layers of subagents beneath the main agent) is strictly enforced to prevent runaway resource exhaustion.
+
+Permissions and Configuration Inheritance
+- Inherited Scopes: Subagents automatically inherit the parent's allowed terminal command prefixes and file read/write directory scopes.
+- Workspace Access: Parent agents retain full access to their subagents' workspaces, including those operating on isolated Git worktrees.
+- Permission Bubbling: If a subagent encounters a tool call that requires explicit user confirmation, the request is automatically bubbled up to the subagent panel UI for your approval.
+
+Multi-Agent Teamwork (Ultra Plan Only)
+Antigravity 2.0 introduces advanced multi-agent orchestration for extremely complex tasks.
+Ultra Plan Exclusive: The /teamwork-preview slash command is currently in preview and is exclusive to users on the Ultra ($200/mo) plan. Using /teamwork-preview prompts the main agent to launch a collaborative multi-agent framework featuring built-in error recovery, automatic retries, and coordination logic.
+
+
+<!-- source: https://antigravity.google/docs/hooks -->
+
+Hooks
+
+Hooks allow you to run custom scripts or shell commands at specific points during Antigravity's execution loop. This is powerful for enforcing custom rules, running linters, or capturing diagnostics automatically.
+
+Configuration
+Hooks are configured in a hooks.json file located in your customization directory (e.g., .agents/ in your workspace or ~/.gemini/config/).
+
+Schema and File Format
+The hooks.json file maps hook names to their event configurations.
+
+{
+  "my-linter-hook": {
+    "PostToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/lint.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "safety-gate": {
+    "enabled": false,
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [{ "command": "./scripts/safety-check.sh" }]
+      }
+    ]
+  },
+  "reminder": {
+    "PreInvocation": [
+      { "type": "command", "command": "./scripts/reminder.sh" }
+    ]
+  }
+}
+
+Hook Definition Fields:
+| Field | Type | Description |
+|---|---|---|
+| enabled | boolean | Optional. Set to false to disable without removing. Defaults to true. |
+| PreToolUse | array | Handlers that run before a tool is executed. |
+| PostToolUse | array | Handlers that run after a tool completes. |
+| PreInvocation | array | Handlers that run before Antigravity calls the model. |
+| PostInvocation | array | Handlers that run after tool calls finish. |
+| Stop | array | Handlers that run when the execution loop terminates. |
+
+Supported Events:
+| Event | Description | Matcher Target |
+|---|---|---|
+| PreToolUse | Fires before a tool is executed. | Tool name (e.g., run_command) |
+| PostToolUse | Fires after a tool completes. | Tool name |
+| PreInvocation | Fires before the model is called. | N/A (matcher ignored) |
+| PostInvocation | Fires after tool calls finish. | N/A (matcher ignored) |
+| Stop | Fires when execution terminates. | N/A (matcher ignored) |
+
+Matcher: For PreToolUse and PostToolUse, use a regular expression to specify which tools trigger the hook:
+- "" or "*": Match all tools.
+- "run_command": Match exactly.
+- "run_command|view_file": Match either.
+- "browser_.*": Match any tool starting with browser_.
+
+Supported Tools (for matchers):
+File and Directory: view_file, write_to_file, replace_file_content, multi_replace_file_content, list_dir, find_by_name
+Search and Research: grep_search, search_web, read_url_content
+System and Execution: run_command, manage_task, schedule, list_permissions, ask_permission
+Agent Collaboration: invoke_subagent, define_subagent, send_message, manage_subagents
+Interaction and Media: ask_question, generate_image
+
+Hook Handler Configuration:
+| Field | Type | Description |
+|---|---|---|
+| type | string | Optional. Currently only "command" is supported. |
+| command | string | Required. The shell command to execute. |
+| timeout | integer | Optional. Timeout in seconds. Defaults to 30. |
+
+Input/Output Contract: Hooks receive input via stdin as JSON and should return output via stdout as JSON.
+
+Common Input Fields (all hooks):
+- conversationId (string): Unique UUID of the active agent conversation.
+- workspacePaths (array of strings): Absolute directory paths.
+- transcriptPath (string): Path to transcript.jsonl logs.
+- artifactDirectoryPath (string): Path to conversation artifacts and screenshots.
+
+PreToolUse:
+- Input adds: toolCall object (name, args), stepIdx (integer).
+- Output: { decision: "allow"|"deny"|"ask"|"force_ask", reason?: string, permissionOverrides?: string[] }
+
+PostToolUse:
+- Input adds: stepIdx, error (optional).
+- Output: {} (empty object)
+
+PreInvocation:
+- Input adds: invocationNum, initialNumSteps.
+- Output: { injectSteps?: Array<{toolCall|userMessage|ephemeralMessage}>, terminationBehavior?: string }
+
+PostInvocation:
+- Input: Same as PreInvocation.
+- Output: { injectSteps?: array, terminationBehavior?: "force_continue"|"terminate"|"" }
+
+Stop:
+- Input adds: executionNum, terminationReason, error, fullyIdle.
+- Output: { decision: "continue"|(any other), reason?: string }
+
+
+<!-- source: https://antigravity.google/docs/sidecars -->
+
+Sidecars
+
+Sidecars are background processes that run alongside Antigravity. Antigravity manages the lifecycle of sidecars, automatically launching them and restarting them if they crash or error. They are useful for persistent background scripts, scheduled recurring tasks, and reacting to events.
+
+Configuration
+Sidecars are discovered by searching for sidecar.json configuration files:
+- Global sidecars: ~/.gemini/config/sidecars/
+- Plugin sidecars: ~/.gemini/config/plugins/<pluginName>/sidecars/
+
+Each sidecar has its own directory and the directory name is used as the sidecar's ID. Sidecars loaded from plugins have the ID <pluginName>/<sidecarName>.
+
+Example directory structure:
+~/.gemini/config/sidecars/
+├── sidecar1/
+│   ├── sidecar.json
+│   └── script.py
+└── sidecar2/
+    └── sidecar.json
+
+Config Schema (sidecar.json):
+- command (string): Command/executable (e.g., python3 or /bin/bash). Mutually exclusive with builtin.
+- builtin (string): Builtin command. Currently supports "schedule". Mutually exclusive with command.
+- args (string[]): Optional. Arguments passed to the command or builtin.
+- restart_policy (string): Optional. One of "always", "on-failure", or "never". Defaults to "always".
+- description (string): Optional. Human-readable description.
+- env (object): Optional. Environment variables for the sidecar process.
+- display_name (string): Optional. Display name used in the UI.
+
+One of command or builtin must be set.
+
+Examples:
+{
+  "description": "Background worker",
+  "command": "python3",
+  "args": ["worker.py"],
+  "restart_policy": "on-failure"
+}
+
+{
+  "description": "Hourly agent to triage review requests.",
+  "builtin": "schedule",
+  "args": ["0 * * * *", "agentapi", "new-conversation", "Give me a summary of incoming review requests."]
+}
+
+User Configuration (config.json)
+Sidecars are disabled unless explicitly enabled in ~/.gemini/config/config.json.
+{
+  "sidecars": {
+    "sidecar1": { "enabled": true },
+    "my-plugin/plugin-sidecar": { "enabled": true, "projectId": "<projectId>" }
+  }
+}
+
+Runtime Data
+Runtime data stored in ~/.gemini/antigravity/sidecar_data/<sidecarId>/:
+- data/: Persistent data (available via ANTIGRAVITY_EXECUTABLE_DATA_DIR env var)
+- logs/: Auto-generated timestamped logs from stdout and stderr.
+- events/: JSON files recorded for agentapi calls.
+
+schedule builtin
+A simple builtin scheduler for running recurring commands:
+{
+  "builtin": "schedule",
+  "args": ["* * * * *", "<command>", "<arg1>", "<arg2>"]
+}
+The first argument is a standard 5-field cron expression.
+
+agentapi
+Sidecars can use the agentapi CLI to programmatically interact with Antigravity:
+- agentapi new-conversation <prompt> (requires projectId set)
+- agentapi send-message <conversation_id> <prompt>
+
+
+================================================================================
+END OF DOCUMENTATION EXTRACTION
+================================================================================
