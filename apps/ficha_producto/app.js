@@ -138,146 +138,77 @@
       r.onerror = reject;
     });
 
-  // ========= Historial Persistente con localStorage =========
+  // ========= Historial Persistente con HistoryManager (canónico skill maestra) =========
+  const historyManager = new HistoryManager('ficha_producto');
+  let _historyCache = [];
+
+  // Constantes legacy para compatibilidad con código de diagnóstico
   const HISTORY_KEY = 'ficha_producto_history';
   const MAX_HISTORY_ITEMS = 50;
 
-  // Verificar si localStorage estÃ¡ disponible
-  function isLocalStorageAvailable() {
-    // VersiÃ³n SIMPLE
+  // Carga inicial desde el servidor
+  (async () => {
     try {
-      return typeof localStorage !== 'undefined';
+      await historyManager.load();
+      _historyCache = historyManager.getAll();
     } catch (e) {
-      return false;
+      console.warn('Historial servidor no disponible, iniciando vacío:', e);
     }
+  })();
+
+  function isLocalStorageAvailable() {
+    return true; // Siempre disponible con HistoryManager
   }
 
   function getHistory() {
-    // VersiÃ³n SIMPLE y ROBUSTA
-    try {
-      // 1. Verificar localStorage
-      if (typeof localStorage === 'undefined') {
-        return [];
-      }
-      
-      // 2. Obtener datos
-      const saved = localStorage.getItem(HISTORY_KEY);
-      if (!saved) {
-        return [];
-      }
-      
-      // 3. Parsear SIMPLE
-      const parsed = JSON.parse(saved);
-      
-      // 4. Verificar que sea array
-      if (!Array.isArray(parsed)) {
-        console.warn('Historial no es array, limpiando...');
-        localStorage.removeItem(HISTORY_KEY);
-        return [];
-      }
-      
-      // 5. Filtrar items corruptos o sin datos esenciales
-      const validItems = parsed.filter(item => {
-        // Un item vÃ¡lido debe ser un objeto
-        if (!item || typeof item !== 'object') return false;
-        
-        // Debe tener al menos nombre o cÃ³digo fuente
-        const hasName = item.name && typeof item.name === 'string';
-        const hasSourceCode = item.sourceCode && typeof item.sourceCode === 'string';
-        
-        return hasName || hasSourceCode;
-      });
-      
-      // 6. Si hay items invÃ¡lidos, guardar solo los vÃ¡lidos
-      if (validItems.length !== parsed.length) {
-        console.log(`Filtrados ${parsed.length - validItems.length} items invÃ¡lidos del historial`);
-        if (validItems.length > 0) {
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(validItems));
-        } else {
-          localStorage.removeItem(HISTORY_KEY);
-        }
-      }
-      
-      return validItems;
-      
-    } catch (error) {
-      // Si hay error, limpiar y empezar de nuevo
-      console.warn('Error cargando historial, limpiando...', error);
-      try {
-        localStorage.removeItem(HISTORY_KEY);
-      } catch (e) {}
-      return [];
-    }
+    return _historyCache;
   }
 
   function saveHistory(history) {
-    // VersiÃ³n SIMPLE y ROBUSTA con gestiÃ³n de quota
-    try {
-      if (!Array.isArray(history)) {
-        console.warn('Historial no es array, no guardando');
-        return;
-      }
-      
-      // Limitar a 20 items mÃ¡ximo inicialmente
-      let toSave = history.slice(0, 20);
-      
-      // Intentar guardar, si falla por quota, eliminar items mÃ¡s antiguos
-      while (toSave.length > 0) {
-        try {
-          const jsonString = JSON.stringify(toSave);
-          console.log(`Guardando ${toSave.length} items, tamaÃ±o: ${Math.round(jsonString.length / 1024)}KB`);
-          localStorage.setItem(HISTORY_KEY, jsonString);
-          console.log('Historial guardado exitosamente');
-          return;
-        } catch (error) {
-          if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-            console.log('Quota excedida, eliminando item mÃ¡s antiguo');
-            toSave.pop(); // Eliminar el mÃ¡s antiguo
-          } else {
-            console.warn('Error guardando historial:', error);
-            throw error;
-          }
-        }
-      }
-      
-      // Si llegamos aquÃ­, no se pudo guardar nada
-      console.log('No se pudo guardar ningÃºn item, limpiando historial');
-      localStorage.removeItem(HISTORY_KEY);
-      
-    } catch (error) {
-      console.warn('Error guardando historial:', error);
-    }
+    if (!Array.isArray(history)) return;
+    _historyCache = history.slice(0, 50);
   }
 
-  function addToHistory(item) {
-    if (!isLocalStorageAvailable()) {
-      console.warn('localStorage no disponible, no se puede aÃ±adir al historial');
-      return null;
-    }
-    
-    const history = getHistory();
+  async function addToHistory(item) {
     const newItem = {
       ...item,
       id: Date.now().toString(36) + Math.random().toString(36).substr(2),
       timestamp: Date.now()
     };
-    console.log('AÃ±adiendo al historial:', newItem);
-    history.unshift(newItem);
-    saveHistory(history);
+    try {
+      // Guardar en servidor: mapear el item al formato HistoryManager
+      const entry = {
+        type: 'product',
+        data: {
+          name: newItem.name || '',
+          price: newItem.price || '',
+          description: newItem.description || '',
+          preserveLogo: newItem.preserveLogo,
+          sourceCode: newItem.sourceCode || null,
+          timestamp: newItem.timestamp
+        },
+        id: newItem.id,
+        createdAt: new Date(newItem.timestamp).toISOString()
+      };
+      // Si hay imagen, usar imageData
+      if (newItem.imageData) entry.imageData = newItem.imageData;
+      await historyManager.save(entry);
+    } catch (e) {
+      console.warn('Error guardando en servidor:', e);
+    }
+    _historyCache.unshift(newItem);
+    if (_historyCache.length > 50) _historyCache = _historyCache.slice(0, 50);
     return newItem;
   }
 
-  function deleteFromHistory(id) {
-    if (!isLocalStorageAvailable()) return;
-    
-    const history = getHistory();
-    const filtered = history.filter(item => item.id !== id);
-    saveHistory(filtered);
+  async function deleteFromHistory(id) {
+    try { await historyManager.delete(id); } catch (e) { console.warn('Error eliminando:', e); }
+    _historyCache = _historyCache.filter(item => item.id !== id);
   }
 
-  function clearAllHistory() {
-    if (!isLocalStorageAvailable()) return;
-    localStorage.removeItem(HISTORY_KEY);
+  async function clearAllHistory() {
+    try { await historyManager.clear(); } catch (e) { console.warn('Error limpiando:', e); }
+    _historyCache = [];
   }
 
   function formatDate(timestamp) {
@@ -2070,7 +2001,7 @@ const App = () => {
 
             {/* ===== SECCIÃ“N DE HISTORIAL - MEJORADA ===== */}
             {/* Los botones de debug SIEMPRE estÃ¡n visibles si hay algo en localStorage */}
-            {(history.length > 0 || (isLocalStorageAvailable() && localStorage.getItem(HISTORY_KEY))) ? (
+            {(history.length > 0) ? (
               <>
                 {/* TÃ­tulo y botones - SIEMPRE visibles si hay datos */}
                 <div className="flex justify-between items-center mb-4">

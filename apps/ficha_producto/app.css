@@ -1,42 +1,37 @@
-/* === TEMA HOOLA — Ficha de Producto === */
-:root{
-  /* PALETA HOOLA (estilo relatos) */
-  --bg1: #001018;                    /* Fondo principal azul casi negro */
-  --bg2: #062f43;                    /* Fondo secundario */
-  --acc: #00D0D0;                    /* Acento cian PRINCIPAL */
-  --acc2: #26C626;                   /* Acento verde SECUNDARIO */
-  --text: #eaffff;                   /* Texto principal */
-  --muted: #99CCCC;                  /* Texto secundario/muted */
-  --border: rgba(0, 208, 208, 0.3); /* Bordes sutiles cian */
-  --card-bg: rgba(23, 79, 122, 0.42); /* Fondo de cards/panels */
-  --shadow-color: rgba(0, 0, 0, 0.5);
-  
-  /* COLORES NEÓN (hoola) */
-  --neon-cyan: #00D0D0;
-  --neon-green: #26C626;
-  --glow-strong: rgba(0, 208, 208, 0.4);
-  
-  /* GRADIENTES */
-  --main-bg-gradient: linear-gradient(135deg, #001018 0%, #062f43 35%, #0E5368 75%, #174F7A 100%);
-  --gradient-cyan-green: linear-gradient(135deg, #00D0D0, #26C626);
+/* === TEMA HOOLA — Ficha de Producto (canónico skill maestra) === */
+:root {
+  --bg1: #001018;
+  --bg2: #0E5368;
+  --contenedor: #174F7A;
+  --acc: #00D0D0;
+  --acc2: #26C626;
+  --text: #eaffff;
+  --muted: #99CCCC;
+  --faint: #669999;
+  --border: rgba(0, 208, 208, 0.7);
+  --border-strong: #00D0D0;
+  --card-bg: rgba(23, 79, 122, 0.42);
+  --card-hover: rgba(30, 100, 150, 0.55);
+  --glow: rgba(0, 208, 208, 0.8);
+  --glow-soft: rgba(0, 208, 208, 0.4);
+  --shadow-color: rgba(0, 0, 0, 0.35);
+  --shadow-light: rgba(0, 208, 208, 0.2);
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --radius: 14px;
+  --font-ui: 'Electrolize', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Conservados para compatibilidad con el código existente */
   --gradient-text: linear-gradient(90deg, #00D0D0, #26C626);
-  
-  /* ESPACIADO Y BORDES */
+  --gradient-cyan-green: linear-gradient(135deg, #00D0D0, #26C626);
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 3rem;
-  
-  /* TRANSICIONES */
   --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-fast: all 0.15s ease;
   --transition-slow: all 0.5s ease;
-  
-  /* COLORES DE ESTADO (preservados) */
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
-  --shadow-light: rgba(0, 208, 208, 0.2);
-  
+
   color-scheme: dark;
 }
 
@@ -47,28 +42,45 @@
 html, body { height: 100%; }
 
 body {
-  font-family: 'Electrolize', system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text);
-  background: var(--main-bg-gradient);
-  background-attachment: fixed;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  background: var(--bg1);
   overflow-x: hidden;
   margin: 0;
-  padding: 2rem 1rem;
-  text-transform: none;
-  letter-spacing: 0.02em;
 }
-
-/* Rejilla de circuito cian (fondo hoola) */
+/* Degradado de fondo + halos cian (canónico) */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
-  background-image: 
-    radial-gradient(circle at 30% 20%, rgba(0, 208, 208, 0.12) 0%, transparent 55%),
-    radial-gradient(circle at 70% 80%, rgba(38, 198, 38, 0.08) 0%, transparent 55%);
+  background:
+    radial-gradient(1000px 750px at 50% 5%, rgba(0,208,208,0.28), transparent 60%),
+    radial-gradient(900px 650px at 15% 25%, rgba(0,160,168,0.20), transparent 58%),
+    linear-gradient(180deg, #001018 0%, #062f43 60%, #0E5368 100%);
   pointer-events: none;
-  z-index: 0;
+  z-index: -2;
+}
+/* Rejilla de circuito cian (canónico) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,208,208,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,208,208,0.08) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.85;
 }
 
 /* ===== CONTENEDOR GENERAL ===== */
@@ -95,16 +107,22 @@ body::before {
 #root > * [class*="shadow-"]{box-shadow:none!important}
 
 /* Títulos y textos */
-h1,h2,h3{
+h2,h3{
   font-family:'Electrolize',sans-serif;
   color:var(--text)!important;
   text-transform:uppercase;
   letter-spacing:0.06em;
 }
 h1{
-  font-size:clamp(2rem,4.5vw,2.8rem)!important;
-  text-align:center;
-  text-shadow:0 4px 15px rgba(0, 208, 208, 0.4), 0 0 30px rgba(0, 208, 208, 0.15);
+  font-family: var(--font-ui);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  color: var(--acc);
+  text-align: center;
+  text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
 }
 p,small{color:var(--muted)}
 
@@ -125,7 +143,7 @@ p,small{color:var(--muted)}
 }
 
 :is(input,textarea,select):hover{
-  border-color: var(--neon-cyan)!important;
+  border-color: var(--acc)!important;
   box-shadow: 0 0 15px rgba(0, 208, 208, 0.2)!important;
 }
 
@@ -172,7 +190,7 @@ button:hover,.btn:hover{
 /* Estilos de focus para accesibilidad */
 button:focus-visible,.btn:focus-visible,
 input:focus-visible,textarea:focus-visible,select:focus-visible {
-  outline: 2px solid var(--neon-cyan);
+  outline: 2px solid var(--acc);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(0, 208, 208, 0.18), 0 0 20px rgba(0, 208, 208, 0.3)!important;
 }
@@ -277,7 +295,7 @@ button[type="submit"]:hover,.btn-primary:hover,[data-variant="primary"]:hover{
 .image-container:hover{
   transform:translateY(-6px) scale(1.02);
   box-shadow:0 20px 40px var(--shadow-color), 0 0 30px rgba(0, 208, 208, 0.3);
-  border-color: var(--neon-cyan);
+  border-color: var(--acc);
 }
 
 .image-container:hover::before {
@@ -381,8 +399,8 @@ button[type="submit"]:hover,.btn-primary:hover,[data-variant="primary"]:hover{
   border: 2px solid rgba(0, 208, 208, .75);
   border-radius: 9px;
   background: rgba(6, 16, 24, .8);
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 12px 14px;
   box-shadow: 0 0 18px rgba(0, 208, 208, 0.4);
 }
@@ -737,7 +755,7 @@ button[type="submit"]:hover,.btn-primary:hover,[data-variant="primary"]:hover{
 
 .lightbox-controls button:hover {
   background-color: rgba(0, 208, 208, 0.3);
-  border-color: var(--neon-cyan);
+  border-color: var(--acc);
   box-shadow: 0 0 20px rgba(0, 208, 208, 0.5);
 }
 
