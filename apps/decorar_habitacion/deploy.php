@@ -57,7 +57,7 @@ $context = stream_context_create([
 ]);
 
 foreach ($FILES as $file) {
-    $url = $rawBase . $file;
+    $url = $rawBase . $file . '?t=' . time();
     $localPath = $BASE_PATH . '/' . basename($file);
     
     $content = @file_get_contents($url, false, $context);
