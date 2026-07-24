@@ -90,10 +90,16 @@ h1,
   width: 100%;
 }
 
-h2,
+h2 {
+  font-family: var(--font-ui) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.04em !important;
+  color: var(--acc) !important;
+}
+
 .app-hero-title {
   font-family: var(--font-ui) !important;
-  font-size: clamp(1.4rem, 3.2vw, 2.2rem) !important;
+  font-size: clamp(2rem, 5vw, 3.2rem) !important;
   font-weight: 400 !important;
   letter-spacing: 0.04em !important;
   color: var(--acc) !important;
