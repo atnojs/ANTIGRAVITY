@@ -1072,8 +1072,6 @@ function App() {
           </button>
           <h1 className="app-title room-header-title">DECORADOR DE {ROOM_CONFIG[selectedRoom].name.toUpperCase()}</h1>
           <div style={{ width: '140px' }}></div>
-        </div>
-      </header>
 
           <input
             ref={fileRef}
