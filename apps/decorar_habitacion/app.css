@@ -37,7 +37,7 @@ body {
 body {
   font-family: 'Electrolize', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
-  background: linear-gradient(160deg, #001018 0%, #062f43 45%, #0E5368 100%);
+  background: var(--bg1);
   background-attachment: fixed;
   line-height: 1.6;
   position: relative;
@@ -52,8 +52,9 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(680px circle at 12% 8%, rgba(0, 208, 208, 0.16), transparent 60%),
-    radial-gradient(720px circle at 88% 92%, rgba(38, 198, 38, 0.10), transparent 60%);
+    radial-gradient(1000px 750px at 50% 5%, rgba(0,208,208,0.28), transparent 60%),
+    radial-gradient(900px 650px at 15% 25%, rgba(0,160,168,0.20), transparent 58%),
+    linear-gradient(180deg, #001018 0%, #062f43 60%, #0E5368 100%);
 }
 
 body::after {
@@ -66,8 +67,9 @@ body::after {
     linear-gradient(rgba(0, 208, 208, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 208, 208, 0.05) 1px, transparent 1px);
   background-size: 46px 46px;
-  -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
-  mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+  mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+  opacity: 0.85;
 }
 
 h1,
@@ -227,10 +229,16 @@ header {
 }
 
 h1 {
-  font-weight: 700;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  margin-bottom: 8px;
-  text-shadow: 0 4px 15px var(--shadow-color);
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--acc);
+  text-shadow:
+    0 0 10px rgba(0,208,208,0.8),
+    0 0 24px rgba(0,208,208,0.8),
+    0 0 44px rgba(0,208,208,0.4);
 }
 
 .subtitle {
@@ -920,17 +928,15 @@ img.object-contain {
 .loading-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50000;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(0, 40, 60, 0.92) 0%, rgba(0, 12, 20, 0.96) 55%),
-    radial-gradient(ellipse at 70% 80%, rgba(0, 60, 60, 0.55) 0%, rgba(0, 8, 14, 0.9) 60%);
-  backdrop-filter: blur(8px) saturate(1.8);
-  -webkit-backdrop-filter: blur(8px) saturate(1.8);
+  background: rgba(0, 16, 24, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .loading-overlay.hidden {
@@ -986,8 +992,8 @@ img.object-contain {
   border: 2px solid rgba(0, 208, 208, .75);
   border-radius: 9px;
   background: rgba(6, 16, 24, .8);
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 12px 14px;
   box-shadow: 0 0 18px rgba(0, 208, 208, 0.4);
 }
@@ -1479,6 +1485,12 @@ figure.relative ul a:hover {
 }
 
 /* --- Focus visible (accesibilidad) --- */
+:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 button:focus-visible,
 a:focus-visible,
 textarea:focus-visible,

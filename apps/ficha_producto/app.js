@@ -1958,40 +1958,7 @@ const App = () => {
                 </button>
               </div>
             )}
-              {history.length === 0 && (
-                <div className="mb-6 text-center text-gray-400">
-                  No hay productos en el historial. Los productos generados aparecerÃ¡n aquÃ­.
-                  <div className="text-xs mt-2 text-yellow-500">
-                    Debug: history.length = {history.length}
-                  </div>
-                </div>
-              )}
-
-           <header className="text-center mb-8">
-             <div className="flex justify-center items-center gap-4">
-               <HeaderIcon />
-               <h1 className="text-3xl font-bold text-white">Generador de Ficha de Producto AI</h1>
-             </div>
-             <p className="text-gray-400 mt-2">
-               Transforma una foto casera en una ficha de producto profesional lista para descargar.
-             </p>
-             
-             {/* BotÃ³n de debug global - SIEMPRE visible */}
-             <div className="mt-4 flex justify-center">
-               <button
-                 onClick={handleDebugHistory}
-                 className="text-sm text-gray-400 hover:text-yellow-300 flex items-center gap-1 border border-gray-700 px-3 py-1 rounded"
-                 title="Debug del sistema de historial"
-               >
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                 </svg>
-                 Debug Historial
-               </button>
-             </div>
-           </header>
-
-          <main>
+           <main>
             {error && (
               <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-md mb-6" role="alert">
                 <strong className="font-bold">Error: </strong>
