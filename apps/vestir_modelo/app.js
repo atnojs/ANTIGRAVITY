@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingSection = $('loading-section');
     const progressPanel = $('progress-panel');
     const progressFill = $('progress-bar-fill');
-    const progressPercent = $('progress-percent');
+    const secondaryStatus = $('secondary-status');
     const errorSection = $('error-section');
     const errorMessage = $('error-message');
     const customPromptArea = $('custom-prompt');
@@ -251,8 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const showLoading = () => {
         loadingSection.classList.remove('hidden');
         progressPanel.classList.remove('hidden');
-        progressPercent.classList.add('hidden');
         progressFill.style.width = '100%';
+        secondaryStatus.textContent = 'Procesando solicitud...';
         progressPanel.setAttribute('aria-hidden', 'false');
         loadingSection.setAttribute('aria-busy', 'true');
     };
