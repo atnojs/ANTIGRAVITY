@@ -1002,10 +1002,8 @@ function App() {
         </header>
 
         <main className="max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold mb-4 gradient-text app-hero-title">Elige el espacio que quieres decorar</h2>
-            <p className="text-white-600 app-hero-subtitle">Selecciona el tipo de estancia para ver los estilos disponibles</p>
-          </div>
+          <h2 className="text-3xl font-bold mb-4 gradient-text app-hero-title">Elige el espacio que quieres decorar</h2>
+          <p className="text-white-600 app-hero-subtitle">Selecciona el tipo de estancia para ver los estilos disponibles</p>
 
           <div className="room-selector-container">
             <button className="room-button btn-3d" onClick={() => setSelectedRoom('salon')}>
