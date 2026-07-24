@@ -1943,7 +1943,7 @@ const App = () => {
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <header className="text-center mb-6">
           <h1>Generador de Ficha de Producto AI</h1>
-          <p style={{color:'var(--muted)', fontSize:'0.95rem', letterSpacing:'0.03em', marginTop:'0.4rem'}}>
+          <p className="subtitle" style={{marginBottom:0}}>
             Transforma una foto casera en una ficha de producto profesional lista para descargar.
           </p>
         </header>

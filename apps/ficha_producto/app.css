@@ -126,6 +126,14 @@ h1{
 }
 p,small{color:var(--muted)}
 
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
 /* ===== FORMULARIO ===== */
 :is(input,textarea,select){
   background: rgba(0, 16, 24, 0.6)!important;
