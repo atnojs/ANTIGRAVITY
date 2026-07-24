@@ -997,13 +997,15 @@ function App() {
 
         <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
           <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <h1 className="text-xl gradient-text app-title">DECORADOR DE ESPACIOS</h1>
+            <h1 className="text-xl font-semibold gradient-text app-title">DECORADOR DE ESPACIOS</h1>
           </div>
         </header>
 
         <main className="max-w-6xl mx-auto px-4 py-12">
-          <h2 className="text-3xl mb-4 gradient-text app-hero-title">Elige el espacio que quieres decorar</h2>
-          <p className="app-hero-subtitle">Selecciona el tipo de estancia para ver los estilos disponibles</p>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold mb-4 gradient-text app-hero-title">Elige el espacio que quieres decorar</h2>
+            <p className="text-white-600 app-hero-subtitle">Selecciona el tipo de estancia para ver los estilos disponibles</p>
+          </div>
 
           <div className="room-selector-container">
             <button className="room-button btn-3d" onClick={() => setSelectedRoom('salon')}>
@@ -1076,7 +1078,7 @@ function App() {
             <button className="px-3 py-2 rounded-lg bg-gray-900 text-white disabled:opacity-50 btn-3d" onClick={resetAll} disabled={busy} type="button">
               ← Cambiar estancia
             </button>
-            <h1 className="text-xl gradient-text app-title room-header-title">DECORADOR DE {ROOM_CONFIG[selectedRoom].name.toUpperCase()}</h1>
+            <h1 className="text-xl font-semibold gradient-text app-title room-header-title">DECORADOR DE {ROOM_CONFIG[selectedRoom].name.toUpperCase()}</h1>
           </div>
 
           <input
@@ -1244,14 +1246,16 @@ function App() {
         </section>
 
         <section className="md:col-span-2">
-          <h2 className="text-lg mb-3 text-center gradient-text app-section-title">Estilos Disponibles para {ROOM_CONFIG[selectedRoom].name}</h2>
-          <div className="style-buttons-container">
+          <div className="bg-white rounded-xl shadow p-3 mb-4" style={{ width: 'fit-content', marginLeft: 'auto', marginRight: 'auto' }}>
+            <h2 className="text-lg font-semibold mb-3 text-center gradient-text app-section-title">Estilos Disponibles para {ROOM_CONFIG[selectedRoom].name}</h2>
+            <div className="style-buttons-container">
               {availableStyles.map((style) => (
                 <button key={style} className="px-3 py-2 rounded-lg bg-gray-900 text-white disabled:opacity-50 btn-3d" onClick={() => generateOne(style)} disabled={!canGenerate} type="button">
                   {style}
                 </button>
               ))}
             </div>
+          </div>
 
           {stylesWithResults.map((style) => (
             <div key={style} className="bg-white rounded-xl shadow p-3 mb-6">
