@@ -25,6 +25,7 @@ $FILES = [
     'apps/decorar_habitacion/history.php',
     'apps/decorar_habitacion/history-manager.js',
     'apps/decorar_habitacion/lightbox.js',
+    'apps/decorar_habitacion/deploy.php',
 ];
 
 // --- VALIDACIÓN DEL WEBHOOK ---
