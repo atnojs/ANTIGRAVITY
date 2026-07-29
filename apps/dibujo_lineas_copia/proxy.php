@@ -67,7 +67,7 @@ if (!$apiKey || empty($apiKey)) {
 }
 
 // ===== LLAMADA A GEMINI 2.5 Flash Image =====
-$model = 'gemini-2.5-flash-image';
+$model = 'gemini-3.1-flash-lite';
 $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
 $payload = [
