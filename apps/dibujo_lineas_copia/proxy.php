@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// PROXY — Imágenes a Lineales con Gemini 2.0 Flash
+// PROXY — Imágenes a Lineales con Gemini 2.5 Flash Image
 // Convierte una imagen subida en dibujo lineal (página de colorear).
 // Clave Gemini en variable 'G' del .htaccess raíz.
 // Contrato de respuesta: {image, mimeType} o {text} o {error: {message}}
@@ -66,8 +66,8 @@ if (!$apiKey || empty($apiKey)) {
     exit;
 }
 
-// ===== LLAMADA A GEMINI 2.0 FLASH =====
-$model = 'gemini-2.0-flash';
+// ===== LLAMADA A GEMINI 2.5 Flash Image =====
+$model = 'gemini-2.5-flash-image';
 $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
 $payload = [
