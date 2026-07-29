@@ -14,10 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
-    const modelBtns = document.querySelectorAll('.model-btn');
-
     let imageQueue = [];
-    let selectedModel = 'flux';
 
     imageInput.addEventListener('change', (e) => {
         imageQueue = Array.from(e.target.files);
@@ -35,16 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 previewGrid.appendChild(div);
             };
             reader.readAsDataURL(file);
-        });
-    });
-
-    // Model selector: toggle active button
-    modelBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            modelBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
-            btn.classList.add('active');
-            btn.setAttribute('aria-checked', 'true');
-            selectedModel = btn.dataset.model;
         });
     });
 
@@ -84,8 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         image: base64,
                         mimeType: file.type || 'image/jpeg',
-                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page...",
-                        model: selectedModel
+                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page..."
                     })
                 });
 
