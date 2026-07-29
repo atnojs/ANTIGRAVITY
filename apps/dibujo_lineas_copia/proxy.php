@@ -67,8 +67,8 @@ if (strlen($imgBinary) > 2500000) { // ~2.5MB
 
 $prompt = (string)($req['prompt'] ?? "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page. Convert all visual elements (people, objects, backgrounds) into consistent, smooth, distinct black outlines using clean uniform lines. Completely eliminate all colors, gradients, shading, textures and gray fills: the result must be purely black lines on a pure white background. Simplify complex shapes to create clear areas of white space that are easy to color. Maintain the original composition, perspective and key elements. The final drawing must be sharp, without artifacts or smudges, ready to be printed and hand-colored.");
 
-// ===== MODELO FLUX: flux-2-pro (image-to-image, recomendado por BFL para edición) =====
-$endpoint = 'flux-2-pro';
+// ===== MODELO FLUX: flux-2-pro-max (MAX quality, image-to-image) =====
+$endpoint = 'flux-2-pro-max';
 
 // FLUX espera la imagen de referencia en base64 PURO (sin prefijo data:)
 $payload = [
