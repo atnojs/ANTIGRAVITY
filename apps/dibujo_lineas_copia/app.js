@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
+
     let imageQueue = [];
 
     imageInput.addEventListener('change', (e) => {
