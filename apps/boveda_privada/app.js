@@ -1076,14 +1076,52 @@
         host.className = 'doc-view doc-excel';
         host.innerHTML =
           `<div class="doc-tabs">${wb.SheetNames.length > 1 ? tabs : ''}</div>
+           <div class="cell-info" aria-live="polite">
+             <span class="cell-ref">Selecciona una celda</span>
+             <span class="cell-value">Pulsa sobre cualquier celda para ver su contenido completo.</span>
+           </div>
            <div class="doc-sheet" id="docSheet"></div>`;
         stage.innerHTML = '';
         stage.appendChild(host);
+        let activeSheet = 0;
+        const selectCell = (cell) => {
+          const address = (cell.id || '').replace(/^sjs-/, '');
+          if (!address) return;
+          const sheet = wb.Sheets[wb.SheetNames[activeSheet]];
+          const source = sheet[address];
+          host.querySelectorAll('.doc-sheet td.selected-cell').forEach(x => x.classList.remove('selected-cell'));
+          cell.classList.add('selected-cell');
+          host.querySelector('.cell-ref').textContent = `${wb.SheetNames[activeSheet]} · ${address}`;
+          const value = source == null
+            ? '(celda vacía)'
+            : (source.w != null ? source.w : (source.v != null ? String(source.v) : '(celda vacía)'));
+          host.querySelector('.cell-value').textContent = source && source.f
+            ? `${value}  ·  Fórmula: =${source.f}`
+            : value;
+        };
         const showSheet = (i) => {
+          activeSheet = i;
           const html = window.XLSX.utils.sheet_to_html(wb.Sheets[wb.SheetNames[i]], { editable: false });
-          host.querySelector('#docSheet').innerHTML = html;
+          const sheetHost = host.querySelector('#docSheet');
+          sheetHost.innerHTML = html;
+          sheetHost.querySelectorAll('td[id^="sjs-"]').forEach(cell => {
+            cell.tabIndex = 0;
+            cell.setAttribute('role', 'button');
+            cell.setAttribute('aria-label', `Celda ${cell.id.replace(/^sjs-/, '')}`);
+          });
+          host.querySelector('.cell-ref').textContent = 'Selecciona una celda';
+          host.querySelector('.cell-value').textContent = 'Pulsa sobre cualquier celda para ver su contenido completo.';
           host.querySelectorAll('.doc-tab').forEach((t, j) => t.classList.toggle('active', j === i));
         };
+        host.querySelector('#docSheet').addEventListener('click', (e) => {
+          const cell = e.target.closest('td[id^="sjs-"]');
+          if (cell) selectCell(cell);
+        });
+        host.querySelector('#docSheet').addEventListener('keydown', (e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          const cell = e.target.closest('td[id^="sjs-"]');
+          if (cell) { e.preventDefault(); selectCell(cell); }
+        });
         host.querySelectorAll('.doc-tab').forEach((t) =>
           t.addEventListener('click', () => showSheet(parseInt(t.dataset.sheet, 10))));
         showSheet(0);

@@ -1052,9 +1052,16 @@ body.select-mode .file-row .fr-actions { opacity: 1; transform: none; }
 .doc-tab:hover { color: var(--text); background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card); }
 .doc-tab.active { color: #001018; background: var(--accent); border-color: var(--accent); font-weight: 700; }
 .doc-tab > * { pointer-events: none; }
+.cell-info { display: flex; align-items: stretch; min-height: 46px; border-bottom: 1px solid #c7d6e0; background: #edf6f8; color: #14202b; font-family: system-ui, "Segoe UI", sans-serif; }
+.cell-ref { display: flex; align-items: center; min-width: 150px; padding: 8px 12px; border-right: 1px solid #c7d6e0; font-weight: 700; color: #075f68; }
+.cell-value { display: flex; align-items: center; min-width: 0; padding: 8px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .doc-sheet { overflow: auto; padding: 4px; }
 .doc-sheet table { border-collapse: collapse; width: 100%; font-family: system-ui, "Segoe UI", sans-serif; font-size: 0.9rem; color: #14202b; }
 .doc-sheet td, .doc-sheet th { border: 1px solid #c7d6e0; padding: 6px 10px; text-align: left; white-space: nowrap; }
+.doc-sheet td[id^="sjs-"] { cursor: pointer; }
+.doc-sheet td[id^="sjs-"]:hover { background: #d9f3f4 !important; }
+.doc-sheet td[id^="sjs-"]:focus { outline: 2px solid #00aeb8; outline-offset: -2px; }
+.doc-sheet td.selected-cell { background: #bcebee !important; box-shadow: inset 0 0 0 2px #008b96; }
 .doc-sheet tr:first-child td, .doc-sheet th { background: #e8f6f6; font-weight: 700; }
 .doc-sheet tr:nth-child(even) td { background: #f2f7fa; }
 
