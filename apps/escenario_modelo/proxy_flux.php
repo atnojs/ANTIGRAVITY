@@ -1,7 +1,7 @@
 <?php
 /**
  * Proxy canónico Antigravity.
- * R = OpenRouter (texto + Gemini 3 Pro para imagenes).
+ * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
  */
 declare(strict_types=1);
 
@@ -167,67 +167,72 @@ function handleOpenRouter(array $request): void {
 }
 
 function handleFlux(array $request): void {
-    $key = getSecret('R');
-    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave OpenRouter (R) no esta configurada.']);
+    $key = getSecret('F');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
     $prompt = trim((string)($request['prompt'] ?? ''));
     if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
+    $quality = strtolower((string)($request['quality'] ?? 'pro'));
+    $models = ['pro'=>'flux-2-pro', 'max'=>'flux-2-max'];
+    if (!isset($models[$quality])) respond(400, ['success' => false, 'error' => 'La calidad debe ser PRO o MAX.']);
+    $format = strtolower((string)($request['output_format'] ?? 'png'));
+    if (!in_array($format, ['png','jpeg','webp'], true)) respond(400, ['success' => false, 'error' => 'Formato no permitido.']);
     [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
+    $payload = ['prompt'=>$prompt, 'width'=>$width, 'height'=>$height, 'output_format'=>$format];
     $images = [];
     if (isset($request['image']) && is_string($request['image']) && trim($request['image']) !== '') $images[] = $request['image'];
     if (isset($request['images']) && is_array($request['images'])) {
         foreach ($request['images'] as $image) if (is_string($image) && trim($image) !== '') $images[] = $image;
     }
-    if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Maximo ocho imagenes de referencia.']);
-    $content = [];
-    $content[] = ['type' => 'text', 'text' => $prompt];
-    foreach ($images as $image) {
-        $b64 = $image;
-        if (strpos($b64, ',') !== false) $b64 = substr($b64, strpos($b64, ',') + 1);
-        $mime = 'image/png';
-        if (strpos($image, 'data:image/jpeg') === 0) $mime = 'image/jpeg';
-        elseif (strpos($image, 'data:image/webp') === 0) $mime = 'image/webp';
-        $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mime . ';base64,' . $b64]];
+    if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Máximo ocho imágenes de referencia.']);
+    foreach ($images as $i => $image) $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = base64Image($image);
+    if (isset($request['seed']) && is_numeric($request['seed'])) $payload['seed'] = (int)$request['seed'];
+    $headers = ['accept: application/json', 'Content-Type: application/json', 'x-key: ' . $key];
+    [$status, $submit] = requestJson('https://api.bfl.ai/v1/' . $models[$quality], 'POST', $headers, $payload);
+    if ($status < 200 || $status >= 300) respond($status ?: 502, ['success'=>false, 'error'=>'FLUX rechazó la solicitud.', 'detail'=>$submit['detail'] ?? $submit]);
+    $pollUrl = (string)($submit['polling_url'] ?? '');
+    $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
+    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) respond(502, ['success'=>false, 'error'=>'URL de seguimiento FLUX no válida.']);
+    $resultUrl = '';
+    $last = 'Pending';
+    for ($i = 0; $i < 90; $i++) {
+        usleep(1000000);
+        [$pollStatus, $poll] = requestJson($pollUrl, 'GET', ['accept: application/json', 'x-key: ' . $key], null, 20);
+        if ($pollStatus !== 200) continue;
+        $last = (string)($poll['status'] ?? 'Pending');
+        if ($last === 'Ready') { $resultUrl = (string)($poll['result']['sample'] ?? ''); break; }
+        if (in_array($last, ['Error','Failed','Request Moderated','Content Moderated'], true)) respond(422, ['success'=>false, 'error'=>'FLUX no pudo completar la tarea.', 'status'=>$last]);
     }
-    if (empty($images)) $content = $prompt;
-    $payload = [
-        'model' => 'google/gemini-3-pro-image',
-        'modalities' => ['image', 'text'],
-        'messages' => [['role' => 'user', 'content' => $content]],
-        'max_tokens' => 8000,
-    ];
-    $headers = ['Content-Type: application/json', 'Authorization: Bearer ' . $key];
-    [$status, $jr] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', $headers, $payload);
-    if ($status < 200 || $status >= 300) {
-        $em = $jr['error']['message'] ?? $jr['error'] ?? ('HTTP ' . $status);
-        if (is_array($em)) $em = json_encode($em);
-        respond($status ?: 502, ['success' => false, 'error' => 'OpenRouter: ' . $em]);
-    }
-    $genImages = $jr['choices'][0]['message']['images'] ?? [];
-    if (empty($genImages)) respond(502, ['success' => false, 'error' => 'Gemini no devolvio imagen.']);
-    $imgDataUrl = $genImages[0]['image_url']['url'] ?? '';
-    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) respond(502, ['success' => false, 'error' => 'Gemini devolvio URL en lugar de imagen.']);
-    $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
+    if ($resultUrl === '' || parse_url($resultUrl, PHP_URL_SCHEME) !== 'https') respond(504, ['success'=>false, 'error'=>'FLUX tardó demasiado.', 'status'=>$last]);
+    $ch = curl_init($resultUrl);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_CONNECTTIMEOUT=>15, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_MAXREDIRS=>3]);
+    $binary = curl_exec($ch);
+    $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $mime = (string)(curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/png');
+    curl_close($ch);
+    if ($binary === false || $binary === '' || $downloadStatus !== 200) respond(502, ['success'=>false, 'error'=>'No se pudo descargar el resultado.']);
+    $base64 = base64_encode($binary);
     respond(200, [
-        'success' => true, 'provider' => 'gemini', 'model' => 'gemini-3-pro-image',
-        'mimeType' => 'image/png', 'image' => $imgB64,
-        'dataUrl' => 'data:image/png;base64,' . $imgB64,
-        'width' => $width, 'height' => $height, 'aspectRatio' => $ratio,
+        'success'=>true, 'provider'=>'flux', 'model'=>$models[$quality], 'quality'=>$quality,
+        'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
+        'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
+        'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
     ]);
 }
+
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['image'=>getSecret('R') !== '', 'openrouter'=>getSecret('R') !== ''],
+    'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
     'actions'=>['generate','openrouter','text','health'],
-    'imageModels'=>['gemini-3-pro-image'],
+    'fluxModels'=>['pro'=>'flux-2-pro', 'max'=>'flux-2-max'],
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['image'=>getSecret('R') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') handleFlux($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
