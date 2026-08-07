@@ -193,9 +193,9 @@ Toda llamada a un modelo debe usar exactamente el overlay de carga de referencia
 - Respetar `prefers-reduced-motion`: detener los giros y la animación de la barra.
 ## Reglas para apps de generación o edición de imágenes
 
-1. Generar y editar imágenes exclusivamente con FLUX de Black Forest Labs.
-2. Ofrecer selector `PRO` / `MAX`, relación de aspecto y resolución `512`, `1024`, `2048` y `4096`.
-3. Mapear `PRO` a `flux-2-pro` y `MAX` a `flux-2-max`, salvo que la API oficial exija una migración posterior.
+1. En apps con selector multimodelo, generar y editar imágenes con FLUX de Black Forest Labs o Gemini mediante OpenRouter según el botón elegido; no fijar FLUX ignorando la selección del usuario.
+2. Ofrecer el selector canónico de cuatro modelos descrito al final de esta skill, relación de aspecto y resolución `512`, `1024`, `2048` y `4096`.
+3. Mapear `flux-pro` a `flux-2-pro`, `flux-max` a `flux-2-max`, `gemini-flash` a `google/gemini-3.1-flash-image` y `gemini-pro` a `google/gemini-3-pro-image`, salvo migración confirmada de la API oficial.
 4. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
 5. Separar claramente imagen de entrada, referencias, prompt, formato y opciones de calidad.
 6. Conservar identidad, composición o elementos protegidos al editar una imagen.
@@ -244,92 +244,208 @@ El trabajo solo está terminado cuando el resultado es utilizable, está validad
 
 ---
 
-## Selector de Modelo IA (4 botones canónico)
+## Selector de Modelo IA: patrón canónico de 4 botones
 
-**Referencia:** `apps/dibujo_lineas_copia` — copiar EXACTO estilo, clases CSS y estructura.
+Aplicar este patrón con libertad baja en toda app de generación o edición de imágenes que ofrezca varios modelos.
 
-### Orden
-Flux Pro (defecto) → 3.1 Flash → 3 Pro → Flux Max (menos a más potencia).
+### Fuente de verdad y alcance
 
-### HTML / JSX
+- Usar `apps/dibujo_lineas_copia` como referencia visual Hoola original.
+- Usar `apps/imagenes_ia/editar_copia` y `apps/imagenes_ia/generar_copia` como referencia de implementación responsive validada.
+- Si el usuario pide copiar el estilo desde una app de referencia hacia otras apps, modificar solo las apps de destino. No editar la app de referencia salvo petición explícita.
+- Antes de tocar archivos, identificar por escrito origen y destinos. Comparar el selector completo: marcado, CSS, estado inicial, evento, payload, proxy y caché.
+
+### Orden, texto y estado inicial obligatorios
+
+1. `Flux Pro` — `flux-pro` — seleccionado por defecto.
+2. `Flux Max` — `flux-max`.
+3. `Gemini 3.1` / `Flash` — `gemini-flash` — texto en dos filas.
+4. `Gemini 3` / `Pro` — `gemini-pro` — texto en dos filas.
+
+No abreviar Gemini a `3.1 Flash` o `3 Pro`. No colocar Flux Max al final. No seleccionar Flux Max por defecto.
+
+### Marcado HTML
+
 ```html
 <div class="model-selector">
   <span class="model-selector-label">Modelo IA</span>
   <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-    <button class="model-toggle active flux" data-model="flux-pro">Flux Pro</button>
-    <button class="model-toggle" data-model="gemini-flash">3.1 Flash</button>
-    <button class="model-toggle" data-model="gemini-pro">3 Pro</button>
-    <button class="model-toggle flux" data-model="flux-max">Flux Max</button>
+    <button type="button" class="model-toggle active flux" data-model="flux-pro">Flux Pro</button>
+    <button type="button" class="model-toggle flux" data-model="flux-max">Flux Max</button>
+    <button type="button" class="model-toggle" data-model="gemini-flash">Gemini 3.1<br>Flash</button>
+    <button type="button" class="model-toggle" data-model="gemini-pro">Gemini 3<br>Pro</button>
   </div>
 </div>
 ```
 
-### CSS canónico (copiar tal cual, usa valores fijos, NO variables)
+En React, mantener las dos filas de Gemini de forma explícita; no confiar en el salto automático:
+
+```jsx
+const models = [
+  { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
+  { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
+  { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
+  { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' },
+];
+
+{models.map((model) => (
+  <button
+    type="button"
+    key={model.id}
+    onClick={() => setSelectedModel(model.id)}
+    className={`model-toggle ${selectedModel === model.id ? `active ${model.cls}` : ''}`}
+  >
+    {model.name}{model.secondLine && <><br />{model.secondLine}</>}
+  </button>
+))}
+```
+
+### Tokens Hoola requeridos
+
+Verificar que existan estos tokens. Si faltan, añadirlos al `:root` de la app de destino; no sustituirlos por un fondo negro:
+
 ```css
-.model-selector {
-  display:flex; flex-direction:column; align-items:center; gap:.6rem;
-  margin:.6rem 0 .4rem; width:100%;
-}
-.model-selector-label {
-  color:rgba(204,255,255,0.55); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
-}
-.model-toggle-group {
-  display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
-  background:rgba(0,16,24,0.85); border:1px solid rgba(0,208,208,0.2);
-  box-shadow:0 0 12px rgba(0,208,208,0.12);
-}
-.model-toggle {
-  font-family:'Electrolize',sans-serif; font-size:.9rem; letter-spacing:0.04em;
-  padding:.55rem 1.1rem; border-radius:999px; border:1px solid transparent;
-  background:transparent; color:rgba(204,255,255,0.45); cursor:pointer;
-  transition:all .25s ease; text-transform:uppercase; white-space:nowrap;
-}
-.model-toggle:hover {
-  color:#eaffff; border-color:rgba(0,208,208,0.55);
-  background:rgba(255,255,255,0.08); backdrop-filter:blur(4px);
-  box-shadow:0 0 14px rgba(0,208,208,0.22);
-}
-.model-toggle.active {
-  background:linear-gradient(135deg,rgba(0,16,24,0.9),#00D0D0);
-  color:#CCFFFF; text-shadow:0 0 8px rgba(0,208,208,0.7);
-  border-color:rgba(0,208,208,0.65); box-shadow:0 0 18px rgba(0,208,208,0.45);
-}
-.model-toggle.active.flux {
-  background:linear-gradient(135deg,rgba(0,16,24,0.9),#26C626);
-  color:#eaffff; text-shadow:0 0 10px rgba(38,198,38,0.8);
-  border-color:#26C626; box-shadow:0 0 20px rgba(38,198,38,0.5);
+:root {
+  --acc: #00D0D0;
+  --acc2: #26C626;
+  --text: #eaffff;
+  --muted: #99CCCC;
+  --contenedor: #174F7A;
+  --border: rgba(0,208,208,.7);
+  --border-strong: #00D0D0;
+  --card-bg: rgba(23,79,122,.42);
+  --card-hover: rgba(30,100,150,.55);
+  --glow: rgba(0,208,208,.8);
+  --glow-soft: rgba(0,208,208,.4);
+  --font-ui: 'Electrolize', system-ui, sans-serif;
 }
 ```
 
-### JS (vanilla) o React
+### CSS canónico responsive
+
+Copiar este bloque completo. La cuadrícula de cuatro columnas y `minmax(0,1fr)` son obligatorios para impedir que el campo desborde el panel.
+
+```css
+.model-selector {
+  display:flex; flex-direction:column; align-items:center; gap:.6rem;
+  margin:1.8rem 0 1.2rem; width:100%;
+}
+.model-selector-label {
+  color:var(--muted); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
+}
+.model-toggle-group {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.25rem;
+  width:100%; max-width:100%; box-sizing:border-box;
+  padding:.3rem; border-radius:999px;
+  background:var(--card-bg); border:1px solid var(--border);
+  box-shadow:0 0 12px var(--glow-soft);
+}
+.model-toggle {
+  min-width:0; padding:.55rem .35rem;
+  border:1px solid transparent; border-radius:999px;
+  background:transparent; color:var(--muted); cursor:pointer;
+  font-family:var(--font-ui); font-size:clamp(.62rem,2.35vw,.8rem);
+  line-height:1.15; letter-spacing:.025em; text-transform:uppercase; white-space:nowrap;
+  transition:all .25s ease;
+}
+.model-toggle:hover {
+  color:var(--text); border-color:var(--border-strong);
+  background:rgba(255,255,255,.06); backdrop-filter:blur(4px);
+  box-shadow:0 0 12px var(--glow-soft);
+}
+.model-toggle.active {
+  color:#CCFFFF; border-color:var(--border-strong);
+  background:linear-gradient(135deg,var(--contenedor),var(--acc));
+  text-shadow:0 0 8px var(--glow); box-shadow:0 0 18px var(--glow);
+}
+.model-toggle.active.flux {
+  color:#eaffff; border-color:var(--acc2);
+  background:linear-gradient(135deg,var(--contenedor),var(--acc2));
+  text-shadow:0 0 8px rgba(38,198,38,.8);
+  box-shadow:0 0 18px rgba(38,198,38,.5);
+}
+```
+
+### Botones de relación de aspecto (AR)
+
+No dejar los botones AR con texto gris oscuro o bordes casi invisibles. Aplicar el mismo lenguaje Hoola y conservar su cuadrícula existente:
+
+```jsx
+className={`aspect-ratio-button ${selectedAR === ar.id ? 'active' : ''}`}
+```
+
+```css
+.aspect-ratio-button {
+  min-width:0; padding:1rem .35rem; border-radius:1rem;
+  border:1px solid rgba(0,208,208,.28); background:var(--card-bg);
+  color:var(--muted); display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:.5rem;
+  transition:all .25s ease; box-shadow:inset 0 0 12px rgba(0,208,208,.05);
+}
+.aspect-ratio-button:hover {
+  color:var(--text); border-color:var(--border-strong);
+  background:var(--card-hover); box-shadow:0 0 12px var(--glow-soft);
+}
+.aspect-ratio-button.active {
+  color:#CCFFFF; border-color:var(--border-strong);
+  background:linear-gradient(135deg,var(--contenedor),rgba(0,208,208,.55));
+  text-shadow:0 0 8px var(--glow); box-shadow:0 0 16px var(--glow-soft);
+}
+.aspect-ratio-button .btn-canon {
+  color:inherit; font-size:.65rem; line-height:1; white-space:nowrap;
+}
+```
+
+### Estado y envío al backend
+
 ```js
 // Vanilla
-window.selectedModel = 'flux-pro';
-document.querySelectorAll('.model-toggle').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    window.selectedModel = btn.dataset.model;
+let selectedModel = 'flux-pro';
+document.querySelectorAll('.model-toggle').forEach((button) => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.model-toggle').forEach((item) => item.classList.remove('active'));
+    button.classList.add('active');
+    if (button.dataset.model.startsWith('flux-')) button.classList.add('flux');
+    selectedModel = button.dataset.model;
   });
 });
 
 // React
 const [selectedModel, setSelectedModel] = useState('flux-pro');
 useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
-// En fetch: model: window.selectedModel || 'flux-pro'
+// Incluir siempre en el payload: model: selectedModel
 ```
 
-### Proxy PHP — mapeo de modelo
+No cambiar solo el aspecto: comprobar que cada botón actualiza el estado y que el `fetch` envía el identificador elegido.
+
+### Mapeo seguro en PHP
+
 ```php
 $reqModel = strtolower((string)($data['model'] ?? 'flux-pro'));
-if (strpos($reqModel, 'max') !== false)      { $backend='flux'; $fluxEndpoint='flux-2-max'; }
-elseif (strpos($reqModel, 'gemini') && strpos($reqModel, 'pro')) { $backend='gemini'; $geminiModel='google/gemini-3-pro-image'; }
-elseif (strpos($reqModel, 'gemini') || strpos($reqModel, 'flash')) { $backend='gemini'; $geminiModel='google/gemini-3.1-flash-image'; }
-else { $backend='flux'; /* flux-pro por defecto */ }
+$backend = 'flux';
+$fluxEndpoint = 'flux-2-pro';
+$geminiModelId = 'google/gemini-3.1-flash-image';
+
+if (strpos($reqModel, 'max') !== false) {
+    $fluxEndpoint = 'flux-2-max';
+} elseif (strpos($reqModel, 'pro') !== false && strpos($reqModel, 'gemini') !== false) {
+    $backend = 'gemini';
+    $geminiModelId = 'google/gemini-3-pro-image';
+} elseif (strpos($reqModel, 'flash') !== false) {
+    $backend = 'gemini';
+    $geminiModelId = 'google/gemini-3.1-flash-image';
+}
 ```
 
-### Reglas
-- `.model-toggle.active` (sin `.flux`) = cian `#00D0D0` = Gemini
-- `.model-toggle.active.flux` = verde `#26C626` = FLUX
-- **NUNCA** usar Tailwind inline para el toggle; siempre clases CSS canónicas.
-- El CSS usa **valores fijos** (no `var(--...)`) porque las apps React no comparten variables Hoola.
+Comparar siempre `strpos(...) !== false`; no usar el resultado como booleano. Mantener FLUX como fallback seguro para `flux-pro` o valores omitidos.
+
+### Validación y publicación obligatorias
+
+1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
+2. Probar que el grupo mide como máximo el 100 % del panel y que no existe scroll horizontal ni texto recortado.
+3. Verificar las cuatro etiquetas completas; comprobar que ambos Gemini ocupan exactamente dos filas.
+4. Probar estados normal, hover y activo: FLUX activo en verde y Gemini activo en cian.
+5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
+6. Confirmar `flux-pro` como estado inicial y revisar el payload de los cuatro botones.
+7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.
+8. Revisar el diff, crear commit, hacer push a la rama de despliegue y verificar la URL real sin caché antigua.
