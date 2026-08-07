@@ -1,8 +1,8 @@
 <?php
 header("Content-Type: text/html; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
-header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *;");
-header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *;");
+header("Content-Security-Policy: default-src 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src 'unsafe-inline'; img-src data: blob: 'unsafe-inline'; frame-src *;");
+header("X-Content-Security-Policy: default-src 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src 'unsafe-inline'; img-src data: blob: 'unsafe-inline'; frame-src *;");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -10,7 +10,7 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FLUX Image Studio | Premium Edition</title>
+  <title>FLUX Image Studio Premium Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +21,7 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
   <script>
     window.onerror = function (msg, url, line, col, error) {
       document.body.innerHTML = '<div style="color:#00D0D0; background:#001018; padding:20px; font-family:monospace; border: 2px solid #26C626;">' +
-        '<h1>Error Crítico de Interfaz</h1>' +
+        '<h1>Error Critico en la Interfaz</h1>' +
         '<p>' + msg + '</p>' +
         '<p>Line: ' + line + ':' + col + '</p>' +
         '<pre>' + (error ? error.stack : 'No stacktrace') + '</pre>' +
@@ -29,64 +29,19 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
     };
   </script>
   <script type="importmap">
-    {
-        "imports": {
-            "react": "https://cdn.jsdelivr.net/npm/react@18.2.0/+esm",
-            "react-dom/client": "https://cdn.jsdelivr.net/npm/react-dom@18.2.0/client/+esm",
-            "lucide-react": "https://cdn.jsdelivr.net/npm/lucide-react@0.294.0/+esm"
-        }
+  {
+    "imports": {
+      "react": "https://cdn.jsdelivr.net/npm/react@18.2.0/+esm",
+      "react-dom/client": "https://cdn.jsdelivr.net/npm/react-dom@18.2.0/client/+esm",
+      "lucide-react": "https://cdn.jsdelivr.net/npm/lucide-react@0.294.0/+esm"
     }
-    </script>
+  }
+  </script>
   <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
-
-  <!-- Toggle modelo (vanilla) -->
-  <style>
-    .model-bar {
-      display:flex; justify-content:center; gap:0.5rem; padding:0.6rem 1rem; margin:0 auto;
-      max-width:600px; z-index:100; position:relative;
-      background:rgba(23,79,122,0.35); border:1px solid rgba(0,208,208,0.35);
-      border-radius:999px; backdrop-filter:blur(8px);
-    }
-    .model-bar .mbtn {
-      font-family:'Electrolize',sans-serif; font-size:0.78rem; letter-spacing:0.04em;
-      padding:0.4rem 1rem; border-radius:999px; border:1px solid transparent;
-      background:transparent; color:rgba(204,255,255,0.5); cursor:pointer;
-      transition:all 0.2s ease; text-transform:uppercase; white-space:nowrap;
-    }
-    .model-bar .mbtn:hover { color:#eaffff; border-color:rgba(0,208,208,0.4); }
-    .model-bar .mbtn.active.flux {
-      background:linear-gradient(135deg,rgba(23,79,122,0.9),#26C626);
-      color:#eaffff; border-color:#26C626;
-      box-shadow:0 0 16px rgba(38,198,38,0.4); text-shadow:0 0 6px rgba(38,198,38,0.5);
-    }
-    .model-bar .mbtn.active.gemini {
-      background:linear-gradient(135deg,rgba(23,79,122,0.9),#00D0D0);
-      color:#CCFFFF; border-color:#00D0D0;
-      box-shadow:0 0 16px rgba(0,208,208,0.4); text-shadow:0 0 6px rgba(0,208,208,0.5);
-    }
-  </style>
-
 </head>
+
 <body>
   <div id="root"></div>
-
-  <div class="model-bar" id="modelBar">
-    <button class="mbtn active flux" data-model="flux">Flux Pro</button>
-    <button class="mbtn gemini" data-model="gemini-flash">3.1 Flash</button>
-    <button class="mbtn gemini" data-model="gemini-pro">3 Pro</button>
-  </div>
-
-  <script>
-    window.selectedModel = 'flux';
-    document.querySelectorAll('#modelBar .mbtn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#modelBar .mbtn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        window.selectedModel = btn.dataset.model;
-      });
-    });
-  </script>
-
   <script src="history-manager.js?v=11"></script>
   <script type="text/babel" data-type="module" data-presets="react" src="app.js?v=11"></script>
 </body>

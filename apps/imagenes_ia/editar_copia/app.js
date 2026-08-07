@@ -539,6 +539,10 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
+  const [selectedModel, setSelectedModel] = useState('flux');
+
+  // Sincronizar modelo con variable global (accesible desde callProxy)
+  useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
     const [progress, setProgress] = useState(0);
     const [progressStatus, setProgressStatus] = useState('');
@@ -813,6 +817,26 @@ const App = () => {
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* ── Selector de Modelo IA ── */}
+                            <div className="space-y-4">
+                              <label className="btn-canon text-[11px] text-green-400">Modelo IA</label>
+                              <div className="grid grid-cols-3 gap-2">
+                                {[
+                                  { id: 'flux', name: 'Flux Pro', color: 'border-green-400 bg-green-500/10 text-green-400 shadow-[0_0_12px_rgba(34,255,60,0.15)]' },
+                                  { id: 'gemini-flash', name: '3.1 Flash', color: 'border-cyan-400 bg-cyan-500/10 text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)]' },
+                                  { id: 'gemini-pro', name: '3 Pro', color: 'border-cyan-400 bg-cyan-500/10 text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)]' }
+                                ].map(m => (
+                                  <button
+                                    key={m.id}
+                                    onClick={() => setSelectedModel(m.id)}
+                                    className={`p-3 rounded-2xl border flex items-center justify-center gap-1 transition-all text-[9px] ${selectedModel === m.id ? m.color : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                  >
+                                    {m.name}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
 
                             <div className="pt-6 order-last">
