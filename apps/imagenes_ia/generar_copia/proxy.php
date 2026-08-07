@@ -68,17 +68,22 @@ if ($imagenEntrada === '' && isset($data['contents'][0]['parts'])) {
 $calidad = (string)($data['calidad'] ?? 'pro');
 
 // ===== Seleccion de modelo =====
-$reqModel = strtolower((string)($data['model'] ?? 'flux'));
+$reqModel = strtolower((string)($data['model'] ?? 'flux-pro'));
 $backend = 'flux';
 $geminiModelId = 'google/gemini-3.1-flash-image';
-if (strpos($reqModel, 'pro') !== false || $reqModel === 'google/gemini-3-pro-image') {
+$fluxEndpoint = 'flux-2-pro'; // por defecto
+
+if (strpos($reqModel, 'max') !== false) {
+    $backend = 'flux';
+    $fluxEndpoint = 'flux-2-max';
+} elseif (strpos($reqModel, 'pro') !== false && (strpos($reqModel, 'gemini') !== false || $reqModel === 'google/gemini-3-pro-image')) {
     $backend = 'gemini';
     $geminiModelId = 'google/gemini-3-pro-image';
 } elseif (strpos($reqModel, 'flash') !== false || $reqModel === 'google/gemini-3.1-flash-image') {
     $backend = 'gemini';
     $geminiModelId = 'google/gemini-3.1-flash-image';
 }
-// 'flux' queda como fallback
+// 'flux-pro', 'flux', 'pro' -> flux-2-pro (ya establecido)
 
 // ====================================================================
 // BACKEND: FLUX
@@ -90,9 +95,6 @@ if ($backend === 'flux') {
         exit;
     }
 
-    $FLUX_MODELS = ['pro'=>'flux-2-pro', 'max'=>'flux-2-max'];
-    $endpoint = $FLUX_MODELS[$calidad] ?? $FLUX_MODELS['pro'];
-
     $payload = ['prompt' => $prompt, 'width' => 1024, 'height' => 1024];
     if ($imagenEntrada !== '') {
         $b64 = $imagenEntrada;
@@ -101,7 +103,7 @@ if ($backend === 'flux') {
     }
 
     // Submit
-    $ch = curl_init('https://api.bfl.ai/v1/' . $endpoint);
+    $ch = curl_init('https://api.bfl.ai/v1/' . $fluxEndpoint);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => json_encode($payload),
@@ -133,7 +135,7 @@ if ($backend === 'flux') {
     $ch = curl_init($imageUrl);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>true]);
     $imgBin = curl_exec($ch); curl_close($ch);
-    echo json_encode(['success'=>true, 'imageUrl'=>'data:image/png;base64,'.base64_encode($imgBin), 'model'=>'flux-2-pro']);
+    echo json_encode(['success'=>true, 'imageUrl'=>'data:image/png;base64,'.base64_encode($imgBin), 'model'=>$fluxEndpoint]);
     exit;
 }
 

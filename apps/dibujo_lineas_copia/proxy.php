@@ -66,21 +66,23 @@ if (strpos($imageB64, 'base64,') !== false) {
 }
 
 // ===== Seleccion de modelo =====
-$MODELS = [
-    'flux'   => 'flux',
-    'gemini' => 'gemini',
-    // alias
-    'flux-2-pro'                => 'flux',
-    'google/gemini-3.1-flash-image' => 'gemini',
-    'google/gemini-3-pro-image'     => 'gemini',
-];
-$reqModel = strtolower((string)($req['model'] ?? 'flux'));
-$backend = $MODELS[$reqModel] ?? null;
-
-// Distinguir gemini pro vs flash
+$reqModel = strtolower((string)($req['model'] ?? 'flux-pro'));
+$backend = null;
 $geminiModel = 'google/gemini-3.1-flash-image';
-if (strpos($reqModel, 'pro') !== false || $reqModel === 'google/gemini-3-pro-image') {
+$fluxEndpoint = 'flux-2-pro';
+
+if (strpos($reqModel, 'max') !== false) {
+    $backend = 'flux';
+    $fluxEndpoint = 'flux-2-max';
+} elseif (strpos($reqModel, 'gemini') !== false && strpos($reqModel, 'pro') !== false) {
+    $backend = 'gemini';
     $geminiModel = 'google/gemini-3-pro-image';
+} elseif (strpos($reqModel, 'gemini') !== false || strpos($reqModel, 'flash') !== false) {
+    $backend = 'gemini';
+    $geminiModel = 'google/gemini-3.1-flash-image';
+} else {
+    // 'flux-pro', 'flux', 'pro' -> flux-2-pro
+    $backend = 'flux';
 }
 
 // ====================================================================
@@ -99,7 +101,7 @@ if ($backend === 'flux') {
     ];
 
     // 1) Submit
-    $ch = curl_init('https://api.bfl.ai/v1/flux-2-pro');
+    $ch = curl_init('https://api.bfl.ai/v1/' . $fluxEndpoint);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,

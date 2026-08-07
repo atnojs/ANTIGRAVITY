@@ -296,7 +296,7 @@ const mergeHistory = (localItems, serverItems) => {
 // Llama al proxy en modo FLUX (imágenes). Contrato: {prompt, calidad, quality, aspectRatio, targetPx, imagen?}
 // -> {success, imageUrl (data URL), coste, modelo, calidad, width, height}
 const callFlux = async ({ prompt, calidad, quality, aspectRatio, targetPx, imagen }) => {
-    const body = { prompt, calidad, quality, aspectRatio, targetPx, model: (window.selectedModel || 'flux') };
+    const body = { prompt, calidad, quality, aspectRatio, targetPx, model: (window.selectedModel || 'flux-pro') };
     if (imagen) body.imagen = imagen;
     const response = await fetch(PROXY_URL, {
         method: 'POST',
@@ -665,6 +665,10 @@ const App = () => {
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
     // Calidad del modelo FLUX elegida con los botones PRO/MAX (pro = equilibrado, max = máxima).
     const [selectedQuality, setSelectedQuality] = useState('pro');
+  const [selectedModel, setSelectedModel] = useState('flux-pro');
+
+  // Sincronizar modelo con variable global
+  useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
     const fileInputRef = useRef(null);
 
@@ -888,23 +892,23 @@ const App = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <label className="btn-canon text-[11px] text-cyan-400">Calidad del Modelo FLUX</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => setSelectedQuality('pro')}
-                                        className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'pro' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
-                                    >
-                                        <span className="btn-canon text-[11px]">PRO</span>
-                                        <span className="btn-canon text-[8px] opacity-70">Equilibrado · ~$0.03</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedQuality('max')}
-                                        className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-0.5 transition-all ${selectedQuality === 'max' ? 'border-[#26C626] bg-[#26C626]/10 text-[#26C626] shadow-[0_0_15px_rgba(38,198,38,0.2)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-[#00D0D0]/40 hover:text-[#00D0D0]'}`}
-                                    >
-                                        <span className="btn-canon text-[11px]">MAX</span>
-                                        <span className="btn-canon text-[8px] opacity-70">Máxima · ~$0.07</span>
-                                    </button>
-                                </div>
+                              <label className="btn-canon text-[11px] text-green-400">Modelo IA</label>
+                              <div className="grid grid-cols-2 gap-2.5">
+                                {[
+                                  { id: 'flux-max', name: 'Flux Max', activeClass: 'border-green-400 bg-green-500/25 text-green-200 shadow-[0_0_20px_rgba(38,198,38,0.4)]' },
+                                  { id: 'flux-pro', name: 'Flux Pro', activeClass: 'border-green-400/70 bg-green-500/15 text-green-300 shadow-[0_0_14px_rgba(38,198,38,0.25)]' },
+                                  { id: 'gemini-flash', name: '3.1 Flash', activeClass: 'border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,208,208,0.4)]' },
+                                  { id: 'gemini-pro', name: '3 Pro', activeClass: 'border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,208,208,0.4)]' }
+                                ].map(m => (
+                                  <button
+                                    key={m.id}
+                                    onClick={() => { setSelectedModel(m.id); setSelectedQuality(m.id.includes('max') ? 'max' : 'pro'); }}
+                                    className={`p-3 rounded-2xl border flex items-center justify-center gap-1.5 transition-all text-xs font-semibold tracking-wide ${selectedModel === m.id ? m.activeClass : 'border-white/10 bg-white/5 text-gray-500 hover:border-white/25 hover:bg-white/10 hover:text-gray-300 hover:backdrop-blur-sm'}`}
+                                  >
+                                    {m.name}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
 
                             <div className="pt-6 order-last">

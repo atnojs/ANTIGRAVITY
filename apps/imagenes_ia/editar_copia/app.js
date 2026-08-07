@@ -539,7 +539,7 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
-  const [selectedModel, setSelectedModel] = useState('flux');
+  const [selectedModel, setSelectedModel] = useState('flux-pro');
 
   // Sincronizar modelo con variable global (accesible desde callProxy)
   useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
@@ -822,16 +822,17 @@ const App = () => {
                             {/* ── Selector de Modelo IA ── */}
                             <div className="space-y-4">
                               <label className="btn-canon text-[11px] text-green-400">Modelo IA</label>
-                              <div className="grid grid-cols-3 gap-2">
+                              <div className="grid grid-cols-2 gap-2.5">
                                 {[
-                                  { id: 'flux', name: 'Flux Pro', color: 'border-green-400 bg-green-500/10 text-green-400 shadow-[0_0_12px_rgba(34,255,60,0.15)]' },
-                                  { id: 'gemini-flash', name: '3.1 Flash', color: 'border-cyan-400 bg-cyan-500/10 text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)]' },
-                                  { id: 'gemini-pro', name: '3 Pro', color: 'border-cyan-400 bg-cyan-500/10 text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)]' }
+                                  { id: 'flux-max', name: 'Flux Max', activeClass: 'border-green-400 bg-green-500/25 text-green-200 shadow-[0_0_20px_rgba(38,198,38,0.4)]' },
+                                  { id: 'flux-pro', name: 'Flux Pro', activeClass: 'border-green-400/70 bg-green-500/15 text-green-300 shadow-[0_0_14px_rgba(38,198,38,0.25)]' },
+                                  { id: 'gemini-flash', name: '3.1 Flash', activeClass: 'border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,208,208,0.4)]' },
+                                  { id: 'gemini-pro', name: '3 Pro', activeClass: 'border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,208,208,0.4)]' }
                                 ].map(m => (
                                   <button
                                     key={m.id}
                                     onClick={() => setSelectedModel(m.id)}
-                                    className={`p-3 rounded-2xl border flex items-center justify-center gap-1 transition-all text-[9px] ${selectedModel === m.id ? m.color : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                    className={`p-3 rounded-2xl border flex items-center justify-center gap-1.5 transition-all text-xs font-semibold tracking-wide ${selectedModel === m.id ? m.activeClass : 'border-white/10 bg-white/5 text-gray-500 hover:border-white/25 hover:bg-white/10 hover:text-gray-300 hover:backdrop-blur-sm'}`}
                                   >
                                     {m.name}
                                   </button>

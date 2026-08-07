@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
 
-    // ===== Selector de modelo (toggle 3 botones) =====
-        // Por defecto: FLUX Pro (más barato ~$0.03, bueno para todo)
-        let selectedModel = 'flux';
+    // ===== Selector de modelo (toggle 4 botones) =====
+        // Por defecto: FLUX Pro (equilibrio calidad/precio ~$0.03)
+        let selectedModel = 'flux-pro';
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
             btn.addEventListener('click', () => {

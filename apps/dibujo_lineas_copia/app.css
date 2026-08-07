@@ -230,12 +230,16 @@ h1{
   box-shadow:0 0 12px var(--glow-soft);
 }
 .model-toggle{
-  font-family:var(--font-ui);font-size:.85rem;letter-spacing:0.04em;
-  padding:.5rem 1.1rem;border-radius:999px;border:1px solid transparent;
+  font-family:var(--font-ui);font-size:.9rem;letter-spacing:0.04em;
+  padding:.55rem 1rem;border-radius:999px;border:1px solid transparent;
   background:transparent;color:var(--muted);cursor:pointer;
-  transition:all .2s ease;text-transform:uppercase;
+  transition:all .25s ease;text-transform:uppercase;white-space:nowrap;
 }
-.model-toggle:hover{color:var(--text);border-color:var(--border)}
+.model-toggle:hover{
+  color:var(--text);border-color:var(--border-strong);
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);
+  box-shadow:0 0 12px var(--glow-soft);
+}
 .model-toggle.active{
   background:linear-gradient(135deg,var(--contenedor),var(--acc));
   color:#CCFFFF;text-shadow:0 0 8px var(--glow);
