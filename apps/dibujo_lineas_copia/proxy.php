@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// PROXY PHP - Imágenes a Lineales con Gemini 3 Pro (OpenRouter)
+// PROXY PHP - Imágenes a Lineales con Gemini 3.1 Flash Image (OpenRouter)
 // Convierte una imagen subida en un dibujo lineal (página de colorear).
 // Clave OpenRouter en variable de entorno 'R' del .htaccess raíz.
 // OpenRouter es SÍNCRONO: llamada única, sin polling.
@@ -66,8 +66,9 @@ if (strlen($imgBinary) > 2500000) { // ~2.5MB
 
 $prompt = (string)($req['prompt'] ?? "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page. Convert all visual elements (people, objects, backgrounds) into consistent, smooth, distinct black outlines using clean uniform lines. Completely eliminate all colors, gradients, shading, textures and gray fills: the result must be purely black lines on a pure white background. Simplify complex shapes to create clear areas of white space that are easy to color. Maintain the original composition, perspective and key elements. The final drawing must be sharp, without artifacts or smudges, ready to be printed and hand-colored.");
 
-// ===== GEMINI 3 PRO vía OpenRouter (síncrono, sin polling) =====
-$model = 'google/gemini-3-pro-image';
+// ===== GEMINI 3.1 FLASH IMAGE vía OpenRouter (síncrono, sin polling) =====
+// Más barato que 3 Pro (~$0.068 vs ~$0.137) y comparado en calidad de line-art.
+$model = 'google/gemini-3.1-flash-image';
 
 // Construir content con imagen + prompt (data URL con prefijo)
 $content = [
