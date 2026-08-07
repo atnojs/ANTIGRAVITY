@@ -819,23 +819,21 @@ const App = () => {
                                 </div>
                             </div>
 
-                            {/* ── Selector de Modelo IA ── */}
-                            <div className="space-y-4">
-                              <label className="btn-canon text-[11px] text-green-400">Modelo IA</label>
-                              <div className="grid grid-cols-2 gap-2.5">
+                            {/* ── Selector de Modelo IA (canonico hoola) ── */}
+                            <div className="model-selector">
+                              <span className="model-selector-label">Modelo IA</span>
+                              <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
                                 {[
-                                  { id: 'flux-max', name: 'Flux Max', activeClass: 'border-green-400 bg-green-500/25 text-green-200 shadow-[0_0_20px_rgba(38,198,38,0.4)]' },
-                                  { id: 'flux-pro', name: 'Flux Pro', activeClass: 'border-green-400/70 bg-green-500/15 text-green-300 shadow-[0_0_14px_rgba(38,198,38,0.25)]' },
-                                  { id: 'gemini-flash', name: '3.1 Flash', activeClass: 'border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,208,208,0.4)]' },
-                                  { id: 'gemini-pro', name: '3 Pro', activeClass: 'border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,208,208,0.4)]' }
+                                  { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
+                                  { id: 'gemini-flash', name: '3.1 Flash', cls: '' },
+                                  { id: 'gemini-pro', name: '3 Pro', cls: '' },
+                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' }
                                 ].map(m => (
                                   <button
                                     key={m.id}
                                     onClick={() => setSelectedModel(m.id)}
-                                    className={`p-3 rounded-2xl border flex items-center justify-center gap-1.5 transition-all text-xs font-semibold tracking-wide ${selectedModel === m.id ? m.activeClass : 'border-white/10 bg-white/5 text-gray-500 hover:border-white/25 hover:bg-white/10 hover:text-gray-300 hover:backdrop-blur-sm'}`}
-                                  >
-                                    {m.name}
-                                  </button>
+                                    className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
+                                  >{m.name}</button>
                                 ))}
                               </div>
                             </div>

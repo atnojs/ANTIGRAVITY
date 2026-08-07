@@ -240,4 +240,96 @@ La entrega final debe indicar:
 - URL y flujos verificados en Chrome desde el servidor.
 - Limitaciones o aspectos no comprobables, sin presentar suposiciones como resultados.
 
-El trabajo solo está terminado cuando el resultado es utilizable, está validado en proporción a su riesgo y no quedan fallos conocidos dentro del alcance solicitado.
+El trabajo solo está terminado cuando el resultado es utilizable, está validado y no quedan fallos conocidos dentro del alcance solicitado.
+
+---
+
+## Selector de Modelo IA (4 botones canónico)
+
+**Referencia:** `apps/dibujo_lineas_copia` — copiar EXACTO estilo, clases CSS y estructura.
+
+### Orden
+Flux Pro (defecto) → 3.1 Flash → 3 Pro → Flux Max (menos a más potencia).
+
+### HTML / JSX
+```html
+<div class="model-selector">
+  <span class="model-selector-label">Modelo IA</span>
+  <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+    <button class="model-toggle active flux" data-model="flux-pro">Flux Pro</button>
+    <button class="model-toggle" data-model="gemini-flash">3.1 Flash</button>
+    <button class="model-toggle" data-model="gemini-pro">3 Pro</button>
+    <button class="model-toggle flux" data-model="flux-max">Flux Max</button>
+  </div>
+</div>
+```
+
+### CSS canónico (copiar tal cual, usa valores fijos, NO variables)
+```css
+.model-selector {
+  display:flex; flex-direction:column; align-items:center; gap:.6rem;
+  margin:.6rem 0 .4rem; width:100%;
+}
+.model-selector-label {
+  color:rgba(204,255,255,0.55); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
+}
+.model-toggle-group {
+  display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
+  background:rgba(0,16,24,0.85); border:1px solid rgba(0,208,208,0.2);
+  box-shadow:0 0 12px rgba(0,208,208,0.12);
+}
+.model-toggle {
+  font-family:'Electrolize',sans-serif; font-size:.9rem; letter-spacing:0.04em;
+  padding:.55rem 1.1rem; border-radius:999px; border:1px solid transparent;
+  background:transparent; color:rgba(204,255,255,0.45); cursor:pointer;
+  transition:all .25s ease; text-transform:uppercase; white-space:nowrap;
+}
+.model-toggle:hover {
+  color:#eaffff; border-color:rgba(0,208,208,0.55);
+  background:rgba(255,255,255,0.08); backdrop-filter:blur(4px);
+  box-shadow:0 0 14px rgba(0,208,208,0.22);
+}
+.model-toggle.active {
+  background:linear-gradient(135deg,rgba(0,16,24,0.9),#00D0D0);
+  color:#CCFFFF; text-shadow:0 0 8px rgba(0,208,208,0.7);
+  border-color:rgba(0,208,208,0.65); box-shadow:0 0 18px rgba(0,208,208,0.45);
+}
+.model-toggle.active.flux {
+  background:linear-gradient(135deg,rgba(0,16,24,0.9),#26C626);
+  color:#eaffff; text-shadow:0 0 10px rgba(38,198,38,0.8);
+  border-color:#26C626; box-shadow:0 0 20px rgba(38,198,38,0.5);
+}
+```
+
+### JS (vanilla) o React
+```js
+// Vanilla
+window.selectedModel = 'flux-pro';
+document.querySelectorAll('.model-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window.selectedModel = btn.dataset.model;
+  });
+});
+
+// React
+const [selectedModel, setSelectedModel] = useState('flux-pro');
+useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
+// En fetch: model: window.selectedModel || 'flux-pro'
+```
+
+### Proxy PHP — mapeo de modelo
+```php
+$reqModel = strtolower((string)($data['model'] ?? 'flux-pro'));
+if (strpos($reqModel, 'max') !== false)      { $backend='flux'; $fluxEndpoint='flux-2-max'; }
+elseif (strpos($reqModel, 'gemini') && strpos($reqModel, 'pro')) { $backend='gemini'; $geminiModel='google/gemini-3-pro-image'; }
+elseif (strpos($reqModel, 'gemini') || strpos($reqModel, 'flash')) { $backend='gemini'; $geminiModel='google/gemini-3.1-flash-image'; }
+else { $backend='flux'; /* flux-pro por defecto */ }
+```
+
+### Reglas
+- `.model-toggle.active` (sin `.flux`) = cian `#00D0D0` = Gemini
+- `.model-toggle.active.flux` = verde `#26C626` = FLUX
+- **NUNCA** usar Tailwind inline para el toggle; siempre clases CSS canónicas.
+- El CSS usa **valores fijos** (no `var(--...)`) porque las apps React no comparten variables Hoola.
