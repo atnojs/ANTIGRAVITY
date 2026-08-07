@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=8" />
+  <link rel="stylesheet" href="app.css?v=9" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -39,6 +39,15 @@
       </div>
       <div class="spinner-container" id="spinner-container">
         <div class="spinner"></div>
+      </div>
+    </div>
+
+    <!-- Selector de modelo (sobre el botón de iniciar) -->
+    <div id="model-selector" class="model-selector">
+      <span class="model-selector-label">Modelo de líneas:</span>
+      <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+        <button type="button" id="model-31" class="model-toggle active" data-model="google/gemini-3.1-flash-image">3.1 Flash (barato)</button>
+        <button type="button" id="model-3" class="model-toggle" data-model="google/gemini-3-pro-image">3 Pro (personas)</button>
       </div>
     </div>
 

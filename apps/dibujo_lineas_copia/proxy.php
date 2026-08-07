@@ -50,6 +50,25 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 $imageB64 = (string)($req['image'] ?? '');
 $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
 
+// ===== Modelo seleccionable desde el frontend =====
+// Por defecto 3.1 Flash Image (más barato, fiel para todo salvo personas).
+// '3' o 'pro' -> Gemini 3 Pro Image (mejor para personas).
+$reqModel = strtolower((string)($req['model'] ?? ''));
+$ALLOWED_MODELS = [
+    'google/gemini-3.1-flash-image',
+    'google/gemini-3-pro-image',
+];
+if (in_array($reqModel, $ALLOWED_MODELS, true)) {
+    $model = $reqModel;
+} else {
+    // Fallback por si el frontend manda 'pro'/'flash' corto
+    if (strpos($reqModel, 'pro') !== false) {
+        $model = 'google/gemini-3-pro-image';
+    } else {
+        $model = 'google/gemini-3.1-flash-image';
+    }
+}
+
 if ($imageB64 === '') {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Falta la imagen']]);
@@ -66,8 +85,7 @@ if (strlen($imgBinary) > 2500000) { // ~2.5MB
 
 $prompt = (string)($req['prompt'] ?? "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page. Convert all visual elements (people, objects, backgrounds) into consistent, smooth, distinct black outlines using clean uniform lines. Completely eliminate all colors, gradients, shading, textures and gray fills: the result must be purely black lines on a pure white background. Simplify complex shapes to create clear areas of white space that are easy to color. Maintain the original composition, perspective and key elements. The final drawing must be sharp, without artifacts or smudges, ready to be printed and hand-colored.");
 
-// ===== GEMINI 3.1 FLASH IMAGE vía OpenRouter (síncrono, sin polling) =====
-// Más barato que 3 Pro (~$0.068 vs ~$0.137) y comparado en calidad de line-art.
+// ===== MODELO: elegido por el usuario en el selector (por defecto 3.1 Flash) =====
 $model = 'google/gemini-3.1-flash-image';
 
 // Construir content con imagen + prompt (data URL con prefijo)

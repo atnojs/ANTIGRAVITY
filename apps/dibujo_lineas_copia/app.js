@@ -15,6 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
 
+    // ===== Selector de modelo (toggle) =====
+    // Por defecto: Gemini 3.1 Flash Image (más barato, fiel para todo salvo personas)
+    let selectedModel = 'google/gemini-3.1-flash-image';
+    const modelToggles = document.querySelectorAll('.model-toggle');
+    modelToggles.forEach(btn => {
+        btn.addEventListener('click', () => {
+            modelToggles.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedModel = btn.dataset.model;
+        });
+    });
+
     let imageQueue = [];
 
     imageInput.addEventListener('change', (e) => {
@@ -72,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         image: base64,
                         mimeType: file.type || 'image/jpeg',
-                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page..."
+                        model: selectedModel,
+                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page... (truncado)"
                     })
                 });
 

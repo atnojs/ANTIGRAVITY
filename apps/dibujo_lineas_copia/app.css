@@ -216,6 +216,32 @@ h1{
 .button-start:hover:not(:disabled){background:linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),linear-gradient(135deg,var(--contenedor),var(--acc));transform:translateY(-2px);box-shadow:0 0 30px var(--glow)}
 .button-start:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 
+/* === Selector de modelo (toggle hoola) === */
+.model-selector{
+  display:flex;flex-direction:column;align-items:center;gap:.6rem;
+  margin:1.8rem 0 1.2rem;width:100%;
+}
+.model-selector-label{
+  color:var(--muted);font-size:.8rem;letter-spacing:0.08em;text-transform:uppercase;
+}
+.model-toggle-group{
+  display:inline-flex;gap:.5rem;padding:.3rem;border-radius:999px;
+  background:var(--card-bg);border:1px solid var(--border);
+  box-shadow:0 0 12px var(--glow-soft);
+}
+.model-toggle{
+  font-family:var(--font-ui);font-size:.85rem;letter-spacing:0.04em;
+  padding:.5rem 1.1rem;border-radius:999px;border:1px solid transparent;
+  background:transparent;color:var(--muted);cursor:pointer;
+  transition:all .2s ease;text-transform:uppercase;
+}
+.model-toggle:hover{color:var(--text);border-color:var(--border)}
+.model-toggle.active{
+  background:linear-gradient(135deg,var(--contenedor),var(--acc));
+  color:#CCFFFF;text-shadow:0 0 8px var(--glow);
+  border-color:var(--border-strong);box-shadow:0 0 18px var(--glow);
+}
+
 .download-single-btn{
   background:var(--card-bg);
   color:var(--acc2);
