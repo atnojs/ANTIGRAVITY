@@ -38,10 +38,55 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
     }
     </script>
   <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
-</head>
 
+  <!-- Toggle modelo (vanilla) -->
+  <style>
+    .model-bar {
+      display:flex; justify-content:center; gap:0.5rem; padding:0.6rem 1rem; margin:0 auto;
+      max-width:600px; z-index:100; position:relative;
+      background:rgba(23,79,122,0.35); border:1px solid rgba(0,208,208,0.35);
+      border-radius:999px; backdrop-filter:blur(8px);
+    }
+    .model-bar .mbtn {
+      font-family:'Electrolize',sans-serif; font-size:0.78rem; letter-spacing:0.04em;
+      padding:0.4rem 1rem; border-radius:999px; border:1px solid transparent;
+      background:transparent; color:rgba(204,255,255,0.5); cursor:pointer;
+      transition:all 0.2s ease; text-transform:uppercase; white-space:nowrap;
+    }
+    .model-bar .mbtn:hover { color:#eaffff; border-color:rgba(0,208,208,0.4); }
+    .model-bar .mbtn.active.flux {
+      background:linear-gradient(135deg,rgba(23,79,122,0.9),#26C626);
+      color:#eaffff; border-color:#26C626;
+      box-shadow:0 0 16px rgba(38,198,38,0.4); text-shadow:0 0 6px rgba(38,198,38,0.5);
+    }
+    .model-bar .mbtn.active.gemini {
+      background:linear-gradient(135deg,rgba(23,79,122,0.9),#00D0D0);
+      color:#CCFFFF; border-color:#00D0D0;
+      box-shadow:0 0 16px rgba(0,208,208,0.4); text-shadow:0 0 6px rgba(0,208,208,0.5);
+    }
+  </style>
+
+</head>
 <body>
   <div id="root"></div>
+
+  <div class="model-bar" id="modelBar">
+    <button class="mbtn active flux" data-model="flux">Flux Pro</button>
+    <button class="mbtn gemini" data-model="gemini-flash">3.1 Flash</button>
+    <button class="mbtn gemini" data-model="gemini-pro">3 Pro</button>
+  </div>
+
+  <script>
+    window.selectedModel = 'flux';
+    document.querySelectorAll('#modelBar .mbtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#modelBar .mbtn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        window.selectedModel = btn.dataset.model;
+      });
+    });
+  </script>
+
   <script src="history-manager.js?v=11"></script>
   <script type="text/babel" data-type="module" data-presets="react" src="app.js?v=11"></script>
 </body>

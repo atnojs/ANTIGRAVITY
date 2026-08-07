@@ -235,10 +235,10 @@ const clearHistoryFromDb = async (mode) => {
 const PROXY_URL = './proxy.php';
 
 const callProxy = async (model, contents, config = {}, promptText = '') => {
-    // Garantizamos que el objeto enviado siempre lleve el parámetro 'prompt'
+    // Garantizamos que el objeto enviado siempre lleve parametro 'prompt'
     const payload = { 
-        model, 
-        prompt: promptText,
+        model: (window.selectedModel || model), 
+        prompt: promptText, 
         contents, 
         ...config 
     };
@@ -278,7 +278,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy('flux', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -319,7 +319,7 @@ const generateImage = async (params) => {
     };
 
     // Pasamos 'finalPrompt' como parámetro explícito
-    const result = await callProxy('gemini-2.5-flash-image', contents, config, finalPrompt);
+    const result = await callProxy('flux', contents, config, finalPrompt);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -336,7 +336,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
+    const result = await callProxy('flux', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;

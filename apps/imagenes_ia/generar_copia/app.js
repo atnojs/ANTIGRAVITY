@@ -296,7 +296,7 @@ const mergeHistory = (localItems, serverItems) => {
 // Llama al proxy en modo FLUX (imágenes). Contrato: {prompt, calidad, quality, aspectRatio, targetPx, imagen?}
 // -> {success, imageUrl (data URL), coste, modelo, calidad, width, height}
 const callFlux = async ({ prompt, calidad, quality, aspectRatio, targetPx, imagen }) => {
-    const body = { prompt, calidad, quality, aspectRatio, targetPx };
+    const body = { prompt, calidad, quality, aspectRatio, targetPx, model: (window.selectedModel || 'flux') };
     if (imagen) body.imagen = imagen;
     const response = await fetch(PROXY_URL, {
         method: 'POST',
