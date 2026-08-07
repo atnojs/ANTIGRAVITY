@@ -320,67 +320,57 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
     }
 };
 
+const IMAGE_PROXY_URL = './proxy_models.php';
+
+const callModelImage = async ({ prompt, aspectRatio, sourceImage, targetPx = 1024, resolution = '1K' }) => {
+    const response = await fetch(IMAGE_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: window.selectedModel || 'flux-pro',
+            prompt,
+            imagen: sourceImage || undefined,
+            aspectRatio,
+            targetPx,
+            resolution
+        })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.success || !data.imageUrl) {
+        throw new Error(data?.error?.message || `Error ${response.status}`);
+    }
+    return data.imageUrl;
+};
+
 const generateImage = async (params) => {
-    let basePrompt = (params.prompt || '').trim();
+    const basePrompt = (params.prompt || '').trim();
     const styleSuffix = (params.styleSuffix || '').trim();
     const fullStylePrompt = `${basePrompt} ${styleSuffix}`.trim();
-
-    let finalPrompt = '';
+    let finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
     if (params.sourceImage) {
-        const sizeInfo = `Adjust the aspect ratio to ${params.aspectRatio}.`;
-        if (fullStylePrompt) {
-            finalPrompt = `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`;
-        } else {
-            finalPrompt = `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`;
-        }
-    } else {
-        finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
+        finalPrompt = fullStylePrompt
+            ? `Transform this image into the following style and content: ${fullStylePrompt}. Keep a complete, high-quality result in ${params.aspectRatio} format.`
+            : `Recreate this image as a complete, natural, high-quality result in ${params.aspectRatio} format.`;
     }
-
-    const parts = [{ text: finalPrompt }];
-    if (params.sourceImage) {
-        const base64Data = params.sourceImage.split(',')[1];
-        parts.push({ inlineData: { data: base64Data, mimeType: "image/jpeg" } });
-    }
-    const contents = [{ parts }];
-    const config = {
-        generationConfig: {
-            imageConfig: {
-                aspectRatio: params.aspectRatio,
-                imageSize: params.imageSize || '1K'
-            }
-        }
-    };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) {
-            const generatedImage = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-            return params.outputMaxWidth ? await resizeImage(generatedImage, params.outputMaxWidth) : generatedImage;
-        }
-    }
-    throw new Error("No se pudo generar la imagen");
+    const resolution = params.imageSize || '1K';
+    const targetPx = resolution === '512' ? 512 : (resolution === '2K' || resolution === '4K' ? 2048 : 1024);
+    const imageUrl = await callModelImage({
+        prompt: finalPrompt,
+        aspectRatio: params.aspectRatio,
+        sourceImage: params.sourceImage,
+        targetPx,
+        resolution
+    });
+    return params.outputMaxWidth ? await resizeImage(imageUrl, params.outputMaxWidth) : imageUrl;
 };
 
-const editImageConversation = async (params) => {
-    const base64Data = params.originalImage.split(',')[1];
-    const contents = [{
-        parts: [
-            { inlineData: { data: base64Data, mimeType: "image/jpeg" } },
-            { text: params.instruction }
-        ]
-    }];
-    const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio, imageSize: params.imageSize || '1K' } } };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) {
-            const editedImage = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-            return params.outputMaxWidth ? await resizeImage(editedImage, params.outputMaxWidth) : editedImage;
-        }
-    }
-    throw new Error("Error en la edición conversacional");
-};
+const editImageConversation = async (params) => callModelImage({
+    prompt: params.instruction,
+    aspectRatio: params.aspectRatio,
+    sourceImage: params.originalImage,
+    targetPx: params.imageSize === '2K' || params.imageSize === '4K' ? 2048 : 1024,
+    resolution: params.imageSize || '1K'
+});
 
 // --- COMPONENTS ---
 const ApiKeyChecker = ({ children }) => <>{children}</>;
@@ -658,6 +648,9 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
+    const [selectedModel, setSelectedModel] = useState('flux-pro');
+
+    useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
     const fileInputRef = useRef(null);
 
@@ -909,6 +902,25 @@ const App = () => {
                                 </div>
                             </div>
 
+                            {/* Selector canónico de Modelo IA */}
+                            <div className="model-selector">
+                              <span className="model-selector-label">Modelo IA</span>
+                              <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                                {[
+                                  { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
+                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
+                                  { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
+                                  { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' }
+                                ].map((model) => (
+                                  <button
+                                    type="button"
+                                    key={model.id}
+                                    onClick={() => setSelectedModel(model.id)}
+                                    className={`model-toggle ${selectedModel === model.id ? `active ${model.cls}` : ''}`}
+                                  >{model.name}{model.secondLine && <><br />{model.secondLine}</>}</button>
+                                ))}
+                              </div>
+                            </div>
                             <div className="pt-6 order-last">
                                 <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}

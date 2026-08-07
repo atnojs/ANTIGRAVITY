@@ -8,6 +8,11 @@
     --muted: #99CCCC;
     --border: rgba(0, 208, 208, 0.7);
     --card-bg: rgba(23, 79, 122, 0.42);
+    --contenedor: #174F7A;
+    --border-strong: #00D0D0;
+    --card-hover: rgba(30, 100, 150, 0.55);
+    --glow: rgba(0, 208, 208, 0.8);
+    --font-ui: 'Electrolize', system-ui, sans-serif;
     --shadow-color: rgba(0, 0, 0, 0.5);
 
     /* Neón + 3D Extensions */
@@ -664,4 +669,45 @@ textarea:focus-visible {
 .group.glass-hover > .absolute:not(.splash-card-link),
 .group.glass-hover > .absolute:not(.splash-card-link) svg {
     pointer-events: none;
+}
+
+/* Selector canónico responsive de Modelo IA */
+.model-selector{
+  --acc:#00D0D0;--acc2:#26C626;--text:#eaffff;--muted:#99CCCC;
+  --contenedor:#174F7A;--border:rgba(0,208,208,.7);--border-strong:#00D0D0;
+  --card-bg:rgba(23,79,122,.42);--glow:rgba(0,208,208,.8);--glow-soft:rgba(0,208,208,.4);
+  --font-ui:'Electrolize',system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:.6rem;
+  margin:1.8rem 0 1.2rem;width:100%;
+}
+.model-selector-label{
+  color:var(--muted);font-size:.8rem;letter-spacing:0.08em;text-transform:uppercase;
+}
+.model-toggle-group{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.25rem;padding:.3rem;border-radius:999px;
+  width:100%;max-width:100%;box-sizing:border-box;
+  background:var(--card-bg);border:1px solid var(--border);
+  box-shadow:0 0 12px var(--glow-soft);
+}
+.model-toggle{
+  font-family:var(--font-ui);font-size:clamp(.62rem,2.35vw,.8rem);letter-spacing:0.025em;
+  min-width:0;padding:.55rem .35rem;border-radius:999px;border:1px solid transparent;
+  background:transparent;color:var(--muted);cursor:pointer;
+  transition:all .25s ease;text-transform:uppercase;white-space:nowrap;
+}
+.model-toggle:hover{
+  color:var(--text);border-color:var(--border-strong);
+  background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);
+  box-shadow:0 0 12px var(--glow-soft);
+}
+.model-toggle.active{
+  background:linear-gradient(135deg,var(--contenedor),var(--acc));
+  color:#CCFFFF;text-shadow:0 0 8px var(--glow);
+  border-color:var(--border-strong);box-shadow:0 0 18px var(--glow);
+}
+/* FLUX activo = verde #26C626 */
+.model-toggle.active.flux{
+  background:linear-gradient(135deg,var(--contenedor),var(--acc2));
+  color:#eaffff;text-shadow:0 0 8px rgba(38,198,38,0.8);
+  border-color:var(--acc2);box-shadow:0 0 18px rgba(38,198,38,0.5);
 }
