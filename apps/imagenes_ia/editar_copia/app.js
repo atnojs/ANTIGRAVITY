@@ -826,14 +826,14 @@ const App = () => {
                                 {[
                                   { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
                                   { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
-                                  { id: 'gemini-flash', name: 'Gemini 3.1 Flash', cls: '' },
-                                  { id: 'gemini-pro', name: 'Gemini 3 Pro', cls: '' }
+                                  { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
+                                  { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' }
                                 ].map(m => (
                                   <button
                                     key={m.id}
                                     onClick={() => setSelectedModel(m.id)}
                                     className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
-                                  >{m.name}</button>
+                                  >{m.name}{m.secondLine && <><br />{m.secondLine}</>}</button>
                                 ))}
                               </div>
                             </div>
