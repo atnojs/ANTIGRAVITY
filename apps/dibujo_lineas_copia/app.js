@@ -15,17 +15,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
 
-    // ===== Selector de modelo (toggle) =====
-    // Por defecto: Gemini 3.1 Flash Image (más barato, fiel para todo salvo personas)
-    let selectedModel = 'google/gemini-3.1-flash-image';
-    const modelToggles = document.querySelectorAll('.model-toggle');
-    modelToggles.forEach(btn => {
-        btn.addEventListener('click', () => {
-            modelToggles.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedModel = btn.dataset.model;
+    // ===== Selector de modelo (toggle 3 botones) =====
+        // Por defecto: FLUX Pro (más barato ~$0.03, bueno para todo)
+        let selectedModel = 'flux';
+        const modelToggles = document.querySelectorAll('.model-toggle');
+        modelToggles.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modelToggles.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedModel = btn.dataset.model;
+            });
         });
-    });
 
     let imageQueue = [];
 

@@ -241,6 +241,12 @@ h1{
   color:#CCFFFF;text-shadow:0 0 8px var(--glow);
   border-color:var(--border-strong);box-shadow:0 0 18px var(--glow);
 }
+/* FLUX activo = verde #26C626 */
+.model-toggle.active.flux{
+  background:linear-gradient(135deg,var(--contenedor),var(--acc2));
+  color:#eaffff;text-shadow:0 0 8px rgba(38,198,38,0.8);
+  border-color:var(--acc2);box-shadow:0 0 18px rgba(38,198,38,0.5);
+}
 
 .download-single-btn{
   background:var(--card-bg);
