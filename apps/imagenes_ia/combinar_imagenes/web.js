@@ -88,7 +88,7 @@ const state = {
     images: new Array(CONFIG.MAX_IMAGES).fill(null), // Array fijo con tamaño máximo, lleno de nulls inicialmente
     history: [],
     selectedAR: '1:1',
-    selectedModel: 'pro', // Modelo FLUX: 'pro' o 'max'
+    selectedModel: 'flux-pro', // Modelo IA: 'flux-pro' | 'gemini-flash' | 'gemini-pro' | 'flux-max'
     selectedRes: 1024, // Resolución (lado objetivo px): 512 / 1024 / 2048 / 4096
     isGenerating: false,
     isEnhancing: false,
@@ -362,15 +362,19 @@ function setupARSelector() {
 }
 
 function setupModelSelector() {
-    if (!elements.modelSelector) return;
-    const buttons = elements.modelSelector.querySelectorAll('.model-option');
+    const toggleGroup = document.querySelector('.model-toggle-group');
+    if (!toggleGroup) return;
+    const buttons = toggleGroup.querySelectorAll('.model-toggle');
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            state.selectedModel = btn.dataset.model; // 'pro' | 'max'
+            state.selectedModel = btn.dataset.model; // 'flux-pro' | 'gemini-flash' | 'gemini-pro' | 'flux-max'
+            window.selectedModel = state.selectedModel;
         });
     });
+    // Exponer valor inicial
+    window.selectedModel = state.selectedModel;
 }
 
 function setupResSelector() {
@@ -474,7 +478,7 @@ async function handleGenerate() {
             backgroundImage: backgroundImage,
             prompt: prompt,
             aspectRatio: state.selectedAR,
-            calidad: state.selectedModel,
+            model: state.selectedModel,
             targetPx: state.selectedRes
         };
 

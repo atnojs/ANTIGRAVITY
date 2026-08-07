@@ -307,11 +307,21 @@ try {
     }
 
     // ═══════════════════════════════════════════════
-    // TAREA 3: APLICAR ESTILO (FLUX 2 img2img: sujeto + JSON de estilo)
+    // TAREA 3: APLICAR ESTILO (FLUX 2 img2img o Gemini vía OpenRouter)
     // ═══════════════════════════════════════════════
     if ($task === 'aplicarEstilo') {
-        if (empty($fluxKey)) {
+        // ── Modelo unificado: model (nuevo) o calidad (backward compat) ──
+        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'flux-pro'));
+
+        // ── Despacho: flux-* → BFL async, gemini-* → OpenRouter sync ──
+        $isFlux   = (strpos($reqModel, 'flux') === 0);
+        $isGemini = (strpos($reqModel, 'gemini') === 0);
+
+        if ($isFlux && empty($fluxKey)) {
             throw new Exception('API Key de FLUX (F) no configurada.', 401);
+        }
+        if ($isGemini && empty($orKey)) {
+            throw new Exception('API Key de OpenRouter (Gemini) no configurada.', 401);
         }
 
         // Imagen del NUEVO sujeto (base64 con o sin prefijo data:)
@@ -337,7 +347,6 @@ try {
             if (!empty($estilo['prompt_estilo'])) {
                 $estiloPrompt = (string) $estilo['prompt_estilo'];
             } else {
-                // Concatenar los campos descriptivos si no hay prompt_estilo
                 $campos = ['estilo_general', 'iluminacion', 'paleta_colores', 'composicion', 'texturas_materiales', 'fondo_profundidad', 'atmosfera', 'post_procesado'];
                 $trozos = [];
                 foreach ($campos as $c) {
@@ -359,16 +368,11 @@ try {
             $fullPrompt .= ' ' . $extra;
         }
 
-        // Modelo según botón: PRO (equilibrado) o MAX (máxima fidelidad)
-        $MODELOS = ['pro' => 'flux-2-pro', 'max' => 'flux-2-max'];
-        $calidad = (string) ($json['calidad'] ?? 'pro');
-        $endpoint = $MODELOS[$calidad] ?? $MODELOS['pro'];
-
         // ── Dimensiones: aspect ratio + lado objetivo, tope duro 4MP ──
         $aspectRatio = (string) ($json['aspectRatio'] ?? '1:1');
         $target = (int) ($json['targetPx'] ?? 1024);
         if ($target < 256)  $target = 256;
-        if ($target > 2048) $target = 2048; // FLUX 2 tope ~4MP
+        if ($target > 2048) $target = 2048;
         $MAX_PX = 4194304;
         $parts = explode(':', $aspectRatio);
         $aw = (float) ($parts[0] ?? 1);
@@ -386,88 +390,159 @@ try {
             if ($w >= $h) $w -= 32; else $h -= 32;
         }
 
-        // ── Payload FLUX 2 (img2img): input_image = sujeto ──
-        $payload = [
-            'prompt' => $fullPrompt,
-            'width'  => $w,
-            'height' => $h,
-            'input_image' => $subject,
-            'output_format' => 'jpeg',
-        ];
+        // ═══ RAMA FLUX (BFL async: submit + polling + download) ═══
+        if ($isFlux) {
+            $FLUX_MODELOS = ['flux-pro' => 'flux-2-pro', 'flux-max' => 'flux-2-max'];
+            $endpoint = $FLUX_MODELOS[$reqModel] ?? 'flux-2-pro';
 
-        // 1) ENVIAR TAREA
-        [$submitCode, $submit] = $callApi(
-            'https://api.bfl.ai/v1/' . $endpoint,
-            $payload,
-            ['Content-Type: application/json', 'accept: application/json', 'x-key: ' . $fluxKey],
-            30
-        );
-        if ($submitCode !== 200) {
-            $em = $submit['detail'] ?? ('HTTP ' . $submitCode);
-            if (is_array($em)) $em = json_encode($em);
-            throw new Exception('FLUX: ' . $em, $submitCode);
-        }
-        $pollUrl = $submit['polling_url'] ?? '';
-        $costCreditos = (float) ($submit['cost'] ?? 0);
-        if ($pollUrl === '') {
-            throw new Exception('FLUX no devolvió polling_url.', 502);
-        }
+            $payload = [
+                'prompt' => $fullPrompt,
+                'width'  => $w,
+                'height' => $h,
+                'input_image' => $subject,
+                'output_format' => 'jpeg',
+            ];
 
-        // 2) POLLING hasta Ready (máx ~90s)
-        $imageUrl = '';
-        for ($i = 0; $i < 60; $i++) {
-            usleep(1500000); // 1.5s
-            $ch = curl_init($pollUrl);
+            // 1) ENVIAR TAREA
+            [$submitCode, $submit] = $callApi(
+                'https://api.bfl.ai/v1/' . $endpoint,
+                $payload,
+                ['Content-Type: application/json', 'accept: application/json', 'x-key: ' . $fluxKey],
+                30
+            );
+            if ($submitCode !== 200) {
+                $em = $submit['detail'] ?? ('HTTP ' . $submitCode);
+                if (is_array($em)) $em = json_encode($em);
+                throw new Exception('FLUX: ' . $em, $submitCode);
+            }
+            $pollUrl = $submit['polling_url'] ?? '';
+            $costCreditos = (float) ($submit['cost'] ?? 0);
+            if ($pollUrl === '') {
+                throw new Exception('FLUX no devolvió polling_url.', 502);
+            }
+
+            // 2) POLLING hasta Ready (máx ~90s)
+            $imageUrl = '';
+            for ($i = 0; $i < 60; $i++) {
+                usleep(1500000);
+                $ch = curl_init($pollUrl);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_HTTPHEADER => ['accept: application/json', 'x-key: ' . $fluxKey],
+                    CURLOPT_TIMEOUT => 20,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                ]);
+                $pollResp = curl_exec($ch);
+                $pollCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                if ($pollCode !== 200) continue;
+                $pr = json_decode($pollResp, true);
+                $st = $pr['status'] ?? '';
+                if ($st === 'Ready') {
+                    $imageUrl = $pr['result']['sample'] ?? '';
+                    break;
+                }
+                if (in_array($st, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
+                    throw new Exception('FLUX rechazó la tarea: ' . $st, 422);
+                }
+            }
+            if ($imageUrl === '') {
+                throw new Exception('FLUX tardó demasiado en generar la imagen. Inténtalo de nuevo.', 504);
+            }
+
+            // 3) Descargar la imagen y devolver como data URL
+            $ch = curl_init($imageUrl);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HTTPHEADER => ['accept: application/json', 'x-key: ' . $fluxKey],
-                CURLOPT_TIMEOUT => 20,
+                CURLOPT_TIMEOUT => 60,
                 CURLOPT_SSL_VERIFYPEER => true,
             ]);
-            $pollResp = curl_exec($ch);
-            $pollCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $imgBin = curl_exec($ch);
+            $imgType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/jpeg';
+            $imgOk = (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200);
             curl_close($ch);
-            if ($pollCode !== 200) continue;
-            $pr = json_decode($pollResp, true);
-            $st = $pr['status'] ?? '';
-            if ($st === 'Ready') {
-                $imageUrl = $pr['result']['sample'] ?? '';
-                break;
+
+            if (!$imgOk || $imgBin === false || $imgBin === '') {
+                throw new Exception('No se pudo descargar la imagen generada por FLUX.', 502);
             }
-            if (in_array($st, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
-                throw new Exception('FLUX rechazó la tarea: ' . $st, 422);
+
+            echo json_encode([
+                'success'  => true,
+                'imageUrl' => 'data:' . $imgType . ';base64,' . base64_encode($imgBin),
+                'coste'    => $costCreditos * 0.01,
+                'modelo'   => $reqModel,
+                'width'    => $w,
+                'height'   => $h,
+            ]);
+            exit;
+        }
+
+        // ═══ RAMA GEMINI (OpenRouter sync: chat completions con imagen) ═══
+        if ($isGemini) {
+            $GEMINI_MODELOS = [
+                'gemini-flash' => 'google/gemini-3.1-flash-image',
+                'gemini-pro'   => 'google/gemini-3-pro-image',
+            ];
+            $geminiModel = $GEMINI_MODELOS[$reqModel] ?? 'google/gemini-3.1-flash-image';
+
+            $dataUrl = 'data:image/jpeg;base64,' . $subject;
+            $userContent = [
+                ['type' => 'text', 'text' => $fullPrompt],
+                ['type' => 'image_url', 'image_url' => ['url' => $dataUrl]],
+            ];
+
+            [$status, $data] = $callApi(
+                'https://openrouter.ai/api/v1/chat/completions',
+                [
+                    'model' => $geminiModel,
+                    'messages' => [
+                        ['role' => 'user', 'content' => $userContent],
+                    ],
+                    'max_tokens' => 4096,
+                ],
+                [
+                    'Content-Type: application/json',
+                    'Authorization: *** ' . $orKey,
+                    'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+                    'X-Title: Estilo JSON',
+                ],
+                120
+            );
+
+            if ($status < 200 || $status >= 300) {
+                $msg = $data['error']['message'] ?? ('HTTP ' . $status);
+                if (is_array($msg)) $msg = json_encode($msg);
+                throw new Exception('OpenRouter Gemini: ' . $msg, $status);
             }
-        }
-        if ($imageUrl === '') {
-            throw new Exception('FLUX tardó demasiado en generar la imagen. Inténtalo de nuevo.', 504);
+
+            // Extraer data URL de la respuesta (Gemini devuelve base64 en el contenido del mensaje)
+            $content = $data['choices'][0]['message']['content'] ?? '';
+            $imageDataUrl = '';
+            // Las respuestas de Gemini pueden venir como texto markdown con data URL inline
+            if (preg_match('/data:image\/[^;]+;base64,[A-Za-z0-9+\/=]+/', $content, $m)) {
+                $imageDataUrl = $m[0];
+            } elseif (strpos($content, 'data:image/') === 0) {
+                $imageDataUrl = $content;
+            }
+
+            if ($imageDataUrl === '') {
+                throw new Exception('Gemini no devolvió una imagen válida.', 502);
+            }
+
+            $cost = (float) ($data['usage']['cost'] ?? 0);
+
+            echo json_encode([
+                'success'  => true,
+                'imageUrl' => $imageDataUrl,
+                'coste'    => $cost,
+                'modelo'   => $reqModel,
+                'width'    => $w,
+                'height'   => $h,
+            ]);
+            exit;
         }
 
-        // 3) Descargar la imagen (la URL de BFL caduca) y devolverla como data URL
-        $ch = curl_init($imageUrl);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 60,
-            CURLOPT_SSL_VERIFYPEER => true,
-        ]);
-        $imgBin = curl_exec($ch);
-        $imgType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/jpeg';
-        $imgOk = (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200);
-        curl_close($ch);
-
-        if (!$imgOk || $imgBin === false || $imgBin === '') {
-            throw new Exception('No se pudo descargar la imagen generada por FLUX.', 502);
-        }
-
-        echo json_encode([
-            'success'  => true,
-            'imageUrl' => 'data:' . $imgType . ';base64,' . base64_encode($imgBin),
-            'coste'    => $costCreditos * 0.01,
-            'modelo'   => $endpoint,
-            'calidad'  => $calidad,
-            'width'    => $w,
-            'height'   => $h,
-        ]);
-        exit;
+        throw new Exception('Modelo no reconocido: ' . $reqModel, 400);
     }
 
     throw new Exception('Tarea no reconocida: ' . $task, 400);

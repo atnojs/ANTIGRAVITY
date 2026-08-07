@@ -264,7 +264,10 @@ const generateImage = async (params) => {
             }
         }
     };
-    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const result = await callProxy(window.selectedModel || 'flux-pro', contents, config);
+    // FLUX response format: { success: true, imageUrl: 'data:...' }
+    if (result.success && result.imageUrl) return result.imageUrl;
+    // Gemini response format
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -281,7 +284,10 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio, imageSize: params.imageSize || '1K' } } };
-    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const result = await callProxy(window.selectedModel || 'flux-pro', contents, config);
+    // FLUX response format
+    if (result.success && result.imageUrl) return result.imageUrl;
+    // Gemini response format
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -512,6 +518,8 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
+    const [selectedModel, setSelectedModel] = useState('flux-pro');
+    useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
     const fileInputRef = useRef(null);
 
@@ -736,6 +744,26 @@ const App = () => {
                                         >
                                             <span className="text-[10px] font-bold tracking-tighter">{res.label}</span>
                                         </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* ── Selector de Modelo IA (canonico hoola) ── */}
+                            <div className="model-selector">
+                                <span className="model-selector-label">Modelo IA</span>
+                                <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                                    {[
+                                        { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
+                                        { id: 'gemini-flash', name: '3.1 Flash', cls: '' },
+                                        { id: 'gemini-pro', name: '3 Pro', cls: '' },
+                                        { id: 'flux-max', name: 'Flux Max', cls: 'flux' }
+                                    ].map(m => (
+                                        <button
+                                            type="button"
+                                            key={m.id}
+                                            onClick={() => setSelectedModel(m.id)}
+                                            className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
+                                        >{m.name}</button>
                                     ))}
                                 </div>
                             </div>

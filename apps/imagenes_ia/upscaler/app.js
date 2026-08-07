@@ -300,7 +300,8 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
 const App = () => {
     const [source, setSource] = useState(null);
     const [sourceInfo, setSourceInfo] = useState(null);
-    const [selectedModel, setSelectedModel] = useState(MODEL_OPTIONS[3]); // medium-4x por defecto
+    const [selectedESRGANModel, setSelectedESRGANModel] = useState(MODEL_OPTIONS[3]); // medium-4x por defecto
+    const [selectedModel, setSelectedModel] = useState('flux-pro'); // Modelo IA (Flux/Gemini)
     const [isDinA4, setIsDinA4] = useState(false);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('');
@@ -334,6 +335,9 @@ const App = () => {
         check();
     }, []);
 
+    // Sincronizar modelo IA con variable global (accesible desde fetch)
+    useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
+
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -361,7 +365,7 @@ const App = () => {
         try {
             const result = await runUpscale(
                 source,
-                selectedModel,
+                selectedESRGANModel,
                 isDinA4,
                 setProgress,
                 setStatus
@@ -371,7 +375,7 @@ const App = () => {
             const newItem = {
                 id: Date.now().toString(),
                 dataUrl: result.dataUrl,
-                name: selectedModel.name + (isDinA4 ? ' â†’ DIN A4' : ''),
+                name: selectedESRGANModel.name + (isDinA4 ? ' → DIN A4' : ''),
                 size: sizeLabel,
                 createdAt: Date.now()
             };
@@ -407,8 +411,8 @@ const App = () => {
             };
         }
         return {
-            width: sourceInfo.width * selectedModel.scale,
-            height: sourceInfo.height * selectedModel.scale
+            width: sourceInfo.width * selectedESRGANModel.scale,
+            height: sourceInfo.height * selectedESRGANModel.scale
         };
     };
 
@@ -472,30 +476,30 @@ const App = () => {
                     {MODEL_OPTIONS.map(model => (
                         <button
                             key={model.id}
-                            onClick={() => setSelectedModel(model)}
+                            onClick={() => setSelectedESRGANModel(model)}
                             className={`w-full p-4 rounded-2xl border text-left transition-all ${
-                                selectedModel.id === model.id
+                                selectedESRGANModel.id === model.id
                                     ? 'border-cyan-500 bg-cyan-500/10'
                                     : 'border-white/5 bg-white/5 hover:bg-white/10'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-1">
                                 <span className={`text-xs font-bold ${
-                                    selectedModel.id === model.id ? 'text-cyan-400' : 'text-gray-400'
+                                    selectedESRGANModel.id === model.id ? 'text-cyan-400' : 'text-gray-400'
                                 }`}>
                                     {model.name}
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                                        selectedModel.id === model.id ? 'bg-cyan-500/20 text-cyan-300' : 'bg-white/5 text-gray-600'
+                                        selectedESRGANModel.id === model.id ? 'bg-cyan-500/20 text-cyan-300' : 'bg-white/5 text-gray-600'
                                     }`}>
                                         {model.scale}x
                                     </span>
-                                    {selectedModel.id === model.id && <i className="fa-solid fa-check text-cyan-400 text-xs"></i>}
+                                    {selectedESRGANModel.id === model.id && <i className="fa-solid fa-check text-cyan-400 text-xs"></i>}
                                 </div>
                             </div>
                             <p className={`text-[10px] leading-relaxed ${
-                                selectedModel.id === model.id ? 'text-gray-300' : 'text-gray-600'
+                                selectedESRGANModel.id === model.id ? 'text-gray-300' : 'text-gray-600'
                             }`}>
                                 {model.description}
                             </p>
@@ -533,6 +537,25 @@ const App = () => {
                             <span className="text-[9px] text-gray-500 ml-2">(600 DPI)</span>
                         </div>
                     )}
+                </div>
+
+                {/* ── Selector de Modelo IA (canónico hoola) ── */}
+                <div className="model-selector">
+                  <span className="model-selector-label">Modelo IA</span>
+                  <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                    {[
+                      { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
+                      { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
+                      { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
+                      { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' }
+                    ].map(m => (
+                      <button
+                        key={m.id}
+                        onClick={() => setSelectedModel(m.id)}
+                        className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
+                      >{m.name}{m.secondLine && <><br />{m.secondLine}</>}</button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Action */}

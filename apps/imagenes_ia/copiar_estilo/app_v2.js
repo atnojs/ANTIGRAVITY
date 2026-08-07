@@ -1,6 +1,18 @@
 // --- CONSTANTES DE FORMATO ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
+// --- SELECTOR DE MODELO IA (4 botones canónico) ---
+window.selectedModel = 'flux-pro';
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.model-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            window.selectedModel = btn.dataset.model;
+        });
+    });
+});
+
 // --- HISTORIAL PERSISTENTE CON INDEXEDDB (Patrón editar/app.js) ---
 const DB_NAME = 'copiar_estilo_db'; // Nombre único para esta app
 const DB_VERSION = 1;

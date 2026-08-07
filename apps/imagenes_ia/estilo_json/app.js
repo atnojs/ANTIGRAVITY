@@ -94,7 +94,7 @@ const state = {
     estiloJson: null,     // objeto JSON del estilo (persistente)
     history: [],
     selectedRes: 1024,
-    selectedModel: 'pro',
+    selectedModel: 'flux-pro',
     isAnalyzing: false,
     isGenerating: false,
     isEnhancing: false,
@@ -388,12 +388,14 @@ function updateResNote() {
         : '';
 }
 function setupModelSelector() {
-    const btns = el.modelSelector.querySelectorAll('.model-option');
+    const btns = el.modelSelector.querySelectorAll('.model-toggle');
     btns.forEach(b => b.addEventListener('click', () => {
         btns.forEach(x => x.classList.remove('active'));
         b.classList.add('active');
         state.selectedModel = b.dataset.model;
+        window.selectedModel = state.selectedModel;
     }));
+    window.selectedModel = state.selectedModel;
 }
 
 // ═══════════════════════════════════════════════
@@ -418,7 +420,7 @@ async function handleGenerate() {
                 estilo: state.estiloJson,
                 prompt: el.promptInput.value.trim(),
                 aspectRatio: subjectAR,
-                calidad: state.selectedModel,
+                model: state.selectedModel,
                 targetPx: state.selectedRes
             })
         });
@@ -588,7 +590,10 @@ function setAnalyzing(v) {
 }
 function setGenerating(v) {
     state.isGenerating = v;
-    if (v) { showLoading('IA generando imagen con el estilo...'); }
+    if (v) {
+        const modelLabel = { 'flux-pro':'Flux Pro', 'flux-max':'Flux Max', 'gemini-flash':'Gemini 3.1 Flash', 'gemini-pro':'Gemini 3 Pro' }[state.selectedModel] || state.selectedModel;
+        showLoading('IA generando con ' + modelLabel + '...');
+    }
     else { hideLoading(); }
     updateStatuses();
 }
