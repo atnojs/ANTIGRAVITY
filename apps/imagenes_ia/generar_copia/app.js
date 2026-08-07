@@ -867,7 +867,7 @@ const App = () => {
                                         <button
                                             key={ar.id}
                                             onClick={() => setSelectedAR(ar.id)}
-                                            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${selectedAR === ar.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/10 bg-white/5 text-gray-200 hover:border-cyan-500/40 hover:text-cyan-300'}`}
+                                            className={`aspect-ratio-button ${selectedAR === ar.id ? 'active' : ''}`}
                                         >
                                             <div className="flex items-center justify-center">{ar.icon}</div>
                                             <span className="btn-canon text-[9px]">{ar.name}</span>
