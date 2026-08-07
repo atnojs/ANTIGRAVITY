@@ -787,22 +787,22 @@ const App = () => {
                                 </div>
                             </div>
 
-                            {/* Selector canónico de Modelo IA */}
+                            {/* ── Selector de Modelo IA (canonico hoola) ── */}
                             <div className="model-selector">
                               <span className="model-selector-label">Modelo IA</span>
                               <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
                                 {[
                                   { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
-                                  { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
-                                  { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' }
-                                ].map((model) => (
+                                  { id: 'gemini-flash', name: '3.1 Flash', cls: '' },
+                                  { id: 'gemini-pro', name: '3 Pro', cls: '' },
+                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' }
+                                ].map(m => (
                                   <button
                                     type="button"
-                                    key={model.id}
-                                    onClick={() => setSelectedModel(model.id)}
-                                    className={`model-toggle ${selectedModel === model.id ? `active ${model.cls}` : ''}`}
-                                  >{model.name}{model.secondLine && <><br />{model.secondLine}</>}</button>
+                                    key={m.id}
+                                    onClick={() => setSelectedModel(m.id)}
+                                    className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
+                                  >{m.name}</button>
                                 ))}
                               </div>
                             </div>
