@@ -825,9 +825,9 @@ const App = () => {
                               <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
                                 {[
                                   { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-                                  { id: 'gemini-flash', name: '3.1 Flash', cls: '' },
-                                  { id: 'gemini-pro', name: '3 Pro', cls: '' },
-                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' }
+                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
+                                  { id: 'gemini-flash', name: 'Gemini 3.1 Flash', cls: '' },
+                                  { id: 'gemini-pro', name: 'Gemini 3 Pro', cls: '' }
                                 ].map(m => (
                                   <button
                                     key={m.id}
