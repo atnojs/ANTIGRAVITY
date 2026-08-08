@@ -1140,7 +1140,7 @@ body {
   color:var(--muted); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
 }
 .model-toggle-group {
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0;
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.25rem;
   width:100%; max-width:100%; box-sizing:border-box;
   padding:.35rem; border-radius:999px;
   background:rgba(6,16,24,.35); backdrop-filter:blur(8px);
@@ -1156,7 +1156,7 @@ body {
   transition:all .25s ease;
 }
 .model-toggle + .model-toggle {
-  border-left:1px solid rgba(0,208,208,.25);
+  border-left:none;
 }
 .model-toggle:hover {
   color:var(--text); background:rgba(255,255,255,.08);
