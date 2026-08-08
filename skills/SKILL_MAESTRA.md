@@ -311,29 +311,28 @@ Copiar este bloque completo. La cuadrícula de cuatro columnas y `minmax(0,1fr)`
 ```css
 .model-selector {
   display:flex; flex-direction:column; align-items:center; gap:.6rem;
-  margin:1.8rem 0 1.2rem; width:100%;
+  margin:2rem auto 1.2rem; width:100%;
+  max-width:min(900px, 100%);
+  box-sizing:border-box;
 }
 .model-selector-label {
   color:var(--muted); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
 }
 .model-toggle-group {
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0;
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.25rem;
   width:100%; max-width:100%; box-sizing:border-box;
-  padding:.3rem; border-radius:999px;
+  padding:.35rem; border-radius:999px;
   background:rgba(6,16,24,.35); backdrop-filter:blur(8px);
   border:1px solid var(--border-strong);
   box-shadow:0 0 14px var(--glow-soft);
 }
 .model-toggle {
-  min-width:0; padding:.55rem .35rem;
+  min-width:0; padding:.45rem .3rem;
   border:none; border-radius:999px;
   background:transparent; color:var(--muted); cursor:pointer;
-  font-family:var(--font-ui); font-size:clamp(.62rem,2.35vw,.8rem);
-  line-height:1.15; letter-spacing:.025em; text-transform:uppercase; white-space:nowrap;
+  font-family:var(--font-ui); font-size:clamp(.62rem,1.6vw,.78rem);
+  line-height:1.2; letter-spacing:.03em; text-transform:uppercase; white-space:nowrap;
   transition:all .25s ease;
-}
-.model-toggle + .model-toggle {
-  border-left:1px solid rgba(0,208,208,.25);
 }
 .model-toggle:hover {
   color:var(--text); background:rgba(255,255,255,.08);
@@ -345,6 +344,8 @@ Copiar este bloque completo. La cuadrícula de cuatro columnas y `minmax(0,1fr)`
   text-shadow:0 0 8px rgba(255,255,255,.35); box-shadow:0 0 18px var(--glow);
 }
 ```
+
+**Validación visual (Antonio, 2026-08-08):** los botones internos NO deben tocarse entre sí. Usar `gap:.25rem` y NO usar `border-left` divisor (el gap ya separa). Barra centrada debajo de todos los campos, `max-width:min(900px,100%)`.
 
 ### Botones de relación de aspecto (AR)
 
