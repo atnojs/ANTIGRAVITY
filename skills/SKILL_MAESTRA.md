@@ -244,25 +244,30 @@ El trabajo solo está terminado cuando el resultado es utilizable, está validad
 
 ---
 
-## Selector de Modelo IA: patrón canónico de 4 botones
+## Selector de Modelo IA: patrón canónico de barra segmentada
 
-Aplicar este patrón con libertad baja en toda app de generación o edición de imágenes que ofrezca varios modelos.
+Aplicar este patrón en toda app de generación o edición de imágenes que ofrezca varios modelos.
 
-### Fuente de verdad y alcance
+### Estilo (única especificación)
 
-- Usar `apps/dibujo_lineas_copia` como referencia visual Hoola original.
-- Usar `apps/imagenes_ia/editar_copia` y `apps/imagenes_ia/generar_copia` como referencia de implementación responsive validada.
-- Si el usuario pide copiar el estilo desde una app de referencia hacia otras apps, modificar solo las apps de destino. No editar la app de referencia salvo petición explícita.
-- Antes de tocar archivos, identificar por escrito origen y destinos. Comparar el selector completo: marcado, CSS, estado inicial, evento, payload, proxy y caché.
+El campo selector de modelo IA es una **barra segmentada unificada** (estilo captura validado por Antonio, 2026-08-08):
 
-### Orden, texto y estado inicial obligatorios
+- **Un solo contenedor** con borde cian glow `#00D0D0` (halo exterior suave), NO botones individuales separados.
+- **Fondo transparente** (vidrio translúcido; se ve el fondo de la app a través).
+- **Segmentos** separados entre sí por **líneas divisorias finas** dentro de la misma barra.
+- Los 4 segmentos reparten el 100 % del ancho de forma equitativa (`grid-template-columns: repeat(4, minmax(0,1fr))`), sin desbordar el panel.
+- Estados: el segmento activo se resalta con la paleta Hoola (cian/verde + glow); los inactivos, texto `var(--muted)` sobre fondo transparente.
 
-1. `Flux Pro` — `flux-pro` — seleccionado por defecto.
-2. `Flux Max` — `flux-max`.
-3. `Gemini 3.1` / `Flash` — `gemini-flash` — texto en dos filas.
-4. `Gemini 3` / `Pro` — `gemini-pro` — texto en dos filas.
+### Orden de los modelos (menor → mayor capacidad)
 
-No abreviar Gemini a `3.1 Flash` o `3 Pro`. No colocar Flux Max al final. No seleccionar Flux Max por defecto.
+Siempre en este orden de izquierda a derecha, de menor a mayor capacidad (validado con precios oficiales de Black Forest Labs y OpenRouter):
+
+1. `3.1FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`
+2. `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image` — **seleccionado por defecto**
+3. `FLUX PRO` — `flux-pro` — `flux-2-pro`
+4. `FLUX MAX` — `flux-max` — `flux-2-max`
+
+No cambiar este orden ni el estado inicial: **3 PRO por defecto**.
 
 ### Marcado HTML
 
@@ -270,34 +275,12 @@ No abreviar Gemini a `3.1 Flash` o `3 Pro`. No colocar Flux Max al final. No sel
 <div class="model-selector">
   <span class="model-selector-label">Modelo IA</span>
   <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-    <button type="button" class="model-toggle active flux" data-model="flux-pro">Flux Pro</button>
-    <button type="button" class="model-toggle flux" data-model="flux-max">Flux Max</button>
-    <button type="button" class="model-toggle" data-model="gemini-flash">Gemini 3.1<br>Flash</button>
-    <button type="button" class="model-toggle" data-model="gemini-pro">Gemini 3<br>Pro</button>
+    <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+    <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+    <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+    <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
   </div>
 </div>
-```
-
-En React, mantener las dos filas de Gemini de forma explícita; no confiar en el salto automático:
-
-```jsx
-const models = [
-  { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-  { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
-  { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
-  { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' },
-];
-
-{models.map((model) => (
-  <button
-    type="button"
-    key={model.id}
-    onClick={() => setSelectedModel(model.id)}
-    className={`model-toggle ${selectedModel === model.id ? `active ${model.cls}` : ''}`}
-  >
-    {model.name}{model.secondLine && <><br />{model.secondLine}</>}
-  </button>
-))}
 ```
 
 ### Tokens Hoola requeridos
@@ -321,7 +304,7 @@ Verificar que existan estos tokens. Si faltan, añadirlos al `:root` de la app d
 }
 ```
 
-### CSS canónico responsive
+### CSS canónico responsive (barra segmentada transparente)
 
 Copiar este bloque completo. La cuadrícula de cuatro columnas y `minmax(0,1fr)` son obligatorios para impedir que el campo desborde el panel.
 
@@ -334,35 +317,32 @@ Copiar este bloque completo. La cuadrícula de cuatro columnas y `minmax(0,1fr)`
   color:var(--muted); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
 }
 .model-toggle-group {
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.25rem;
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0;
   width:100%; max-width:100%; box-sizing:border-box;
   padding:.3rem; border-radius:999px;
-  background:var(--card-bg); border:1px solid var(--border);
-  box-shadow:0 0 12px var(--glow-soft);
+  background:rgba(6,16,24,.35); backdrop-filter:blur(8px);
+  border:1px solid var(--border-strong);
+  box-shadow:0 0 14px var(--glow-soft);
 }
 .model-toggle {
   min-width:0; padding:.55rem .35rem;
-  border:1px solid transparent; border-radius:999px;
+  border:none; border-radius:999px;
   background:transparent; color:var(--muted); cursor:pointer;
   font-family:var(--font-ui); font-size:clamp(.62rem,2.35vw,.8rem);
   line-height:1.15; letter-spacing:.025em; text-transform:uppercase; white-space:nowrap;
   transition:all .25s ease;
 }
+.model-toggle + .model-toggle {
+  border-left:1px solid rgba(0,208,208,.25);
+}
 .model-toggle:hover {
-  color:var(--text); border-color:var(--border-strong);
-  background:rgba(255,255,255,.06); backdrop-filter:blur(4px);
+  color:var(--text); background:rgba(255,255,255,.08);
   box-shadow:0 0 12px var(--glow-soft);
 }
 .model-toggle.active {
-  color:#CCFFFF; border-color:var(--border-strong);
-  background:linear-gradient(135deg,var(--contenedor),var(--acc));
-  text-shadow:0 0 8px var(--glow); box-shadow:0 0 18px var(--glow);
-}
-.model-toggle.active.flux {
-  color:#eaffff; border-color:var(--acc2);
-  background:linear-gradient(135deg,var(--contenedor),var(--acc2));
-  text-shadow:0 0 8px rgba(38,198,38,.8);
-  box-shadow:0 0 18px rgba(38,198,38,.5);
+  color:#061018; border:none;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  text-shadow:0 0 8px rgba(255,255,255,.35); box-shadow:0 0 18px var(--glow);
 }
 ```
 
@@ -400,18 +380,17 @@ className={`aspect-ratio-button ${selectedAR === ar.id ? 'active' : ''}`}
 
 ```js
 // Vanilla
-let selectedModel = 'flux-pro';
+let selectedModel = 'gemini-pro';
 document.querySelectorAll('.model-toggle').forEach((button) => {
   button.addEventListener('click', () => {
     document.querySelectorAll('.model-toggle').forEach((item) => item.classList.remove('active'));
     button.classList.add('active');
-    if (button.dataset.model.startsWith('flux-')) button.classList.add('flux');
     selectedModel = button.dataset.model;
   });
 });
 
 // React
-const [selectedModel, setSelectedModel] = useState('flux-pro');
+const [selectedModel, setSelectedModel] = useState('gemini-pro');
 useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 // Incluir siempre en el payload: model: selectedModel
 ```
@@ -421,31 +400,31 @@ No cambiar solo el aspecto: comprobar que cada botón actualiza el estado y que 
 ### Mapeo seguro en PHP
 
 ```php
-$reqModel = strtolower((string)($data['model'] ?? 'flux-pro'));
-$backend = 'flux';
+$reqModel = strtolower((string)($data['model'] ?? 'gemini-pro'));
+$backend = 'gemini';
+$geminiModelId = 'google/gemini-3-pro-image';
 $fluxEndpoint = 'flux-2-pro';
-$geminiModelId = 'google/gemini-3.1-flash-image';
 
 if (strpos($reqModel, 'max') !== false) {
+    $backend = 'flux';
     $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($reqModel, 'pro') !== false && strpos($reqModel, 'gemini') !== false) {
-    $backend = 'gemini';
-    $geminiModelId = 'google/gemini-3-pro-image';
+} elseif (strpos($reqModel, 'pro') !== false && strpos($reqModel, 'flux') !== false) {
+    $backend = 'flux';
+    $fluxEndpoint = 'flux-2-pro';
 } elseif (strpos($reqModel, 'flash') !== false) {
-    $backend = 'gemini';
     $geminiModelId = 'google/gemini-3.1-flash-image';
 }
 ```
 
-Comparar siempre `strpos(...) !== false`; no usar el resultado como booleano. Mantener FLUX como fallback seguro para `flux-pro` o valores omitidos.
+Comparar siempre `strpos(...) !== false`; no usar el resultado como booleano. Mantener `gemini-pro` como fallback seguro para valores omitidos.
 
 ### Validación y publicación obligatorias
 
 1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
 2. Probar que el grupo mide como máximo el 100 % del panel y que no existe scroll horizontal ni texto recortado.
-3. Verificar las cuatro etiquetas completas; comprobar que ambos Gemini ocupan exactamente dos filas.
-4. Probar estados normal, hover y activo: FLUX activo en verde y Gemini activo en cian.
+3. Verificar las cuatro etiquetas completas: `3.1FLASH`, `3 PRO`, `FLUX PRO`, `FLUX MAX`.
+4. Probar estados normal, hover y activo: activo con gradiente cian-verde y texto oscuro.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
-6. Confirmar `flux-pro` como estado inicial y revisar el payload de los cuatro botones.
+6. Confirmar `gemini-pro` (3 PRO) como estado inicial y revisar el payload de los cuatro botones.
 7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.
 8. Revisar el diff, crear commit, hacer push a la rama de despliegue y verificar la URL real sin caché antigua.
