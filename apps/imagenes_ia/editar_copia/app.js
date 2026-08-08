@@ -320,11 +320,10 @@ const generateImage = async (params) => {
 
     // Pasamos 'finalPrompt' como parámetro explícito
     const result = await callProxy('flux', contents, config, finalPrompt);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    if (!result?.success || !result?.imageUrl) {
+        throw new Error(result?.error?.message || "No se pudo generar la imagen");
     }
-    throw new Error("No se pudo generar la imagen");
+    return result.imageUrl;
 };
 
 const editImageConversation = async (params) => {
@@ -337,11 +336,10 @@ const editImageConversation = async (params) => {
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
     const result = await callProxy('flux', contents, config);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    if (!result?.success || !result?.imageUrl) {
+        throw new Error(result?.error?.message || "Error en la edición conversacional");
     }
-    throw new Error("Error en la edición conversacional");
+    return result.imageUrl;
 };
 
 // --- COMPONENTS ---
