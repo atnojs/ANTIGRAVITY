@@ -1148,11 +1148,11 @@ body {
   box-shadow:0 0 14px var(--glow-soft);
 }
 .model-toggle {
-  min-width:0; padding:.3rem .2rem;
+  min-width:0; padding:.45rem .3rem;
   border:none; border-radius:999px;
   background:transparent; color:var(--muted); cursor:pointer;
-  font-family:var(--font-ui); font-size:clamp(.55rem,1.4vw,.7rem);
-  line-height:1.2; letter-spacing:.02em; text-transform:uppercase; white-space:nowrap;
+  font-family:var(--font-ui); font-size:clamp(.62rem,1.6vw,.78rem);
+  line-height:1.2; letter-spacing:.03em; text-transform:uppercase; white-space:nowrap;
   transition:all .25s ease;
 }
 .model-toggle + .model-toggle {
