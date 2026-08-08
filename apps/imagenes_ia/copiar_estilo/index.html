@@ -12,7 +12,7 @@
         rel="stylesheet">
 
     <!-- Style Guide & Custom Styles (Consolidated) -->
-    <link rel="stylesheet" href="app.css?v=4">
+    <link rel="stylesheet" href="app.css?v=5">
 </head>
 
 <body>
@@ -49,17 +49,6 @@
             </div>
         </div>
 
-        <!-- Selector de Modelo IA (barra segmentada canónica) -->
-        <div class="model-selector">
-            <span class="model-selector-label">Modelo IA</span>
-            <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-                <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
-                <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
-                <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
-                <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
-            </div>
-        </div>
-
         <!-- Card 2: Subject Reference -->
         <div class="glass upload-card">
             <h3>IMAGEN A EDITAR</h3>
@@ -70,6 +59,17 @@
                 <input type="file" id="subjectInput" accept="image/*">
                 <img id="subjectPreview" class="preview-img">
             </div>
+        </div>
+    </div>
+
+    <!-- Selector de Modelo IA (barra segmentada canónica, debajo de todos los campos) -->
+    <div class="model-selector">
+        <span class="model-selector-label">Modelo IA</span>
+        <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+            <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+            <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+            <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+            <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
         </div>
     </div>
 
