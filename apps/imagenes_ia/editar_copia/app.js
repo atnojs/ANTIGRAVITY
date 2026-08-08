@@ -345,20 +345,19 @@ const editImageConversation = async (params) => {
 // --- COMPONENTS ---
 const ApiKeyChecker = ({ children }) => <>{children}</>;
 
-const LoadingOverlay = ({ progress = 0, status = '' }) => (
-    <div className="loading-overlay">
+const LoadingOverlay = ({ status = '' }) => (
+    <div className="loading-overlay" role="status" aria-live="polite" aria-busy="true">
         <div className="spinner-triple">
             <div className="ring ring-1"></div>
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <p className="loading-text">IA Generando Obra Maestra...</p>
-        <div className="progress-container">
-            <div className="progress-percentage">{progress}%</div>
+        <p className="loading-text">IA generando lo solicitado...</p>
+        <div className="progress-panel">
             <div className="progress-bar-track">
-                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+                <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
-            <div className="progress-status">{status || 'Iniciando...'}</div>
+            <div className="secondary-status">{status || 'Procesando solicitud...'}</div>
         </div>
     </div>
 );
@@ -617,27 +616,22 @@ const App = () => {
             }
 
             setProgress(10);
-            setProgressStatus('Generando imagen 1 de 2...');
+            setProgressStatus('Generando imagen...');
 
-            const results = await Promise.all([
-                generateImage({
-                    prompt: effectivePrompt,
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: finalSourceImage
-                }).then(url => { setProgress(40); setProgressStatus('Generando imagen 2 de 2...'); return url; }),
-                generateImage({
-                    prompt: effectivePrompt + (mode === 'remix' ? " (Alternative detailed variation)" : " --variation distinct composition"),
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: finalSourceImage
-                }).then(url => { setProgress(70); setProgressStatus('Finalizando...'); return url; })
-            ]);
+            const imageUrl = await generateImage({
+                prompt: effectivePrompt,
+                styleSuffix,
+                aspectRatio: selectedAR,
+                sourceImage: finalSourceImage
+            });
+
+            setProgress(70);
+            setProgressStatus('Finalizando...');
 
             setProgress(90);
             setProgressStatus('Guardando...');
 
-            const newHistoryImages = results.map(imageUrl => ({
+            const newImage = {
                 id: Math.random().toString(36).substring(7),
                 url: imageUrl,
                 prompt: effectivePrompt || 'Edición de imagen',
@@ -646,14 +640,12 @@ const App = () => {
                 size: '1K',
                 mode: mode,
                 createdAt: Date.now()
-            }));
+            };
 
-            for (const img of newHistoryImages) {
-                await saveHistoryItemToDb(img);
-            }
+            await saveHistoryItemToDb(newImage);
 
             setProgress(100);
-            setImages(prev => [...newHistoryImages, ...prev]);
+            setImages(prev => [newImage, ...prev]);
         } catch (err) {
             setError(err.message || "Error de generación");
         } finally {
@@ -708,7 +700,7 @@ const App = () => {
 
     return (
         <ApiKeyChecker>
-            {isGenerating && <LoadingOverlay progress={progress} status={progressStatus} />}
+            {isGenerating && <LoadingOverlay status={progressStatus} />}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
                     <Splash onSelect={handleStart} />
