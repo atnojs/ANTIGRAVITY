@@ -80,24 +80,24 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 $task = $req['task'] ?? '';
-$modelParam = strtolower((string)($req['model'] ?? 'flux-pro'));
+$modelParam = strtolower((string)($req['model'] ?? 'gemini-pro'));
 
 // ===== Determinar backend =====
-$backend = 'flux';
+$backend = 'gemini';
 $fluxEndpoint = 'flux-2-pro';
-$geminiModelId = 'google/gemini-3.1-flash-image';
+$geminiModelId = 'google/gemini-3-pro-image';
 
 if (strpos($modelParam, 'max') !== false) {
     $backend = 'flux';
     $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($modelParam, 'gemini-pro') !== false || $modelParam === 'google/gemini-3-pro-image') {
-    $backend = 'gemini';
-    $geminiModelId = 'google/gemini-3-pro-image';
-} elseif (strpos($modelParam, 'gemini') !== false || strpos($modelParam, 'flash') !== false) {
+} elseif (strpos($modelParam, 'flux-pro') !== false || $modelParam === 'flux-2-pro') {
+    $backend = 'flux';
+    $fluxEndpoint = 'flux-2-pro';
+} elseif (strpos($modelParam, 'flash') !== false) {
     $backend = 'gemini';
     $geminiModelId = 'google/gemini-3.1-flash-image';
 }
-// 'flux-pro', 'flux', 'pro' → flux-2-pro (default)
+// Valores omitidos o desconocidos → Gemini 3 Pro (default canónico)
 
 // ===== Extraer imagen y prompt =====
 $imageData = (string)($req['imageData'] ?? '');

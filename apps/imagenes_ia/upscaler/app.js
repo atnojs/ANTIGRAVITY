@@ -301,7 +301,7 @@ const App = () => {
     const [source, setSource] = useState(null);
     const [sourceInfo, setSourceInfo] = useState(null);
     const [selectedESRGANModel, setSelectedESRGANModel] = useState(MODEL_OPTIONS[3]); // medium-4x por defecto
-    const [selectedModel, setSelectedModel] = useState('flux-pro'); // Modelo IA (Flux/Gemini)
+    const [selectedModel, setSelectedModel] = useState('gemini-pro'); // Modelo IA (Flux/Gemini)
     const [isDinA4, setIsDinA4] = useState(false);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('');
@@ -574,16 +574,18 @@ const App = () => {
                   <span className="model-selector-label">Modelo IA</span>
                   <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
                     {[
-                      { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-                      { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
-                      { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
-                      { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' }
+                      { id: 'gemini-flash', name: '3.1FLASH' },
+                      { id: 'gemini-pro', name: '3 PRO' },
+                      { id: 'flux-pro', name: 'FLUX PRO' },
+                      { id: 'flux-max', name: 'FLUX MAX' }
                     ].map(m => (
                       <button
+                        type="button"
                         key={m.id}
                         onClick={() => setSelectedModel(m.id)}
-                        className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
-                      >{m.name}{m.secondLine && <><br />{m.secondLine}</>}</button>
+                        aria-pressed={selectedModel === m.id}
+                        className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
+                      >{m.name}</button>
                     ))}
                   </div>
                 </div>
