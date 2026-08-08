@@ -539,7 +539,7 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
-  const [selectedModel, setSelectedModel] = useState('flux-pro');
+  const [selectedModel, setSelectedModel] = useState('gemini-pro');
 
   // Sincronizar modelo con variable global (accesible desde callProxy)
   useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
@@ -824,16 +824,17 @@ const App = () => {
                               <span className="model-selector-label">Modelo IA</span>
                               <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
                                 {[
-                                  { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
-                                  { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
-                                  { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' }
+                                  { id: 'gemini-flash', name: '3.1FLASH' },
+                                  { id: 'gemini-pro', name: '3 PRO' },
+                                  { id: 'flux-pro', name: 'FLUX PRO' },
+                                  { id: 'flux-max', name: 'FLUX MAX' }
                                 ].map(m => (
                                   <button
                                     key={m.id}
                                     onClick={() => setSelectedModel(m.id)}
-                                    className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
-                                  >{m.name}{m.secondLine && <><br />{m.secondLine}</>}</button>
+                                    className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
+                                    aria-pressed={selectedModel === m.id}
+                                  >{m.name}</button>
                                 ))}
                               </div>
                             </div>

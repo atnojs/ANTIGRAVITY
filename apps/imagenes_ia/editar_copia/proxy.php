@@ -68,22 +68,22 @@ if ($imagenEntrada === '' && isset($data['contents'][0]['parts'])) {
 $calidad = (string)($data['calidad'] ?? 'pro');
 
 // ===== Seleccion de modelo =====
-$reqModel = strtolower((string)($data['model'] ?? 'flux-pro'));
-$backend = 'flux';
-$geminiModelId = 'google/gemini-3.1-flash-image';
+$reqModel = strtolower((string)($data['model'] ?? 'gemini-pro'));
+$backend = 'gemini';
+$geminiModelId = 'google/gemini-3-pro-image';
 $fluxEndpoint = 'flux-2-pro'; // por defecto
 
 if (strpos($reqModel, 'max') !== false) {
     $backend = 'flux';
     $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($reqModel, 'pro') !== false && (strpos($reqModel, 'gemini') !== false || $reqModel === 'google/gemini-3-pro-image')) {
-    $backend = 'gemini';
-    $geminiModelId = 'google/gemini-3-pro-image';
+} elseif (strpos($reqModel, 'pro') !== false && strpos($reqModel, 'flux') !== false) {
+    $backend = 'flux';
+    $fluxEndpoint = 'flux-2-pro';
 } elseif (strpos($reqModel, 'flash') !== false || $reqModel === 'google/gemini-3.1-flash-image') {
     $backend = 'gemini';
     $geminiModelId = 'google/gemini-3.1-flash-image';
 }
-// 'flux-pro', 'flux', 'pro' -> flux-2-pro (ya establecido)
+// Valores omitidos o no reconocidos conservan Gemini 3 Pro como fallback seguro.
 
 // ====================================================================
 // BACKEND: FLUX

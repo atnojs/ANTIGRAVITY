@@ -679,32 +679,33 @@ textarea:focus-visible {
   color:var(--muted);font-size:.8rem;letter-spacing:0.08em;text-transform:uppercase;
 }
 .model-toggle-group{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.25rem;padding:.3rem;border-radius:999px;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;
   width:100%;max-width:100%;box-sizing:border-box;
-  background:var(--card-bg);border:1px solid var(--border);
-  box-shadow:0 0 12px var(--glow-soft);
+  padding:.3rem;border-radius:999px;
+  background:rgba(6,16,24,.35);backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--border-strong);
+  box-shadow:0 0 14px var(--glow-soft);
 }
 .model-toggle{
-  font-family:var(--font-ui);font-size:clamp(.62rem,2.35vw,.8rem);letter-spacing:0.025em;
-  min-width:0;padding:.55rem .35rem;border-radius:999px;border:1px solid transparent;
+  min-width:0;padding:.55rem .35rem;
+  border:none;border-radius:999px;
   background:transparent;color:var(--muted);cursor:pointer;
-  transition:all .25s ease;text-transform:uppercase;white-space:nowrap;
+  font-family:var(--font-ui);font-size:clamp(.62rem,2.35vw,.8rem);
+  line-height:1.15;letter-spacing:.025em;text-transform:uppercase;white-space:nowrap;
+  transition:all .25s ease;
+}
+.model-toggle + .model-toggle{
+  border-left:1px solid rgba(0,208,208,.25);
 }
 .model-toggle:hover{
-  color:var(--text);border-color:var(--border-strong);
-  background:rgba(255,255,255,0.06);backdrop-filter:blur(4px);
+  color:var(--text);background:rgba(255,255,255,.08);
   box-shadow:0 0 12px var(--glow-soft);
 }
 .model-toggle.active{
-  background:linear-gradient(135deg,var(--contenedor),var(--acc));
-  color:#CCFFFF;text-shadow:0 0 8px var(--glow);
-  border-color:var(--border-strong);box-shadow:0 0 18px var(--glow);
-}
-/* FLUX activo = verde #26C626 */
-.model-toggle.active.flux{
-  background:linear-gradient(135deg,var(--contenedor),var(--acc2));
-  color:#eaffff;text-shadow:0 0 8px rgba(38,198,38,0.8);
-  border-color:var(--acc2);box-shadow:0 0 18px rgba(38,198,38,0.5);
+  color:#061018;border:none;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  text-shadow:0 0 8px rgba(255,255,255,.35);box-shadow:0 0 18px var(--glow);
 }
 
 /* Botones de relación de aspecto: legibles y coherentes con el selector Holaa */
