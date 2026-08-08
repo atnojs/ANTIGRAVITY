@@ -14,14 +14,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=5">
 </head>
 
 <body>
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
-            <h1 class="gradient-text">Estilo JSON</h1>
+            <h1>Estilo JSON</h1>
             <p class="subtitle">Extrae el estilo de una imagen en JSON y aplícalo a cualquier sujeto.</p>
         </header>
 
@@ -176,11 +176,11 @@
                     <div class="grid-cell full">
                         <div class="model-selector" id="modelSelector">
                             <span class="model-selector-label">Modelo IA</span>
-                            <div class="model-toggle-group" id="modelToggleGroup">
-                                <button class="model-toggle active flux" data-model="flux-pro" type="button">Flux Pro</button>
-                                <button class="model-toggle" data-model="gemini-flash" type="button">3.1 Flash</button>
-                                <button class="model-toggle" data-model="gemini-pro" type="button">3 Pro</button>
-                                <button class="model-toggle flux" data-model="flux-max" type="button">Flux Max</button>
+                            <div class="model-toggle-group" id="modelToggleGroup" role="group" aria-label="Seleccionar modelo">
+                                <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+                                <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+                                <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+                                <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
                             </div>
                         </div>
                         <button class="btn-generate btn-3d" id="btnGenerate">
@@ -252,19 +252,25 @@
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay hidden" id="loadingOverlay">
+    <!-- Loading Overlay (universal skill_maestra) -->
+    <div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="false">
         <div class="spinner-triple">
             <div class="ring ring-1"></div>
             <div class="ring ring-2"></div>
             <div class="ring ring-3"></div>
         </div>
-        <p class="loading-text" id="loadingText">Procesando...</p>
+        <p class="loading-text">IA generando lo solicitado...</p>
+        <div class="progress-panel">
+            <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <p class="secondary-status" id="loadingText">Procesando...</p>
+        </div>
     </div>
 
     <!-- JavaScript -->
     <script src="history-manager.js"></script>
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 
 </html>

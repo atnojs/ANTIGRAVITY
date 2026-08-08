@@ -94,7 +94,7 @@ const state = {
     estiloJson: null,     // objeto JSON del estilo (persistente)
     history: [],
     selectedRes: 1024,
-    selectedModel: 'flux-pro',
+    selectedModel: 'gemini-pro', // 3 PRO por defecto (skill_maestra)
     isAnalyzing: false,
     isGenerating: false,
     isEnhancing: false,
@@ -123,6 +123,15 @@ async function init() {
     cacheEls();
     try { await openDatabase(); state.history = await loadHistoryFromStorage(); }
     catch (e) { console.warn('Error init historial:', e); state.history = []; }
+
+    // El servidor es la fuente de verdad: fusionar con el historial PHP al iniciar.
+    if (window.HistoryManager) {
+        try {
+            HistoryManager.configure({ dbName: DB_NAME, historyUrl: './history.php' });
+            const merged = await HistoryManager.loadAll();
+            if (Array.isArray(merged) && merged.length) state.history = merged;
+        } catch (e) { console.warn('Error merge historial servidor:', e); }
+    }
 
     // El JSON de estilo NO persiste: al refrescar la app se empieza en limpio.
     // (El historial de resultados sí es persistente.)
@@ -591,8 +600,8 @@ function setAnalyzing(v) {
 function setGenerating(v) {
     state.isGenerating = v;
     if (v) {
-        const modelLabel = { 'flux-pro':'Flux Pro', 'flux-max':'Flux Max', 'gemini-flash':'Gemini 3.1 Flash', 'gemini-pro':'Gemini 3 Pro' }[state.selectedModel] || state.selectedModel;
-        showLoading('IA generando con ' + modelLabel + '...');
+        const modelLabel = { 'gemini-flash':'3.1FLASH', 'gemini-pro':'3 PRO', 'flux-pro':'FLUX PRO', 'flux-max':'FLUX MAX' }[state.selectedModel] || state.selectedModel;
+        showLoading('Generando con ' + modelLabel + '...');
     }
     else { hideLoading(); }
     updateStatuses();
@@ -600,8 +609,14 @@ function setGenerating(v) {
 function showLoading(txt) {
     el.loadingText.textContent = txt || 'Procesando...';
     el.loadingOverlay.classList.remove('hidden');
+    el.loadingOverlay.setAttribute('aria-busy', 'true');
+    document.body.style.overflow = 'hidden';
 }
-function hideLoading() { el.loadingOverlay.classList.add('hidden'); }
+function hideLoading() {
+    el.loadingOverlay.classList.add('hidden');
+    el.loadingOverlay.setAttribute('aria-busy', 'false');
+    document.body.style.overflow = '';
+}
 
 function showError(msg) {
     el.errorMessage.textContent = msg;

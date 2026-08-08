@@ -20,10 +20,10 @@
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
+set_time_limit(130);
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -31,6 +31,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 try {
+    // ── Endpoint de salud (GET): comprueba que el proxy responde y qué claves hay ──
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $fluxOk = false; $gemOk = false; $orOk = false; $dsOk = false;
+        $configFile = __DIR__ . '/config.php';
+        if (file_exists($configFile)) {
+            include $configFile;
+            if (defined('F')) $fluxOk = (F !== '');
+            if (defined('A')) $gemOk = (A !== '');
+            if (defined('R')) $orOk = (R !== '');
+            if (defined('DEEPSEEK_API_KEY')) $dsOk = (DEEPSEEK_API_KEY !== '');
+        }
+        foreach (['F', 'REDIRECT_F', 'BFL_API_KEY', 'REDIRECT_BFL_API_KEY'] as $v) {
+            if ($fluxOk) break;
+            $fluxOk = !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
+        }
+        foreach (['R', 'REDIRECT_R', 'OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
+            if ($orOk) break;
+            $orOk = !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
+        }
+        echo json_encode([
+            'success' => true,
+            'service' => 'estilo-json-proxy',
+            'configured' => [
+                'flux' => $fluxOk,
+                'gemini_vision' => $gemOk,
+                'openrouter' => $orOk,
+                'deepseek' => $dsOk,
+            ],
+            'actions' => ['analizarEstilo', 'mejorarPrompt', 'aplicarEstilo'],
+        ]);
+        exit;
+    }
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método no permitido', 405);
     }
@@ -50,7 +82,8 @@ try {
         elseif (defined('BFL_API_KEY')) $fluxKey = BFL_API_KEY;
         if (defined('A')) $gemKey = A;
         elseif (defined('GEMINI_API_KEY')) $gemKey = GEMINI_API_KEY;
-        if (defined('OPENROUTER_API_KEY')) $orKey = OPENROUTER_API_KEY;
+        if (defined('R')) $orKey = R;
+        elseif (defined('OPENROUTER_API_KEY')) $orKey = OPENROUTER_API_KEY;
         if (defined('DEEPSEEK_API_KEY')) $dsKey = DEEPSEEK_API_KEY;
     }
     // FLUX (F / BFL_API_KEY)
@@ -63,8 +96,8 @@ try {
         if (!empty($gemKey)) break;
         $gemKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
     }
-    // OpenRouter (visión, respaldo si no hay Gemini) — OPENROUTER_API_KEY o 'C'
-    foreach (['OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
+    // OpenRouter (Gemini imagen + visión respaldo) — clave canónica 'R' del .htaccess raíz
+    foreach (['R', 'REDIRECT_R', 'OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
         if (!empty($orKey)) break;
         $orKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
     }
@@ -308,8 +341,9 @@ try {
     // TAREA 3: APLICAR ESTILO (FLUX 2 img2img o Gemini vía OpenRouter)
     // ═══════════════════════════════════════════════
     if ($task === 'aplicarEstilo') {
-        // ── Modelo unificado: model (nuevo) o calidad (backward compat) ──
-        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'flux-pro'));
+        // ── Modelo unificado: model (nuevo) o calidad (backward compat).
+        // Fallback seguro según skill_maestra: gemini-pro (3 PRO).
+        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'gemini-pro'));
 
         // ── Despacho: flux-* → BFL async, gemini-* → OpenRouter sync ──
         $isFlux   = (strpos($reqModel, 'flux') === 0);
