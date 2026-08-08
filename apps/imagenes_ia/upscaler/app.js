@@ -371,11 +371,41 @@ const App = () => {
                 setStatus
             );
 
+            // ── Mejora opcional con IA (Flux/Gemini via proxy) ──
+            let enhancedDataUrl = result.dataUrl;
+            let modelLabel = '';
+            try {
+                setStatus('Mejorando con IA (' + (window.selectedModel || selectedModel) + ')...');
+                const base64Data = result.dataUrl.split(',')[1] || result.dataUrl;
+                const proxyResp = await fetch('./proxy.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: window.selectedModel || selectedModel,
+                        imageData: base64Data,
+                        mimeType: 'image/jpeg',
+                        prompt: 'Enhance this image preserving all content. Improve sharpness, texture detail, and overall quality.',
+                        task: 'enhance'
+                    })
+                });
+                if (proxyResp.ok) {
+                    const proxyData = await proxyResp.json();
+                    if (proxyData.success && proxyData.imageUrl) {
+                        enhancedDataUrl = proxyData.imageUrl;
+                        modelLabel = ' + ' + ((window.selectedModel || selectedModel) === 'flux-pro' ? 'Flux Pro' :
+                            (window.selectedModel || selectedModel) === 'flux-max' ? 'Flux Max' :
+                            (window.selectedModel || selectedModel) === 'gemini-pro' ? 'Gemini 3 Pro' : 'Gemini 3.1 Flash');
+                    }
+                }
+            } catch (proxyErr) {
+                console.warn('Mejora IA omitida (fallback a ESRGAN):', proxyErr);
+            }
+
             const sizeLabel = `${result.width}x${result.height} (600 DPI)`;
             const newItem = {
                 id: Date.now().toString(),
-                dataUrl: result.dataUrl,
-                name: selectedESRGANModel.name + (isDinA4 ? ' → DIN A4' : ''),
+                dataUrl: enhancedDataUrl,
+                name: selectedESRGANModel.name + (isDinA4 ? ' → DIN A4' : '') + modelLabel,
                 size: sizeLabel,
                 createdAt: Date.now()
             };

@@ -814,16 +814,10 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: "gemini-2.5-flash-image",
-            contents: [{ parts: [
-                { text: promptInstructions },
-                { inlineData: { mimeType: styleData.mimeType, data: styleData.data } },
-                { inlineData: { mimeType: subjectData.mimeType, data: subjectData.data } }
-            ]}],
-            generationConfig: {
-                responseModalities: ["IMAGE"],
-                imageConfig: { aspectRatio: detectedAR }
-            }
+            model: window.selectedModel || 'flux-pro',
+            image: subjectData.data,
+            mimeType: subjectData.mimeType,
+            prompt: promptInstructions
         };
 
         const response = await fetch('proxy.php', {
@@ -834,18 +828,14 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
 
         const data = await response.json();
 
-        if (data.candidates?.[0]?.content?.parts) {
-            for (const part of data.candidates[0].content.parts) {
-                if (part.inlineData) {
-                    const imgSrc = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-                    slotImages[item.type] = imgSrc;
-                    renderAnalysisCards();
-                }
-            }
+        if (data.image) {
+            const imgSrc = `data:${data.mimeType || 'image/png'};base64,${data.image}`;
+            slotImages[item.type] = imgSrc;
+            renderAnalysisCards();
         } else if (data.error) {
             alert("Error generando imagen: " + JSON.stringify(data.error));
         } else {
-            alert("El modelo no devolvió una imagen. Prueba con el otro JSON.");
+            alert("El modelo no devolvió una imagen. Prueba con otro modelo.");
         }
 
     } catch (e) {

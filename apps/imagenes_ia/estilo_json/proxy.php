@@ -1,21 +1,19 @@
 <?php
 /**
  * ============================================================
- * 🎨 ESTILO JSON — PROXY PHP
+ * 🎨 ESTILO JSON — PROXY PHP (Multi-Backend)
  * Flujo:
  *   1) analizarEstilo : imagen de referencia -> JSON de estilo
- *                       (visión: OpenRouter gpt-4o-mini, JSON mode)
- *   2) aplicarEstilo  : imagen del nuevo sujeto + JSON de estilo
- *                       -> nueva imagen (FLUX 2 img2img, submit+poll)
- *   3) mejorarPrompt  : DeepSeek (texto) afina las instrucciones extra
- *
- * 100% FLUX para GENERAR imagen (regla del proyecto). El análisis de
- * estilo usa un modelo de VISIÓN (FLUX no lee imágenes) vía OpenRouter,
- * NUNCA Gemini.
+ *                       (visión: Gemini o OpenRouter gpt-4o-mini)
+ *   2) mejorarPrompt  : DeepSeek (texto) afina las instrucciones extra
+ *   3) aplicarEstilo  : imagen del sujeto + JSON de estilo -> nueva imagen
+ *                       ┌─ flux-pro / flux-max → BFL async (submit+poll)
+ *                       └─ gemini-flash / gemini-pro → OpenRouter sync
  *
  * Claves (cascada, fuente real = SetEnv del .htaccess raíz de Hostinger):
  *   F                  -> FLUX / Black Forest Labs (generar imagen)
- *   OPENROUTER_API_KEY -> OpenRouter (visión gpt-4o-mini para el JSON)
+ *   A                  -> Gemini (visión para analizar el estilo)
+ *   OPENROUTNER_API_KEY / C -> OpenRouter (Gemini img + visión respaldo)
  *   B / DEEPSEEK_API_KEY -> DeepSeek (texto, Mejorar Prompt)
  * ============================================================
  */
