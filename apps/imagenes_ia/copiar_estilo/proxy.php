@@ -170,25 +170,22 @@ if (strpos($imageB64, 'base64,') !== false) {
     $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
 }
 
-// ===== Selección de modelo =====
-$reqModel = strtolower((string)($req['model'] ?? 'flux-pro'));
-$backend = null;
-$geminiModel = 'google/gemini-3.1-flash-image';
+// ===== Selección de modelo (mapeo canónico SKILL_MAESTRA) =====
+$reqModel = strtolower((string)($req['model'] ?? 'gemini-pro'));
+$backend = 'gemini';
+$geminiModel = 'google/gemini-3-pro-image';
 $fluxEndpoint = 'flux-2-pro';
 
 if (strpos($reqModel, 'max') !== false) {
     $backend = 'flux';
     $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($reqModel, 'gemini') !== false && strpos($reqModel, 'pro') !== false) {
-    $backend = 'gemini';
-    $geminiModel = 'google/gemini-3-pro-image';
-} elseif (strpos($reqModel, 'gemini') !== false || strpos($reqModel, 'flash') !== false) {
-    $backend = 'gemini';
-    $geminiModel = 'google/gemini-3.1-flash-image';
-} else {
-    // 'flux-pro', 'flux', 'pro' -> flux-2-pro
+} elseif (strpos($reqModel, 'pro') !== false && strpos($reqModel, 'flux') !== false) {
     $backend = 'flux';
+    $fluxEndpoint = 'flux-2-pro';
+} elseif (strpos($reqModel, 'flash') !== false) {
+    $geminiModel = 'google/gemini-3.1-flash-image';
 }
+// Cualquier otro valor (o 'gemini-pro') -> Gemini 3 Pro (fallback seguro)
 
 // ====================================================================
 // BACKEND: FLUX (BFL async)

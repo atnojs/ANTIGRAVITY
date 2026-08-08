@@ -1,8 +1,8 @@
 // --- CONSTANTES DE FORMATO ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
-// --- SELECTOR DE MODELO IA (4 botones canónico) ---
-window.selectedModel = 'flux-pro';
+// --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
+window.selectedModel = 'gemini-pro';
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -814,7 +814,7 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: window.selectedModel || 'flux-pro',
+            model: window.selectedModel || 'gemini-pro',
             image: subjectData.data,
             mimeType: subjectData.mimeType,
             prompt: promptInstructions

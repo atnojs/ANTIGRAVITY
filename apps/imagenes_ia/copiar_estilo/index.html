@@ -6,13 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copiar Estilo</title>
 
-    <!-- Google Fonts: Montserrat (Títulos) + Poppins (Texto) -->
+    <!-- Google Fonts: Electrolize (UI) + Poppins (Texto) -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Electrolize&family=Poppins:wght@300;400;500;600&display=swap"
         rel="stylesheet">
 
     <!-- Style Guide & Custom Styles (Consolidated) -->
-    <link rel="stylesheet" href="app.css?v=3">
+    <link rel="stylesheet" href="app.css?v=4">
 </head>
 
 <body>
@@ -49,14 +49,14 @@
             </div>
         </div>
 
-        <!-- Model Selector (canonical 4-button toggle) -->
+        <!-- Selector de Modelo IA (barra segmentada canónica) -->
         <div class="model-selector">
             <span class="model-selector-label">Modelo IA</span>
             <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-                <button type="button" class="model-toggle active flux" data-model="flux-pro">Flux Pro</button>
-                <button type="button" class="model-toggle" data-model="gemini-flash">3.1 Flash</button>
-                <button type="button" class="model-toggle" data-model="gemini-pro">3 Pro</button>
-                <button type="button" class="model-toggle flux" data-model="flux-max">Flux Max</button>
+                <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+                <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+                <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+                <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
             </div>
         </div>
 
@@ -81,7 +81,7 @@
             <div class="ring ring-2"></div>
             <div class="ring ring-3"></div>
         </div>
-        <div class="loading-text-glow">IA Generando Obra Maestra...</div>
+        <div class="loading-text-glow">IA generando lo solicitado...</div>
 
         <!-- Progress Indicator -->
         <div class="progress-container">
@@ -112,7 +112,7 @@
 
     <!-- App Logic -->
     <script src="history-manager.js"></script>
-    <script src="app_v2.js?v=2"></script>
+    <script src="app_v2.js?v=3"></script>
 </body>
 
 </html>
