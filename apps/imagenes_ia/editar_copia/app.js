@@ -144,6 +144,26 @@ const STYLE_GROUPS = {
         { id: 'duotono', name: 'Duotono Impactante', promptSuffix: 'Bold duotone color effect, two high-contrast ink colors, graphic design aesthetic, modern visual power.' },
         { id: 'glitch', name: 'Glitch Art Digital', promptSuffix: 'Digital glitch aesthetic, chromatic aberration, data corruption artifacts, scanlines, cybernetic distortion look.' },
         { id: 'poster', name: 'Póster Moderno', promptSuffix: 'Contemporary graphic poster layout, swiss design style, grid-based composition, high-impact typographic focus (simulated).' }
+    ],
+    fotografia: [
+        { id: '', name: '📷 Foto / Cine', promptSuffix: '' },
+        { id: 'fotorrealismo', name: 'Fotorrealismo Ultra', promptSuffix: 'Hyper-photorealistic image, ultra-detailed skin and material textures, natural true-to-life lighting, shot on a professional full-frame camera with razor-sharp focus, no artistic filters, no digital artifacts.' },
+        { id: 'cinematografico', name: 'Cinematográfico', promptSuffix: 'Cinematic film still, anamorphic widescreen framing, dramatic lighting, shallow depth of field, teal and orange color grade, subtle film grain, blockbuster movie production quality.' },
+        { id: 'noir', name: 'Noir / Cine Negro', promptSuffix: 'Classic film noir aesthetic, dramatic chiaroscuro lighting, deep black shadows, hard light through venetian blinds, moody 1940s detective atmosphere, high-contrast monochrome.' },
+        { id: 'documental', name: 'Documental / Periodístico', promptSuffix: 'Authentic documentary photography, natural available light, candid unposed realism, photojournalistic composition, genuine emotion, minimal post-processing, honest street reportage.' },
+        { id: 'retrato-estudio', name: 'Retrato de Estudio', promptSuffix: 'Professional studio portrait photography, softbox key lighting, seamless background, crisp catchlights in the eyes, flawless skin rendering, high-end commercial photography.' },
+        { id: 'moda-editorial', name: 'Moda Editorial', promptSuffix: 'High-fashion editorial photography, magazine cover aesthetic, dramatic poses, avant-garde styling, studio strobes, premium retouched look, Vogue-style glamour.' },
+        { id: 'naturaleza', name: 'Naturaleza Salvaje', promptSuffix: 'Award-winning nature photography, National Geographic style, stunning golden hour light, tack-sharp wildlife and landscape detail, breathtaking composition.' },
+        { id: 'analogica', name: 'Película Analógica', promptSuffix: 'Authentic 35mm analog film photography, Kodak Portra color palette, natural film grain, soft halation, nostalgic photochemical look, classic film camera.' },
+        { id: 'bn-clasico', name: 'Blanco y Negro Clásico', promptSuffix: 'Timeless black and white photography, masterful tonal range, deep blacks and soft highlights, fine-art monochrome, Ansel Adams style.' },
+        { id: 'polaroid', name: 'Instantánea Polaroid', promptSuffix: 'Vintage instant camera photo, Polaroid aesthetic, faded pastel tones, slight vignetting, authentic retro snapshot with the classic white frame.' },
+        { id: 'street', name: 'Street Photography', promptSuffix: 'Captivating street photography, candid urban moments, decisive-moment composition, natural shadows and light, gritty authentic city atmosphere.' },
+        { id: 'aerea', name: 'Aérea / Drone', promptSuffix: 'Breathtaking aerial drone photography, top-down perspective, stunning landscape patterns, crisp detail from above, golden hour light.' },
+        { id: 'macro', name: 'Macro Fotografía', promptSuffix: 'Extreme macro photography, incredible fine detail, tiny world perspective, beautiful creamy bokeh, sharp focus on delicate textures.' },
+        { id: 'sci-fi-cine', name: 'Sci-Fi Cinematográfico', promptSuffix: 'Epic sci-fi cinematic still, futuristic production design, atmospheric volumetric lighting, holographic accents, anamorphic lens flares, blockbuster VFX quality.' },
+        { id: 'epico', name: 'Épico / Blockbuster', promptSuffix: 'Epic cinematic blockbuster still, grand scale, sweeping vistas, dramatic storm clouds, hero lighting, breathtaking visual effects, IMAX quality.' },
+        { id: 'terror-cine', name: 'Terror Cinematográfico', promptSuffix: 'Atmospheric horror film still, eerie low-key lighting, creeping fog and deep shadows, unsettling composition, dark moody color palette, psychological tension.' },
+        { id: 'western', name: 'Western Clásico', promptSuffix: 'Classic western film aesthetic, dusty frontier landscapes, warm sepia tones, dramatic desert light, rugged authentic atmosphere, golden hour cowboy cinematography.' }
     ]
 };
 
@@ -789,6 +809,12 @@ const App = () => {
                                         options={STYLE_GROUPS.grafico}
                                         value={STYLE_GROUPS.grafico.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
                                         onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.grafico.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
+                                    />
+                                    <CustomSelect
+                                        options={STYLE_GROUPS.fotografia}
+                                        value={STYLE_GROUPS.fotografia.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
+                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.fotografia.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
+                                        className="col-span-2"
                                     />
                                 </div>
                             </div>
