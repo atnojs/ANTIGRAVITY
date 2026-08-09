@@ -737,12 +737,6 @@ textarea:focus-visible {
   color:#CCFFFF;text-shadow:0 0 8px var(--glow);
   border-color:var(--border-strong);box-shadow:0 0 18px var(--glow);
 }
-/* FLUX activo = verde #26C626 */
-.model-toggle.active.flux{
-  background:linear-gradient(135deg,var(--contenedor),var(--acc2));
-  color:#eaffff;text-shadow:0 0 8px rgba(38,198,38,0.8);
-  border-color:var(--acc2);box-shadow:0 0 18px rgba(38,198,38,0.5);
-}
 
 /* Botones de relación de aspecto: legibles y coherentes con el selector Holaa */
 .aspect-ratio-button{
@@ -763,12 +757,3 @@ textarea:focus-visible {
 .aspect-ratio-button .btn-canon{
   color:inherit;font-size:.65rem;line-height:1;white-space:nowrap;
 }
-
-.download-single-btn{
-  background:var(--card-bg);
-  color:var(--acc2);
-  border-color:var(--acc2);
-  box-shadow:0 0 12px rgba(38,198,38,0.25);
-  font-size:.8rem;padding:.6rem 1rem
-}
-.download-single-btn:hover{background:linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg);transform:translateY(-2px);box-shadow:0 0 20px rgba(38,198,38,0.5)}
