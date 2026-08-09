@@ -399,7 +399,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`ar-effect w-full p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between rounded-xl ${isOpen ? 'active' : (isPlaceholder ? 'opacity-60' : '')}`}
+                className={`ar-effect w-full p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between rounded-xl ${isOpen || !isPlaceholder ? 'active' : 'opacity-60'}`}
             >
                 <span className={isPlaceholder ? 'text-gray-500' : ''}>{selectedOption.name}</span>
                 <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
