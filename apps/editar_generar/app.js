@@ -1,5 +1,6 @@
-const { useState, useRef, useEffect, Fragment } = React;
-const ReactDOM = window.ReactDOM;
+const ReactObj = window.React || {};
+const { useState, useRef, useEffect, Fragment } = ReactObj;
+const ReactDOM = window.ReactDOM || {};
 
 // --- Lucide Icon Wrapper ---
 const toPascal = (kebab) => kebab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
@@ -50,7 +51,7 @@ const MessageSquare = (p) => <Icon name="message-square" {...p} />;
 const Download = (p) => <Icon name="download" {...p} />;
 const Share2 = (p) => <Icon name="share-2" {...p} />;
 
-// --- CONSTANTES (ORIGINAL) ---
+// --- CONSTANTES ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
 const getClosestAspectRatio = (width, height) => {
@@ -143,6 +144,26 @@ const STYLE_GROUPS = {
         { id: 'duotono', name: 'Duotono Impactante', promptSuffix: 'Bold duotone color effect, two high-contrast ink colors, graphic design aesthetic, modern visual power.' },
         { id: 'glitch', name: 'Glitch Art Digital', promptSuffix: 'Digital glitch aesthetic, chromatic aberration, data corruption artifacts, scanlines, cybernetic distortion look.' },
         { id: 'poster', name: 'Póster Moderno', promptSuffix: 'Contemporary graphic poster layout, swiss design style, grid-based composition, high-impact typographic focus (simulated).' }
+    ],
+    fotografia: [
+        { id: '', name: '📷 Foto / Cine', promptSuffix: '' },
+        { id: 'fotorrealismo', name: 'Fotorrealismo Ultra', promptSuffix: 'Hyper-photorealistic image, ultra-detailed skin and material textures, natural true-to-life lighting, shot on a professional full-frame camera with razor-sharp focus, no artistic filters, no digital artifacts.' },
+        { id: 'cinematografico', name: 'Cinematográfico', promptSuffix: 'Cinematic film still, anamorphic widescreen framing, dramatic lighting, shallow depth of field, teal and orange color grade, subtle film grain, blockbuster movie production quality.' },
+        { id: 'noir', name: 'Noir / Cine Negro', promptSuffix: 'Classic film noir aesthetic, dramatic chiaroscuro lighting, deep black shadows, hard light through venetian blinds, moody 1940s detective atmosphere, high-contrast monochrome.' },
+        { id: 'documental', name: 'Documental / Periodístico', promptSuffix: 'Authentic documentary photography, natural available light, candid unposed realism, photojournalistic composition, genuine emotion, minimal post-processing, honest street reportage.' },
+        { id: 'retrato-estudio', name: 'Retrato de Estudio', promptSuffix: 'Professional studio portrait photography, softbox key lighting, seamless background, crisp catchlights in the eyes, flawless skin rendering, high-end commercial photography.' },
+        { id: 'moda-editorial', name: 'Moda Editorial', promptSuffix: 'High-fashion editorial photography, magazine cover aesthetic, dramatic poses, avant-garde styling, studio strobes, premium retouched look, Vogue-style glamour.' },
+        { id: 'naturaleza', name: 'Naturaleza Salvaje', promptSuffix: 'Award-winning nature photography, National Geographic style, stunning golden hour light, tack-sharp wildlife and landscape detail, breathtaking composition.' },
+        { id: 'analogica', name: 'Película Analógica', promptSuffix: 'Authentic 35mm analog film photography, Kodak Portra color palette, natural film grain, soft halation, nostalgic photochemical look, classic film camera.' },
+        { id: 'bn-clasico', name: 'Blanco y Negro Clásico', promptSuffix: 'Timeless black and white photography, masterful tonal range, deep blacks and soft highlights, fine-art monochrome, Ansel Adams style.' },
+        { id: 'polaroid', name: 'Instantánea Polaroid', promptSuffix: 'Vintage instant camera photo, Polaroid aesthetic, faded pastel tones, slight vignetting, authentic retro snapshot with the classic white frame.' },
+        { id: 'street', name: 'Street Photography', promptSuffix: 'Captivating street photography, candid urban moments, decisive-moment composition, natural shadows and light, gritty authentic city atmosphere.' },
+        { id: 'aerea', name: 'Aérea / Drone', promptSuffix: 'Breathtaking aerial drone photography, top-down perspective, stunning landscape patterns, crisp detail from above, golden hour light.' },
+        { id: 'macro', name: 'Macro Fotografía', promptSuffix: 'Extreme macro photography, incredible fine detail, tiny world perspective, beautiful creamy bokeh, sharp focus on delicate textures.' },
+        { id: 'sci-fi-cine', name: 'Sci-Fi Cinematográfico', promptSuffix: 'Epic sci-fi cinematic still, futuristic production design, atmospheric volumetric lighting, holographic accents, anamorphic lens flares, blockbuster VFX quality.' },
+        { id: 'epico', name: 'Épico / Blockbuster', promptSuffix: 'Epic cinematic blockbuster still, grand scale, sweeping vistas, dramatic storm clouds, hero lighting, breathtaking visual effects, IMAX quality.' },
+        { id: 'terror-cine', name: 'Terror Cinematográfico', promptSuffix: 'Atmospheric horror film still, eerie low-key lighting, creeping fog and deep shadows, unsettling composition, dark moody color palette, psychological tension.' },
+        { id: 'western', name: 'Western Clásico', promptSuffix: 'Classic western film aesthetic, dusty frontier landscapes, warm sepia tones, dramatic desert light, rugged authentic atmosphere, golden hour cowboy cinematography.' }
     ]
 };
 
@@ -154,7 +175,7 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
-// --- HISTORIAL PERSISTENTE CON INDEXEDDB ---
+// --- HISTORIAL PERSISTENTE CON INDEXEDDB FILTRADO POR MODO ---
 const DB_NAME = 'editar_imagenes_db';
 const DB_VERSION = 1;
 const STORE_NAME = 'history';
@@ -173,7 +194,7 @@ const openHistoryDb = () => new Promise((resolve, reject) => {
     };
 });
 
-const loadHistoryFromDb = async () => {
+const loadHistoryFromDb = async (mode) => {
     try {
         if (!historyDb) await openHistoryDb();
         return new Promise((resolve, reject) => {
@@ -181,7 +202,7 @@ const loadHistoryFromDb = async () => {
             const store = tx.objectStore(STORE_NAME);
             const req = store.getAll();
             req.onsuccess = () => {
-                const items = req.result || [];
+                const items = (req.result || []).filter(item => (item.mode || 'remix') === mode);
                 items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 resolve(items);
             };
@@ -216,24 +237,31 @@ const deleteHistoryItemFromDb = async (id) => {
     } catch (e) { console.warn('Error eliminando item:', e); }
 };
 
-const clearHistoryFromDb = async () => {
+const clearHistoryFromDb = async (mode) => {
     try {
         if (!historyDb) await openHistoryDb();
-        return new Promise((resolve, reject) => {
-            const tx = historyDb.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.clear();
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
+        const allItems = await new Promise((resolve) => {
+            const tx = historyDb.transaction(STORE_NAME, 'readonly');
+            const req = tx.objectStore(STORE_NAME).getAll();
+            req.onsuccess = () => resolve(req.result || []);
         });
+        const txDelete = historyDb.transaction(STORE_NAME, 'readwrite');
+        const store = txDelete.objectStore(STORE_NAME);
+        allItems.filter(i => (i.mode || 'remix') === mode).forEach(i => store.delete(i.id));
     } catch (e) { console.warn('Error limpiando historial:', e); }
 };
 
-// --- SERVICES (ORIGINAL LOGIC) ---
+// --- SERVICES CORREGIDOS ---
 const PROXY_URL = './proxy.php';
 
-const callProxy = async (model, contents, config = {}) => {
-    const payload = { model, contents, ...config };
+const callProxy = async (model, contents, config = {}, promptText = '') => {
+    // Garantizamos que el objeto enviado siempre lleve parametro 'prompt'
+    const payload = { 
+        model: (window.selectedModel || model), 
+        prompt: promptText, 
+        contents, 
+        ...config 
+    };
     const response = await fetch(PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -251,10 +279,9 @@ const enhancePrompt = async (basePrompt) => {
         const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÓN DE IMÁGENES.
 TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÓN DEL USUARIO.
 Instrucciones:
-1. NO inventes sujetos nuevos (ej: si pide un perro, no digas que es un Golden Retriever a menos que él lo diga).
+1. NO inventes sujetos nuevos.
 2. NO cambies el entorno drásticamente.
-3. Céntrate en añadir detalles técnicos de calidad (iluminación, texturas, estilo de cámara) para que el prompt sea más efectivo pero manteniendo el mensaje original intacto.
-4. Si el usuario pide un cambio pequeño (ej: "lazo rojo"), el prompt debe centrarse en ese cambio pero con mejor lenguaje técnico.
+3. Céntrate en añadir detalles técnicos de calidad para que el prompt sea más efectivo.
 
 Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (Descriptiva, Cinematográfica, Artística, y Minimalista) siguiendo estas reglas estrictas.`;
         const contents = [{ parts: [{ text: systemInstructions }] }];
@@ -271,7 +298,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy('flux', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -310,12 +337,13 @@ const generateImage = async (params) => {
             }
         }
     };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+
+    // Pasamos 'finalPrompt' como parámetro explícito
+    const result = await callProxy('flux', contents, config, finalPrompt);
+    if (!result?.success || !result?.imageUrl) {
+        throw new Error(result?.error?.message || "No se pudo generar la imagen");
     }
-    throw new Error("No se pudo generar la imagen");
+    return result.imageUrl;
 };
 
 const editImageConversation = async (params) => {
@@ -327,31 +355,29 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
-    const partsResponse = result?.candidates?.[0]?.content?.parts || [];
-    for (const part of partsResponse) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+    const result = await callProxy('flux', contents, config);
+    if (!result?.success || !result?.imageUrl) {
+        throw new Error(result?.error?.message || "Error en la edición conversacional");
     }
-    throw new Error("Error en la edición conversacional");
+    return result.imageUrl;
 };
 
 // --- COMPONENTS ---
 const ApiKeyChecker = ({ children }) => <>{children}</>;
 
-const LoadingOverlay = ({ progress = 0, status = '' }) => (
-    <div className="loading-overlay">
+const LoadingOverlay = ({ status = '' }) => (
+    <div className="loading-overlay" role="status" aria-live="polite" aria-busy="true">
         <div className="spinner-triple">
             <div className="ring ring-1"></div>
             <div className="ring ring-2"></div>
             <div className="ring ring-3"></div>
         </div>
-        <p className="loading-text">IA Generando Obra Maestra...</p>
-        <div className="progress-container">
-            <div className="progress-percentage">{progress}%</div>
+        <p className="loading-text">IA generando lo solicitado...</p>
+        <div className="progress-panel">
             <div className="progress-bar-track">
-                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+                <div className="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
-            <div className="progress-status">{status || 'Iniciando...'}</div>
+            <div className="secondary-status">{status || 'Procesando solicitud...'}</div>
         </div>
     </div>
 );
@@ -421,8 +447,8 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
     return (
         <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
             <div className="absolute top-4 left-4 z-10">
-                <div className="px-3 py-1 glass rounded-full text-[9px] font-bold uppercase tracking-widest text-white/90 border-white/5 backdrop-blur-md">
-                    {image.style.name} | {image.aspectRatio}
+                <div className="px-3 py-1 glass rounded-full text-[9px] uppercase text-white/90 border-white/5 backdrop-blur-md btn-canon">
+                    {image.style ? image.style.name : 'Estilo'} | {image.aspectRatio}
                 </div>
             </div>
             <div className="relative aspect-square bg-slate-950 overflow-hidden flex items-center justify-center">
@@ -438,28 +464,28 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
                             <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center group-hover/btn:bg-cyan-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <RefreshCw className="text-cyan-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-cyan-200 uppercase tracking-tighter">Nuevas</span>
+                            <span className="btn-canon text-[8px] text-cyan-200">Nuevas</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onEdit(image); }} className="flex flex-col items-center gap-1.5 group/btn">
-                            <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center group-hover/btn:bg-purple-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
-                                <MessageSquare className="text-purple-400" size={16} />
-                            </div>
-                            <span className="text-[8px] font-bold text-purple-200 uppercase tracking-tighter">Variar</span>
-                        </button>
+    <div className="w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center group-hover/btn:bg-cyan-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
+        <MessageSquare className="text-cyan-400" size={16} />
+    </div>
+    <span className="btn-canon text-[8px] text-cyan-200">Variar</span>
+</button>
 
                         <button onClick={handleDownload} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-slate-800/80 border border-slate-600 flex items-center justify-center group-hover/btn:bg-slate-700 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Download className="text-slate-200" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-slate-300 uppercase tracking-tighter">Bajar</span>
+                            <span className="btn-canon text-[8px] text-slate-300">Bajar</span>
                         </button>
 
                         <button onClick={(e) => { e.stopPropagation(); onDelete(image.id); }} className="flex flex-col items-center gap-1.5 group/btn">
                             <div className="w-9 h-9 rounded-full bg-red-900/40 border border-red-500/50 flex items-center justify-center group-hover/btn:bg-red-500/40 group-hover/btn:scale-110 transition-all shadow-lg">
                                 <Trash2 className="text-red-400" size={16} />
                             </div>
-                            <span className="text-[8px] font-bold text-red-300 uppercase tracking-tighter">Quitar</span>
+                            <span className="btn-canon text-[8px] text-red-300">Quitar</span>
                         </button>
                     </div>
                 </div>
@@ -469,7 +495,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
                 <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight italic">
                     {image.prompt}
                 </p>
-                <div className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-1">
+                <div className="text-[9px] text-gray-600 uppercase mt-1 btn-canon">
                     {new Date(image.createdAt).toLocaleTimeString()}
                 </div>
             </div>
@@ -480,22 +506,25 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
 const Splash = ({ onSelect }) => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
-            <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">Edita como un Pro</h1>
-            <p className="text-gray-300 text-lg md:text-2xl font-light max-w-2xl mx-auto">
-                <span className="neon-text font-semibold">Generación/Edición Visual de Imágenes</span>
+            <h1 className="splash-title">Diseña como un Pro</h1>
+            <p className="splash-subtitle">
+                Edición y Generación de Imágenes con IA
             </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-            <button onClick={() => onSelect('remix')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-purple-500/30">
-                <div className="absolute top-0 right-0 p-8 text-purple-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
+            {/* Tarjeta 1: Editar Imagen */}
+            <button onClick={() => onSelect('remix')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
+                <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:rotate-12 transition-transform duration-700">
                     <ImageIcon size={200} />
                 </div>
-                <div className="bg-purple-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-purple-400 mb-6 border border-purple-500/30">
+                <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Wand2 size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Editar Imagen</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Edita imágenes existentes con la potencia de Nano Banana.</p>
+                <h2 className="btn-editar-imagen">Editar Imagen</h2>
+                <p className="card-desc">Edita imágenes existentes con la potencia de Nano Banana.</p>
             </button>
+
+            {/* Tarjeta 2: Generar Imágenes */}
             <button onClick={() => onSelect('text-to-image')} className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30">
                 <div className="absolute top-0 right-0 p-8 text-cyan-500/10 transform group-hover:scale-150 group-hover:-rotate-12 transition-transform duration-700">
                     <Sparkles size={200} />
@@ -503,16 +532,17 @@ const Splash = ({ onSelect }) => (
                 <div className="bg-cyan-500/20 w-16 h-16 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 border border-cyan-500/30">
                     <Sparkles size={32} />
                 </div>
-                <h2 className="text-4xl font-bold">Generar Imágenes</h2>
-                <p className="text-gray-400 text-lg leading-relaxed">Genera imágenes desde una descripción de texto.</p>
+                <h2 className="btn-generar-imagenes">Generar Imágenes</h2>
+                <p className="card-desc">Genera imágenes desde una descripción de texto.</p>
             </button>
         </div>
     </div>
 );
 
+
 // --- APP MAIN ---
 const App = () => {
-    const [view, setView] = useState('editor');
+    const [view, setView] = useState('splash');
     const [mode, setMode] = useState('remix');
     const [prompt, setPrompt] = useState('');
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
@@ -526,34 +556,34 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
-    const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
+  const [selectedModel, setSelectedModel] = useState('gemini-pro');
+
+  // Sincronizar modelo con variable global (accesible desde callProxy)
+  useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
     const [progress, setProgress] = useState(0);
     const [progressStatus, setProgressStatus] = useState('');
 
     const fileInputRef = useRef(null);
 
-    // Cargar historial al montar
+    // Cargar historial desacoplado por modo activo
     useEffect(() => {
         const loadHistory = async () => {
             try {
-                const items = await loadHistoryFromDb();
-                if (items.length > 0) setImages(items);
+                const items = await loadHistoryFromDb(mode);
+                setImages(items);
             } catch (e) { console.warn('Error cargando historial:', e); }
         };
-        loadHistory();
-    }, []);
-
-    // Auto-open file selector on mount for edit mode
-    useEffect(() => {
-        setTimeout(() => fileInputRef.current?.click(), 100);
-    }, []);
+        if (view === 'editor') {
+            loadHistory();
+        }
+    }, [view, mode]);
 
     const handleStart = (m) => {
         setMode(m);
         setView('editor');
         if (m === 'text-to-image') setRemixSource(null);
-        if (m === 'remix') setTimeout(() => fileInputRef.current?.click(), 100);
+        setError(null);
     };
 
     const handleFileUpload = (e) => {
@@ -565,7 +595,6 @@ const App = () => {
             img.onload = () => {
                 const detectedAR = getClosestAspectRatio(img.width, img.height);
                 setSelectedAR(detectedAR);
-                setOriginalImageAR(detectedAR);
                 setRemixSource(f.target.result);
             };
             img.src = f.target.result;
@@ -583,8 +612,17 @@ const App = () => {
     };
 
     const handleGenerate = async (finalPrompt = prompt) => {
-        const effectivePrompt = finalPrompt.trim() || (mode === 'remix' && remixSource ? ' ' : '');
-        if (!effectivePrompt && !(mode === 'remix' && remixSource)) return;
+        const effectivePrompt = (typeof finalPrompt === 'string' ? finalPrompt : prompt).trim();
+        
+        if (mode === 'text-to-image' && !effectivePrompt) {
+            setError("Escribe una descripción antes de generar.");
+            return;
+        }
+        if (mode === 'remix' && !remixSource) {
+            setError("Sube una imagen para poder editarla.");
+            return;
+        }
+
         setIsGenerating(true);
         setError(null);
         setProgress(0);
@@ -598,44 +636,36 @@ const App = () => {
             }
 
             setProgress(10);
-            setProgressStatus('Generando imagen 1 de 2...');
+            setProgressStatus('Generando imagen...');
 
-            // Generar 2 imágenes en paralelo
-            const results = await Promise.all([
-                generateImage({
-                    prompt: effectivePrompt,
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: finalSourceImage
-                }).then(url => { setProgress(40); setProgressStatus('Generando imagen 2 de 2...'); return url; }),
-                generateImage({
-                    prompt: effectivePrompt + (mode === 'remix' ? " (Alternative detailed variation)" : " --variation distinct composition"),
-                    styleSuffix,
-                    aspectRatio: selectedAR,
-                    sourceImage: finalSourceImage
-                }).then(url => { setProgress(70); setProgressStatus('Finalizando...'); return url; })
-            ]);
+            const imageUrl = await generateImage({
+                prompt: effectivePrompt,
+                styleSuffix,
+                aspectRatio: selectedAR,
+                sourceImage: finalSourceImage
+            });
+
+            setProgress(70);
+            setProgressStatus('Finalizando...');
 
             setProgress(90);
             setProgressStatus('Guardando...');
 
-            const newHistoryImages = results.map(imageUrl => ({
+            const newImage = {
                 id: Math.random().toString(36).substring(7),
                 url: imageUrl,
-                prompt: effectivePrompt || 'Remezcla',
+                prompt: effectivePrompt || 'Edición de imagen',
                 style: selectedStyle,
                 aspectRatio: selectedAR,
                 size: '1K',
+                mode: mode,
                 createdAt: Date.now()
-            }));
+            };
 
-            // Guardar en IndexedDB
-            for (const img of newHistoryImages) {
-                await saveHistoryItemToDb(img);
-            }
+            await saveHistoryItemToDb(newImage);
 
             setProgress(100);
-            setImages(prev => [...newHistoryImages, ...prev]);
+            setImages(prev => [newImage, ...prev]);
         } catch (err) {
             setError(err.message || "Error de generación");
         } finally {
@@ -650,17 +680,20 @@ const App = () => {
         await deleteHistoryItemFromDb(id);
         setImages(images.filter(img => img.id !== id));
     };
+
     const handleClearHistory = async () => {
-        if (!confirm('¿Estás seguro de que quieres eliminar todo el historial?')) return;
-        await clearHistoryFromDb();
+        if (!confirm('¿Estás seguro de que quieres eliminar el historial de este modo?')) return;
+        await clearHistoryFromDb(mode);
         setImages([]);
     };
+
     const handleRegenerate = (img) => {
         setPrompt(img.prompt);
-        setSelectedStyle(img.style);
+        if (img.style) setSelectedStyle(img.style);
         setSelectedAR(img.aspectRatio);
         handleGenerate(img.prompt);
     };
+
     const handleOpenEdit = (img) => {
         setEditImage(img);
         setEditInstruction('');
@@ -676,7 +709,7 @@ const App = () => {
                 instruction: editInstruction,
                 aspectRatio: editImage.aspectRatio
             });
-            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, createdAt: Date.now() };
+            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, mode: mode, createdAt: Date.now() };
             await saveHistoryItemToDb(updatedImage);
             setImages([updatedImage, ...images]);
             setEditImage(null);
@@ -687,7 +720,7 @@ const App = () => {
 
     return (
         <ApiKeyChecker>
-            {isGenerating && <LoadingOverlay progress={progress} status={progressStatus} />}
+            {isGenerating && <LoadingOverlay status={progressStatus} />}
             <div className="min-h-screen custom-scrollbar overflow-y-auto">
                 {view === 'splash' ? (
                     <Splash onSelect={handleStart} />
@@ -695,31 +728,37 @@ const App = () => {
                     <div className="flex flex-col lg:flex-row min-h-screen">
                         <aside className="lg:w-[440px] glass border-r border-white/5 lg:sticky lg:top-0 lg:h-screen overflow-y-auto p-10 space-y-10 custom-scrollbar flex flex-col z-20">
                             <div className="flex items-center justify-between shrink-0">
-                                <h1 className="text-2xl font-bold gradient-text flex items-center gap-3">
-                                    <Wand2 className="text-purple-400" size={28} />
-                                    Editor de Imágenes
-                                </h1>
-                            </div>
-
+    <h1 onClick={() => setView('splash')} className="aside-title flex items-center gap-3 cursor-pointer">
+        <Wand2 className="text-cyan-400" size={28} />
+        {mode === 'remix' ? 'Editar Imagen' : 'Generar Imágenes'}
+    </h1>
+</div>
                             {mode === 'remix' && (
-                                <div className="space-y-4 animate-in">
-                                    <label className="text-[11px] font-bold text-purple-400 uppercase tracking-widest">Imagen a Editar</label>
-                                    <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-purple-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-purple-500 transition-all">
-                                        {remixSource ? <img src={remixSource} className="w-full h-full object-contain" /> : <div className="text-purple-400 flex flex-col items-center gap-2"><Upload size={24} /><span className="text-[10px] font-bold uppercase">Sube Imagen</span></div>}
-                                    </div>
-                                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
-                                </div>
-                            )}
+    <div className="space-y-4 animate-in">
+        <label className="btn-canon text-[11px] text-cyan-400">Imagen a Editar</label>
+        <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-cyan-400 transition-all">
+            {remixSource ? (
+                <img src={remixSource} className="w-full h-full object-contain" />
+            ) : (
+                <div className="text-cyan-400 flex flex-col items-center gap-2">
+                    <Upload size={24} />
+                    <span className="btn-canon text-[10px]">Sube Imagen</span>
+                </div>
+            )}
+        </div>
+        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
+    </div>
+)}
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Quieres añadir algo??</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Describe tu imagen</label>
                                 <div className="relative">
                                     <textarea
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder="Detalla lo que deseas ver en tu imagen..."
-                                        className="w-full h-48 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none custom-scrollbar focus:border-cyan-400 transition-all shadow-inner"
-                                    />
+    value={prompt}
+    onChange={(e) => setPrompt(e.target.value)}
+    placeholder="Detalla lo que deseas ver en tu imagen..."
+    className="w-full h-48 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none custom-scrollbar focus:border-cyan-400 placeholder:text-cyan-400 transition-all shadow-inner"
+/>
                                     <button
                                         onClick={handleEnhance}
                                         disabled={isEnhancing || !prompt.trim()}
@@ -749,7 +788,7 @@ const App = () => {
                             </div>
 
                             <div className="space-y-6">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Panel de Estilos</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Panel de Estilos</label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <CustomSelect
                                         options={STYLE_GROUPS.ilustracion}
@@ -771,31 +810,57 @@ const App = () => {
                                         value={STYLE_GROUPS.grafico.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
                                         onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.grafico.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
                                     />
+                                    <CustomSelect
+                                        options={STYLE_GROUPS.fotografia}
+                                        value={STYLE_GROUPS.fotografia.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
+                                        onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.fotografia.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
+                                        className="col-span-2"
+                                    />
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Formato de Salida</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">Formato de Salida</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {ASPECT_RATIOS.map((ar) => (
                                         <button
                                             key={ar.id}
                                             onClick={() => setSelectedAR(ar.id)}
-                                            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all ${selectedAR === ar.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                            className={`aspect-ratio-button ${selectedAR === ar.id ? 'active' : ''}`}
                                         >
                                             <div className="flex items-center justify-center">{ar.icon}</div>
-                                            <span className="text-[9px] font-bold tracking-tighter">{ar.name}</span>
+                                            <span className="btn-canon text-[9px]">{ar.name}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
+                            {/* ── Selector de Modelo IA (canonico hoola) ── */}
+                            <div className="model-selector">
+                              <span className="model-selector-label">Modelo IA</span>
+                              <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                                {[
+                                  { id: 'gemini-flash', name: '3.1FLASH' },
+                                  { id: 'gemini-pro', name: '3 PRO' },
+                                  { id: 'flux-pro', name: 'FLUX PRO' },
+                                  { id: 'flux-max', name: 'FLUX MAX' }
+                                ].map(m => (
+                                  <button
+                                    key={m.id}
+                                    onClick={() => setSelectedModel(m.id)}
+                                    className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
+                                    aria-pressed={selectedModel === m.id}
+                                  >{m.name}</button>
+                                ))}
+                              </div>
+                            </div>
+
                             <div className="pt-6 order-last">
-                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-                                    {isGenerating ? 'PROCESANDO...' : 'GENERAR EDICIÓN'}
+                                    {isGenerating ? 'PROCESANDO...' : (mode === 'remix' ? 'GENERAR EDICIÓN' : 'GENERAR IMAGEN')}
                                 </button>
-                                {error && <p className="text-red-400 text-[10px] text-center mt-4 font-bold uppercase tracking-widest">{error}</p>}
+                                {error && <p className="btn-canon text-red-400 text-[11px] text-center mt-4">{error}</p>}
                             </div>
                         </aside>
 
@@ -803,8 +868,8 @@ const App = () => {
                             <div className="max-w-7xl mx-auto space-y-16">
                                 <div className="flex items-end justify-between">
                                     <div className="space-y-2">
-                                        <h2 className="text-4xl font-bold tracking-tight">Historial de Imágenes Editadas</h2>
-                                        <p className="text-gray-400 font-medium">Controla y refina tus creaciones visuales en tiempo real.</p>
+                                        <h2 className="section-title">{mode === 'remix' ? 'Historial de Imágenes Editadas' : 'Historial de Imágenes Generadas'}</h2>
+                                        <p className="empty-subtitle" style={{textAlign:'left', marginLeft:0, marginRight:0}}>Controla y refina tus creaciones visuales en tiempo real.</p>
                                     </div>
                                     {images.length > 0 && (
                                         <button onClick={handleClearHistory} className="px-4 py-2 glass rounded-2xl text-xs text-gray-400 hover:text-red-400 hover:border-red-500/30 transition-all flex items-center gap-2">
@@ -819,8 +884,8 @@ const App = () => {
                                             <ImageIcon size={48} />
                                         </div>
                                         <div className="space-y-2">
-                                            <h3 className="text-xl font-bold text-gray-400 tracking-tight">No hay imágenes aún</h3>
-                                            <p className="text-gray-600 max-w-sm mx-auto">Comienza por describir tu idea en el panel lateral.</p>
+                                            <h3 className="empty-title">No hay imágenes aún</h3>
+                                            <p className="empty-subtitle">Comienza por describir tu idea en el panel lateral.</p>
                                         </div>
                                     </div>
                                 ) : (
@@ -837,7 +902,7 @@ const App = () => {
                             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-2xl p-8 cursor-zoom-out" onClick={() => setLightboxImage(null)}>
                                 <div className="relative max-w-6xl w-full h-full flex flex-col items-center justify-center gap-8">
                                     <img src={lightboxImage.url} className="max-w-full max-h-[85vh] object-contain rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5" />
-                                    <div className="glass px-8 py-4 rounded-full flex gap-10 text-[11px] font-bold text-gray-400 tracking-widest uppercase">
+                                    <div className="glass px-8 py-4 rounded-full flex gap-10 text-[11px] text-gray-400 uppercase btn-canon" onClick={(e) => e.stopPropagation()}>
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
                                         <span>RES: {lightboxImage.size}</span>
                                         <span className="text-gray-600">ID: {lightboxImage.id}</span>
@@ -871,7 +936,7 @@ const App = () => {
                                                     className="w-full h-44 bg-black/20 border border-white/5 rounded-3xl p-6 text-sm outline-none resize-none focus:border-cyan-400 transition-all shadow-inner"
                                                 />
                                             </div>
-                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
+                                            <button onClick={handleEditSubmit} disabled={isGenerating || !editInstruction.trim()} className="btn-canon w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                                 {isGenerating ? <Loader2 className="animate-spin" /> : <Send size={20} />}
                                                 Aplicar Cambios
                                             </button>
@@ -889,5 +954,3 @@ const App = () => {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
-
-

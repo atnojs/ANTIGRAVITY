@@ -1,0 +1,95 @@
+/* ═══════════════════════════════════════════════
+   IMAGE STUDIO PRO — APP SPECIFIC
+   Solo estilos nuevos + refinamientos del original
+   ═══════════════════════════════════════════════ */
+
+/* ── Progress bar (app.js usa estas clases) ── */
+.progress-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(34, 211, 238, 0.15);
+    border-radius: 24px;
+    padding: 24px 32px;
+    min-width: 300px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: scaleIn 0.3s var(--ease-spring) both;
+}
+.progress-percentage {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+.progress-bar-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+    border-radius: 3px;
+    transition: width 0.5s var(--ease-out);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+}
+.progress-status {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ── Scrollbar custom (ya está en base.css, compatibilidad) ── */
+
+/* ── Image hover zoom (usado por app.js) ── */
+.group:hover .group-hover\:scale-105 {
+    transform: scale(1.05);
+}
+.group:hover .group-hover\:scale-110 {
+    transform: scale(1.10);
+}
+.transition-transform {
+    transition: transform 0.6s var(--ease-out);
+}
+
+/* ── Line clamp ── */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ── Animate pulse ── */
+.animate-pulse {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Backdrop blur ── */
+.backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Responsive spacing ── */
+@media (max-width: 768px) {
+    .progress-container {
+        min-width: auto;
+        padding: 20px;
+    }
+    .progress-percentage {
+        font-size: 1.6rem;
+    }
+}

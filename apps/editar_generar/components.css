@@ -1,342 +1,135 @@
 /* ═══════════════════════════════════════════════
-   IMAGE STUDIO PRO — COMPONENTS (Premium Neon Glass)
-   Compatible 100% con app.js original
+   SISTEMA DE DISEÑO CANÓNICO - COMPONENTES
    ═══════════════════════════════════════════════ */
 
-/* ── Glass surfaces ── */
+/* Glassmorphism */
 .glass {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
-    transition: all var(--duration-base) var(--ease-out);
+    background: var(--bg-card, rgba(0, 16, 24, 0.75));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-cyan, rgba(0, 208, 208, 0.45));
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 208, 208, 0.1);
 }
+
+.glass-hover {
+    transition: var(--transition-main, all 0.3s ease);
+}
+
 .glass-hover:hover {
-    border-color: rgba(34, 211, 238, 0.25);
-    box-shadow: var(--shadow-card), var(--shadow-glow-cyan);
+    border-color: #00D0D0 !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 208, 208, 0.3) !important;
     transform: translateY(-2px);
 }
+
 .glass-light {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-.glass-modal {
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid rgba(34, 211, 238, 0.15);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: var(--radius-xl);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), var(--shadow-glow-purple);
-}
-
-/* ── Buttons ── */
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #0EA5E9, #7C3AED);
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.03em;
-    border: none;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    transition: all var(--duration-base) var(--ease-out);
-    box-shadow: var(--shadow-button);
-    position: relative;
-    overflow: hidden;
-}
-.btn-primary::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent 60%);
-    opacity: 0;
-    transition: opacity var(--duration-fast);
-}
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 40px rgba(34, 211, 238, 0.4);
-}
-.btn-primary:hover::after { opacity: 1; }
-.btn-primary:active { transform: translateY(1px) scale(0.98); }
-.btn-primary:disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.75rem;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
-}
-.btn-secondary:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.btn-3d {
-    position: relative;
-    transition: all var(--duration-base) var(--ease-out);
-}
-.btn-3d:hover {
-    transform: translateY(-2px);
-}
-.btn-3d:active {
-    transform: translateY(1px) scale(0.98);
-}
-
-/* ── Cards ── */
-.card-interactive {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    overflow: hidden;
-    cursor: pointer;
-    transition: all var(--duration-base) var(--ease-out);
-}
-.card-interactive:hover {
-    border-color: rgba(34, 211, 238, 0.25);
-    box-shadow: var(--shadow-card), var(--shadow-glow-cyan);
-    transform: translateY(-4px);
-}
-.card-interactive:active { transform: translateY(-2px) scale(0.985); }
-
-.card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-md);
-    background: rgba(34, 211, 238, 0.1);
-    border: 1px solid rgba(34, 211, 238, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--duration-base) var(--ease-out);
-}
-.card-interactive:hover .card-icon {
-    background: rgba(34, 211, 238, 0.18);
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
-}
-
-/* ── Gallery ── */
-.gallery-item {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    transition: all var(--duration-base) var(--ease-out);
-}
-.gallery-item:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-card), var(--shadow-glow-purple);
-}
-
-/* ── Action button ── */
-.action-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(8px);
-}
-.action-btn:hover {
-    background: rgba(34, 211, 238, 0.15);
-    color: var(--neon-cyan);
-    border-color: rgba(34, 211, 238, 0.3);
-    transform: scale(1.1);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ── Loading Overlay ── */
-.loading-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    background: rgba(2, 6, 23, 0.85);
-    backdrop-filter: blur(4px);
-}
-.loading-text {
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-cyan);
-    text-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
-}
-.loading-bg-image {
-    position: absolute;
-    inset: 0;
-    object-fit: cover;
-    opacity: 0.3;
-    filter: blur(20px) saturate(0.5);
+/* 1. Cabeceras principales y pantalla inicial */
+h1, .splash-title {
+    text-transform: uppercase !important;
+    font-family: 'Electrolize', sans-serif !important;
+    font-size: clamp(2rem, 4vw, 3rem) !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.05em !important;
+    color: #00D0D0 !important;
+    text-shadow: 0 0 10px rgba(0, 208, 208, 0.8), 
+                 0 0 22px rgba(0, 208, 208, 0.5), 
+                 0 0 40px rgba(0, 208, 208, 0.25) !important;
+    margin-bottom: 0.5rem !important;
 }
 
-/* Triple ring spinner */
-.spinner-triple {
-    position: relative;
-    width: 64px;
-    height: 64px;
-}
-.ring {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 2px solid transparent;
-}
-.ring-1 {
-    border-top-color: var(--neon-cyan);
-    animation: spin 1s linear infinite;
-}
-.ring-2 {
-    inset: 8px;
-    border-right-color: var(--neon-purple);
-    animation: spin 0.7s linear infinite reverse;
-}
-.ring-3 {
-    inset: 16px;
-    border-bottom-color: var(--neon-pink);
-    animation: spin 0.5s linear infinite;
+/* 2. Subtítulos principales */
+.splash-subtitle, .app-subtitle {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 0.95rem !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.03em !important;
+    color: #99CCCC !important;
 }
 
-/* ── Input ── */
-.input-with-icon {
-    position: relative;
-}
-.input-with-icon input,
-.input-with-icon textarea {
-    width: 100%;
-    background: var(--bg-input);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--radius-md);
-    padding: 14px 16px;
-    color: var(--text-primary);
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    outline: none;
-    transition: all var(--duration-base) var(--ease-out);
-}
-.input-with-icon input:focus,
-.input-with-icon textarea:focus {
-    border-color: rgba(34, 211, 238, 0.4);
-    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.06);
-}
-.input-with-icon .icon {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    pointer-events: none;
+/* 3. Títulos de los botones de la pantalla inicial (Splash) */
+.btn-editar-imagen, 
+.btn-generar-imagenes, 
+.card-title {
+    font-family: 'Electrolize', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #00D0D0 !important;
+    text-shadow: 0 0 10px rgba(0, 208, 208, 0.8), 
+                 0 0 20px rgba(0, 208, 208, 0.5) !important;
 }
 
-/* ── Alerts ── */
-.alert {
-    padding: 12px 18px;
-    border-radius: var(--radius-md);
-    font-size: 0.8rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid;
-}
-.alert-error {
-    background: rgba(239, 68, 68, 0.08);
-    border-color: rgba(239, 68, 68, 0.2);
-    color: #FCA5A5;
-}
-.alert-success {
-    background: rgba(34, 197, 94, 0.08);
-    border-color: rgba(34, 197, 94, 0.2);
-    color: #86EFAC;
-}
-.alert-info {
-    background: rgba(34, 211, 238, 0.08);
-    border-color: rgba(34, 211, 238, 0.2);
-    color: #67E8F9;
+.card-desc {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 0.875rem !important;
+    color: #94a3b8 !important;
+    line-height: 1.5 !important;
 }
 
-/* ── Overlay (card actions on hover) ── */
-.overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(2,6,23,0.85) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity var(--duration-base) var(--ease-out);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 16px;
-    gap: 8px;
-}
-.card-interactive:hover .overlay,
-.gallery-item:hover .overlay { opacity: 1; }
-
-.overlay-actions {
-    display: flex;
-    gap: 8px;
+/* 4. Título del panel lateral del editor ("EDITAR IMAGEN") */
+aside h1, .aside-title {
+    font-family: 'Electrolize', sans-serif !important;
+    font-size: 1.4rem !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #00D0D0 !important;
+    text-shadow: 0 0 10px rgba(0, 208, 208, 0.8), 
+                 0 0 20px rgba(0, 208, 208, 0.5) !important;
+    margin: 0 !important;
 }
 
-/* ── Divider ── */
-.divider-text {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--text-muted);
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-.divider-text::before,
-.divider-text::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+/* 5. Título del historial ("HISTORIAL DE IMÁGENES...") */
+.section-title, h2.section-title {
+    font-family: 'Electrolize', sans-serif !important;
+    font-size: 1.8rem !important;
+    font-weight: 400 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #00D0D0 !important;
+    text-shadow: 0 0 10px rgba(0, 208, 208, 0.8), 
+                 0 0 22px rgba(0, 208, 208, 0.5),
+                 0 0 35px rgba(0, 208, 208, 0.25) !important;
+    margin-bottom: 0.25rem !important;
 }
 
-/* ── Spinner simple ── */
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-top-color: var(--neon-cyan);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+/* 6. Subtítulo del historial ("Controla y refina...") */
+.section-subtitle, p.section-subtitle {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 0.95rem !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.03em !important;
+    color: #99CCCC !important;
+    text-shadow: 0 0 8px rgba(0, 208, 208, 0.2) !important;
 }
 
-/* ── Shadow ── */
-.shadow-inner { box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4); }
+/* 7. Botones y bordes especiales */
+.btn-canon {
+    font-family: 'Electrolize', sans-serif !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+}
+
+.neon-border-purple {
+    border-color: rgba(0, 208, 208, 0.55) !important;
+}
+
+.neon-border-purple:focus {
+    border-color: #00D0D0 !important;
+    box-shadow: 0 0 15px rgba(0, 208, 208, 0.3) !important;
+}
+
+/* 8. Placeholders para las áreas de texto */
+textarea::placeholder,
+textarea::-webkit-input-placeholder {
+    color: #99CCCC !important;
+    opacity: 0.5 !important;
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 300 !important;
+}

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Studio Pro | Premium Edition</title>
+    <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon">
+
+    <!-- Fuentes premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React 18 UMD -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel standalone -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Sistema de Diseño Premium -->
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="app.css">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            document.body.innerHTML = '<div style="max-width:500px;margin:80px auto;background:#18181B;border:1px solid #27272A;border-radius:24px;padding:40px;color:#fff;font-family:Inter,sans-serif;text-align:center;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5)">' +
+                '<div style="font-size:48px;margin-bottom:16px">⚠️</div>' +
+                '<h1 style="font-size:1.5rem;font-weight:700;margin-bottom:8px">Error de Interfaz</h1>' +
+                '<p style="color:#A1A1AA;margin-bottom:16px">' + msg + '</p>' +
+                '<p style="font-size:0.75rem;color:#52525B">Line: ' + line + ':' + col + '</p>' +
+                '<pre style="text-align:left;font-size:0.7rem;color:#71717A;margin-top:16px;overflow:auto">' + (error ? error.stack : '') + '</pre>' +
+                '</div>';
+        };
+    </script>
+</head>
+
+<body>
+    <!-- Preloader: visible mientras Babel compila JSX y React monta -->
+    <div id="preloader" style="
+        position:fixed;inset:0;z-index:9999;display:flex;
+        flex-direction:column;align-items:center;justify-content:center;
+        background:#09090B;gap:20px;font-family:Inter,sans-serif;
+    ">
+        <div style="
+            width:48px;height:48px;border-radius:50%;
+            border:3px solid rgba(255,255,255,0.08);
+            border-top-color:#F59E0B;
+            animation:preloader-spin 0.8s linear infinite;
+        "></div>
+        <p style="color:#71717A;font-size:0.8rem;font-weight:500;letter-spacing:0.06em;">
+            CARGANDO IMAGE STUDIO PRO
+        </p>
+        <style>
+            @keyframes preloader-spin { to { transform: rotate(360deg); } }
+        </style>
+    </div>
+
+    <div id="root"></div>
+
+    <!-- Scripts: cargan en orden. Babel compila app.js y React reemplaza #root -->
+    <script type="text/babel" src="app.js"></script>
+
+    <!-- Ocultar preloader cuando React monte -->
+    <script>
+        // Fallback: ocultar preloader después de 8s si React no montó
+        setTimeout(function() {
+            var pl = document.getElementById('preloader');
+            var root = document.getElementById('root');
+            if (pl && root && root.innerHTML.trim() === '') {
+                pl.innerHTML = '<div style="text-align:center;color:#A1A1AA">' +
+                    '<p style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:#F59E0B">⚡ Carga lenta detectada</p>' +
+                    '<p style="font-size:0.8rem;margin-bottom:16px">Las dependencias CDN pueden tardar en conexiones lentas.</p>' +
+                    '<p style="font-size:0.7rem;color:#52525B">Recarga la página o verifica tu conexión.</p>' +
+                    '</div>';
+            }
+        }, 8000);
+
+        // Ocultar preloader inmediatamente si React ya montó
+        var checkReact = setInterval(function() {
+            var root = document.getElementById('root');
+            if (root && root.children.length > 0) {
+                var pl = document.getElementById('preloader');
+                if (pl) { pl.style.display = 'none'; }
+                clearInterval(checkReact);
+            }
+        }, 100);
+    </script>
+
+    <!-- Fallback si JS está desactivado -->
+    <noscript>
+        <div style="
+            position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+            background:#09090B;color:#A1A1AA;font-family:Inter,sans-serif;text-align:center;
+        ">
+            <div>
+                <p style="font-size:1.5rem;font-weight:700;color:#F59E0B;margin-bottom:12px">JavaScript Requerido</p>
+                <p style="font-size:0.85rem">Image Studio Pro necesita JavaScript para funcionar.</p>
+            </div>
+        </div>
+    </noscript>
+</body>
+
+</html>

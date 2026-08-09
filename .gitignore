@@ -119,3 +119,6 @@ apps/decorar_habitacion/crops/
 # Ignorar copias de seguridad y pruebas temporales
 copias_de_seguridad_de_archivos/
 *.backup_*
+
+# Repo embebido dentro del respaldo de la antigua app (no versionar)
+apps/editar_generar_1/5/
