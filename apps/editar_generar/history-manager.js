@@ -181,6 +181,8 @@
           aspectRatio: item.aspectRatio || '1:1',
           size: item.size || '',
           calidad: item.calidad || 'pro',
+          model: item.model || '',
+          mode: item.mode || 'remix',
           createdAt: item.createdAt || Date.now(),
           imageData: item.url || ''
         })

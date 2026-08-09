@@ -185,79 +185,57 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
-// --- HISTORIAL PERSISTENTE CON INDEXEDDB FILTRADO POR MODO ---
-const DB_NAME = 'editar_imagenes_db';
-const DB_VERSION = 1;
-const STORE_NAME = 'history';
-
-let historyDb = null;
-
-const openHistoryDb = () => new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => { historyDb = request.result; resolve(historyDb); };
-    request.onupgradeneeded = (e) => {
-        const database = e.target.result;
-        if (!database.objectStoreNames.contains(STORE_NAME)) {
-            database.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        }
-    };
-});
+// --- HISTORIAL PERSISTENTE (HistoryManager: IndexedDB + servidor) ---
+// El servidor (history.php) es la fuente de verdad; IndexedDB es caché local.
+let historyManagerReady = false;
+const ensureHistoryManager = async () => {
+    if (historyManagerReady) return;
+    if (typeof window.HistoryManager === 'undefined') {
+        console.warn('HistoryManager no cargado; historial solo en sesión.');
+        return;
+    }
+    window.HistoryManager.configure({ dbName: 'editar_generar_history', maxItems: 200 });
+    await window.HistoryManager.init();
+    historyManagerReady = true;
+};
 
 const loadHistoryFromDb = async (mode) => {
     try {
-        if (!historyDb) await openHistoryDb();
-        return new Promise((resolve, reject) => {
-            const tx = historyDb.transaction(STORE_NAME, 'readonly');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.getAll();
-            req.onsuccess = () => {
-                const items = (req.result || []).filter(item => (item.mode || 'remix') === mode);
-                items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                resolve(items);
-            };
-            req.onerror = () => reject(req.error);
-        });
+        await ensureHistoryManager();
+        if (!historyManagerReady) return [];
+        const items = await window.HistoryManager.loadAll();
+        return items
+            .filter(item => (item.mode || 'remix') === mode)
+            .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     } catch (e) { console.warn('Error cargando historial:', e); return []; }
 };
 
 const saveHistoryItemToDb = async (item) => {
     try {
-        if (!historyDb) await openHistoryDb();
-        return new Promise((resolve, reject) => {
-            const tx = historyDb.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.put(item);
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-        });
+        await ensureHistoryManager();
+        if (!historyManagerReady) return;
+        await window.HistoryManager.saveItem(item);
     } catch (e) { console.warn('Error guardando item:', e); }
 };
 
 const deleteHistoryItemFromDb = async (id) => {
     try {
-        if (!historyDb) await openHistoryDb();
-        return new Promise((resolve, reject) => {
-            const tx = historyDb.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            const req = store.delete(id);
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-        });
+        await ensureHistoryManager();
+        if (!historyManagerReady) return;
+        await window.HistoryManager.deleteItem(id);
     } catch (e) { console.warn('Error eliminando item:', e); }
 };
 
 const clearHistoryFromDb = async (mode) => {
     try {
-        if (!historyDb) await openHistoryDb();
-        const allItems = await new Promise((resolve) => {
-            const tx = historyDb.transaction(STORE_NAME, 'readonly');
-            const req = tx.objectStore(STORE_NAME).getAll();
-            req.onsuccess = () => resolve(req.result || []);
-        });
-        const txDelete = historyDb.transaction(STORE_NAME, 'readwrite');
-        const store = txDelete.objectStore(STORE_NAME);
-        allItems.filter(i => (i.mode || 'remix') === mode).forEach(i => store.delete(i.id));
+        await ensureHistoryManager();
+        if (!historyManagerReady) return;
+        // Borra todos los items del modo actual; el resto se conserva.
+        const allItems = await window.HistoryManager.loadAll();
+        const ids = allItems.filter(i => (i.mode || 'remix') === mode).map(i => i.id);
+        for (const id of ids) {
+            await window.HistoryManager.deleteItem(id);
+        }
     } catch (e) { console.warn('Error limpiando historial:', e); }
 };
 
@@ -421,10 +399,10 @@ const CustomSelect = ({ options, value, onChange, className }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'} hover:border-cyan-400/70 hover:bg-white/5 hover:shadow-[0_0_15px_rgba(0,208,208,0.3)] focus:border-cyan-400`}
+                className={`ar-effect w-full p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between rounded-xl ${isOpen ? 'active' : (isPlaceholder ? 'opacity-60' : '')}`}
             >
-                <span className={isPlaceholder ? 'text-gray-500' : 'text-gray-200'}>{selectedOption.name}</span>
-                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span className={isPlaceholder ? 'text-gray-500' : ''}>{selectedOption.name}</span>
+                <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
@@ -830,7 +808,7 @@ const App = () => {
 </div>
                             <button
                                 onClick={() => setView('splash')}
-                                className="w-full py-3 mb-4 bg-transparent border border-cyan-500/30 hover:border-cyan-400/70 hover:bg-cyan-500/10 text-cyan-400 text-sm font-medium rounded-xl transition-all hover:shadow-[0_0_15px_rgba(0,208,208,0.3)]"
+                                className="ar-effect w-full py-3 mb-4 text-sm font-medium rounded-xl flex items-center justify-center gap-2"
                             >
                                 ← Volver
                             </button>

@@ -110,6 +110,8 @@ if ($method === 'POST') {
         'aspectRatio' => (string)($req['aspectRatio'] ?? '1:1'),
         'size'        => (string)($req['size'] ?? ''),
         'calidad'     => (string)($req['calidad'] ?? 'normal'),
+        'model'       => (string)($req['model'] ?? ''),
+        'mode'        => (string)($req['mode'] ?? 'remix'),
         'targetPx'    => isset($req['targetPx']) ? (int)$req['targetPx'] : null,
         'downloadPx'  => isset($req['downloadPx']) ? (int)$req['downloadPx'] : null,
         'createdAt'   => (int)($req['createdAt'] ?? 0),
