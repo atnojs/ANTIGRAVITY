@@ -9,6 +9,15 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
+// CORS y OPTIONS
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 // ===== Claves =====
 function getKey(string $name): string {
     $config = __DIR__ . '/config.php';
@@ -40,6 +49,92 @@ if (json_last_error()!==JSON_ERROR_NONE || !is_array($data)) {
     http_response_code(400);
     echo json_encode(['error'=>['message'=>'JSON invalido']]);
     exit;
+}
+
+// ====================================================================
+// ACCIÓN TEXTO (mejorador de prompts vía OpenRouter)
+// Contrato: {action:'text', prompt, system?, model?} -> {success, text, model}
+// ====================================================================
+$action = strtolower((string)($data['action'] ?? ''));
+if ($action === 'text' || $action === 'openrouter') {
+    if ($orKey === '') {
+        http_response_code(500);
+        echo json_encode(['error'=>['message'=>'Clave OpenRouter (R) no configurada.']]);
+        exit;
+    }
+    $textPrompt = trim((string)($data['prompt'] ?? ''));
+    if ($textPrompt === '' && isset($data['contents'][0]['parts'])) {
+        foreach ($data['contents'][0]['parts'] as $part) {
+            if (!empty($part['text'])) { $textPrompt = trim((string)$part['text']); break; }
+        }
+    }
+    if ($textPrompt === '') {
+        http_response_code(400);
+        echo json_encode(['error'=>['message'=>'Falta el campo "prompt" para texto.']]);
+        exit;
+    }
+    $systemText = trim((string)($data['system'] ?? ''));
+    $textModel = trim((string)($data['model'] ?? 'openrouter/auto'));
+    if ($textModel === '' || strlen($textModel) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $textModel) !== 1) {
+        $textModel = 'openrouter/auto';
+    }
+    $messages = [];
+    if ($systemText !== '') $messages[] = ['role' => 'system', 'content' => $systemText];
+    $messages[] = ['role' => 'user', 'content' => $textPrompt];
+
+    $payload = ['model' => $textModel, 'messages' => $messages, 'stream' => false];
+    $temp = (float)($data['temperature'] ?? 0.7);
+    if ($temp >= 0.0 && $temp <= 2.0) $payload['temperature'] = $temp;
+    if (isset($data['max_tokens']) && is_numeric($data['max_tokens'])) {
+        $payload['max_tokens'] = max(1, min(32768, (int)$data['max_tokens']));
+    }
+
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $orKey, 'accept: application/json'],
+        CURLOPT_TIMEOUT => 120, CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
+    if ($err) { http_response_code(502); echo json_encode(['error'=>['message'=>'Error OpenRouter: '.$err]]); exit; }
+    if ($code >= 400) {
+        $eb = json_decode($resp, true); $em = $eb['error']['message'] ?? $eb['error'] ?? ('HTTP '.$code);
+        if (is_array($em)) $em = json_encode($em);
+        http_response_code($code); echo json_encode(['error'=>['message'=>'OpenRouter: '.$em]]); exit;
+    }
+    $jr = json_decode($resp, true);
+    $content = $jr['choices'][0]['message']['content'] ?? '';
+    if (is_array($content)) {
+        $content = implode("\n", array_map(static fn($p) => is_array($p) ? ($p['text'] ?? '') : (string)$p, $content));
+    }
+    echo json_encode(['success' => true, 'text' => (string)$content, 'model' => (string)($jr['model'] ?? $textModel)]);
+    exit;
+}
+
+// ===== Relación de aspecto y resolución =====
+$aspectRatio = (string)($data['aspectRatio'] ?? ($data['generationConfig']['imageConfig']['aspectRatio'] ?? '1:1'));
+$allowedAspects = ['1:1','3:4','4:3','16:9','9:16','21:9'];
+if (!in_array($aspectRatio, $allowedAspects, true)) $aspectRatio = '1:1';
+$resolution = strtoupper((string)($data['resolution'] ?? '1K'));
+if (!in_array($resolution, ['512','1K','2K','4K'], true)) $resolution = '1K';
+$targetPx = 1024;
+if ($resolution === '512') $targetPx = 512;
+elseif ($resolution === '2K' || $resolution === '4K') $targetPx = 2048;
+$MAX_PX = 4194304; // 4 MP
+$ratioParts = explode(':', $aspectRatio);
+$ratioW = max(1.0, (float)($ratioParts[0] ?? 1));
+$ratioH = max(1.0, (float)($ratioParts[1] ?? 1));
+if ($ratioW >= $ratioH) { $width = $targetPx; $height = $targetPx * $ratioH / $ratioW; }
+else { $height = $targetPx; $width = $targetPx * $ratioW / $ratioH; }
+if ($width * $height > $MAX_PX) {
+    $scale = sqrt($MAX_PX / ($width * $height));
+    $width *= $scale; $height *= $scale;
+}
+$width = max(256, (int)(round($width / 32) * 32));
+$height = max(256, (int)(round($height / 32) * 32));
+while ($width * $height > $MAX_PX) {
+    if ($width >= $height) $width -= 32; else $height -= 32;
 }
 
 $prompt = trim((string)($data['prompt'] ?? ''));
@@ -95,7 +190,7 @@ if ($backend === 'flux') {
         exit;
     }
 
-    $payload = ['prompt' => $prompt, 'width' => 1024, 'height' => 1024];
+    $payload = ['prompt' => $prompt, 'width' => $width, 'height' => $height];
     if ($imagenEntrada !== '') {
         $b64 = $imagenEntrada;
         if (strpos($b64, ',') !== false) $b64 = substr($b64, strpos($b64, ',') + 1);
@@ -154,33 +249,43 @@ if ($imagenEntrada !== '') {
     elseif (strpos($imagenEntrada, 'data:image/webp')===0) $mime='image/webp';
     $b64 = $imagenEntrada;
     if (strpos($b64, ',') !== false) $b64 = substr($b64, strpos($b64, ',')+1);
-    $content = [
-        ['type'=>'text', 'text'=>$prompt],
-        ['type'=>'image_url', 'image_url'=>['url'=>'data:'.$mime.';base64,'.$b64]],
-    ];
-} else {
-    $content = $prompt;
 }
 
-$payload = ['model'=>$geminiModelId, 'modalities'=>['image','text'], 'messages'=>[['role'=>'user','content'=>$content]], 'max_tokens'=>8000];
+$payload = [
+    'model' => $geminiModelId,
+    'prompt' => $prompt,
+    'aspect_ratio' => $aspectRatio,
+    'resolution' => $resolution,
+    'output_format' => 'png'
+];
+if ($imagenEntrada !== '') {
+    $imageDataUrl = $imagenEntrada;
+    if (strpos($imageDataUrl, 'data:image/') !== 0) {
+        $imageDataUrl = 'data:' . $mime . ';base64,' . $b64;
+    }
+    $payload['input_references'] = [[
+        'type' => 'image_url',
+        'image_url' => ['url' => $imageDataUrl]
+    ]];
+}
 
-$ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+$ch = curl_init('https://openrouter.ai/api/v1/images');
 curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>json_encode($payload),
-    CURLOPT_HTTPHEADER=>['Content-Type: application/json', 'Authorization: Bearer '.$orKey],
-    CURLOPT_TIMEOUT=>120, CURLOPT_CONNECTTIMEOUT=>15,
+    CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $orKey],
+    CURLOPT_TIMEOUT => 180, CURLOPT_CONNECTTIMEOUT => 15,
 ]);
 $resp = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
 if ($err) { http_response_code(502); echo json_encode(['error'=>['message'=>'Error OpenRouter: '.$err]]); exit; }
-if ($code>=400) {
-    $eb = json_decode($resp, true); $em = $eb['error']['message']??$eb['error']??('HTTP '.$code);
-    if (is_array($em)) $em = json_encode($em);
-    http_response_code($code); echo json_encode(['error'=>['message'=>'OpenRouter: '.$em]]); exit;
-}
 $jr = json_decode($resp, true);
-$images = $jr['choices'][0]['message']['images'] ?? [];
-if (empty($images)) { http_response_code(502); echo json_encode(['error'=>['message'=>'Gemini no devolvio imagen.']]); exit; }
-$imgDataUrl = $images[0]['image_url']['url'] ?? '';
-if ($imgDataUrl==='' || strpos($imgDataUrl, 'data:')!==0) { http_response_code(502); echo json_encode(['error'=>['message'=>'Gemini devolvio URL en lugar de imagen.']]); exit; }
-$imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',')+1);
-echo json_encode(['success'=>true, 'imageUrl'=>'data:image/png;base64,'.$imgB64, 'model'=>$geminiModelId]);
+if ($code >= 400 || !is_array($jr)) {
+    $em = $jr['error']['message'] ?? $jr['error'] ?? ('HTTP '.$code);
+    if (is_array($em)) $em = json_encode($em);
+    http_response_code($code >= 400 ? $code : 502);
+    echo json_encode(['error'=>['message'=>'OpenRouter: '.$em]]); exit;
+}
+$imageBase64 = (string)($jr['data'][0]['b64_json'] ?? '');
+if ($imageBase64 === '') { http_response_code(502); echo json_encode(['error'=>['message'=>'Gemini no devolvio imagen.']]); exit; }
+$mediaType = (string)($jr['data'][0]['media_type'] ?? 'image/png');
+echo json_encode(['success'=>true, 'imageUrl'=>'data:'.$mediaType.';base64,'.$imageBase64, 'model'=>$geminiModelId]);

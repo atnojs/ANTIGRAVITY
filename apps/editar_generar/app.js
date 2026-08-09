@@ -50,9 +50,19 @@ const RefreshCw = (p) => <Icon name="refresh-cw" {...p} />;
 const MessageSquare = (p) => <Icon name="message-square" {...p} />;
 const Download = (p) => <Icon name="download" {...p} />;
 const Share2 = (p) => <Icon name="share-2" {...p} />;
+const Copy = (p) => <Icon name="copy" {...p} />;
+const Check = (p) => <Icon name="check" {...p} />;
 
 // --- CONSTANTES ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
+
+const MODEL_LABELS = {
+    'gemini-flash': '3.1FLASH',
+    'gemini-pro': '3 PRO',
+    'flux-pro': 'FLUX PRO',
+    'flux-max': 'FLUX MAX'
+};
+const getModelLabel = (m) => MODEL_LABELS[m] || m || '—';
 
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
@@ -276,31 +286,37 @@ const callProxy = async (model, contents, config = {}, promptText = '') => {
 
 const enhancePrompt = async (basePrompt) => {
     try {
-        const systemInstructions = `ERES UN EXPERTO EN MEJORA DE PROMPTS PARA GENERACIÓN DE IMÁGENES.
-TU REGLA DE ORO ES: RESPETA ESTRICTAMENTE LA INTENCIÓN DEL USUARIO.
+        const systemInstructions = `Eres un experto en mejora de prompts para generación de imágenes.
+Regla de oro: respeta estrictamente la intención del usuario.
 Instrucciones:
 1. NO inventes sujetos nuevos.
 2. NO cambies el entorno drásticamente.
-3. Céntrate en añadir detalles técnicos de calidad para que el prompt sea más efectivo.
+3. Añade detalles técnicos de calidad para que el prompt sea más efectivo.
+4. Trabaja siempre en español.
 
-Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (Descriptiva, Cinematográfica, Artística, y Minimalista) siguiendo estas reglas estrictas.`;
-        const contents = [{ parts: [{ text: systemInstructions }] }];
-        const config = {
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: { type: { type: "STRING" }, text: { type: "STRING" } },
-                        required: ["type", "text"]
-                    }
-                }
-            }
-        };
-        const result = await callProxy('flux', contents, config);
-        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-        return text ? JSON.parse(text) : [];
+Genera 4 variantes del prompt "${basePrompt}" siguiendo estas reglas estrictas:
+- Descriptiva: descripción rica y detallada de la escena.
+- Cinematográfica: estilo de cine, iluminación y composición dramáticas.
+- Artística: interpretación creativa con estilo pictórico o ilustrado.
+- Minimalista: versión limpia, esencial y directa.
+
+Responde SOLO con un JSON válido, sin texto adicional, con esta estructura:
+[{"type":"Descriptiva","text":"..."},{"type":"Cinematográfica","text":"..."},{"type":"Artística","text":"..."},{"type":"Minimalista","text":"..."}]`;
+        const result = await callProxy('', [], {
+            action: 'text',
+            system: systemInstructions,
+            model: 'openrouter/auto',
+            temperature: 0.7,
+            max_tokens: 2000
+        }, basePrompt);
+        if (!result?.success || !result?.text) return [];
+        const raw = String(result.text || '').trim();
+        // Extraer el array JSON de la respuesta (puede venir rodeado de texto/markdown)
+        const match = raw.match(/\[[\s\S]*\]/);
+        const jsonText = match ? match[0] : raw;
+        const parsed = JSON.parse(jsonText);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(p => p && p.type && p.text);
     } catch (e) {
         console.error("Failed to enhance prompt", e);
         return [];
@@ -331,6 +347,8 @@ const generateImage = async (params) => {
     }
     const contents = [{ parts }];
     const config = {
+        aspectRatio: params.aspectRatio,
+        resolution: '1K',
         generationConfig: {
             imageConfig: {
                 aspectRatio: params.aspectRatio
@@ -354,7 +372,7 @@ const editImageConversation = async (params) => {
             { text: params.instruction }
         ]
     }];
-    const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
+    const config = { aspectRatio: params.aspectRatio, resolution: '1K', generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
     const result = await callProxy('flux', contents, config);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "Error en la edición conversacional");
@@ -436,6 +454,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
 };
 
 const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
+    const [copied, setCopied] = useState(false);
     const handleDownload = (e) => {
         e.stopPropagation();
         const link = document.createElement('a');
@@ -444,11 +463,32 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
         link.click();
     };
 
+    const handleCopyPrompt = (e) => {
+        e.stopPropagation();
+        const text = image.prompt || '';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1600);
+            }).catch(() => {});
+        } else {
+            // Fallback para contextos sin Clipboard API
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (err) {}
+            document.body.removeChild(ta);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1600);
+        }
+    };
+
     return (
         <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
             <div className="absolute top-4 left-4 z-10">
                 <div className="px-3 py-1 glass rounded-full text-[9px] uppercase text-white/90 border-white/5 backdrop-blur-md btn-canon">
-                    {image.style ? image.style.name : 'Estilo'} | {image.aspectRatio}
+                    {image.style ? image.style.name : 'Estilo'} | {image.aspectRatio} | {getModelLabel(image.model)}
                 </div>
             </div>
             <div className="relative aspect-square bg-slate-950 overflow-hidden flex items-center justify-center">
@@ -492,9 +532,20 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
             </div>
 
             <div className="p-4 bg-slate-900/80 backdrop-blur-md flex flex-col gap-1 border-t border-white/5">
-                <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight italic">
-                    {image.prompt}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                    <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight italic flex-1">
+                        {image.prompt}
+                    </p>
+                    <button
+                        onClick={handleCopyPrompt}
+                        title="Copiar prompt"
+                        aria-label="Copiar prompt al portapapeles"
+                        className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-[9px] uppercase transition-all border ${copied ? 'text-green-400 border-green-500/40 bg-green-500/10' : 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/25'}`}
+                    >
+                        {copied ? <Check size={11} /> : <Copy size={11} />}
+                        {copied ? '¡Copiado!' : 'Copiar'}
+                    </button>
+                </div>
                 <div className="text-[9px] text-gray-600 uppercase mt-1 btn-canon">
                     {new Date(image.createdAt).toLocaleTimeString()}
                 </div>
@@ -582,6 +633,9 @@ const App = () => {
     const handleStart = (m) => {
         setMode(m);
         setView('editor');
+        // Al cambiar de modo se limpia el prompt para que la edición y la generación no se mezclen.
+        setPrompt('');
+        setEditInstruction('');
         if (m === 'text-to-image') setRemixSource(null);
         setError(null);
     };
@@ -657,6 +711,7 @@ const App = () => {
                 prompt: effectivePrompt || 'Edición de imagen',
                 style: selectedStyle,
                 aspectRatio: selectedAR,
+                model: selectedModel,
                 size: '1K',
                 mode: mode,
                 createdAt: Date.now()
@@ -670,7 +725,7 @@ const App = () => {
             setError(err.message || "Error de generación");
         } finally {
             setTimeout(() => { setIsGenerating(false); setProgress(0); setProgressStatus(''); }, 400);
-            setPrompt("");
+            // El prompt se conserva para poder reutilizarlo en la siguiente generación.
             setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
             setSelectedAR(AspectRatio.SQUARE);
         }
@@ -691,6 +746,7 @@ const App = () => {
         setPrompt(img.prompt);
         if (img.style) setSelectedStyle(img.style);
         setSelectedAR(img.aspectRatio);
+        if (img.model) setSelectedModel(img.model);
         handleGenerate(img.prompt);
     };
 
@@ -709,7 +765,7 @@ const App = () => {
                 instruction: editInstruction,
                 aspectRatio: editImage.aspectRatio
             });
-            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, mode: mode, createdAt: Date.now() };
+            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, mode: mode, model: selectedModel, createdAt: Date.now() };
             await saveHistoryItemToDb(updatedImage);
             setImages([updatedImage, ...images]);
             setEditImage(null);
@@ -904,6 +960,7 @@ const App = () => {
                                     <img src={lightboxImage.url} className="max-w-full max-h-[85vh] object-contain rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5" />
                                     <div className="glass px-8 py-4 rounded-full flex gap-10 text-[11px] text-gray-400 uppercase btn-canon" onClick={(e) => e.stopPropagation()}>
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
+                                        <span className="text-cyan-400">{getModelLabel(lightboxImage.model)}</span>
                                         <span>RES: {lightboxImage.size}</span>
                                         <span className="text-gray-600">ID: {lightboxImage.id}</span>
                                     </div>
