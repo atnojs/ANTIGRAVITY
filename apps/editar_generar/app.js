@@ -416,10 +416,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
                                     onChange(opt.id);
                                     setIsOpen(false);
                                 }}
-                                className={`w-full px-4 py-3 text-left text-xs transition-all flex items-center gap-3 ${opt.id === value
-                                    ? 'bg-cyan-500/20 text-cyan-400 border-l-2 border-cyan-400'
-                                    : 'text-gray-300 hover:bg-white/5 hover:text-cyan-400 border-l-2 border-transparent'
-                                    }`}
+                                className={`dropdown-option ${opt.id === value ? 'active' : ''}`}
                             >
                                 {opt.name}
                             </button>
@@ -808,7 +805,8 @@ const App = () => {
 </div>
                             <button
                                 onClick={() => setView('splash')}
-                                className="ar-effect w-full py-3 mb-4 text-sm font-medium rounded-xl flex items-center justify-center gap-2"
+                                className="ar-effect self-start -mt-8 mb-2 px-3 py-1.5 text-xs font-medium rounded-lg flex items-center gap-1.5"
+                                title="Volver al inicio"
                             >
                                 ← Volver
                             </button>

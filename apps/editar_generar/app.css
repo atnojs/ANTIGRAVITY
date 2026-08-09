@@ -773,3 +773,20 @@ textarea:focus-visible {
   background:linear-gradient(135deg,var(--contenedor),rgba(0,208,208,.55));
   text-shadow:0 0 8px var(--glow);box-shadow:0 0 16px var(--glow-soft);
 }
+
+/* Opciones del desplegable: mismo lenguaje hover/activo que AR y Volver */
+.dropdown-option{
+  width:100%;padding:.75rem 1rem;text-align:left;font-size:.75rem;
+  display:flex;align-items:center;gap:.75rem;cursor:pointer;
+  border-left:2px solid transparent;transition:all .25s ease;
+  color:var(--muted);background:transparent;
+}
+.dropdown-option:hover{
+  color:var(--text);border-color:var(--border-strong);
+  background:var(--card-hover);box-shadow:0 0 12px var(--glow-soft);
+}
+.dropdown-option.active{
+  color:#CCFFFF;border-color:var(--border-strong);
+  background:linear-gradient(135deg,var(--contenedor),rgba(0,208,208,.55));
+  text-shadow:0 0 8px var(--glow);
+}
