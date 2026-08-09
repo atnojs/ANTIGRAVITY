@@ -401,7 +401,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
                 onClick={() => setIsOpen(!isOpen)}
                 className={`ar-effect w-full p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between rounded-xl ${isOpen || !isPlaceholder ? 'active' : 'opacity-60'}`}
             >
-                <span className={isPlaceholder ? 'text-gray-500' : ''}>{selectedOption.name}</span>
+                <span>{selectedOption.name}</span>
                 <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>

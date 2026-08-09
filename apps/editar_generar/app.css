@@ -762,11 +762,13 @@ textarea:focus-visible {
 /* Efecto AR compartido: botón Volver y desplegables (mismo lenguaje que aspect-ratio-button) */
 .ar-effect{
   border:1px solid rgba(0,208,208,.28);background:var(--card-bg);
-  color:var(--muted);transition:all .25s ease;box-shadow:inset 0 0 12px rgba(0,208,208,.05);
+  color:var(--text);transition:all .25s ease;box-shadow:inset 0 0 12px rgba(0,208,208,.05);
 }
 .ar-effect:hover{
-  color:var(--text);border-color:var(--border-strong);
-  background:var(--card-hover);box-shadow:0 0 12px var(--glow-soft);
+  color:#CCFFFF;border-color:var(--border-strong);
+  background:var(--card-hover);
+  text-shadow:0 0 8px var(--glow);
+  box-shadow:0 0 16px var(--glow-soft);
 }
 .ar-effect.active{
   color:#CCFFFF;border-color:var(--border-strong);
@@ -779,11 +781,13 @@ textarea:focus-visible {
   width:100%;padding:.75rem 1rem;text-align:left;font-size:.75rem;
   display:flex;align-items:center;gap:.75rem;cursor:pointer;
   border-left:2px solid transparent;transition:all .25s ease;
-  color:var(--muted);background:transparent;
+  color:var(--text);background:transparent;
 }
 .dropdown-option:hover{
-  color:var(--text);border-color:var(--border-strong);
-  background:var(--card-hover);box-shadow:0 0 12px var(--glow-soft);
+  color:#CCFFFF;border-color:var(--border-strong);
+  background:var(--card-hover);
+  text-shadow:0 0 8px var(--glow);
+  box-shadow:0 0 16px var(--glow-soft);
 }
 .dropdown-option.active{
   color:#CCFFFF;border-color:var(--border-strong);
