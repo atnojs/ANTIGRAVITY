@@ -244,19 +244,18 @@ El trabajo solo está terminado cuando el resultado es utilizable, está validad
 
 ---
 
-## Selector de Modelo IA: patrón canónico de barra segmentada
+## Selector de Modelo IA: patrón canónico de toggles pill hoola
 
 Aplicar este patrón en toda app de generación o edición de imágenes que ofrezca varios modelos.
 
 ### Estilo (única especificación)
 
-El campo selector de modelo IA es una **barra segmentada unificada** (estilo captura validado por Antonio, 2026-08-08):
+El campo selector de modelo IA es una **barra de toggles pill unificada** (estilo validado por Antonio, 2026-08-09, implementado en `apps/imagenes_ia/editar_copia`):
 
-- **Un solo contenedor** con borde cian glow `#00D0D0` (halo exterior suave), NO botones individuales separados.
-- **Fondo transparente** (vidrio translúcido; se ve el fondo de la app a través).
-- **Segmentos** separados entre sí por **líneas divisorias finas** dentro de la misma barra.
-- Los 4 segmentos reparten el 100 % del ancho de forma equitativa (`grid-template-columns: repeat(4, minmax(0,1fr))`), sin desbordar el panel.
-- Estados: el segmento activo se resalta con la paleta Hoola (cian/verde + glow); los inactivos, texto `var(--muted)` sobre fondo transparente.
+- **Un solo contenedor** de vidrio azulado `var(--card-bg)` con borde cian `var(--border)`, radio de píldora (`999px`), halo exterior suave y `gap:.5rem` entre botones. NO botones individuales separados fuera de la barra.
+- **Botones pill** con `padding:.55rem 1rem`, borde transparente por defecto, texto `var(--muted)`, tipografía Electrolize y `text-transform:uppercase`.
+- **Estados**: el segmento activo se resalta con gradiente `var(--contenedor) → var(--acc)` (cian) y texto `#CCFFFF` con glow; los inactivos, texto `var(--muted)` sobre fondo transparente.
+- **NO usar estados separados flux/gemini**: el activo es único para los 4 modelos (sin clases `flux`/`gemini` en el HTML).
 
 ### Orden de los modelos (menor → mayor capacidad)
 
@@ -283,6 +282,8 @@ No cambiar este orden ni el estado inicial: **3 PRO por defecto**.
 </div>
 ```
 
+No añadir clases `flux`/`gemini` a los botones: el activo se marca únicamente con `active`.
+
 ### Tokens Hoola requeridos
 
 Verificar que existan estos tokens. Si faltan, añadirlos al `:root` de la app de destino; no sustituirlos por un fondo negro:
@@ -304,48 +305,42 @@ Verificar que existan estos tokens. Si faltan, añadirlos al `:root` de la app d
 }
 ```
 
-### CSS canónico responsive (barra segmentada transparente)
+### CSS canónico responsive (toggles pill hoola)
 
-Copiar este bloque completo. La cuadrícula de cuatro columnas y `minmax(0,1fr)` son obligatorios para impedir que el campo desborde el panel.
+Copiar este bloque completo, idéntico al implementado en `apps/imagenes_ia/editar_copia`:
 
 ```css
 .model-selector {
   display:flex; flex-direction:column; align-items:center; gap:.6rem;
-  margin:2rem auto 1.2rem; width:100%;
-  max-width:min(900px, 100%);
-  box-sizing:border-box;
+  margin:1.8rem 0 1.2rem; width:100%;
 }
 .model-selector-label {
-  color:var(--muted); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
 }
 .model-toggle-group {
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.25rem;
-  width:100%; max-width:100%; box-sizing:border-box;
-  padding:.35rem; border-radius:999px;
-  background:rgba(6,16,24,.35); backdrop-filter:blur(8px);
-  border:1px solid var(--border-strong);
-  box-shadow:0 0 14px var(--glow-soft);
+  display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
+  background:var(--card-bg); border:1px solid var(--border);
+  box-shadow:0 0 12px var(--glow-soft);
 }
 .model-toggle {
-  min-width:0; padding:.45rem .3rem;
-  border:none; border-radius:999px;
+  font-family:var(--font-ui); font-size:.9rem; letter-spacing:0.04em;
+  padding:.55rem 1rem; border-radius:999px; border:1px solid transparent;
   background:transparent; color:var(--muted); cursor:pointer;
-  font-family:var(--font-ui); font-size:clamp(.62rem,1.6vw,.78rem);
-  line-height:1.2; letter-spacing:.03em; text-transform:uppercase; white-space:nowrap;
-  transition:all .25s ease;
+  transition:all .25s ease; text-transform:uppercase; white-space:nowrap;
 }
 .model-toggle:hover {
-  color:var(--text); background:rgba(255,255,255,.08);
+  color:var(--text); border-color:var(--border-strong);
+  background:rgba(255,255,255,0.06); backdrop-filter:blur(4px);
   box-shadow:0 0 12px var(--glow-soft);
 }
 .model-toggle.active {
-  color:#061018; border:none;
-  background:linear-gradient(135deg,var(--acc),var(--acc2));
-  text-shadow:0 0 8px rgba(255,255,255,.35); box-shadow:0 0 18px var(--glow);
+  background:linear-gradient(135deg,var(--contenedor),var(--acc));
+  color:#CCFFFF; text-shadow:0 0 8px var(--glow);
+  border-color:var(--border-strong); box-shadow:0 0 18px var(--glow);
 }
 ```
 
-**Validación visual (Antonio, 2026-08-08):** los botones internos NO deben tocarse entre sí. Usar `gap:.25rem` y NO usar `border-left` divisor (el gap ya separa). Barra centrada debajo de todos los campos, `max-width:min(900px,100%)`.
+**Validación visual (Antonio, 2026-08-09):** los botones pill NO deben tocarse entre sí. Usar `gap:.5rem` dentro del contenedor `inline-flex` y NO usar `border-left` divisor. Barra centrada debajo de todos los campos.
 
 ### Botones de relación de aspecto (AR)
 
@@ -422,9 +417,9 @@ Comparar siempre `strpos(...) !== false`; no usar el resultado como booleano. Ma
 ### Validación y publicación obligatorias
 
 1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
-2. Probar que el grupo mide como máximo el 100 % del panel y que no existe scroll horizontal ni texto recortado.
+2. Probar que la barra de toggles no desborda el panel y que no existe scroll horizontal ni texto recortado.
 3. Verificar las cuatro etiquetas completas: `3.1FLASH`, `3 PRO`, `FLUX PRO`, `FLUX MAX`.
-4. Probar estados normal, hover y activo: activo con gradiente cian-verde y texto oscuro.
+4. Probar estados normal, hover y activo: activo con gradiente `contenedor→cian` y texto `#CCFFFF`.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
 6. Confirmar `gemini-pro` (3 PRO) como estado inicial y revisar el payload de los cuatro botones.
 7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.

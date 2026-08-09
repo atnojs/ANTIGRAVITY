@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo (toggle 4 botones) =====
-        // Por defecto: 3 PRO (gemini-pro) segun SKILL_MAESTRA_primaria
+        // Por defecto: 3 PRO (gemini-pro) segun SKILL_MAESTRA
         let selectedModel = 'gemini-pro';
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
