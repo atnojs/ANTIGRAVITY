@@ -53,7 +53,7 @@ if (json_last_error()!==JSON_ERROR_NONE || !is_array($data)) {
 
 // ====================================================================
 // ACCIÓN TEXTO (mejorador de prompts vía OpenRouter)
-// Contrato: {action:'text', prompt, system?, model?} -> {success, text, model}
+// Contrato: {action:'text', prompt, system?, model?, imagen?} -> {success, text, model}
 // ====================================================================
 $action = strtolower((string)($data['action'] ?? ''));
 if ($action === 'text' || $action === 'openrouter') {
@@ -74,13 +74,40 @@ if ($action === 'text' || $action === 'openrouter') {
         exit;
     }
     $systemText = trim((string)($data['system'] ?? ''));
-    $textModel = trim((string)($data['model'] ?? 'openrouter/auto'));
+    $textModel = trim((string)($data['model'] ?? 'openai/gpt-4o'));
     if ($textModel === '' || strlen($textModel) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $textModel) !== 1) {
-        $textModel = 'openrouter/auto';
+        $textModel = 'openai/gpt-4o';
     }
+    
+    // Detectar imagen opcional para análisis visual
+    $imagenEntrada = isset($data['imagen']) ? (string)$data['imagen'] : '';
+    if ($imagenEntrada === '' && isset($data['contents'][0]['parts'])) {
+        foreach ($data['contents'][0]['parts'] as $part) {
+            if (!empty($part['inlineData']['data'])) {
+                $imagenEntrada = (string)$part['inlineData']['data'];
+                break;
+            }
+        }
+    }
+    
     $messages = [];
     if ($systemText !== '') $messages[] = ['role' => 'system', 'content' => $systemText];
-    $messages[] = ['role' => 'user', 'content' => $textPrompt];
+    
+    // Construir mensaje user con imagen si existe
+    if ($imagenEntrada !== '') {
+        $mime = 'image/jpeg';
+        if (strpos($imagenEntrada, 'data:image/png')===0) $mime='image/png';
+        elseif (strpos($imagenEntrada, 'data:image/webp')===0) $mime='image/webp';
+        $b64 = $imagenEntrada;
+        if (strpos($b64, ',') !== false) $b64 = substr($b64, strpos($b64, ',')+1);
+        $userContent = [
+            ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mime . ';base64,' . $b64]],
+            ['type' => 'text', 'text' => $textPrompt]
+        ];
+        $messages[] = ['role' => 'user', 'content' => $userContent];
+    } else {
+        $messages[] = ['role' => 'user', 'content' => $textPrompt];
+    }
 
     $payload = ['model' => $textModel, 'messages' => $messages, 'stream' => false];
     $temp = (float)($data['temperature'] ?? 0.7);

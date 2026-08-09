@@ -421,7 +421,7 @@ const CustomSelect = ({ options, value, onChange, className }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between hover:border-cyan-400/50 focus:border-cyan-400 transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'}`}
+                className={`w-full bg-black/20 border border-white/5 rounded-3xl p-4 text-[11px] outline-none cursor-pointer text-left flex items-center justify-between transition-all ${isPlaceholder ? 'opacity-60' : 'neon-border-purple'} hover:border-cyan-400/70 hover:bg-white/5 hover:shadow-[0_0_15px_rgba(0,208,208,0.3)] focus:border-cyan-400`}
             >
                 <span className={isPlaceholder ? 'text-gray-500' : 'text-gray-200'}>{selectedOption.name}</span>
                 <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -597,7 +597,7 @@ const App = () => {
     const [mode, setMode] = useState('remix');
     const [prompt, setPrompt] = useState('');
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
-    const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.ilustracion[0]);
+    const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.fotografia[1]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
@@ -636,6 +636,7 @@ const App = () => {
         // Al cambiar de modo se limpia el prompt para que la edición y la generación no se mezclen.
         setPrompt('');
         setEditInstruction('');
+        setEnhancedPrompts([]);
         if (m === 'text-to-image') setRemixSource(null);
         setError(null);
     };
@@ -650,6 +651,7 @@ const App = () => {
                 const detectedAR = getClosestAspectRatio(img.width, img.height);
                 setSelectedAR(detectedAR);
                 setRemixSource(f.target.result);
+                setEnhancedPrompts([]);
             };
             img.src = f.target.result;
         };
@@ -657,12 +659,49 @@ const App = () => {
     };
 
     const handleEnhance = async () => {
-        if (!prompt.trim()) return;
+        if (mode === 'remix' && !remixSource) {
+            setError("Sube una imagen antes de mejorar el prompt.");
+            return;
+        }
+        if (mode === 'text-to-image' && !prompt.trim()) {
+            setError("Escribe una descripción antes de mejorar.");
+            return;
+        }
         setIsEnhancing(true);
         try {
-            const enhanced = await enhancePrompt(prompt);
+            let enhanced;
+            if (mode === 'remix') {
+                // En modo edición, analizar la imagen cargada con visión
+                const compressedImage = await resizeImage(remixSource, 1024, 0.85);
+                const base64Data = compressedImage.split(',')[1];
+                const systemInstructions = `Eres un experto en edición de imágenes con IA. Analiza esta imagen y genera 4 variantes de prompts para editarla en español. Cada variante debe describir un cambio específico y útil (mejorar iluminación, cambiar fondo, añadir elementos, mejorar calidad). Respeta el contenido principal de la imagen. Responde SOLO con un JSON válido: [{"type":"Iluminación","text":"..."},{"type":"Fondo","text":"..."},{"type":"Detalles","text":"..."},{"type":"Calidad","text":"..."}]`;
+                const result = await callProxy('', [], {
+                    action: 'text',
+                    system: systemInstructions,
+                    model: 'openai/gpt-4o',
+                    temperature: 0.7,
+                    max_tokens: 2000,
+                    imagen: base64Data
+                }, prompt.trim() || 'Analiza esta imagen y sugiere mejoras');
+                if (!result?.success || !result?.text) {
+                    enhanced = [];
+                } else {
+                    const raw = String(result.text || '').trim();
+                    const match = raw.match(/\[[\s\S]*\]/);
+                    const jsonText = match ? match[0] : raw;
+                    try {
+                        const parsed = JSON.parse(jsonText);
+                        enhanced = Array.isArray(parsed) ? parsed.filter(p => p && p.type && p.text) : [];
+                    } catch (e) {
+                        enhanced = [];
+                    }
+                }
+            } else {
+                // En modo generación, mejorar el texto del prompt
+                enhanced = await enhancePrompt(prompt);
+            }
             setEnhancedPrompts(enhanced);
-        } catch (err) { console.error(err); } finally { setIsEnhancing(false); }
+        } catch (err) { console.error(err); setEnhancedPrompts([]); } finally { setIsEnhancing(false); }
     };
 
     const handleGenerate = async (finalPrompt = prompt) => {
@@ -789,6 +828,12 @@ const App = () => {
         {mode === 'remix' ? 'Editar Imagen' : 'Generar Imágenes'}
     </h1>
 </div>
+                            <button
+                                onClick={() => setView('splash')}
+                                className="w-full py-3 mb-4 bg-transparent border border-cyan-500/30 hover:border-cyan-400/70 hover:bg-cyan-500/10 text-cyan-400 text-sm font-medium rounded-xl transition-all hover:shadow-[0_0_15px_rgba(0,208,208,0.3)]"
+                            >
+                                ← Volver
+                            </button>
                             {mode === 'remix' && (
     <div className="space-y-4 animate-in">
         <label className="btn-canon text-[11px] text-cyan-400">Imagen a Editar</label>
@@ -807,7 +852,7 @@ const App = () => {
 )}
 
                             <div className="space-y-4">
-                                <label className="btn-canon text-[11px] text-cyan-400">Describe tu imagen</label>
+                                <label className="btn-canon text-[11px] text-cyan-400">{mode === 'remix' ? 'Especifica los detalles a editar' : 'Describe tu imagen'}</label>
                                 <div className="relative">
                                     <textarea
     value={prompt}
