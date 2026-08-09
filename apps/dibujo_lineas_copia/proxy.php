@@ -66,7 +66,7 @@ if (strpos($imageB64, 'base64,') !== false) {
 }
 
 // ===== Seleccion de modelo =====
-$reqModel = strtolower((string)($req['model'] ?? 'flux-pro'));
+$reqModel = strtolower((string)($req['model'] ?? 'gemini-pro'));
 $backend = null;
 $geminiModel = 'google/gemini-3.1-flash-image';
 $fluxEndpoint = 'flux-2-pro';

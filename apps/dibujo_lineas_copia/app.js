@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo (toggle 4 botones) =====
-        // Por defecto: FLUX Pro (equilibrio calidad/precio ~$0.03)
-        let selectedModel = 'flux-pro';
+        // Por defecto: 3 PRO (gemini-pro) segun SKILL_MAESTRA_primaria
+        let selectedModel = 'gemini-pro';
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
             btn.addEventListener('click', () => {
