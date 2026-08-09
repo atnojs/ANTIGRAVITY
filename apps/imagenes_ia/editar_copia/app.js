@@ -506,7 +506,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
 const Splash = ({ onSelect }) => (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-12">
         <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4">
-            <h1 className="splash-title">Edita como un Pro</h1>
+            <h1 className="splash-title">Diseña como un Pro</h1>
             <p className="splash-subtitle">
                 Edición y Generación de Imágenes con IA
             </p>

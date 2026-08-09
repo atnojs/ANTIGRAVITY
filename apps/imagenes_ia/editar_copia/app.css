@@ -634,17 +634,61 @@ textarea:focus-visible {
 
 /* --- GRADIENTES (botón principal Generar/Editar) --- */
 .from-cyan-600 {
-    --tw-gradient-from: #00b0b0 !important;
-    --tw-gradient-to: rgba(0, 176, 176, 0) !important;
+    --tw-gradient-from: #00D0D0 !important;
+    --tw-gradient-to: rgba(0, 208, 208, 0) !important;
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
-.to-blue-700 { --tw-gradient-to: #008f8f !important; }
+.to-blue-700 { --tw-gradient-to: #26C626 !important; }
 .hover\:from-cyan-500:hover {
     --tw-gradient-from: #00D0D0 !important;
     --tw-gradient-to: rgba(0, 208, 208, 0) !important;
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
-.hover\:to-blue-600:hover { --tw-gradient-to: #00b0b0 !important; }
+.hover\:to-blue-600:hover { --tw-gradient-to: #26C626 !important; }
+
+/* --- SUPERFICIES: reemplazan negros/grises tailwind por vidrio hoola --- */
+[class*="bg-black/20"],
+[class*="bg-slate-900/80"],
+[class*="bg-slate-900/40"] { background-color: rgba(23, 79, 122, 0.42) !important; }
+/* bg-slate-950 exacto (contenedor de imagen): vidrio; los /95 y /80 (lightbox y modal) permanecen oscuros */
+[class*="bg-slate-950"]:not([class*="bg-slate-950/"]) { background-color: rgba(23, 79, 122, 0.42) !important; }
+[class*="bg-slate-800/80"],
+[class*="bg-slate-700"] { background-color: rgba(23, 79, 122, 0.55) !important; }
+[class*="bg-slate-900"]:not([class*="bg-slate-900/"]) { background-color: rgba(23, 79, 122, 0.5) !important; }
+
+/* --- BORDES: reemplazan blancos/grises por borde cian --- */
+[class*="border-white/5"],
+[class*="border-white/10"] { border-color: rgba(0, 208, 208, 0.45) !important; }
+[class*="border-slate-600"],
+[class*="border-slate-700"] { border-color: rgba(0, 208, 208, 0.55) !important; }
+
+/* --- TEXTOS: reemplazan grises por la escala hoola --- */
+[class*="text-gray-500"],
+[class*="text-gray-400"],
+[class*="text-slate-400"],
+[class*="text-slate-600"] { color: #99CCCC !important; }
+[class*="text-gray-300"],
+[class*="text-gray-200"],
+[class*="text-slate-300"],
+[class*="text-slate-200"] { color: #eaffff !important; }
+[class*="text-gray-600"],
+[class*="text-gray-700"],
+[class*="text-slate-500"] { color: #669999 !important; }
+[class*="text-white/"] { color: #eaffff !important; }
+/* hover blanco translúcido al 8% (skill_maestra: capa blanca en hover) */
+[class*="hover:bg-white/5"]:hover,
+[class*="hover:bg-white/10"]:hover { background-color: rgba(255, 255, 255, 0.08) !important; }
+/* bg-white/5 en estado normal (iconos decorativos) -> vidrio hoola */
+[class*="bg-white/5"]:not([class*="hover:"]) { background-color: rgba(23, 79, 122, 0.42) !important; }
+
+/* --- ACCIÓN PRIMARIA: gradiente cian-verde con texto azul muy oscuro (skill_maestra) --- */
+.bg-gradient-to-r.from-cyan-600.to-blue-700 {
+    color: #061018 !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.35) !important;
+}
+.bg-gradient-to-r.from-cyan-600.to-blue-700:disabled {
+    color: rgba(6, 16, 24, 0.4) !important;
+}
 
 /* ═══════════════════════════════════════════════
    FIX doble-clic en el splash (tarjetas Generar/Editar)
@@ -672,24 +716,21 @@ textarea:focus-visible {
   color:var(--muted);font-size:.8rem;letter-spacing:0.08em;text-transform:uppercase;
 }
 .model-toggle-group{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.25rem;
   width:100%;max-width:100%;box-sizing:border-box;
-  padding:.3rem;border-radius:999px;
+  padding:.35rem;border-radius:999px;
   background:rgba(6,16,24,.35);backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
   border:1px solid var(--border-strong);
   box-shadow:0 0 14px var(--glow-soft);
 }
 .model-toggle{
-  min-width:0;padding:.55rem .35rem;
+  min-width:0;padding:.45rem .3rem;
   border:none;border-radius:999px;
   background:transparent;color:var(--muted);cursor:pointer;
-  font-family:var(--font-ui);font-size:clamp(.62rem,2.35vw,.8rem);
-  line-height:1.15;letter-spacing:.025em;text-transform:uppercase;white-space:nowrap;
+  font-family:var(--font-ui);font-size:clamp(.62rem,1.6vw,.78rem);
+  line-height:1.2;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;
   transition:all .25s ease;
-}
-.model-toggle + .model-toggle{
-  border-left:1px solid rgba(0,208,208,.25);
 }
 .model-toggle:hover{
   color:var(--text);background:rgba(255,255,255,.08);
