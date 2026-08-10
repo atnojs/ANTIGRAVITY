@@ -895,12 +895,6 @@ const App = () => {
                                 <label className="btn-canon text-[11px] text-cyan-400">Panel de Estilos</label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <CustomSelect
-                                        options={HISTORICAL_ERAS}
-                                        value={HISTORICAL_ERAS.some(e => e.id === (selectedEra && selectedEra.id)) ? (selectedEra && selectedEra.id) : ''}
-                                        onChange={(id) => setSelectedEra(HISTORICAL_ERAS.find(e => e.id === id) || HISTORICAL_ERAS[0])}
-                                        className="col-span-2"
-                                    />
-                                    <CustomSelect
                                         options={STYLE_GROUPS.ilustracion}
                                         value={STYLE_GROUPS.ilustracion.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
                                         onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.ilustracion.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
@@ -924,7 +918,11 @@ const App = () => {
                                         options={STYLE_GROUPS.fotografia}
                                         value={STYLE_GROUPS.fotografia.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
                                         onChange={(id) => id ? setSelectedStyle(STYLE_GROUPS.fotografia.find(s => s.id === id)) : setSelectedStyle({ id: '', name: 'Original', promptSuffix: '' })}
-                                        className="col-span-2"
+                                    />
+                                    <CustomSelect
+                                        options={HISTORICAL_ERAS}
+                                        value={HISTORICAL_ERAS.some(e => e.id === (selectedEra && selectedEra.id)) ? (selectedEra && selectedEra.id) : ''}
+                                        onChange={(id) => setSelectedEra(HISTORICAL_ERAS.find(e => e.id === id) || HISTORICAL_ERAS[0])}
                                     />
                                 </div>
                             </div>
