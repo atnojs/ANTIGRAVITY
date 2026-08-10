@@ -240,21 +240,55 @@ h2, h3, h4 { font-family: 'Electrolize', sans-serif; text-transform: uppercase; 
 #surprise-btn:disabled { background: linear-gradient(135deg, #3a5060, #1a3a4a); color: #669999; box-shadow: none; cursor: not-allowed; }
 
 /* ===== SELECTORES ===== */
-.quality-toggle, .ar-selector, .res-selector {
+.ar-selector, .res-selector {
   display: flex; justify-content: center; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;
 }
-.quality-toggle button, .ar-selector button, .res-selector button {
+.ar-selector button, .res-selector button {
   font-family: 'Electrolize', sans-serif; text-transform: uppercase;
   letter-spacing: 0.04em; padding: 0.35rem 0.7rem;
   border-radius: 999px; border: 1.5px solid var(--border);
   background: rgba(23,79,122,0.2); color: var(--muted);
   cursor: pointer; font-size: 0.72rem; transition: all 0.2s;
 }
-.quality-toggle button.active, .ar-selector button.active, .res-selector button.active {
-  border-color: #26C626; background: rgba(38,198,38,0.18); color: #26C626;
+.ar-selector button.active, .res-selector button.active {
+  border-color: var(--border-strong);
+  background: linear-gradient(135deg, var(--contenedor), var(--acc));
+  color: #CCFFFF;
+  text-shadow: 0 0 8px var(--glow);
+  box-shadow: 0 0 18px var(--glow-soft);
 }
-.quality-toggle button:hover:not(.active), .ar-selector button:hover:not(.active), .res-selector button:hover:not(.active) {
+.ar-selector button:hover:not(.active), .res-selector button:hover:not(.active) {
   background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),rgba(23,79,122,0.2); border-color: var(--acc); color: var(--text); box-shadow: 0 0 14px rgba(0,208,208,0.3);
+}
+
+/* ===== SKILL MAESTRA: SELECTOR DE MODELO IA (toggles pill hoola 4 modelos) ===== */
+.model-selector {
+  display:flex; flex-direction:column; align-items:center; gap:.6rem;
+  margin:1.8rem 0 1.2rem; width:100%;
+}
+.model-selector-label {
+  color:var(--muted); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
+}
+.model-toggle-group {
+  display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
+  background:var(--card-bg); border:1px solid var(--border);
+  box-shadow:0 0 12px var(--glow-soft);
+}
+.model-toggle {
+  font-family:var(--font-ui); font-size:.9rem; letter-spacing:0.04em;
+  padding:.55rem 1rem; border-radius:999px; border:1px solid transparent;
+  background:transparent; color:var(--muted); cursor:pointer;
+  transition:all .25s ease; text-transform:uppercase; white-space:nowrap;
+}
+.model-toggle:hover {
+  color:var(--text); border-color:var(--border-strong);
+  background:rgba(255,255,255,0.06); backdrop-filter:blur(4px);
+  box-shadow:0 0 12px var(--glow-soft);
+}
+.model-toggle.active {
+  background:linear-gradient(135deg,var(--contenedor),var(--acc));
+  color:#CCFFFF; text-shadow:0 0 8px var(--glow);
+  border-color:var(--border-strong); box-shadow:0 0 18px var(--glow);
 }
 
 /* ===== MAPEO TAILWIND ===== */

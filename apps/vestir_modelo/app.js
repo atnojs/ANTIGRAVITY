@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isProcessing = false;
     const usedSurpriseStyles = new Set();
     let historyItems = [];
-    let selectedQuality = 'pro';
+    let selectedModel = 'gemini-pro';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -125,11 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ===== SELECTORES =====
-    document.querySelectorAll('.quality-toggle button').forEach(btn => {
+    document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.quality-toggle button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            selectedQuality = btn.dataset.quality;
+            selectedModel = btn.dataset.model;
         });
     });
     document.querySelectorAll('.ar-selector button').forEach(btn => {
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const callFlux = async (prompt, modelB64, outfitB64) => {
         const payload = {
             action: 'generate',
-            quality: selectedQuality,
+            model: selectedModel,
             aspectRatio: selectedAR,
             resolution: selectedRes,
             prompt,

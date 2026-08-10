@@ -45,9 +45,14 @@
         </div>
       </div>
 
-      <div class="quality-toggle">
-        <button id="quality-pro" class="active" data-quality="pro">FLUX PRO</button>
-        <button id="quality-max" data-quality="max">FLUX MAX</button>
+      <div class="model-selector">
+        <span class="model-selector-label">Modelo IA</span>
+        <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+          <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+          <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+          <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+          <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+        </div>
       </div>
       <div class="ar-selector">
         <button class="active" data-ar="1:1">1:1</button>
