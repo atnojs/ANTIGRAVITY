@@ -1,0 +1,81 @@
+/* ═══════════════════════════════════════════════
+   ESTUDIO CREATIVO — BASE (Hoola canónico)
+   Fusión AuraStudio UI + editar_generar motor
+   ═══════════════════════════════════════════════ */
+
+:root {
+    /* Paleta hoola canónica */
+    --bg-deep: #001018;
+    --bg-panel: #041847;
+    --acc: #00D0D0;
+    --acc2: #26C626;
+    --glow: rgba(0, 208, 208, 0.8);
+    --glow-soft: rgba(0, 208, 208, 0.4);
+    --text: #eaffff;
+    --muted: #99CCCC;
+    --text-dim: #6B9A9A;
+    --contenedor: #174F7A;
+    --card-bg: rgba(23, 79, 122, 0.42);
+    --card-hover: rgba(30, 100, 150, 0.55);
+    --border: rgba(0, 208, 208, 0.45);
+    --border-strong: #00D0D0;
+    --border-dim: rgba(0, 208, 208, 0.12);
+    --font-ui: 'Electrolize', system-ui, sans-serif;
+    --radius-sm: 9px;
+    --radius: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 24px;
+    --radius-pill: 999px;
+    --transition: all 0.25s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; overflow-x: hidden; }
+
+body {
+    font-family: 'Electrolize', sans-serif;
+    background: linear-gradient(180deg, #001018 0%, #062f43 60%, #0E5368 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Fondo: halos + rejilla */
+body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(0, 208, 208, 0.09) 0%, transparent 55%),
+        radial-gradient(ellipse at 70% 80%, rgba(0, 100, 120, 0.07) 0%, transparent 55%);
+}
+
+body::after {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+        linear-gradient(rgba(0, 208, 208, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 208, 208, 0.07) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+}
+
+#root { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+input, select, textarea { font-family: inherit; }
+
+::selection { background: rgba(0, 208, 208, 0.35); color: var(--text); }
+
+/* Scrollbar */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 16, 24, 0.6); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 208, 208, 0.18); border-radius: 9999px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0, 208, 208, 0.35); }
+.hidden { display: none !important; }
