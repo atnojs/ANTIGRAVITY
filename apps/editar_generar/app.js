@@ -185,6 +185,28 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
+// ── VIAJE EN EL TIEMPO: 15 eras históricas ──
+// Cada era aporta un sufijo de transformación (personaje + entorno + vestimenta)
+// que se inyecta en el prompt manteniendo los rasgos faciales de la persona.
+const HISTORICAL_ERAS = [
+    { id: '', shortName: 'Sin Era', name: '⏳ Viaje en el Tiempo', era: '', promptSuffix: '' },
+    { id: 'prehistory', shortName: 'Prehistoria', name: 'Prehistoria · 20.000 a.C.', era: '20,000 a.C.', promptSuffix: 'Show this person as a primitive hunter-gatherer in a prehistoric landscape, dressed in furs and hide clothing with bone jewelry, standing near a cave entrance with ancient cave paintings and a flickering fire, preserving their exact facial features and identity.' },
+    { id: 'ancient-egypt', shortName: 'Antiguo Egipto', name: 'Antiguo Egipto · 1.350 a.C.', era: '1,350 a.C.', promptSuffix: 'Show this person as a majestic Pharaoh or high-ranking Egyptian noble in the court of Akhenaten, wearing golden ornaments and white linen robes, with the Great Pyramids visible through a stone window, preserving their exact facial features and identity.' },
+    { id: 'classical-greece', shortName: 'Grecia Clásica', name: 'Grecia Clásica · 450 a.C.', era: '450 a.C.', promptSuffix: 'Show this person as a Greek philosopher or citizen in the Agora of Athens, wearing a white chiton and laurel wreath, with marble columns of the Parthenon in the background under a bright Mediterranean sun, preserving their exact facial features and identity.' },
+    { id: 'roman-empire', shortName: 'Imperio Romano', name: 'Imperio Romano · 100 d.C.', era: '100 d.C.', promptSuffix: 'Show this person as a high-ranking Roman Centurion or a noble Senator, wearing a red tunic and ornate bronze armor or a purple-bordered toga, with the bustling Roman Forum or the Colosseum behind, preserving their exact facial features and identity.' },
+    { id: 'viking-age', shortName: 'Era Vikinga', name: 'Era Vikinga · 900 d.C.', era: '900 d.C.', promptSuffix: 'Show this person as a fierce Viking warrior or shield-maiden, wearing fur-lined leather armor with braided hair and an iron helmet, standing on a rocky fjord with a longship in the misty waters, preserving their exact facial features and identity.' },
+    { id: 'medieval', shortName: 'Edad Media', name: 'Edad Media · 1.200 d.C.', era: '1,200 d.C.', promptSuffix: 'Show this person as a brave knight in shining plate armor or a noble lady in a medieval castle hall, with tapestries on stone walls, torches flickering, and a tournament field visible outside, preserving their exact facial features and identity.' },
+    { id: 'feudal-japan', shortName: 'Japón Feudal', name: 'Japón Feudal · 1.600 d.C.', era: '1,600 d.C.', promptSuffix: 'Show this person as a noble Samurai in traditional lacquered armor or a graceful figure in a silk kimono, with a katana at the waist and cherry blossoms falling in a Zen garden with a pagoda, preserving their exact facial features and identity.' },
+    { id: 'renaissance', shortName: 'Renacimiento', name: 'Renacimiento · 1.500 d.C.', era: '1,500 d.C.', promptSuffix: 'Show this person as a wealthy Renaissance merchant or artist in a studio filled with canvases and scientific instruments, wearing rich velvet clothing and ornate collars, with a view of Florence cathedral, preserving their exact facial features and identity.' },
+    { id: 'piracy-age', shortName: 'Era de la Piratería', name: 'Era de la Piratería · 1.720 d.C.', era: '1,720 d.C.', promptSuffix: 'Show this person as a legendary pirate captain on the deck of a galleon, wearing a tricorne hat and long coat with weathered skin, holding a telescope with a tropical island and turquoise sea behind, preserving their exact facial features and identity.' },
+    { id: 'industrial-era', shortName: 'Era Industrial', name: 'Era Industrial · 1.850 d.C.', era: '1,850 d.C.', promptSuffix: 'Show this person as a Victorian inventor or factory owner in London, wearing a top hat and waistcoat with a pocket watch, with steam-powered machinery and brick chimneys in a foggy industrial city, preserving their exact facial features and identity.' },
+    { id: 'wild-west', shortName: 'Lejano Oeste', name: 'Lejano Oeste · 1.880 d.C.', era: '1,880 d.C.', promptSuffix: 'Show this person as a legendary gunslinger or pioneer in a dusty frontier town, wearing a leather duster and cowboy hat with rugged boots, standing in front of a wooden saloon with a desert sunset, preserving their exact facial features and identity.' },
+    { id: 'roaring-twenties', shortName: 'Los Locos Años 20', name: 'Los Locos Años 20 · 1.925 d.C.', era: '1,925 d.C.', promptSuffix: 'Show this person as a glamorous socialite or dapper gentleman in a smoky jazz club, wearing a sequined flapper dress or pinstripe suit, with Art Deco interiors and a live band in the background, preserving their exact facial features and identity.' },
+    { id: 'cold-war', shortName: 'Guerra Fría', name: 'Guerra Fría · 1.965 d.C.', era: '1,965 d.C.', promptSuffix: 'Show this person as a mysterious secret agent or a scientist in a high-tech control room, wearing a trench coat or lab coat, with analog computers, reel-to-reel tapes, and a rocket launch visible on a screen, preserving their exact facial features and identity.' },
+    { id: 'cyberpunk', shortName: 'Futuro Neón', name: 'Futuro Neón · 2.099 d.C.', era: '2,099 d.C.', promptSuffix: 'Show this person as a high-tech street samurai or netrunner in a rain-slicked neon city, with cybernetic implants, a glowing visor, and a futuristic jacket, with massive holographic advertisements, preserving their exact facial features and identity.' },
+    { id: 'galactic-empire', shortName: 'Imperio Galáctico', name: 'Imperio Galáctico · 3.500 d.C.', era: '3,500 d.C.', promptSuffix: 'Show this person as a high-ranking galactic officer or starship pilot, wearing a sleek futuristic uniform, with glowing data pads, standing on the bridge of a massive spaceship overlooking a nebula, preserving their exact facial features and identity.' }
+];
+
 // --- HISTORIAL PERSISTENTE (HistoryManager: IndexedDB + servidor) ---
 // El servidor (history.php) es la fuente de verdad; IndexedDB es caché local.
 let historyManagerReady = false;
@@ -463,7 +485,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
         <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
             <div className="absolute top-4 left-4 z-10">
                 <div className="px-3 py-1 glass rounded-full text-[9px] uppercase text-white/90 border-white/5 backdrop-blur-md btn-canon">
-                    {image.style ? image.style.name : 'Estilo'} | {image.aspectRatio} | {getModelLabel(image.model)}
+                    {image.era && image.era.shortName && image.era.shortName !== 'Sin Era' ? `${image.era.shortName} | ` : ''}{image.style ? image.style.name : 'Estilo'} | {image.aspectRatio} | {getModelLabel(image.model)}
                 </div>
             </div>
             <div className="relative aspect-square bg-slate-950 overflow-hidden flex items-center justify-center">
@@ -573,6 +595,7 @@ const App = () => {
     const [prompt, setPrompt] = useState('');
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.fotografia[1]);
+    const [selectedEra, setSelectedEra] = useState(HISTORICAL_ERAS[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
@@ -696,7 +719,8 @@ const App = () => {
         setProgress(0);
         setProgressStatus('Preparando...');
         try {
-            const styleSuffix = selectedStyle.promptSuffix;
+            const eraSuffix = (selectedEra && selectedEra.promptSuffix || '').trim();
+            const styleSuffix = `${eraSuffix} ${(selectedStyle.promptSuffix || '').trim()}`.trim();
             let finalSourceImage = mode === 'remix' ? (remixSource || undefined) : undefined;
 
             if (finalSourceImage) {
@@ -724,6 +748,7 @@ const App = () => {
                 url: imageUrl,
                 prompt: effectivePrompt || 'Edición de imagen',
                 style: selectedStyle,
+                era: selectedEra,
                 aspectRatio: selectedAR,
                 model: selectedModel,
                 size: '1K',
@@ -741,6 +766,7 @@ const App = () => {
             setTimeout(() => { setIsGenerating(false); setProgress(0); setProgressStatus(''); }, 400);
             // El prompt se conserva para poder reutilizarlo en la siguiente generación.
             setSelectedStyle(STYLE_GROUPS.ilustracion[0]);
+            setSelectedEra(HISTORICAL_ERAS[0]);
             setSelectedAR(AspectRatio.SQUARE);
         }
     };
@@ -759,6 +785,7 @@ const App = () => {
     const handleRegenerate = (img) => {
         setPrompt(img.prompt);
         if (img.style) setSelectedStyle(img.style);
+        if (img.era) setSelectedEra(img.era);
         setSelectedAR(img.aspectRatio);
         if (img.model) setSelectedModel(img.model);
         handleGenerate(img.prompt);
@@ -867,6 +894,12 @@ const App = () => {
                             <div className="space-y-6">
                                 <label className="btn-canon text-[11px] text-cyan-400">Panel de Estilos</label>
                                 <div className="grid grid-cols-2 gap-4">
+                                    <CustomSelect
+                                        options={HISTORICAL_ERAS}
+                                        value={HISTORICAL_ERAS.some(e => e.id === (selectedEra && selectedEra.id)) ? (selectedEra && selectedEra.id) : ''}
+                                        onChange={(id) => setSelectedEra(HISTORICAL_ERAS.find(e => e.id === id) || HISTORICAL_ERAS[0])}
+                                        className="col-span-2"
+                                    />
                                     <CustomSelect
                                         options={STYLE_GROUPS.ilustracion}
                                         value={STYLE_GROUPS.ilustracion.some(s => s.id === selectedStyle.id) ? selectedStyle.id : ''}
@@ -980,6 +1013,7 @@ const App = () => {
                                 <div className="relative max-w-6xl w-full h-full flex flex-col items-center justify-center gap-8">
                                     <img src={lightboxImage.url} className="max-w-full max-h-[85vh] object-contain rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5" />
                                     <div className="glass px-8 py-4 rounded-full flex gap-10 text-[11px] text-gray-400 uppercase btn-canon" onClick={(e) => e.stopPropagation()}>
+                                        {lightboxImage.era && lightboxImage.era.shortName && lightboxImage.era.shortName !== 'Sin Era' ? <span className="text-cyan-400">{lightboxImage.era.shortName}</span> : null}
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
                                         <span className="text-cyan-400">{getModelLabel(lightboxImage.model)}</span>
                                         <span>RES: {lightboxImage.size}</span>
