@@ -15,7 +15,7 @@ import {
   CameraIcon,
   RefreshCw
 } from 'lucide-react';
-import { auth, db, signInWithGoogle, logout } from './firebase';
+import { auth, db, signInWithGoogle, finishGoogleSignIn, initAuthPersistence, logout } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { 
   collection, 
@@ -210,11 +210,29 @@ export default function App() {
   // --- Auth & Data ---
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await initAuthPersistence();
+        // Si venimos de un redirect de Google, recuperamos la sesión.
+        const result = await finishGoogleSignIn();
+        if (!cancelled && result?.user) {
+          setUser(result.user);
+        }
+      } catch (e) {
+        console.warn('Auth persistence/redirect:', e);
+      }
+    })();
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setIsAuthReady(true);
+      if (!cancelled) {
+        setUser(u);
+        setIsAuthReady(true);
+      }
     });
-    return unsubscribe;
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -335,9 +353,9 @@ export default function App() {
       });
       const base64Data = capturedImage.split(',')[1];
 
-      // Step 1: Analyze the original photo with gemini-3-flash-preview (more robust for vision)
+      // Step 1: Analyze the original photo with gemini-2.5-flash-image (modelo verificado del proyecto)
       const analysisResponse = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.5-flash-image',
         contents: {
           parts: [
             {
@@ -360,7 +378,7 @@ export default function App() {
 
       // Step 2: Generate TWO distinct prompts for variety
       const promptResponse = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.5-flash-image',
         contents: `Based on this person's analysis: "${analysisText}", and the historical scene "${selectedScene.name}" (${selectedScene.era}), 
                    generate TWO distinct and detailed image generation prompts. 
                    The prompts should describe the person as a character in that era, maintaining their likeness but changing clothing and background.
