@@ -229,11 +229,11 @@ const Splash = ({ onLogout, user }) => {
             </button>
 
             <div className="text-center space-y-4">
-                <h1 className="text-6xl md:text-8xl font-extrabold gradient-text tracking-tight uppercase">
+                <h1 className="splash-title">
                     Edita como un Pro
                 </h1>
-                <p className="text-gray-300 text-lg md:text-2xl font-light max-w-2xl mx-auto">
-                    <span className="neon-text font-semibold">Estilos Visuales de Imágenes</span>
+                <p className="app-subtitle max-w-2xl mx-auto">
+                    Estilos Visuales de Imágenes
                 </p>
             </div>
 

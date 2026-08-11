@@ -9,11 +9,13 @@
     --border: rgba(0, 208, 208, 0.7);
     --card-bg: rgba(23, 79, 122, 0.42);
     --shadow-color: rgba(0, 0, 0, 0.5);
+    --font-ui: 'Electrolize', system-ui, sans-serif;
 
     /* Neón + 3D Extensions */
     --neon-cyan: #00D0D0;
     --neon-pink: #26C626;
     --neon-purple: #26C626;
+    --glow: rgba(0, 208, 208, 0.8);
     --glow-strong: rgba(0, 208, 208, 0.8);
     --glow-soft: rgba(0, 208, 208, 0.4);
     --radius-lg: 14px;
@@ -70,6 +72,26 @@ h3,
     font-family: 'Electrolize', system-ui, sans-serif;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+/* Titular canónico hoola (referencia dibujo_lineas_copia) */
+.splash-title {
+    font-family: var(--font-ui);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    color: var(--acc);
+    text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
+}
+
+.app-subtitle {
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+    font-size: 1.05rem;
+    letter-spacing: 0.03em;
+    font-weight: 400;
 }
 
 /* Glassmorphism CORE */
