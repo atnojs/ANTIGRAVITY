@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeCategory = null;
 
     // Selectores FLUX
-    let selectedQuality = 'pro';
+    let selectedModel = 'gemini-pro';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -722,6 +722,17 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
 
+    // Helper para etiqueta legible del modelo
+    const getModelLabel = (model) => {
+        const labels = {
+            'gemini-flash': '3.1 FLASH',
+            'gemini-pro': '3 PRO',
+            'flux-pro': 'FLUX PRO',
+            'flux-max': 'FLUX MAX'
+        };
+        return labels[model] || model;
+    };
+
     function computeTargetDims(ar, resolution) {
         const ratios = { '1:1': [1,1], '16:9': [16,9], '9:16': [9,16], '4:3': [4,3], '3:4': [3,4] };
         const [rw, rh] = ratios[ar] || [1, 1];
@@ -770,13 +781,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const setupSelectors = () => {
-        // Calidad PRO/MAX
-        document.querySelectorAll('#quality-selector .toggle-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#quality-selector .toggle-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedQuality = btn.dataset.quality;
-            });
+        //Selector Modelo IA (4 modelos)
+        document.querySelectorAll('#model-selector .toggle-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('#model-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedModel = btn.dataset.model;
+          });
         });
         // Formato AR
         document.querySelectorAll('#ar-selector .toggle-btn').forEach(btn => {
@@ -1001,7 +1012,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let lastResult = null;
 
             for (let i = 0; i < iterations; i++) {
-                showGlobalLoader(`Generando imagen ${i + 1} de ${iterations}`);
+                const modelLabel = getModelLabel(selectedModel);
+                showGlobalLoader(`Generando imagen ${i + 1} de ${iterations} · ${modelLabel} a ${selectedRes}px`);
                 try {
                     if (i > 0) await new Promise(r => setTimeout(r, 2000));
                     const resultBase64 = await callImageAPI(originalImageBase64, prompt);
@@ -1311,7 +1323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             action: 'generate',
             image: base64Image,
             prompt: prompt,
-            quality: selectedQuality,
+            quality: selectedModel,
             width: dims.width,
             height: dims.height
         });

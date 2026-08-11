@@ -1,11 +1,9 @@
 <?php
-// ============================================================
-// PROXY FLUX — Cambio de Outfit (image-to-image)
-// Transforma la ropa de una persona usando FLUX (Black Forest Labs).
-// Clave FLUX en variable de entorno 'F' del .htaccess raíz.
-// BFL es ASÍNCRONO: este proxy hace submit + polling del lado servidor.
-// También maneja texto (DeepSeek, clave 'B') y visión (Gemini, clave 'G').
-// ============================================================
+// ==========================================================
+// PROXY CambioOutfit (image-to-image)
+// 4 modelos: Gemini Flash/Pro (clave G) + FLUX Pro/Max (clave F)
+// También maneja texto (DeepSeek, clave B) y visión (Gemini, clave G).
+// ===========================================================
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -37,20 +35,20 @@ if (!function_exists('curl_init')) {
 $requestBody = file_get_contents('php://input');
 if (empty($requestBody)) {
     http_response_code(400);
-    echo json_encode(['error' => ['message' => 'Cuerpo vacío.']]);
+    echo json_encode(['error' => ['message' => 'Cuerpo vacio.']]);
     exit;
 }
 
 $req = json_decode($requestBody, true);
 if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     http_response_code(400);
-    echo json_encode(['error' => ['message' => 'JSON inválido.']]);
+    echo json_encode(['error' => ['message' => 'JSON invalido.']]);
     exit;
 }
 
 $action = (string)($req['action'] ?? 'generate');
 
-// ===== RUTEO POR ACCIÓN =====
+// ===== RUTEO POR ACCION =====
 if ($action === 'text') {
     handleText($req);
 } elseif ($action === 'vision') {
@@ -59,20 +57,44 @@ if ($action === 'text') {
     handleGenerate($req);
 }
 
-// ============================================================
-// GENERAR IMAGEN (FLUX — clave F)
-// ============================================================
+// ===========================================================
+// GENERAR IMAGEN (ruteo por modelo)
+// ===========================================================
 function handleGenerate(array $req): void {
-    $apiKey = getKey('F');
+    $modelInput = (string)($req['quality'] ?? 'gemini-pro');
+
+    // Gemini Flash / Pro
+    if ($modelInput === 'gemini-flash' || $modelInput === 'gemini-pro') {
+        handleGeminiImage($req, $modelInput);
+        return;
+    }
+
+    // FLUX Pro / Max
+    if ($modelInput === 'flux-pro' || $modelInput === 'flux-max') {
+        handleFluxImage($req, $modelInput);
+        return;
+    }
+
+    // Fallback: FLUX
+    handleFluxImage($req, 'flux-pro');
+}
+
+// ===========================================================
+// GEMINI IMAGE-TO-IMAGE (clave G)
+// ===========================================================
+function handleGeminiImage(array $req, string $modelInput): void {
+    $apiKey = getKey('G');
+    if (!$apiKey) {
+        $apiKey = getKey('A');
+    }
     if (!$apiKey) {
         http_response_code(500);
-        echo json_encode(['error' => ['message' => 'API key de FLUX (F) no configurada.']]);
+        echo json_encode(['error' => ['message' => 'API key Gemini (G) no configurada.']]);
         exit;
     }
 
     $imageB64 = (string)($req['image'] ?? '');
     $prompt   = (string)($req['prompt'] ?? '');
-    $quality  = (string)($req['quality'] ?? 'pro');
     $width    = (int)($req['width'] ?? 1024);
     $height   = (int)($req['height'] ?? 1024);
 
@@ -82,31 +104,143 @@ function handleGenerate(array $req): void {
         exit;
     }
 
-    // Limpiar prefijo data: si existe
+    // Limpiar prefijo data:
     if (strpos($imageB64, 'base64,') !== false) {
         $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
     }
 
-    // Control de tamaño
+    // Control tamano
+    $imgBinary = base64_decode($imageB64, true);
+    if ($imgBinary === false || strlen($imgBinary) > 4000000) {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (maximo 4MB).']]);
+        exit;
+    }
+
+    // Mapear modelo
+    $geminiModel = ($modelInput === 'gemini-flash') ? 'gemini-2.5-flash' : 'gemini-2.5-pro';
+
+    $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $geminiModel . ':generateContent?key=' . urlencode($apiKey);
+
+    $systemPrompt = "You are an AI image editor. The user provides an image of a person and a description of a new outfit. Generate a NEW edited image where ONLY the outfit is changed according to the prompt. Keep the person's face, body pose, skin tone, hair, and background EXACTLY as in the original. Change ONLY the clothing/outfit. Maintain photorealistic quality. Output ONLY the edited image.";
+
+    $payload = [
+        'system_instruction' => [
+            'parts' => [['text' => $systemPrompt]]
+        ],
+        'contents' => [[
+            'parts' => [
+                ['inlineData' => ['mimeType' => 'image/jpeg', 'data' => $imageB64]],
+                ['text' => $prompt],
+            ]
+        ]],
+        'generationConfig' => [
+            'responseModalities' => ['IMAGE', 'TEXT'],
+            'temperature' => 0.4,
+        ],
+    ];
+
+    $ch = curl_init($endpoint);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS     => json_encode($payload),
+        CURLOPT_TIMEOUT        => 90,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $response = curl_exec($ch);
+    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if (curl_errno($ch)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error Gemini: ' . curl_error($ch)]]);
+        curl_close($ch);
+        exit;
+    }
+    curl_close($ch);
+
+    if ($httpcode >= 400) {
+        $err = json_decode($response, true);
+        http_response_code($httpcode);
+        $msg = $err['error']['message'] ?? ('HTTP ' . $httpcode);
+        echo json_encode(['error' => ['message' => 'Gemini: ' . $msg]]);
+        exit;
+    }
+
+    $data = json_decode($response, true);
+    $parts = $data['candidates'][0]['content']['parts'] ?? [];
+
+    // Buscar parte imagen
+    $imageData = '';
+    foreach ($parts as $p) {
+        if (isset($p['inlineData']['data'])) {
+            $imageData = $p['inlineData']['data'];
+            break;
+        }
+    }
+
+    if ($imageData === '') {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Gemini no devolvio imagen. Intenta con FLUX.']]);
+        exit;
+    }
+
+    echo json_encode([
+        'success'  => true,
+        'image'    => $imageData,
+        'mimeType' => 'image/png',
+        'width'    => $width,
+        'height'   => $height,
+    ]);
+}
+
+// ===========================================================
+// FLUX IMAGE-TO-IMAGE (clave F, Black Forest Labs)
+// ===========================================================
+function handleFluxImage(array $req, string $modelInput): void {
+    $apiKey = getKey('F');
+    if (!$apiKey) {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'API key FLUX (F) no configurada.']]);
+        exit;
+    }
+
+    $imageB64 = (string)($req['image'] ?? '');
+    $prompt   = (string)($req['prompt'] ?? '');
+    $width    = (int)($req['width'] ?? 1024);
+    $height   = (int)($req['height'] ?? 1024);
+
+    if ($imageB64 === '' || $prompt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Faltan imagen o prompt.']]);
+        exit;
+    }
+
+    // Limpiar prefijo data:
+    if (strpos($imageB64, 'base64,') !== false) {
+        $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
+    }
+
+    // Control tamano
     $imgBinary = base64_decode($imageB64, true);
     if ($imgBinary === false || strlen($imgBinary) > 2500000) {
         http_response_code(400);
-        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (maximo 2.5MB).']]);
         exit;
     }
 
     // Clamp 4MP
     $pixels = $width * $height;
     if ($pixels > 4194304) {
-        $scale = sqrt(4194304 / $pixels);
-        $width  = (int)(round($width * $scale / 32) * 32);
+        $scale  = sqrt(4194304 / $pixels);
+        $width  = (int)(round($width  * $scale / 32) * 32);
         $height = (int)(round($height * $scale / 32) * 32);
-        if ($width < 32) $width = 32;
+        if ($width  < 32) $width  = 32;
         if ($height < 32) $height = 32;
     }
 
-    // Endpoint según calidad
-    $endpoint = ($quality === 'max') ? 'flux-2-max' : 'flux-2-pro';
+    // Endpoint segun modelo
+    $endpoint = ($modelInput === 'flux-max') ? 'flux-2-max' : 'flux-2-pro';
 
     // ===== 1) SUBMIT =====
     $submitUrl = 'https://api.bfl.ai/v1/' . $endpoint;
@@ -134,7 +268,7 @@ function handleGenerate(array $req): void {
     $submitCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     if (curl_errno($ch)) {
         http_response_code(502);
-        echo json_encode(['error' => ['message' => 'Error de conexión con FLUX: ' . curl_error($ch)]]);
+        echo json_encode(['error' => ['message' => 'Error de conexion con FLUX: ' . curl_error($ch)]]);
         curl_close($ch);
         exit;
     }
@@ -149,18 +283,18 @@ function handleGenerate(array $req): void {
         exit;
     }
 
-    $submit = json_decode($submitResp, true);
-    $pollUrl = $submit['polling_url'] ?? '';
-    if ($pollUrl === '') {
+    $submit  = json_decode($submitResp, true);
+    if (empty($submit['polling_url'])) {
         http_response_code(502);
-        echo json_encode(['error' => ['message' => 'FLUX no devolvió polling_url']]);
+        echo json_encode(['error' => ['message' => 'FLUX no devolvio polling_url']]);
         exit;
     }
+    $pollUrl = $submit['polling_url'];
 
-    // ===== 2) POLLING (máx ~90s) =====
+    // ===== 2) POLLING (max ~90s) =====
     $imageUrl = '';
     for ($i = 0; $i < 60; $i++) {
-        usleep(1500000); // 1.5s
+        usleep(1500000);
         $ch = curl_init($pollUrl);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -172,7 +306,7 @@ function handleGenerate(array $req): void {
         curl_close($ch);
 
         if ($pollCode !== 200) continue;
-        $pr = json_decode($pollResp, true);
+        $pr     = json_decode($pollResp, true);
         $status = $pr['status'] ?? '';
         if ($status === 'Ready') {
             $imageUrl = $pr['result']['sample'] ?? '';
@@ -180,14 +314,14 @@ function handleGenerate(array $req): void {
         }
         if (in_array($status, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
             http_response_code(422);
-            echo json_encode(['error' => ['message' => 'FLUX rechazó la tarea: ' . $status]]);
+            echo json_encode(['error' => ['message' => 'FLUX rechazo la tarea: ' . $status]]);
             exit;
         }
     }
 
     if ($imageUrl === '') {
         http_response_code(504);
-        echo json_encode(['error' => ['message' => 'FLUX tardó demasiado. Inténtalo de nuevo.']]);
+        echo json_encode(['error' => ['message' => 'FLUX tardo demasiado. Intentalo de nuevo.']]);
         exit;
     }
 
@@ -217,18 +351,17 @@ function handleGenerate(array $req): void {
     ]);
 }
 
-// ============================================================
-// TEXTO (DeepSeek — clave B)
-// ============================================================
+// ===========================================================
+// TEXTO (DeepSeek - clave B)
+// ===========================================================
 function handleText(array $req): void {
     $apiKey = getKey('B');
     if (!$apiKey) {
-        // Fallback: intentar con DEEPSEEK_API_KEY
         $apiKey = getenv('DEEPSEEK_API_KEY') ?: '';
     }
     if (!$apiKey) {
         http_response_code(500);
-        echo json_encode(['error' => ['message' => 'API key de DeepSeek (B) no configurada.']]);
+        echo json_encode(['error' => ['message' => 'API key DeepSeek (B) no configurada.']]);
         exit;
     }
 
@@ -240,8 +373,8 @@ function handleText(array $req): void {
     }
 
     $payload = [
-        'model'    => 'deepseek-chat',
-        'messages' => [
+        'model'       => 'deepseek-chat',
+        'messages'    => [
             ['role' => 'user', 'content' => $prompt]
         ],
         'max_tokens'  => 1024,
@@ -282,18 +415,17 @@ function handleText(array $req): void {
     echo json_encode(['success' => true, 'text' => $text]);
 }
 
-// ============================================================
-// VISIÓN (Gemini — clave G)
-// ============================================================
+// ===========================================================
+// VISION (Gemini - clave G)
+// ===========================================================
 function handleVision(array $req): void {
     $apiKey = getKey('G');
     if (!$apiKey) {
-        // Fallback a 'A' (clave antigua de Gemini)
         $apiKey = getKey('A');
     }
     if (!$apiKey) {
         http_response_code(500);
-        echo json_encode(['error' => ['message' => 'API key de Gemini (G o A) no configurada.']]);
+        echo json_encode(['error' => ['message' => 'API key Gemini (G o A) no configurada.']]);
         exit;
     }
 
@@ -314,11 +446,11 @@ function handleVision(array $req): void {
     $imgBinary = base64_decode($imageB64, true);
     if ($imgBinary === false || strlen($imgBinary) > 2500000) {
         http_response_code(400);
-        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (máximo 2.5MB).']]);
+        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (maximo 2.5MB).']]);
         exit;
     }
 
-    $model = 'gemini-2.5-flash';
+    $model    = 'gemini-2.5-flash';
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
     $payload = [
@@ -365,9 +497,9 @@ function handleVision(array $req): void {
     echo json_encode(['success' => true, 'text' => $text]);
 }
 
-// ============================================================
+// ===========================================================
 // HELPERS
-// ============================================================
+// ===========================================================
 function getKey(string $var): string {
     $key = getenv($var);
     if (!$key) $key = getenv('REDIRECT_' . $var);

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="app.css?v=12" />
+  <link rel="stylesheet" href="app.css?v=13" />
 </head>
 <body>
 
@@ -115,9 +115,11 @@
             </div>
             <div class="control-line">
               <span class="control-line-label">Modelo</span>
-              <div class="toggle-row" id="quality-selector">
-                <button id="quality-pro" class="toggle-btn active" data-quality="pro">PRO</button>
-                <button id="quality-max" class="toggle-btn" data-quality="max">MAX</button>
+              <div class="toggle-row model-selector" id="model-selector">
+                <button class="toggle-btn" data-model="gemini-flash">3.1 FLASH</button>
+                <button class="toggle-btn active" data-model="gemini-pro">3 PRO</button>
+                <button class="toggle-btn" data-model="flux-pro">FLUX PRO</button>
+                <button class="toggle-btn" data-model="flux-max">FLUX MAX</button>
               </div>
             </div>
           </div>
@@ -157,6 +159,6 @@
 <div id="toast" class="toast-bar"><p id="toast-message"></p></div>
 
 <script src="history-manager.js?v=1"></script>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>
