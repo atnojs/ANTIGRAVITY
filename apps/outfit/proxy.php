@@ -83,13 +83,10 @@ function handleGenerate(array $req): void {
 // GEMINI IMAGE-TO-IMAGE (clave G)
 // ===========================================================
 function handleGeminiImage(array $req, string $modelInput): void {
-    $apiKey = getKey('G');
-    if (!$apiKey) {
-        $apiKey = getKey('A');
-    }
-    if (!$apiKey) {
+    $orKey = getKey('R');
+    if (!$orKey) {
         http_response_code(500);
-        echo json_encode(['error' => ['message' => 'API key Gemini (G) no configurada.']]);
+        echo json_encode(['error' => ['message' => 'API key OpenRouter (R) no configurada.']]);
         exit;
     }
 
@@ -117,43 +114,43 @@ function handleGeminiImage(array $req, string $modelInput): void {
         exit;
     }
 
-    // Mapear modelo
-    $geminiModel = ($modelInput === 'gemini-flash') ? 'gemini-3.1-flash-image' : 'gemini-3-pro-image';
-
-    $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $geminiModel . ':generateContent?key=' . urlencode($apiKey);
+    // Mapear modelo Gemini via OpenRouter
+    $geminiModelId = ($modelInput === 'gemini-flash') ? 'google/gemini-3.1-flash-image' : 'google/gemini-3-pro-image';
 
     $systemPrompt = "You are an AI image editor. The user provides an image of a person and a description of a new outfit. Generate a NEW edited image where ONLY the outfit is changed according to the prompt. Keep the person's face, body pose, skin tone, hair, and background EXACTLY as in the original. Change ONLY the clothing/outfit. Maintain photorealistic quality. Output ONLY the edited image.";
 
-    $payload = [
-        'system_instruction' => [
-            'parts' => [['text' => $systemPrompt]]
-        ],
-        'contents' => [[
-            'parts' => [
-                ['inlineData' => ['mimeType' => 'image/jpeg', 'data' => $imageB64]],
-                ['text' => $prompt],
-            ]
-        ]],
-        'generationConfig' => [
-            'responseModalities' => ['IMAGE', 'TEXT'],
-            'temperature' => 0.4,
-        ],
+    $content = [
+        ['type' => 'text', 'text' => $systemPrompt . "
+
+" . $prompt],
+        ['type' => 'image_url', 'image_url' => ['url' => 'data:image/jpeg;base64,' . $imageB64]],
     ];
 
-    $ch = curl_init($endpoint);
+    $payload = [
+        'model'      => $geminiModelId,
+        'modalities' => ['image', 'text'],
+        'messages'   => [['role' => 'user', 'content' => $content]],
+        'max_tokens' => 8000,
+    ];
+
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_HTTPHEADER     => [
+            'Authorization: Bearer ' . $orKey,
+            'Content-Type: application/json',
+            'accept: application/json',
+        ],
         CURLOPT_POSTFIELDS     => json_encode($payload),
-        CURLOPT_TIMEOUT        => 90,
+        CURLOPT_TIMEOUT        => 120,
         CURLOPT_CONNECTTIMEOUT => 15,
     ]);
     $response = curl_exec($ch);
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     if (curl_errno($ch)) {
         http_response_code(502);
-        echo json_encode(['error' => ['message' => 'Error Gemini: ' . curl_error($ch)]]);
+        echo json_encode(['error' => ['message' => 'Error OpenRouter: ' . curl_error($ch)]]);
         curl_close($ch);
         exit;
     }
@@ -168,33 +165,29 @@ function handleGeminiImage(array $req, string $modelInput): void {
     }
 
     $data = json_decode($response, true);
-    $parts = $data['candidates'][0]['content']['parts'] ?? [];
-
-    // Buscar parte imagen
-    $imageData = '';
-    foreach ($parts as $p) {
-        if (isset($p['inlineData']['data'])) {
-            $imageData = $p['inlineData']['data'];
-            break;
-        }
-    }
-
-    if ($imageData === '') {
+    $images = $data['choices'][0]['message']['images'] ?? [];
+    if (empty($images)) {
         http_response_code(502);
         echo json_encode(['error' => ['message' => 'Gemini no devolvio imagen. Intenta con FLUX.']]);
         exit;
     }
+    $imgDataUrl = $images[0]['image_url']['url'] ?? '';
+    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Gemini devolvio URL en lugar de imagen.']]);
+        exit;
+    }
+    $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
 
     echo json_encode([
         'success'  => true,
-        'image'    => $imageData,
+        'image'    => $imgB64,
         'mimeType' => 'image/png',
         'width'    => $width,
         'height'   => $height,
     ]);
 }
 
-// ===========================================================
 // FLUX IMAGE-TO-IMAGE (clave F, Black Forest Labs)
 // ===========================================================
 function handleFluxImage(array $req, string $modelInput): void {
