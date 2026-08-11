@@ -118,7 +118,7 @@ function handleGeminiImage(array $req, string $modelInput): void {
     }
 
     // Mapear modelo
-    $geminiModel = ($modelInput === 'gemini-flash') ? 'gemini-2.5-flash' : 'gemini-2.5-pro';
+    $geminiModel = ($modelInput === 'gemini-flash') ? 'gemini-3.1-flash-image' : 'gemini-3-pro-image';
 
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $geminiModel . ':generateContent?key=' . urlencode($apiKey);
 
@@ -450,7 +450,7 @@ function handleVision(array $req): void {
         exit;
     }
 
-    $model    = 'gemini-2.5-flash';
+    $model    = 'gemini-3.1-flash-image';
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
     $payload = [
