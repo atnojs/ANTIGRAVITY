@@ -102,7 +102,7 @@ const compSelectB = document.getElementById('comp-select-b');
 const compSelectC = document.getElementById('comp-select-c');
 
 // Toggle buttons (como outfit)
-let selectedQuality = 'pro';
+let selectedModel = 'gemini-pro';
 let selectedAR = '1:1';
 let selectedRes = 1024;
 
@@ -174,6 +174,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (modalClose) modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
   if (modal) modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.style.display = 'none';
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (modal) modal.style.display = 'none';
+      const lb = document.getElementById('antigravity-lightbox');
+      if (lb) lb.style.display = 'none';
+    }
   });
 
   // Contenedores de tags
@@ -283,6 +290,13 @@ function initDragAndDrop() {
       if (e.dataTransfer.files.length > 0) handleImageUpload(e.dataTransfer.files[0], box.id);
     });
     box.addEventListener('click', () => { currentBox = box.id; fileInput.click(); });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        currentBox = box.id;
+        fileInput.click();
+      }
+    });
   });
 
   fileInput.addEventListener('change', () => {
@@ -380,7 +394,7 @@ function checkGenerateButtonState() {
   generateBtn.disabled = !(uploadedCount >= 1 && styleSelect.value && selectedCompositions.length > 0);
 }
 
-// ===== TOGGLE BUTTONS (formato, resolución, modelo) =====
+// ===== TOGGLE BUTTONS (formato, resolución) y selector de modelo =====
 function initToggleButtons() {
   document.getElementById('ar-selector').addEventListener('click', e => {
     const btn = e.target.closest('.toggle-btn');
@@ -396,12 +410,12 @@ function initToggleButtons() {
     btn.classList.add('active');
     selectedRes = parseInt(btn.dataset.res);
   });
-  document.getElementById('quality-selector').addEventListener('click', e => {
-    const btn = e.target.closest('.toggle-btn');
-    if (!btn) return;
-    document.querySelectorAll('#quality-selector .toggle-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedQuality = btn.dataset.quality;
+  document.querySelectorAll('.model-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+      selectedModel = button.dataset.model;
+    });
   });
 }
 
@@ -462,7 +476,7 @@ async function generateImages() {
         const body = {
           action: 'generate',
           prompt: prompt,
-          quality: selectedQuality,
+          model: selectedModel,
           aspectRatio: selectedAR,
           resolution: selectedRes,
           output_format: 'png',

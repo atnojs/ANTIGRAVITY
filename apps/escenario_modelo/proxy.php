@@ -153,7 +153,7 @@ function handleOpenRouter(array $request): void {
     if (isset($request['temperature']) && is_numeric($request['temperature'])) $payload['temperature'] = max(0.0, min(2.0, (float)$request['temperature']));
     if (isset($request['max_tokens']) && is_numeric($request['max_tokens'])) $payload['max_tokens'] = max(1, min(32768, (int)$request['max_tokens']));
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
-        'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
+        'Authorization: Bearer ' . $key, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
     if ($status < 200 || $status >= 300 || isset($response['error'])) {
         $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
@@ -166,15 +166,89 @@ function handleOpenRouter(array $request): void {
     ]);
 }
 
-function handleFlux(array $request): void {
-    $key = getSecret('F');
-    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
+function handleGenerate(array $request): void {
     $prompt = trim((string)($request['prompt'] ?? ''));
     if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
-    $quality = strtolower((string)($request['quality'] ?? 'pro'));
-    $models = ['pro'=>'flux-2-pro', 'max'=>'flux-2-max'];
-    if (!isset($models[$quality])) respond(400, ['success' => false, 'error' => 'La calidad debe ser PRO o MAX.']);
+
+    // Determinar backend según modelo (skill_maestra: 4 modelos)
+    $reqModel = strtolower((string)($request['model'] ?? $request['quality'] ?? 'gemini-pro'));
+    $backend = 'flux';
+    $geminiModelId = 'google/gemini-3.1-flash-image';
+    $fluxEndpoint = 'flux-2-pro';
+
+    if (strpos($reqModel, 'max') !== false) {
+        $backend = 'flux';
+        $fluxEndpoint = 'flux-2-max';
+    } elseif ((strpos($reqModel, 'pro') !== false && strpos($reqModel, 'gemini') !== false) || $reqModel === 'google/gemini-3-pro-image' || $reqModel === 'gemini-pro') {
+        $backend = 'gemini';
+        $geminiModelId = 'google/gemini-3-pro-image';
+    } elseif (strpos($reqModel, 'flash') !== false || $reqModel === 'google/gemini-3.1-flash-image' || $reqModel === 'gemini-flash') {
+        $backend = 'gemini';
+        $geminiModelId = 'google/gemini-3.1-flash-image';
+    }
+
+    if ($backend === 'gemini') {
+        handleGeminiImage($request, $prompt, $geminiModelId);
+        return;
+    }
+    handleFluxGenerate($request, $prompt, $fluxEndpoint);
+}
+
+function handleGeminiImage(array $request, string $prompt, string $geminiModelId): void {
+    $orKey = getSecret('R');
+    if ($orKey === '') respond(500, ['success' => false, 'error' => 'La clave de OpenRouter (R) no está configurada.']);
+
+    $images = [];
+    if (isset($request['image']) && is_string($request['image']) && trim($request['image']) !== '') $images[] = $request['image'];
+    if (isset($request['images']) && is_array($request['images'])) {
+        foreach ($request['images'] as $image) if (is_string($image) && trim($image) !== '') $images[] = $image;
+    }
+    if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Máximo ocho imágenes de referencia.']);
+
+    $content = [];
+    $content[] = ['type' => 'text', 'text' => $prompt];
+    foreach ($images as $image) {
+        $mime = 'image/jpeg';
+        if (strpos($image, 'data:image/png') === 0) $mime = 'image/png';
+        elseif (strpos($image, 'data:image/webp') === 0) $mime = 'image/webp';
+        $b64 = strpos($image, ',') !== false ? substr($image, strpos($image, ',') + 1) : $image;
+        $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mime . ';base64,' . $b64]];
+    }
+
+    $payload = [
+        'model' => $geminiModelId,
+        'modalities' => ['image', 'text'],
+        'messages' => [['role' => 'user', 'content' => $content]],
+        'max_tokens' => 8000,
+    ];
+
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
+        'Authorization: *** ' . $orKey, 'Content-Type: application/json', 'accept: application/json'
+    ], $payload, 120);
+
+    if ($status < 200 || $status >= 300 || isset($response['error'])) {
+        $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
+        respond($status >= 400 && $status < 600 ? $status : 502, ['success' => false, 'error' => 'Gemini no pudo completar la solicitud.', 'detail' => $detail]);
+    }
+
+    $images = $response['choices'][0]['message']['images'] ?? [];
+    if (empty($images)) respond(502, ['success' => false, 'error' => 'Gemini no devolvió imagen.']);
+    $imgDataUrl = $images[0]['image_url']['url'] ?? '';
+    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) respond(502, ['success' => false, 'error' => 'Gemini devolvió URL en lugar de imagen.']);
+    $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
+
+    respond(200, [
+        'success' => true, 'provider' => 'gemini', 'model' => $geminiModelId,
+        'mimeType' => 'image/png', 'image' => $imgB64,
+        'dataUrl' => 'data:image/png;base64,' . $imgB64,
+    ]);
+}
+
+function handleFluxGenerate(array $request, string $prompt, string $fluxEndpoint): void {
+    $key = getSecret('F');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
+    $quality = strpos($fluxEndpoint, 'max') !== false ? 'max' : 'pro';
     $format = strtolower((string)($request['output_format'] ?? 'png'));
     if (!in_array($format, ['png','jpeg','webp'], true)) respond(400, ['success' => false, 'error' => 'Formato no permitido.']);
     [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
@@ -188,7 +262,7 @@ function handleFlux(array $request): void {
     foreach ($images as $i => $image) $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = base64Image($image);
     if (isset($request['seed']) && is_numeric($request['seed'])) $payload['seed'] = (int)$request['seed'];
     $headers = ['accept: application/json', 'Content-Type: application/json', 'x-key: ' . $key];
-    [$status, $submit] = requestJson('https://api.bfl.ai/v1/' . $models[$quality], 'POST', $headers, $payload);
+    [$status, $submit] = requestJson('https://api.bfl.ai/v1/' . $fluxEndpoint, 'POST', $headers, $payload);
     if ($status < 200 || $status >= 300) respond($status ?: 502, ['success'=>false, 'error'=>'FLUX rechazó la solicitud.', 'detail'=>$submit['detail'] ?? $submit]);
     $pollUrl = (string)($submit['polling_url'] ?? '');
     $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
@@ -213,7 +287,7 @@ function handleFlux(array $request): void {
     if ($binary === false || $binary === '' || $downloadStatus !== 200) respond(502, ['success'=>false, 'error'=>'No se pudo descargar el resultado.']);
     $base64 = base64_encode($binary);
     respond(200, [
-        'success'=>true, 'provider'=>'flux', 'model'=>$models[$quality], 'quality'=>$quality,
+        'success'=>true, 'provider'=>'flux', 'model'=>$fluxEndpoint, 'quality'=>$quality,
         'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
         'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
         'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
@@ -226,7 +300,12 @@ if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
     'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
     'actions'=>['generate','openrouter','text','health'],
-    'fluxModels'=>['pro'=>'flux-2-pro', 'max'=>'flux-2-max'],
+    'models'=>[
+        'gemini-flash' => 'google/gemini-3.1-flash-image',
+        'gemini-pro'   => 'google/gemini-3-pro-image',
+        'flux-pro'     => 'flux-2-pro',
+        'flux-max'     => 'flux-2-max',
+    ],
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
@@ -234,5 +313,5 @@ $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
 if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
-if ($action === 'generate') handleFlux($request);
+if ($action === 'generate') handleGenerate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);

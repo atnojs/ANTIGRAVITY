@@ -4,12 +4,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Composición Escenario</title>
+  <title>Composición Escenario — IA Fotográfica</title>
+  <meta name="description" content="Crea composiciones publicitarias impactantes: combina escenario, modelo, prenda y complemento con estilos fotográficos profesionales mediante IA.">
   <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=5"/>
+  <link rel="stylesheet" href="app.css?v=6"/>
 </head>
 <body>
 
@@ -18,6 +19,7 @@
   <!-- ===== HEADER ===== -->
   <header>
     <h1>Crea Composiciones Impactantes con IA</h1>
+    <p class="app-subtitle">Escenario, modelo, prenda y complemento en una sola imagen profesional</p>
   </header>
 
   <!-- ===== LAYOUT PRINCIPAL ===== -->
@@ -28,7 +30,7 @@
 
       <!-- UPLOAD BOXES -->
       <section class="upload-section">
-        <div class="upload-box" id="scenario-box">
+        <div class="upload-box" id="scenario-box" role="button" tabindex="0" aria-label="Añadir escenario">
           <span class="icon" aria-hidden="true">🌆</span>
           <h3>Escenario</h3>
           <p>Añade el fondo</p>
@@ -36,7 +38,7 @@
             <img class="preview-image" id="scenario-preview" alt="Vista previa del escenario">
           </div>
         </div>
-        <div class="upload-box" id="model-box">
+        <div class="upload-box" id="model-box" role="button" tabindex="0" aria-label="Añadir modelo">
           <span class="icon" aria-hidden="true">👤</span>
           <h3>Modelo</h3>
           <p>Añade el/la modelo</p>
@@ -44,7 +46,7 @@
             <img class="preview-image" id="model-preview" alt="Vista previa del modelo">
           </div>
         </div>
-        <div class="upload-box" id="clothing-box">
+        <div class="upload-box" id="clothing-box" role="button" tabindex="0" aria-label="Añadir prenda de ropa">
           <span class="icon" aria-hidden="true">👕</span>
           <h3>Prenda de ropa</h3>
           <p>Añade la prenda</p>
@@ -52,7 +54,7 @@
             <img class="preview-image" id="clothing-preview" alt="Vista previa de la prenda">
           </div>
         </div>
-        <div class="upload-box" id="accessory-box">
+        <div class="upload-box" id="accessory-box" role="button" tabindex="0" aria-label="Añadir complemento">
           <span class="icon" aria-hidden="true">👜</span>
           <h3>Complemento</h3>
           <p>Añade el complemento</p>
@@ -111,7 +113,7 @@
         </div>
       </section>
 
-      <!-- CONTROLES: formato, resolución, modelo (EN UNA SOLA FILA) -->
+      <!-- CONTROLES: formato y resolución + selector canónico de modelo IA -->
       <section class="section-card" id="section-controls">
         <h2 class="section-title">Ajustes de imagen</h2>
         <div class="controls-stack controls-row">
@@ -137,13 +139,16 @@
               <button class="toggle-btn" data-res="4096">4096</button>
             </div>
           </div>
-          <span class="control-sep" aria-hidden="true"></span>
-          <div class="control-line">
-            <span class="control-line-label">Modelo</span>
-            <div class="toggle-row" id="quality-selector">
-              <button class="toggle-btn active" data-quality="pro">PRO</button>
-              <button class="toggle-btn" data-quality="max">MAX</button>
-            </div>
+        </div>
+
+        <!-- Selector canónico de modelo IA (4 modelos, 3 PRO por defecto) -->
+        <div class="model-selector">
+          <span class="model-selector-label">Modelo IA</span>
+          <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+            <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+            <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+            <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+            <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
           </div>
         </div>
       </section>
@@ -157,12 +162,12 @@
       </section>
 
       <!-- RESULTADOS -->
-      <section class="results-section" id="results-section">
+      <section class="results-section" id="results-section" aria-live="polite">
         <h2 class="section-title">Resultados</h2>
         <div class="results-grid" id="results-grid"></div>
         <div class="download-all-wrap">
           <button class="btn-secondary" id="download-all">Descargar ZIP</button>
-          <button class="btn-secondary" id="new-composition" style="background:linear-gradient(135deg,#d69e2e,#b7791f);color:#fff;">Nueva Composición</button>
+          <button class="btn-secondary btn-reset" id="new-composition">Nueva Composición</button>
         </div>
       </section>
 
@@ -172,7 +177,7 @@
     <aside class="history-col" id="history-section">
       <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
       <div id="history-grid"></div>
-      <button id="history-clear-btn" style="display:none;margin-top:8px;padding:4px 10px;border-radius:999px;border:1px solid #ef4444;background:rgba(239,68,68,0.2);color:#ef4444;cursor:pointer;font-size:0.65rem;font-family:var(--font);text-transform:uppercase;letter-spacing:0.06em;">Limpiar</button>
+      <button id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
     </aside>
 
   </div><!-- /main-layout -->
@@ -210,12 +215,8 @@
 
 <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 
-<script src="https://unpkg.com/feather-icons"></script>
 <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="history-manager.js?v=5"></script>
-<script src="app.js?v=5"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => { feather.replace(); });
-</script>
+<script src="history-manager.js?v=6"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

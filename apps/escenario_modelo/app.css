@@ -27,6 +27,7 @@
   --radius-sm: 10px;
   --font: 'Electrolize', system-ui, -apple-system, sans-serif;
   --font-body: 'Electrolize', system-ui, -apple-system, sans-serif;
+  --font-ui: 'Electrolize', system-ui, -apple-system, sans-serif;
   --maxw: 1440px;
 }
 
@@ -93,6 +94,13 @@ h1 {
     0 0 44px var(--glow-soft);
   line-height: 1.2;
   margin-bottom: 0.5rem;
+}
+
+.app-subtitle {
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 1.2rem;
+  color: var(--muted);
 }
 
 /* === MAIN LAYOUT === */
@@ -305,6 +313,36 @@ h1 {
   font-weight: 700;
 }
 
+/* === SELECTOR DE MODELO IA (patrón canónico pill hoola, 4 modelos) === */
+.model-selector {
+  display: flex; flex-direction: column; align-items: center; gap: .6rem;
+  margin: 1.8rem 0 1.2rem; width: 100%;
+}
+.model-selector-label {
+  color: var(--muted); font-size: .8rem; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.model-toggle-group {
+  display: inline-flex; gap: .5rem; padding: .3rem; border-radius: 999px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  box-shadow: 0 0 12px var(--glow-soft);
+}
+.model-toggle {
+  font-family: var(--font-ui); font-size: .9rem; letter-spacing: 0.04em;
+  padding: .55rem 1rem; border-radius: 999px; border: 1px solid transparent;
+  background: transparent; color: var(--muted); cursor: pointer;
+  transition: all .25s ease; text-transform: uppercase; white-space: nowrap;
+}
+.model-toggle:hover {
+  color: var(--text); border-color: var(--border-strong);
+  background: rgba(255,255,255,0.06); backdrop-filter: blur(4px);
+  box-shadow: 0 0 12px var(--glow-soft);
+}
+.model-toggle.active {
+  background: linear-gradient(135deg,var(--contenedor),var(--acc));
+  color: #CCFFFF; text-shadow: 0 0 8px var(--glow);
+  border-color: var(--border-strong); box-shadow: 0 0 18px var(--glow);
+}
+
 /* === BOTÓN PRIMARIO (gradiente cian-verde) === */
 .section-generate { text-align: center; }
 
@@ -420,6 +458,28 @@ h1 {
 .btn-secondary:hover { transform: translateY(-1px); }
 .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.btn-reset {
+  background: var(--card-bg);
+  color: var(--acc);
+  border: 1px solid var(--border-strong);
+}
+.btn-reset:hover {
+  color: #CCFFFF;
+  background: var(--card-hover);
+  box-shadow: 0 0 16px var(--glow-soft);
+}
+
+.btn-danger-outline {
+  display: block; margin-top: 8px; margin-left: auto; margin-right: auto;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--danger);
+  background: rgba(239,68,68,0.2); color: var(--danger);
+  cursor: pointer; font-size: 0.65rem;
+  font-family: var(--font); text-transform: uppercase; letter-spacing: 0.06em;
+  transition: background .2s, color .2s;
+}
+.btn-danger-outline:hover { background: rgba(239,68,68,0.35); color: #fff; }
+
 .download-all-wrap {
   display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px;
 }
@@ -510,9 +570,11 @@ h1 {
 .loading-overlay {
   position: fixed; inset: 0; z-index: 9999;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
-  background: rgba(0, 16, 24, 0.75);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(0, 40, 60, 0.32) 0%, rgba(0, 12, 20, 0.38) 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 60, 60, 0.20) 0%, rgba(0, 8, 14, 0.28) 60%);
+  backdrop-filter: blur(14px) saturate(1.8);
+  -webkit-backdrop-filter: blur(14px) saturate(1.8);
 }
 
 .loading-overlay.hidden { display: none; }
@@ -554,7 +616,6 @@ h1 {
   border: 2px solid rgba(0, 208, 208, 0.75);
   border-radius: 9px;
   background: rgba(6, 16, 24, 0.8);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   padding: 12px 14px;
   box-shadow: 0 0 18px var(--glow-soft);
 }
@@ -575,7 +636,7 @@ h1 {
 
 .progress-bar-fill.indeterminate {
   width: 40%;
-  animation: indeterminateBar 1.5s ease-in-out infinite;
+  animation: indeterminateBar 2.5s ease-in-out infinite;
 }
 
 @keyframes indeterminateBar {
