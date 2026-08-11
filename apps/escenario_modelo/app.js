@@ -397,16 +397,16 @@ function checkGenerateButtonState() {
 // ===== TOGGLE BUTTONS (formato, resolución) y selector de modelo =====
 function initToggleButtons() {
   document.getElementById('ar-selector').addEventListener('click', e => {
-    const btn = e.target.closest('.toggle-btn');
+    const btn = e.target.closest('.aspect-ratio-button');
     if (!btn) return;
-    document.querySelectorAll('#ar-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#ar-selector .aspect-ratio-button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedAR = btn.dataset.ar;
   });
   document.getElementById('res-selector').addEventListener('click', e => {
-    const btn = e.target.closest('.toggle-btn');
+    const btn = e.target.closest('.aspect-ratio-button');
     if (!btn) return;
-    document.querySelectorAll('#res-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#res-selector .aspect-ratio-button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedRes = parseInt(btn.dataset.res);
   });

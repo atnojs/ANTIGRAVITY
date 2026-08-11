@@ -285,32 +285,37 @@ h1 {
   color: var(--muted);
 }
 
-.toggle-row { display: flex; gap: 5px; flex-wrap: wrap; }
-
-.toggle-btn {
-  padding: 6px 13px; border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,0.3);
-  color: var(--muted);
-  font-family: var(--font); font-size: 0.7rem;
-  letter-spacing: 0.05em; text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
+/* Cuadrícula de botones AR / resolución (patrón canónico aspect-ratio-button) */
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 6px;
 }
+.ar-grid { grid-template-columns: repeat(7, 1fr); }
+.res-grid { grid-template-columns: repeat(4, 1fr); }
 
-.toggle-btn:hover {
-  background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg);
-  border-color: var(--border-strong);
-  color: #fff;
-  box-shadow: 0 0 14px var(--glow-soft);
+.aspect-ratio-button {
+  min-width: 0; padding: .7rem .35rem; border-radius: 1rem;
+  border: 1px solid rgba(0,208,208,.28); background: var(--card-bg);
+  color: var(--muted); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: .45rem;
+  transition: all .25s ease; box-shadow: inset 0 0 12px rgba(0,208,208,.05);
+  cursor: pointer; font-family: var(--font);
 }
-
-.toggle-btn.active {
-  background: linear-gradient(135deg, var(--acc), var(--acc2));
-  color: #001018;
-  border-color: var(--acc);
-  font-weight: 700;
+.aspect-ratio-button svg {
+  width: 18px; height: 18px; flex-shrink: 0;
+}
+.aspect-ratio-button:hover {
+  color: var(--text); border-color: var(--border-strong);
+  background: var(--card-hover); box-shadow: 0 0 12px var(--glow-soft);
+}
+.aspect-ratio-button.active {
+  color: #CCFFFF; border-color: var(--border-strong);
+  background: linear-gradient(135deg, var(--contenedor), rgba(0,208,208,.55));
+  text-shadow: 0 0 8px var(--glow); box-shadow: 0 0 16px var(--glow-soft);
+}
+.aspect-ratio-button .btn-canon {
+  color: inherit; font-size: .65rem; line-height: 1; white-space: nowrap;
 }
 
 /* === SELECTOR DE MODELO IA (patrón canónico pill hoola, 4 modelos) === */
@@ -686,7 +691,7 @@ footer {
   .loading-text,
   .result-card.animate-in { animation: none; }
   .result-card.animate-in { opacity: 1; transform: none; }
-  .toggle-btn, .btn-generate, .upload-box { transition: none; }
+  .aspect-ratio-button, .btn-generate, .upload-box { transition: none; }
   * { transition-duration: 0.01ms !important; }
 }
 
@@ -701,8 +706,9 @@ footer {
   .results-grid { grid-template-columns: 1fr; }
   .image-container { height: 200px; }
   h1 { font-size: clamp(1.4rem, 7vw, 2rem); }
-  .toggle-row { gap: 3px; }
-  .toggle-btn { padding: 5px 10px; font-size: 0.65rem; }
+  .ar-grid { grid-template-columns: repeat(4, 1fr); }
+  .res-grid { grid-template-columns: repeat(4, 1fr); }
+  .aspect-ratio-button { padding: .6rem .25rem; }
   .controls-stack.controls-row { flex-direction: column; }
   .controls-row .control-line { padding: 0; }
   .control-sep { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
