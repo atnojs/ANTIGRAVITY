@@ -114,15 +114,11 @@ function handleGeminiImage(array $req, string $modelInput): void {
         exit;
     }
 
-    // Mapear modelo Gemini via OpenRouter
+    // Mapear modelo Gemini via OpenRouter (mismo patron que escenario_modelo)
     $geminiModelId = ($modelInput === 'gemini-flash') ? 'google/gemini-3.1-flash-image' : 'google/gemini-3-pro-image';
 
-    $systemPrompt = "You are an AI image editor. The user provides an image of a person and a description of a new outfit. Generate a NEW edited image where ONLY the outfit is changed according to the prompt. Keep the person's face, body pose, skin tone, hair, and background EXACTLY as in the original. Change ONLY the clothing/outfit. Maintain photorealistic quality. Output ONLY the edited image.";
-
     $content = [
-        ['type' => 'text', 'text' => $systemPrompt . "
-
-" . $prompt],
+        ['type' => 'text', 'text' => $prompt],
         ['type' => 'image_url', 'image_url' => ['url' => 'data:image/jpeg;base64,' . $imageB64]],
     ];
 
