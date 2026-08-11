@@ -206,42 +206,27 @@ function callDeepSeek(string $apiKey, string $systemPrompt, string $userMessage)
 }
 
 /**
- * Llamar a FLUX (BFL API) para generar imagen combinada.
+ * Llamar a FLUX (BFL API v2) para generar imagen combinada.
  * Endpoints canónicos (skill maestra): flux-2-pro / flux-2-max
+ * API: https://api.bfl.ai/v1/{model} → {id, polling_url} → GET polling_url
  */
 function callFlux(string $apiKey, string $fluxEndpoint, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
-
-    // Construir payload con imágenes en base64
-    $imageContents = [];
-    foreach ($images as $img) {
-        $imageContents[] = [
-            'type' => 'image_url',
-            'image_url' => ['url' => 'data:' . ($img['mimeType'] ?? 'image/jpeg') . ';base64,' . $img['data']]
-        ];
-    }
-
-    // Imagen de fondo (si hay)
-    if ($background && !empty($background['data'])) {
-        array_unshift($imageContents, [
-            'type' => 'image_url',
-            'image_url' => ['url' => 'data:' . ($background['mimeType'] ?? 'image/jpeg') . ';base64,' . $background['data']]
-        ]);
-    }
-
-    $messages = [[
-        'role' => 'user',
-        'content' => array_merge(
-            [['type' => 'text', 'text' => $prompt]],
-            $imageContents
-        )
-    ]];
-
-    // Dimensiones según aspect ratio
+    // Dimensiones según aspect ratio (múltiplos de 32, máx 4 MP)
     $dims = aspectRatioToDims($aspectRatio, min($targetPx, 2048));
 
-    $url = 'https://api.bfl.ml/v1/' . $fluxEndpoint;
+    // Imágenes de entrada: fondo primero, luego el resto (hasta 8)
+    $inputs = [];
+    if ($background && !empty($background['data'])) {
+        $inputs[] = ['data' => $background['data'], 'mimeType' => $background['mimeType'] ?? 'image/jpeg'];
+    }
+    foreach ($images as $img) {
+        $inputs[] = ['data' => $img['data'], 'mimeType' => $img['mimeType'] ?? 'image/jpeg'];
+    }
+    if (count($inputs) > 8) {
+        return ['error' => ['message' => 'FLUX admite máximo 8 imágenes por combinación']];
+    }
 
-    $body = json_encode([
+    $payload = [
         'prompt' => $prompt,
         'width' => $dims['w'],
         'height' => $dims['h'],
@@ -250,63 +235,115 @@ function callFlux(string $apiKey, string $fluxEndpoint, string $prompt, array $i
         'seed' => random_int(0, 999999),
         'safety_tolerance' => 5,
         'output_format' => 'jpeg'
-    ]);
-
-    $headers = [
-        'Content-Type: application/json',
-        'X-Key: ' . $apiKey
     ];
 
-    $response = httpPost($url, $headers, $body);
-
-    if (isset($response['error'])) {
-        return $response;
+    // Enviar imágenes como input_image, input_image_2, ...
+    $hasInput = false;
+    foreach ($inputs as $i => $img) {
+        $data = $img['data'];
+        if (strpos($data, 'data:') === 0) {
+            $data = substr($data, strpos($data, ',') + 1);
+        }
+        $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = $data;
+        $hasInput = true;
     }
 
-    // BFL devuelve { id: "..." }, hay que esperar y hacer polling
-    $taskId = $response['id'] ?? null;
-    if (!$taskId) {
-        return ['error' => ['message' => 'No se recibió ID de tarea de FLUX']];
+    $url = 'https://api.bfl.ai/v1/' . $fluxEndpoint;
+    $headers = [
+        'Content-Type: application/json',
+        'accept: application/json',
+        'x-key: ' . $apiKey
+    ];
+
+    [$submitStatus, $submit] = bflJson($url, 'POST', $headers, $payload);
+
+    if ($submitStatus < 200 || $submitStatus >= 300 || isset($submit['error'])) {
+        $detail = $submit['detail'] ?? $submit['error'] ?? $submit['message'] ?? ('HTTP ' . $submitStatus);
+        return ['error' => ['message' => 'FLUX rechazó la solicitud: ' . $detail]];
     }
 
-    // Polling (máx 120 segundos)
-    $result = pollBflResult($apiKey, $taskId);
-    return $result;
+    // API v2: respuesta { id, polling_url }
+    $pollUrl = (string)($submit['polling_url'] ?? '');
+    $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
+    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) {
+        return ['error' => ['message' => 'URL de seguimiento FLUX no válida']];
+    }
+
+    // Polling (máx ~90 s)
+    $resultUrl = '';
+    $last = 'Pending';
+    for ($i = 0; $i < 90; $i++) {
+        usleep(1000000);
+        [$pollStatus, $poll] = bflJson($pollUrl, 'GET', $headers, null);
+        if ($pollStatus !== 200 || isset($poll['error'])) continue;
+        $last = (string)($poll['status'] ?? 'Pending');
+        if ($last === 'Ready') {
+            $resultUrl = (string)($poll['result']['sample'] ?? '');
+            break;
+        }
+        if (in_array($last, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
+            return ['error' => ['message' => 'FLUX no pudo completar la tarea: ' . $last]];
+        }
+    }
+
+    if ($resultUrl === '' || parse_url($resultUrl, PHP_URL_SCHEME) !== 'https') {
+        return ['error' => ['message' => 'FLUX tardó demasiado (estado: ' . $last . ')']];
+    }
+
+    // Descargar la imagen resultante
+    $ch = curl_init($resultUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 3,
+    ]);
+    $binary = curl_exec($ch);
+    $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($binary === false || $binary === '' || $downloadStatus !== 200) {
+        return ['error' => ['message' => 'No se pudo descargar el resultado de FLUX']];
+    }
+
+    return [
+        'images' => [[
+            'data' => base64_encode($binary),
+            'mimeType' => 'image/jpeg'
+        ]]
+    ];
 }
 
 /**
- * Polling del resultado de BFL.
+ * Petición JSON a BFL devolviendo [status, body].
  */
-function pollBflResult(string $apiKey, string $taskId): array {
-    $maxAttempts = 60; // ~120 segundos
-    $headers = ['X-Key: ' . $apiKey];
-
-    for ($i = 0; $i < $maxAttempts; $i++) {
-        sleep(2);
-        $result = httpGet("https://api.bfl.ml/v1/get_result?id={$taskId}", $headers);
-
-        if (isset($result['status']) && $result['status'] === 'Ready') {
-            $imageUrl = $result['result']['sample'] ?? null;
-            if ($imageUrl) {
-                $imageData = @file_get_contents($imageUrl);
-                if ($imageData) {
-                    return [
-                        'images' => [[
-                            'data' => base64_encode($imageData),
-                            'mimeType' => 'image/jpeg'
-                        ]]
-                    ];
-                }
-            }
-            return ['error' => ['message' => 'Imagen generada pero no se pudo descargar']];
-        }
-
-        if (isset($result['status']) && $result['status'] === 'Failed') {
-            return ['error' => ['message' => 'FLUX falló: ' . ($result['result']['error'] ?? 'Error desconocido')]];
-        }
+function bflJson(string $url, string $method, array $headers, ?array $body = null, int $timeout = 60): array {
+    $ch = curl_init($url);
+    $options = [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_FOLLOWLOCATION => false,
+    ];
+    if ($body !== null) {
+        $options[CURLOPT_POSTFIELDS] = json_encode($body);
     }
+    curl_setopt_array($ch, $options);
+    $raw = curl_exec($ch);
+    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
 
-    return ['error' => ['message' => 'Timeout esperando resultado de FLUX']];
+    if ($raw === false || $raw === '') {
+        return [$status, ['error' => ['message' => $error !== '' ? $error : 'Respuesta vacía de BFL']]];
+    }
+    $data = json_decode($raw, true);
+    if (!is_array($data)) {
+        return [$status, ['error' => ['message' => 'Respuesta no JSON de BFL (HTTP ' . $status . ')']]];
+    }
+    return [$status, $data];
 }
 
 /**
@@ -314,9 +351,20 @@ function pollBflResult(string $apiKey, string $taskId): array {
  * Modelos canónicos (skill maestra): google/gemini-3.1-flash-image / google/gemini-3-pro-image
  */
 function callGemini(string $apiKey, string $geminiModelId, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
-    // Construir contenido (texto primero, luego fondo y resto de imágenes como data URLs)
+    // Instrucción de proporción (Gemini controla el AR por prompt)
+    $ratioHint = [
+        '1:1'  => 'Genera la imagen en formato cuadrado 1:1.',
+        '3:2'  => 'Genera la imagen en formato horizontal 3:2.',
+        '4:5'  => 'Genera la imagen en formato vertical 4:5.',
+        '16:9' => 'Genera la imagen en formato horizontal panorámico 16:9.',
+        '21:9' => 'Genera la imagen en formato ultra panorámico 21:9.',
+        '9:16' => 'Genera la imagen en formato vertical 9:16.',
+    ];
+    $ratioText = $ratioHint[$aspectRatio] ?? $ratioHint['1:1'];
+
+    // Construir contenido (texto con la proporción, luego fondo y resto de imágenes)
     $content = [];
-    $content[] = ['type' => 'text', 'text' => $prompt];
+    $content[] = ['type' => 'text', 'text' => $ratioText . ' ' . $prompt];
 
     // Imagen de fondo primero
     if ($background && !empty($background['data'])) {
@@ -457,9 +505,14 @@ function aspectRatioToDims(string $ar, int $maxSide): array {
 
     [$w, $h] = $map[$ar] ?? [1, 1];
 
+    // Redondear a múltiplos de 32 (requisito de BFL flux-2)
     if ($w >= $h) {
-        return ['w' => $maxSide, 'h' => (int) round($maxSide * $h / $w)];
+        return ['w' => round32($maxSide), 'h' => round32($maxSide * $h / $w)];
     } else {
-        return ['h' => $maxSide, 'w' => (int) round($maxSide * $w / $h)];
+        return ['h' => round32($maxSide), 'w' => round32($maxSide * $w / $h)];
     }
+}
+
+function round32(float $value): int {
+    return max(32, (int) round($value / 32) * 32);
 }
