@@ -7,9 +7,9 @@
  * DeepSeek para mejorar prompts (texto)
  *
  * Claves de entorno:
- *   F  — FLUX API key (BFL / replicate)
- *   A  — Gemini API key (Google AI Studio)
- *   D  — DeepSeek API key (para enhancePrompt)
+ *   F  — FLUX API key (BFL, generación de imágenes)
+ *   R  — OpenRouter (Gemini imagen, vía el .htaccess raíz)
+ *   D / B / DEEPSEEK_API_KEY  — DeepSeek (para enhancePrompt)
  *
  * Endpoints:
  *   POST { task: 'enhancePrompt', prompt, images[]?, hasBackground }
@@ -20,9 +20,6 @@
  */
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -33,6 +30,29 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Método no permitido']]);
     exit;
+}
+
+/**
+ * Helper de claves en cascada (skill maestra):
+ * config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+ */
+function getSecret(string $name): string {
+    $config = __DIR__ . '/config.php';
+    if (is_file($config)) {
+        include_once $config;
+        if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
+            return trim((string)constant($name));
+        }
+    }
+    $values = [
+        getenv($name), getenv('REDIRECT_' . $name),
+        $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '',
+        $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? '',
+    ];
+    foreach ($values as $value) {
+        if (is_string($value) && trim($value) !== '') return trim($value);
+    }
+    return '';
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -46,9 +66,9 @@ $task = $input['task'];
 
 // ─── ENHANCE PROMPT → DeepSeek ───────────────────────────────
 if ($task === 'enhancePrompt') {
-    $apiKey = getenv('D');
+    $apiKey = getSecret('D') ?: getSecret('B') ?: getSecret('DEEPSEEK_API_KEY');
     if (!$apiKey) {
-        echo json_encode(['error' => ['message' => 'API key DeepSeek (D) no configurada']]);
+        echo json_encode(['error' => ['message' => 'API key DeepSeek (D/B) no configurada']]);
         exit;
     }
 
@@ -102,7 +122,7 @@ PROMPT;
 
 // ─── COMBINE IMAGES → FLUX o Gemini ──────────────────────────
 if ($task === 'combineImages') {
-    $model = $input['model'] ?? 'flux-pro';
+    $model = strtolower((string)($input['model'] ?? 'gemini-pro'));
     $prompt = $input['prompt'] ?? '';
     $aspectRatio = $input['aspectRatio'] ?? '1:1';
     $targetPx = $input['targetPx'] ?? 1024;
@@ -114,21 +134,36 @@ if ($task === 'combineImages') {
         exit;
     }
 
-    // Determinar backend según modelo
-    if (strpos($model, 'gemini') !== false) {
-        $apiKey = getenv('A');
+    // ── Mapeo canónico skill maestra (4 modelos) ──
+    $backend = 'flux';
+    $fluxEndpoint = 'flux-2-pro';
+    $geminiModelId = 'google/gemini-3.1-flash-image';
+
+    if (strpos($model, 'max') !== false) {
+        $backend = 'flux';
+        $fluxEndpoint = 'flux-2-max';
+    } elseif (strpos($model, 'gemini') !== false && strpos($model, 'pro') !== false) {
+        $backend = 'gemini';
+        $geminiModelId = 'google/gemini-3-pro-image';
+    } elseif (strpos($model, 'flash') !== false) {
+        $backend = 'gemini';
+        $geminiModelId = 'google/gemini-3.1-flash-image';
+    }
+
+    if ($backend === 'gemini') {
+        $apiKey = getSecret('R'); // OpenRouter
         if (!$apiKey) {
-            echo json_encode(['error' => ['message' => 'API key Gemini (A) no configurada']]);
+            echo json_encode(['error' => ['message' => 'API key OpenRouter (R) no configurada']]);
             exit;
         }
-        $result = callGemini($apiKey, $model, $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
+        $result = callGemini($apiKey, $geminiModelId, $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
     } else {
-        $apiKey = getenv('F');
+        $apiKey = getSecret('F'); // FLUX / BFL
         if (!$apiKey) {
             echo json_encode(['error' => ['message' => 'API key FLUX (F) no configurada']]);
             exit;
         }
-        $result = callFlux($apiKey, $model, $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
+        $result = callFlux($apiKey, $fluxEndpoint, $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
     }
 
     echo json_encode($result);
@@ -172,15 +207,9 @@ function callDeepSeek(string $apiKey, string $systemPrompt, string $userMessage)
 
 /**
  * Llamar a FLUX (BFL API) para generar imagen combinada.
- * Modelos: flux-pro, flux-max
+ * Endpoints canónicos (skill maestra): flux-2-pro / flux-2-max
  */
-function callFlux(string $apiKey, string $model, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
-    // Mapear modelo a endpoint de BFL
-    $modelMap = [
-        'flux-pro' => 'flux-pro',
-        'flux-max' => 'flux-max'
-    ];
-    $bflModel = $modelMap[$model] ?? 'flux-pro';
+function callFlux(string $apiKey, string $fluxEndpoint, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
 
     // Construir payload con imágenes en base64
     $imageContents = [];
@@ -210,7 +239,7 @@ function callFlux(string $apiKey, string $model, string $prompt, array $images, 
     // Dimensiones según aspect ratio
     $dims = aspectRatioToDims($aspectRatio, min($targetPx, 2048));
 
-    $url = 'https://api.bfl.ml/v1/' . $bflModel;
+    $url = 'https://api.bfl.ml/v1/' . $fluxEndpoint;
 
     $body = json_encode([
         'prompt' => $prompt,
@@ -281,55 +310,46 @@ function pollBflResult(string $apiKey, string $taskId): array {
 }
 
 /**
- * Llamar a Gemini (Google AI) para generar imagen.
- * Modelos: gemini-flash (gemini-2.0-flash-exp), gemini-pro (gemini-2.5-pro-exp)
+ * Llamar a Gemini (vía OpenRouter, clave R) para generar imagen combinada.
+ * Modelos canónicos (skill maestra): google/gemini-3.1-flash-image / google/gemini-3-pro-image
  */
-function callGemini(string $apiKey, string $model, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
-    // Mapear modelo a ID de Gemini
-    $modelMap = [
-        'gemini-flash' => 'gemini-2.0-flash-exp-image-generation',
-        'gemini-pro' => 'gemini-2.5-pro-exp-03-25'
-    ];
-    $geminiModel = $modelMap[$model] ?? 'gemini-2.0-flash-exp-image-generation';
-
-    // Construir contenido del mensaje (partes)
-    $parts = [];
+function callGemini(string $apiKey, string $geminiModelId, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
+    // Construir contenido (texto primero, luego fondo y resto de imágenes como data URLs)
+    $content = [];
+    $content[] = ['type' => 'text', 'text' => $prompt];
 
     // Imagen de fondo primero
     if ($background && !empty($background['data'])) {
-        $parts[] = [
-            'inlineData' => [
-                'mimeType' => $background['mimeType'] ?? 'image/jpeg',
-                'data' => $background['data']
-            ]
+        $content[] = [
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . ($background['mimeType'] ?? 'image/jpeg') . ';base64,' . $background['data']]
         ];
     }
 
     // Imágenes adicionales
     foreach ($images as $img) {
-        $parts[] = [
-            'inlineData' => [
-                'mimeType' => $img['mimeType'] ?? 'image/jpeg',
-                'data' => $img['data']
-            ]
+        $content[] = [
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . ($img['mimeType'] ?? 'image/jpeg') . ';base64,' . $img['data']]
         ];
     }
 
-    // Prompt de texto
-    $parts[] = ['text' => $prompt];
-
-    $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $geminiModel . ':generateContent?key=' . urlencode($apiKey);
+    $url = 'https://openrouter.ai/api/v1/chat/completions';
 
     $body = json_encode([
-        'contents' => [[
-            'parts' => $parts
-        ]],
-        'generationConfig' => [
-            'responseModalities' => ['IMAGE', 'TEXT']
-        ]
+        'model' => $geminiModelId,
+        'modalities' => ['image', 'text'],
+        'messages' => [
+            ['role' => 'user', 'content' => $content]
+        ],
+        'max_tokens' => 8000
     ]);
 
-    $headers = ['Content-Type: application/json'];
+    $headers = [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $apiKey,
+        'accept: application/json'
+    ];
 
     $response = httpPost($url, $headers, $body);
 
@@ -337,18 +357,22 @@ function callGemini(string $apiKey, string $model, string $prompt, array $images
         return $response;
     }
 
-    // Extraer imagen de la respuesta de Gemini
-    $candidates = $response['candidates'] ?? [];
+    // Extraer imagen de la respuesta de OpenRouter (choices[0].message.images[])
     $images_out = [];
-
-    foreach ($candidates as $candidate) {
-        foreach (($candidate['content']['parts'] ?? []) as $part) {
-            if (isset($part['inlineData'])) {
-                $images_out[] = [
-                    'data' => $part['inlineData']['data'] ?? '',
-                    'mimeType' => $part['inlineData']['mimeType'] ?? 'image/jpeg'
-                ];
+    $msgImages = $response['choices'][0]['message']['images'] ?? [];
+    foreach ($msgImages as $img) {
+        $dataUrl = $img['image_url']['url'] ?? '';
+        if ($dataUrl !== '' && strpos($dataUrl, 'data:') === 0) {
+            $comma = strpos($dataUrl, ',');
+            $b64 = $comma !== false ? substr($dataUrl, $comma + 1) : $dataUrl;
+            $mime = 'image/png';
+            if (preg_match('/^data:image\/([a-z0-9.+-]+)/i', $dataUrl, $m)) {
+                $mime = 'image/' . strtolower($m[1]);
             }
+            $images_out[] = [
+                'data' => $b64,
+                'mimeType' => $mime
+            ];
         }
     }
 

@@ -88,7 +88,7 @@ const state = {
     images: new Array(CONFIG.MAX_IMAGES).fill(null), // Array fijo con tamaño máximo, lleno de nulls inicialmente
     history: [],
     selectedAR: '1:1',
-    selectedModel: 'flux-pro', // Modelo IA: 'flux-pro' | 'gemini-flash' | 'gemini-pro' | 'flux-max'
+    selectedModel: 'gemini-pro', // Modelo IA: 'gemini-flash' | 'gemini-pro' (default) | 'flux-pro' | 'flux-max'
     selectedRes: 1024, // Resolución (lado objetivo px): 512 / 1024 / 2048 / 4096
     isGenerating: false,
     isEnhancing: false,
@@ -109,6 +109,7 @@ const elements = {
     btnClearPrompt: document.getElementById('btnClearPrompt'),
     promptButtons: document.getElementById('promptButtons'),
     progressContainer: document.getElementById('loadingOverlay'),
+    secondaryStatus: document.getElementById('secondaryStatus'),
     errorMessage: document.getElementById('errorMessage'),
     historySection: document.getElementById('historySection'),
     historyGrid: document.getElementById('historyGrid'),
@@ -313,6 +314,7 @@ async function handleEnhancePrompt() {
     }
 
     setEnhancing(true);
+    setProcessing(true, 'Mejorando prompt...');
     hideError();
 
     try {
@@ -345,10 +347,11 @@ async function handleEnhancePrompt() {
         console.error('Error:', error);
     } finally {
         setEnhancing(false);
+        setProcessing(false);
     }
 }
 
-// ... (Resto de funciones: setupPromptEnhancement, showPromptButtons, hidePromptButtons, setEnhancing, handleGenerate, setGenerating, addToHistory, renderHistory, createHistoryCard, downloadImage, regenerateImage, deleteFromHistory, setupLightbox, openLightbox, closeLightbox, fileToBase64, showError, hideError - SIN CAMBIOS IMPORTANTES)
+// ... (Resto de funciones: setupPromptEnhancement, showPromptButtons, hidePromptButtons, setEnhancing, handleGenerate, setProcessing, addToHistory, renderHistory, createHistoryCard, downloadImage, regenerateImage, deleteFromHistory, setupLightbox, openLightbox, closeLightbox, fileToBase64, showError, hideError - SIN CAMBIOS IMPORTANTES)
 
 function setupARSelector() {
     const buttons = elements.arSelector.querySelectorAll('.ar-option');
@@ -455,7 +458,7 @@ async function handleGenerate() {
         return;
     }
 
-    setGenerating(true);
+    setProcessing(true, 'Generando imágenes...');
     hideError();
 
     try {
@@ -509,18 +512,24 @@ async function handleGenerate() {
         showError(error.message || 'Error al generar las imágenes');
         console.error('Error de generación:', error);
     } finally {
-        setGenerating(false);
+        setProcessing(false);
     }
 }
 
-function setGenerating(isGenerating) {
-    state.isGenerating = isGenerating;
-    elements.btnGenerate.disabled = isGenerating;
+function setProcessing(isProcessing, statusText) {
+    state.isGenerating = isProcessing;
+    elements.btnGenerate.disabled = isProcessing;
 
-    if (isGenerating) {
+    if (elements.secondaryStatus) {
+        elements.secondaryStatus.textContent = statusText || 'Procesando solicitud...';
+    }
+
+    if (isProcessing) {
         elements.progressContainer.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Bloquear scroll durante el proceso
     } else {
         elements.progressContainer.classList.add('hidden');
+        document.body.style.overflow = '';
     }
 }
 

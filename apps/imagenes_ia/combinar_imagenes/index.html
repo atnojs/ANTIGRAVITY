@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="web.css?v=hoola1">
+    <link rel="stylesheet" href="web.css?v=hoola2">
 </head>
 
 <body>
@@ -141,15 +141,15 @@
                     <p class="section-desc" id="resNote"></p>
                 </div>
 
-                <!-- Selector de Modelo IA (4-button toggle canónico) -->
+                <!-- Selector de Modelo IA (toggles pill hoola canónico, skill maestra) -->
                 <div class="section-block">
                     <div class="model-selector">
                         <span class="model-selector-label">Modelo IA</span>
                         <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-                            <button type="button" class="model-toggle active flux" data-model="flux-pro">Flux Pro</button>
-                            <button type="button" class="model-toggle" data-model="gemini-flash">3.1 Flash</button>
-                            <button type="button" class="model-toggle" data-model="gemini-pro">3 Pro</button>
-                            <button type="button" class="model-toggle flux" data-model="flux-max">Flux Max</button>
+                            <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+                            <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+                            <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+                            <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
                         </div>
                     </div>
                 </div>
@@ -222,20 +222,26 @@
                 </div>
             </div>
         </div>
-        <!-- Loading Overlay -->
-        <div class="loading-overlay hidden" id="loadingOverlay">
+        <!-- Loading Overlay (universal skill maestra) -->
+        <div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
             <div class="spinner-triple">
                 <div class="ring ring-1"></div>
                 <div class="ring ring-2"></div>
                 <div class="ring ring-3"></div>
             </div>
-            <p class="loading-text">IA Generando Obra Maestra...</p>
+            <p class="loading-text">IA generando lo solicitado...</p>
+            <div class="progress-panel">
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p class="secondary-status" id="secondaryStatus">Procesando solicitud...</p>
+            </div>
         </div>
     </div>
 
     <!-- JavaScript -->
     <script src="history-manager.js"></script>
-    <script src="web.js"></script>
+    <script src="web.js?v=2"></script>
 </body>
 
 </html>
