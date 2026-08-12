@@ -55,6 +55,23 @@ try {
     }
   }
 
+  // ─── Clave R (OpenRouter → Gemini imagen) ─────────────
+  $orKey = '';
+  foreach (['R'] as $var) {
+    foreach (['', 'REDIRECT_'] as $prefix) {
+      $val = getenv($prefix . $var);
+      if (!empty($val)) { $orKey = $val; break 2; }
+    }
+  }
+  if (empty($orKey)) {
+    foreach (['R'] as $var) {
+      if (!empty($_SERVER[$var] ?? '')) { $orKey = $_SERVER[$var]; break; }
+    }
+  }
+
+  // Modelo elegido por el frontend (patrón canónico 4 modelos)
+  $model = strtolower((string)($json['model'] ?? ''));
+
   // ══════════════════════════════════════════════════════════
   //  Gemini helpers
   // ══════════════════════════════════════════════════════════
@@ -127,6 +144,48 @@ try {
     return json_decode($resp, true);
   }
 
+  function geminiGenerate($geminiModel, $prompt, $inputImageBase64, $mimeType, $apiKey) {
+    $content = [
+      ['type' => 'text', 'text' => $prompt],
+    ];
+    if (!empty($inputImageBase64)) {
+      $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . ($mimeType ?: 'image/png') . ';base64,' . $inputImageBase64]];
+    }
+    $payload = [
+      'model' => $geminiModel,
+      'modalities' => ['image', 'text'],
+      'messages' => [['role' => 'user', 'content' => $content]],
+      'max_tokens' => 8000,
+    ];
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_POST => true,
+      CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'accept: application/json', 'Authorization: Bearer ' . $apiKey],
+      CURLOPT_POSTFIELDS => json_encode($payload),
+      CURLOPT_TIMEOUT => 120,
+      CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch);
+    if ($resp === false) throw new Exception("cURL OpenRouter: " . curl_error($ch));
+    $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    curl_close($ch);
+    $data = json_decode($resp, true);
+    if ($status < 200 || $status >= 300 || isset($data['error'])) {
+      $msg = $data['error']['message'] ?? $data['error'] ?? ("HTTP " . $status);
+      if (is_array($msg)) $msg = json_encode($msg);
+      throw new Exception("OpenRouter: " . $msg);
+    }
+    $images = $data['choices'][0]['message']['images'] ?? [];
+    if (empty($images)) throw new Exception("Gemini no devolvió imagen.");
+    $imgDataUrl = $images[0]['image_url']['url'] ?? '';
+    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) throw new Exception("Gemini devolvió URL en lugar de imagen.");
+    $outB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
+    $outMime = 'image/png';
+    if (preg_match('#^data:(image/[a-z0-9.+-]+);#i', $imgDataUrl, $m) === 1) $outMime = $m[1];
+    return ['data' => $outB64, 'mimeType' => $outMime];
+  }
+
   function fluxGenerate($endpoint, $prompt, $inputImageBase64, $apiKey) {
     $payload = ['prompt' => $prompt, 'width' => 1024, 'height' => 1024];
     if (!empty($inputImageBase64)) {
@@ -191,31 +250,50 @@ try {
     exit;
   }
 
-  // ── generateImages (FLUX) ─────────────────────────────
+  // ── generateImages (FLUX o GEMINI según modelo) ───────
   if ($task === 'generateImages') {
-    if (empty($fluxKey)) {
-      http_response_code(500);
-      echo json_encode(['error' => ['message' => 'Clave FLUX (F) no configurada']]);
-      exit;
-    }
     if (!is_array($prompts)) $prompts = [];
     $images = [];
 
     // Extraer base64 puro de la imagen (quitar prefijo data:...)
     $inputB64 = '';
+    $inputMime = 'image/png';
     if (!empty($image['data'])) {
       $d = $image['data'];
-      if (preg_match('#^data:image/[^;]+;base64,(.+)$#', $d, $m)) {
-        $inputB64 = $m[1];
+      if (preg_match('#^data:(image/[^;]+);base64,(.+)$#', $d, $m)) {
+        $inputMime = $m[1];
+        $inputB64 = $m[2];
       } else {
         $inputB64 = $d; // asumir que ya viene puro
       }
     }
 
-    foreach ($prompts as $p) {
-      $result = fluxGenerate('flux-2-pro', $p, $inputB64, $fluxKey);
-      $images[] = $result;
+    // Determinar backend por modelo
+    $isGemini = (strpos($model, 'gemini') !== false);
+    $isMax = (strpos($model, 'max') !== false);
+
+    if ($isGemini) {
+      if (empty($orKey)) {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada']]);
+        exit;
+      }
+      $geminiModel = (strpos($model, 'flash') !== false) ? 'google/gemini-3.1-flash-image' : 'google/gemini-3-pro-image';
+      foreach ($prompts as $p) {
+        $images[] = geminiGenerate($geminiModel, $p, $inputB64, $inputMime, $orKey);
+      }
+    } else {
+      if (empty($fluxKey)) {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave FLUX (F) no configurada']]);
+        exit;
+      }
+      $endpoint = $isMax ? 'flux-2-max' : 'flux-2-pro';
+      foreach ($prompts as $p) {
+        $images[] = fluxGenerate($endpoint, $p, $inputB64, $fluxKey);
+      }
     }
+
     echo json_encode(['images' => $images]);
     exit;
   }

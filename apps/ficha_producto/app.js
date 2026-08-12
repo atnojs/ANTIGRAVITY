@@ -462,7 +462,7 @@
         try {
           const finalPrompt = composePrePrompt(prompts[i], { integration: __detectIntegrationFromImage(__normalizeImageForApi(imageInline)) });
           const __imageNorm = __normalizeImageForApi(imageInline);
-          const __payload = { task: "generateImages", image: __imageNorm, prompts: [finalPrompt] };
+          const __payload = { task: "generateImages", image: __imageNorm, prompts: [finalPrompt], model: (window.__fichaModel || 'flux-pro') };
           __extendPayloadWithConfigs(__payload, finalPrompt);
           const res = await fetch("./proxy.php", {
             method: "POST",
@@ -504,6 +504,7 @@
         task: "generateImages",
         image: __normalizeImageForApi(currentImage),
         prompts: [finalPrompt],
+        model: (window.__fichaModel || 'flux-pro'),
       };
       __extendPayloadWithConfigs(__payload, finalPrompt);
       
@@ -924,6 +925,12 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState("");
   const [preserveLogo, setPreserveLogo] = useState(true);
+  const [selectedModel, setSelectedModel] = useState(window.__fichaModel || 'flux-pro');
+
+  const changeModel = (m) => {
+    setSelectedModel(m);
+    window.__fichaModel = m;
+  };
 
   const handleImageChange = (e) => {
     const f = e.target.files[0];
@@ -1024,6 +1031,31 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
             </div>
             <p className="text-xs text-gray-500">PNG, JPG, WEBP hasta 4MB</p>
           </div>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300">Modelo IA</label>
+        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Seleccionar modelo">
+          {[
+            { id: 'gemini-flash', label: '3.1FLASH' },
+            { id: 'gemini-pro', label: '3 PRO' },
+            { id: 'flux-pro', label: 'FLUX PRO' },
+            { id: 'flux-max', label: 'FLUX MAX' },
+          ].map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => changeModel(m.id)}
+              className={`px-3 py-2 rounded-full text-xs font-medium uppercase tracking-wide transition ${
+                selectedModel === m.id
+                  ? 'bg-indigo-600 text-white shadow'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
         </div>
       </div>
 
