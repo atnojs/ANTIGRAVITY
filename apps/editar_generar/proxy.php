@@ -11,11 +11,43 @@ header('Content-Type: application/json; charset=utf-8');
 
 // CORS y OPTIONS
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
+}
+
+// ===== ESTADÍSTICAS POR MODELO (GET) =====
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $statsFile = __DIR__ . '/stats.json';
+    $stats = file_exists($statsFile) ? json_decode((string)file_get_contents($statsFile), true) : [];
+    if (!is_array($stats)) $stats = [];
+    echo json_encode(['success' => true, 'stats' => $stats], JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// ===== REGISTRO DE STATS (mismo formato que generador_ia_flux) =====
+function recordStat(string $modelo): void {
+    $statsFile = __DIR__ . '/stats.json';
+    $lock = fopen($statsFile, 'c+');
+    if ($lock === false) return;
+    flock($lock, LOCK_EX);
+    $stats = [];
+    if (filesize($statsFile) > 0) {
+        $raw = fread($lock, filesize($statsFile));
+        $decoded = json_decode((string)$raw, true);
+        if (is_array($decoded)) $stats = $decoded;
+    }
+    if (!isset($stats['models']) || !is_array($stats['models'])) $stats['models'] = [];
+    $stats['models'][$modelo] = (int)($stats['models'][$modelo] ?? 0) + 1;
+    $stats['total'] = (int)($stats['total'] ?? 0) + 1;
+    $stats['last'] = date(DATE_ATOM);
+    ftruncate($lock, 0);
+    fseek($lock, 0);
+    fwrite($lock, json_encode($stats, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    flock($lock, LOCK_UN);
+    fclose($lock);
 }
 
 // ===== Claves =====
@@ -257,6 +289,7 @@ if ($backend === 'flux') {
     $ch = curl_init($imageUrl);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>true]);
     $imgBin = curl_exec($ch); curl_close($ch);
+    recordStat($fluxEndpoint);
     echo json_encode(['success'=>true, 'imageUrl'=>'data:image/png;base64,'.base64_encode($imgBin), 'model'=>$fluxEndpoint]);
     exit;
 }
@@ -315,4 +348,5 @@ if ($code >= 400 || !is_array($jr)) {
 $imageBase64 = (string)($jr['data'][0]['b64_json'] ?? '');
 if ($imageBase64 === '') { http_response_code(502); echo json_encode(['error'=>['message'=>'Gemini no devolvio imagen.']]); exit; }
 $mediaType = (string)($jr['data'][0]['media_type'] ?? 'image/png');
+recordStat($geminiModelId);
 echo json_encode(['success'=>true, 'imageUrl'=>'data:'.$mediaType.';base64,'.$imageBase64, 'model'=>$geminiModelId]);
