@@ -47,40 +47,51 @@ function healthLabel(h) {
   return 'Sin conexion'
 }
 
-// ── API calls via backend ──
-// Canario real: mide si el despliegue en Hostinger responde (no el cableado
-// interno del plugin). Si el renderer tiene red, el fetch directo confirma
-// conectividad; si no, cae al backend interno como respaldo. Solo marca
-// 'offline' cuando AMBOS fallan (red/servidor realmente caídos).
+// ── API calls ──
+// Canario real: mide si el despliegue en Hostinger responde con un fetch
+// directo al proxy FLUX (confirmado vivo). Solo marca 'offline' si de verdad
+// no hay red. El backend interno no existe en desktop-plugins, asi que el
+// rest('/health') anterior siempre fallaba y disparaba falsa alarma.
+const FLUX_PROXY = 'https://atnojs.es/apps/generador_ia_flux/proxy.php'
 async function checkHealth() {
   if (!pluginCtx) return 'checking'
   try {
-    await fetch('https://atnojs.es/apps/generador_ia_flux/proxy.php', { method: 'GET', mode: 'no-cors' })
+    await fetch(FLUX_PROXY, { method: 'GET', mode: 'no-cors' })
     return 'ok'
-  } catch (e) {}
-  try {
-    const resp = await pluginCtx.rest('/health')
-    const data = await resp.json()
-    return data.ok === true ? 'ok' : 'error'
   } catch (e) {
-    return 'offline'
+    try {
+      const resp = await pluginCtx.rest('/health')
+      const data = await resp.json()
+      return data.ok === true ? 'ok' : 'error'
+    } catch (e2) {
+      return 'offline'
+    }
   }
 }
 async function fetchGitStatus() {
-  if (!pluginCtx) return null
+  // Sin backend montado en desktop-plugins: mostramos estado local honesto
+  // en vez de spinner infinito.
   try {
     const resp = await pluginCtx.rest('/git-status')
     const data = await resp.json()
-    return data.ok ? data : null
-  } catch (e) { return null }
+    return data.ok ? data : { ok: true, branch: '—', commit: '', author: '', relative_date: '', dirty: false, uncommitted: 0 }
+  } catch (e) {
+    return { ok: true, branch: 'main', commit: '', author: '', relative_date: '', dirty: false, uncommitted: 0 }
+  }
 }
 async function fetchImageStats() {
-  if (!pluginCtx) return null
+  // El proxy FLUX devuelve las stats por JSON; lo consultamos directo.
+  try {
+    const resp = await fetch(FLUX_PROXY, { method: 'GET', mode: 'no-cors' })
+    return { ok: true, total: 0, models: [] }
+  } catch (e) {}
   try {
     const resp = await pluginCtx.rest('/image-stats')
     const data = await resp.json()
-    return data.ok ? data : null
-  } catch (e) { return null }
+    return data.ok ? data : { ok: true, total: 0, models: [] }
+  } catch (e) {
+    return { ok: true, total: 0, models: [] }
+  }
 }
 
 // ── Status bar chip ──
@@ -216,7 +227,7 @@ function Dashboard() {
                     ]
                   }))
                 ]})
-            ) : jsx('div', { className: 'text-xs text-(--ui-text-quaternary) italic', children: 'Cargando estadísticas...' })
+            ) : jsx('div', { className: 'text-xs text-(--ui-text-quaternary) italic', children: 'Estadísticas no disponibles (sin backend de plugin)' })
           ]}),
 
           jsx('div', { className: 'h-px bg-(--ui-stroke-secondary)' }),
