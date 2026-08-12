@@ -36,7 +36,7 @@
   var state = {
     aspectRatio: "1:1",
     resolution: 1024,
-    quality: "pro",
+    model: "gemini-pro",          // 4 modelos: gemini-flash, gemini-pro, flux-pro, flux-max
     textColor: "rgb(0,255,255)",   // default cyan (position 50 on slider)
     fontSize: 120,
     lineSpacing: 1.15,       // multiplier
@@ -51,9 +51,9 @@
     var group = $(groupId);
     if (!group) return;
     group.addEventListener("click", function (e) {
-      var btn = e.target.closest(".toggle-btn");
+      var btn = e.target.closest(".toggle-btn, .model-toggle");
       if (!btn) return;
-      var buttons = group.querySelectorAll(".toggle-btn");
+      var buttons = group.querySelectorAll(".toggle-btn, .model-toggle");
       buttons.forEach(function (b) { b.classList.remove("active"); });
       btn.classList.add("active");
       onChange(btn);
@@ -62,7 +62,7 @@
 
   initToggleGroup("ar-selector", function (btn) { state.aspectRatio = btn.getAttribute("data-ar"); });
   initToggleGroup("res-selector", function (btn) { state.resolution = parseInt(btn.getAttribute("data-res"), 10); });
-  initToggleGroup("quality-selector", function (btn) { state.quality = btn.getAttribute("data-quality"); });
+  initToggleGroup("model-selector", function (btn) { state.model = btn.getAttribute("data-model"); });
 
   // ===== COLOR SLIDER (0=white → 50=red → 100=black through full spectrum) =====
   var colorSlider = $("color-slider");
@@ -304,14 +304,14 @@
 
     var btn = $("generate-btn"), btnText = $("generate-btn-text"), spinner = $("generate-spinner");
     btn.disabled = true; btnText.textContent = "GENERANDO..."; spinner.classList.remove("hidden");
-    showOverlay("Generando imagen base con FLUX...");
+    showOverlay("Generando imagen base con IA...");
 
     fetch("proxy.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "generate", prompt: prompt,
-        quality: state.quality, aspectRatio: state.aspectRatio,
+        model: state.model, aspectRatio: state.aspectRatio,
         resolution: state.resolution, output_format: "jpeg"
       })
     })
@@ -459,7 +459,7 @@
         bottomText: $("bottom-text").value,
         aspectRatio: state.aspectRatio,
         resolution: state.resolution,
-        quality: state.quality,
+        model: state.model,
         cleanFluxImage: dataUrl
       },
       imageData: memeDataUrl
