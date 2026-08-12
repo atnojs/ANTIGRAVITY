@@ -1,12 +1,17 @@
 """
 Antigravity Command Center - Python Backend
 Proporciona git status y health checks al plugin del dashboard.
+
+Rutas montadas en /api/plugins/antigravity-command/dashboard/
 """
 import subprocess
-import os
+import urllib.request
+import urllib.error
 from pathlib import Path
 
-from hermes.plugin import router
+from fastapi import APIRouter
+
+router = APIRouter()
 
 ANTIGRAVITY_ROOT = Path(r"E:\ANTIGRAVITY")
 PROXY_URL = "https://atnojs.es/apps/generador_ia_flux/proxy.php"
@@ -16,7 +21,6 @@ PROXY_URL = "https://atnojs.es/apps/generador_ia_flux/proxy.php"
 async def git_status():
     """Devuelve estado de git en el repo Antigravity."""
     try:
-        # Rama actual
         branch = subprocess.run(
             ["git", "branch", "--show-current"],
             cwd=ANTIGRAVITY_ROOT,
@@ -24,7 +28,6 @@ async def git_status():
         )
         branch_name = branch.stdout.strip() or "desconocida"
 
-        # Ultimo commit
         log = subprocess.run(
             ["git", "log", "-1", "--format=%s|%an|%ar"],
             cwd=ANTIGRAVITY_ROOT,
@@ -32,7 +35,6 @@ async def git_status():
         )
         commit_info = log.stdout.strip()
 
-        # Cambios sin commit
         status = subprocess.run(
             ["git", "status", "--porcelain"],
             cwd=ANTIGRAVITY_ROOT,
@@ -57,8 +59,6 @@ async def git_status():
 @router.get("/health")
 async def health_check():
     """Verifica salud del proxy FLUX en Hostinger."""
-    import urllib.request
-    import urllib.error
     try:
         req = urllib.request.Request(PROXY_URL, method="GET")
         with urllib.request.urlopen(req, timeout=8) as resp:
