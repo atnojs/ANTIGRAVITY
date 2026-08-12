@@ -219,7 +219,7 @@
     renderChipsActive();
     const grid = $("#listGrid");
     grid.innerHTML = "";
-    let items = RELATOS.filter((r) r.tematica === listState.slug).reverse();
+    let items = RELATOS.filter((r) => r.tematica === listState.slug).reverse();
     if (listState.reg !== "todos") items = items.filter((r) => r.registro === listState.reg);
     if (listState.fmt !== "todos") items = items.filter((r) => r.formato === listState.fmt);
 
