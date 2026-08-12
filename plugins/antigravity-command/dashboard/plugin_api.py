@@ -1,12 +1,13 @@
 """
 Antigravity Command Center - Python Backend
-Proporciona git status y health checks al plugin del dashboard.
+Proporciona git status, health checks y estadisticas de imagenes por modelo.
 
 Rutas montadas en /api/plugins/antigravity-command/dashboard/
 """
 import subprocess
 import urllib.request
 import urllib.error
+import json
 from pathlib import Path
 
 from fastapi import APIRouter
@@ -14,7 +15,15 @@ from fastapi import APIRouter
 router = APIRouter()
 
 ANTIGRAVITY_ROOT = Path(r"E:\ANTIGRAVITY")
-PROXY_URL = "https://atnojs.es/apps/generador_ia_flux/proxy.php"
+# Proxy FLUX canonico: unico punto que sabe modelo + calidad de cada generacion
+FLUX_PROXY = "https://atnojs.es/apps/generador_ia_flux/proxy.php"
+
+# Map FLUX model ids -> etiquetas legibles
+MODEL_LABELS = {
+    "flux-2-klein-9b": "FLUX 2 Klein (barato)",
+    "flux-2-pro": "FLUX 2 Pro (normal)",
+    "flux-2-max": "FLUX 2 Max (pro)",
+}
 
 
 @router.get("/git-status")
@@ -58,15 +67,39 @@ async def git_status():
 
 @router.get("/health")
 async def health_check():
-    """Verifica salud del proxy FLUX en Hostinger."""
+    """Verifica salud del proxy FLUX en Hostinger (sirve como canario de despliegue)."""
     try:
-        req = urllib.request.Request(PROXY_URL, method="GET")
+        req = urllib.request.Request(FLUX_PROXY, method="GET")
         with urllib.request.urlopen(req, timeout=8) as resp:
             return {"ok": True, "status": resp.status, "proxy": "saludable"}
     except urllib.error.URLError as e:
         return {"ok": False, "status": getattr(e, "code", 0), "proxy": "no responde"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+
+@router.get("/image-stats")
+async def image_stats():
+    """Cuenta imagenes generadas por modelo leyendo las estadisticas del proxy FLUX.
+
+    El proxy FLUX es el unico punto que registra el modelo real (flux-2-klein-9b /
+    flux-2-pro / flux-2-max) de cada generacion en stats.json. Las apps de imagen
+    guardan el modelo en su propio historial (ver history.php / history-manager.js);
+    este endpoint agrega el total de generaciones FLUX por modelo.
+    """
+    try:
+        req = urllib.request.Request(FLUX_PROXY, method="GET")
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        raw = (payload.get("stats") or {}).get("models") or {}
+        total = (payload.get("stats") or {}).get("total") or sum(raw.values())
+        breakdown = [
+            {"model": mid, "label": MODEL_LABELS.get(mid, mid), "count": cnt}
+            for mid, cnt in sorted(raw.items(), key=lambda kv: -kv[1])
+        ]
+        return {"ok": True, "total": total, "models": breakdown}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "total": 0, "models": []}
 
 
 @router.get("/ping")

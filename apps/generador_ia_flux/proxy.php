@@ -17,6 +17,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// ===== ESTADÍSTICAS POR MODELO (GET) =====
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $statsFile = __DIR__ . '/stats.json';
+    $stats = file_exists($statsFile) ? json_decode((string)file_get_contents($statsFile), true) : [];
+    if (!is_array($stats)) $stats = [];
+    echo json_encode(['success' => true, 'stats' => $stats], JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function recordStat(string $modelo): void {
+    $statsFile = __DIR__ . '/stats.json';
+    $lock = fopen($statsFile, 'c+');
+    if ($lock === false) return;
+    flock($lock, LOCK_EX);
+    $stats = [];
+    if (filesize($statsFile) > 0) {
+        $raw = fread($lock, filesize($statsFile));
+        $decoded = json_decode((string)$raw, true);
+        if (is_array($decoded)) $stats = $decoded;
+    }
+    if (!isset($stats['models']) || !is_array($stats['models'])) $stats['models'] = [];
+    $stats['models'][$modelo] = (int)($stats['models'][$modelo] ?? 0) + 1;
+    $stats['total'] = (int)($stats['total'] ?? 0) + 1;
+    $stats['last'] = date(DATE_ATOM);
+    ftruncate($lock, 0);
+    fseek($lock, 0);
+    fwrite($lock, json_encode($stats, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    flock($lock, LOCK_UN);
+    fclose($lock);
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Solo se aceptan peticiones POST']]);
@@ -63,6 +94,7 @@ $MODELOS = [
 ];
 $calidad = $data['calidad'] ?? 'normal';
 $endpoint = $MODELOS[$calidad] ?? $MODELOS['normal'];
+recordStat($endpoint);
 
 // Imagen de entrada opcional (data URL base64) para EDITAR
 $imagenEntrada = isset($data['imagen']) ? (string)$data['imagen'] : '';

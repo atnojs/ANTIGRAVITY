@@ -2,13 +2,13 @@
  * Antigravity Command Center - Hermes Desktop Plugin
  * Multi-superficie: status bar chip + panel dashboard
  * Inspirado por el tutorial de Tomb's Garage sobre Plugin SDK
- * v2 - Con backend Python para git status y health checks
+ * v3 - Contador de imagenes por modelo + aviso de despliegue fallido
  */
 
-import { atom, cn, computed, haptic, host, useValue,
+import { atom, cn, haptic, host, useValue,
          StatusDot, Badge, Button, ScrollArea, Separator,
          GlyphSpinner, EmptyState, ErrorState,
-         relativeTime, fmtDateTime
+         relativeTime, fmtDateTime, useToast
 } from '@hermes/plugin-sdk'
 import { jsx, jsxs } from 'react/jsx-runtime'
 
@@ -22,6 +22,9 @@ const healthAtom = atom('checking')
 const gitAtom = atom(null)
 const lastCheckAtom = atom(null)
 const lastGitAtom = atom(null)
+const statsAtom = atom(null)          // { total, models: [{model,label,count}] }
+const lastStatsAtom = atom(null)
+const deployAlertAtom = atom(false)   // true si el despliegue (proxy) esta caido
 
 // Helpers
 function healthColor(h) {
@@ -45,9 +48,17 @@ async function checkHealth() {
   try {
     const resp = await pluginCtx.rest('/health')
     const data = await resp.json()
-    healthAtom.set(data.ok ? 'ok' : 'error')
+    const ok = data.ok === true
+    healthAtom.set(ok ? 'ok' : 'error')
+    deployAlertAtom.set(!ok)
+    // Aviso desktop si el despliegue esta caido
+    if (!ok) {
+      try { host.notify({ kind: 'error', message: '⚠️ Despliegue Hostinger caído: el proxy FLUX no responde' }) } catch (e) {}
+    }
   } catch (e) {
     healthAtom.set('offline')
+    deployAlertAtom.set(true)
+    try { host.notify({ kind: 'error', message: '⚠️ Sin conexión con el despliegue en Hostinger' }) } catch (e) {}
   }
   lastCheckAtom.set(Date.now())
 }
@@ -57,19 +68,30 @@ async function fetchGitStatus() {
   try {
     const resp = await pluginCtx.rest('/git-status')
     const data = await resp.json()
-    if (data.ok) {
-      gitAtom.set(data)
-    }
+    if (data.ok) gitAtom.set(data)
   } catch (e) {
     gitAtom.set(null)
   }
   lastGitAtom.set(Date.now())
 }
 
+async function fetchImageStats() {
+  if (!pluginCtx) return
+  try {
+    const resp = await pluginCtx.rest('/image-stats')
+    const data = await resp.json()
+    if (data.ok) statsAtom.set(data)
+  } catch (e) {
+    statsAtom.set(null)
+  }
+  lastStatsAtom.set(Date.now())
+}
+
 // ── Status bar chip ──
 function StatusChip() {
   const h = useValue(healthAtom)
   const last = useValue(lastCheckAtom)
+  const alert = useValue(deployAlertAtom)
 
   return jsx('button', {
     className: cn(
@@ -80,14 +102,13 @@ function StatusChip() {
     title: last ? 'Antigravity - chequeado ' + relativeTime(last) : 'Antigravity Command',
     onClick: () => {
       haptic('tap')
-      checkHealth()
-      fetchGitStatus()
+      checkHealth(); fetchGitStatus(); fetchImageStats()
     },
     children: jsxs('span', {
       className: 'inline-flex items-center gap-1',
       children: [
         jsx(StatusDot, { color: healthColor(h), size: 'small' }),
-        'AG'
+        alert ? '⚠' : 'AG'
       ]
     })
   })
@@ -111,12 +132,55 @@ function ActionBtn({ label, url, action }) {
   })
 }
 
+// ── Image model stats section ──
+function ImageStats() {
+  const stats = useValue(statsAtom)
+  const last = useValue(lastStatsAtom)
+
+  if (!stats) {
+    return jsx('div', {
+      className: 'flex items-center gap-2 text-xs text-(--ui-text-quaternary) italic',
+      children: jsxs('span', { children: [jsx(GlyphSpinner, { size: 'small' }), ' Cargando estadísticas...'] })
+    })
+  }
+
+  if (stats.total === 0) {
+    return jsx('div', {
+      className: 'text-xs text-(--ui-text-quaternary) italic',
+      children: 'Aún no hay generaciones registradas.'
+    })
+  }
+
+  return jsxs('div', {
+    className: 'flex flex-col gap-1.5',
+    children: [
+      jsxs('div', {
+        className: 'flex items-center justify-between',
+        children: [
+          jsx('span', { className: 'text-(--ui-text-secondary)', children: 'Total: ' + stats.total }),
+          last ? jsx('span', { className: 'text-[0.65rem] text-(--ui-text-quaternary)', children: 'Actualizado ' + relativeTime(last) }) : null
+        ]
+      }),
+      ...stats.models.map((m) =>
+        jsxs('div', {
+          className: 'flex items-center justify-between px-2 py-1 rounded bg-(--ui-bg-subtle)',
+          children: [
+            jsx('span', { className: 'text-xs text-(--ui-text-primary)', children: m.label }),
+            jsx(Badge, { variant: 'info', children: String(m.count) })
+          ]
+        })
+      )
+    ]
+  })
+}
+
 // ── Dashboard pane ──
 function Dashboard() {
   const h = useValue(healthAtom)
   const git = useValue(gitAtom)
   const last = useValue(lastCheckAtom)
   const lastGit = useValue(lastGitAtom)
+  const alert = useValue(deployAlertAtom)
 
   return jsxs('div', {
     className: 'flex h-full flex-col bg-(--ui-bg) text-sm',
@@ -127,14 +191,17 @@ function Dashboard() {
         children: jsxs('div', {
           className: 'flex items-center gap-2',
           children: [
-            jsx('span', {
-              className: 'font-semibold text-(--ui-text-primary)',
-              children: 'Antigravity Command'
-            }),
+            jsx('span', { className: 'font-semibold text-(--ui-text-primary)', children: 'Antigravity Command' }),
             jsx(StatusDot, { color: healthColor(h), size: 'small' })
           ]
         })
       }),
+
+      // Aviso de despliegue caido
+      alert ? jsx('div', {
+        className: 'mx-3 mt-3 px-3 py-2 rounded border border-(--ui-danger) bg-(--ui-danger-subtle) text-(--ui-danger) text-xs flex items-center gap-2',
+        children: jsxs('span', { children: ['⚠️ ', 'El despliegue en Hostinger no responde. Revisa el servidor.'] })
+      }) : null,
 
       jsx(ScrollArea, {
         className: 'flex-1',
@@ -146,27 +213,29 @@ function Dashboard() {
             jsxs('div', {
               className: 'flex flex-col gap-1.5',
               children: [
-                jsx('div', {
-                  className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider',
-                  children: 'Despliegue Hostinger'
-                }),
+                jsx('div', { className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider', children: 'Despliegue Hostinger' }),
                 jsx('div', {
                   className: 'flex items-center gap-2 px-2.5 py-2 rounded border border-(--ui-stroke-secondary)',
                   children: jsxs('div', {
                     className: 'flex items-center gap-2',
                     children: [
                       jsx(StatusDot, { color: healthColor(h), size: 'small' }),
-                      jsx('span', {
-                        className: 'text-xs text-(--ui-text-secondary)',
-                        children: healthLabel(h)
-                      })
+                      jsx('span', { className: 'text-xs text-(--ui-text-secondary)', children: healthLabel(h) })
                     ]
                   })
                 }),
-                last ? jsx('div', {
-                  className: 'text-[0.65rem] text-(--ui-text-quaternary)',
-                  children: 'Chequeado ' + relativeTime(last)
-                }) : null
+                last ? jsx('div', { className: 'text-[0.65rem] text-(--ui-text-quaternary)', children: 'Chequeado ' + relativeTime(last) }) : null
+              ]
+            }),
+
+            jsx(Separator, {}),
+
+            // ── Imagenes por modelo ──
+            jsxs('div', {
+              className: 'flex flex-col gap-1.5',
+              children: [
+                jsx('div', { className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider', children: 'Imágenes por modelo' }),
+                jsx(ImageStats, {})
               ]
             }),
 
@@ -176,46 +245,20 @@ function Dashboard() {
             jsxs('div', {
               className: 'flex flex-col gap-1.5',
               children: [
-                jsx('div', {
-                  className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider',
-                  children: 'Git'
-                }),
+                jsx('div', { className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider', children: 'Git' }),
                 git ? jsxs('div', {
                   className: 'flex flex-col gap-1 text-xs',
                   children: [
-                    jsx('div', {
-                      className: 'text-(--ui-text-secondary)',
-                      children: 'Rama: ' + git.branch
-                    }),
-                    jsx('div', {
-                      className: 'text-(--ui-text-tertiary) truncate',
-                      children: git.commit ? git.commit.slice(0, 60) : 'sin commits'
-                    }),
-                    git.author ? jsx('div', {
-                      className: 'text-[0.65rem] text-(--ui-text-quaternary)',
-                      children: git.author + ' - ' + (git.relative_date || '')
-                    }) : null,
-                    git.dirty ? jsx(Badge, {
-                      variant: 'warning',
-                      children: git.uncommitted + ' cambios sin commit'
-                    }) : jsx(Badge, {
-                      variant: 'success',
-                      children: 'Todo limpio'
-                    })
+                    jsx('div', { className: 'text-(--ui-text-secondary)', children: 'Rama: ' + git.branch }),
+                    jsx('div', { className: 'text-(--ui-text-tertiary) truncate', children: git.commit ? git.commit.slice(0, 60) : 'sin commits' }),
+                    git.author ? jsx('div', { className: 'text-[0.65rem] text-(--ui-text-quaternary)', children: git.author + ' - ' + (git.relative_date || '') }) : null,
+                    git.dirty ? jsx(Badge, { variant: 'warning', children: git.uncommitted + ' cambios sin commit' }) : jsx(Badge, { variant: 'success', children: 'Todo limpio' })
                   ]
                 }) : jsx('div', {
                   className: 'flex items-center gap-2 text-xs text-(--ui-text-quaternary) italic',
-                  children: jsxs('span', {
-                    children: [
-                      jsx(GlyphSpinner, { size: 'small' }),
-                      ' Cargando estado git...'
-                    ]
-                  })
+                  children: jsxs('span', { children: [jsx(GlyphSpinner, { size: 'small' }), ' Cargando estado git...'] })
                 }),
-                lastGit ? jsx('div', {
-                  className: 'text-[0.65rem] text-(--ui-text-quaternary)',
-                  children: 'Actualizado ' + relativeTime(lastGit)
-                }) : null
+                lastGit ? jsx('div', { className: 'text-[0.65rem] text-(--ui-text-quaternary)', children: 'Actualizado ' + relativeTime(lastGit) }) : null
               ]
             }),
 
@@ -225,25 +268,13 @@ function Dashboard() {
             jsxs('div', {
               className: 'flex flex-col gap-1.5',
               children: [
-                jsx('div', {
-                  className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider',
-                  children: 'Acciones rapidas'
-                }),
+                jsx('div', { className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider', children: 'Acciones rapidas' }),
                 jsxs('div', {
                   className: 'flex flex-col gap-1',
                   children: [
-                    jsx(ActionBtn, {
-                      label: 'Abrir Outfit',
-                      url: 'https://atnojs.es/apps/outfit'
-                    }),
-                    jsx(ActionBtn, {
-                      label: 'Abrir Imagenes IA',
-                      url: 'https://atnojs.es/apps/imagenes_ia/editar_copia'
-                    }),
-                    jsx(ActionBtn, {
-                      label: 'Refrescar Estado',
-                      action: () => { checkHealth(); fetchGitStatus(); }
-                    })
+                    jsx(ActionBtn, { label: 'Abrir Outfit', url: 'https://atnojs.es/apps/outfit' }),
+                    jsx(ActionBtn, { label: 'Abrir Imagenes IA', url: 'https://atnojs.es/apps/imagenes_ia/editar_generar (COPIA)' }),
+                    jsx(ActionBtn, { label: 'Refrescar Estado', action: () => { checkHealth(); fetchGitStatus(); fetchImageStats() } })
                   ]
                 })
               ]
@@ -255,22 +286,13 @@ function Dashboard() {
             jsxs('div', {
               className: 'flex flex-col gap-1.5',
               children: [
-                jsx('div', {
-                  className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider',
-                  children: 'Entorno'
-                }),
+                jsx('div', { className: 'text-xs font-medium text-(--ui-text-tertiary) uppercase tracking-wider', children: 'Entorno' }),
                 jsxs('div', {
                   className: 'flex flex-col gap-0.5 text-xs text-(--ui-text-secondary)',
                   children: [
-                    jsx('div', {
-                      children: 'Perfil: ' + host.state.profile.get()
-                    }),
-                    jsx('div', {
-                      children: 'Gateway: ' + host.state.gateway.get()
-                    }),
-                    jsx('div', {
-                      children: 'Modelo: ' + host.state.model.get()
-                    })
+                    jsx('div', { children: 'Perfil: ' + host.state.profile.get() }),
+                    jsx('div', { children: 'Gateway: ' + host.state.gateway.get() }),
+                    jsx('div', { children: 'Modelo: ' + host.state.model.get() })
                   ]
                 })
               ]
@@ -286,44 +308,30 @@ function Dashboard() {
 // ── Plugin export ──
 let healthTimer = null
 let gitTimer = null
+let statsTimer = null
 
 export default {
   id: ID,
   name: 'Antigravity Command',
 
   register(ctx) {
-    // Store ctx for API calls
     pluginCtx = ctx
 
-    // Status bar chip (right side, order 100)
-    ctx.register({
-      id: 'status',
-      area: 'statusBar.right',
-      order: 100,
-      render: jsx(StatusChip, {})
-    })
+    ctx.register({ id: 'status', area: 'statusBar.right', order: 100, render: jsx(StatusChip, {}) })
+    ctx.register({ id: 'dashboard', area: 'panes', title: 'Antigravity', data: { placement: 'right', width: '320px' }, render: jsx(Dashboard, {}) })
 
-    // Dashboard pane (right sidebar, 300px)
-    ctx.register({
-      id: 'dashboard',
-      area: 'panes',
-      title: 'Antigravity',
-      data: { placement: 'right', width: '300px' },
-      render: jsx(Dashboard, {})
-    })
-
-    // Initial fetch
     checkHealth()
     fetchGitStatus()
+    fetchImageStats()
 
-    // Periodic refresh: health cada 5 min, git cada 2 min
     healthTimer = setInterval(checkHealth, 5 * 60 * 1000)
     gitTimer = setInterval(fetchGitStatus, 2 * 60 * 1000)
+    statsTimer = setInterval(fetchImageStats, 5 * 60 * 1000)
 
-    // Cleanup on unload
     return () => {
       if (healthTimer) clearInterval(healthTimer)
       if (gitTimer) clearInterval(gitTimer)
+      if (statsTimer) clearInterval(statsTimer)
       pluginCtx = null
     }
   }
