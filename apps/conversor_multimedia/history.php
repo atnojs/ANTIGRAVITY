@@ -19,7 +19,6 @@ header('Cache-Control: no-store');
 const MAX_HISTORY_ITEMS = 200;
 const MAX_REQUEST_BYTES = 30 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 24 * 1024 * 1024;
-const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -89,7 +88,7 @@ function removeImageForEntry(array $entry): void {
     if ($imageFile === '') {
         return;
     }
-    foreach (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'avif'] as $extension) {
+    foreach (['png', 'jpg', 'jpeg', 'webp', 'gif'] as $extension) {
         $path = dataDir() . '/' . $imageFile . '.' . $extension;
         if (is_file($path)) {
             @unlink($path);
@@ -97,26 +96,8 @@ function removeImageForEntry(array $entry): void {
     }
 }
 
-function removeVideoForEntry(array $entry): void {
-    $videoFile = sanitizeToken((string)($entry['videoFile'] ?? ''));
-    if ($videoFile === '') {
-        return;
-    }
-    foreach (['mp4', 'webm', 'avi', 'mov', 'gif'] as $extension) {
-        $path = dataDir() . '/' . $videoFile . '.' . $extension;
-        if (is_file($path)) {
-            @unlink($path);
-        }
-    }
-}
-
-function removeMediaForEntry(array $entry): void {
-    removeImageForEntry($entry);
-    removeVideoForEntry($entry);
-}
-
 function persistImage(string $id, string $dataUrl): array {
-    if (preg_match('#^data:image/(png|jpe?g|webp|gif|bmp|avif);base64,(.+)$#is', $dataUrl, $matches) !== 1) {
+    if (preg_match('#^data:image/(png|jpe?g|webp|gif);base64,(.+)$#is', $dataUrl, $matches) !== 1) {
         respond(400, ['success' => false, 'error' => 'imageData debe ser una imagen data URL válida.']);
     }
     $extension = strtolower($matches[1]);
@@ -134,31 +115,6 @@ function persistImage(string $id, string $dataUrl): array {
     $path = dataDir() . '/' . $baseName . '.' . $extension;
     if (file_put_contents($path, $binary, LOCK_EX) === false) {
         respond(500, ['success' => false, 'error' => 'No se pudo guardar la imagen del historial.']);
-    }
-    return [$baseName, './history_data/' . rawurlencode($baseName . '.' . $extension)];
-}
-
-function persistVideo(string $id, string $dataUrl): array {
-    if (preg_match('#^data:(video/(?:mp4|webm|x-msvideo|quicktime)|image/gif);base64,(.+)$#is', $dataUrl, $matches) !== 1) {
-        respond(400, ['success' => false, 'error' => 'videoData debe ser un vídeo data URL válido.']);
-    }
-    $mime = strtolower($matches[1]);
-    $extensions = ['video/mp4' => 'mp4', 'video/webm' => 'webm', 'video/x-msvideo' => 'avi', 'video/quicktime' => 'mov', 'image/gif' => 'gif'];
-    $extension = $extensions[$mime] ?? '';
-    if ($extension === '') {
-        respond(400, ['success' => false, 'error' => 'El formato de vídeo no está permitido.']);
-    }
-    $binary = base64_decode($matches[2], true);
-    if ($binary === false) {
-        respond(400, ['success' => false, 'error' => 'El vídeo no contiene base64 válido.']);
-    }
-    if (strlen($binary) > MAX_VIDEO_BYTES) {
-        respond(413, ['success' => false, 'error' => 'El vídeo supera el máximo de 20 MB para el historial.']);
-    }
-    $baseName = sanitizeToken($id, 'item_' . bin2hex(random_bytes(8)));
-    $path = dataDir() . '/' . $baseName . '.' . $extension;
-    if (file_put_contents($path, $binary, LOCK_EX) === false) {
-        respond(500, ['success' => false, 'error' => 'No se pudo guardar el vídeo del historial.']);
     }
     return [$baseName, './history_data/' . rawurlencode($baseName . '.' . $extension)];
 }
@@ -204,6 +160,7 @@ if ($action === 'save') {
         'id' => $id,
         'app' => $app,
         'type' => sanitizeToken((string)($body['type'] ?? 'item'), 'item'),
+        'model' => sanitizeToken((string)($body['model'] ?? ($body['data']['model'] ?? '')), ''),
         'data' => $body['data'] ?? [],
         'createdAt' => (string)($body['createdAt'] ?? date(DATE_ATOM)),
     ];
@@ -213,18 +170,13 @@ if ($action === 'save') {
         $entry['imageFile'] = $imageFile;
         $entry['imageUrl'] = $imageUrl;
     }
-    if (isset($body['videoData']) && is_string($body['videoData']) && $body['videoData'] !== '') {
-        [$videoFile, $videoUrl] = persistVideo($id, $body['videoData']);
-        $entry['videoFile'] = $videoFile;
-        $entry['videoUrl'] = $videoUrl;
-    }
 
     $history = array_values(array_filter($history, static fn(array $existing): bool => ($existing['id'] ?? '') !== $id));
     array_unshift($history, $entry);
     while (count($history) > MAX_HISTORY_ITEMS) {
         $removed = array_pop($history);
         if (is_array($removed)) {
-            removeMediaForEntry($removed);
+            removeImageForEntry($removed);
         }
     }
     saveHistoryUnlocked($history);
@@ -245,7 +197,7 @@ if ($action === 'delete') {
     $deleted = false;
     foreach ($history as $entry) {
         if (($entry['id'] ?? '') === $id && ($entry['app'] ?? 'default') === $app) {
-            removeMediaForEntry($entry);
+            removeImageForEntry($entry);
             $deleted = true;
             continue;
         }
@@ -262,7 +214,7 @@ if ($action === 'clear') {
     $deleted = 0;
     foreach ($history as $entry) {
         if (($entry['app'] ?? 'default') === $app) {
-            removeMediaForEntry($entry);
+            removeImageForEntry($entry);
             $deleted++;
             continue;
         }

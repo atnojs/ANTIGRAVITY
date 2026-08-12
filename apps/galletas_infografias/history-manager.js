@@ -60,6 +60,9 @@ class HistoryManager {
             }
         }
 
+        // Modelo: prioriza entry.model, luego data.model, luego el nombre de la app.
+        const model = entry.model || data.model || this.appName;
+
         const payload = await this._request(`${this.apiUrl}?action=save`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -67,6 +70,7 @@ class HistoryManager {
                 id,
                 app: this.appName,
                 type: entry.type || 'item',
+                model,
                 data,
                 imageData,
                 createdAt: entry.createdAt || new Date().toISOString()

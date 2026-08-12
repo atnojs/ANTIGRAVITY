@@ -160,6 +160,7 @@ if ($action === 'save') {
         'id' => $id,
         'app' => $app,
         'type' => sanitizeToken((string)($body['type'] ?? 'item'), 'item'),
+        'model' => sanitizeToken((string)($body['model'] ?? ($body['data']['model'] ?? '')), ''),
         'data' => $body['data'] ?? [],
         'createdAt' => (string)($body['createdAt'] ?? date(DATE_ATOM)),
     ];

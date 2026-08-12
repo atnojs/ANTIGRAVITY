@@ -52,7 +52,6 @@ class HistoryManager {
         const id = String(entry.id || `h_${Date.now()}_${cryptoRandomId()}`);
         const data = entry.data ?? entry;
         let imageData = entry.imageData || '';
-        let videoData = entry.videoData || '';
 
         if (!imageData && data && typeof data === 'object') {
             const candidate = data.dataUrl || data.url || '';
@@ -61,12 +60,8 @@ class HistoryManager {
             }
         }
 
-        if (!videoData && data && typeof data === 'object') {
-            const candidate = data.dataUrl || data.url || '';
-            if (typeof candidate === 'string' && (candidate.startsWith('data:video/') || candidate.startsWith('data:image/gif'))) {
-                videoData = candidate;
-            }
-        }
+        // Modelo: prioriza entry.model, luego data.model, luego el nombre de la app.
+        const model = entry.model || data.model || this.appName;
 
         const payload = await this._request(`${this.apiUrl}?action=save`, {
             method: 'POST',
@@ -75,9 +70,9 @@ class HistoryManager {
                 id,
                 app: this.appName,
                 type: entry.type || 'item',
+                model,
                 data,
                 imageData,
-                videoData,
                 createdAt: entry.createdAt || new Date().toISOString()
             })
         });

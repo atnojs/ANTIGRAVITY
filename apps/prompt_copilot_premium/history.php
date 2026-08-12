@@ -1,4 +1,12 @@
 <?php
+/**
+ * Historial persistente canónico para apps Antigravity.
+ *
+ * GET  ?action=list&app=nombre
+ * POST ?action=save    cuerpo JSON
+ * POST ?action=delete  cuerpo { app, id }
+ * POST ?action=clear   cuerpo { app }
+ */
 declare(strict_types=1);
 
 ini_set('display_errors', '0');
@@ -6,222 +14,218 @@ error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: no-store');
 
-const MAX_ITEMS = 100;
-const MAX_FILE_BYTES = 2_000_000;
+const MAX_HISTORY_ITEMS = 200;
+const MAX_REQUEST_BYTES = 30 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 24 * 1024 * 1024;
 
-function respond(int $status, array $payload): never
-{
+function respond(int $status, array $payload): never {
     http_response_code($status);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 
-function textLength(string $value): int
-{
-    return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
-}
-
-function textSubstr(string $value, int $start, int $length): string
-{
-    return function_exists('mb_substr')
-        ? mb_substr($value, $start, $length, 'UTF-8')
-        : substr($value, $start, $length);
-}
-
-function cleanText(mixed $value, int $maxLength): string
-{
-    if (!is_string($value)) {
-        return '';
-    }
-    $value = trim(str_replace("\0", '', $value));
-    return textSubstr($value, 0, $maxLength);
-}
-
-function validateNamespace(string $raw): string
-{
-    $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '', $raw) ?? '';
-    if (strlen($sanitized) < 3 || strlen($sanitized) > 64) {
-        respond(400, ['ok' => false, 'error' => 'Namespace de historial no válido.']);
-    }
-    return $sanitized;
-}
-
-function clientHistoryKey(string $namespace): string
-{
-    $cookieName = 'psp_history_id';
-    $token = $_COOKIE[$cookieName] ?? '';
-    if (!is_string($token) || !preg_match('/^[a-f0-9]{32}$/', $token)) {
-        $token = bin2hex(random_bytes(16));
-        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
-        setcookie($cookieName, $token, [
-            'expires' => time() + 31536000,
-            'path' => '/',
-            'secure' => $secure,
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ]);
-        $_COOKIE[$cookieName] = $token;
-    }
-    return hash('sha256', $namespace . ':' . $token);
-}
-
-function dataPath(string $namespace): string
-{
+function dataDir(): string {
     $directory = __DIR__ . '/history_data';
-    if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
-        respond(500, ['ok' => false, 'error' => 'No se pudo preparar la carpeta del historial.']);
+    if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+        respond(500, ['success' => false, 'error' => 'No se pudo crear el almacenamiento del historial.']);
     }
-    return $directory . '/' . $namespace . '_' . clientHistoryKey($namespace) . '.json';
+    return $directory;
 }
 
-function readItemsLocked($handle): array
-{
-    rewind($handle);
-    $raw = stream_get_contents($handle);
-    if ($raw === false || trim($raw) === '') {
+function dataFile(): string {
+    return dataDir() . '/history.json';
+}
+
+function lockFile() {
+    $handle = fopen(dataDir() . '/history.lock', 'c+');
+    if ($handle === false) {
+        respond(500, ['success' => false, 'error' => 'No se pudo bloquear el historial.']);
+    }
+    return $handle;
+}
+
+function loadHistoryUnlocked(): array {
+    $file = dataFile();
+    if (!is_file($file)) {
         return [];
     }
-    $decoded = json_decode($raw, true);
-    return is_array($decoded) ? array_values(array_filter($decoded, 'is_array')) : [];
-}
-
-function writeItemsLocked($handle, array $items): void
-{
-    $encoded = json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    if ($encoded === false || strlen($encoded) > MAX_FILE_BYTES) {
-        respond(507, ['ok' => false, 'error' => 'El historial supera el tamaño permitido.']);
+    $raw = file_get_contents($file);
+    if ($raw === false || $raw === '') {
+        return [];
     }
-    rewind($handle);
-    if (!ftruncate($handle, 0) || fwrite($handle, $encoded) === false) {
-        respond(500, ['ok' => false, 'error' => 'No se pudo guardar el historial.']);
+    $history = json_decode($raw, true);
+    return is_array($history) ? $history : [];
+}
+
+function saveHistoryUnlocked(array $history): void {
+    $json = json_encode(array_values($history), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($json === false || file_put_contents(dataFile(), $json, LOCK_EX) === false) {
+        respond(500, ['success' => false, 'error' => 'No se pudo guardar el historial.']);
     }
-    fflush($handle);
 }
 
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-    header('Allow: POST');
-    respond(405, ['ok' => false, 'error' => 'Método no permitido.']);
+function readJsonBody(): array {
+    if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > MAX_REQUEST_BYTES) {
+        respond(413, ['success' => false, 'error' => 'La solicitud supera el tamaño permitido.']);
+    }
+    $raw = file_get_contents('php://input');
+    $body = json_decode($raw ?: '', true);
+    if (!is_array($body) || json_last_error() !== JSON_ERROR_NONE) {
+        respond(400, ['success' => false, 'error' => 'El cuerpo no contiene JSON válido.']);
+    }
+    return $body;
 }
 
-if (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'XMLHttpRequest') {
-    respond(400, ['ok' => false, 'error' => 'Solicitud no válida.']);
+function sanitizeToken(string $value, string $fallback = ''): string {
+    $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '', $value) ?? '';
+    return $sanitized !== '' ? substr($sanitized, 0, 100) : $fallback;
 }
 
-$raw = file_get_contents('php://input');
-if ($raw === false || $raw === '' || strlen($raw) > 60000) {
-    respond(400, ['ok' => false, 'error' => 'Solicitud vacía o demasiado grande.']);
+function removeImageForEntry(array $entry): void {
+    $imageFile = sanitizeToken((string)($entry['imageFile'] ?? ''));
+    if ($imageFile === '') {
+        return;
+    }
+    foreach (['png', 'jpg', 'jpeg', 'webp', 'gif'] as $extension) {
+        $path = dataDir() . '/' . $imageFile . '.' . $extension;
+        if (is_file($path)) {
+            @unlink($path);
+        }
+    }
 }
 
-try {
-    $input = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
-} catch (JsonException) {
-    respond(400, ['ok' => false, 'error' => 'El JSON enviado no es válido.']);
+function persistImage(string $id, string $dataUrl): array {
+    if (preg_match('#^data:image/(png|jpe?g|webp|gif);base64,(.+)$#is', $dataUrl, $matches) !== 1) {
+        respond(400, ['success' => false, 'error' => 'imageData debe ser una imagen data URL válida.']);
+    }
+    $extension = strtolower($matches[1]);
+    if ($extension === 'jpeg') {
+        $extension = 'jpg';
+    }
+    $binary = base64_decode($matches[2], true);
+    if ($binary === false) {
+        respond(400, ['success' => false, 'error' => 'La imagen no contiene base64 válido.']);
+    }
+    if (strlen($binary) > MAX_IMAGE_BYTES) {
+        respond(413, ['success' => false, 'error' => 'La imagen supera el máximo de 24 MB.']);
+    }
+    $baseName = sanitizeToken($id, 'item_' . bin2hex(random_bytes(8)));
+    $path = dataDir() . '/' . $baseName . '.' . $extension;
+    if (file_put_contents($path, $binary, LOCK_EX) === false) {
+        respond(500, ['success' => false, 'error' => 'No se pudo guardar la imagen del historial.']);
+    }
+    return [$baseName, './history_data/' . rawurlencode($baseName . '.' . $extension)];
 }
 
-if (!is_array($input)) {
-    respond(400, ['ok' => false, 'error' => 'Historial no válido.']);
+$method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+if ($method === 'OPTIONS') {
+    http_response_code(204);
+    exit;
 }
 
-$namespace = validateNamespace((string)($input['namespace'] ?? ''));
+$action = strtolower((string)($_GET['action'] ?? ($method === 'GET' ? 'list' : '')));
 
-$action = is_string($input['action'] ?? null) ? $input['action'] : '';
-if (!in_array($action, ['load', 'save', 'delete', 'clear'], true)) {
-    respond(400, ['ok' => false, 'error' => 'Acción no válida.']);
+if ($method === 'GET' && $action === 'list') {
+    $app = sanitizeToken((string)($_GET['app'] ?? ''));
+    $lock = lockFile();
+    flock($lock, LOCK_SH);
+    $history = loadHistoryUnlocked();
+    flock($lock, LOCK_UN);
+    fclose($lock);
+
+    if ($app !== '') {
+        $history = array_values(array_filter($history, static fn(array $entry): bool => ($entry['app'] ?? '') === $app));
+    }
+    respond(200, ['success' => true, 'history' => $history, 'count' => count($history)]);
 }
 
-$path = dataPath($namespace);
-$handle = fopen($path, 'c+');
-if ($handle === false) {
-    respond(500, ['ok' => false, 'error' => 'No se pudo abrir el historial.']);
+if ($method !== 'POST') {
+    respond(405, ['success' => false, 'error' => 'Método no permitido.']);
 }
 
-if (!flock($handle, LOCK_EX)) {
-    fclose($handle);
-    respond(503, ['ok' => false, 'error' => 'El historial está ocupado. Vuelve a intentarlo.']);
+$body = readJsonBody();
+$app = sanitizeToken((string)($body['app'] ?? ''), 'default');
+$lock = lockFile();
+if (!flock($lock, LOCK_EX)) {
+    fclose($lock);
+    respond(500, ['success' => false, 'error' => 'No se pudo acceder al historial.']);
 }
+$history = loadHistoryUnlocked();
 
-$items = readItemsLocked($handle);
+if ($action === 'save') {
+    $id = sanitizeToken((string)($body['id'] ?? ''), 'h_' . bin2hex(random_bytes(12)));
+    $entry = [
+        'id' => $id,
+        'app' => $app,
+        'type' => sanitizeToken((string)($body['type'] ?? 'item'), 'item'),
+        'model' => sanitizeToken((string)($body['model'] ?? ($body['data']['model'] ?? '')), ''),
+        'data' => $body['data'] ?? [],
+        'createdAt' => (string)($body['createdAt'] ?? date(DATE_ATOM)),
+    ];
 
-if ($action === 'load') {
-    flock($handle, LOCK_UN);
-    fclose($handle);
-    respond(200, ['ok' => true, 'items' => $items]);
-}
+    if (isset($body['imageData']) && is_string($body['imageData']) && $body['imageData'] !== '') {
+        [$imageFile, $imageUrl] = persistImage($id, $body['imageData']);
+        $entry['imageFile'] = $imageFile;
+        $entry['imageUrl'] = $imageUrl;
+    }
 
-if ($action === 'clear') {
-    $items = [];
-    writeItemsLocked($handle, $items);
-    flock($handle, LOCK_UN);
-    fclose($handle);
-    respond(200, ['ok' => true, 'items' => []]);
+    $history = array_values(array_filter($history, static fn(array $existing): bool => ($existing['id'] ?? '') !== $id));
+    array_unshift($history, $entry);
+    while (count($history) > MAX_HISTORY_ITEMS) {
+        $removed = array_pop($history);
+        if (is_array($removed)) {
+            removeImageForEntry($removed);
+        }
+    }
+    saveHistoryUnlocked($history);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'entry' => $entry, 'count' => count($history)]);
 }
 
 if ($action === 'delete') {
-    $id = cleanText($input['id'] ?? '', 80);
-    if (!preg_match('/^[a-zA-Z0-9_-]{8,80}$/', $id)) {
-        flock($handle, LOCK_UN);
-        fclose($handle);
-        respond(422, ['ok' => false, 'error' => 'Identificador de historial no válido.']);
+    $id = sanitizeToken((string)($body['id'] ?? ''));
+    if ($id === '') {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'Falta el ID.']);
     }
-    $items = array_values(array_filter($items, static fn(array $item): bool => ($item['id'] ?? '') !== $id));
-    writeItemsLocked($handle, $items);
-    flock($handle, LOCK_UN);
-    fclose($handle);
-    respond(200, ['ok' => true, 'items' => $items]);
+
+    $next = [];
+    $deleted = false;
+    foreach ($history as $entry) {
+        if (($entry['id'] ?? '') === $id && ($entry['app'] ?? 'default') === $app) {
+            removeImageForEntry($entry);
+            $deleted = true;
+            continue;
+        }
+        $next[] = $entry;
+    }
+    saveHistoryUnlocked($next);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond($deleted ? 200 : 404, ['success' => $deleted, 'deleted' => $deleted ? 1 : 0]);
 }
 
-$item = $input['item'] ?? null;
-if (!is_array($item)) {
-    flock($handle, LOCK_UN);
-    fclose($handle);
-    respond(422, ['ok' => false, 'error' => 'El elemento del historial no es válido.']);
+if ($action === 'clear') {
+    $next = [];
+    $deleted = 0;
+    foreach ($history as $entry) {
+        if (($entry['app'] ?? 'default') === $app) {
+            removeImageForEntry($entry);
+            $deleted++;
+            continue;
+        }
+        $next[] = $entry;
+    }
+    saveHistoryUnlocked($next);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'deleted' => $deleted]);
 }
 
-$id = cleanText($item['id'] ?? '', 80);
-if (!preg_match('/^[a-zA-Z0-9_-]{8,80}$/', $id)) {
-    $id = bin2hex(random_bytes(12));
-}
-
-$mode = in_array($item['mode'] ?? '', ['copilot', 'improver'], true) ? $item['mode'] : 'copilot';
-$safeItem = [
-    'id' => $id,
-    'title' => cleanText($item['title'] ?? 'Prompt profesional', 120) ?: 'Prompt profesional',
-    'original' => cleanText($item['original'] ?? '', 12000),
-    'prompt' => cleanText($item['prompt'] ?? '', 30000),
-    'mode' => $mode,
-    'score' => max(0, min(100, (int) ($item['score'] ?? 0))),
-    'createdAt' => cleanText($item['createdAt'] ?? gmdate(DATE_ATOM), 40),
-    'updatedAt' => gmdate(DATE_ATOM),
-    'meta' => is_array($item['meta'] ?? null) ? [
-        'targetTool' => cleanText($item['meta']['targetTool'] ?? '', 40),
-        'resolvedModel' => cleanText($item['meta']['resolvedModel'] ?? '', 160),
-    ] : [],
-    'changes' => is_array($item['changes'] ?? null) ? array_slice(array_values(array_map(static fn($v) => cleanText($v, 900), $item['changes'])), 0, 12) : [],
-    'assumptions' => is_array($item['assumptions'] ?? null) ? array_slice(array_values(array_map(static fn($v) => cleanText($v, 900), $item['assumptions'])), 0, 12) : [],
-    'validation' => is_array($item['validation'] ?? null) ? array_slice(array_values(array_map(static fn($v) => cleanText($v, 900), $item['validation'])), 0, 12) : [],
-    'metrics' => is_array($item['metrics'] ?? null) ? [
-        'claridad' => max(0, min(100, (int) ($item['metrics']['claridad'] ?? 0))),
-        'contexto' => max(0, min(100, (int) ($item['metrics']['contexto'] ?? 0))),
-        'restricciones' => max(0, min(100, (int) ($item['metrics']['restricciones'] ?? 0))),
-        'formato' => max(0, min(100, (int) ($item['metrics']['formato'] ?? 0))),
-        'verificacion' => max(0, min(100, (int) ($item['metrics']['verificacion'] ?? 0))),
-    ] : [],
-];
-
-if ($safeItem['prompt'] === '') {
-    flock($handle, LOCK_UN);
-    fclose($handle);
-    respond(422, ['ok' => false, 'error' => 'No se puede guardar un prompt vacío.']);
-}
-
-$items = array_values(array_filter($items, static fn(array $existing): bool => ($existing['id'] ?? '') !== $id));
-array_unshift($items, $safeItem);
-$items = array_slice($items, 0, MAX_ITEMS);
-writeItemsLocked($handle, $items);
-
-flock($handle, LOCK_UN);
-fclose($handle);
-respond(200, ['ok' => true, 'item' => $safeItem, 'items' => $items]);
+flock($lock, LOCK_UN);
+fclose($lock);
+respond(400, ['success' => false, 'error' => 'Acción no válida.', 'validActions' => ['list', 'save', 'delete', 'clear']]);
