@@ -166,6 +166,63 @@ function handleOpenRouter(array $request): void {
     ]);
 }
 
+function handleGemini(array $request): void {
+    $key = getSecret('R');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave de OpenRouter no está configurada.']);
+    $prompt = trim((string)($request['prompt'] ?? ''));
+    if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
+    if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
+
+    $reqModel = strtolower((string)($request['model'] ?? 'gemini-pro'));
+    $geminiModel = 'google/gemini-3-pro-image';
+    if (strpos($reqModel, 'flash') !== false) $geminiModel = 'google/gemini-3.1-flash-image';
+
+    $image = (string)($request['image'] ?? '');
+    if ($image === '' && isset($request['images'][0]) && is_string($request['images'][0])) $image = $request['images'][0];
+    if ($image === '') respond(400, ['success' => false, 'error' => 'Falta la imagen.']);
+
+    $mime = 'image/png';
+    if (preg_match('#^data:(image/[a-z0-9.+-]+);base64,#i', $image, $m) === 1) $mime = $m[1];
+
+    $payload = [
+        'model' => $geminiModel,
+        'modalities' => ['image', 'text'],
+        'messages' => [[
+            'role' => 'user',
+            'content' => [
+                ['type' => 'text', 'text' => $prompt],
+                ['type' => 'image_url', 'image_url' => ['url' => $image]],
+            ],
+        ]],
+        'max_tokens' => 8000,
+    ];
+
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
+        'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
+    ], $payload, 120);
+
+    if ($status < 200 || $status >= 300 || isset($response['error'])) {
+        $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
+        if (is_array($detail)) $detail = json_encode($detail);
+        respond($status >= 400 && $status < 600 ? $status : 502, ['success'=>false, 'error'=>'OpenRouter no pudo generar la imagen.', 'detail'=>$detail]);
+    }
+
+    $images = $response['choices'][0]['message']['images'] ?? [];
+    if (empty($images)) respond(502, ['success'=>false, 'error'=>'Gemini no devolvió imagen.']);
+    $imgDataUrl = (string)($images[0]['image_url']['url'] ?? '');
+    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) respond(502, ['success'=>false, 'error'=>'Gemini devolvió URL en lugar de imagen.']);
+
+    [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
+
+    respond(200, [
+        'success'=>true, 'provider'=>'gemini', 'model'=>$geminiModel,
+        'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
+        'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
+        'mimeType'=>$mime, 'image'=>substr($imgDataUrl, strpos($imgDataUrl, ',') + 1),
+        'dataUrl'=>$imgDataUrl,
+    ]);
+}
+
 function handleFlux(array $request): void {
     $key = getSecret('F');
     if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
@@ -234,5 +291,9 @@ $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
 if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
-if ($action === 'generate') handleFlux($request);
+if ($action === 'generate') {
+    $reqModel = strtolower((string)($request['model'] ?? ''));
+    if (strpos($reqModel, 'gemini') !== false) handleGemini($request);
+    handleFlux($request);
+}
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);

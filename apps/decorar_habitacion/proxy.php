@@ -252,6 +252,111 @@ if ($action === 'crop') {
 }
 
 // ============================================================
+//  RAMA GEMINI IMAGEN (clave R / OpenRouter): redecora imagen->imagen
+//  Activa cuando el frontend envía model con "gemini" (3.1FLASH / 3 PRO).
+// ============================================================
+$reqModel = strtolower((string)($req['model'] ?? ''));
+if (strpos($reqModel, 'gemini') !== false) {
+    $orKey = readKey('R');
+    if (!$orKey) {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']]);
+        exit;
+    }
+    $imageB64 = (string)($req['image'] ?? '');
+    $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
+    $prompt   = (string)($req['prompt'] ?? '');
+    if ($imageB64 === '' || $prompt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Faltan imagen o prompt.']]);
+        exit;
+    }
+    $imgBinary = base64_decode($imageB64, true);
+    if ($imgBinary === false) {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Imagen en base64 invalida.']]);
+        exit;
+    }
+    if (strlen($imgBinary) > 2500000) {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (maximo 2.5MB). Reduce la foto e intentalo de nuevo.']]);
+        exit;
+    }
+
+    $geminiModel = (strpos($reqModel, 'flash') !== false) ? 'google/gemini-3.1-flash-image' : 'google/gemini-3-pro-image';
+
+    $content = [
+        ['type' => 'text', 'text' => $prompt],
+        ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . $imageB64]],
+    ];
+    $payload = [
+        'model' => $geminiModel,
+        'modalities' => ['image', 'text'],
+        'messages' => [['role' => 'user', 'content' => $content]],
+        'max_tokens' => 8000,
+    ];
+
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'accept: application/json',
+            'Authorization: Bearer ' . $orKey,
+        ],
+        CURLOPT_TIMEOUT => 120,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+
+    if ($err) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error conexion OpenRouter: ' . $err]]);
+        exit;
+    }
+    if ($code >= 400) {
+        $eb = json_decode($resp, true);
+        $em = $eb['error']['message'] ?? $eb['error'] ?? ('HTTP ' . $code);
+        if (is_array($em)) $em = json_encode($em);
+        http_response_code($code);
+        echo json_encode(['error' => ['message' => 'OpenRouter: ' . $em]]);
+        exit;
+    }
+    $jr = json_decode($resp, true);
+    $images = $jr['choices'][0]['message']['images'] ?? [];
+    if (empty($images)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Gemini no devolvio imagen.']]);
+        exit;
+    }
+    $imgDataUrl = $images[0]['image_url']['url'] ?? '';
+    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Gemini devolvio URL en lugar de imagen.']]);
+        exit;
+    }
+    $outB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
+    $outBin = base64_decode($outB64, true);
+    $outMime = 'image/png';
+    if (preg_match('#^data:(image/[a-z0-9.+-]+);#i', $imgDataUrl, $m) === 1) $outMime = $m[1];
+
+    echo json_encode([
+        'image'    => base64_encode($outBin !== false ? $outBin : ''),
+        'mimeType' => $outMime,
+        'width'    => (int)($req['width'] ?? 0),
+        'height'   => (int)($req['height'] ?? 0),
+        'provider' => 'gemini',
+        'model'    => $geminiModel,
+    ]);
+    exit;
+}
+
+// ============================================================
 //  RAMA FLUX (imagen->imagen): redecorar la estancia
 // ============================================================
 $apiKey = readKey('F');

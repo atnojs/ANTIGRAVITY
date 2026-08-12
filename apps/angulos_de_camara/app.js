@@ -60,6 +60,17 @@ let currentImageData = null;
 let currentImageMimeType = null;
 let currentQuality = 'pro';
 
+// === Selector de modelo IA (patrón canónico: 3.1FLASH / 3 PRO / FLUX PRO / FLUX MAX) ===
+let selectedModel = 'gemini-pro';
+const modelToggles = document.querySelectorAll('.model-toggle');
+modelToggles.forEach(btn => {
+  btn.addEventListener('click', () => {
+    modelToggles.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedModel = btn.dataset.model;
+  });
+});
+
 // === Prompts por tipo de plano ===
 const prompts = {
   'general': 'PLANO GENERAL: Toma completa del objeto exacto de la imagen proporcionada. Muestra TODO el objeto desde lejos, integrado en un entorno amplio y realista. La cámara está lejos del objeto, mostrando el contexto completo. Vista frontal directa a nivel de ojos. El objeto debe ser IDÉNTICO en forma, tamaño, colores, texturas y marcas. ENFATIZA: Esto es un PLANO GENERAL - la cámara está LEJOS, mostrando el objeto completo en su entorno.',
@@ -432,6 +443,7 @@ async function callFluxAPI(cardId, shotType, backgroundOverride) {
   const payload = {
     action: 'generate',
     prompt: finalPrompt,
+    model: selectedModel,
     quality: currentQuality,
     output_format: outputFormat,
     aspectRatio: aspectRatio,

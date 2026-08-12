@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
   <!-- CSS Hoola -->
-  <link rel="stylesheet" href="app.css?v=6">
+  <link rel="stylesheet" href="app.css?v=7">
 </head>
 <body>
 
@@ -49,6 +49,17 @@
             <button class="shot-option glass-hover" data-shot="side">Plano Lateral</button>
             <button class="shot-option glass-hover" data-shot="top-down">Plano Cenital</button>
           </div>
+
+        <!-- Selector de modelo IA (patrón canónico toggles pill hoola, SKILL_MAESTRA) -->
+        <div class="model-selector">
+          <span class="model-selector-label">Modelo IA</span>
+          <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+            <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
+            <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
+            <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
+            <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+          </div>
+        </div>
 
           <!-- Selector de calidad PRO / MAX -->
           <div class="quality-selector">
@@ -181,6 +192,6 @@
   <!-- HistoryManager canónico (servidor) -->
   <script src="history-manager.js"></script>
   <!-- Lógica de la app -->
-  <script src="app.js?v=5" defer></script>
+  <script src="app.js?v=6" defer></script>
 </body>
 </html>

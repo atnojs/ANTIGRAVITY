@@ -197,12 +197,13 @@ function imageDims(uri) {
 // Llama al proxy FLUX (editar imagen->imagen). Devuelve un data URI JPEG/PNG.
 // b64img: base64 PURO (sin prefijo data:).
 // dimsInfo: resultado de computeTargetDims -> { flux:{width,height}, target:{w,h}, upscale }.
-async function callFlux(b64img, prompt, quality, dimsInfo) {
+async function callFlux(b64img, prompt, quality, dimsInfo, model) {
   const body = {
     image: b64img,
     mimeType: "image/jpeg",
     prompt: prompt,
     quality: quality || "pro",
+    model: model || "gemini-pro",
   };
   if (dimsInfo && dimsInfo.flux && dimsInfo.flux.width && dimsInfo.flux.height) {
     body.width = dimsInfo.flux.width;
@@ -566,6 +567,7 @@ function App() {
     return () => { document.body.style.overflow = ''; };
   }, [busy]);
   const [selectedQuality, setSelectedQuality] = useState('pro'); // 'pro' | 'max'
+  const [selectedModel, setSelectedModel] = useState('gemini-pro'); // patron canonico 4 modelos
   const [selectedRes, setSelectedRes] = useState(DEFAULT_RES); // 512 | 1024 | 2048 | 4096
   const [customInstruction, setCustomInstruction] = useState("");
   const [editingUserImage, setEditingUserImage] = useState(false);
@@ -719,7 +721,7 @@ function App() {
       const prompt = buildRemoveObjectsPrompt(selectedRoom);
       const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
-      const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
+      const uri = await callFlux(srcB64, prompt, selectedQuality, dims, selectedModel);
 
       setSrc(uri);
       setSrcB64(dataUriToBase64(uri));
@@ -738,7 +740,7 @@ function App() {
       const prompt = buildCustomPrompt(customInstruction, selectedRoom);
       const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
-      const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
+      const uri = await callFlux(srcB64, prompt, selectedQuality, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
       const id = makeHistoryId("Personalizado");
@@ -771,7 +773,7 @@ function App() {
       const prompt = buildUniversalPrompt(style, variation, selectedRoom);
       const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
-      const uri = await callFlux(srcB64, prompt, selectedQuality, dims);
+      const uri = await callFlux(srcB64, prompt, selectedQuality, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
       const id = makeHistoryId(style);
@@ -794,7 +796,7 @@ function App() {
       const nd = await imageDims(item.uri);
       const dims = nd ? computeTargetDims(nd.w, nd.h, selectedRes) : null;
 
-      const uri = await callFlux(b64img, prompt, selectedQuality, dims);
+      const uri = await callFlux(b64img, prompt, selectedQuality, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
       const id = makeHistoryId(style);
@@ -822,7 +824,7 @@ function App() {
       const nd = await imageDims(item.uri);
       const dims = nd ? computeTargetDims(nd.w, nd.h, selectedRes) : null;
 
-      const uri = await callFlux(b64img, prompt, selectedQuality, dims);
+      const uri = await callFlux(b64img, prompt, selectedQuality, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
 
@@ -1187,7 +1189,27 @@ function App() {
           )}
 
           <div className="bg-white rounded-xl shadow p-3 mt-4 quality-selector">
-            <h3 className="font-semibold mb-2">Calidad de generación</h3>
+            <h3 className="font-semibold mb-2">Modelo IA</h3>
+            <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+              {[
+                { id: 'gemini-flash', label: '3.1FLASH' },
+                { id: 'gemini-pro', label: '3 PRO' },
+                { id: 'flux-pro', label: 'FLUX PRO' },
+                { id: 'flux-max', label: 'FLUX MAX' },
+              ].map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
+                  onClick={() => setSelectedModel(m.id)}
+                  disabled={busy}
+                  aria-pressed={selectedModel === m.id}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <h3 className="font-semibold mb-2 mt-3">Calidad de generación</h3>
             <div className="quality-toggle">
               <button
                 type="button"

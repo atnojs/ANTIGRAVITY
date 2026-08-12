@@ -1402,6 +1402,54 @@ textarea::placeholder {
   text-transform: none;
 }
 
+/* --- Selector de Modelo IA (patrón canónico toggles pill hoola, SKILL_MAESTRA) --- */
+.model-toggle-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(0, 16, 24, 0.35);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 12px var(--shadow-light);
+}
+
+.model-toggle-group button.model-toggle {
+  flex: 1;
+  min-width: 90px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Electrolize', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+.model-toggle-group button.model-toggle:hover {
+  color: var(--text);
+  border-color: var(--acc);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 12px var(--shadow-light);
+}
+
+.model-toggle-group button.model-toggle.active {
+  background: linear-gradient(135deg, var(--contenedor), var(--acc));
+  color: #CCFFFF;
+  text-shadow: 0 0 8px var(--glow);
+  border-color: var(--acc);
+  box-shadow: 0 0 18px var(--glow);
+}
+
+.model-toggle-group button.model-toggle:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 /* --- Selector de resolución (hoola) --- */
 .res-toggle {
   display: flex;
