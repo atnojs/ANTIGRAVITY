@@ -207,58 +207,75 @@ const HISTORICAL_ERAS = [
     { id: 'galactic-empire', shortName: 'Imperio Galáctico', name: 'Imperio Galáctico · 3.500 d.C.', era: '3,500 d.C.', promptSuffix: 'Show this person as a high-ranking galactic officer or starship pilot, wearing a sleek futuristic uniform, with glowing data pads, standing on the bridge of a massive spaceship overlooking a nebula, preserving their exact facial features and identity.' }
 ];
 
-// --- HISTORIAL PERSISTENTE (HistoryManager: IndexedDB + servidor) ---
-// El servidor (history.php) es la fuente de verdad; IndexedDB es caché local.
-let historyManagerReady = false;
-const ensureHistoryManager = async () => {
-    if (historyManagerReady) return;
-    if (typeof window.HistoryManager === 'undefined') {
-        console.warn('HistoryManager no cargado; historial solo en sesión.');
-        return;
+// --- HISTORIAL PERSISTENTE (HistoryManager canónico: servidor history.php) ---
+// El servidor es la fuente de verdad: carga, guarda, elimina y limpia.
+let historyInstance = null;
+const getHistory = () => {
+    if (!historyInstance && typeof window.HistoryManager !== 'undefined') {
+        historyInstance = new window.HistoryManager('editar_generar');
     }
-    window.HistoryManager.configure({ dbName: 'editar_generar_history', maxItems: 200 });
-    await window.HistoryManager.init();
-    historyManagerReady = true;
+    return historyInstance;
 };
 
 const loadHistoryFromDb = async (mode) => {
     try {
-        await ensureHistoryManager();
-        if (!historyManagerReady) return [];
-        const items = await window.HistoryManager.loadAll();
-        return items
-            .filter(item => (item.mode || 'remix') === mode)
-            .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        const history = getHistory();
+        if (!history) return [];
+        const all = await history.load();
+        return all
+            .filter(item => ((item.data && item.data.mode) || 'remix') === mode)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .map(item => ({
+                id: item.id,
+                url: item.imageUrl || '',
+                prompt: (item.data && item.data.prompt) || '',
+                style: item.data && item.data.style,
+                era: item.data && item.data.era,
+                aspectRatio: (item.data && item.data.aspectRatio) || '1:1',
+                model: item.model || (item.data && item.data.model) || 'desconocido',
+                size: (item.data && item.data.size) || '1K',
+                mode: (item.data && item.data.mode) || 'remix',
+                createdAt: item.createdAt
+            }));
     } catch (e) { console.warn('Error cargando historial:', e); return []; }
 };
 
 const saveHistoryItemToDb = async (item) => {
-    try {
-        await ensureHistoryManager();
-        if (!historyManagerReady) return;
-        await window.HistoryManager.saveItem(item);
-    } catch (e) { console.warn('Error guardando item:', e); }
+    const history = getHistory();
+    if (!history) return;
+    await history.save({
+        id: item.id,
+        type: 'image',
+        model: item.model || 'desconocido',
+        data: {
+            prompt: item.prompt,
+            style: item.style,
+            era: item.era,
+            aspectRatio: item.aspectRatio,
+            model: item.model,
+            mode: item.mode,
+            size: item.size
+        },
+        imageData: item.url,
+        createdAt: new Date(item.createdAt || Date.now()).toISOString()
+    });
 };
 
 const deleteHistoryItemFromDb = async (id) => {
-    try {
-        await ensureHistoryManager();
-        if (!historyManagerReady) return;
-        await window.HistoryManager.deleteItem(id);
-    } catch (e) { console.warn('Error eliminando item:', e); }
+    const history = getHistory();
+    if (!history) return;
+    await history.delete(id);
 };
 
 const clearHistoryFromDb = async (mode) => {
-    try {
-        await ensureHistoryManager();
-        if (!historyManagerReady) return;
-        // Borra todos los items del modo actual; el resto se conserva.
-        const allItems = await window.HistoryManager.loadAll();
-        const ids = allItems.filter(i => (i.mode || 'remix') === mode).map(i => i.id);
-        for (const id of ids) {
-            await window.HistoryManager.deleteItem(id);
+    const history = getHistory();
+    if (!history) return;
+    const all = await history.load();
+    for (const item of all) {
+        if (((item.data && item.data.mode) || 'remix') === mode) {
+            await history.delete(item.id);
         }
-    } catch (e) { console.warn('Error limpiando historial:', e); }
+    }
 };
 
 // --- SERVICES CORREGIDOS ---
