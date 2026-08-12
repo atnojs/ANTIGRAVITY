@@ -48,13 +48,20 @@ function healthLabel(h) {
 }
 
 // ── API calls via backend ──
+// Canario real: mide si el despliegue en Hostinger responde (no el cableado
+// interno del plugin). Si el renderer tiene red, el fetch directo confirma
+// conectividad; si no, cae al backend interno como respaldo. Solo marca
+// 'offline' cuando AMBOS fallan (red/servidor realmente caídos).
 async function checkHealth() {
-  if (!pluginCtx) return
+  if (!pluginCtx) return 'checking'
+  try {
+    await fetch('https://atnojs.es/apps/generador_ia_flux/proxy.php', { method: 'GET', mode: 'no-cors' })
+    return 'ok'
+  } catch (e) {}
   try {
     const resp = await pluginCtx.rest('/health')
     const data = await resp.json()
-    const ok = data.ok === true
-    return ok ? 'ok' : 'error'
+    return data.ok === true ? 'ok' : 'error'
   } catch (e) {
     return 'offline'
   }
