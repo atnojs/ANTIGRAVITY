@@ -122,3 +122,6 @@ copias_de_seguridad_de_archivos/
 
 # Repo embebido dentro del respaldo de la antigua app (no versionar)
 apps/editar_generar_1/5/
+
+apps/viaje_tiempo/.diag/
+skills/diag_mic.py
