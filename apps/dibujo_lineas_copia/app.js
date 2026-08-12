@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    HistoryManager.configure({ dbName: 'dibujo_lineas_db' });
+    // --- HISTORIAL PERSISTENTE (HistoryManager canonico: servidor history.php) ---
+    let historyInstance = null;
+    const getHistory = () => {
+        if (!historyInstance && typeof window.HistoryManager !== 'undefined') {
+            historyInstance = new window.HistoryManager('dibujo_lineas_copia');
+        }
+        return historyInstance;
+    };
     const PROXY_URL = 'proxy.php';
     const imageInput = document.getElementById('image-input');
     const startButton = document.getElementById('start-button');
@@ -107,13 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                     resultsGallery.appendChild(item);
-                    HistoryManager.saveItem({
+                    saveHistoryItemToDb({
                         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
                         url: imgDataUrl,
                         prompt: 'Dibujo lineal: ' + safeName,
+                        model: selectedModel,
                         aspectRatio: '1:1',
                         size: '',
-                        geminiSize: '1K',
                         style: { type: 'line_art' },
                         createdAt: Date.now()
                     });
@@ -143,8 +150,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ... (El resto del código de HistoryManager y funciones de UI se mantiene igual)
+
+    // Anade un File a la cola de procesamiento y lo muestra en la vista previa
+    function addFileToQueue(file) {
+        imageQueue.push(file);
+        startButton.disabled = false;
+        startButton.innerHTML = `🚀 Iniciar Procesamiento (${imageQueue.length})`;
+        previewSection.classList.remove('hidden');
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `<img src="${ev.target.result}">`;
+            previewGrid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function saveHistoryItemToDb(item) {
+        const history = getHistory();
+        if (!history) return Promise.resolve();
+        return history.save({
+            id: item.id,
+            type: 'image',
+            model: item.model || 'desconocido',
+            data: {
+                prompt: item.prompt,
+                aspectRatio: item.aspectRatio || '1:1',
+                size: item.size || '',
+                model: item.model || 'desconocido',
+                style: item.style || {}
+            },
+            imageData: item.url,
+            createdAt: new Date(item.createdAt || Date.now()).toISOString()
+        }).catch(function(e) {
+            console.error('Error guardando historial:', e);
+            alert('No se pudo guardar en el historial: ' + e.message);
+        });
+    }
+
     function loadAndRenderHistory() {
-        HistoryManager.loadAll().then(function(items) {
+        const history = getHistory();
+        if (!history) { return; }
+        history.load().then(function(items) {
             var grid = document.getElementById('history-grid');
             var title = document.getElementById('history-title');
             var clearBtn = document.getElementById('history-clear-btn');
@@ -158,42 +206,85 @@ document.addEventListener('DOMContentLoaded', () => {
             if (title) title.style.display = 'block';
             if (clearBtn) clearBtn.style.display = 'inline-block';
             grid.innerHTML = items.map(function(item) {
+                const imageUrl = item.imageUrl || (item.data && item.data.url) || '';
                 return '<div class="gallery-item">' +
-                    '<img src="' + item.url + '" alt="Historial" style="cursor:pointer" onclick="window._openDibujoLightbox(\'' + item.url + '\')">' +
+                    '<img src="' + imageUrl + '" alt="Historial" style="cursor:pointer" onclick="window._useDibujoImage(\'' + item.id + '\')" title="Clic para usar en la app">' +
                     '<div class="gallery-item-actions">' +
-                    '<a href="' + item.url + '" download="dibujo_' + (item.id || 'historial') + '.png" class="download-single-btn">💾 Descargar</a>' +
+                    '<button class="download-single-btn" onclick="window._openDibujoLightbox(\'' + item.id + '\')">🔍 Ampliar</button>' +
+                    '<a href="' + imageUrl + '" download="dibujo_' + (item.id || 'historial') + '.png" class="download-single-btn">💾 Descargar</a>' +
                     '<button class="download-single-btn" style="background:rgba(239,68,68,0.8);margin-left:0.5rem;border:none;cursor:pointer" onclick="window._deleteDibujoItem(\'' + item.id + '\')">🗑️</button>' +
                     '</div></div>';
             }).join('');
+        }).catch(function(e) {
+            console.error('Error cargando historial:', e);
+            var grid = document.getElementById('history-grid');
+            if (grid) grid.innerHTML = '<div style="padding:1rem;color:var(--danger);font-size:.85rem">Error al cargar el historial: ' + e.message + '</div>';
         });
     }
 
     window._deleteDibujoItem = function(id) {
         if (confirm('¿Eliminar del historial?')) {
-            HistoryManager.deleteItem(id).then(function() { loadAndRenderHistory(); });
+            const history = getHistory();
+            if (!history) return;
+            history.delete(id).then(function() { loadAndRenderHistory(); });
         }
     };
-    window._openDibujoLightbox = function(url) {
-        var lb = document.getElementById('dibujo-lightbox');
-        if (!lb) {
-            lb = document.createElement('div');
-            lb.id = 'dibujo-lightbox';
-            lb.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
-            lb.onclick = function() { lb.remove(); };
-            var img = document.createElement('img');
-            img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px';
-            lb.appendChild(img);
-            document.body.appendChild(lb);
-        }
-        lb.querySelector('img').src = url;
-        lb.style.display = 'flex';
+
+    // Carga la imagen del historial dentro de la app para volver a usarla (cola + vista previa)
+    window._useDibujoImage = function(id) {
+        const history = getHistory();
+        if (!history) return;
+        history.load().then(function(items) {
+            const item = items.find(function(i) { return i.id === id; });
+            if (!item) { alert('Entrada no encontrada en el historial.'); return; }
+            const imageUrl = item.imageUrl || (item.data && item.data.url) || '';
+            if (!imageUrl) { alert('Esta entrada no tiene imagen.'); return; }
+            fetch(imageUrl).then(function(resp) {
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                return resp.blob();
+            }).then(function(blob) {
+                const ext = (blob.type && blob.type.split('/')[1]) || 'png';
+                const file = new File([blob], 'historial_' + id + '.' + ext, { type: blob.type || 'image/png' });
+                addFileToQueue(file);
+                alert('Imagen cargada en la app. Pulsa "Iniciar Procesamiento" para usarla.');
+            }).catch(function(e) {
+                console.error('Error usando imagen del historial:', e);
+                alert('No se pudo cargar la imagen en la app: ' + e.message);
+            });
+        });
+    };
+
+    window._openDibujoLightbox = function(id) {
+        const history = getHistory();
+        if (!history) return;
+        history.load().then(function(items) {
+            const item = items.find(function(i) { return i.id === id; });
+            if (!item) return;
+            const url = item.imageUrl || (item.data && item.data.url) || '';
+            if (!url) return;
+            var lb = document.getElementById('dibujo-lightbox');
+            if (!lb) {
+                lb = document.createElement('div');
+                lb.id = 'dibujo-lightbox';
+                lb.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+                lb.onclick = function() { lb.remove(); };
+                var img = document.createElement('img');
+                img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px';
+                lb.appendChild(img);
+                document.body.appendChild(lb);
+            }
+            lb.querySelector('img').src = url;
+            lb.style.display = 'flex';
+        });
     };
 
     document.getElementById('history-clear-btn').addEventListener('click', function() {
         if (confirm('¿Eliminar todo el historial?')) {
-            HistoryManager.clearAll().then(function() { loadAndRenderHistory(); });
+            const history = getHistory();
+            if (!history) return;
+            history.clear().then(function() { loadAndRenderHistory(); });
         }
     });
 
-    HistoryManager.init().then(function() { loadAndRenderHistory(); });
+    loadAndRenderHistory();
 });
