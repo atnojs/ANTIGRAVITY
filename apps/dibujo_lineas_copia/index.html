@@ -14,7 +14,8 @@
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
-  <main class="container">
+  <div class="main-layout">
+  <main class="container main-col">
     <h1>Imágenes a Lineales</h1>
 <p class="subtitle">Sube una o varias imágenes. Pasa el cursor sobre una para eliminarla. Al terminar, cambia de modelo y vuelve a pulsar "Iniciar Procesamiento" para comparar resultados.</p>
 
@@ -60,12 +61,15 @@
 
     <div id="error-message" class="error-message hidden"></div>
 
-    <section id="history-section" style="margin-top:3rem">
-      <h2 style="color:var(--text);margin-bottom:1rem;display:none" id="history-title">Historial</h2>
-      <div id="history-grid" class="results-gallery"></div>
-      <button id="history-clear-btn" style="display:none;margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem">Limpiar Historial</button>
-    </section>
   </main>
+
+  <!-- COLUMNA DERECHA: HISTORIAL (patrón canónico SKILL_MAESTRA) -->
+  <aside class="history-col" id="history-section">
+    <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+    <div id="history-grid"></div>
+    <button id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
+  </aside>
+  </div><!-- /.main-layout -->
 
   <!-- Loading Overlay -->
   <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
@@ -84,7 +88,7 @@
   </div>
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
-  <script src="history-manager.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="history-manager.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
