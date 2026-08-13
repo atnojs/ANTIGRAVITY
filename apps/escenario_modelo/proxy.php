@@ -114,33 +114,6 @@ function dimensions(array $request): array {
     return [$width, $height, $ratio, $resolution, $adjusted];
 }
 
-function imageDimsFromBinary(string $bin): array {
-    if ($bin === '') return [0, 0];
-    if (strncmp($bin, "PNG
-
-", 8) === 0 && strlen($bin) >= 24) {
-        $data = unpack('Nw/Nh', substr($bin, 16, 8));
-        return [$data['w'], $data['h']];
-    }
-    if (strncmp($bin, "ÿØ", 2) === 0) {
-        $i = 2;
-        $len = strlen($bin);
-        while ($i + 9 < $len) {
-            if (ord($bin[$i]) !== 0xFF) { $i++; continue; }
-            $marker = ord($bin[$i + 1]);
-            if ($marker >= 0xC0 && $marker <= 0xCF && $marker !== 0xC4 && $marker !== 0xC8 && $marker !== 0xCC) {
-                $d = unpack('nh/nw', substr($bin, $i + 5, 4));
-                return [$d['w'], $d['h']];
-            }
-            if ($marker === 0xD8 || $marker === 0xD9 || ($marker >= 0xD0 && $marker <= 0xD7)) { $i += 2; continue; }
-            $seg = unpack('n', substr($bin, $i + 2, 2))[1];
-            if ($seg < 2) return [0, 0];
-            $i += 2 + $seg;
-        }
-    }
-    return [0, 0];
-}
-
 function base64Image(string $value): string {
     $value = trim($value);
     if (preg_match('#^data:image/(?:png|jpe?g|webp);base64,#i', $value) === 1) {
@@ -233,66 +206,42 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
     }
     if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Máximo ocho imágenes de referencia.']);
 
-        // OpenRouter: API dedicada de imágenes (/api/v1/images) para controlar
-    // aspect_ratio y resolution (chat/completions los ignora silenciosamente).
-    $refImages = [];
+    $content = [];
+    $content[] = ['type' => 'text', 'text' => $prompt];
     foreach ($images as $image) {
         $mime = 'image/jpeg';
         if (strpos($image, 'data:image/png') === 0) $mime = 'image/png';
         elseif (strpos($image, 'data:image/webp') === 0) $mime = 'image/webp';
         $b64 = strpos($image, ',') !== false ? substr($image, strpos($image, ',') + 1) : $image;
-        $refImages[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mime . ';base64,' . $b64]];
-    }
-
-    [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
-    // Resoluciones admitidas por modelo (metadata oficial OpenRouter):
-    //   gemini-3-pro-image -> "1K" / "2K"
-    //   gemini-3.1-flash-image -> "512" / "1K" / "2K" / "4K"
-    $resKey = '1K';
-    if (strpos($geminiModelId, 'pro-image') !== false) {
-        if ($requested < 1024) { $resKey = '1K'; $adjusted = true; }
-        elseif ($requested <= 2048) { $resKey = '2K'; }
-        else { $resKey = '2K'; $adjusted = true; }
-    } else {
-        if ($requested >= 4096) { $resKey = '4K'; }
-        elseif ($requested >= 2048) { $resKey = '2K'; }
-        elseif ($requested >= 1024) { $resKey = '1K'; }
-        else { $resKey = '512'; }
+        $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mime . ';base64,' . $b64]];
     }
 
     $payload = [
         'model' => $geminiModelId,
-        'prompt' => $prompt,
-        'aspect_ratio' => $ratio,
-        'resolution' => $resKey,
+        'modalities' => ['image', 'text'],
+        'messages' => [['role' => 'user', 'content' => $content]],
+        'max_tokens' => 8000,
     ];
-    if ($refImages !== []) $payload['images'] = $refImages;
 
-    [$status, $response] = requestJson('https://openrouter.ai/api/v1/images', 'POST', [
-        'Authorization: Bearer ' . $orKey, 'Content-Type: application/json', 'accept: application/json'
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
+        'Authorization: *** ' . $orKey, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
 
     if ($status < 200 || $status >= 300 || isset($response['error'])) {
-        $detail = $response['error']['message'] ?? ($response['error'] ?? ('HTTP ' . $status));
-        if (is_array($detail)) $detail = json_encode($detail);
-        respond(($status >= 400 && $status < 600) ? $status : 502, ['success' => false, 'error' => 'OpenRouter no pudo generar la imagen.', 'detail' => $detail]);
+        $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
+        respond($status >= 400 && $status < 600 ? $status : 502, ['success' => false, 'error' => 'Gemini no pudo completar la solicitud.', 'detail' => $detail]);
     }
 
-    $outImg = $response['data'][0] ?? null;
-    if (!is_array($outImg)) respond(502, ['success' => false, 'error' => 'OpenRouter no devolvió imagen.']);
-    $imgB64 = (string)($outImg['b64_json'] ?? '');
-    $mediaType = (string)($outImg['media_type'] ?? 'image/png');
-    if ($imgB64 === '') respond(502, ['success' => false, 'error' => 'OpenRouter devolvió imagen vacía.']);
+    $images = $response['choices'][0]['message']['images'] ?? [];
+    if (empty($images)) respond(502, ['success' => false, 'error' => 'Gemini no devolvió imagen.']);
+    $imgDataUrl = $images[0]['image_url']['url'] ?? '';
+    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) respond(502, ['success' => false, 'error' => 'Gemini devolvió URL en lugar de imagen.']);
+    $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
 
-    $imgBin = base64_decode($imgB64, true);
-    $imgMime = ($mediaType !== '' && strpos($mediaType, 'image/') === 0) ? $mediaType : 'image/png';
-    [$realW, $realH] = imageDimsFromBinary($imgBin === false ? '' : $imgBin);
     respond(200, [
         'success' => true, 'provider' => 'gemini', 'model' => $geminiModelId,
-        'mimeType' => $imgMime, 'image' => $imgB64,
-        'dataUrl' => 'data:' . $imgMime . ';base64,' . $imgB64,
-        'width' => $realW, 'height' => $realH, 'aspectRatio' => $ratio,
-        'requestedResolution' => $requested, 'resolutionAdjusted' => $adjusted,
+        'mimeType' => 'image/png', 'image' => $imgB64,
+        'dataUrl' => 'data:image/png;base64,' . $imgB64,
     ]);
 }
 
@@ -337,12 +286,11 @@ function handleFluxGenerate(array $request, string $prompt, string $fluxEndpoint
     curl_close($ch);
     if ($binary === false || $binary === '' || $downloadStatus !== 200) respond(502, ['success'=>false, 'error'=>'No se pudo descargar el resultado.']);
     $base64 = base64_encode($binary);
-        [$realW, $realH] = imageDimsFromBinary($binary);
     respond(200, [
-        'success' => true, 'provider' => 'flux', 'model' => $fluxEndpoint, 'quality' => $quality,
-        'width' => $realW, 'height' => $realH, 'aspectRatio' => $ratio,
-        'requestedResolution' => $requested, 'resolutionAdjusted' => $adjusted,
-        'mimeType' => $mime, 'image' => $base64, 'dataUrl' => 'data:' . $mime . ';base64,' . $base64,
+        'success'=>true, 'provider'=>'flux', 'model'=>$fluxEndpoint, 'quality'=>$quality,
+        'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
+        'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
+        'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
     ]);
 }
 
