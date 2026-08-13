@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=5" />
+  <link rel="stylesheet" href="app.css?v=6" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -136,16 +136,11 @@
 
     </div><!-- /main-col -->
 
-    <!-- HISTORIAL -->
-    <aside id="history-section" class="history-panel hidden">
-      <div class="history-header">
-        <h2 class="section-title">📸 Historial</h2>
-        <button id="history-clear-btn" class="action-chip" style="font-size:0.6rem;padding:4px 10px">Limpiar</button>
-      </div>
-      <div class="history-header-actions">
-        <button id="history-refresh-btn" class="action-chip" style="font-size:0.55rem;padding:3px 8px">↻ Refrescar</button>
-      </div>
-      <div id="history-container" class="history-grid"></div>
+    <!-- COLUMNA DERECHA: HISTORIAL -->
+    <aside class="history-col" id="history-section" aria-labelledby="history-title">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <button id="history-clear-btn" class="btn-danger-outline" type="button" style="display:none;">Limpiar</button>
     </aside>
 
   </div><!-- /main-layout -->
@@ -173,6 +168,6 @@
 
 <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 <script src="history-manager.js?v=1"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

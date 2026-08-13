@@ -148,8 +148,11 @@
         $("result-section").classList.remove("hidden");
         $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
         // Save uploaded image to history for reuse
-        saveToHistory(dataUrl, "(Imagen subida)");
-        showToast("¡Imagen cargada y guardada en historial!", true);
+        saveToHistory(dataUrl, "(Imagen subida)").then(function (saved) {
+          if (saved) {
+            showToast("¡Imagen cargada y guardada en historial!", true);
+          }
+        });
       };
       img.src = dataUrl;
     };
@@ -441,17 +444,24 @@
     // Also save to history so the new text version is persisted
     var baseImage = state.cleanFluxImage || state.memeDataUrl;
     var prompt = $("meme-idea").value || "(Meme descargado)";
-    saveToHistory(baseImage, prompt);
-    showToast("Meme descargado y guardado en historial.", true);
+    saveToHistory(baseImage, prompt).then(function (saved) {
+      if (saved) {
+        showToast("Meme descargado y guardado en historial.", true);
+      }
+    });
   });
 
   // ===== HISTORY =====
-  var history = new HistoryManager("creador_memes");
+  var history = null;
 
   function saveToHistory(dataUrl, prompt) {
     var canvas = $("meme-canvas");
     var memeDataUrl = canvas ? canvas.toDataURL("image/jpeg", 0.85) : dataUrl;
-    history.save({
+    if (!history) {
+      showToast("El historial todavía no está disponible.", false);
+      return Promise.resolve(false);
+    }
+    return history.save({
       type: "meme",
       data: {
         prompt: prompt,
@@ -463,15 +473,23 @@
         cleanFluxImage: dataUrl
       },
       imageData: memeDataUrl
-    }).then(function () { loadHistory(); })
-    .catch(function (err) { console.error("Error guardando historial:", err); });
+    }).then(function () {
+      return true;
+    }).catch(function (err) {
+      console.error("Error guardando historial:", err);
+      showToast("No se pudo guardar el meme en el historial.", false);
+      return false;
+    });
   }
 
-  function loadHistory() {
-    history.load().then(function (items) {
-      renderHistory(items);
-      if (items.length > 0) $("history-section").classList.remove("hidden");
-    }).catch(function () {});
+  async function loadAndRenderHistory() {
+    try {
+      await history.load();
+      renderHistoryFromState();
+    } catch (e) {
+      console.warn("Error cargando historial:", e);
+      showToast("No se pudo cargar el historial. Recarga la página para volver a intentarlo.", false);
+    }
   }
 
   function reuseImage(item) {
@@ -491,78 +509,140 @@
     reuseImg.src = cleanUrl;
   }
 
-  function renderHistory(items) {
-    var container = $("history-container");
-    if (!container) return;
+  function createHistoryAction(label, className, iconMarkup, handler) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "history-action-btn " + className;
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    button.innerHTML = '<span class="history-action-ico">' + iconMarkup + '</span><span class="history-action-label">' + label + '</span>';
+    button.addEventListener("click", function (event) {
+      event.stopPropagation();
+      handler();
+    });
+    return button;
+  }
+
+  function renderHistoryFromState() {
+    var container = $("history-grid");
+    var title = $("history-title");
+    var clearBtn = $("history-clear-btn");
+    if (!container || !history) return;
+
+    var items = history.getAll();
     container.innerHTML = "";
-    if (!items || items.length === 0) { $("history-section").classList.add("hidden"); return; }
-    $("history-section").classList.remove("hidden");
+    if (!items || items.length === 0) {
+      if (title) title.style.display = "none";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+    if (title) title.style.display = "block";
+    if (clearBtn) clearBtn.style.display = "block";
 
     items.forEach(function (item) {
       var imageUrl = item.imageUrl || (item.data && item.data.dataUrl) || "";
       if (!imageUrl && item.imageFile) {
         imageUrl = "./history_data/" + encodeURIComponent(item.imageFile + ".jpg");
       }
-      var wrapper = document.createElement("div"); wrapper.className = "history-item-wrapper";
+      if (!imageUrl) return;
+
+      var wrapper = document.createElement("div");
+      wrapper.className = "history-item-wrap";
       var img = document.createElement("img");
-      img.src = imageUrl; img.alt = "Meme generado"; img.loading = "lazy";
-      img.addEventListener("click", function () {
-        var memeImg = new Image();
-        memeImg.onload = function () {
-          state.generatedImage = memeImg;
-          if (item.data) {
-            $("top-text").value = item.data.topText || "";
-            $("bottom-text").value = item.data.bottomText || "";
-          }
-          drawMemeOnCanvas();
-          $("result-section").classList.remove("hidden");
-          $("result-section").scrollIntoView({ behavior: "smooth", block: "center" });
-        };
-        memeImg.src = imageUrl;
-      });
+      img.src = imageUrl;
+      img.alt = "Meme del historial";
+      img.loading = "lazy";
+      img.addEventListener("click", function () { window._openLightbox(imageUrl); });
 
-      var actions = document.createElement("div"); actions.className = "history-item-actions";
+      var actions = document.createElement("div");
+      actions.className = "history-actions";
 
-      var reuseBtn = document.createElement("button");
-      reuseBtn.className = "btn-square btn-sq-blue";
-      reuseBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
-      reuseBtn.title = "Reutilizar imagen";
-      reuseBtn.addEventListener("click", function (e) { e.stopPropagation(); reuseImage(item); });
+      var reuseBtn = createHistoryAction(
+        "Reutilizar",
+        "history-reuse-btn",
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
+        function () { reuseImage(item); }
+      );
 
-      var downBtn = document.createElement("button");
-      downBtn.className = "btn-square btn-sq-green";
-      downBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>';
-      downBtn.title = "Descargar";
-      downBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var a = document.createElement("a"); a.href = imageUrl;
-        a.download = "meme_" + item.id + ".jpg";
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      });
+      var downBtn = createHistoryAction(
+        "Descargar",
+        "history-download-btn",
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        function () {
+          var a = document.createElement("a");
+          a.href = imageUrl;
+          a.download = "meme_" + item.id + ".jpg";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      );
 
-      var delBtn = document.createElement("button");
-      delBtn.className = "btn-square btn-sq-red";
-      delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
-      delBtn.title = "Eliminar";
-      delBtn.addEventListener("click", function (e) { e.stopPropagation(); history.delete(item.id).then(function () { loadHistory(); }).catch(function () {}); });
+      var delBtn = createHistoryAction(
+        "Eliminar",
+        "history-delete-btn",
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+        function () { window._deleteHistoryItem(item.id); }
+      );
+
+      var date = document.createElement("span");
+      date.className = "history-date";
+      var createdAt = item.createdAt ? new Date(item.createdAt) : null;
+      date.textContent = createdAt && !isNaN(createdAt.getTime()) ? createdAt.toLocaleString("es-ES") : "";
 
       actions.appendChild(reuseBtn); actions.appendChild(downBtn); actions.appendChild(delBtn);
-      wrapper.appendChild(img); wrapper.appendChild(actions);
+      wrapper.appendChild(img); wrapper.appendChild(actions); wrapper.appendChild(date);
       container.appendChild(wrapper);
     });
   }
 
-  $("history-clear-btn").addEventListener("click", function () {
-    if (!confirm("¿Seguro que quieres borrar todo el historial de memes?")) return;
-    history.clear().then(function () { $("history-section").classList.add("hidden"); loadHistory(); })
-    .catch(function () { showToast("Error al limpiar historial.", false); });
+  window._deleteHistoryItem = async function (id) {
+    if (!confirm("¿Eliminar del historial?")) return;
+    try {
+      await history.delete(id);
+    } catch (e) {
+      console.warn("Error eliminando del historial:", e);
+      showToast("No se pudo eliminar el meme del historial.", false);
+    }
+  };
+
+  window._openLightbox = function (url) {
+    var lightbox = $("antigravity-lightbox");
+    if (!lightbox) {
+      lightbox = document.createElement("div");
+      lightbox.id = "antigravity-lightbox";
+      lightbox.style.cssText = "position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out";
+      lightbox.setAttribute("role", "dialog");
+      lightbox.setAttribute("aria-label", "Vista ampliada del meme");
+      lightbox.addEventListener("click", function () { lightbox.style.display = "none"; });
+      var image = document.createElement("img");
+      image.alt = "Meme ampliado";
+      image.style.cssText = "max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px";
+      lightbox.appendChild(image);
+      document.body.appendChild(lightbox);
+    }
+    lightbox.querySelector("img").src = url;
+    lightbox.style.display = "flex";
+  };
+
+  $("history-clear-btn").addEventListener("click", async function () {
+    if (!confirm("¿Eliminar todo el historial?")) return;
+    try {
+      await history.clear();
+    } catch (e) {
+      console.warn("Error limpiando historial:", e);
+      showToast("No se pudo limpiar el historial.", false);
+    }
   });
 
-  var refreshBtn = $("history-refresh-btn");
-  if (refreshBtn) refreshBtn.addEventListener("click", function () { loadHistory(); showToast("Historial actualizado", true); });
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    var lightbox = $("antigravity-lightbox");
+    if (lightbox) lightbox.style.display = "none";
+  });
 
   // ===== INIT =====
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", async function () {
     window.__creador_memes_loaded = true;
 
     // Init color slider thumb
@@ -570,8 +650,14 @@
     colorSlider.style.setProperty("--thumb-color", initColor.hex);
     state.textColor = "rgb(" + initColor.r + "," + initColor.g + "," + initColor.b + ")";
 
-    try { loadHistory(); window.__creador_memes_domready = true; }
-    catch (e) { console.error("Error inicializando creador_memes:", e); }
+    try {
+      history = new HistoryManager("creador_memes");
+      history.onChange(function () { renderHistoryFromState(); });
+      await loadAndRenderHistory();
+      window.__creador_memes_domready = true;
+    } catch (e) {
+      console.error("Error inicializando creador_memes:", e);
+    }
   });
 
 })();
