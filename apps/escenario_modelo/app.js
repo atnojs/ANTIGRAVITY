@@ -244,13 +244,36 @@ function renderHistoryFromState() {
    const resInfo = ((d.resolution ? d.resolution + 'px' : '') + (d.aspectRatio ? ' · ' + d.aspectRatio : '')).replace(/^ · /, '');
    return `<div class="history-item-wrap">
      <img src="${url}" alt="Imagen del historial" loading="lazy" onclick="window._openLightbox('${url}')" data-hist='${JSON.stringify(histData).replace(/"/g, "&quot;").replace(/'/g, "&#39;")}'>
-     <button class="btn-square" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">✕</button>
+     <div class="history-actions">
+       <button type="button" class="history-action-btn history-download-btn" onclick="event.stopPropagation();window._downloadHistoryItem('${item.id}')" title="Descargar imagen" aria-label="Descargar imagen">
+         <span class="history-action-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+         <span class="history-action-label">Descargar</span>
+       </button>
+       <button type="button" class="history-action-btn history-delete-btn" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" title="Eliminar del historial" aria-label="Eliminar del historial">
+         <span class="history-action-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+         <span class="history-action-label">Eliminar</span>
+       </button>
+     </div>
      <button class="history-info-btn" type="button" onclick="event.stopPropagation();window._toggleHistoryPopup(this)" aria-label="Ver detalles de generación" title="Ver detalles">ⓘ</button>
      <span class="history-date">${new Date(createdAt).toLocaleString()}</span>
    </div>`;
  }).join('');
  grid.querySelectorAll('img[data-hist]').forEach((im) => { try { im._histData = JSON.parse(im.getAttribute('data-hist')); } catch (err) { im._histData = {}; } });
 }
+
+window._downloadHistoryItem = function (id) {
+  const items = (history && history.getAll) ? (history.getAll() || []) : [];
+  const item = items.find((it) => it.id === id);
+  if (!item) return;
+  const url = item.imageUrl || (item.data && item.data.url) || '';
+  if (!url) { alert('No se puede descargar esta imagen.'); return; }
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'composicion_' + (item.createdAt ? String(item.createdAt).slice(0, 10) : 'imagen') + '.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
 
 window._deleteHistoryItem = async function (id) {
   if (confirm('¿Eliminar del historial?')) {
@@ -342,15 +365,16 @@ window._bindHistoryPopupEvents = function () {
   if (!grid || grid.dataset.popupBound) return;
   grid.dataset.popupBound = '1';
   grid.addEventListener('mouseover', (e) => {
-    const img = e.target.closest('.history-item-wrap img');
+    const wrap = e.target.closest('.history-item-wrap');
+    const img = wrap && wrap.querySelector('img');
     if (img && img._histData) {
       window._hideHistoryPopup();
       window._showHistoryPopup(img);
     }
   });
   grid.addEventListener('mouseout', (e) => {
-    const img = e.target.closest('.history-item-wrap img');
-    if (img && !img.contains(e.relatedTarget)) window._hideHistoryPopup();
+    const wrap = e.target.closest('.history-item-wrap');
+    if (!wrap || !wrap.contains(e.relatedTarget)) window._hideHistoryPopup();
   });
 };
 document.addEventListener('click', (e) => {

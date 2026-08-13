@@ -552,6 +552,50 @@ h1 {
 }
 
 
+
+/* === OVERLAY ACCIONES HISTORIAL (estilo ajustes_imagen: circulos + etiqueta) === */
+.history-actions {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; align-items: flex-end; justify-content: center; gap: 14px;
+  padding: 8px; background: rgba(0,0,0,0.45);
+  opacity: 0; transition: opacity .2s ease;
+  pointer-events: none;
+}
+.history-item-wrap:hover .history-actions { opacity: 1; }
+.history-action-btn {
+  pointer-events: auto; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: transparent; border: none; padding: 0;
+  font-family: var(--font-ui, 'Electrolize', sans-serif);
+}
+.history-action-ico {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(6,16,24,0.88);
+  border: 1px solid var(--border-strong);
+  color: #eaffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: background .15s, box-shadow .15s;
+}
+.history-action-ico svg { width: 13px; height: 13px; }
+.history-download-btn .history-action-ico:hover {
+  background: rgba(0,208,208,0.25); box-shadow: 0 0 10px var(--glow);
+}
+.history-delete-btn .history-action-ico {
+  border-color: rgba(248,113,113,0.7); color: #fecaca;
+}
+.history-delete-btn .history-action-ico:hover {
+  background: rgba(239,68,68,0.3); box-shadow: 0 0 10px rgba(248,113,113,0.5);
+}
+.history-action-label {
+  font-size: 9px; letter-spacing: 0.02em; color: #e2e8f0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8); white-space: nowrap;
+}
+.history-delete-btn .history-action-label { color: #fecaca; }
+@media (hover: none) {
+  .history-actions { opacity: 1; }
+}
+
 /* === POPUP DETALLES HISTORIAL (capa global) === */
 .history-info-btn {
   position: absolute; top: 3px; left: 3px;
