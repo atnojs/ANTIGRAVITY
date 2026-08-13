@@ -371,7 +371,7 @@ h1{
   .spinner-triple .ring,.progress-bar-fill { animation: none; }
 }
 
-/* === LAYOUT: main-layout (contenido + historial lateral) === */
+/* === LAYOUT: main-layout (contenido centrado + historial al borde derecho) === */
 .main-layout {
   display: flex;
   gap: 20px;
@@ -379,25 +379,28 @@ h1{
   max-width: 1800px;
   margin: 0 auto;
   align-items: flex-start;
+  padding: 0 1rem;
 }
 .main-col {
   flex: 1 1 0;
   min-width: 0;
+  margin: 0 auto;
 }
 
 /* === HISTORIAL (panel lateral con scroll propio) === */
 .history-col {
   flex: 0 0 clamp(320px, 24vw, 460px);
   width: clamp(320px, 24vw, 460px);
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 32px);
   overflow-y: auto;
   position: sticky; top: 16px;
   background: var(--card-bg);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius) 0 0 var(--radius);
   padding: 14px;
   box-shadow: 0 0 20px var(--glow-soft);
+  margin-right: -1rem;
 }
 .history-col::-webkit-scrollbar { width: 6px; }
 .history-col::-webkit-scrollbar-thumb { background: var(--acc); border-radius: 999px; }
