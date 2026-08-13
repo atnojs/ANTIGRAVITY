@@ -191,6 +191,269 @@ Toda llamada a un modelo debe usar exactamente el overlay de carga de referencia
 - El contenedor usa `role="status"`, `aria-live="polite"` y `aria-busy="true"`; la barra conserva `role="progressbar"` con mínimo 0 y máximo 100.
 - Al iniciar, mostrar el overlay, bloquear el scroll del documento y deshabilitar la acción que duplicaría la petición. Al terminar o fallar, ocultarlo, restaurar el scroll y los controles, y mostrar el resultado o un error comprensible.
 - Respetar `prefers-reduced-motion`: detener los giros y la animación de la barra.
+## Panel de historial: patrón canónico clonable
+
+Toda app que genere o edite imágenes debe incluir un **panel lateral de historial** con scroll propio, idéntico al implementado en `apps/escenario_modelo`. Este panel es la referencia única; copiar sus tres capas (HTML, CSS y JS) sin inventar variantes.
+
+### 1. HTML — estructura del panel
+
+El historial vive en un `<aside>` dentro de `.main-layout`, como columna hermana de `.main-col`:
+
+```html
+<div class="main-layout">
+  <div class="main-col">
+    <!-- …resto de la app… -->
+  </div>
+
+  <!-- COLUMNA DERECHA: HISTORIAL -->
+  <aside class="history-col" id="history-section">
+    <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+    <div id="history-grid"></div>
+    <button id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
+  </aside>
+</div>
+```
+
+- `#history-title` y `#history-clear-btn` empiezan ocultos (`display:none`) y se muestran solo cuando hay items.
+- `#history-grid` es el contenedor donde el JS inyecta los items.
+
+### 2. CSS — estilos completos del panel
+
+Copiar este bloque completo al `app.css` de la app destino. Los tokens `--acc`, `--border`, `--glow-soft`, etc. deben existir en `:root` (ver sección de tokens Hoola).
+
+```css
+/* === HISTORIAL (panel lateral con scroll propio) === */
+.history-col {
+  flex: 0 0 clamp(320px, 24vw, 460px);
+  width: clamp(320px, 24vw, 460px);
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  position: sticky; top: 16px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: 0 0 20px var(--glow-soft);
+}
+
+.history-col::-webkit-scrollbar { width: 6px; }
+.history-col::-webkit-scrollbar-thumb { background: var(--acc); border-radius: 999px; }
+
+.history-col .section-title { font-size: 0.82rem; margin-bottom: 8px; }
+
+.history-col #history-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+}
+
+.history-item-wrap {
+  position: relative; aspect-ratio: 3/4;
+  border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.25);
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.history-item-wrap:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 16px var(--glow-soft);
+}
+
+.history-item-wrap img {
+  width: 100%; height: 100%; object-fit: cover; cursor: pointer;
+  transition: transform .2s;
+}
+
+.history-item-wrap img:hover { transform: scale(1.04); }
+
+.history-item-wrap .btn-square {
+  position: absolute; top: 3px; right: 3px;
+  width: 22px; height: 22px; border-radius: 5px;
+  border: none; background: rgba(239,68,68,0.75); color: #fff;
+  cursor: pointer; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+
+.history-item-wrap .btn-square:hover { background: var(--danger); }
+
+.history-item-wrap .history-date {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 2px 5px;
+  background: rgba(0,0,0,0.65);
+  color: var(--faint); font-size: 0.55rem; text-align: center;
+}
+
+/* Botón Limpiar (danger outline) */
+.btn-danger-outline {
+  display: block; margin-top: 8px; margin-left: auto; margin-right: auto;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--danger);
+  background: rgba(239,68,68,0.2); color: var(--danger);
+  cursor: pointer; font-size: 0.65rem;
+  font-family: var(--font); text-transform: uppercase; letter-spacing: 0.06em;
+  transition: background .2s, color .2s;
+}
+.btn-danger-outline:hover { background: rgba(239,68,68,0.35); color: #fff; }
+```
+
+**Responsive** (añadir dentro del `@media (max-width: 768px)` existente):
+
+```css
+.history-col { flex: none; width: 100%; position: static; max-height: none; border-radius: var(--radius-sm); }
+.history-col #history-grid { grid-template-columns: repeat(2, 1fr); }
+```
+
+### 3. JS — integración con HistoryManager
+
+Copiar estas funciones al `app.js` de la app destino, adaptando solo el nombre de la app en `new HistoryManager('nombre_app')`.
+
+#### 3a. Instanciación y carga (dentro de DOMContentLoaded)
+
+```js
+let history; // instancia de HistoryManager
+
+// Dentro de DOMContentLoaded:
+history = new HistoryManager('nombre_app'); // nombre único de la app
+await loadAndRenderHistory();
+history.onChange(() => renderHistoryFromState());
+```
+
+#### 3b. Carga y renderizado
+
+```js
+async function loadAndRenderHistory() {
+  try {
+    await history.load();
+    renderHistoryFromState();
+  } catch (e) {
+    console.warn('Error cargando historial:', e);
+  }
+}
+
+function renderHistoryFromState() {
+  const grid = document.getElementById('history-grid');
+  const title = document.getElementById('history-title');
+  const clearBtn = document.getElementById('history-clear-btn');
+  if (!grid) return;
+
+  const items = history.getAll();
+
+  if (!items || !items.length) {
+    grid.innerHTML = '';
+    if (title) title.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
+    return;
+  }
+  if (title) title.style.display = 'block';
+  if (clearBtn) clearBtn.style.display = 'block';
+
+  grid.innerHTML = items.map(item => {
+    const url = item.imageUrl || (item.data && item.data.url) || '';
+    const createdAt = item.createdAt || '';
+
+    return `<div class="history-item-wrap">
+      <img src="${url}" alt="Historial" loading="lazy" onclick="window._openLightbox('${url}')">
+      <button class="btn-square" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">✕</button>
+      <span class="history-date">${new Date(createdAt).toLocaleString()}</span>
+    </div>`;
+  }).join('');
+}
+```
+
+#### 3c. Eliminación individual y lightbox
+
+```js
+window._deleteHistoryItem = async function (id) {
+  if (confirm('¿Eliminar del historial?')) {
+    try {
+      await history.delete(id);
+    } catch (e) {
+      console.warn('Error eliminando del historial:', e);
+    }
+  }
+};
+
+window._openLightbox = function (url) {
+  let lb = document.getElementById('antigravity-lightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'antigravity-lightbox';
+    lb.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+    lb.onclick = function () { lb.style.display = 'none'; };
+    const img = document.createElement('img');
+    img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px';
+    lb.appendChild(img);
+    document.body.appendChild(lb);
+  }
+  lb.querySelector('img').src = url;
+  lb.style.display = 'flex';
+};
+```
+
+#### 3d. Limpiar todo el historial
+
+```js
+document.getElementById('history-clear-btn').addEventListener('click', async function () {
+  if (confirm('¿Eliminar todo el historial?')) {
+    try {
+      await history.clear();
+    } catch (e) {
+      console.warn('Error limpiando historial:', e);
+    }
+  }
+});
+```
+
+#### 3e. Guardar una imagen en el historial (al generar)
+
+Después de obtener la imagen generada (dataUrl o procesada):
+
+```js
+const histId = 'h_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
+try {
+  await history.save({
+    id: histId,
+    type: 'image',             // o el tipo que use la app
+    data: {
+      url: processedImageUrl,  // la URL o dataUrl de la imagen
+      prompt: promptUsado,
+      // …cualquier metadato relevante…
+    },
+    imageData: processedImageUrl,  // dataUrl base64 para persistencia en servidor
+    createdAt: new Date().toISOString()
+  });
+} catch (e) {
+  console.warn('Error guardando en historial:', e);
+}
+```
+
+#### 3f. Cerrar lightbox con Escape
+
+```js
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const lb = document.getElementById('antigravity-lightbox');
+    if (lb) lb.style.display = 'none';
+  }
+});
+```
+
+### 4. Checklist de integración
+
+Al clonar el historial en una app nueva o existente:
+
+1. ✅ Copiar el HTML del `<aside class="history-col">` dentro de `.main-layout`.
+2. ✅ Copiar el bloque CSS completo (panel, items, scrollbar, responsive).
+3. ✅ Copiar las funciones JS: `loadAndRenderHistory`, `renderHistoryFromState`, `_deleteHistoryItem`, `_openLightbox`, listener del botón Limpiar y cierre con Escape.
+4. ✅ Crear la instancia con `new HistoryManager('nombre_unico_app')`.
+5. ✅ Llamar `await history.load()` + `history.onChange(...)` en la inicialización.
+6. ✅ Llamar `await history.save({...})` tras cada generación o edición exitosa.
+7. ✅ Asegurar que `history-manager.js` y `history.php` están copiados en la carpeta de la app.
+8. ✅ Verificar que el panel tiene scroll propio (no scrollea la página entera).
+9. ✅ Confirmar que en móvil el panel pasa al flujo normal (ancho completo, sin sticky).
+10. ✅ Comprobar que el título "Historial" y el botón "Limpiar" solo aparecen cuando hay items.
+
 ## Reglas para apps de generación o edición de imágenes
 
 1. En apps con selector multimodelo, generar y editar imágenes con FLUX de Black Forest Labs o Gemini mediante OpenRouter según el botón elegido; no fijar FLUX ignorando la selección del usuario.
