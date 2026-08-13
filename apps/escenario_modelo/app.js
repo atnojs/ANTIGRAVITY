@@ -105,6 +105,9 @@ const compSelectC = document.getElementById('comp-select-c');
 let selectedModel = 'gemini-pro';
 let selectedAR = '1:1';
 let selectedRes = 1024;
+// Etiquetas legibles para metadatos (resultado / popup historial)
+const MODEL_LABELS = { 'gemini-flash': '3.1FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
+const getModelLabel = (m) => MODEL_LABELS[m] || m;
 
 // ===== DATOS DE COMPOSICIONES =====
 const COMPOSITION_MAP = {
@@ -196,6 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ─── Cargar historial ─────────────────────────────────────
   await loadAndRenderHistory();
+ window._bindHistoryPopupEvents();
 
   // Listener para cambios en el historial
   history.onChange(() => renderHistoryFromState());
@@ -231,16 +235,21 @@ function renderHistoryFromState() {
   if (title) title.style.display = 'block';
   if (clearBtn) clearBtn.style.display = 'block';
 
-  grid.innerHTML = items.map(item => {
-    const url = item.imageUrl || (item.data && item.data.url) || '';
-    const createdAt = item.createdAt || '';
-
-    return `<div class="history-item-wrap">
-      <img src="${url}" alt="Historial" loading="lazy" onclick="window._openLightbox('${url}')">
-      <button class="btn-square" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">✕</button>
-      <span class="history-date">${new Date(createdAt).toLocaleString()}</span>
-    </div>`;
-  }).join('');
+   grid.innerHTML = items.map(item => {
+   const url = item.imageUrl || (item.data && item.data.url) || '';
+   const histData = item.data || {};
+   const createdAt = item.createdAt || '';
+   const d = item.data || {};
+   const dims = (d.width && d.height) ? `${d.width}×${d.height}px` : '';
+   const resInfo = ((d.resolution ? d.resolution + 'px' : '') + (d.aspectRatio ? ' · ' + d.aspectRatio : '')).replace(/^ · /, '');
+   return `<div class="history-item-wrap">
+     <img src="${url}" alt="Imagen del historial" loading="lazy" onclick="window._openLightbox('${url}')" data-hist='${JSON.stringify(histData).replace(/"/g, "&quot;").replace(/'/g, "&#39;")}'>
+     <button class="btn-square" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">✕</button>
+     <button class="history-info-btn" type="button" onclick="event.stopPropagation();window._toggleHistoryPopup(this)" aria-label="Ver detalles de generación" title="Ver detalles">ⓘ</button>
+     <span class="history-date">${new Date(createdAt).toLocaleString()}</span>
+   </div>`;
+ }).join('');
+ grid.querySelectorAll('img[data-hist]').forEach((im) => { try { im._histData = JSON.parse(im.getAttribute('data-hist')); } catch (err) { im._histData = {}; } });
 }
 
 window._deleteHistoryItem = async function (id) {
@@ -268,6 +277,85 @@ window._openLightbox = function (url) {
   lb.querySelector('img').src = url;
   lb.style.display = 'flex';
 };
+window._fmtStyle = (d) => {
+  const STYLE_LABELS = { cinematic: 'Cinemático', 'high-key': 'High-Key', 'low-key': 'Low-Key', 'street-style': 'StreetStyle', minimalist: 'Minimalista Conceptual', surreal: 'Surrealista Onírico', grunge: 'GrungeRaw', vintage: 'Vintage', bw: 'Blanco y Negro', pastel: 'Pastel', cyberpunk: 'Ciberpunk', baroque: 'Barroco' };
+  return (d && (d.styleLabel || STYLE_LABELS[d.style] || d.style)) || '—';
+};
+window._fmtComp = (d) => (d && (d.compositionLabel || (COMPOSITION_MAP[d.composition] && COMPOSITION_MAP[d.composition].title) || d.composition)) || '—';
+window._fmtModel = (d) => (d && (d.modelLabel || getModelLabel(d.model))) || '—';
+window._historyPopupEl = null;
+window._historyPopupAnchor = null;
+window._ensureHistoryPopup = function () {
+  if (window._historyPopupEl) return window._historyPopupEl;
+  const el = document.createElement('div');
+  el.id = 'antigravity-history-popup';
+  el.className = 'history-popup-global';
+  document.body.appendChild(el);
+  window._historyPopupEl = el;
+  return el;
+};
+window._fillHistoryPopup = function (d) {
+  const el = window._ensureHistoryPopup();
+  const dims = (d && d.width && d.height) ? d.width + '×' + d.height + 'px' : '';
+  const resInfo = ((d && d.resolution ? d.resolution + 'px' : '') + (d && d.aspectRatio ? ' · ' + d.aspectRatio : '')).replace(/^ · /, '');
+  el.innerHTML =
+    '<div class="history-popup-row"><span class="history-popup-label">Estilo fotográfico</span><span class="history-popup-value">' + window._fmtStyle(d) + '</span></div>' +
+    '<div class="history-popup-row"><span class="history-popup-label">Composición</span><span class="history-popup-value">' + window._fmtComp(d) + '</span></div>' +
+    '<div class="history-popup-row"><span class="history-popup-label">Modelo</span><span class="history-popup-value">' + window._fmtModel(d) + '</span></div>' +
+    '<div class="history-popup-row"><span class="history-popup-label">Formato / Resolución</span><span class="history-popup-value">' + (resInfo || '—') + (dims ? ' (' + dims + ')' : '') + '</span></div>';
+  return el;
+};
+window._positionHistoryPopup = function (anchorEl) {
+  const el = window._fillHistoryPopup(anchorEl._histData);
+  const r = anchorEl.getBoundingClientRect();
+  el.style.display = 'block';
+  const pw = el.offsetWidth;
+  const ph = el.offsetHeight;
+  let left = r.left + (r.width - pw) / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+  let top = r.top - ph - 10;
+  if (top < 8) top = r.bottom + 10;
+  el.style.left = left + 'px';
+  el.style.top = top + 'px';
+};
+window._showHistoryPopup = function (anchorEl) {
+  window._historyPopupAnchor = anchorEl;
+  window._positionHistoryPopup(anchorEl);
+};
+window._hideHistoryPopup = function () {
+  if (window._historyPopupEl) window._historyPopupEl.style.display = 'none';
+  window._historyPopupAnchor = null;
+};
+window._toggleHistoryPopup = function (btn) {
+  const wrap = btn.closest('.history-item-wrap');
+  const img = wrap && wrap.querySelector('img');
+  if (!img || !img._histData) return;
+  if (window._historyPopupAnchor === btn && window._historyPopupEl && window._historyPopupEl.style.display === 'block') {
+    window._hideHistoryPopup();
+  } else {
+    btn._histData = img._histData;
+    window._showHistoryPopup(btn);
+  }
+};
+window._bindHistoryPopupEvents = function () {
+  const grid = document.getElementById('history-grid');
+  if (!grid || grid.dataset.popupBound) return;
+  grid.dataset.popupBound = '1';
+  grid.addEventListener('mouseover', (e) => {
+    const img = e.target.closest('.history-item-wrap img');
+    if (img && img._histData) {
+      window._hideHistoryPopup();
+      window._showHistoryPopup(img);
+    }
+  });
+  grid.addEventListener('mouseout', (e) => {
+    const img = e.target.closest('.history-item-wrap img');
+    if (img && !img.contains(e.relatedTarget)) window._hideHistoryPopup();
+  });
+};
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.history-item-wrap')) window._hideHistoryPopup();
+});
 
 document.getElementById('history-clear-btn').addEventListener('click', async function () {
   if (confirm('¿Eliminar todo el historial?')) {
@@ -502,7 +590,7 @@ async function generateImages() {
             const processed = await postProcessDataURL(data.dataUrl);
             const imgKey = `${comp}_${v}`;
             generatedImages.unshift({ key: imgKey, data: processed });
-            addResultCard(imgKey, processed, comp);
+            addResultCard(imgKey, processed, comp, { styleLabel: styleName, modelLabel: getModelLabel(selectedModel), ar: selectedAR, res: selectedRes });
 
             // Guardar en historial
             const histId = 'h_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
@@ -511,12 +599,22 @@ async function generateImages() {
                 id: histId,
                 type: 'composition',
                 data: {
-                  url: processed,
-                  prompt: prompt,
-                  composition: comp,
-                  variant: v,
-                  style: styleSelect.value
-                },
+        url: processed,
+        prompt: prompt,
+        composition: comp,
+        variant: v,
+        style: styleSelect.value,
+        styleLabel: styleName,
+        compositionLabel: (compMeta && compMeta.title) || comp,
+        model: selectedModel,
+        modelLabel: getModelLabel(selectedModel),
+        resolution: selectedRes,
+        aspectRatio: selectedAR,
+        width: data.width || null,
+        height: data.height || null,
+        requestedResolution: data.requestedResolution || null,
+        resolutionAdjusted: !!data.resolutionAdjusted
+      },
                 imageData: processed,
                 createdAt: new Date().toISOString()
               });
@@ -556,7 +654,7 @@ async function generateImages() {
 }
 
 // ===== RESULTADOS =====
-function addResultCard(compKey, imgData, comp) {
+function addResultCard(compKey, imgData, comp, meta = {}) {
   const match = compKey.match(/^(.*)_(\d+)$/);
   const baseKey = match ? match[1] : compKey;
   const variantNum = match ? match[2] : '1';
@@ -583,6 +681,7 @@ function addResultCard(compKey, imgData, comp) {
     <div class="result-info">
       <h3>${safeTitle}${variantText}</h3>
       <p>${COMPOSITION_MAP[baseKey]?.description || 'Composición generada.'}</p>
+ <p class="result-meta">🎨 ${meta.styleLabel || '—'} · 🤖 ${meta.modelLabel || '—'}${meta.ar ? ' · ' + meta.ar + ' ' + meta.res + 'px' : ''}</p>
     </div>
   `;
   resultsGrid.insertBefore(card, resultsGrid.firstChild);

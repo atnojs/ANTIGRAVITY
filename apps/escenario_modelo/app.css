@@ -551,6 +551,45 @@ h1 {
   color: var(--faint); font-size: 0.55rem; text-align: center;
 }
 
+
+/* === POPUP DETALLES HISTORIAL (capa global) === */
+.history-info-btn {
+  position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px; border-radius: 5px;
+  border: 1px solid var(--border); background: rgba(6,16,24,0.75);
+  color: var(--acc); cursor: pointer; font-size: 12px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, box-shadow .15s;
+}
+.history-info-btn:hover {
+  background: rgba(0,208,208,0.25); box-shadow: 0 0 8px var(--glow-soft);
+}
+.history-popup-global {
+  display: none; position: fixed; z-index: 20000;
+  width: max-content; max-width: min(270px, calc(100vw - 16px));
+  background: rgba(6,16,24,0.94);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px; padding: 10px 12px;
+  box-shadow: 0 0 20px var(--glow-soft), 0 10px 28px rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+  font-family: var(--font-ui, 'Electrolize', sans-serif);
+}
+.history-popup-row {
+  display: flex; flex-direction: column; gap: 1px; padding: 3px 0;
+}
+.history-popup-row + .history-popup-row {
+  border-top: 1px solid rgba(0,208,208,0.18);
+}
+.history-popup-label {
+  color: var(--muted); font-size: 0.58rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.history-popup-value {
+  color: var(--text); font-size: 0.72rem;
+  line-height: 1.35; font-weight: 600;
+}
+
 /* === MODAL LIGHTBOX === */
 .modal {
   display: none; position: fixed; inset: 0; z-index: 1000;
