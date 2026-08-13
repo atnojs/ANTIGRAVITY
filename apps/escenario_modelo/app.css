@@ -821,18 +821,18 @@ footer {
   margin-top: 10px;
 }
 .btn-improve {
-  font-family: var(--font-ui, 'Electrolize', sans-serif);
-  font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
-  padding: 0.6rem 1.2rem; border-radius: 999px; cursor: pointer;
-  color: #061018; font-weight: 600;
+  display: inline-block; padding: 7px 16px; border-radius: 999px;
+  border: 1px solid var(--border-strong);
   background: linear-gradient(135deg, var(--acc), var(--acc2));
-  border: none; box-shadow: 0 0 14px var(--glow-soft);
-  transition: transform .15s, box-shadow .15s, opacity .15s;
+  color: #001018;
+  font-family: var(--font); font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--glow-soft);
+  transition: transform .15s;
 }
-.btn-improve:hover:not(:disabled) {
-  transform: translateY(-1px); box-shadow: 0 0 20px var(--glow);
-}
-.btn-improve:disabled { opacity: 0.55; cursor: wait; }
+.btn-improve:hover:not(:disabled) { transform: translateY(-1px); }
+.btn-improve:disabled { opacity: 0.4; cursor: not-allowed; }
 .improve-status {
   color: var(--muted); font-size: 0.72rem; line-height: 1.35;
 }

@@ -100,6 +100,11 @@ const newCompositionBtn = document.getElementById('new-composition');
 const compSelectA = document.getElementById('comp-select-a');
 const compSelectB = document.getElementById('comp-select-b');
 const compSelectC = document.getElementById('comp-select-c');
+const customPromptEl = document.getElementById('custom-prompt');
+const improvePromptBtn = document.getElementById('improve-prompt-btn');
+const improvePromptBtnText = document.getElementById('improve-prompt-btn-text');
+const improvePromptStatus = document.getElementById('improve-prompt-status');
+const promptVariantsEl = document.getElementById('prompt-variants');
 
 // Toggle buttons (como outfit)
 let selectedModel = 'gemini-pro';
@@ -108,6 +113,7 @@ let selectedRes = 1024;
 // Etiquetas legibles para metadatos (resultado / popup historial)
 const MODEL_LABELS = { 'gemini-flash': '3.1FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
 const getModelLabel = (m) => MODEL_LABELS[m] || m;
+let promptVariants = [];
 
 // ===== DATOS DE COMPOSICIONES =====
 const COMPOSITION_MAP = {
@@ -167,6 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initToggleButtons();
   checkGenerateButtonState();
   initCustomSelects();
+initCustomPromptUI();
 
   generateBtn.addEventListener('click', generateImages);
   downloadAllBtn.addEventListener('click', downloadAllImages);
@@ -199,7 +206,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ─── Cargar historial ─────────────────────────────────────
   await loadAndRenderHistory();
- window._bindHistoryPopupEvents();
+  window._bindHistoryPopupEvents();
+  restorePromptVariants();
 
   // Listener para cambios en el historial
   history.onChange(() => renderHistoryFromState());
@@ -224,7 +232,7 @@ function renderHistoryFromState() {
   const clearBtn = document.getElementById('history-clear-btn');
   if (!grid) return;
 
-  const items = history.getAll();
+  const items = (history.getAll() || []).filter((it) => it.type !== 'prompt_variants');
 
   if (!items || !items.length) {
     grid.innerHTML = '';
@@ -304,7 +312,7 @@ window._fmtStyle = (d) => {
   const STYLE_LABELS = { cinematic: 'Cinemático', 'high-key': 'High-Key', 'low-key': 'Low-Key', 'street-style': 'StreetStyle', minimalist: 'Minimalista Conceptual', surreal: 'Surrealista Onírico', grunge: 'GrungeRaw', vintage: 'Vintage', bw: 'Blanco y Negro', pastel: 'Pastel', cyberpunk: 'Ciberpunk', baroque: 'Barroco' };
   return (d && (d.styleLabel || STYLE_LABELS[d.style] || d.style)) || '—';
 };
-window._fmtComp = (d) => (d && (d.compositionLabel || (COMPOSITION_MAP[d.composition] && COMPOSITION_MAP[d.composition].title) || d.composition)) || '—';
+window._fmtComp = (d) => (d && (d.compositionLabel || ((d.composition === 'custom') ? 'Composición Personalizada' : (COMPOSITION_MAP[d.composition] && COMPOSITION_MAP[d.composition].title) || d.composition))) || '—';
 window._fmtModel = (d) => (d && (d.modelLabel || getModelLabel(d.model))) || '—';
 window._historyPopupEl = null;
 window._historyPopupAnchor = null;
@@ -503,7 +511,8 @@ function updateOptionChecks() {
 
 function checkGenerateButtonState() {
   const uploadedCount = Object.values(uploadedImages).filter(Boolean).length;
-  generateBtn.disabled = !(uploadedCount >= 1 && styleSelect.value && selectedCompositions.length > 0);
+  const customText = customPromptEl ? customPromptEl.value.trim() : '';
+  generateBtn.disabled = !(uploadedCount >= 1 && (styleSelect.value || selectedCompositions.length > 0 || customText !== ''));
 }
 
 // ===== TOGGLE BUTTONS (formato, resolución) y selector de modelo =====
@@ -657,8 +666,10 @@ function restorePromptVariants() {
 async function generateImages() {
   if (generateBtn.disabled) return;
 
+  const customText = customPromptEl.value.trim();
+  const compsToRun = customText ? ['custom'] : selectedCompositions;
   const numVariants = 1;
-  const totalImages = Math.min(selectedCompositions.length * numVariants, 4);
+  const totalImages = Math.min(compsToRun.length * numVariants, 4);
   let currentImage = 0;
   let successCount = 0;
 
@@ -687,15 +698,15 @@ async function generateImages() {
   resultsSection.scrollIntoView({ behavior: 'smooth' });
 
   try {
-    for (const comp of selectedCompositions) {
+    for (const comp of compsToRun) {
       for (let v = 1; v <= numVariants; v++) {
         if (currentImage >= totalImages) break;
         currentImage++;
         if (secondaryStatus) secondaryStatus.textContent = `Generando imagen ${currentImage} de ${totalImages}...`;
 
-        const compMeta = COMPOSITION_MAP[comp];
-        const styleName = styleSelect.options[styleSelect.selectedIndex]?.textContent || styleSelect.value || 'Cinemático';
-        const prompt = buildCompositionPrompt(comp, compMeta, styleName, v, compMeta?.description);
+        const compMeta = comp === 'custom' ? { title: 'Composición Personalizada', description: 'Composición personalizada escrita por el usuario.' } : COMPOSITION_MAP[comp];
+    const styleName = styleSelect.options[styleSelect.selectedIndex]?.textContent || styleSelect.value || 'Cinemático';
+    const prompt = comp === 'custom' ? buildCustomPrompt(customText, styleName) : buildCompositionPrompt(comp, compMeta, styleName, v, compMeta?.description);
 
         // Construir array de imágenes: [scenario, model, clothing, accessory]
         const orderedKeys = ['scenario', 'model', 'clothing', 'accessory'];
