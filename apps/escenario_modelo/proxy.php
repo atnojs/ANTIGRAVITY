@@ -233,19 +233,21 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
     }
     if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Máximo ocho imágenes de referencia.']);
 
-    $content = [];
-    $content[] = ['type' => 'text', 'text' => $prompt];
+        // OpenRouter: API dedicada de imágenes (/api/v1/images) para controlar
+    // aspect_ratio y resolution (chat/completions los ignora silenciosamente).
+    $refImages = [];
     foreach ($images as $image) {
         $mime = 'image/jpeg';
         if (strpos($image, 'data:image/png') === 0) $mime = 'image/png';
         elseif (strpos($image, 'data:image/webp') === 0) $mime = 'image/webp';
         $b64 = strpos($image, ',') !== false ? substr($image, strpos($image, ',') + 1) : $image;
-        $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mime . ';base64,' . $b64]];
+        $refImages[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mime . ';base64,' . $b64]];
     }
 
-        [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
-    // OpenRouter: resoluciones admitidas (metadata oficial):
-    //   gemini-3-pro-image -> "1K" / "2K" | gemini-3.1-flash-image -> "512"/"1K"/"2K"/"4K"
+    [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
+    // Resoluciones admitidas por modelo (metadata oficial OpenRouter):
+    //   gemini-3-pro-image -> "1K" / "2K"
+    //   gemini-3.1-flash-image -> "512" / "1K" / "2K" / "4K"
     $resKey = '1K';
     if (strpos($geminiModelId, 'pro-image') !== false) {
         if ($requested < 1024) { $resKey = '1K'; $adjusted = true; }
@@ -257,36 +259,33 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
         elseif ($requested >= 1024) { $resKey = '1K'; }
         else { $resKey = '512'; }
     }
+
     $payload = [
         'model' => $geminiModelId,
-        'modalities' => ['image', 'text'],
-        'messages' => [[
-            'role' => 'user',
-            'content' => $content,
-        ]],
-        'max_tokens' => 8000,
+        'prompt' => $prompt,
         'aspect_ratio' => $ratio,
         'resolution' => $resKey,
     ];
+    if ($refImages !== []) $payload['images'] = $refImages;
 
-    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
-        'Authorization: *** ' . $orKey, 'Content-Type: application/json', 'accept: application/json'
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/images', 'POST', [
+        'Authorization: Bearer ' . $orKey, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
 
     if ($status < 200 || $status >= 300 || isset($response['error'])) {
-        $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
-        respond($status >= 400 && $status < 600 ? $status : 502, ['success' => false, 'error' => 'Gemini no pudo completar la solicitud.', 'detail' => $detail]);
+        $detail = $response['error']['message'] ?? ($response['error'] ?? ('HTTP ' . $status));
+        if (is_array($detail)) $detail = json_encode($detail);
+        respond(($status >= 400 && $status < 600) ? $status : 502, ['success' => false, 'error' => 'OpenRouter no pudo generar la imagen.', 'detail' => $detail]);
     }
 
-    $images = $response['choices'][0]['message']['images'] ?? [];
-    if (empty($images)) respond(502, ['success' => false, 'error' => 'Gemini no devolvió imagen.']);
-    $imgDataUrl = $images[0]['image_url']['url'] ?? '';
-    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) respond(502, ['success' => false, 'error' => 'Gemini devolvió URL en lugar de imagen.']);
-    $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
+    $outImg = $response['data'][0] ?? null;
+    if (!is_array($outImg)) respond(502, ['success' => false, 'error' => 'OpenRouter no devolvió imagen.']);
+    $imgB64 = (string)($outImg['b64_json'] ?? '');
+    $mediaType = (string)($outImg['media_type'] ?? 'image/png');
+    if ($imgB64 === '') respond(502, ['success' => false, 'error' => 'OpenRouter devolvió imagen vacía.']);
 
-        $imgBin = base64_decode($imgB64, true);
-    $imgMime = 'image/png';
-    if ($imgBin !== false && strncmp($imgBin, "\xFF\xD8", 2) === 0) $imgMime = 'image/jpeg';
+    $imgBin = base64_decode($imgB64, true);
+    $imgMime = ($mediaType !== '' && strpos($mediaType, 'image/') === 0) ? $mediaType : 'image/png';
     [$realW, $realH] = imageDimsFromBinary($imgBin === false ? '' : $imgBin);
     respond(200, [
         'success' => true, 'provider' => 'gemini', 'model' => $geminiModelId,
