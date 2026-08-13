@@ -425,14 +425,28 @@ h1{
 }
 .history-item-wrap img:hover { transform: scale(1.04); }
 .history-item-wrap .btn-square {
-  position: absolute; top: 3px; right: 3px;
-  width: 22px; height: 22px; border-radius: 5px;
-  border: none; background: rgba(239,68,68,0.75); color: #fff;
-  cursor: pointer; font-size: 12px;
+  position: absolute;
+  width: 28px; height: 28px; border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  cursor: pointer; font-size: 13px;
   display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
+  transition: background .2s, border-color .2s, box-shadow .2s;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
-.history-item-wrap .btn-square:hover { background: var(--danger); }
+.history-item-wrap .btn-square:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: var(--acc);
+  box-shadow: 0 0 16px rgba(0, 208, 208, 0.4);
+}
+.history-item-wrap .btn-delete {
+  top: 6px; right: 6px;
+}
+.history-item-wrap .btn-download {
+  top: 6px; left: 6px;
+}
 .history-item-wrap .history-date {
   position: absolute; bottom: 0; left: 0; right: 0;
   padding: 2px 5px;

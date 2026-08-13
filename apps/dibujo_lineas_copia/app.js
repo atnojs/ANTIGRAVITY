@@ -247,7 +247,8 @@ function addFileToQueue(file) {
 
             return `<div class="history-item-wrap">
                 <img src="${url}" alt="Historial" loading="lazy" onclick="window._openLightbox('${url}')">
-                <button class="btn-square" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">✕</button>
+                <button class="btn-square btn-delete" onclick="event.stopPropagation();window._deleteHistoryItem('${item.id}')" aria-label="Eliminar">✕</button>
+                <button class="btn-square btn-download" onclick="event.stopPropagation();window._downloadHistoryItem('${url}', '${item.id}')" aria-label="Descargar" title="Descargar">💾</button>
                 <span class="history-date">${new Date(createdAt).toLocaleString()}</span>
             </div>`;
         }).join('');
@@ -264,6 +265,13 @@ function addFileToQueue(file) {
                 console.warn('Error eliminando del historial:', e);
             }
         }
+    };
+
+    window._downloadHistoryItem = function(url, id) {
+        const link = document.createElement('a');
+        link.download = `dibujo_lineal_${id}.png`;
+        link.href = url;
+        link.click();
     };
 
     window._openLightbox = function (url) {
