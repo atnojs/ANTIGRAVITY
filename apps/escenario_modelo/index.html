@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=9"/>
+  <link rel="stylesheet" href="app.css?v=10"/>
 </head>
 <body>
 
@@ -113,7 +113,21 @@
         </div>
       </section>
 
-      <!-- CONTROLES: formato y resolución + selector canónico de modelo IA -->
+      <!-- COMPOSICIÓN PERSONALIZADA + MEJORAR PROMPT -->
+<section class="section-card" id="section-custom-prompt">
+  <h2 class="section-title">Composición personalizada</h2>
+  <p class="custom-prompt-hint">Escribe tu propia composición o púlsame el botón para mejorarla con IA. Los 4 prompts mejorados quedan guardados: prueba el que más te guste.</p>
+  <textarea id="custom-prompt" class="custom-prompt-input" rows="3" placeholder="Describe la composición que quieres conseguir. Ej.: modelo de pie sobre un pedestal de mármol, vestida con la prenda, atardecer dorado de fondo, humo elegante, luz de contraluz..." aria-label="Prompt de composición personalizada"></textarea>
+  <div class="custom-prompt-actions">
+    <button type="button" id="improve-prompt-btn" class="btn-improve" aria-label="Mejorar prompt con IA">
+      <span id="improve-prompt-btn-text">✨ Mejorar Prompt</span>
+    </button>
+    <span id="improve-prompt-status" class="improve-status" aria-live="polite"></span>
+  </div>
+  <div class="prompt-variants" id="prompt-variants" aria-label="Prompts mejorados disponibles"></div>
+</section>
+
+<!-- CONTROLES: formato y resolución + selector canónico de modelo IA -->
       <section class="section-card" id="section-controls">
         <h2 class="section-title">Ajustes de imagen</h2>
         <div class="controls-stack controls-row">
@@ -249,7 +263,7 @@
 <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
 
 <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="history-manager.js?v=9"></script>
-<script src="app.js?v=9"></script>
+<script src="history-manager.js?v=10"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>

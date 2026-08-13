@@ -531,6 +531,128 @@ function initToggleButtons() {
   });
 }
 
+// ===== PROMPT PERSONALIZADO + MEJORAR CON IA =====
+function buildCustomPrompt(customText, styleText) {
+  const base = [
+    'Professional advertising photography composition.',
+    'Style: ' + styleText + '.',
+    customText,
+    'Integrate the reference images: use the background scene, place the model naturally within it, dress the model with the clothing item, and add the accessory with correct scale, contact shadows, and occlusions.',
+    'Match lighting, color temperature, and perspective to the background scene.',
+    'Photorealistic rendering, catalog quality, soft diffused daylight.',
+    'No text, no watermarks, no logos overlaid.',
+    '4K, highly detailed, premium product photography.'
+  ];
+  return base.join(' ');
+}
+
+function initCustomPromptUI() {
+  if (customPromptEl) customPromptEl.addEventListener('input', () => checkGenerateButtonState());
+  if (improvePromptBtn) improvePromptBtn.addEventListener('click', improvePrompt);
+}
+
+function setImproveStatus(text) {
+  if (improvePromptStatus) improvePromptStatus.textContent = text || '';
+}
+
+async function improvePrompt() {
+  const base = customPromptEl.value.trim();
+  if (!base) {
+    setImproveStatus('Escribe primero tu composición en el campo de arriba.');
+    if (customPromptEl) customPromptEl.focus();
+    return;
+  }
+  improvePromptBtn.disabled = true;
+  if (improvePromptBtnText) improvePromptBtnText.textContent = 'MEJORANDO...';
+  setImproveStatus('Generando 4 variantes...');
+  try {
+    const response = await fetch('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'openrouter',
+        model: 'openai/gpt-4o-mini',
+        prompt: 'Mejora este prompt base de fotografía publicitaria. Devuelve EXACTAMENTE 4 variantes mejoradas, todas en inglés, con enfoques distintos (1 fiel al original, 2 cinematográfica, 3 comercial/catálogo, 4 creativa). Conserva SIEMPRE los elementos esenciales del original: sujeto, acción, escenario, prendas, complementos, iluminación y estilo. Responde SOLO con un JSON válido: {"variants": ["...", "...", "...", "..."]}, sin texto adicional. Prompt base: ' + base
+      })
+    });
+    const data = await response.json();
+    if (!data.success || !data.text) throw new Error(data.error || 'Respuesta inválida del servidor.');
+    const variants = parseVariants(data.text);
+    if (!variants.length) throw new Error('No se pudieron extraer las variantes.');
+    promptVariants = variants.slice(0, 4);
+    renderPromptVariants();
+    await persistPromptVariants(base);
+    setImproveStatus('4 prompts listos. Pulsa uno para probarlo.');
+  } catch (err) {
+    console.error('Error mejorando prompt:', err);
+    setImproveStatus('Error al mejorar el prompt. Inténtalo de nuevo.');
+  } finally {
+    improvePromptBtn.disabled = false;
+    if (improvePromptBtnText) improvePromptBtnText.textContent = '✨ Mejorar Prompt';
+  }
+}
+
+function parseVariants(text) {
+  try {
+    const match = String(text).match(/\[[\s\S]*\]/);
+    if (match) {
+      const arr = JSON.parse(match[0]);
+      if (Array.isArray(arr)) return arr.filter((v) => typeof v === 'string' && v.trim()).map((v) => v.trim());
+    }
+  } catch (e) { /* fallback */ }
+  return String(text)
+    .split(/\n+/)
+    .map((l) => l.replace(/^\s*(?:\d+[.)]|[-*])\s*/, '').trim())
+    .filter((l) => l.length > 20)
+    .slice(0, 4);
+}
+
+function renderPromptVariants() {
+  if (!promptVariantsEl) return;
+  if (!promptVariants.length) { promptVariantsEl.innerHTML = ''; return; }
+  promptVariantsEl.innerHTML = promptVariants.map((v, i) =>
+    '<button type="button" class="prompt-variant-btn" onclick="window._applyPromptVariant(' + i + ')" title="' + v.replace(/"/g, '&quot;') + '" aria-label="Usar variante ' + (i + 1) + '">' +
+      '<span class="prompt-variant-num">' + (i + 1) + '</span>' +
+      '<span class="prompt-variant-text">' + v.replace(/"/g, '&quot;') + '</span>' +
+    '</button>'
+  ).join('');
+}
+
+window._applyPromptVariant = function (i) {
+  if (!promptVariants[i]) return;
+  if (customPromptEl) {
+    customPromptEl.value = promptVariants[i];
+    customPromptEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  checkGenerateButtonState();
+  if (!generateBtn.disabled) generateImages();
+};
+
+async function persistPromptVariants(original) {
+  try {
+    await history.save({
+      id: 'prompt_variants',
+      type: 'prompt_variants',
+      data: { original: original, variants: promptVariants },
+      createdAt: new Date().toISOString()
+    });
+  } catch (e) {
+    console.warn('Error guardando variantes:', e);
+  }
+}
+
+function restorePromptVariants() {
+  if (!history || !history.getAll) return;
+  const items = history.getAll() || [];
+  const saved = items.find((it) => it.type === 'prompt_variants');
+  if (!saved || !saved.data || !Array.isArray(saved.data.variants) || !saved.data.variants.length) return;
+  promptVariants = saved.data.variants.slice(0, 4);
+  if (customPromptEl && saved.data.original && !customPromptEl.value.trim()) {
+    customPromptEl.value = saved.data.original;
+  }
+  renderPromptVariants();
+}
+
 // ===== GENERACIÓN DE IMÁGENES CON FLUX =====
 async function generateImages() {
   if (generateBtn.disabled) return;
@@ -687,7 +809,7 @@ function addResultCard(compKey, imgData, comp, meta = {}) {
   card.className = 'result-card animate-in';
   card.dataset.key = compKey;
 
-  const safeTitle = (COMPOSITION_MAP[baseKey]?.title || baseKey).replace(/"/g, '&quot;');
+  const safeTitle = (COMPOSITION_MAP[baseKey]?.title || (baseKey === 'custom' ? 'Composición Personalizada' : baseKey)).replace(/"/g, '&quot;');
   const filename = `${baseKey.replace(/[^a-z0-9]/gi, '-')}_variant${variantNum}.png`;
 
   card.innerHTML = `
@@ -704,7 +826,7 @@ function addResultCard(compKey, imgData, comp, meta = {}) {
     </div>
     <div class="result-info">
       <h3>${safeTitle}${variantText}</h3>
-      <p>${COMPOSITION_MAP[baseKey]?.description || 'Composición generada.'}</p>
+      <p>${COMPOSITION_MAP[baseKey]?.description || (baseKey === 'custom' ? 'Composición personalizada por el usuario.' : 'Composición generada.')}</p>
  <p class="result-meta">🎨 ${meta.styleLabel || '—'} · 🤖 ${meta.modelLabel || '—'}${meta.ar ? ' · ' + meta.ar + ' ' + meta.res + 'px' : ''}</p>
     </div>
   `;
