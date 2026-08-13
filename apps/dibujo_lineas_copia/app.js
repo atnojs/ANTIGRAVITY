@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== Selector de modelo (toggle 4 botones) =====
         // Por defecto: 3 PRO (gemini-pro) segun SKILL_MAESTRA
         let selectedModel = 'gemini-pro';
+const MODEL_LABELS = { 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -36,24 +37,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let imageQueue = [];
 
-    imageInput.addEventListener('change', (e) => {
-        imageQueue = Array.from(e.target.files);
-        if (imageQueue.length === 0) return;
-        startButton.disabled = false;
-        startButton.innerHTML = `🚀 Iniciar Procesamiento (${imageQueue.length})`;
-        previewSection.classList.remove('hidden');
+imageInput.addEventListener('change', (e) => {
+    imageQueue = Array.from(e.target.files);
+    if (imageQueue.length === 0) return;
+    resultsGallery.innerHTML = '';
+    galleryTitle.classList.add('hidden');
+    updateQueueUI();
+});
+
+function updateQueueUI() {
+    if (imageQueue.length === 0) {
+        startButton.disabled = true;
+        startButton.innerHTML = '🚀 Iniciar Procesamiento';
+        previewSection.classList.add('hidden');
         previewGrid.innerHTML = '';
-        imageQueue.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const div = document.createElement('div');
-                div.className = 'preview-item';
-                div.innerHTML = `<img src="${ev.target.result}">`;
-                previewGrid.appendChild(div);
-            };
-            reader.readAsDataURL(file);
-        });
+        imageInput.value = '';
+        return;
+    }
+    startButton.disabled = false;
+    startButton.innerHTML = `🚀 Iniciar Procesamiento (${imageQueue.length})`;
+    previewSection.classList.remove('hidden');
+    renderPreviews();
+}
+
+function renderPreviews() {
+    previewGrid.innerHTML = '';
+    imageQueue.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `<img src="${ev.target.result}" alt="Vista previa ${index + 1}">` +
+                `<button type="button" class="remove-preview" data-index="${index}" aria-label="Eliminar imagen ${index + 1}">✕</button>`;
+            previewGrid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
     });
+}
+
+previewGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.remove-preview');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.index, 10);
+    if (isNaN(idx) || idx < 0 || idx >= imageQueue.length) return;
+    imageQueue.splice(idx, 1);
+    updateQueueUI();
+});
 
     // Función auxiliar para pausa entre peticiones
     const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -65,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingOverlay) { loadingOverlay.classList.remove('hidden'); loadingOverlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         if (loadingText) loadingText.textContent = 'IA generando lo solicitado...';
         galleryTitle.classList.remove('hidden');
-        resultsGallery.innerHTML = '';
         const total = imageQueue.length;
         if (loadingStatus) loadingStatus.textContent = `Preparando ${total} ${total === 1 ? 'imagen' : 'im\u00e1genes'}...`;
 
@@ -108,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
                     item.innerHTML = `
+                        <div class="gallery-model-badge">${MODEL_LABELS[selectedModel] || selectedModel}</div>
                         <img src="${imgDataUrl}" alt="Dibujo lineal">
                         <div class="gallery-item-actions">
                             <a href="${imgDataUrl}" download="dibujo_${safeName}.png" class="download-single-btn">💾 Descargar</a>
@@ -146,26 +175,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingStatus) loadingStatus.textContent = 'Finalizando resultados...';
         if (loadingOverlay) { loadingOverlay.classList.add('hidden'); loadingOverlay.style.display = 'none'; document.body.style.overflow = ''; }
         progressText.innerText = 'Procesamiento Finalizado';
+    startButton.disabled = false;
+    startButton.innerHTML = `🚀 Iniciar Procesamiento (${imageQueue.length})`;
+    galleryTitle.classList.remove('hidden');
         loadAndRenderHistory();
     });
 
     // ... (El resto del código de HistoryManager y funciones de UI se mantiene igual)
 
     // Anade un File a la cola de procesamiento y lo muestra en la vista previa
-    function addFileToQueue(file) {
-        imageQueue.push(file);
-        startButton.disabled = false;
-        startButton.innerHTML = `🚀 Iniciar Procesamiento (${imageQueue.length})`;
-        previewSection.classList.remove('hidden');
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const div = document.createElement('div');
-            div.className = 'preview-item';
-            div.innerHTML = `<img src="${ev.target.result}">`;
-            previewGrid.appendChild(div);
-        };
-        reader.readAsDataURL(file);
-    }
+function addFileToQueue(file) {
+    imageQueue.push(file);
+    updateQueueUI();
+}
 
     function saveHistoryItemToDb(item) {
         const history = getHistory();
