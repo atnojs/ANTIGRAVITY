@@ -329,7 +329,7 @@ model: selectedModel,
       inputHtml = '<label style="font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:0.5rem;">Selecciona una opción:</label>' +
         '<div style="display:flex;flex-direction:column;gap:0.375rem;max-height:15rem;overflow-y:auto;">' +
         tool.options.map(function (opt, i) {
-          return '<button class="ai-option-btn' + (i === 0 ? ' is-selected' : '') + '" data-value="' + opt.replace(/"/g, '&quot;') + '" style="text-align:left;padding:0.5rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;border:1px solid ' + (i === 0 ? '#00D0D0' : '#334155') + ';background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + opt + '</button>';
+          return '<button class="ai-option-btn' + (i === 0 ? ' is-selected' : '') + '" data-value="' + opt.replace(/"/g, '&quot;') + '" style="text-align:left;padding:0.5rem 0.75rem;font-size:0.75rem;border-radius:0.5rem;border:1px solid ' + (i === 0 ? '#00D0D0' : 'rgba(0,208,208,0.5)') + ';background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? '#061018' : '#eaffff') + ';cursor:pointer;transition:all 0.15s;">' + opt + '</button>';
         }).join('') + '</div>';
     } else if (tool.inputType === 'text') {
       inputHtml = '<label style="font-size:0.75rem;color:#94a3b8;display:block;margin-bottom:0.5rem;">Describe lo que quieres:</label>' +
@@ -343,7 +343,7 @@ model: selectedModel,
 
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancelar';
-    cancelBtn.style.cssText = 'padding:0.5rem 1rem;border-radius:0.5rem;background:#1e293b;color:#cbd5e1;font-size:0.875rem;border:none;cursor:pointer;';
+    cancelBtn.style.cssText = 'padding:0.5rem 1rem;border-radius:0.5rem;background:#1e293b;color:#eaffff;font-size:0.875rem;border:none;cursor:pointer;';
     cancelBtn.onclick = removeModal;
 
     const execBtn = document.createElement('button');
@@ -396,8 +396,8 @@ model: selectedModel,
           optionBtns.forEach(function (b) {
             b.classList.remove('is-selected');
             b.style.background = '#1e293b';
-            b.style.color = '#cbd5e1';
-            b.style.borderColor = '#334155';
+            b.style.color = '#eaffff';
+            b.style.borderColor = 'rgba(0,208,208,0.5)';
           });
           btn.classList.add('is-selected');
           btn.style.background = 'rgba(0,208,208,0.3)';
@@ -535,17 +535,16 @@ model: selectedModel,
 '<i data-lucide="wand-2" style="width:0.75rem;height:0.75rem;"></i> IA 10 Herramientas</h4>' +
       '<div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
         '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;">Modelo:</span>' +
-'<button id="ai-quality-flash" class="ai-quality-btn" data-model="gemini-flash" title="google/gemini-3.1-flash-image rapido y economico" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #334155;background:#1e293b;color:#cbd5e1;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3.1FLASH</button>' +
-'<button id="ai-quality-pro" class="ai-quality-btn is-selected" data-model="gemini-pro" title="google/gemini-3-pro-image maxima calidad" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #00D0D0;background:rgba(0,208,208,0.3);color:white;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3 PRO</button>' +
-'<button id="ai-quality-fluxpro" class="ai-quality-btn" data-model="flux-pro" title="flux-2-pro calidad/velocidad (~$0.03)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #334155;background:#1e293b;color:#cbd5e1;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX PRO</button>' +
-'<button id="ai-quality-fluxmax" class="ai-quality-btn" data-model="flux-max" title="flux-2-max maxima fidelidad (~$0.07)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #334155;background:#1e293b;color:#cbd5e1;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX MAX</button>' +
-        '<button id="ai-quality-max" class="ai-quality-btn" data-quality="max" title="flux-2-max — máxima fidelidad (~$0.07)" style="flex:1;padding:0.3rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid #334155;background:#1e293b;color:#cbd5e1;cursor:pointer;transition:all 0.15s;text-transform:uppercase;">MAX</button>' +
+'<button id="ai-quality-flash" class="ai-quality-btn" data-model="gemini-flash" title="google/gemini-3.1-flash-image rapido y economico" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3.1FLASH</button>' +
+'<button id="ai-quality-pro" class="ai-quality-btn is-selected" data-model="gemini-pro" title="google/gemini-3-pro-image maxima calidad" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #00D0D0;background:rgba(0,208,208,0.3);color:#061018;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3 PRO</button>' +
+'<button id="ai-quality-fluxpro" class="ai-quality-btn" data-model="flux-pro" title="flux-2-pro calidad/velocidad (~$0.03)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX PRO</button>' +
+'<button id="ai-quality-fluxmax" class="ai-quality-btn" data-model="flux-max" title="flux-2-max maxima fidelidad (~$0.07)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX MAX</button>' +
       '</div>' +
       '<div style="margin-bottom:0.4rem;">' +
         '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.25rem;">Formato:</span>' +
         '<div style="display:flex;gap:0.3rem;">' +
           ['1:1', '16:9', '9:16', '4:3', '3:4'].map(function (ar, i) {
-            return '<button class="ai-ar-btn' + (i === 0 ? ' is-selected' : '') + '" data-ar="' + ar + '" style="flex:1;padding:0.3rem 0.15rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid ' + (i === 0 ? '#00D0D0' : '#334155') + ';background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + ar + '</button>';
+            return '<button class="ai-ar-btn' + (i === 0 ? ' is-selected' : '') + '" data-ar="' + ar + '" style="flex:1;padding:0.3rem 0.15rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid ' + (i === 0 ? '#00D0D0' : 'rgba(0,208,208,0.5)') + ';background:' + (i === 0 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (i === 0 ? '#061018' : '#eaffff') + ';cursor:pointer;transition:all 0.15s;">' + ar + '</button>';
           }).join('') +
         '</div>' +
       '</div>' +
@@ -553,7 +552,7 @@ model: selectedModel,
         '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.25rem;">Resolución:</span>' +
         '<div style="display:flex;gap:0.3rem;">' +
           [512, 1024, 2048, 4096].map(function (res, i) {
-            return '<button class="ai-res-btn' + (res === 1024 ? ' is-selected' : '') + '" data-res="' + res + '" style="flex:1;padding:0.3rem 0.15rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid ' + (res === 1024 ? '#00D0D0' : '#334155') + ';background:' + (res === 1024 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (res === 1024 ? 'white' : '#cbd5e1') + ';cursor:pointer;transition:all 0.15s;">' + res + '</button>';
+            return '<button class="ai-res-btn' + (res === 1024 ? ' is-selected' : '') + '" data-res="' + res + '" style="flex:1;padding:0.3rem 0.15rem;font-size:10px;font-weight:700;border-radius:0.375rem;border:1px solid ' + (res === 1024 ? '#00D0D0' : 'rgba(0,208,208,0.5)') + ';background:' + (res === 1024 ? 'rgba(0,208,208,0.3)' : '#1e293b') + ';color:' + (res === 1024 ? '#061018' : '#eaffff') + ';cursor:pointer;transition:all 0.15s;">' + res + '</button>';
           }).join('') +
         '</div>' +
       '</div>' +
@@ -571,8 +570,8 @@ model: selectedModel,
           btns.forEach(function (x) {
             x.classList.remove('is-selected');
             x.style.background = '#1e293b';
-            x.style.color = '#cbd5e1';
-            x.style.borderColor = '#334155';
+            x.style.color = '#eaffff';
+            x.style.borderColor = 'rgba(0,208,208,0.5)';
           });
           b.classList.add('is-selected');
           b.style.background = 'rgba(0,208,208,0.3)';
@@ -626,8 +625,8 @@ qualityBtns.forEach(function (qb) {
  qualityBtns.forEach(function (b) {
  b.classList.remove('is-selected');
  b.style.background = '#1e293b';
- b.style.color = '#cbd5e1';
- b.style.borderColor = '#334155';
+ b.style.color = '#eaffff';
+ b.style.borderColor = 'rgba(0,208,208,0.5)';
  });
  qb.classList.add('is-selected');
  qb.style.background = 'rgba(0,208,208,0.3)';
@@ -636,23 +635,7 @@ qualityBtns.forEach(function (qb) {
  };
 });
 window.selectedAIModel = selectedModel;
-    qualityBtns.forEach(function (qb) {
-      qb.onclick = function () {
-        selectedQuality = qb.getAttribute('data-quality') || 'pro';
-        qualityBtns.forEach(function (b) {
-          b.classList.remove('is-selected');
-          b.style.background = '#1e293b';
-          b.style.color = '#cbd5e1';
-          b.style.borderColor = '#334155';
-        });
-        qb.classList.add('is-selected');
-        qb.style.background = 'rgba(0,208,208,0.3)';
-        qb.style.color = 'white';
-        qb.style.borderColor = '#00D0D0';
-      };
-    });
-
-    // Add tool buttons
+        // Add tool buttons
     var grid = document.getElementById('ai-tools-grid');
     if (!grid) return;
 
