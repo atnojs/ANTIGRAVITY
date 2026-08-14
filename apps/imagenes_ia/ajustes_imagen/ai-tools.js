@@ -287,11 +287,10 @@ model: selectedModel,
         displayedImg.src = dataUrl;
       }
 
-      // Actualización: también actualizar el estado original de la imagen en la app.
-      // Se pasa 'tool' para que la app registre la edición IA como acción manual
-      // y el guardado la detecte como un cambio real (evita "sin cambios").
+      // Actualizar únicamente la imagen de trabajo. La app conserva la base
+      // subida y solo guarda el resultado cuando el usuario pulsa el botón.
       window.dispatchEvent(new CustomEvent('ai-tool-update', {
-        detail: { imageUrl: dataUrl, tool: toolLabel || 'IA FLUX' }
+        detail: { imageUrl: dataUrl, tool: toolLabel || 'IA FLUX', saveToHistory: false }
       }));
     };
     img.src = dataUrl;
@@ -480,12 +479,6 @@ model: selectedModel,
       if (resultUrl) {
         // Update the image in the app
         var updated = updateAppImage(resultUrl, tool.label);
-
-        // Also try to trigger React state update via event
-        // Dispatch a custom event that the React app can listen to
-        window.dispatchEvent(new CustomEvent('ai-image-updated', {
-          detail: { imageUrl: resultUrl, tool: tool.label }
-        }));
 
         var elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
         showStatus('✅ ' + tool.label + ' completado en ' + elapsed + 's', 4000);

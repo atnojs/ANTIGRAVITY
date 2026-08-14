@@ -18,14 +18,27 @@ const DAILY_LIMIT = 8;
 const hm = new HistoryManager('ajustes_imagen');
 const normalizeHistoryEntry = (e) => ({
   id: e.id,
-  thumbnail: (e.data && e.data.thumbnail) || e.imageData || '',
-  originalSource: e.imageData || ((e.data && e.data.originalSource) || ''),
-  timestamp: (e.data && e.data.timestamp) || (e.createdAt ? new Date(e.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
-  settings: (e.data && e.data.settings) || INITIAL_SETTINGS,
-  effectsDescription: (e.data && e.data.effectsDescription) || '',
-  manualActions: (e.data && e.data.manualActions) || [],
+  thumbnail: (e.data && e.data.thumbnail) || e.imageData || e.thumbnail || '',
+  originalSource: e.imageData || e.originalSource || ((e.data && e.data.originalSource) || ''),
+  timestamp: (e.data && e.data.timestamp) || e.timestamp || (e.createdAt ? new Date(e.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+  settings: (e.data && e.data.settings) || e.settings || INITIAL_SETTINGS,
+  effectsDescription: (e.data && e.data.effectsDescription) || e.effectsDescription || '',
+  manualActions: (e.data && e.data.manualActions) || e.manualActions || [],
   model: e.model || (e.data && e.data.model) || '',
 });
+const LOCAL_HISTORY_KEY = 'ajustes_imagen_history';
+const isLocalFile = () => window.location.protocol === 'file:';
+const readLocalHistory = () => {
+    try {
+        const items = JSON.parse(window.localStorage.getItem(LOCAL_HISTORY_KEY) || '[]');
+        return Array.isArray(items) ? items : [];
+    } catch {
+        return [];
+    }
+};
+const writeLocalHistory = (items) => {
+    try { window.localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(items)); } catch (e) { console.warn('No se pudo guardar el historial local:', e); }
+};
 // Inicializar Firebase
 console.log("DEBUG: Initializing Firebase with:", FIREBASE_CONFIG);
 if (!firebase.apps.length) {
@@ -36,7 +49,9 @@ const db = firebase.firestore();
 
 // Recoge el retorno del login por redirección (fallback de Google cuando el
 // navegador bloquea el popup / cookies de terceros). onAuthStateChanged hace el resto.
-auth.getRedirectResult().catch((e) => { console.warn('getRedirectResult:', e); });
+if (!isLocalFile()) {
+    auth.getRedirectResult().catch((e) => { console.warn('getRedirectResult:', e); });
+}
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 
@@ -484,7 +499,6 @@ const AuthModal = () => {
             if (err.code === 'auth/email-already-in-use') {
                 try {
                     await auth.signInWithEmailAndPassword(email, password);
-                    onClose();
                     return;
                 } catch (loginErr) {
                     setError(
@@ -494,7 +508,13 @@ const AuthModal = () => {
                 }
             }
 
-            setError(err.message);
+            if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found'].includes(err.code)) {
+                setError('Credenciales incorrectas. Si tu cuenta es de Google, usa el botón Google.');
+            } else {
+                setError(err.message);
+            }
+        } finally {
+            setLoading(false);
         }
 
     };
@@ -502,6 +522,11 @@ const AuthModal = () => {
     const handleGoogleLogin = async () => {
         setError('');
         setLoading(true);
+        if (isLocalFile()) {
+            setError('El acceso con Google necesita abrir la app desde su dirección web, no desde el archivo index.html.');
+            setLoading(false);
+            return;
+        }
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         try {
@@ -1138,6 +1163,8 @@ const App = () => {
     const [uploadedFile, setUploadedFile] = useState(null);
     const [originalUploadedFile, setOriginalUploadedFile] = useState(null);
     const [originalImage, setOriginalImage] = useState(null);
+    // La imagen base de la sesión no debe confundirse con la imagen que se está editando.
+    const originalUploadedImageRef = useRef(null);
 
     const [currentSettings, setCurrentSettings] = useState(INITIAL_SETTINGS);
     const [history, setHistory] = useState([]);
@@ -1199,7 +1226,7 @@ const App = () => {
  useEffect(() => {
  const loadHistory = async () => {
  try {
- const items = await hm.load();
+ const items = isLocalFile() ? readLocalHistory() : await hm.load();
  setHistory(items.map(normalizeHistoryEntry));
  } catch (e) { console.warn('Error cargando historial:', e); }
  };
@@ -1224,6 +1251,26 @@ const App = () => {
         return () => unsubscribe();
     }, []);
 
+    // La IA solo cambia la imagen de trabajo. La imagen subida permanece como
+    // base hasta que el usuario pulsa "Guardar y reiniciar".
+    useEffect(() => {
+        const handleAIUpdate = (event) => {
+            if (!event.detail || !event.detail.imageUrl) return;
+            setOriginalImage(event.detail.imageUrl);
+            setUploadedFile(event.detail.imageUrl);
+            setCurrentSettings(INITIAL_SETTINGS);
+            setMemeData(null);
+            setPreviousImageBeforeEdit(null);
+            setHasOverlayFromHistory(false);
+            setManualActions(prev => [...prev, event.detail.tool ? `IA FLUX: ${event.detail.tool}` : 'Edición IA FLUX']);
+            setStatusMessage('Imagen actualizada por IA. Pulsa Guardar y reiniciar para añadirla al historial.');
+            setTimeout(() => setStatusMessage(''), 3000);
+        };
+
+        window.addEventListener('ai-tool-update', handleAIUpdate);
+        return () => window.removeEventListener('ai-tool-update', handleAIUpdate);
+    }, []);
+
     useEffect(() => {
         if (window.lucide) window.lucide.createIcons();
     });
@@ -1236,6 +1283,7 @@ const App = () => {
         reader.onload = (event) => {
             const img = new Image();
             img.onload = () => {
+                originalUploadedImageRef.current = event.target.result;
                 setUploadedFile(event.target.result);
                 setOriginalUploadedFile(event.target.result);
                 setOriginalImage(event.target.result);
@@ -1577,8 +1625,9 @@ const App = () => {
     const handleMouseUp = () => setIsDragging(false);
 
     const saveToHistory = async () => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current || !originalImage) return;
         const canvas = canvasRef.current;
+        const imageToRestore = originalUploadedImageRef.current || originalUploadedFile || originalImage;
 
         const savedImage = canvas.toDataURL('image/jpeg', 0.9);
         const thumbUrl = canvas.toDataURL('image/jpeg', 0.5);
@@ -1601,12 +1650,20 @@ const App = () => {
 
         };
 
-         const savedEntry = await hm.save({ type: 'image', model: newHistoryItem.model || '', data: { thumbnail: newHistoryItem.thumbnail, timestamp: newHistoryItem.timestamp, settings: newHistoryItem.settings, effectsDescription: newHistoryItem.effectsDescription, manualActions: newHistoryItem.manualActions }, imageData: newHistoryItem.originalSource });
- setHistory(prev => [normalizeHistoryEntry(savedEntry), ...prev]);
+        // Solo este botón persiste el resultado actual en el historial.
+        if (isLocalFile()) {
+            const localItems = [newHistoryItem, ...readLocalHistory()];
+            writeLocalHistory(localItems);
+            setHistory(localItems);
+        } else {
+            const savedEntry = await hm.save({ type: 'image', model: newHistoryItem.model || '', data: { thumbnail: newHistoryItem.thumbnail, timestamp: newHistoryItem.timestamp, settings: newHistoryItem.settings, effectsDescription: newHistoryItem.effectsDescription, manualActions: newHistoryItem.manualActions }, imageData: newHistoryItem.originalSource });
+            setHistory(prev => [normalizeHistoryEntry(savedEntry), ...prev]);
+        }
 
 
-        if (originalUploadedFile) setOriginalImage(originalUploadedFile);
-        setUploadedFile(originalUploadedFile);
+        // Tras guardar, iniciar una nueva prueba desde la imagen subida, no desde el resultado guardado.
+        setOriginalImage(imageToRestore);
+        setUploadedFile(imageToRestore);
         setCurrentSettings(INITIAL_SETTINGS);
         setMemeData(null);
         setStatusMessage("¡Guardado! Lienzo restaurado a la imagen original.");
@@ -1635,7 +1692,12 @@ const App = () => {
     };
 
     const handleDeleteHistory = async (id) => {
-         await hm.delete(id);
+        if (isLocalFile()) {
+            const localItems = readLocalHistory().filter(item => item.id !== id);
+            writeLocalHistory(localItems);
+        } else {
+            await hm.delete(id);
+        }
 
         setHistory(prev => prev.filter(item => item.id !== id));
     };
@@ -1643,6 +1705,7 @@ const App = () => {
     const handleDeleteCurrentImage = () => {
         setOriginalImage(null);
         setUploadedFile(null);
+        originalUploadedImageRef.current = null;
         setOriginalUploadedFile(null); // Limpiar también la imagen original
         setCurrentSettings(INITIAL_SETTINGS);
         setMemeData(null);
