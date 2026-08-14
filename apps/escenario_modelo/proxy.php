@@ -88,7 +88,7 @@ function dimensions(array $request): array {
     $allowed = [512, 1024, 2048, 4096];
     $resolution = (int)($request['resolution'] ?? 1024);
     if (!in_array($resolution, $allowed, true)) $resolution = 1024;
-    $ratios = ['1:1'=>[1,1], '16:9'=>[16,9], '9:16'=>[9,16], '21:16'=>[21,16]];
+    $ratios = ['1:1'=>[1,1], '16:9'=>[16,9], '9:16'=>[9,16], '21:9'=>[21,9]];
     $ratio = (string)($request['aspectRatio'] ?? '1:1');
     [$rw, $rh] = $ratios[$ratio] ?? $ratios['1:1'];
     if (isset($request['width'], $request['height'])) {
