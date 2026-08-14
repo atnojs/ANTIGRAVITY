@@ -1359,7 +1359,11 @@ const App = () => {
     }));
   };
   const handleMouseUp = () => setIsDragging(false);
-  const saveToHistory = async () => {
+  const saveToHistory = async event => {
+    // El historial solo puede escribirse desde un clic real del usuario.
+    // Cualquier llamada programática (incluida una finalización de IA) se ignora.
+    const nativeEvent = event && (event.nativeEvent || event);
+    if (!nativeEvent || nativeEvent.isTrusted !== true) return;
     if (!canvasRef.current || !originalImage) return;
     const canvas = canvasRef.current;
     const imageToRestore = originalUploadedImageRef.current || originalUploadedFile || originalImage;
