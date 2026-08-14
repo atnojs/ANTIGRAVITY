@@ -18,89 +18,18 @@ const FIREBASE_CONFIG = {
 const ADMIN_EMAIL = "atnojs@gmail.com";
 const DAILY_LIMIT = 8;
 
-// --- HISTORIAL PERSISTENTE CON INDEXEDDB ---
-const DB_NAME_AJUSTES = 'ajustes_imagen_db';
-const DB_VERSION_AJUSTES = 1;
-const STORE_NAME_AJUSTES = 'history';
-let ajustesDb = null;
-const openAjustesDb = () => new Promise((resolve, reject) => {
-  const request = indexedDB.open(DB_NAME_AJUSTES, DB_VERSION_AJUSTES);
-  request.onerror = () => reject(request.error);
-  request.onsuccess = () => {
-    ajustesDb = request.result;
-    resolve(ajustesDb);
-  };
-  request.onupgradeneeded = e => {
-    const database = e.target.result;
-    if (!database.objectStoreNames.contains(STORE_NAME_AJUSTES)) {
-      database.createObjectStore(STORE_NAME_AJUSTES, {
-        keyPath: 'id'
-      });
-    }
-  };
+// --- HISTORIAL PERSISTENTE EN SERVIDOR (HistoryManager / history.php) ---
+const hm = new HistoryManager('ajustes_imagen');
+const normalizeHistoryEntry = (e) => ({
+  id: e.id,
+  thumbnail: (e.data && e.data.thumbnail) || e.imageData || '',
+  originalSource: e.imageData || ((e.data && e.data.originalSource) || ''),
+  timestamp: (e.data && e.data.timestamp) || (e.createdAt ? new Date(e.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+  settings: (e.data && e.data.settings) || INITIAL_SETTINGS,
+  effectsDescription: (e.data && e.data.effectsDescription) || '',
+  manualActions: (e.data && e.data.manualActions) || [],
+  model: e.model || (e.data && e.data.model) || '',
 });
-const loadAjustesHistoryFromDb = async () => {
-  try {
-    if (!ajustesDb) await openAjustesDb();
-    return new Promise((resolve, reject) => {
-      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readonly');
-      const store = tx.objectStore(STORE_NAME_AJUSTES);
-      const req = store.getAll();
-      req.onsuccess = () => {
-        const items = req.result || [];
-        items.sort((a, b) => (b.id || 0) - (a.id || 0));
-        resolve(items);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  } catch (e) {
-    console.warn('Error cargando historial:', e);
-    return [];
-  }
-};
-const saveAjustesHistoryItemToDb = async item => {
-  try {
-    if (!ajustesDb) await openAjustesDb();
-    return new Promise((resolve, reject) => {
-      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readwrite');
-      const store = tx.objectStore(STORE_NAME_AJUSTES);
-      const req = store.put(item);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch (e) {
-    console.warn('Error guardando item:', e);
-  }
-};
-const deleteAjustesHistoryItemFromDb = async id => {
-  try {
-    if (!ajustesDb) await openAjustesDb();
-    return new Promise((resolve, reject) => {
-      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readwrite');
-      const store = tx.objectStore(STORE_NAME_AJUSTES);
-      const req = store.delete(id);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch (e) {
-    console.warn('Error eliminando item:', e);
-  }
-};
-const clearAjustesHistoryFromDb = async () => {
-  try {
-    if (!ajustesDb) await openAjustesDb();
-    return new Promise((resolve, reject) => {
-      const tx = ajustesDb.transaction(STORE_NAME_AJUSTES, 'readwrite');
-      const store = tx.objectStore(STORE_NAME_AJUSTES);
-      const req = store.clear();
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch (e) {
-    console.warn('Error limpiando historial:', e);
-  }
-};
-
 // Inicializar Firebase
 console.log("DEBUG: Initializing Firebase with:", FIREBASE_CONFIG);
 if (!firebase.apps.length) {
@@ -1022,18 +951,16 @@ const App = () => {
     textOverlaysRef.current = textOverlays;
   }, [textOverlays]);
 
-  // Cargar historial desde IndexedDB al montar
-  useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const items = await loadAjustesHistoryFromDb();
-        if (items.length > 0) setHistory(items);
-      } catch (e) {
-        console.warn('Error cargando historial:', e);
-      }
-    };
-    loadHistory();
-  }, []);
+ //Cargar historial desde servidor al montar
+ useEffect(() => {
+ const loadHistory = async () => {
+ try {
+ const items = await hm.load();
+ setHistory(items.map(normalizeHistoryEntry));
+ } catch (e) { console.warn('Error cargando historial:', e); }
+ };
+ loadHistory();
+ }, []);
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async currentUser => {
       setUser(currentUser);
@@ -1408,10 +1335,11 @@ const App = () => {
         ...currentSettings
       },
       effectsDescription: effectsDescription,
-      manualActions: [...manualActions]
+manualActions: [...manualActions],
+  model: window.selectedAIModel || '',
     };
-    await saveAjustesHistoryItemToDb(newHistoryItem);
-    setHistory(prev => [newHistoryItem, ...prev]);
+ const savedEntry = await hm.save({ type: 'image', model: newHistoryItem.model || '', data: { thumbnail: newHistoryItem.thumbnail, timestamp: newHistoryItem.timestamp, settings: newHistoryItem.settings, effectsDescription: newHistoryItem.effectsDescription, manualActions: newHistoryItem.manualActions }, imageData: newHistoryItem.originalSource });
+ setHistory(prev => [normalizeHistoryEntry(savedEntry), ...prev]);
     if (originalUploadedFile) setOriginalImage(originalUploadedFile);
     setUploadedFile(originalUploadedFile);
     setCurrentSettings(INITIAL_SETTINGS);
@@ -1437,7 +1365,7 @@ const App = () => {
     link.click();
   };
   const handleDeleteHistory = async id => {
-    await deleteAjustesHistoryItemFromDb(id);
+ await hm.delete(id);
     setHistory(prev => prev.filter(item => item.id !== id));
   };
   const handleDeleteCurrentImage = () => {
@@ -2837,9 +2765,13 @@ const App = () => {
     className: "flex justify-between items-center px-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] text-slate-500 font-mono"
-  }, item.timestamp), /*#__PURE__*/React.createElement("span", {
+}, item.timestamp), item.model ? React.createElement("span", {className: "text-[9px] text-cyan-300 font-mono ml-1"}, modelLabel(item.model)) : null, /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] text-blue-400"
   }, "Versi\xF3n guardada"))))))));
+};
+const modelLabel = (m) => {
+  const labels = { 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
+  return labels[m] || m;
 };
 const SliderControl = ({
   label,

@@ -68,7 +68,8 @@ $imageB64 = (string)($req['image'] ?? '');
 $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
 $prompt   = (string)($req['prompt'] ?? '');
 $quality  = (string)($req['quality'] ?? 'pro'); // 'pro' o 'max', elegido por el usuario
-$reqW     = (int)($req['width'] ?? 0);           // ancho pedido (px), 0 = por defecto
+$reqModel = strtolower((string)($req['model'] ?? ''));
+if ($reqModel === '') { $reqModel = ($quality === 'max') ? 'flux-max' : 'flux-pro'; }
 $reqH     = (int)($req['height'] ?? 0);          // alto pedido (px), 0 = por defecto
 
 if ($imageB64 === '') {
@@ -100,7 +101,21 @@ if (strlen($imgBinary) > 2500000) {
     exit;
 }
 
-// ===== MODELO FLUX según la calidad elegida por el usuario (pro / max) =====
+// ===== SELECCION MODELO (skill_maestra: 3.1FLASH / 3 PRO / FLUX PRO / FLUX MAX) =====
+$backend = 'flux';
+$geminiModelId = 'google/gemini-3.1-flash-image';
+$fluxEndpoint = 'flux-2-pro';
+if (strpos($reqModel, 'max') !== false) {
+    $backend = 'flux';
+    $fluxEndpoint = 'flux-2-max';
+} elseif ((strpos($reqModel, 'pro') !== false && strpos($reqModel, 'gemini') !== false) || $reqModel === 'google/gemini-3-pro-image' || $reqModel === 'gemini-pro') {
+    $backend = 'gemini';
+    $geminiModelId = 'google/gemini-3-pro-image';
+} elseif (strpos($reqModel, 'flash') !== false || $reqModel === 'google/gemini-3.1-flash-image' || $reqModel === 'gemini-flash') {
+    $backend = 'gemini';
+    $geminiModelId = 'google/gemini-3.1-flash-image';
+}
+$endpoint = $fluxEndpoint;
 $endpoint = ($quality === 'max') ? 'flux-2-max' : 'flux-2-pro';
 
 // ===== DIMENSIONES pedidas, con CLAMP al límite de FLUX 2 (4 MP = 4.194.304 px) =====
@@ -126,7 +141,86 @@ if ($reqW > 0 && $reqH > 0) {
 }
 
 
-// ===== 1) ENVIAR TAREA =====
+
+// ===== RAMA GEMINI (OpenRouter chat/completions, usa la imagen de referencia) =====
+if ($backend === 'gemini') {
+    // Clave OpenRouter (R): cascade config.php / env / server
+    $orKey = '';
+    if (file_exists(__DIR__ . '/config.php')) {
+        include __DIR__ . '/config.php';
+        if (defined('R') && constant('R') !== '') { $orKey = (string)constant('R'); }
+    }
+    if ($orKey === '') { $orKey = (string)getenv('R'); }
+    if ($orKey === '') { $orKey = (string)getenv('REDIRECT_R'); }
+    if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? ''); }
+    if ($orKey === '') { $orKey = (string)($_SERVER['REDIRECT_R'] ?? ''); }
+    if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? ''); }
+    if ($orKey === '') { $orKey = (string)($_ENV['REDIRECT_R'] ?? ''); }
+    if ($orKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'API key de OpenRouter (R) no configurada.']]);
+        exit;
+    }
+    $content = [['type' => 'text', 'text' => $prompt]];
+    $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . $imageB64]];
+    $gPayload = [
+        'model' => $geminiModelId,
+        'modalities' => ['image', 'text'],
+        'messages' => [['role' => 'user', 'content' => $content]],
+        'max_tokens' => 8000,
+    ];
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $orKey, 'Content-Type: application/json', 'accept: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($gPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_TIMEOUT => 120,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+    if ($err) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error OpenRouter: ' . $err]]);
+        exit;
+    }
+    $jr = json_decode($resp, true);
+    if ($code >= 400 || !is_array($jr)) {
+        $message = $jr['error']['message'] ?? ($jr['error'] ?? ('HTTP ' . $code));
+        if (is_array($message)) { $message = json_encode($message); }
+        http_response_code($code >= 400 ? $code : 502);
+        echo json_encode(['error' => ['message' => 'Gemini: ' . $message]]);
+        exit;
+    }
+    $images = $jr['choices'][0]['message']['images'] ?? [];
+    if (empty($images)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Gemini no devolvio imagen.']]);
+        exit;
+    }
+    $imgDataUrl = $images[0]['image_url']['url'] ?? '';
+    if ($imgDataUrl === '' || strpos($imgDataUrl, 'data:') !== 0) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Gemini devolvio URL en lugar de imagen.']]);
+        exit;
+    }
+    $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
+    $gMime = 'image/png';
+    if (strpos($imgDataUrl, 'data:image/jpeg') === 0) { $gMime = 'image/jpeg'; }
+    elseif (strpos($imgDataUrl, 'data:image/webp') === 0) { $gMime = 'image/webp'; }
+    echo json_encode([
+        'image' => $imgB64,
+        'mimeType' => $gMime,
+        'width' => $reqW ?: null,
+        'height' => $reqH ?: null,
+        'model' => $geminiModelId,
+    ]);
+    exit;
+}
+
 $submitUrl = 'https://api.bfl.ai/v1/' . $endpoint;
 $ch = curl_init($submitUrl);
 curl_setopt_array($ch, [
