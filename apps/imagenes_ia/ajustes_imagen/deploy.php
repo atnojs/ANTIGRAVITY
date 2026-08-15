@@ -16,6 +16,7 @@ $BASE_PATH = __DIR__;
 // Archivos a sincronizar
 $FILES = [
     'apps/imagenes_ia/ajustes_imagen/index.html',
+    'apps/imagenes_ia/ajustes_imagen/.htaccess',
     'apps/imagenes_ia/ajustes_imagen/app.js',
     'apps/imagenes_ia/ajustes_imagen/app-compiled.js',
     'apps/imagenes_ia/ajustes_imagen/app.css',

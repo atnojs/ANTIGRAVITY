@@ -1,0 +1,16 @@
+<IfModule mod_headers.c>
+    # El HTML siempre se revalida en el navegador: evita que un index.html
+    # cacheado apunte a versiones antiguas de los JS/CSS (los assets usan
+    # ?v=N como cache-bust y pueden vivir cacheados 7 dias).
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+
+    # Unset strict headers that might be inherited
+    Header unset Content-Security-Policy
+    Header always unset Content-Security-Policy
+    
+    # Set permissive policy
+    Header set Content-Security-Policy "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>
