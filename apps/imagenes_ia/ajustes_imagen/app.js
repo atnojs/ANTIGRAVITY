@@ -18,8 +18,8 @@ const DAILY_LIMIT = 8;
 const hm = new HistoryManager('ajustes_imagen');
 const normalizeHistoryEntry = (e) => ({
   id: e.id,
-  thumbnail: (e.data && e.data.thumbnail) || e.imageData || e.thumbnail || '',
-  originalSource: e.imageData || e.originalSource || ((e.data && e.data.originalSource) || ''),
+  thumbnail: (e.data && e.data.thumbnail) || e.imageData || e.imageUrl || e.thumbnail || '',
+  originalSource: e.imageData || e.originalSource || e.imageUrl || ((e.data && e.data.originalSource) || ''),
   timestamp: (e.data && e.data.timestamp) || e.timestamp || (e.createdAt ? new Date(e.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
   settings: (e.data && e.data.settings) || e.settings || INITIAL_SETTINGS,
   effectsDescription: (e.data && e.data.effectsDescription) || e.effectsDescription || '',
@@ -1681,9 +1681,12 @@ const App = () => {
     };
 
     const restoreFromHistory = (item) => {
-        if (!originalImage) return;
+        // Permitir restaurar aunque el lienzo esté vacío: la imagen del historial
+        // pasa a ser la imagen de trabajo.
+        if (!item || !item.originalSource) return;
         setPreviousImageBeforeEdit(originalImage);
         setOriginalImage(item.originalSource);
+        setUploadedFile(item.originalSource);
         setCurrentSettings(item.settings || INITIAL_SETTINGS);
         setMemeData(null);
         setHasOverlayFromHistory(true);
