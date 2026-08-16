@@ -252,8 +252,8 @@
     const lower = text.toLocaleLowerCase('es');
     const improverSignals = [
       'mejora este prompt', 'mejorar este prompt', 'optimiza este prompt',
-      'corrige este prompt', 'reescribe este prompt', 'prompt:',
-      '# objetivo', '## objetivo', 'actúa como', 'eres un experto'
+      'corrige este prompt', 'reescribe este prompt', 'profesionaliza este prompt',
+      'haz más claro este prompt', 'revisa este prompt', 'prompt actual:'
     ];
     for (const s of improverSignals) {
       if (lower.includes(s)) return 'improver';
