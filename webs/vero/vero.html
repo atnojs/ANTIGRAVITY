@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pintura Textil Creativa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Electrolize', system-ui, sans-serif;
+      background: #001018;
+      color: #eaffff;
+      line-height: 1.5;
+    }
+
+    header {
+      background: linear-gradient(135deg, #00D0D0, #26C626);
+      color: #fff;
+      padding: 24px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+    }
+
+    header p {
+      margin: 0 0 16px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    nav button {
+      border: 0;
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    nav button.active,
+    nav button:hover {
+      background: #fff;
+      color: #00D0D0;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .hidden,
+    [hidden] {
+      display: none !important;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid rgba(0,208,208,.35);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(0,208,208,.15);
+      color: #00D0D0;
+      margin-bottom: 10px;
+    }
+
+    .card ul {
+      margin: 10px 0;
+      padding-left: 18px;
+    }
+
+    .card li {
+      margin: 4px 0;
+    }
+
+    .button,
+    button[type="submit"] {
+      border: 0;
+      background: #00D0D0;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .button.secondary {
+      background: #669999;
+    }
+
+    .button.danger {
+      background: #dc2626;
+    }
+
+    .button.small {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+    }
+
+    form {
+      background: #fff;
+      border: 1px solid rgba(0,208,208,.35);
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 10px 0 4px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid rgba(0,208,208,.35);
+      border-radius: 10px;
+      font: inherit;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .notice {
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+      font-weight: 600;
+    }
+
+    .notice.ok {
+      background: rgba(38,198,38,.15);
+      color: #26C626;
+    }
+
+    .notice.error {
+      background: rgba(239,68,68,.15);
+      color: #ef4444;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(0,208,208,.2);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #001018;
+    }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero .card {
+      background: linear-gradient(135deg, rgba(0,208,208,.12), rgba(38,198,38,.12));
+    }
+
+    footer {
+      padding: 20px;
+      text-align: center;
+      color: #669999;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .muted {
+      color: #669999;
+    }
+
+    @media (max-width: 600px) {
+      th,
+      td {
+        font-size: 0.92rem;
+      }
+    }
+  
+/* ===== RETEMA HOOLA (vero.html) ===== */
+*{font-family:'Electrolize',system-ui,sans-serif}
+body{background:#001018;background-image:radial-gradient(ellipse 55% 42% at 12% 6%,rgba(0,208,208,.16),transparent 62%),radial-gradient(ellipse 50% 45% at 88% 94%,rgba(0,208,208,.12),transparent 62%),linear-gradient(180deg,#001018 0%,#062f43 55%,#0E5368 100%),repeating-linear-gradient(0deg,rgba(0,208,208,.045)0 1px,transparent 1px 46px),repeating-linear-gradient(90deg,rgba(0,208,208,.045)0 1px,transparent 1px 46px);background-attachment:fixed;color:#eaffff}
+header{background:linear-gradient(135deg,#062f43,#174F7A);border-bottom:1px solid rgba(0,208,208,.7);box-shadow:0 0 24px rgba(0,208,208,.35)}
+header h1{text-transform:uppercase;letter-spacing:.06em;text-shadow:0 0 10px rgba(0,208,208,.8),0 0 24px rgba(0,208,208,.8),0 0 44px rgba(0,208,208,.4)}
+nav button{background:rgba(23,79,122,.42);border:1px solid rgba(0,208,208,.35);backdrop-filter:blur(6px);text-transform:uppercase;letter-spacing:.05em;font-size:.8rem}
+nav button.active,nav button:hover{background:linear-gradient(135deg,#174F7A,#00D0D0);color:#CCFFFF;box-shadow:0 0 14px rgba(0,208,208,.8)}
+main h2{text-transform:uppercase;letter-spacing:.04em;color:#eaffff}
+.card,form,table{background:rgba(23,79,122,.42);border:1px solid rgba(0,208,208,.7);border-radius:14px;box-shadow:0 0 18px rgba(0,208,208,.4),inset 0 0 20px rgba(0,208,208,.05);backdrop-filter:blur(6px);color:#eaffff}
+.card:hover{transform:translateY(-4px);border-color:#00D0D0;box-shadow:0 0 26px rgba(0,208,208,.8)}
+.badge{background:rgba(0,208,208,.15);border:1px solid rgba(0,208,208,.55);color:#00D0D0}
+.button,button[type="submit"]{border-radius:999px;background:linear-gradient(135deg,#00D0D0,#26C626);color:#061018;font-weight:700;text-transform:uppercase;letter-spacing:.05em;box-shadow:0 0 12px rgba(0,208,208,.4)}
+.button:hover{box-shadow:0 0 18px rgba(0,208,208,.8)}
+.button.secondary{background:rgba(23,79,122,.55);color:#eaffff;border:1px solid rgba(0,208,208,.35)}
+.button.danger{background:rgba(239,68,68,.85);color:#fff}
+input,select,textarea{background:rgba(6,16,24,.6);border:1px solid rgba(0,208,208,.35);color:#eaffff;border-radius:10px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#00D0D0;box-shadow:0 0 12px rgba(0,208,208,.4)}
+label{color:#99CCCC;text-transform:uppercase;letter-spacing:.05em;font-size:.78rem}
+.notice.ok{background:rgba(38,198,38,.15);color:#26C626;border:1px solid rgba(38,198,38,.5)}
+.notice.error{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.5)}
+th,td{border-bottom:1px dashed rgba(0,208,208,.2)}
+footer{color:#669999}
+.muted{color:#669999}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+
+</style>
+</head>
+<body>
+  <header>
+    <h1>Pintura Textil Creativa</h1>
+    <p>Talleres y clases para personas desde 6 años. Mira ejemplos, inscríbete y gestiona eventos.</p>
+
+    <nav aria-label="Secciones">
+      <button class="tab active" data-page="inicio">Inicio</button>
+      <button class="tab" data-page="talleres">Talleres</button>
+      <button class="tab" data-page="clases">Clases</button>
+      <button class="tab" data-page="inscripcion">Inscripción</button>
+      <button class="tab" data-page="personal">Personal</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="inicio" class="page">
+      <div class="hero">
+        <div class="card">
+          <h2>¿Qué hacemos?</h2>
+          <p>Creamos prendas únicas con pintura textil: estampados, pinceladas, plantillas y técnicas mixtas.</p>
+          <ul>
+            <li>Talleres prácticos de corta duración.</li>
+            <li>Clases regulares por niveles.</li>
+            <li>Materiales y ubicación visibles en cada evento.</li>
+          </ul>
+          <div class="toolbar">
+            <button class="button" data-go="talleres">Ver talleres</button>
+            <button class="button secondary" data-go="clases">Ver clases</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Cómo inscribirse</h2>
+          <ol>
+            <li>Elige un taller o clase.</li>
+            <li>Completa el formulario con nombre, contacto y edad.</li>
+            <li>Recibe confirmación en pantalla.</li>
+          </ol>
+          <p class="muted">Para editar eventos, entra a la pestaña Personal.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="talleres" class="page hidden">
+      <h2>Talleres</h2>
+      <p class="muted">Ejemplos de talleres disponibles. Pulsa “Inscribirse” para reservar.</p>
+      <div id="talleres-grid" class="grid" aria-live="polite"></div>
+    </section>
+
+    <section id="clases" class="page hidden">
+      <h2>Clases</h2>
+      <p class="muted">Clases regulares para aprender paso a paso.</p>
+      <div id="clases-grid" class="grid" aria-live="polite"></div>
+    </section>
+
+    <section id="inscripcion" class="page hidden">
+      <h2>Inscripción</h2>
+
+      <form id="form-inscripcion">
+        <label for="evento-select">Evento</label>
+        <select id="evento-select" required></select>
+
+        <div id="evento-info" class="notice" role="status" aria-live="polite" hidden></div>
+
+        <label for="nombre">Nombre completo</label>
+        <input id="nombre" required placeholder="Ej. Ana Pérez">
+
+        <label for="contacto">Correo o teléfono</label>
+        <input id="contacto" required placeholder="correo@ejemplo.com o 600...">
+
+        <label for="edad">Edad (mínimo 6 años)</label>
+        <input id="edad" type="number" min="6" max="120" required>
+
+        <button type="submit">Inscribirme</button>
+
+        <div id="mensaje-inscripcion" class="notice" role="status" aria-live="polite" hidden></div>
+      </form>
+    </section>
+
+    <section id="personal" class="page hidden">
+      <h2>Personal</h2>
+
+      <div id="login-box" class="card">
+        <h3>Acceso para personal</h3>
+        <p class="muted">Demo: contraseña <code>personal123</code>. En producción usa un sistema seguro.</p>
+
+        <label for="password">Contraseña</label>
+        <input id="password" type="password">
+
+        <div class="toolbar">
+          <button id="btn-login" class="button">Entrar</button>
+        </div>
+
+        <div id="login-msg" class="notice error" hidden></div>
+      </div>
+
+      <div id="panel-box" hidden>
+        <div class="toolbar">
+          <span><strong>Sesión iniciada.</strong></span>
+          <button id="btn-logout" class="button secondary">Cerrar sesión</button>
+        </div>
+
+        <h3>Crear o editar taller / clase</h3>
+
+        <form id="form-evento">
+          <input type="hidden" id="evento-id">
+
+          <div class="form-grid">
+            <div>
+              <label for="evento-tipo">Tipo</label>
+              <select id="evento-tipo" required>
+                <option value="taller">Taller</option>
+                <option value="clase">Clase</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="evento-titulo">Título</label>
+              <input id="evento-titulo" required placeholder="Ej. Estampado con hojas">
+            </div>
+
+            <div>
+              <label for="evento-fecha">Fecha</label>
+              <input id="evento-fecha" type="date" required>
+            </div>
+
+            <div>
+              <label for="evento-hora">Hora</label>
+              <input id="evento-hora" type="time" required>
+            </div>
+
+            <div>
+              <label for="evento-duracion">Duración</label>
+              <input id="evento-duracion" required placeholder="Ej. 2 horas">
+            </div>
+
+            <div>
+              <label for="evento-cupo">Cupo máximo</label>
+              <input id="evento-cupo" type="number" min="1" max="999" required value="10">
+            </div>
+
+            <div>
+              <label for="evento-ubicacion">Ubicación</label>
+              <input id="evento-ubicacion" required placeholder="Ej. Aula 3, Calle Arte 12">
+            </div>
+          </div>
+
+          <label for="evento-descripcion">Descripción</label>
+          <textarea id="evento-descripcion" required placeholder="Qué se aprenderá, a quién va dirigido..."></textarea>
+
+          <label for="evento-materiales">Materiales</label>
+          <textarea id="evento-materiales" required placeholder="Ej. camiseta clara, pinceles, pintura textil"></textarea>
+
+          <div class="toolbar">
+            <button type="submit" class="button">Guardar evento</button>
+            <button type="button" id="btn-cancelar" class="button secondary">Cancelar edición</button>
+          </div>
+        </form>
+
+        <h3>Eventos existentes</h3>
+        <div id="admin-lista" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Prototipo funcional con almacenamiento local del navegador. Para producción, conecta un backend o formulario real.</p>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = "pintura_textil_eventos_v1";
+    const ADMIN_PASSWORD = "personal123";
+
+    let eventos = cargarEventos();
+    let edicionId = null;
+    let sesionPersonal = false;
+
+    function cargarEventos() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (Array.isArray(data) && data.length) return data;
+      } catch (error) {
+        console.error("No se pudo leer localStorage", error);
+      }
+
+      return seedEventos();
+    }
+
+    function seedEventos() {
+      const base = [
+        {
+          id: "taller-estampado-botanico",
+          tipo: "taller",
+          titulo: "Estampado botánico",
+          descripcion: "Aprende a estampar hojas y flores sobre tela usando pintura textil.",
+          fecha: "2026-07-05",
+          hora: "10:00",
+          duracion: "2 horas",
+          materiales: "Camiseta clara, hojas naturales, pintura textil, rodillo y papel protector.",
+          ubicacion: "Taller central, Calle Arte 12",
+          cupo: 12,
+          inscritos: []
+        },
+        {
+          id: "taller-camisetas-creativas",
+          tipo: "taller",
+          titulo: "Camisetas creativas",
+          descripcion: "Diseña una camiseta con pincel, esponja y plantillas.",
+          fecha: "2026-07-12",
+          hora: "16:30",
+          duracion: "1 hora y 30 minutos",
+          materiales: "Camiseta blanca, pinceles, esponjas, plantillas y pintura textil.",
+          ubicacion: "Centro cultural La Aguja, Sala 2",
+          cupo: 10,
+          inscritos: []
+        },
+        {
+          id: "taller-bolsas-estampadas",
+          tipo: "taller",
+          titulo: "Bolsas estampadas",
+          descripcion: "Taller familiar para decorar bolsas de tela con sellos caseros.",
+          fecha: "2026-07-19",
+          hora: "11:00",
+          duracion: "90 minutos",
+          materiales: "Bolsa de tela, sellos, tinta textil y cartón para proteger.",
+          ubicacion: "Biblioteca infantil, planta baja",
+          cupo: 15,
+          inscritos: []
+        },
+        {
+          id: "clase-iniciacion",
+          tipo: "clase",
+          titulo: "Iniciación a pintura textil",
+          descripcion: "Clase regular para aprender mezcla de color, pinceladas y fijado.",
+          fecha: "2026-07-07",
+          hora: "18:00",
+          duracion: "1 hora semanal",
+          materiales: "Cuaderno textil, pinceles, paleta y pinturas básicas.",
+          ubicacion: "Taller central, Calle Arte 12",
+          cupo: 8,
+          inscritos: []
+        },
+        {
+          id: "clase-avanzada",
+          tipo: "clase",
+          titulo: "Técnicas avanzadas",
+          descripcion: "Trabajo con capas, degradados, máscaras y detalles finos.",
+          fecha: "2026-07-09",
+          hora: "17:00",
+          duracion: "1 hora y 30 minutos semanales",
+          materiales: "Prenda oscura, pintura textil, pinceles finos y secador.",
+          ubicacion: "Aula creativa, Calle Color 5",
+          cupo: 6,
+          inscritos: []
+        },
+        {
+          id: "clase-infantil",
+          tipo: "clase",
+          titulo: "Pintura textil infantil",
+          descripcion: "Clase lúdica para niñas y niños desde 6 años, con supervisión.",
+          fecha: "2026-07-08",
+          hora: "16:00",
+          duracion: "45 minutos semanales",
+          materiales: "Delantal, camiseta vieja y pinturas lavables recomendadas.",
+          ubicacion: "Sala familiar, Centro cultural La Aguja",
+          cupo: 12,
+          inscritos: []
+        }
+      ];
+
+      guardarEnStorage(base);
+      return base;
+    }
+
+    function guardarEnStorage(lista) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
+      } catch (error) {
+        console.error("No se pudo guardar en localStorage", error);
+      }
+    }
+
+    function guardarEventos() {
+      guardarEnStorage(eventos);
+    }
+
+    function generarId() {
+      return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function escapar(texto) {
+      return String(texto ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function cupoDisponible(evento) {
+      return Math.max(0, Number(evento.cupo || 0) - (evento.inscritos?.length || 0));
+    }
+
+    function buscarEvento(id) {
+      return eventos.find((item) => item.id === id);
+    }
+
+    function mostrarPagina(nombre) {
+      document.querySelectorAll(".page").forEach((section) => {
+        section.classList.toggle("hidden", section.id !== nombre);
+      });
+
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.page === nombre);
+      });
+
+      renderizarTodo();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function tarjetaEvento(evento) {
+      const disponible = cupoDisponible(evento);
+      const lleno = disponible <= 0;
+
+      return `
+        <article class="card" aria-label="${escapar(evento.titulo)}">
+          <span class="badge">${evento.tipo === "taller" ? "Taller" : "Clase"}</span>
+          <h3>${escapar(evento.titulo)}</h3>
+          <p>${escapar(evento.descripcion)}</p>
+          <ul>
+            <li><strong>Fecha:</strong> ${escapar(evento.fecha)}</li>
+            <li><strong>Hora:</strong> ${escapar(evento.hora)}</li>
+            <li><strong>Duración:</strong> ${escapar(evento.duracion)}</li>
+            <li><strong>Ubicación:</strong> ${escapar(evento.ubicacion)}</li>
+            <li><strong>Materiales:</strong> ${escapar(evento.materiales)}</li>
+            <li><strong>Cupo disponible:</strong> ${disponible} de ${escapar(evento.cupo)}</li>
+          </ul>
+          <button class="button btn-inscribir" data-id="${escapar(evento.id)}" ${lleno ? "disabled" : ""}>
+            ${lleno ? "Completo" : "Inscribirse"}
+          </button>
+        </article>
+      `;
+    }
+
+    function renderizarEventosPublicos() {
+      const talleres = eventos.filter((item) => item.tipo === "taller");
+      const clases = eventos.filter((item) => item.tipo === "clase");
+      const vacio = '<p class="muted">Por ahora no hay eventos disponibles.</p>';
+
+      document.getElementById("talleres-grid").innerHTML = talleres.length
+        ? talleres.map(tarjetaEvento).join("")
+        : vacio;
+
+      document.getElementById("clases-grid").innerHTML = clases.length
+        ? clases.map(tarjetaEvento).join("")
+        : vacio;
+    }
+
+    function renderizarSelectorEventos() {
+      const select = document.getElementById("evento-select");
+      const seleccionado = select.value;
+
+      select.innerHTML =
+        '<option value="">Selecciona un taller o clase</option>' +
+        eventos
+          .map((evento) => {
+            const disponible = cupoDisponible(evento);
+            const etiqueta = `${evento.tipo === "taller" ? "Taller" : "Clase"}: ${evento.titulo} — ${evento.fecha} ${evento.hora} — ${disponible} cupos`;
+            return `<option value="${escapar(evento.id)}" ${disponible <= 0 ? "disabled" : ""}>${escapar(etiqueta)}</option>`;
+          })
+          .join("");
+
+      if (buscarEvento(seleccionado)) {
+        select.value = seleccionado;
+      }
+
+      actualizarInfoEvento();
+    }
+
+    function actualizarInfoEvento() {
+      const select = document.getElementById("evento-select");
+      const info = document.getElementById("evento-info");
+      const evento = buscarEvento(select.value);
+
+      if (!evento) {
+        info.hidden = true;
+        info.textContent = "";
+        return;
+      }
+
+      info.hidden = false;
+      info.className = "notice";
+      info.innerHTML = `
+        <strong>${escapar(evento.titulo)}</strong><br>
+        Duración: ${escapar(evento.duracion)}<br>
+        Materiales: ${escapar(evento.materiales)}<br>
+        Ubicación: ${escapar(evento.ubicacion)}<br>
+        Cupo disponible: ${cupoDisponible(evento)}
+      `;
+    }
+
+    function mostrarMensaje(elementoId, texto, tipo) {
+      const caja = document.getElementById(elementoId);
+      caja.hidden = false;
+      caja.className = `notice ${tipo}`;
+      caja.textContent = texto;
+    }
+
+    function inscribir(evento, datos) {
+      evento.inscritos = evento.inscritos || [];
+      evento.inscritos.push({
+        nombre: datos.nombre,
+        contacto: datos.contacto,
+        edad: datos.edad,
+        fechaRegistro: new Date().toISOString()
+      });
+
+      guardarEventos();
+    }
+
+    function renderizarPanel() {
+      if (!sesionPersonal) return;
+
+      const contenedor = document.getElementById("admin-lista");
+
+      if (!eventos.length) {
+        contenedor.innerHTML = '<p class="muted">No hay eventos creados.</p>';
+        return;
+      }
+
+      contenedor.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Título</th>
+              <th>Fecha y hora</th>
+              <th>Duración</th>
+              <th>Ubicación</th>
+              <th>Cupo</th>
+              <th>Inscritos</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${eventos
+              .map(
+                (evento) => `
+                  <tr>
+                    <td>${evento.tipo === "taller" ? "Taller" : "Clase"}</td>
+                    <td>${escapar(evento.titulo)}</td>
+                    <td>${escapar(evento.fecha)} ${escapar(evento.hora)}</td>
+                    <td>${escapar(evento.duracion)}</td>
+                    <td>${escapar(evento.ubicacion)}</td>
+                    <td>${escapar(evento.cupo)}</td>
+                    <td>${evento.inscritos?.length || 0}</td>
+                    <td>
+                      <button class="button small btn-editar" data-id="${escapar(evento.id)}">Editar</button>
+                      <button class="button danger small btn-eliminar" data-id="${escapar(evento.id)}">Eliminar</button>
+                    </td>
+                  </tr>
+                `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderizarTodo() {
+      renderizarEventosPublicos();
+      renderizarSelectorEventos();
+
+      if (sesionPersonal) {
+        renderizarPanel();
+      }
+    }
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => mostrarPagina(tab.dataset.page));
+    });
+
+    document.querySelectorAll("[data-go]").forEach((boton) => {
+      boton.addEventListener("click", () => mostrarPagina(boton.dataset.go));
+    });
+
+    document.addEventListener("click", (eventoClick) => {
+      const botonInscribir = eventoClick.target.closest(".btn-inscribir");
+
+      if (botonInscribir) {
+        const select = document.getElementById("evento-select");
+        select.value = botonInscribir.dataset.id;
+        actualizarInfoEvento();
+        mostrarPagina("inscripcion");
+        return;
+      }
+
+      const botonEditar = eventoClick.target.closest(".btn-editar");
+
+      if (botonEditar) {
+        editarEvento(botonEditar.dataset.id);
+        return;
+      }
+
+      const botonEliminar = eventoClick.target.closest(".btn-eliminar");
+
+      if (botonEliminar) {
+        eliminarEvento(botonEliminar.dataset.id);
+      }
+    });
+
+    document.getElementById("evento-select").addEventListener("change", actualizarInfoEvento);
+
+    document.getElementById("password").addEventListener("keydown", (eventoTecla) => {
+      if (eventoTecla.key === "Enter") {
+        document.getElementById("btn-login").click();
+      }
+    });
+
+    document.getElementById("form-inscripcion").addEventListener("submit", (eventoForm) => {
+      eventoForm.preventDefault();
+
+      const mensajeId = "mensaje-inscripcion";
+      const eventoId = document.getElementById("evento-select").value;
+      const nombre = document.getElementById("nombre").value.trim();
+      const contacto = document.getElementById("contacto").value.trim();
+      const edad = Number(document.getElementById("edad").value);
+      const evento = buscarEvento(eventoId);
+
+      if (!evento) {
+        mostrarMensaje(mensajeId, "Selecciona un taller o clase válido.", "error");
+        return;
+      }
+
+      if (!nombre || !contacto) {
+        mostrarMensaje(mensajeId, "Completa nombre y contacto.", "error");
+        return;
+      }
+
+      if (!Number.isFinite(edad) || edad < 6) {
+        mostrarMensaje(mensajeId, "La edad mínima es 6 años.", "error");
+        return;
+      }
+
+      if (cupoDisponible(evento) <= 0) {
+        mostrarMensaje(mensajeId, "Este evento ya no tiene cupos disponibles.", "error");
+        return;
+      }
+
+      const yaInscrito = (evento.inscritos || []).some(
+        (item) => item.contacto.toLowerCase() === contacto.toLowerCase()
+      );
+
+      if (yaInscrito) {
+        mostrarMensaje(mensajeId, "Ese contacto ya está inscrito en este evento.", "error");
+        return;
+      }
+
+      inscribir(evento, { nombre, contacto, edad });
+      mostrarMensaje(mensajeId, `Inscripción confirmada para “${evento.titulo}”.`, "ok");
+      eventoForm.reset();
+      renderizarTodo();
+    });
+
+    document.getElementById("btn-login").addEventListener("click", () => {
+      const clave = document.getElementById("password").value;
+      const mensaje = document.getElementById("login-msg");
+
+      if (clave === ADMIN_PASSWORD) {
+        sesionPersonal = true;
+        document.getElementById("login-box").hidden = true;
+        document.getElementById("panel-box").hidden = false;
+        mensaje.hidden = true;
+        renderizarTodo();
+      } else {
+        mensaje.hidden = false;
+        mensaje.textContent = "Contraseña incorrecta.";
+      }
+    });
+
+    document.getElementById("btn-logout").addEventListener("click", () => {
+      sesionPersonal = false;
+      document.getElementById("login-box").hidden = false;
+      document.getElementById("panel-box").hidden = true;
+      document.getElementById("password").value = "";
+      document.getElementById("login-msg").hidden = true;
+      mostrarPagina("inicio");
+    });
+
+    document.getElementById("form-evento").addEventListener("submit", (eventoForm) => {
+      eventoForm.preventDefault();
+
+      const datos = {
+        tipo: document.getElementById("evento-tipo").value,
+        titulo: document.getElementById("evento-titulo").value.trim(),
+        descripcion: document.getElementById("evento-descripcion").value.trim(),
+        fecha: document.getElementById("evento-fecha").value,
+        hora: document.getElementById("evento-hora").value,
+        duracion: document.getElementById("evento-duracion").value.trim(),
+        materiales: document.getElementById("evento-materiales").value.trim(),
+        ubicacion: document.getElementById("evento-ubicacion").value.trim(),
+        cupo: Number(document.getElementById("evento-cupo").value)
+      };
+
+      if (
+        !datos.titulo ||
+        !datos.fecha ||
+        !datos.hora ||
+        !datos.duracion ||
+        !datos.materiales ||
+        !datos.ubicacion ||
+        !datos.cupo
+      ) {
+        alert("Completa todos los campos obligatorios.");
+        return;
+      }
+
+      if (edicionId) {
+        const evento = buscarEvento(edicionId);
+
+        if (evento) {
+          Object.assign(evento, datos);
+        }
+      } else {
+        eventos.push({
+          id: generarId(),
+          ...datos,
+          inscritos: []
+        });
+      }
+
+      guardarEventos();
+      eventoForm.reset();
+      edicionId = null;
+      renderizarTodo();
+      alert("Evento guardado.");
+    });
+
+    document.getElementById("btn-cancelar").addEventListener("click", () => {
+      document.getElementById("form-evento").reset();
+      edicionId = null;
+    });
+
+    function editarEvento(id) {
+      const evento = buscarEvento(id);
+
+      if (!evento) return;
+
+      edicionId = evento.id;
+
+      document.getElementById("evento-id").value = evento.id;
+      document.getElementById("evento-tipo").value = evento.tipo;
+      document.getElementById("evento-titulo").value = evento.titulo;
+      document.getElementById("evento-descripcion").value = evento.descripcion;
+      document.getElementById("evento-fecha").value = evento.fecha;
+      document.getElementById("evento-hora").value = evento.hora;
+      document.getElementById("evento-duracion").value = evento.duracion;
+      document.getElementById("evento-materiales").value = evento.materiales;
+      document.getElementById("evento-ubicacion").value = evento.ubicacion;
+      document.getElementById("evento-cupo").value = evento.cupo;
+
+      document.getElementById("evento-titulo").focus();
+    }
+
+    function eliminarEvento(id) {
+      const evento = buscarEvento(id);
+
+      if (!evento) return;
+
+      const confirmado = confirm(`¿Eliminar “${evento.titulo}”? Esta acción no se puede deshacer.`);
+
+      if (!confirmado) return;
+
+      eventos = eventos.filter((item) => item.id !== id);
+      guardarEventos();
+      renderizarTodo();
+    }
+
+    renderizarTodo();
+  </script>
+</body>
+</html>
