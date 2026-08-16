@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pigmento &amp; Tela — Talleres de pintura textil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+<style>
+/* ============ BASE ============ */
+:root{
+ --paper:#062f43; --card:rgba(23,79,122,.42); --ink:#eaffff; --ink-soft:#99CCCC;
+ --madder:#00D0D0; --marigold:#26C626; --indigo:#174F7A; --leaf:#26C626; --plum:#336666;
+ --line:rgba(0,208,208,.25); --tint:rgba(6,16,24,.55);
+ --hard:0 0 18px rgba(0,208,208,.35);
+ --disp:'Electrolize',system-ui,sans-serif; --body:'Electrolize',system-ui,sans-serif;
+ --acc:#00D0D0; --acc2:#26C626; --text:#eaffff; --contenedor:#174F7A;
+ --card-bg:rgba(23,79,122,.42); --card-hover:rgba(30,100,150,.55);
+ --border:rgba(0,208,208,.7); --border-strong:#00D0D0;
+ --glow:rgba(0,208,208,.8); --glow-soft:rgba(0,208,208,.4);
+ --font-ui:'Electrolize',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ font-family:var(--body);color:var(--ink);background:#001018;
+ background-image:
+  radial-gradient(ellipse 55% 42% at 12% 6%,rgba(0,208,208,.16),transparent 62%),
+  radial-gradient(ellipse 50% 45% at 88% 94%,rgba(0,208,208,.12),transparent 62%),
+  linear-gradient(180deg,#001018 0%,#062f43 55%,#0E5368 100%),
+  repeating-linear-gradient(0deg,rgba(0,208,208,.045)0 1px,transparent 1px 46px),
+  repeating-linear-gradient(90deg,rgba(0,208,208,.045)0 1px,transparent 1px 46px);
+ background-attachment:fixed;
+ line-height:1.55;font-size:16px;
+}
+::selection{background:var(--marigold);color:var(--ink)}
+a{color:inherit}
+button{font-family:var(--body);cursor:pointer}
+img{max-width:100%}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:#fff;padding:8px 14px;z-index:200;border-radius:8px}
+.skip:focus{left:8px}
+:focus-visible{outline:3px dashed var(--madder);outline-offset:3px;border-radius:4px}
+
+/* ============ MARQUESINA SUPERIOR ============ */
+.marquee{background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap;font-weight:700;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+.marquee-track{display:inline-flex;gap:0;padding:7px 0;animation:mq 26s linear infinite;width:max-content}
+.marquee-track span{padding:0 1.4em}
+.marquee-track em{font-style:normal;color:var(--marigold)}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ============ CABECERA ============ */
+header.top{position:sticky;top:0;z-index:100;background:rgba(251,247,239,.94);backdrop-filter:blur(6px);border-bottom:2px dashed var(--ink)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--disp);font-weight:900;font-size:1.35rem;letter-spacing:-.01em}
+.brand svg{display:block}
+.brand small{display:block;font-family:var(--body);font-weight:700;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--madder)}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap}
+.nav-links a{text-decoration:none;font-weight:700;font-size:.92rem;padding:8px 14px;border-radius:9px;border:2px solid transparent;transition:.18s}
+.nav-links a:hover{border-color:var(--ink);background:var(--card);box-shadow:2px 2px 0 var(--ink)}
+.nav-links a.active{background:var(--ink);color:var(--paper)}
+.nav-links a.staff-link{border-color:var(--madder);color:var(--madder)}
+.nav-links a.staff-link.active{background:var(--madder);color:#fff}
+
+/* ============ BOTONES / CHIPS ============ */
+.btn{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);background:var(--madder);color:#fff;
+  font-weight:800;font-size:.95rem;padding:11px 20px;border-radius:11px;text-decoration:none;box-shadow:var(--hard);
+  transition:transform .15s,box-shadow .15s;position:relative}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,.9)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.9)}
+.btn.ghost{background:var(--card);color:var(--ink)}
+.btn.gold{background:var(--marigold);color:var(--ink)}
+.btn.indigo{background:var(--indigo)}
+.btn.small{padding:7px 13px;font-size:.82rem;border-radius:9px;box-shadow:3px 3px 0 rgba(0,0,0,.9)}
+.btn.block{width:100%;justify-content:center}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none!important}
+.chip{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--ink);background:var(--card);border-radius:999px;
+  padding:6px 14px;font-weight:700;font-size:.85rem;transition:.15s}
+button.chip:hover{transform:translateY(-2px);box-shadow:2px 3px 0 var(--ink)}
+button.chip.on{background:var(--ink);color:var(--paper)}
+.tag{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  border:2px solid var(--ink);padding:3px 10px;border-radius:6px;background:var(--card)}
+.tag.taller{background:var(--marigold)}
+.tag.clase{background:rgba(0,208,208,.2)}
+
+/* ============ PORTADA ============ */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding:52px 0 30px}
+.hero .eyebrow{font-weight:800;letter-spacing:.3em;text-transform:uppercase;font-size:.72rem;color:var(--indigo);display:flex;align-items:center;gap:10px}
+.hero .eyebrow::before{content:"";width:34px;height:3px;background:var(--indigo)}
+h1.display{font-family:var(--disp);font-weight:900;font-size:clamp(2.5rem,5.4vw,4.1rem);line-height:1.02;letter-spacing:-.02em;margin:14px 0 16px}
+h1.display .stroke{position:relative;white-space:nowrap;color:var(--madder)}
+h1.display .stroke svg{position:absolute;left:-2%;bottom:-12px;width:104%;height:16px}
+.hero p.lead{max-width:46ch;font-size:1.06rem;color:var(--ink-soft)}
+.palette{display:flex;gap:10px;margin:20px 0 24px;align-items:center}
+.palette i{width:26px;height:26px;border-radius:50% 42% 55% 45%;border:2px solid var(--ink);transition:transform .2s;display:block}
+.palette i:hover{transform:rotate(20deg) scale(1.2)}
+.palette span{font-size:.8rem;font-weight:700;color:var(--ink-soft);margin-left:6px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.hero-note{margin-top:22px;font-size:.85rem;color:var(--ink-soft);display:flex;gap:18px;flex-wrap:wrap}
+.hero-note b{display:flex;align-items:center;gap:6px}
+
+/* Tarjeta destacada */
+.featured{background:var(--card);border:2px solid var(--ink);border-radius:14px;overflow:hidden;box-shadow:7px 7px 0 rgba(0,0,0,.9);transform:rotate(1.2deg);transition:transform .25s}
+.featured:hover{transform:rotate(0deg) translateY(-4px)}
+.featured .thumb{height:190px;position:relative}
+.featured .thumb .tag{position:absolute;top:12px;left:12px}
+.featured .body{padding:18px 20px 20px;position:relative}
+.featured .body::before{content:"";position:absolute;inset:8px;border:1.5px dashed rgba(0,0,0,.35);border-radius:8px;pointer-events:none}
+.featured h3{font-family:var(--disp);font-weight:800;font-size:1.35rem;margin-bottom:6px}
+.mini-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.85rem;font-weight:700;color:var(--ink-soft);margin:8px 0 14px}
+
+/* ============ SECCIONES / GRID ============ */
+.section{padding:46px 0}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+h2.section-title{font-family:var(--disp);font-weight:900;font-size:clamp(1.7rem,3.4vw,2.5rem);letter-spacing:-.01em}
+h2.section-title .dot{color:var(--marigold)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:24px}
+
+/* Tarjetas */
+.card{background:var(--card);border:2px solid var(--ink);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
+  transition:transform .2s,box-shadow .2s;box-shadow:4px 4px 0 rgba(0,0,0,.85)}
+.card:hover{transform:translateY(-5px) rotate(-.4deg);box-shadow:8px 9px 0 rgba(0,0,0,.85)}
+.card .thumb{height:150px;position:relative;border-bottom:2px solid var(--ink)}
+.card .thumb .tag{position:absolute;top:10px;left:10px}
+.card .thumb .price{position:absolute;bottom:10px;right:10px;background:var(--ink);color:var(--marigold);font-family:var(--disp);font-weight:800;padding:4px 12px;border-radius:8px;font-size:1rem}
+.card .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1;position:relative}
+.card .body::before{content:"";position:absolute;inset:7px;border:1.5px dashed rgba(0,0,0,.3);border-radius:9px;pointer-events:none}
+.card h3{font-family:var(--disp);font-weight:800;font-size:1.22rem;line-height:1.15}
+.card .desc{font-size:.9rem;color:var(--ink-soft);flex:1}
+.card .meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;font-weight:700;color:var(--ink-soft)}
+.card .actions{display:flex;gap:10px;align-items:center;margin-top:4px}
+.card .card-link{text-decoration:none;display:flex;flex-direction:column;flex:1}
+.full-pill{font-size:.72rem;font-weight:800;background:rgba(239,68,68,.15);border:2px solid var(--madder);color:var(--madder);border-radius:999px;padding:4px 10px}
+
+/* Barra de plazas */
+.cap{display:flex;align-items:center;gap:10px;font-size:.78rem;font-weight:800}
+.cap .bar{flex:1;height:10px;border:2px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden}
+.cap .bar i{display:block;height:100%;background:var(--leaf);transition:width .6s ease}
+.cap.hot .bar i{background:var(--madder)}
+
+/* ============ ESTADOS ============ */
+.skel{background:var(--card);border:2px solid var(--ink);border-radius:14px;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,.6)}
+.skel .s-thumb,.skel .s-l{background:linear-gradient(100deg,var(--tint) 40%,#fff 50%,var(--tint) 60%);background-size:200% 100%;animation:sh 1.2s infinite linear}
+.skel .s-thumb{height:150px}
+.skel .s-body{padding:18px;display:flex;flex-direction:column;gap:12px}
+.skel .s-l{height:14px;border-radius:6px}
+.skel .s-l.w60{width:60%}.skel .s-l.w90{width:90%}.skel .s-l.w40{width:40%}
+@keyframes sh{to{background-position:-200% 0}}
+.state-box{border:2px dashed var(--ink);border-radius:16px;background:var(--card);padding:48px 26px;text-align:center;margin:10px 0}
+.state-box .big{font-size:2.6rem;line-height:1}
+.state-box h3{font-family:var(--disp);font-weight:800;font-size:1.4rem;margin:12px 0 6px}
+.state-box p{color:var(--ink-soft);max-width:44ch;margin:0 auto 18px}
+.state-box.err{border-color:var(--madder)}
+.spinner{width:22px;height:22px;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:-5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============ DETALLE ============ */
+.back{display:inline-flex;gap:8px;align-items:center;font-weight:800;text-decoration:none;margin:26px 0 18px;font-size:.9rem}
+.back:hover{color:var(--madder)}
+.detail-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:30px;align-items:start}
+.banner{height:230px;border:2px solid var(--ink);border-radius:16px;position:relative;box-shadow:6px 6px 0 rgba(0,0,0,.85)}
+.banner .tag{position:absolute;top:14px;left:14px}
+.detail-main{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:26px;margin-top:24px;position:relative}
+.detail-main::before{content:"";position:absolute;inset:9px;border:1.5px dashed rgba(0,0,0,.3);border-radius:10px;pointer-events:none}
+.detail-main h1{font-family:var(--disp);font-weight:900;font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.08;margin-bottom:10px}
+.detail-main p{color:var(--ink-soft);max-width:62ch}
+.info-block{margin-top:26px}
+.info-block h4{font-family:var(--disp);font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.info-block h4::after{content:"";flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--ink) 0 6px,transparent 6px 12px);opacity:.4}
+.mat-grid{display:flex;flex-wrap:wrap;gap:10px}
+.mat{border:2px solid var(--ink);background:var(--paper);border-radius:10px;padding:8px 14px;font-size:.88rem;font-weight:700;display:flex;gap:8px;align-items:center;transition:.15s}
+.mat:hover{background:var(--marigold);transform:translateY(-2px)}
+.mat i{width:10px;height:10px;border-radius:50%;background:var(--madder);border:1.5px solid var(--ink);flex:none}
+.loc-card{display:flex;gap:18px;align-items:center;border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--paper)}
+.loc-map{flex:none;width:150px;height:110px;border-right:2px solid var(--ink);
+  background:repeating-linear-gradient(0deg,rgba(0,208,208,.18) 0 14px,rgba(0,16,24,.5) 14px 28px),repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 2px,transparent 2px 34px);position:relative}
+.loc-map::after{content:"📍";position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:1.9rem;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.3))}
+.loc-info{padding:14px 16px}
+.loc-info b{font-size:1.02rem}
+.loc-info span{display:block;color:var(--ink-soft);font-size:.9rem}
+.aside-sticky{position:sticky;top:96px}
+.ticket{background:var(--card);border:2px solid var(--ink);border-radius:16px;box-shadow:7px 7px 0 rgba(0,0,0,.9);overflow:hidden}
+.ticket .t-head{background:var(--ink);color:var(--paper);padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.ticket .t-head .p{font-family:var(--disp);font-weight:900;font-size:1.7rem;color:var(--marigold)}
+.ticket .t-body{padding:20px;display:flex;flex-direction:column;gap:12px}
+.t-row{display:flex;justify-content:space-between;gap:10px;font-size:.92rem;border-bottom:1.5px dashed rgba(0,0,0,.25);padding-bottom:10px}
+.t-row b{text-align:right}
+.ticket .note{font-size:.78rem;color:var(--ink-soft);text-align:center}
+
+/* ============ MODAL / FORMULARIOS ============ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:18px;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.modal{background:var(--paper);border:2px solid var(--ink);border-radius:18px;max-width:560px;width:100%;max-height:90vh;overflow:auto;box-shadow:10px 10px 0 rgba(0,0,0,.35);animation:pop .25s;position:relative}
+@keyframes pop{from{transform:translateY(24px) scale(.97);opacity:0}}
+.modal .m-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 0}
+.modal .m-head h3{font-family:var(--disp);font-weight:900;font-size:1.45rem}
+.m-close{border:2px solid var(--ink);background:var(--card);width:34px;height:34px;border-radius:9px;font-weight:800;font-size:1rem;transition:.15s}
+.m-close:hover{background:var(--madder);color:#fff;transform:rotate(90deg)}
+.modal .m-body{padding:18px 22px 24px}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:800;font-size:.85rem;margin-bottom:5px}
+.field label small{font-weight:500;color:var(--ink-soft)}
+.field input,.field select,.field textarea{width:100%;border:2px solid var(--ink);border-radius:10px;padding:10px 12px;font-family:var(--body);font-size:.95rem;background:#fff;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;box-shadow:3px 3px 0 var(--marigold)}
+.field .err-msg{display:none;color:var(--madder);font-size:.78rem;font-weight:700;margin-top:4px}
+.field.invalid input,.field.invalid select{border-color:var(--madder);background:rgba(239,68,68,.12)}
+.field.invalid .err-msg{display:block}
+.f-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-alert{border:2px solid var(--madder);background:rgba(239,68,68,.12);border-radius:10px;padding:10px 14px;font-size:.86rem;font-weight:700;margin-bottom:14px;color:#ef4444}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.85rem}
+.check input{width:auto;margin-top:3px}
+
+/* Éxito */
+.success-stamp{text-align:center;padding:10px 0 4px}
+.success-stamp .stamp{display:inline-block;font-family:var(--disp);font-weight:900;font-size:1.9rem;color:var(--leaf);border:4px solid var(--leaf);border-radius:14px;padding:8px 22px;transform:rotate(-5deg);animation:stamp .5s cubic-bezier(.2,2,.4,1);letter-spacing:.02em}
+@keyframes stamp{from{transform:rotate(-5deg) scale(2.4);opacity:0}}
+.success-stamp p{color:var(--ink-soft);margin:14px 0}
+.code-box{background:var(--ink);color:var(--marigold);font-family:var(--disp);font-weight:800;font-size:1.25rem;letter-spacing:.14em;border-radius:10px;padding:10px;margin:12px 0}
+.sum-list{border:2px dashed var(--ink);border-radius:12px;padding:14px 16px;font-size:.9rem;margin-bottom:16px;background:#fff}
+.sum-list div{display:flex;justify-content:space-between;padding:3px 0}
+.sum-list div span:first-child{color:var(--ink-soft)}
+.sum-list div b{text-align:right}
+
+/* ============ STAFF ============ */
+.staff-login{max-width:420px;margin:60px auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin:22px 0 30px}
+.stat{background:var(--card);border:2px solid var(--ink);border-radius:13px;padding:16px 18px;box-shadow:4px 4px 0 rgba(0,0,0,.85)}
+.stat .n{font-family:var(--disp);font-weight:900;font-size:2rem;line-height:1}
+.stat .l{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-soft);margin-top:6px}
+.ev-row{background:var(--card);border:2px solid var(--ink);border-radius:13px;margin-bottom:14px;overflow:hidden;box-shadow:3px 3px 0 rgba(0,0,0,.7);transition:.15s}
+.ev-row:hover{transform:translateX(3px)}
+.ev-row .row-top{display:flex;gap:14px;align-items:center;padding:14px 16px;flex-wrap:wrap}
+.ev-swatch{width:46px;height:46px;border:2px solid var(--ink);border-radius:10px;flex:none}
+.ev-row .grow{flex:1;min-width:180px}
+.ev-row .grow b{font-family:var(--disp);font-size:1.05rem}
+.ev-row .sub{font-size:.8rem;color:var(--ink-soft);font-weight:700}
+.ev-row .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ev-row .regs{border-top:2px dashed var(--ink);padding:14px 16px;background:var(--tint);display:none}
+.ev-row.open .regs{display:block}
+.reg-item{display:flex;justify-content:space-between;gap:10px;font-size:.85rem;padding:7px 0;border-bottom:1px dashed rgba(0,0,0,.25);flex-wrap:wrap}
+.reg-item:last-child{border-bottom:none}
+.demo-bar{margin-top:34px;border:2px dashed var(--ink);border-radius:12px;padding:14px 18px;background:var(--tint);font-size:.84rem;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+
+/* ============ FOOTER ============ */
+footer{margin-top:70px;background:var(--ink);color:var(--paper)}
+footer .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:30px;padding:44px 0 30px}
+footer h5{font-family:var(--disp);font-weight:800;font-size:1.05rem;margin-bottom:10px;color:var(--marigold)}
+footer p,footer li{font-size:.88rem;color:#99CCCC}
+footer ul{list-style:none}
+footer li{padding:3px 0}
+.foot-strip{height:12px;background:repeating-linear-gradient(90deg,var(--madder) 0 40px,var(--marigold) 40px 80px,var(--indigo) 80px 120px,var(--leaf) 120px 160px)}
+.foot-bottom{border-top:1px solid rgba(0,208,208,.25);padding:14px 0;font-size:.78rem;color:#669999;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* ============ TOAST / REVEAL ============ */
+#toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,120px);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:12px;font-weight:700;box-shadow:5px 5px 0 rgba(0,0,0,.3);z-index:500;transition:transform .35s cubic-bezier(.2,1.4,.4,1);font-size:.92rem;max-width:90vw;text-align:center}
+#toast.show{transform:translate(-50%,0)}
+#toast.ok{border-left:8px solid var(--leaf)} #toast.bad{border-left:8px solid var(--madder)}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .5s ease,transform .5s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:920px){
+  .hero{grid-template-columns:1fr;gap:30px;padding-top:36px}
+  .featured{transform:none;max-width:520px}
+  .detail-grid{grid-template-columns:1fr}
+  .aside-sticky{position:static}
+  footer .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .f-2{grid-template-columns:1fr}
+  footer .foot-grid{grid-template-columns:1fr}
+  .nav-links{width:100%;justify-content:flex-start}
+  .loc-card{flex-direction:column}
+  .loc-map{width:100%;border-right:none;border-bottom:2px solid var(--ink)}
+}
+
+/* ===== RETEMA HOOLA (vero2) ===== */
+h1,h2,h3,.section-title{text-transform:uppercase;letter-spacing:.04em}
+h1.display{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:.04em;text-shadow:0 0 10px var(--glow),0 0 24px var(--glow),0 0 44px var(--glow-soft)}
+.card,.featured,.stat,.ev-row,.detail-main,.ticket,.modal,.state-box,.skel{background:var(--card-bg);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:14px;box-shadow:0 0 18px var(--glow-soft),inset 0 0 20px rgba(0,208,208,.05)}
+.card:hover{transform:translateY(-5px);border-color:var(--border-strong);box-shadow:0 0 26px var(--glow)}
+.featured:hover{transform:rotate(0deg) translateY(-4px);border-color:var(--border-strong)}
+.card .body::before,.featured .body::before,.detail-main::before{border:1px dashed rgba(0,208,208,.18);border-radius:9px}
+.card .thumb{border-bottom:1px solid var(--border)}
+.btn{border:1px solid var(--border);border-radius:999px;background:linear-gradient(135deg,#00D0D0,#26C626);color:#061018;font-weight:700;text-transform:uppercase;letter-spacing:.05em;box-shadow:0 0 12px var(--glow-soft);text-shadow:none}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 18px var(--glow)}
+.btn.ghost{background:var(--card-bg);color:var(--text)}
+.btn.gold{background:linear-gradient(135deg,#26C626,#1fa81f);color:#061018}
+.btn.indigo{background:linear-gradient(135deg,#174F7A,#0E5368);color:#eaffff}
+.chip{border:1px solid var(--border);background:var(--card-bg);color:var(--muted);backdrop-filter:blur(4px)}
+button.chip:hover{transform:translateY(-2px);box-shadow:0 0 12px var(--glow-soft);border-color:var(--border-strong);color:var(--text)}
+button.chip.on{background:linear-gradient(135deg,var(--contenedor),var(--acc));color:#CCFFFF;border-color:var(--border-strong);box-shadow:0 0 14px var(--glow)}
+.tag{border:1px solid var(--border);background:var(--card-bg);color:var(--muted);backdrop-filter:blur(4px)}
+.tag.taller{background:linear-gradient(135deg,#00D0D0,#26C626);color:#061018;border-color:var(--border-strong)}
+.tag.clase{background:rgba(0,208,208,.15);color:#00D0D0;border-color:var(--border-strong)}
+.marquee{background:linear-gradient(90deg,#00D0D0,#26C626);color:#001018;box-shadow:0 0 24px var(--glow-soft)}
+.marquee-track em{color:#001018}
+header.top{background:rgba(0,16,24,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);box-shadow:0 0 18px var(--glow-soft)}
+.brand{color:var(--text)}
+.brand small{color:var(--acc)}
+.nav-links a{color:var(--muted)}
+.nav-links a:hover{border-color:var(--border);background:var(--card-bg);box-shadow:0 0 12px var(--glow-soft);color:var(--text)}
+.nav-links a.active{background:linear-gradient(135deg,var(--contenedor),var(--acc));color:#CCFFFF;border-color:var(--border-strong);box-shadow:0 0 14px var(--glow)}
+.nav-links a.staff-link{border-color:var(--border-strong);color:var(--acc)}
+.nav-links a.staff-link.active{background:linear-gradient(135deg,#00D0D0,#26C626);color:#061018}
+.skip{background:var(--acc2);color:#061018;border-radius:8px}
+.field input,.field select,.field textarea{background:rgba(6,16,24,.6);border:1px solid rgba(0,208,208,.35);border-radius:10px;color:#eaffff}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--border-strong);box-shadow:0 0 12px var(--glow-soft)}
+.field label{color:var(--muted);letter-spacing:.05em;text-transform:uppercase;font-size:.75rem}
+.field .err-msg{color:#ef4444}
+.field.invalid input,.field.invalid select{border-color:#ef4444;background:rgba(239,68,68,.12)}
+.form-alert{border-color:#ef4444;background:rgba(239,68,68,.12);color:#ef4444}
+.full-pill{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444}
+.cap .bar{background:rgba(0,16,24,.6);border:1px solid var(--border)}
+.cap .bar i{background:var(--acc2)}
+.cap.hot .bar i{background:#ef4444}
+.sum-list{background:rgba(0,16,24,.6);border:1px dashed rgba(0,208,208,.4);border-radius:12px;color:var(--text)}
+.sum-list div span:first-child{color:var(--muted)}
+.success-stamp .stamp{color:var(--acc2);border-color:var(--acc2)}
+.success-stamp p{color:var(--muted)}
+.code-box{background:rgba(0,16,24,.9);color:var(--acc);border:1px solid var(--border)}
+.state-box p{color:var(--muted)}
+.state-box.err{border-color:#ef4444}
+.mat{border:1px solid var(--border);background:rgba(0,16,24,.55);color:var(--muted)}
+.mat:hover{background:rgba(0,208,208,.15);color:var(--text)}
+.mat i{background:var(--acc);border-color:var(--border-strong)}
+.loc-card{background:rgba(0,16,24,.55);border:1px solid var(--border)}
+.loc-map{border-right:1px solid var(--border)}
+.loc-info b{color:var(--text)}
+.loc-info span{color:var(--muted)}
+.banner{border:1px solid var(--border);box-shadow:0 0 18px var(--glow-soft)}
+.detail-main h1{color:var(--text)}
+.detail-main p{color:var(--muted)}
+.info-block h4{color:var(--text);text-transform:uppercase;letter-spacing:.05em}
+.info-block h4::after{background:repeating-linear-gradient(90deg,var(--border) 0 6px,transparent 6px 12px);opacity:.5}
+.ticket{border-radius:16px}
+.ticket .t-head{background:rgba(0,16,24,.9);color:var(--text);border-bottom:1px solid var(--border)}
+.ticket .t-head .p{color:var(--acc)}
+.t-row{border-bottom:1px dashed rgba(0,208,208,.25);color:var(--muted)}
+.t-row b{color:var(--text)}
+.ticket .note{color:var(--muted)}
+.modal{background:rgba(6,16,24,.92);border:1px solid var(--border);border-radius:18px;box-shadow:0 0 26px var(--glow);backdrop-filter:blur(8px)}
+.modal .m-head h3{color:var(--text)}
+.m-close{border:1px solid var(--border);background:var(--card-bg);color:var(--text)}
+.m-close:hover{background:rgba(0,208,208,.15);color:var(--acc);transform:rotate(90deg)}
+.stat .n{color:var(--acc)}
+.stat .l{color:var(--muted)}
+.ev-row{border-radius:13px}
+.ev-row:hover{transform:translateX(3px);border-color:var(--border-strong);box-shadow:0 0 16px var(--glow-soft)}
+.ev-row .grow b{color:var(--text)}
+.ev-row .sub{color:var(--muted)}
+.ev-row .regs{border-top:1px dashed rgba(0,208,208,.3);background:rgba(0,16,24,.5)}
+.reg-item{border-bottom:1px dashed rgba(0,208,208,.2);color:var(--muted)}
+.ev-swatch{border:1px solid var(--border)}
+.demo-bar{border:1px dashed rgba(0,208,208,.4);background:rgba(0,16,24,.5);color:var(--muted)}
+footer{background:#001018;border-top:1px solid var(--border);color:var(--text)}
+footer h5{color:var(--acc2);text-transform:uppercase;letter-spacing:.08em}
+footer p,footer li{color:var(--muted)}
+.foot-bottom{border-top:1px solid rgba(0,208,208,.25);color:var(--muted)}
+#toast{background:rgba(0,16,24,.92);color:var(--text);border:1px solid var(--border-strong);border-radius:12px;box-shadow:0 0 22px var(--glow)}
+#toast.ok{border-left:8px solid var(--acc2)}
+#toast.bad{border-left:8px solid #ef4444}
+.back{color:var(--text)}
+.back:hover{color:var(--acc)}
+.eyebrow{color:var(--acc)}
+.hero .eyebrow::before{background:var(--acc)}
+.palette i{border-color:var(--border)}
+.palette span{color:var(--muted)}
+.hero p.lead{color:var(--muted)}
+.hero-note{color:var(--muted)}
+.mini-meta{color:var(--muted)}
+.card .desc,.card .meta{color:var(--muted)}
+.card h3{color:var(--text);text-transform:uppercase;letter-spacing:.04em}
+.card .thumb .price{background:rgba(0,16,24,.85);color:var(--acc);border:1px solid var(--border)}
+.section-head h2{color:var(--text)}
+h2.section-title .dot{color:var(--acc2)}
+.skel .s-thumb,.skel .s-l{background:linear-gradient(100deg,rgba(6,16,24,.7) 40%,rgba(23,79,122,.6) 50%,rgba(6,16,24,.7) 60%);background-size:200% 100%}
+::selection{background:var(--acc2);color:#001018}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#app">Saltar al contenido</a>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="mq"></div>
+</div>
+
+<header class="top">
+  <div class="wrap nav">
+    <a class="brand" href="#/">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+        <path d="M17 3c5 7 9 11 9 17a9 9 0 1 1-18 0c0-6 4-10 9-17z" fill="#00D0D0" stroke="#001018" stroke-width="2.4"/>
+        <circle cx="13.5" cy="21.5" r="2.4" fill="#CCFFFF"/>
+      </svg>
+      <span>Pigmento &amp; Tela<small>atelier textil · desde 6 años</small></span>
+    </a>
+    <nav class="nav-links" aria-label="Navegación principal">
+      <a href="#/" data-nav="home">Cartelera</a>
+      <a href="#/?f=taller" data-nav="taller">Talleres</a>
+      <a href="#/?f=clase" data-nav="clase">Clases</a>
+      <a href="#/personal" data-nav="personal" class="staff-link">Personal</a>
+    </nav>
+  </div>
+</header>
+
+<main id="app" class="wrap"></main>
+
+<footer>
+  <div class="foot-strip" aria-hidden="true"></div>
+  <div class="wrap foot-grid">
+    <div>
+      <h5>Pigmento &amp; Tela</h5>
+      <p>Atelier de pintura textil creativa. Talleres y clases para manos de 6 a 99 años: batik, estampado botánico, serigrafía, tie-dye y más. Todos los materiales con base al agua, sin tóxicos.</p>
+    </div>
+    <div>
+      <h5>Contacto</h5>
+      <ul>
+        <li>📍 Calle del Lino 4, Madrid</li>
+        <li>✉️ hola@pigmentoytela.es</li>
+        <li>📞 +34 600 123 456</li>
+      </ul>
+    </div>
+    <div>
+      <h5>Horario del atelier</h5>
+      <ul>
+        <li>Ma–Vi · 10:00 – 20:00</li>
+        <li>Sá–Do · 10:00 – 14:00</li>
+        <li>Lunes · descansamos pinceles</li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap foot-bottom">
+    <span>© 2025 Pigmento &amp; Tela — hecho con tela, tinta y cariño.</span>
+    <span>Menores de 12 años: acompañamiento de una persona adulta.</span>
+  </div>
+</footer>
+
+<div id="modal-root"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =================== DATOS Y UTILIDADES =================== */
+const LS_EV='pt_events', LS_RG='pt_regs', SS_ST='pt_staff', LS_ERR='pt_force_error';
+const PASS='pincel';
+let events=[], regs=[], failChance=.07, formTouched=false;
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const uid=()=> 'e'+Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hexA=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
+const addDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const fmtDate=s=>new Date(s+'T12:00').toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+const fmtLong=s=>new Date(s+'T12:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+const ageFrom=iso=>{const b=new Date(iso),t=new Date();let a=t.getFullYear()-b.getFullYear();const m=t.getMonth()-b.getMonth();if(m<0||(m===0&&t.getDate()<b.getDate()))a--;return a};
+
+function save(){localStorage.setItem(LS_EV,JSON.stringify(events));localStorage.setItem(LS_RG,JSON.stringify(regs))}
+function load(){
+  try{events=JSON.parse(localStorage.getItem(LS_EV))||[]}catch(e){events=[]}
+  try{regs=JSON.parse(localStorage.getItem(LS_RG))||[]}catch(e){regs=[]}
+  if(!events.length && !localStorage.getItem(LS_EV)) seed();
+}
+function seed(){
+  events=[
+    {id:uid(),tipo:'taller',titulo:'Batik de cera fría',desc:'Dibujamos con cera sobre algodón y teñimos por capas. Cada doblez y cada grieta cuentan una historia distinta: ninguna pieza sale igual.',fecha:addDays(3),hora:'17:30',duracion:'3 h',minAge:12,maxAge:99,plazas:12,inscritos:8,precio:28,lugar:'Taller La Bobina',direccion:'Calle del Lino 4, Madrid',materiales:['Tela de algodón','Cera fría','Pinceles y pinceletas','Tintes al agua','Papel de periódico','Delantal'],patron:'batik',color:'#174F7A'},
+    {id:uid(),tipo:'taller',titulo:'Estampado botánico en familia',desc:'Golpeamos hojas y flores frescas sobre bolsas de tela para imprimir sus formas y pigmentos reales. Perfecto como primer taller: apto desde los 6 años.',fecha:addDays(5),hora:'11:00',duracion:'2 h',minAge:6,maxAge:99,plazas:16,inscritos:13,precio:18,lugar:'Atelier Pigmento & Tela',direccion:'Calle del Lino 4, Madrid',materiales:['Bolsa de tela de algodón','Hojas y flores frescas','Mazos de madera','Papel absorbente','Delantal'],patron:'hojas',color:'#26C626'},
+    {id:uid(),tipo:'clase',titulo:'Acuarela textil: iniciación',desc:'Curso de 4 sesiones para dominar degradados, aguadas y reservas de sal sobre tela. Al terminar, cada alumna/o se lleva su propia camiseta pintada.',fecha:addDays(8),hora:'18:00',duracion:'4 sesiones · 1,5 h',minAge:14,maxAge:99,plazas:10,inscritos:6,precio:55,lugar:'Atelier Pigmento & Tela',direccion:'Calle del Lino 4, Madrid',materiales:['Camiseta blanca','Acuarelas textiles','Pinceles redondos','Bastidor','Sal gruesa','Fijador térmico'],patron:'ondas',color:'#00D0D0'},
+    {id:uid(),tipo:'taller',titulo:'Tie-dye de colores',desc:'Gomitas, giros y tintes: la técnica más divertida para teñir en espiral, rayos o mandalas. Los peques deben venir con una persona adulta.',fecha:addDays(10),hora:'12:00',duracion:'1 h 30 min',minAge:6,maxAge:12,plazas:20,inscritos:20,precio:15,lugar:'Patio del Centro Cívico Sur',direccion:'Avda. de los Telares 21, Madrid',materiales:['Camiseta blanca','Gomas elásticas','Tintes de colores','Guantes','Bolsas con cierre'],patron:'topos',color:'#26C626'},
+    {id:uid(),tipo:'clase',titulo:'Serigrafía casera paso a paso',desc:'Tres sesiones para montar tu propio marco, revelar un diseño sencillo y estampar pósters y tote bags como un estudio de verdad.',fecha:addDays(14),hora:'17:00',duracion:'3 sesiones · 2 h',minAge:10,maxAge:99,plazas:8,inscritos:3,precio:46,lugar:'Taller La Bobina',direccion:'Calle del Lino 4, Madrid',materiales:['Marco con malla','Rasqueta','Tinta al agua','Papel kraft','Cinta de carrocero','Camisetas para estampar'],patron:'rayas',color:'#336666'},
+    {id:uid(),tipo:'taller',titulo:'Sellos tallados a mano',desc:'Tallamos goma, entintamos y repetimos patrones sobre bolsas tote. Un taller de ritmo tranquilo, ideal para quien disfruta del detalle.',fecha:addDays(17),hora:'11:30',duracion:'2 h',minAge:8,maxAge:99,plazas:14,inscritos:5,precio:20,lugar:'Atelier Pigmento & Tela',direccion:'Calle del Lino 4, Madrid',materiales:['Goma de tallar','Gubias de punta redonda','Tinta textil','Rodillo','Bolsa tote'],patron:'sellos',color:'#00D0D0'}
+  ];
+  save();
+}
+
+/* =================== PATRONES DE TELA (CSS) =================== */
+function patternCSS(e){
+  const c=e.color||'#00D0D0', t=hexA(c,.16), m=hexA(c,.55);
+  const base={backgroundColor:hexA(c,.08)};
+  const map={
+    rayas:{backgroundImage:`repeating-linear-gradient(135deg,${m} 0 12px,transparent 12px 30px),repeating-linear-gradient(45deg,${t} 0 12px,transparent 12px 30px)`},
+    topos:{backgroundImage:`radial-gradient(${m} 7px,transparent 8px),radial-gradient(${t} 5px,transparent 6px)`,backgroundSize:'46px 46px,46px 46px',backgroundPosition:'0 0,23px 23px'},
+    batik:{backgroundImage:`radial-gradient(circle at 25% 30%,${m} 0 18%,transparent 20%),radial-gradient(circle at 75% 65%,${t} 0 22%,transparent 24%),radial-gradient(circle at 60% 15%,${t} 0 12%,transparent 14%),repeating-linear-gradient(63deg,${hexA(c,.25)} 0 2px,transparent 2px 22px),repeating-linear-gradient(-20deg,${hexA(c,.18)} 0 2px,transparent 2px 30px)`},
+    hojas:{backgroundImage:`radial-gradient(ellipse 26px 12px at 20% 30%,${m} 40%,transparent 42%),radial-gradient(ellipse 22px 10px at 60% 60%,${hexA(c,.7)} 40%,transparent 42%),radial-gradient(ellipse 30px 13px at 85% 25%,${t} 40%,transparent 42%),radial-gradient(ellipse 20px 9px at 40% 85%,${m} 40%,transparent 42%)`,backgroundColor:hexA(c,.06)},
+    ondas:{backgroundImage:`repeating-radial-gradient(circle at 50% 120%,${m} 0 5px,transparent 5px 26px),repeating-radial-gradient(circle at 50% -20%,${t} 0 5px,transparent 5px 26px)`},
+    sellos:{backgroundImage:`repeating-linear-gradient(0deg,transparent 0 26px,${t} 26px 30px),repeating-linear-gradient(90deg,transparent 0 26px,${t} 26px 30px),radial-gradient(${m} 8px,transparent 9px)`,backgroundSize:'auto,auto,56px 56px'}
+  };
+  const p=map[e.patron]||map.rayas;
+  return Object.assign(base,p);
+}
+function applyPattern(el,e){Object.assign(el.style,patternCSS(e))}
+
+/* =================== ROUTER =================== */
+function route(){
+  closeModal(true);
+  const raw=(location.hash||'#/').slice(1);
+  const [path,qs]=raw.split('?');
+  const q=new URLSearchParams(qs||'');
+  const seg=path.split('/').filter(Boolean);
+  $$('.nav-links a').forEach(a=>a.classList.remove('active'));
+  if(seg[0]==='taller'&&seg[1]) {renderDetail(seg[1]);}
+  else if(seg[0]==='personal') {markNav('personal');renderStaff();}
+  else {markNav(q.get('f')||'home');renderHome(q.get('f')||'todos');}
+  window.scrollTo({top:0});
+}
+function markNav(k){const a=$(`[data-nav="${k}"]`);if(a)a.classList.add('active')}
+window.addEventListener('hashchange',route);
+
+/* =================== INICIO / CARTELERA =================== */
+let homeLoaded=false;
+function renderHome(filter){
+  const app=$('#app');
+  const list=events.filter(e=>filter==='todos'||e.tipo===filter).slice().sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const featured=events.filter(e=>e.inscritos<e.plazas).sort((a,b)=>a.fecha.localeCompare(b.fecha))[0];
+  const count=t=>events.filter(e=>e.tipo===t).length;
+
+  app.innerHTML=`
+  <section class="hero">
+    <div>
+      <span class="eyebrow">Atelier de pintura sobre tela</span>
+      <h1 class="display">Tinta, tela y <span class="stroke">manos manchadas<svg viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M3 10 Q 50 2 100 8 T 197 6" fill="none" stroke="#26C626" stroke-width="5" stroke-linecap="round"/></svg></span></h1>
+      <p class="lead">Talleres y clases de pintura textil para todas las edades, desde los 6 años. Telas, tintes al agua y muchas ganas de mancharse: nosotros ponemos el resto.</p>
+      <div class="palette" aria-hidden="true">
+        <i style="background:#00D0D0"></i><i style="background:#26C626"></i><i style="background:#174F7A"></i><i style="background:#26C626"></i><i style="background:#336666"></i>
+        <span>pigmentos de temporada</span>
+      </div>
+      <div class="hero-cta">
+        <a class="btn" href="#cartelera">Ver cartelera ↓</a>
+        <button class="btn ghost" onclick="openForm()">Inscribirme</button>
+      </div>
+      <div class="hero-note">
+        <b>✂️ Materiales incluidos</b><b>👧 Desde 6 años</b><b>💧 Tintes sin tóxicos</b>
+      </div>
+    </div>
+    ${featured?`
+    <article class="featured reveal">
+      <div class="thumb" data-pat="${featured.id}"><span class="tag ${featured.tipo}">${featured.tipo}</span></div>
+      <div class="body">
+        <span class="tag" style="align-self:flex-start;background:var(--tint)">Próximo evento</span>
+        <h3>${esc(featured.titulo)}</h3>
+        <div class="mini-meta">
+          <span>⏱ ${esc(featured.duracion)}</span><span>📅 ${fmtDate(featured.fecha)} · ${esc(featured.hora)}</span><span>📍 ${esc(featured.lugar)}</span>
+        </div>
+        <a class="btn gold small" href="#/taller/${featured.id}">Ver detalle y reservar →</a>
+      </div>
+    </article>`:''}
+  </section>
+
+  <section class="section" id="cartelera">
+    <div class="section-head">
+      <h2 class="section-title">Cartelera de talleres y clases<span class="dot">.</span></h2>
+      <span id="count-lbl" style="font-weight:700;color:var(--ink-soft);font-size:.88rem"></span>
+    </div>
+    <div class="filters" role="tablist" aria-label="Filtrar eventos">
+      <button class="chip ${filter==='todos'?'on':''}" onclick="setFilter('todos')">Todo (${events.length})</button>
+      <button class="chip ${filter==='taller'?'on':''}" onclick="setFilter('taller')">Talleres (${count('taller')})</button>
+      <button class="chip ${filter==='clase'?'on':''}" onclick="setFilter('clase')">Clases (${count('clase')})</button>
+    </div>
+    <div id="grid" class="grid" aria-live="polite"></div>
+  </section>`;
+
+  const grid=$('#grid');
+  if(!homeLoaded){
+    skeletonGrid(grid);
+    setTimeout(()=>{
+      failChance*=0.35;
+      if(Math.random()<failChance){ errorState(grid,()=>renderHome(filter,true)); }
+      else { homeLoaded=true; paintList(grid,list); }
+    },800);
+  } else paintList(grid,list);
+
+  $$('[data-pat]').forEach(el=>{const e=events.find(x=>x.id===el.dataset.pat);if(e)applyPattern(el,e)});
+  reveal();
+}
+function setFilter(f){location.hash=f==='todos'?'/':'/?f='+f}
+
+function skeletonGrid(grid){
+  grid.innerHTML=Array.from({length:3},()=>`
+    <div class="skel" aria-hidden="true"><div class="s-thumb"></div>
+      <div class="s-body"><div class="s-l w60"></div><div class="s-l w90"></div><div class="s-l w40"></div></div>
+    </div>`).join('');
+  $('#count-lbl').textContent='Cargando…';
+}
+function errorState(box,retry){
+  box.innerHTML=`<div class="state-box err" style="grid-column:1/-1">
+    <div class="big">🧵💥</div>
+    <h3>Se nos ha enredado el hilo…</h3>
+    <p>No pudimos cargar los talleres y clases. Comprueba tu conexión e inténtalo de nuevo.</p>
+    <button class="btn" id="retry-btn">↻ Reintentar</button>
+  </div>`;
+  $('#retry-btn').onclick=retry;
+  toast('Error de carga. Inténtalo de nuevo.','bad');
+}
+function paintList(grid,list){
+  if(!list.length){
+    grid.innerHTML=`<div class="state-box" style="grid-column:1/-1">
+      <div class="big">🪡</div>
+      <h3>Aquí todavía no hay nada cosido</h3>
+      <p>No hay ${events.length?'eventos de este tipo':'talleres ni clases activos'} en este momento. El equipo está preparando nuevos colores: vuelve muy pronto.</p>
+      ${events.length?'<button class="btn ghost" onclick="setFilter(\'todos\')">Ver todo</button>':'<a class="btn" href="#/personal">Acceso del personal</a>'}
+    </div>`;
+    $('#count-lbl').textContent='0 eventos';
+    return;
+  }
+  $('#count-lbl').textContent=list.length+(list.length===1?' evento':' eventos');
+  grid.innerHTML=list.map((e,i)=>{
+    const full=e.inscritos>=e.plazas;
+    return `<article class="card reveal" style="transition-delay:${i*60}ms">
+      <div class="thumb" data-c="${e.id}">
+        <span class="tag ${e.tipo}">${e.tipo}</span><span class="price">${e.precio?e.precio+' €':'Gratis'}</span>
+      </div>
+      <div class="body">
+        <h3>${esc(e.titulo)}</h3>
+        <p class="desc">${esc(e.desc).slice(0,110)}…</p>
+        <div class="meta">
+          <span>⏱ ${esc(e.duracion)}</span><span>📅 ${fmtDate(e.fecha)}</span>
+          <span>👥 ${e.minAge}${e.maxAge&&e.maxAge<99?'–'+e.maxAge:'+'} años</span>
+        </div>
+        <div class="cap ${e.inscritos/e.plazas>=.8?'hot':''}">
+          <span class="bar" aria-hidden="true"><i style="width:${Math.min(100,e.inscritos/e.plazas*100)}%"></i></span>
+          <span>${e.inscritos}/${e.plazas} plazas</span>
+        </div>
+        <div class="actions">
+          <a class="btn small ghost" href="#/taller/${e.id}">Ver detalle</a>
+          ${full?'<span class="full-pill">Completo</span>':`<button class="btn small" onclick="openForm('${e.id}')">Reservar</button>`}
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+  $$('.thumb[data-c]',grid).forEach(el=>{const e=events.find(x=>x.id===el.dataset.c);if(e)applyPattern(el,e)});
+  reveal();
+}
+
+/* =================== DETALLE =================== */
+function renderDetail(id){
+  const app=$('#app');
+  const e=events.find(x=>x.id===id);
+  if(!e){app.innerHTML=`<div class="state-box err" style="margin-top:40px"><div class="big">🔍</div><h3>Evento no encontrado</h3><p>Puede que se haya retirado de la cartelera.</p><a class="btn" href="#/">← Volver a la cartelera</a></div>`;return}
+  const full=e.inscritos>=e.plazas;
+  const pct=Math.min(100,e.inscritos/e.plazas*100);
+  app.innerHTML=`
+  <a class="back" href="#/">← Volver a la cartelera</a>
+  <div class="detail-grid">
+    <div>
+      <div class="banner" id="banner"><span class="tag ${e.tipo}">${e.tipo}</span></div>
+      <article class="detail-main reveal in">
+        <h1>${esc(e.titulo)}</h1>
+        <p>${esc(e.desc)}</p>
+        <div class="info-block">
+          <h4>🎒 Materiales incluidos</h4>
+          <div class="mat-grid">${e.materiales.map(m=>`<span class="mat"><i></i>${esc(m)}</span>`).join('')}</div>
+        </div>
+        <div class="info-block">
+          <h4>📍 Localización</h4>
+          <div class="loc-card">
+            <div class="loc-map" aria-hidden="true"></div>
+            <div class="loc-info"><b>${esc(e.lugar)}</b><span>${esc(e.direccion)}</span><span>Llegada recomendada 10 min antes 🕐</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <aside class="aside-sticky">
+      <div class="ticket reveal in">
+        <div class="t-head"><span style="font-weight:800;letter-spacing:.1em;font-size:.8rem">RESERVA</span><span class="p">${e.precio?e.precio+' €':'Gratis'}</span></div>
+        <div class="t-body">
+          <div class="t-row"><span>📅 Fecha</span><b>${fmtLong(e.fecha)}</b></div>
+          <div class="t-row"><span>🕐 Hora</span><b>${esc(e.hora)}</b></div>
+          <div class="t-row"><span>⏱ Duración</span><b>${esc(e.duracion)}</b></div>
+          <div class="t-row"><span>👥 Edades</span><b>${e.minAge}${e.maxAge&&e.maxAge<99?' a '+e.maxAge:'+'} años</b></div>
+          <div class="cap ${pct>=80?'hot':''}">
+            <span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
+            <span>${e.inscritos}/${e.plazas}</span>
+          </div>
+          ${full
+            ?`<button class="btn block" disabled>Plazas agotadas</button>`
+            :`<button class="btn block" onclick="openForm('${e.id}')">🖌 Reservar plaza</button>`}
+          <p class="note">Cancelación gratuita hasta 48 h antes. Materiales incluidos.</p>
+        </div>
+      </div>
+    </aside>
+  </div>`;
+  applyPattern($('#banner'),e);
+  reveal();
+}
+
+/* =================== MODAL =================== */
+function openModal(html){
+  $('#modal-root').innerHTML=`<div class="modal-bg" id="mbg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  $('#mbg').addEventListener('click',ev=>{if(ev.target.id==='mbg')closeModal()});
+  document.addEventListener('keydown',escClose);
+  const f=$('.modal input, .modal select, .modal textarea');if(f)f.focus();
+}
+function escClose(ev){if(ev.key==='Escape')closeModal()}
+function closeModal(silent){
+  $('#modal-root').innerHTML='';
+  document.removeEventListener('keydown',escClose);
+}
+
+/* =================== INSCRIPCIÓN =================== */
+function openForm(evId){
+  if(!events.length){toast('Ahora mismo no hay eventos abiertos a inscripción.','bad');return}
+  const opts=events.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(e=>{
+    const full=e.inscritos>=e.plazas;
+    return `<option value="${e.id}" ${full?'disabled':''} ${e.id===evId?'selected':''}>${esc(e.titulo)} · ${fmtDate(e.fecha)}${full?' — COMPLETO':''}</option>`;
+  }).join('');
+  openModal(`
+    <div class="m-head"><h3>Formulario de inscripción</h3><button class="m-close" onclick="closeModal()" aria-label="Cerrar">✕</button></div>
+    <div class="m-body">
+      <div id="f-alert"></div>
+      <form id="reg-form" novalidate>
+        <div class="field"><label for="r-ev">Taller o clase</label>
+          <select id="r-ev" required>${opts}</select>
+        </div>
+        <div class="field"><label for="r-nombre">Nombre y apellidos</label>
+          <input id="r-nombre" type="text" autocomplete="name" placeholder="Ej.: Ana Lino Pérez">
+          <span class="err-msg">Escribe tu nombre completo (mín. 3 letras).</span>
+        </div>
+        <div class="f-2">
+          <div class="field"><label for="r-email">Correo electrónico</label>
+            <input id="r-email" type="email" autocomplete="email" placeholder="tu@correo.es">
+            <span class="err-msg">Introduce un correo válido.</span>
+          </div>
+          <div class="field"><label for="r-tel">Teléfono <small>(opcional)</small></label>
+            <input id="r-tel" type="tel" autocomplete="tel" placeholder="600 000 000">
+            <span class="err-msg">Formato de teléfono no válido.</span>
+          </div>
+        </div>
+        <div class="field"><label for="r-nac">Fecha de nacimiento <small>— debe tener al menos 6 años</small></label>
+          <input id="r-nac" type="date">
+          <span class="err-msg" id="r-nac-msg">Edad no válida.</span>
+        </div>
+        <div class="field"><label class="check"><input type="checkbox" id="r-ok">
+          <span>Acepto las normas del atelier y autorizo el uso de materiales fotográficos sin identificar.</span></label>
+          <span class="err-msg">Debes aceptar para continuar.</span>
+        </div>
+        <button class="btn block" type="submit" id="r-send">Enviar inscripción</button>
+      </form>
+    </div>`);
+  $('#reg-form').addEventListener('submit',submitReg);
+}
+
+function setInvalid(id,bad,msg){
+  const f=$('#'+id).closest('.field');
+  f.classList.toggle('invalid',bad);
+  if(msg&&bad)$('#'+id+'-msg')&&($('#'+id+'-msg').textContent=msg);
+  return bad;
+}
+function submitReg(ev){
+  ev.preventDefault();
+  const evSel=$('#r-ev').value, e=events.find(x=>x.id===evSel);
+  const nombre=$('#r-nombre').value.trim(), email=$('#r-email').value.trim(),
+        tel=$('#r-tel').value.trim(), nac=$('#r-nac').value, ok=$('#r-ok').checked;
+  let bad=false;
+  bad|=setInvalid('r-nombre',nombre.length<3);
+  bad|=setInvalid('r-email',!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email));
+  bad|=setInvalid('r-tel',tel&&!/^[+\d][\d\s]{7,}$/.test(tel));
+  const edad=nac?ageFrom(nac):NaN;
+  let nacBad=true,msg='Indica la fecha de nacimiento.';
+  if(nac){
+    if(isNaN(edad)||edad<6){msg='La edad mínima para participar es de 6 años.'}
+    else if(edad<e.minAge){msg=`Este evento es a partir de ${e.minAge} años.`}
+    else if(e.maxAge&&e.maxAge<99&&edad>e.maxAge){msg=`Este evento es hasta ${e.maxAge} años.`}
+    else nacBad=false;
+  }
+  bad|=setInvalid('r-nac',nacBad,msg);
+  bad|=setInvalid('r-ok',!ok);
+  if(bad){toast('Revisa los campos marcados.','bad');return}
+  if(regs.some(r=>r.eventId===e.id&&r.email.toLowerCase()===email.toLowerCase())){
+    $('#f-alert').innerHTML=`<div class="form-alert">⚠️ Este correo ya está inscrito en «${esc(e.titulo)}».</div>`;return;
+  }
+  if(e.inscritos>=e.plazas){
+    $('#f-alert').innerHTML=`<div class="form-alert">😢 Las plazas de este evento se acaban de agotar.</div>`;return;
+  }
+  const btn=$('#r-send');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Enviando…';
+  $('#f-alert').innerHTML='';
+  setTimeout(()=>{
+    if(Math.random()<failChance){
+      btn.disabled=false;btn.textContent='Enviar inscripción';
+      $('#f-alert').innerHTML=`<div class="form-alert">⚠️ Error de conexión al enviar. Tus datos siguen aquí: pulsa de nuevo.</div>`;
+      toast('Error al registrar. Inténtalo otra vez.','bad');
+      return;
+    }
+    e.inscritos++;
+    const code='PT-'+Math.random().toString(36).slice(2,6).toUpperCase();
+    regs.push({id:uid(),eventId:e.id,nombre,email,tel,edad,code,fecha:new Date().toISOString()});
+    save();
+    $('#modal-root .modal').innerHTML=`
+      <div class="m-head"><h3>¡Hecho!</h3><button class="m-close" onclick="closeModal()" aria-label="Cerrar">✕</button></div>
+      <div class="m-body">
+        <div class="success-stamp">
+          <span class="stamp">¡PLAZA RESERVADA!</span>
+          <p>Guarda tu código de confirmación. Te esperamos con los pinceles listos, <b>${esc(nombre.split(' ')[0])}</b>.</p>
+          <div class="code-box">${code}</div>
+          <div class="sum-list">
+            <div><span>Evento</span><b>${esc(e.titulo)}</b></div>
+            <div><span>Fecha</span><b>${fmtLong(e.fecha)} · ${esc(e.hora)}</b></div>
+            <div><span>Duración</span><b>${esc(e.duracion)}</b></div>
+            <div><span>Lugar</span><b>${esc(e.lugar)}</b></div>
+            <div><span>Participante</span><b>${esc(nombre)} (${edad} años)</b></div>
+            <div><span>Importe</span><b>${e.precio?e.precio+' € (en el atelier)':'Gratuito'}</b></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" onclick="closeModal();openForm()">Inscribir a otra persona</button>
+            <button class="btn ghost" onclick="closeModal()">Volver</button>
+          </div>
+        </div>
+      </div>`;
+    toast('✔ Registro completado con éxito.','ok');
+  },900);
+}
+
+/* =================== STAFF =================== */
+function renderStaff(){
+  const app=$('#app');
+  const authed=sessionStorage.getItem(SS_ST)==='1';
+  if(!authed){
+    app.innerHTML=`
+    <div class="staff-login reveal in">
+      <div class="ticket">
+        <div class="t-head"><span style="font-weight:800;letter-spacing:.1em;font-size:.8rem">ZONA DE PERSONAL</span><span style="font-size:1.3rem">🔑</span></div>
+        <div class="t-body">
+          <p style="font-size:.9rem;color:var(--ink-soft)">Acceso reservado al equipo del atelier para crear y gestionar talleres y clases.</p>
+          <div class="field"><label for="pw">Contraseña</label>
+            <input type="password" id="pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')staffLogin()">
+            <span class="err-msg" id="pw-err">Contraseña incorrecta.</span>
+          </div>
+          <button class="btn block" onclick="staffLogin()">Entrar</button>
+          <p class="note">Demo: contraseña <b>pincel</b></p>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
+  const totalIn=events.reduce((a,e)=>a+e.inscritos,0), totalPl=events.reduce((a,e)=>a+e.plazas,0);
+  app.innerHTML=`
+  <section class="section" style="padding-top:34px">
+    <div class="section-head">
+      <h2 class="section-title">Gestión del atelier<span class="dot">.</span></h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" onclick="eventForm()">＋ Nuevo evento</button>
+        <button class="btn ghost small" onclick="staffLogout()">Salir</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n">${events.length}</div><div class="l">Eventos activos</div></div>
+      <div class="stat"><div class="n">${totalIn}</div><div class="l">Inscripciones</div></div>
+      <div class="stat"><div class="n">${totalPl?Math.round(totalIn/totalPl*100):0}%</div><div class="l">Ocupación media</div></div>
+    </div>
+    <div id="ev-list" aria-live="polite"></div>
+    <div class="demo-bar">🧪 <span><b>Modo demo:</b> simula un fallo de red en la carga de la cartelera.</span>
+      <button class="btn small ${localStorage.getItem(LS_ERR)==='1'?'indigo':'ghost'}" onclick="toggleForceErr()">${localStorage.getItem(LS_ERR)==='1'?'Error activado — quitar':'Simular error'}</button>
+    </div>
+  </section>`;
+  paintStaffList();
+}
+function paintStaffList(){
+  const box=$('#ev-list');
+  if(!events.length){
+    box.innerHTML=`<div class="state-box"><div class="big">🗂</div><h3>Sin eventos creados</h3><p>Crea el primer taller o clase con el botón «Nuevo evento».</p><button class="btn" onclick="eventForm()">＋ Crear evento</button></div>`;
+    return;
+  }
+  box.innerHTML=events.map(e=>{
+    const eRegs=regs.filter(r=>r.eventId===e.id);
+    return `<article class="ev-row" id="row-${e.id}">
+      <div class="row-top">
+        <div class="ev-swatch" data-c="${e.id}"></div>
+        <div class="grow">
+          <b>${esc(e.titulo)}</b> <span class="tag ${e.tipo}" style="font-size:.6rem">${e.tipo}</span>
+          <div class="sub">📅 ${fmtDate(e.fecha)} · ${esc(e.hora)} · ⏱ ${esc(e.duracion)} · 📍 ${esc(e.lugar)}</div>
+        </div>
+        <div class="cap ${e.inscritos/e.plazas>=.8?'hot':''}" style="width:150px">
+          <span class="bar"><i style="width:${Math.min(100,e.inscritos/e.plazas*100)}%"></i></span>
+          <span>${e.inscritos}/${e.plazas}</span>
+        </div>
+        <div class="row-actions">
+          <button class="btn small ghost" onclick="toggleRegs('${e.id}')">👥 Inscritos (${eRegs.length})</button>
+          <button class="btn small gold" onclick="eventForm('${e.id}')">✎ Editar</button>
+          <button class="btn small ghost" onclick="delEvent('${e.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="regs">
+        ${eRegs.length?eRegs.map(r=>`<div class="reg-item"><b>${esc(r.nombre)}</b><span>${r.edad} años · ${esc(r.email)} · cód. ${r.code}</span></div>`).join('')
+        :'<p style="font-size:.85rem;color:var(--ink-soft)">Todavía no hay inscripciones en este evento.</p>'}
+      </div>
+    </article>`;
+  }).join('');
+  $$('#ev-list .ev-swatch').forEach(el=>{const e=events.find(x=>x.id===el.dataset.c);if(e)applyPattern(el,e)});
+}
+function toggleRegs(id){$('#row-'+id).classList.toggle('open')}
+function staffLogin(){
+  const pw=$('#pw');
+  if(pw.value===PASS){sessionStorage.setItem(SS_ST,'1');toast('¡Dentro! Bienvenida/o al atelier.','ok');renderStaff()}
+  else{pw.closest('.field').classList.add('invalid');toast('Contraseña incorrecta.','bad')}
+}
+function staffLogout(){sessionStorage.removeItem(SS_ST);renderStaff();toast('Sesión cerrada.','ok')}
+function toggleForceErr(){
+  const on=localStorage.getItem(LS_ERR)==='1';
+  on?localStorage.removeItem(LS_ERR):localStorage.setItem(LS_ERR,'1');
+  homeLoaded=false;
+  toast(on?'Simulación de error desactivada.':'Error simulado: recarga la cartelera para verlo.','ok');
+  renderStaff();
+}
+function delEvent(id){
+  const e=events.find(x=>x.id===id);
+  if(!confirm(`¿Eliminar «${e.titulo}»? Se borrarán también sus inscripciones.`))return;
+  events=events.filter(x=>x.id!==id);regs=regs.filter(r=>r.eventId!==id);save();
+  paintStaffList();toast('Evento eliminado.','ok');
+}
+
+/* ---- Formulario crear/editar ---- */
+function eventForm(id){
+  const e=events.find(x=>x.id===id)||{tipo:'taller',fecha:addDays(7),hora:'17:00',duracion:'2 h',minAge:6,maxAge:99,plazas:12,precio:18,patron:'rayas',color:'#00D0D0',materiales:[],inscritos:0};
+  const isNew=!id;
+  openModal(`
+    <div class="m-head"><h3>${isNew?'Nuevo evento':'Editar evento'}</h3><button class="m-close" onclick="closeModal()" aria-label="Cerrar">✕</button></div>
+    <div class="m-body">
+      <form id="ev-form" novalidate>
+        <div class="field"><label for="e-titulo">Título</label><input id="e-titulo" value="${esc(e.titulo)}"><span class="err-msg">Obligatorio.</span></div>
+        <div class="f-2">
+          <div class="field"><label for="e-tipo">Tipo</label>
+            <select id="e-tipo"><option value="taller" ${e.tipo==='taller'?'selected':''}>Taller</option><option value="clase" ${e.tipo==='clase'?'selected':''}>Clase</option></select>
+          </div>
+          <div class="field"><label for="e-precio">Precio (€) <small>— 0 = gratis</small></label><input id="e-precio" type="number" min="0" value="${e.precio}"></div>
+        </div>
+        <div class="field"><label for="e-desc">Descripción</label><textarea id="e-desc" rows="3">${esc(e.desc)}</textarea></div>
+        <div class="f-2">
+          <div class="field"><label for="e-fecha">Fecha</label><input id="e-fecha" type="date" value="${e.fecha}"><span class="err-msg">Obligatoria.</span></div>
+          <div class="field"><label for="e-hora">Hora</label><input id="e-hora" type="time" value="${e.hora}"></div>
+        </div>
+        <div class="f-2">
+          <div class="field"><label for="e-dur">Duración <small>(texto)</small></label><input id="e-dur" value="${esc(e.duracion)}" placeholder="Ej.: 2 h 30 min"><span class="err-msg">Obligatoria.</span></div>
+          <div class="field"><label for="e-plazas">Plazas</label><input id="e-plazas" type="number" min="1" value="${e.plazas}"><span class="err-msg">Mínimo 1.</span></div>
+        </div>
+        <div class="f-2">
+          <div class="field"><label for="e-min">Edad mínima <small>(≥ 6)</small></label><input id="e-min" type="number" min="6" max="99" value="${e.minAge}"><span class="err-msg">Entre 6 y 99.</span></div>
+          <div class="field"><label for="e-max">Edad máxima <small>(99 = sin límite)</small></label><input id="e-max" type="number" min="6" max="99" value="${e.maxAge||99}"></div>
+        </div>
+        <div class="f-2">
+          <div class="field"><label for="e-lugar">Localización</label><input id="e-lugar" value="${esc(e.lugar)}"><span class="err-msg">Obligatoria.</span></div>
+          <div class="field"><label for="e-dir">Dirección</label><input id="e-dir" value="${esc(e.direccion)}"></div>
+        </div>
+        <div class="field"><label for="e-mat">Materiales <small>(separados por comas)</small></label>
+          <input id="e-mat" value="${esc(e.materiales.join(', '))}" placeholder="Ej.: tela, pinceles, tintes"><span class="err-msg">Indica al menos un material.</span>
+        </div>
+        <div class="f-2">
+          <div class="field"><label for="e-pat">Patrón visual</label>
+            <select id="e-pat">${['rayas','topos','batik','hojas','ondas','sellos'].map(p=>`<option ${e.patron===p?'selected':''}>${p}</option>`).join('')}</select>
+          </div>
+          <div class="field"><label for="e-col">Color</label><input id="e-col" type="color" value="${e.color}"></div>
+        </div>
+        <button class="btn block" type="submit">${isNew?'Crear evento':'Guardar cambios'}</button>
+      </form>
+    </div>`);
+  $('#ev-form').addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const g=i=>$('#'+i);
+    const mats=g('e-mat').value.split(',').map(s=>s.trim()).filter(Boolean);
+    let bad=false;
+    bad|=setInvalid('e-titulo',!g('e-titulo').value.trim());
+    bad|=setInvalid('e-fecha',!g('e-fecha').value);
+    bad|=setInvalid('e-dur',!g('e-dur').value.trim());
+    bad|=setInvalid('e-plazas',!(+g('e-plazas').value>0));
+    const min=+g('e-min').value;
+    bad|=setInvalid('e-min',!(min>=6&&min<=99));
+    bad|=setInvalid('e-lugar',!g('e-lugar').value.trim());
+    bad|=setInvalid('e-mat',!mats.length);
+    if(bad){toast('Revisa los campos marcados.','bad');return}
+    const data={tipo:g('e-tipo').value,titulo:g('e-titulo').value.trim(),desc:g('e-desc').value.trim()||'Taller de pintura textil creativa.',
+      fecha:g('e-fecha').value,hora:g('e-hora').value||'10:00',duracion:g('e-dur').value.trim(),minAge:min,maxAge:+g('e-max').value||99,
+      plazas:+g('e-plazas').value,precio:Math.max(0,+g('e-precio').value||0),lugar:g('e-lugar').value.trim(),direccion:g('e-dir').value.trim()||'Por confirmar',
+      materiales:mats,patron:g('e-pat').value,color:g('e-col').value};
+    if(isNew){data.id=uid();data.inscritos=0;events.unshift(data)}
+    else{Object.assign(events.find(x=>x.id===id),data)}
+    save();closeModal();homeLoaded=true;paintStaffList();
+    toast(isNew?'✔ Evento creado.':'✔ Evento actualizado.','ok');
+  });
+}
+
+/* =================== EXTRAS =================== */
+function toast(msg,type){
+  const t=$('#toast');t.textContent=msg;t.className='show '+(type||'');
+  clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),3400);
+}
+let obs;
+function reveal(){
+  if(obs)obs.disconnect();
+  obs=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');obs.unobserve(x.target)}}),{threshold:.12});
+  $$('.reveal').forEach(el=>obs.observe(el));
+}
+
+/* Marquesina */
+(function(){
+  const items='batik <em>✦</em> estampado botánico <em>✦</em> serigrafía <em>✦</em> tie-dye <em>✦</em> acuarela textil <em>✦</em> sellos tallados <em>✦</em> desde 6 años <em>✦</em> materiales incluidos <em>✦</em> ';
+  $('#mq').innerHTML=('<span>'+items+'</span>').repeat(4);
+})();
+
+/* Error simulado persistente */
+window.addEventListener('load',()=>{
+  if(localStorage.getItem(LS_ERR)==='1'){failChance=1.1;homeLoaded=false}
+});
+
+/* =================== ARRANQUE =================== */
+load();
+route();
+</script>
+</body>
+</html>
