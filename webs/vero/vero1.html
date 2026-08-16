@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trazo &amp; Tela · Pintura textil creativa</title>
+<meta name="description" content="Talleres y clases de pintura textil creativa para peques desde 6 años, jóvenes, familias y adultos. Reserva tu plaza y aprende a pintar tela.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+<style>
+:root{
+ --paper:#062f43; --paper2:#174F7A; --ink:#eaffff; --ink2:#99CCCC; --mute:#669999;
+ --mag:#00D0D0; --mag-d:#00b0b0; --sun:#26C626; --sun-d:#1fa81f;
+ --teal:#00D0D0; --teal-d:#00b0b0; --cobalt:#26C626; --cobalt-d:#1fa81f;
+ --green:#26C626; --green-d:#1fa81f; --coral-d:#d9480f;
+ --disp:'Electrolize',system-ui,sans-serif; --body:'Electrolize',system-ui,sans-serif;
+ --acc:#00D0D0; --acc2:#26C626; --text:#eaffff; --contenedor:#174F7A;
+ --card-bg:rgba(23,79,122,.42); --card-hover:rgba(30,100,150,.55);
+ --border:rgba(0,208,208,.7); --border-strong:#00D0D0;
+ --glow:rgba(0,208,208,.8); --glow-soft:rgba(0,208,208,.4);
+ --font-ui:'Electrolize',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ font-family:var(--body);color:var(--ink);background:#001018;
+ background-image:
+  radial-gradient(ellipse 55% 42% at 12% 6%,rgba(0,208,208,.16),transparent 62%),
+  radial-gradient(ellipse 50% 45% at 88% 94%,rgba(0,208,208,.12),transparent 62%),
+  linear-gradient(180deg,#001018 0%,#062f43 55%,#0E5368 100%),
+  repeating-linear-gradient(0deg,rgba(0,208,208,.045)0 1px,transparent 1px 46px),
+  repeating-linear-gradient(90deg,rgba(0,208,208,.045)0 1px,transparent 1px 46px);
+ background-attachment:fixed;
+ font-size:16px; line-height:1.5;
+}
+section{scroll-margin-top:84px}
+img,svg{display:block;max-width:100%}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic-f{fill:currentColor;stroke:none}
+.skip{position:absolute;left:-999px;top:0;background:var(--sun);color:var(--ink);font-weight:700;padding:.6rem 1rem;z-index:300;border:2px solid var(--ink)}
+.skip:focus{left:12px;top:12px}
+:focus-visible{outline:3px solid var(--mag);outline-offset:2px}
+
+/* ===== TEXTILES (patrones CSS) ===== */
+.pt{border:2px solid var(--ink)}
+.p-shibori{background-color:#0E5368;background-image:
+  radial-gradient(circle, rgba(255,255,255,0) 0 9px, rgba(255,255,255,.95) 9px 12px, rgba(255,255,255,0) 12px),
+  radial-gradient(circle at 0 0, rgba(255,255,255,0) 0 6px, rgba(255,255,255,.55) 6px 8px, rgba(255,255,255,0) 8px);
+  background-size:64px 64px,64px 64px;background-position:0 0,32px 32px}
+.p-espiral{background:repeating-radial-gradient(circle at 50% 50%, #00D0D0 0 12px, #26C626 12px 22px, #174F7A 22px 32px, #CCFFFF 32px 37px)}
+.p-lunar{background-color:#062f43;background-image:
+  radial-gradient(circle, #00D0D0 0 7px, transparent 8px),
+  radial-gradient(circle, #174F7A 0 4px, transparent 5px);
+  background-size:38px 38px,38px 38px;background-position:0 0,19px 19px}
+.p-rayas{background:repeating-linear-gradient(45deg,#00D0D0 0 13px,#062f43 13px 26px)}
+.p-hojas{background-color:#062f43;background-image:
+  radial-gradient(ellipse 30px 11px at 25% 30%, #26C626 60%, transparent 61%),
+  radial-gradient(ellipse 26px 9px at 70% 70%, #1fa81f 60%, transparent 61%);
+  background-size:70px 70px}
+.p-acuarela{background-color:#062f43;background-image:
+  radial-gradient(circle at 22% 25%, rgba(0,208,208,.75) 0 18%, transparent 45%),
+  radial-gradient(circle at 78% 30%, rgba(38,198,38,.7) 0 16%, transparent 44%),
+  radial-gradient(circle at 30% 80%, rgba(0,208,208,.8) 0 17%, transparent 45%),
+  radial-gradient(circle at 75% 78%, rgba(38,198,38,.7) 0 15%, transparent 42%)}
+.p-sol{background-color:#26C626;background-image:
+  radial-gradient(circle at 50% 55%, #CCFFFF 0 18%, transparent 19%),
+  repeating-radial-gradient(circle at 50% 55%, transparent 0 26px, rgba(255,255,255,.5) 26px 30px)}
+.p-cuadros{background-color:#0E5368;background-image:
+  linear-gradient(rgba(0,208,208,.5) 50%, transparent 50%),
+  linear-gradient(90deg, rgba(0,208,208,.5) 50%, transparent 50%);
+  background-size:28px 28px}
+
+/* ===== CABECERA ===== */
+.top{position:sticky;top:0;z-index:80;background:var(--ink);color:var(--paper);border-bottom:4px solid var(--sun)}
+.top-in{max-width:1180px;margin:auto;display:flex;align-items:center;gap:1rem;padding:.65rem 1.2rem}
+.logo{display:flex;align-items:center;gap:.55rem;font-family:var(--disp);font-weight:800;font-size:1.25rem;text-decoration:none;color:var(--paper);letter-spacing:-.01em}
+.logo small{font-size:.6rem;display:block;font-weight:600;letter-spacing:.22em;color:var(--sun);text-transform:uppercase}
+.nav-links{display:flex;gap:1.3rem;margin-left:auto;align-items:center;list-style:none}
+.nav-links a{color:var(--paper);text-decoration:none;font-weight:600;font-size:.94rem;padding:.25rem 0;border-bottom:2px dashed transparent;transition:border-color .2s}
+.nav-links a:hover{border-bottom-color:var(--sun)}
+.nav-links .mini{display:inline-flex;align-items:center;gap:.35rem;border:2px solid var(--sun);padding:.3rem .7rem;font-size:.82rem;font-weight:700}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-family:var(--disp);font-weight:700;
+  border:2px solid var(--ink);background:var(--paper2);color:var(--ink);padding:.75rem 1.35rem;text-decoration:none;
+  box-shadow:4px 4px 0 var(--ink);transition:transform .15s,box-shadow .15s,background .2s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+.btn-mag{background:var(--mag);color:#fff}
+.btn-mag:hover{background:var(--mag-d)}
+.btn-sun{background:var(--sun)}
+.btn-ghost{background:transparent}
+.btn-sm{padding:.45rem .85rem;font-size:.9rem;box-shadow:3px 3px 0 var(--ink)}
+.btn[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none;transform:none}
+.burger{display:none;margin-left:auto;background:none;border:2px solid var(--paper);color:var(--paper);padding:.4rem .6rem;font-weight:700}
+@media(max-width:920px){
+  .burger{display:block}
+  .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:var(--ink);flex-direction:column;align-items:flex-start;padding:1.2rem;border-bottom:4px solid var(--sun);gap:1rem}
+  .top.open .nav-links{display:flex}
+}
+
+/* ===== HERO ===== */
+.hero{max-width:1180px;margin:auto;padding:3.2rem 1.2rem 4rem;display:grid;grid-template-columns:1.05fr .95fr;gap:2.5rem;align-items:center}
+.kicker{display:inline-flex;align-items:center;gap:.5rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:.75rem;color:var(--mag-d);border:2px dashed var(--mag-d);padding:.35rem .8rem;transform:rotate(-1.5deg);background:var(--paper2)}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(2.5rem,6vw,4.4rem);line-height:1.03;letter-spacing:-.02em;margin:1.1rem 0 1rem}
+.hl{background:linear-gradient(transparent 58%, var(--sun) 58% 94%, transparent 94%);padding:0 .12em}
+.lead{font-size:1.13rem;max-width:33rem;color:var(--ink2)}
+.hero-cta{display:flex;gap:.9rem;flex-wrap:wrap;margin:1.7rem 0 2.3rem}
+.stats{display:flex;gap:2.2rem;flex-wrap:wrap}
+.stat b{font-family:var(--disp);font-size:2rem;display:block;line-height:1;color:var(--ink)}
+.stat span{font-size:.84rem;color:var(--mute);font-weight:600}
+.board{position:relative;min-height:440px}
+.fab{position:absolute;border:2px solid var(--ink);box-shadow:10px 10px 0 rgba(0,0,0,.14);animation:bob 7s ease-in-out infinite alternate}
+.fab1{width:min(320px,68%);aspect-ratio:1;left:6%;top:6%;rotate:-4deg}
+.fab2{width:200px;aspect-ratio:1;right:2%;top:0;rotate:5deg;animation-delay:.9s}
+.fab3{width:160px;aspect-ratio:1;right:12%;bottom:4%;rotate:-7deg;animation-delay:1.6s}
+.fab4{width:110px;aspect-ratio:1;left:0;bottom:16%;rotate:8deg;animation-delay:.4s}
+@keyframes bob{to{translate:0 -12px}}
+.pin{position:absolute;top:-10px;left:50%;translate:-50% 0;width:16px;height:16px;border-radius:50%;background:var(--sun);border:2px solid var(--ink);z-index:2}
+.badge-spin{position:absolute;left:-10px;bottom:-4%;width:126px;height:126px;animation:spin 20s linear infinite;z-index:3}
+@keyframes spin{to{rotate:360deg}}
+@media(max-width:920px){.hero{grid-template-columns:1fr;padding-top:2.4rem}.board{min-height:380px;max-width:480px}}
+
+/* ===== MARQUESINA ===== */
+.marquee{background:var(--sun);border-block:3px solid var(--ink);overflow:hidden;padding:.65rem 0}
+.mq-track{display:flex;gap:2.6rem;width:max-content;animation:mq 30s linear infinite;font-family:var(--disp);font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:1rem;white-space:nowrap}
+.marquee:hover .mq-track{animation-play-state:paused}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* ===== SECCIONES ===== */
+.sec{max-width:1180px;margin:auto;padding:4.2rem 1.2rem}
+.band{border-block:3px solid var(--ink)}
+.b-teal{background:rgba(14,83,104,.35)}
+.b-mag{background:rgba(23,79,122,.35)}
+.b-cobalt{background:rgba(23,79,122,.45)}
+.b-green{background:rgba(38,198,38,.12)}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.num{font-family:var(--disp);font-weight:700;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;display:inline-flex;gap:.55rem;align-items:center}
+.num::before{content:'';width:12px;height:12px;border:2px solid var(--ink)}
+.n-mag{color:var(--mag-d)}.n-mag::before{background:var(--mag)}
+.n-teal{color:var(--teal-d)}.n-teal::before{background:var(--teal)}
+.n-cobalt{color:var(--cobalt-d)}.n-cobalt::before{background:var(--cobalt)}
+.n-sun{color:var(--sun-d)}.n-sun::before{background:var(--sun)}
+.n-green{color:var(--green-d)}.n-green::before{background:var(--green)}
+h2{font-family:var(--disp);font-weight:800;font-size:clamp(1.9rem,4vw,3rem);letter-spacing:-.015em;margin-top:.45rem}
+.sec-note{max-width:22rem;font-size:.95rem;color:var(--ink2)}
+
+/* ===== FILTROS + TARJETAS ===== */
+.chips{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.8rem}
+.chip-f{font-weight:700;border:2px solid var(--ink);background:var(--paper2);padding:.45rem 1rem;box-shadow:3px 3px 0 var(--ink);transition:transform .15s,box-shadow .15s,background .2s}
+.chip-f:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.chip-f[aria-pressed="true"]{background:var(--ink);color:var(--paper);transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.7rem}
+.card{position:relative;background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(0,0,0,.13);display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}
+.card:hover{transform:translate(-4px,-4px);box-shadow:13px 13px 0 rgba(0,0,0,.16)}
+.card::after{content:'';position:absolute;inset:7px;border:2px dashed rgba(0,0,0,.16);pointer-events:none}
+.ev-art{height:150px;border-bottom:2px solid var(--ink);position:relative;flex:none}
+.ev-cat{position:absolute;left:10px;top:10px;background:var(--paper2);border:2px solid var(--ink);padding:.15rem .55rem;font-size:.7rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.ev-fecha{position:absolute;right:10px;bottom:10px;background:var(--ink);color:var(--paper);padding:.2rem .6rem;font-family:var(--disp);font-weight:700;font-size:.82rem}
+.ev-body{padding:1.1rem 1.2rem 1.3rem;display:flex;flex-direction:column;gap:.65rem;flex:1}
+.ev-body h3{font-family:var(--disp);font-size:1.35rem;font-weight:800;line-height:1.15}
+.ev-desc{font-size:.94rem;color:var(--ink2)}
+.ev-meta{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.85rem;font-weight:600;list-style:none}
+.ev-meta li{display:inline-flex;gap:.35rem;align-items:center}
+.ev-meta .ic{color:var(--mag-d)}
+details.ev-mat summary{cursor:pointer;font-weight:700;font-size:.85rem;color:var(--teal-d);display:inline-flex;gap:.4rem;align-items:center}
+.mat-list{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.55rem;list-style:none}
+.mat-list li{background:var(--paper);border:1.5px solid var(--ink);font-size:.74rem;padding:.14rem .5rem;font-weight:600}
+.ev-foot{margin-top:auto;display:flex;justify-content:space-between;align-items:baseline;padding-top:.35rem;gap:.5rem;flex-wrap:wrap}
+.plazas{font-size:.8rem;font-weight:700;color:var(--green-d)}
+.plazas.low{color:var(--coral-d)}
+.plazas.full{color:var(--mag-d)}
+.precio{font-family:var(--disp);font-size:1.55rem;font-weight:800}
+.precio small{font-size:.75rem;font-family:var(--body);font-weight:600;color:var(--mute)}
+.empty{font-weight:600;color:var(--mute);padding:1rem 0}
+
+/* ===== CLASES ===== */
+.clase{position:relative;display:grid;grid-template-columns:112px 1fr auto;gap:1.3rem;background:var(--paper2);border:2px solid var(--ink);padding:1rem 1.1rem;align-items:center;box-shadow:7px 7px 0 rgba(0,0,0,.13);margin-bottom:1.1rem;transition:transform .2s,box-shadow .2s}
+.clase:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 rgba(0,0,0,.16)}
+.clase::after{content:'';position:absolute;inset:6px;border:2px dashed rgba(0,0,0,.14);pointer-events:none}
+.cl-chip{width:112px;height:112px}
+.cl-main h3{font-family:var(--disp);font-size:1.3rem;font-weight:800;display:inline;margin-right:.6rem}
+.cl-horario{font-family:var(--disp);font-weight:700;font-size:1.02rem;color:var(--cobalt-d);margin:.3rem 0 .5rem}
+.cl-side{text-align:right;display:flex;flex-direction:column;gap:.3rem;align-items:flex-end}
+.cl-side .precio small{display:block}
+@media(max-width:760px){.clase{grid-template-columns:1fr}.cl-chip{width:100%;height:58px}.cl-side{align-items:flex-start;text-align:left}}
+
+/* ===== TENDEDERO ===== */
+.tendedero{position:relative;padding-top:1.5rem}
+.cuerda{position:absolute;top:34px;left:-30px;right:-30px;border-top:3px solid var(--ink);border-radius:0 0 50% 50%/0 0 26px 26px}
+.prendas{display:flex;gap:1.5rem;overflow-x:auto;padding:2rem .4rem 1.4rem;list-style:none;scroll-snap-type:x mandatory}
+.prenda{flex:0 0 185px;scroll-snap-align:center;transform-origin:top center;animation:sway 5s ease-in-out infinite alternate;animation-delay:var(--d,0s);position:relative}
+@keyframes sway{from{rotate:-2.2deg}to{rotate:2.2deg}}
+.prenda:hover{animation-play-state:paused}
+.pinza{position:absolute;top:-16px;left:50%;translate:-50% 0;width:14px;height:28px;background:#336666;border:2px solid var(--ink);border-radius:3px;z-index:2}
+.prenda .tela{aspect-ratio:1;box-shadow:7px 7px 0 rgba(0,0,0,.14);transition:scale .25s}
+.prenda:nth-child(even) .tela{aspect-ratio:.9}
+.prenda:hover .tela{scale:1.05}
+.prenda figcaption{font-size:.8rem;font-weight:700;text-align:center;margin-top:.6rem}
+.prenda figcaption span{display:block;font-weight:500;color:var(--mute);font-size:.74rem}
+
+/* ===== INFO ===== */
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1.6rem}
+.panel{background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(0,0,0,.13);padding:1.4rem 1.4rem 1.6rem;position:relative}
+.panel::after{content:'';position:absolute;inset:6px;border:2px dashed rgba(0,0,0,.15);pointer-events:none}
+.panel h3{font-family:var(--disp);font-weight:800;font-size:1.35rem;margin-bottom:1rem;display:flex;gap:.5rem;align-items:center}
+.panel h3 .ic{color:var(--mag-d);width:20px;height:20px}
+.row{display:flex;justify-content:space-between;gap:1rem;border-bottom:2px dashed rgba(0,0,0,.22);padding:.55rem 0;font-size:.95rem}
+.row b{font-family:var(--disp);white-space:nowrap}
+.row .v-teal{color:var(--teal-d)}.row .v-mag{color:var(--mag-d)}.row .v-cobalt{color:var(--cobalt-d)}.row .v-sun{color:var(--sun-d)}
+.check-list{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.check-list li{display:flex;gap:.55rem;align-items:flex-start;font-size:.95rem}
+.check-list .ic{color:var(--green-d);margin-top:.15rem}
+.nota{margin-top:1rem;font-size:.83rem;background:var(--paper);border:2px dashed var(--ink);padding:.6rem .8rem;font-weight:600}
+.sede{display:flex;gap:.6rem;align-items:flex-start;padding:.5rem 0;border-bottom:2px dashed rgba(0,0,0,.22)}
+.sede .ic{color:var(--mag-d);margin-top:.2rem}
+.sede b{display:block}
+.sede small{color:var(--mute)}
+
+/* ===== INSCRIPCIÓN ===== */
+.ins-wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:2.5rem;align-items:start}
+.pasos{list-style:none;margin-top:1.8rem;display:flex;flex-direction:column;gap:1.1rem}
+.pasos li{display:flex;gap:1rem;align-items:flex-start}
+.pasos .pn{font-family:var(--disp);font-weight:800;font-size:1.6rem;color:var(--paper2);background:var(--mag);border:2px solid var(--ink);width:52px;height:52px;display:grid;place-items:center;flex:none;box-shadow:3px 3px 0 var(--ink)}
+.pasos b{font-family:var(--disp);font-size:1.05rem;display:block}
+.pasos p{font-size:.93rem;color:var(--ink2)}
+.form-card{background:var(--paper2);border:3px solid var(--ink);box-shadow:10px 10px 0 rgba(0,0,0,.18);padding:1.7rem;rotate:-.5deg}
+.form-card h3{font-family:var(--disp);font-size:1.5rem;font-weight:800;margin-bottom:1.2rem}
+.field{margin-bottom:.95rem}
+.field label{display:block;font-weight:700;font-size:.85rem;margin-bottom:.3rem}
+.field label small{font-weight:500;color:var(--mute)}
+.field input,.field select,.field textarea{width:100%;border:2px solid var(--ink);background:#fff;padding:.62rem .7rem;font-size:.95rem}
+.field .err{color:var(--mag-d);font-size:.79rem;font-weight:700;margin-top:.25rem;min-height:1em;display:block}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.chk{display:flex;gap:.55rem;align-items:flex-start;font-size:.88rem;font-weight:600}
+.chk input{width:auto;margin-top:.2rem}
+.ok-box{background:rgba(38,198,38,.14);border:2px solid var(--green-d);padding:1.1rem;font-weight:600;margin-top:1rem}
+@media(max-width:860px){.ins-wrap{grid-template-columns:1fr}.form-card{rotate:0deg}}
+
+/* ===== GESTIÓN ===== */
+.gestion-card{max-width:430px;margin:auto;background:var(--ink);color:var(--paper);border:3px solid var(--ink);box-shadow:10px 10px 0 rgba(0,0,0,.25);padding:2rem;text-align:center}
+.gestion-card .ic{width:38px;height:38px;margin:0 auto .8rem;color:var(--sun)}
+.gestion-card input{width:100%;border:2px solid var(--sun);background:#fff;color:var(--ink);padding:.65rem;margin:.9rem 0 .4rem;text-align:center;font-weight:700;letter-spacing:.1em}
+.gestion-card .hint{font-size:.78rem;color:#99CCCC;margin-top:.7rem}
+.gestion-card .g-err{color:var(--sun);font-weight:700;font-size:.85rem;min-height:1.2em}
+#dash .dash-head{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin-bottom:1.4rem}
+.dstats{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.6rem}
+.dstat{background:var(--paper2);border:2px solid var(--ink);padding:.7rem 1.1rem;box-shadow:4px 4px 0 rgba(0,0,0,.15)}
+.dstat b{font-family:var(--disp);font-size:1.5rem;display:block;line-height:1.1}
+.dstat span{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.gform{background:var(--paper2);border:3px solid var(--ink);padding:1.4rem;margin-bottom:1.8rem;box-shadow:8px 8px 0 rgba(0,0,0,.15)}
+.gform h3{font-family:var(--disp);font-size:1.3rem;margin-bottom:1rem}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.85rem}
+.ggrid .full{grid-column:1/-1}
+.pat-opts{display:flex;gap:.55rem;flex-wrap:wrap}
+.pat-opts label{cursor:pointer}
+.pat-opts input{position:absolute;opacity:0}
+.pat-opts .sw{width:46px;height:46px;display:block;box-shadow:2px 2px 0 var(--ink);transition:transform .15s}
+.pat-opts input:checked + .sw{outline:3px solid var(--mag);outline-offset:2px;transform:scale(1.08)}
+.tbl-wrap{overflow-x:auto;border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(0,0,0,.15)}
+.tbl{width:100%;border-collapse:collapse;background:var(--paper2);min-width:720px}
+.tbl th{background:var(--ink);color:var(--paper);text-align:left;padding:.65rem .8rem;font-size:.76rem;letter-spacing:.07em;text-transform:uppercase}
+.tbl td{padding:.6rem .8rem;border-top:2px dashed rgba(0,0,0,.2);font-size:.9rem;vertical-align:middle}
+.tbl .mini-tag{font-size:.68rem;font-weight:800;text-transform:uppercase;border:1.5px solid var(--ink);padding:.1rem .4rem;background:var(--paper)}
+.tbl .acts{display:flex;gap:.4rem}
+.regs-row td{background:rgba(0,208,208,.05)}
+.regs-chips{display:flex;flex-wrap:wrap;gap:.4rem;list-style:none}
+.regs-chips li{background:var(--paper);border:1.5px solid var(--ink);font-size:.78rem;padding:.2rem .55rem;font-weight:600}
+
+/* ===== MODAL / TOAST ===== */
+.overlay{position:fixed;inset:0;background:rgba(2,8,14,.72);display:none;align-items:center;justify-content:center;padding:1rem;z-index:150}
+.overlay.show{display:flex}
+.modal{background:var(--paper2);border:3px solid var(--ink);box-shadow:12px 12px 0 rgba(0,0,0,.3);max-width:580px;width:100%;max-height:92vh;overflow:auto;padding:1.7rem;position:relative;animation:pop .3s ease}
+@keyframes pop{from{transform:translateY(22px) scale(.97);opacity:0}}
+.modal h3{font-family:var(--disp);font-size:1.5rem;font-weight:800;margin-bottom:.4rem;padding-right:2.5rem}
+.m-close{position:absolute;top:.8rem;right:.8rem;background:var(--paper);border:2px solid var(--ink);width:36px;height:36px;display:grid;place-items:center}
+.m-close:hover{background:var(--sun)}
+.m-res{background:var(--paper);border:2px dashed var(--ink);padding:.8rem .95rem;margin:.7rem 0 1.1rem;font-size:.9rem}
+.m-res b{font-family:var(--disp)}
+.m-res ul{list-style:none;display:flex;flex-wrap:wrap;gap:.3rem 1.1rem;margin-top:.4rem}
+.m-res li{display:inline-flex;gap:.35rem;align-items:center;font-weight:600}
+.m-res .ic{color:var(--mag-d)}
+.toast{position:fixed;left:50%;bottom:26px;translate:-50% 18px;background:var(--ink);color:var(--paper);border:2px solid var(--sun);padding:.85rem 1.3rem;font-weight:700;opacity:0;transition:.35s;z-index:250;pointer-events:none;max-width:92vw;box-shadow:6px 6px 0 rgba(0,0,0,.3)}
+.toast.show{opacity:1;translate:-50% 0}
+
+/* ===== PIE ===== */
+.fringe{height:16px;background:repeating-linear-gradient(90deg,var(--sun) 0 12px,var(--mag) 12px 24px,var(--teal) 24px 36px,var(--cobalt) 36px 48px)}
+footer{background:var(--ink);color:var(--paper);padding:3.2rem 1.2rem 1.6rem}
+.f-in{max-width:1180px;margin:auto;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:2.4rem}
+footer h4{font-family:var(--disp);font-size:1.05rem;color:var(--sun);margin-bottom:.8rem;letter-spacing:.04em}
+footer p,footer li{font-size:.92rem;color:#99CCCC}
+footer ul{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+footer a{color:#eaffff;text-decoration:none;border-bottom:2px dashed transparent}
+footer a:hover{border-bottom-color:var(--sun)}
+.f-bot{max-width:1180px;margin:2.4rem auto 0;border-top:1px dashed rgba(0,208,208,.25);padding-top:1.2rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.82rem;color:#669999}
+@media(max-width:760px){.f-in{grid-template-columns:1fr}}
+
+/* ===== REVEAL / MOVIMIENTO ===== */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s ease;transition-delay:var(--rd,0s)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+}
+
+/* ===== RETEMA HOOLA (Trazo & Tela) ===== */
+.card,.clase,.panel,.form-card,.modal,.gform,.dstat,.kicker,.ev-cat{background:var(--card-bg);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:14px;box-shadow:0 0 18px var(--glow-soft),inset 0 0 20px rgba(0,208,208,.05)}
+.card:hover,.clase:hover,.panel:hover{transform:translateY(-4px);border-color:var(--border-strong);box-shadow:0 0 26px var(--glow),inset 0 0 20px rgba(0,208,208,.08)}
+.card::after,.clase::after,.panel::after{border:1px dashed rgba(0,208,208,.18);border-radius:10px}
+.card{border-radius:14px;overflow:hidden}
+.clase{border-radius:14px;padding:1rem 1.1rem}
+.tbl-wrap{border:1px solid var(--border);border-radius:14px;box-shadow:0 0 18px var(--glow-soft);background:var(--card-bg);backdrop-filter:blur(6px)}
+.tbl{background:transparent}
+.tbl th{background:#001018;color:#CCFFFF;border-bottom:1px solid var(--border)}
+.tbl td{border-top:1px dashed rgba(0,208,208,.18)}
+.top{background:rgba(0,16,24,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);box-shadow:0 0 18px var(--glow-soft)}
+.logo small{color:var(--acc2)}
+.logo{color:var(--text)}
+.nav-links a{color:#eaffff}
+.burger{border-color:var(--border);color:#eaffff}
+.btn{border:1px solid var(--border);border-radius:999px;background:var(--card-bg);backdrop-filter:blur(6px);color:var(--text);box-shadow:0 0 12px var(--glow-soft);text-transform:uppercase;letter-spacing:.06em}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 18px var(--glow);border-color:var(--border-strong)}
+.btn-mag{background:linear-gradient(135deg,#00D0D0,#26C626);color:#061018;font-weight:700;text-shadow:none}
+.btn-mag:hover{background:linear-gradient(135deg,#26E6E6,#2ED62E);color:#061018}
+.btn-sun{background:var(--acc2);color:#061018}
+.btn-ghost{background:rgba(0,208,208,.08)}
+.chip-f{border:1px solid rgba(0,208,208,.35);border-radius:999px;background:var(--card-bg);backdrop-filter:blur(6px);color:var(--muted);box-shadow:none;text-transform:uppercase;letter-spacing:.05em;font-size:.8rem}
+.chip-f:hover{color:var(--text);border-color:var(--border-strong);box-shadow:0 0 12px var(--glow-soft)}
+.chip-f[aria-pressed="true"]{background:linear-gradient(135deg,var(--contenedor),var(--acc));color:#CCFFFF;border-color:var(--border-strong);box-shadow:0 0 14px var(--glow);transform:none}
+.marquee{background:linear-gradient(90deg,#00D0D0,#26C626);border-block:1px solid rgba(0,208,208,.6);color:#001018;box-shadow:0 0 24px var(--glow-soft)}
+.field input,.field select,.field textarea,.gestion-card input{background:rgba(6,16,24,.6);border:1px solid rgba(0,208,208,.35);border-radius:10px;color:#eaffff}
+.field input:focus,.field select:focus,.field textarea:focus,.gestion-card input:focus{outline:none;border-color:var(--border-strong);box-shadow:0 0 12px var(--glow-soft)}
+.field label{color:var(--muted);letter-spacing:.05em;text-transform:uppercase;font-size:.75rem}
+.err,.g-err{color:#ef4444}
+.g-err{color:#ef4444!important}
+.plazas.full{color:#ef4444}
+.pasos .pn{background:linear-gradient(135deg,#00D0D0,#26C626);color:#061018;border:1px solid var(--border-strong);border-radius:14px;box-shadow:0 0 16px var(--glow-soft);font-weight:700}
+.pasos b{color:var(--text);text-transform:uppercase;letter-spacing:.05em}
+.pasos p{color:var(--muted)}
+.gestion-card{background:rgba(0,16,24,.88);border:1px solid var(--border);border-radius:14px;box-shadow:0 0 22px var(--glow-soft);color:var(--text)}
+.gestion-card input{color:#eaffff}
+.gestion-card .ic{color:var(--acc)}
+.ev-fecha{background:#001018;color:#CCFFFF;border:1px solid var(--border);border-radius:8px;letter-spacing:.06em}
+.ev-cat{background:rgba(0,16,24,.65);color:var(--acc2);border:1px solid var(--border-strong)}
+.ev-meta .ic,.panel h3 .ic,.sede .ic,.m-res .ic{color:var(--acc)}
+.mat-list li,.regs-chips li{background:rgba(0,16,24,.65);border:1px solid rgba(0,208,208,.3);color:var(--muted);border-radius:6px}
+.nota,.m-res{background:rgba(0,16,24,.55);border:1px dashed rgba(0,208,208,.4);border-radius:10px;color:var(--muted)}
+.m-close{background:rgba(0,16,24,.6);border:1px solid var(--border);color:var(--text);border-radius:10px}
+.m-close:hover{background:rgba(0,208,208,.15);color:var(--acc)}
+.overlay{background:rgba(2,8,14,.72);backdrop-filter:blur(4px)}
+.modal{border-radius:14px}
+.m-res b{color:var(--text)}
+.toast{background:rgba(0,16,24,.92);border:1px solid var(--border-strong);box-shadow:0 0 22px var(--glow);border-radius:12px;color:#eaffff}
+footer{background:#001018;border-top:1px solid var(--border);color:var(--text)}
+footer h4{color:var(--acc2);text-transform:uppercase;letter-spacing:.08em}
+.f-bot{border-top:1px dashed rgba(0,208,208,.25);color:var(--mute)}
+footer p,footer li{color:var(--muted)}
+.skip{background:var(--acc2);color:#061018;border-color:#061018}
+.kicker{color:var(--acc);border-color:var(--border-strong);background:rgba(0,16,24,.6);text-transform:uppercase}
+h1,h2,h3{text-transform:uppercase;letter-spacing:.04em}
+h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:.04em;text-shadow:0 0 10px var(--glow),0 0 24px var(--glow),0 0 44px var(--glow-soft)}
+h2{letter-spacing:.03em;color:var(--text)}
+.sec-note,.lead{color:var(--muted)}
+.num{color:var(--acc);letter-spacing:.22em}
+.n-mag{color:var(--acc)}.n-teal{color:var(--acc)}.n-cobalt{color:var(--acc2)}.n-sun{color:var(--acc2)}.n-green{color:var(--acc2)}
+.num::before{border-color:var(--border-strong)}
+.n-mag::before{background:var(--acc)}.n-teal::before{background:var(--acc)}.n-cobalt::before{background:var(--acc2)}.n-sun::before{background:var(--acc2)}.n-green::before{background:var(--acc2)}
+.row{border-bottom:1px dashed rgba(0,208,208,.2);color:var(--text)}
+.row b{color:var(--text)}
+.check-list .ic{color:var(--acc2)}
+.sede{border-bottom:1px dashed rgba(0,208,208,.2)}
+.sede small{color:var(--mute)}
+.precio{color:var(--text)}
+.plazas{color:var(--acc2)}
+.plazas.low{color:#ff9f43}
+.prenda .tela{border:1px solid var(--border);box-shadow:0 0 14px var(--glow-soft)}
+.pinza{background:#336666;border-color:var(--border-strong)}
+.cuerda{border-top:1px solid rgba(0,208,208,.5)}
+.pin{background:var(--acc2);border-color:#001018}
+.fab{border:1px solid var(--border);box-shadow:0 0 18px var(--glow-soft)}
+.badge-spin text{font-family:'Electrolize',sans-serif}
+.dstat span{color:var(--mute)}
+.dstat b{color:var(--text)}
+.empty{color:var(--muted)}
+.ev-desc{color:var(--muted)}
+.cl-horario{color:var(--acc)}
+details.ev-mat summary{color:var(--acc2)}
+.ok-box{background:rgba(38,198,38,.14);border:1px solid rgba(38,198,38,.5);border-radius:10px;color:var(--text)}
+.gform{border-radius:14px}
+.gform h3{color:var(--text)}
+.tbl .mini-tag{background:rgba(0,16,24,.6);border:1px solid rgba(0,208,208,.3);color:var(--acc)}
+.regs-row td{background:rgba(0,208,208,.05)}
+.band{border-block:1px solid var(--border)}
+.pat-opts .sw{border:1px solid var(--border);box-shadow:2px 2px 0 rgba(0,208,208,.3)}
+.field select option{background:#0A2E40;color:#eaffff}
+.prenda figcaption{color:var(--text)}
+.prenda figcaption span{color:var(--mute)}
+.stat b{color:var(--text)}
+.mq-track{color:#001018}
+@media(max-width:920px){.nav-links{background:rgba(0,16,24,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}}
+@media(max-width:760px){.cl-side .precio{color:var(--text)}}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#talleres">Saltar al contenido</a>
+
+<!-- Iconos SVG -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-5.1-7-11a7 7 0 0 1 14 0c0 5.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3.5 20c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.8 15.6c2.5.4 4.2 2 4.7 4.4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12l5 5L20 7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1zM14 7l3 3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/></symbol>
+</svg>
+
+<!-- ===== CABECERA ===== -->
+<header class="top" id="top">
+  <div class="top-in">
+    <a class="logo" href="#inicio">
+      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><rect x="3" y="8" width="18" height="18" fill="#00D0D0" stroke="#001018" stroke-width="2" transform="rotate(-6 12 17)"/><rect x="14" y="10" width="18" height="18" fill="#26C626" stroke="#001018" stroke-width="2" transform="rotate(5 23 19)"/><circle cx="23" cy="19" r="3" fill="#CCFFFF"/></svg>
+      <span>Trazo &amp; Tela<small>pintura textil creativa</small></span>
+    </a>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">☰ Menú</button>
+    <ul class="nav-links" id="menu">
+      <li><a href="#talleres">Talleres</a></li>
+      <li><a href="#clases">Clases</a></li>
+      <li><a href="#galeria">Galería</a></li>
+      <li><a href="#info">Info práctica</a></li>
+      <li><a href="#inscripcion">Inscripción</a></li>
+      <li><a class="mini" href="#gestion"><svg class="ic"><use href="#i-lock"/></svg> Personal</a></li>
+      <li><a class="btn btn-mag btn-sm" href="#inscripcion">Reservar plaza</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+<!-- ===== HERO ===== -->
+<section class="hero" id="inicio">
+  <div>
+    <p class="kicker">✳ Talleres y clases · desde los 6 años</p>
+    <h1>Pinta la tela,<br><span class="hl">vístete de historias.</span></h1>
+    <p class="lead">Shibori, estampado botánico, acuarela sobre algodón, tie-dye… Un taller vivo donde peques, jóvenes, familias y adultos convierten prendas en pequeñas obras de arte.</p>
+    <div class="hero-cta">
+      <a class="btn btn-mag" href="#talleres">Explorar talleres</a>
+      <a class="btn btn-ghost" href="#clases">Ver clases semanales</a>
+    </div>
+    <div class="stats" aria-label="Nuestros números">
+      <div class="stat"><b><span data-n="380">0</span>+</b><span>camisetas pintadas</span></div>
+      <div class="stat"><b><span data-n="42">0</span></b><span>talleres al año</span></div>
+      <div class="stat"><b><span data-n="3">0</span></b><span>sedes + espacios invitados</span></div>
+    </div>
+  </div>
+  <div class="board" aria-hidden="true">
+    <div class="fab fab1 pt p-acuarela"><span class="pin"></span></div>
+    <div class="fab fab2 pt p-shibori"><span class="pin"></span></div>
+    <div class="fab fab3 pt p-espiral"><span class="pin"></span></div>
+    <div class="fab fab4 pt p-lunar"><span class="pin"></span></div>
+    <svg class="badge-spin" viewBox="0 0 120 120">
+      <defs><path id="circ" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
+      <circle cx="60" cy="60" r="59" fill="#001018"/>
+      <circle cx="60" cy="60" r="26" fill="#26C626" stroke="#CCFFFF" stroke-width="2" stroke-dasharray="5 4"/>
+      <text fill="#CCFFFF" font-size="12" font-weight="700" letter-spacing="2.4" font-family="Electrolize, sans-serif"><textPath href="#circ">DESDE 6 AÑOS ✦ PLAZAS LIMITADAS ✦ </textPath></text>
+      <text x="60" y="67" text-anchor="middle" fill="#001018" font-size="22">✦</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ===== MARQUESINA ===== -->
+<div class="marquee" aria-hidden="true">
+  <div class="mq-track">
+    <span>Shibori ✦ Estampado botánico ✦ Tie-dye ✦ Acuarela textil ✦ Sellos caseros ✦ Tote bags ✦ Tintes naturales ✦ Pinceles y reservas ✦</span>
+    <span>Shibori ✦ Estampado botánico ✦ Tie-dye ✦ Acuarela textil ✦ Sellos caseros ✦ Tote bags ✦ Tintes naturales ✦ Pinceles y reservas ✦</span>
+  </div>
+</div>
+
+<!-- ===== TALLERES ===== -->
+<section class="sec" id="talleres">
+  <div class="sec-head reveal">
+    <div>
+      <span class="num n-mag">Nº 01 — Catálogo</span>
+      <h2>Próximos talleres</h2>
+    </div>
+    <p class="sec-note">Cada taller indica su <strong>duración</strong>, los <strong>materiales</strong> (¡casi todo incluido!) y <strong>dónde</strong> se celebra. Elige el tuyo y reserva.</p>
+  </div>
+  <div class="chips reveal" role="group" aria-label="Filtrar talleres por edad">
+    <button class="chip-f" data-cat="todo" aria-pressed="true">Todo</button>
+    <button class="chip-f" data-cat="infantil" aria-pressed="false">Infantil · 6-12</button>
+    <button class="chip-f" data-cat="familiar" aria-pressed="false">Familiar · 6+</button>
+    <button class="chip-f" data-cat="joven" aria-pressed="false">Jóvenes · 13-17</button>
+    <button class="chip-f" data-cat="adulto" aria-pressed="false">Adultos</button>
+  </div>
+  <div class="grid" id="gridTalleres"></div>
+</section>
+
+<!-- ===== CLASES ===== -->
+<section class="band b-cobalt" id="clases">
+  <div class="sec">
+    <div class="sec-head reveal">
+      <div>
+        <span class="num n-cobalt">Nº 02 — Continuidad</span>
+        <h2>Clases semanales</h2>
+      </div>
+      <p class="sec-note">Grupos reducidos para avanzar a tu ritmo, semana a semana. Precio mensual o por ciclo completo.</p>
+    </div>
+    <div id="listaClases"></div>
+  </div>
+</section>
+
+<!-- ===== GALERÍA / TENDEDERO ===== -->
+<section class="sec" id="galeria">
+  <div class="sec-head reveal">
+    <div>
+      <span class="num n-teal">Nº 03 — Tendedero</span>
+      <h2>Lo que se crea aquí</h2>
+    </div>
+    <p class="sec-note">Piezas reales de nuestros talleres, tendidas al sol. Desliza para verlas todas.</p>
+  </div>
+  <div class="tendedero reveal">
+    <div class="cuerda" aria-hidden="true"></div>
+    <ul class="prendas">
+      <li class="prenda" style="--d:0s"><span class="pinza"></span><div class="tela pt p-shibori" role="img" aria-label="Pañuelo shibori índigo"></div><figcaption>Pañuelo shibori índigo<span>Taller infantil 6-12</span></figcaption></li>
+      <li class="prenda" style="--d:.5s"><span class="pinza"></span><div class="tela pt p-hojas" role="img" aria-label="Tote bag con estampado botánico"></div><figcaption>Tote bag botánica<span>Taller familiar</span></figcaption></li>
+      <li class="prenda" style="--d:1s"><span class="pinza"></span><div class="tela pt p-espiral" role="img" aria-label="Camiseta tie-dye en espiral"></div><figcaption>Camiseta espiral<span>Jóvenes 13-17</span></figcaption></li>
+      <li class="prenda" style="--d:.3s"><span class="pinza"></span><div class="tela pt p-acuarela" role="img" aria-label="Acuarela textil amanecer"></div><figcaption>«Amanecer», acuarela<span>Clase de adultos</span></figcaption></li>
+      <li class="prenda" style="--d:.8s"><span class="pinza"></span><div class="tela pt p-lunar" role="img" aria-label="Cojín con sellos de lunares"></div><figcaption>Cojín de sellos<span>Infantil</span></figcaption></li>
+      <li class="prenda" style="--d:1.2s"><span class="pinza"></span><div class="tela pt p-sol" role="img" aria-label="Bandera solar teñida a mano"></div><figcaption>Bandera solar<span>Taller comunitario</span></figcaption></li>
+      <li class="prenda" style="--d:.6s"><span class="pinza"></span><div class="tela pt p-cuadros" role="img" aria-label="Mantel de cuadros pintado"></div><figcaption>Mantel a cuadros<span>Familiar</span></figcaption></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== INFO PRÁCTICA ===== -->
+<section class="band b-green" id="info">
+  <div class="sec">
+    <div class="sec-head reveal">
+      <div>
+        <span class="num n-green">Nº 04 — Info práctica</span>
+        <h2>Duraciones, materiales y sedes</h2>
+      </div>
+    </div>
+    <div class="panels">
+      <div class="panel reveal">
+        <h3><svg class="ic"><use href="#i-clock"/></svg> Formatos y duración</h3>
+        <div class="row"><span>Taller exprés</span><b class="v-teal">90 min</b></div>
+        <div class="row"><span>Taller completo</span><b class="v-mag">2 h – 2,5 h</b></div>
+        <div class="row"><span>Clase semanal</span><b class="v-cobalt">1,5 h – 2 h · 4 semanas</b></div>
+        <div class="row"><span>Ciclo familiar</span><b class="v-sun">6 sesiones de 1,5 h</b></div>
+        <p class="nota">Edad mínima: <strong>6 años</strong>. Menores de 14: acompañados o con autorización firmada.</p>
+      </div>
+      <div class="panel reveal" style="--rd:.1s">
+        <h3><svg class="ic"><use href="#i-spark"/></svg> Tu kit básico</h3>
+        <ul class="check-list">
+          <li><svg class="ic"><use href="#i-check"/></svg> Prenda o tela clara de algodón</li>
+          <li><svg class="ic"><use href="#i-check"/></svg> Ropa que se pueda manchar (¡pintamos de verdad!)</li>
+          <li><svg class="ic"><use href="#i-check"/></svg> Botellita de agua</li>
+          <li><svg class="ic"><use href="#i-check"/></svg> Un trapo viejo de casa</li>
+          <li><svg class="ic"><use href="#i-check"/></svg> Muchas ganas de experimentar</li>
+        </ul>
+        <p class="nota">En los talleres, <strong>pinturas, pinceles y materiales van incluidos</strong> en el precio. En las clases aportamos pintura y pinceles comunes.</p>
+      </div>
+      <div class="panel reveal" style="--rd:.2s">
+        <h3><svg class="ic"><use href="#i-pin"/></svg> Dónde estamos</h3>
+        <div class="sede"><svg class="ic"><use href="#i-pin"/></svg><span><b>Taller Trazo &amp; Tela</b><small>Calle del Telar 12, Centro · nuestra sede principal</small></span></div>
+        <div class="sede"><svg class="ic"><use href="#i-pin"/></svg><span><b>Nave Ribera</b><small>Av. de los Tintes 3 · talleres grandes y teñidos</small></span></div>
+        <div class="sede"><svg class="ic"><use href="#i-pin"/></svg><span><b>Espacios invitados</b><small>Parques, mercados y centros cívicos · eventos itinerantes</small></span></div>
+        <p class="nota">Todos los espacios son accesibles. Escríbenos si necesitas algún apoyo concreto.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INSCRIPCIÓN ===== -->
+<section class="band b-mag" id="inscripcion">
+  <div class="sec ins-wrap">
+    <div class="reveal">
+      <span class="num n-mag">Nº 05 — Apúntate</span>
+      <h2>Reserva tu plaza</h2>
+      <p class="lead" style="margin-top:.8rem">Rellena el formulario y te guardamos un hueco en el caballete. Te escribiremos para confirmar todos los detalles.</p>
+      <ol class="pasos">
+        <li><span class="pn">01</span><span><b>Explora el catálogo</b><p>Elige un taller puntual o una clase semanal. Fíjate en la edad recomendada.</p></span></li>
+        <li><span class="pn">02</span><span><b>Rellena el formulario</b><p>Nombre, contacto y edad (mínimo 6 años). Si tienes menos de 14, hará falta autorización.</p></span></li>
+        <li><span class="pn">03</span><span><b>Recibe la confirmación</b><p>Te enviamos los detalles de horario, materiales y ubicación. ¡Y a pintar!</p></span></li>
+      </ol>
+    </div>
+    <form class="form-card reveal" id="formInscripcion" novalidate style="--rd:.15s">
+      <h3>Formulario de inscripción</h3>
+      <div class="field">
+        <label for="f-evento">Taller o clase al que te apuntas *</label>
+        <select id="f-evento" required></select>
+        <span class="err" id="e-evento"></span>
+      </div>
+      <div class="field">
+        <label for="f-nombre">Nombre y apellidos *</label>
+        <input type="text" id="f-nombre" autocomplete="name" required>
+        <span class="err" id="e-nombre"></span>
+      </div>
+      <div class="f2">
+        <div class="field">
+          <label for="f-email">Correo electrónico *</label>
+          <input type="email" id="f-email" autocomplete="email" required>
+          <span class="err" id="e-email"></span>
+        </div>
+        <div class="field">
+          <label for="f-edad">Edad * <small>(mín. 6 años)</small></label>
+          <input type="number" id="f-edad" min="6" max="120" inputmode="numeric" required>
+          <span class="err" id="e-edad"></span>
+        </div>
+      </div>
+      <div class="field auth-wrap" hidden>
+        <label class="chk"><input type="checkbox" id="f-auto"> Soy madre, padre o persona tutora y autorizo la participación del menor de 14 años.</label>
+        <span class="err" id="e-auto"></span>
+      </div>
+      <div class="field">
+        <label for="f-notas">¿Algo que debamos saber? <small>(alergias, apoyos, dudas…)</small></label>
+        <textarea id="f-notas" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn btn-mag" style="width:100%">Enviar inscripción</button>
+      <div class="ok-box" id="f-ok" hidden></div>
+    </form>
+  </div>
+</section>
+
+<!-- ===== GESTIÓN ===== -->
+<section class="band" id="gestion" style="background:var(--paper)">
+  <div class="sec">
+    <div class="sec-head reveal">
+      <div>
+        <span class="num n-sun">Nº 06 — Equipo</span>
+        <h2>Gestión de eventos</h2>
+      </div>
+      <p class="sec-note">Zona para el personal: crear, editar y eliminar talleres y clases, y consultar las inscripciones.</p>
+    </div>
+
+    <div id="loginBox" class="reveal">
+      <form class="gestion-card" id="formLogin" novalidate>
+        <svg class="ic"><use href="#i-lock"/></svg>
+        <h3 style="font-family:var(--disp);font-size:1.4rem">Acceso del personal</h3>
+        <p style="color:#99CCCC;font-size:.9rem;margin-top:.3rem">Introduce la contraseña del equipo.</p>
+        <label for="g-pass" class="skip">Contraseña</label>
+        <input type="password" id="g-pass" placeholder="Contraseña" autocomplete="current-password">
+        <p class="g-err" id="g-login-err" role="alert"></p>
+        <button type="submit" class="btn btn-sun" style="width:100%">Entrar</button>
+        <p class="hint">Demo: contraseña <strong>hilo2025</strong></p>
+      </form>
+    </div>
+
+    <div id="dash" hidden>
+      <div class="dash-head">
+        <h3 style="font-family:var(--disp);font-size:1.5rem">¡Hola, equipo! 👋</h3>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <button class="btn btn-mag btn-sm" id="btnNuevo"><svg class="ic"><use href="#i-plus"/></svg> Nuevo evento</button>
+          <button class="btn btn-sm" id="btnReset">Restaurar demo</button>
+          <button class="btn btn-ghost btn-sm" id="btnLogout">Cerrar sesión</button>
+        </div>
+      </div>
+      <div class="dstats" id="dstats"></div>
+
+      <form class="gform" id="gform" hidden novalidate>
+        <h3 id="gformTitle">Crear evento</h3>
+        <input type="hidden" id="g-id">
+        <div class="ggrid">
+          <div class="field"><label for="g-tipo">Tipo</label>
+            <select id="g-tipo"><option value="taller">Taller (puntual)</option><option value="clase">Clase (semanal)</option></select></div>
+          <div class="field"><label for="g-titulo">Título *</label><input type="text" id="g-titulo"></div>
+          <div class="field"><label for="g-cat">Categoría</label>
+            <select id="g-cat"><option value="infantil">Infantil · 6-12</option><option value="familiar">Familiar · 6+</option><option value="joven">Jóvenes · 13-17</option><option value="adulto">Adultos</option></select></div>
+          <div class="field"><label for="g-fecha">Fecha / día *</label><input type="text" id="g-fecha" placeholder="Sáb 12 jul · o · Martes"><span class="err" id="ge-fecha"></span></div>
+          <div class="field"><label for="g-hora">Hora</label><input type="text" id="g-hora" placeholder="10:30 · o · 17:30 – 19:00"></div>
+          <div class="field"><label for="g-dur">Duración *</label><input type="text" id="g-dur" placeholder="90 min · 4 semanas…"><span class="err" id="ge-dur"></span></div>
+          <div class="field"><label for="g-lugar">Ubicación *</label><input type="text" id="g-lugar" placeholder="Sede Centro"><span class="err" id="ge-lugar"></span></div>
+          <div class="field"><label for="g-precio">Precio (€)</label><input type="number" id="g-precio" min="0" step="0.5" value="15"></div>
+          <div class="field"><label for="g-per">Precio por</label>
+            <select id="g-per"><option value="">actividad</option><option value="/mes">mes</option><option value="/ciclo">ciclo</option></select></div>
+          <div class="field"><label for="g-cap">Plazas totales *</label><input type="number" id="g-cap" min="1" value="12"><span class="err" id="ge-cap"></span></div>
+          <div class="field full"><label for="g-desc">Descripción breve</label><textarea id="g-desc" rows="2"></textarea></div>
+          <div class="field full"><label for="g-mat">Materiales <small>(separados por comas)</small></label><input type="text" id="g-mat" placeholder="Delantal, bolsa de tela, pinturas…"></div>
+          <div class="field full"><label>Diseño de la tarjeta</label>
+            <div class="pat-opts" id="patOpts"></div></div>
+        </div>
+        <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap">
+          <button type="submit" class="btn btn-mag">Guardar evento</button>
+          <button type="button" class="btn btn-ghost" id="gCancel">Cancelar</button>
+        </div>
+      </form>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <caption class="skip">Listado de eventos creados</caption>
+          <thead><tr><th>Evento</th><th>Tipo</th><th>Fecha</th><th>Ocupación</th><th>Inscritos</th><th>Acciones</th></tr></thead>
+          <tbody id="dashBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ===== PIE ===== -->
+<div class="fringe" aria-hidden="true"></div>
+<footer>
+  <div class="f-in">
+    <div>
+      <h4>Trazo &amp; Tela</h4>
+      <p>Taller de pintura textil creativa para todas las edades (desde los 6 años). Creemos que cada prenda puede contar una historia, y que mancharse las manos es la mejor manera de empezar.</p>
+    </div>
+    <div>
+      <h4>Contacto</h4>
+      <ul>
+        <li><a href="mailto:hola@trazoytela.es"><svg class="ic" style="display:inline;vertical-align:-3px;margin-right:.3rem"><use href="#i-mail"/></svg>hola@trazoytela.es</a></li>
+        <li>📞 +34 600 123 456</li>
+        <li><svg class="ic" style="display:inline;vertical-align:-3px;margin-right:.3rem"><use href="#i-pin"/></svg> Calle del Telar 12, Centro</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Horario del taller</h4>
+      <ul>
+        <li>Martes a viernes · 16:30 – 20:30</li>
+        <li>Sábados · 10:00 – 14:00</li>
+        <li>Domingos y lunes · ¡tendemos la ropa!</li>
+      </ul>
+    </div>
+  </div>
+  <div class="f-bot">
+    <span>© <span id="year"></span> Trazo &amp; Tela · Hecho con hilo, pintura y cariño.</span>
+    <span>Sitio de demostración · los datos se guardan solo en tu navegador.</span>
+  </div>
+</footer>
+
+<!-- ===== MODAL RESERVA ===== -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-titulo">
+    <button class="m-close" id="mClose" aria-label="Cerrar"><svg class="ic"><use href="#i-x"/></svg></button>
+    <h3 id="m-titulo">Reservar plaza</h3>
+    <div class="m-res" id="m-res"></div>
+    <form id="m-form" novalidate>
+      <div class="field"><label for="m-nombre">Nombre y apellidos *</label><input type="text" id="m-nombre"><span class="err" id="me-nombre"></span></div>
+      <div class="f2">
+        <div class="field"><label for="m-email">Correo electrónico *</label><input type="email" id="m-email"><span class="err" id="me-email"></span></div>
+        <div class="field"><label for="m-edad">Edad * <small>(mín. 6)</small></label><input type="number" id="m-edad" min="6" max="120"><span class="err" id="me-edad"></span></div>
+      </div>
+      <div class="field auth-wrap" hidden>
+        <label class="chk"><input type="checkbox" id="m-auto"> Autorizo la participación del menor de 14 años.</label>
+        <span class="err" id="me-auto"></span>
+      </div>
+      <button type="submit" class="btn btn-mag" id="m-submit" style="width:100%">Confirmar reserva</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ================= DATOS ================= */
+const LS_E='tyt_events_v1', LS_R='tyt_regs_v1', SS_S='tyt_staff';
+const CATS={infantil:'Infantil · 6-12',familiar:'Familiar · 6+',joven:'Jóvenes · 13-17',adulto:'Adultos'};
+const PATS=['p-shibori','p-espiral','p-lunar','p-rayas','p-hojas','p-acuarela','p-sol','p-cuadros'];
+
+const SEED=[
+ {id:'t1',tipo:'taller',titulo:'Shibori: magia con nudos',cat:'infantil',fecha:'Sáb 14 jun',hora:'10:30',dur:'90 min',lugar:'Sede Centro · C/ del Telar 12',precio:18,per:'',cap:14,pat:'p-shibori',desc:'Anuda, aprieta y descubre figuras sorpresa al desplegar la tela teñida en índigo.',mat:['Delantal','Bolsa de tela blanca','Gomas y pinzas','Guantes']},
+ {id:'t2',tipo:'taller',titulo:'Estampado botánico con hojas',cat:'familiar',fecha:'Dom 22 jun',hora:'11:00',dur:'2 h',lugar:'Parque de la Aguja · kiosko',precio:22,per:'',cap:20,pat:'p-hojas',desc:'Recolectamos hojas del parque y las convertimos en sellos naturales sobre algodón.',mat:['Camiseta clara','Hojas y flores','Pintura textil','Papel de horno']},
+ {id:'t3',tipo:'taller',titulo:'Acuarela sobre algodón',cat:'adulto',fecha:'Vie 27 jun',hora:'18:00',dur:'2,5 h',lugar:'Sede Centro · C/ del Telar 12',precio:26,per:'',cap:12,pat:'p-acuarela',desc:'Degradados, aguadas y veladuras: técnica pictórica aplicada a la tela paso a paso.',mat:['Paño de algodón','Pinceles finos','Lápiz textil']},
+ {id:'t4',tipo:'taller',titulo:'Tie-dye en espiral',cat:'joven',fecha:'Sáb 28 jun',hora:'17:00',dur:'2 h',lugar:'Nave Ribera · Av. de los Tintes 3',precio:20,per:'',cap:16,pat:'p-espiral',desc:'Gira, tiñe y presume: la técnica más llamativa para customizar tus prendas.',mat:['Camiseta blanca','Cuerda','Tintes de colores']},
+ {id:'t5',tipo:'taller',titulo:'Sellos caseros con goma eva',cat:'infantil',fecha:'Sáb 5 jul',hora:'10:30',dur:'90 min',lugar:'Sede Centro · C/ del Telar 12',precio:15,per:'',cap:14,pat:'p-lunar',desc:'Fabricamos nuestros propios sellos y creamos patrones repetidos llenos de ritmo.',mat:['Tote bag','Goma eva','Témperas textiles']},
+ {id:'t6',tipo:'taller',titulo:'Pinta tu tote bag',cat:'familiar',fecha:'Dom 6 jul',hora:'12:00',dur:'1,5 h',lugar:'Mercado Norte · puesto 8',precio:16,per:'',cap:18,pat:'p-rayas',desc:'Diseña y pinta la bolsa que te acompañará todo el verano. Plantillas y sellos incluidos.',mat:['Bolsa de tela','Sellos','Cinta de carrocero']},
+ {id:'c1',tipo:'clase',titulo:'Iniciación al pincel sobre tela',cat:'infantil',fecha:'Martes',hora:'17:30 – 19:00',dur:'4 semanas · 1,5 h/sesión',lugar:'Sede Centro · C/ del Telar 12',precio:48,per:'/mes',cap:12,pat:'p-rayas',desc:'Primeros trazos, mezclas de color y un proyecto final para llevar a casa.',mat:['Camiseta clara','Pinceles variados','Trapito']},
+ {id:'c2',tipo:'clase',titulo:'Laboratorio de tintes y reservas',cat:'joven',fecha:'Miércoles',hora:'18:30 – 20:30',dur:'4 semanas · 2 h/sesión',lugar:'Nave Ribera · Av. de los Tintes 3',precio:56,per:'/mes',cap:12,pat:'p-shibori',desc:'Shibori, ceras, ataduras y tintes: experimentación pura para jóvenes inquietos.',mat:['Prenda para teñir','Delantal']},
+ {id:'c3',tipo:'clase',titulo:'Tela & cuento: pintar para contar',cat:'familiar',fecha:'Sábados',hora:'11:00 – 12:30',dur:'6 sesiones · 1,5 h',lugar:'Sede Centro · C/ del Telar 12',precio:60,per:'/ciclo',cap:10,pat:'p-lunar',desc:'Cada sesión, un cuento; cada cuento, una tela pintada en familia. Ciclo completo.',mat:['Cojín claro','Rotuladores textiles']},
+ {id:'c4',tipo:'clase',titulo:'Acuarela textil avanzada',cat:'adulto',fecha:'Jueves',hora:'18:00 – 20:00',dur:'4 semanas · 2 h/sesión',lugar:'Sede Centro · C/ del Telar 12',precio:60,per:'/mes',cap:10,pat:'p-acuarela',desc:'Composición, veladuras y fijado profesional para proyectos con acabado de galería.',mat:['Prenda de algodón','Pinceles finos','Lápiz textil']}
+];
+
+const NAMES=['Lucía M.','Mateo R.','Sofía G.','Hugo P.','Valeria S.','Leo T.','Emma C.','Daniel F.','Olivia N.','Bruno A.','Alba D.','Teo L.','Jimena O.','Nora B.','Izan E.','Carla V.','Pablo H.','Vega K.','María J.','Andrés Q.'];
+function fakeRegs(n){return Array.from({length:n},(_,i)=>({nombre:NAMES[i%NAMES.length],email:'hola'+(i+1)+'@ejemplo.com',edad:6+(i%30)}))}
+function seedRegs(){return{t1:fakeRegs(6),t2:fakeRegs(9),t3:fakeRegs(8),t4:fakeRegs(16),t5:fakeRegs(4),t6:fakeRegs(11),c1:fakeRegs(7),c2:fakeRegs(10),c3:fakeRegs(5),c4:fakeRegs(9)}}
+
+let events=JSON.parse(localStorage.getItem(LS_E)||'null')||SEED.map(e=>({...e}));
+let regs=JSON.parse(localStorage.getItem(LS_R)||'null')||seedRegs();
+const save=()=>{localStorage.setItem(LS_E,JSON.stringify(events));localStorage.setItem(LS_R,JSON.stringify(regs))};
+save();
+
+/* ================= UTILIDADES ================= */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const getEv=id=>events.find(e=>e.id===id);
+const enrolled=id=>(regs[id]||[]).length;
+const libres=e=>e.cap-enrolled(e.id);
+let toastTimer;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3200)}
+const icon=n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+
+let revealObs;
+function observeReveals(){
+  if(revealObs) revealObs.disconnect();
+  revealObs=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');revealObs.unobserve(en.target)}}),{threshold:.12});
+  $$('.reveal:not(.in)').forEach(el=>revealObs.observe(el));
+}
+
+/* ================= RENDER CATÁLOGO ================= */
+let curFilter='todo';
+function plazasLabel(e){
+  const l=libres(e);
+  if(l<=0) return `<span class="plazas full">${icon('users')} Completo</span>`;
+  if(l<=3) return `<span class="plazas low">${icon('users')} ¡Últimas ${l} plazas!</span>`;
+  return `<span class="plazas">${icon('users')} Quedan ${l} plazas</span>`;
+}
+function matsHTML(e){
+  if(!e.mat||!e.mat.length) return '';
+  return `<details class="ev-mat"><summary>${icon('spark')} Ver materiales</summary><ul class="mat-list">${e.mat.map(m=>`<li>${esc(m)}</li>`).join('')}</ul></details>`;
+}
+function cardTaller(e){
+  const full=libres(e)<=0;
+  return `<article class="card reveal">
+    <div class="ev-art ${e.pat}"><span class="ev-cat">${CATS[e.cat]||e.cat}</span><span class="ev-fecha">${esc(e.fecha)}</span></div>
+    <div class="ev-body">
+      <h3>${esc(e.titulo)}</h3>
+      <p class="ev-desc">${esc(e.desc)}</p>
+      <ul class="ev-meta">
+        <li>${icon('clock')} ${esc(e.dur)}</li>
+        ${e.hora?`<li>${icon('clock')} ${esc(e.hora)}</li>`:''}
+        <li>${icon('pin')} ${esc(e.lugar)}</li>
+      </ul>
+      ${matsHTML(e)}
+      <div class="ev-foot">${plazasLabel(e)}<span class="precio">${e.precio} €<small>${e.per}</small></span></div>
+      <button class="btn btn-mag" data-reg="${e.id}" ${full?'disabled':''}>${full?'Sin plazas':'Reservar plaza'}</button>
+    </div>
+  </article>`;
+}
+function renderTalleres(){
+  const list=events.filter(e=>e.tipo==='taller'&&(curFilter==='todo'||e.cat===curFilter));
+  $('#gridTalleres').innerHTML=list.length?list.map(cardTaller).join(''):'<p class="empty">No hay talleres en esta categoría por ahora… ¡vuelve pronto! 🧵</p>';
+  observeReveals();
+}
+function renderClases(){
+  const list=events.filter(e=>e.tipo==='clase');
+  $('#listaClases').innerHTML=list.length?list.map(e=>{
+    const full=libres(e)<=0;
+    return `<article class="clase reveal">
+      <div class="cl-chip pt ${e.pat}" aria-hidden="true"></div>
+      <div class="cl-main">
+        <h3>${esc(e.titulo)}</h3><span class="ev-cat" style="position:static;display:inline-block">${CATS[e.cat]||e.cat}</span>
+        <p class="cl-horario">${esc(e.fecha)} · ${esc(e.hora)}</p>
+        <ul class="ev-meta">
+          <li>${icon('clock')} ${esc(e.dur)}</li>
+          <li>${icon('pin')} ${esc(e.lugar)}</li>
+        </ul>
+        ${matsHTML(e)}
+        <div style="margin-top:.5rem">${plazasLabel(e)}</div>
+      </div>
+      <div class="cl-side">
+        <span class="precio">${e.precio} €<small>${e.per}</small></span>
+        <button class="btn btn-mag btn-sm" data-reg="${e.id}" ${full?'disabled':''}>${full?'Sin plazas':'Apuntarme'}</button>
+      </div>
+    </article>`;
+  }).join(''):'<p class="empty">Todavía no hay clases publicadas.</p>';
+  observeReveals();
+}
+function fillSelect(){
+  const t=events.filter(e=>e.tipo==='taller'), c=events.filter(e=>e.tipo==='clase');
+  $('#f-evento').innerHTML=`<option value="">— Elige una opción —</option>
+    <optgroup label="Talleres puntuales">${t.map(e=>`<option value="${e.id}">${esc(e.titulo)} · ${esc(e.fecha)}</option>`).join('')}</optgroup>
+    <optgroup label="Clases semanales">${c.map(e=>`<option value="${e.id}">${esc(e.titulo)} · ${esc(e.fecha)}</option>`).join('')}</optgroup>`;
+}
+function renderAll(){renderTalleres();renderClases();fillSelect();if(sessionStorage.getItem(SS_S))renderDash()}
+
+/* ================= MODAL RESERVA ================= */
+let modalEv=null,lastFocus=null;
+function openModal(id){
+  modalEv=getEv(id);if(!modalEv)return;
+  lastFocus=document.activeElement;
+  $('#m-res').innerHTML=`<b>${esc(modalEv.titulo)}</b><ul>
+    <li>${icon('clock')} ${esc(modalEv.fecha)}${modalEv.hora?' · '+esc(modalEv.hora):''}</li>
+    <li>${icon('clock')} ${esc(modalEv.dur)}</li>
+    <li>${icon('pin')} ${esc(modalEv.lugar)}</li>
+    <li>${icon('users')} ${libres(modalEv)>0?libres(modalEv)+' plazas libres':'completo'}</li></ul>`;
+  const full=libres(modalEv)<=0;
+  $('#m-submit').disabled=full;
+  $('#m-submit').textContent=full?'Evento completo':'Confirmar reserva';
+  $('#m-form').reset();['me-nombre','me-email','me-edad','me-auto'].forEach(i=>$('#'+i).textContent='');
+  $('#overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>$('#m-nombre').focus(),60);
+}
+function closeModal(){$('#overlay').classList.remove('show');document.body.style.overflow='';modalEv=null;if(lastFocus)lastFocus.focus()}
+$('#mClose').addEventListener('click',closeModal);
+$('#overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#overlay').classList.contains('show'))closeModal()});
+
+/* ================= VALIDACIÓN E INSCRIPCIÓN ================= */
+function validaReg(nombre,email,edad,auto){
+  const err={};
+  if(!nombre||nombre.trim().length<3)err.nombre='Escribe tu nombre completo.';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email||''))err.email='Introduce un correo válido.';
+  const n=parseInt(edad,10);
+  if(isNaN(n))err.edad='Indica la edad.';
+  else if(n<6)err.edad='La edad mínima son 6 años.';
+  else if(n>120)err.edad='Revisa la edad.';
+  else if(n<14&&!auto)err.auto='Menores de 14: se necesita autorización.';
+  return err;
+}
+function addReg(id,data){(regs[id]=regs[id]||[]).push(data);save()}
+
+$('#m-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const err=validaReg($('#m-nombre').value,$('#m-email').value,$('#m-edad').value,$('#m-auto').checked);
+  $('#me-nombre').textContent=err.nombre||'';$('#me-email').textContent=err.email||'';
+  $('#me-edad').textContent=err.edad||'';$('#me-auto').textContent=err.auto||'';
+  if(Object.keys(err).length)return;
+  addReg(modalEv.id,{nombre:$('#m-nombre').value.trim(),email:$('#m-email').value.trim(),edad:parseInt($('#m-edad').value,10)});
+  toast(`🎨 ¡Plaza reservada para «${modalEv.titulo}»! Te escribiremos pronto.`);
+  closeModal();renderAll();
+});
+function toggleAuth(inputId,wrap){
+  const n=parseInt($(inputId).value,10);
+  const w=$(inputId).closest('form').querySelector('.auth-wrap');
+  if(w)w.hidden=!(n>=6&&n<14);
+}
+$('#f-edad').addEventListener('input',()=>toggleAuth('#f-edad'));
+$('#m-edad').addEventListener('input',()=>toggleAuth('#m-edad'));
+
+$('#formInscripcion').addEventListener('submit',e=>{
+  e.preventDefault();
+  const ev=$('#f-evento').value;
+  const err={};
+  if(!ev)err.evento='Elige un taller o clase.';
+  Object.assign(err,validaReg($('#f-nombre').value,$('#f-email').value,$('#f-edad').value,$('#f-auto').checked));
+  $('#e-evento').textContent=err.evento||'';$('#e-nombre').textContent=err.nombre||'';
+  $('#e-email').textContent=err.email||'';$('#e-edad').textContent=err.edad||'';$('#e-auto').textContent=err.auto||'';
+  if(Object.keys(err).length){$('#f-ok').hidden=true;return}
+  const eObj=getEv(ev);
+  if(libres(eObj)<=0){$('#e-evento').textContent='Este evento está completo. Elige otro.';return}
+  addReg(ev,{nombre:$('#f-nombre').value.trim(),email:$('#f-email').value.trim(),edad:parseInt($('#f-edad').value,10)});
+  const ok=$('#f-ok');
+  ok.innerHTML=`✅ <strong>¡Inscripción enviada!</strong> Te hemos guardado plaza en <em>${esc(eObj.titulo)}</em>. Enviaremos los detalles a <strong>${esc($('#f-email').value)}</strong>.`;
+  ok.hidden=false;
+  toast('🧵 ¡Inscripción completada! Nos vemos en el taller.');
+  e.target.reset();ok.scrollIntoView({behavior:'smooth',block:'center'});
+  renderAll();
+});
+
+/* Delegación de botones reservar */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-reg]');
+  if(b&&!b.disabled)openModal(b.dataset.reg);
+});
+
+/* ================= FILTROS ================= */
+$$('.chip-f').forEach(btn=>btn.addEventListener('click',()=>{
+  curFilter=btn.dataset.cat;
+  $$('.chip-f').forEach(b=>b.setAttribute('aria-pressed',b===btn?'true':'false'));
+  renderTalleres();
+}));
+
+/* ================= GESTIÓN (PERSONAL) ================= */
+function renderPatOpts(){
+  $('#patOpts').innerHTML=PATS.map((p,i)=>`<label><input type="radio" name="g-pat" value="${p}" ${i===0?'checked':''}><span class="sw pt ${p}" title="${p}"></span></label>`).join('');
+}
+function renderDash(){
+  const totalCap=events.reduce((a,e)=>a+e.cap,0), totalRegs=Object.values(regs).reduce((a,l)=>a+l.length,0);
+  $('#dstats').innerHTML=`
+    <div class="dstat"><b>${events.length}</b><span>Eventos publicados</span></div>
+    <div class="dstat"><b>${totalCap}</b><span>Plazas ofertadas</span></div>
+    <div class="dstat"><b>${totalRegs}</b><span>Inscripciones</span></div>`;
+  $('#dashBody').innerHTML=events.map(e=>{
+    const occ=enrolled(e.id);
+    return `<tr>
+      <td><strong>${esc(e.titulo)}</strong><br><small style="color:var(--mute)">${CATS[e.cat]||e.cat} · ${e.precio} €${e.per}</small></td>
+      <td><span class="mini-tag">${e.tipo==='taller'?'Taller':'Clase'}</span></td>
+      <td>${esc(e.fecha)}${e.hora?'<br><small>'+esc(e.hora)+'</small>':''}</td>
+      <td>${occ}/${e.cap}</td>
+      <td><button class="btn btn-sm" data-ins="${e.id}">Ver (${occ})</button></td>
+      <td><div class="acts">
+        <button class="btn btn-sm" data-edit="${e.id}" aria-label="Editar ${esc(e.titulo)}">${icon('pencil')}</button>
+        <button class="btn btn-sm" data-del="${e.id}" aria-label="Eliminar ${esc(e.titulo)}">${icon('trash')}</button>
+      </div></td>
+    </tr>
+    <tr class="regs-row" id="regs-${e.id}" hidden><td colspan="6">
+      ${occ?`<ul class="regs-chips">${(regs[e.id]||[]).map(r=>`<li>${esc(r.nombre)} · ${esc(r.email)} · ${r.edad} años</li>`).join('')}</ul>`:'<em style="color:var(--mute)">Sin inscripciones todavía.</em>'}
+    </td></tr>`;
+  }).join('');
+}
+$('#btnNuevo').addEventListener('click',()=>{
+  $('#gform').hidden=false;$('#gformTitle').textContent='Crear evento';
+  $('#gform').reset();$('#g-id').value='';renderPatOpts();
+  $('#gform').scrollIntoView({behavior:'smooth',block:'center'});
+});
+$('#gCancel').addEventListener('click',()=>{$('#gform').hidden=true});
+$('#gform').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v={titulo:$('#g-titulo').value.trim(),fecha:$('#g-fecha').value.trim(),dur:$('#g-dur').value.trim(),lugar:$('#g-lugar').value.trim()};
+  const err={};
+  if(!v.titulo){$('#ge-fecha').textContent='';err.t=true}
+  if(!v.fecha)err.fecha='Obligatorio';
+  if(!v.dur)err.dur='Obligatorio';
+  if(!v.lugar)err.lugar='Obligatorio';
+  if(!(parseInt($('#g-cap').value,10)>0))err.cap='Mínimo 1';
+  $('#ge-fecha').textContent=v.titulo?(err.fecha||''):'Escribe un título';
+  $('#ge-dur').textContent=err.dur||'';$('#ge-lugar').textContent=err.lugar||'';$('#ge-cap').textContent=err.cap||'';
+  if(Object.keys(err).length||!v.titulo)return;
+  const data={
+    tipo:$('#g-tipo').value, titulo:v.titulo, cat:$('#g-cat').value, fecha:v.fecha,
+    hora:$('#g-hora').value.trim(), dur:v.dur, lugar:v.lugar,
+    precio:parseFloat($('#g-precio').value)||0, per:$('#g-per').value,
+    cap:parseInt($('#g-cap').value,10), desc:$('#g-desc').value.trim(),
+    mat:$('#g-mat').value.split(',').map(s=>s.trim()).filter(Boolean),
+    pat:($$('input[name=g-pat]').find(r=>r.checked)||{}).value||'p-shibori'
+  };
+  const id=$('#g-id').value;
+  if(id){const i=events.findIndex(x=>x.id===id);events[i]={...events[i],...data};toast('✏️ Evento actualizado.')}
+  else{data.id='e'+Date.now();events.push(data);toast('✨ Evento creado y publicado.')}
+  save();$('#gform').hidden=true;renderAll();
+});
+$('#dashBody').addEventListener('click',e=>{
+  const ins=e.target.closest('[data-ins]');
+  if(ins){const r=$('#regs-'+ins.dataset.ins);r.hidden=!r.hidden;return}
+  const del=e.target.closest('[data-del]');
+  if(del){
+    const ev=getEv(del.dataset.del);
+    if(confirm(`¿Eliminar «${ev.titulo}» y sus inscripciones?`)){
+      events=events.filter(x=>x.id!==ev.id);delete regs[ev.id];
+      save();renderAll();toast('🗑️ Evento eliminado.');
+    }return;
+  }
+  const ed=e.target.closest('[data-edit]');
+  if(ed){
+    const ev=getEv(ed.dataset.edit);if(!ev)return;
+    $('#gform').hidden=false;$('#gformTitle').textContent='Editar: '+ev.titulo;
+    $('#g-id').value=ev.id;$('#g-tipo').value=ev.tipo;$('#g-titulo').value=ev.titulo;
+    $('#g-cat').value=ev.cat;$('#g-fecha').value=ev.fecha;$('#g-hora').value=ev.hora;
+    $('#g-dur').value=ev.dur;$('#g-lugar').value=ev.lugar;$('#g-precio').value=ev.precio;
+    $('#g-per').value=ev.per;$('#g-cap').value=ev.cap;$('#g-desc').value=ev.desc;
+    $('#g-mat').value=(ev.mat||[]).join(', ');
+    renderPatOpts();
+    const r=$$('input[name=g-pat]').find(x=>x.value===ev.pat);if(r)r.checked=true;
+    $('#gform').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+});
+$('#formLogin').addEventListener('submit',e=>{
+  e.preventDefault();
+  if($('#g-pass').value==='hilo2025'){
+    sessionStorage.setItem(SS_S,'1');$('#g-login-err').textContent='';$('#g-pass').value='';
+    showDash();toast('🔓 Sesión iniciada. ¡Bienvenida, equipo!');
+  }else $('#g-login-err').textContent='Contraseña incorrecta.';
+});
+$('#btnLogout').addEventListener('click',()=>{sessionStorage.removeItem(SS_S);showDash();toast('Sesión cerrada.')});
+$('#btnReset').addEventListener('click',()=>{
+  if(!confirm('¿Restaurar los datos de demostración? Se perderán los cambios.'))return;
+  events=SEED.map(e=>({...e}));regs=seedRegs();save();renderAll();toast('♻️ Datos de demo restaurados.');
+});
+function showDash(){
+  const on=!!sessionStorage.getItem(SS_S);
+  $('#loginBox').hidden=on;$('#dash').hidden=!on;
+  if(on)renderDash();
+}
+
+/* ================= NAV / MENÚ ================= */
+$('#burger').addEventListener('click',()=>{
+  const open=$('#top').classList.toggle('open');
+  $('#burger').setAttribute('aria-expanded',open);
+  $('#burger').textContent=open?'✕ Cerrar':'☰ Menú';
+});
+$$('#menu a').forEach(a=>a.addEventListener('click',()=>{
+  $('#top').classList.remove('open');$('#burger').setAttribute('aria-expanded','false');$('#burger').textContent='☰ Menú';
+}));
+
+/* ================= CONTADORES / INICIO ================= */
+function counters(){
+  $$('[data-n]').forEach(el=>{
+    const target=+el.dataset.n,dur=1400,t0=performance.now();
+    function step(t){const p=Math.min((t-t0)/dur,1);el.textContent=Math.round(target*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)}
+    requestAnimationFrame(step);
+  });
+}
+$('#year').textContent=new Date().getFullYear();
+renderPatOpts();renderAll();showDash();observeReveals();counters();
+</script>
+</body>
+</html>
