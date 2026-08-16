@@ -253,12 +253,17 @@
     const improverSignals = [
       'mejora este prompt', 'mejorar este prompt', 'optimiza este prompt',
       'corrige este prompt', 'reescribe este prompt', 'profesionaliza este prompt',
-      'haz más claro este prompt', 'revisa este prompt', 'prompt actual:'
+      'haz más claro este prompt', 'revisa este prompt', 'prompt actual:', 'prompt final',
+      'prompt optimizado'
     ];
     for (const s of improverSignals) {
       if (lower.includes(s)) return 'improver';
     }
-    const looksStructured = text.split('\n').length >= 6 && /(^|\n)\s*[-#*]\s+/.test(text);
+    const hasBulletSections = /(^|\n)\s*[-#*]\s+/.test(text);
+    const bracketSectionCount = (text.match(/(^|\n)\s*\[[^\]\n]{2,60}\]\s*:/g) || []).length;
+    const hasBracketSections = bracketSectionCount >= 2;
+    const hasPromptHeadings = /(^|\n)\s*(objetivo|contexto|requisitos|restricciones|formato|criterios de aceptación|prompt final)\s*:/i.test(text);
+    const looksStructured = text.split('\n').length >= 5 && (hasBulletSections || hasBracketSections || hasPromptHeadings);
     return looksStructured ? 'improver' : 'copilot';
   }
 
