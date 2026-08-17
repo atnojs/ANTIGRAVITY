@@ -54,6 +54,12 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 ## Reglas críticas del proyecto
 
+- **Protocolo de ejecución (obligatorio, directiva de Antonio 2026-08-17):**
+  - Al recibir una tarea, EJECUTAR sin hacer preguntas de confirmación. Nada de "¿procedo?", "¿confirmas?", "¿quiere decir que…?". Actuar.
+  - Si hay que eliminar, mover, modificar o actualizar archivos: hacerlo sin pedir permiso.
+  - PERO antes de tocar nada, crear una carpeta de respaldo (`backups/` o nombre descriptivo en la raíz o junto al trabajo) y guardar en ella TODO lo que se elimine, modifique o mueva — cualquier archivo necesario para rehacer los cambios y volver a la casilla de salida.
+  - Al terminar la tarea: commit + push siempre (el webhook despliega).
+  - Antonio revisa el trabajo. SOLO cuando él lo indique, se elimina la carpeta de respaldo. Nunca borrarla antes.
 - Las imágenes se generan/editan SIEMPRE con FLUX (Black Forest Labs).
 - El estilo es SIEMPRE hoola/relatos: cian `#00D0D0` + verde `#26C626`, tipografía Electrolize, glassmorphism.
 - Todo lo que se cree o edite debe ser RESPONSIVE (se ve y funciona bien en móvil, tablet y escritorio).
