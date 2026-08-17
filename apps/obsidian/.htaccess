@@ -1,0 +1,16 @@
+# Quartz: URLs sin extension -> archivo .html (SPA en Hostinger)
+Options -MultiViews
+RewriteEngine On
+RewriteBase /apps/obsidian/
+
+# Si el archivo o carpeta existe, servirlo tal cual
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# URLs internas sin extension -> su .html
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
+
+# Fallback: home
+RewriteRule ^$ index.html [L]
