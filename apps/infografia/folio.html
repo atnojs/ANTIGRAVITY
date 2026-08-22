@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folio — Infografías que se entienden</title>
+  <meta name="description" content="Genera infografías claras a partir de tus ideas, datos y fuentes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/folio.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegación principal">
+      <a class="brand" href="#" onclick="App.reset(); return false;" aria-label="Folio, volver al inicio"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>folio</span></a>
+      <div class="sidebar-label">Workspace</div>
+      <nav class="main-nav">
+        <a class="nav-item active" href="#builder"><span class="nav-icon">✦</span> Crear</a>
+        <a class="nav-item" href="#projects" onclick="App.showToast('Tus proyectos aparecerán aquí cuando guardes una infografía.'); return false;"><span class="nav-icon">▤</span> Mis proyectos <span class="nav-count">0</span></a>
+        <a class="nav-item" href="#templates" onclick="App.showToast('La biblioteca de plantillas está en preparación.'); return false;"><span class="nav-icon">◫</span> Plantillas</a>
+      </nav>
+      <div class="sidebar-label sidebar-label-spaced">Tu marca</div>
+      <button class="brand-kit" type="button" onclick="App.showToast('Pronto podrás guardar colores, logo y tipografías de tu marca.')"><span class="brand-kit-swatch"><span></span><span></span><span></span></span><span><strong>Kit de marca</strong><small>Colores y tipografías</small></span><span class="chevron">›</span></button>
+      <div class="sidebar-bottom"><div class="model-status"><span class="status-dot"></span><span id="sidebar-model-status">Modo demo listo</span></div><button class="help-button" type="button" onclick="App.openModelSettings()"><span>?</span> Conectar un modelo</button></div>
+    </aside>
+
+    <main class="main-content" id="builder">
+      <header class="topbar"><div class="breadcrumb"><span>Workspace</span><b>/</b><strong>Nueva infografía</strong></div><div class="topbar-actions"><span class="save-state"><span class="save-dot"></span><span id="save-label">Borrador guardado</span></span><button class="icon-button" type="button" aria-label="Ayuda" onclick="App.showToast('Elige primero la historia y luego el estilo. Folio se encarga del resto.')">?</button><button class="avatar" type="button" aria-label="Perfil">AR</button></div></header>
+      <section class="intro-block" aria-labelledby="page-title"><div><p class="eyebrow">NUEVA CREACIÓN <span></span> 01</p><h1 id="page-title">Dale forma a tu idea<span class="title-period">.</span></h1><p class="intro-copy">Convierte información compleja en una historia visual que se entiende a la primera.</p></div><div class="intro-note"><span class="note-star">✳</span><span>Elige la estructura según lo que quieres contar.<br><strong>El diseño viene después.</strong></span></div></section>
+      <div class="smart-banner"><span class="sparkle">✦</span><div><strong>¿No sabes por dónde empezar?</strong><span>Cuéntame tu idea y te recomendaré la estructura visual más clara.</span></div><button class="text-button" type="button" onclick="App.recommend()">Recomendar por mí <span>→</span></button></div>
+
+      <div class="builder-layout">
+        <section class="brief-panel card" aria-labelledby="brief-title">
+          <div class="card-heading"><div><span class="step-number">01</span><h2 id="brief-title">Cuéntame la historia</h2></div><span class="required-label">* Obligatorio</span></div>
+          <p class="card-helper">La estructura se adapta al tipo de información, no al revés.</p>
+          <fieldset class="form-block"><legend>¿Qué quieres explicar?</legend><div class="format-grid" id="format-grid"></div></fieldset>
+          <div class="form-block"><label for="topic">Tema o idea principal <span>*</span></label><textarea id="topic" rows="4" maxlength="900" placeholder="Ej. Cómo ha cambiado el consumo de agua en España y qué hábitos pueden reducirlo."></textarea><div class="field-meta"><span>Escribe con tus palabras. Folio ordenará el contenido.</span><span id="topic-count">0 / 900</span></div></div>
+          <div class="two-fields"><div class="form-block compact-block"><label for="audience">¿Para quién?</label><select id="audience"><option value="adultos">Público general</option><option value="profesionales">Equipo / clientes</option><option value="estudiantes">Estudiantes</option><option value="niños">Niños y familias</option><option value="mayores">Lectura accesible</option></select></div><div class="form-block compact-block"><label for="channel">¿Dónde se verá?</label><select id="channel"><option value="social">Redes sociales</option><option value="presentacion">Presentación</option><option value="documento">Informe / PDF</option><option value="web">Web / pantalla</option></select></div></div>
+          <div class="form-block optional-block"><div class="optional-title"><label for="source">Fuente o datos de referencia</label><span>Opcional · mejora la credibilidad</span></div><input id="source" type="text" maxlength="140" placeholder="Ej. Informe del Ministerio para la Transición Ecológica, 2025"></div>
+          <div class="sample-row"><span>¿Necesitas una idea rápida?</span><button type="button" class="sample-button" onclick="App.loadSample()">Usar un ejemplo <span>↗</span></button></div>
+        </section>
+
+        <section class="style-panel card" aria-labelledby="style-title">
+          <div class="card-heading style-heading"><div><span class="step-number">02</span><h2 id="style-title">Elige un lenguaje visual</h2></div><span class="style-count"><span id="visible-style-count">3</span> estilos visibles</span></div>
+          <p class="card-helper">Agrupados por intención visual para que encuentres el tono sin perderte entre plantillas.</p>
+          <div class="folder-tabs" id="folder-tabs" role="tablist" aria-label="Familias visuales"></div>
+          <div class="folder-caption"><span class="folder-bullet"></span><span id="folder-caption-text">Una selección serena, modular y fácil de leer.</span></div>
+          <div class="style-grid" id="style-grid"></div>
+          <div class="selected-style" id="selected-style"></div>
+          <div class="style-footer"><button class="outline-button" type="button" onclick="App.showToast('Usa las carpetas para explorar nuevas familias visuales.')"><span>＋</span> Explorar estilos</button><span class="keyboard-hint"><kbd>⌘</kbd><kbd>↵</kbd> generar</span></div>
+        </section>
+      </div>
+
+      <section class="bottom-tools card" aria-label="Opciones de salida"><div class="output-title"><span class="output-icon">↗</span><div><strong>Salida</strong><small>Una pieza lista para compartir</small></div></div><div class="output-options"><label class="output-option active"><input type="radio" name="aspect" value="vertical" checked><span class="option-icon vertical-icon"></span><span><strong>Vertical</strong><small>4:5 · Social</small></span></label><label class="output-option"><input type="radio" name="aspect" value="landscape"><span class="option-icon landscape-icon"></span><span><strong>Apaisada</strong><small>16:9 · Presentación</small></span></label><label class="output-option"><input type="radio" name="aspect" value="square"><span class="option-icon square-icon"></span><span><strong>Cuadrada</strong><small>1:1 · Feed</small></span></label></div><button class="generate-button" id="generate-button" type="button" onclick="App.generate()"><span class="button-spark">✦</span> Generar infografía <span class="arrow">→</span></button></section>
+      <footer class="app-footer"><span>Folio convierte tus ideas en imágenes con criterio.</span><span><button type="button" onclick="App.showToast('Tus datos se quedan en este navegador salvo que conectes una API.')">Privacidad</button><i>·</i><button type="button" onclick="App.openModelSettings()">Configuración del modelo</button></span></footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" id="model-modal" hidden><section class="model-modal" role="dialog" aria-modal="true" aria-labelledby="model-modal-title"><button class="modal-close" type="button" aria-label="Cerrar" onclick="App.closeModelSettings()">×</button><p class="eyebrow">AJUSTES <span></span> MODELO</p><h2 id="model-modal-title">Conecta tu modelo de IA</h2><p>La demo funciona sin clave. Añade una clave de DeepSeek u OpenRouter para que el modelo ordene y redacte el contenido por ti.</p><label for="api-key">API key</label><div class="key-row"><input id="api-key" type="password" placeholder="sk-..." autocomplete="off"><button type="button" class="save-key-button" onclick="App.saveApiKey()">Guardar</button></div><div class="security-note"><span>⌁</span> Se guarda solo en este navegador. No se envía a Folio.</div><button type="button" class="remove-key" onclick="App.removeApiKey()">Usar siempre el modo demo</button></section></div>
+  <div class="result-backdrop" id="result-modal" hidden><section class="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title"><header class="result-header"><div><p class="eyebrow">RESULTADO <span></span> LISTO</p><h2 id="result-title">Tu infografía está lista<span class="title-period">.</span></h2><p id="result-subtitle">Una primera versión para revisar y compartir.</p></div><button class="modal-close" type="button" aria-label="Cerrar resultado" onclick="App.closeResult()">×</button></header><div class="result-layout"><div class="canvas-wrap"><canvas id="result-canvas" aria-label="Vista previa de la infografía generada"></canvas><div class="canvas-badge" id="canvas-badge">BOCETO LOCAL</div></div><aside class="result-aside"><div class="result-summary"><span class="summary-label">Estructura</span><strong id="result-format">Resumen informativo</strong><span id="result-format-note">Jerarquía y lectura rápida</span></div><div class="result-summary"><span class="summary-label">Lenguaje visual</span><strong id="result-style">Startup Pitch</strong><span id="result-style-note">Moderno y expresivo</span></div><div class="result-summary"><span class="summary-label">Siguiente mejora</span><p id="result-tip">Revisa que cada dato tenga su fuente antes de publicarla.</p></div><div class="result-actions"><button class="generate-button" type="button" onclick="App.downloadPNG()">Descargar PNG <span class="arrow">↓</span></button><button class="outline-button full-button" type="button" onclick="App.printResult()">Imprimir / guardar PDF</button><button class="text-button retry-button" type="button" onclick="App.regenerate()">↻ Crear una variante</button></div></aside></div></section></div>
+
+  <script src="js/styles-data.js"></script><script src="js/engine.js"></script><script src="js/api.js"></script><script src="js/folio-app.js"></script>
+</body>
+</html>

@@ -1,4 +1,8 @@
-# 📊 Infográfica AI
+# 📊 Folio — Infografías que se entienden
+
+La propuesta renovada vive en `folio.html` y se abre automáticamente desde `index.html`. Separa el tipo de historia (datos, comparación, proceso, cronología, mapa o resumen) del lenguaje visual, agrupando los estilos en carpetas para que la elección sea rápida.
+
+Incluye recomendación automática, ejemplos de contenido, borrador guardado localmente, generación de boceto sin API, conexión opcional con DeepSeek/OpenRouter, descarga PNG e impresión a PDF.
 
 Generador de infografías con inteligencia artificial. **50 estilos únicos** para diferentes audiencias + **10 efectos de movimiento** para animar el resultado.
 
