@@ -110,10 +110,10 @@ const FolioStock = {
     const family = TEMPLATE_FAMILIES.find(item => item.id === template.family);
     const colors = family.colors;
     const blocks = Array.from({length:4},(_,index) => `<i style="--i:${index}"></i>`).join('');
-    return `<article class="stock-card ${template.id === this.selectedTemplateId ? 'selected' : ''}">
+    return `<article class="stock-card stock-${template.family} ${template.id === this.selectedTemplateId ? 'selected' : ''}">
       <button type="button" class="stock-select" onclick="FolioStock.select('${template.id}')">
         <span class="stock-preview stock-v${template.variant}" style="--p:${colors[0]};--ink:${colors[1]};--accent:${colors[2]}">
-          <b>${this.escape(template.data.titulo)}</b><small>${this.escape(template.format)}</small><span class="stock-blocks">${blocks}</span>
+          <b>${this.escape(template.data.titulo)}</b><small>${this.escape(template.format)}</small><em class="stock-motif">${family.icon}</em><span class="stock-blocks">${blocks}</span>
         </span>
         <span class="stock-copy"><strong>${this.escape(template.name)}</strong><small>${this.escape(template.familyName)} · ${this.escape(template.category)}</small></span>
       </button>

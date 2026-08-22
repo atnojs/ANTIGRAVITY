@@ -113,6 +113,7 @@ textarea, input, select { width: 100%; border: 1px solid #deddd6; border-radius:
 .stock-preview::before { content:""; position:absolute; inset:0; opacity:.13; background-image:radial-gradient(var(--ink) .8px,transparent .8px); background-size:9px 9px; }
 .stock-preview > b { position:relative; z-index:2; display:block; max-width:86%; font:800 19px/1.02 var(--serif); letter-spacing:-.045em; }
 .stock-preview > small { position:relative; z-index:2; display:inline-block; margin-top:8px; padding:3px 5px; border:1px solid currentColor; border-radius:10px; font:700 7px var(--mono); text-transform:uppercase; }
+.stock-motif { position:absolute; right:14px; top:12px; z-index:2; color:var(--accent); font:900 28px/1 var(--serif); font-style:normal; }
 .stock-blocks { position:absolute; inset:78px 13px 14px; display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
 .stock-blocks i { display:block; border:1px solid color-mix(in srgb,var(--ink) 42%,transparent); background:color-mix(in srgb,var(--accent) calc(18% + var(--i)*5%),transparent); border-radius:7px; }
 .stock-blocks i::before { content:""; display:block; width:42%; height:5px; margin:10px 8px 5px; border-radius:6px; background:var(--accent); }
@@ -129,6 +130,26 @@ textarea, input, select { width: 100%; border: 1px solid #deddd6; border-radius:
 .stock-v7 .stock-blocks i:nth-child(1) { grid-column:1 / -1; border-radius:50%; }
 .stock-v8 .stock-blocks { grid-template-columns:repeat(2,1fr); transform:skewY(-2deg); }
 .stock-v9 .stock-blocks { display:flex; flex-direction:column; }
+.stock-handmade .stock-preview::before { opacity:.18; background-image:repeating-linear-gradient(0deg,transparent 0 11px,var(--ink) 12px 12px); }
+.stock-handmade .stock-blocks { transform:rotate(-2deg); }
+.stock-handmade .stock-blocks i { border:2px dashed var(--ink); background:transparent; }
+.stock-editorial .stock-preview { background:linear-gradient(165deg,var(--ink) 0 37%,var(--p) 37%); color:var(--p); }
+.stock-editorial .stock-blocks { top:92px; color:var(--ink); }
+.stock-editorial .stock-blocks i { border-radius:0; background:color-mix(in srgb,var(--accent) 12%,white); }
+.stock-illustrated .stock-blocks i { border-radius:50%; }
+.stock-illustrated .stock-motif { width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:white; }
+.stock-bold .stock-preview { background:linear-gradient(90deg,var(--ink) 0 50%,var(--accent) 50%); color:white; }
+.stock-bold .stock-blocks i { border:2px solid white; background:rgba(255,255,255,.12); }
+.stock-data .stock-preview { background:#111c2f;color:#f6f8fb; }
+.stock-data .stock-blocks i { border:0;background:#1d2a40;box-shadow:inset 0 3px var(--accent); }
+.stock-minimal .stock-blocks i { border-radius:0;background:transparent;border:1px solid var(--ink); }
+.stock-education .stock-preview::before { background-image:repeating-linear-gradient(0deg,transparent 0 13px,color-mix(in srgb,var(--accent) 24%,transparent) 14px 14px);opacity:1; }
+.stock-education .stock-blocks i { border:2px solid var(--ink);border-radius:0;box-shadow:4px 4px 0 var(--accent);background:white; }
+.stock-vintage .stock-preview { box-shadow:inset 0 0 0 7px color-mix(in srgb,var(--ink) 55%,transparent),inset 0 0 0 10px var(--p); }
+.stock-vintage .stock-blocks i { border-radius:50%;background:transparent;border:2px solid var(--ink); }
+.stock-tech .stock-preview { color:#eaf8ff;background-color:#071426;background-image:linear-gradient(rgba(49,216,223,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(49,216,223,.12) 1px,transparent 1px);background-size:16px 16px; }
+.stock-tech .stock-blocks i { background:rgba(49,216,223,.1);border:1px solid #31d8df;box-shadow:0 0 8px rgba(49,216,223,.35); }
+.stock-organic .stock-blocks i { border-radius:50% 10% 50% 10%;background:color-mix(in srgb,var(--accent) 22%,transparent); }
 .stock-copy { display:block; padding:11px 12px 8px; }
 .stock-copy strong { display:block; color:#2e3836; font-size:11px; line-height:1.25; }
 .stock-copy small { display:block; margin-top:4px; color:#929994; font-size:8px; }

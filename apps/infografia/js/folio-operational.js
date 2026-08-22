@@ -278,6 +278,12 @@ const FolioOperational = {
 
   drawCanvas(data, style, format) {
     const c = this.setupCanvas(style);
+    const templateId = App.lastInfographic?.templateId || (typeof FolioStock !== 'undefined' ? FolioStock.selectedTemplateId : null);
+    const template = typeof STOCK_TEMPLATES !== 'undefined' ? STOCK_TEMPLATES.find(item => item.id === templateId) : null;
+    if (template && typeof FolioStockRender !== 'undefined') {
+      FolioStockRender.draw(c, data, template, this);
+      return;
+    }
     const { ctx, width, height, aspect, accent, accent2, text, muted } = c;
     const margin = aspect === 'vertical' ? 48 : 56;
     ctx.fillStyle = accent;
