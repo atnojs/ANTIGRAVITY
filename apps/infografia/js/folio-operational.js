@@ -10,6 +10,11 @@ const FolioOperational = {
     await this.initHistory();
     await this.updateApiStatus();
     this.updateProjectCount();
+    const editorButton = document.querySelector('[onclick="App.openEditor()"]');
+    if (editorButton) {
+      editorButton.setAttribute('onclick', 'App.openImageEditor()');
+      editorButton.textContent = 'Editar en Editor de Imágenes ↗';
+    }
   },
 
   getClientId() {
@@ -177,8 +182,14 @@ const FolioOperational = {
     const audience = document.getElementById('audience').value;
     const channel = document.getElementById('channel').value;
     const title = topic.split(/[.!?]/)[0].trim().slice(0, 90);
-    const design = typeof FolioStock !== 'undefined' ? FolioStock.getSettings() : {};
-    const style = typeof FolioStock !== 'undefined' ? FolioStock.resolveStyle(App.getStyle()) : App.getStyle();
+    if (typeof FolioReference !== 'undefined' && FolioReference.imageData && !FolioReference.schema) {
+      await FolioReference.analyze();
+      if (!FolioReference.schema) return;
+    }
+    const referenceSchema = typeof FolioReference !== 'undefined' ? FolioReference.schema : null;
+    const baseStyle = App.getStyle();
+    const palette = referenceSchema?.palette || {};
+    const style = { ...baseStyle, _c1: palette.background || baseStyle._c1, _c2: palette.accent || palette.primary || baseStyle._c2, _c3: palette.secondary || baseStyle._c3, _c4: palette.primary || baseStyle._c4, _c5: palette.text || baseStyle._c5 };
     let data = null;
     let sourceLabel = 'BOCETO LOCAL';
 
@@ -190,7 +201,8 @@ const FolioOperational = {
         format: App.selectedFormat,
         source,
         channel,
-        visualDirection: typeof FolioStock !== 'undefined' ? FolioStock.promptDescription() : ''
+        visualDirection: referenceSchema?.summary || '',
+        referenceSchema
       });
       sourceLabel = 'GENERADO CON IA';
     } catch (error) {
@@ -207,8 +219,7 @@ const FolioOperational = {
       sourceLabel,
       format: App.selectedFormat,
       aspect: document.querySelector('input[name="aspect"]:checked')?.value || 'vertical',
-      design,
-      templateId: typeof FolioStock !== 'undefined' ? FolioStock.selectedTemplateId : null,
+      referenceSchema,
       topic,
       projectId: `folio_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
     };
@@ -239,12 +250,14 @@ const FolioOperational = {
   },
 
   canvasFont(role) {
-    if (typeof FolioStock !== 'undefined') return FolioStock.font(role);
+    const type = App.lastInfographic?.referenceSchema?.typography?.[role === 'heading' ? 'title' : 'body'];
+    if (type === 'serif' || type === 'display' || type === 'handwritten') return 'Fraunces, Georgia, serif';
+    if (type === 'mono') return 'DM Mono, monospace';
     return role === 'heading' ? 'Fraunces, Georgia, serif' : role === 'mono' ? 'DM Mono, monospace' : 'DM Sans, Arial, sans-serif';
   },
 
   sectionLimit(aspect, maximum = 6) {
-    const density = typeof FolioStock !== 'undefined' ? FolioStock.getSettings().density : 'balanced';
+    const density = App.lastInfographic?.referenceSchema?.composition?.density || 'balanced';
     if (density === 'airy') return 3;
     if (density === 'detailed' && aspect === 'vertical') return maximum;
     return Math.min(4, maximum);
@@ -271,19 +284,25 @@ const FolioOperational = {
     gradient.addColorStop(1, App.withAlpha(accent2, .2));
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
-    const canvasState = { canvas, ctx, width, height, aspect, bg, accent, accent2, text, muted };
-    if (typeof FolioStock !== 'undefined') FolioStock.decorateBackground(canvasState, style._design || App.lastInfographic?.design || FolioStock.getSettings());
-    return canvasState;
+    const illustrationMode = App.lastInfographic?.referenceSchema?.shapes?.illustration;
+    if (illustrationMode && illustrationMode !== 'none') {
+      for (let index = 0; index < 7; index += 1) {
+        const x = (index * 173 + 41) % width;
+        const y = (index * 227 + 96) % height;
+        const radius = 28 + (index % 3) * 19;
+        ctx.fillStyle = App.withAlpha(index % 2 ? accent : accent2, .075);
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    return { canvas, ctx, width, height, aspect, bg, accent, accent2, text, muted };
   },
 
   drawCanvas(data, style, format) {
     const c = this.setupCanvas(style);
-    const templateId = App.lastInfographic?.templateId || (typeof FolioStock !== 'undefined' ? FolioStock.selectedTemplateId : null);
-    const template = typeof STOCK_TEMPLATES !== 'undefined' ? STOCK_TEMPLATES.find(item => item.id === templateId) : null;
-    if (template && typeof FolioStockRender !== 'undefined') {
-      FolioStockRender.draw(c, data, template, this);
-      return;
-    }
+    const schemaLayout = App.lastInfographic?.referenceSchema?.layout;
+    const layoutFormat = ({ split:'comparison', comparison:'comparison', timeline:'timeline', process:'process', dashboard:'statistical', radial:'informational', editorial:'informational', poster:'informational', grid:'informational', map:'geographic' })[schemaLayout] || format;
     const { ctx, width, height, aspect, accent, accent2, text, muted } = c;
     const margin = aspect === 'vertical' ? 48 : 56;
     ctx.fillStyle = accent;
@@ -299,9 +318,10 @@ const FolioOperational = {
     App.drawWrapped(ctx, data.subtitulo || '', margin, 220, width - margin * 2, 22, 2);
 
     const contentTop = 278;
-    if (format === 'timeline' || format === 'process') this.drawSequence(c, data.sections, contentTop, format === 'process');
-    else if (format === 'comparison') this.drawComparison(c, data.sections, contentTop);
-    else if (format === 'statistical') this.drawStatistics(c, data.sections, contentTop);
+    if (schemaLayout === 'radial' || schemaLayout === 'map') this.drawRadial(c, data.sections, contentTop);
+    else if (layoutFormat === 'timeline' || layoutFormat === 'process') this.drawSequence(c, data.sections, contentTop, layoutFormat === 'process');
+    else if (layoutFormat === 'comparison') this.drawComparison(c, data.sections, contentTop);
+    else if (layoutFormat === 'statistical') this.drawStatistics(c, data.sections, contentTop);
     else this.drawCards(c, data.sections, contentTop);
 
     ctx.fillStyle = muted;
@@ -325,6 +345,70 @@ const FolioOperational = {
       const y = top + Math.floor(index / columns) * (cardH + gap);
       this.drawInfoCard(ctx, section, x, y, cardW, cardH, index, text, muted, accent, accent2);
     });
+  },
+
+  drawRadial(c, sections, top) {
+    const { ctx, width, height, aspect, text, muted, accent, accent2, bg } = c;
+    const items = sections.slice(0, Math.min(6, this.sectionLimit(aspect, 6)));
+    const centerX = width / 2;
+    const centerY = top + (height - top - 80) / 2;
+    const radiusX = aspect === 'vertical' ? 205 : 300;
+    const radiusY = aspect === 'vertical' ? 185 : 125;
+    const nodeW = aspect === 'vertical' ? 150 : 170;
+    const nodeH = 88;
+
+    items.forEach((section, index) => {
+      const angle = -Math.PI / 2 + (Math.PI * 2 * index) / Math.max(items.length, 1);
+      const x = centerX + Math.cos(angle) * radiusX;
+      const y = centerY + Math.sin(angle) * radiusY;
+      ctx.strokeStyle = App.withAlpha(index % 2 ? accent2 : accent, .55);
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.quadraticCurveTo((centerX + x) / 2 + Math.sin(angle) * 24, (centerY + y) / 2 - Math.cos(angle) * 24, x, y);
+      ctx.stroke();
+    });
+
+    ctx.fillStyle = App.withAlpha(accent, .2);
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 82, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 63, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = App.isLight(accent) ? '#1d252b' : '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.font = `700 35px ${this.canvasFont('body')}`;
+    ctx.fillText('✦', centerX, centerY + 12);
+
+    items.forEach((section, index) => {
+      const angle = -Math.PI / 2 + (Math.PI * 2 * index) / Math.max(items.length, 1);
+      const cx = centerX + Math.cos(angle) * radiusX;
+      const cy = centerY + Math.sin(angle) * radiusY;
+      const x = Math.max(24, Math.min(width - nodeW - 24, cx - nodeW / 2));
+      const y = Math.max(top - 8, Math.min(height - nodeH - 55, cy - nodeH / 2));
+      ctx.fillStyle = App.withAlpha(App.isLight(bg) ? '#ffffff' : '#000000', .22);
+      ctx.beginPath();
+      ctx.roundRect(x, y, nodeW, nodeH, 18);
+      ctx.fill();
+      ctx.fillStyle = index % 2 ? accent2 : accent;
+      ctx.beginPath();
+      ctx.arc(x + 25, y + 27, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = App.isLight(index % 2 ? accent2 : accent) ? '#1d252b' : '#ffffff';
+      ctx.font = `700 15px ${this.canvasFont('body')}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(section.icono || '✦', x + 25, y + 32);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = text;
+      ctx.font = `700 14px ${this.canvasFont('heading')}`;
+      App.drawWrapped(ctx, section.titulo, x + 47, y + 25, nodeW - 57, 16, 2);
+      ctx.fillStyle = muted;
+      ctx.font = `400 9px ${this.canvasFont('body')}`;
+      App.drawWrapped(ctx, section.puntos?.[0] || '', x + 14, y + 58, nodeW - 28, 12, 2);
+    });
+    ctx.textAlign = 'left';
   },
 
   drawStatistics(c, sections, top) {
@@ -429,9 +513,18 @@ const FolioOperational = {
     ctx.fillRect(x, y, w, h);
     ctx.fillStyle = index % 2 ? accent2 : accent;
     ctx.fillRect(x, y, 5, h);
+    ctx.fillStyle = index % 2 ? accent2 : accent;
+    ctx.beginPath();
+    ctx.arc(x + 25, y + (compact ? 22 : 27), compact ? 11 : 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = App.isLight(index % 2 ? accent2 : accent) ? '#1d252b' : '#ffffff';
+    ctx.font = `700 ${compact ? 10 : 12}px ${this.canvasFont('body')}`;
+    ctx.textAlign = 'center';
+    ctx.fillText(section.icono || '✦', x + 25, y + (compact ? 26 : 31));
+    ctx.textAlign = 'left';
     ctx.fillStyle = text;
     ctx.font = `700 ${compact ? 14 : 17}px ${this.canvasFont('heading')}`;
-    ctx.fillText(section.titulo.slice(0, compact ? 24 : 28), x + 18, y + (compact ? 24 : 29));
+    ctx.fillText(section.titulo.slice(0, compact ? 24 : 28), x + 46, y + (compact ? 26 : 31));
     if (section.dato_destacado) {
       ctx.fillStyle = index % 2 ? accent2 : accent;
       ctx.font = `700 ${compact ? 16 : 22}px ${this.canvasFont('body')}`;
@@ -453,8 +546,7 @@ const FolioOperational = {
       styleId: item.styleId || App.selectedStyleId,
       format: item.format,
       aspect: item.aspect,
-      design: item.design || (typeof FolioStock !== 'undefined' ? FolioStock.getSettings() : {}),
-      templateId: item.templateId || null,
+      referenceSchema: item.referenceSchema || null,
       sourceLabel: item.sourceLabel,
       topic: item.topic || document.getElementById('topic').value,
       audience: document.getElementById('audience').value,
@@ -538,11 +630,9 @@ const FolioOperational = {
     const project = this.projects.find(item => item.id === id);
     const payload = this.projectPayload(project);
     if (!payload?.infographic) return;
-    const oldDesign = typeof FolioStock !== 'undefined' ? FolioStock.getSettings() : {};
-    if (typeof FolioStock !== 'undefined') FolioStock.setSettings(payload.design || {});
-    const style = typeof FolioStock !== 'undefined'
-      ? FolioStock.resolveStyle(App.getStyle(payload.styleId || 'dashboard-pro'))
-      : App.getStyle(payload.styleId || 'dashboard-pro');
+    const previousItem = App.lastInfographic;
+    const style = App.getStyle(payload.styleId || 'dashboard-pro');
+    App.lastInfographic = { ...(App.lastInfographic || {}), referenceSchema: payload.referenceSchema || null };
     const radio = document.querySelector(`input[name="aspect"][value="${payload.aspect || 'vertical'}"]`);
     const previousAspect = document.querySelector('input[name="aspect"]:checked')?.value || 'vertical';
     if (radio) radio.checked = true;
@@ -553,7 +643,7 @@ const FolioOperational = {
     link.click();
     const previousRadio = document.querySelector(`input[name="aspect"][value="${previousAspect}"]`);
     if (previousRadio) previousRadio.checked = true;
-    if (typeof FolioStock !== 'undefined') FolioStock.setSettings(oldDesign);
+    App.lastInfographic = previousItem;
     App.showToast('Infografía descargada desde Mis proyectos.');
   },
 
@@ -574,28 +664,22 @@ const FolioOperational = {
     document.getElementById('source').value = payload.infographic.fuente || '';
     if (payload.audience) document.getElementById('audience').value = payload.audience;
     if (payload.channel) document.getElementById('channel').value = payload.channel;
-    if (typeof FolioStock !== 'undefined') {
-      FolioStock.setSettings(payload.design || {});
-      FolioStock.selectedTemplateId = payload.templateId || null;
-    }
-    const resolvedStyle = typeof FolioStock !== 'undefined'
-      ? FolioStock.resolveStyle(App.getStyle(styleId))
-      : App.getStyle(styleId);
+    if (typeof FolioReference !== 'undefined') FolioReference.schema = payload.referenceSchema || null;
+    const resolvedStyle = App.getStyle(styleId);
     App.lastInfographic = {
       data: payload.infographic,
       style: resolvedStyle,
       styleId,
       format: payload.format || 'informational',
       aspect: payload.aspect || 'vertical',
-      design: payload.design || {},
-      templateId: payload.templateId || null,
+      referenceSchema: payload.referenceSchema || null,
       sourceLabel: payload.sourceLabel || 'PROYECTO GUARDADO',
       topic: payload.topic || '',
       projectId: project.id,
       createdAt: project.createdAt
     };
     App.renderFormats();
-    App.renderSelectedStyle();
+    if (typeof FolioReference !== 'undefined') FolioReference.render();
     this.closeProjects();
     this.renderResult();
     document.getElementById('result-subtitle').textContent = 'Proyecto recuperado.';
@@ -631,125 +715,20 @@ const FolioOperational = {
     }
   },
 
-  openEditor() {
-    const item = App.lastInfographic;
-    if (!item) return;
-    document.getElementById('edit-title').value = item.data.titulo || '';
-    document.getElementById('edit-subtitle').value = item.data.subtitulo || '';
-    document.getElementById('edit-source').value = item.data.fuente || '';
-    this.renderEditorSections();
-    document.getElementById('editor-modal').hidden = false;
-  },
-
-  renderEditorSections() {
-    const sections = App.lastInfographic?.data?.sections || [];
-    document.getElementById('edit-sections').innerHTML = sections.map((section, index) => `<fieldset class="edit-section" data-index="${index}"><legend>Bloque ${index + 1}</legend><div class="edit-section-toolbar"><button type="button" title="Subir" onclick="App.moveEditorSection(${index},-1)">↑</button><button type="button" title="Bajar" onclick="App.moveEditorSection(${index},1)">↓</button><button type="button" title="Eliminar" onclick="App.removeEditorSection(${index})">×</button></div><div class="editor-row"><label>Título<input class="edit-section-title" maxlength="40" value="${this.escape(section.titulo)}"></label><label>Icono<input class="edit-section-icon" maxlength="4" value="${this.escape(section.icono || '✦')}"></label></div><label>Dato destacado<input class="edit-section-stat" maxlength="20" value="${this.escape(section.dato_destacado || '')}"></label><label>Puntos · una línea por punto<textarea class="edit-section-points" rows="4" maxlength="700">${this.escape((section.puntos || []).join('\n'))}</textarea></label></fieldset>`).join('');
-  },
-
-  syncEditorSections() {
-    document.querySelectorAll('.edit-section').forEach((fieldset, index) => {
-      const section = App.lastInfographic?.data?.sections?.[index];
-      if (!section) return;
-      section.titulo = fieldset.querySelector('.edit-section-title').value;
-      section.icono = fieldset.querySelector('.edit-section-icon').value;
-      section.dato_destacado = fieldset.querySelector('.edit-section-stat').value;
-      section.puntos = fieldset.querySelector('.edit-section-points').value.split('\n').map(value => value.trim()).filter(Boolean).slice(0, 6);
-    });
-  },
-
-  addEditorSection() {
-    this.syncEditorSections();
-    const sections = App.lastInfographic?.data?.sections;
-    if (!sections || sections.length >= 8) return App.showToast('Puedes utilizar hasta 8 bloques.');
-    sections.push({titulo:`Bloque ${sections.length + 1}`,icono:'✦',dato_destacado:'',puntos:['Escribe aquí la información.']});
-    this.renderEditorSections();
-  },
-
-  removeEditorSection(index) {
-    this.syncEditorSections();
-    const sections = App.lastInfographic?.data?.sections;
-    if (!sections || sections.length <= 1) return App.showToast('La infografía necesita al menos un bloque.');
-    sections.splice(index,1);
-    this.renderEditorSections();
-  },
-
-  moveEditorSection(index, direction) {
-    this.syncEditorSections();
-    const sections = App.lastInfographic?.data?.sections;
-    const target = index + direction;
-    if (!sections || target < 0 || target >= sections.length) return;
-    [sections[index],sections[target]] = [sections[target],sections[index]];
-    this.renderEditorSections();
-  },
-
-  closeEditor() {
-    document.getElementById('editor-modal').hidden = true;
-  },
-
-  async applyEdits() {
-    const item = App.lastInfographic;
-    if (!item) return;
-    item.data.titulo = document.getElementById('edit-title').value.trim() || item.data.titulo;
-    item.data.subtitulo = document.getElementById('edit-subtitle').value.trim();
-    item.data.fuente = document.getElementById('edit-source').value.trim();
-    document.querySelectorAll('.edit-section').forEach((fieldset, index) => {
-      const section = item.data.sections[index];
-      if (!section) return;
-      section.titulo = fieldset.querySelector('.edit-section-title').value.trim() || section.titulo;
-      section.icono = fieldset.querySelector('.edit-section-icon').value.trim() || '✦';
-      section.dato_destacado = fieldset.querySelector('.edit-section-stat').value.trim();
-      section.puntos = fieldset.querySelector('.edit-section-points').value.split('\n').map(value => value.trim()).filter(Boolean).slice(0, 6);
-    });
-    this.closeEditor();
-    this.renderResult();
-    await this.saveCurrentProject();
-    App.showToast('Cambios aplicados y guardados.');
-  },
-
-  openStyleLibrary() {
-    this.styleFilter = 'all';
-    document.getElementById('style-library-search').value = '';
-    this.renderStyleFilters();
-    this.renderStyleLibrary();
-    document.getElementById('styles-modal').hidden = false;
-    document.body.style.overflow = 'hidden';
-  },
-
-  closeStyleLibrary() {
-    document.getElementById('styles-modal').hidden = true;
-    document.body.style.overflow = '';
-  },
-
-  renderStyleFilters() {
-    const labels = { all: 'Todos', infantil: 'Infantil', senior: 'Accesible', corporativo: 'Corporativo', artistico: 'Artístico', tecnico: 'Técnico' };
-    document.getElementById('style-library-filters').innerHTML = Object.entries(labels).map(([id, label]) => `<button type="button" class="library-filter ${this.styleFilter === id ? 'active' : ''}" onclick="App.filterStyleLibrary('${id}')">${label}</button>`).join('');
-  },
-
-  filterStyleLibrary(filter) {
-    this.styleFilter = filter;
-    this.renderStyleFilters();
-    this.renderStyleLibrary();
-  },
-
-  renderStyleLibrary() {
-    const query = document.getElementById('style-library-search')?.value.toLowerCase().trim() || '';
-    const visible = STYLES.filter(style => (this.styleFilter === 'all' || style.cat === this.styleFilter) && (!query || style.name.toLowerCase().includes(query)));
-    document.getElementById('all-styles-grid').innerHTML = visible.map(style => `<button class="library-style-card ${style.id === App.selectedStyleId ? 'active' : ''}" type="button" onclick="App.chooseLibraryStyle('${style.id}')"><span class="library-style-preview" style="background:linear-gradient(135deg,${style._c1},${style._c3})"><i style="background:${style._c2}"></i><i style="background:${style._c4}"></i><i style="background:${style._c5}"></i></span><strong>${this.escape(style.name)}</strong><small>${this.escape(style.cat)}</small></button>`).join('');
-  },
-
-  chooseLibraryStyle(id) {
-    const style = App.getStyle(id);
-    const map = { infantil: 'expressive', senior: 'calm', corporativo: 'system', artistico: 'editorial', tecnico: 'system' };
-    const folderId = map[style.cat] || 'system';
-    const folder = FOLDERS.find(item => item.id === folderId);
-    if (folder && !folder.styles.includes(id)) folder.styles = [id, ...folder.styles].slice(0, 4);
-    App.activeFolder = folderId;
-    App.selectedStyleId = id;
-    App.renderFolders();
-    App.renderStyles();
-    App.saveDraft();
-    this.closeStyleLibrary();
-    App.showToast(`${style.name} seleccionado.`);
+  openImageEditor() {
+    const canvas = document.getElementById('result-canvas');
+    if (!canvas || !App.lastInfographic) return;
+    try {
+      localStorage.setItem('antigravity-image-handoff', JSON.stringify({
+        source: 'folio',
+        title: App.lastInfographic.data?.titulo || 'Infografía Folio',
+        dataUrl: canvas.toDataURL('image/png'),
+        createdAt: Date.now()
+      }));
+      window.location.href = '/apps/editar_imagen/?handoff=folio';
+    } catch (error) {
+      App.showToast('La imagen es demasiado grande para abrirla directamente. Descárgala y súbela al editor.');
+    }
   },
 
   escape(value) {
@@ -770,16 +749,7 @@ App.openProject = id => FolioOperational.openProject(id);
 App.downloadProject = id => FolioOperational.downloadProject(id);
 App.deleteProject = id => FolioOperational.deleteProject(id);
 App.clearProjects = () => FolioOperational.clearProjects();
-App.openEditor = () => FolioOperational.openEditor();
-App.closeEditor = () => FolioOperational.closeEditor();
-App.applyEdits = () => FolioOperational.applyEdits();
-App.addEditorSection = () => FolioOperational.addEditorSection();
-App.removeEditorSection = index => FolioOperational.removeEditorSection(index);
-App.moveEditorSection = (index, direction) => FolioOperational.moveEditorSection(index, direction);
-App.openStyleLibrary = () => FolioOperational.openStyleLibrary();
-App.closeStyleLibrary = () => FolioOperational.closeStyleLibrary();
-App.renderStyleLibrary = () => FolioOperational.renderStyleLibrary();
-App.filterStyleLibrary = filter => FolioOperational.filterStyleLibrary(filter);
-App.chooseLibraryStyle = id => FolioOperational.chooseLibraryStyle(id);
+App.openImageEditor = () => FolioOperational.openImageEditor();
+App.openEditor = () => FolioOperational.openImageEditor();
 
 document.addEventListener('DOMContentLoaded', () => FolioOperational.init());

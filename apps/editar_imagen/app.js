@@ -425,9 +425,37 @@ const App = () => {
             });
     }, []);
 
-    // Auto-open file selector on mount for edit mode
+    // Recibe imágenes generadas por otras apps Antigravity en el mismo dominio.
     useEffect(() => {
-        setTimeout(() => fileInputRef.current?.click(), 100);
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('handoff') !== 'folio') return;
+            const raw = localStorage.getItem('antigravity-image-handoff');
+            if (!raw) return;
+            const handoff = JSON.parse(raw);
+            if (!handoff?.dataUrl?.startsWith('data:image/')) return;
+            const img = new Image();
+            img.onload = () => {
+                const detectedAR = getClosestAspectRatio(img.width, img.height);
+                setMode('remix');
+                setView('editor');
+                setSelectedAR(detectedAR);
+                setOriginalImageAR(detectedAR);
+                setRemixSource(handoff.dataUrl);
+                setPrompt(`Edita la infografía «${handoff.title || 'Folio'}»`);
+                localStorage.removeItem('antigravity-image-handoff');
+            };
+            img.src = handoff.dataUrl;
+        } catch (handoffError) {
+            console.warn('No se pudo importar la imagen de Folio:', handoffError);
+        }
+    }, []);
+
+    // Auto-open file selector salvo cuando llega una imagen desde Folio.
+    useEffect(() => {
+        if (new URLSearchParams(window.location.search).get('handoff') !== 'folio') {
+            setTimeout(() => fileInputRef.current?.click(), 100);
+        }
     }, []);
 
     const handleStart = (m) => {

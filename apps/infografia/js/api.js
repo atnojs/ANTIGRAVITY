@@ -21,6 +21,9 @@ const API = {
     const source = String(options.source || '').trim();
     const channel = options.channel || 'social';
     const visualDirection = String(options.visualDirection || '').trim();
+    const referenceSchema = options.referenceSchema && typeof options.referenceSchema === 'object'
+      ? options.referenceSchema
+      : null;
 
     const systemPrompt = `Eres un editor de datos y diseñador de infografías experto. Genera una infografía estructurada en JSON.
 
@@ -31,7 +34,9 @@ REGLAS:
 - Estructura narrativa: ${format}
 - Canal de publicación: ${channel}
 - Estilo visual: ${style.prompt}
-- Dirección visual elegida por el usuario: ${visualDirection || 'usar la configuración de la plantilla'}
+- Dirección visual elegida por el usuario: ${visualDirection || 'usar una composición editorial clara'}
+- Gramática visual extraída de la referencia: ${referenceSchema ? JSON.stringify(referenceSchema) : 'sin referencia visual; usa un diseño editorial claro'}
+- Adapta el contenido a la cantidad de secciones, recorrido de lectura y densidad indicados por esa gramática.
 - NO inventes cifras, porcentajes, fechas, fuentes ni afirmaciones. Usa únicamente datos explícitos del usuario.
 - Si no existe un dato numérico verificable, deja dato_destacado como cadena vacía.
 - Conserva la fuente exactamente como se aporta. Si no se aporta, usa una cadena vacía.
@@ -101,6 +106,29 @@ FUENTE APORTADA: ${source || 'No aportada'}`;
     }
 
     return infographic;
+  },
+
+  async analyzeReference(imageData) {
+    if (!/^data:image\/(png|jpeg|webp);base64,/i.test(String(imageData))) {
+      throw new Error('La referencia no tiene un formato de imagen válido.');
+    }
+    const response = await fetch(this.proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'analyze-reference', image: imageData })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.success) {
+      throw new Error(payload.error || payload.detail || `Error HTTP ${response.status}`);
+    }
+    const raw = payload.json || payload.text || '';
+    const cleaned = String(raw).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    const schema = JSON.parse(match ? match[0] : cleaned);
+    if (!schema.layout || !schema.palette || !schema.composition) {
+      throw new Error('La IA no pudo extraer una estructura visual utilizable.');
+    }
+    return schema;
   },
 
   async health() {

@@ -96,7 +96,7 @@ if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success' => true, 'service' => 'infografia-ai-proxy',
     'configured' => ['openrouter' => getSecret('R') !== ''],
-    'actions' => ['generate-text', 'health'],
+    'actions' => ['generate-text', 'analyze-reference', 'health'],
 ]);
 if ($method !== 'POST') respond(405, ['success' => false, 'error' => 'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success' => false, 'error' => 'cURL no está disponible.']);
@@ -105,6 +105,71 @@ $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate-text'));
 
 if ($action === 'health') respond(200, ['success' => true, 'configured' => ['openrouter' => getSecret('R') !== '']]);
+
+if ($action === 'analyze-reference') {
+    $key = getSecret('R');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave R de OpenRouter no está configurada.']);
+
+    $image = trim((string)($request['image'] ?? ''));
+    if ($image === '' || !preg_match('#^data:image/(png|jpeg|webp);base64,#i', $image)) {
+        respond(400, ['success' => false, 'error' => 'La referencia debe ser una imagen PNG, JPG o WebP válida.']);
+    }
+    if (strlen($image) > 14 * 1024 * 1024) {
+        respond(413, ['success' => false, 'error' => 'La imagen de referencia supera el tamaño permitido.']);
+    }
+
+    $system = <<<'PROMPT'
+Eres un director de arte experto en infografías. Analiza la imagen como referencia de DISEÑO, no de contenido.
+Devuelve exclusivamente JSON válido. Extrae composición, recorrido visual, paleta, tipografía genérica, formas, conectores, densidad y posición de ilustraciones.
+No transcribas ni reutilices textos, nombres, logos, marcas de agua, personajes ni ilustraciones exactas. No identifiques al autor. Describe una gramática visual abstracta y reutilizable.
+Usa solamente estos valores:
+- orientation: vertical, landscape o square
+- layout: split, radial, timeline, process, dashboard, editorial, poster, grid, comparison o map
+- typography.title/body: serif, sans, display, handwritten o mono
+- typography.titleScale: small, medium, large o huge
+- composition.readingPath: top-down, left-right, radial o zigzag
+- composition.density: airy, balanced o dense
+- shapes.cards: square, rounded, organic o none
+- shapes.connectors: none, lines, arrows, branches o dashed
+- shapes.illustration: central, distributed, background o none
+Todos los colores deben ser hexadecimales de seis dígitos.
+Formato exacto:
+{"version":1,"orientation":"vertical","layout":"editorial","palette":{"background":"#ffffff","primary":"#111111","secondary":"#777777","accent":"#ff5500","text":"#111111"},"typography":{"title":"display","body":"sans","titleScale":"large"},"composition":{"columns":2,"sectionCount":5,"readingPath":"top-down","density":"balanced"},"shapes":{"cards":"rounded","connectors":"arrows","illustration":"distributed"},"decorations":["formas geométricas"],"summary":"Descripción breve en español"}
+PROMPT;
+
+    $payload = [
+        'model' => 'openai/gpt-4o-mini',
+        'messages' => [
+            ['role' => 'system', 'content' => $system],
+            ['role' => 'user', 'content' => [
+                ['type' => 'text', 'text' => 'Extrae una gramática visual reutilizable de esta infografía.'],
+                ['type' => 'image_url', 'image_url' => ['url' => $image]],
+            ]],
+        ],
+        'temperature' => 0.2,
+        'max_tokens' => 1200,
+        'response_format' => ['type' => 'json_object'],
+    ];
+
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
+        'Authorization: Bearer ' . $key,
+        'Content-Type: application/json',
+        'Accept: application/json',
+        'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+        'X-Title: Folio Reference Analyzer',
+    ], $payload, 90);
+
+    if ($status < 200 || $status >= 300 || isset($response['error'])) {
+        $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
+        respond($status >= 400 && $status < 600 ? $status : 502, [
+            'success' => false, 'error' => 'OpenRouter no pudo analizar la referencia.', 'detail' => $detail
+        ]);
+    }
+    $content = (string)($response['choices'][0]['message']['content'] ?? '');
+    if ($content === '') respond(502, ['success' => false, 'error' => 'La IA devolvió un análisis vacío.']);
+    $json = extractJSON($content);
+    respond(200, ['success' => true, 'provider' => 'openrouter', 'model' => 'openai/gpt-4o-mini', 'text' => $content, 'json' => $json]);
+}
 
 if ($action === 'generate-text') {
     $key = getSecret('R');
@@ -164,4 +229,4 @@ if ($action === 'generate-text') {
     ]);
 }
 
-respond(400, ['success' => false, 'error' => 'Acción no permitida.', 'validActions' => ['generate-text', 'health']]);
+respond(400, ['success' => false, 'error' => 'Acción no permitida.', 'validActions' => ['generate-text', 'analyze-reference', 'health']]);

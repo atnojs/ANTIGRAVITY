@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles/folio.css?v=5">
+  <link rel="stylesheet" href="styles/folio.css?v=6">
 </head>
 <body>
   <div class="app-shell">
@@ -18,7 +18,7 @@
       <nav class="main-nav">
         <a class="nav-item active" href="#builder"><span class="nav-icon">✦</span> Crear</a>
         <a class="nav-item" href="#projects" onclick="App.openProjects(); return false;"><span class="nav-icon">▤</span> Mis proyectos <span class="nav-count" id="projects-count">0</span></a>
-        <a class="nav-item" href="#templates" onclick="App.openTemplates(); return false;"><span class="nav-icon">◫</span> Plantillas <span class="nav-count" data-stock-count>100</span></a>
+        <a class="nav-item" href="#reference-panel" onclick="FolioReference.search(); return false;"><span class="nav-icon">⌕</span> Buscar inspiración</a>
       </nav>
       <div class="sidebar-label sidebar-label-spaced">Tu marca</div>
       <button class="brand-kit" type="button" onclick="App.showToast('Pronto podrás guardar colores, logo y tipografías de tu marca.')"><span class="brand-kit-swatch"><span></span><span></span><span></span></span><span><strong>Kit de marca</strong><small>Colores y tipografías</small></span><span class="chevron">›</span></button>
@@ -41,25 +41,24 @@
           <div class="sample-row"><span>¿Necesitas una idea rápida?</span><button type="button" class="sample-button" onclick="App.loadSample()">Usar un ejemplo <span>↗</span></button></div>
         </section>
 
-        <section class="style-panel card" aria-labelledby="style-title">
-          <div class="card-heading style-heading"><div><span class="step-number">02</span><h2 id="style-title">Elige un lenguaje visual</h2></div><span class="style-count"><span id="visible-style-count">3</span> estilos visibles</span></div>
-          <p class="card-helper">Agrupados por intención visual para que encuentres el tono sin perderte entre plantillas.</p>
-          <div class="folder-tabs" id="folder-tabs" role="tablist" aria-label="Familias visuales"></div>
-          <div class="folder-caption"><span class="folder-bullet"></span><span id="folder-caption-text">Una selección serena, modular y fácil de leer.</span></div>
-          <div class="style-grid" id="style-grid"></div>
-          <div class="selected-style" id="selected-style"></div>
-          <div class="visual-controls" aria-label="Variaciones visuales">
-            <label>Acabado<select id="visual-finish"><option value="clean">Limpio vectorial</option><option value="illustrated">Ilustrado</option><option value="doodle">Dibujado a mano</option><option value="collage">Collage editorial</option><option value="threeD">Volumen 3D</option></select></label>
-            <label>Paleta<select id="visual-palette"><option value="template">De la plantilla</option><option value="vibrant">Vibrante</option><option value="pastel">Pastel</option><option value="dark">Oscura</option><option value="contrast">Alto contraste</option><option value="earth">Tonos tierra</option></select></label>
-            <label>Tipografía<select id="visual-typeface"><option value="editorial">Editorial</option><option value="geometric">Geométrica</option><option value="friendly">Amable</option><option value="technical">Técnica</option></select></label>
-            <label>Densidad<select id="visual-density"><option value="airy">Sintética</option><option value="balanced" selected>Equilibrada</option><option value="detailed">Detallada</option></select></label>
+        <section class="style-panel card reference-panel" id="reference-panel" aria-labelledby="style-title">
+          <div class="card-heading style-heading"><div><span class="step-number">02</span><h2 id="style-title">Elige una referencia real</h2></div><span class="reference-state" id="reference-state">Sin referencia</span></div>
+          <p class="card-helper">Busca una infografía que te guste y tráela aquí. Folio analizará su composición para crear una pieza nueva sobre tu tema.</p>
+          <button class="google-search-button" type="button" onclick="FolioReference.search()"><span class="google-g">G</span><span><strong>Buscar infografía en Google</strong><small>Se abrirá Google Imágenes en otra pestaña</small></span><span class="arrow">↗</span></button>
+          <div class="reference-steps"><span><b>1</b> Busca</span><span>→</span><span><b>2</b> Copia o guarda</span><span>→</span><span><b>3</b> Pega o arrastra aquí</span></div>
+          <div class="reference-dropzone" id="reference-dropzone" tabindex="0" role="button" onclick="document.getElementById('reference-file').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('reference-file').click()}">
+            <input id="reference-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            <div class="reference-empty" id="reference-empty"><span class="drop-icon">⇩</span><strong>Arrastra, pega o selecciona la imagen</strong><small>PNG, JPG o WebP · máximo 10 MB</small></div>
+            <div class="reference-preview-wrap" id="reference-preview-wrap" hidden><img id="reference-preview" alt="Referencia visual elegida"><div class="reference-preview-overlay"><strong id="reference-file-name">Referencia cargada</strong><small id="reference-analysis-label">Lista para analizar</small></div></div>
           </div>
-          <div class="style-footer"><div class="style-footer-buttons"><button class="outline-button" type="button" onclick="App.openTemplates()"><span>◫</span> Ver <span data-stock-count>100</span> plantillas</button><button class="outline-button" type="button" onclick="App.openStyleLibrary()"><span>＋</span> 50 estilos</button></div><span class="keyboard-hint"><kbd>⌘</kbd><kbd>↵</kbd> generar</span></div>
+          <div class="reference-actions" id="reference-actions" hidden><button class="generate-button analyze-button" id="analyze-reference-button" type="button" onclick="FolioReference.analyze()"><span class="button-spark">✦</span> Analizar diseño</button><button class="outline-button" type="button" onclick="FolioReference.clear()">Quitar</button></div>
+          <div class="reference-result" id="reference-result" hidden><div><span>DISEÑO EXTRAÍDO</span><strong id="reference-layout">Composición analizada</strong><p id="reference-summary"></p></div><div class="reference-palette" id="reference-palette" aria-label="Paleta detectada"></div></div>
+          <p class="reference-legal">Usa referencias propias o con permiso. Folio reutiliza la estructura visual, no copia textos, logos, marcas de agua ni ilustraciones exactas.</p>
         </section>
       </div>
 
       <section class="bottom-tools card" aria-label="Opciones de salida"><div class="output-title"><span class="output-icon">↗</span><div><strong>Salida</strong><small>Una pieza lista para compartir</small></div></div><div class="output-options"><label class="output-option active"><input type="radio" name="aspect" value="vertical" checked><span class="option-icon vertical-icon"></span><span><strong>Vertical</strong><small>4:5 · Social</small></span></label><label class="output-option"><input type="radio" name="aspect" value="landscape"><span class="option-icon landscape-icon"></span><span><strong>Apaisada</strong><small>16:9 · Presentación</small></span></label><label class="output-option"><input type="radio" name="aspect" value="square"><span class="option-icon square-icon"></span><span><strong>Cuadrada</strong><small>1:1 · Feed</small></span></label></div><button class="generate-button" id="generate-button" type="button" onclick="App.generate()"><span class="button-spark">✦</span> Generar infografía <span class="arrow">→</span></button></section>
-      <footer class="app-footer"><span>Folio convierte tus ideas en imágenes con criterio.</span><span><button type="button" onclick="App.showToast('Tus datos se quedan en este navegador salvo que conectes una API.')">Privacidad</button><i>·</i><button type="button" onclick="App.openModelSettings()">Configuración del modelo</button></span></footer>
+      <footer class="app-footer"><span>Folio convierte tus ideas en imágenes con criterio.</span><span><button type="button" onclick="App.showToast('La referencia se envía al modelo sólo para analizar su diseño.')">Privacidad</button><i>·</i><button type="button" onclick="App.openModelSettings()">Configuración del modelo</button></span></footer>
     </main>
   </div>
 
@@ -69,12 +68,6 @@
 
   <div class="modal-backdrop" id="projects-modal" hidden><section class="library-modal" role="dialog" aria-modal="true" aria-labelledby="projects-title"><button class="modal-close" type="button" aria-label="Cerrar proyectos" onclick="App.closeProjects()">×</button><p class="eyebrow">BIBLIOTECA <span></span> PROYECTOS</p><div class="library-heading"><div><h2 id="projects-title">Mis infografías</h2><p>Se guardan al generar o editar una pieza.</p></div><button class="outline-button" type="button" onclick="App.clearProjects()">Vaciar historial</button></div><div class="projects-grid" id="projects-grid"></div><div class="library-empty" id="projects-empty" hidden><span>◇</span><strong>Aún no hay proyectos</strong><p>Genera tu primera infografía y aparecerá aquí.</p></div></section></div>
 
-  <div class="modal-backdrop" id="editor-modal" hidden><section class="editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-title"><button class="modal-close" type="button" aria-label="Cerrar editor" onclick="App.closeEditor()">×</button><p class="eyebrow">EDICIÓN <span></span> 100% EDITABLE</p><h2 id="editor-title">Ajusta cualquier dato</h2><p class="editor-helper">Edita títulos, iconos, cifras, textos y fuente. También puedes añadir, reordenar o eliminar bloques.</p><div class="editor-fields"><label for="edit-title">Título</label><input id="edit-title" maxlength="100"><label for="edit-subtitle">Subtítulo</label><input id="edit-subtitle" maxlength="160"><div id="edit-sections"></div><button class="outline-button add-section-button" type="button" onclick="App.addEditorSection()">＋ Añadir bloque</button><label for="edit-source">Fuente</label><input id="edit-source" maxlength="180"></div><div class="editor-actions"><button class="outline-button" type="button" onclick="App.closeEditor()">Cancelar</button><button class="generate-button" type="button" onclick="App.applyEdits()">Aplicar y guardar</button></div></section></div>
-
-  <div class="modal-backdrop" id="styles-modal" hidden><section class="library-modal styles-library" role="dialog" aria-modal="true" aria-labelledby="styles-library-title"><button class="modal-close" type="button" aria-label="Cerrar estilos" onclick="App.closeStyleLibrary()">×</button><p class="eyebrow">BIBLIOTECA <span></span> 50 ESTILOS</p><div class="library-heading"><div><h2 id="styles-library-title">Todos los lenguajes visuales</h2><p>Busca por nombre o filtra por familia.</p></div><input id="style-library-search" type="search" placeholder="Buscar estilo…" oninput="App.renderStyleLibrary()"></div><div class="library-filters" id="style-library-filters"></div><div class="all-styles-grid" id="all-styles-grid"></div></section></div>
-
-  <div class="modal-backdrop" id="templates-modal" hidden><section class="library-modal templates-library" role="dialog" aria-modal="true" aria-labelledby="templates-title"><button class="modal-close" type="button" aria-label="Cerrar plantillas" onclick="App.closeTemplates()">×</button><p class="eyebrow">STOCK EDITABLE <span></span> <span data-stock-count>100</span> COMPOSICIONES</p><div class="library-heading template-heading"><div><h2 id="templates-title">Elige viendo el resultado</h2><p><span id="template-visible-count">100</span> plantillas originales. La vista previa no consume IA.</p></div><input id="template-search" type="search" placeholder="Buscar tema, familia o uso…" oninput="App.renderTemplates()"></div><div class="library-filters template-filters" id="template-family-filters"></div><div class="stock-templates-grid" id="stock-templates-grid"></div></section></div>
-
-  <script src="js/styles-data.js?v=5"></script><script src="js/templates-data.js?v=5"></script><script src="js/engine.js?v=5"></script><script src="js/api.js?v=5"></script><script src="history-manager.js?v=5"></script><script src="js/folio-app.js?v=5"></script><script src="js/folio-operational.js?v=5"></script><script src="js/stock-library.js?v=5"></script><script src="js/stock-renderers.js?v=5"></script>
+  <script src="js/styles-data.js?v=6"></script><script src="js/engine.js?v=6"></script><script src="js/api.js?v=6"></script><script src="history-manager.js?v=6"></script><script src="js/reference-flow.js?v=6"></script><script src="js/folio-app.js?v=6"></script><script src="js/folio-operational.js?v=6"></script>
 </body>
 </html>
