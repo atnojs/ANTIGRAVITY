@@ -20,6 +20,7 @@ const API = {
     const format = options.format || 'informational';
     const source = String(options.source || '').trim();
     const channel = options.channel || 'social';
+    const visualDirection = String(options.visualDirection || '').trim();
 
     const systemPrompt = `Eres un editor de datos y diseñador de infografías experto. Genera una infografía estructurada en JSON.
 
@@ -30,6 +31,7 @@ REGLAS:
 - Estructura narrativa: ${format}
 - Canal de publicación: ${channel}
 - Estilo visual: ${style.prompt}
+- Dirección visual elegida por el usuario: ${visualDirection || 'usar la configuración de la plantilla'}
 - NO inventes cifras, porcentajes, fechas, fuentes ni afirmaciones. Usa únicamente datos explícitos del usuario.
 - Si no existe un dato numérico verificable, deja dato_destacado como cadena vacía.
 - Conserva la fuente exactamente como se aporta. Si no se aporta, usa una cadena vacía.

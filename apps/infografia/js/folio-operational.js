@@ -177,7 +177,8 @@ const FolioOperational = {
     const audience = document.getElementById('audience').value;
     const channel = document.getElementById('channel').value;
     const title = topic.split(/[.!?]/)[0].trim().slice(0, 90);
-    const style = App.getStyle();
+    const design = typeof FolioStock !== 'undefined' ? FolioStock.getSettings() : {};
+    const style = typeof FolioStock !== 'undefined' ? FolioStock.resolveStyle(App.getStyle()) : App.getStyle();
     let data = null;
     let sourceLabel = 'BOCETO LOCAL';
 
@@ -188,7 +189,8 @@ const FolioOperational = {
       data = await API.generate(App.selectedStyleId, audience, title, topic, apiKey, {
         format: App.selectedFormat,
         source,
-        channel
+        channel,
+        visualDirection: typeof FolioStock !== 'undefined' ? FolioStock.promptDescription() : ''
       });
       sourceLabel = 'GENERADO CON IA';
     } catch (error) {
@@ -205,6 +207,8 @@ const FolioOperational = {
       sourceLabel,
       format: App.selectedFormat,
       aspect: document.querySelector('input[name="aspect"]:checked')?.value || 'vertical',
+      design,
+      templateId: typeof FolioStock !== 'undefined' ? FolioStock.selectedTemplateId : null,
       topic,
       projectId: `folio_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
     };
@@ -234,6 +238,18 @@ const FolioOperational = {
     document.body.style.overflow = 'hidden';
   },
 
+  canvasFont(role) {
+    if (typeof FolioStock !== 'undefined') return FolioStock.font(role);
+    return role === 'heading' ? 'Fraunces, Georgia, serif' : role === 'mono' ? 'DM Mono, monospace' : 'DM Sans, Arial, sans-serif';
+  },
+
+  sectionLimit(aspect, maximum = 6) {
+    const density = typeof FolioStock !== 'undefined' ? FolioStock.getSettings().density : 'balanced';
+    if (density === 'airy') return 3;
+    if (density === 'detailed' && aspect === 'vertical') return maximum;
+    return Math.min(4, maximum);
+  },
+
   setupCanvas(style) {
     const canvas = document.getElementById('result-canvas');
     const aspect = document.querySelector('input[name="aspect"]:checked')?.value || App.lastInfographic?.aspect || 'vertical';
@@ -255,7 +271,9 @@ const FolioOperational = {
     gradient.addColorStop(1, App.withAlpha(accent2, .2));
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
-    return { canvas, ctx, width, height, aspect, bg, accent, accent2, text, muted };
+    const canvasState = { canvas, ctx, width, height, aspect, bg, accent, accent2, text, muted };
+    if (typeof FolioStock !== 'undefined') FolioStock.decorateBackground(canvasState, style._design || App.lastInfographic?.design || FolioStock.getSettings());
+    return canvasState;
   },
 
   drawCanvas(data, style, format) {
@@ -265,13 +283,13 @@ const FolioOperational = {
     ctx.fillStyle = accent;
     ctx.fillRect(margin, 44, 48, 5);
     ctx.fillStyle = muted;
-    ctx.font = '500 12px DM Mono, monospace';
+    ctx.font = `500 12px ${this.canvasFont('mono')}`;
     ctx.fillText(`FOLIO / ${String(format || 'RESUMEN').toUpperCase()}`, margin, 76);
     ctx.fillStyle = text;
-    ctx.font = `700 ${aspect === 'vertical' ? 38 : 42}px Fraunces, Georgia, serif`;
+    ctx.font = `700 ${aspect === 'vertical' ? 38 : 42}px ${this.canvasFont('heading')}`;
     App.drawWrapped(ctx, data.titulo, margin, 128, width - margin * 2, 44, 2);
     ctx.fillStyle = muted;
-    ctx.font = '400 15px DM Sans, Arial, sans-serif';
+    ctx.font = `400 15px ${this.canvasFont('body')}`;
     App.drawWrapped(ctx, data.subtitulo || '', margin, 220, width - margin * 2, 22, 2);
 
     const contentTop = 278;
@@ -281,7 +299,7 @@ const FolioOperational = {
     else this.drawCards(c, data.sections, contentTop);
 
     ctx.fillStyle = muted;
-    ctx.font = '400 10px DM Mono, monospace';
+    ctx.font = `400 10px ${this.canvasFont('mono')}`;
     ctx.fillText(data.fuente ? `FUENTE · ${data.fuente.slice(0, 76)}` : 'SIN FUENTE APORTADA', margin, height - 34);
     ctx.fillStyle = accent;
     ctx.fillRect(width - margin - 30, height - 42, 30, 2);
@@ -293,9 +311,10 @@ const FolioOperational = {
     const gap = 14;
     const columns = aspect === 'vertical' ? 1 : 2;
     const cardW = (width - margin * 2 - gap * (columns - 1)) / columns;
-    const rows = Math.ceil(Math.min(sections.length, 4) / columns);
+    const limit = this.sectionLimit(aspect);
+    const rows = Math.ceil(Math.min(sections.length, limit) / columns);
     const cardH = Math.min(122, (height - top - 80 - gap * (rows - 1)) / rows);
-    sections.slice(0, 4).forEach((section, index) => {
+    sections.slice(0, limit).forEach((section, index) => {
       const x = margin + (index % columns) * (cardW + gap);
       const y = top + Math.floor(index / columns) * (cardH + gap);
       this.drawInfoCard(ctx, section, x, y, cardW, cardH, index, text, muted, accent, accent2);
@@ -307,9 +326,11 @@ const FolioOperational = {
     const margin = aspect === 'vertical' ? 48 : 56;
     const gap = 14;
     const columns = 2;
+    const limit = this.sectionLimit(aspect);
     const cardW = (width - margin * 2 - gap) / 2;
-    const cardH = Math.min(170, (height - top - 94 - gap) / 2);
-    sections.slice(0, 4).forEach((section, index) => {
+    const rows = Math.ceil(Math.min(sections.length, limit) / columns);
+    const cardH = Math.min(170, (height - top - 94 - gap * (rows - 1)) / rows);
+    sections.slice(0, limit).forEach((section, index) => {
       const x = margin + (index % 2) * (cardW + gap);
       const y = top + Math.floor(index / 2) * (cardH + gap);
       ctx.fillStyle = App.withAlpha('#ffffff', .11);
@@ -317,13 +338,13 @@ const FolioOperational = {
       ctx.fillStyle = index % 2 ? accent2 : accent;
       ctx.fillRect(x, y, cardW, 5);
       ctx.fillStyle = section.dato_destacado ? (index % 2 ? accent2 : accent) : muted;
-      ctx.font = `700 ${section.dato_destacado ? 34 : 20}px DM Sans, Arial, sans-serif`;
+      ctx.font = `700 ${section.dato_destacado ? 34 : 20}px ${this.canvasFont('body')}`;
       ctx.fillText(section.dato_destacado || section.icono || '✦', x + 18, y + 48);
       ctx.fillStyle = text;
-      ctx.font = '700 17px Fraunces, Georgia, serif';
+      ctx.font = `700 17px ${this.canvasFont('heading')}`;
       ctx.fillText(section.titulo.slice(0, 28), x + 18, y + 78);
       ctx.fillStyle = muted;
-      ctx.font = '400 11px DM Sans, Arial, sans-serif';
+      ctx.font = `400 11px ${this.canvasFont('body')}`;
       App.drawWrapped(ctx, section.puntos?.[0] || '', x + 18, y + 104, cardW - 36, 16, 3);
     });
   },
@@ -331,7 +352,7 @@ const FolioOperational = {
   drawSequence(c, sections, top, numbered) {
     const { ctx, width, height, aspect, text, muted, accent, accent2, bg } = c;
     const margin = aspect === 'vertical' ? 48 : 56;
-    const items = sections.slice(0, aspect === 'vertical' ? 4 : 3);
+    const items = sections.slice(0, this.sectionLimit(aspect));
     const lineX = margin + 23;
     const available = height - top - 94;
     const itemH = available / Math.max(items.length, 1);
@@ -348,21 +369,21 @@ const FolioOperational = {
       ctx.arc(lineX, y + 24, 17, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = App.isLight(accent2) ? '#1d252b' : '#fff';
-      ctx.font = '700 12px DM Sans, Arial, sans-serif';
+      ctx.font = `700 12px ${this.canvasFont('body')}`;
       ctx.textAlign = 'center';
       ctx.fillText(numbered ? String(index + 1) : (section.icono || '•'), lineX, y + 28);
       ctx.textAlign = 'left';
       ctx.fillStyle = App.withAlpha('#ffffff', .1);
       ctx.fillRect(lineX + 30, y, width - margin - lineX - 30, Math.max(72, itemH - 12));
       ctx.fillStyle = text;
-      ctx.font = '700 18px Fraunces, Georgia, serif';
+      ctx.font = `700 18px ${this.canvasFont('heading')}`;
       ctx.fillText(section.titulo.slice(0, 30), lineX + 47, y + 29);
       ctx.fillStyle = muted;
-      ctx.font = '400 11px DM Sans, Arial, sans-serif';
+      ctx.font = `400 11px ${this.canvasFont('body')}`;
       App.drawWrapped(ctx, section.puntos?.[0] || '', lineX + 47, y + 53, width - margin - lineX - 68, 16, 2);
       if (section.dato_destacado) {
         ctx.fillStyle = accent;
-        ctx.font = '700 16px DM Sans, Arial, sans-serif';
+        ctx.font = `700 16px ${this.canvasFont('body')}`;
         ctx.textAlign = 'right';
         ctx.fillText(section.dato_destacado, width - margin - 14, y + 29);
         ctx.textAlign = 'left';
@@ -384,36 +405,37 @@ const FolioOperational = {
       ctx.fillRect(x, top, colW, 7);
       const primary = sections[col] || sections[0] || { titulo: '', puntos: [] };
       ctx.fillStyle = text;
-      ctx.font = `700 ${aspect === 'vertical' ? 19 : 23}px Fraunces, Georgia, serif`;
+      ctx.font = `700 ${aspect === 'vertical' ? 19 : 23}px ${this.canvasFont('heading')}`;
       App.drawWrapped(ctx, primary.titulo, x + 18, top + 45, colW - 36, 27, 2);
       ctx.fillStyle = col ? accent2 : accent;
-      ctx.font = '700 25px DM Sans, Arial, sans-serif';
+      ctx.font = `700 25px ${this.canvasFont('body')}`;
       if (primary.dato_destacado) ctx.fillText(primary.dato_destacado, x + 18, top + 102);
       ctx.fillStyle = muted;
-      ctx.font = '400 12px DM Sans, Arial, sans-serif';
+      ctx.font = `400 12px ${this.canvasFont('body')}`;
       const points = [...(primary.puntos || []), ...(sections[col + 2]?.puntos || [])].slice(0, 4);
       points.forEach((point, index) => App.drawWrapped(ctx, `• ${point}`, x + 18, top + 140 + index * 58, colW - 36, 17, 3));
     });
   },
 
   drawInfoCard(ctx, section, x, y, w, h, index, text, muted, accent, accent2) {
+    const compact = h < 96;
     ctx.fillStyle = App.withAlpha('#ffffff', .1);
     ctx.fillRect(x, y, w, h);
     ctx.fillStyle = index % 2 ? accent2 : accent;
     ctx.fillRect(x, y, 5, h);
     ctx.fillStyle = text;
-    ctx.font = '700 17px Fraunces, Georgia, serif';
-    ctx.fillText(section.titulo.slice(0, 28), x + 18, y + 29);
+    ctx.font = `700 ${compact ? 14 : 17}px ${this.canvasFont('heading')}`;
+    ctx.fillText(section.titulo.slice(0, compact ? 24 : 28), x + 18, y + (compact ? 24 : 29));
     if (section.dato_destacado) {
       ctx.fillStyle = index % 2 ? accent2 : accent;
-      ctx.font = '700 22px DM Sans, Arial, sans-serif';
+      ctx.font = `700 ${compact ? 16 : 22}px ${this.canvasFont('body')}`;
       ctx.textAlign = 'right';
-      ctx.fillText(section.dato_destacado, x + w - 16, y + 29);
+      ctx.fillText(section.dato_destacado, x + w - 16, y + (compact ? 24 : 29));
       ctx.textAlign = 'left';
     }
     ctx.fillStyle = muted;
-    ctx.font = '400 11px DM Sans, Arial, sans-serif';
-    App.drawWrapped(ctx, section.puntos?.[0] || '', x + 18, y + 59, w - 36, 16, 3);
+    ctx.font = `400 ${compact ? 9 : 11}px ${this.canvasFont('body')}`;
+    App.drawWrapped(ctx, section.puntos?.[0] || '', x + 18, y + (compact ? 45 : 59), w - 36, compact ? 12 : 16, compact ? 2 : 3);
   },
 
   async saveCurrentProject() {
@@ -425,6 +447,8 @@ const FolioOperational = {
       styleId: item.styleId || App.selectedStyleId,
       format: item.format,
       aspect: item.aspect,
+      design: item.design || (typeof FolioStock !== 'undefined' ? FolioStock.getSettings() : {}),
+      templateId: item.templateId || null,
       sourceLabel: item.sourceLabel,
       topic: item.topic || document.getElementById('topic').value,
       audience: document.getElementById('audience').value,
@@ -500,8 +524,31 @@ const FolioOperational = {
       const preview = project.imageUrl
         ? `<img src="${this.escape(project.imageUrl)}" alt="">`
         : `<div class="project-swatch" style="background:linear-gradient(135deg,${style._c1},${style._c3})"><span>${this.escape(infographic.titulo || 'Infografía')}</span></div>`;
-      return `<article class="project-card"><button class="project-open" type="button" onclick="App.openProject('${this.escape(project.id)}')">${preview}<span class="project-meta"><strong>${this.escape(infographic.titulo || 'Infografía sin título')}</strong><small>${date} · ${this.escape(payload.format || 'resumen')}</small></span></button><button class="project-delete" type="button" aria-label="Eliminar proyecto" onclick="App.deleteProject('${this.escape(project.id)}')">×</button></article>`;
+      return `<article class="project-card"><button class="project-open" type="button" onclick="App.openProject('${this.escape(project.id)}')">${preview}<span class="project-meta"><strong>${this.escape(infographic.titulo || 'Infografía sin título')}</strong><small>${date} · ${this.escape(payload.format || 'resumen')}</small></span></button><div class="project-actions"><button class="project-download" type="button" onclick="App.downloadProject('${this.escape(project.id)}')">Descargar PNG ↓</button><button class="project-delete project-delete-inline" type="button" aria-label="Eliminar proyecto" onclick="App.deleteProject('${this.escape(project.id)}')">×</button></div></article>`;
     }).join('');
+  },
+
+  downloadProject(id) {
+    const project = this.projects.find(item => item.id === id);
+    const payload = this.projectPayload(project);
+    if (!payload?.infographic) return;
+    const oldDesign = typeof FolioStock !== 'undefined' ? FolioStock.getSettings() : {};
+    if (typeof FolioStock !== 'undefined') FolioStock.setSettings(payload.design || {});
+    const style = typeof FolioStock !== 'undefined'
+      ? FolioStock.resolveStyle(App.getStyle(payload.styleId || 'dashboard-pro'))
+      : App.getStyle(payload.styleId || 'dashboard-pro');
+    const radio = document.querySelector(`input[name="aspect"][value="${payload.aspect || 'vertical'}"]`);
+    const previousAspect = document.querySelector('input[name="aspect"]:checked')?.value || 'vertical';
+    if (radio) radio.checked = true;
+    this.drawCanvas(payload.infographic, style, payload.format || 'informational');
+    const link = document.createElement('a');
+    link.download = `folio-${String(payload.infographic.titulo || 'infografia').toLowerCase().replace(/[^a-z0-9áéíóúñ]+/gi,'-').replace(/^-|-$/g,'')}.png`;
+    link.href = document.getElementById('result-canvas').toDataURL('image/png');
+    link.click();
+    const previousRadio = document.querySelector(`input[name="aspect"][value="${previousAspect}"]`);
+    if (previousRadio) previousRadio.checked = true;
+    if (typeof FolioStock !== 'undefined') FolioStock.setSettings(oldDesign);
+    App.showToast('Infografía descargada desde Mis proyectos.');
   },
 
   openProject(id) {
@@ -512,19 +559,30 @@ const FolioOperational = {
     App.selectedStyleId = styleId;
     App.selectedFormat = payload.format || 'informational';
     const detail = STYLE_DETAILS[styleId];
-    if (detail?.folder) App.activeFolder = detail.folder;
+    const styleCategory = App.getStyle(styleId).cat;
+    const folderMap = { infantil:'expressive', senior:'calm', corporativo:'system', artistico:'editorial', tecnico:'system' };
+    App.activeFolder = detail?.folder || folderMap[styleCategory] || App.activeFolder;
     const radio = document.querySelector(`input[name="aspect"][value="${payload.aspect || 'vertical'}"]`);
     if (radio) radio.checked = true;
     document.getElementById('topic').value = payload.topic || '';
     document.getElementById('source').value = payload.infographic.fuente || '';
     if (payload.audience) document.getElementById('audience').value = payload.audience;
     if (payload.channel) document.getElementById('channel').value = payload.channel;
+    if (typeof FolioStock !== 'undefined') {
+      FolioStock.setSettings(payload.design || {});
+      FolioStock.selectedTemplateId = payload.templateId || null;
+    }
+    const resolvedStyle = typeof FolioStock !== 'undefined'
+      ? FolioStock.resolveStyle(App.getStyle(styleId))
+      : App.getStyle(styleId);
     App.lastInfographic = {
       data: payload.infographic,
-      style: App.getStyle(styleId),
+      style: resolvedStyle,
       styleId,
       format: payload.format || 'informational',
       aspect: payload.aspect || 'vertical',
+      design: payload.design || {},
+      templateId: payload.templateId || null,
       sourceLabel: payload.sourceLabel || 'PROYECTO GUARDADO',
       topic: payload.topic || '',
       projectId: project.id,
@@ -573,8 +631,49 @@ const FolioOperational = {
     document.getElementById('edit-title').value = item.data.titulo || '';
     document.getElementById('edit-subtitle').value = item.data.subtitulo || '';
     document.getElementById('edit-source').value = item.data.fuente || '';
-    document.getElementById('edit-sections').innerHTML = item.data.sections.map((section, index) => `<fieldset class="edit-section" data-index="${index}"><legend>Bloque ${index + 1}</legend><div class="editor-row"><label>Título<input class="edit-section-title" maxlength="40" value="${this.escape(section.titulo)}"></label><label>Dato destacado<input class="edit-section-stat" maxlength="20" value="${this.escape(section.dato_destacado || '')}"></label></div><label>Puntos<textarea class="edit-section-points" rows="3" maxlength="500">${this.escape((section.puntos || []).join('\n'))}</textarea></label></fieldset>`).join('');
+    this.renderEditorSections();
     document.getElementById('editor-modal').hidden = false;
+  },
+
+  renderEditorSections() {
+    const sections = App.lastInfographic?.data?.sections || [];
+    document.getElementById('edit-sections').innerHTML = sections.map((section, index) => `<fieldset class="edit-section" data-index="${index}"><legend>Bloque ${index + 1}</legend><div class="edit-section-toolbar"><button type="button" title="Subir" onclick="App.moveEditorSection(${index},-1)">↑</button><button type="button" title="Bajar" onclick="App.moveEditorSection(${index},1)">↓</button><button type="button" title="Eliminar" onclick="App.removeEditorSection(${index})">×</button></div><div class="editor-row"><label>Título<input class="edit-section-title" maxlength="40" value="${this.escape(section.titulo)}"></label><label>Icono<input class="edit-section-icon" maxlength="4" value="${this.escape(section.icono || '✦')}"></label></div><label>Dato destacado<input class="edit-section-stat" maxlength="20" value="${this.escape(section.dato_destacado || '')}"></label><label>Puntos · una línea por punto<textarea class="edit-section-points" rows="4" maxlength="700">${this.escape((section.puntos || []).join('\n'))}</textarea></label></fieldset>`).join('');
+  },
+
+  syncEditorSections() {
+    document.querySelectorAll('.edit-section').forEach((fieldset, index) => {
+      const section = App.lastInfographic?.data?.sections?.[index];
+      if (!section) return;
+      section.titulo = fieldset.querySelector('.edit-section-title').value;
+      section.icono = fieldset.querySelector('.edit-section-icon').value;
+      section.dato_destacado = fieldset.querySelector('.edit-section-stat').value;
+      section.puntos = fieldset.querySelector('.edit-section-points').value.split('\n').map(value => value.trim()).filter(Boolean).slice(0, 6);
+    });
+  },
+
+  addEditorSection() {
+    this.syncEditorSections();
+    const sections = App.lastInfographic?.data?.sections;
+    if (!sections || sections.length >= 8) return App.showToast('Puedes utilizar hasta 8 bloques.');
+    sections.push({titulo:`Bloque ${sections.length + 1}`,icono:'✦',dato_destacado:'',puntos:['Escribe aquí la información.']});
+    this.renderEditorSections();
+  },
+
+  removeEditorSection(index) {
+    this.syncEditorSections();
+    const sections = App.lastInfographic?.data?.sections;
+    if (!sections || sections.length <= 1) return App.showToast('La infografía necesita al menos un bloque.');
+    sections.splice(index,1);
+    this.renderEditorSections();
+  },
+
+  moveEditorSection(index, direction) {
+    this.syncEditorSections();
+    const sections = App.lastInfographic?.data?.sections;
+    const target = index + direction;
+    if (!sections || target < 0 || target >= sections.length) return;
+    [sections[index],sections[target]] = [sections[target],sections[index]];
+    this.renderEditorSections();
   },
 
   closeEditor() {
@@ -591,8 +690,9 @@ const FolioOperational = {
       const section = item.data.sections[index];
       if (!section) return;
       section.titulo = fieldset.querySelector('.edit-section-title').value.trim() || section.titulo;
+      section.icono = fieldset.querySelector('.edit-section-icon').value.trim() || '✦';
       section.dato_destacado = fieldset.querySelector('.edit-section-stat').value.trim();
-      section.puntos = fieldset.querySelector('.edit-section-points').value.split('\n').map(value => value.trim()).filter(Boolean).slice(0, 4);
+      section.puntos = fieldset.querySelector('.edit-section-points').value.split('\n').map(value => value.trim()).filter(Boolean).slice(0, 6);
     });
     this.closeEditor();
     this.renderResult();
@@ -661,11 +761,15 @@ App.updateApiStatus = () => FolioOperational.updateApiStatus();
 App.openProjects = () => FolioOperational.openProjects();
 App.closeProjects = () => FolioOperational.closeProjects();
 App.openProject = id => FolioOperational.openProject(id);
+App.downloadProject = id => FolioOperational.downloadProject(id);
 App.deleteProject = id => FolioOperational.deleteProject(id);
 App.clearProjects = () => FolioOperational.clearProjects();
 App.openEditor = () => FolioOperational.openEditor();
 App.closeEditor = () => FolioOperational.closeEditor();
 App.applyEdits = () => FolioOperational.applyEdits();
+App.addEditorSection = () => FolioOperational.addEditorSection();
+App.removeEditorSection = index => FolioOperational.removeEditorSection(index);
+App.moveEditorSection = (index, direction) => FolioOperational.moveEditorSection(index, direction);
 App.openStyleLibrary = () => FolioOperational.openStyleLibrary();
 App.closeStyleLibrary = () => FolioOperational.closeStyleLibrary();
 App.renderStyleLibrary = () => FolioOperational.renderStyleLibrary();
