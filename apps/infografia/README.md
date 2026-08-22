@@ -1,79 +1,67 @@
 # 📊 Folio — Infografías que se entienden
 
-La propuesta renovada vive en `folio.html` y se abre automáticamente desde `index.html`. Separa el tipo de historia (datos, comparación, proceso, cronología, mapa o resumen) del lenguaje visual, agrupando los estilos en carpetas para que la elección sea rápida.
+Generador de infografías con IA y modo local. `index.html` abre automáticamente la experiencia desde `folio.html`.
 
-Incluye recomendación automática, ejemplos de contenido, borrador guardado localmente, generación de boceto sin API, conexión opcional con DeepSeek/OpenRouter, descarga PNG e impresión a PDF.
-
-Generador de infografías con inteligencia artificial. **50 estilos únicos** para diferentes audiencias + **10 efectos de movimiento** para animar el resultado.
+Separa el tipo de historia —datos, comparación, proceso, cronología, mapa o resumen— del lenguaje visual. Los 50 estilos se agrupan y se pueden buscar sin convertir la pantalla principal en un catálogo interminable.
 
 ## ✨ Características
 
-- 🎯 **50 estilos** divididos en 5 categorías por audiencia
-- 🧒 **Infantil** (10 estilos) — para niños de 7-10 años
-- 👴 **Senior** (10 estilos) — alta legibilidad para adultos mayores
-- 👔 **Corporativo** (10 estilos) — profesional y elegante
-- 🎨 **Artístico** (10 estilos) — creativo y visualmente impactante
-- 📊 **Técnico** (10 estilos) — científico y datos
-- 🎬 **10 efectos de movimiento** para animar la infografía
-- 🔑 API Key configurable (soporta OpenRouter, FLUX, DALL-E)
+- 6 estructuras narrativas y 50 estilos visuales buscables
+- Recomendador de estructura según el contenido
+- Generación mediante OpenRouter a través de proxy PHP
+- Fallback local si la IA no está configurada
+- Validación para no introducir cifras que el usuario no haya aportado
+- Historial persistente con fallback al navegador
+- Editor de títulos, bloques, datos y fuentes
+- Salidas vertical, apaisada y cuadrada
+- Descarga PNG e impresión/guardado PDF
 
 ## 🚀 Cómo usar
 
-1. **Abrir** `index.html` en cualquier navegador
-2. **Configurar API Key** (OpenRouter o similar)
-3. **Elegir estilo** entre los 50 disponibles
-4. **Ingresar contenido** (título + puntos clave)
-5. **Generar** la infografía con IA
-6. **Elegir efecto de movimiento** entre 10 opciones
-7. **Descargar** PNG o animación
+1. Abre `index.html` desde un servidor PHP.
+2. Elige el tipo de historia y un estilo visual.
+3. Introduce el contenido y, si existe, su fuente.
+4. Genera, revisa y edita la pieza.
+5. Descárgala o recupérala desde **Mis proyectos**.
 
 ## 📁 Estructura
 
 ```
-infographic-app/
-├── index.html              # App principal
-├── styles/
-│   ├── main.css            # Estilos base
-│   └── animations.css      # 10 efectos de movimiento
-├── js/
-│   ├── styles-data.js      # 50 estilos (datos completos)
-│   ├── prompts.js          # Plantillas de prompt por estilo
-│   ├── animations.js       # Controlador de animaciones
-│   └── api.js              # API de generación IA
-└── README.md
+infografia/
+├── index.html               # Entrada; abre Folio
+├── folio.html               # Interfaz principal
+├── proxy.php                # Proxy seguro de OpenRouter
+├── history.php              # Persistencia de proyectos
+├── history-manager.js       # Cliente del historial
+├── config.example.php       # Ejemplo de configuración
+├── styles/folio.css         # Diseño de Folio
+└── js/
+    ├── styles-data.js       # Catálogo de 50 estilos
+    ├── api.js               # Cliente IA
+    ├── folio-app.js         # Interfaz base
+    └── folio-operational.js # Historial, edición y layouts
 ```
 
-## 🔧 Configuración de API
+## 🔧 Configuración de OpenRouter
 
-La app usa **OpenRouter** por defecto. Necesitas una API Key de:
+La vía recomendada es configurar la clave en el servidor:
 
-1. [OpenRouter.ai](https://openrouter.ai) — modelos FLUX, DALL-E, Stable Diffusion
-2. Ingresarla en el campo superior de la app
-3. Se guarda en localStorage del navegador
+1. Copia `config.example.php` como `config.php`.
+2. Sustituye el valor de `R` por la clave de OpenRouter.
+3. Alternativamente, define la variable de entorno `R` en el hosting.
 
-## 🌐 Subir a Hostinger
+`config.php` está excluido de Git. La interfaz también admite una clave personal guardada en el navegador como fallback.
 
-1. Sube toda la carpeta `infographic-app/` a tu hosting
-2. Abre `https://tudominio.com/infographic-app/`
-3. Configura tu API Key y ¡a crear infografías!
+## 🌐 Publicación
+
+1. Publica la rama `main` en un hosting con PHP 8.1+ y cURL.
+2. Configura el secreto `R` en el servidor.
+3. Da permiso de escritura a PHP en la carpeta de la app para que pueda crear `history_data/`.
+4. Comprueba `proxy.php?action=health` y abre la ruta de la app.
 
 ## 📐 Requisitos
 
-- Navegador moderno (Chrome, Firefox, Edge, Safari)
-- API Key de OpenRouter (o servicio compatible)
-- Conexión a internet (para generar las imágenes)
-
-## 🎬 Los 10 efectos de movimiento
-
-| # | Efecto | Descripción |
-|---|--------|-------------|
-| 1 | Revelar Progresivo | Se dibuja de arriba a abajo |
-| 2 | Zoom Suave | Acercamiento lento continuo |
-| 3 | Pan Deslizante | Se desplaza horizontalmente |
-| 4 | Destello Secciones | Cada sección aparece en secuencia |
-| 5 | Respiración Sutil | La infografía "respira" suavemente |
-| 6 | Ken Burns | Zoom + paneo tipo documental |
-| 7 | Partículas Flotantes | Elementos decorativos flotan |
-| 8 | Resaltado Narrativo | Cada punto se ilumina en secuencia |
-| 9 | Máquina Escribir | Texto aparece letra por letra |
-| 10 | Caleidoscopio | Entrada con efecto espejo |
+- PHP 8.1 o superior con extensión cURL
+- Navegador moderno
+- HTTPS en producción
+- Clave de OpenRouter para generación con IA; sin ella funciona el modo local

@@ -14,6 +14,8 @@ header('Cache-Control: no-store');
 
 const MAX_REQUEST_BYTES = 32 * 1024 * 1024;
 const MAX_PROMPT_BYTES = 12000;
+const MAX_SYSTEM_BYTES = 16000;
+const ALLOWED_MODELS = ['openai/gpt-4o-mini'];
 
 function respond(int $status, array $payload): void {
     http_response_code($status);
@@ -114,6 +116,8 @@ if ($action === 'generate-text') {
 
     if ($system === '' && $prompt === '') respond(400, ['success' => false, 'error' => 'Faltan system o prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
+    if (strlen($system) > MAX_SYSTEM_BYTES) respond(413, ['success' => false, 'error' => 'Las instrucciones son demasiado largas.']);
+    if (!in_array($model, ALLOWED_MODELS, true)) respond(400, ['success' => false, 'error' => 'Modelo no permitido.']);
 
     $messages = [];
     if ($system !== '') $messages[] = ['role' => 'system', 'content' => $system];

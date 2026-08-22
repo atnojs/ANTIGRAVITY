@@ -10,20 +10,30 @@ const API = {
   /**
    * Genera la estructura de la infografía vía IA
    */
-  async generate(styleId, audience, title, content, apiKey) {
+  async generate(styleId, audience, title, content, apiKey = '', options = {}) {
     const style = STYLES.find(s => s.id === styleId);
     if (!style) throw new Error('Estilo no encontrado');
 
     // Determinar idioma
     const isSpanish = /[áéíóúñü]/i.test(title + content);
 
-    const systemPrompt = `Eres un diseñador de infografías experto. Genera una infografía estructurada en JSON.
+    const format = options.format || 'informational';
+    const source = String(options.source || '').trim();
+    const channel = options.channel || 'social';
+
+    const systemPrompt = `Eres un editor de datos y diseñador de infografías experto. Genera una infografía estructurada en JSON.
 
 REGLAS:
 - ${isSpanish ? 'Todo el texto debe estar en ESPAÑOL' : 'All text must be in English'}
 - Crea 4-6 secciones con: titulo (corto, max 3 palabras), puntos (2-4 bullets concisos), icono (un emoji), dato_destacado (un número o frase impactante)
 - Tono: ${audience === 'niños' ? 'muy simple, divertido, para niños 7-10 años' : audience === 'mayores' ? 'claro, letra grande, accesible, para adultos mayores' : 'profesional, equilibrado, para adultos'}
+- Estructura narrativa: ${format}
+- Canal de publicación: ${channel}
 - Estilo visual: ${style.prompt}
+- NO inventes cifras, porcentajes, fechas, fuentes ni afirmaciones. Usa únicamente datos explícitos del usuario.
+- Si no existe un dato numérico verificable, deja dato_destacado como cadena vacía.
+- Conserva la fuente exactamente como se aporta. Si no se aporta, usa una cadena vacía.
+- No presentes ejemplos o estimaciones como hechos.
 
 Devuelve SOLO JSON válido con este formato:
 {
@@ -32,18 +42,17 @@ Devuelve SOLO JSON válido con este formato:
   "sections": [
     {"titulo": "Sección 1", "icono": "📊", "dato_destacado": "73%", "puntos": ["Punto 1", "Punto 2"]}
   ],
-  "fuente": "Fuente opcional",
+  "fuente": ${JSON.stringify(source)},
   "color_fondo": "${style._c1}",
   "color_acento": "${style._c2}"
 }`;
 
     const userPrompt = `Crea una infografía sobre:
 TÍTULO: ${title || 'Información clave'}
-CONTENIDO: ${content || 'Datos e información relevante sobre el tema'}`;
+CONTENIDO: ${content || 'Datos e información relevante sobre el tema'}
+FUENTE APORTADA: ${source || 'No aportada'}`;
 
     let data = null;
-    let provider = null;
-
     // 1. Intentar proxy.php (OpenRouter vía servidor)
     try {
       const resp = await fetch(this.proxyUrl, {
@@ -59,7 +68,6 @@ CONTENIDO: ${content || 'Datos e información relevante sobre el tema'}`;
       const json = await resp.json();
       if (json.success && json.text) {
         data = { choices: [{ message: { content: json.text } }] };
-        provider = 'proxy (openrouter)';
       } else if (json.error) {
         throw new Error(json.error);
       }
@@ -71,19 +79,14 @@ CONTENIDO: ${content || 'Datos e información relevante sobre el tema'}`;
     if (!data) {
       if (!apiKey) throw new Error('Necesitas configurar tu API Key (el proxy no está disponible)');
 
-      // Intentar DeepSeek primero
-      try {
-        data = await this.callAPI('https://api.deepseek.com/chat/completions', apiKey, 'deepseek-chat', systemPrompt, userPrompt);
-        provider = 'deepseek';
-      } catch (err) {
-        console.log('DeepSeek falló, intentando OpenRouter directo:', err.message);
-        try {
-          data = await this.callAPI('https://openrouter.ai/api/v1/chat/completions', apiKey, 'deepseek/deepseek-chat', systemPrompt, userPrompt, true);
-          provider = 'openrouter';
-        } catch (err2) {
-          throw new Error('No se pudo conectar con ningún proveedor. Verifica tu API Key.');
-        }
-      }
+      data = await this.callAPI(
+        'https://openrouter.ai/api/v1/chat/completions',
+        apiKey,
+        'openai/gpt-4o-mini',
+        systemPrompt,
+        userPrompt,
+        true
+      );
     }
 
     // Extraer JSON de la respuesta
@@ -96,6 +99,20 @@ CONTENIDO: ${content || 'Datos e información relevante sobre el tema'}`;
     }
 
     return infographic;
+  },
+
+  async health() {
+    try {
+      const response = await fetch(this.proxyUrl, { cache: 'no-store' });
+      if (!response.ok) return { available: false, configured: false };
+      const payload = await response.json();
+      return {
+        available: payload.success === true,
+        configured: payload.configured?.openrouter === true
+      };
+    } catch {
+      return { available: false, configured: false };
+    }
   },
 
   /**
