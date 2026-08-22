@@ -725,7 +725,7 @@ const FolioOperational = {
         dataUrl: canvas.toDataURL('image/png'),
         createdAt: Date.now()
       }));
-      window.location.href = '/apps/editar_imagen/?handoff=folio';
+      window.location.href = '/apps/imagenes_ia/ajustes_imagen/editor_local/?handoff=folio';
     } catch (error) {
       App.showToast('La imagen es demasiado grande para abrirla directamente. Descárgala y súbela al editor.');
     }
