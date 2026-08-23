@@ -208,8 +208,8 @@ function handleFlux(array $request): void {
     if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
     $quality = strtolower((string)($request['quality'] ?? 'pro'));
-    $models = ['pro'=>'flux-2-pro', 'max'=>'flux-2-max'];
-    if (!isset($models[$quality])) respond(400, ['success' => false, 'error' => 'La calidad debe ser PRO o MAX.']);
+    $models = ['flash'=>'flux-2-pro', 'pro'=>'flux-2-pro', 'flux-pro'=>'flux-2-pro', 'flux-max'=>'flux-2-max'];
+    if (!isset($models[$quality])) respond(400, ['success' => false, 'error' => 'Modelo no válido. Usa flash, pro, flux-pro o flux-max.']);
     $format = strtolower((string)($request['output_format'] ?? 'png'));
     if (!in_array($format, ['png','jpeg','webp'], true)) respond(400, ['success' => false, 'error' => 'Formato no permitido.']);
     [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
@@ -261,7 +261,7 @@ if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
     'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
     'actions'=>['generate','analyze_infographic','openrouter','text','health'],
-    'fluxModels'=>['pro'=>'flux-2-pro', 'max'=>'flux-2-max'],
+    'fluxModels'=>['flash'=>'flux-2-pro', 'pro'=>'flux-2-pro', 'flux-pro'=>'flux-2-pro', 'flux-max'=>'flux-2-max'],
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);

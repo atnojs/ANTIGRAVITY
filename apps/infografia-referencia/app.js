@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:'flux-pro', history:null };
+  const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:'pro', history:null };
   const MAX_FILE = 20 * 1024 * 1024;
 
   // Helpers para grupos de toggle (estilo Hoola)
@@ -79,7 +79,7 @@
       const aspectVal = getToggleValue('aspect-toggles');
       const aspect = aspectVal === 'auto' ? ratioFromDimensions(state.analysis.medidas) : aspectVal;
       const prompt=buildPrompt({free,title,subtitle,sections,audience:$('audience').value,language:$('language').value,analysis:state.analysis});
-      const result=await api({action:'generate',quality:state.selectedModel==='flux-max'?'max':'pro',prompt,image:state.referenceDataUrl,aspectRatio:aspect,resolution:Number(getToggleValue('resolution-toggles')),output_format:'png'});
+      const result=await api({action:'generate',quality:state.selectedModel,prompt,image:state.referenceDataUrl,aspectRatio:aspect,resolution:Number(getToggleValue('resolution-toggles')),output_format:'png'});
       state.resultDataUrl=result.dataUrl;$('result-image').src=state.resultDataUrl;$('result-section').hidden=false;
       try{await state.history.save({id:'h_'+Date.now().toString(36),type:'image',model:result.model,data:{prompt,reference:state.referenceName,analysis:state.analysis,aspectRatio:aspect},imageData:state.resultDataUrl,createdAt:new Date().toISOString()})}catch(e){showHistoryError(e.message)}
       $('result-section').scrollIntoView({behavior:'smooth'});setStatus(`Infografía lista en ${result.width} × ${result.height}.`,'success');
