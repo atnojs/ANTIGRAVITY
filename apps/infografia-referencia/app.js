@@ -4,9 +4,27 @@
   const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:'flux-pro', history:null };
   const MAX_FILE = 20 * 1024 * 1024;
 
+  // Helpers para grupos de toggle (estilo Hoola)
+  const setupToggleGroup = (containerId, onChangeCallback) => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.addEventListener('click', (e) => {
+      const btn = e.target.closest('.toggle-btn');
+      if (!btn) return;
+      container.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (onChangeCallback) onChangeCallback(btn.dataset.value);
+    });
+  };
+  const getToggleValue = (containerId) => {
+    return document.querySelector(`#${containerId} .toggle-btn.active`)?.dataset.value || '';
+  };
+
   document.addEventListener('DOMContentLoaded', init);
   async function init(){
     bind();
+    setupToggleGroup('aspect-toggles');
+    setupToggleGroup('resolution-toggles');
     if(window.infografiaDesktop){
       $('desktop-badge').hidden=false;
       $('watch-status').textContent='Vigilando la carpeta Descargas. La última imagen descargada aparecerá automáticamente.';
@@ -58,9 +76,10 @@
     if(!free&&!title&&!sections)return setStatus('Introduce una descripción, un título o secciones.','error');
     setBusy(true,'Generando la nueva infografía con FLUX...');
     try{
-      const aspect=$('aspect').value==='auto'?ratioFromDimensions(state.analysis.medidas):$('aspect').value;
+      const aspectVal = getToggleValue('aspect-toggles');
+      const aspect = aspectVal === 'auto' ? ratioFromDimensions(state.analysis.medidas) : aspectVal;
       const prompt=buildPrompt({free,title,subtitle,sections,audience:$('audience').value,language:$('language').value,analysis:state.analysis});
-      const result=await api({action:'generate',quality:state.selectedModel==='flux-max'?'max':'pro',prompt,image:state.referenceDataUrl,aspectRatio:aspect,resolution:Number($('resolution').value),output_format:'png'});
+      const result=await api({action:'generate',quality:state.selectedModel==='flux-max'?'max':'pro',prompt,image:state.referenceDataUrl,aspectRatio:aspect,resolution:Number(getToggleValue('resolution-toggles')),output_format:'png'});
       state.resultDataUrl=result.dataUrl;$('result-image').src=state.resultDataUrl;$('result-section').hidden=false;
       try{await state.history.save({id:'h_'+Date.now().toString(36),type:'image',model:result.model,data:{prompt,reference:state.referenceName,analysis:state.analysis,aspectRatio:aspect},imageData:state.resultDataUrl,createdAt:new Date().toISOString()})}catch(e){showHistoryError(e.message)}
       $('result-section').scrollIntoView({behavior:'smooth'});setStatus(`Infografía lista en ${result.width} × ${result.height}.`,'success');
@@ -74,7 +93,7 @@
   function openLightbox(url){$('lightbox').querySelector('img').src=url;$('lightbox').hidden=false}
   function downloadJson(){const blob=new Blob([JSON.stringify(state.analysis,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);downloadDataUrl(url,'referencia-infografia.json');setTimeout(()=>URL.revokeObjectURL(url),1000)}
   function downloadDataUrl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click()}
-  function setBusy(on,text='Procesando solicitud...'){$('ai-overlay').hidden=!on;$('progress-state').textContent=text;document.body.style.overflow=on?'hidden':'';$('generate-btn').disabled=on||!state.analysis;$('analyze-btn').disabled=on||!state.referenceDataUrl}
+  function setBusy(on,text='Procesando solicitud...'){$('ai-overlay').hidden=!on;$('secondary-status').textContent=text;document.body.style.overflow=on?'hidden':'';$('generate-btn').disabled=on||!state.analysis;$('analyze-btn').disabled=on||!state.referenceDataUrl}
   function setStatus(text,type=''){$('status-message').textContent=text;$('status-message').style.color=type==='error'?'#ffb0b0':type==='success'?'#8aff9a':''}
   function showHistoryError(text){$('history-error').textContent=`Historial: ${text}`}
   function readAsDataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('No se pudo leer el archivo.'));r.readAsDataURL(file)})}
