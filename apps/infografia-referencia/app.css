@@ -441,11 +441,12 @@ h1 {
 }
 .ar-option.active,
 .res-option.active {
-  background: linear-gradient(135deg, var(--acc), var(--acc2));
-  border-color: var(--acc2);
-  color: #001018;
-  font-weight: 700;
-  box-shadow: 0 4px 15px rgba(38,198,38,0.35);
+  background: linear-gradient(135deg, var(--contenedor), var(--acc));
+  border-color: var(--border-strong);
+  color: #CCFFFF;
+  text-shadow: 0 0 8px var(--glow);
+  font-weight: 400;
+  box-shadow: 0 0 18px var(--glow);
 }
 
 /* ---- Form fields ---- */
