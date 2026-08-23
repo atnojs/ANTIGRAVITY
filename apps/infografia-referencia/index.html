@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Crea una nueva infografía conservando el estilo y la composición de una referencia.">
+  <title>Réplica Infográfica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=1">
+  <style>[hidden]{display:none!important}</style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="app-header">
+      <p class="eyebrow">ESTUDIO DE INFOGRAFÍAS CON IA</p>
+      <h1>Réplica Infográfica</h1>
+      <p class="app-subtitle">Elige una referencia, conviértela en una guía JSON y crea otra pieza con tus propios datos.</p>
+      <div id="desktop-badge" class="desktop-badge" hidden>● DETECCIÓN AUTOMÁTICA ACTIVA</div>
+    </header>
+
+    <div class="main-layout">
+      <main class="main-col">
+        <section class="glass-panel step-card" aria-labelledby="reference-title">
+          <div class="section-heading"><span>01</span><div><h2 id="reference-title">Infografía de referencia</h2><p>La usaremos solo como guía de estilo y composición.</p></div></div>
+          <div class="reference-actions">
+            <button id="google-btn" class="btn btn-secondary" type="button">Buscar en Google ↗</button>
+            <button id="download-check-btn" class="btn btn-secondary" type="button">Ya la he descargado</button>
+            <label class="btn btn-upload" for="reference-file">＋ SUBIR INFOGRAFÍA DESDE MI PC</label>
+            <input id="reference-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+          </div>
+          <p id="watch-status" class="hint">En la app de Windows vigilaremos Descargas; en navegador puedes subir el archivo.</p>
+          <div id="reference-preview" class="reference-preview empty">
+            <div class="empty-copy"><strong>Aún no hay referencia</strong><span>PNG, JPG o WEBP · máximo 20 MB</span></div>
+            <img id="reference-image" alt="Infografía de referencia" hidden>
+          </div>
+          <div class="row-actions">
+            <button id="analyze-btn" class="btn btn-primary" type="button" disabled>Analizar y crear JSON</button>
+            <button id="download-json-btn" class="btn btn-secondary" type="button" disabled>Descargar JSON</button>
+          </div>
+          <details id="json-details" class="json-details">
+            <summary>Ver JSON extraído</summary>
+            <pre id="json-output">{}</pre>
+          </details>
+        </section>
+
+        <section class="glass-panel step-card" aria-labelledby="content-title">
+          <div class="section-heading"><span>02</span><div><h2 id="content-title">Tus datos</h2><p>Combina una descripción libre con campos precisos.</p></div></div>
+          <div class="form-grid">
+            <label class="field field-wide">Descripción libre
+              <textarea id="free-prompt" rows="5" maxlength="5000" placeholder="Ej.: Crea una infografía sobre la evolución del ser humano para estudiantes, con ocho etapas y fechas claras."></textarea>
+            </label>
+            <label class="field">Título<input id="title" maxlength="120" placeholder="Evolución del Ser Humano"></label>
+            <label class="field">Subtítulo<input id="subtitle" maxlength="180" placeholder="De los primeros homininos a Homo sapiens"></label>
+            <label class="field field-wide">Secciones y datos
+              <textarea id="sections" rows="8" maxlength="7000" placeholder="Una sección por línea. Ejemplo:&#10;Australopithecus afarensis | Hace 3,9–2,9 millones de años | Bipedismo habitual&#10;Homo erectus | Hace 1,9 millones–110.000 años | Expansión fuera de África"></textarea>
+            </label>
+            <label class="field">Público<select id="audience"><option>Público general</option><option>Estudiantes</option><option>Niños y familias</option><option>Profesionales</option><option>Lectura accesible</option></select></label>
+            <label class="field">Idioma<select id="language"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="de">Alemán</option></select></label>
+          </div>
+        </section>
+
+        <section class="glass-panel step-card" aria-labelledby="output-title">
+          <div class="section-heading"><span>03</span><div><h2 id="output-title">Generación</h2><p>Ajusta el modelo y el formato final.</p></div></div>
+          <div class="model-selector">
+            <span class="model-selector-label">Modelo IA</span>
+            <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo FLUX">
+              <button type="button" class="model-toggle active" data-model="flux-pro">FLUX PRO</button>
+              <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+            </div>
+          </div>
+          <div class="output-controls">
+            <label class="field">Relación de aspecto<select id="aspect"><option value="auto">Como la referencia</option><option value="16:9">16:9</option><option value="9:16">9:16</option><option value="1:1">1:1</option><option value="4:3">4:3</option><option value="3:4">3:4</option></select></label>
+            <label class="field">Resolución<select id="resolution"><option value="1024">1024</option><option value="2048">2048</option><option value="4096">4096</option><option value="512">512</option></select></label>
+          </div>
+          <button id="generate-btn" class="btn btn-primary btn-generate" type="button" disabled>✦ Generar nueva infografía</button>
+          <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="result-section" class="glass-panel result-panel" hidden aria-labelledby="result-title">
+          <div class="section-heading"><span>04</span><div><h2 id="result-title">Resultado</h2><p>La URL del proveedor ya se ha convertido en una imagen persistente.</p></div></div>
+          <button id="result-image-button" class="result-image-button" type="button" aria-label="Ampliar resultado"><img id="result-image" alt="Infografía generada"></button>
+          <div class="row-actions"><button id="download-result-btn" class="btn btn-primary" type="button">Descargar PNG</button><button id="regenerate-btn" class="btn btn-secondary" type="button">Crear variante</button></div>
+        </section>
+      </main>
+
+      <aside class="history-col" id="history-section">
+        <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+        <div id="history-grid"></div>
+        <button id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
+        <p id="history-error" class="history-error" role="alert"></p>
+      </aside>
+    </div>
+  </div>
+
+  <div id="ai-overlay" class="ai-overlay" hidden role="status" aria-live="polite" aria-busy="true">
+    <div class="triple-spinner" aria-hidden="true"><i></i><i></i><i></i></div>
+    <strong>IA generando lo solicitado...</strong>
+    <div class="progress-panel"><div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"><span></span></div><p id="progress-state">Procesando solicitud...</p></div>
+  </div>
+  <div id="lightbox" class="lightbox" hidden><button type="button" aria-label="Cerrar">×</button><img alt="Vista ampliada"></div>
+  <script src="history-manager.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
