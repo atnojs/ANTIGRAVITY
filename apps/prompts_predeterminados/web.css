@@ -32,7 +32,7 @@ body {
     font-family: 'Electrolize', system-ui, sans-serif;
     background: #001018;
     color: var(--text);
-    padding-top: 80px;
+    padding-top: 0.5rem;
     min-height: 100vh;
     position: relative;
     letter-spacing: 0.02em;
@@ -114,37 +114,47 @@ button:hover,
     box-shadow: 0 0 25px rgba(0, 208, 208, 0.5);
 }
 
-/* ==== TOPBAR ==== */
+/* ==== TOPBAR (eliminada caja, solo flex para centrar título) ==== */
 .topbar {
-    position: fixed;
-    top: 0;
+    position: relative;
     width: 100%;
-    z-index: 1001;
-    background: rgba(23, 79, 122, 0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 30px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    min-height: 70px;
+    padding: 1.5rem 0 0.5rem 0;
+    background: none;
+    border: none;
+    backdrop-filter: none;
+    min-height: auto;
+    z-index: 1001;
 }
 
 .brand {
     font-family: 'Electrolize', system-ui, sans-serif;
     font-weight: 400;
-    font-size: 1.5rem;
+    font-size: clamp(2rem, 5vw, 3.2rem);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--acc);
     text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
+    text-align: center;
 }
 
 .brand i {
     color: var(--acc);
+}
+
+.topbar-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .btn-generate-header {
@@ -1037,13 +1047,16 @@ body.edit-mode .category-btn:active {
 /* ==== RESPONSIVE ==== */
 @media (max-width: 600px) {
     .topbar {
-        flex-direction: column;
-        gap: 10px;
-        padding: 15px;
+        padding: 1rem 0 0.3rem 0;
+    }
+
+    .topbar-actions {
+        top: 0.3rem;
+        right: 0.8rem;
     }
 
     .brand {
-        font-size: 1.1rem;
+        font-size: clamp(2rem, 5vw, 3.2rem);
     }
 
     .tile-wrap {
@@ -1058,12 +1071,6 @@ body.edit-mode .category-btn:active {
 /* ═══════════════════════════════════════════════════════════════════
    🔐 ESTILOS DE AUTENTICACIÓN FIREBASE
    ═══════════════════════════════════════════════════════════════════ */
-
-.topbar-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
 
 .btn-user-auth {
     display: flex;
