@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Adapta un prompt visual a una imagen base y aplica su estilo con inteligencia artificial.">
+  <meta name="theme-color" content="#001018">
+  <title>Estilizador de Prompts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Saltar a la herramienta</a>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="eyebrow"><span></span> Image-to-image guiado por prompt</div>
+      <h1 class="app-title">Estilizador de Prompts</h1>
+      <p class="app-subtitle">Convierte cualquier descripción visual en un estilo aplicable a tu propia fotografía.</p>
+    </header>
+
+    <div class="main-layout">
+      <main id="workspace" class="main-col">
+        <section class="prompt-card" aria-labelledby="workflow-title">
+          <div class="card-heading">
+            <div>
+              <p class="step-kicker">Flujo único</p>
+              <h2 id="workflow-title">De una idea a tu imagen</h2>
+            </div>
+            <span class="status-chip" id="service-status">Comprobando servicio…</span>
+          </div>
+
+          <div class="prompt-grid layout-row-prompts">
+            <div class="field-block source-block">
+              <div class="field-heading">
+                <span class="step-number">1</span>
+                <div>
+                  <label for="source-prompt">Prompt original</label>
+                  <small>Describe la imagen o el estilo que te interesa.</small>
+                </div>
+              </div>
+              <textarea id="source-prompt" rows="7" maxlength="12000" placeholder="Ejemplo: retrato editorial cinematográfico, luz lateral azul, grano analógico, tonos cobrizos y fondo con niebla…"></textarea>
+              <div class="field-footer">
+                <span id="source-counter">0 / 12000</span>
+                <button id="adapt-btn" class="btn btn-secondary" type="button">
+                  <span class="btn-icon" aria-hidden="true">✦</span>
+                  <span>Adaptar a imagen base</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="field-block adapted-block">
+              <div class="field-heading">
+                <span class="step-number">2</span>
+                <div>
+                  <label for="adapted-prompt">Prompt adaptado</label>
+                  <small>La IA protege el contenido y traslada el estilo.</small>
+                </div>
+              </div>
+              <textarea id="adapted-prompt" rows="7" maxlength="6000" placeholder="Aquí aparecerá el prompt preparado para editar tu fotografía…" disabled></textarea>
+              <div class="field-footer">
+                <span id="adapted-state">Pendiente de adaptación</span>
+                <button id="copy-prompt-btn" class="btn-icon-only" type="button" title="Copiar prompt adaptado" aria-label="Copiar prompt adaptado" disabled>⧉</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="adapt-error" class="message message-error" role="alert" hidden></div>
+
+          <div class="media-grid layout-row-images">
+            <section class="image-workspace media-card" aria-labelledby="base-image-title">
+              <div class="field-heading compact-heading">
+                <span class="step-number">3</span>
+                <div>
+                  <h3 id="base-image-title">Imagen base</h3>
+                  <small>Se conservarán su sujeto, composición y encuadre.</small>
+                </div>
+              </div>
+
+              <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+              <label id="upload-zone" class="upload-zone" for="image-input" tabindex="0">
+                <span class="upload-symbol" aria-hidden="true">＋</span>
+                <strong>Sube o arrastra tu fotografía</strong>
+                <span>PNG, JPG o WebP · máximo 20 MB</span>
+              </label>
+
+              <div id="image-preview-card" class="image-preview-card" hidden>
+                <img id="image-preview" alt="Vista previa de la imagen base">
+                <div class="preview-meta">
+                  <strong id="image-name"></strong>
+                  <span id="image-info"></span>
+                </div>
+                <button id="remove-image-btn" class="remove-image-btn" type="button" aria-label="Quitar imagen">×</button>
+              </div>
+            </section>
+
+            <section id="result-section" class="result-section media-card" aria-labelledby="result-title">
+              <div class="field-heading compact-heading result-heading">
+                <span class="step-number">4</span>
+                <div>
+                  <h3 id="result-title">Resultado</h3>
+                  <small id="result-meta">La imagen transformada aparecerá aquí.</small>
+                </div>
+              </div>
+              <div class="result-frame">
+                <div id="result-placeholder" class="result-placeholder">
+                  <span aria-hidden="true">✦</span>
+                  <strong>Resultado</strong>
+                </div>
+                <img id="result-image" alt="Imagen generada con el estilo del prompt" hidden>
+                <div id="result-actions" class="result-actions" hidden>
+                  <button id="expand-result-btn" class="btn btn-secondary" type="button">Ampliar</button>
+                  <button id="download-result-btn" class="btn btn-primary compact" type="button">Descargar</button>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="bottom-control-bar">
+            <div class="options-stack">
+              <div class="control-panel">
+                <fieldset class="control-group">
+                  <legend>Relación de aspecto</legend>
+                  <div id="ar-selector" class="aspect-grid">
+                    <button type="button" class="aspect-ratio-button active" data-ar="1:1"><span class="ratio-icon ratio-square"></span><span class="btn-canon">1:1</span></button>
+                    <button type="button" class="aspect-ratio-button" data-ar="16:9"><span class="ratio-icon ratio-wide"></span><span class="btn-canon">16:9</span></button>
+                    <button type="button" class="aspect-ratio-button" data-ar="9:16"><span class="ratio-icon ratio-tall"></span><span class="btn-canon">9:16</span></button>
+                    <button type="button" class="aspect-ratio-button" data-ar="4:3"><span class="ratio-icon ratio-land"></span><span class="btn-canon">4:3</span></button>
+                    <button type="button" class="aspect-ratio-button" data-ar="3:4"><span class="ratio-icon ratio-port"></span><span class="btn-canon">3:4</span></button>
+                  </div>
+                </fieldset>
+
+                <fieldset class="control-group">
+                  <legend>Resolución</legend>
+                  <div id="resolution-selector" class="resolution-grid">
+                    <button type="button" class="resolution-button" data-resolution="512">512</button>
+                    <button type="button" class="resolution-button active" data-resolution="1024">1024</button>
+                    <button type="button" class="resolution-button" data-resolution="2048">2048</button>
+                    <button type="button" class="resolution-button" data-resolution="4096">4096</button>
+                  </div>
+                </fieldset>
+
+                <div class="control-group format-group">
+                  <label for="output-format">Formato</label>
+                  <select id="output-format">
+                    <option value="png">PNG</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="webp">WEBP</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="model-selector">
+                <span class="model-selector-label">Modelo IA</span>
+                <div class="model-toggle-group" role="radiogroup" aria-label="Seleccionar modelo">
+                  <button type="button" class="model-toggle" data-model="gemini-flash" role="radio" aria-checked="false">3.1FLASH</button>
+                  <button type="button" class="model-toggle active" data-model="gemini-pro" role="radio" aria-checked="true">3 PRO</button>
+                  <button type="button" class="model-toggle" data-model="flux-pro" role="radio" aria-checked="false">FLUX PRO</button>
+                  <button type="button" class="model-toggle" data-model="flux-max" role="radio" aria-checked="false">FLUX MAX</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="generate-column">
+              <button id="generate-btn" class="btn btn-primary" type="button" disabled>
+                <span aria-hidden="true">✦</span>
+                <span>Generar imagen estilizada</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="generation-error" class="message message-error" role="alert" hidden></div>
+        </section>
+      </main>
+
+      <aside class="history-col" id="history-section" aria-labelledby="history-title">
+        <h2 id="history-title" class="section-title" style="display:none">Historial</h2>
+        <p id="history-status" class="history-status" aria-live="polite"></p>
+        <div id="history-grid"></div>
+        <button id="history-clear-btn" class="btn-danger-outline" type="button" style="display:none">Limpiar</button>
+      </aside>
+    </div>
+  </div>
+
+  <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner-triple" aria-hidden="true">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+    </div>
+    <p class="loading-text">IA generando lo solicitado...</p>
+    <div class="progress-panel">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      <p id="secondary-status" class="secondary-status">Procesando solicitud...</p>
+    </div>
+  </div>
+
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Vista ampliada" hidden>
+    <button id="lightbox-close" class="lightbox-close" type="button" aria-label="Cerrar vista ampliada">×</button>
+    <img id="lightbox-image" alt="Imagen ampliada">
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="history-manager.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
