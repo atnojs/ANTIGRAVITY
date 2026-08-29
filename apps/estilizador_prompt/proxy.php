@@ -174,7 +174,7 @@ function handleAdaptPrompt(array $request): void {
     if ($source === '') respond(400, ['success' => false, 'error' => 'Escribe el prompt que quieres adaptar.']);
     if (strlen($source) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
 
-    $system = 'Eres especialista en edición image-to-image. Convierte el prompt del usuario en una única instrucción lista para editar una imagen base. La instrucción debe comenzar indicando que se edite la imagen proporcionada, conservar la identidad, rasgos, anatomía, pose, encuadre, perspectiva, proporciones y elementos principales, y aplicar únicamente el estilo visual, iluminación, paleta, materiales, acabado y atmósfera deducibles del prompt original. No describas una imagen nueva desde cero, no inventes sujetos ni sustituyas el contenido principal. Todo texto debe estar obligatoriamente en español. Devuelve solo el prompt final, sin título, listas, comillas ni Markdown, con un máximo de 1600 caracteres.';
+    $system = 'Eres especialista en edición image-to-image con referencia estructural bloqueada. Tu tarea es extraer del prompt del usuario únicamente el tratamiento visual transferible: estilo, técnica, paleta, iluminación, textura, materiales, acabado, efectos y atmósfera. Convierte ese tratamiento en una sola instrucción para editar globalmente la imagen base completa, de borde a borde y sin dejar zonas sin estilizar. La imagen base es la única fuente de contenido y composición: exige conservar sin cambios el número y la identidad de los sujetos, rasgos, expresión, mirada, pose, orientación corporal, anatomía, silueta, vestuario, objetos, fondo, posiciones y relaciones espaciales, encuadre, escala del sujeto, punto de vista, perspectiva y cámara. Ignora y no traslades del prompt original ninguna descripción de sujeto, escena, pose, encuadre, cámara, plano, punto de vista, recorte, zoom, relación de aspecto, resolución o dimensiones. No describas ni reconstruyas una imagen nueva, no añadas, elimines, sustituyas, desplaces, recortes ni amplíes elementos. No menciones relación de aspecto, resolución ni dimensiones en el resultado. Redacta obligatoriamente en español y devuelve solo el prompt final, sin título, listas, comillas ni Markdown, con un máximo de 1800 caracteres.';
     $payload = [
         'model' => 'openai/gpt-4o-mini',
         'messages' => [
@@ -208,6 +208,10 @@ function handleAdaptPrompt(array $request): void {
     ]);
 }
 
+function lockBaseImageComposition(string $stylePrompt): string {
+    return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA. Usa la imagen proporcionada como única fuente de contenido, geometría y composición. Conserva exactamente todos los elementos visibles y sus posiciones: sujetos e identidad, rasgos y expresión, mirada, pose y orientación, anatomía y silueta, vestuario y accesorios, objetos, fondo, encuadre, escala, punto de vista, perspectiva e iluminación espacial. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas nada. Aplica el tratamiento visual de forma global y continua a toda la superficie de la imagen, de borde a borde, incluyendo sujeto, piel, cabello, ropa, objetos y fondo; no limites el efecto al rostro ni a una zona concreta. El resultado debe ser la misma imagen base, reconocible píxel a píxel en su estructura, cambiando únicamente su tratamiento visual. TRATAMIENTO VISUAL: ' . $stylePrompt;
+}
+
 function handleGenerate(array $request): void {
     $prompt = trim((string)($request['prompt'] ?? ''));
     if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
@@ -227,11 +231,13 @@ function handleGenerate(array $request): void {
     if (!isset($modelMap[$reqModel])) respond(400, ['success' => false, 'error' => 'El modelo seleccionado no está permitido.']);
     [$backend, $providerModel] = $modelMap[$reqModel];
 
+    $lockedPrompt = lockBaseImageComposition($prompt);
+
     if ($backend === 'gemini') {
-        handleGeminiImage($request, $prompt, $providerModel);
+        handleGeminiImage($request, $lockedPrompt, $providerModel);
         return;
     }
-    handleFluxGenerate($request, $prompt, $providerModel);
+    handleFluxGenerate($request, $lockedPrompt, $providerModel);
 }
 
 function handleGeminiImage(array $request, string $prompt, string $geminiModelId): void {

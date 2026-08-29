@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     setMessage(els.adaptError);
-    showLoading('Analizando el estilo y protegiendo el contenido de la imagen base…');
+    showLoading('Extrayendo el estilo y bloqueando toda la composición base…');
     try {
       const data = await fetchJson('proxy.php', {
         method: 'POST',
