@@ -486,7 +486,8 @@ body.edit-mode .edit-mode-controls {
     margin: 0 auto 8px;
     padding: 6px 18px;
     border: 1px solid #ff00ff;
-    color: #ff00ff;
+    border-radius: 25px;
+    color: var(--acc);
     background: rgba(255, 0, 255, 0.04);
     font-size: clamp(0.95rem, 2vw, 1.15rem);
     font-weight: 600;
@@ -500,7 +501,7 @@ body.edit-mode .edit-mode-controls {
 
 .prompt-styler-link:hover,
 .prompt-styler-link:focus-visible {
-    color: #ffffff;
+    color: var(--acc);
     background: rgba(255, 0, 255, 0.16);
     box-shadow: 0 0 14px rgba(255, 0, 255, 0.55);
     outline: none;
