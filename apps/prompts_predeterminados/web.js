@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php'; // Proxy PHP para FLUX (Black Forest Labs)
-    let selectedModel = '3pro'; // Modelo IA: 31flash | 3pro | fluxpro | fluxmax
+    let selectedModel = 'gemini-pro'; // gemini-flash | gemini-pro | flux-pro | flux-max
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
@@ -92,10 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
     const modelLabels = {
-        '31flash': '3.1FLASH',
-        '3pro': '3 PRO',
-        'fluxpro': 'FLUX PRO',
-        'fluxmax': 'FLUX MAX'
+        'gemini-flash': '3.1FLASH',
+        'gemini-pro': '3 PRO',
+        'flux-pro': 'FLUX PRO',
+        'flux-max': 'FLUX MAX'
     };
     function showGenLoading(statusMsg) {
         const txt = document.getElementById('loading-text');
@@ -1207,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modelSelector.addEventListener('click', (e) => {
             const btn = e.target.closest('.model-option');
             if (!btn) return;
-            selectedModel = btn.dataset.model || '3pro';
+            selectedModel = btn.dataset.model || 'gemini-pro';
             modelSelector.querySelectorAll('.model-option').forEach((b) => {
                 const isActive = (b === btn);
                 b.classList.toggle('active', isActive);
@@ -1381,12 +1381,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const requestBody = {
             prompt: finalPrompt,
-            image: imageB64,
+            image: baseImage || '',
             mimeType: mimeType,
             model: selectedModel
         };
 
-        console.log('Request a FLUX:', JSON.stringify({ ...requestBody, image: imageB64 ? '[base64]' : '' }).substring(0, 300) + '...');
+        console.log('Request al generador:', JSON.stringify({ ...requestBody, image: imageB64 ? '[base64]' : '' }).substring(0, 300) + '...');
 
         const response = await fetch(PROXY_URL, {
             method: 'POST',
@@ -1403,13 +1403,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const data = await response.json();
-        console.log('Respuesta de FLUX:', JSON.stringify({ ...data, imageUrl: data.imageUrl ? '[dataURL]' : '' }).substring(0, 300));
+        const imageData = data.dataUrl || data.imageUrl || (data.image && data.mimeType
+            ? `data:${data.mimeType};base64,${data.image}`
+            : '');
+        console.log('Respuesta del generador:', JSON.stringify({ ...data, image: data.image ? '[base64]' : '', dataUrl: data.dataUrl ? '[dataURL]' : '', imageUrl: data.imageUrl ? '[dataURL]' : '' }).substring(0, 300));
 
-        if (data.success && data.imageUrl) {
-            return data.imageUrl; // data URL lista para el frontend/historial
+        if (data.success && imageData) {
+            return imageData; // data URL lista para el frontend/historial
         }
 
-        const msg = data?.error?.message || 'No se recibió imagen de FLUX.';
+        const msg = data?.error?.message || data?.error || data?.detail || 'El modelo no devolvió ninguna imagen.';
         throw new Error(msg);
     }
 
@@ -1510,4 +1513,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadState();
 });
-

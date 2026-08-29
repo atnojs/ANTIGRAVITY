@@ -687,3 +687,194 @@ Comparar siempre `strpos(...) !== false`; no usar el resultado como booleano. Ma
 6. Confirmar `gemini-pro` (3 PRO) como estado inicial y revisar el payload de los cuatro botones.
 7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.
 8. Revisar el diff, crear commit, hacer push a la rama de despliegue y verificar la URL real sin caché antigua.
+
+---
+
+## Modal de Login y Campos de Autenticación: patrón canónico Hoola (`apps/prompts_predeterminados`)
+
+Aplicar este patrón estético y funcional para cualquier interfaz de autenticación (Login / Registro / Control de Sesión) basada en la arquitectura Hoola/Relatos.
+
+### Estilo e Identidad Visual
+
+1. **Overlay de Fondo (`.modal-overlay.auth-modal`)**
+   - Fondo azul oscuro profundo con desenfoque de cristal: `background: rgba(0, 16, 24, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 1000; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;`.
+
+2. **Contenedor Modal (`.modal-content.auth-modal-content`)**
+   - **Superficie de vidrio**: `background: var(--card-bg)` (`rgba(23, 79, 122, 0.42)`); `backdrop-filter: blur(16px);`.
+   - **Borde cian**: `border: 2px solid var(--border)` (`rgba(0, 208, 208, 0.7)`).
+   - **Dimensiones y curvatura**: `max-width: 420px; width: 95%; padding: 35px; border-radius: 16px;`.
+   - **Resplandor exterior**: `box-shadow: 0 0 30px rgba(0, 208, 208, 0.3);`.
+
+3. **Cabecera del Modal (`.auth-header`)**
+   - **Icono destacado (`.auth-icon`)**: Icono centrado (`<i class="fa fa-user-circle auth-icon"></i>`), tamaño `3.5rem`, texto con degradado cian-verde: `background: linear-gradient(135deg, var(--neon-cyan), var(--acc2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;`.
+   - **Título principal (`<h2>`)**: `font-family: 'Electrolize', system-ui, sans-serif; font-size: 1.5rem; background: linear-gradient(90deg, #fff, var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;`.
+   - **Subtítulo (`.auth-subtitle`)**: `color: var(--muted)` (`#99CCCC`); `font-size: 0.9rem;`.
+
+4. **Campos de Entrada y Etiquetas (`.form-group`)**
+   - **Etiqueta (`<label>`)**: `color: var(--muted); font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;` con icono FontAwesome (`fa-envelope`, `fa-lock`).
+   - **Campos de entrada (`input[type="email"]`, `input[type="password"]`, `input[type="text"]`)**:
+     ```css
+     .auth-modal .form-group input {
+         width: 100%;
+         padding: 12px 15px;
+         background: rgba(23, 79, 122, 0.8);
+         border: 1px solid var(--border);
+         border-radius: 10px;
+         color: var(--text);
+         font-size: 0.95rem;
+         transition: var(--transition-main);
+     }
+     ```
+   - **Estado Foco (`:focus`)**:
+     ```css
+     .auth-modal .form-group input:focus {
+         outline: none;
+         border-color: var(--acc); /* #00D0D0 */
+         box-shadow: 0 0 15px rgba(0, 208, 208, 0.3);
+     }
+     ```
+
+5. **Mensaje de Error (`.auth-error`)**
+   - `background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #f87171; padding: 10px; font-size: 0.85rem; margin-bottom: 15px; display: none;`. Se activa añadiendo la clase `.show`.
+
+6. **Botones de Acción**
+   - **Botón Iniciar Sesión (`.btn-auth-login`)**:
+     - `background: linear-gradient(135deg, rgba(0, 208, 208, 0.3), rgba(38, 198, 38, 0.3)); border: 2px solid var(--acc); color: #fff; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 1rem; padding: 14px 24px; cursor: pointer; width: 100%; margin-bottom: 20px;`.
+     - Hover: `background: linear-gradient(135deg, rgba(0, 208, 208, 0.5), rgba(38, 198, 38, 0.5)); box-shadow: 0 0 25px rgba(0, 208, 208, 0.4); transform: translateY(-2px);`.
+   - **Botón Crear Cuenta (`.btn-auth-register`)**:
+     - `background: linear-gradient(135deg, rgba(38, 198, 38, 0.2), rgba(0, 208, 208, 0.2)); border: 2px solid #26C626; color: #26C626; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 1rem; padding: 14px 24px; cursor: pointer; width: 100%; margin-bottom: 15px;`.
+     - Hover: `background: linear-gradient(135deg, rgba(38, 198, 38, 0.4), rgba(0, 208, 208, 0.4)); box-shadow: 0 0 25px rgba(38, 198, 38, 0.4); transform: translateY(-2px);`.
+   - **Separador Horizontal (`.auth-divider`)**:
+     - Líneas `::before` y `::after` con `flex: 1; height: 1px; background: var(--border);` y texto central `span` `"o"` (`padding: 0 15px; color: var(--muted);`).
+   - **Botón Google OAuth (`.btn-auth-google`)**:
+     - `background: rgba(255, 255, 255, 0.95); border: 2px solid rgba(255, 255, 255, 0.3); color: #333; border-radius: 12px; font-weight: 600; font-size: 1rem; padding: 14px 24px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;`.
+     - **Logo de Google SVG Multicolor Obligatorio**: Usar NUNCA `<i class="fa fa-google"></i>`. Usar SIEMPRE el logo SVG oficial multicolor con cuatro rutas exactas (`#4285F4`, `#34A853`, `#FBBC05`, `#EA4335`):
+       ```html
+       <svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 8px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+       ```
+     - Hover: `background: #fff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); transform: translateY(-2px);`.
+
+---
+
+### Marcado Canónico HTML (`index.html`)
+
+```html
+<!-- MODAL DE AUTENTICACIÓN FIREBASE -->
+<div id="auth-modal" class="modal-overlay auth-modal">
+     <div class="modal-content auth-modal-content">
+          <div class="auth-header">
+               <i class="fa fa-user-circle auth-icon"></i>
+               <h2>Acceso a Galería</h2>
+               <p class="auth-subtitle">Inicia sesión o crea una cuenta para acceder</p>
+          </div>
+          
+          <div id="auth-login-form">
+               <div class="form-group">
+                    <label><i class="fa fa-envelope"></i> Email</label>
+                    <input type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email" />
+               </div>
+               <div class="form-group">
+                    <label><i class="fa fa-lock"></i> Contraseña</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
+               </div>
+               <div id="auth-error" class="auth-error"></div>
+               <button id="auth-login-btn" class="btn-auth-login">
+                    <i class="fa fa-sign-in-alt"></i> Iniciar Sesión
+               </button>
+               <button id="auth-register-btn" class="btn-auth-register">
+                    <i class="fa fa-user-plus"></i> Crear Cuenta
+               </button>
+               <div class="auth-divider">
+                    <span>o</span>
+               </div>
+               <button id="auth-google-btn" class="btn-auth-google">
+                    <svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 8px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continuar con Google
+               </button>
+          </div>
+          
+          <div id="auth-user-info" class="auth-user-info hidden">
+               <div class="user-avatar">
+                    <img id="auth-user-photo" src="" alt="Foto de perfil">
+                    <div id="auth-user-initial" class="user-initial"></div>
+               </div>
+               <div class="user-details">
+                    <p id="auth-user-name" class="user-name"></p>
+                    <p id="auth-user-email" class="user-email"></p>
+               </div>
+               <button id="auth-logout-btn" class="btn-auth-logout">
+                    <i class="fa fa-sign-out-alt"></i> Cerrar Sesión
+               </button>
+          </div>
+     </div>
+</div>
+```
+
+---
+
+### Lógica Técnica y Resiliencia de Autenticación (Firebase Auth)
+
+```javascript
+// Inicialización y configuración de Firebase Auth
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// Observador central del estado de autenticación
+auth.onAuthStateChanged((user) => {
+    updateAuthUI(user);
+});
+
+// Login con Email y Contraseña
+async function loginWithEmail() {
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    if (!email || !password) return showAuthError('Introduce email y contraseña');
+    clearAuthError();
+    authLoginBtn.disabled = true;
+    authLoginBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Entrando...';
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        authModal.style.display = 'none';
+    } catch (error) {
+        showAuthError(parseAuthError(error));
+    } finally {
+        authLoginBtn.disabled = false;
+        authLoginBtn.innerHTML = '<i class="fa fa-sign-in-alt"></i> Iniciar Sesión';
+    }
+}
+
+// Registro con Email y Contraseña
+async function registerWithEmail() {
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    if (!email || !password || password.length < 6) return showAuthError('La contraseña requiere al menos 6 caracteres');
+    clearAuthError();
+    authRegisterBtn.disabled = true;
+    authRegisterBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Creando cuenta...';
+    try {
+        await auth.createUserWithEmailAndPassword(email, password);
+    } catch (error) {
+        showAuthError(parseAuthError(error));
+    } finally {
+        authRegisterBtn.disabled = false;
+        authRegisterBtn.innerHTML = '<i class="fa fa-user-plus"></i> Crear Cuenta';
+    }
+}
+
+// Login con Google OAuth
+async function loginWithGoogle() {
+    clearAuthError();
+    authGoogleBtn.disabled = true;
+    authGoogleBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Conectando...';
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        await auth.signInWithPopup(provider);
+    } catch (error) {
+        showAuthError('Error al iniciar sesión con Google');
+    } finally {
+        authGoogleBtn.disabled = false;
+        authGoogleBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 8px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continuar con Google';
+    }
+}
+```
+
