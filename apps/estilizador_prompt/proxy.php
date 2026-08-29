@@ -174,7 +174,7 @@ function handleAdaptPrompt(array $request): void {
     if ($source === '') respond(400, ['success' => false, 'error' => 'Escribe el prompt que quieres adaptar.']);
     if (strlen($source) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
 
-    $system = 'Eres especialista en edición image-to-image con referencia estructural bloqueada. Tu tarea es extraer del prompt del usuario únicamente el tratamiento visual transferible: estilo, técnica, paleta, iluminación, textura, materiales, acabado, efectos y atmósfera. Convierte ese tratamiento en una sola instrucción para editar globalmente la imagen base completa, de borde a borde y sin dejar zonas sin estilizar. La imagen base es la única fuente de contenido y composición: exige conservar sin cambios el número y la identidad de los sujetos, rasgos, expresión, mirada, pose, orientación corporal, anatomía, silueta, vestuario, objetos, fondo, posiciones y relaciones espaciales, encuadre, escala del sujeto, punto de vista, perspectiva y cámara. Ignora y no traslades del prompt original ninguna descripción de sujeto, escena, pose, encuadre, cámara, plano, punto de vista, recorte, zoom, relación de aspecto, resolución o dimensiones. No describas ni reconstruyas una imagen nueva, no añadas, elimines, sustituyas, desplaces, recortes ni amplíes elementos. No menciones relación de aspecto, resolución ni dimensiones en el resultado. Redacta obligatoriamente en español y devuelve solo el prompt final, sin título, listas, comillas ni Markdown, con un máximo de 1800 caracteres.';
+    $system = 'Eres un extractor de tratamiento visual para edición image-to-image. Del prompt del usuario conserva únicamente cualidades transferibles a toda una imagen: estilo, técnica, paleta, iluminación, textura, materiales, acabado, efectos y atmósfera. Elimina por completo sujetos, identidad, anatomía, vestuario, objetos, lugares, fondo concreto, acciones, pose, orientación, encuadre, escala, plano, punto de vista, cámara, perspectiva, recorte, zoom, relación de aspecto, resolución y dimensiones. Deslocaliza todos los efectos: si el original aplica algo a un rostro, persona, objeto, fondo o zona determinada, conviértelo en un tratamiento uniforme para la imagen completa y no menciones esa parte ni esa ubicación. No describas una escena nueva ni instrucciones de composición. No menciones relación de aspecto, resolución ni dimensiones. Redacta obligatoriamente en español y devuelve solo una frase o párrafo breve con el tratamiento visual, sin título, listas, comillas ni Markdown, con un máximo de 900 caracteres.';
     $payload = [
         'model' => 'openai/gpt-4o-mini',
         'messages' => [
@@ -199,6 +199,8 @@ function handleAdaptPrompt(array $request): void {
     if ($adapted === '') respond(502, ['success' => false, 'error' => 'El adaptador no devolvió un prompt utilizable.']);
     if (strlen($adapted) > 6000) $adapted = substr($adapted, 0, 6000);
 
+    $adapted = lockBaseImageComposition($adapted);
+
     respond(200, [
         'success' => true,
         'provider' => 'openrouter',
@@ -210,6 +212,14 @@ function handleAdaptPrompt(array $request): void {
 
 function lockBaseImageComposition(string $stylePrompt): string {
     return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA. Usa la imagen proporcionada como única fuente de contenido, geometría y composición. Conserva exactamente todos los elementos visibles y sus posiciones: sujetos e identidad, rasgos y expresión, mirada, pose y orientación, anatomía y silueta, vestuario y accesorios, objetos, fondo, encuadre, escala, punto de vista, perspectiva e iluminación espacial. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas nada. Aplica el tratamiento visual de forma global y continua a toda la superficie de la imagen, de borde a borde, incluyendo sujeto, piel, cabello, ropa, objetos y fondo; no limites el efecto al rostro ni a una zona concreta. El resultado debe ser la misma imagen base, reconocible píxel a píxel en su estructura, cambiando únicamente su tratamiento visual. TRATAMIENTO VISUAL: ' . $stylePrompt;
+}
+
+function extractVisualTreatment(string $prompt): string {
+    $marker = 'TRATAMIENTO VISUAL:';
+    $position = strripos($prompt, $marker);
+    if ($position === false) return trim($prompt);
+    $treatment = trim(substr($prompt, $position + strlen($marker)));
+    return $treatment !== '' ? $treatment : trim($prompt);
 }
 
 function handleGenerate(array $request): void {
@@ -231,7 +241,7 @@ function handleGenerate(array $request): void {
     if (!isset($modelMap[$reqModel])) respond(400, ['success' => false, 'error' => 'El modelo seleccionado no está permitido.']);
     [$backend, $providerModel] = $modelMap[$reqModel];
 
-    $lockedPrompt = lockBaseImageComposition($prompt);
+    $lockedPrompt = lockBaseImageComposition(extractVisualTreatment($prompt));
 
     if ($backend === 'gemini') {
         handleGeminiImage($request, $lockedPrompt, $providerModel);
