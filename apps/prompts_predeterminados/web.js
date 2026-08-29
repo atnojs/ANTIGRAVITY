@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php'; // Proxy PHP para FLUX (Black Forest Labs)
-    let selectedQuality = 'pro'; // Calidad FLUX: 'pro' (~$0.03) | 'max' (~$0.07)
+    let selectedModel = '3pro'; // Modelo IA: 31flash | 3pro | fluxpro | fluxmax
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
@@ -91,11 +91,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const genUploadArea = document.getElementById('gen-upload-area');
 
     // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
+    const modelLabels = {
+        '31flash': '3.1FLASH',
+        '3pro': '3 PRO',
+        'fluxpro': 'FLUX PRO',
+        'fluxmax': 'FLUX MAX'
+    };
     function showGenLoading(statusMsg) {
         const txt = document.getElementById('loading-text');
         const sec = document.getElementById('secondary-status');
         if (txt) txt.textContent = 'IA generando lo solicitado...';
-        if (sec) sec.textContent = statusMsg || 'Procesando solicitud...';
+        if (sec) sec.textContent = statusMsg || (modelLabels[selectedModel] || 'FLUX') + ' · procesando...';
         genLoading.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -1195,14 +1201,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // LLAMADA A FLUX (Black Forest Labs)
     // ═══════════════════════════════════════════════════════════════
 
-    // Selector de calidad PRO / MAX
-    const qualitySelector = document.getElementById('quality-selector');
-    if (qualitySelector) {
-        qualitySelector.addEventListener('click', (e) => {
-            const btn = e.target.closest('.quality-option');
+    // Selector de modelo IA (4 modelos, barra segmentada)
+    const modelSelector = document.getElementById('model-selector');
+    if (modelSelector) {
+        modelSelector.addEventListener('click', (e) => {
+            const btn = e.target.closest('.model-option');
             if (!btn) return;
-            selectedQuality = btn.dataset.quality || 'pro';
-            qualitySelector.querySelectorAll('.quality-option').forEach((b) => {
+            selectedModel = btn.dataset.model || '3pro';
+            modelSelector.querySelectorAll('.model-option').forEach((b) => {
                 const isActive = (b === btn);
                 b.classList.toggle('active', isActive);
                 b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
@@ -1377,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', () => {
             prompt: finalPrompt,
             image: imageB64,
             mimeType: mimeType,
-            quality: selectedQuality
+            model: selectedModel
         };
 
         console.log('Request a FLUX:', JSON.stringify({ ...requestBody, image: imageB64 ? '[base64]' : '' }).substring(0, 300) + '...');

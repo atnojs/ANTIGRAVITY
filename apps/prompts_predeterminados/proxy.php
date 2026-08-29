@@ -74,8 +74,18 @@ if ($hasImage) {
     }
 }
 
-// ===== MODELO FLUX: selector PRO / MAX =====
-$endpoint = ($quality === 'max') ? 'flux-2-max' : 'flux-2-pro';
+// ===== MODELO FLUX: selector 4 modelos (skill_maestra) =====
+$modelMap = [
+    '31flash' => 'flux-1.1-pro-ultra',
+    '3pro'    => 'flux-2-pro',
+    'fluxpro' => 'flux-pro',
+    'fluxmax' => 'flux-2-max',
+];
+$model = str_replace([' ', '-', '_'], '', strtolower((string)($req['model'] ?? '')));
+if ($model === '' || !isset($modelMap[$model])) {
+    $model = '3pro'; // default
+}
+$endpoint = $modelMap[$model];
 
 // ===== Dimensiones con CLAMP 4MP (FLUX 2 rechaza >4.194.304 px con HTTP 422) =====
 $width  = (int)($req['width']  ?? 1024);
@@ -205,7 +215,7 @@ echo json_encode([
     'imageUrl' => $dataUrl,
     'coste'    => round($cost * 0.01, 4), // créditos → USD
     'modelo'   => $endpoint,
-    'calidad'  => $quality,
+    'model'    => $model,
     'width'    => $width,
     'height'   => $height,
 ]);

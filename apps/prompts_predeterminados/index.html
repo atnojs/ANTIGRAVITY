@@ -14,7 +14,7 @@
      <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
      <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-     <link rel="stylesheet" href="web.css?v=3">
+     <link rel="stylesheet" href="web.css?v=4">
 </head>
 
 <body>
@@ -68,9 +68,9 @@
      </div>
 
      <div class="topbar">
-          <div class="brand">
+          <div class="brand splash-title">
                <i class="fa fa-wand-magic-sparkles"></i>
-               Galería de Prompts para Imágenes Profesionales
+               Galería de Prompts
           </div>
           <div class="topbar-actions">
                <button id="user-auth-btn" class="btn-user-auth">
@@ -198,17 +198,25 @@
                                    placeholder="Describe el estilo o cambios que deseas aplicar..."></textarea>
                          </div>
 
-                         <!-- SELECTOR DE CALIDAD FLUX PRO / MAX -->
-                         <div class="gen-section quality-section">
-                              <h4><i class="fa fa-gem"></i> Calidad FLUX</h4>
-                              <div class="quality-selector" id="quality-selector">
-                                   <button type="button" class="quality-option active" data-quality="pro" aria-pressed="true">
-                                        <span class="q-name">PRO</span>
-                                        <span class="q-desc">Equilibrado · ~$0.03</span>
+                         <!-- SELECTOR DE MODELO IA CANÓNICO (4 modelos) -->
+                         <div class="gen-section model-section">
+                              <h4><i class="fa fa-gem"></i> Modelo IA</h4>
+                              <div class="model-selector" id="model-selector" role="radiogroup" aria-label="Modelo de IA">
+                                   <button type="button" class="model-option" data-model="31flash" aria-pressed="false" title="Rápido y económico">
+                                        <span class="m-name">3.1FLASH</span>
+                                        <span class="m-desc">~$0.002</span>
                                    </button>
-                                   <button type="button" class="quality-option" data-quality="max" aria-pressed="false">
-                                        <span class="q-name">MAX</span>
-                                        <span class="q-desc">Máxima calidad · ~$0.07</span>
+                                   <button type="button" class="model-option active" data-model="3pro" aria-pressed="true" title="Equilibrado por defecto">
+                                        <span class="m-name">3 PRO</span>
+                                        <span class="m-desc">~$0.03</span>
+                                   </button>
+                                   <button type="button" class="model-option" data-model="fluxpro" aria-pressed="false" title="Alta calidad profesional">
+                                        <span class="m-name">FLUX PRO</span>
+                                        <span class="m-desc">~$0.05</span>
+                                   </button>
+                                   <button type="button" class="model-option" data-model="fluxmax" aria-pressed="false" title="Máxima calidad">
+                                        <span class="m-name">FLUX MAX</span>
+                                        <span class="m-desc">~$0.07</span>
                                    </button>
                               </div>
                          </div>
@@ -254,8 +262,8 @@
        <script src="firebase-app.js"></script>
       <script src="firebase-auth.js"></script>
       <script src="history-manager.js"></script>
-      <script src="web.js?v=3"></script>
-<script src="lightbox.js?v=2"></script>
+      <script src="web.js?v=4"></script>
+<script src="lightbox.js?v=3"></script>
 </body>
 
 </html>
