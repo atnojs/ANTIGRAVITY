@@ -451,7 +451,14 @@ select {
 .history-item-wrap:hover { border-color: var(--border-strong); box-shadow: 0 0 16px var(--glow-soft); }
 .history-item-wrap img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; transition: transform .2s; }
 .history-item-wrap img:hover { transform: scale(1.04); }
-.history-item-wrap .btn-square { position: absolute; top: 3px; right: 3px; display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; border: none; border-radius: 6px; color: #fff; background: rgba(239, 68, 68, .78); cursor: pointer; font-size: 13px; }
+.history-item-actions { position: absolute; top: 5px; right: 5px; display: flex; gap: 5px; }
+.history-item-wrap .btn-square { display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, .24); border-radius: 6px; color: #fff; cursor: pointer; font-size: 14px; line-height: 1; box-shadow: 0 3px 10px rgba(0, 0, 0, .28); transition: border-color .2s, background .2s, transform .2s; }
+.history-item-wrap .btn-square:hover { border-color: rgba(255, 255, 255, .7); transform: translateY(-1px); }
+.history-item-wrap .btn-square:disabled { cursor: wait; opacity: .55; }
+.history-download { background: rgba(0, 128, 150, .9); }
+.history-download:hover { background: rgba(0, 190, 195, .95); }
+.history-delete { background: rgba(239, 68, 68, .82); }
+.history-delete:hover { background: rgba(239, 68, 68, .98); }
 .history-item-wrap .history-date { position: absolute; right: 0; bottom: 0; left: 0; padding: 3px 5px; color: #cceeee; background: rgba(0, 0, 0, .68); font-size: .55rem; text-align: center; }
 .btn-danger-outline { display: block; margin: 8px auto 0; padding: 5px 11px; border: 1px solid var(--danger); border-radius: 999px; color: #ff9c9c; background: rgba(239, 68, 68, .2); cursor: pointer; font-size: .65rem; letter-spacing: .06em; text-transform: uppercase; }
 .btn-danger-outline:hover { color: #fff; background: rgba(239, 68, 68, .35); }

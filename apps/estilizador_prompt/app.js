@@ -322,13 +322,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     return 'png';
   }
 
-  function downloadDataUrl(dataUrl, mime = 'image/png') {
+  function downloadDataUrl(dataUrl, mime = 'image/png', prefix = 'imagen_estilizada') {
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `imagen_estilizada_${Date.now()}.${extensionForMime(mime)}`;
+    link.download = `${prefix}_${Date.now()}.${extensionForMime(mime)}`;
     document.body.appendChild(link);
     link.click();
     link.remove();
+  }
+
+  async function downloadHistoryImage(item, url) {
+    const storedMime = item.data?.mimeType || url.match(/^data:([^;]+)/)?.[1] || 'image/png';
+    if (url.startsWith('data:image/')) {
+      downloadDataUrl(url, storedMime, 'imagen_historial');
+      return;
+    }
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('No se pudo descargar la imagen.');
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    downloadDataUrl(objectUrl, blob.type || storedMime, 'imagen_historial');
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
   }
 
   function openLightbox(url) {
@@ -368,19 +382,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       image.alt = 'Resultado guardado en el historial';
       image.loading = 'lazy';
       image.addEventListener('click', () => openLightbox(url));
+      const actions = document.createElement('div');
+      actions.className = 'history-item-actions';
+      const download = document.createElement('button');
+      download.type = 'button';
+      download.className = 'btn-square history-download';
+      download.textContent = '↓';
+      download.setAttribute('aria-label', 'Descargar imagen del historial');
+      download.setAttribute('title', 'Descargar');
+      download.addEventListener('click', async () => {
+        download.disabled = true;
+        try {
+          await downloadHistoryImage(item, url);
+          showToast('Descarga iniciada.');
+        } catch {
+          showToast('No se pudo descargar la imagen.');
+        } finally {
+          download.disabled = false;
+        }
+      });
       const remove = document.createElement('button');
       remove.type = 'button';
-      remove.className = 'btn-square';
+      remove.className = 'btn-square history-delete';
       remove.textContent = '×';
       remove.setAttribute('aria-label', 'Eliminar del historial');
+      remove.setAttribute('title', 'Eliminar');
       remove.addEventListener('click', async () => {
         if (!window.confirm('¿Eliminar esta imagen del historial?')) return;
         try { await history.delete(item.id); } catch { els.historyStatus.textContent = 'No se pudo eliminar la imagen.'; }
       });
+      actions.append(download, remove);
       const date = document.createElement('span');
       date.className = 'history-date';
       date.textContent = new Date(item.createdAt || Date.now()).toLocaleString('es-ES');
-      wrap.append(image, remove, date);
+      wrap.append(image, actions, date);
       els.historyGrid.appendChild(wrap);
     });
   }
