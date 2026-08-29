@@ -196,6 +196,9 @@ function handleAdaptPrompt(array $request): void {
     $adapted = trim((string)($response['choices'][0]['message']['content'] ?? ''));
     $adapted = preg_replace('/^```(?:text|markdown)?\s*|\s*```$/iu', '', $adapted) ?? $adapted;
     $adapted = trim($adapted, " \t\n\r\0\x0B\"");
+    $adapted = preg_replace('/\buna\s+composici[oó]n\b/iu', 'un tratamiento visual', $adapted) ?? $adapted;
+    $adapted = preg_replace('/\bla\s+composici[oó]n\b/iu', 'el tratamiento visual', $adapted) ?? $adapted;
+    $adapted = preg_replace('/\bcomposici[oó]n\b/iu', 'tratamiento visual', $adapted) ?? $adapted;
     if ($adapted === '') respond(502, ['success' => false, 'error' => 'El adaptador no devolvió un prompt utilizable.']);
     if (strlen($adapted) > 6000) $adapted = substr($adapted, 0, 6000);
 
