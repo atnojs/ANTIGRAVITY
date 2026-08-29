@@ -12,7 +12,6 @@
 
 :root {
     --bg1: #001018;
-    --main-bg-gradient: linear-gradient(135deg, #001018 0%, #062f43 50%, #0E5368 100%);
     --acc: #00D0D0;
     --acc2: #26C626;
     --neon-cyan: #00D0D0;
@@ -31,16 +30,16 @@
 
 body {
     font-family: 'Electrolize', system-ui, sans-serif;
-    background: var(--main-bg-gradient);
-    background-attachment: fixed;
+    background: #001018;
     color: var(--text);
     padding-top: 80px;
     min-height: 100vh;
     position: relative;
     letter-spacing: 0.02em;
+    line-height: 1.6;
 }
 
-/* Halos radiales cian del estilo relatos */
+/* Degradado de fondo + halos cian canónicos (skill_maestra) */
 body::before {
     content: '';
     position: fixed;
@@ -48,11 +47,12 @@ body::before {
     z-index: -2;
     pointer-events: none;
     background:
-        radial-gradient(circle at 15% 20%, rgba(0, 208, 208, 0.18), transparent 45%),
-        radial-gradient(circle at 85% 80%, rgba(38, 198, 38, 0.12), transparent 45%);
+        radial-gradient(1000px 750px at 50% 5%, rgba(0, 208, 208, 0.28), transparent 60%),
+        radial-gradient(900px 650px at 15% 25%, rgba(0, 160, 168, 0.20), transparent 58%),
+        linear-gradient(180deg, #001018 0%, #062f43 60%, #0E5368 100%);
 }
 
-/* Rejilla de circuito cian con mascara radial */
+/* Rejilla de circuito cian canónica */
 body::after {
     content: '';
     position: fixed;
@@ -60,11 +60,12 @@ body::after {
     z-index: -1;
     pointer-events: none;
     background-image:
-        linear-gradient(rgba(0, 208, 208, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 208, 208, 0.06) 1px, transparent 1px);
+        linear-gradient(rgba(0, 208, 208, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 208, 208, 0.08) 1px, transparent 1px);
     background-size: 46px 46px;
-    -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 80%);
-    mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+    mask-image: radial-gradient(ellipse 95% 75% at 50% 25%, #000 45%, transparent 82%);
+    opacity: 0.85;
 }
 
 /* ==== ESTILO GLOBAL DE BOTONES ==== */
@@ -129,24 +130,19 @@ button:hover,
     min-height: 70px;
 }
 
-.brand.splash-title {
+.brand {
     font-family: 'Electrolize', system-ui, sans-serif;
     font-weight: 400;
-    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-size: 1.5rem;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     background: linear-gradient(90deg, var(--neon-cyan), var(--acc2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: none;
-    text-shadow:
-        0 0 10px var(--glow, rgba(0, 208, 208, 0.8)),
-        0 0 24px var(--glow, rgba(0, 208, 208, 0.8)),
-        0 0 44px var(--glow-soft, rgba(0, 208, 208, 0.4));
+    filter: drop-shadow(0 0 12px rgba(0, 208, 208, 0.55));
     display: flex;
     align-items: center;
     gap: 12px;
-    line-height: 1.2;
 }
 
 .brand i {
@@ -1450,14 +1446,15 @@ body.edit-mode .category-btn:active {
 }
 
 .model-option.active {
-    background: linear-gradient(135deg, rgba(0, 208, 208, 0.18), rgba(38, 198, 38, 0.18));
-    box-shadow: inset 0 0 20px rgba(0, 208, 208, 0.15);
+    background: linear-gradient(135deg, #00D0D0, #26C626);
+    box-shadow: 0 0 20px rgba(0, 208, 208, 0.35);
 }
 
 .model-option.active .m-name {
-    color: var(--acc2, #26C626);
+    color: #061018;
 }
 
 .model-option.active .m-desc {
-    color: var(--neon-cyan);
+    color: #061018;
+    opacity: 0.85;
 }
