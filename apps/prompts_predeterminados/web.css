@@ -135,18 +135,16 @@ button:hover,
     font-weight: 400;
     font-size: 1.5rem;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--acc2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 12px rgba(0, 208, 208, 0.55));
+    letter-spacing: 0.04em;
+    color: var(--acc);
+    text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
 .brand i {
-    -webkit-text-fill-color: var(--neon-cyan);
+    color: var(--acc);
 }
 
 .btn-generate-header {
@@ -194,18 +192,17 @@ button:hover,
 }
 
 .category-btn.active {
-    background: linear-gradient(135deg, rgba(0, 208, 208, 0.2), rgba(38, 198, 38, 0.2));
-    border-color: var(--acc);
+    background: rgba(0, 208, 208, 0.15);
+    border-color: var(--border-strong);
     box-shadow: 0 0 25px rgba(0, 208, 208, 0.4);
 }
 
 .category-title {
     font-family: 'Electrolize', system-ui, sans-serif;
-    font-weight: 700;
+    font-weight: 400;
     font-size: 0.95rem;
-    background: linear-gradient(90deg, #fff, var(--acc2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--acc);
+    letter-spacing: 0.03em;
 }
 
 .category-count {
@@ -334,14 +331,22 @@ body.edit-mode .category-edit-buttons {
     padding: 8px 12px;
     font-size: 0.8rem;
     margin-top: 8px;
-    background: linear-gradient(135deg, rgba(38, 198, 38, 0.15), rgba(38, 198, 38, 0.15));
-    border: 1px solid var(--acc2);
-    color: var(--acc2);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--acc);
+    font-family: 'Electrolize', system-ui, sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: var(--transition-main);
 }
 
 .use-prompt-btn:hover {
-    background: linear-gradient(135deg, rgba(38, 198, 38, 0.3), rgba(38, 198, 38, 0.3));
-    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-strong);
+    box-shadow: 0 0 15px var(--glow-soft);
+    transform: translateY(-2px);
 }
 
 /* ==== VISOR DE IMAGEN ==== */
@@ -1393,8 +1398,9 @@ body.edit-mode .category-btn:active {
     gap: 0;
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid var(--border);
-    background: rgba(23, 79, 122, 0.3);
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    box-shadow: 0 0 18px var(--glow-soft);
 }
 
 .model-option {
@@ -1446,8 +1452,8 @@ body.edit-mode .category-btn:active {
 }
 
 .model-option.active {
-    background: linear-gradient(135deg, #00D0D0, #26C626);
-    box-shadow: 0 0 20px rgba(0, 208, 208, 0.35);
+    background: #00D0D0;
+    box-shadow: 0 0 24px rgba(0, 208, 208, 0.5);
 }
 
 .model-option.active .m-name {
