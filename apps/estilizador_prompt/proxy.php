@@ -210,12 +210,12 @@ function styleImageDataUrl(string $source): string {
 }
 
 function handleStyleImageAnalysis(string $key, string $styleImage, string $guidance): void {
-    $system = 'Analiza la imagen recibida como una referencia de estilo, nunca como fuente de contenido o composición. Devuelve JSON válido y nada más, con todos los valores escritos en español. Extrae una firma visual MUY ESPECÍFICA y transferible: medio, géneros, dirección artística, técnicas, paleta dominante y acentos, esquema de iluminación, texturas, apariencia de materiales, atmósfera, realismo, acabado, tratamientos de superficie y efectos visuales. No identifiques ni describas personas, cuerpos, rostros, peinados, prendas concretas, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. Convierte cualquier objeto o prenda detectado en una propiedad transferible: por ejemplo, no escribas armadura sino metal oscuro envejecido, mojado, rayado y reflectante; no escribas esfera, orbe ni glowing orb, sino resplandor energético cian, halos, reflejos, partículas o vetas de luz. visual_effects solo puede contener técnicas o fenómenos visuales sin sustantivos de objetos. No inventes rasgos que no sean visibles. Evita adjetivos genéricos si puedes especificar color, material, dirección de luz, contraste o microtextura. Cada valor debe poder aplicarse a cualquier imagen sin crear elementos nuevos. Usa exactamente estas claves: medium, genres, art_direction, visual_techniques, color_palette, lighting, textures, materials, visual_effects, atmosphere, realism_and_finish, surface_treatments. medium debe ser una cadena y todas las demás claves deben ser arrays de cadenas.';
+    $system = 'Eres un director de arte especializado en descomponer referencias visuales para transferencia de estilo sobre una fotografía base inmutable. Devuelve JSON válido y nada más, con todos los valores en español. Tu análisis debe capturar lo que hace reconocible a la referencia, no una lista genérica de adjetivos. Distingue cuidadosamente: 1) paleta con función de cada color; 2) perfil tonal y exposición, incluida la conservación de detalle en blancos y negros; 3) firma de luz con dureza, dirección, temperatura, contraste y comportamiento de reflejos; 4) materiales y acabados como propiedades de superficie; 5) lenguaje gráfico transferible como precisión editorial, limpieza, geometría, ritmo y uso del espacio, sin copiar la composición; 6) texturas; 7) efectos ópticos indicando carácter, intensidad, tamaño y densidad; 8) atmósfera y nivel de realismo. optical_effects solo debe incluir efectos realmente visibles: no llames bokeh a puntos especulares definidos, no llames alto contraste a una imagen high-key con blancos controlados y no conviertas un halo suave en destellos prismáticos. transferable_anchors debe contener entre 6 y 10 rasgos discriminantes, ordenados de mayor a menor prioridad; cada ancla debe ser concreta y comprobable. avoid_in_result debe registrar de 4 a 8 desviaciones visuales que destruirían esta firma, deducidas por oposición directa a lo visible: por ejemplo blancos quemados frente a marfil con detalle, flare arcoíris frente a reflejo dorado controlado, partículas caóticas frente a ornamentación escasa. non_transferable_reference_elements debe enumerar el contenido que se detecta pero que NO debe copiarse: identidad, texto literal, logotipos, prendas, objetos, escenario, pose, encuadre y composición. No incluyas nombres propios ni transcribas palabras visibles. Convierte objetos en cualidades transferibles: armadura pasa a metal oscuro envejecido; esfera pasa a resplandor energético y reflejos, nunca al objeto. No inventes rasgos ausentes. Usa exactamente estas claves: medium, style_family, visual_identity, palette_signature, tonal_profile, lighting_signature, material_signature, graphic_design_language, texture_signature, optical_effects, atmosphere, realism_and_finish, transferable_anchors, non_transferable_reference_elements, avoid_in_result. medium, style_family y visual_identity son cadenas; todas las demás claves son arrays de cadenas.';
     $instruction = $guidance !== ''
         ? 'Analiza la referencia visual. Usa esta orientación del usuario solo para nombrar mejor el estilo, nunca para describir contenido o geometría: ' . $guidance
         : 'Analiza la referencia visual y extrae su firma de estilo transferible.';
     $payload = [
-        'model' => 'openai/gpt-4o-mini',
+        'model' => 'openai/gpt-4.1-mini',
         'messages' => [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => [
@@ -224,8 +224,8 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
             ]],
         ],
         'response_format' => ['type' => 'json_object'],
-        'temperature' => 0.05,
-        'max_tokens' => 2000,
+        'temperature' => 0,
+        'max_tokens' => 2800,
         'stream' => false,
     ];
 
@@ -240,71 +240,70 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
     $raw = preg_replace('/^```(?:json)?\s*|\s*```$/iu', '', $raw) ?? $raw;
     $decoded = json_decode($raw, true);
     if (!is_array($decoded)) respond(502, ['success' => false, 'error' => 'El análisis visual no devolvió un JSON válido.']);
-    $genres = normalizeTransferableStyleList($decoded['genres'] ?? []);
-    $artDirection = normalizeTransferableStyleList($decoded['art_direction'] ?? []);
-    $visualTechniques = normalizeTransferableStyleList($decoded['visual_techniques'] ?? []);
-    $colorPalette = normalizeTransferableStyleList($decoded['color_palette'] ?? []);
-    $lighting = normalizeTransferableStyleList($decoded['lighting'] ?? []);
-    $textures = normalizeTransferableStyleList($decoded['textures'] ?? []);
-    $materials = normalizeTransferableStyleList($decoded['materials'] ?? []);
-    $visualEffects = normalizeTransferableStyleList($decoded['visual_effects'] ?? []);
+    $medium = trim((string)($decoded['medium'] ?? ''));
+    $styleFamily = trim((string)($decoded['style_family'] ?? ''));
+    $visualIdentity = trim((string)($decoded['visual_identity'] ?? ''));
+    $palette = normalizeTransferableStyleList($decoded['palette_signature'] ?? []);
+    $tonal = normalizeTransferableStyleList($decoded['tonal_profile'] ?? []);
+    $lighting = normalizeTransferableStyleList($decoded['lighting_signature'] ?? []);
+    $materials = normalizeTransferableStyleList($decoded['material_signature'] ?? []);
+    $graphicLanguage = normalizeTransferableStyleList($decoded['graphic_design_language'] ?? []);
+    $textures = normalizeTransferableStyleList($decoded['texture_signature'] ?? []);
+    $opticalEffects = normalizeTransferableStyleList($decoded['optical_effects'] ?? []);
     $atmosphere = normalizeTransferableStyleList($decoded['atmosphere'] ?? []);
     $realism = normalizeTransferableStyleList($decoded['realism_and_finish'] ?? []);
-    $surfaceTreatments = normalizeTransferableStyleList($decoded['surface_treatments'] ?? []);
+    $anchors = normalizeTransferableStyleList($decoded['transferable_anchors'] ?? []);
+    $nonTransferable = normalizeStringList($decoded['non_transferable_reference_elements'] ?? []);
+    $avoid = normalizeStringList($decoded['avoid_in_result'] ?? []);
 
-    $anchorGroups = [
-        'Paleta' => $colorPalette,
-        'Iluminación' => $lighting,
-        'Materiales' => $materials,
-        'Efectos' => $visualEffects,
-        'Texturas' => $textures,
-        'Atmósfera' => $atmosphere,
-        'Acabado' => $realism,
+    if ($anchors === []) {
+        $anchors = array_slice(array_values(array_unique(array_merge($palette, $tonal, $lighting, $materials, $graphicLanguage, $opticalEffects))), 0, 10);
+    }
+    if ($anchors === [] || ($visualIdentity === '' && $styleFamily === '')) {
+        respond(502, ['success' => false, 'error' => 'El análisis no contiene una firma visual suficientemente específica.']);
+    }
+
+    $globalSections = [];
+    if ($visualIdentity !== '') $globalSections[] = 'IDENTIDAD VISUAL: ' . $visualIdentity . '.';
+    if ($styleFamily !== '') $globalSections[] = 'FAMILIA ESTÉTICA: ' . $styleFamily . '.';
+    $promptFields = [
+        'PRIORIDADES OBLIGATORIAS' => $anchors,
+        'PALETA Y FUNCIÓN DEL COLOR' => $palette,
+        'PERFIL TONAL Y EXPOSICIÓN' => $tonal,
+        'FIRMA DE ILUMINACIÓN' => $lighting,
+        'ACABADO DE MATERIALES' => $materials,
+        'LENGUAJE GRÁFICO COMO ACABADO, SIN RECOMPONER' => $graphicLanguage,
+        'TEXTURAS' => $textures,
+        'EFECTOS ÓPTICOS CONTROLADOS' => $opticalEffects,
+        'ATMÓSFERA' => $atmosphere,
+        'REALISMO Y ACABADO FINAL' => $realism,
     ];
-    $mandatoryAnchors = [];
-    foreach ($anchorGroups as $label => $values) {
-        if ($values !== []) $mandatoryAnchors[] = $label . ': ' . implode(', ', $values);
+    foreach ($promptFields as $label => $values) {
+        if ($values !== []) $globalSections[] = $label . ': ' . implode('; ', $values) . '.';
     }
-    if ($mandatoryAnchors === []) respond(502, ['success' => false, 'error' => 'El análisis no contiene suficientes propiedades visuales transferibles.']);
-
-    $signatureParts = [];
-    if ($genres !== []) $signatureParts[] = implode(', ', $genres);
-    if ($artDirection !== []) $signatureParts[] = implode(', ', $artDirection);
-    if ($colorPalette !== []) $signatureParts[] = 'paleta ' . implode(', ', $colorPalette);
-    if ($lighting !== []) $signatureParts[] = 'luz ' . implode(', ', $lighting);
-    if ($materials !== []) $signatureParts[] = 'acabados ' . implode(', ', $materials);
-    if ($visualEffects !== []) $signatureParts[] = 'efectos ' . implode(', ', $visualEffects);
-    $styleSignature = implode('; ', $signatureParts);
-
-    $globalClauses = [];
-    foreach ($anchorGroups as $label => $values) {
-        if ($values !== []) $globalClauses[] = strtolower($label) . ' ' . implode(', ', $values);
-    }
-    if ($visualTechniques !== []) $globalClauses[] = 'técnicas ' . implode(', ', $visualTechniques);
-    if ($surfaceTreatments !== []) $globalClauses[] = 'tratamientos de superficie ' . implode(', ', $surfaceTreatments);
-    $globalPrompt = 'Aplica a toda la imagen, de borde a borde, ' . implode('; ', $globalClauses) . '. Transfiere estas propiedades con intensidad alta como tratamiento de color, luz, textura, atmósfera y acabado superficial; conserva la naturaleza de cada material y no crees, elimines ni sustituyas sujetos, prendas, objetos o escenarios.';
-    $materialTranslation = $materials !== []
-        ? ['Traslada la apariencia de ' . implode(', ', $materials) . ' a las superficies existentes conservando exactamente sus formas, límites, pliegues y posición.']
-        : [];
+    if ($avoid !== []) $globalSections[] = 'DESVIACIONES QUE DEBES EVITAR: ' . implode('; ', $avoid) . '.';
+    $globalSections[] = 'Aplica esta firma visual con intensidad alta a toda la imagen base como color, luz, tono, textura, reflejo y acabado superficial. No copies texto, logotipos, identidad, prendas, objetos, escenario, pose, encuadre ni composición de la referencia.';
+    $globalPrompt = implode(' ', $globalSections);
 
     $styleJson = [
-        'schema_version' => '1.1',
+        'schema_version' => '2.0',
         'source_type' => 'style_reference_image',
-        'medium' => trim((string)($decoded['medium'] ?? '')),
-        'genres' => $genres,
-        'style_signature' => $styleSignature,
-        'mandatory_anchors' => $mandatoryAnchors,
-        'art_direction' => $artDirection,
-        'visual_techniques' => $visualTechniques,
-        'color_palette' => $colorPalette,
-        'lighting' => $lighting,
-        'textures' => $textures,
-        'materials' => $materials,
-        'visual_effects' => $visualEffects,
-        'material_translation' => $materialTranslation,
+        'analysis_model' => 'openai/gpt-4.1-mini',
+        'medium' => $medium,
+        'style_family' => $styleFamily,
+        'visual_identity' => $visualIdentity,
+        'palette_signature' => $palette,
+        'tonal_profile' => $tonal,
+        'lighting_signature' => $lighting,
+        'material_signature' => $materials,
+        'graphic_design_language' => $graphicLanguage,
+        'texture_signature' => $textures,
+        'optical_effects' => $opticalEffects,
         'atmosphere' => $atmosphere,
         'realism_and_finish' => $realism,
-        'surface_treatments' => $surfaceTreatments,
+        'transferable_anchors' => $anchors,
+        'non_transferable_reference_elements' => $nonTransferable,
+        'avoid_in_result' => $avoid,
         'global_treatment_prompt' => $globalPrompt,
     ];
     $adapted = json_encode($styleJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -313,7 +312,7 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
     respond(200, [
         'success' => true,
         'provider' => 'openrouter',
-        'model' => 'openai/gpt-4o-mini',
+        'model' => 'openai/gpt-4.1-mini',
         'format' => 'json',
         'sourceType' => 'image',
         'adaptedPrompt' => $adapted,
@@ -371,12 +370,16 @@ function handleAdaptPrompt(array $request): void {
 }
 
 function lockBaseImageComposition(string $stylePrompt): string {
-    return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA. La única imagen recibida es la base y manda de forma absoluta sobre contenido, identidad, geometría y composición. Conserva exactamente todos sus elementos visibles y sus posiciones: identidad y rasgos, expresión y mirada, pose y orientación, anatomía y silueta, forma del cabello, contorno, pliegues, costuras y diseño del vestuario, accesorios, objetos, arquitectura, fondo, encuadre, escala, punto de vista y perspectiva. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas elementos. TRANSFERENCIA DE ESTILO ALTA Y OBLIGATORIA: cambia de forma evidente la paleta, gradación, iluminación, contraste, microtexturas, atmósfera y acabado superficial de toda la fotografía para reproducir la firma visual descrita. Trata los materiales como un sombreado o pátina superficial que sigue la geometría ya existente y conserva la naturaleza de cada zona: la piel sigue siendo piel, el cabello sigue siendo cabello, la tela sigue siendo la misma prenda y el fondo sigue siendo el mismo fondo. PROHIBIDO añadir paneles, placas, piezas de armadura, ribetes, costuras, grabados, runas, adornos, fuentes de luz, objetos o capas de vestuario que no existan en la base. Los halos, reflejos, partículas y vetas de energía deben adherirse a bordes y superficies existentes o extenderse como atmósfera semitransparente; nunca deben formar una esfera, objeto o sujeto nuevo. Aplica el tratamiento globalmente y de borde a borde sobre sujeto, piel, cabello, ropa, objetos, suelo, cielo y fondo; no lo reduzcas a oscurecer la foto, aplicar un filtro genérico ni tratar solo el rostro. El resultado debe mantener la misma escena, pose, siluetas y detalles estructurales de la imagen base, pero resultar inequívocamente reconocible por la paleta, la luz, las texturas y la atmósfera del estilo solicitado. TRATAMIENTO VISUAL OBLIGATORIO: ' . $stylePrompt;
+    return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA. La única imagen recibida es la base y manda de forma absoluta sobre contenido, identidad, geometría y composición. Conserva exactamente todos sus elementos visibles y sus posiciones: identidad y rasgos, expresión y mirada, pose y orientación, anatomía y silueta, forma del cabello, contorno, pliegues, costuras y diseño del vestuario, accesorios, objetos, arquitectura, fondo, encuadre, escala, punto de vista y perspectiva. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas elementos. TRANSFERENCIA DE ESTILO ALTA Y OBLIGATORIA: cambia de forma evidente la paleta, gradación, iluminación, contraste, microtexturas, atmósfera y acabado superficial de toda la fotografía para reproducir la firma visual descrita. Trata los materiales como un sombreado o pátina superficial que sigue la geometría ya existente y conserva la naturaleza de cada zona: la piel sigue siendo piel, el cabello sigue siendo cabello, la tela sigue siendo la misma prenda y el fondo sigue siendo el mismo fondo. PROHIBIDO añadir texto, títulos, letras, logotipos, símbolos, marcas, paneles, placas, piezas de armadura, ribetes, costuras, grabados, runas, adornos, fuentes de luz, objetos o capas de vestuario que no existan en la base. Los halos, reflejos, partículas y vetas de energía deben adherirse a bordes y superficies existentes o extenderse como atmósfera semitransparente; nunca deben formar una esfera, objeto o sujeto nuevo. Aplica el tratamiento globalmente y de borde a borde sobre sujeto, piel, cabello, ropa, objetos, suelo, cielo y fondo; no lo reduzcas a oscurecer la foto, aplicar un filtro genérico ni tratar solo el rostro. El resultado debe mantener la misma escena, pose, siluetas y detalles estructurales de la imagen base, pero resultar inequívocamente reconocible por la paleta, la luz, las texturas y la atmósfera del estilo solicitado. TRATAMIENTO VISUAL OBLIGATORIO: ' . $stylePrompt;
 }
 
 function extractVisualTreatment(string $prompt): string {
     $decoded = json_decode($prompt, true);
     if (is_array($decoded)) {
+        if ((string)($decoded['schema_version'] ?? '') === '2.0') {
+            $global = trim((string)($decoded['global_treatment_prompt'] ?? ''));
+            if ($global !== '') return normalizeTreatmentLanguage($global);
+        }
         $sections = [];
         // Medio, género y nombres de materiales quedan en el JSON informativo,
         // pero no se envían al generador porque inducen cambios de contenido.
