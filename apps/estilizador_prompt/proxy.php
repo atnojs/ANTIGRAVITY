@@ -190,7 +190,7 @@ function styleImageDataUrl(string $source): string {
 }
 
 function handleStyleImageAnalysis(string $key, string $styleImage, string $guidance): void {
-    $system = 'Analiza la imagen recibida como una referencia de estilo, nunca como fuente de contenido o composición. Devuelve JSON válido y nada más. Extrae una firma visual MUY ESPECÍFICA y transferible: medio, géneros, dirección artística, técnicas, paleta dominante y acentos, esquema de iluminación, texturas, apariencia de materiales, atmósfera, realismo, acabado, tratamientos de superficie y efectos visuales. No identifiques ni describas personas, cuerpos, rostros, peinados, prendas concretas, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. Convierte cualquier objeto o prenda detectado en una propiedad de material transferible: por ejemplo, no escribas que debe aparecer una armadura, sino metal oscuro envejecido, mojado, rayado y reflectante aplicado a las superficies existentes. Convierte cualquier fuente luminosa u objeto energético en un sistema transferible de resplandor, reflejos, halos, partículas o vetas de energía aplicado sobre la geometría existente; nunca exijas crear el objeto original. No inventes rasgos que no sean visibles. Evita adjetivos genéricos si puedes especificar color, material, dirección de luz, contraste o microtextura. style_signature debe resumir en una frase la combinación que hace reconocible el estilo. mandatory_anchors debe contener entre 5 y 10 anclas visuales concretas e imprescindibles; si falta cualquiera de ellas, la transferencia se consideraría fallida. material_translation debe explicar cómo llevar los materiales de la referencia a las superficies ya presentes sin cambiar formas. El campo global_treatment_prompt debe estar en español, empezar por "Aplica a toda la imagen" e incluir explícitamente todas las anclas, en un único párrafo imperativo y sin modificar la estructura de una futura imagen base. Usa exactamente estas claves: schema_version, source_type, medium, genres, style_signature, mandatory_anchors, art_direction, visual_techniques, color_palette, lighting, textures, materials, material_translation, atmosphere, realism_and_finish, surface_treatments, global_treatment_prompt. schema_version debe ser "1.1", source_type debe ser "style_reference_image"; medium, style_signature y global_treatment_prompt deben ser cadenas; todas las demás claves deben ser arrays de cadenas.';
+    $system = 'Analiza la imagen recibida como una referencia de estilo, nunca como fuente de contenido o composición. Devuelve JSON válido y nada más. Extrae una firma visual MUY ESPECÍFICA y transferible: medio, géneros, dirección artística, técnicas, paleta dominante y acentos, esquema de iluminación, texturas, apariencia de materiales, atmósfera, realismo, acabado, tratamientos de superficie y efectos visuales. No identifiques ni describas personas, cuerpos, rostros, peinados, prendas concretas, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. Convierte cualquier objeto o prenda detectado en una propiedad transferible: por ejemplo, no escribas armadura sino metal oscuro envejecido, mojado, rayado y reflectante; no escribas esfera sino resplandor energético cian, halos, reflejos, partículas o vetas de luz. No inventes rasgos que no sean visibles. Evita adjetivos genéricos si puedes especificar color, material, dirección de luz, contraste o microtextura. Cada valor debe poder aplicarse a cualquier imagen sin crear elementos nuevos. Usa exactamente estas claves: medium, genres, art_direction, visual_techniques, color_palette, lighting, textures, materials, visual_effects, atmosphere, realism_and_finish, surface_treatments. medium debe ser una cadena y todas las demás claves deben ser arrays de cadenas.';
     $instruction = $guidance !== ''
         ? 'Analiza la referencia visual. Usa esta orientación del usuario solo para nombrar mejor el estilo, nunca para describir contenido o geometría: ' . $guidance
         : 'Analiza la referencia visual y extrae su firma de estilo transferible.';
@@ -220,37 +220,71 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
     $raw = preg_replace('/^```(?:json)?\s*|\s*```$/iu', '', $raw) ?? $raw;
     $decoded = json_decode($raw, true);
     if (!is_array($decoded)) respond(502, ['success' => false, 'error' => 'El análisis visual no devolvió un JSON válido.']);
-    $globalPrompt = normalizeTreatmentLanguage(trim((string)($decoded['global_treatment_prompt'] ?? '')));
-    if ($globalPrompt === '') respond(502, ['success' => false, 'error' => 'El JSON no contiene un tratamiento visual utilizable.']);
+    $genres = normalizeStringList($decoded['genres'] ?? []);
+    $artDirection = normalizeStringList($decoded['art_direction'] ?? []);
+    $visualTechniques = normalizeStringList($decoded['visual_techniques'] ?? []);
+    $colorPalette = normalizeStringList($decoded['color_palette'] ?? []);
+    $lighting = normalizeStringList($decoded['lighting'] ?? []);
+    $textures = normalizeStringList($decoded['textures'] ?? []);
+    $materials = normalizeStringList($decoded['materials'] ?? []);
+    $visualEffects = normalizeStringList($decoded['visual_effects'] ?? []);
+    $atmosphere = normalizeStringList($decoded['atmosphere'] ?? []);
+    $realism = normalizeStringList($decoded['realism_and_finish'] ?? []);
+    $surfaceTreatments = normalizeStringList($decoded['surface_treatments'] ?? []);
 
-    $mandatoryAnchors = normalizeStringList($decoded['mandatory_anchors'] ?? []);
-    if ($mandatoryAnchors === []) {
-        $mandatoryAnchors = array_slice(array_values(array_unique(array_merge(
-            normalizeStringList($decoded['color_palette'] ?? []),
-            normalizeStringList($decoded['lighting'] ?? []),
-            normalizeStringList($decoded['materials'] ?? []),
-            normalizeStringList($decoded['surface_treatments'] ?? []),
-            normalizeStringList($decoded['atmosphere'] ?? [])
-        ))), 0, 10);
+    $anchorGroups = [
+        'Paleta' => $colorPalette,
+        'Iluminación' => $lighting,
+        'Materiales' => $materials,
+        'Efectos' => $visualEffects,
+        'Texturas' => $textures,
+        'Atmósfera' => $atmosphere,
+        'Acabado' => $realism,
+    ];
+    $mandatoryAnchors = [];
+    foreach ($anchorGroups as $label => $values) {
+        if ($values !== []) $mandatoryAnchors[] = $label . ': ' . implode(', ', $values);
     }
+    if ($mandatoryAnchors === []) respond(502, ['success' => false, 'error' => 'El análisis no contiene suficientes propiedades visuales transferibles.']);
+
+    $signatureParts = [];
+    if ($genres !== []) $signatureParts[] = implode(', ', $genres);
+    if ($artDirection !== []) $signatureParts[] = implode(', ', $artDirection);
+    if ($colorPalette !== []) $signatureParts[] = 'paleta ' . implode(', ', $colorPalette);
+    if ($lighting !== []) $signatureParts[] = 'luz ' . implode(', ', $lighting);
+    if ($materials !== []) $signatureParts[] = 'acabados ' . implode(', ', $materials);
+    if ($visualEffects !== []) $signatureParts[] = 'efectos ' . implode(', ', $visualEffects);
+    $styleSignature = implode('; ', $signatureParts);
+
+    $globalClauses = [];
+    foreach ($anchorGroups as $label => $values) {
+        if ($values !== []) $globalClauses[] = strtolower($label) . ' ' . implode(', ', $values);
+    }
+    if ($visualTechniques !== []) $globalClauses[] = 'técnicas ' . implode(', ', $visualTechniques);
+    if ($surfaceTreatments !== []) $globalClauses[] = 'tratamientos de superficie ' . implode(', ', $surfaceTreatments);
+    $globalPrompt = 'Aplica a toda la imagen, de borde a borde, ' . implode('; ', $globalClauses) . '. Transfiere estas propiedades con intensidad alta a cada superficie ya existente sin crear, eliminar ni sustituir sujetos, objetos o escenarios.';
+    $materialTranslation = $materials !== []
+        ? ['Traslada la apariencia de ' . implode(', ', $materials) . ' a las superficies existentes conservando exactamente sus formas, límites, pliegues y posición.']
+        : [];
 
     $styleJson = [
         'schema_version' => '1.1',
         'source_type' => 'style_reference_image',
         'medium' => trim((string)($decoded['medium'] ?? '')),
-        'genres' => normalizeStringList($decoded['genres'] ?? []),
-        'style_signature' => trim((string)($decoded['style_signature'] ?? '')),
+        'genres' => $genres,
+        'style_signature' => $styleSignature,
         'mandatory_anchors' => $mandatoryAnchors,
-        'art_direction' => normalizeStringList($decoded['art_direction'] ?? []),
-        'visual_techniques' => normalizeStringList($decoded['visual_techniques'] ?? []),
-        'color_palette' => normalizeStringList($decoded['color_palette'] ?? []),
-        'lighting' => normalizeStringList($decoded['lighting'] ?? []),
-        'textures' => normalizeStringList($decoded['textures'] ?? []),
-        'materials' => normalizeStringList($decoded['materials'] ?? []),
-        'material_translation' => normalizeStringList($decoded['material_translation'] ?? []),
-        'atmosphere' => normalizeStringList($decoded['atmosphere'] ?? []),
-        'realism_and_finish' => normalizeStringList($decoded['realism_and_finish'] ?? []),
-        'surface_treatments' => normalizeStringList($decoded['surface_treatments'] ?? []),
+        'art_direction' => $artDirection,
+        'visual_techniques' => $visualTechniques,
+        'color_palette' => $colorPalette,
+        'lighting' => $lighting,
+        'textures' => $textures,
+        'materials' => $materials,
+        'visual_effects' => $visualEffects,
+        'material_translation' => $materialTranslation,
+        'atmosphere' => $atmosphere,
+        'realism_and_finish' => $realism,
+        'surface_treatments' => $surfaceTreatments,
         'global_treatment_prompt' => $globalPrompt,
     ];
     $adapted = json_encode($styleJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -327,12 +361,8 @@ function extractVisualTreatment(string $prompt): string {
     $decoded = json_decode($prompt, true);
     if (is_array($decoded)) {
         $sections = [];
-        $signature = trim((string)($decoded['style_signature'] ?? ''));
-        if ($signature !== '') $sections[] = 'FIRMA VISUAL: ' . $signature . '.';
-        $global = trim((string)($decoded['global_treatment_prompt'] ?? ''));
-        if ($global !== '') $sections[] = $global;
         $jsonLabels = [
-            'mandatory_anchors' => 'ANCLAS VISUALES IMPRESCINDIBLES',
+            'medium' => 'MEDIO',
             'genres' => 'GÉNEROS',
             'art_direction' => 'DIRECCIÓN ARTÍSTICA',
             'visual_techniques' => 'TÉCNICAS',
@@ -340,7 +370,7 @@ function extractVisualTreatment(string $prompt): string {
             'lighting' => 'ILUMINACIÓN',
             'textures' => 'TEXTURAS',
             'materials' => 'APARIENCIA DE MATERIALES',
-            'material_translation' => 'TRADUCCIÓN DE MATERIALES',
+            'visual_effects' => 'EFECTOS VISUALES',
             'atmosphere' => 'ATMÓSFERA',
             'realism_and_finish' => 'REALISMO Y ACABADO',
             'surface_treatments' => 'TRATAMIENTOS DE SUPERFICIE',
@@ -348,6 +378,10 @@ function extractVisualTreatment(string $prompt): string {
         foreach ($jsonLabels as $key => $label) {
             $values = normalizeStringList($decoded[$key] ?? []);
             if ($values !== []) $sections[] = $label . ': ' . implode('; ', $values) . '.';
+        }
+        if ($sections === []) {
+            $global = trim((string)($decoded['global_treatment_prompt'] ?? ''));
+            if ($global !== '') $sections[] = $global;
         }
         if ($sections !== []) return normalizeTreatmentLanguage(implode(' ', $sections));
     }
