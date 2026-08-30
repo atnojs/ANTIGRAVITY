@@ -378,15 +378,14 @@ function extractVisualTreatment(string $prompt): string {
     $decoded = json_decode($prompt, true);
     if (is_array($decoded)) {
         $sections = [];
+        // Medio, género y nombres de materiales quedan en el JSON informativo,
+        // pero no se envían al generador porque inducen cambios de contenido.
         $jsonLabels = [
-            'medium' => 'MEDIO',
-            'genres' => 'GÉNEROS',
             'art_direction' => 'DIRECCIÓN ARTÍSTICA',
             'visual_techniques' => 'TÉCNICAS',
             'color_palette' => 'PALETA',
             'lighting' => 'ILUMINACIÓN',
             'textures' => 'TEXTURAS',
-            'materials' => 'APARIENCIA DE MATERIALES',
             'visual_effects' => 'EFECTOS VISUALES',
             'atmosphere' => 'ATMÓSFERA',
             'realism_and_finish' => 'REALISMO Y ACABADO',
