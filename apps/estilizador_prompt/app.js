@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     setMessage(els.adaptError);
     showLoading(hasStyleImage
-      ? 'Analizando la imagen y construyendo su JSON de estilo…'
+      ? 'GPT-5.6 Sol está reconstruyendo el diseño completo en JSON…'
       : 'Extrayendo el estilo y bloqueando toda la composición base…');
     try {
       const data = await fetchJson('proxy.php', {
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       els.copyPromptBtn.disabled = false;
       els.downloadJsonBtn.hidden = state.adaptedFormat !== 'json';
       els.downloadJsonBtn.disabled = state.adaptedFormat !== 'json';
-      showToast(state.adaptedFormat === 'json' ? 'JSON visual extraído correctamente.' : 'Prompt adaptado correctamente.');
+      showToast(state.adaptedFormat === 'json' ? 'JSON completo extraído correctamente.' : 'Prompt adaptado correctamente.');
     } catch (error) {
       state.isAdapted = false;
       setMessage(els.adaptError, error.message || 'No se pudo adaptar el prompt.');

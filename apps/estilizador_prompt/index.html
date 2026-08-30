@@ -39,7 +39,7 @@
                 <span class="step-number">1</span>
                 <div>
                   <label for="source-prompt">Prompt original</label>
-                  <small>Escribe un prompt o sube una imagen cuyo estilo quieras extraer.</small>
+                  <small>Escribe un prompt o sube una imagen cuyo diseño completo quieras reconstruir.</small>
                 </div>
               </div>
               <textarea id="source-prompt" rows="7" maxlength="12000" placeholder="Ejemplo: retrato editorial cinematográfico, luz lateral azul, grano analógico, tonos cobrizos y fondo con niebla…"></textarea>
@@ -48,8 +48,8 @@
               <label id="style-upload-zone" class="style-upload-zone" for="style-image-input" tabindex="0">
                 <span class="style-upload-icon" aria-hidden="true">▧</span>
                 <span>
-                  <strong>Subir imagen de estilo</strong>
-                  <small>Se enviará a OpenRouter una sola vez para extraer automáticamente su JSON visual.</small>
+                  <strong>Subir imagen de referencia</strong>
+                  <small>GPT-5.6 Sol analizará composición, textos, entorno, luz y estilo para crear su JSON completo.</small>
                 </span>
               </label>
               <div id="style-image-preview-card" class="style-image-preview-card" hidden>
@@ -75,7 +75,7 @@
                 <span class="step-number">2</span>
                 <div>
                   <label for="adapted-prompt">Prompt adaptado</label>
-                  <small>La IA bloquea la escena y traslada solo el estilo.</small>
+                  <small>La IA crea un JSON completo y adapta el sujeto base al diseño de referencia.</small>
                 </div>
               </div>
               <textarea id="adapted-prompt" rows="7" maxlength="12000" placeholder="Aquí aparecerá el prompt preparado para editar tu fotografía…" disabled></textarea>
@@ -97,7 +97,7 @@
                 <span class="step-number">3</span>
                 <div>
                   <h3 id="base-image-title">Imagen base</h3>
-                  <small>Se conservarán su sujeto, composición y encuadre.</small>
+                  <small>Aporta la identidad y el sujeto principal que sustituirá al de la referencia.</small>
                 </div>
               </div>
 
@@ -229,6 +229,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="history-manager.js?v=1"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
