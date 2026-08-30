@@ -166,13 +166,102 @@ function handleOpenRouter(array $request): void {
     ]);
 }
 
+function normalizeTreatmentLanguage(string $text): string {
+    $text = preg_replace('/\buna\s+composici[oó]n\b/iu', 'un tratamiento visual', $text) ?? $text;
+    $text = preg_replace('/\bla\s+composici[oó]n\b/iu', 'el tratamiento visual', $text) ?? $text;
+    return preg_replace('/\bcomposici[oó]n\b/iu', 'tratamiento visual', $text) ?? $text;
+}
+
+function normalizeStringList($value): array {
+    if (is_string($value) && trim($value) !== '') return [trim($value)];
+    if (!is_array($value)) return [];
+    $items = [];
+    foreach ($value as $item) {
+        if (is_string($item) && trim($item) !== '') $items[] = trim($item);
+    }
+    return array_values(array_unique($items));
+}
+
+function styleImageDataUrl(string $source): string {
+    $rawB64 = base64Image($source);
+    $mime = 'image/jpeg';
+    if (preg_match('#^data:(image/(?:png|jpe?g|webp));base64,#i', $source, $match) === 1) $mime = strtolower($match[1]);
+    return 'data:' . $mime . ';base64,' . $rawB64;
+}
+
+function handleStyleImageAnalysis(string $key, string $styleImage, string $guidance): void {
+    $system = 'Analiza la imagen recibida como referencia de estilo, no como fuente de contenido. Devuelve JSON válido y nada más. Describe únicamente rasgos visuales transferibles: medio, género, dirección artística, técnicas, paleta, iluminación, texturas, materiales, atmósfera, realismo, acabado y tratamientos de superficie. No identifiques ni describas personas, cuerpos, rostros, peinados, vestuario, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. No inventes rasgos que no sean visibles. Si un efecto está localizado, conviértelo en un tratamiento global de borde a borde. El campo global_treatment_prompt debe estar en español, empezar por "Aplica a toda la imagen" y contener un único párrafo imperativo que conserve la firma visual sin modificar la estructura de una futura imagen base. Usa exactamente estas claves: schema_version, source_type, medium, genres, art_direction, visual_techniques, color_palette, lighting, textures, materials, atmosphere, realism_and_finish, surface_treatments, global_treatment_prompt. schema_version debe ser "1.0", source_type debe ser "style_reference_image", medium y global_treatment_prompt deben ser cadenas; todas las demás claves deben ser arrays de cadenas.';
+    $instruction = $guidance !== ''
+        ? 'Analiza la referencia visual. Usa esta orientación del usuario solo para nombrar mejor el estilo, nunca para describir contenido o geometría: ' . $guidance
+        : 'Analiza la referencia visual y extrae su firma de estilo transferible.';
+    $payload = [
+        'model' => 'openai/gpt-4o-mini',
+        'messages' => [
+            ['role' => 'system', 'content' => $system],
+            ['role' => 'user', 'content' => [
+                ['type' => 'text', 'text' => $instruction],
+                ['type' => 'image_url', 'image_url' => ['url' => styleImageDataUrl($styleImage)]],
+            ]],
+        ],
+        'response_format' => ['type' => 'json_object'],
+        'temperature' => 0.05,
+        'max_tokens' => 1400,
+        'stream' => false,
+    ];
+
+    [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
+        'Authorization: Bearer ' . $key, 'Content-Type: application/json', 'accept: application/json'
+    ], $payload, 120);
+    if ($status < 200 || $status >= 300 || isset($response['error'])) {
+        respond($status >= 400 && $status < 600 ? $status : 502, ['success' => false, 'error' => 'No se pudo analizar la imagen de estilo. Inténtalo de nuevo.']);
+    }
+
+    $raw = trim((string)($response['choices'][0]['message']['content'] ?? ''));
+    $raw = preg_replace('/^```(?:json)?\s*|\s*```$/iu', '', $raw) ?? $raw;
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) respond(502, ['success' => false, 'error' => 'El análisis visual no devolvió un JSON válido.']);
+    $globalPrompt = normalizeTreatmentLanguage(trim((string)($decoded['global_treatment_prompt'] ?? '')));
+    if ($globalPrompt === '') respond(502, ['success' => false, 'error' => 'El JSON no contiene un tratamiento visual utilizable.']);
+
+    $styleJson = [
+        'schema_version' => '1.0',
+        'source_type' => 'style_reference_image',
+        'medium' => trim((string)($decoded['medium'] ?? '')),
+        'genres' => normalizeStringList($decoded['genres'] ?? []),
+        'art_direction' => normalizeStringList($decoded['art_direction'] ?? []),
+        'visual_techniques' => normalizeStringList($decoded['visual_techniques'] ?? []),
+        'color_palette' => normalizeStringList($decoded['color_palette'] ?? []),
+        'lighting' => normalizeStringList($decoded['lighting'] ?? []),
+        'textures' => normalizeStringList($decoded['textures'] ?? []),
+        'materials' => normalizeStringList($decoded['materials'] ?? []),
+        'atmosphere' => normalizeStringList($decoded['atmosphere'] ?? []),
+        'realism_and_finish' => normalizeStringList($decoded['realism_and_finish'] ?? []),
+        'surface_treatments' => normalizeStringList($decoded['surface_treatments'] ?? []),
+        'global_treatment_prompt' => $globalPrompt,
+    ];
+    $adapted = json_encode($styleJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if (!is_string($adapted)) respond(500, ['success' => false, 'error' => 'No se pudo preparar el archivo JSON.']);
+
+    respond(200, [
+        'success' => true,
+        'provider' => 'openrouter',
+        'model' => 'openai/gpt-4o-mini',
+        'format' => 'json',
+        'sourceType' => 'image',
+        'adaptedPrompt' => $adapted,
+        'text' => $adapted,
+    ]);
+}
+
 function handleAdaptPrompt(array $request): void {
     $key = getSecret('R');
     if ($key === '') respond(500, ['success' => false, 'error' => 'La adaptación de prompts no está configurada en el servidor.']);
 
     $source = trim((string)($request['prompt'] ?? ''));
-    if ($source === '') respond(400, ['success' => false, 'error' => 'Escribe el prompt que quieres adaptar.']);
+    $styleImage = trim((string)($request['styleImage'] ?? ''));
+    if ($source === '' && $styleImage === '') respond(400, ['success' => false, 'error' => 'Escribe un prompt o sube una imagen de estilo.']);
     if (strlen($source) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
+    if ($styleImage !== '') handleStyleImageAnalysis($key, $styleImage, $source);
 
     $system = 'Transforma el texto recibido en un tratamiento artístico para aplicar sobre una imagen base inmutable. Conserva exclusivamente los rasgos de firma visual que aparezcan de forma explícita en la entrada: medio, género, dirección artística, estética, técnica, paleta, iluminación, texturas, materiales, acabado, atmósfera, realismo, efectos y motivos narrativos. No añadas ninguna técnica, efecto, material, color o motivo mencionado solamente en estas instrucciones. Elimina cualquier indicación sobre el contenido o la geometría de la imagen. Si una técnica de la entrada está localizada en una parte concreta, no la elimines: conviértela en una capa global distribuida por todo el fotograma. Si la entrada contiene motivos narrativos o escenas secundarias, consérvalos únicamente como siluetas o superposiciones semitransparentes no estructurales. Puedes conservar acabados superficiales como humedad, brillo o rugosidad solo cuando estén presentes en la entrada, aplicándolos sobre los materiales existentes sin cambiar su forma. PROHIBIDO escribir en la salida: sujeto, hombre, mujer, persona, retrato, rostro, cara, perfil, expresión, mirada, pose, orientación, primer plano, plano, zoom, cámara, lente, encuadre, perspectiva, composición, vertical, horizontal, fotografía o imagen de referencia, relación de aspecto, resolución, dimensiones o proporciones. Tampoco describas el peinado, vestuario, objetos, lugar o fondo. No narres la escena original ni uses frases como "la imagen presenta". Empieza obligatoriamente con "Aplica a toda la imagen" y redacta en modo imperativo un único párrafo específico en español, sin título, listas, comillas ni Markdown, con un máximo de 1300 caracteres. Ejemplo: si la entrada incluye cartel de fantasía oscura, ampliación lateral, acabado húmedo, doble exposición con siluetas y formato 9:16, conserva únicamente cartel de fantasía oscura, acabado húmedo y doble exposición global con siluetas narrativas.';
     $payload = [
@@ -196,9 +285,7 @@ function handleAdaptPrompt(array $request): void {
     $adapted = trim((string)($response['choices'][0]['message']['content'] ?? ''));
     $adapted = preg_replace('/^```(?:text|markdown)?\s*|\s*```$/iu', '', $adapted) ?? $adapted;
     $adapted = trim($adapted, " \t\n\r\0\x0B\"");
-    $adapted = preg_replace('/\buna\s+composici[oó]n\b/iu', 'un tratamiento visual', $adapted) ?? $adapted;
-    $adapted = preg_replace('/\bla\s+composici[oó]n\b/iu', 'el tratamiento visual', $adapted) ?? $adapted;
-    $adapted = preg_replace('/\bcomposici[oó]n\b/iu', 'tratamiento visual', $adapted) ?? $adapted;
+    $adapted = normalizeTreatmentLanguage($adapted);
     if ($adapted === '') respond(502, ['success' => false, 'error' => 'El adaptador no devolvió un prompt utilizable.']);
     if (strlen($adapted) > 6000) $adapted = substr($adapted, 0, 6000);
 
@@ -208,6 +295,8 @@ function handleAdaptPrompt(array $request): void {
         'success' => true,
         'provider' => 'openrouter',
         'model' => 'openai/gpt-4o-mini',
+        'format' => 'text',
+        'sourceType' => 'text',
         'adaptedPrompt' => $adapted,
         'text' => $adapted,
     ]);
@@ -218,6 +307,11 @@ function lockBaseImageComposition(string $stylePrompt): string {
 }
 
 function extractVisualTreatment(string $prompt): string {
+    $decoded = json_decode($prompt, true);
+    if (is_array($decoded)) {
+        $jsonTreatment = trim((string)($decoded['global_treatment_prompt'] ?? ''));
+        if ($jsonTreatment !== '') return normalizeTreatmentLanguage($jsonTreatment);
+    }
     $marker = 'TRATAMIENTO VISUAL:';
     $position = strripos($prompt, $marker);
     if ($position === false) return trim($prompt);

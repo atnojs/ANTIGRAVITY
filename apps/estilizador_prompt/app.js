@@ -10,7 +10,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     adaptedBlock: document.querySelector('.adapted-block'),
     adaptBtn: $('adapt-btn'),
     copyPromptBtn: $('copy-prompt-btn'),
+    downloadJsonBtn: $('download-json-btn'),
     adaptError: $('adapt-error'),
+    styleImageInput: $('style-image-input'),
+    styleUploadZone: $('style-upload-zone'),
+    styleImagePreviewCard: $('style-image-preview-card'),
+    styleImagePreview: $('style-image-preview'),
+    styleImageName: $('style-image-name'),
+    styleImageInfo: $('style-image-info'),
+    removeStyleImageBtn: $('remove-style-image-btn'),
     imageInput: $('image-input'),
     uploadZone: $('upload-zone'),
     imagePreviewCard: $('image-preview-card'),
@@ -43,6 +51,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const state = {
     sourceUsed: '',
+    sourceSignatureUsed: '',
+    styleImageData: '',
+    styleImageFile: null,
+    styleImageWidth: 0,
+    styleImageHeight: 0,
+    adaptedFormat: 'text',
     imageData: '',
     imageFile: null,
     imageWidth: 0,
@@ -114,15 +128,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateGenerateState() {
     const ready = state.isAdapted && els.adapted.value.trim() && state.imageData && !state.isBusy;
     els.generateBtn.disabled = !ready;
-    els.adaptBtn.disabled = state.isBusy || !els.source.value.trim();
+    els.adaptBtn.disabled = state.isBusy || (!els.source.value.trim() && !state.styleImageData);
+  }
+
+  function currentSourceSignature() {
+    const file = state.styleImageFile;
+    return JSON.stringify({
+      text: els.source.value.trim(),
+      image: file ? [file.name, file.size, file.lastModified] : null
+    });
   }
 
   function markAdaptationStale() {
-    const source = els.source.value.trim();
     els.sourceCounter.textContent = `${els.source.value.length} / 12000`;
-    if (state.sourceUsed && source !== state.sourceUsed) {
+    if (state.sourceSignatureUsed && currentSourceSignature() !== state.sourceSignatureUsed) {
       state.isAdapted = false;
-      els.adaptedState.textContent = 'El prompt original ha cambiado · vuelve a adaptar';
+      els.adaptedState.textContent = 'La entrada original ha cambiado · vuelve a adaptar';
       els.adaptedBlock.classList.remove('ready');
     }
     updateGenerateState();
@@ -130,29 +151,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function adaptPrompt() {
     const source = els.source.value.trim();
-    if (!source) {
-      setMessage(els.adaptError, 'Escribe primero el prompt que quieres convertir.');
-      els.source.focus();
+    const hasStyleImage = Boolean(state.styleImageData);
+    if (!source && !hasStyleImage) {
+      setMessage(els.adaptError, 'Escribe un prompt o sube una imagen de estilo.');
+      els.styleUploadZone.focus();
       return;
     }
     setMessage(els.adaptError);
-    showLoading('Extrayendo el estilo y bloqueando toda la composición base…');
+    showLoading(hasStyleImage
+      ? 'Analizando la imagen y construyendo su JSON de estilo…'
+      : 'Extrayendo el estilo y bloqueando toda la composición base…');
     try {
       const data = await fetchJson('proxy.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'adapt', prompt: source })
+        body: JSON.stringify({
+          action: 'adapt',
+          prompt: source,
+          styleImage: state.styleImageData
+        })
       }, 130000);
       const adapted = String(data.adaptedPrompt || data.text || '').trim();
       if (!data.success || !adapted) throw new Error('La IA no devolvió un prompt adaptado.');
-      state.sourceUsed = source;
+      state.sourceUsed = source || `[Imagen de estilo: ${state.styleImageFile?.name || 'referencia visual'}]`;
+      state.sourceSignatureUsed = currentSourceSignature();
+      state.adaptedFormat = data.format === 'json' ? 'json' : 'text';
       state.isAdapted = true;
       els.adapted.disabled = false;
       els.adapted.value = adapted;
-      els.adaptedState.textContent = 'Listo · puedes editarlo antes de generar';
+      els.adaptedState.textContent = state.adaptedFormat === 'json'
+        ? 'JSON de estilo listo · puedes editarlo antes de generar'
+        : 'Listo · puedes editarlo antes de generar';
       els.adaptedBlock.classList.add('ready');
       els.copyPromptBtn.disabled = false;
-      showToast('Prompt adaptado correctamente.');
+      els.downloadJsonBtn.hidden = state.adaptedFormat !== 'json';
+      els.downloadJsonBtn.disabled = state.adaptedFormat !== 'json';
+      showToast(state.adaptedFormat === 'json' ? 'JSON visual extraído correctamente.' : 'Prompt adaptado correctamente.');
     } catch (error) {
       state.isAdapted = false;
       setMessage(els.adaptError, error.message || 'No se pudo adaptar el prompt.');
@@ -184,15 +218,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  async function loadImageFile(file) {
-    setMessage(els.generationError);
-    if (!file) return;
-    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-      setMessage(els.generationError, 'Usa una imagen PNG, JPG o WebP.');
+  function validateImageFile(file) {
+    if (!file) return 'No se ha seleccionado ninguna imagen.';
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return 'Usa una imagen PNG, JPG o WebP.';
+    if (file.size > 20 * 1024 * 1024) return 'La imagen supera el máximo de 20 MB.';
+    return '';
+  }
+
+  async function loadStyleImageFile(file) {
+    setMessage(els.adaptError);
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setMessage(els.adaptError, validationError);
       return;
     }
-    if (file.size > 20 * 1024 * 1024) {
-      setMessage(els.generationError, 'La imagen supera el máximo de 20 MB.');
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const size = await imageDimensions(dataUrl);
+      state.styleImageFile = file;
+      state.styleImageData = dataUrl;
+      state.styleImageWidth = size.width;
+      state.styleImageHeight = size.height;
+      els.styleImagePreview.src = dataUrl;
+      els.styleImageName.textContent = file.name;
+      els.styleImageInfo.textContent = `${size.width} × ${size.height} px · ${readableBytes(file.size)}`;
+      els.styleUploadZone.hidden = true;
+      els.styleImagePreviewCard.hidden = false;
+      markAdaptationStale();
+      await adaptPrompt();
+    } catch (error) {
+      setMessage(els.adaptError, error.message || 'No se pudo analizar la imagen de estilo.');
+    }
+  }
+
+  function clearStyleImage() {
+    state.styleImageData = '';
+    state.styleImageFile = null;
+    state.styleImageWidth = 0;
+    state.styleImageHeight = 0;
+    els.styleImageInput.value = '';
+    els.styleImagePreview.removeAttribute('src');
+    els.styleImagePreviewCard.hidden = true;
+    els.styleUploadZone.hidden = false;
+    markAdaptationStale();
+  }
+
+  async function loadImageFile(file) {
+    setMessage(els.generationError);
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setMessage(els.generationError, validationError);
       return;
     }
     try {
@@ -331,6 +406,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     link.remove();
   }
 
+  function downloadStyleJson() {
+    try {
+      const parsed = JSON.parse(els.adapted.value);
+      const content = JSON.stringify(parsed, null, 2);
+      const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `estilo_extraido_${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+      showToast('JSON descargado.');
+    } catch {
+      showToast('El contenido editado ya no es un JSON válido.');
+    }
+  }
+
   async function downloadHistoryImage(item, url) {
     const storedMime = item.data?.mimeType || url.match(/^data:([^;]+)/)?.[1] || 'image/png';
     if (url.startsWith('data:image/')) {
@@ -451,6 +545,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   els.source.addEventListener('input', markAdaptationStale);
   els.adapted.addEventListener('input', updateGenerateState);
   els.adaptBtn.addEventListener('click', adaptPrompt);
+  els.downloadJsonBtn.addEventListener('click', downloadStyleJson);
   els.copyPromptBtn.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(els.adapted.value);
@@ -461,6 +556,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Prompt copiado.');
     }
   });
+
+  els.styleImageInput.addEventListener('change', () => loadStyleImageFile(els.styleImageInput.files?.[0]));
+  els.styleUploadZone.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); els.styleImageInput.click(); }
+  });
+  ['dragenter', 'dragover'].forEach((type) => els.styleUploadZone.addEventListener(type, (event) => {
+    event.preventDefault();
+    els.styleUploadZone.classList.add('dragover');
+  }));
+  ['dragleave', 'drop'].forEach((type) => els.styleUploadZone.addEventListener(type, (event) => {
+    event.preventDefault();
+    els.styleUploadZone.classList.remove('dragover');
+  }));
+  els.styleUploadZone.addEventListener('drop', (event) => loadStyleImageFile(event.dataTransfer?.files?.[0]));
+  els.removeStyleImageBtn.addEventListener('click', clearStyleImage);
+  els.styleImagePreview.addEventListener('click', () => openLightbox(state.styleImageData));
 
   els.imageInput.addEventListener('change', () => loadImageFile(els.imageInput.files?.[0]));
   els.uploadZone.addEventListener('keydown', (event) => {

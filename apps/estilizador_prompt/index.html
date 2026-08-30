@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=3">
+  <link rel="stylesheet" href="app.css?v=4">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Saltar a la herramienta</a>
@@ -39,10 +39,28 @@
                 <span class="step-number">1</span>
                 <div>
                   <label for="source-prompt">Prompt original</label>
-                  <small>Describe la imagen o el estilo que te interesa.</small>
+                  <small>Escribe un prompt o sube una imagen cuyo estilo quieras extraer.</small>
                 </div>
               </div>
               <textarea id="source-prompt" rows="7" maxlength="12000" placeholder="Ejemplo: retrato editorial cinematográfico, luz lateral azul, grano analógico, tonos cobrizos y fondo con niebla…"></textarea>
+              <div class="source-choice"><span>o usa una referencia visual</span></div>
+              <input id="style-image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+              <label id="style-upload-zone" class="style-upload-zone" for="style-image-input" tabindex="0">
+                <span class="style-upload-icon" aria-hidden="true">▧</span>
+                <span>
+                  <strong>Subir imagen de estilo</strong>
+                  <small>Se enviará a OpenRouter para extraer automáticamente su JSON visual.</small>
+                </span>
+              </label>
+              <div id="style-image-preview-card" class="style-image-preview-card" hidden>
+                <img id="style-image-preview" alt="Vista previa de la imagen de estilo">
+                <div class="style-preview-meta">
+                  <strong id="style-image-name"></strong>
+                  <span id="style-image-info"></span>
+                  <small>Analizar de nuevo con el botón Adaptar.</small>
+                </div>
+                <button id="remove-style-image-btn" class="remove-style-image-btn" type="button" aria-label="Quitar imagen de estilo">×</button>
+              </div>
               <div class="field-footer">
                 <span id="source-counter">0 / 12000</span>
                 <button id="adapt-btn" class="btn btn-secondary" type="button">
@@ -63,7 +81,10 @@
               <textarea id="adapted-prompt" rows="7" maxlength="6000" placeholder="Aquí aparecerá el prompt preparado para editar tu fotografía…" disabled></textarea>
               <div class="field-footer">
                 <span id="adapted-state">Pendiente de adaptación</span>
-                <button id="copy-prompt-btn" class="btn-icon-only" type="button" title="Copiar prompt adaptado" aria-label="Copiar prompt adaptado" disabled>⧉</button>
+                <div class="adapted-actions">
+                  <button id="download-json-btn" class="btn-icon-only" type="button" title="Descargar JSON de estilo" aria-label="Descargar JSON de estilo" hidden>↓</button>
+                  <button id="copy-prompt-btn" class="btn-icon-only" type="button" title="Copiar prompt adaptado" aria-label="Copiar prompt adaptado" disabled>⧉</button>
+                </div>
               </div>
             </div>
           </div>
@@ -208,6 +229,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="history-manager.js?v=1"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
