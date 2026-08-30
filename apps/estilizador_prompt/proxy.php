@@ -182,6 +182,24 @@ function normalizeStringList($value): array {
     return array_values(array_unique($items));
 }
 
+function normalizeTransferableStyleList($value): array {
+    $items = normalizeStringList($value);
+    $normalized = [];
+    $patterns = [
+        '/\b(?:glowing|luminous|electric|energy)\s+(?:orbs?|spheres?)\b/iu' => 'resplandor energético azul eléctrico con halos y reflejos',
+        '/\b(?:orbs?|spheres?)\s+(?:of\s+)?energy\b/iu' => 'resplandor energético azul eléctrico con halos y reflejos',
+        '/\b(?:esferas?|orbes?)\s+(?:de\s+)?energ(?:ía|ia)\b/iu' => 'resplandor energético azul eléctrico con halos y reflejos',
+        '/\b(?:orbs?|spheres?|esferas?|orbes?)\b/iu' => 'halos luminosos difusos',
+        '/\b(?:dark\s+)?armou?rs?\b/iu' => 'acabado de metal oscuro envejecido',
+        '/\barmaduras?\b/iu' => 'acabado de metal oscuro envejecido',
+    ];
+    foreach ($items as $item) {
+        $clean = trim((string)preg_replace(array_keys($patterns), array_values($patterns), $item));
+        if ($clean !== '') $normalized[] = $clean;
+    }
+    return array_values(array_unique($normalized));
+}
+
 function styleImageDataUrl(string $source): string {
     $rawB64 = base64Image($source);
     $mime = 'image/jpeg';
@@ -190,7 +208,7 @@ function styleImageDataUrl(string $source): string {
 }
 
 function handleStyleImageAnalysis(string $key, string $styleImage, string $guidance): void {
-    $system = 'Analiza la imagen recibida como una referencia de estilo, nunca como fuente de contenido o composición. Devuelve JSON válido y nada más. Extrae una firma visual MUY ESPECÍFICA y transferible: medio, géneros, dirección artística, técnicas, paleta dominante y acentos, esquema de iluminación, texturas, apariencia de materiales, atmósfera, realismo, acabado, tratamientos de superficie y efectos visuales. No identifiques ni describas personas, cuerpos, rostros, peinados, prendas concretas, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. Convierte cualquier objeto o prenda detectado en una propiedad transferible: por ejemplo, no escribas armadura sino metal oscuro envejecido, mojado, rayado y reflectante; no escribas esfera sino resplandor energético cian, halos, reflejos, partículas o vetas de luz. No inventes rasgos que no sean visibles. Evita adjetivos genéricos si puedes especificar color, material, dirección de luz, contraste o microtextura. Cada valor debe poder aplicarse a cualquier imagen sin crear elementos nuevos. Usa exactamente estas claves: medium, genres, art_direction, visual_techniques, color_palette, lighting, textures, materials, visual_effects, atmosphere, realism_and_finish, surface_treatments. medium debe ser una cadena y todas las demás claves deben ser arrays de cadenas.';
+    $system = 'Analiza la imagen recibida como una referencia de estilo, nunca como fuente de contenido o composición. Devuelve JSON válido y nada más, con todos los valores escritos en español. Extrae una firma visual MUY ESPECÍFICA y transferible: medio, géneros, dirección artística, técnicas, paleta dominante y acentos, esquema de iluminación, texturas, apariencia de materiales, atmósfera, realismo, acabado, tratamientos de superficie y efectos visuales. No identifiques ni describas personas, cuerpos, rostros, peinados, prendas concretas, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. Convierte cualquier objeto o prenda detectado en una propiedad transferible: por ejemplo, no escribas armadura sino metal oscuro envejecido, mojado, rayado y reflectante; no escribas esfera, orbe ni glowing orb, sino resplandor energético cian, halos, reflejos, partículas o vetas de luz. visual_effects solo puede contener técnicas o fenómenos visuales sin sustantivos de objetos. No inventes rasgos que no sean visibles. Evita adjetivos genéricos si puedes especificar color, material, dirección de luz, contraste o microtextura. Cada valor debe poder aplicarse a cualquier imagen sin crear elementos nuevos. Usa exactamente estas claves: medium, genres, art_direction, visual_techniques, color_palette, lighting, textures, materials, visual_effects, atmosphere, realism_and_finish, surface_treatments. medium debe ser una cadena y todas las demás claves deben ser arrays de cadenas.';
     $instruction = $guidance !== ''
         ? 'Analiza la referencia visual. Usa esta orientación del usuario solo para nombrar mejor el estilo, nunca para describir contenido o geometría: ' . $guidance
         : 'Analiza la referencia visual y extrae su firma de estilo transferible.';
@@ -220,17 +238,17 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
     $raw = preg_replace('/^```(?:json)?\s*|\s*```$/iu', '', $raw) ?? $raw;
     $decoded = json_decode($raw, true);
     if (!is_array($decoded)) respond(502, ['success' => false, 'error' => 'El análisis visual no devolvió un JSON válido.']);
-    $genres = normalizeStringList($decoded['genres'] ?? []);
-    $artDirection = normalizeStringList($decoded['art_direction'] ?? []);
-    $visualTechniques = normalizeStringList($decoded['visual_techniques'] ?? []);
-    $colorPalette = normalizeStringList($decoded['color_palette'] ?? []);
-    $lighting = normalizeStringList($decoded['lighting'] ?? []);
-    $textures = normalizeStringList($decoded['textures'] ?? []);
-    $materials = normalizeStringList($decoded['materials'] ?? []);
-    $visualEffects = normalizeStringList($decoded['visual_effects'] ?? []);
-    $atmosphere = normalizeStringList($decoded['atmosphere'] ?? []);
-    $realism = normalizeStringList($decoded['realism_and_finish'] ?? []);
-    $surfaceTreatments = normalizeStringList($decoded['surface_treatments'] ?? []);
+    $genres = normalizeTransferableStyleList($decoded['genres'] ?? []);
+    $artDirection = normalizeTransferableStyleList($decoded['art_direction'] ?? []);
+    $visualTechniques = normalizeTransferableStyleList($decoded['visual_techniques'] ?? []);
+    $colorPalette = normalizeTransferableStyleList($decoded['color_palette'] ?? []);
+    $lighting = normalizeTransferableStyleList($decoded['lighting'] ?? []);
+    $textures = normalizeTransferableStyleList($decoded['textures'] ?? []);
+    $materials = normalizeTransferableStyleList($decoded['materials'] ?? []);
+    $visualEffects = normalizeTransferableStyleList($decoded['visual_effects'] ?? []);
+    $atmosphere = normalizeTransferableStyleList($decoded['atmosphere'] ?? []);
+    $realism = normalizeTransferableStyleList($decoded['realism_and_finish'] ?? []);
+    $surfaceTreatments = normalizeTransferableStyleList($decoded['surface_treatments'] ?? []);
 
     $anchorGroups = [
         'Paleta' => $colorPalette,
