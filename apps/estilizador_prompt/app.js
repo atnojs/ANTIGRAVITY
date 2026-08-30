@@ -366,6 +366,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           action: 'generate',
           prompt: els.adapted.value.trim(),
           image: state.imageData,
+          styleImage: state.styleImageData,
           model: state.selectedModel,
           aspectRatio: state.aspectRatio,
           resolution: state.resolution,

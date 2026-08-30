@@ -12,7 +12,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
-const MAX_REQUEST_BYTES = 32 * 1024 * 1024;
+const MAX_REQUEST_BYTES = 48 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 const MAX_PROMPT_BYTES = 12000;
 const MAX_OUTPUT_PIXELS = 4194304;
@@ -190,7 +190,7 @@ function styleImageDataUrl(string $source): string {
 }
 
 function handleStyleImageAnalysis(string $key, string $styleImage, string $guidance): void {
-    $system = 'Analiza la imagen recibida como referencia de estilo, no como fuente de contenido. Devuelve JSON válido y nada más. Describe únicamente rasgos visuales transferibles: medio, género, dirección artística, técnicas, paleta, iluminación, texturas, materiales, atmósfera, realismo, acabado y tratamientos de superficie. No identifiques ni describas personas, cuerpos, rostros, peinados, vestuario, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. No inventes rasgos que no sean visibles. Si un efecto está localizado, conviértelo en un tratamiento global de borde a borde. El campo global_treatment_prompt debe estar en español, empezar por "Aplica a toda la imagen" y contener un único párrafo imperativo que conserve la firma visual sin modificar la estructura de una futura imagen base. Usa exactamente estas claves: schema_version, source_type, medium, genres, art_direction, visual_techniques, color_palette, lighting, textures, materials, atmosphere, realism_and_finish, surface_treatments, global_treatment_prompt. schema_version debe ser "1.0", source_type debe ser "style_reference_image", medium y global_treatment_prompt deben ser cadenas; todas las demás claves deben ser arrays de cadenas.';
+    $system = 'Analiza la imagen recibida como una referencia de estilo, nunca como fuente de contenido o composición. Devuelve JSON válido y nada más. Extrae una firma visual MUY ESPECÍFICA y transferible: medio, géneros, dirección artística, técnicas, paleta dominante y acentos, esquema de iluminación, texturas, apariencia de materiales, atmósfera, realismo, acabado, tratamientos de superficie y efectos visuales. No identifiques ni describas personas, cuerpos, rostros, peinados, prendas concretas, objetos concretos, texto, localización, fondo, acciones, pose, expresión, mirada, cámara, encuadre, perspectiva, distribución, composición, relación de aspecto, resolución ni dimensiones. Convierte cualquier objeto o prenda detectado en una propiedad de material transferible: por ejemplo, no escribas que debe aparecer una armadura, sino metal oscuro envejecido, mojado, rayado y reflectante aplicado a las superficies existentes. Convierte cualquier fuente luminosa u objeto energético en un sistema transferible de resplandor, reflejos, halos, partículas o vetas de energía aplicado sobre la geometría existente; nunca exijas crear el objeto original. No inventes rasgos que no sean visibles. Evita adjetivos genéricos si puedes especificar color, material, dirección de luz, contraste o microtextura. style_signature debe resumir en una frase la combinación que hace reconocible el estilo. mandatory_anchors debe contener entre 5 y 10 anclas visuales concretas e imprescindibles; si falta cualquiera de ellas, la transferencia se consideraría fallida. material_translation debe explicar cómo llevar los materiales de la referencia a las superficies ya presentes sin cambiar formas. El campo global_treatment_prompt debe estar en español, empezar por "Aplica a toda la imagen" e incluir explícitamente todas las anclas, en un único párrafo imperativo y sin modificar la estructura de una futura imagen base. Usa exactamente estas claves: schema_version, source_type, medium, genres, style_signature, mandatory_anchors, art_direction, visual_techniques, color_palette, lighting, textures, materials, material_translation, atmosphere, realism_and_finish, surface_treatments, global_treatment_prompt. schema_version debe ser "1.1", source_type debe ser "style_reference_image"; medium, style_signature y global_treatment_prompt deben ser cadenas; todas las demás claves deben ser arrays de cadenas.';
     $instruction = $guidance !== ''
         ? 'Analiza la referencia visual. Usa esta orientación del usuario solo para nombrar mejor el estilo, nunca para describir contenido o geometría: ' . $guidance
         : 'Analiza la referencia visual y extrae su firma de estilo transferible.';
@@ -205,7 +205,7 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
         ],
         'response_format' => ['type' => 'json_object'],
         'temperature' => 0.05,
-        'max_tokens' => 1400,
+        'max_tokens' => 2000,
         'stream' => false,
     ];
 
@@ -223,17 +223,31 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
     $globalPrompt = normalizeTreatmentLanguage(trim((string)($decoded['global_treatment_prompt'] ?? '')));
     if ($globalPrompt === '') respond(502, ['success' => false, 'error' => 'El JSON no contiene un tratamiento visual utilizable.']);
 
+    $mandatoryAnchors = normalizeStringList($decoded['mandatory_anchors'] ?? []);
+    if ($mandatoryAnchors === []) {
+        $mandatoryAnchors = array_slice(array_values(array_unique(array_merge(
+            normalizeStringList($decoded['color_palette'] ?? []),
+            normalizeStringList($decoded['lighting'] ?? []),
+            normalizeStringList($decoded['materials'] ?? []),
+            normalizeStringList($decoded['surface_treatments'] ?? []),
+            normalizeStringList($decoded['atmosphere'] ?? [])
+        ))), 0, 10);
+    }
+
     $styleJson = [
-        'schema_version' => '1.0',
+        'schema_version' => '1.1',
         'source_type' => 'style_reference_image',
         'medium' => trim((string)($decoded['medium'] ?? '')),
         'genres' => normalizeStringList($decoded['genres'] ?? []),
+        'style_signature' => trim((string)($decoded['style_signature'] ?? '')),
+        'mandatory_anchors' => $mandatoryAnchors,
         'art_direction' => normalizeStringList($decoded['art_direction'] ?? []),
         'visual_techniques' => normalizeStringList($decoded['visual_techniques'] ?? []),
         'color_palette' => normalizeStringList($decoded['color_palette'] ?? []),
         'lighting' => normalizeStringList($decoded['lighting'] ?? []),
         'textures' => normalizeStringList($decoded['textures'] ?? []),
         'materials' => normalizeStringList($decoded['materials'] ?? []),
+        'material_translation' => normalizeStringList($decoded['material_translation'] ?? []),
         'atmosphere' => normalizeStringList($decoded['atmosphere'] ?? []),
         'realism_and_finish' => normalizeStringList($decoded['realism_and_finish'] ?? []),
         'surface_treatments' => normalizeStringList($decoded['surface_treatments'] ?? []),
@@ -302,15 +316,40 @@ function handleAdaptPrompt(array $request): void {
     ]);
 }
 
-function lockBaseImageComposition(string $stylePrompt): string {
-    return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA. Usa la imagen proporcionada como única fuente de contenido, geometría y composición. Conserva exactamente todos los elementos estructurales visibles y sus posiciones: sujetos e identidad, rasgos y expresión, mirada, pose y orientación, anatomía y silueta, forma del cabello, vestuario y accesorios, objetos, fondo, encuadre, escala, punto de vista y perspectiva. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas elementos estructurales. Se permiten únicamente los acabados, texturas y superposiciones semitransparentes descritos en el tratamiento visual; deben respetar y mantener visible la estructura subyacente, sin convertirse en nuevos sujetos ni ocultar el contenido base. Aplica el tratamiento de forma global y continua a toda la superficie de la imagen, de borde a borde, incluyendo sujeto, piel, cabello, ropa, objetos y fondo; no limites el efecto al rostro ni a una zona concreta. El resultado debe conservar la misma estructura visual de la imagen base y cambiar únicamente su tratamiento artístico. TRATAMIENTO VISUAL: ' . $stylePrompt;
+function lockBaseImageComposition(string $stylePrompt, bool $hasStyleReference = false): string {
+    $referenceRoles = $hasStyleReference
+        ? ' REFERENCIAS: la IMAGEN 1 es la imagen base y manda de forma absoluta sobre contenido, identidad y geometría. La IMAGEN 2 es exclusivamente una referencia de estilo: toma de ella paleta, materiales, iluminación, texturas, acabado, atmósfera y efectos, pero no copies su sujeto, objetos, pose, escenario ni composición.'
+        : '';
+    return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA.' . $referenceRoles . ' Conserva exactamente todos los elementos estructurales visibles de la imagen base y sus posiciones: identidad y rasgos, expresión y mirada, pose y orientación, anatomía y silueta, forma del cabello, contorno y costuras del vestuario, accesorios, objetos, fondo, encuadre, escala, punto de vista y perspectiva. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas elementos estructurales. TRANSFERENCIA DE ESTILO ALTA Y OBLIGATORIA: cambia de forma evidente la paleta, gradación, iluminación, contraste, microtexturas, acabado y apariencia material de TODAS las superficies existentes para reproducir la firma visual descrita. Puedes convertir visualmente tela, piel, paredes u objetos en acabados metálicos, húmedos, pétreos, pictóricos, luminosos u otros indicados, pero conserva exactamente sus formas, límites, pliegues, costuras y posición. Los halos, reflejos, partículas, vetas de energía y superposiciones deben adherirse a la geometría existente o extenderse como tratamiento atmosférico; nunca deben convertirse en objetos o sujetos nuevos. Aplica el tratamiento globalmente y de borde a borde sobre sujeto, piel, cabello, ropa, objetos, suelo, cielo y fondo; no lo reduzcas a oscurecer la foto, aplicar un filtro genérico ni tratar solo el rostro. El resultado debe ser inequívocamente reconocible como el estilo solicitado y, al mismo tiempo, conservar la estructura visual de la imagen base. TRATAMIENTO VISUAL OBLIGATORIO: ' . $stylePrompt;
 }
 
 function extractVisualTreatment(string $prompt): string {
     $decoded = json_decode($prompt, true);
     if (is_array($decoded)) {
-        $jsonTreatment = trim((string)($decoded['global_treatment_prompt'] ?? ''));
-        if ($jsonTreatment !== '') return normalizeTreatmentLanguage($jsonTreatment);
+        $sections = [];
+        $signature = trim((string)($decoded['style_signature'] ?? ''));
+        if ($signature !== '') $sections[] = 'FIRMA VISUAL: ' . $signature . '.';
+        $global = trim((string)($decoded['global_treatment_prompt'] ?? ''));
+        if ($global !== '') $sections[] = $global;
+        $jsonLabels = [
+            'mandatory_anchors' => 'ANCLAS VISUALES IMPRESCINDIBLES',
+            'genres' => 'GÉNEROS',
+            'art_direction' => 'DIRECCIÓN ARTÍSTICA',
+            'visual_techniques' => 'TÉCNICAS',
+            'color_palette' => 'PALETA',
+            'lighting' => 'ILUMINACIÓN',
+            'textures' => 'TEXTURAS',
+            'materials' => 'APARIENCIA DE MATERIALES',
+            'material_translation' => 'TRADUCCIÓN DE MATERIALES',
+            'atmosphere' => 'ATMÓSFERA',
+            'realism_and_finish' => 'REALISMO Y ACABADO',
+            'surface_treatments' => 'TRATAMIENTOS DE SUPERFICIE',
+        ];
+        foreach ($jsonLabels as $key => $label) {
+            $values = normalizeStringList($decoded[$key] ?? []);
+            if ($values !== []) $sections[] = $label . ': ' . implode('; ', $values) . '.';
+        }
+        if ($sections !== []) return normalizeTreatmentLanguage(implode(' ', $sections));
     }
     $marker = 'TRATAMIENTO VISUAL:';
     $position = strripos($prompt, $marker);
@@ -338,7 +377,8 @@ function handleGenerate(array $request): void {
     if (!isset($modelMap[$reqModel])) respond(400, ['success' => false, 'error' => 'El modelo seleccionado no está permitido.']);
     [$backend, $providerModel] = $modelMap[$reqModel];
 
-    $lockedPrompt = lockBaseImageComposition(extractVisualTreatment($prompt));
+    $styleImage = trim((string)($request['styleImage'] ?? ''));
+    $lockedPrompt = lockBaseImageComposition(extractVisualTreatment($prompt), $styleImage !== '');
 
     if ($backend === 'gemini') {
         handleGeminiImage($request, $lockedPrompt, $providerModel);
@@ -366,16 +406,25 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
     if ($geminiModelId === 'google/gemini-3-pro-image' && $effective === 512) $effective = 1024;
     $resolutionMap = [512 => '512', 1024 => '1K', 2048 => '2K', 4096 => '4K'];
 
+    $inputReferences = [[
+        'type' => 'image_url',
+        'image_url' => ['url' => $dataUrl],
+    ]];
+    $styleImage = trim((string)($request['styleImage'] ?? ''));
+    if ($styleImage !== '') {
+        $inputReferences[] = [
+            'type' => 'image_url',
+            'image_url' => ['url' => styleImageDataUrl($styleImage)],
+        ];
+    }
+
     $payload = [
         'model' => $geminiModelId,
         'prompt' => $prompt,
         'n' => 1,
         'resolution' => $resolutionMap[$effective],
         'aspect_ratio' => $ratio,
-        'input_references' => [[
-            'type' => 'image_url',
-            'image_url' => ['url' => $dataUrl],
-        ]],
+        'input_references' => $inputReferences,
     ];
 
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/images', 'POST', [
@@ -412,6 +461,7 @@ function handleFluxGenerate(array $request, string $prompt, string $fluxEndpoint
     $payload = ['prompt'=>$prompt, 'width'=>$width, 'height'=>$height, 'output_format'=>$format];
     $images = [];
     if (isset($request['image']) && is_string($request['image']) && trim($request['image']) !== '') $images[] = $request['image'];
+    if (isset($request['styleImage']) && is_string($request['styleImage']) && trim($request['styleImage']) !== '') $images[] = $request['styleImage'];
     if (isset($request['images']) && is_array($request['images'])) {
         foreach ($request['images'] as $image) if (is_string($image) && trim($image) !== '') $images[] = $image;
     }
