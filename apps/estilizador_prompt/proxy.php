@@ -192,6 +192,8 @@ function normalizeTransferableStyleList($value): array {
         '/\b(?:orbs?|spheres?|esferas?|orbes?)\b/iu' => 'halos luminosos difusos',
         '/\b(?:dark\s+)?armou?rs?\b/iu' => 'acabado de metal oscuro envejecido',
         '/\barmaduras?\b/iu' => 'acabado de metal oscuro envejecido',
+        '/\brocks?\b/iu' => 'acabado mineral de piedra rugosa',
+        '/\brocas?\b/iu' => 'acabado mineral de piedra rugosa',
     ];
     foreach ($items as $item) {
         $clean = trim((string)preg_replace(array_keys($patterns), array_values($patterns), $item));
@@ -280,7 +282,7 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
     }
     if ($visualTechniques !== []) $globalClauses[] = 'técnicas ' . implode(', ', $visualTechniques);
     if ($surfaceTreatments !== []) $globalClauses[] = 'tratamientos de superficie ' . implode(', ', $surfaceTreatments);
-    $globalPrompt = 'Aplica a toda la imagen, de borde a borde, ' . implode('; ', $globalClauses) . '. Transfiere estas propiedades con intensidad alta a cada superficie ya existente sin crear, eliminar ni sustituir sujetos, objetos o escenarios.';
+    $globalPrompt = 'Aplica a toda la imagen, de borde a borde, ' . implode('; ', $globalClauses) . '. Transfiere estas propiedades con intensidad alta como tratamiento de color, luz, textura, atmósfera y acabado superficial; conserva la naturaleza de cada material y no crees, elimines ni sustituyas sujetos, prendas, objetos o escenarios.';
     $materialTranslation = $materials !== []
         ? ['Traslada la apariencia de ' . implode(', ', $materials) . ' a las superficies existentes conservando exactamente sus formas, límites, pliegues y posición.']
         : [];
@@ -368,11 +370,8 @@ function handleAdaptPrompt(array $request): void {
     ]);
 }
 
-function lockBaseImageComposition(string $stylePrompt, bool $hasStyleReference = false): string {
-    $referenceRoles = $hasStyleReference
-        ? ' REFERENCIAS: la IMAGEN 1 es la imagen base y manda de forma absoluta sobre contenido, identidad y geometría. La IMAGEN 2 es exclusivamente una referencia de estilo: toma de ella paleta, materiales, iluminación, texturas, acabado, atmósfera y efectos, pero no copies su sujeto, objetos, pose, escenario ni composición.'
-        : '';
-    return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA.' . $referenceRoles . ' Conserva exactamente todos los elementos estructurales visibles de la imagen base y sus posiciones: identidad y rasgos, expresión y mirada, pose y orientación, anatomía y silueta, forma del cabello, contorno y costuras del vestuario, accesorios, objetos, fondo, encuadre, escala, punto de vista y perspectiva. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas elementos estructurales. TRANSFERENCIA DE ESTILO ALTA Y OBLIGATORIA: cambia de forma evidente la paleta, gradación, iluminación, contraste, microtexturas, acabado y apariencia material de TODAS las superficies existentes para reproducir la firma visual descrita. Puedes convertir visualmente tela, piel, paredes u objetos en acabados metálicos, húmedos, pétreos, pictóricos, luminosos u otros indicados, pero conserva exactamente sus formas, límites, pliegues, costuras y posición. Los halos, reflejos, partículas, vetas de energía y superposiciones deben adherirse a la geometría existente o extenderse como tratamiento atmosférico; nunca deben convertirse en objetos o sujetos nuevos. Aplica el tratamiento globalmente y de borde a borde sobre sujeto, piel, cabello, ropa, objetos, suelo, cielo y fondo; no lo reduzcas a oscurecer la foto, aplicar un filtro genérico ni tratar solo el rostro. El resultado debe ser inequívocamente reconocible como el estilo solicitado y, al mismo tiempo, conservar la estructura visual de la imagen base. TRATAMIENTO VISUAL OBLIGATORIO: ' . $stylePrompt;
+function lockBaseImageComposition(string $stylePrompt): string {
+    return 'EDITA LA IMAGEN BASE; NO GENERES UNA COMPOSICIÓN NUEVA. La única imagen recibida es la base y manda de forma absoluta sobre contenido, identidad, geometría y composición. Conserva exactamente todos sus elementos visibles y sus posiciones: identidad y rasgos, expresión y mirada, pose y orientación, anatomía y silueta, forma del cabello, contorno, pliegues, costuras y diseño del vestuario, accesorios, objetos, arquitectura, fondo, encuadre, escala, punto de vista y perspectiva. No recortes, amplíes, reencuadres, gires, desplaces, añadas, elimines ni sustituyas elementos. TRANSFERENCIA DE ESTILO ALTA Y OBLIGATORIA: cambia de forma evidente la paleta, gradación, iluminación, contraste, microtexturas, atmósfera y acabado superficial de toda la fotografía para reproducir la firma visual descrita. Trata los materiales como un sombreado o pátina superficial que sigue la geometría ya existente y conserva la naturaleza de cada zona: la piel sigue siendo piel, el cabello sigue siendo cabello, la tela sigue siendo la misma prenda y el fondo sigue siendo el mismo fondo. PROHIBIDO añadir paneles, placas, piezas de armadura, ribetes, costuras, grabados, runas, adornos, fuentes de luz, objetos o capas de vestuario que no existan en la base. Los halos, reflejos, partículas y vetas de energía deben adherirse a bordes y superficies existentes o extenderse como atmósfera semitransparente; nunca deben formar una esfera, objeto o sujeto nuevo. Aplica el tratamiento globalmente y de borde a borde sobre sujeto, piel, cabello, ropa, objetos, suelo, cielo y fondo; no lo reduzcas a oscurecer la foto, aplicar un filtro genérico ni tratar solo el rostro. El resultado debe mantener la misma escena, pose, siluetas y detalles estructurales de la imagen base, pero resultar inequívocamente reconocible por la paleta, la luz, las texturas y la atmósfera del estilo solicitado. TRATAMIENTO VISUAL OBLIGATORIO: ' . $stylePrompt;
 }
 
 function extractVisualTreatment(string $prompt): string {
@@ -429,8 +428,7 @@ function handleGenerate(array $request): void {
     if (!isset($modelMap[$reqModel])) respond(400, ['success' => false, 'error' => 'El modelo seleccionado no está permitido.']);
     [$backend, $providerModel] = $modelMap[$reqModel];
 
-    $styleImage = trim((string)($request['styleImage'] ?? ''));
-    $lockedPrompt = lockBaseImageComposition(extractVisualTreatment($prompt), $styleImage !== '');
+    $lockedPrompt = lockBaseImageComposition(extractVisualTreatment($prompt));
 
     if ($backend === 'gemini') {
         handleGeminiImage($request, $lockedPrompt, $providerModel);
@@ -462,13 +460,6 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
         'type' => 'image_url',
         'image_url' => ['url' => $dataUrl],
     ]];
-    $styleImage = trim((string)($request['styleImage'] ?? ''));
-    if ($styleImage !== '') {
-        $inputReferences[] = [
-            'type' => 'image_url',
-            'image_url' => ['url' => styleImageDataUrl($styleImage)],
-        ];
-    }
 
     $payload = [
         'model' => $geminiModelId,
@@ -513,7 +504,6 @@ function handleFluxGenerate(array $request, string $prompt, string $fluxEndpoint
     $payload = ['prompt'=>$prompt, 'width'=>$width, 'height'=>$height, 'output_format'=>$format];
     $images = [];
     if (isset($request['image']) && is_string($request['image']) && trim($request['image']) !== '') $images[] = $request['image'];
-    if (isset($request['styleImage']) && is_string($request['styleImage']) && trim($request['styleImage']) !== '') $images[] = $request['styleImage'];
     if (isset($request['images']) && is_array($request['images'])) {
         foreach ($request['images'] as $image) if (is_string($image) && trim($image) !== '') $images[] = $image;
     }
