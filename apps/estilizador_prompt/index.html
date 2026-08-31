@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=4">
+  <link rel="stylesheet" href="app.css?v=5">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Saltar a la herramienta</a>
@@ -49,7 +49,7 @@
                 <span class="style-upload-icon" aria-hidden="true">▧</span>
                 <span>
                   <strong>Subir imagen de referencia</strong>
-                  <small>GPT-5.6 Sol analizará composición, textos, entorno, luz y estilo para crear su JSON completo.</small>
+                  <small>Gemini 3.7 Flash analizará composición, textos, entorno, luz y estilo; Sol actuará como respaldo si el análisis queda incompleto.</small>
                 </span>
               </label>
               <div id="style-image-preview-card" class="style-image-preview-card" hidden>
@@ -63,7 +63,7 @@
               </div>
               <div class="field-footer">
                 <span id="source-counter">0 / 12000</span>
-                <button id="adapt-btn" class="btn btn-secondary" type="button">
+                <button id="adapt-btn" class="btn btn-action-neon" type="button">
                   <span class="btn-icon" aria-hidden="true">✦</span>
                   <span>Adaptar a imagen base</span>
                 </button>
@@ -75,13 +75,14 @@
                 <span class="step-number">2</span>
                 <div>
                   <label for="adapted-prompt">Prompt adaptado</label>
-                  <small>La IA crea un JSON completo y adapta el sujeto base al diseño de referencia.</small>
+                  <small>Aquí aparece el prompt final. El análisis JSON queda disponible por separado.</small>
                 </div>
               </div>
               <textarea id="adapted-prompt" rows="7" maxlength="12000" placeholder="Aquí aparecerá el prompt preparado para editar tu fotografía…" disabled></textarea>
               <div class="field-footer">
                 <span id="adapted-state">Pendiente de adaptación</span>
                 <div class="adapted-actions">
+                  <button id="view-json-btn" class="btn-json-view" type="button" hidden>Ver JSON</button>
                   <button id="download-json-btn" class="btn-icon-only" type="button" title="Descargar JSON de estilo" aria-label="Descargar JSON de estilo" hidden>↓</button>
                   <button id="copy-prompt-btn" class="btn-icon-only" type="button" title="Copiar prompt adaptado" aria-label="Copiar prompt adaptado" disabled>⧉</button>
                 </div>
@@ -186,7 +187,7 @@
             </div>
 
             <div class="generate-column">
-              <button id="generate-btn" class="btn btn-primary" type="button" disabled>
+              <button id="generate-btn" class="btn btn-action-neon btn-action-main" type="button" disabled>
                 <span aria-hidden="true">✦</span>
                 <span>Generar imagen estilizada</span>
               </button>
@@ -226,9 +227,26 @@
     <img id="lightbox-image" alt="Imagen ampliada">
   </div>
 
+  <div id="json-modal" class="json-modal" role="dialog" aria-modal="true" aria-labelledby="json-modal-title" hidden>
+    <div class="json-modal-panel">
+      <div class="json-modal-heading">
+        <div>
+          <p class="step-kicker">Análisis visual completo</p>
+          <h2 id="json-modal-title">JSON de la referencia</h2>
+        </div>
+        <button id="json-modal-close" class="json-modal-close" type="button" aria-label="Cerrar visor JSON">×</button>
+      </div>
+      <pre class="json-code"><code id="json-modal-content"></code></pre>
+      <div class="json-modal-actions">
+        <button id="copy-json-btn" class="btn btn-secondary" type="button">Copiar JSON</button>
+        <button id="modal-download-json-btn" class="btn btn-action-neon" type="button">Descargar JSON</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="history-manager.js?v=1"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

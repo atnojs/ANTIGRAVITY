@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     adaptedBlock: document.querySelector('.adapted-block'),
     adaptBtn: $('adapt-btn'),
     copyPromptBtn: $('copy-prompt-btn'),
+    viewJsonBtn: $('view-json-btn'),
     downloadJsonBtn: $('download-json-btn'),
     adaptError: $('adapt-error'),
     styleImageInput: $('style-image-input'),
@@ -46,6 +47,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     lightbox: $('lightbox'),
     lightboxImage: $('lightbox-image'),
     lightboxClose: $('lightbox-close'),
+    jsonModal: $('json-modal'),
+    jsonModalContent: $('json-modal-content'),
+    jsonModalClose: $('json-modal-close'),
+    copyJsonBtn: $('copy-json-btn'),
+    modalDownloadJsonBtn: $('modal-download-json-btn'),
     toast: $('toast')
   };
 
@@ -57,6 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     styleImageWidth: 0,
     styleImageHeight: 0,
     adaptedFormat: 'text',
+    analysisJson: '',
+    transferMode: '',
     imageData: '',
     imageFile: null,
     imageWidth: 0,
@@ -143,8 +151,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     els.sourceCounter.textContent = `${els.source.value.length} / 12000`;
     if (state.sourceSignatureUsed && currentSourceSignature() !== state.sourceSignatureUsed) {
       state.isAdapted = false;
+      state.analysisJson = '';
+      state.transferMode = '';
       els.adaptedState.textContent = 'La entrada original ha cambiado · vuelve a adaptar';
       els.adaptedBlock.classList.remove('ready');
+      els.viewJsonBtn.hidden = true;
+      els.downloadJsonBtn.hidden = true;
     }
     updateGenerateState();
   }
@@ -159,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     setMessage(els.adaptError);
     showLoading(hasStyleImage
-      ? 'GPT-5.6 Sol está reconstruyendo el diseño completo en JSON…'
+      ? 'Analizando qué es estilo, qué es contenido y qué puede transferirse…'
       : 'Extrayendo el estilo y bloqueando toda la composición base…');
     try {
       const data = await fetchJson('proxy.php', {
@@ -175,18 +187,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!data.success || !adapted) throw new Error('La IA no devolvió un prompt adaptado.');
       state.sourceUsed = source || `[Imagen de estilo: ${state.styleImageFile?.name || 'referencia visual'}]`;
       state.sourceSignatureUsed = currentSourceSignature();
-      state.adaptedFormat = data.format === 'json' ? 'json' : 'text';
+      state.analysisJson = String(data.analysisJson || '').trim();
+      state.transferMode = String(data.transferMode || '').trim();
+      state.adaptedFormat = data.format === 'reference' && state.analysisJson ? 'reference' : 'text';
       state.isAdapted = true;
       els.adapted.disabled = false;
       els.adapted.value = adapted;
-      els.adaptedState.textContent = state.adaptedFormat === 'json'
-        ? 'JSON de estilo listo · puedes editarlo antes de generar'
+      els.adaptedState.textContent = state.adaptedFormat === 'reference'
+        ? `${state.transferMode === 'template_reconstruction' ? 'Plantilla reconstruible' : 'Transferencia de estilo'} · prompt editable`
         : 'Listo · puedes editarlo antes de generar';
       els.adaptedBlock.classList.add('ready');
       els.copyPromptBtn.disabled = false;
-      els.downloadJsonBtn.hidden = state.adaptedFormat !== 'json';
-      els.downloadJsonBtn.disabled = state.adaptedFormat !== 'json';
-      showToast(state.adaptedFormat === 'json' ? 'JSON completo extraído correctamente.' : 'Prompt adaptado correctamente.');
+      els.viewJsonBtn.hidden = state.adaptedFormat !== 'reference';
+      els.downloadJsonBtn.hidden = state.adaptedFormat !== 'reference';
+      els.downloadJsonBtn.disabled = state.adaptedFormat !== 'reference';
+      showToast(state.adaptedFormat === 'reference' ? 'Análisis JSON y prompt final preparados.' : 'Prompt adaptado correctamente.');
     } catch (error) {
       state.isAdapted = false;
       setMessage(els.adaptError, error.message || 'No se pudo adaptar el prompt.');
@@ -339,6 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         data: {
           originalPrompt: state.sourceUsed,
           prompt: els.adapted.value.trim(),
+          referenceJson: state.analysisJson,
           model: response.model || state.selectedModel,
           provider: response.provider || '',
           aspectRatio: response.aspectRatio || state.aspectRatio,
@@ -365,6 +381,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         body: JSON.stringify({
           action: 'generate',
           prompt: els.adapted.value.trim(),
+          promptMode: state.adaptedFormat,
           image: state.imageData,
           model: state.selectedModel,
           aspectRatio: state.aspectRatio,
@@ -408,7 +425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function downloadStyleJson() {
     try {
-      const parsed = JSON.parse(els.adapted.value);
+      const parsed = JSON.parse(state.analysisJson);
       const content = JSON.stringify(parsed, null, 2);
       const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
       const objectUrl = URL.createObjectURL(blob);
@@ -421,8 +438,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
       showToast('JSON descargado.');
     } catch {
-      showToast('El contenido editado ya no es un JSON válido.');
+      showToast('No hay un JSON válido disponible.');
     }
+  }
+
+  function openJsonModal() {
+    if (!state.analysisJson) return;
+    try {
+      els.jsonModalContent.textContent = JSON.stringify(JSON.parse(state.analysisJson), null, 2);
+    } catch {
+      els.jsonModalContent.textContent = state.analysisJson;
+    }
+    els.jsonModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    els.jsonModalClose.focus();
+  }
+
+  function closeJsonModal() {
+    els.jsonModal.hidden = true;
+    if (els.loadingOverlay.classList.contains('hidden') && els.lightbox.hidden) document.body.style.overflow = '';
+    els.viewJsonBtn.focus();
   }
 
   async function downloadHistoryImage(item, url) {
@@ -545,7 +580,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   els.source.addEventListener('input', markAdaptationStale);
   els.adapted.addEventListener('input', updateGenerateState);
   els.adaptBtn.addEventListener('click', adaptPrompt);
+  els.viewJsonBtn.addEventListener('click', openJsonModal);
   els.downloadJsonBtn.addEventListener('click', downloadStyleJson);
+  els.modalDownloadJsonBtn.addEventListener('click', downloadStyleJson);
+  els.copyJsonBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(state.analysisJson);
+      showToast('JSON copiado.');
+    } catch {
+      showToast('No se pudo copiar el JSON.');
+    }
+  });
+  els.jsonModalClose.addEventListener('click', closeJsonModal);
+  els.jsonModal.addEventListener('click', (event) => { if (event.target === els.jsonModal) closeJsonModal(); });
   els.copyPromptBtn.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(els.adapted.value);
@@ -608,7 +655,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   els.downloadResultBtn.addEventListener('click', () => downloadDataUrl(state.resultData, state.resultMime));
   els.lightboxClose.addEventListener('click', closeLightbox);
   els.lightbox.addEventListener('click', (event) => { if (event.target === els.lightbox) closeLightbox(); });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !els.lightbox.hidden) closeLightbox(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    if (!els.jsonModal.hidden) closeJsonModal();
+    else if (!els.lightbox.hidden) closeLightbox();
+  });
 
   els.historyClearBtn.addEventListener('click', async () => {
     if (!history || !window.confirm('¿Eliminar todo el historial?')) return;
