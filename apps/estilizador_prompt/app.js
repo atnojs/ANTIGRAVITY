@@ -330,6 +330,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     return '';
   }
 
+  function mimeForFormat(format) {
+    return format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
+  }
+
+  function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('No se pudo preparar el formato seleccionado.'));
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function normalizeResultFormat(dataUrl, format) {
+    const targetMime = mimeForFormat(format);
+    const currentMime = dataUrl.match(/^data:([^;]+)/)?.[1]?.toLowerCase() || '';
+    if (currentMime === targetMime) return { dataUrl, mimeType: targetMime, converted: false };
+
+    const image = new Image();
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = () => reject(new Error('No se pudo convertir la imagen al formato seleccionado.'));
+      image.src = dataUrl;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Tu navegador no permite convertir el formato de la imagen.');
+    if (targetMime === 'image/jpeg') {
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    context.drawImage(image, 0, 0);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, targetMime, format === 'png' ? undefined : 0.95));
+    if (!blob || blob.type.toLowerCase() !== targetMime) {
+      throw new Error(`El navegador no admite la conversión a ${format.toUpperCase()}.`);
+    }
+    return { dataUrl: await blobToDataUrl(blob), mimeType: targetMime, converted: true };
+  }
+
   function formatResultMeta(data) {
     const model = {
       'google/gemini-3.1-flash-image': '3.1FLASH',
@@ -341,7 +382,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (data.width && data.height) dimensions = `${data.width} × ${data.height} px`;
     else if (data.effectiveResolution) dimensions = `${data.effectiveResolution}px · ${data.aspectRatio || state.aspectRatio}`;
     const adjusted = data.resolutionAdjusted ? ' · ajustada al límite del modelo' : '';
-    return `${model}${dimensions ? ` · ${dimensions}` : ''}${adjusted}`;
+    const outputFormat = String(data.outputFormat || data.requestedFormat || '').toUpperCase();
+    return `${model}${dimensions ? ` · ${dimensions}` : ''}${outputFormat ? ` · ${outputFormat}` : ''}${adjusted}`;
   }
 
   async function saveHistory(dataUrl, response) {
@@ -389,17 +431,23 @@ document.addEventListener('DOMContentLoaded', async () => {
           output_format: els.format.value
         })
       }, 165000);
-      const dataUrl = actualDataUrl(data);
-      if (!data.success || !dataUrl) throw new Error('El modelo no devolvió una imagen válida.');
-      state.resultData = dataUrl;
-      state.resultMime = data.mimeType || dataUrl.match(/^data:([^;]+)/)?.[1] || 'image/png';
-      els.resultImage.src = dataUrl;
+      const rawDataUrl = actualDataUrl(data);
+      if (!data.success || !rawDataUrl) throw new Error('El modelo no devolvió una imagen válida.');
+      els.secondaryStatus.textContent = `Preparando ${els.format.value.toUpperCase()}…`;
+      const normalized = await normalizeResultFormat(rawDataUrl, els.format.value);
+      data.dataUrl = normalized.dataUrl;
+      data.mimeType = normalized.mimeType;
+      data.outputFormat = els.format.value;
+      data.formatConverted = normalized.converted;
+      state.resultData = normalized.dataUrl;
+      state.resultMime = normalized.mimeType;
+      els.resultImage.src = normalized.dataUrl;
       els.resultImage.hidden = false;
       els.resultPlaceholder.hidden = true;
       els.resultActions.hidden = false;
       els.resultMeta.textContent = formatResultMeta(data);
       els.resultSection.hidden = false;
-      await saveHistory(dataUrl, data);
+      await saveHistory(normalized.dataUrl, data);
       els.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       setMessage(els.generationError, error.message || 'No se pudo generar la imagen.');

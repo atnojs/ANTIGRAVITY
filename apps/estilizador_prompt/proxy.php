@@ -166,6 +166,25 @@ function handleOpenRouter(array $request): void {
     ]);
 }
 
+function requestedOutputFormat(array $request): string {
+    $format = strtolower(trim((string)($request['output_format'] ?? 'png')));
+    if (!in_array($format, ['png', 'jpeg', 'webp'], true)) {
+        respond(400, ['success' => false, 'error' => 'Formato no permitido.']);
+    }
+    return $format;
+}
+
+function formatMime(string $format): string {
+    return $format === 'jpeg' ? 'image/jpeg' : 'image/' . $format;
+}
+
+function detectImageMime(string $binary, string $fallback = 'image/png'): string {
+    if (strncmp($binary, "\x89PNG\r\n\x1a\n", 8) === 0) return 'image/png';
+    if (strncmp($binary, "\xff\xd8\xff", 3) === 0) return 'image/jpeg';
+    if (strlen($binary) >= 12 && substr($binary, 0, 4) === 'RIFF' && substr($binary, 8, 4) === 'WEBP') return 'image/webp';
+    return preg_match('#^image/(?:png|jpeg|webp)$#i', $fallback) === 1 ? strtolower($fallback) : 'image/png';
+}
+
 function normalizeTreatmentLanguage(string $text): string {
     $text = preg_replace('/\buna\s+composici[oó]n\b/iu', 'un tratamiento visual', $text) ?? $text;
     $text = preg_replace('/\bla\s+composici[oó]n\b/iu', 'el tratamiento visual', $text) ?? $text;
@@ -510,6 +529,7 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
     $effective = $requested;
     if ($geminiModelId === 'google/gemini-3-pro-image' && $effective === 512) $effective = 1024;
     $resolutionMap = [512 => '512', 1024 => '1K', 2048 => '2K', 4096 => '4K'];
+    $format = requestedOutputFormat($request);
 
     $inputReferences = [[
         'type' => 'image_url',
@@ -534,8 +554,10 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
     }
 
     $imgB64 = (string)($response['data'][0]['b64_json'] ?? '');
-    $outMime = (string)($response['data'][0]['media_type'] ?? 'image/png');
-    if ($imgB64 === '' || base64_decode($imgB64, true) === false) respond(502, ['success' => false, 'error' => 'Gemini no devolvió una imagen válida.']);
+    $binary = $imgB64 !== '' ? base64_decode($imgB64, true) : false;
+    if (!is_string($binary)) respond(502, ['success' => false, 'error' => 'Gemini no devolvió una imagen válida.']);
+    $reportedMime = (string)($response['data'][0]['media_type'] ?? formatMime($format));
+    $outMime = detectImageMime($binary, $reportedMime);
 
     respond(200, [
         'success' => true, 'provider' => 'gemini', 'model' => $geminiModelId,
@@ -545,6 +567,8 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
         'requestedResolution' => $requested,
         'effectiveResolution' => $effective,
         'resolutionAdjusted' => $requested !== $effective,
+        'requestedFormat' => $format,
+        'formatAdjusted' => $outMime !== formatMime($format),
         'cost' => $response['usage']['cost'] ?? null,
     ]);
 }
@@ -553,8 +577,7 @@ function handleFluxGenerate(array $request, string $prompt, string $fluxEndpoint
     $key = getSecret('F');
     if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
     $quality = strpos($fluxEndpoint, 'max') !== false ? 'max' : 'pro';
-    $format = strtolower((string)($request['output_format'] ?? 'png'));
-    if (!in_array($format, ['png','jpeg','webp'], true)) respond(400, ['success' => false, 'error' => 'Formato no permitido.']);
+    $format = requestedOutputFormat($request);
     [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
     $payload = ['prompt'=>$prompt, 'width'=>$width, 'height'=>$height, 'output_format'=>$format];
     $images = [];
@@ -586,14 +609,16 @@ function handleFluxGenerate(array $request, string $prompt, string $fluxEndpoint
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_CONNECTTIMEOUT=>15, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_MAXREDIRS=>3]);
     $binary = curl_exec($ch);
     $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $mime = (string)(curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/png');
+    $reportedMime = (string)(curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: formatMime($format));
     curl_close($ch);
     if ($binary === false || $binary === '' || $downloadStatus !== 200) respond(502, ['success'=>false, 'error'=>'No se pudo descargar el resultado.']);
+    $mime = detectImageMime((string)$binary, $reportedMime);
     $base64 = base64_encode($binary);
     respond(200, [
         'success'=>true, 'provider'=>'flux', 'model'=>$fluxEndpoint, 'quality'=>$quality,
         'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
         'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
+        'requestedFormat'=>$format, 'formatAdjusted'=>$mime !== formatMime($format),
         'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
     ]);
 }
