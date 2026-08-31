@@ -319,10 +319,9 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
     $analysisJson = json_encode($styleJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     if (!is_string($analysisJson)) respond(500, ['success' => false, 'error' => 'No se pudo preparar el archivo JSON.']);
 
-    $exclusionText = $exclusions !== [] ? ' DO NOT COPY FROM THE REFERENCE: ' . implode('; ', $exclusions) . '.' : '';
     $adaptedPrompt = $mode === 'template_reconstruction'
-        ? adaptReferenceBlueprintToBase($generationPrompt . $exclusionText)
-        : lockBaseImageComposition($generationPrompt . $exclusionText);
+        ? adaptReferenceBlueprintToBase($generationPrompt)
+        : lockBaseImageComposition($generationPrompt);
 
     respond(200, [
         'success' => true,
@@ -409,7 +408,7 @@ function compileTransferableStylePrompt(array $style): string {
     $palette = normalizeStringList($style['color_palette'] ?? []);
     if ($palette !== []) $sections[] = 'TONAL PALETTE: ' . implode(', ', $palette) . '. Use it only for grading and rendering harmony; do not recolor hair, skin, clothing or objects into the reference character\'s colors.';
 
-    return 'Apply only the transferable rendering language described below to the supplied base image. The base image is the exclusive source of identity, face, anatomy, body proportions, hair shape and color, facial expression, gaze, pose, framing, clothing, accessories, objects and background. Convert the whole existing image into this visual medium from edge to edge while preserving every semantic element and its location. Do not import or imitate any character, celebrity, scar, tattoo, eye state, hairstyle, jewelry, costume, musculature, exposed skin, expression, pose or background from the style reference. ' . implode(' ', $sections);
+    return 'Apply only the transferable rendering language described below to the supplied base image. The base image remains the exclusive source of identity, face, anatomy, body proportions, hair, expression, gaze, pose, framing, clothing, accessories, objects and background. Convert the whole existing image into this visual medium from edge to edge while preserving every semantic element, its appearance and its location. The reference influences rendering technique only; all depicted content must continue to come from the base image. ' . implode(' ', $sections);
 }
 
 function adaptReferenceBlueprintToBase(string $generationPrompt): string {
