@@ -47,6 +47,111 @@ const DIFFICULTIES = [
 
 const TAG_COLORS = ['', 'purple', 'emerald', 'pink', 'amber'];
 
+// 100 comandos del carrusel de Instagram de ninodirector (DcekG11IJf-).
+// Se mantienen como datos para poder ampliar el listado sin duplicar lógica de UI.
+const INSTAGRAM_COMMANDS = [
+    ['/xray', 'el interior como radiografía'],
+    ['/explodedview', 'las piezas separadas en el aire'],
+    ['/cutaway', 'cortado por la mitad, se ve dentro'],
+    ['/crosssection', 'corte transversal limpio'],
+    ['/teardown', 'desarmado sobre la mesa'],
+    ['/schematic', 'esquema técnico de líneas'],
+    ['/ghostedview', 'carcasa translúcida sobre el mecanismo'],
+    ['/skeletalview', 'solo la estructura interna'],
+    ['/layerview', 'las capas apiladas y visibles'],
+    ['/partsdiagram', 'las piezas numeradas en fila'],
+    ['/blueprint', 'plano azul de arquitecto'],
+    ['/isometric', 'maqueta a cuarenta y cinco grados'],
+    ['/orthographic', 'sin perspectiva, todo a escala'],
+    ['/patentdrawing', 'dibujo de patente antigua'],
+    ['/wireframe', 'malla de líneas sin relleno'],
+    ['/infographic', 'datos ordenados en gráfica'],
+    ['/annotated', 'con flechas y notas encima'],
+    ['/floorplan', 'planta vista desde arriba'],
+    ['/dimensioned', 'con cotas y medidas marcadas'],
+    ['/flowchart', 'diagrama de flujo con cajas'],
+    ['/handwritten', 'escrito a mano sobre la imagen'],
+    ['/napkinsketch', 'boceto rápido en servilleta'],
+    ['/whiteboard', 'marcador sobre pizarra blanca'],
+    ['/moodboard', 'tablero de referencias pegadas'],
+    ['/pencilsketch', 'lápiz de grafito, trazo suelto'],
+    ['/notebookpage', 'hoja de libreta rayada'],
+    ['/collage', 'capas de material pegadas'],
+    ['/redpen', 'corregido con bolígrafo rojo'],
+    ['/storyboard', 'viñetas en secuencia'],
+    ['/tornpaper', 'bordes rasgados a mano'],
+    ['/knolling', 'todo alineado a noventa grados'],
+    ['/productshot', 'foto de catálogo, fondo limpio'],
+    ['/actionfigure', 'en blister de juguete'],
+    ['/packaging', 'la caja como si existiera'],
+    ['/flatlay', 'vista cenital sobre superficie'],
+    ['/macro', 'detalle extremo, textura visible'],
+    ['/heroshot', 'la toma principal, ángulo heroico'],
+    ['/floatingproduct', 'flotando sin soporte visible'],
+    ['/ghostmannequin', 'prenda con volumen y sin cuerpo'],
+    ['/splashshot', 'salpicadura congelada alrededor'],
+    ['/devicemockup', 'el aparato en su encuadre'],
+    ['/screenmockup', 'pantalla con interfaz dentro'],
+    ['/boxmockup', 'maqueta de caja impresa'],
+    ['/labelmockup', 'etiqueta aplicada al envase'],
+    ['/apparelmockup', 'prenda plana o vestida'],
+    ['/embossedlogo', 'logo en relieve sobre material'],
+    ['/foilstamp', 'estampado metálico brillante'],
+    ['/shelfshot', 'en el estante, entre competencia'],
+    ['/sizecomparison', 'junto a algo de tamaño conocido'],
+    ['/colorway', 'la misma pieza en varios colores'],
+    ['/cinematic', 'luz y encuadre de película'],
+    ['/goldenhour', 'luz cálida de atardecer'],
+    ['/bluehour', 'azul frío del crepúsculo'],
+    ['/rimlight', 'borde iluminado alrededor'],
+    ['/backlight', 'luz detrás, sujeto a contraluz'],
+    ['/softlighting', 'luz difusa, sombras suaves'],
+    ['/dramaticlighting', 'contraste alto, sombras duras'],
+    ['/volumetriclight', 'haces visibles en el aire'],
+    ['/lowkey', 'todo oscuro, un punto de luz'],
+    ['/highkey', 'todo claro, casi sin sombra'],
+    ['/shallowdepth', 'sujeto nítido, fondo disuelto'],
+    ['/bokeh', 'fondo con puntos de luz'],
+    ['/longexposure', 'estelas de luz por el tiempo'],
+    ['/tiltshift', 'miniatura por desenfoque'],
+    ['/35mm', 'grano y color de película clásica'],
+    ['/anamorphic', 'panorámica con destellos alargados'],
+    ['/lowangle', 'desde abajo, sujeto agrandado'],
+    ['/overhead', 'cámara justo encima'],
+    ['/dutchangle', 'horizonte inclinado, tensión'],
+    ['/extremecloseup', 'un detalle llena el cuadro'],
+    ['/claymation', 'plastilina modelada a mano'],
+    ['/papercraft', 'papel recortado y plegado'],
+    ['/lowpoly', 'polígonos grandes y facetados'],
+    ['/pixelart', 'píxeles visibles, paleta corta'],
+    ['/linocut', 'grabado en linóleo, tinta plana'],
+    ['/risograph', 'risografía con desfase de color'],
+    ['/halftone', 'trama de puntos de imprenta'],
+    ['/stainedglass', 'vitral con plomos negros'],
+    ['/chromemetal', 'cromo espejado y líquido'],
+    ['/embroidery', 'bordado con hilo visible'],
+    ['/charactersheet', 'hoja de diseño del personaje'],
+    ['/turnaround', 'el personaje girado en varios ángulos'],
+    ['/expressionsheet', 'la misma cara en varias emociones'],
+    ['/costumedesign', 'figurín de vestuario'],
+    ['/minime', 'versión miniatura de juguete'],
+    ['/statue', 'el sujeto como escultura'],
+    ['/silhouettestudy', 'solo contornos para comparar'],
+    ['/environmentalportrait', 'la persona en su lugar de trabajo'],
+    ['/duotoneportrait', 'retrato en dos tintas planas'],
+    ['/backview', 'de espaldas, cara oculta'],
+    ['/magazinecover', 'portada de revista con titulares'],
+    ['/movieposter', 'cartel de cine con créditos'],
+    ['/bookcover', 'portada de libro con lomo'],
+    ['/albumcover', 'carátula de disco cuadrada'],
+    ['/stickersheet', 'lámina de calcomanías troqueladas'],
+    ['/billboard', 'valla publicitaria en contexto'],
+    ['/newspaper', 'página de periódico impreso'],
+    ['/quotecard', 'cita destacada en tarjeta'],
+    ['/timeline', 'línea de tiempo con hitos'],
+    ['/patterntile', 'patrón que se repite sin costura'],
+];
+
 const SEED_TRICKS = [
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'terminal', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
     { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'css', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
@@ -59,6 +164,19 @@ const SEED_TRICKS = [
     { id: 's9', title: 'Método Ivy Lee: productividad diaria', description: 'Cada noche escribe las 6 tareas más importantes para mañana, ordenadas por prioridad. Al día siguiente empieza por la #1 y no pases a la siguiente hasta terminar.', category: 'productividad', tags: ['productividad', 'metodo', 'focus'], codeSnippet: '📋 Cada noche:\n1. Escribe 6 tareas para mañana\n2. Priorízalas (1 = más importante)\n\n🌅 Al día siguiente:\n1. Empieza por la tarea #1\n2. No pases a #2 hasta terminar #1\n3. Las no acabadas pasan a mañana', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 10 },
     { id: 's10', title: 'Regla 5-5-5 para tomar decisiones', description: 'Pregúntate: ¿esto importará en 5 minutos, 5 meses o 5 años? La respuesta te ayuda a calibrar cuánta energía mental merece cada decisión.', category: 'productividad', tags: ['decisiones', 'mentalidad', 'minimalismo'], codeSnippet: '⏱️ ¿Importará en 5 MINUTOS?\n   → Déjalo pasar. No reacciones.\n\n📅 ¿Importará en 5 MESES?\n   → Dedícale atención moderada.\n\n🎯 ¿Importará en 5 AÑOS?\n   → Esto SÍ merece tu mejor energía.', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 9 },
     { id: 's11', title: 'El truco del patito de goma (Rubber Duck Debugging)', description: 'Cuando estés atascado con un bug, explícaselo en voz alta a un objeto inanimado (como un patito de goma). El mero hecho de verbalizar el problema te hace ver la solución.', category: 'otros', tags: ['debugging', 'pensamiento', 'metodologia'], codeSnippet: '🐤 Pasos del Rubber Duck Debugging:\n1. Coge un patito (o cualquier objeto)\n2. Explícale el problema línea por línea\n3. No asumas nada - explícalo TODO\n4. La solución suele aparecer a mitad de la explicación', difficulty: 'beginner', sourceUrl: 'https://es.wikipedia.org/wiki/M%C3%A9todo_de_depuraci%C3%B3n_del_patito_de_goma', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 11 },
+    ...INSTAGRAM_COMMANDS.map(([command, meaning], index) => ({
+        id: `ig-dcek-${String(index + 1).padStart(3, '0')}`,
+        title: `${command} — ${meaning}`,
+        description: `Comando ${index + 1} del carrusel «250 comandos de imagen» de ninodirector. Úsalo junto con un sujeto concreto y un encuadre o formato.`,
+        category: 'ia',
+        tags: ['comandos de imagen', 'imagen', 'Instagram'],
+        codeSnippet: command,
+        difficulty: 'beginner',
+        sourceUrl: 'https://www.instagram.com/p/DcekG11IJf-/',
+        imageUrl: '',
+        isFavorite: false,
+        createdAt: Date.UTC(2026, 7, 25) - index,
+    })),
 ];
 
 /* ═══════════════════════════════════════════════
@@ -75,7 +193,12 @@ function useLocalStorage(key, initial) {
     const [val, setVal] = useState(() => {
         try {
             const saved = localStorage.getItem(key);
-            return saved ? JSON.parse(saved) : initial;
+            if (!saved) return initial;
+            const parsed = JSON.parse(saved);
+            if (!Array.isArray(parsed)) return initial;
+            const existingIds = new Set(parsed.map(item => item.id));
+            const newSeedItems = initial.filter(item => !existingIds.has(item.id));
+            return newSeedItems.length ? [...newSeedItems, ...parsed] : parsed;
         } catch { return initial; }
     });
 
