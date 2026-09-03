@@ -4,20 +4,26 @@
   const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:'pro', history:null };
   const MAX_FILE = 20 * 1024 * 1024;
 
-  // Helper genérico para grupos de pills (ar-option / res-option)
+  // Helper genérico para grupos de pills (ar-option / res-option).
+  // Usamos data-value en lugar de [class$="-option"] porque los botones
+  // activos también tienen la clase "active" y dejan de coincidir con ese
+  // selector, permitiendo que se acumulen varias selecciones.
   const setupPillGroup = (containerId, onChangeCallback) => {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.addEventListener('click', (e) => {
-      const btn = e.target.closest('[class$="-option"]');
-      if (!btn) return;
-      container.querySelectorAll('[class$="-option"]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      const btn = e.target.closest('button[data-value]');
+      if (!btn || !container.contains(btn)) return;
+      container.querySelectorAll('button[data-value]').forEach(b => {
+        const selected = b === btn;
+        b.classList.toggle('active', selected);
+        b.setAttribute('aria-pressed', String(selected));
+      });
       if (onChangeCallback) onChangeCallback(btn.dataset.value);
     });
   };
   const getPillValue = (containerId) => {
-    return document.querySelector(`#${containerId} [class$="-option"].active`)?.dataset.value || '';
+    return document.querySelector(`#${containerId} button[data-value].active`)?.dataset.value || '';
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -56,7 +62,7 @@
     if(file.size>MAX_FILE)return setStatus('La imagen supera 20 MB.','error');
     state.referenceDataUrl=await readAsDataUrl(file);state.referenceName=file.name;state.analysis=null;
     $('reference-image').src=state.referenceDataUrl;$('reference-image').hidden=false;$('reference-preview').classList.remove('empty');$('reference-preview').querySelector('.empty-copy').hidden=true;
-    $('analyze-btn').disabled=false;$('download-json-btn').disabled=true;$('generate-btn').disabled=true;$('json-output').textContent='{}';
+    $('analyze-btn').disabled=false;$('download-json-btn').disabled=true;$('json-output').textContent='{}';
     setStatus(`Referencia cargada: ${file.name}`,'success');
   }
   async function analyze(){
@@ -66,26 +72,27 @@
       const local=await localImageFacts(state.referenceDataUrl);
       const payload=await api({action:'analyze_infographic',image:state.referenceDataUrl,localFacts:local});
       state.analysis={...payload.analysis,archivo:state.referenceName,medidas:local.dimensions,paleta_local:local.palette};
-      $('json-output').textContent=JSON.stringify(state.analysis,null,2);$('json-details').open=true;$('download-json-btn').disabled=false;$('generate-btn').disabled=false;
+      $('json-output').textContent=JSON.stringify(state.analysis,null,2);$('json-details').open=true;$('download-json-btn').disabled=false;
       setStatus('JSON creado. Ya puedes introducir tus datos y generar.','success');
     }catch(e){setStatus(e.message,'error')}finally{setBusy(false)}
   }
   async function generate(){
-    if(!state.analysis||!state.referenceDataUrl)return setStatus('Primero analiza una referencia.','error');
+    if(!state.referenceDataUrl)return setStatus('Primero carga una referencia.','error');
+    if(!state.analysis)return setStatus('Primero analiza la referencia para definir su estilo.','error');
     const free=$('free-prompt').value.trim(),title=$('title').value.trim(),subtitle=$('subtitle').value.trim(),sections=$('sections').value.trim();
-    if(!free&&!title&&!sections)return setStatus('Introduce una descripción, un título o secciones.','error');
     setBusy(true,'Generando la nueva infografía con FLUX...');
     try{
       const aspectVal = getPillValue('aspect-toggles');
       const aspect = aspectVal === 'auto' ? ratioFromDimensions(state.analysis.medidas) : aspectVal;
-      const prompt=buildPrompt({free,title,subtitle,sections,audience:$('audience').value,language:$('language').value,analysis:state.analysis});
-      const result=await api({action:'generate',quality:state.selectedModel,prompt,image:state.referenceDataUrl,aspectRatio:aspect,resolution:Number(getPillValue('resolution-toggles')),output_format:'png'});
+      const content={free,title,subtitle,sections,audience:$('audience').value,language:$('language').value};
+      const prompt=buildPrompt({...content,analysis:state.analysis});
+      const result=await api({action:'generate',quality:state.selectedModel,prompt,image:state.referenceDataUrl,aspectRatio:aspect || '1:1',resolution:Number(getPillValue('resolution-toggles')) || 1024,output_format:'png',content});
       state.resultDataUrl=result.dataUrl;$('result-image').src=state.resultDataUrl;$('result-section').hidden=false;
       try{await state.history.save({id:'h_'+Date.now().toString(36),type:'image',model:result.model,data:{prompt,reference:state.referenceName,analysis:state.analysis,aspectRatio:aspect},imageData:state.resultDataUrl,createdAt:new Date().toISOString()})}catch(e){showHistoryError(e.message)}
       $('result-section').scrollIntoView({behavior:'smooth'});setStatus(`Infografía lista en ${result.width} × ${result.height}.`,'success');
     }catch(e){setStatus(e.message,'error')}finally{setBusy(false)}
   }
-  function buildPrompt(v){return `Crea una infografía final en ${v.language==='es'?'español':'el idioma solicitado'}. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: ${JSON.stringify(v.analysis)}. Contenido libre del usuario: ${v.free||'Sin descripción adicional'}. Título exacto: ${v.title||'Derívalo del contenido'}. Subtítulo exacto: ${v.subtitle||'Sin subtítulo obligatorio'}. Secciones exactas (una por línea, separadas por |): ${v.sections||'Organiza el contenido libre en secciones claras'}. Público: ${v.audience}. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.`}
+  function buildPrompt(v){return `Crea una infografía final en ${v.language==='es'?'español':'el idioma solicitado'}. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: ${JSON.stringify(v.analysis)}. Datos proporcionados por el usuario: descripción libre: ${v.free||'[VACÍO]'}; título: ${v.title||'[VACÍO]'}; subtítulo: ${v.subtitle||'[VACÍO]'}; secciones y datos: ${v.sections||'[VACÍO]'}. Si algún campo está vacío, complétalo automáticamente de forma coherente con el resto de la información y con el tema que se pueda inferir; si todos están vacíos, elige un tema educativo claro y desarrolla título, subtítulo y secciones suficientes para una infografía completa. Público: ${v.audience}. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.`}
   async function api(body){const r=await fetch('proxy.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let p;try{p=await r.json()}catch{throw new Error(`El servidor devolvió una respuesta inválida (HTTP ${r.status}).`)}if(!r.ok||!p.success)throw new Error(p.error+(p.detail?`: ${typeof p.detail==='string'?p.detail:'detalle del proveedor'}`:''));return p}
   async function localImageFacts(dataUrl){const img=await loadImage(dataUrl),canvas=document.createElement('canvas'),size=96;canvas.width=size;canvas.height=size;const c=canvas.getContext('2d',{willReadFrequently:true});c.drawImage(img,0,0,size,size);const d=c.getImageData(0,0,size,size).data,bins=new Map();for(let i=0;i<d.length;i+=16){if(d[i+3]<180)continue;const rgb=[d[i],d[i+1],d[i+2]].map(x=>Math.round(x/32)*32);const key=rgb.join(',');bins.set(key,(bins.get(key)||0)+1)}const palette=[...bins.entries()].sort((a,b)=>b[1]-a[1]).slice(0,7).map(([k])=>'#'+k.split(',').map(x=>Math.min(255,+x).toString(16).padStart(2,'0')).join(''));return{dimensions:{width:img.naturalWidth,height:img.naturalHeight,aspectRatio:(img.naturalWidth/img.naturalHeight).toFixed(3)},palette}}
   function ratioFromDimensions(d){const r=d.width/d.height;if(r>2.0)return'21:9';if(r>1.55)return'16:9';if(r<.68)return'9:16';if(r<.84)return'9:16';return'1:1'}
@@ -93,7 +100,7 @@
   function openLightbox(url){$('lightbox').querySelector('img').src=url;$('lightbox').hidden=false}
   function downloadJson(){const blob=new Blob([JSON.stringify(state.analysis,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);downloadDataUrl(url,'referencia-infografia.json');setTimeout(()=>URL.revokeObjectURL(url),1000)}
   function downloadDataUrl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click()}
-  function setBusy(on,text='Procesando solicitud...'){$('loading-overlay').classList.toggle('hidden',!on);$('secondary-status').textContent=text;document.body.style.overflow=on?'hidden':'';$('generate-btn').disabled=on||!state.analysis;$('analyze-btn').disabled=on||!state.referenceDataUrl}
+  function setBusy(on,text='Procesando solicitud...'){$('loading-overlay').classList.toggle('hidden',!on);$('secondary-status').textContent=text;document.body.style.overflow=on?'hidden':'';$('generate-btn').disabled=on;$('analyze-btn').disabled=on||!state.referenceDataUrl}
   function setStatus(text,type=''){$('status-message').textContent=text;$('status-message').style.color=type==='error'?'#ffb0b0':type==='success'?'#8aff9a':''}
   function showHistoryError(text){$('history-error').textContent=`Historial: ${text}`}
   function readAsDataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('No se pudo leer el archivo.'));r.readAsDataURL(file)})}

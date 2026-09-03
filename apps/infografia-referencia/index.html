@@ -79,25 +79,25 @@
           <div class="ar-selector">
             <span class="ar-label">Relación de aspecto</span>
             <div class="ar-options" id="aspect-toggles" role="group" aria-label="Relación de aspecto">
-              <button type="button" class="ar-option active" data-value="auto">Auto</button>
-              <button type="button" class="ar-option" data-value="21:9">21:9</button>
-              <button type="button" class="ar-option" data-value="16:9">16:9</button>
-              <button type="button" class="ar-option" data-value="9:16">9:16</button>
-              <button type="button" class="ar-option" data-value="1:1">1:1</button>
+              <button type="button" class="ar-option active" data-value="auto" aria-pressed="true">Auto</button>
+              <button type="button" class="ar-option" data-value="21:9" aria-pressed="false">21:9</button>
+              <button type="button" class="ar-option" data-value="16:9" aria-pressed="false">16:9</button>
+              <button type="button" class="ar-option" data-value="9:16" aria-pressed="false">9:16</button>
+              <button type="button" class="ar-option" data-value="1:1" aria-pressed="false">1:1</button>
             </div>
           </div>
 
           <div class="res-selector">
             <span class="res-label">Resolución</span>
             <div class="res-options" id="resolution-toggles" role="group" aria-label="Resolución">
-              <button type="button" class="res-option" data-value="512">512</button>
-              <button type="button" class="res-option active" data-value="1024">1024</button>
-              <button type="button" class="res-option" data-value="2048">2048</button>
-              <button type="button" class="res-option" data-value="4096">4096</button>
+              <button type="button" class="res-option" data-value="512" aria-pressed="false">512</button>
+              <button type="button" class="res-option active" data-value="1024" aria-pressed="true">1024</button>
+              <button type="button" class="res-option" data-value="2048" aria-pressed="false">2048</button>
+              <button type="button" class="res-option" data-value="4096" aria-pressed="false">4096</button>
             </div>
           </div>
 
-          <button id="generate-btn" class="button-start" type="button" disabled>✦ Generar nueva infografía</button>
+          <button id="generate-btn" class="button-start" type="button">✦ Generar nueva infografía</button>
           <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
         </section>
 
@@ -135,6 +135,6 @@
 
   <div id="lightbox" class="lightbox" hidden><button type="button" aria-label="Cerrar">×</button><img alt="Vista ampliada"></div>
   <script src="history-manager.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
