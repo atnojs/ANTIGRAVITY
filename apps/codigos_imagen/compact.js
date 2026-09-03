@@ -87,18 +87,23 @@
     }
 
     async function loadState() {
-        let saved = null;
-        try { const response = await fetch('load_state.php?t=' + Date.now(), { cache: 'no-store' }); if (!response.ok) throw new Error(); saved = await response.json(); } catch (_) { try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (__) {} }
+        let serverState = null; let localState = null;
+        try { const response = await fetch('load_state.php?t=' + Date.now(), { cache: 'no-store' }); if (!response.ok) throw new Error(); serverState = await response.json(); } catch (_) {}
+        try { localState = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) {}
+        const serverTime = getStateTime(serverState); const localTime = getStateTime(localState);
+        const saved = localState && localTime > serverTime ? localState : serverState || localState;
         state = normalizeState(saved || createDefaultState());
     }
 
+    function getStateTime(source) { if (!source) return 0; const numeric = Number(source.updatedAt); if (Number.isFinite(numeric) && numeric > 0) return numeric; const parsed = Date.parse(String(source.ultima_actualizacion || '').replace(' ', 'T')); return Number.isFinite(parsed) ? parsed : 0; }
+
     function createDefaultState() {
         const prompt = 'Crea una imagen de alta calidad a partir de la referencia, conservando con precisión la identidad y los elementos principales. Iluminación cinematográfica, composición limpia, detalles realistas, textura natural, sin texto ni logotipos.';
-        return { version: 1, models: ['ChatGPT', 'Gemini', 'FLUX', 'Qwen', 'Grok'].map(function (name, index) { return { id: 'model-' + name.toLowerCase(), name: name, image: SAMPLE_IMAGE, items: [{ id: 'sample-' + index, title: 'Varios', description: '', image: SAMPLE_IMAGE, prompt: prompt }] }; }) };
+        return { version: 1, updatedAt: 0, models: ['ChatGPT', 'Gemini', 'FLUX', 'Qwen', 'Grok'].map(function (name, index) { return { id: 'model-' + name.toLowerCase(), name: name, image: SAMPLE_IMAGE, items: [{ id: 'sample-' + index, title: 'Varios', description: '', image: SAMPLE_IMAGE, prompt: prompt }] }; }) };
     }
 
     function normalizeState(source) {
-        return { version: 1, models: (Array.isArray(source && source.models) ? source.models : []).map(function (model, index) { const items = Array.isArray(model.items) ? model.items.map(function (item, itemIndex) { return { id: String(item.id || 'prompt-' + Date.now() + '-' + itemIndex), title: String(item.title || item.name || 'Varios'), description: String(item.description || ''), image: String(item.image || item.websiteUrl || ''), prompt: String(item.prompt || item.briefDescription || '') }; }) : []; return { id: String(model.id || 'model-' + Date.now() + '-' + index), name: String(model.name || 'Modelo sin nombre'), image: String(model.image || (items[0] && items[0].image) || ''), items: items }; }) };
+        return { version: 1, updatedAt: Number(source && source.updatedAt) || getStateTime(source), models: (Array.isArray(source && source.models) ? source.models : []).map(function (model, index) { const items = Array.isArray(model.items) ? model.items.map(function (item, itemIndex) { return { id: String(item.id || 'prompt-' + Date.now() + '-' + itemIndex), title: String(item.title || item.name || 'Varios'), description: String(item.description || ''), image: String(item.image || item.websiteUrl || ''), prompt: String(item.prompt || item.briefDescription || '') }; }) : []; return { id: String(model.id || 'model-' + Date.now() + '-' + index), name: String(model.name || 'Modelo sin nombre'), image: String(model.image || (items[0] && items[0].image) || ''), items: items }; }) };
     }
 
     function render() {
@@ -166,7 +171,7 @@
 
     async function copyPrompt(text, button) { try { await navigator.clipboard.writeText(text || ''); } catch (_) { const helper = document.createElement('textarea'); helper.value = text || ''; helper.style.position = 'fixed'; helper.style.opacity = '0'; document.body.appendChild(helper); helper.select(); document.execCommand('copy'); helper.remove(); } const original = button.innerHTML; button.innerHTML = '✓ &nbsp; Copiado'; button.classList.add('copied'); showToast('Código copiado.'); setTimeout(function () { button.innerHTML = original; button.classList.remove('copied'); }, 1500); }
     function openViewer(item) { refs.viewerImage.src = item.image; refs.viewerImage.alt = item.title; refs.viewerCaption.textContent = item.title; openModal('compact-image-viewer'); }
-    async function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); if (!adminPassword) return false; try { const response = await fetch('guardar_cambios.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPassword, state: state }) }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(); return true; } catch (_) { return false; } }
+    async function saveState() { state.updatedAt = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); if (!adminPassword) return false; try { const response = await fetch('guardar_cambios.php', { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPassword, state: state }) }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(); return true; } catch (_) { return false; } }
     function getActiveModel() { return state.models.find(function (model) { return model.id === activeModelId; }) || null; }
     function openModal(id) { document.getElementById(id).hidden = false; document.body.classList.add('modal-open'); }
     function closeModal(id) { document.getElementById(id).hidden = true; if (!root.querySelector('.modal-overlay:not([hidden])')) document.body.classList.remove('modal-open'); }

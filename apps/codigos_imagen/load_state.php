@@ -2,7 +2,9 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
-$path = __DIR__ . '/estado_codigos.json';
+$runtimePath = __DIR__ . '/uploads/estado_codigos.json';
+$seedPath = __DIR__ . '/estado_codigos.json';
+$path = is_file($runtimePath) ? $runtimePath : $seedPath;
 
 if (!is_file($path)) {
     echo json_encode(['version' => 1, 'models' => []], JSON_UNESCAPED_UNICODE);
