@@ -25,6 +25,7 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
    CONSTANTS
    ═══════════════════════════════════════════════ */
 const STORAGE_KEY = 'trickvault_data';
+const EDIT_PASSWORD = '0';
 
 const CATEGORIES = [
     { id: 'terminal',    label: 'Terminal / Linux',   icon: '🖥️',  color: 'cyan',    bgIcon: '💻' },
@@ -240,6 +241,62 @@ function Lightbox({ src, onClose }) {
         <div className="lightbox" onClick={onClose}>
             <img src={src} alt="Vista ampliada" />
             <button className="lightbox-close" onClick={onClose} aria-label="Cerrar lightbox">✕</button>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: PasswordModal (Edit access)
+   ═══════════════════════════════════════════════ */
+function PasswordModal({ onSubmit, onClose }) {
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        if (!password) {
+            setError('Introduce la contraseña para continuar.');
+            return;
+        }
+        if (!onSubmit(password)) {
+            setError('Contraseña incorrecta.');
+            setPassword('');
+        }
+    }
+
+    return (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal" role="dialog" aria-modal="true" aria-label="Contraseña de edición">
+                <div className="modal-header">
+                    <h2>🔒 Edición protegida</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="modal-body">
+                        <p style={{marginTop:0,color:'var(--muted)'}}>Introduce la contraseña para añadir, editar o eliminar trucos.</p>
+                        <label htmlFor="edit-password">Contraseña</label>
+                        <input
+                            id="edit-password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                            autoFocus
+                            autoComplete="current-password"
+                        />
+                        {error && <p role="alert" style={{color:'var(--neon-pink)',margin:'0.5rem 0 0',fontSize:'0.85rem'}}>{error}</p>}
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary">🔓 Continuar</button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
@@ -571,6 +628,9 @@ function App() {
     const [copiedId, setCopiedId] = useState(null);
     const [toasts, setToasts] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [editUnlocked, setEditUnlocked] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [pendingEditAction, setPendingEditAction] = useState(null);
 
     function addToast(msg, type = 'success') {
         const id = uid();
@@ -580,15 +640,36 @@ function App() {
 
     function removeToast(id) { setToasts(prev => prev.filter(t => t.id !== id)); }
 
+    const withEditAccess = useCallback((action) => {
+        if (editUnlocked) {
+            action();
+            return;
+        }
+        setPendingEditAction(() => action);
+        setShowPasswordModal(true);
+    }, [editUnlocked]);
+
+    const submitEditPassword = useCallback((password) => {
+        if (password !== EDIT_PASSWORD) return false;
+        const action = pendingEditAction;
+        setEditUnlocked(true);
+        setShowPasswordModal(false);
+        setPendingEditAction(null);
+        if (action) action();
+        return true;
+    }, [pendingEditAction]);
+
     const toggleFav = useCallback((id) => {
         setTricks(prev => prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t));
     }, [setTricks]);
 
     const deleteTrick = useCallback((id) => {
-        if (!confirm('¿Eliminar este truco para siempre?')) return;
-        setTricks(prev => prev.filter(t => t.id !== id));
-        addToast('🗑️ Truco eliminado', 'error');
-    }, [setTricks]);
+        withEditAccess(() => {
+            if (!confirm('¿Eliminar este truco para siempre?')) return;
+            setTricks(prev => prev.filter(t => t.id !== id));
+            addToast('🗑️ Truco eliminado', 'error');
+        });
+    }, [setTricks, withEditAccess]);
 
     const saveTrick = useCallback((formData) => {
         if (editingTrick) {
@@ -615,15 +696,17 @@ function App() {
     }, []);
 
     const handleImport = useCallback((importedTricks) => {
-        const existingIds = new Set(tricks.map(t => t.id));
-        const newOnes = importedTricks.filter(t => !existingIds.has(t.id));
-        if (newOnes.length === 0) {
-            addToast('No hay trucos nuevos para importar', 'error');
-            return;
-        }
-        setTricks(prev => [...newOnes, ...prev]);
-        addToast(`📤 ${newOnes.length} trucos importados`);
-    }, [tricks, setTricks]);
+        withEditAccess(() => {
+            const existingIds = new Set(tricks.map(t => t.id));
+            const newOnes = importedTricks.filter(t => !existingIds.has(t.id));
+            if (newOnes.length === 0) {
+                addToast('No hay trucos nuevos para importar', 'error');
+                return;
+            }
+            setTricks(prev => [...newOnes, ...prev]);
+            addToast(`📤 ${newOnes.length} trucos importados`);
+        });
+    }, [tricks, setTricks, withEditAccess]);
 
     const selectCategory = useCallback((catId) => {
         setCurrentCategory(catId);
@@ -640,14 +723,18 @@ function App() {
     }, []);
 
     const openAddForm = useCallback(() => {
-        setEditingTrick(null);
-        setShowForm(true);
-    }, []);
+        withEditAccess(() => {
+            setEditingTrick(null);
+            setShowForm(true);
+        });
+    }, [withEditAccess]);
 
     const openEditForm = useCallback((trick) => {
-        setEditingTrick(trick);
-        setShowForm(true);
-    }, []);
+        withEditAccess(() => {
+            setEditingTrick(trick);
+            setShowForm(true);
+        });
+    }, [withEditAccess]);
 
     // Simulated loading for premium feel
     useEffect(() => {
@@ -745,6 +832,13 @@ function App() {
 
             {lightboxSrc && (
                 <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+            )}
+
+            {showPasswordModal && (
+                <PasswordModal
+                    onSubmit={submitEditPassword}
+                    onClose={() => { setShowPasswordModal(false); setPendingEditAction(null); }}
+                />
             )}
 
             <Toast toasts={toasts} removeToast={removeToast} />
