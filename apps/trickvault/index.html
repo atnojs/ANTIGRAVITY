@@ -331,11 +331,6 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
         { label: 'Título *', name: 'title', type: 'text', placeholder: 'Ej: Atajo para buscar en el historial' },
         { label: 'Descripción *', name: 'description', type: 'textarea', placeholder: 'Explica el truco, cuándo usarlo y por qué es útil...', rows: 3 },
         { label: 'Categoría', name: 'category', type: 'select', options: CATEGORIES.map(c => ({ value: c.id, label: `${c.icon} ${c.label}` })) },
-        { label: 'Etiquetas (separadas por comas)', name: 'tags', type: 'text', placeholder: 'bash, terminal, atajos' },
-        { label: 'Código / Comando', name: 'codeSnippet', type: 'textarea', placeholder: 'Pega aquí el código o comando...', rows: 4 },
-        { label: 'URL de imagen', name: 'imageUrl', type: 'text', placeholder: 'https://ejemplo.com/imagen.png' },
-        { label: 'URL de fuente', name: 'sourceUrl', type: 'text', placeholder: 'https://donde-lo-encontraste.com' },
-        { label: 'Dificultad', name: 'difficulty', type: 'select', options: DIFFICULTIES.map(d => ({ value: d.value, label: d.label })) },
     ];
 
     return (
