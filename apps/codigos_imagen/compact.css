@@ -282,3 +282,130 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Clon visual de las tarjetas de apps/prompts_predeterminados. */
+.compact-header {
+    min-height: auto;
+    padding: 1.5rem 0 .5rem;
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+.compact-title {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    text-shadow: 0 0 10px rgba(0, 208, 208, .8), 0 0 24px rgba(0, 208, 208, .8), 0 0 44px rgba(0, 208, 208, .4);
+    white-space: normal;
+}
+.compact-grid,
+.prompt-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
+    padding: 20px;
+}
+.model-folder,
+.prompt-card {
+    flex: 0 0 auto;
+    width: 220px;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    color: #eaffff;
+    background: rgba(23, 79, 122, .42);
+    border: 1px solid rgba(0, 208, 208, .7);
+    border-radius: 15px;
+    box-shadow: none;
+    transition: all .3s cubic-bezier(.4, 0, .2, 1);
+}
+.model-folder:hover,
+.model-folder:focus-visible,
+.prompt-card:hover {
+    background: rgba(23, 79, 122, .42);
+    border-color: #00d0d0;
+    box-shadow: 0 10px 40px rgba(0, 208, 208, .2);
+    transform: translateY(-5px);
+}
+.folder-image,
+.prompt-card .card-image {
+    display: block;
+    width: 100%;
+    height: 160px;
+    aspect-ratio: auto;
+    overflow: hidden;
+    background: #000;
+    border: 0;
+}
+.folder-image img,
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: none;
+    transition: transform .5s ease;
+}
+.model-folder:hover .folder-image img,
+.prompt-card:hover .card-image img { transform: scale(1.05); }
+.folder-content,
+.card-content {
+    display: block;
+    padding: 15px;
+    text-align: center;
+}
+.folder-name,
+.card-title {
+    width: auto;
+    min-height: 0;
+    display: block;
+    margin: 0 0 12px;
+    padding: 0;
+    color: #00d0d0;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    font-size: .95rem;
+    font-weight: 700;
+    line-height: 1.6;
+    letter-spacing: .02em;
+    text-align: center;
+    text-shadow: none;
+    text-transform: none;
+}
+.folder-name { margin-bottom: 0; text-transform: uppercase; }
+.copy-button {
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 10px 15px;
+    color: #eaffff;
+    background: linear-gradient(135deg, rgba(0, 208, 208, .1), rgba(38, 198, 38, .1));
+    border: 1px solid rgba(0, 208, 208, .3);
+    border-radius: 10px;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    font-size: .85rem;
+    font-weight: 600;
+}
+.copy-button:hover,
+.copy-button.copied {
+    color: #00d0d0;
+    background: linear-gradient(135deg, rgba(0, 208, 208, .25), rgba(38, 198, 38, .25));
+    border-color: #00d0d0;
+    box-shadow: 0 0 15px rgba(0, 208, 208, .4);
+}
+.folder-actions,
+.card-actions { padding: 0 15px 15px; }
+
+@media (max-width: 650px) {
+    .compact-header { padding: 1rem 8px .25rem; }
+    .compact-title { font-size: clamp(1.45rem, 7vw, 2.1rem); }
+    .compact-grid,
+    .prompt-grid { gap: 16px; padding: 15px 0; }
+    .model-folder,
+    .prompt-card { width: min(220px, calc(50% - 8px)); }
+    .folder-image,
+    .prompt-card .card-image { height: 145px; }
+}

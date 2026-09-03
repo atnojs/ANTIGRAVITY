@@ -1,38 +1,33 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/config.php';
 
-$input = json_decode(file_get_contents('php://input'), true);
-$password = isset($input['password']) ? trim((string) $input['password']) : '';
-$state = isset($input['state']) && is_array($input['state']) ? $input['state'] : null;
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
 
-if (!hash_equals(ADMIN_PASSWORD, $password)) {
-    http_response_code(401);
+if (!$data || !isset($data['state']['models']) || !is_array($data['state']['models'])) {
+    echo json_encode(['success' => false, 'error' => 'No hay datos válidos.']);
+    exit;
+}
+
+$password = isset($data['password']) ? (string) $data['password'] : '';
+if ($password !== '0') {
     echo json_encode(['success' => false, 'error' => 'Contraseña incorrecta.']);
     exit;
 }
 
-if (!$state || !isset($state['models']) || !is_array($state['models'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Datos de biblioteca no válidos.']);
-    exit;
-}
-
-$safeState = [
+$state = [
     'version' => 1,
-    'models' => $state['models'],
+    'models' => $data['state']['models'],
     'ultima_actualizacion' => date('Y-m-d H:i:s')
 ];
 
 $path = __DIR__ . '/estado_codigos.json';
-$json = json_encode($safeState, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-$saved = file_put_contents($path, $json, LOCK_EX);
+$saved = file_put_contents($path, json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
 if ($saved === false) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'No se pudo escribir la biblioteca.']);
+    echo json_encode(['success' => false, 'error' => 'No se pudo escribir el archivo JSON.']);
     exit;
 }
 
-echo json_encode(['success' => true, 'updatedAt' => $safeState['ultima_actualizacion']]);
+echo json_encode(['success' => true, 'updatedAt' => $state['ultima_actualizacion']]);
 ?>
