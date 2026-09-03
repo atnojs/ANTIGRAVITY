@@ -8,8 +8,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css">
+    <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="app.css?v=20260903-home">
 </head>
 <body>
     <div id="root"></div>
@@ -429,7 +429,15 @@ function CategoryGrid({ tricks, onSelectCategory }) {
     return (
         <div className="category-grid">
             {CATEGORIES.map(cat => (
-                <div key={cat.id} className={`category-card ${cat.color}-border`} onClick={() => onSelectCategory(cat.id)}>
+                <div
+                    key={cat.id}
+                    className={`category-card ${cat.color}-border`}
+                    onClick={() => onSelectCategory(cat.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectCategory(cat.id); } }}
+                    role="button"
+                    tabIndex="0"
+                    aria-label={`${cat.label}: ${counts[cat.id] || 0} trucos`}
+                >
                     <div className="bg-icon">{cat.bgIcon}</div>
                     <div className={`cat-icon ${cat.color}`}>{cat.icon}</div>
                     <h3>{cat.label}</h3>
@@ -739,7 +747,7 @@ function App() {
     const globalSearchQuery = search; // used across views
 
     return (
-        <div className="app-container">
+        <div className={`app-container ${view === 'categories' ? 'home-mode' : ''}`}>
             {loading && (
                 <div className="loading-overlay">
                     <div className="spinner-triple">
