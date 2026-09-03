@@ -134,9 +134,12 @@
 
     function toggleEditMode() { if (isEditable) { isEditable = false; adminPassword = ''; render(); showToast('Edición cerrada.'); return; } refs.passwordForm.reset(); refs.passwordError.hidden = true; openModal('compact-password-modal'); setTimeout(function () { refs.passwordInput.focus(); }, 80); }
     async function checkPassword(event) {
-        event.preventDefault(); const password = refs.passwordInput.value; refs.passwordError.hidden = true;
+        event.preventDefault(); const password = refs.passwordInput.value.trim(); refs.passwordError.hidden = true;
         try { const data = new FormData(); data.append('password', password); const response = await fetch('validar_password.php', { method: 'POST', body: data }); const result = await response.json(); if (!result.success) throw new Error(result.error || 'Contraseña incorrecta.'); }
-        catch (error) { if (!(error instanceof TypeError && password === LOCAL_PASSWORD_FALLBACK)) { refs.passwordError.textContent = error.message || 'Contraseña incorrecta.'; refs.passwordError.hidden = false; return; } }
+        catch (error) {
+            const endpointUnavailable = error instanceof TypeError || error instanceof SyntaxError;
+            if (!(endpointUnavailable && password === LOCAL_PASSWORD_FALLBACK)) { refs.passwordError.textContent = error.message || 'Contraseña incorrecta.'; refs.passwordError.hidden = false; return; }
+        }
         adminPassword = password; isEditable = true; closeModal('compact-password-modal'); render(); showToast('Modo edición activado.');
     }
 

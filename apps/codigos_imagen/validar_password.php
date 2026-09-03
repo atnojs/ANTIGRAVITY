@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/config.php';
 
-$password = isset($_POST['password']) ? (string) $_POST['password'] : '';
+$password = isset($_POST['password']) ? trim((string) $_POST['password']) : '';
 
 if (hash_equals(ADMIN_PASSWORD, $password)) {
     echo json_encode(['success' => true]);

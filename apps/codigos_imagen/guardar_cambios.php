@@ -3,7 +3,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/config.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
-$password = isset($input['password']) ? (string) $input['password'] : '';
+$password = isset($input['password']) ? trim((string) $input['password']) : '';
 $state = isset($input['state']) && is_array($input['state']) ? $input['state'] : null;
 
 if (!hash_equals(ADMIN_PASSWORD, $password)) {
