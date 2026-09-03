@@ -376,6 +376,16 @@ body::before {
     text-transform: none;
 }
 .folder-name { margin-bottom: 0; text-transform: uppercase; }
+.card-description {
+    margin: -4px 0 12px;
+    color: #99cccc;
+    font-family: 'Electrolize', system-ui, sans-serif;
+    font-size: .78rem;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: center;
+}
+#compact-prompt-description { min-height: 76px; }
 .copy-button {
     width: 100%;
     min-height: 0;
