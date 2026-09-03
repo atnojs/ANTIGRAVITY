@@ -1,0 +1,82 @@
+{
+    "version": 1,
+    "models": [
+        {
+            "id": "model-chatgpt",
+            "name": "ChatGPT",
+            "icon": "✦",
+            "description": "Versátil y preciso",
+            "items": [
+                {
+                    "id": "prompt-chatgpt-1",
+                    "title": "Retrato editorial de estudio",
+                    "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80",
+                    "prompt": "Crea un retrato editorial hiperrealista de la persona de referencia, conservando fielmente su identidad, rasgos faciales y proporciones. Iluminación de estudio suave y envolvente, fondo neutro cálido, piel natural, composición de revista, lente de 85 mm, profundidad de campo sutil, detalles de alta fidelidad, sin texto ni logotipos."
+                },
+                {
+                    "id": "prompt-chatgpt-2",
+                    "title": "Producto premium sobre pedestal",
+                    "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80",
+                    "prompt": "Fotografía de producto premium del objeto de referencia sobre un pedestal minimalista. Mantén la forma y los detalles del producto intactos. Luz lateral cinematográfica, sombras suaves, fondo degradado marfil y lavanda, composición publicitaria limpia, textura realista, acabado de catálogo de lujo, alta resolución, sin palabras ni marcas inventadas."
+                }
+            ]
+        },
+        {
+            "id": "model-gemini",
+            "name": "Gemini",
+            "icon": "◇",
+            "description": "Ideas rápidas y visuales",
+            "items": [
+                {
+                    "id": "prompt-gemini-1",
+                    "title": "Escena cinematográfica",
+                    "image": "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=80",
+                    "prompt": "Transforma la imagen de referencia en una escena cinematográfica coherente y detallada. Conserva al sujeto principal y crea una atmósfera visual clara: luz de última hora de la tarde, colores naturales, profundidad espacial, composición narrativa, textura fotográfica auténtica y un acabado de película contemporánea."
+                }
+            ]
+        },
+        {
+            "id": "model-flux",
+            "name": "FLUX",
+            "icon": "◌",
+            "description": "Realismo y detalle",
+            "items": [
+                {
+                    "id": "prompt-flux-1",
+                    "title": "Moda urbana nocturna",
+                    "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+                    "prompt": "High-end editorial street fashion photograph, preserve the person identity from the reference image. Night city environment with wet pavement reflections, subtle neon accents, natural confident pose, realistic fabric texture, directional rim light, 35mm lens, cinematic contrast, authentic candid energy, no text, no logos."
+                }
+            ]
+        },
+        {
+            "id": "model-qwen",
+            "name": "Qwen",
+            "icon": "◎",
+            "description": "Experimentación",
+            "items": [
+                {
+                    "id": "prompt-midjourney-1",
+                    "title": "Ilustración editorial",
+                    "image": "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=80",
+                    "prompt": "Crea una imagen de alta calidad a partir de la referencia, conservando con precisión la identidad y los elementos principales. Iluminación cinematográfica, composición limpia, detalles realistas, textura natural, sin texto ni logotipos."
+                }
+            ]
+        },
+        {
+            "id": "model-grok",
+            "name": "Grok",
+            "icon": "✺",
+            "description": "Estilos creativos",
+            "items": [
+                {
+                    "id": "sample-grok",
+                    "title": "Varios",
+                    "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80",
+                    "prompt": "Crea una imagen de alta calidad a partir de la referencia, conservando con precisión la identidad y los elementos principales. Iluminación cinematográfica, composición limpia, detalles realistas, textura natural, sin texto ni logotipos."
+                }
+            ]
+        }
+    ],
+    "ultima_actualizacion": ""
+}
