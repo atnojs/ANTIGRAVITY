@@ -306,7 +306,10 @@ function PasswordModal({ onSubmit, onClose }) {
    ═══════════════════════════════════════════════ */
 function TrickForm({ trick, onSave, onClose }) {
     const isEdit = !!trick;
-    const [form, setForm] = useState(trick || {
+    const [form, setForm] = useState(() => trick ? {
+        ...trick,
+        tags: Array.isArray(trick.tags) ? trick.tags.join(', ') : (trick.tags || '')
+    } : {
         title: '', description: '', category: 'terminal', tags: '',
         codeSnippet: '', imageUrl: '', sourceUrl: '', difficulty: 'beginner', isFavorite: false
     });
@@ -319,7 +322,8 @@ function TrickForm({ trick, onSave, onClose }) {
     function handleSubmit(e) {
         e.preventDefault();
         if (!form.title.trim() || !form.description.trim()) return;
-        const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
+        const tags = (Array.isArray(form.tags) ? form.tags : String(form.tags || '').split(','))
+            .map(t => t.trim()).filter(Boolean);
         onSave({ ...form, tags });
     }
 
