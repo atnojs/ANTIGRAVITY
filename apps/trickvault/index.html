@@ -304,7 +304,7 @@ function PasswordModal({ onSubmit, onClose }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickForm (Add / Edit Modal)
    ═══════════════════════════════════════════════ */
-function TrickForm({ trick, onSave, onClose }) {
+function TrickForm({ trick, onSave, onClose, onDelete }) {
     const isEdit = !!trick;
     const [form, setForm] = useState(() => trick ? {
         ...trick,
@@ -375,6 +375,7 @@ function TrickForm({ trick, onSave, onClose }) {
                         </label>
                     </div>
                     <div className="modal-footer">
+                        {isEdit && <button type="button" className="btn btn-danger" onClick={onDelete} style={{marginRight:'auto'}}>🗑️ Eliminar</button>}
                         <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
                         <button type="submit" className="btn btn-primary">{isEdit ? '💾 Guardar Cambios' : '✨ Crear Truco'}</button>
                     </div>
@@ -387,16 +388,15 @@ function TrickForm({ trick, onSave, onClose }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickCard
    ═══════════════════════════════════════════════ */
-function TrickCard({ trick, onToggleFav, onEdit, onDelete, onImageClick, onCopy, copiedId }) {
+function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId }) {
     const cat = getCat(trick.category);
     return (
         <div className={`trick-card ${trick.isFavorite ? 'favorite' : ''}`}>
             <div className="trick-card-header">
                 <h3>{trick.title}</h3>
                 <div className="actions">
-                    <button className={`fav-btn ${trick.isFavorite ? 'active' : ''}`} onClick={() => onToggleFav(trick.id)} title={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-label={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}>⭐</button>
+                    <button className={`fav-btn ${trick.isFavorite ? 'active' : ''}`} onClick={() => onToggleFav(trick.id)} title={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-label={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-pressed={trick.isFavorite}>{trick.isFavorite ? '⭐' : '☆'}</button>
                     <button onClick={() => onEdit(trick)} title="Editar" aria-label="Editar truco">✏️</button>
-                    <button onClick={() => onDelete(trick.id)} title="Eliminar" aria-label="Eliminar truco">🗑️</button>
                 </div>
             </div>
 
@@ -460,7 +460,7 @@ function CategoryGrid({ tricks, onSelectCategory }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickList (Category View)
    ═══════════════════════════════════════════════ */
-function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onDelete, onImageClick, onCopy, copiedId, onAdd, search, setSearch, filter, setFilter }) {
+function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, search, setSearch, filter, setFilter }) {
     const cat = getCat(categoryId);
 
     const filtered = useMemo(() => {
@@ -504,7 +504,7 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onDelete, 
             ) : (
                 <div className="tricks-grid">
                     {filtered.map(t => (
-                        <TrickCard key={t.id} trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onDelete={onDelete} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
+                        <TrickCard key={t.id} trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
                     ))}
                 </div>
             )}
@@ -515,7 +515,7 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onDelete, 
 /* ═══════════════════════════════════════════════
    COMPONENT: GlobalSearch
    ═══════════════════════════════════════════════ */
-function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onDelete, onImageClick, onCopy, copiedId }) {
+function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId }) {
     const [query, setQuery] = useState('');
 
     const results = useMemo(() => {
@@ -552,7 +552,7 @@ function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onDelete,
                 <div className="tricks-grid">
                     {results.map(t => (
                         <div key={t.id} style={{position:'relative'}}>
-                            <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onDelete={onDelete} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
+                            <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
                             <button className="btn btn-glass btn-sm" style={{position:'absolute',top:'0.5rem',right:'4rem',zIndex:2}} onClick={() => onSelectCategory(t.category)} title="Ir a la categoría">
                                 📂 {getCat(t.category)?.label}
                             </button>
@@ -667,13 +667,17 @@ function App() {
         setTricks(prev => prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t));
     }, [setTricks]);
 
-    const deleteTrick = useCallback((id) => {
+    const deleteEditingTrick = useCallback(() => {
+        if (!editingTrick) return;
         withEditAccess(() => {
             if (!confirm('¿Eliminar este truco para siempre?')) return;
-            setTricks(prev => prev.filter(t => t.id !== id));
+            const deletedId = editingTrick.id;
+            setTricks(prev => prev.filter(t => t.id !== deletedId));
+            setShowForm(false);
+            setEditingTrick(null);
             addToast('🗑️ Truco eliminado', 'error');
         });
-    }, [setTricks, withEditAccess]);
+    }, [editingTrick, setTricks, withEditAccess]);
 
     const saveTrick = useCallback((formData) => {
         if (editingTrick) {
@@ -804,7 +808,6 @@ function App() {
                     onBack={goHome}
                     onToggleFav={toggleFav}
                     onEdit={openEditForm}
-                    onDelete={deleteTrick}
                     onImageClick={setLightboxSrc}
                     onCopy={handleCopy}
                     copiedId={copiedId}
@@ -822,7 +825,6 @@ function App() {
                     onSelectCategory={selectCategory}
                     onToggleFav={toggleFav}
                     onEdit={openEditForm}
-                    onDelete={deleteTrick}
                     onImageClick={setLightboxSrc}
                     onCopy={handleCopy}
                     copiedId={copiedId}
@@ -831,7 +833,7 @@ function App() {
 
             {/* MODALS */}
             {showForm && (
-                <TrickForm trick={editingTrick} onSave={saveTrick} onClose={() => { setShowForm(false); setEditingTrick(null); }} />
+                <TrickForm trick={editingTrick} onSave={saveTrick} onDelete={deleteEditingTrick} onClose={() => { setShowForm(false); setEditingTrick(null); }} />
             )}
 
             {lightboxSrc && (
