@@ -306,6 +306,7 @@ function PasswordModal({ onSubmit, onClose }) {
    ═══════════════════════════════════════════════ */
 function TrickForm({ trick, onSave, onClose, onDelete }) {
     const isEdit = !!trick;
+    const [formError, setFormError] = useState('');
     const [form, setForm] = useState(() => trick ? {
         ...trick,
         tags: Array.isArray(trick.tags) ? trick.tags.join(', ') : (trick.tags || '')
@@ -316,15 +317,21 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
 
     function handleChange(e) {
         const { name, value, type, checked } = e.target;
+        setFormError('');
         setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     }
 
     function handleSubmit(e) {
         e.preventDefault();
-        if (!form.title.trim() || !form.description.trim()) return;
+        const title = String(form.title || '').trim();
+        const description = String(form.description || '').trim();
+        if (!title || !description) {
+            setFormError('Completa el título y la descripción para guardar la tarjeta.');
+            return;
+        }
         const tags = (Array.isArray(form.tags) ? form.tags : String(form.tags || '').split(','))
             .map(t => t.trim()).filter(Boolean);
-        onSave({ ...form, tags });
+        onSave({ ...form, title, description, tags });
     }
 
     const fields = [
@@ -364,6 +371,7 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
                                 </div>
                             );
                         })}
+                        {formError && <p className="form-error" role="alert">{formError}</p>}
                         <label style={{display:'flex',alignItems:'center',gap:'0.5rem',cursor:'pointer',marginTop:'0.5rem'}}>
                             <input type="checkbox" name="isFavorite" checked={form.isFavorite} onChange={handleChange} style={{width:'auto'}} />
                             <span style={{color:'var(--neon-pink)',fontSize:'0.9rem'}}>⭐ Marcar como favorito</span>
@@ -383,14 +391,14 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickCard
    ═══════════════════════════════════════════════ */
-function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId }) {
+function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit = false }) {
     return (
         <div className={`trick-card ${trick.isFavorite ? 'favorite' : ''}`}>
             <div className="trick-card-header">
                 <h3>{trick.title}</h3>
                 <div className="actions">
                     <button className={`fav-btn ${trick.isFavorite ? 'active' : ''}`} onClick={() => onToggleFav(trick.id)} title={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-label={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-pressed={trick.isFavorite}>{trick.isFavorite ? '⭐' : '☆'}</button>
-                    <button onClick={() => onEdit(trick)} title="Editar" aria-label="Editar truco">✏️</button>
+                    {canEdit && <button onClick={() => onEdit(trick)} title="Editar" aria-label="Editar truco">✏️</button>}
                 </div>
             </div>
 
@@ -451,7 +459,7 @@ function CategoryGrid({ tricks, onSelectCategory }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickList (Category View)
    ═══════════════════════════════════════════════ */
-function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, search, setSearch, filter, setFilter }) {
+function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter }) {
     const cat = getCat(categoryId);
 
     const filtered = useMemo(() => {
@@ -471,7 +479,7 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
 
             <div className="section-header">
                 <h2>{cat?.icon} {cat?.label} <span style={{color:'var(--muted)',fontSize:'0.9rem',fontWeight:400}}>({filtered.length} trucos)</span></h2>
-                <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Truco</button>
+                {canEdit && <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Truco</button>}
             </div>
 
             <div className="stats-bar">
@@ -495,7 +503,7 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
             ) : (
                 <div className="tricks-grid">
                     {filtered.map(t => (
-                        <TrickCard key={t.id} trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
+                        <TrickCard key={t.id} trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} canEdit={canEdit} />
                     ))}
                 </div>
             )}
@@ -506,7 +514,7 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
 /* ═══════════════════════════════════════════════
    COMPONENT: GlobalSearch
    ═══════════════════════════════════════════════ */
-function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId }) {
+function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
     const [query, setQuery] = useState('');
 
     const results = useMemo(() => {
@@ -543,7 +551,7 @@ function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onImageCl
                 <div className="tricks-grid">
                     {results.map(t => (
                         <div key={t.id} style={{position:'relative'}}>
-                            <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} />
+                            <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} canEdit={canEdit} />
                             <button className="btn btn-glass btn-sm" style={{position:'absolute',top:'0.5rem',right:'4rem',zIndex:2}} onClick={() => onSelectCategory(t.category)} title="Ir a la categoría">
                                 📂 {getCat(t.category)?.label}
                             </button>
@@ -672,11 +680,17 @@ function App() {
     }, [editingTrick, setTricks, withEditAccess]);
 
     const saveTrick = useCallback((formData) => {
+        const normalized = {
+            ...formData,
+            title: String(formData.title || '').trim(),
+            description: String(formData.description || '').trim(),
+            tags: Array.isArray(formData.tags) ? formData.tags : [],
+        };
         if (editingTrick) {
-            setTricks(prev => prev.map(t => t.id === editingTrick.id ? { ...editingTrick, ...formData } : t));
+            setTricks(prev => prev.map(t => t.id === editingTrick.id ? { ...t, ...normalized } : t));
             addToast('✅ Truco actualizado');
         } else {
-            const newTrick = { ...formData, id: uid(), createdAt: Date.now() };
+            const newTrick = { ...normalized, id: uid(), createdAt: Date.now() };
             setTricks(prev => [newTrick, ...prev]);
             addToast('✨ Truco creado');
         }
@@ -759,22 +773,14 @@ function App() {
                 </div>
             )}
 
-            {/* HEADER */}
-            <header className="app-header">
-                <div className="header-left">
-                    <span className="app-logo">💎</span>
-                    <div>
-                        <div className="app-title">TrickVault</div>
-                        <div className="app-subtitle">Tu colección personal de trucos</div>
-                    </div>
+            {/* TÍTULO CENTRADO */}
+            <div className="app-branding" aria-label="TrickVault">
+                <span className="app-logo">💎</span>
+                <div className="app-title-wrap">
+                    <div className="app-title">TrickVault</div>
+                    <div className="app-subtitle">Tu colección personal de trucos</div>
                 </div>
-                <div className="header-right">
-                    <button className={`btn btn-glass btn-sm ${view === 'categories' ? 'active' : ''}`} onClick={goHome}>🏠 Inicio</button>
-                    <button className={`btn btn-glass btn-sm ${view === 'search' ? 'active' : ''}`} onClick={() => { setView('search'); setSearch(''); }}>🔍 Buscar</button>
-                    <button className="btn btn-primary btn-sm" onClick={openAddForm}>✨ Nuevo</button>
-                    <ExportImport tricks={tricks} onImport={handleImport} />
-                </div>
-            </header>
+            </div>
 
             {/* STATS */}
             <div className="stats-bar">
@@ -788,6 +794,7 @@ function App() {
                 <div>
                     <div className="section-header">
                         <h2>📂 Categorías</h2>
+                        {editUnlocked && <button className="btn btn-primary btn-sm" onClick={openAddForm}>✨ Nuevo Truco</button>}
                     </div>
                     <CategoryGrid tricks={tricks} onSelectCategory={selectCategory} />
                 </div>
@@ -804,6 +811,7 @@ function App() {
                     onCopy={handleCopy}
                     copiedId={copiedId}
                     onAdd={openAddForm}
+                    canEdit={editUnlocked}
                     search={search}
                     setSearch={setSearch}
                     filter={filter}
@@ -820,6 +828,7 @@ function App() {
                     onImageClick={setLightboxSrc}
                     onCopy={handleCopy}
                     copiedId={copiedId}
+                    canEdit={editUnlocked}
                 />
             )}
 
@@ -842,7 +851,14 @@ function App() {
             <Toast toasts={toasts} removeToast={removeToast} />
 
             {/* FOOTER */}
-            <footer style={{textAlign:'center',padding:'3rem 0 1.5rem',color:'var(--muted)',fontSize:'0.75rem'}}>
+            <footer className="app-footer">
+                <button
+                    type="button"
+                    className="edit-access-trigger"
+                    onClick={() => withEditAccess(() => setEditUnlocked(true), true)}
+                    aria-label="Activar edición"
+                    title="Activar edición"
+                >✏️</button>
                 TrickVault — Hecho con 💎 y Neon Glassmorphism
             </footer>
         </div>
