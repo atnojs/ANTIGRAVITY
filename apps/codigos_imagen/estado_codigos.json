@@ -4,8 +4,7 @@
         {
             "id": "model-chatgpt",
             "name": "ChatGPT",
-            "icon": "✦",
-            "description": "Versátil y preciso",
+            "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80",
             "items": [
                 {
                     "id": "prompt-chatgpt-1",
@@ -24,8 +23,7 @@
         {
             "id": "model-gemini",
             "name": "Gemini",
-            "icon": "◇",
-            "description": "Ideas rápidas y visuales",
+            "image": "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=80",
             "items": [
                 {
                     "id": "prompt-gemini-1",
@@ -38,8 +36,7 @@
         {
             "id": "model-flux",
             "name": "FLUX",
-            "icon": "◌",
-            "description": "Realismo y detalle",
+            "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
             "items": [
                 {
                     "id": "prompt-flux-1",
@@ -52,8 +49,7 @@
         {
             "id": "model-qwen",
             "name": "Qwen",
-            "icon": "◎",
-            "description": "Experimentación",
+            "image": "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=80",
             "items": [
                 {
                     "id": "prompt-midjourney-1",
@@ -66,8 +62,7 @@
         {
             "id": "model-grok",
             "name": "Grok",
-            "icon": "✺",
-            "description": "Estilos creativos",
+            "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80",
             "items": [
                 {
                     "id": "sample-grok",
