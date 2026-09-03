@@ -410,9 +410,6 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId 
             )}
 
             <div className="card-footer">
-                {trick.sourceUrl ? (
-                    <a href={trick.sourceUrl} target="_blank" rel="noopener noreferrer" className="source-link">🔗 Fuente original</a>
-                ) : <span></span>}
                 <span className="date">{formatDate(trick.createdAt)}</span>
             </div>
         </div>
