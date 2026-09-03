@@ -1,7 +1,6 @@
 (function () {
     'use strict';
 
-    const STORAGE_KEY = 'codigosImagenData';
     const LOCAL_PASSWORD_FALLBACK = '0';
     const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80';
     let state = { models: [] };
@@ -87,12 +86,8 @@
     }
 
     async function loadState() {
-        let serverState = null; let localState = null;
-        try { const response = await fetch('load_state.php?t=' + Date.now(), { cache: 'no-store' }); if (!response.ok) throw new Error(); serverState = await response.json(); } catch (_) {}
-        try { localState = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) {}
-        const serverTime = getStateTime(serverState); const localTime = getStateTime(localState);
-        const saved = localState && localTime > serverTime ? localState : serverState || localState;
-        state = normalizeState(saved || createDefaultState());
+        try { const response = await fetch('load_state.php?t=' + Date.now(), { cache: 'no-store' }); if (!response.ok) throw new Error(); state = normalizeState(await response.json()); return true; }
+        catch (_) { state = { version: 1, updatedAt: 0, models: [] }; showToast('No se pudieron cargar los datos del servidor.', 'error'); return false; }
     }
 
     function getStateTime(source) { if (!source) return 0; const numeric = Number(source.updatedAt); if (Number.isFinite(numeric) && numeric > 0) return numeric; const parsed = Date.parse(String(source.ultima_actualizacion || '').replace(' ', 'T')); return Number.isFinite(parsed) ? parsed : 0; }
@@ -171,7 +166,7 @@
 
     async function copyPrompt(text, button) { try { await navigator.clipboard.writeText(text || ''); } catch (_) { const helper = document.createElement('textarea'); helper.value = text || ''; helper.style.position = 'fixed'; helper.style.opacity = '0'; document.body.appendChild(helper); helper.select(); document.execCommand('copy'); helper.remove(); } const original = button.innerHTML; button.innerHTML = '✓ &nbsp; Copiado'; button.classList.add('copied'); showToast('Código copiado.'); setTimeout(function () { button.innerHTML = original; button.classList.remove('copied'); }, 1500); }
     function openViewer(item) { refs.viewerImage.src = item.image; refs.viewerImage.alt = item.title; refs.viewerCaption.textContent = item.title; openModal('compact-image-viewer'); }
-    async function saveState() { state.updatedAt = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); if (!adminPassword) return false; try { const response = await fetch('guardar_cambios.php', { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPassword, state: state }) }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(); return true; } catch (_) { return false; } }
+    async function saveState() { if (!adminPassword) return false; const revision = Date.now(); state.updatedAt = revision; try { const response = await fetch('guardar_cambios.php', { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPassword, state: state }) }); const result = await response.json(); if (!response.ok || !result.success || Number(result.updatedAt) !== revision) throw new Error(); const verification = await fetch('load_state.php?t=' + Date.now(), { cache: 'no-store' }); if (!verification.ok) throw new Error(); const confirmedState = await verification.json(); if (Number(confirmedState.updatedAt) !== revision) throw new Error(); state = normalizeState(confirmedState); render(); return true; } catch (_) { await loadState(); render(); return false; } }
     function getActiveModel() { return state.models.find(function (model) { return model.id === activeModelId; }) || null; }
     function openModal(id) { document.getElementById(id).hidden = false; document.body.classList.add('modal-open'); }
     function closeModal(id) { document.getElementById(id).hidden = true; if (!root.querySelector('.modal-overlay:not([hidden])')) document.body.classList.remove('modal-open'); }

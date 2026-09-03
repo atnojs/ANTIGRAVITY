@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
-$runtimePath = __DIR__ . '/uploads/estado_codigos.json';
+$runtimePath = __DIR__ . '/gallery_data/estado_codigos.json';
 $seedPath = __DIR__ . '/estado_codigos.json';
 $path = is_file($runtimePath) ? $runtimePath : $seedPath;
 
