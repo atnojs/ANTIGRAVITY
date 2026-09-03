@@ -384,7 +384,6 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
    COMPONENT: TrickCard
    ═══════════════════════════════════════════════ */
 function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId }) {
-    const cat = getCat(trick.category);
     return (
         <div className={`trick-card ${trick.isFavorite ? 'favorite' : ''}`}>
             <div className="trick-card-header">
@@ -393,13 +392,6 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId 
                     <button className={`fav-btn ${trick.isFavorite ? 'active' : ''}`} onClick={() => onToggleFav(trick.id)} title={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-label={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-pressed={trick.isFavorite}>{trick.isFavorite ? '⭐' : '☆'}</button>
                     <button onClick={() => onEdit(trick)} title="Editar" aria-label="Editar truco">✏️</button>
                 </div>
-            </div>
-
-            <div className="meta">
-                <span className={`tag`}>{cat?.icon} {cat?.label}</span>
-                <span className={`difficulty ${trick.difficulty}`}>
-                    {DIFFICULTIES.find(d => d.value === trick.difficulty)?.label || trick.difficulty}
-                </span>
             </div>
 
             <p className="description">{trick.description}</p>
