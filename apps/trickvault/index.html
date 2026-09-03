@@ -644,11 +644,12 @@ function App() {
 
     function removeToast(id) { setToasts(prev => prev.filter(t => t.id !== id)); }
 
-    const withEditAccess = useCallback((action) => {
-        if (editUnlocked) {
+    const withEditAccess = useCallback((action, forcePrompt = false) => {
+        if (editUnlocked && !forcePrompt) {
             action();
             return;
         }
+        if (forcePrompt) setEditUnlocked(false);
         setPendingEditAction(() => action);
         setShowPasswordModal(true);
     }, [editUnlocked]);
@@ -741,7 +742,7 @@ function App() {
         withEditAccess(() => {
             setEditingTrick(trick);
             setShowForm(true);
-        });
+        }, true);
     }, [withEditAccess]);
 
     // Simulated loading for premium feel
