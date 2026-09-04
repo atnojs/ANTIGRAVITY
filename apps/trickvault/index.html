@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20260904-images">
+    <link rel="stylesheet" href="app.css?v=20260904-hostinger">
 </head>
 <body>
     <div id="root"></div>
@@ -25,7 +25,8 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
    CONSTANTS
    ═══════════════════════════════════════════════ */
 const STORAGE_KEY = 'trickvault_data';
-const EDIT_PASSWORD = '0';
+const IMAGE_STORE_URL = 'image_store.php';
+const AUTH_URL = 'auth.php';
 
 const CATEGORIES = [
     { id: 'terminal',    label: 'Terminal / Linux',   icon: '🖥️',  color: 'cyan',    bgIcon: '💻' },
@@ -187,6 +188,62 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sub
 function formatDate(ts) { return new Date(ts).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
 function getCat(id) { return CATEGORIES.find(c => c.id === id); }
 
+async function readServerJson(response) {
+    let payload;
+    try { payload = await response.json(); }
+    catch { throw new Error(`El servidor devolvió una respuesta inválida (HTTP ${response.status}).`); }
+    if (!response.ok || payload.success === false) {
+        throw new Error(payload.error || `Error del servidor (HTTP ${response.status}).`);
+    }
+    return payload;
+}
+
+async function loadRemoteImages() {
+    const response = await fetch(`${IMAGE_STORE_URL}?action=list&t=${Date.now()}`, { cache: 'no-store', credentials: 'same-origin' });
+    const payload = await readServerJson(response);
+    return payload.images && typeof payload.images === 'object' ? payload.images : {};
+}
+
+async function authenticateRemote(password) {
+    const formData = new FormData();
+    formData.append('password', password);
+    const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+    await readServerJson(response);
+    return true;
+}
+
+async function uploadRemoteImage(trickId, imageData) {
+    const formData = new FormData();
+    formData.append('trickId', trickId);
+    formData.append('imageData', imageData);
+    const response = await fetch(`${IMAGE_STORE_URL}?action=save`, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+    const payload = await readServerJson(response);
+    if (!payload.url) throw new Error('El servidor no devolvió la dirección de la imagen.');
+    return payload.url;
+}
+
+async function removeRemoteImage(trickId) {
+    const formData = new FormData();
+    formData.append('trickId', trickId);
+    const response = await fetch(`${IMAGE_STORE_URL}?action=delete`, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+    return readServerJson(response);
+}
+
 /* ═══════════════════════════════════════════════
    HOOK: useLocalStorage
    ═══════════════════════════════════════════════ */
@@ -251,6 +308,7 @@ function Lightbox({ src, onClose }) {
 function PasswordModal({ onSubmit, onClose }) {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         const handler = (e) => { if (e.key === 'Escape') onClose(); };
@@ -258,15 +316,19 @@ function PasswordModal({ onSubmit, onClose }) {
         return () => document.removeEventListener('keydown', handler);
     }, [onClose]);
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
+        if (submitting) return;
         if (!password) {
             setError('Introduce la contraseña para continuar.');
             return;
         }
-        if (!onSubmit(password)) {
+        setSubmitting(true);
+        const accepted = await onSubmit(password);
+        if (!accepted) {
             setError('Contraseña incorrecta.');
             setPassword('');
+            setSubmitting(false);
         }
     }
 
@@ -292,8 +354,8 @@ function PasswordModal({ onSubmit, onClose }) {
                         {error && <p role="alert" style={{color:'var(--neon-pink)',margin:'0.5rem 0 0',fontSize:'0.85rem'}}>{error}</p>}
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
-                        <button type="submit" className="btn btn-primary">🔓 Continuar</button>
+                        <button type="button" className="btn btn-glass" onClick={onClose} disabled={submitting}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Comprobando…' : '🔓 Continuar'}</button>
                     </div>
                 </form>
             </div>
@@ -307,6 +369,7 @@ function PasswordModal({ onSubmit, onClose }) {
 function TrickForm({ trick, onSave, onClose, onDelete }) {
     const isEdit = !!trick;
     const [formError, setFormError] = useState('');
+    const [saving, setSaving] = useState(false);
     const [form, setForm] = useState(() => trick ? {
         ...trick,
         tags: Array.isArray(trick.tags) ? trick.tags.join(', ') : (trick.tags || '')
@@ -352,8 +415,9 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
         e.target.value = '';
     }
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
+        if (saving) return;
         const title = String(form.title || '').trim();
         const description = String(form.description || '').trim();
         if (!title || !description) {
@@ -362,7 +426,9 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
         }
         const tags = (Array.isArray(form.tags) ? form.tags : String(form.tags || '').split(','))
             .map(t => t.trim()).filter(Boolean);
-        onSave({ ...form, title, description, tags });
+        setSaving(true);
+        const saved = await onSave({ ...form, title, description, tags });
+        if (saved === false) setSaving(false);
     }
 
     const fields = [
@@ -421,8 +487,8 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
                     </div>
                     <div className="modal-footer">
                         {isEdit && <button type="button" className="btn btn-danger" onClick={onDelete} style={{marginRight:'auto'}}>🗑️ Eliminar</button>}
-                        <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
-                        <button type="submit" className="btn btn-primary">{isEdit ? '💾 Guardar Cambios' : '✨ Crear Truco'}</button>
+                        <button type="button" className="btn btn-glass" onClick={onClose} disabled={saving}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : (isEdit ? '💾 Guardar Cambios' : '✨ Crear Truco')}</button>
                     </div>
                 </form>
             </div>
@@ -676,6 +742,7 @@ function App() {
     const [editUnlocked, setEditUnlocked] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [pendingEditAction, setPendingEditAction] = useState(null);
+    const initialTricksRef = useRef(tricks);
 
     function addToast(msg, type = 'success') {
         const id = uid();
@@ -695,15 +762,36 @@ function App() {
         setShowPasswordModal(true);
     }, [editUnlocked]);
 
-    const submitEditPassword = useCallback((password) => {
-        if (password !== EDIT_PASSWORD) return false;
-        const action = pendingEditAction;
-        setEditUnlocked(true);
-        setShowPasswordModal(false);
-        setPendingEditAction(null);
-        if (action) action();
-        return true;
-    }, [pendingEditAction]);
+    const migrateLocalImages = useCallback(async () => {
+        let changed = false;
+        const next = [];
+        for (const trick of tricks) {
+            let imageUrl = trick.imageUrl || '';
+            if (typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) {
+                imageUrl = await uploadRemoteImage(trick.id, imageUrl);
+                changed = true;
+            }
+            next.push({ ...trick, imageUrl });
+        }
+        if (changed) setTricks(next);
+        return next;
+    }, [tricks, setTricks]);
+
+    const submitEditPassword = useCallback(async (password) => {
+        try {
+            await authenticateRemote(password);
+            await migrateLocalImages();
+            const action = pendingEditAction;
+            setEditUnlocked(true);
+            setShowPasswordModal(false);
+            setPendingEditAction(null);
+            if (action) action();
+            return true;
+        } catch (error) {
+            console.error('[TrickVault] No se pudo iniciar la sesión de edición:', error);
+            return false;
+        }
+    }, [pendingEditAction, migrateLocalImages]);
 
     const toggleFav = useCallback((id) => {
         setTricks(prev => prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t));
@@ -714,6 +802,9 @@ function App() {
         withEditAccess(() => {
             if (!confirm('¿Eliminar este truco para siempre?')) return;
             const deletedId = editingTrick.id;
+            if (editingTrick.imageUrl) {
+                removeRemoteImage(deletedId).catch(error => console.error('[TrickVault] No se pudo borrar la imagen remota:', error));
+            }
             setTricks(prev => prev.filter(t => t.id !== deletedId));
             setShowForm(false);
             setEditingTrick(null);
@@ -721,23 +812,38 @@ function App() {
         });
     }, [editingTrick, setTricks, withEditAccess]);
 
-    const saveTrick = useCallback((formData) => {
-        const normalized = {
-            ...formData,
-            title: String(formData.title || '').trim(),
-            description: String(formData.description || '').trim(),
-            tags: Array.isArray(formData.tags) ? formData.tags : [],
-        };
-        if (editingTrick) {
-            setTricks(prev => prev.map(t => t.id === editingTrick.id ? { ...t, ...normalized } : t));
-            addToast('✅ Truco actualizado');
-        } else {
-            const newTrick = { ...normalized, id: uid(), createdAt: Date.now() };
-            setTricks(prev => [newTrick, ...prev]);
-            addToast('✨ Truco creado');
+    const saveTrick = useCallback(async (formData) => {
+        try {
+            const targetId = editingTrick?.id || uid();
+            const normalized = {
+                ...formData,
+                title: String(formData.title || '').trim(),
+                description: String(formData.description || '').trim(),
+                tags: Array.isArray(formData.tags) ? formData.tags : [],
+            };
+
+            if (typeof normalized.imageUrl === 'string' && normalized.imageUrl.startsWith('data:image/')) {
+                normalized.imageUrl = await uploadRemoteImage(targetId, normalized.imageUrl);
+            } else if (editingTrick?.imageUrl && !normalized.imageUrl) {
+                await removeRemoteImage(targetId);
+            }
+
+            if (editingTrick) {
+                setTricks(prev => prev.map(t => t.id === targetId ? { ...t, ...normalized } : t));
+                addToast('✅ Truco actualizado');
+            } else {
+                const newTrick = { ...normalized, id: targetId, createdAt: Date.now() };
+                setTricks(prev => [newTrick, ...prev]);
+                addToast('✨ Truco creado');
+            }
+            setShowForm(false);
+            setEditingTrick(null);
+            return true;
+        } catch (error) {
+            console.error('[TrickVault] No se pudo guardar la imagen:', error);
+            addToast('No se pudo guardar la imagen en Hostinger', 'error');
+            return false;
         }
-        setShowForm(false);
-        setEditingTrick(null);
     }, [editingTrick, setTricks]);
 
     const handleCopy = useCallback(async (trick) => {
@@ -791,6 +897,32 @@ function App() {
             setShowForm(true);
         }, true);
     }, [withEditAccess]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function syncImagesFromHostinger() {
+            try {
+                const remoteImages = await loadRemoteImages();
+                const next = [];
+
+                for (const trick of initialTricksRef.current) {
+                    let imageUrl = trick.imageUrl || '';
+                    if (!(typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) && remoteImages[trick.id]) {
+                        imageUrl = remoteImages[trick.id];
+                    }
+                    next.push({ ...trick, imageUrl });
+                }
+
+                if (!cancelled) setTricks(next);
+            } catch (error) {
+                console.error('[TrickVault] No se pudieron cargar las imágenes de Hostinger:', error);
+            }
+        }
+
+        syncImagesFromHostinger();
+        return () => { cancelled = true; };
+    }, [setTricks]);
 
     // Simulated loading for premium feel
     useEffect(() => {

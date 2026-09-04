@@ -229,6 +229,12 @@ h1, h2, h3, h4, .font-montserrat {
     white-space: nowrap;
 }
 
+.btn:disabled {
+    opacity: 0.55;
+    cursor: wait;
+    transform: none;
+}
+
 .btn-primary {
     background: linear-gradient(135deg, #06b6d4, #3b82f6);
     color: white;
