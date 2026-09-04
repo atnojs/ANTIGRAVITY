@@ -752,12 +752,11 @@ function App() {
 
     function removeToast(id) { setToasts(prev => prev.filter(t => t.id !== id)); }
 
-    const withEditAccess = useCallback((action, forcePrompt = false) => {
-        if (editUnlocked && !forcePrompt) {
+    const withEditAccess = useCallback((action) => {
+        if (editUnlocked) {
             action();
             return;
         }
-        if (forcePrompt) setEditUnlocked(false);
         setPendingEditAction(() => action);
         setShowPasswordModal(true);
     }, [editUnlocked]);
@@ -895,8 +894,20 @@ function App() {
         withEditAccess(() => {
             setEditingTrick(trick);
             setShowForm(true);
-        }, true);
+        });
     }, [withEditAccess]);
+
+    const toggleEditMode = useCallback(() => {
+        if (editUnlocked) {
+            setEditUnlocked(false);
+            setShowForm(false);
+            setEditingTrick(null);
+            setShowPasswordModal(false);
+            setPendingEditAction(null);
+            return;
+        }
+        withEditAccess(() => setEditUnlocked(true));
+    }, [editUnlocked, withEditAccess]);
 
     useEffect(() => {
         let cancelled = false;
@@ -1029,9 +1040,9 @@ function App() {
                 <button
                     type="button"
                     className="edit-access-trigger"
-                    onClick={() => withEditAccess(() => setEditUnlocked(true), true)}
-                    aria-label="Activar edición"
-                    title="Activar edición"
+                    onClick={toggleEditMode}
+                    aria-label={editUnlocked ? 'Salir del modo edición' : 'Activar edición'}
+                    title={editUnlocked ? 'Salir del modo edición' : 'Activar edición'}
                 >✏️</button>
                 TrickVault — Hecho con 💎 y Neon Glassmorphism
             </footer>
