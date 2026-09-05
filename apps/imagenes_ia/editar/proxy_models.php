@@ -92,7 +92,7 @@ while ($width * $height > $maxPixels) {
 }
 
 // ===== Seleccion de modelo =====
-$reqModel = strtolower((string)($data['model'] ?? 'flux-pro'));
+$reqModel = strtolower((string)($data['model'] ?? 'gemini-flash'));
 $backend = 'flux';
 $geminiModelId = 'google/gemini-3.1-flash-image';
 $fluxEndpoint = 'flux-2-pro'; // por defecto

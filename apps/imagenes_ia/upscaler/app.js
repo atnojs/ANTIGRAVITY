@@ -301,7 +301,7 @@ const App = () => {
     const [source, setSource] = useState(null);
     const [sourceInfo, setSourceInfo] = useState(null);
     const [selectedESRGANModel, setSelectedESRGANModel] = useState(MODEL_OPTIONS[3]); // medium-4x por defecto
-    const [selectedModel, setSelectedModel] = useState('gemini-pro'); // Modelo IA (Flux/Gemini)
+    const [selectedModel, setSelectedModel] = useState('gemini-flash'); // Modelo IA (Flux/Gemini)
     const [isDinA4, setIsDinA4] = useState(false);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('');
