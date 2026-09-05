@@ -70,7 +70,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 // Detectar backend según el modelo
-$modelParam = strtolower((string)($req['model'] ?? 'gemini-2.5-flash-image'));
+$modelParam = strtolower((string)($req['model'] ?? 'gemini-3.1-flash-image-preview'));
 
 // ====================================================================
 // BACKEND: FLUX (BFL) — async submit + poll
@@ -205,7 +205,7 @@ if (!$GEMINI_KEY || empty($GEMINI_KEY)) {
 }
 
 // Modelo
-$model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
+$model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($GEMINI_KEY);
 
 // Construir payload — soporte passthrough + formato sencillo

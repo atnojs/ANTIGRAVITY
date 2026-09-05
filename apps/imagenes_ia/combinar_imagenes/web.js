@@ -88,7 +88,7 @@ const state = {
     images: new Array(CONFIG.MAX_IMAGES).fill(null), // Array fijo con tamaño máximo, lleno de nulls inicialmente
     history: [],
     selectedAR: '1:1',
-    selectedModel: 'gemini-pro', // Modelo IA: 'gemini-flash' | 'gemini-pro' (default) | 'flux-pro' | 'flux-max'
+    selectedModel: 'gemini-flash', // Modelo IA: 'gemini-flash' | 'gemini-pro' | 'flux-pro' | 'flux-max'
     selectedRes: 1024, // Resolución (lado objetivo px): 512 / 1024 / 2048 / 4096
     isGenerating: false,
     isEnhancing: false,

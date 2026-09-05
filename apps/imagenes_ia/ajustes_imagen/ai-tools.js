@@ -107,7 +107,7 @@
   // ============================================================
   let currentTool = null;
   let isProcessing = false;
-let selectedModel = 'gemini-pro'; //4 modelos skill_maestra: gemini-flash (3.1FLASH), gemini-pro (3 PRO), flux-pro (FLUX PRO), flux-max (FLUX MAX)
+let selectedModel = 'gemini-flash'; //4 modelos skill_maestra: gemini-flash (3.1FLASH), gemini-pro (3 PRO), flux-pro (FLUX PRO), flux-max (FLUX MAX)
   let selectedAR = '1:1';      // aspect ratio elegido: '1:1','16:9','9:16','4:3','3:4'
   let selectedRes = 1024;      // resolución (lado mayor px): 512, 1024, 2048, 4096
 
@@ -528,8 +528,8 @@ model: selectedModel,
 '<i data-lucide="wand-2" style="width:0.75rem;height:0.75rem;"></i> IA 10 Herramientas</h4>' +
       '<div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
         '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;">Modelo:</span>' +
-'<button id="ai-quality-flash" class="ai-quality-btn" data-model="gemini-flash" title="google/gemini-3.1-flash-image rapido y economico" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3.1FLASH</button>' +
-'<button id="ai-quality-pro" class="ai-quality-btn is-selected" data-model="gemini-pro" title="google/gemini-3-pro-image maxima calidad" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #00D0D0;background:rgba(0,208,208,0.3);color:#061018;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3 PRO</button>' +
+'<button id="ai-quality-flash" class="ai-quality-btn is-selected" data-model="gemini-flash" title="google/gemini-3.1-flash-image rapido y economico" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #00D0D0;background:rgba(0,208,208,0.3);color:#061018;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3.1FLASH</button>' +
+'<button id="ai-quality-pro" class="ai-quality-btn" data-model="gemini-pro" title="google/gemini-3-pro-image maxima calidad" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3 PRO</button>' +
 '<button id="ai-quality-fluxpro" class="ai-quality-btn" data-model="flux-pro" title="flux-2-pro calidad/velocidad (~$0.03)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX PRO</button>' +
 '<button id="ai-quality-fluxmax" class="ai-quality-btn" data-model="flux-max" title="flux-2-max maxima fidelidad (~$0.07)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX MAX</button>' +
       '</div>' +
@@ -613,7 +613,7 @@ model: selectedModel,
 var qualityBtns = section.querySelectorAll('.ai-quality-btn');
 qualityBtns.forEach(function (qb) {
  qb.onclick = function () {
- selectedModel = qb.getAttribute('data-model') || 'gemini-pro';
+ selectedModel = qb.getAttribute('data-model') || 'gemini-flash';
  window.selectedAIModel = selectedModel;
  qualityBtns.forEach(function (b) {
  b.classList.remove('is-selected');

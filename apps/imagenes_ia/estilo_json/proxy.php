@@ -342,8 +342,8 @@ try {
     // ═══════════════════════════════════════════════
     if ($task === 'aplicarEstilo') {
         // ── Modelo unificado: model (nuevo) o calidad (backward compat).
-        // Fallback seguro según skill_maestra: gemini-pro (3 PRO).
-        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'gemini-pro'));
+        // Fallback seguro: Gemini 3.1 Flash.
+        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'gemini-flash'));
 
         // ── Despacho: flux-* → BFL async, gemini-* → OpenRouter sync ──
         $isFlux   = (strpos($reqModel, 'flux') === 0);

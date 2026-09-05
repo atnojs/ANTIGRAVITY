@@ -271,7 +271,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -287,7 +287,7 @@ const callModelImage = async ({ prompt, aspectRatio, sourceImage, targetPx = 102
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: window.selectedModel || 'flux-pro',
+            model: window.selectedModel || 'gemini-flash',
             prompt,
             imagen: sourceImage || undefined,
             aspectRatio,
@@ -521,7 +521,7 @@ const App = () => {
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
-    const [selectedModel, setSelectedModel] = useState('flux-pro');
+    const [selectedModel, setSelectedModel] = useState('gemini-flash');
 
     useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 

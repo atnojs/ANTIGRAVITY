@@ -2,7 +2,7 @@
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
 // --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
-window.selectedModel = 'gemini-pro';
+window.selectedModel = 'gemini-flash';
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -267,7 +267,7 @@ El campo "prompt" debe ser extremadamente detallado, de al menos 150 palabras. C
     }
 
     const payload = {
-        model: "gemini-2.5-flash",
+        model: "gemini-3.1-flash-preview",
         contents: [{ parts: [
             { text: promptText },
             { inlineData: { mimeType: styleData.mimeType, data: styleData.data } }
@@ -814,7 +814,7 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: window.selectedModel || 'gemini-pro',
+            model: window.selectedModel || 'gemini-flash',
             image: subjectData.data,
             mimeType: subjectData.mimeType,
             prompt: promptInstructions

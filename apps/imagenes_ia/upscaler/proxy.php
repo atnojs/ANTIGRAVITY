@@ -80,7 +80,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 $task = $req['task'] ?? '';
-$modelParam = strtolower((string)($req['model'] ?? 'gemini-pro'));
+$modelParam = strtolower((string)($req['model'] ?? 'gemini-flash'));
 
 // ===== Determinar backend =====
 $backend = 'gemini';
@@ -128,7 +128,7 @@ if ($task === 'enhance' && $backend === 'gemini' && $imageData !== '') {
         goto use_openrouter;
     }
 
-    $model = 'gemini-2.5-flash-image';
+    $model = 'gemini-3.1-flash-image-preview';
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($gKey);
 
     $payload = [
@@ -302,7 +302,7 @@ if ($OR_KEY === '') {
     }
 
     // Usar API directa de Gemini
-    $model = 'gemini-2.5-flash-image';
+    $model = 'gemini-3.1-flash-image-preview';
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($gKey);
 
     $payload = [

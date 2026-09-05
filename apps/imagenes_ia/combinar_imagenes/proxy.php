@@ -122,7 +122,7 @@ PROMPT;
 
 // ─── COMBINE IMAGES → FLUX o Gemini ──────────────────────────
 if ($task === 'combineImages') {
-    $model = strtolower((string)($input['model'] ?? 'gemini-pro'));
+    $model = strtolower((string)($input['model'] ?? 'gemini-flash'));
     $prompt = $input['prompt'] ?? '';
     $aspectRatio = $input['aspectRatio'] ?? '1:1';
     $targetPx = $input['targetPx'] ?? 1024;

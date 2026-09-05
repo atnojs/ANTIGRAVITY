@@ -87,7 +87,7 @@ if (isset($req['contents'])) {
             exit;
         }
 
-        $model = (string)($req['model'] ?? 'gemini-2.5-flash');
+        $model = (string)($req['model'] ?? 'gemini-3.1-flash-preview');
         $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($geminiDirectKey);
 
         $payload = ['contents' => $req['contents']];
@@ -171,7 +171,7 @@ if (strpos($imageB64, 'base64,') !== false) {
 }
 
 // ===== Selección de modelo (mapeo canónico SKILL_MAESTRA) =====
-$reqModel = strtolower((string)($req['model'] ?? 'gemini-pro'));
+$reqModel = strtolower((string)($req['model'] ?? 'gemini-flash'));
 $backend = 'gemini';
 $geminiModel = 'google/gemini-3-pro-image';
 $fluxEndpoint = 'flux-2-pro';
@@ -185,7 +185,7 @@ if (strpos($reqModel, 'max') !== false) {
 } elseif (strpos($reqModel, 'flash') !== false) {
     $geminiModel = 'google/gemini-3.1-flash-image';
 }
-// Cualquier otro valor (o 'gemini-pro') -> Gemini 3 Pro (fallback seguro)
+// Cualquier otro valor -> Gemini 3.1 Flash (fallback seguro)
 
 // ====================================================================
 // BACKEND: FLUX (BFL async)
