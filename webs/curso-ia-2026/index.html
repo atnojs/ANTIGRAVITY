@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Recorrido interactivo por Goal Engineering, vibe coding y ChatGPT en modo ejecución a partir del Curso IA 2026.">
+  <title>Curso IA 2026 · De pedir a ejecutar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+  <link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="topbar">
+    <a class="brand" href="#inicio" aria-label="Curso IA 2026, inicio">
+      <span class="brand-mark" aria-hidden="true">✦</span>
+      <span>CURSO IA <span>/ 2026</span></span>
+    </a>
+    <nav class="desktop-nav" aria-label="Navegación principal">
+      <a href="#ruta">La ruta</a>
+      <a href="#constructor">Constructor</a>
+      <a href="#casos">Casos reales</a>
+      <a href="#checklist">Checklist</a>
+    </nav>
+    <button class="primary-button header-cta" type="button" data-scroll-to="constructor">Crear mi objetivo <span aria-hidden="true">→</span></button>
+    <button class="menu-button" id="menu-button" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-nav">☰</button>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Navegación móvil" hidden>
+      <a href="#ruta">La ruta</a>
+      <a href="#constructor">Constructor</a>
+      <a href="#casos">Casos reales</a>
+      <a href="#checklist">Checklist</a>
+    </nav>
+  </header>
+
+  <main id="contenido">
+    <section class="hero" id="inicio">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="status-pill"><span class="pulse" aria-hidden="true"></span>Tres jornadas · Un nuevo modo de trabajar</p>
+          <h1>De pedir<br><span>a ejecutar.</span></h1>
+          <p class="hero-lead">Una guía interactiva para pasar del chat a la delegación: define una meta, crea una primera versión y convierte el proceso en un sistema reutilizable.</p>
+          <div class="hero-actions">
+            <button class="primary-button" type="button" data-scroll-to="ruta">Explorar el recorrido <span aria-hidden="true">▶</span></button>
+            <button class="secondary-button" type="button" data-scroll-to="constructor">Crear un encargo</button>
+          </div>
+        </div>
+
+        <div class="execution-console" aria-label="Resumen de las tres fases">
+          <div class="console-head"><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span><span>MODO EJECUCIÓN</span></div>
+          <div class="console-steps">
+            <button type="button" data-day="dia-1" class="console-step">
+              <span class="step-icon">01</span><span><small>FASE 1</small><strong>DIRIGIR</strong></span><span aria-hidden="true">›</span>
+            </button>
+            <button type="button" data-day="dia-2" class="console-step">
+              <span class="step-icon">02</span><span><small>FASE 2</small><strong>CONSTRUIR</strong></span><span aria-hidden="true">›</span>
+            </button>
+            <button type="button" data-day="dia-3" class="console-step">
+              <span class="step-icon">03</span><span><small>FASE 3</small><strong>EJECUTAR</strong></span><span aria-hidden="true">›</span>
+            </button>
+          </div>
+          <div class="console-note"><strong>EL CAMBIO ESENCIAL</strong><p>Tu valor ya no está en indicar cada clic, sino en definir el terreno, el resultado y la forma de comprobarlo.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tinted" id="ruta">
+      <div class="section-inner">
+        <p class="eyebrow">La ruta completa</p>
+        <h2>Tres días. Una evolución.</h2>
+        <p class="section-lead">Cada jornada añade una capa: primero diriges, después construyes y finalmente sistematizas.</p>
+
+        <div class="day-tabs" role="tablist" aria-label="Jornadas del curso">
+          <button type="button" class="day-tab active" id="tab-dia-1" role="tab" aria-selected="true" aria-controls="dia-1" data-tab="dia-1"><b>01</b><span><small>DIRIGIR</small>De pedir respuestas a delegar resultados</span></button>
+          <button type="button" class="day-tab" id="tab-dia-2" role="tab" aria-selected="false" aria-controls="dia-2" data-tab="dia-2"><b>02</b><span><small>CONSTRUIR</small>Vibe coding, Sites y agentes</span></button>
+          <button type="button" class="day-tab" id="tab-dia-3" role="tab" aria-selected="false" aria-controls="dia-3" data-tab="dia-3"><b>03</b><span><small>EJECUTAR</small>Procesos reales y verificables</span></button>
+        </div>
+
+        <div class="day-panel active" id="dia-1" role="tabpanel" aria-labelledby="tab-dia-1">
+          <div class="day-intro"><span class="day-symbol">◎</span><div><small>JORNADA 01</small><h3>La fórmula del Goal Engineering</h3><p>Convierte una necesidad en un encargo que la IA pueda planificar, ejecutar y verificar dentro de límites claros.</p></div></div>
+          <div class="takeaway-grid">
+            <article><b>01</b><h4>Objetivo antes que instrucciones</h4><p>Describe el resultado terminado y por qué importa; deja margen para que la IA encuentre el camino.</p></article>
+            <article><b>02</b><h4>Contexto y fuentes</h4><p>Aporta archivos, datos, ejemplos y criterios que reduzcan las decisiones inventadas.</p></article>
+            <article><b>03</b><h4>Permisos y límites</h4><p>Define qué puede leer, modificar o enviar, y qué acciones necesitan tu aprobación.</p></article>
+            <article><b>04</b><h4>Verificación</h4><p>Explica cómo sabrás que el trabajo está completo y qué pruebas debe superar.</p></article>
+          </div>
+        </div>
+
+        <div class="day-panel" id="dia-2" role="tabpanel" aria-labelledby="tab-dia-2" hidden>
+          <div class="day-intro"><span class="day-symbol">⌘</span><div><small>JORNADA 02</small><h3>De idea a primera versión</h3><p>Convierte una descripción clara en una web, un dashboard o una herramienta que puedas probar, corregir y publicar.</p></div></div>
+          <div class="takeaway-grid">
+            <article><b>01</b><h4>Empieza por el usuario</h4><p>Define quién utilizará la solución, qué hará y qué resultado espera recibir.</p></article>
+            <article><b>02</b><h4>Construye por bloques</h4><p>Pide una primera versión funcional y aplica cambios concretos, uno a uno.</p></article>
+            <article><b>03</b><h4>Prueba el recorrido</h4><p>Comprueba estados normales, errores, datos vacíos, móvil y persistencia.</p></article>
+            <article><b>04</b><h4>Elige la herramienta</h4><p>Lovable prioriza velocidad visual; Replit ofrece más control; Sites integra creación y publicación.</p></article>
+          </div>
+        </div>
+
+        <div class="day-panel" id="dia-3" role="tabpanel" aria-labelledby="tab-dia-3" hidden>
+          <div class="day-intro"><span class="day-symbol">⚡</span><div><small>JORNADA 03</small><h3>ChatGPT en modo ejecución</h3><p>Lleva el método a tareas de negocio: menús, currículums, propuestas, reuniones, onboarding, webs y producto.</p></div></div>
+          <div class="takeaway-grid">
+            <article><b>01</b><h4>Parte de una tarea concreta</h4><p>Busca procesos repetitivos cuyo resultado puedas revisar con facilidad.</p></article>
+            <article><b>02</b><h4>Convierte el método en Skill</h4><p>Guarda instrucciones, reglas y entregables para repetir el proceso con consistencia.</p></article>
+            <article><b>03</b><h4>Trabaja con copias</h4><p>Protege originales y evita acciones externas hasta revisar el resultado.</p></article>
+            <article><b>04</b><h4>Escala con criterio</h4><p>La velocidad aumenta, pero la decisión final y la calidad siguen siendo humanas.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="constructor">
+      <div class="section-inner">
+        <p class="eyebrow">Laboratorio</p>
+        <h2>Construye un objetivo que se pueda ejecutar.</h2>
+        <p class="section-lead">Completa las cinco piezas del Goal Engineering. Tu encargo se compone en tiempo real.</p>
+        <div class="builder-grid">
+          <form class="builder-form" id="goal-form">
+            <label for="goal-context">1. Contexto y fuentes<textarea id="goal-context" rows="3" placeholder="¿Qué necesita saber? ¿Qué archivos o datos puede consultar?"></textarea></label>
+            <label for="goal-objective">2. Objetivo<textarea id="goal-objective" rows="3" placeholder="¿Qué resultado concreto quieres obtener?"></textarea></label>
+            <label for="goal-deliverables">3. Entregables<textarea id="goal-deliverables" rows="3" placeholder="¿Qué debe crear y en qué formato?"></textarea></label>
+            <label for="goal-limits">4. Límites de autonomía<textarea id="goal-limits" rows="3" placeholder="¿Qué puede hacer y qué debe consultarte?"></textarea></label>
+            <label for="goal-done">5. Condición de terminado<textarea id="goal-done" rows="3" placeholder="¿Qué pruebas o criterios debe cumplir?"></textarea></label>
+          </form>
+          <aside class="prompt-panel">
+            <div class="prompt-head"><div><small>TU ENCARGO</small><h3>Prompt en tiempo real</h3></div><button class="secondary-button compact" id="copy-prompt" type="button">Copiar</button></div>
+            <pre id="prompt-output" aria-live="polite"></pre>
+            <p class="safety-note">✓ Revisa nombres, cifras, permisos y acciones externas antes de ejecutar.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tinted" id="casos">
+      <div class="section-inner">
+        <div class="cases-head"><div><p class="eyebrow">Aplicaciones reales</p><h2>Del método al trabajo.</h2><p class="section-lead">Explora los proyectos desarrollados durante el curso y encuentra un punto de partida.</p></div><label class="search-box" for="case-search"><span aria-hidden="true">⌕</span><span class="visually-hidden">Buscar casos</span><input id="case-search" type="search" placeholder="Buscar un caso…"></label></div>
+        <div class="filters" role="group" aria-label="Filtrar casos">
+          <button class="filter active" type="button" data-category="Todos">Todos</button><button class="filter" type="button" data-category="Crear">Crear</button><button class="filter" type="button" data-category="Mejorar">Mejorar</button><button class="filter" type="button" data-category="Automatizar">Automatizar</button><button class="filter" type="button" data-category="Analizar">Analizar</button>
+        </div>
+        <div class="case-grid" id="case-grid">
+          <article class="case-card" data-category="Crear" data-search="menú interactivo carta cafetería carrito"><span class="case-icon">☷</span><small>DÍA 3</small><h3>Menú interactivo</h3><p>Transforma una carta en una experiencia móvil con categorías, extras, alérgenos y carrito.</p><b>CREAR ›</b></article>
+          <article class="case-card" data-category="Mejorar" data-search="currículum cv oferta empleo"><span class="case-icon">▤</span><small>DÍA 3</small><h3>Currículum adaptado</h3><p>Compara un CV con una oferta y destaca experiencia real sin inventar credenciales.</p><b>MEJORAR ›</b></article>
+          <article class="case-card" data-category="Crear" data-search="propuesta comercial presupuesto cliente"><span class="case-icon">◇</span><small>DÍA 3</small><h3>Propuesta comercial</h3><p>Convierte un presupuesto en una propuesta clara, verificable y preparada para aceptar.</p><b>CREAR ›</b></article>
+          <article class="case-card" data-category="Automatizar" data-search="reuniones transcripción decisiones tareas"><span class="case-icon">◫</span><small>DÍA 3</small><h3>Procesar reuniones</h3><p>Extrae decisiones, responsables, fechas pendientes y borradores desde una transcripción.</p><b>AUTOMATIZAR ›</b></article>
+          <article class="case-card" data-category="Automatizar" data-search="onboarding empleados empresa recursos humanos"><span class="case-icon">▦</span><small>DÍA 3</small><h3>Onboarding</h3><p>Genera un paquete de bienvenida, plan inicial, accesos y responsables desde fuentes autorizadas.</p><b>AUTOMATIZAR ›</b></article>
+          <article class="case-card" data-category="Analizar" data-search="dashboard ventas excel pedidos filtros indicadores"><span class="case-icon">⌁</span><small>DÍAS 1–2</small><h3>Dashboard de ventas</h3><p>Convierte una hoja de pedidos en indicadores y filtros útiles para decidir.</p><b>ANALIZAR ›</b></article>
+        </div>
+        <p class="empty-state" id="empty-state" hidden>No hay casos que coincidan con tu búsqueda.</p>
+      </div>
+    </section>
+
+    <section class="section" id="checklist">
+      <div class="section-inner checklist-layout">
+        <div><p class="eyebrow">Antes de pulsar ejecutar</p><h2>Tu control de calidad.</h2><p class="section-lead">Marca cada punto. El progreso se guarda en el servidor para que puedas continuar desde cualquier dispositivo.</p><div class="progress-card"><div><span>PREPARACIÓN</span><strong id="progress-value">0%</strong></div><div class="progress-track" role="progressbar" aria-label="Progreso de preparación" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div><p id="progress-copy">0 de 5 controles completados</p><p class="save-status" id="save-status" aria-live="polite"></p></div></div>
+        <div class="check-list">
+          <button type="button" data-check="0"><span aria-hidden="true">○</span>El resultado final está descrito con claridad</button>
+          <button type="button" data-check="1"><span aria-hidden="true">○</span>Las fuentes y archivos necesarios están disponibles</button>
+          <button type="button" data-check="2"><span aria-hidden="true">○</span>Los límites de autonomía están definidos</button>
+          <button type="button" data-check="3"><span aria-hidden="true">○</span>Los entregables tienen formato y ubicación</button>
+          <button type="button" data-check="4"><span aria-hidden="true">○</span>Existe un criterio verificable de terminado</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing"><span aria-hidden="true">✦</span><h2>La IA acelera el trabajo.<br><em>El criterio sigue siendo tuyo.</em></h2><p>Define, delega, revisa y convierte lo que funciona en un proceso que puedas repetir.</p><button class="primary-button" type="button" data-scroll-to="constructor">Crear mi primer encargo →</button></section>
+  </main>
+
+  <footer><span>Curso IA 2026 · Síntesis interactiva</span><span>Basado en las jornadas 1, 2 y 3</span></footer>
+  <script src="history-manager.js?v=1"></script>
+  <script src="app.js?v=1" defer></script>
+</body>
+</html>
