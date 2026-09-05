@@ -2,7 +2,7 @@
  * ═══════════════════════════════════════════════════════════════════
  * 🧬 PROTOCOLO GEMINI v11.0 - ALIGNED WITH WORKING PATTERN
  * ═══════════════════════════════════════════════════════════════════
- * Modelo: gemini-2.5-flash-image
+ * Modelo: gemini-3.1-flash-image-preview
  * Usa el mismo patrón que editar_imagen (que SÍ funciona)
  */
 
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let styleImage = null;    // Referencia
 
     const PROXY_URL = 'proxy.php';
-    const MODEL = 'gemini-2.5-flash-image';
+    const MODEL = 'gemini-3.1-flash-image-preview';
 
     // --- ELEMENTOS ---
     const dropIdentity = document.getElementById('drop-area-identity');
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateBtn.onclick = async () => {
         loadingOverlay.style.display = 'flex';
         resetSteps();
-        logContent.innerHTML = '> Iniciando Protocolo v11.0 (gemini-2.5-flash-image)...<br>';
+        logContent.innerHTML = '> Iniciando Protocolo v11.0 (gemini-3.1-flash-image-preview)...<br>';
 
         try {
             // Paso único: Usar el patrón que funciona en editar_imagen
