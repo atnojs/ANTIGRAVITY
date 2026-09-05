@@ -36,7 +36,7 @@ if ($apiKey === false || empty($apiKey)) {
 
 // --- MODELO ACTUALIZADO ---
 // Modelo de Google AI a utilizar. Cambiado al modelo más reciente.
-$model = 'gemini-2.5-flash-image'; 
+$model = 'gemini-3.1-flash-image-preview'; 
 
 // URL del punto de enlace (endpoint) del API de Google AI.
 $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
