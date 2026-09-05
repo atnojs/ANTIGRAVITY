@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeCategory = null;
 
     // Selectores FLUX
-    let selectedModel = 'gemini-pro';
+    let selectedModel = 'gemini-flash';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 

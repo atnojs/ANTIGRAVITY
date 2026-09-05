@@ -61,7 +61,7 @@ if ($action === 'text') {
 // GENERAR IMAGEN (ruteo por modelo)
 // ===========================================================
 function handleGenerate(array $req): void {
-    $modelInput = (string)($req['quality'] ?? 'gemini-pro');
+    $modelInput = (string)($req['quality'] ?? 'gemini-flash');
 
     // Gemini Flash / Pro
     if ($modelInput === 'gemini-flash' || $modelInput === 'gemini-pro') {
