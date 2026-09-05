@@ -173,7 +173,7 @@ function handleGemini(array $request): void {
     if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
 
-    $reqModel = strtolower((string)($request['model'] ?? 'gemini-pro'));
+    $reqModel = strtolower((string)($request['model'] ?? 'gemini-flash'));
     $geminiModel = 'google/gemini-3-pro-image';
     if (strpos($reqModel, 'flash') !== false) $geminiModel = 'google/gemini-3.1-flash-image';
 

@@ -61,7 +61,7 @@ let currentImageMimeType = null;
 let currentQuality = 'pro';
 
 // === Selector de modelo IA (patrón canónico: 3.1FLASH / 3 PRO / FLUX PRO / FLUX MAX) ===
-let selectedModel = 'gemini-pro';
+let selectedModel = 'gemini-flash';
 const modelToggles = document.querySelectorAll('.model-toggle');
 modelToggles.forEach(btn => {
   btn.addEventListener('click', () => {
