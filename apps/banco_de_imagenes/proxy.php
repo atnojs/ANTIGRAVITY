@@ -79,7 +79,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !isset($requestData['prompt']) || t
 $prompt = $requestData['prompt'];
 
 // Usar modelo correcto
-$model = 'gemini-2.5-flash-image';
+$model = 'gemini-3.1-flash-image-preview';
 $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
 $payload = json_encode([
