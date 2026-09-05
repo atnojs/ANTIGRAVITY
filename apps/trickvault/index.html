@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20260905-drag-guide">
+    <link rel="stylesheet" href="app.css?v=20260905-prompt-guide-fast">
 </head>
 <body>
     <div id="root"></div>
@@ -1077,15 +1077,13 @@ function App() {
                 </div>
             </div>
 
-            {view === 'categories' && (
-                <div className="prompt-guide" role="note">
-                    <span className="prompt-guide-icon" aria-hidden="true">💡</span>
-                    <div>
-                        <span className="prompt-guide-kicker">CÓDIGOS DE IMAGEN · GUÍA RÁPIDA</span>
-                        <p>{IMAGE_PROMPT_HINT}</p>
-                    </div>
+            <div className="prompt-guide" role="note">
+                <span className="prompt-guide-icon" aria-hidden="true">💡</span>
+                <div>
+                    <span className="prompt-guide-kicker">CÓDIGOS DE IMAGEN · GUÍA RÁPIDA</span>
+                    <p>{IMAGE_PROMPT_HINT}</p>
                 </div>
-            )}
+            </div>
 
             {/* STATS — solo aparecen en la portada */}
             {view === 'categories' && (
