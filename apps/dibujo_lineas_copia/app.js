@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo (toggle 4 botones) =====
-        // Por defecto: 3 PRO (gemini-pro) segun SKILL_MAESTRA
-        let selectedModel = 'gemini-pro';
+        // Por defecto: Gemini 3.1 Flash
+        let selectedModel = 'gemini-flash';
 const MODEL_LABELS = { 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
