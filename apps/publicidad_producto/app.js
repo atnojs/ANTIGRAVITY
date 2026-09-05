@@ -320,7 +320,7 @@ function App() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'generate_image',
-                    model: 'gemini-2.5-flash-image',
+                    model: 'gemini-3.1-flash-image-preview',
                     prompt: prompt,
                     base64ImageData: base64Image.split(',')[1],
                     mimeType: base64Image.split(';')[0].split(':')[1]
@@ -330,7 +330,7 @@ function App() {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const data = await response.json();
-            // El modelo gemini-2.5-flash-image devuelve la imagen en candidates[0].content.parts
+            // El modelo gemini-3.1-flash-image-preview devuelve la imagen en candidates[0].content.parts
             // Buscamos la part que tenga inlineData
             const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
             if (imagePart) {
