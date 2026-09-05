@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isProcessing = false;
     const usedSurpriseStyles = new Set();
     let historyItems = [];
-    let selectedModel = 'gemini-pro';
+    let selectedModel = 'gemini-flash';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
