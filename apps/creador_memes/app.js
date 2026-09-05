@@ -36,7 +36,7 @@
   var state = {
     aspectRatio: "1:1",
     resolution: 1024,
-    model: "gemini-pro",          // 4 modelos: gemini-flash, gemini-pro, flux-pro, flux-max
+    model: "gemini-flash",        // 4 modelos: gemini-flash, gemini-pro, flux-pro, flux-max
     textColor: "rgb(0,255,255)",   // default cyan (position 50 on slider)
     fontSize: 120,
     lineSpacing: 1.15,       // multiplier
