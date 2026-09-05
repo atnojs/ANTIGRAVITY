@@ -61,7 +61,7 @@ $prompt = (string)$data['prompt'];
 // Presets de calidad -> modelo real de OpenRouter (mismos que el script original)
 $MODELOS = [
     'barato' => 'google/gemini-3.1-flash-lite-image',
-    'normal' => 'google/gemini-2.5-flash-image',
+    'normal' => 'google/gemini-3.1-flash-image',
     'pro'    => 'google/gemini-3-pro-image',
 ];
 $calidad = $data['calidad'] ?? 'normal';
