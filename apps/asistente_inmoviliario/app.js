@@ -310,7 +310,7 @@ async function processImage(fileData) {
     
     const payload = {
         endpoint: 'generateContent',
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-3.1-flash-image-preview',
         data: {
             contents: [{
                 parts: [
@@ -357,7 +357,7 @@ async function generateAdText(audience, length, tone) {
 
     const payload = {
         endpoint: 'generateContent',
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-3.1-flash-image-preview',
         data: {
             contents: [{
                 parts: [{ text: prompt }, ...imageParts]
