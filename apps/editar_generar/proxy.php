@@ -222,7 +222,7 @@ if ($imagenEntrada === '' && isset($data['contents'][0]['parts'])) {
 $calidad = (string)($data['calidad'] ?? 'pro');
 
 // ===== Seleccion de modelo =====
-$reqModel = strtolower((string)($data['model'] ?? 'gemini-pro'));
+$reqModel = strtolower((string)($data['model'] ?? 'gemini-flash'));
 $backend = 'gemini';
 $geminiModelId = 'google/gemini-3-pro-image';
 $fluxEndpoint = 'flux-2-pro'; // por defecto

@@ -622,7 +622,7 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
-  const [selectedModel, setSelectedModel] = useState('gemini-pro');
+  const [selectedModel, setSelectedModel] = useState('gemini-flash');
 
   // Sincronizar modelo con variable global (accesible desde callProxy)
   useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
