@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20260904-hostinger">
+    <link rel="stylesheet" href="app.css?v=20260905-drag-reorder">
 </head>
 <body>
     <div id="root"></div>
@@ -187,6 +187,34 @@ const SEED_TRICKS = [
 function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
 function formatDate(ts) { return new Date(ts).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
 function getCat(id) { return CATEGORIES.find(c => c.id === id); }
+function hasSortOrder(trick) { return Number.isFinite(Number(trick.sortOrder)); }
+function compareTricks(a, b) {
+    const aOrder = hasSortOrder(a) ? Number(a.sortOrder) : null;
+    const bOrder = hasSortOrder(b) ? Number(b.sortOrder) : null;
+    if (aOrder !== null && bOrder !== null) return aOrder - bOrder;
+    if (aOrder !== null) return -1;
+    if (bOrder !== null) return 1;
+    return b.createdAt - a.createdAt;
+}
+function normalizeTrickOrder(items) {
+    const usedByCategory = new Map();
+    const nextByCategory = new Map();
+    items.forEach(item => {
+        if (!hasSortOrder(item)) return;
+        if (!usedByCategory.has(item.category)) usedByCategory.set(item.category, new Set());
+        usedByCategory.get(item.category).add(Number(item.sortOrder));
+    });
+    return items.map(item => {
+        if (hasSortOrder(item)) return item;
+        const used = usedByCategory.get(item.category) || new Set();
+        let next = nextByCategory.get(item.category) || 0;
+        while (used.has(next)) next += 1;
+        used.add(next);
+        usedByCategory.set(item.category, used);
+        nextByCategory.set(item.category, next + 1);
+        return { ...item, sortOrder: next };
+    });
+}
 
 async function readServerJson(response) {
     let payload;
@@ -256,7 +284,8 @@ function useLocalStorage(key, initial) {
             if (!Array.isArray(parsed)) return initial;
             const existingIds = new Set(parsed.map(item => item.id));
             const newSeedItems = initial.filter(item => !existingIds.has(item.id));
-            return newSeedItems.length ? [...newSeedItems, ...parsed] : parsed;
+            const merged = newSeedItems.length ? [...newSeedItems, ...parsed] : parsed;
+            return normalizeTrickOrder(merged);
         } catch { return initial; }
     });
 
@@ -499,12 +528,40 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickCard
    ═══════════════════════════════════════════════ */
-function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit = false }) {
+function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit = false, canDrag = false, isDragging = false, isDragOver = false, onDragStart, onDragOver, onDrop, onDragEnd }) {
+    function handleDragStart(event) {
+        if (!canDrag || event.target.closest('button, input, a, img')) {
+            event.preventDefault();
+            return;
+        }
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', trick.id);
+        }
+        onDragStart?.(event, trick);
+    }
+
     return (
-        <div className={`trick-card ${trick.isFavorite ? 'favorite' : ''}`}>
+        <div
+            className={['trick-card', trick.isFavorite ? 'favorite' : '', canDrag ? 'is-draggable' : '', isDragging ? 'is-dragging' : '', isDragOver ? 'is-drag-over' : ''].filter(Boolean).join(' ')}
+            draggable={canDrag}
+            onDragStart={handleDragStart}
+            onDragOver={(event) => {
+                if (!canDrag || !onDragOver) return;
+                event.preventDefault();
+                onDragOver(event, trick);
+            }}
+            onDrop={(event) => {
+                if (!canDrag || !onDrop) return;
+                event.preventDefault();
+                onDrop(event, trick);
+            }}
+            onDragEnd={onDragEnd}
+        >
             <div className="trick-card-header">
                 <h3>{trick.title}</h3>
                 <div className="actions">
+                    {canDrag && <span className="drag-handle" title="Arrastra para recolocar" aria-label="Arrastra para recolocar">⠿</span>}
                     <button className={`fav-btn ${trick.isFavorite ? 'active' : ''}`} onClick={() => onToggleFav(trick.id)} title={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-label={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-pressed={trick.isFavorite}>{trick.isFavorite ? '⭐' : '☆'}</button>
                     {canEdit && <button onClick={() => onEdit(trick)} title="Editar" aria-label="Editar truco">✏️</button>}
                 </div>
@@ -567,8 +624,10 @@ function CategoryGrid({ tricks, onSelectCategory }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickList (Category View)
    ═══════════════════════════════════════════════ */
-function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter }) {
+function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter, onReorder }) {
     const cat = getCat(categoryId);
+    const [draggingId, setDraggingId] = useState(null);
+    const [dragOverId, setDragOverId] = useState(null);
 
     const filtered = useMemo(() => {
         let result = tricks.filter(t => t.category === categoryId);
@@ -578,8 +637,28 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
         }
         if (filter === 'favorites') result = result.filter(t => t.isFavorite);
         if (filter === 'beginner' || filter === 'intermediate' || filter === 'advanced') result = result.filter(t => t.difficulty === filter);
-        return result.sort((a, b) => b.createdAt - a.createdAt);
+        return result.sort(compareTricks);
     }, [tricks, categoryId, search, filter]);
+
+    function handleDragStart(event, trick) {
+        setDraggingId(trick.id);
+        setDragOverId(null);
+    }
+
+    function handleDragOver(event, trick) {
+        if (draggingId && trick.id !== draggingId) setDragOverId(trick.id);
+    }
+
+    function resetDragState() {
+        setDraggingId(null);
+        setDragOverId(null);
+    }
+
+    function handleDrop(event, trick) {
+        const sourceId = event.dataTransfer?.getData('text/plain') || draggingId;
+        if (sourceId && sourceId !== trick.id) onReorder(categoryId, sourceId, trick.id);
+        resetDragState();
+    }
 
     return (
         <div>
@@ -601,6 +680,7 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
                 <button className={`btn btn-glass btn-sm ${filter === 'intermediate' ? 'active' : ''}`} onClick={() => setFilter('intermediate')}>🟡 Intermedio</button>
                 <button className={`btn btn-glass btn-sm ${filter === 'advanced' ? 'active' : ''}`} onClick={() => setFilter('advanced')}>🔴 Avanzado</button>
             </div>
+            {canEdit && <p className="drag-hint">⠿ Arrastra las tarjetas para cambiar su posición.</p>}
 
             {filtered.length === 0 ? (
                 <div className="empty-state">
@@ -611,7 +691,23 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
             ) : (
                 <div className="tricks-grid">
                     {filtered.map(t => (
-                        <TrickCard key={t.id} trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} canEdit={canEdit} />
+                        <TrickCard
+                            key={t.id}
+                            trick={t}
+                            onToggleFav={onToggleFav}
+                            onEdit={onEdit}
+                            onImageClick={onImageClick}
+                            onCopy={onCopy}
+                            copiedId={copiedId}
+                            canEdit={canEdit}
+                            canDrag={canEdit}
+                            isDragging={draggingId === t.id}
+                            isDragOver={dragOverId === t.id}
+                            onDragStart={handleDragStart}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                            onDragEnd={resetDragState}
+                        />
                     ))}
                 </div>
             )}
@@ -796,6 +892,19 @@ function App() {
         setTricks(prev => prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t));
     }, [setTricks]);
 
+    const reorderTricks = useCallback((categoryId, sourceId, targetId) => {
+        setTricks(prev => {
+            const categoryTricks = prev.filter(t => t.category === categoryId).sort(compareTricks);
+            const sourceIndex = categoryTricks.findIndex(t => t.id === sourceId);
+            const targetIndex = categoryTricks.findIndex(t => t.id === targetId);
+            if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return prev;
+            const [moved] = categoryTricks.splice(sourceIndex, 1);
+            categoryTricks.splice(targetIndex, 0, moved);
+            const orderById = new Map(categoryTricks.map((trick, index) => [trick.id, index]));
+            return prev.map(trick => orderById.has(trick.id) ? { ...trick, sortOrder: orderById.get(trick.id) } : trick);
+        });
+    }, [setTricks]);
+
     const deleteEditingTrick = useCallback(() => {
         if (!editingTrick) return;
         withEditAccess(() => {
@@ -831,8 +940,13 @@ function App() {
                 setTricks(prev => prev.map(t => t.id === targetId ? { ...t, ...normalized } : t));
                 addToast('✅ Truco actualizado');
             } else {
-                const newTrick = { ...normalized, id: targetId, createdAt: Date.now() };
-                setTricks(prev => [newTrick, ...prev]);
+                setTricks(prev => {
+                    const maxOrder = prev
+                        .filter(trick => trick.category === normalized.category)
+                        .reduce((max, trick) => hasSortOrder(trick) ? Math.max(max, Number(trick.sortOrder)) : max, -1);
+                    const newTrick = { ...normalized, id: targetId, createdAt: Date.now(), sortOrder: maxOrder + 1 };
+                    return [newTrick, ...prev];
+                });
                 addToast('✨ Truco creado');
             }
             setShowForm(false);
@@ -1001,6 +1115,7 @@ function App() {
                     setSearch={setSearch}
                     filter={filter}
                     setFilter={setFilter}
+                    onReorder={reorderTricks}
                 />
             )}
 

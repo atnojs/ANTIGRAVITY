@@ -423,6 +423,18 @@ h1, h2, h3, h4, .font-montserrat {
     box-shadow: 0 12px 35px rgba(46, 232, 255, 0.12);
 }
 
+.trick-card.is-draggable { cursor: grab; }
+.trick-card.is-draggable:active { cursor: grabbing; }
+.trick-card.is-dragging {
+    opacity: 0.45;
+    transform: scale(0.98);
+}
+.trick-card.is-drag-over {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 0 2px rgba(46, 232, 255, 0.35), 0 12px 35px rgba(46, 232, 255, 0.18);
+    transform: translateY(-3px);
+}
+
 .trick-card.favorite { border-color: rgba(255, 78, 205, 0.35); }
 
 .trick-card-header {
@@ -445,6 +457,23 @@ h1, h2, h3, h4, .font-montserrat {
     gap: 0.25rem;
     flex-shrink: 0;
 }
+
+.drag-handle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--acc);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: grab;
+    user-select: none;
+    opacity: 0.85;
+}
+
+.drag-handle:active { cursor: grabbing; }
 
 .trick-card-header .actions button {
     width: 26px;
@@ -578,6 +607,12 @@ h1, h2, h3, h4, .font-montserrat {
 .trick-card .date {
     font-size: 0.7rem;
     color: var(--muted);
+}
+
+.drag-hint {
+    margin: -0.35rem 0 0.9rem;
+    color: var(--muted);
+    font-size: 0.75rem;
 }
 
 /* ═══════════════════════════════════════════
