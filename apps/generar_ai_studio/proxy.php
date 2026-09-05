@@ -73,7 +73,7 @@ if (!is_array($req)) {
 $action = $req['action'] ?? '';
 
 // 3) Modelo y endpoint
-$model = $req['model'] ?? 'gemini-2.5-flash-image';
+$model = $req['model'] ?? 'gemini-3.1-flash-image-preview';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 if ($action === 'optimize') {
@@ -147,7 +147,7 @@ if ($action === 'optimize') {
         exit;
     }
 
-    $imageModel = 'gemini-2.5-flash-image';
+    $imageModel = 'gemini-3.1-flash-image-preview';
     $imageEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$imageModel}:generateContent?key={$API_KEY}";
 
     $imagePrompt = "Genera una nueva obra visual de alta calidad inspirada en la imagen de referencia provista siguiendo estrictamente esta descripción: {$prompt}. Estilo estético: {$style}. Relación de aspecto: {$aspectRatio}. La imagen resultante DEBE ser de la proporción {$aspectRatio}. Altamente detallada, profesional, calidad de obra maestra. Redacta la descripción de respuesta en español.";

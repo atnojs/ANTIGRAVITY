@@ -323,7 +323,7 @@
       const data = await callProxy('optimize', {
         prompt: prompt,
         style: getActiveStyleName(),
-        model: 'gemini-2.5-flash'
+        model: 'gemini-3.1-flash-preview'
       });
 
       // Gemini returns candidates[0].content.parts[0].text
@@ -405,7 +405,7 @@
       const tagData = await callProxy('generate', {
         prompt: prompt,
         style: styleName,
-        model: 'gemini-2.5-flash'
+        model: 'gemini-3.1-flash-preview'
       });
       if (tagData.candidates?.[0]?.content?.parts?.[0]?.text) {
         try {
