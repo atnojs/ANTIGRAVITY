@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php'; // Proxy PHP para Gemini
-    const GEMINI_MODEL = 'gemini-2.5-flash-image'; // Nano Banana Pro - Modelo para generación de imágenes
+    const GEMINI_MODEL = 'gemini-3.1-flash-image-preview'; // Gemini 3.1 Flash - Modelo para generación de imágenes
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
