@@ -481,7 +481,7 @@ function handleGenerate(array $request): void {
     if ($image === '') respond(400, ['success' => false, 'error' => 'Sube una imagen base antes de generar.']);
 
     // Selector canónico: solo se aceptan estos cuatro identificadores.
-    $reqModel = strtolower((string)($request['model'] ?? 'gemini-pro'));
+    $reqModel = strtolower((string)($request['model'] ?? 'gemini-flash'));
     $modelMap = [
         'gemini-flash' => ['gemini', 'google/gemini-3.1-flash-image'],
         'gemini-pro' => ['gemini', 'google/gemini-3-pro-image'],

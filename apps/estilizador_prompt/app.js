@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     imageFile: null,
     imageWidth: 0,
     imageHeight: 0,
-    selectedModel: 'gemini-pro',
+    selectedModel: 'gemini-flash',
     aspectRatio: '1:1',
     resolution: 1024,
     isAdapted: false,
