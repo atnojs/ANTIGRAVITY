@@ -70,10 +70,10 @@ if ($prompt === '') {
 // Modelos permitidos (whitelist server-side — el frontend NO elige libremente)
 $MODELOS_IMG = [
     'barato' => 'google/gemini-3.1-flash-lite-image',
-    'normal' => 'google/gemini-2.5-flash-image',
+    'normal' => 'google/gemini-3.1-flash-image',
     'pro'    => 'google/gemini-3-pro-image',
 ];
-$MODELO_TEXTO = 'google/gemini-2.5-flash-lite';
+$MODELO_TEXTO = 'google/gemini-3.1-flash';
 
 $openRouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
