@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php'; // Proxy PHP para FLUX (Black Forest Labs)
-    let selectedModel = 'gemini-pro'; // gemini-flash | gemini-pro | flux-pro | flux-max
+    let selectedModel = 'gemini-flash'; // gemini-flash | gemini-pro | flux-pro | flux-max
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
@@ -1207,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modelSelector.addEventListener('click', (e) => {
             const btn = e.target.closest('.model-option');
             if (!btn) return;
-            selectedModel = btn.dataset.model || 'gemini-pro';
+            selectedModel = btn.dataset.model || 'gemini-flash';
             modelSelector.querySelectorAll('.model-option').forEach((b) => {
                 const isActive = (b === btn);
                 b.classList.toggle('active', isActive);
