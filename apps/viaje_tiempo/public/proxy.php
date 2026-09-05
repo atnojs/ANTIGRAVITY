@@ -88,7 +88,7 @@ if (!$requestData) {
 }
 
 // 3. Determinar el modelo, el endpoint y los datos extras
-$model = $requestData['model'] ?? 'gemini-2.5-flash-image';
+$model = $requestData['model'] ?? 'gemini-3.1-flash-image-preview';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 // 4. Preparar payload

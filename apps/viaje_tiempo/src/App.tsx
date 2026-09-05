@@ -353,9 +353,9 @@ export default function App() {
       });
       const base64Data = capturedImage.split(',')[1];
 
-      // Step 1: Analyze the original photo with gemini-2.5-flash-image (modelo verificado del proyecto)
+      // Step 1: Analyze the original photo with gemini-3.1-flash-image-preview
       const analysisResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-3.1-flash-image-preview',
         contents: {
           parts: [
             {
@@ -378,7 +378,7 @@ export default function App() {
 
       // Step 2: Generate TWO distinct prompts for variety
       const promptResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-3.1-flash-image-preview',
         contents: `Based on this person's analysis: "${analysisText}", and the historical scene "${selectedScene.name}" (${selectedScene.era}), 
                    generate TWO distinct and detailed image generation prompts. 
                    The prompts should describe the person as a character in that era, maintaining their likeness but changing clothing and background.
@@ -397,7 +397,7 @@ export default function App() {
       // Step 3: Generate TWO historical photos using the dynamic prompts
       const generateImage = async (index: number) => {
         const generationResponse = await ai.models.generateContent({
-          model: 'gemini-2.5-flash-image',
+          model: 'gemini-3.1-flash-image-preview',
           contents: {
             parts: [
               {
