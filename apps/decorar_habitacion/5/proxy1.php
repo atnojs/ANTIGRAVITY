@@ -95,7 +95,7 @@ if (!is_array($req)) {
 }
 
 // ---------- MODELO ----------
-$model  = $req['model']  ?? 'gemini-2.5-flash-image';
+$model  = $req['model']  ?? 'gemini-3.1-flash-image-preview';
 $action = $req['action'] ?? 'generate';
 
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
