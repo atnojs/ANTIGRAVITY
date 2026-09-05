@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20260905-drag-reorder">
+    <link rel="stylesheet" href="app.css?v=20260905-drag-guide">
 </head>
 <body>
     <div id="root"></div>
@@ -27,6 +27,7 @@ const { useState, useEffect, useCallback, useRef, useMemo } = React;
 const STORAGE_KEY = 'trickvault_data';
 const IMAGE_STORE_URL = 'image_store.php';
 const AUTH_URL = 'auth.php';
+const IMAGE_PROMPT_HINT = 'Úsalo junto con un sujeto concreto y un encuadre o formato';
 
 const CATEGORIES = [
     { id: 'terminal',    label: 'Terminal / Linux',   icon: '🖥️',  color: 'cyan',    bgIcon: '💻' },
@@ -169,7 +170,7 @@ const SEED_TRICKS = [
     ...INSTAGRAM_COMMANDS.map(([command, meaning], index) => ({
         id: `ig-dcek-${String(index + 1).padStart(3, '0')}`,
         title: `${command} — ${meaning}`,
-        description: `Comando ${index + 1} del carrusel «250 comandos de imagen» de ninodirector. Úsalo junto con un sujeto concreto y un encuadre o formato.`,
+        description: '',
         category: 'ia',
         tags: ['comandos de imagen', 'imagen', 'Instagram'],
         codeSnippet: command,
@@ -187,6 +188,12 @@ const SEED_TRICKS = [
 function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
 function formatDate(ts) { return new Date(ts).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
 function getCat(id) { return CATEGORIES.find(c => c.id === id); }
+function isLegacyImageCommandDescription(description) {
+    return typeof description === 'string' && /^Comando \d+ del carrusel «250 comandos de imagen» de ninodirector\.\s*Úsalo junto con un sujeto concreto y un encuadre o formato\.?$/i.test(description.trim());
+}
+function cleanLegacyImageCommandDescriptions(items) {
+    return items.map(item => isLegacyImageCommandDescription(item.description) ? { ...item, description: '' } : item);
+}
 function hasSortOrder(trick) { return Number.isFinite(Number(trick.sortOrder)); }
 function compareTricks(a, b) {
     const aOrder = hasSortOrder(a) ? Number(a.sortOrder) : null;
@@ -285,7 +292,7 @@ function useLocalStorage(key, initial) {
             const existingIds = new Set(parsed.map(item => item.id));
             const newSeedItems = initial.filter(item => !existingIds.has(item.id));
             const merged = newSeedItems.length ? [...newSeedItems, ...parsed] : parsed;
-            return normalizeTrickOrder(merged);
+            return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(merged));
         } catch { return initial; }
     });
 
@@ -567,7 +574,7 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId,
                 </div>
             </div>
 
-            <p className="description">{trick.description}</p>
+            {trick.description && <p className="description">{trick.description}</p>}
 
             {trick.imageUrl && (
                 <img src={trick.imageUrl} alt={trick.title} className="trick-image" onClick={() => onImageClick(trick.imageUrl)} loading="lazy" />
@@ -669,17 +676,6 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
                 {canEdit && <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Truco</button>}
             </div>
 
-            <div className="stats-bar">
-                <div className="search-wrap">
-                    <span className="search-icon">🔍</span>
-                    <input type="text" placeholder="Buscar en esta categoría..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar trucos" />
-                </div>
-                <button className={`btn btn-glass btn-sm ${filter === '' ? 'active' : ''}`} onClick={() => setFilter('')}>Todos</button>
-                <button className={`btn btn-glass btn-sm ${filter === 'favorites' ? 'active' : ''}`} onClick={() => setFilter('favorites')}>⭐ Favoritos</button>
-                <button className={`btn btn-glass btn-sm ${filter === 'beginner' ? 'active' : ''}`} onClick={() => setFilter('beginner')}>🟢 Principiante</button>
-                <button className={`btn btn-glass btn-sm ${filter === 'intermediate' ? 'active' : ''}`} onClick={() => setFilter('intermediate')}>🟡 Intermedio</button>
-                <button className={`btn btn-glass btn-sm ${filter === 'advanced' ? 'active' : ''}`} onClick={() => setFilter('advanced')}>🔴 Avanzado</button>
-            </div>
             {canEdit && <p className="drag-hint">⠿ Arrastra las tarjetas para cambiar su posición.</p>}
 
             {filtered.length === 0 ? (
@@ -1081,12 +1077,24 @@ function App() {
                 </div>
             </div>
 
-            {/* STATS */}
-            <div className="stats-bar">
-                <span className="stat-chip">💎 <span className="count">{tricks.length}</span> trucos</span>
-                <span className="stat-chip">📂 <span className="count">{new Set(tricks.map(t => t.category)).size}</span> categorías</span>
-                <span className="stat-chip">⭐ <span className="count">{totalFavs}</span> favoritos</span>
-            </div>
+            {view === 'categories' && (
+                <div className="prompt-guide" role="note">
+                    <span className="prompt-guide-icon" aria-hidden="true">💡</span>
+                    <div>
+                        <span className="prompt-guide-kicker">CÓDIGOS DE IMAGEN · GUÍA RÁPIDA</span>
+                        <p>{IMAGE_PROMPT_HINT}</p>
+                    </div>
+                </div>
+            )}
+
+            {/* STATS — solo aparecen en la portada */}
+            {view === 'categories' && (
+                <div className="stats-bar">
+                    <span className="stat-chip">💎 <span className="count">{tricks.length}</span> trucos</span>
+                    <span className="stat-chip">📂 <span className="count">{new Set(tricks.map(t => t.category)).size}</span> categorías</span>
+                    <span className="stat-chip">⭐ <span className="count">{totalFavs}</span> favoritos</span>
+                </div>
+            )}
 
             {/* MAIN CONTENT */}
             {view === 'categories' && (
