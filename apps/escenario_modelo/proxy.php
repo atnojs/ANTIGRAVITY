@@ -172,7 +172,7 @@ function handleGenerate(array $request): void {
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
 
     // Determinar backend según modelo (skill_maestra: 4 modelos)
-    $reqModel = strtolower((string)($request['model'] ?? $request['quality'] ?? 'gemini-pro'));
+    $reqModel = strtolower((string)($request['model'] ?? $request['quality'] ?? 'gemini-flash'));
     $backend = 'flux';
     $geminiModelId = 'google/gemini-3.1-flash-image';
     $fluxEndpoint = 'flux-2-pro';

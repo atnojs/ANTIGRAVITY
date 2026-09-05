@@ -107,7 +107,7 @@ const improvePromptStatus = document.getElementById('improve-prompt-status');
 const promptVariantsEl = document.getElementById('prompt-variants');
 
 // Toggle buttons (como outfit)
-let selectedModel = 'gemini-pro';
+let selectedModel = 'gemini-flash';
 let selectedAR = '1:1';
 let selectedRes = 1024;
 // Etiquetas legibles para metadatos (resultado / popup historial)
