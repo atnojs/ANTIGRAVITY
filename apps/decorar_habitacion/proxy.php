@@ -109,7 +109,7 @@ if ($action === 'analyze' || $action === 'detect') {
         $maxTok = 1024;
     }
 
-    $model = 'gemini-2.5-flash';
+    $model = 'gemini-3.1-flash-preview';
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
     $genCfg = [
