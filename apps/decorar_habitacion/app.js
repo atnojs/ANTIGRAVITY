@@ -203,7 +203,7 @@ async function callFlux(b64img, prompt, quality, dimsInfo, model) {
     mimeType: "image/jpeg",
     prompt: prompt,
     quality: quality || "pro",
-    model: model || "gemini-pro",
+    model: model || "gemini-flash",
   };
   if (dimsInfo && dimsInfo.flux && dimsInfo.flux.width && dimsInfo.flux.height) {
     body.width = dimsInfo.flux.width;
@@ -567,7 +567,7 @@ function App() {
     return () => { document.body.style.overflow = ''; };
   }, [busy]);
   const [selectedQuality, setSelectedQuality] = useState('pro'); // 'pro' | 'max'
-  const [selectedModel, setSelectedModel] = useState('gemini-pro'); // patron canonico 4 modelos
+  const [selectedModel, setSelectedModel] = useState('gemini-flash'); // patron canonico 4 modelos
   const [selectedRes, setSelectedRes] = useState(DEFAULT_RES); // 512 | 1024 | 2048 | 4096
   const [customInstruction, setCustomInstruction] = useState("");
   const [editingUserImage, setEditingUserImage] = useState(false);
