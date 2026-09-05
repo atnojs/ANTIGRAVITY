@@ -906,6 +906,8 @@ h1, h2, h3, h4, .font-montserrat {
     display: flex;
     align-items: center;
     gap: 1rem;
+    width: fit-content;
+    max-width: 100%;
     margin: 0 auto 20px;
     padding: 1rem 1.25rem;
     overflow: hidden;
@@ -922,7 +924,7 @@ h1, h2, h3, h4, .font-montserrat {
     inset: 0;
     background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.12) 45%, transparent 70%);
     transform: translateX(-100%);
-    animation: promptGuideSweep 5s ease-in-out infinite;
+    animation: promptGuideSweep 2.2s linear infinite;
     pointer-events: none;
 }
 
@@ -970,8 +972,9 @@ h1, h2, h3, h4, .font-montserrat {
 }
 
 @keyframes promptGuideSweep {
-    0%, 35% { transform: translateX(-100%); }
-    70%, 100% { transform: translateX(100%); }
+    0% { transform: translateX(-110%); }
+    74% { transform: translateX(110%); }
+    75%, 100% { transform: translateX(110%); }
 }
 
 .app-container.home-mode::before {
