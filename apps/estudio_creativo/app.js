@@ -282,7 +282,7 @@ const App = () => {
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLES[0]);
     const [selectedAR, setSelectedAR] = useState('1:1');
-    const [selectedModel, setSelectedModel] = useState('gemini-pro');
+    const [selectedModel, setSelectedModel] = useState('gemini-flash');
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
