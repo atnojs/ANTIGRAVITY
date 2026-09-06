@@ -50,15 +50,15 @@ Preguntar únicamente cuando falte una decisión crítica que cambie materialmen
 
 ## Infraestructura obligatoria para todas las apps y webs
 
-Toda app o web debe incluir e integrar copias de estos archivos canónicos:
+Toda app o web debe incluir un `proxy.php` propio y copias de estos archivos canónicos de historial:
 
-- `E:/ANTIGRAVITY/skills/proxy.php`: único punto servidor para llamadas protegidas y comprobación de salud. El frontend nunca llama directamente a una API que requiera una clave.
+- `proxy.php` de la app: único punto servidor para llamadas protegidas y comprobación de salud. En apps de imágenes debe usar la lista blanca del bloque de `apps/dibujo_lineas_copia`. El frontend nunca llama directamente a una API que requiera una clave.
 - `E:/ANTIGRAVITY/skills/history.php`: API de persistencia en Hostinger.
 - `E:/ANTIGRAVITY/skills/history-manager.js`: cliente JavaScript de `history.php`; carga, guarda, elimina, limpia y notifica cambios.
 
 Reglas de integración:
 
-1. Copiar los tres archivos a la carpeta pública de la app. En una app existente, comparar primero y conservar adaptaciones válidas.
+1. Copiar los dos archivos canónicos de historial a la carpeta pública de la app. En una app existente, conservar su `proxy.php` y adaptarlo solo cuando el encargo lo requiera.
 2. Cargar `history-manager.js` antes del código que lo use.
 3. Crear una instancia con nombre único: `new HistoryManager('nombre_app')`.
 4. Ejecutar `load()` al iniciar y renderizar el resultado del servidor.
@@ -70,10 +70,10 @@ Reglas de integración:
 
 ## Backend, proveedores y seguridad
 
-- Mantener este mapa del `.htaccess` raíz privado de Hostinger: `F` para FLUX y `R` para OpenRouter. No intercambiarlas.
-- Guardar FLUX como `SetEnv F "..."` y OpenRouter como `SetEnv R "..."`; nunca escribir sus valores en Git, frontend, documentación, capturas compartidas ni respuestas.
+- Mantener este mapa del `.htaccess` raíz privado de Hostinger: `O` para OpenAI Images directo y `R` para OpenRouter. No intercambiarlas.
+- Guardar OpenAI como `SetEnv O "..."` y OpenRouter como `SetEnv R "..."`; nunca escribir sus valores en Git, frontend, documentación, capturas compartidas ni respuestas.
 - Resolver ambas claves en servidor mediante `config.php`, `getenv`, variantes `REDIRECT_`, `$_SERVER` y `$_ENV`.
-- Usar FLUX para toda generación o edición de imágenes.
+- En generación o edición de imágenes, usar exclusivamente el bloque vigente de `apps/dibujo_lineas_copia`: OpenAI directo para `openai-medium` y `openai-high`, y Gemini mediante OpenRouter para `gemini-flash` y `gemini-pro`.
 - Usar OpenRouter para texto, razonamiento u otras tareas compatibles mediante la acción `openrouter` o `text` del proxy.
 - En OpenRouter, fijar el destino servidor a `https://openrouter.ai/api/v1/chat/completions`, autenticar con `Authorization: Bearer <R>` y no aceptar una URL remota enviada por el frontend.
 - Aceptar solo métodos, acciones, modelos y parámetros validados.
@@ -193,9 +193,9 @@ Toda llamada a un modelo debe usar exactamente el overlay de carga de referencia
 - Respetar `prefers-reduced-motion`: detener los giros y la animación de la barra.
 ## Reglas para apps de generación o edición de imágenes
 
-1. Generar y editar imágenes exclusivamente con FLUX de Black Forest Labs.
-2. Ofrecer selector `PRO` / `MAX`, relación de aspecto y resolución `512`, `1024`, `2048` y `4096`.
-3. Mapear `PRO` a `flux-2-pro` y `MAX` a `flux-2-max`, salvo que la API oficial exija una migración posterior.
+1. El único selector multimodelo permitido es el bloque vigente de `apps/dibujo_lineas_copia`. Antes de tocarlo, leer completos `index.html`, `app.css` y `app.js` de esa app.
+2. Mantener dos grupos: `OPENAI` a la izquierda con `MEDIUM` activo por defecto y `HIGHT`; `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. No añadir otros proveedores ni recuperar bloques anteriores.
+3. Mapear `openai-medium` y `openai-high` a `gpt-image-2` directo con calidad `medium` y `high`; mapear `gemini-flash` y `gemini-pro` a `google/gemini-3.1-flash-image` y `google/gemini-3-pro-image` mediante OpenRouter.
 4. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
 5. Separar claramente imagen de entrada, referencias, prompt, formato y opciones de calidad.
 6. Conservar identidad, composición o elementos protegidos al editar una imagen.

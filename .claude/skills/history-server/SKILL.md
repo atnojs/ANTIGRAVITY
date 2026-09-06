@@ -120,6 +120,8 @@ async function onDelete(id) {
 
 ## 5. Estructura de cada entrada
 
+El ejemplo usa el modelo predeterminado del bloque canónico de `apps/dibujo_lineas_copia`.
+
 ```json
 {
     "id": "1717000000_abc123def",
@@ -127,7 +129,7 @@ async function onDelete(id) {
     "data": {
         "url": "https://...",
         "prompt": "una casa en el bosque",
-        "model": "flux-2-pro"
+        "model": "openai-medium"
     },
     "createdAt": "2026-06-04T12:00:00+02:00"
 }

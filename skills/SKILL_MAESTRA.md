@@ -50,15 +50,15 @@ Preguntar únicamente cuando falte una decisión crítica que cambie materialmen
 
 ## Infraestructura obligatoria para todas las apps y webs
 
-Toda app o web debe incluir e integrar copias de estos archivos canónicos:
+Toda app o web debe incluir un `proxy.php` propio y copias de estos archivos canónicos de historial:
 
-- `E:/ANTIGRAVITY/skills/proxy.php`: único punto servidor para llamadas protegidas y comprobación de salud. El frontend nunca llama directamente a una API que requiera una clave.
+- `proxy.php` de la app: único punto servidor para llamadas protegidas y comprobación de salud. En apps de imágenes debe usar la lista blanca del bloque de `apps/dibujo_lineas_copia`. El frontend nunca llama directamente a una API que requiera una clave.
 - `E:/ANTIGRAVITY/skills/history.php`: API de persistencia en Hostinger.
 - `E:/ANTIGRAVITY/skills/history-manager.js`: cliente JavaScript de `history.php`; carga, guarda, elimina, limpia y notifica cambios.
 
 Reglas de integración:
 
-1. Copiar los tres archivos a la carpeta pública de la app. En una app existente, comparar primero y conservar adaptaciones válidas.
+1. Copiar los dos archivos canónicos de historial a la carpeta pública de la app. En una app existente, conservar su `proxy.php` y adaptarlo solo cuando el encargo lo requiera.
 2. Cargar `history-manager.js` antes del código que lo use.
 3. Crear una instancia con nombre único: `new HistoryManager('nombre_app')`.
 4. Ejecutar `load()` al iniciar y renderizar el resultado del servidor.
@@ -70,10 +70,10 @@ Reglas de integración:
 
 ## Backend, proveedores y seguridad
 
-- Mantener este mapa del `.htaccess` raíz privado de Hostinger: `F` para FLUX y `R` para OpenRouter. No intercambiarlas.
-- Guardar FLUX como `SetEnv F "..."` y OpenRouter como `SetEnv R "..."`; nunca escribir sus valores en Git, frontend, documentación, capturas compartidas ni respuestas.
+- Mantener este mapa del `.htaccess` raíz privado de Hostinger: `O` para OpenAI Images directo y `R` para OpenRouter. No intercambiarlas.
+- Guardar OpenAI como `SetEnv O "..."` y OpenRouter como `SetEnv R "..."`; nunca escribir sus valores en Git, frontend, documentación, capturas compartidas ni respuestas.
 - Resolver ambas claves en servidor mediante `config.php`, `getenv`, variantes `REDIRECT_`, `$_SERVER` y `$_ENV`.
-- Usar FLUX para toda generación o edición de imágenes.
+- En generación o edición de imágenes, usar exclusivamente el bloque vigente de `apps/dibujo_lineas_copia`: OpenAI directo para `openai-medium` y `openai-high`, y Gemini mediante OpenRouter para `gemini-flash` y `gemini-pro`.
 - Usar OpenRouter para texto, razonamiento u otras tareas compatibles mediante la acción `openrouter` o `text` del proxy.
 - En OpenRouter, fijar el destino servidor a `https://openrouter.ai/api/v1/chat/completions`, autenticar con `Authorization: Bearer <R>` y no aceptar una URL remota enviada por el frontend.
 - Aceptar solo métodos, acciones, modelos y parámetros validados.
@@ -456,9 +456,9 @@ Al clonar el historial en una app nueva o existente:
 
 ## Reglas para apps de generación o edición de imágenes
 
-1. En apps con selector multimodelo, generar y editar imágenes con FLUX de Black Forest Labs o Gemini mediante OpenRouter según el botón elegido; no fijar FLUX ignorando la selección del usuario.
-2. Ofrecer el selector canónico de cuatro modelos descrito al final de esta skill, relación de aspecto y resolución `512`, `1024`, `2048` y `4096`.
-3. Mapear `flux-pro` a `flux-2-pro`, `flux-max` a `flux-2-max`, `gemini-flash` a `google/gemini-3.1-flash-image` y `gemini-pro` a `google/gemini-3-pro-image`, salvo migración confirmada de la API oficial.
+1. El único selector multimodelo permitido es el bloque vigente de `apps/dibujo_lineas_copia`, descrito al final de esta skill. Antes de tocarlo, leer completos `index.html`, `app.css` y `app.js` de esa app.
+2. Mantener dos grupos: `OPENAI` a la izquierda con `MEDIUM` activo por defecto y `HIGHT`; `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. No añadir otros proveedores ni recuperar bloques anteriores.
+3. Mapear `openai-medium` y `openai-high` a `gpt-image-2` directo con calidad `medium` y `high`; mapear `gemini-flash` y `gemini-pro` a `google/gemini-3.1-flash-image` y `google/gemini-3-pro-image` mediante OpenRouter.
 4. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
 5. Separar claramente imagen de entrada, referencias, prompt, formato y opciones de calidad.
 6. Conservar identidad, composición o elementos protegidos al editar una imagen.
@@ -507,45 +507,56 @@ El trabajo solo está terminado cuando el resultado es utilizable, está validad
 
 ---
 
-## Selector de Modelo IA: patrón canónico de toggles pill hoola
+## Selector de Modelo IA: bloque canónico de `apps/dibujo_lineas_copia`
 
 Aplicar este patrón en toda app de generación o edición de imágenes que ofrezca varios modelos.
 
 ### Estilo (única especificación)
 
-El campo selector de modelo IA es una **barra de toggles pill unificada** (estilo validado por Antonio, 2026-08-09, implementado en `apps/imagenes_ia/editar_copia`):
+La única fuente de verdad es el bloque implementado en `apps/dibujo_lineas_copia`. Antes de crear, editar o reparar un selector, leer completos `index.html`, `app.css` y `app.js` de esa app y copiar su versión vigente. No conservar ejemplos, proveedores, etiquetas ni estructuras de selectores anteriores.
 
-- **Un solo contenedor** de vidrio azulado `var(--card-bg)` con borde cian `var(--border)`, radio de píldora (`999px`), halo exterior suave y `gap:.5rem` entre botones. NO botones individuales separados fuera de la barra.
+- **Dos columnas de proveedor**: `OPENAI` a la izquierda y `GEMINI` a la derecha, dentro de `.model-provider-layout`.
+- **Un grupo pill por proveedor** con vidrio azulado `var(--card-bg)`, borde cian `var(--border)`, radio de píldora (`999px`), halo exterior suave y `gap:.5rem` entre botones.
 - **Botones pill** con `padding:.55rem 1rem`, borde transparente por defecto, texto `var(--muted)`, tipografía Electrolize y `text-transform:uppercase`.
 - **Estados**: el segmento activo se resalta con gradiente `var(--contenedor) → var(--acc)` (cian) y texto `#CCFFFF` con glow; los inactivos, texto `var(--muted)` sobre fondo transparente.
-- **NO usar estados separados flux/gemini**: el activo es único para los 4 modelos (sin clases `flux`/`gemini` en el HTML).
+- **Estado único**: solo un botón puede tener la clase `active`; `MEDIUM` debe estar activo al cargar.
 
-### Orden de los modelos (menor → mayor capacidad)
+### Proveedores, orden y modelos
 
-Siempre en este orden de izquierda a derecha, de menor a mayor capacidad (validado con precios oficiales de Black Forest Labs y OpenRouter):
+Mantener exactamente este orden dentro de cada bloque:
 
-1. `3.1FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`
-2. `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image` — **seleccionado por defecto**
-3. `FLUX PRO` — `flux-pro` — `flux-2-pro`
-4. `FLUX MAX` — `flux-max` — `flux-2-max`
+1. `OPENAI`: `MEDIUM` — `openai-medium` — `gpt-image-2` con calidad `medium` — **seleccionado por defecto**.
+2. `OPENAI`: `HIGHT` — `openai-high` — `gpt-image-2` con calidad `high`.
+3. `GEMINI`: `3.1 FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image` mediante OpenRouter.
+4. `GEMINI`: `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image` mediante OpenRouter.
 
-No cambiar este orden ni el estado inicial: **3 PRO por defecto**.
+No añadir otros modelos ni cambiar el estado inicial: **MEDIUM por defecto**.
 
 ### Marcado HTML
 
 ```html
-<div class="model-selector">
+<div id="model-selector" class="model-selector">
   <span class="model-selector-label">Modelo IA</span>
-  <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-    <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
-    <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
-    <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
-    <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+  <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+    <div class="model-provider-column">
+      <span class="model-provider-title">OPENAI</span>
+      <div class="model-toggle-group">
+        <button type="button" id="model-openai-medium" class="model-toggle active" data-model="openai-medium">MEDIUM</button>
+        <button type="button" id="model-openai-high" class="model-toggle" data-model="openai-high">HIGHT</button>
+      </div>
+    </div>
+    <div class="model-provider-column">
+      <span class="model-provider-title">GEMINI</span>
+      <div class="model-toggle-group">
+        <button type="button" id="model-g31" class="model-toggle" data-model="gemini-flash">3.1 FLASH</button>
+        <button type="button" id="model-g3" class="model-toggle" data-model="gemini-pro">3 PRO</button>
+      </div>
+    </div>
   </div>
 </div>
 ```
 
-No añadir clases `flux`/`gemini` a los botones: el activo se marca únicamente con `active`.
+No añadir botones, grupos o alias heredados. El activo se marca únicamente con `active`.
 
 ### Tokens Hoola requeridos
 
@@ -568,9 +579,9 @@ Verificar que existan estos tokens. Si faltan, añadirlos al `:root` de la app d
 }
 ```
 
-### CSS canónico responsive (toggles pill hoola)
+### CSS canónico responsive
 
-Copiar este bloque completo, idéntico al implementado en `apps/imagenes_ia/editar_copia`:
+Copiar este bloque completo desde `apps/dibujo_lineas_copia/app.css` y volver a comprobar la fuente si la app canónica cambia:
 
 ```css
 .model-selector {
@@ -584,6 +595,16 @@ Copiar este bloque completo, idéntico al implementado en `apps/imagenes_ia/edit
   display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
   background:var(--card-bg); border:1px solid var(--border);
   box-shadow:0 0 12px var(--glow-soft);
+}
+.model-provider-layout {
+  display:flex; justify-content:center; align-items:flex-start; gap:1rem;
+  width:100%;
+}
+.model-provider-column {
+  display:flex; flex-direction:column; align-items:center; gap:.35rem;
+}
+.model-provider-title {
+  color:var(--muted); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
 }
 .model-toggle {
   font-family:var(--font-ui); font-size:.9rem; letter-spacing:0.04em;
@@ -601,9 +622,14 @@ Copiar este bloque completo, idéntico al implementado en `apps/imagenes_ia/edit
   color:#CCFFFF; text-shadow:0 0 8px var(--glow);
   border-color:var(--border-strong); box-shadow:0 0 18px var(--glow);
 }
+@media (max-width:700px) {
+  .model-provider-layout { gap:.5rem; }
+  .model-toggle-group { gap:.2rem; }
+  .model-toggle { font-size:.76rem; padding:.5rem .65rem; }
+}
 ```
 
-**Validación visual (Antonio, 2026-08-09):** los botones pill NO deben tocarse entre sí. Usar `gap:.5rem` dentro del contenedor `inline-flex` y NO usar `border-left` divisor. Barra centrada debajo de todos los campos.
+Los botones pill no deben tocarse entre sí. Conservar las dos columnas de proveedor, los dos grupos independientes y el centrado de `apps/dibujo_lineas_copia`.
 
 ### Botones de relación de aspecto (AR)
 
@@ -639,7 +665,13 @@ className={`aspect-ratio-button ${selectedAR === ar.id ? 'active' : ''}`}
 
 ```js
 // Vanilla
-let selectedModel = 'gemini-pro';
+let selectedModel = 'openai-medium';
+const MODEL_LABELS = {
+  'openai-medium': 'MEDIUM',
+  'openai-high': 'HIGHT',
+  'gemini-flash': '3.1 FLASH',
+  'gemini-pro': '3 PRO'
+};
 document.querySelectorAll('.model-toggle').forEach((button) => {
   button.addEventListener('click', () => {
     document.querySelectorAll('.model-toggle').forEach((item) => item.classList.remove('active'));
@@ -649,7 +681,7 @@ document.querySelectorAll('.model-toggle').forEach((button) => {
 });
 
 // React
-const [selectedModel, setSelectedModel] = useState('gemini-pro');
+const [selectedModel, setSelectedModel] = useState('openai-medium');
 useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 // Incluir siempre en el payload: model: selectedModel
 ```
@@ -659,32 +691,31 @@ No cambiar solo el aspecto: comprobar que cada botón actualiza el estado y que 
 ### Mapeo seguro en PHP
 
 ```php
-$reqModel = strtolower((string)($data['model'] ?? 'gemini-pro'));
-$backend = 'gemini';
-$geminiModelId = 'google/gemini-3-pro-image';
-$fluxEndpoint = 'flux-2-pro';
+$reqModel = strtolower((string)($data['model'] ?? 'openai-medium'));
+$models = [
+    'openai-medium' => ['provider' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+    'openai-high'   => ['provider' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
+    'gemini-flash'  => ['provider' => 'openrouter', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'    => ['provider' => 'openrouter', 'model' => 'google/gemini-3-pro-image'],
+];
 
-if (strpos($reqModel, 'max') !== false) {
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($reqModel, 'pro') !== false && strpos($reqModel, 'flux') !== false) {
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-pro';
-} elseif (strpos($reqModel, 'flash') !== false) {
-    $geminiModelId = 'google/gemini-3.1-flash-image';
+if (!isset($models[$reqModel])) {
+    http_response_code(400);
+    exit('Modelo no permitido');
 }
+$selected = $models[$reqModel];
 ```
 
-Comparar siempre `strpos(...) !== false`; no usar el resultado como booleano. Mantener `gemini-pro` como fallback seguro para valores omitidos.
+Validar por lista blanca exacta y mantener `openai-medium` como fallback seguro para valores omitidos.
 
 ### Validación y publicación obligatorias
 
 1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
 2. Probar que la barra de toggles no desborda el panel y que no existe scroll horizontal ni texto recortado.
-3. Verificar las cuatro etiquetas completas: `3.1FLASH`, `3 PRO`, `FLUX PRO`, `FLUX MAX`.
+3. Verificar las cuatro etiquetas completas y sus bloques: `OPENAI` con `MEDIUM` / `HIGHT`, y `GEMINI` con `3.1 FLASH` / `3 PRO`.
 4. Probar estados normal, hover y activo: activo con gradiente `contenedor→cian` y texto `#CCFFFF`.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
-6. Confirmar `gemini-pro` (3 PRO) como estado inicial y revisar el payload de los cuatro botones.
+6. Confirmar `openai-medium` (`MEDIUM`) como estado inicial y revisar el payload de los cuatro botones.
 7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.
 8. Revisar el diff, crear commit, hacer push a la rama de despliegue y verificar la URL real sin caché antigua.
 

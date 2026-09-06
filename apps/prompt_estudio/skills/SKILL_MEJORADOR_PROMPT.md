@@ -29,7 +29,7 @@ Usar cuando el usuario:
 - Aporte un prompt y pida mejorarlo.
 - Pida optimizar, compactar, profesionalizar, estructurar, adaptar o corregir un prompt.
 - Quiera convertir una instrucción vaga en un prompt listo para copiar.
-- Quiera adaptar un prompt a ChatGPT, Claude, Gemini, Midjourney, Flux, una API, una herramienta de código, una herramienta de imagen o un asistente.
+- Quiera adaptar un prompt a ChatGPT, Claude, Gemini, Midjourney, una API, una herramienta de código, una herramienta de imagen o un asistente.
 - Quiera que el prompt produzca JSON, XML, YAML, CSV, tablas, documentos, código o respuestas con formato estricto.
 
 Si el usuario solo tiene una idea amplia y necesita descubrir qué pedir, usar antes `SKILL_METODO_COPILOTO.md`.
@@ -363,7 +363,7 @@ Aplicar solo si el destino es conocido o importante.
 - Para multimodal, indicar qué entrada visual se analiza y qué salida se espera.
 - Para plantillas, usar placeholders claros.
 
-### Midjourney / Flux / Stable Diffusion / herramientas visuales
+### Midjourney / Stable Diffusion / herramientas visuales
 
 - Priorizar sujeto, medio, composición, iluminación, lente/cámara, estilo, color, textura y relación de aspecto.
 - Evitar instrucciones largas que la herramienta no interprete bien.

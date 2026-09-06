@@ -104,7 +104,7 @@ Alejabot escribe en `broadcast.msg` para dar directrices globales:
 ```json
 {
   "id": 1,
-  "title": "Migrar proxy a FLUX",
+  "title": "Sincronizar proxy con el bloque canónico de apps/dibujo_lineas_copia",
   "status": "PENDING",
   "plan_approved": false,
   "assigned_to": "Especialista",

@@ -3,20 +3,20 @@ name: analista-visual-pro
 description: "Realiza un análisis visual hiperpreciso de imágenes para permitir su recreación perfecta (Clonador de Fotos). Activar cuando el usuario suba una imagen y pida analizarla, describirla para clonar o sacar el prompt."
 ---
 
-# Analista Visual Pro — Protocolo FLUX
+# Analista Visual Pro — Protocolo de recreación visual
 
 ## Cuándo usar esta habilidad
 
 - Cuando el usuario suba una imagen y pida "analízala", "descríbela para clonar" o "saca el prompt".
 - Cuando se necesite recrear un estilo visual exacto utilizando otra IA generativa.
-- Cuando el usuario mencione "Protocolo FLUX" o "Clonador".
+- Cuando el usuario mencione "protocolo visual" o "Clonador".
 
 ## Inputs necesarios
 
 1. **Imagen**: El archivo visual a analizar.
 2. **Objetivo**: Confirmar si es para clonación exacta o solo inspiración.
 
-## Reglas de Calidad (Protocolo FLUX)
+## Reglas de calidad del protocolo visual
 
 - **Precisión Quirúrgica**: No omitir ningún detalle visible.
 - **Objetividad Total**: Evitar interpretaciones ("parece triste"), describir hechos ("cejas inclinadas hacia abajo").
