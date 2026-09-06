@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo (toggle 4 botones) =====
-        // Por defecto: Gemini 3.1 Flash
-        let selectedModel = 'gemini-flash';
+        // Por defecto: OpenAI Medium
+        let selectedModel = 'openai-medium';
 const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
