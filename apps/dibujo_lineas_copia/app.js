@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
-    'openai-medium': 'GPT MEDIUM',
-    'openai-high': 'GPT HIGHT'
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGHT'
 };
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
@@ -150,7 +150,7 @@ previewGrid.addEventListener('click', (e) => {
                         </div>
                     `;
                     resultsGallery.appendChild(item);
-                    saveHistoryItemToDb({
+                    await saveHistoryItemToDb({
                         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
                         url: imgDataUrl,
                         prompt: 'Dibujo lineal: ' + safeName,
@@ -185,7 +185,7 @@ previewGrid.addEventListener('click', (e) => {
     startButton.disabled = false;
     startButton.innerHTML = `🚀 Iniciar Procesamiento (${imageQueue.length})`;
     galleryTitle.classList.remove('hidden');
-        loadAndRenderHistory();
+        await loadAndRenderHistory();
     });
 
     // ... (El resto del código de HistoryManager y funciones de UI se mantiene igual)
