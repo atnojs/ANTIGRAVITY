@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20260905-prompt-guide-fast">
+    <link rel="stylesheet" href="app.css?v=20260906-copy-prompts">
 </head>
 <body>
     <div id="root"></div>
@@ -28,6 +28,7 @@ const STORAGE_KEY = 'trickvault_data';
 const IMAGE_STORE_URL = 'image_store.php';
 const AUTH_URL = 'auth.php';
 const IMAGE_PROMPT_HINT = 'Úsalo junto con un sujeto concreto y un encuadre o formato';
+const IMAGE_PROMPT_COPY_GUIDANCE = 'Úsalo junto con un sujeto concreto y un encuadre o formato.';
 
 const CATEGORIES = [
     { id: 'terminal',    label: 'Terminal / Linux',   icon: '🖥️',  color: 'cyan',    bgIcon: '💻' },
@@ -193,6 +194,42 @@ function isLegacyImageCommandDescription(description) {
 }
 function cleanLegacyImageCommandDescriptions(items) {
     return items.map(item => isLegacyImageCommandDescription(item.description) ? { ...item, description: '' } : item);
+}
+
+const IMAGE_PROMPT_OVERRIDES = {
+    '/ghostedview': 'Objeto único con carcasa exterior translúcida sobre el mecanismo, mostrando el interior de forma clara y reconocible.',
+    '/layerview': 'Objeto único en vista 3/4, con sus capas de construcción visibles y ligeramente separadas, alineadas y fáciles de identificar.',
+    '/wireframe': 'Objeto único en vista 3/4, malla 3D fina, fondo oscuro, líneas cian luminosas, sin texto, sin medidas, sin vistas adicionales y sin ficha técnica.',
+};
+
+function capitalizeSentence(value) {
+    const text = String(value || '').trim();
+    return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+}
+
+function buildImagePrompt(command, meaning) {
+    const normalizedCommand = String(command || '').trim();
+    const commandName = normalizedCommand.replace(/^\/+/, '');
+    const customInstruction = IMAGE_PROMPT_OVERRIDES[normalizedCommand];
+    const instruction = customInstruction || `Aplica este tratamiento visual de forma claramente reconocible: ${capitalizeSentence(meaning)}.`;
+    return `genera una imagen con ${commandName} de un/una (añade aquí el objeto). ${instruction} ${IMAGE_PROMPT_COPY_GUIDANCE}`;
+}
+
+const IMAGE_COMMAND_PROMPTS = new Map(
+    INSTAGRAM_COMMANDS.map(([command, meaning]) => [command, buildImagePrompt(command, meaning)])
+);
+
+function getImageCommandKey(trick) {
+    return typeof trick?.codeSnippet === 'string' ? trick.codeSnippet.trim() : '';
+}
+
+function isImageCommandTrick(trick) {
+    return IMAGE_COMMAND_PROMPTS.has(getImageCommandKey(trick));
+}
+
+function getTrickCopyText(trick) {
+    const commandPrompt = IMAGE_COMMAND_PROMPTS.get(getImageCommandKey(trick));
+    return commandPrompt || String(trick?.codeSnippet || '');
 }
 function hasSortOrder(trick) { return Number.isFinite(Number(trick.sortOrder)); }
 function compareTricks(a, b) {
@@ -581,11 +618,11 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId,
             )}
 
             {trick.codeSnippet && (
-                <div className="code-snippet">
-                    <button className={`copy-btn ${copiedId === trick.id ? 'copied' : ''}`} onClick={() => onCopy(trick)} title="Copiar código" aria-label="Copiar código al portapapeles">
+                <div className="code-snippet" onSelectStart={(event) => event.preventDefault()}>
+                    <button className={`copy-btn ${copiedId === trick.id ? 'copied' : ''}`} onClick={() => onCopy(trick)} title={isImageCommandTrick(trick) ? 'Copiar prompt completo' : 'Copiar código'} aria-label={isImageCommandTrick(trick) ? 'Copiar prompt completo al portapapeles' : 'Copiar código al portapapeles'}>
                         {copiedId === trick.id ? '✓' : '📋'}
                     </button>
-                    {trick.codeSnippet}
+                    <span className="code-value">{trick.codeSnippet}</span>
                 </div>
             )}
 
@@ -957,9 +994,10 @@ function App() {
 
     const handleCopy = useCallback(async (trick) => {
         try {
-            await navigator.clipboard.writeText(trick.codeSnippet);
+            const copyText = getTrickCopyText(trick);
+            await navigator.clipboard.writeText(copyText);
             setCopiedId(trick.id);
-            addToast('📋 Código copiado al portapapeles');
+            addToast(isImageCommandTrick(trick) ? '📋 Prompt completo copiado' : '📋 Código copiado al portapapeles');
             setTimeout(() => setCopiedId(null), 2000);
         } catch {
             addToast('Error al copiar', 'error');

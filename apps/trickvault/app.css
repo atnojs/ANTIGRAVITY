@@ -548,6 +548,14 @@ h1, h2, h3, h4, .font-montserrat {
     white-space: pre-wrap;
     max-height: 120px;
     overflow-y: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+.trick-card .code-snippet * {
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .copy-btn {
