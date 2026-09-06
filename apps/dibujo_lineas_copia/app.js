@@ -22,10 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
 
-    // ===== Selector de modelo (toggle 4 botones) =====
+    // ===== Selector de modelo (toggle 6 botones) =====
         // Por defecto: Gemini 3.1 Flash
         let selectedModel = 'gemini-flash';
-const MODEL_LABELS = { 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
+const MODEL_LABELS = {
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO',
+    'flux-pro': 'FLUX PRO',
+    'flux-max': 'FLUX MAX',
+    'openai-medium': 'OPENAI MEDIUM',
+    'openai-high': 'OPENAI HIGH'
+};
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
             btn.addEventListener('click', () => {
