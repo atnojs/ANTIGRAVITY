@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=14" />
+  <link rel="stylesheet" href="app.css?v=15" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -46,13 +46,21 @@
     <!-- Selector de modelo (patrón canónico toggles pill hoola, SKILL_MAESTRA) -->
     <div id="model-selector" class="model-selector">
       <span class="model-selector-label">Modelo IA</span>
-      <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-        <button type="button" id="model-g31" class="model-toggle active" data-model="gemini-flash">3.1 FLASH</button>
-        <button type="button" id="model-g3" class="model-toggle" data-model="gemini-pro">3 PRO</button>
-        <button type="button" id="model-fpro" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
-        <button type="button" id="model-fmax" class="model-toggle" data-model="flux-max">FLUX MAX</button>
-        <button type="button" id="model-openai-medium" class="model-toggle" data-model="openai-medium">OPENAI MEDIUM</button>
-        <button type="button" id="model-openai-high" class="model-toggle" data-model="openai-high">OPENAI HIGH</button>
+      <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+        <div class="model-provider-column">
+          <span class="model-provider-title">OPENAI</span>
+          <div class="model-toggle-group">
+            <button type="button" id="model-openai-medium" class="model-toggle" data-model="openai-medium">GPT MEDIUM</button>
+            <button type="button" id="model-openai-high" class="model-toggle" data-model="openai-high">GPT HIGHT</button>
+          </div>
+        </div>
+        <div class="model-provider-column">
+          <span class="model-provider-title">GEMINI</span>
+          <div class="model-toggle-group">
+            <button type="button" id="model-g31" class="model-toggle active" data-model="gemini-flash">3.1 FLASH</button>
+            <button type="button" id="model-g3" class="model-toggle" data-model="gemini-pro">3 PRO</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -91,6 +99,6 @@
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <script src="history-manager.js?v=7"></script>
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

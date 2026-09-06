@@ -22,16 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
 
-    // ===== Selector de modelo (toggle 6 botones) =====
+    // ===== Selector de modelo (toggle 4 botones) =====
         // Por defecto: Gemini 3.1 Flash
         let selectedModel = 'gemini-flash';
 const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
-    'flux-pro': 'FLUX PRO',
-    'flux-max': 'FLUX MAX',
-    'openai-medium': 'OPENAI MEDIUM',
-    'openai-high': 'OPENAI HIGH'
+    'openai-medium': 'GPT MEDIUM',
+    'openai-high': 'GPT HIGHT'
 };
         const modelToggles = document.querySelectorAll('.model-toggle');
         modelToggles.forEach(btn => {
@@ -138,10 +136,12 @@ previewGrid.addEventListener('click', (e) => {
                 }
 
                 if (data.image) {
+                    const resultAspectRatio = data.aspectRatio || '1:1';
                     var imgDataUrl = "data:" + (data.mimeType || 'image/png') + ";base64," + data.image;
                     const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
+                    item.dataset.aspectRatio = resultAspectRatio;
                     item.innerHTML = `
                         <div class="gallery-model-badge">${MODEL_LABELS[selectedModel] || selectedModel}</div>
                         <img src="${imgDataUrl}" alt="Dibujo lineal">
@@ -155,7 +155,7 @@ previewGrid.addEventListener('click', (e) => {
                         url: imgDataUrl,
                         prompt: 'Dibujo lineal: ' + safeName,
                         model: selectedModel,
-                        aspectRatio: '1:1',
+                        aspectRatio: resultAspectRatio,
                         size: '',
                         style: { type: 'line_art' },
                         createdAt: Date.now()

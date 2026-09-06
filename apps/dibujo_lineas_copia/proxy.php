@@ -21,6 +21,67 @@ function getKey(string $name): string {
     return '';
 }
 
+function gcdInt(int $a, int $b): int {
+    $a = abs($a); $b = abs($b);
+    while ($b !== 0) { $tmp = $a % $b; $a = $b; $b = $tmp; }
+    return $a > 0 ? $a : 1;
+}
+
+function imageAspectLabel(int $width, int $height): string {
+    if ($width <= 0 || $height <= 0) return '1:1';
+    $g = gcdInt($width, $height);
+    return intdiv($width, $g) . ':' . intdiv($height, $g);
+}
+
+function sendImageResponse(string $binary, string $mimeType = 'image/png'): void {
+    $info = @getimagesizefromstring($binary);
+    $width = (int)($info[0] ?? 0);
+    $height = (int)($info[1] ?? 0);
+    echo json_encode([
+        'image'       => base64_encode($binary),
+        'mimeType'    => $mimeType,
+        'width'       => $width,
+        'height'      => $height,
+        'aspectRatio' => imageAspectLabel($width, $height),
+    ]);
+    exit;
+}
+
+function openAiOutputSize(int $sourceWidth, int $sourceHeight): string {
+    if ($sourceWidth <= 0 || $sourceHeight <= 0) return '1024x1024';
+
+    // GPT Image 2 permite tamaños arbitrarios en múltiplos de 16.
+    // Usamos aproximadamente 1 MP para conservar el AR sin disparar el coste.
+    $ratio = max(1 / 3, min(3, $sourceWidth / $sourceHeight));
+    $targetPixels = 1048576;
+    $width = (int)(round(sqrt($targetPixels * $ratio) / 16) * 16);
+    $height = (int)(round(sqrt($targetPixels / $ratio) / 16) * 16);
+    $width = max(16, $width);
+    $height = max(16, $height);
+
+    // Redondeo defensivo para cumplir el límite 3:1 de la API.
+    while ($width / $height > 3) $height += 16;
+    while ($height / $width > 3) $width += 16;
+    return $width . 'x' . $height;
+}
+
+function geminiAspectRatio(int $sourceWidth, int $sourceHeight): string {
+    if ($sourceWidth <= 0 || $sourceHeight <= 0) return '1:1';
+    $ratio = $sourceWidth / $sourceHeight;
+    $allowed = [
+        '1:1' => 1.0, '2:3' => 2 / 3, '3:2' => 3 / 2,
+        '3:4' => 3 / 4, '4:3' => 4 / 3, '4:5' => 4 / 5,
+        '5:4' => 5 / 4, '9:16' => 9 / 16, '16:9' => 16 / 9,
+        '21:9' => 21 / 9,
+    ];
+    $best = '1:1'; $distance = PHP_FLOAT_MAX;
+    foreach ($allowed as $label => $value) {
+        $current = abs($ratio - $value);
+        if ($current < $distance) { $distance = $current; $best = $label; }
+    }
+    return $best;
+}
+
 $fluxKey = getKey('F');
 $orKey   = getKey('R');
 $openaiKey = getKey('OPENAI_API_KEY');
@@ -56,18 +117,29 @@ if ($imageB64 === '') {
     exit;
 }
 
-// Validacion tamano
-$imgBinary = base64_decode($imageB64);
+// Preparar base64 puro (sin prefijo data:) antes de decodificar.
+if (strpos($imageB64, 'base64,') !== false) {
+    $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
+}
+
+// Validacion tamano y dimensiones de la imagen original.
+$imgBinary = base64_decode($imageB64, true);
+if ($imgBinary === false || $imgBinary === '') {
+    http_response_code(400);
+    echo json_encode(['error'=>['message'=>'Imagen base64 invalida.']]);
+    exit;
+}
 if (strlen($imgBinary) > 2500000) {
     http_response_code(400);
     echo json_encode(['error'=>['message'=>'Imagen demasiado grande (maximo 2.5MB).']]);
     exit;
 }
 
-// Preparar base64 puro (sin prefijo data:)
-if (strpos($imageB64, 'base64,') !== false) {
-    $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
-}
+$imageInfo = @getimagesizefromstring($imgBinary);
+$sourceWidth = (int)($imageInfo[0] ?? 0);
+$sourceHeight = (int)($imageInfo[1] ?? 0);
+$openaiSize = openAiOutputSize($sourceWidth, $sourceHeight);
+$geminiRatio = geminiAspectRatio($sourceWidth, $sourceHeight);
 
 // ===== Seleccion de modelo =====
 $reqModel = strtolower((string)($req['model'] ?? 'gemini-flash'));
@@ -184,11 +256,7 @@ if ($backend === 'flux') {
     $imgBin = curl_exec($ch);
     curl_close($ch);
 
-    echo json_encode([
-        'image'    => base64_encode($imgBin),
-        'mimeType' => 'image/png',
-    ]);
-    exit;
+    sendImageResponse($imgBin, 'image/png');
 }
 
 // ====================================================================
@@ -211,6 +279,8 @@ if ($backend === 'gemini') {
         'modalities' => ['image','text'],
         'messages'   => [['role'=>'user','content'=>$content]],
         'max_tokens' => 8000,
+        // OpenRouter reenvía esta configuración al proveedor Gemini.
+        'image_config' => ['aspect_ratio' => $geminiRatio],
     ];
 
     $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
@@ -260,11 +330,7 @@ if ($backend === 'gemini') {
     }
 
     $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
-    echo json_encode([
-        'image'    => base64_encode(base64_decode($imgB64)),
-        'mimeType' => 'image/png',
-    ]);
-    exit;
+    sendImageResponse(base64_decode($imgB64), 'image/png');
 }
 
 // ====================================================================
@@ -293,7 +359,7 @@ if ($backend === 'openai') {
         'model'  => 'gpt-image-2',
         'prompt' => $prompt,
         'quality'=> $openaiQuality,
-        'size'   => '1024x1024',
+        'size'   => $openaiSize,
         'image[]'=> new CURLFile($tmpPath, $mimeType, $uploadName),
     ];
 
@@ -356,11 +422,7 @@ if ($backend === 'openai') {
         exit;
     }
 
-    echo json_encode([
-        'image'    => $imageData,
-        'mimeType' => $mimeOut,
-    ]);
-    exit;
+    sendImageResponse(base64_decode($imageData), $mimeOut);
 }
 
 // Modelo no reconocido
