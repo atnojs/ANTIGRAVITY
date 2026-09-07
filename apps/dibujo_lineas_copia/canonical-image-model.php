@@ -126,7 +126,11 @@ function ag_image_generate(array $request, string $configDir = ''): array
         $ch = curl_init($endpoint); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$fields, CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$key], CURLOPT_CONNECTTIMEOUT=>20, CURLOPT_TIMEOUT=>180]);
         $raw = curl_exec($ch); $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $error = curl_error($ch); curl_close($ch); if ($tmp !== null) @unlink($tmp);
         if ($raw === false) throw new RuntimeException('Error conectando con OpenAI: '.$error, 502);
-        $data = json_decode((string)$raw, true); if (!is_array($data) || $status < 200 || $status >= 300) throw new RuntimeException('OpenAI no pudo completar la solicitud.', $status >= 400 ? $status : 502);
+        $data = json_decode((string)$raw, true);
+        if (!is_array($data) || $status < 200 || $status >= 300) {
+            $message = is_array($data) ? (string)($data['error']['message'] ?? 'OpenAI no pudo completar la solicitud.') : 'OpenAI no pudo completar la solicitud.';
+            throw new RuntimeException($message, $status >= 400 ? $status : 502);
+        }
         $b64 = (string)($data['data'][0]['b64_json'] ?? ''); if ($b64 === '') throw new RuntimeException('OpenAI no devolvió ninguna imagen.', 502);
         return ag_image_result($b64, 'image/png', $selected, 'openai');
     }
