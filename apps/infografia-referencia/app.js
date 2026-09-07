@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:'pro', history:null };
+  const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:'openai-medium', history:null };
   const MAX_FILE = 20 * 1024 * 1024;
 
   // Helper genérico para grupos de pills (ar-option / res-option).
@@ -51,7 +51,7 @@
     $('regenerate-btn').addEventListener('click',generate);
     $('download-result-btn').addEventListener('click',()=>downloadDataUrl(state.resultDataUrl,'infografia-generada.png'));
     $('result-image-button').addEventListener('click',()=>openLightbox(state.resultDataUrl));
-    document.querySelectorAll('.model-toggle').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.model-toggle').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.selectedModel=b.dataset.model}));
+    document.querySelectorAll('.model-toggle').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.model-toggle').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false')});b.classList.add('active');b.setAttribute('aria-pressed','true');state.selectedModel=b.dataset.model}));
     $('history-clear-btn').addEventListener('click',async()=>{if(confirm('¿Eliminar todo el historial?'))try{await state.history.clear()}catch(e){showHistoryError(e.message)}});
     $('lightbox').addEventListener('click',(e)=>{if(e.target===$('lightbox')||e.target.tagName==='BUTTON')$('lightbox').hidden=true});
     document.addEventListener('keydown',(e)=>{if(e.key==='Escape')$('lightbox').hidden=true});
@@ -80,13 +80,13 @@
     if(!state.referenceDataUrl)return setStatus('Primero carga una referencia.','error');
     if(!state.analysis)return setStatus('Primero analiza la referencia para definir su estilo.','error');
     const free=$('free-prompt').value.trim(),title=$('title').value.trim(),subtitle=$('subtitle').value.trim(),sections=$('sections').value.trim();
-    setBusy(true,'Generando la nueva infografía con FLUX...');
+    setBusy(true,'IA generando lo solicitado...');
     try{
       const aspectVal = getPillValue('aspect-toggles');
       const aspect = aspectVal === 'auto' ? ratioFromDimensions(state.analysis.medidas) : aspectVal;
       const content={free,title,subtitle,sections,audience:$('audience').value,language:$('language').value};
       const prompt=buildPrompt({...content,analysis:state.analysis});
-      const result=await api({action:'generate',quality:state.selectedModel,prompt,image:state.referenceDataUrl,aspectRatio:aspect || '1:1',resolution:Number(getPillValue('resolution-toggles')) || 1024,output_format:'png',content});
+      const result=await api({action:'generate',model:state.selectedModel,prompt,image:state.referenceDataUrl,aspectRatio:aspect || '1:1',resolution:Number(getPillValue('resolution-toggles')) || 1024,output_format:'png',content});
       state.resultDataUrl=result.dataUrl;$('result-image').src=state.resultDataUrl;$('result-section').hidden=false;
       try{await state.history.save({id:'h_'+Date.now().toString(36),type:'image',model:result.model,data:{prompt,reference:state.referenceName,analysis:state.analysis,aspectRatio:aspect},imageData:state.resultDataUrl,createdAt:new Date().toISOString()})}catch(e){showHistoryError(e.message)}
       $('result-section').scrollIntoView({behavior:'smooth'});setStatus(`Infografía lista en ${result.width} × ${result.height}.`,'success');

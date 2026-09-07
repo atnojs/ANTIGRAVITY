@@ -23,22 +23,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo (toggle 4 botones) =====
-        // Por defecto: OpenAI Medium
-        let selectedModel = 'openai-medium';
-const MODEL_LABELS = {
-    'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO',
-    'openai-medium': 'MEDIUM',
-    'openai-high': 'HIGHT'
-};
-        const modelToggles = document.querySelectorAll('.model-toggle');
-        modelToggles.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modelToggles.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedModel = btn.dataset.model;
-            });
+    const DEFAULT_MODEL = 'openai-medium';
+    let selectedModel = DEFAULT_MODEL;
+    const MODEL_LABELS = {
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO',
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGHT'
+    };
+    const modelToggles = document.querySelectorAll('.model-toggle');
+
+    const setSelectedModel = (model) => {
+        selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
+        modelToggles.forEach((button) => {
+            const isActive = button.dataset.model === selectedModel;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
         });
+    };
+
+    modelToggles.forEach((button) => {
+        button.addEventListener('click', () => setSelectedModel(button.dataset.model));
+    });
+    setSelectedModel(DEFAULT_MODEL);
 
     let imageQueue = [];
 

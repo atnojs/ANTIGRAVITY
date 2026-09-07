@@ -5,6 +5,7 @@
  *   - generateImages / editImage: FLUX BFL (clave F)
  */
 header("Content-Type: application/json; charset=utf-8");
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 
 try {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -25,6 +26,18 @@ try {
   $image  = $json['image']  ?? null;
   $prompt = $json['prompt'] ?? null;
   $prompts = $json['prompts'] ?? null;
+
+  if ($task === 'generateImages') {
+    $images = [];
+    foreach (is_array($prompts) ? $prompts : [] as $itemPrompt) {
+      $payload = $json;
+      $payload['prompt'] = (string)$itemPrompt;
+      $result = ag_image_generate($payload, __DIR__);
+      $images[] = ['data' => $result['image'], 'mimeType' => $result['mimeType']];
+    }
+    echo json_encode(['images' => $images], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+  }
 
   // ─── Clave A (Gemini → describe) ──────────────────────
   $geminiKey = '';

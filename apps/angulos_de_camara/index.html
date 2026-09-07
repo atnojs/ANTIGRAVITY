@@ -1,10 +1,10 @@
-<!-- Ángulos de Cámara — Estilo Hoola (FLUX + Historial servidor) -->
+<!-- Ángulos de Cámara — Estilo Hoola (IA + Historial servidor) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <meta name="description" content="Generador de ángulos de cámara con IA FLUX. Arrastra una imagen y obtén perspectivas diferentes al instante."/>
+  <meta name="description" content="Generador de ángulos de cámara con IA. Arrastra una imagen y obtén perspectivas diferentes al instante."/>
   <title>Ángulos de Cámara</title>
   <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 
@@ -24,7 +24,7 @@
   <div class="container">
     <header>
       <h1>Generador de Ángulos de Cámara</h1>
-      <p>Arrastra una imagen y obtén 5 perspectivas de cámara diferentes al instante con IA FLUX.</p>
+      <p>Arrastra una imagen y obtén 5 perspectivas de cámara diferentes al instante con IA.</p>
     </header>
 
     <main class="app-container glass-hover">
@@ -50,22 +50,26 @@
             <button class="shot-option glass-hover" data-shot="top-down">Plano Cenital</button>
           </div>
 
-        <!-- Selector de modelo IA (patrón canónico toggles pill hoola, SKILL_MAESTRA) -->
-        <div class="model-selector">
+        <!-- Selector de modelo IA (patrón canónico SKILL_MAESTRA) -->
+        <div id="model-selector" class="model-selector">
           <span class="model-selector-label">Modelo IA</span>
-          <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-            <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
-            <button type="button" class="model-toggle active" data-model="gemini-flash">3.1 FLASH</button>
-            <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
-            <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+          <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+            <div class="model-provider-column">
+              <span class="model-provider-title">OPENAI</span>
+              <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGHT</button>
+              </div>
+            </div>
+            <div class="model-provider-column">
+              <span class="model-provider-title">GEMINI</span>
+              <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+              </div>
+            </div>
           </div>
         </div>
-
-          <!-- Selector de calidad PRO / MAX -->
-          <div class="quality-selector">
-            <button class="quality-btn active" data-quality="pro">PRO</button>
-            <button class="quality-btn" data-quality="max">MAX</button>
-          </div>
 
           <!-- Formato + Resolución + Tipo en fila única -->
           <div class="format-row">

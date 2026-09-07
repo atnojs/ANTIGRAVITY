@@ -1,16 +1,13 @@
 <?php
 // ============================================================
-// PROXY PHP - Generador de imágenes con FLUX (Black Forest Labs)
-// Oculta la clave FLUX (variable 'F' del .htaccess raíz de Hostinger).
-// BFL es ASÍNCRONO: este proxy hace submit + polling del lado servidor,
-// así el frontend recibe la imagen en una sola llamada.
-// Selector PRO/MAX + width/height dinámicos con CLAMP 4MP (FLUX 2 rechaza >4MP).
+// PROXY PHP - Generador de imágenes OpenAI y Gemini.
 // ============================================================
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -20,6 +17,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Solo se aceptan peticiones POST']]);
+    exit;
+}
+
+$canonicalBody = json_decode((string)file_get_contents('php://input'), true);
+if (is_array($canonicalBody)) {
+    try {
+        $result = ag_image_generate($canonicalBody, __DIR__);
+        $result['width'] = (int)($canonicalBody['width'] ?? 0);
+        $result['height'] = (int)($canonicalBody['height'] ?? 0);
+        $result['imageUrl'] = $result['imageUrl'] ?? $result['dataUrl'];
+        echo json_encode($result, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    } catch (Throwable $error) {
+        $status = (int)$error->getCode();
+        if ($status < 400 || $status > 599) $status = 500;
+        http_response_code($status);
+        echo json_encode(['error'=>['message'=>$error->getMessage()]], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    }
     exit;
 }
 

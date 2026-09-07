@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isProcessing = false;
     const usedSurpriseStyles = new Set();
     let historyItems = [];
-    let selectedModel = 'gemini-flash';
+    let selectedModel = 'openai-medium';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -127,8 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== SELECTORES =====
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.model-toggle').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
             selectedModel = btn.dataset.model;
         });
     });
@@ -264,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const setProcessing = v => { isProcessing = v; updateButtons(); };
 
     // ===== LLAMADA AL PROXY CANÓNICO =====
-    const callFlux = async (prompt, modelB64, outfitB64) => {
+    const callImageModel = async (prompt, modelB64, outfitB64) => {
         const payload = {
             action: 'generate',
             model: selectedModel,
@@ -340,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             for (const comp of toGen) {
                 try {
-                    const { imageUrl } = await callFlux(comp.prompt, modelFile.base64, outfitFile.base64);
+                    const { imageUrl } = await callImageModel(comp.prompt, modelFile.base64, outfitFile.base64);
                     await historyManager.save({
                         type: 'image',
                         data: { prompt: comp.title, description: comp.description },
@@ -365,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setProcessing(true);
         try {
             const style = await buildSurpriseStyle();
-            const { imageUrl } = await callFlux(style.prompt, modelFile.base64, outfitFile.base64);
+            const { imageUrl } = await callImageModel(style.prompt, modelFile.base64, outfitFile.base64);
             await historyManager.save({ type: 'image', data: { prompt: style.title, description: style.description }, imageData: imageUrl });
             historyItems = historyManager.getAll();
             renderHistory();

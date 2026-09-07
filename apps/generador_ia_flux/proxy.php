@@ -1,13 +1,11 @@
 <?php
 // ============================================================
-// PROXY PHP - Generador / Editor de imágenes con FLUX (Black Forest Labs)
-// Oculta la clave BFL_API_KEY del frontend.
-// BFL es ASÍNCRONO: este proxy hace submit + polling del lado servidor,
-// así el frontend recibe la imagen en una sola llamada.
+// PROXY PHP - Generador / Editor de imágenes OpenAI y Gemini.
 // Compatible Hostinger (cascade de fuentes de clave).
 // ============================================================
 
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -54,6 +52,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$canonicalBody = json_decode((string)file_get_contents('php://input'), true);
+if (is_array($canonicalBody)) {
+    try {
+        $result = ag_image_generate($canonicalBody, __DIR__);
+        recordStat((string)($result['model'] ?? $canonicalBody['model'] ?? 'openai-medium'));
+        echo json_encode($result, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    } catch (Throwable $error) {
+        $status = (int)$error->getCode();
+        if ($status < 400 || $status > 599) $status = 500;
+        http_response_code($status);
+        echo json_encode(['error'=>['message'=>$error->getMessage()]], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    }
+    exit;
+}
+
 // ===== CLAVE API BFL: cascade de fuentes (Hostinger) =====
 $apiKey = '';
 $configFile = __DIR__ . '/config.php';
@@ -77,6 +90,17 @@ if (empty($apiKey)) {
 // ===== LEER BODY =====
 $body = file_get_contents('php://input');
 $data = json_decode($body, true);
+
+if (is_array($data) && isset(ag_image_catalog()[(string)($data['model'] ?? '')])) {
+    try {
+        $result = ag_image_generate($data, __DIR__);
+        echo json_encode($result, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    } catch (Throwable $error) {
+        http_response_code((int)$error->getCode() >= 400 && (int)$error->getCode() <= 599 ? (int)$error->getCode() : 500);
+        echo json_encode(['error'=>['message'=>$error->getMessage()]], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    }
+    exit;
+}
 
 if (!$data || !isset($data['prompt']) || trim((string)$data['prompt']) === '') {
     http_response_code(400);

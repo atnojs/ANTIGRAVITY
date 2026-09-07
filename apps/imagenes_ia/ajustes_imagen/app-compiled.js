@@ -1033,7 +1033,7 @@ const App = () => {
         setMemeData(null);
         setPreviousImageBeforeEdit(null);
         setHasOverlayFromHistory(false);
-        setManualActions(prev => [...prev, event.detail.tool ? ('IA FLUX: ' + event.detail.tool) : 'Edición IA FLUX']);
+        setManualActions(prev => [...prev, event.detail.tool ? ('IA: ' + event.detail.tool) : 'Edición IA']);
         setStatusMessage("Imagen actualizada por IA. Pulsa Guardar y reiniciar para añadirla al historial.");
         setTimeout(() => setStatusMessage(""), 3000);
       }
@@ -2837,7 +2837,7 @@ manualActions: [...manualActions],
   }, "Versi\xF3n guardada"))))))));
 };
 const modelLabel = (m) => {
-  const labels = { 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
+  const labels = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGHT', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
   return labels[m] || m;
 };
 const SliderControl = ({

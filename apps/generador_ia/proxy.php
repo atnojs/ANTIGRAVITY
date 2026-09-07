@@ -6,6 +6,7 @@
 // ============================================================
 
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -19,6 +20,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Solo se aceptan peticiones POST']]);
+    exit;
+}
+
+$canonicalBody = json_decode((string)file_get_contents('php://input'), true);
+if (is_array($canonicalBody)) {
+    try {
+        $result = ag_image_generate($canonicalBody, __DIR__);
+        echo json_encode($result, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    } catch (Throwable $error) {
+        $status = (int)$error->getCode();
+        if ($status < 400 || $status > 599) $status = 500;
+        http_response_code($status);
+        echo json_encode(['error'=>['message'=>$error->getMessage()]], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    }
     exit;
 }
 

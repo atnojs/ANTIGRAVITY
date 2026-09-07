@@ -47,10 +47,10 @@ const ASPECT_RATIOS = [
 ];
 
 const MODELS = [
-    { id: 'gemini-flash', label: '3.1FLASH' },
-    { id: 'gemini-pro', label: '3 PRO' },
-    { id: 'flux-pro', label: 'FLUX PRO' },
-    { id: 'flux-max', label: 'FLUX MAX' }
+    { id: 'openai-medium', label: 'MEDIUM' },
+    { id: 'openai-high', label: 'HIGHT' },
+    { id: 'gemini-flash', label: '3.1 FLASH' },
+    { id: 'gemini-pro', label: '3 PRO' }
 ];
 const getModelLabel = (m) => (MODELS.find(x => x.id === m) || {}).label || m || '—';
 
@@ -153,7 +153,7 @@ const generateImage = async (params) => {
     if (params.sourceImage) { const b64 = params.sourceImage.split(',')[1]; parts.push({inlineData:{data:b64,mimeType:'image/jpeg'}}); }
     const contents = [{parts}];
     const cfg = {aspectRatio:params.aspectRatio, resolution:'1K', generationConfig:{imageConfig:{aspectRatio:params.aspectRatio}}};
-    const r = await callProxy('flux', contents, cfg, finalPrompt);
+    const r = await callProxy(window.selectedModel || 'openai-medium', contents, cfg, finalPrompt);
     if (!r?.success || !r?.imageUrl) throw new Error(r?.error?.message || 'No se pudo generar la imagen');
     return r.imageUrl;
 };
@@ -202,12 +202,12 @@ const Splash = ({ onSelect }) => (
             <div className="splash-card" onClick={() => onSelect('remix')}>
                 <div className="splash-card-icon"><W size={32}/></div>
                 <h2>Editar Imagen</h2>
-                <p>Transforma imagenes existentes con la potencia de FLUX y Gemini. Sube tu foto, describe los cambios y la IA los aplica.</p>
+                <p>Transforma imagenes existentes con los modelos de OpenAI y Gemini. Sube tu foto, describe los cambios y la IA los aplica.</p>
             </div>
             <div className="splash-card" onClick={() => onSelect('text-to-image')}>
                 <div className="splash-card-icon"><S size={32}/></div>
                 <h2>Generar Imagenes</h2>
-                <p>Describe tu vision y FLUX o Gemini la materializaran en alta resolucion. 14 estilos artisticos, 4 modelos y control total.</p>
+                <p>Describe tu vision y los modelos de OpenAI o Gemini la materializaran en alta resolucion. 14 estilos artisticos, 4 modelos y control total.</p>
             </div>
         </div>
     </div>
@@ -282,7 +282,7 @@ const App = () => {
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLES[0]);
     const [selectedAR, setSelectedAR] = useState('1:1');
-    const [selectedModel, setSelectedModel] = useState('gemini-flash');
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -450,11 +450,21 @@ const App = () => {
 
                     <div className="model-selector">
                         <span className="model-selector-label">Modelo IA</span>
-                        <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-                            {MODELS.map(m => (
-                                <button key={m.id} onClick={()=>setSelectedModel(m.id)} className={`model-toggle ${selectedModel===m.id?'active':''}`} aria-pressed={selectedModel===m.id}>
-                                    {m.label}
-                                </button>
+                        <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                            {[
+                                { provider: 'OPENAI', ids: ['openai-medium', 'openai-high'] },
+                                { provider: 'GEMINI', ids: ['gemini-flash', 'gemini-pro'] }
+                            ].map(group => (
+                                <div className="model-provider-column" key={group.provider}>
+                                    <span className="model-provider-title">{group.provider}</span>
+                                    <div className="model-toggle-group">
+                                        {MODELS.filter(m => group.ids.includes(m.id)).map(m => (
+                                            <button type="button" key={m.id} onClick={()=>setSelectedModel(m.id)} className={`model-toggle ${selectedModel===m.id?'active':''}`} aria-pressed={selectedModel===m.id}>
+                                                {m.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>

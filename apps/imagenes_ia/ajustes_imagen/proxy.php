@@ -12,6 +12,7 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 
 // CORS
 header('Access-Control-Allow-Origin: *');
@@ -28,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['error' => ['message' => 'Solo POST']]);
     exit;
 }
+
+$canonicalBody = json_decode((string)file_get_contents('php://input'), true);
+if (is_array($canonicalBody)) ag_image_response($canonicalBody, __DIR__);
 
 // ===== CLAVE FLUX (variable 'F'): cascade config.php → env → REDIRECT_ → $_SERVER → $_ENV =====
 // (Mismo patrón que 'A' para Gemini. La clave va en SetEnv F "bfl_..." del .htaccess raíz.)

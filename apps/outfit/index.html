@@ -115,11 +115,23 @@
             </div>
             <div class="control-line">
               <span class="control-line-label">Modelo</span>
-              <div class="toggle-row model-selector" id="model-selector">
-                <button class="toggle-btn" data-model="gemini-flash">3.1 FLASH</button>
-                <button class="toggle-btn active" data-model="gemini-flash">3.1 FLASH</button>
-                <button class="toggle-btn" data-model="flux-pro">FLUX PRO</button>
-                <button class="toggle-btn" data-model="flux-max">FLUX MAX</button>
+              <div id="model-selector" class="model-selector">
+                <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                  <div class="model-provider-column">
+                    <span class="model-provider-title">OPENAI</span>
+                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGHT</button>
+                    </div>
+                  </div>
+                  <div class="model-provider-column">
+                    <span class="model-provider-title">GEMINI</span>
+                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

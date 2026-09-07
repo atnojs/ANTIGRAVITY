@@ -1,9 +1,9 @@
-// app.js — Composición de Escenario con FLUX vía proxy canónico Antigravity
+// app.js — Composición de Escenario con IA vía proxy canónico Antigravity
 // ========================================================================
-// Usa el proxy canónico con acción 'generate' para FLUX.
+// Usa el proxy canónico con acción 'generate' para OpenAI y Gemini.
 // Historial gestionado por HistoryManager (clase, no estático).
 
-// ===== PROMPT BUILDER PARA FLUX =====
+// ===== PROMPT BUILDER PARA GENERACIÓN DE IMÁGENES =====
 function buildCompositionPrompt(compKey, compMeta, styleText, variant, compDesc) {
   const title = compMeta?.title || compKey;
   const desc = compDesc || compMeta?.description || '';
@@ -107,11 +107,11 @@ const improvePromptStatus = document.getElementById('improve-prompt-status');
 const promptVariantsEl = document.getElementById('prompt-variants');
 
 // Toggle buttons (como outfit)
-let selectedModel = 'gemini-flash';
+let selectedModel = 'openai-medium';
 let selectedAR = '1:1';
 let selectedRes = 1024;
 // Etiquetas legibles para metadatos (resultado / popup historial)
-const MODEL_LABELS = { 'gemini-flash': '3.1FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
+const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGHT', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
 const getModelLabel = (m) => MODEL_LABELS[m] || m;
 let promptVariants = [];
 
@@ -533,8 +533,9 @@ function initToggleButtons() {
   });
   document.querySelectorAll('.model-toggle').forEach(button => {
     button.addEventListener('click', () => {
-      document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.model-toggle').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
       button.classList.add('active');
+      button.setAttribute('aria-pressed', 'true');
       selectedModel = button.dataset.model;
     });
   });
@@ -662,7 +663,7 @@ function restorePromptVariants() {
   renderPromptVariants();
 }
 
-// ===== GENERACIÓN DE IMÁGENES CON FLUX =====
+// ===== GENERACIÓN DE IMÁGENES =====
 async function generateImages() {
   if (generateBtn.disabled) return;
 
@@ -781,7 +782,7 @@ async function generateImages() {
 
             successCount++;
           } else {
-            console.error(`Error FLUX para ${comp} v${v}:`, data.error || 'Respuesta inválida');
+            console.error(`Error del modelo para ${comp} v${v}:`, data.error || 'Respuesta inválida');
             if (secondaryStatus) secondaryStatus.textContent = `Error en imagen ${currentImage}. Continuando...`;
           }
         } catch (fetchErr) {

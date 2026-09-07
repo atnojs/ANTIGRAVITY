@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     imageFile: null,
     imageWidth: 0,
     imageHeight: 0,
-    selectedModel: 'gemini-flash',
+    selectedModel: 'openai-medium',
     aspectRatio: '1:1',
     resolution: 1024,
     isAdapted: false,
@@ -320,6 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const active = item === button;
       item.classList.toggle('active', active);
       if (item.hasAttribute('role')) item.setAttribute('aria-checked', active ? 'true' : 'false');
+      if (item.classList.contains('model-toggle')) item.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
     state[stateKey] = transform(button.dataset[dataKey]);
   }
@@ -373,10 +374,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function formatResultMeta(data) {
     const model = {
-      'google/gemini-3.1-flash-image': '3.1FLASH',
+      'openai-medium': 'MEDIUM',
+      'openai-high': 'HIGHT',
+      'gemini-flash': '3.1 FLASH',
+      'gemini-pro': '3 PRO',
+      'google/gemini-3.1-flash-image': '3.1 FLASH',
       'google/gemini-3-pro-image': '3 PRO',
-      'flux-2-pro': 'FLUX PRO',
-      'flux-2-max': 'FLUX MAX'
+      'gpt-image-2': 'GPT Image 2'
     }[data.model] || state.selectedModel;
     let dimensions = '';
     if (data.width && data.height) dimensions = `${data.width} × ${data.height} px`;
@@ -611,13 +615,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function checkService() {
     try {
       const data = await fetchJson('proxy.php', {}, 12000);
-      const flux = Boolean(data.configured?.flux);
+      const openai = Boolean(data.configured?.openai);
       const openrouter = Boolean(data.configured?.openrouter);
-      els.serviceStatus.classList.toggle('online', flux && openrouter);
-      els.serviceStatus.classList.toggle('partial', flux !== openrouter);
-      els.serviceStatus.textContent = flux && openrouter
+      els.serviceStatus.classList.toggle('online', openai && openrouter);
+      els.serviceStatus.classList.toggle('partial', openai !== openrouter);
+      els.serviceStatus.textContent = openai && openrouter
         ? '4 modelos disponibles'
-        : flux || openrouter
+        : openai || openrouter
           ? 'Servicio parcialmente configurado'
           : 'Faltan claves del servidor';
     } catch {
@@ -692,9 +696,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const button = event.target.closest('.resolution-button');
     if (button) selectExclusive('#resolution-selector', '.resolution-button', button, 'resolution', 'resolution', Number);
   });
-  document.querySelector('.model-toggle-group').addEventListener('click', (event) => {
+  document.querySelector('.model-provider-layout').addEventListener('click', (event) => {
     const button = event.target.closest('.model-toggle');
-    if (button) selectExclusive('.model-toggle-group', '.model-toggle', button, 'selectedModel', 'model');
+    if (button) selectExclusive('.model-provider-layout', '.model-toggle', button, 'selectedModel', 'model');
   });
 
   els.generateBtn.addEventListener('click', generateImage);

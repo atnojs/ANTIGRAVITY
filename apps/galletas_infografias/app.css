@@ -1240,3 +1240,30 @@ h1 {
 .modal-card::-webkit-scrollbar { width: 6px; }
 .modal-card::-webkit-scrollbar-track { background: transparent; }
 .modal-card::-webkit-scrollbar-thumb { background: rgba(0,208,208,0.3); border-radius: 3px; }
+
+/* Disposición canónica del selector de modelos por proveedor. */
+.model-provider-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+.model-provider-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  min-width: 0;
+}
+.model-provider-title {
+  color: var(--muted, #99CCCC);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .5rem; }
+  .model-toggle-group { gap: .2rem; }
+  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
+}

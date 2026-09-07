@@ -91,11 +91,23 @@
               <button class="toggle-btn" data-value="4096">4096</button>
             </div>
           </div>
-          <div class="toggle-row">
-            <span class="toggle-label">Modelo</span>
-            <div class="toggle-group" id="model-toggles">
-              <button class="toggle-btn active" data-value="pro">PRO</button>
-              <button class="toggle-btn" data-value="max">MAX</button>
+          <div class="model-selector" id="model-selector">
+            <span class="model-selector-label">Modelo IA</span>
+            <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+              <div class="model-provider-column">
+                <span class="model-provider-title">OPENAI</span>
+                <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGHT</button>
+                </div>
+              </div>
+              <div class="model-provider-column">
+                <span class="model-provider-title">GEMINI</span>
+                <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -137,7 +149,7 @@
         <label for="ce-desc">Descripción</label>
         <input type="text" id="ce-desc" placeholder="Breve descripción de qué muestra la infografía" aria-label="Descripción" maxlength="200" />
         <label for="ce-prompt">Prompt</label>
-        <textarea id="ce-prompt" rows="5" aria-label="Prompt de la galleta" placeholder="Instrucciones detalladas para FLUX..."></textarea>
+        <textarea id="ce-prompt" rows="5" aria-label="Prompt de la galleta" placeholder="Instrucciones detalladas para la IA..."></textarea>
         <label for="ce-colors">Colores (hex separados por comas, 5 recomendados)</label>
         <input type="text" id="ce-colors" placeholder="#F59E0B, #EA580C, #D97706, #FCD34D, #92400E" aria-label="Paleta de colores" maxlength="200" />
       </div>

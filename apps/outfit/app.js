@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoading = false;
     let activeCategory = null;
 
-    // Selectores FLUX
-    let selectedModel = 'gemini-flash';
+    // Selector de modelo IA
+    let selectedModel = 'openai-medium';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -725,10 +725,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper para etiqueta legible del modelo
     const getModelLabel = (model) => {
         const labels = {
+            'openai-medium': 'MEDIUM',
+            'openai-high': 'HIGHT',
             'gemini-flash': '3.1 FLASH',
-            'gemini-pro': '3 PRO',
-            'flux-pro': 'FLUX PRO',
-            'flux-max': 'FLUX MAX'
+            'gemini-pro': '3 PRO'
         };
         return labels[model] || model;
     };
@@ -745,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
             height = resolution;
             width = Math.round(resolution * ratio);
         }
-        // Redondear a múltiplos de 32 (requisito FLUX)
+        // Redondear a múltiplos de 32 para mantener dimensiones compatibles.
         width = Math.max(32, Math.round(width / 32) * 32);
         height = Math.max(32, Math.round(height / 32) * 32);
         return { width, height };
@@ -782,10 +782,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const setupSelectors = () => {
         //Selector Modelo IA (4 modelos)
-        document.querySelectorAll('#model-selector .toggle-btn').forEach(btn => {
+        document.querySelectorAll('#model-selector .model-toggle').forEach(btn => {
           btn.addEventListener('click', () => {
-            document.querySelectorAll('#model-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#model-selector .model-toggle').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
             selectedModel = btn.dataset.model;
           });
         });
@@ -1323,7 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             action: 'generate',
             image: base64Image,
             prompt: prompt,
-            quality: selectedModel,
+            model: selectedModel,
             width: dims.width,
             height: dims.height
         });

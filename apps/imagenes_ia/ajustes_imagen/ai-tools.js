@@ -1,5 +1,5 @@
 /**
- * AI Tools — FLUX-powered image editing (Tier 1)
+ * AI Tools — edición de imágenes con OpenAI y Gemini (Tier 1)
  * Injects AI functionality into the Ajustes Imagen app via DOM.
  * No JSX, no Babel, no dependencies on React internals.
  * v1.0 — 2026-06-07
@@ -107,7 +107,7 @@
   // ============================================================
   let currentTool = null;
   let isProcessing = false;
-let selectedModel = 'gemini-flash'; //4 modelos skill_maestra: gemini-flash (3.1FLASH), gemini-pro (3 PRO), flux-pro (FLUX PRO), flux-max (FLUX MAX)
+  let selectedModel = 'openai-medium';
   let selectedAR = '1:1';      // aspect ratio elegido: '1:1','16:9','9:16','4:3','3:4'
   let selectedRes = 1024;      // resolución (lado mayor px): 512, 1024, 2048, 4096
 
@@ -121,7 +121,7 @@ let selectedModel = 'gemini-flash'; //4 modelos skill_maestra: gemini-flash (3.1
   };
 
   // Calcula {width,height} objetivo (lado mayor = selectedRes) según AR seleccionado,
-  // redondeando a múltiplos de 32 (requisito de FLUX).
+  // redondeando a múltiplos de 32 para mantener dimensiones compatibles.
   function computeTargetDims() {
     var r = AR_RATIOS[selectedAR] || [1, 1];
     var rw = r[0], rh = r[1];
@@ -202,7 +202,7 @@ let selectedModel = 'gemini-flash'; //4 modelos skill_maestra: gemini-flash (3.1
   }
 
   // Reescala una data URL a las dimensiones objetivo usando canvas (upscale client-side).
-  // Se usa cuando el usuario pide 4096 pero FLUX solo puede generar hasta 4MP nativos.
+  // Se usa cuando el proveedor devuelve una imagen menor que la resolución solicitada.
   function upscaleDataUrl(dataUrl, targetW, targetH) {
     return new Promise(function (resolve) {
       var img = new Image();
@@ -222,7 +222,7 @@ let selectedModel = 'gemini-flash'; //4 modelos skill_maestra: gemini-flash (3.1
     });
   }
 
-  async function callFluxAPI(imageBase64, prompt) {
+  async function callImageModel(imageBase64, prompt) {
     const base64Data = imageBase64.includes('base64,')
       ? imageBase64.split('base64,')[1] : imageBase64;
     const mimeType = imageBase64.startsWith('data:')
@@ -233,9 +233,7 @@ let selectedModel = 'gemini-flash'; //4 modelos skill_maestra: gemini-flash (3.1
     const payload = {
       image: base64Data,
       mimeType: mimeType,
-      prompt: prompt,
-model: selectedModel,
-        quality: (selectedModel.indexOf('max') !== -1) ? 'max' : 'pro',
+      model: selectedModel,
       width: dims.width,
       height: dims.height
     };
@@ -259,11 +257,11 @@ model: selectedModel,
     if (result.error) throw new Error((result.error && result.error.message) || result.error);
     if (result.image) {
       var dataUrl = 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.image;
-      // Si FLUX generó a menor resolución que la pedida (clamp 4MP p.ej. 4096),
+      // Si el proveedor generó a menor resolución que la pedida,
       // escalamos client-side a las dimensiones finales solicitadas.
       return await upscaleDataUrl(dataUrl, dims.width, dims.height);
     }
-    throw new Error('FLUX no devolvió imagen.');
+    throw new Error('El proveedor no devolvió imagen.');
   }
 
   function updateAppImage(dataUrl, toolLabel) {
@@ -290,7 +288,7 @@ model: selectedModel,
       // Actualizar únicamente la imagen de trabajo. La app conserva la base
       // subida y solo guarda el resultado cuando el usuario pulsa el botón.
       window.dispatchEvent(new CustomEvent('ai-tool-update', {
-        detail: { imageUrl: dataUrl, tool: toolLabel || 'IA FLUX', saveToHistory: false }
+        detail: { imageUrl: dataUrl, tool: toolLabel || 'IA de imagen', saveToHistory: false }
       }));
     };
     img.src = dataUrl;
@@ -474,7 +472,7 @@ model: selectedModel,
       console.log('[AI Tool: ' + tool.label + '] Prompt:', finalPrompt.substring(0, 100) + '...');
 
  window.selectedAIModel = selectedModel;
- var resultUrl = await callFluxAPI(image, finalPrompt);
+ var resultUrl = await callImageModel(image, finalPrompt);
 
       if (resultUrl) {
         // Update the image in the app
@@ -526,12 +524,24 @@ model: selectedModel,
     section.innerHTML =
       '<h4 style="font-size:11px;font-weight:600;color:#00D0D0;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
 '<i data-lucide="wand-2" style="width:0.75rem;height:0.75rem;"></i> IA 10 Herramientas</h4>' +
-      '<div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:0.5rem;">' +
-        '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;">Modelo:</span>' +
-'<button id="ai-quality-flash" class="ai-quality-btn is-selected" data-model="gemini-flash" title="google/gemini-3.1-flash-image rapido y economico" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid #00D0D0;background:rgba(0,208,208,0.3);color:#061018;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3.1FLASH</button>' +
-'<button id="ai-quality-pro" class="ai-quality-btn" data-model="gemini-pro" title="google/gemini-3-pro-image maxima calidad" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">3 PRO</button>' +
-'<button id="ai-quality-fluxpro" class="ai-quality-btn" data-model="flux-pro" title="flux-2-pro calidad/velocidad (~$0.03)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX PRO</button>' +
-'<button id="ai-quality-fluxmax" class="ai-quality-btn" data-model="flux-max" title="flux-2-max maxima fidelidad (~$0.07)" style="flex:1;padding:0.3rem 0.1rem;font-size:9px;font-weight:700;border-radius:0.375rem;border:1px solid rgba(0,208,208,0.5);background:#1e293b;color:#eaffff;cursor:pointer;transition:all 0.15s;text-transform:uppercase;white-space:nowrap;">FLUX MAX</button>' +
+      '<div class="model-selector" style="margin-bottom:0.5rem;">' +
+        '<span class="model-selector-label">Modelo IA</span>' +
+        '<div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">' +
+          '<div class="model-provider-column">' +
+            '<span class="model-provider-title">OPENAI</span>' +
+            '<div class="model-toggle-group">' +
+              '<button id="ai-quality-openai-medium" class="ai-quality-btn model-toggle active" data-model="openai-medium" type="button" title="OpenAI Medium" aria-pressed="true">MEDIUM</button>' +
+              '<button id="ai-quality-openai-high" class="ai-quality-btn model-toggle" data-model="openai-high" type="button" title="OpenAI High" aria-pressed="false">HIGHT</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="model-provider-column">' +
+            '<span class="model-provider-title">GEMINI</span>' +
+            '<div class="model-toggle-group">' +
+              '<button id="ai-quality-gemini-flash" class="ai-quality-btn model-toggle" data-model="gemini-flash" type="button" title="Gemini 3.1 Flash" aria-pressed="false">3.1 FLASH</button>' +
+              '<button id="ai-quality-gemini-pro" class="ai-quality-btn model-toggle" data-model="gemini-pro" type="button" title="Gemini 3 Pro" aria-pressed="false">3 PRO</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
       '<div style="margin-bottom:0.4rem;">' +
         '<span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.25rem;">Formato:</span>' +
@@ -555,7 +565,7 @@ model: selectedModel,
     // Insertar SIEMPRE al INICIO del contenedor scrollable (primer hijo)
     scrollDiv.insertBefore(section, scrollDiv.firstChild);
 
-    // Helper genérico: toggle exclusivo de un grupo de botones selector (pro/max, AR, res)
+    // Helper genérico: toggle exclusivo de un grupo de botones selector (modelo, AR, res)
     function wireSelectorGroup(selector, onPick) {
       var btns = section.querySelectorAll(selector);
       btns.forEach(function (b) {
@@ -609,25 +619,22 @@ model: selectedModel,
       };
     }
 
-    // Selector de modelo (pro/max): actualiza selectedQuality y el estado visual
-var qualityBtns = section.querySelectorAll('.ai-quality-btn');
-qualityBtns.forEach(function (qb) {
- qb.onclick = function () {
- selectedModel = qb.getAttribute('data-model') || 'gemini-flash';
- window.selectedAIModel = selectedModel;
- qualityBtns.forEach(function (b) {
- b.classList.remove('is-selected');
- b.style.background = '#1e293b';
- b.style.color = '#eaffff';
- b.style.borderColor = 'rgba(0,208,208,0.5)';
- });
- qb.classList.add('is-selected');
- qb.style.background = 'rgba(0,208,208,0.3)';
- qb.style.color = 'white';
- qb.style.borderColor = '#00D0D0';
- };
-});
-window.selectedAIModel = selectedModel;
+    // Selector de modelo: un único estado activo entre los cuatro modelos canónicos.
+    var qualityBtns = section.querySelectorAll('.ai-quality-btn');
+    qualityBtns.forEach(function (qb) {
+      qb.onclick = function () {
+        selectedModel = qb.getAttribute('data-model') || 'openai-medium';
+        window.selectedAIModel = selectedModel;
+        qualityBtns.forEach(function (b) {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        qb.classList.add('active');
+        qb.setAttribute('aria-pressed', 'true');
+      };
+      qb.setAttribute('aria-pressed', qb.classList.contains('active') ? 'true' : 'false');
+    });
+    window.selectedAIModel = selectedModel;
         // Add tool buttons
     var grid = document.getElementById('ai-tools-grid');
     if (!grid) return;

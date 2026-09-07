@@ -11,6 +11,7 @@ set_time_limit(130);
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
+require_once __DIR__ . '/../../apps/dibujo_lineas_copia/canonical-image-model.php';
 
 const MAX_REQUEST_BYTES = 32 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
@@ -167,6 +168,9 @@ function handleOpenRouter(array $request): void {
 }
 
 function handleFlux(array $request): void {
+    if (!isset(ag_image_catalog()[(string)($request['model'] ?? '')])) $request['model'] = 'openai-medium';
+    ag_image_response($request, __DIR__);
+    /* Código histórico inalcanzable conservado temporalmente para compatibilidad de despliegue. */
     $key = getSecret('F');
     if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
     $prompt = trim((string)($request['prompt'] ?? ''));

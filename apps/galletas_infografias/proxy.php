@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 /**
  * Proxy canónico Antigravity.
  * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
@@ -263,6 +264,6 @@ $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? $request['service'] ?? 'generate'));
 if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
-if ($action === 'generate' || $action === 'flux') handleFlux($request);
+if ($action === 'generate') ag_image_response($request, __DIR__);
 if ($action === 'translate') handleTranslate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);

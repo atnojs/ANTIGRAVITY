@@ -1,6 +1,7 @@
 <?php
 // Proxy for StoryWeaver Character Generator
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
@@ -55,6 +56,10 @@ try {
   if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
 
   $task        = $json['task'] ?? '';
+  if ($task === 'generateImage' || (($json['provider'] ?? '') === 'flux')) {
+      if (!isset(ag_image_catalog()[(string)($json['model'] ?? '')])) $json['model'] = 'openai-medium';
+      ag_image_response($json, __DIR__);
+  }
   $provider    = $json['provider'] ?? 'gemini'; 
   $prompt      = (string)($json['prompt'] ?? '');
   $images      = $json['images'] ?? [];

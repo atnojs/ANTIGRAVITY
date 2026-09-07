@@ -203,26 +203,26 @@
                                    placeholder="Describe el estilo o cambios que deseas aplicar..."></textarea>
                          </div>
 
-                         <!-- SELECTOR DE MODELO IA CANÓNICO (4 modelos) -->
+                         <!-- SELECTOR DE MODELO IA -->
                          <div class="gen-section model-section">
                               <h4><i class="fa fa-gem"></i> Modelo IA</h4>
-                              <div class="model-selector" id="model-selector" role="radiogroup" aria-label="Modelo de IA">
-                                   <button type="button" class="model-option" data-model="gemini-flash" aria-pressed="false" title="Rápido y económico">
-                                        <span class="m-name">3.1FLASH</span>
-                                        <span class="m-desc">~$0.002</span>
-                                   </button>
-                                   <button type="button" class="model-option active" data-model="gemini-flash" aria-pressed="true" title="Gemini 3.1 Flash por defecto">
-                                        <span class="m-name">3 PRO</span>
-                                        <span class="m-desc">~$0.03</span>
-                                   </button>
-                                   <button type="button" class="model-option" data-model="flux-pro" aria-pressed="false" title="Alta calidad profesional">
-                                        <span class="m-name">FLUX PRO</span>
-                                        <span class="m-desc">~$0.05</span>
-                                   </button>
-                                   <button type="button" class="model-option" data-model="flux-max" aria-pressed="false" title="Máxima calidad">
-                                        <span class="m-name">FLUX MAX</span>
-                                        <span class="m-desc">~$0.07</span>
-                                   </button>
+                              <div class="model-selector" id="model-selector">
+                                   <div class="model-provider-layout" role="group" aria-label="Modelo de IA">
+                                        <div class="model-provider-column">
+                                             <span class="model-provider-title">OPENAI</span>
+                                             <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGHT</button>
+                                             </div>
+                                        </div>
+                                        <div class="model-provider-column">
+                                             <span class="model-provider-title">GEMINI</span>
+                                             <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+                                             </div>
+                                        </div>
+                                   </div>
                               </div>
                          </div>
 

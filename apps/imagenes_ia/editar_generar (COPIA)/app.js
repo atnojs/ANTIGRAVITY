@@ -264,8 +264,7 @@ const generateImage = async (params) => {
             }
         }
     };
-    const result = await callProxy(window.selectedModel || 'flux-pro', contents, config);
-    // FLUX response format: { success: true, imageUrl: 'data:...' }
+    const result = await callProxy(window.selectedModel || 'openai-medium', contents, config);
     if (result.success && result.imageUrl) return result.imageUrl;
     // Gemini response format
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
@@ -284,8 +283,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio, imageSize: params.imageSize || '1K' } } };
-    const result = await callProxy(window.selectedModel || 'flux-pro', contents, config);
-    // FLUX response format
+    const result = await callProxy(window.selectedModel || 'openai-medium', contents, config);
     if (result.success && result.imageUrl) return result.imageUrl;
     // Gemini response format
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
@@ -518,7 +516,7 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
-    const [selectedModel, setSelectedModel] = useState('flux-pro');
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
     useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
     const fileInputRef = useRef(null);
@@ -751,19 +749,20 @@ const App = () => {
                             {/* ── Selector de Modelo IA (canonico hoola) ── */}
                             <div className="model-selector">
                                 <span className="model-selector-label">Modelo IA</span>
-                                <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                                <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
                                     {[
-                                        { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-                                        { id: 'gemini-flash', name: '3.1 Flash', cls: '' },
-                                        { id: 'gemini-pro', name: '3 Pro', cls: '' },
-                                        { id: 'flux-max', name: 'Flux Max', cls: 'flux' }
-                                    ].map(m => (
-                                        <button
-                                            type="button"
-                                            key={m.id}
-                                            onClick={() => setSelectedModel(m.id)}
-                                            className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
-                                        >{m.name}</button>
+                                        { provider: 'OPENAI', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGHT']] },
+                                        { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                                    ].map(group => (
+                                        <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
+                                            <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
+                                            <div className="model-toggle-group" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                                                {group.models.map(([id, name]) => (
+                                                    <button type="button" key={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id}
+                                                        className={`model-toggle ${selectedModel === id ? 'active' : ''}`}>{name}</button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -865,4 +864,3 @@ const App = () => {
 
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
-

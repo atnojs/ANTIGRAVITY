@@ -301,7 +301,7 @@ const App = () => {
     const [source, setSource] = useState(null);
     const [sourceInfo, setSourceInfo] = useState(null);
     const [selectedESRGANModel, setSelectedESRGANModel] = useState(MODEL_OPTIONS[3]); // medium-4x por defecto
-    const [selectedModel, setSelectedModel] = useState('gemini-flash'); // Modelo IA (Flux/Gemini)
+    const [selectedModel, setSelectedModel] = useState('openai-medium'); // Modelo IA (OpenAI/Gemini)
     const [isDinA4, setIsDinA4] = useState(false);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('');
@@ -371,7 +371,7 @@ const App = () => {
                 setStatus
             );
 
-            // ── Mejora opcional con IA (Flux/Gemini via proxy) ──
+            // ── Mejora opcional con IA (OpenAI/Gemini vía proxy) ──
             let enhancedDataUrl = result.dataUrl;
             let modelLabel = '';
             try {
@@ -392,9 +392,12 @@ const App = () => {
                     const proxyData = await proxyResp.json();
                     if (proxyData.success && proxyData.imageUrl) {
                         enhancedDataUrl = proxyData.imageUrl;
-                        modelLabel = ' + ' + ((window.selectedModel || selectedModel) === 'flux-pro' ? 'Flux Pro' :
-                            (window.selectedModel || selectedModel) === 'flux-max' ? 'Flux Max' :
-                            (window.selectedModel || selectedModel) === 'gemini-pro' ? 'Gemini 3 Pro' : 'Gemini 3.1 Flash');
+                        modelLabel = ' + ' + ({
+                            'openai-medium': 'OpenAI Medium',
+                            'openai-high': 'OpenAI Hight',
+                            'gemini-pro': 'Gemini 3 Pro',
+                            'gemini-flash': 'Gemini 3.1 Flash'
+                        }[window.selectedModel || selectedModel] || 'OpenAI Medium');
                     }
                 }
             } catch (proxyErr) {
@@ -572,20 +575,20 @@ const App = () => {
                 {/* ── Selector de Modelo IA (canónico hoola) ── */}
                 <div className="model-selector">
                   <span className="model-selector-label">Modelo IA</span>
-                  <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                  <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
                     {[
-                      { id: 'gemini-flash', name: '3.1FLASH' },
-                      { id: 'gemini-pro', name: '3 PRO' },
-                      { id: 'flux-pro', name: 'FLUX PRO' },
-                      { id: 'flux-max', name: 'FLUX MAX' }
-                    ].map(m => (
-                      <button
-                        type="button"
-                        key={m.id}
-                        onClick={() => setSelectedModel(m.id)}
-                        aria-pressed={selectedModel === m.id}
-                        className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
-                      >{m.name}</button>
+                      { provider: 'OPENAI', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGHT']] },
+                      { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                    ].map(group => (
+                      <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
+                        <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
+                        <div className="model-toggle-group" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                          {group.models.map(([id, name]) => (
+                            <button type="button" key={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id}
+                              className={`model-toggle ${selectedModel === id ? 'active' : ''}`}>{name}</button>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

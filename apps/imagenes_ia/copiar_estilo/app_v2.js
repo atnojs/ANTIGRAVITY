@@ -2,12 +2,13 @@
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
 // --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
-window.selectedModel = 'gemini-flash';
+window.selectedModel = 'openai-medium';
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.model-toggle').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
             window.selectedModel = btn.dataset.model;
         });
     });
@@ -814,7 +815,7 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: window.selectedModel || 'gemini-flash',
+            model: window.selectedModel || 'openai-medium',
             image: subjectData.data,
             mimeType: subjectData.mimeType,
             prompt: promptInstructions

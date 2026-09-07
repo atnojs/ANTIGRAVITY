@@ -462,7 +462,7 @@
         try {
           const finalPrompt = composePrePrompt(prompts[i], { integration: __detectIntegrationFromImage(__normalizeImageForApi(imageInline)) });
           const __imageNorm = __normalizeImageForApi(imageInline);
-          const __payload = { task: "generateImages", image: __imageNorm, prompts: [finalPrompt], model: (window.__fichaModel || 'flux-pro') };
+          const __payload = { task: "generateImages", image: __imageNorm.data, mimeType: __imageNorm.mimeType, prompts: [finalPrompt], model: (window.__fichaModel || 'openai-medium') };
           __extendPayloadWithConfigs(__payload, finalPrompt);
           const res = await fetch("./proxy.php", {
             method: "POST",
@@ -500,11 +500,13 @@
       const enhancedPrompt = customPrompt + logoPreservationInstructions;
 
       const finalPrompt = composePrePrompt(enhancedPrompt, { integration: __detectIntegrationFromImage(__normalizeImageForApi(currentImage)) });
+      const __imageNorm = __normalizeImageForApi(currentImage);
       const __payload = {
         task: "generateImages",
-        image: __normalizeImageForApi(currentImage),
+        image: __imageNorm.data,
+        mimeType: __imageNorm.mimeType,
         prompts: [finalPrompt],
-        model: (window.__fichaModel || 'flux-pro'),
+        model: (window.__fichaModel || 'openai-medium'),
       };
       __extendPayloadWithConfigs(__payload, finalPrompt);
       
@@ -925,7 +927,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState("");
   const [preserveLogo, setPreserveLogo] = useState(true);
-  const [selectedModel, setSelectedModel] = useState(window.__fichaModel || 'flux-pro');
+  const [selectedModel, setSelectedModel] = useState(window.__fichaModel || 'openai-medium');
 
   const changeModel = (m) => {
     setSelectedModel(m);
@@ -1036,25 +1038,31 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
 
       <div>
         <label className="block text-sm font-medium text-gray-300">Modelo IA</label>
-        <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Seleccionar modelo">
+        <div className="model-provider-layout mt-2 grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
           {[
-            { id: 'gemini-flash', label: '3.1FLASH' },
-            { id: 'gemini-pro', label: '3 PRO' },
-            { id: 'flux-pro', label: 'FLUX PRO' },
-            { id: 'flux-max', label: 'FLUX MAX' },
-          ].map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => changeModel(m.id)}
-              className={`px-3 py-2 rounded-full text-xs font-medium uppercase tracking-wide transition ${
-                selectedModel === m.id
-                  ? 'bg-indigo-600 text-white shadow'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              {m.label}
-            </button>
+            { provider: 'OPENAI', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGHT' }] },
+            { provider: 'GEMINI', models: [{ id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
+          ].map((group) => (
+            <div className="model-provider-column min-w-0" key={group.provider}>
+              <span className="model-provider-title block text-center text-[10px] font-semibold tracking-widest text-gray-400 mb-1">{group.provider}</span>
+              <div className="model-toggle-group grid grid-cols-2 gap-1">
+                {group.models.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => changeModel(m.id)}
+                    aria-pressed={selectedModel === m.id}
+                    className={`model-toggle px-2 py-2 rounded-full text-xs font-medium uppercase tracking-wide transition ${
+                      selectedModel === m.id
+                        ? 'active bg-indigo-600 text-white shadow'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>

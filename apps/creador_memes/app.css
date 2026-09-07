@@ -615,3 +615,30 @@ input[type="range"]::-moz-range-thumb {
 .btn-sq-green  { --btn-glow: rgba(16,185,129,0.5); color: #dafef1; }
 .btn-sq-blue   { --btn-glow: rgba(0,208,208,0.55); color: #d9e8ff; }
 .btn-sq-red    { --btn-glow: rgba(239,68,68,0.55); color: #ffe3e3; }
+
+/* Disposición canónica del selector de modelos por proveedor. */
+.model-provider-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+.model-provider-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  min-width: 0;
+}
+.model-provider-title {
+  color: var(--muted, #99CCCC);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .5rem; }
+  .model-toggle-group { gap: .2rem; }
+  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
+}

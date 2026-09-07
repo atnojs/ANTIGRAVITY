@@ -10,6 +10,9 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
+$agBody = json_decode(file_get_contents('php://input') ?: '', true);
+if (is_array($agBody) && array_key_exists('model', $agBody)) ag_image_response($agBody, __DIR__);
 
 // CORS
 header('Access-Control-Allow-Origin: *');
@@ -66,7 +69,7 @@ $FLUX_KEY = resolveKey('F');      // BFL API key
 $OR_KEY   = resolveKey('R');      // OpenRouter API key
 
 // ===== Entrada =====
-$raw = file_get_contents('php://input') ?: '';
+$raw = is_array($agBody) ? json_encode($agBody) : (file_get_contents('php://input') ?: '');
 if (empty($raw)) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Cuerpo vacío.']]);

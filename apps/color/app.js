@@ -26,16 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let textChoice = null; // null, true (con), false (sin), 'custom'
 
     // ─── Estado de los selectores de salida ──────────────────
-    let selectedQuality = 'pro'; // 'pro' | 'max'
+    let selectedModel = 'openai-medium';
     const selectedAR = '9:16';   // formato fijo por defecto
     const selectedRes = 512;     // resolución fija por defecto
 
-    // ─── Selectores: Calidad PRO/MAX ─────────────────────────
-    const qualityBtns = document.querySelectorAll('.quality-option');
-    qualityBtns.forEach(btn => {
+    // ─── Selectores de modelo ─────────────────────────────────
+    const modelBtns = document.querySelectorAll('#model-selector .model-toggle');
+    modelBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            selectedQuality = btn.dataset.quality;
-            qualityBtns.forEach(b => {
+            selectedModel = btn.dataset.model || 'openai-medium';
+            modelBtns.forEach(b => {
                 const on = b === btn;
                 b.classList.toggle('active', on);
                 b.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return { width: round32(w), height: round32(h) };
     }
 
-    // Upscale en cliente (para 4096, que FLUX no genera nativo por el límite 4MP)
+    // Upscale en cliente para preparar descargas de 4096 px.
     function upscaleDataUrl(dataUrl, targetW, targetH) {
         return new Promise((resolve) => {
             const img = new Image();
@@ -302,22 +302,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // 4) Dimensiones objetivo (formato + resolución)
             const target = computeTargetDims(selectedAR, selectedRes);
 
-            // 5) Para cada concepto, generar la imagen con FLUX (secuencial)
+            // 5) Para cada concepto, generar la imagen (secuencial)
             let anyOk = false;
             for (let i = 0; i < concepts.length; i++) {
                 const concept = concepts[i];
                 setLoading(true, `Generando imagen ${i + 1} de ${concepts.length}...`);
                 try {
-                    const flux = await fetchFluxImage({
-                        prompt: buildFluxPrompt(concept),
-                        calidad: selectedQuality,
+                    const generated = await fetchImageModel({
+                        prompt: buildImagePrompt(concept),
+                        model: selectedModel,
                         width: target.width,
                         height: target.height
                     });
 
-                    let imageUrl = flux.imageUrl;
-                    // Upscale en cliente si se pidió más resolución de la que FLUX generó
-                    if (imageUrl && (flux.width < target.width || flux.height < target.height)) {
+                    let imageUrl = generated.imageUrl;
+                    if (imageUrl && (generated.width < target.width || generated.height < target.height)) {
                         imageUrl = await upscaleDataUrl(imageUrl, target.width, target.height);
                     }
 
@@ -333,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!anyOk) {
                 const note = document.createElement('p');
                 note.className = 'error-message';
-                note.textContent = 'Se generaron las paletas pero falló la creación de imágenes. Revisa la clave de FLUX e inténtalo de nuevo.';
+                note.textContent = 'Se generaron las paletas pero falló la creación de imágenes. Revisa la configuración de OpenAI/Gemini e inténtalo de nuevo.';
                 resultsContainer.appendChild(note);
             }
         } catch (error) {
@@ -358,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return data.concepts || [];
     }
 
-    async function fetchFluxImage(payload) {
+    async function fetchImageModel(payload) {
         const response = await fetch('proxy.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -371,8 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return data;
     }
 
-    // Construye el prompt final para FLUX a partir del concepto de DeepSeek
-    function buildFluxPrompt(concept) {
+    // Construye el prompt final para el modelo seleccionado
+    function buildImagePrompt(concept) {
         let p = concept.imagePrompt || '';
         const palette = Array.isArray(concept.palette) ? concept.palette.join(', ') : '';
         if (palette && !/#/.test(p)) {
@@ -541,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
             prompt: (concept.title || 'Paleta') + (baseColor ? ' · ' + baseColor : ''),
             aspectRatio: selectedAR,
             size: selectedRes + 'px',
-            quality: selectedQuality,
+            model: selectedModel,
             palette: Array.isArray(concept.palette) ? concept.palette : [],
             font: concept.font || null,
             style: { mode: currentMode },

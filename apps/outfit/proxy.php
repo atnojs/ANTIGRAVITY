@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 // ==========================================================
 // PROXY CambioOutfit (image-to-image)
 // 4 modelos: Gemini Flash/Pro (clave G) + FLUX Pro/Max (clave F)
@@ -61,6 +62,7 @@ if ($action === 'text') {
 // GENERAR IMAGEN (ruteo por modelo)
 // ===========================================================
 function handleGenerate(array $req): void {
+    ag_image_response($req, __DIR__);
     $modelInput = (string)($req['quality'] ?? 'gemini-flash');
 
     // Gemini Flash / Pro

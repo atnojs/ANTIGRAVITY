@@ -8,6 +8,7 @@
  */
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 
 // CORS y OPTIONS
 header('Access-Control-Allow-Origin: *');
@@ -51,11 +52,15 @@ if (json_last_error()!==JSON_ERROR_NONE || !is_array($data)) {
     exit;
 }
 
+$action = strtolower((string)($data['action'] ?? ''));
+if ($action !== 'text' && $action !== 'openrouter') {
+    ag_image_response($data, __DIR__);
+}
+
 // ====================================================================
 // ACCIÓN TEXTO (mejorador de prompts vía OpenRouter)
 // Contrato: {action:'text', prompt, system?, model?, imagen?} -> {success, text, model}
 // ====================================================================
-$action = strtolower((string)($data['action'] ?? ''));
 if ($action === 'text' || $action === 'openrouter') {
     if ($orKey === '') {
         http_response_code(500);

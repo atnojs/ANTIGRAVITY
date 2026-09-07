@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 /**
  * Proxy multimodelo de Estilizador de Prompts.
  * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
@@ -473,6 +474,7 @@ function extractVisualTreatment(string $prompt): string {
 }
 
 function handleGenerate(array $request): void {
+    ag_image_response($request, __DIR__);
     $prompt = trim((string)($request['prompt'] ?? ''));
     if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);

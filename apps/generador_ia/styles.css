@@ -41,6 +41,33 @@
   --read-size: 1.12rem;
 }
 
+/* Disposición canónica del selector de modelos por proveedor. */
+.model-provider-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+.model-provider-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  min-width: 0;
+}
+.model-provider-title {
+  color: var(--muted, #99CCCC);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .5rem; }
+  .model-toggle-group { gap: .2rem; }
+  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
+}
+
 /* Tema claro (variante suave, mantiene identidad teal) */
 body.light {
   --bg: #e8f4f4;
@@ -723,6 +750,13 @@ select option { background: var(--fondo-sup); color: var(--text); }
 }
 .quality-card .q-name { font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
 .quality-card .q-price { font-size: 0.72rem; color: var(--text-faint); margin-top: 4px; }
+
+.model-selector { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:8px; }
+.model-provider-column { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.model-provider-title { grid-column:1/-1; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); }
+.model-toggle-group { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; grid-column:1/-1; }
+.model-toggle { border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:8px; padding:9px 5px; cursor:pointer; font:inherit; font-size:.72rem; font-weight:700; }
+.model-toggle.active { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
 
 .btn-generate {
   width: 100%; margin-top: 22px; padding: 16px;

@@ -3,7 +3,7 @@
  * 🎨 ESTILO JSON — JavaScript
  * 1) Subes una imagen de estilo -> la IA (visión) crea su JSON automáticamente.
  * 2) Subes la imagen del sujeto.
- * 3) Pulsas "Generar" -> FLUX aplica el estilo (JSON) al sujeto.
+ * 3) Pulsas "Generar" -> el modelo elegido aplica el estilo (JSON) al sujeto.
  * El JSON de estilo queda guardado (persistente) para reutilizarlo con más sujetos.
  * ============================================
  */
@@ -11,7 +11,7 @@
 const CONFIG = {
     ALLOWED_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
     PROXY_URL: 'proxy.php',
-    MAX_INPUT_SIDE: 2048 // Clamp de entrada (4MP) para no romper FLUX
+    MAX_INPUT_SIDE: 2048 // Clamp de entrada para mantener la petición estable.
 };
 
 // --- HISTORIAL PERSISTENTE (IndexedDB + servidor) ---
@@ -94,7 +94,7 @@ const state = {
     estiloJson: null,     // objeto JSON del estilo (persistente)
     history: [],
     selectedRes: 1024,
-    selectedModel: 'gemini-pro', // 3 PRO por defecto (skill_maestra)
+    selectedModel: 'openai-medium',
     isAnalyzing: false,
     isGenerating: false,
     isEnhancing: false,
@@ -383,8 +383,9 @@ function subjectAspectRatio() {
 function setupResSelector() {
     const btns = el.resSelector.querySelectorAll('.ar-option');
     btns.forEach(b => b.addEventListener('click', () => {
-        btns.forEach(x => x.classList.remove('active'));
+        btns.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
         b.classList.add('active');
+        b.setAttribute('aria-pressed', 'true');
         state.selectedRes = parseInt(b.dataset.res, 10);
         updateResNote();
     }));
@@ -393,14 +394,15 @@ function setupResSelector() {
 function updateResNote() {
     if (!el.resNote) return;
     el.resNote.textContent = state.selectedRes >= 4096
-        ? 'FLUX genera hasta ~2048 px nativos; 4096 se reescala en tu equipo.'
+        ? 'El proveedor ajustará la resolución al límite de la API.'
         : '';
 }
 function setupModelSelector() {
     const btns = el.modelSelector.querySelectorAll('.model-toggle');
     btns.forEach(b => b.addEventListener('click', () => {
-        btns.forEach(x => x.classList.remove('active'));
+        btns.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
         b.classList.add('active');
+        b.setAttribute('aria-pressed', 'true');
         state.selectedModel = b.dataset.model;
         window.selectedModel = state.selectedModel;
     }));
@@ -408,7 +410,7 @@ function setupModelSelector() {
 }
 
 // ═══════════════════════════════════════════════
-// PASO 3: GENERAR (FLUX aplica el estilo al sujeto)
+// PASO 3: GENERAR (aplica el estilo al sujeto)
 // ═══════════════════════════════════════════════
 async function handleGenerate() {
     if (!state.estiloJson) { showError('Falta el JSON de estilo. Sube una imagen de estilo (paso 1).'); return; }
@@ -435,9 +437,9 @@ async function handleGenerate() {
         });
         const data = await res.json();
         if (data.error) throw new Error(data.error.message || data.error);
-        if (!data.imageUrl) throw new Error('FLUX no devolvió imagen');
+        if (!data.imageUrl) throw new Error('El modelo no devolvió imagen');
 
-        // Escalado en cliente si el usuario pidió 4096 y FLUX generó menos
+        // Escalado en cliente si el usuario pidió 4096 y el modelo generó menos.
         let finalUrl = data.imageUrl;
         if (state.selectedRes >= 4096) {
             try { finalUrl = await upscaleDataUrl(data.imageUrl, state.selectedRes, subjectAR); }
@@ -600,8 +602,7 @@ function setAnalyzing(v) {
 function setGenerating(v) {
     state.isGenerating = v;
     if (v) {
-        const modelLabel = { 'gemini-flash':'3.1FLASH', 'gemini-pro':'3 PRO', 'flux-pro':'FLUX PRO', 'flux-max':'FLUX MAX' }[state.selectedModel] || state.selectedModel;
-        showLoading('Generando con ' + modelLabel + '...');
+        showLoading('IA generando lo solicitado...');
     }
     else { hideLoading(); }
     updateStatuses();

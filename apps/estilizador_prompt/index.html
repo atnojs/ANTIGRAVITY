@@ -175,13 +175,23 @@
                 </div>
               </div>
 
-              <div class="model-selector">
+              <div id="model-selector" class="model-selector">
                 <span class="model-selector-label">Modelo IA</span>
-                <div class="model-toggle-group" role="radiogroup" aria-label="Seleccionar modelo">
-                  <button type="button" class="model-toggle" data-model="gemini-flash" role="radio" aria-checked="false">3.1FLASH</button>
-                  <button type="button" class="model-toggle active" data-model="gemini-flash" role="radio" aria-checked="true">3.1 FLASH</button>
-                  <button type="button" class="model-toggle" data-model="flux-pro" role="radio" aria-checked="false">FLUX PRO</button>
-                  <button type="button" class="model-toggle" data-model="flux-max" role="radio" aria-checked="false">FLUX MAX</button>
+                <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                  <div class="model-provider-column">
+                    <span class="model-provider-title">OPENAI</span>
+                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGHT</button>
+                    </div>
+                  </div>
+                  <div class="model-provider-column">
+                    <span class="model-provider-title">GEMINI</span>
+                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

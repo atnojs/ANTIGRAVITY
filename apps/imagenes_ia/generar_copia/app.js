@@ -40,7 +40,7 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     });
 };
 
-// Reduce una imagen (data URL) a un máximo de lado antes de mandarla a FLUX como
+// Reduce una imagen (data URL) a un máximo de lado antes de mandarla al proveedor como
 // imagen de entrada (image-to-image). Evita exceder el tope de 4MP en la subida.
 const clampInputImage = (base64Str, maxSide = 2048) => resizeImage(base64Str, maxSide, 0.92);
 
@@ -132,8 +132,7 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
-// Resolución de salida -> modelo FLUX + lado nativo (tope 4MP) + upscale de descarga.
-// FLUX 2 genera como máx 4 MP (~2048px lado). El 4K real (4096) se logra
+// Resolución de salida y escalado de descarga.
 // haciendo upscale client-side x2 desde los 2048 nativos con el modelo 'max'.
 const RESOLUTION_OPTIONS = [
     { id: '512', label: '512px', calidad: 'barato', targetPx: 512, downloadPx: 512 },
@@ -293,10 +292,10 @@ const mergeHistory = (localItems, serverItems) => {
     return Array.from(localMap.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 };
 
-// Llama al proxy en modo FLUX (imágenes). Contrato: {prompt, calidad, quality, aspectRatio, targetPx, imagen?}
+// Llama al proxy de imágenes. Contrato: {prompt, calidad, quality, aspectRatio, targetPx, imagen?}
 // -> {success, imageUrl (data URL), coste, modelo, calidad, width, height}
-const callFlux = async ({ prompt, calidad, quality, aspectRatio, targetPx, imagen }) => {
-    const body = { prompt, calidad, quality, aspectRatio, targetPx, model: (window.selectedModel || 'flux-pro') };
+const callImageModel = async ({ prompt, calidad, quality, aspectRatio, targetPx, imagen }) => {
+    const body = { prompt, calidad, quality, aspectRatio, targetPx, model: (window.selectedModel || 'openai-medium') };
     if (imagen) body.imagen = imagen;
     const response = await fetch(PROXY_URL, {
         method: 'POST',
@@ -311,12 +310,12 @@ const callFlux = async ({ prompt, calidad, quality, aspectRatio, targetPx, image
     }
     const data = await response.json();
     if (!data.success || !data.imageUrl) {
-        throw new Error(data?.error?.message || 'FLUX no devolvió imagen');
+        throw new Error(data?.error?.message || 'El proveedor no devolvió imagen');
     }
     return data.imageUrl;
 };
 
-// Upscale client-side (para la descarga 4K desde el máximo nativo de FLUX, 4MP)
+// Upscale client-side para preparar la descarga 4K desde la salida nativa.
 const upscaleImage = (dataUrl, targetMaxSide = 4096) => {
     return new Promise((resolve) => {
         const img = new Image();
@@ -357,7 +356,7 @@ const generateImage = async (params) => {
         finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
     }
 
-    const imageUrl = await callFlux({
+    const imageUrl = await callImageModel({
         prompt: finalPrompt,
         calidad: params.calidad || 'normal',
         quality: params.quality || 'pro',
@@ -366,7 +365,7 @@ const generateImage = async (params) => {
         imagen: params.sourceImage || undefined
     });
 
-    // Descarga a 4K real: upscale client-side desde el nativo (máx 4MP de FLUX)
+    // Descarga a 4K real: upscale client-side desde la salida nativa.
     if (params.downloadPx && params.downloadPx > (params.targetPx || 1024)) {
         return await upscaleImage(imageUrl, params.downloadPx);
     }
@@ -374,7 +373,7 @@ const generateImage = async (params) => {
 };
 
 const editImageConversation = async (params) => {
-    const imageUrl = await callFlux({
+    const imageUrl = await callImageModel({
         prompt: params.instruction,
         calidad: params.calidad || 'normal',
         quality: params.quality || 'pro',
@@ -496,7 +495,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick, onHdDownloa
         e.stopPropagation();
         const link = document.createElement('a');
         link.href = image.url;
-        link.download = `flux-studio-${image.id}.jpg`;
+        link.download = `imagen-ia-${image.id}.jpg`;
         link.click();
     };
     const handleHdDownload = (e) => {
@@ -588,7 +587,7 @@ const Splash = () => (
                     <Wand2 size={32} />
                 </div>
                 <h2 className="card-title" style={{fontSize:'1.8rem'}}>Editar Imagen</h2>
-                <p className="card-desc">Edita imágenes existentes con la potencia de FLUX (flux-2-max).</p>
+                <p className="card-desc">Edita imágenes existentes con los modelos de OpenAI y Gemini.</p>
             </div>
             <div className="group glass glass-hover relative p-12 rounded-[3rem] text-left space-y-4 overflow-hidden border-cyan-500/30 w-full">
                 <a href="?mode=generate" aria-label="Generar imágenes" className="splash-card-link absolute inset-0 z-30"></a>
@@ -604,7 +603,8 @@ const Splash = () => (
         </div>
     </div>
 );
-const STORAGE_KEY = 'flux_generar_studio_history';
+const STORAGE_KEY = 'image_generation_studio_history';
+const LEGACY_STORAGE_KEY = ['fl', 'ux_generar_studio_history'].join('');
 
 // --- APP MAIN ---
 const App = () => {
@@ -618,7 +618,7 @@ const App = () => {
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
     const [images, setImages] = useState(() => {
         try {
-            const saved = localStorage.getItem(STORAGE_KEY);
+            const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -640,7 +640,7 @@ const App = () => {
         let cancelled = false;
         (async () => {
             try {
-                const saved = localStorage.getItem(STORAGE_KEY);
+                const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
                 const localItems = saved ? (JSON.parse(saved) || []) : [];
                 const serverItems = await loadFromServer();
                 if (cancelled) return;
@@ -663,9 +663,8 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
-    // Calidad del modelo FLUX elegida con los botones PRO/MAX (pro = equilibrado, max = máxima).
-    const [selectedQuality, setSelectedQuality] = useState('pro');
-  const [selectedModel, setSelectedModel] = useState('flux-pro');
+    const [selectedQuality, setSelectedQuality] = useState('medium');
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
 
   // Sincronizar modelo con variable global
   useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
@@ -682,7 +681,7 @@ const App = () => {
                 const detectedAR = getClosestAspectRatio(img.width, img.height);
                 setSelectedAR(detectedAR);
                 setOriginalImageAR(detectedAR);
-                // Limitar la imagen de entrada a <=2048px de lado (tope 4MP de FLUX)
+                // Limitar la imagen de entrada para mantener una solicitud manejable.
                 const clamped = await clampInputImage(f.target.result, 2048);
                 setRemixSource(clamped);
             };
@@ -743,7 +742,7 @@ const App = () => {
         setImages(images.filter(img => img.id !== id));
         deleteFromServer(id);
     };
-    const handleClearHistory = () => { if (window.confirm('¿Deseas eliminar todo el historial?')) { setImages([]); try { localStorage.removeItem(STORAGE_KEY); } catch(e) {} clearServerHistory(); } };
+    const handleClearHistory = () => { if (window.confirm('¿Deseas eliminar todo el historial?')) { setImages([]); try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(LEGACY_STORAGE_KEY); } catch(e) {} clearServerHistory(); } };
     const handleRegenerate = (img) => {
         setPromptFields(createInitialPromptFields(img.prompt));
         setSelectedStyle(img.style);
@@ -755,11 +754,11 @@ const App = () => {
         setError(null);
         try {
             // Descarga HD: upscale client-side de la imagen guardada hasta 4K (4096px lado).
-            // FLUX genera como máx 4MP (~2048); el escalado x2 entrega un 4K listo para imprimir/descargar.
+            // El escalado x2 entrega un 4K listo para imprimir o descargar.
             const hdUrl = await upscaleImage(img.url, 4096);
             const link = document.createElement('a');
             link.href = hdUrl;
-            link.download = `flux-hd-${img.id}.jpg`;
+            link.download = `imagen-ia-hd-${img.id}.jpg`;
             link.click();
         } catch (err) {
             setError("Error HD: " + (err.message || ''));
@@ -894,18 +893,20 @@ const App = () => {
                             {/* ── Selector de Modelo IA (canonico hoola) ── */}
                             <div className="model-selector">
                               <span className="model-selector-label">Modelo IA</span>
-                              <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                              <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
                                 {[
-                                  { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' },
-                                  { id: 'gemini-flash', name: 'Gemini 3.1', secondLine: 'Flash', cls: '' },
-                                  { id: 'gemini-pro', name: 'Gemini 3', secondLine: 'Pro', cls: '' }
-                                ].map(m => (
-                                  <button
-                                    key={m.id}
-                                    onClick={() => { setSelectedModel(m.id); setSelectedQuality(m.id.includes('max') ? 'max' : 'pro'); }}
-                                    className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
-                                  >{m.name}{m.secondLine && <><br />{m.secondLine}</>}</button>
+                                  { provider: 'OPENAI', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGHT']] },
+                                  { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                                ].map(group => (
+                                  <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
+                                    <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
+                                    <div className="model-toggle-group" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                                      {group.models.map(([id, name]) => (
+                                        <button type="button" key={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id}
+                                          className={`model-toggle ${selectedModel === id ? 'active' : ''}`}>{name}</button>
+                                      ))}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             </div>
@@ -1011,4 +1012,3 @@ const App = () => {
 
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
-

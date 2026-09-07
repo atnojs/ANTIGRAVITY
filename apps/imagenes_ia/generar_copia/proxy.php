@@ -8,6 +8,9 @@
  */
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
+$agBody = json_decode(file_get_contents('php://input') ?: '', true);
+if (is_array($agBody)) ag_image_response($agBody, __DIR__);
 
 // ===== Claves =====
 function getKey(string $name): string {
@@ -28,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$body = file_get_contents('php://input');
+$body = is_array($agBody) ? json_encode($agBody) : file_get_contents('php://input');
 if (empty($body)) {
     http_response_code(400);
     echo json_encode(['error'=>['message'=>'Cuerpo vacio']]);

@@ -22,6 +22,7 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 set_time_limit(130);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
@@ -117,6 +118,7 @@ try {
     }
 
     $task = $json['task'] ?? '';
+    if ($task === 'aplicarEstilo') ag_image_response($json, __DIR__);
 
     // Helper genérico de POST JSON
     $callApi = function ($url, $body, $headers, $timeout = 60) {

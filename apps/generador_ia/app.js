@@ -23,12 +23,10 @@
 
   var state = {
     mode: "crear",      // "crear" | "editar"
-    calidad: "normal",
+    selectedModel: "openai-medium",
     imagenBase64: "",   // data URL de la imagen a editar
     ultimaImagen: ""    // última imagen generada (para "editar esta")
   };
-
-  var PRECIO = { barato: "~2 cént.", normal: "~4 cént.", pro: "~13 cént." };
 
   // ---------- Tema claro/oscuro ----------
   function initTheme() {
@@ -57,14 +55,15 @@
     }
   }
 
-  // ---------- Selección de calidad ----------
-  function initQuality() {
-    var cards = document.querySelectorAll(".quality-card");
-    cards.forEach(function (c) {
-      c.addEventListener("click", function () {
-        cards.forEach(function (x) { x.classList.remove("active"); });
-        c.classList.add("active");
-        state.calidad = c.getAttribute("data-cal");
+  // ---------- Selección de modelo ----------
+  function initModelSelector() {
+    var buttons = document.querySelectorAll("#model-selector .model-toggle");
+    buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        buttons.forEach(function (other) { other.classList.remove("active"); other.setAttribute("aria-pressed", "false"); });
+        button.classList.add("active");
+        button.setAttribute("aria-pressed", "true");
+        state.selectedModel = button.getAttribute("data-model") || "openai-medium";
       });
     });
   }
@@ -130,7 +129,7 @@
     showOverlay(state.mode === "editar" ? "Editando imagen..." : "Generando imagen...");
     $("btnGenerate").disabled = true;
 
-    var payload = { prompt: prompt, calidad: state.calidad };
+    var payload = { prompt: prompt, model: state.selectedModel };
     if (state.mode === "editar") payload.imagen = state.imagenBase64;
 
     fetch("proxy.php", {
@@ -165,10 +164,7 @@
     state.ultimaImagen = img;
     $("resultImg").src = img;
     $("btnDownload").href = img;
-    var eur = (data.coste * 0.92).toFixed(3);
-    $("resultMeta").innerHTML =
-      "Calidad: <b>" + data.calidad + "</b> · Coste: <b>$" + Number(data.coste).toFixed(4) +
-      "</b> (~" + eur + " €)";
+    $("resultMeta").innerHTML = "Modelo: <b>" + (data.model || data.modelo || state.selectedModel) + "</b> · Proveedor: <b>" + (data.provider || "IA") + "</b>";
     $("resultShow").classList.remove("is-hidden");
 
     // Guardar en historial persistente
@@ -180,9 +176,7 @@
         id: id,
         imageData: img,
         prompt: prompt,
-        calidad: data.calidad,
-        modelo: data.modelo,
-        coste: data.coste,
+        modelo: data.model || data.modelo || state.selectedModel,
         editada: state.mode === "editar",
         createdAt: Date.now()
       })
@@ -291,7 +285,7 @@
   // ---------- Init ----------
   document.addEventListener("DOMContentLoaded", function () {
     initTheme();
-    initQuality();
+    initModelSelector();
     initDropZone();
 
     $("tabCrear").addEventListener("click", function () { setMode("crear"); });

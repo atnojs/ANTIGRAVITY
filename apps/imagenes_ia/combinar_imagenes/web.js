@@ -88,7 +88,7 @@ const state = {
     images: new Array(CONFIG.MAX_IMAGES).fill(null), // Array fijo con tamaño máximo, lleno de nulls inicialmente
     history: [],
     selectedAR: '1:1',
-    selectedModel: 'gemini-flash', // Modelo IA: 'gemini-flash' | 'gemini-pro' | 'flux-pro' | 'flux-max'
+    selectedModel: 'openai-medium',
     selectedRes: 1024, // Resolución (lado objetivo px): 512 / 1024 / 2048 / 4096
     isGenerating: false,
     isEnhancing: false,
@@ -365,14 +365,15 @@ function setupARSelector() {
 }
 
 function setupModelSelector() {
-    const toggleGroup = document.querySelector('.model-toggle-group');
+    const toggleGroup = document.querySelector('.model-provider-layout');
     if (!toggleGroup) return;
     const buttons = toggleGroup.querySelectorAll('.model-toggle');
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
-            buttons.forEach(b => b.classList.remove('active'));
+            buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
-            state.selectedModel = btn.dataset.model; // 'flux-pro' | 'gemini-flash' | 'gemini-pro' | 'flux-max'
+            btn.setAttribute('aria-pressed', 'true');
+            state.selectedModel = btn.dataset.model;
             window.selectedModel = state.selectedModel;
         });
     });
@@ -394,12 +395,11 @@ function setupResSelector() {
     updateResNote();
 }
 
-// FLUX 2 tope duro: 4 MP (~2048 px de lado). A 4096 la imagen se genera al
-// máximo nativo (4MP) y se reescala en el navegador; avisamos al usuario.
+// A 4096 la imagen se genera al máximo nativo y se reescala en el navegador.
 function updateResNote() {
     if (!elements.resNote) return;
     if (state.selectedRes >= 4096) {
-        elements.resNote.textContent = 'FLUX genera hasta 4 MP nativos (~2048 px); 4096 se reescala en tu equipo.';
+        elements.resNote.textContent = 'La salida de 4096 px se reescala en tu equipo desde el máximo nativo del modelo.';
     } else {
         elements.resNote.textContent = '';
     }

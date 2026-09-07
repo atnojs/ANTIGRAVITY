@@ -721,3 +721,37 @@ header p {
   background: rgba(239, 68, 68, 0.08);
   font-size: 0.85rem;
 }
+
+.model-selector { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.model-provider-column { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.model-provider-title { grid-column:1/-1; color:#94a3b8; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; }
+.model-toggle-group { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; grid-column:1/-1; }
+.model-toggle { border:1px solid rgba(148,163,184,.4); background:rgba(15,23,42,.7); color:#e2e8f0; border-radius:8px; padding:9px 5px; cursor:pointer; font:inherit; font-size:.72rem; font-weight:700; }
+.model-toggle.active { border-color:#00d0d0; background:rgba(0,208,208,.22); color:#eaffff; }
+
+/* Disposición canónica del selector de modelos por proveedor. */
+.model-provider-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+.model-provider-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  min-width: 0;
+}
+.model-provider-title {
+  color: var(--muted, #99CCCC);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .5rem; }
+  .model-toggle-group { gap: .2rem; }
+  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
+}

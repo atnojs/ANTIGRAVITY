@@ -17,6 +17,7 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 
 // CORS
 header('Access-Control-Allow-Origin: *');
@@ -66,6 +67,9 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 $action = (string)($req['action'] ?? '');
+if (!in_array($action, ['analyze', 'detect', 'crop'], true)) {
+    ag_image_response($req, __DIR__);
+}
 
 // ============================================================
 //  RAMA GEMINI 2.5-flash (visión->texto): describir / detectar

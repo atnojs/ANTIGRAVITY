@@ -1,21 +1,19 @@
 const { useState, useRef, useEffect } = React;
 
-// === CONFIGURACIÓN FLUX (Black Forest Labs) ===
-// La app redecora la foto (imagen->imagen) con FLUX. Selector PRO/MAX.
-// La clave FLUX vive en SetEnv F "bfl_..." del .htaccess RAÍZ de Hostinger.
+// === CONFIGURACIÓN DE GENERACIÓN DE IMÁGENES ===
+// La app redecora la foto mediante los modelos autorizados de OpenAI y Gemini.
 const PROXY_BASE = "https://atnojs.es/apps/decorar_habitacion/proxy.php";
 
 const STORAGE_KEY = 'decorar_habitacion_history';
 
-// Resoluciones disponibles (lado largo, en px). FLUX 2 rechaza >4MP, así que
-// las resoluciones que superen 4MP (p.ej. 4096) se generan al máximo nativo
-// permitido y se escalan en el cliente con canvas a la resolución pedida.
+// Resoluciones disponibles (lado largo, en px). Las salidas que no lleguen al
+// tamaño solicitado se escalan en el cliente con canvas.
 const RES_OPTIONS = [512, 1024, 2048, 4096];
 const DEFAULT_RES = 1024;
-const MAX_PIXELS = 4194304; // 4 MP — límite duro de FLUX 2
+const MAX_PIXELS = 4194304; // 4 MP para mantener un tamaño nativo compatible.
 
 // Objetos de decoración típicos por estancia (para los enlaces de compra).
-// FLUX no hace visión->texto, así que los objetos se derivan de la estancia.
+// Si el análisis visual no devuelve objetos, se usa esta lista por estancia.
 const ROOM_SHOPPING = {
   salon: ["Sofá", "Mesa de centro", "Lámpara de pie", "Alfombra", "Estantería", "Cuadro decorativo", "Cortinas", "Cojines decorativos"],
   cocina: ["Isla de cocina", "Taburetes altos", "Grifo de diseño", "Campana extractora", "Menaje", "Estantería abierta", "Iluminación LED", "Vajilla"],
@@ -131,10 +129,10 @@ const ROOM_PROMPTS = {
   }
 };
 
-/* ------------------------- Red (FLUX) ------------------------- */
+/* ------------------------- Red de generación ------------------------- */
 // Calcula las dimensiones respetando el AR de la foto, con el lado largo = res.
-// Devuelve { target:{w,h} pedidas, flux:{width,height} clampeadas a 4MP, upscale:bool }.
-// Si la resolución pedida supera 4MP, FLUX genera al máximo nativo y el cliente escala.
+// Devuelve { target:{w,h} pedidas, native:{width,height} limitado a 4MP, upscale:bool }.
+// Si la resolución pedida supera 4MP, el cliente escala el resultado.
 function computeTargetDims(natW, natH, res) {
   if (!natW || !natH) return null;
   const ar = natW / natH;
@@ -147,7 +145,7 @@ function computeTargetDims(natW, natH, res) {
   const targetW = round32(tw);
   const targetH = round32(th);
 
-  // Dimensiones para FLUX (clamp a 4MP)
+  // Dimensiones nativas compatibles (límite de 4MP).
   let fw = targetW, fh = targetH;
   let upscale = false;
   if (fw * fh > MAX_PIXELS) {
@@ -158,7 +156,7 @@ function computeTargetDims(natW, natH, res) {
   }
   return {
     target: { w: targetW, h: targetH },
-    flux: { width: fw, height: fh },
+    native: { width: fw, height: fh },
     upscale
   };
 }
@@ -194,20 +192,19 @@ function imageDims(uri) {
   });
 }
 
-// Llama al proxy FLUX (editar imagen->imagen). Devuelve un data URI JPEG/PNG.
+// Llama al proxy de generación (editar imagen->imagen). Devuelve un data URI JPEG/PNG.
 // b64img: base64 PURO (sin prefijo data:).
-// dimsInfo: resultado de computeTargetDims -> { flux:{width,height}, target:{w,h}, upscale }.
-async function callFlux(b64img, prompt, quality, dimsInfo, model) {
+// dimsInfo: resultado de computeTargetDims -> { native:{width,height}, target:{w,h}, upscale }.
+async function callImageModel(b64img, prompt, dimsInfo, model) {
   const body = {
     image: b64img,
     mimeType: "image/jpeg",
     prompt: prompt,
-    quality: quality || "pro",
-    model: model || "gemini-flash",
+    model: model || "openai-medium",
   };
-  if (dimsInfo && dimsInfo.flux && dimsInfo.flux.width && dimsInfo.flux.height) {
-    body.width = dimsInfo.flux.width;
-    body.height = dimsInfo.flux.height;
+  if (dimsInfo && dimsInfo.native && dimsInfo.native.width && dimsInfo.native.height) {
+    body.width = dimsInfo.native.width;
+    body.height = dimsInfo.native.height;
   }
 
   const res = await fetch(PROXY_BASE, {
@@ -221,12 +218,12 @@ async function callFlux(b64img, prompt, quality, dimsInfo, model) {
     const msg = (json && json.error && json.error.message) || `Error ${res.status}`;
     throw new Error(msg);
   }
-  if (json.error) throw new Error(json.error.message || "Error de FLUX");
-  if (!json.image) throw new Error("FLUX no devolvió imagen.");
+  if (json.error) throw new Error(json.error.message || "Error del proveedor");
+  if (!json.image) throw new Error("El proveedor no devolvió imagen.");
   const mime = json.mimeType || "image/jpeg";
   let uri = `data:${mime};base64,${json.image}`;
 
-  // Si la resolución pedida supera 4MP, FLUX generó al máximo nativo -> escalar en cliente.
+  // Si la resolución pedida supera el límite nativo, escalar en cliente.
   if (dimsInfo && dimsInfo.upscale && dimsInfo.target) {
     uri = await upscaleDataUrl(uri, dimsInfo.target.w, dimsInfo.target.h);
   }
@@ -566,8 +563,7 @@ function App() {
     document.body.style.overflow = busy ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [busy]);
-  const [selectedQuality, setSelectedQuality] = useState('pro'); // 'pro' | 'max'
-  const [selectedModel, setSelectedModel] = useState('gemini-flash'); // patron canonico 4 modelos
+  const [selectedModel, setSelectedModel] = useState('openai-medium');
   const [selectedRes, setSelectedRes] = useState(DEFAULT_RES); // 512 | 1024 | 2048 | 4096
   const [customInstruction, setCustomInstruction] = useState("");
   const [editingUserImage, setEditingUserImage] = useState(false);
@@ -721,7 +717,7 @@ function App() {
       const prompt = buildRemoveObjectsPrompt(selectedRoom);
       const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
-      const uri = await callFlux(srcB64, prompt, selectedQuality, dims, selectedModel);
+      const uri = await callImageModel(srcB64, prompt, dims, selectedModel);
 
       setSrc(uri);
       setSrcB64(dataUriToBase64(uri));
@@ -740,7 +736,7 @@ function App() {
       const prompt = buildCustomPrompt(customInstruction, selectedRoom);
       const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
-      const uri = await callFlux(srcB64, prompt, selectedQuality, dims, selectedModel);
+      const uri = await callImageModel(srcB64, prompt, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
       const id = makeHistoryId("Personalizado");
@@ -773,7 +769,7 @@ function App() {
       const prompt = buildUniversalPrompt(style, variation, selectedRoom);
       const dims = srcDims ? computeTargetDims(srcDims.w, srcDims.h, selectedRes) : null;
 
-      const uri = await callFlux(srcB64, prompt, selectedQuality, dims, selectedModel);
+      const uri = await callImageModel(srcB64, prompt, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
       const id = makeHistoryId(style);
@@ -796,7 +792,7 @@ function App() {
       const nd = await imageDims(item.uri);
       const dims = nd ? computeTargetDims(nd.w, nd.h, selectedRes) : null;
 
-      const uri = await callFlux(b64img, prompt, selectedQuality, dims, selectedModel);
+      const uri = await callImageModel(b64img, prompt, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
       const id = makeHistoryId(style);
@@ -824,7 +820,7 @@ function App() {
       const nd = await imageDims(item.uri);
       const dims = nd ? computeTargetDims(nd.w, nd.h, selectedRes) : null;
 
-      const uri = await callFlux(b64img, prompt, selectedQuality, dims, selectedModel);
+      const uri = await callImageModel(b64img, prompt, dims, selectedModel);
 
       const objects = await detectObjectsFromImageUri(uri);
 
@@ -1190,47 +1186,29 @@ function App() {
 
           <div className="bg-white rounded-xl shadow p-3 mt-4 quality-selector">
             <h3 className="font-semibold mb-2">Modelo IA</h3>
-            <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+            <div className="model-provider-layout grid grid-cols-2 gap-2" role="group" aria-label="Seleccionar modelo">
               {[
-                { id: 'gemini-flash', label: '3.1FLASH' },
-                { id: 'gemini-pro', label: '3 PRO' },
-                { id: 'flux-pro', label: 'FLUX PRO' },
-                { id: 'flux-max', label: 'FLUX MAX' },
-              ].map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
-                  onClick={() => setSelectedModel(m.id)}
-                  disabled={busy}
-                  aria-pressed={selectedModel === m.id}
-                >
-                  {m.label}
-                </button>
+                { provider: 'OPENAI', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGHT' }] },
+                { provider: 'GEMINI', models: [{ id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
+              ].map((group) => (
+                <div className="model-provider-column" key={group.provider}>
+                  <span className="model-provider-title block text-center text-xs mb-1">{group.provider}</span>
+                  <div className="model-toggle-group">
+                    {group.models.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
+                        onClick={() => setSelectedModel(m.id)}
+                        disabled={busy}
+                        aria-pressed={selectedModel === m.id}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
-            </div>
-            <h3 className="font-semibold mb-2 mt-3">Calidad de generación</h3>
-            <div className="quality-toggle">
-              <button
-                type="button"
-                className={`quality-btn ${selectedQuality === 'pro' ? 'active' : ''}`}
-                onClick={() => setSelectedQuality('pro')}
-                disabled={busy}
-                aria-pressed={selectedQuality === 'pro'}
-              >
-                PRO
-                <span className="quality-sub">Equilibrada · ~$0.03</span>
-              </button>
-              <button
-                type="button"
-                className={`quality-btn ${selectedQuality === 'max' ? 'active' : ''}`}
-                onClick={() => setSelectedQuality('max')}
-                disabled={busy}
-                aria-pressed={selectedQuality === 'max'}
-              >
-                MAX
-                <span className="quality-sub">Máxima fidelidad · ~$0.07</span>
-              </button>
             </div>
             <p className="text-xs text-gray-500 mt-2">
               La decoración conserva el formato y la perspectiva de tu foto.

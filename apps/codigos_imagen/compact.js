@@ -94,7 +94,7 @@
 
     function createDefaultState() {
         const prompt = 'Crea una imagen de alta calidad a partir de la referencia, conservando con precisión la identidad y los elementos principales. Iluminación cinematográfica, composición limpia, detalles realistas, textura natural, sin texto ni logotipos.';
-        return { version: 1, updatedAt: 0, models: ['ChatGPT', 'Gemini', 'FLUX', 'Qwen', 'Grok'].map(function (name, index) { return { id: 'model-' + name.toLowerCase(), name: name, image: SAMPLE_IMAGE, items: [{ id: 'sample-' + index, title: 'Varios', description: '', image: SAMPLE_IMAGE, prompt: prompt }] }; }) };
+        return { version: 1, updatedAt: 0, models: ['ChatGPT', 'Gemini'].map(function (name, index) { return { id: 'model-' + name.toLowerCase(), name: name, image: SAMPLE_IMAGE, items: [{ id: 'sample-' + index, title: 'Varios', description: '', image: SAMPLE_IMAGE, prompt: prompt }] }; }) };
     }
 
     function normalizeState(source) {

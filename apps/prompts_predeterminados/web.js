@@ -44,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
-    const PROXY_URL = 'proxy.php'; // Proxy PHP para FLUX (Black Forest Labs)
-    let selectedModel = 'gemini-flash'; // gemini-flash | gemini-pro | flux-pro | flux-max
+    const PROXY_URL = 'proxy.php';
+    let selectedModel = 'openai-medium';
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
@@ -92,16 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
     const modelLabels = {
-        'gemini-flash': '3.1FLASH',
-        'gemini-pro': '3 PRO',
-        'flux-pro': 'FLUX PRO',
-        'flux-max': 'FLUX MAX'
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGHT',
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO'
     };
     function showGenLoading(statusMsg) {
         const txt = document.getElementById('loading-text');
         const sec = document.getElementById('secondary-status');
         if (txt) txt.textContent = 'IA generando lo solicitado...';
-        if (sec) sec.textContent = statusMsg || (modelLabels[selectedModel] || 'FLUX') + ' · procesando...';
+        if (sec) sec.textContent = statusMsg || (modelLabels[selectedModel] || 'MEDIUM') + ' · procesando...';
         genLoading.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -1198,17 +1198,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ═══════════════════════════════════════════════════════════════
-    // LLAMADA A FLUX (Black Forest Labs)
+    // Llamada al modelo de imágenes seleccionado
     // ═══════════════════════════════════════════════════════════════
 
     // Selector de modelo IA (4 modelos, barra segmentada)
     const modelSelector = document.getElementById('model-selector');
     if (modelSelector) {
         modelSelector.addEventListener('click', (e) => {
-            const btn = e.target.closest('.model-option');
+            const btn = e.target.closest('.model-toggle');
             if (!btn) return;
-            selectedModel = btn.dataset.model || 'gemini-flash';
-            modelSelector.querySelectorAll('.model-option').forEach((b) => {
+            selectedModel = btn.dataset.model || 'openai-medium';
+            modelSelector.querySelectorAll('.model-toggle').forEach((b) => {
                 const isActive = (b === btn);
                 b.classList.toggle('active', isActive);
                 b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
@@ -1290,15 +1290,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Modo normal: llamar a FLUX (Black Forest Labs) vía proxy
+        // Modo normal: llamar al proxy de generación
         genResults.innerHTML = '';
         showGenLoading('Generando imagen...');
         genSubmitBtn.disabled = true;
 
         try {
             try {
-                // Generar 1 imagen con IA (FLUX)
-                const imageData = await generateWithFlux(prompt, genBaseImage);
+                // Generar 1 imagen con IA
+                const imageData = await generateWithImageModel(prompt, genBaseImage);
 
                 hideGenLoading();
                 genResults.innerHTML = '';
@@ -1366,14 +1366,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    async function generateWithFlux(prompt, baseImage) {
+    async function generateWithImageModel(prompt, baseImage) {
         // Enriquecer el prompt para edición imagen→imagen (aplicar estilo a la foto).
         let finalPrompt = prompt;
         let imageB64 = '';
         let mimeType = 'image/jpeg';
 
         if (baseImage) {
-            // base64 PURO (sin prefijo data:) para BFL
+            // Normalizar la referencia para el proxy
             imageB64 = baseImage.includes(',') ? baseImage.split(',')[1] : baseImage;
             mimeType = baseImage.match(/data:(.*?);/)?.[1] || 'image/jpeg';
             finalPrompt = `Apply the following artistic style/transformation to the provided input image, keeping its main subject, pose and composition recognizable: ${prompt}`;

@@ -20,6 +20,7 @@
  */
 
 header('Content-Type: application/json');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -56,6 +57,7 @@ function getSecret(string $name): string {
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
+if (is_array($input) && (($input['task'] ?? '') === 'combineImages')) ag_image_response($input, __DIR__);
 if (!$input || !isset($input['task'])) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Body JSON inválido o falta el campo task']]);

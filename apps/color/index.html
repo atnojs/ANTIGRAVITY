@@ -67,10 +67,16 @@
 
         <div id="output-options">
           <div class="option-group">
-            <p class="option-label">Calidad</p>
-            <div class="quality-selector">
-              <button type="button" id="quality-pro-btn" class="quality-option active" data-quality="pro" aria-pressed="true">PRO<small>equilibrada</small></button>
-              <button type="button" id="quality-max-btn" class="quality-option" data-quality="max" aria-pressed="false">MAX<small>máxima</small></button>
+            <p class="option-label">Modelo de generación</p>
+            <div id="model-selector" class="model-selector model-provider-layout" role="group" aria-label="Seleccionar modelo">
+              <div class="model-provider-column"><span class="model-provider-title">OPENAI</span><div class="model-toggle-group">
+                <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
+                <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGHT</button></div>
+              </div>
+              <div class="model-provider-column"><span class="model-provider-title">GEMINI</span><div class="model-toggle-group">
+                <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+                <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button></div>
+              </div>
             </div>
           </div>
         </div>
