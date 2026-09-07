@@ -536,29 +536,52 @@ body::after {
   font-weight: 700;
 }
 
-/* Selector Modelo IA canónico (barra segmentada) */
+/* Selector Modelo IA canónico */
 .model-selector {
-  gap: 2px;
+  width: 100%;
   background: rgba(255,255,255,0.04);
-  padding: 3px;
+  padding: 6px;
+  border-radius: 14px;
+}
+.model-toggle-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+.model-toggle {
+  flex: 0 1 auto;
+  padding: 6px 10px;
   border-radius: 999px;
-}
-.model-selector .toggle-btn {
-  padding: 6px 14px;
-  font-size: 0.66rem;
-  letter-spacing: 0.06em;
   border: 1px solid transparent;
-}
-.model-selector .toggle-btn:not(.active) {
   background: transparent;
-  border-color: transparent;
   color: var(--text-dim);
+  font-family: var(--font);
+  font-size: 0.64rem;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
 }
-.model-selector .toggle-btn:not(.active):hover {
+.model-toggle:hover {
   background: rgba(255,255,255,0.06);
-  border-color: transparent;
-  box-shadow: none;
+  border-color: var(--cian);
   color: #fff;
+  box-shadow: 0 0 12px var(--glow-soft);
+}
+.model-toggle:focus-visible {
+  outline: 2px solid var(--cian);
+  outline-offset: 2px;
+}
+.model-toggle.active {
+  background: var(--cian);
+  border-color: var(--cian);
+  color: #001018;
+  font-weight: 700;
+  box-shadow: 0 0 14px var(--glow-soft);
 }
 
 /* ================================================================
@@ -959,6 +982,7 @@ body::after {
   flex-direction: column;
   align-items: center;
   gap: .35rem;
+  flex: 1 1 0;
   min-width: 0;
 }
 .model-provider-title {
