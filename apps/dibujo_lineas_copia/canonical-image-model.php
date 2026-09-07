@@ -118,12 +118,16 @@ function ag_image_generate(array $request, string $configDir = ''): array
         if ($key === '') throw new RuntimeException('La clave de OpenAI no está configurada.', 500);
         $fields = ['model'=>'gpt-image-2', 'prompt'=>$prompt, 'quality'=>$selected['quality'], 'size'=>ag_image_size($request)];
         $endpoint = 'https://api.openai.com/v1/images/generations'; $tmp = null;
+        $headers = ['Authorization: Bearer '.$key, 'Content-Type: application/json'];
+        $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($images !== []) {
             [$binary, $mime] = ag_image_input($images[0]); $tmp = tempnam(sys_get_temp_dir(), 'ag_image_');
             if ($tmp === false || file_put_contents($tmp, $binary) === false) throw new RuntimeException('No se pudo preparar la imagen.', 500);
             $ext = str_contains($mime, 'png') ? 'png' : (str_contains($mime, 'webp') ? 'webp' : 'jpg'); $fields['image[]'] = new CURLFile($tmp, $mime, 'referencia.'.$ext); $endpoint = 'https://api.openai.com/v1/images/edits';
+            $headers = ['Authorization: Bearer '.$key];
+            $postFields = $fields;
         }
-        $ch = curl_init($endpoint); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$fields, CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$key], CURLOPT_CONNECTTIMEOUT=>20, CURLOPT_TIMEOUT=>180]);
+        $ch = curl_init($endpoint); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$postFields, CURLOPT_HTTPHEADER=>$headers, CURLOPT_CONNECTTIMEOUT=>20, CURLOPT_TIMEOUT=>180]);
         $raw = curl_exec($ch); $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $error = curl_error($ch); curl_close($ch); if ($tmp !== null) @unlink($tmp);
         if ($raw === false) throw new RuntimeException('Error conectando con OpenAI: '.$error, 502);
         $data = json_decode((string)$raw, true);
