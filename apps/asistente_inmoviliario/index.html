@@ -5,28 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Asistente Inmobiliario</title>
 
-  <!-- Google Fonts -->
+  <!-- Tipografía del lenguaje visual Hoola/Relatos -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet"/>
 
 <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Estilos -->
-  <link rel="stylesheet" href="app.css"/>
+  <link rel="stylesheet" href="app.css?v=6"/>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Asistente Inmobiliario IA</h1>
-      <p>Transforma tus fotos y crea el anuncio perfecto en segundos.</p>
-    </header>
-
-    <main class="app-container">
-      <h2 class="section-title">Paso 1: Sube las imágenes</h2>
-
-      <div id="drop-zone" class="drop-zone">
+  <div class="main-layout">
+    <main class="container main-col">
+      <header class="app-header">
+        <h1 class="app-title">Asistente Inmobiliario IA</h1>
+        <p class="app-subtitle">Transforma tus fotos y crea el anuncio perfecto en segundos.</p>
+      </header>
+    <section class="app-container" aria-labelledby="upload-title">
+      <h2 id="upload-title" class="section-title">Paso 1: Sube las imágenes</h2>
+      <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-controls="image-uploader" aria-label="Subir imágenes de la propiedad">
         <div class="dz-content">
           <p><strong>Haz clic para subir</strong> o arrastra y suelta</p>
           <p class="muted-text">PNG, JPG o WEBP</p>
@@ -34,7 +33,7 @@
       </div>
       <input id="image-uploader" type="file" class="hidden" multiple accept="image/*"/>
 
-      <div id="image-preview-grid"></div>
+      <div id="image-preview-grid" aria-live="polite"></div>
 
       <h2 class="section-title">Paso 2: Define el estilo</h2>
 
@@ -70,59 +69,57 @@
       </div>
 
       <div class="center">
-        <button id="generate-btn" class="btn btn-primary">Generar Anuncio</button>
+        <button id="generate-btn" type="button" class="btn btn-primary">Generar Anuncio</button>
       </div>
-    </main>
+    </section>
 
-    <section id="results-section">
+    <section id="results-section" class="results-section hidden" aria-labelledby="results-title">
       <div class="results-header">
-        <h3 class="section-title">Resultados</h3>
+        <h2 id="results-title" class="section-title">Resultados</h2>
       </div>
       <div id="results-image-grid" class="image-grid"></div>
-      <div id="results-text" class="results-text"></div>
+      <div id="results-text" class="results-text" role="status" aria-live="polite"></div>
     </section>
-  </div>
+    </main>
 
-  <!-- Loading Overlay (estándar Antigravity) -->
-  <div id="loadingOverlay" class="loading-overlay hidden">
-    <div class="spinner-triple">
+    <!-- Historial lateral persistente, patrón canónico de SKILL_MAESTRA -->
+    <aside class="history-col" id="history-section" aria-labelledby="history-title">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <p id="historyEmpty" class="history-empty">No hay generaciones guardadas aún.</p>
+      <button id="history-clear-btn" class="btn-danger-outline" style="display:none;" type="button">Limpiar</button>
+    </aside>
+  </div>
+  <!-- Estado universal mientras trabaja la IA -->
+  <div id="loadingOverlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner-triple" aria-hidden="true">
       <div class="ring ring-1"></div>
       <div class="ring ring-2"></div>
       <div class="ring ring-3"></div>
     </div>
-    <p class="loading-text">IA Generando Obra Maestra...</p>
+    <p id="loadingText" class="loading-text">IA generando lo solicitado...</p>
+    <div class="progress-panel">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Procesamiento en curso"></div>
+      </div>
+      <p id="secondary-status" class="secondary-status">Procesando solicitud...</p>
+    </div>
   </div>
 
   <!-- Lightbox -->
-  <div id="lightbox" class="lightbox hidden">
+  <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
     <div class="lightbox-controls">
-      <button id="lightboxDownload" class="lightbox-btn" title="Descargar">
-        <i data-lucide="download" class="w-5 h-5"></i>
+      <button id="lightboxDownload" class="lightbox-btn" type="button" title="Descargar" aria-label="Descargar imagen">
+        <i data-lucide="download" aria-hidden="true"></i>
       </button>
-      <button id="lightboxClose" class="lightbox-btn" title="Cerrar">
-        <i data-lucide="x" class="w-5 h-5"></i>
+      <button id="lightboxClose" class="lightbox-btn" type="button" title="Cerrar" aria-label="Cerrar imagen ampliada">
+        <i data-lucide="x" aria-hidden="true"></i>
       </button>
     </div>
     <img id="lightboxImg" src="" alt="Imagen ampliada" />
   </div>
 
-  <!-- Sección de Historial -->
-  <section id="history-section" class="history-section">
-    <div class="history-header">
-      <h3 class="section-title">📋 Historial de Generaciones</h3>
-      <button id="clearHistoryBtn" class="btn btn-danger" style="font-size:0.85rem;padding:0.4rem 1rem;">🗑 Limpiar todo</button>
-    </div>
-    <div id="historyGrid" class="history-grid"></div>
-    <p id="historyEmpty" class="muted-text center" style="display:none;">No hay generaciones guardadas aún.</p>
-  </section>
-
   <script src="history-manager.js?v=5"></script>
-  <script src="app.js" type="module"></script>
-  <script>
-    // Click en el área de subida
-    document.getElementById('drop-zone').addEventListener('click', () => {
-      document.getElementById('image-uploader').click();
-    });
-  </script>
+  <script src="app.js?v=6" type="module"></script>
 </body>
 </html>

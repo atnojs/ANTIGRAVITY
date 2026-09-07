@@ -1,15 +1,16 @@
 lucide.createIcons();
 
-// ===== CONFIGURACIÓN DE HISTORIAL PERSISTENTE =====
-const HISTORY_DB_NAME = 'asistente_inmoviliario_history';
-HistoryManager.configure({ dbName: HISTORY_DB_NAME });
-HistoryManager.init().catch(e => console.warn('HistoryManager init error:', e));
+// ===== HISTORIAL PERSISTENTE =====
+const historyManager = new HistoryManager('asistente_inmoviliario');
 
 // ===== REFERENCIAS DOM =====
 const imageUploader = document.getElementById('image-uploader');
 const imagePreviewGrid = document.getElementById('image-preview-grid');
+const dropZone = document.getElementById('drop-zone');
 const generateBtn = document.getElementById('generate-btn');
 const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingText = document.getElementById('loadingText');
+const secondaryStatus = document.getElementById('secondary-status');
 const resultsSection = document.getElementById('results-section');
 const resultsImageGrid = document.getElementById('results-image-grid');
 const resultsText = document.getElementById('results-text');
@@ -17,9 +18,10 @@ const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const lightboxDownload = document.getElementById('lightboxDownload');
 const lightboxClose = document.getElementById('lightboxClose');
-const historyGrid = document.getElementById('historyGrid');
+const historyTitle = document.getElementById('history-title');
+const historyGrid = document.getElementById('history-grid');
 const historyEmpty = document.getElementById('historyEmpty');
-const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const clearHistoryBtn = document.getElementById('history-clear-btn');
 
 let uploadedFiles = []; // Array de objetos { id, file, base64, action }
 
@@ -44,61 +46,80 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== LOADING OVERLAY =====
-function showLoading(text) {
-  loadingOverlay.querySelector('.loading-text').textContent = text || 'IA Generando Obra Maestra...';
+function showLoading(status) {
+  loadingText.textContent = 'IA generando lo solicitado...';
+  secondaryStatus.textContent = status || 'Procesando solicitud...';
+  loadingOverlay.setAttribute('aria-busy', 'true');
   loadingOverlay.classList.remove('hidden');
+  document.body.classList.add('loading-locked');
 }
-function hideLoading() { loadingOverlay.classList.add('hidden'); }
-
+function hideLoading() {
+  loadingOverlay.classList.add('hidden');
+  loadingOverlay.setAttribute('aria-busy', 'false');
+  document.body.classList.remove('loading-locked');
+}
 // ===== HISTORIAL =====
 async function loadHistory() {
   try {
-    const items = await HistoryManager.loadAll();
-    renderHistory(items);
+    await historyManager.load();
+    renderHistory(historyManager.getAll());
   } catch (e) {
     console.warn('Error cargando historial:', e);
+    historyGrid.innerHTML = '';
+    historyTitle.style.display = 'none';
+    clearHistoryBtn.style.display = 'none';
     historyEmpty.style.display = 'block';
   }
 }
 
-function renderHistory(items) {
+function renderHistory(items = historyManager.getAll()) {
   historyGrid.innerHTML = '';
-  if (!items || items.length === 0) {
+  const validItems = (items || []).filter(item => item.imageUrl || item.url || item.data?.url || item.data?.dataUrl);
+  if (validItems.length === 0) {
+    historyTitle.style.display = 'none';
+    clearHistoryBtn.style.display = 'none';
     historyEmpty.style.display = 'block';
     return;
   }
+  historyTitle.style.display = 'block';
+  clearHistoryBtn.style.display = 'block';
   historyEmpty.style.display = 'none';
-  items.forEach(item => {
-    const src = item.url || item.imageUrl || '';
-    if (!src) return;
+  validItems.forEach(item => {
+    const src = item.imageUrl || item.data?.url || item.data?.dataUrl || item.url || '';
     const card = document.createElement('div');
-    card.className = 'history-card';
+    card.className = 'history-item-wrap';
     card.innerHTML = `
-      <img src="${src}" alt="Generación ${item.id}" onclick="window._openLightbox && window._openLightbox('${src}')" style="cursor:zoom-in" />
-      <div class="history-actions">
-        <button class="hist-download" title="Descargar">
-          <i data-lucide="download" style="width:14px;height:14px"></i>
+      <img alt="Generación guardada" />
+      <button class="btn-square btn-download" type="button" title="Descargar" aria-label="Descargar generación">
+          <i data-lucide="download" aria-hidden="true"></i>
         </button>
-        <button class="hist-delete" title="Eliminar">
-          <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+      <button class="btn-square btn-delete" type="button" title="Eliminar" aria-label="Eliminar generación">
+          <i data-lucide="trash-2" aria-hidden="true"></i>
         </button>
-      </div>
-      <div class="history-info">${new Date(item.createdAt).toLocaleDateString('es-ES', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      <span class="history-date"></span>
     `;
-    card.querySelector('.hist-download').addEventListener('click', (e) => {
+    const image = card.querySelector('img');
+    image.src = src;
+    image.alt = `Generación guardada ${item.id || ''}`.trim();
+    image.addEventListener('click', () => openLightbox(src));
+    card.querySelector('.history-date').textContent = new Date(item.createdAt || Date.now()).toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    card.querySelector('.btn-download').addEventListener('click', (e) => {
       e.stopPropagation();
       const a = document.createElement('a');
       a.href = src;
       a.download = `generado-${item.id}.png`;
       a.click();
     });
-    card.querySelector('.hist-delete').addEventListener('click', async (e) => {
+    card.querySelector('.btn-delete').addEventListener('click', async (e) => {
       e.stopPropagation();
-      await HistoryManager.deleteItem(item.id);
-      const items = await HistoryManager.loadAll();
-      renderHistory(items);
+      try {
+        await historyManager.delete(item.id);
+      } catch (error) {
+        alert('No se pudo eliminar la generación. Inténtalo de nuevo.');
+      }
     });
-    card.querySelector('img').addEventListener('click', () => openLightbox(src));
     historyGrid.appendChild(card);
   });
   lucide.createIcons();
@@ -106,11 +127,15 @@ function renderHistory(items) {
 
 window._openLightbox = openLightbox;
 
+historyManager.onChange((items) => renderHistory(items));
+
 clearHistoryBtn.addEventListener('click', async () => {
   if (confirm('¿Eliminar todo el historial de generaciones?')) {
-    await HistoryManager.clearAll();
-    historyGrid.innerHTML = '';
-    historyEmpty.style.display = 'block';
+    try {
+      await historyManager.clear();
+    } catch (error) {
+      alert('No se pudo limpiar el historial. Inténtalo de nuevo.');
+    }
   }
 });
 
@@ -118,6 +143,23 @@ clearHistoryBtn.addEventListener('click', async () => {
 loadHistory();
 
 imageUploader.addEventListener('change', handleImageUpload);
+dropZone.addEventListener('click', () => imageUploader.click());
+dropZone.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    imageUploader.click();
+  }
+});
+dropZone.addEventListener('dragover', (event) => {
+  event.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (event) => {
+  event.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleImageUpload({ target: { files: event.dataTransfer.files } });
+});
 
 function handleImageUpload(event) {
     console.log('Evento change activado en image-uploader');
@@ -153,30 +195,28 @@ function createImagePreviewCard(fileData) {
     console.log('Creando tarjeta de vista previa para:', fileData.id);
     const card = document.createElement('div');
     card.id = fileData.id;
-    card.className = 'image-container'; // Usa la clase CSS de app.css
-    card.style.aspectRatio = '1 / 1'; // Asegura la proporción de aspecto que coincide con CSS
+    card.className = 'image-container';
     
     card.innerHTML = `
-        <img src="${fileData.base64}" alt="Vista previa de ${fileData.file.name}" class="w-full h-full object-cover">
+        <img src="${fileData.base64}" alt="Vista previa de ${fileData.file.name}">
         <div class="overlay-buttons">
-            <button data-id="${fileData.id}" class="overlay-btn delete" title="Eliminar">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <button type="button" data-id="${fileData.id}" class="overlay-btn delete" title="Eliminar" aria-label="Eliminar imagen seleccionada">
+                <i data-lucide="trash-2" aria-hidden="true"></i>
             </button>
         </div>
-        <div class="space-y-2 p-2">
-            <div class="flex items-center">
-                <input id="radio-nada-${fileData.id}" type="radio" value="nada" name="action-${fileData.id}" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 focus:ring-sky-500" checked>
-                <label for="radio-nada-${fileData.id}" class="ml-2 text-sm font-medium text-gray-900">Nada</label>
+        <div class="image-options" role="radiogroup" aria-label="Acción para ${fileData.file.name}">
+            <label class="image-option" for="radio-nada-${fileData.id}">
+                <input id="radio-nada-${fileData.id}" type="radio" value="nada" name="action-${fileData.id}" checked>
+                <span>Nada</span>
+            </label>
+            <label class="image-option" for="radio-staging-${fileData.id}">
+                <input id="radio-staging-${fileData.id}" type="radio" value="staging" name="action-${fileData.id}">
+                <span>Staging Virtual</span>
+            </label>
+            <label class="image-option" for="radio-vaciar-${fileData.id}">
+                <input id="radio-vaciar-${fileData.id}" type="radio" value="vaciar" name="action-${fileData.id}">
+                <span>Vaciar Espacio</span>
             </div>
-            <div class="flex items-center">
-                <input id="radio-staging-${fileData.id}" type="radio" value="staging" name="action-${fileData.id}" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 focus:ring-sky-500">
-                <label for="radio-staging-${fileData.id}" class="ml-2 text-sm font-medium text-gray-900">Staging Virtual</label>
-            </div>
-            <div class="flex items-center">
-                <input id="radio-vaciar-${fileData.id}" type="radio" value="vaciar" name="action-${fileData.id}" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 focus:ring-sky-500">
-                <label for="radio-vaciar-${fileData.id}" class="ml-2 text-sm font-medium text-gray-900">Vaciar Espacio</label>
-            </div>
-        </div>
     `;
     
     imagePreviewGrid.appendChild(card);
@@ -212,9 +252,9 @@ async function handleGeneration() {
 
     generateBtn.disabled = true;
     generateBtn.textContent = 'PROCESANDO...';
-    showLoading('IA Generando Anuncio Inmobiliario...');
+    showLoading('Procesando imágenes y redactando el anuncio...');
     resultsImageGrid.innerHTML = '';
-    resultsText.innerHTML = '';
+    resultsText.textContent = '';
     resultsSection.classList.add('hidden');
 
     const audience = document.getElementById('target-audience').value;
@@ -240,27 +280,28 @@ async function handleGeneration() {
         for (const img of images) {
           if (img.dataUrl && img.dataUrl.startsWith('data:image')) {
             const historyId = `hist-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
-            await HistoryManager.saveItem({
+            await historyManager.save({
               id: historyId,
-              url: img.dataUrl,
-              prompt: `Staging/Vaciado de ${img.originalName}`,
-              createdAt: Date.now()
+              type: 'image',
+              model: 'gemini-3.1-flash-image-preview',
+              data: {
+                url: img.dataUrl,
+                prompt: `Staging/Vaciado de ${img.originalName}`,
+                originalName: img.originalName
+              },
+              imageData: img.dataUrl,
+              createdAt: new Date().toISOString()
             });
           }
         }
-        // Recargar historial
-        const items = await HistoryManager.loadAll();
-        renderHistory(items);
-
     } catch (error) {
         console.error("Error durante la generación:", error);
-        alert("Hubo un error al generar el anuncio: " + error.message + ". Revisa la consola para más detalles.");
+        alert("No se pudo completar el anuncio. Comprueba las imágenes e inténtalo de nuevo.");
     } finally {
         console.log('Rehabilitando botón y ocultando loader');
         generateBtn.disabled = false;
         generateBtn.textContent = 'Generar Anuncio';
         hideLoading();
-        resultsSection.classList.remove('hidden');
     }
 }
 
@@ -374,15 +415,20 @@ async function generateAdText(audience, length, tone) {
 function displayResults(images, text) {
     images.forEach(img => {
         const resultCard = document.createElement('div');
-        resultCard.className = 'relative group';
+        resultCard.className = 'result-card';
         resultCard.innerHTML = `
-            <img src="${img.dataUrl}" alt="Imagen generada de ${img.originalName}" class="w-full h-48 object-cover rounded-lg shadow-md" style="cursor:zoom-in" onclick="window._openLightbox('${img.dataUrl}')" />
-            <a href="${img.dataUrl}" download="generado-${img.originalName}" class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-lg transition-all opacity-0 group-hover:opacity-100" style="pointer-events:none">
-                <div class="bg-white text-gray-800 p-3 rounded-full shadow-lg" style="pointer-events:auto">
-                    <i data-lucide="download" class="w-6 h-6"></i>
-                </div>
+            <img class="result-image" alt="" />
+            <a class="result-download" aria-label="Descargar imagen generada" title="Descargar imagen">
+                    <i data-lucide="download" aria-hidden="true"></i>
             </a>
         `;
+        const image = resultCard.querySelector('.result-image');
+        image.src = img.dataUrl;
+        image.alt = `Imagen generada de ${img.originalName}`;
+        image.addEventListener('click', () => openLightbox(img.dataUrl));
+        const download = resultCard.querySelector('.result-download');
+        download.href = img.dataUrl;
+        download.download = `generado-${img.originalName}`;
         resultsImageGrid.appendChild(resultCard);
     });
 
