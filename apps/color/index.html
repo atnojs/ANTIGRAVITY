@@ -8,7 +8,7 @@
   <title>Crea Paletas</title>
   <link rel="stylesheet" href="base.css?v=3" />
   <link rel="stylesheet" href="components.css?v=4" />
-  <link rel="stylesheet" href="app.css?v=4" />
+  <link rel="stylesheet" href="app.css?v=6" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon" />
   <!-- Fuente requerida por el estilo hoola/relatos -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,15 +19,16 @@
 </head>
 
 <body>
-  <div class="container">
-    <header>
-      <h1>Crea Paletas de Color</h1>
-      <p>Genera imágenes publicitarias premium a partir de un color o una imagen. Descubre paletas de colores
+  <div class="main-layout">
+    <main class="container main-col">
+    <header class="app-header">
+      <h1 class="app-title">Crea Paletas de Color</h1>
+      <p class="app-subtitle">Genera imágenes publicitarias premium a partir de un color o una imagen. Descubre paletas de colores
         complementarias, análogas y monocromáticas que cobran vida con IA.</p>
     </header>
 
-    <main>
-      <div class="input-selector">
+    <section class="app-container" aria-label="Configuración de la paleta">
+    <div class="input-selector">
         <button id="color-mode-btn" class="active" aria-pressed="true">Color</button>
         <button id="image-mode-btn" aria-pressed="false">Imagen</button>
       </div>
@@ -86,17 +87,21 @@
 
       <div id="loader" class="hidden"></div>
 
-      <section id="results-container" class="results-container" aria-live="polite"></section>
-      <section id="history-container" class="history-container" aria-live="polite" style="margin-top:2rem">
-        <h2 style="color:white;margin-bottom:1rem;display:none" id="history-title">Historial</h2>
-        <div id="history-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem"></div>
-      </section>
+      <section id="results-container" class="results-container hidden" aria-live="polite"></section>
+    </section>
     </main>
+
+    <aside id="history-container" class="history-col" aria-labelledby="history-title">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <p id="history-empty" class="history-empty">No hay generaciones guardadas aún.</p>
+      <button id="history-clear-btn" class="btn-danger-outline" type="button" style="display:none;">Limpiar</button>
+    </aside>
   </div>
 
   <!-- Loading Overlay Universal (SKILL_MAESTRA) -->
-  <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
-    <div class="spinner-triple">
+  <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner-triple" aria-hidden="true">
       <div class="ring ring-1"></div>
       <div class="ring ring-2"></div>
       <div class="ring ring-3"></div>
@@ -110,11 +115,8 @@
     </div>
   </div>
 
-  <script>
-  (function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();
-  </script>
   <script src="history-manager.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
   <footer>
     <p id="footer-text">&copy; 2025 Atnojs. Todos los derechos reservados.</p>
   </footer>

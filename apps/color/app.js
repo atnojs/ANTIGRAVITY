@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     imageUploadLabel.addEventListener('dragenter', () => imageUploadLabel.classList.add('dragover'));
-    imageUploadLabel.addEventListener('dragleave', () => imageUploadLabel.classList.remove('dragleave'));
+    imageUploadLabel.addEventListener('dragleave', () => imageUploadLabel.classList.remove('dragover'));
     imageUploadLabel.addEventListener('drop', (e) => {
         imageUploadLabel.classList.remove('dragover');
         const dt = e.dataTransfer;
@@ -387,23 +387,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.getElementById('loading-overlay');
         const loadingText = document.getElementById('loading-text');
         const secondaryStatus = document.getElementById('secondary-status');
+        document.body.classList.toggle('loading-locked', isLoading);
         if (isLoading) {
             generateBtn.disabled = true;
             if (overlay) {
                 overlay.classList.remove('hidden');
-                overlay.style.display = 'flex';
+                overlay.setAttribute('aria-busy', 'true');
             }
             if (loadingText) loadingText.textContent = 'IA generando lo solicitado...';
             if (secondaryStatus) secondaryStatus.textContent = message || 'Procesando solicitud...';
-            document.body.style.overflow = 'hidden';
             resultsContainer.classList.remove('hidden');
         } else {
             generateBtn.disabled = false;
             if (overlay) {
                 overlay.classList.add('hidden');
-                overlay.style.display = 'none';
+                overlay.setAttribute('aria-busy', 'false');
             }
-            document.body.style.overflow = '';
+            document.body.classList.remove('loading-locked');
             resultsContainer.classList.remove('hidden');
         }
     }
@@ -565,38 +565,65 @@ document.addEventListener('DOMContentLoaded', () => {
         HistoryManager.loadAll().then(function (items) {
             var grid = document.getElementById('history-grid');
             var title = document.getElementById('history-title');
+            var empty = document.getElementById('history-empty');
+            var clearBtn = document.getElementById('history-clear-btn');
             if (!grid) return;
-            if (!items || !items.length) {
-                grid.innerHTML = '';
+            var validItems = (items || []).filter(function (item) {
+                return item.url || item.imageUrl || (item.data && (item.data.url || item.data.dataUrl));
+            });
+            grid.innerHTML = '';
+            if (!validItems.length) {
                 if (title) title.style.display = 'none';
+                if (clearBtn) clearBtn.style.display = 'none';
+                if (empty) empty.style.display = 'block';
                 return;
             }
             if (title) title.style.display = 'block';
-            grid.innerHTML = items.map(function (item) {
-                return '<article class="result-card" style="position:relative">' +
-                    '<div class="image-container">' +
-                    '<img src="' + item.url + '" alt="Historial" onclick="document.getElementById(\'image-viewer\')?.' +
-                    'classList.add(\'active\');var v=document.querySelector(\'#image-viewer img\');if(v)v.src=this.src">' +
-                    '<button class="download-card-btn" title="Eliminar" style="right:10px;left:auto;background:rgba(239,68,68,0.8)" ' +
-                    'onclick="event.stopPropagation();window._deleteHistoryItem && window._deleteHistoryItem(\'' + item.id + '\')">' +
-                    '<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 20 20\' fill=\'white\' width=\'16\' height=\'16\'>' +
-                    '<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.75h-.75A2.25 2.25 0 0 0 3 6.75v.5c0 .414.336.75.75.75H4v6.75A2.75 2.75 0 0 0 6.75 17h6.5A2.75 2.75 0 0 0 16 14.75V8h.25A.75.75 0 0 0 17 7.25v-.5A2.25 2.25 0 0 0 14.75 4.5H14v-.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM12.5 4.5v-.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.75h5Z" clip-rule="evenodd"/></svg>' +
-                    '</button></div>' +
-                    '<div class="result-info"><p style="color:#99CCCC;font-size:0.8rem;margin:0">' +
-                    new Date(item.createdAt).toLocaleString() + '</p></div></article>';
-            }).join('');
-
-            // Botón limpiar todo
-            var clearBtn = document.getElementById('history-clear-btn');
-            if (!clearBtn) {
-                clearBtn = document.createElement('button');
-                clearBtn.id = 'history-clear-btn';
-                clearBtn.textContent = 'Limpiar Historial';
-                clearBtn.style.cssText = 'margin-top:1rem;padding:0.5rem 1rem;background:rgba(239,68,68,0.2);border:1px solid #ef4444;color:#ef4444;border-radius:8px;cursor:pointer;font-size:0.8rem';
+            if (clearBtn) {
+                clearBtn.style.display = 'block';
                 clearBtn.onclick = clearAllHistory;
-                var historyContainer = document.getElementById('history-container');
-                if (historyContainer) historyContainer.appendChild(clearBtn);
             }
+            if (empty) empty.style.display = 'none';
+
+            validItems.forEach(function (item) {
+                var src = item.url || item.imageUrl || (item.data && (item.data.url || item.data.dataUrl)) || '';
+                var card = document.createElement('div');
+                card.className = 'history-item-wrap';
+
+                var img = document.createElement('img');
+                img.src = src;
+                img.alt = 'Generación guardada';
+                img.addEventListener('click', function () { openViewer(src, 'Historial'); });
+
+                var downloadBtn = document.createElement('button');
+                downloadBtn.type = 'button';
+                downloadBtn.className = 'btn-square btn-download';
+                downloadBtn.title = 'Descargar';
+                downloadBtn.setAttribute('aria-label', 'Descargar generación');
+                downloadBtn.textContent = '↓';
+                downloadBtn.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    downloadImage(src, 'generacion_' + item.id + '.jpg');
+                });
+
+                var deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'btn-square btn-delete';
+                deleteBtn.title = 'Eliminar';
+                deleteBtn.setAttribute('aria-label', 'Eliminar generación');
+                deleteBtn.textContent = '×';
+                deleteBtn.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    deleteHistoryItem(item.id);
+                });
+
+                var date = document.createElement('span');
+                date.className = 'history-date';
+                date.textContent = new Date(item.createdAt || Date.now()).toLocaleString('es-ES');
+
+                card.append(img, downloadBtn, deleteBtn, date);
+                grid.appendChild(card);
+            });
         });
     }
 
