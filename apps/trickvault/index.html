@@ -156,6 +156,56 @@ const INSTAGRAM_COMMANDS = [
     ['/patterntile', 'patrón que se repite sin costura'],
 ];
 
+// 40 comandos de edición visual compartidos en la captura de referencia.
+// Se combinan con los anteriores y se eliminan coincidencias por comando.
+const ADDITIONAL_IMAGE_COMMANDS = [
+    ['/showcase', 'Foto premium del producto'],
+    ['/premiumshowcase', 'Showcase deluxe de alto impacto'],
+    ['/productshot', 'Foto de estudio profesional'],
+    ['/metaad', 'Imagen lista para anuncios'],
+    ['/newspaperad', 'Anuncio estilo periódico'],
+    ['/billboardmockup', 'Campaña en valla urbana'],
+    ['/3Dbillboard', 'Valla 3D gigante'],
+    ['/paperbag', 'Marca aplicada a bolsa'],
+    ['/storefrontbranding', 'Marca en fachada'],
+    ['/cupbranding', 'Marca en vasos o envases'],
+    ['/luxury', 'Estética elegante y exclusiva'],
+    ['/perfumead', 'Look premium de perfumería'],
+    ['/luxurywatchad', 'Publicidad de lujo para accesorios'],
+    ['/glassreflection', 'Reflejos de cristal y estudio'],
+    ['/floatingproduct', 'Producto suspendido'],
+    ['/surrealad', 'Campaña creativa y surrealista'],
+    ['/nature', 'Integrado con elementos naturales'],
+    ['/jungle', 'En plena selva tropical'],
+    ['/desert', 'En un desierto cinematográfico'],
+    ['/ocean', 'Escena oceánica'],
+    ['/underwater', 'Bajo el agua'],
+    ['/space', 'En el espacio'],
+    ['/cyberpunk', 'Estética cyberpunk'],
+    ['/futuristic', 'Ambiente tecnológico futurista'],
+    ['/fire', 'Rodeado de fuego y chispas'],
+    ['/ice', 'Ambiente helado'],
+    ['/fireAndIce', 'Contraste fuego y hielo'],
+    ['/smoke', 'Humo dramático'],
+    ['/storm', 'Tormenta épica'],
+    ['/energy', 'Rayos y energía visual'],
+    ['/splash', 'Agua o líquido alrededor'],
+    ['/waterSplashAd', 'Splash publicitario de agua'],
+    ['/explosion', 'Explosión visual'],
+    ['/productexplosion', 'Producto con polvo e ingredientes explotando'],
+    ['/cinematic', 'Acabado cinematográfico'],
+    ['/portrait', 'Retrato con el sujeto protagonista'],
+    ['/macro', 'Primerísimo plano de detalle'],
+    ['/floating', 'Flotando con elementos alrededor'],
+    ['/hologram', 'Hologramas e interfaces digitales'],
+    ['/neon', 'Luces futuristas'],
+];
+
+const ALL_IMAGE_COMMANDS = [
+    ...INSTAGRAM_COMMANDS,
+    ...ADDITIONAL_IMAGE_COMMANDS.filter(([command]) => !INSTAGRAM_COMMANDS.some(([existingCommand]) => existingCommand === command)),
+];
+
 const SEED_TRICKS = [
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'terminal', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
     { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'css', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
@@ -168,7 +218,7 @@ const SEED_TRICKS = [
     { id: 's9', title: 'Método Ivy Lee: productividad diaria', description: 'Cada noche escribe las 6 tareas más importantes para mañana, ordenadas por prioridad. Al día siguiente empieza por la #1 y no pases a la siguiente hasta terminar.', category: 'productividad', tags: ['productividad', 'metodo', 'focus'], codeSnippet: '📋 Cada noche:\n1. Escribe 6 tareas para mañana\n2. Priorízalas (1 = más importante)\n\n🌅 Al día siguiente:\n1. Empieza por la tarea #1\n2. No pases a #2 hasta terminar #1\n3. Las no acabadas pasan a mañana', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 10 },
     { id: 's10', title: 'Regla 5-5-5 para tomar decisiones', description: 'Pregúntate: ¿esto importará en 5 minutos, 5 meses o 5 años? La respuesta te ayuda a calibrar cuánta energía mental merece cada decisión.', category: 'productividad', tags: ['decisiones', 'mentalidad', 'minimalismo'], codeSnippet: '⏱️ ¿Importará en 5 MINUTOS?\n   → Déjalo pasar. No reacciones.\n\n📅 ¿Importará en 5 MESES?\n   → Dedícale atención moderada.\n\n🎯 ¿Importará en 5 AÑOS?\n   → Esto SÍ merece tu mejor energía.', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 9 },
     { id: 's11', title: 'El truco del patito de goma (Rubber Duck Debugging)', description: 'Cuando estés atascado con un bug, explícaselo en voz alta a un objeto inanimado (como un patito de goma). El mero hecho de verbalizar el problema te hace ver la solución.', category: 'otros', tags: ['debugging', 'pensamiento', 'metodologia'], codeSnippet: '🐤 Pasos del Rubber Duck Debugging:\n1. Coge un patito (o cualquier objeto)\n2. Explícale el problema línea por línea\n3. No asumas nada - explícalo TODO\n4. La solución suele aparecer a mitad de la explicación', difficulty: 'beginner', sourceUrl: 'https://es.wikipedia.org/wiki/M%C3%A9todo_de_depuraci%C3%B3n_del_patito_de_goma', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 11 },
-    ...INSTAGRAM_COMMANDS.map(([command, meaning], index) => ({
+    ...ALL_IMAGE_COMMANDS.map(([command, meaning], index) => ({
         id: `ig-dcek-${String(index + 1).padStart(3, '0')}`,
         title: `${command} — ${meaning}`,
         description: '',
@@ -216,7 +266,7 @@ function buildImagePrompt(command, meaning) {
 }
 
 const IMAGE_COMMAND_PROMPTS = new Map(
-    INSTAGRAM_COMMANDS.map(([command, meaning]) => [command, buildImagePrompt(command, meaning)])
+    ALL_IMAGE_COMMANDS.map(([command, meaning]) => [command, buildImagePrompt(command, meaning)])
 );
 
 function getImageCommandKey(trick) {
