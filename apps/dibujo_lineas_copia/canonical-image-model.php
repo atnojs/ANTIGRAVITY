@@ -92,8 +92,10 @@ function ag_image_size(array $request): string
     $rw = max(1, (int)$parts[0]); $rh = max(1, (int)$parts[1]);
     $width = $rw >= $rh ? $resolution : (int)round($resolution * $rw / $rh);
     $height = $rw >= $rh ? (int)round($resolution * $rh / $rw) : $resolution;
-    $pixels = min(4194304, max(262144, $width * $height)); $ratio = max(1/3, min(3, $width / max(1, $height)));
-    $width = max(16, (int)(round(sqrt($pixels * $ratio) / 16) * 16)); $height = max(16, (int)(round(sqrt($pixels / $ratio) / 16) * 16));
+    // Presupuesto mínimo de la API Images de OpenAI: 1.048.576 px (1024x1024).
+    // Tamaños menores se rechazan ("below the current minimum pixel budget").
+    $pixels = min(4194304, max(1048576, $width * $height)); $ratio = max(1/3, min(3, $width / max(1, $height)));
+    $width = max(16, (int)(ceil(sqrt($pixels * $ratio) / 16) * 16)); $height = max(16, (int)(ceil(sqrt($pixels / $ratio) / 16) * 16));
     return $width . 'x' . $height;
 }
 
