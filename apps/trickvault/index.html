@@ -206,6 +206,8 @@ const ALL_IMAGE_COMMANDS = [
     ...ADDITIONAL_IMAGE_COMMANDS.filter(([command]) => !INSTAGRAM_COMMANDS.some(([existingCommand]) => existingCommand === command)),
 ];
 
+
+
 const SEED_TRICKS = [
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'terminal', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
     { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'css', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
@@ -246,31 +248,178 @@ function cleanLegacyImageCommandDescriptions(items) {
     return items.map(item => isLegacyImageCommandDescription(item.description) ? { ...item, description: '' } : item);
 }
 
-const IMAGE_PROMPT_OVERRIDES = {
-    '/ghostedview': 'Objeto único con carcasa exterior translúcida sobre el mecanismo, mostrando el interior de forma clara y reconocible.',
-    '/layerview': 'Objeto único en vista 3/4, con sus capas de construcción visibles y ligeramente separadas, alineadas y fáciles de identificar.',
-    '/wireframe': 'Objeto único en vista 3/4, malla 3D fina, fondo oscuro, líneas cian luminosas, sin texto, sin medidas, sin vistas adicionales y sin ficha técnica.',
+const PROMPT_TEMPLATES = {
+    // 1-10
+    "/xray": "Semi-transparent X-ray radiographic visualization of [OBJETO], luminous skeletal inner anatomy and mechanical interior structure, monochrome cyan and white glowing bones and gears, high-contrast dark medical radiograph background, 8k resolution, minimalist technical transparency",
+    "/explodedview": "Detailed 3D technical exploded view of [OBJETO], floating disassembled parts neatly organized in layers on a solid neutral light grey studio background, visible separated components, clean isometric perspective, CAD engineering illustration, 8k resolution",
+    "/cutaway": "Precise cutaway cross-section view of [OBJETO], half outer surface sliced cleanly to expose intricate inner mechanism, detailed gears and interior chambers, studio lighting, technical product illustration, crisp depth and materials",
+    "/crosssection": "Clean anatomical cross-section slice through [OBJETO], visible inner layers, internal core structure and textures, high clarity macro perspective, clean neutral background, scientific catalog style",
+    "/teardown": "Complete technical teardown of [OBJETO], all individual components laid flat and meticulously organized on a clean dark wooden workbench, knolling photography, overhead 90-degree flat lay, soft natural workshop lighting",
+    "/schematic": "Technical schematic line drawing of [OBJETO], precise blueprint drafting lines, clean vector outlines, architectural wire labels and circuit diagram aesthetics, white vector linework on solid slate background",
+    "/ghostedview": "High-end 3D render of [OBJETO] with semi-transparent frosted acrylic glass outer shell, glowing interior gears and internal mechanical components clearly visible beneath, elegant studio lighting, sleek product design visualization",
+    "/skeletalview": "Bare structural skeletal frame of [OBJETO], stripped of all skin and outer panels, exposing the raw structural chassis, internal scaffolding and core architecture, high-contrast dramatic studio lighting",
+    "/layerview": "Expanded 3D exploded layer view of [OBJETO], sequential slices and material tiers floating parallel in mid-air, showing deconstructed stack of components in order, modern infographic presentation, clean studio background",
+    "/partsdiagram": "Organized spare parts diagram of [OBJETO], individual components neatly arranged in rows with clean spacing, technical catalog breakdown style, crisp soft studio lighting, high precision",
+
+    // 11-20
+    "/blueprint": "Architectural technical blueprint of [OBJETO], white and cyan drafting grid lines, accurate orthogonal technical schematics, dimension markings, classic blueprint cyan paper texture background",
+    "/isometric": "Detailed 3D isometric model of [OBJETO], 45-degree isometric projection angle, miniature diorama aesthetic, crisp volumetric lighting, clean solid matte background, stylish low-poly or smooth CAD finish",
+    "/orthographic": "Flat orthographic multi-view technical projection of [OBJETO], top view, front view and side view without perspective distortion, true scale technical engineering drafting, clean minimalist white background",
+    "/patentdrawing": "Authentic vintage patent application drawing of [OBJETO], black ink engraved linework, cross-hatching shade details, textured aged yellowed parchment paper, vintage US patent style",
+    "/wireframe": "3D wireframe mesh model of [OBJETO], luminous bright cyan neon wireframe lines, transparent polygons, hollow wireframe CAD blueprint style, studio perspective view, smooth digital topography lines, floating on a solid dark navy blue background, clean 3D computer graphics visualization, 8k resolution, minimalist high-tech aesthetic",
+    "/infographic": "Modern clean infographic presentation explaining [OBJETO], clean geometric callout boxes, minimal statistical graphs, modern graphic design layout, balanced negative space, high aesthetic clarity",
+    "/annotated": "Detailed studio product photo of [OBJETO] overlaid with sleek red and white callout lines, technical arrows, circular focal pointers and handwritten engineering notes, editorial catalog review style",
+    "/floorplan": "Architectural top-down floor plan layout of [OBJETO], precise wall thicknesses, spatial zoning, interior dimensions and doors, clean 2D architectural CAD drafting style",
+    "/dimensioned": "Engineering CAD technical drawing of [OBJETO] with visible measurement arrows, exact dimension lines, metric radius callouts and tolerance specs, architectural drafting aesthetic",
+    "/flowchart": "Clear functional flowchart diagram illustrating the workflow and mechanics of [OBJETO], sleek rounded process nodes, directional arrows, clean dark UI tech layout",
+
+    // 21-30
+    "/handwritten": "Artistic product study of [OBJETO] with spontaneous handwritten cursive fountain pen annotations and sketch arrows drawn directly on the page, creative inventor diary notebook aesthetic",
+    "/napkinsketch": "Spontaneous ballpoint pen rough sketch of [OBJETO] drawn on a textured paper coffee napkin, loose quick concept lines, coffee cup ring stain, authentic brainstorming cafe aesthetic",
+    "/whiteboard": "Dry-erase marker drawing of [OBJETO] on a glossy office whiteboard, colorful marker outlines, erased smudges, hand-drawn explanatory diagrams and arrows, creative startup brainstorm vibe",
+    "/moodboard": "Creative design aesthetic moodboard centered around [OBJETO], pinboard collage featuring fabric swatches, color palette chips, cinematic photo cutouts, metallic textures and architectural details",
+    "/pencilsketch": "Fine graphite pencil drawing of [OBJETO], loose expressive hand-drawn crosshatching, subtle shading gradients, textured white heavyweight sketch paper, artist sketchbook illustration",
+    "/notebookpage": "Detailed hand-drawn concept illustration of [OBJETO] sketched on a lined vintage notebook page, margins, ballpoint ink, creative inventor journal page aesthetic",
+    "/collage": "Mixed-media artistic paper collage of [OBJETO], layered textured paper clippings, vintage magazine cutouts, typography fragments, rich textured tactile visual depth",
+    "/redpen": "Design blueprint proof of [OBJETO] covered in assertive red ballpoint pen corrections, circle highlights, handwritten editorial remarks and revision checkmarks",
+    "/storyboard": "Sequential cinematic storyboard sheet showcasing [OBJETO], four narrative keyframes in comic panels with action descriptions and camera direction arrows, charcoal sketching style",
+    "/tornpaper": "Creative ripped paper visual of [OBJETO], subject revealed through jagged layered torn edges of colorful craft paper, authentic paper fiber texture, striking depth",
+
+    // 31-40
+    "/knolling": "Precise knolling layout of [OBJETO] with all associated accessories and components disassembled and organized in strict 90-degree right angles, top-down flat lay, soft even studio lighting",
+    "/productshot": "High-end commercial product photography of [OBJETO], clean solid gradient studio background, professional softbox three-point lighting, subtle floor reflection, sharp 8k catalog look",
+    "/actionfigure": "Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics",
+    "/packaging": "Premium retail packaging box mockup for [OBJETO], matte finish cardboard with embossed spot UV details and clean typography, modern luxury unboxing aesthetic",
+    "/flatlay": "Aesthetic top-down flatlay photography of [OBJETO] curated on a textured concrete surface surrounded by minimal complementary tools and accessories, soft diffused morning daylight",
+    "/macro": "Extreme macro close-up photography of [OBJETO], razor-sharp focus on intricate micro-textures, material weave and surface craftsmanship, exquisite bokeh in background, 8k resolution",
+    "/heroshot": "Dramatic low-angle hero shot of [OBJETO], dynamic powerful perspective, cinematic rim lighting, volumetric atmosphere, prestigious flagship commercial presentation",
+    "/floatingproduct": "Zero-gravity floating presentation of [OBJETO] hovering effortlessly in mid-air, clean minimal solid studio background, subtle realistic cast shadow below, modern luxury commercial aesthetic",
+    "/ghostmannequin": "Invisible ghost mannequin hollow display of [OBJETO], 3D floating volume with realistic interior lining and natural fabric folds, clean studio white background",
+    "/splashshot": "High-speed commercial splash photography of [OBJETO], frozen dynamic water and liquid droplets bursting and swirling around the subject, crystal clear liquid caustics, vibrant high-speed lighting",
+
+    // 41-50
+    "/devicemockup": "Modern tech device mockup featuring [OBJETO] displayed in a sleek minimalist desk setting, natural ambient window light, photorealistic high-end tech lifestyle environment",
+    "/screenmockup": "Frontal screen display mockup showing [OBJETO] inside a borderless glass digital interface, sleek UI elements, subtle ambient screen glow, premium digital showcase",
+    "/boxmockup": "Realistic 3D cardboard packaging box mockup for [OBJETO], elegant custom branding, perspective angle, soft realistic ground contact shadows, studio backdrop",
+    "/labelmockup": "Detailed packaging label mockup applied smoothly onto [OBJETO], premium matte paper texture, gold foil embossed stamp, macro studio lighting",
+    "/apparelmockup": "Premium apparel lifestyle mockup featuring [OBJETO], textured organic cotton fabric, realistic natural garment folds, soft editorial fashion studio lighting",
+    "/embossedlogo": "Tactile close-up of [OBJETO] with an elegant deep embossed debossed logo stamped into premium leather or thick textured cotton cardstock, dramatic angled light revealing depth",
+    "/foilstamp": "Macro shot of [OBJETO] with shimmering hot foil stamping, reflective metallic gold and holographic shimmer catching the light, luxurious premium printing craftsmanship",
+    "/shelfshot": "Retail point-of-sale perspective of [OBJETO] placed on a boutique store shelf among curated premium items, warm interior store lighting, realistic depth of field",
+    "/sizecomparison": "Clean studio visual of [OBJETO] placed directly next to a familiar everyday reference object for accurate scale comparison, neutral background, crisp documentary lighting",
+    "/colorway": "Multi-variant colorway product lineup of [OBJETO], showcasing four distinct curated matte and metallic color finishes standing side by side, clean studio catalog render",
+
+    // 51-60
+    "/cinematic": "Cinematic widescreen still of [OBJETO], anamorphic lens flare, rich atmospheric color grading, cinematic shadows, dramatic film still aesthetic, 8k resolution",
+    "/goldenhour": "Warm golden hour outdoor photography of [OBJETO], low-angle setting sun casting long dramatic golden shadows, warm glowing ambient haze, natural cinematic sunlight",
+    "/bluehour": "Atmospheric blue hour twilight photography of [OBJETO], deep cool indigo and sapphire evening ambient light, subtle warm artificial accent highlights, moody dusk vibe",
+    "/rimlight": "Dramatic dark silhouette studio portrait of [OBJETO], powerful sharp razor-thin rim light tracing the outer contours, deep black background, intense high-contrast mood",
+    "/backlight": "Stunning backlighting silhouette of [OBJETO], intense light source placed directly behind the subject creating glowing edges and soft luminous halo effects, cinematic contrast",
+    "/softlighting": "Gentle soft diffused lighting portrait of [OBJETO], silky smooth pastel shadow gradients, high-key gentle illumination, peaceful elegant aesthetic",
+    "/dramaticlighting": "Chiaroscuro dramatic lighting on [OBJETO], stark contrast between deep pitch-black shadows and intense specular highlights, Renaissance painting lighting influence",
+    "/volumetriclight": "Cinematic volumetric light rays beaming through dusty air onto [OBJETO], visible sunbeams and atmospheric fog shafts, epic dramatic mood",
+    "/lowkey": "Moody low-key photography of [OBJETO], mostly dark deep shadows with selective soft light illuminating key textures and silhouettes, sophisticated minimalist noir style",
+    "/highkey": "Bright and airy high-key commercial photography of [OBJETO], clean pure white environment, minimal subtle shadows, fresh modern aesthetic",
+
+    // 61-70
+    "/shallowdepth": "Exquisite shallow depth of field photograph of [OBJETO], razor-sharp focal point on subject with a completely melted creamy background blur, f/1.2 optical bokeh",
+    "/bokeh": "Glamorous night photography of [OBJETO] with prominent circular and hexagonal glowing bokeh light orbs shimmering softly in the blurred background",
+    "/longexposure": "Dreamy long exposure photography featuring [OBJETO], smooth motion blur light trails streaming dynamically around the stationary crisp subject, fine art photographic technique",
+    "/tiltshift": "Miniature tilt-shift photography of [OBJETO], narrow slice of sharp focus with heavy top and bottom blur, playful miniature toy diorama illusion, high-angle perspective",
+    "/35mm": "Authentic 35mm film photograph of [OBJETO], organic analog film grain, rich color saturation, nostalgic Kodak Portra film palette, subtle vintage optical warmth",
+    "/anamorphic": "Anamorphic 2.39:1 widescreen cinematic shot of [OBJETO], horizontal blue lens flare streaks, oval bokeh highlights, cinematic Panavision look",
+    "/lowangle": "Intimidating low-angle worm's-eye perspective looking up at [OBJETO], imposing massive presence, wide-angle lens distortion, towering heroic composition",
+    "/overhead": "Direct overhead bird's-eye 90-degree top-down photograph of [OBJETO], perfectly symmetrical geometric alignment, flat layout on a solid textured background",
+    "/dutchangle": "Dynamic Dutch angle diagonal composition of [OBJETO], tilted horizon creating dramatic visual tension and energy, cinematic action thriller perspective",
+    "/extremecloseup": "Ultra extreme macro close-up filling the frame with a single intricate detail of [OBJETO], microscopic textures and material craftsmanship, shallow depth of field",
+
+    // 71-80
+    "/claymation": "Charming handmade claymation plasticine sculpture of [OBJETO], visible thumbprint textures, artisanal sculpted clay aesthetic, playful stop-motion animation look",
+    "/papercraft": "Intricate 3D papercraft origami sculpture of [OBJETO], folded crisp colorful cardstock paper layers, realistic paper shadows, artisanal paper art diorama",
+    "/lowpoly": "Stylized low-poly 3D geometric faceted model of [OBJETO], clean polygon flat planes, vibrant pastel gradient shading, modern minimalist digital art",
+    "/pixelart": "Nostalgic 16-bit retro pixel art of [OBJETO], detailed isometric pixel sprite, limited vibrant color palette, authentic retro videogame artwork",
+    "/linocut": "Traditional relief printmaking linocut of [OBJETO], bold carved black ink linework, gouged white negative spaces, textured artisanal handmade print on washi paper",
+    "/risograph": "Vintage 2-color risograph art print of [OBJETO], vibrant fluo pink and teal inks with characteristic dot screen misregistration and analog grain texture",
+    "/halftone": "Pop-art vintage comic halftone print of [OBJETO], visible retro Ben-Day dots pattern, bold black outlines, vibrant offset printing aesthetic",
+    "/stainedglass": "Gothic architectural stained glass window depicting [OBJETO], glowing vibrant jewel-toned translucent colored glass pieces bound with dark lead cames, backlit sunlight",
+    "/chromemetal": "Liquid chrome futuristic 3D render of [OBJETO], high-polish mirror reflective silver metal with liquid curves, surreal studio reflections, glossy aesthetic",
+    "/embroidery": "Intricate tactile textile embroidery of [OBJETO], raised colorful silk thread stitches, woven fabric canvas texture, handcrafted hoop art craftsmanship",
+
+    // 81-90
+    "/charactersheet": "Complete visual character concept design sheet of [OBJETO], multiple turnaround poses, expression thumbnails, detailed callout annotations, production art style",
+    "/turnaround": "Model turnaround sheet of [OBJETO] showing front view, side profile, three-quarter angle and back view lined up horizontally, 3D artist character model sheet",
+    "/expressionsheet": "Concept design emotion expression sheet depicting [OBJETO] reacting with various distinct expressions, comic animation model sheet layout",
+    "/costumedesign": "Haute couture fashion costume design illustration of [OBJETO], watercolor and gouache sketch with fabric swatches, pencil lines and tailoring notes",
+    "/minime": "Adorable miniature chibified designer toy figure version of [OBJETO], smooth vinyl collectible aesthetic, oversized proportions, studio toy display",
+    "/statue": "Classical neoclassical marble and bronze museum sculpture of [OBJETO], carved polished stone with delicate chisel details, museum gallery lighting",
+    "/silhouettestudy": "Graphic silhouette comparison study sheet of [OBJETO], solid black shapes exploring varied proportions and dynamic contours against a neutral white grid",
+    "/environmentalportrait": "Authentic environmental portrait of [OBJETO] situated inside its natural workspace and surroundings, atmospheric real-world depth and ambient lighting",
+    "/duotoneportrait": "Graphic duotone poster art of [OBJETO], striking high-contrast two-color palette of vibrant electric cobalt blue and neon orange, modern riso print style",
+    "/backview": "Mysterious rear-angle back view of [OBJETO], subject viewed from behind, face hidden, contemplative cinematic framing, atmospheric background depth",
+
+    // 91-100
+    "/magazinecover": "Glossy high-fashion editorial magazine cover featuring [OBJETO] as the central cover star, elegant typography masthead, headline banners, high-impact photography",
+    "/movieposter": "Epic cinematic theatrical movie poster featuring [OBJETO], dramatic blockbuster composition, billing block credits at the bottom, moody cinematic lighting",
+    "/bookcover": "Minimalist hardcover book cover design for [OBJETO], debossed title typography, artistic central emblem, premium cloth binding texture, sophisticated aesthetic",
+    "/albumcover": "Square vinyl album cover artwork featuring [OBJETO], iconic musical album aesthetic, subtle retro cardboard ring wear, evocative moody artistic visual",
+    "/stickersheet": "Die-cut kiss-cut vinyl sticker sheet featuring multiple cute illustrations of [OBJETO] in various poses, white borders, glossy peelable sticker sheet aesthetic",
+    "/billboard": "Real-world roadside advertising billboard displaying a bold campaign of [OBJETO], clear daytime sky, city context, large-scale commercial advertisement",
+    "/newspaper": "Front page newspaper feature photo of [OBJETO], authentic black-and-white vintage newsprint paper texture, halftone photo reproduction, vintage journalism layout",
+    "/quotecard": "Elegant minimalist social media quote card featuring [OBJETO] alongside clean modern typography, balanced composition, soft pastel gradient backdrop",
+    "/timeline": "Horizontal visual infographic timeline charting the evolutionary history of [OBJETO], clean milestone nodes, sequential dates and illustrative markers",
+    "/patterntile": "Seamless repeating textile pattern tile composed of stylized motifs of [OBJETO], perfectly tileable vector surface design, harmonious color scheme",
+
+    // 101-110 (Nuevas)
+    "/showcase": "Ultra-premium commercial studio showcase of [OBJETO], resting on a glossy black mirrored pedestal, subtle golden rim lighting, minimalist elegant dark background, commercial product photography, 8k resolution",
+    "/premiumshowcase": "Deluxe high-impact commercial product showcase of [OBJETO], positioned on polished obsidian marble with subtle golden vein lighting and atmospheric light beams, prestigious flagship presentation",
+    "/metaad": "Modern high-converting social media advertising visual for [OBJETO], vibrant gradient studio background, bold commercial composition, clean negative space, advertising photography",
+    "/newspaperad": "Vintage full-page monochrome newspaper advertisement for [OBJETO], retro halftone print texture, distressed paper grain, aged serif typography layout, authentic 1960s editorial advertising print",
+    "/billboardmockup": "Realistic outdoor urban street billboard mockup displaying an advertisement for [OBJETO], modern metropolitan city avenue context, dusk natural ambient lighting, photorealistic commercial mockup",
+    "/3Dbillboard": "Giant naked-eye anamorphic 3D curved digital billboard in a futuristic city intersection, showing a hyper-realistic [OBJETO] bursting out of the screen illusion, neon night cyberpunk city street below",
+    "/paperbag": "Minimalist luxury kraft paper shopping bag mockup featuring [OBJETO] branding, braided cotton handles, elegant embossed gold foil typography logo, clean neutral studio podium, soft realistic shadows",
+    "/storefrontbranding": "Chic modern boutique cafe storefront branding mockup for [OBJETO], matte black and brushed brass exterior facade, large glass display windows, warm interior lighting, realistic architectural photography",
+    "/cupbranding": "Paper takeaway cup branding mockup for [OBJETO] on a rustic wooden table, custom printed sleeve with minimalist typography logo, warm ambient coffee shop atmosphere",
+    "/luxury": "Ultra-luxury high-end catalog presentation of [OBJETO], displayed on sculpted black velvet with a soft cinematic spotlight, opulent dark ambiance, high-fashion aesthetic, 8k resolution",
+
+    // 111-120
+    "/perfumead": "Haute perfumery commercial advertisement for [OBJETO], crystal flacon reflections, floating delicate flower petals, ethereal backlit mist, Vogue luxury editorial style",
+    "/luxurywatchad": "Prestigious magazine commercial advertisement for [OBJETO], resting on polished dark walnut wood, macro surface details, warm dramatic side lighting, horology catalog look",
+    "/glassreflection": "Architectural studio photo of [OBJETO] surrounded by geometric crystal glass prisms and mirrors, sharp optical caustics, clean reflections on glossy marble floor",
+    "/surrealad": "Award-winning surrealist conceptual advertising visual for [OBJETO], dreamlike impossible physics, floating celestial elements, vibrant imaginative color palette, fine art direction",
+    "/nature": "Natural lifestyle product photograph of [OBJETO] nestled seamlessly among lush forest moss, weathered river stones and wild greenery, soft dappled sunlight filtering through trees",
+    "/jungle": "Cinematic adventure scene featuring [OBJETO] in the heart of a dense tropical rainforest jungle, giant wet monstera leaves, mist, dramatic jungle foliage",
+    "/desert": "Cinematic desert landscape photography of [OBJETO] resting on sweeping golden sand dunes under a vast clear sky, intense sun warmth, rippled sand textures",
+    "/ocean": "Breathtaking ocean photography of [OBJETO] surrounded by deep blue turquoise ocean water, sea foam, golden sun reflections dancing across gentle ripples",
+    "/underwater": "Crisp underwater photography of [OBJETO] submerged in crystal-clear azure water, shimmering caustic sunbeams piercing through the surface, rising air bubbles",
+    "/space": "Sci-fi deep space visual of [OBJETO] floating weightlessly against a cosmic backdrop of a glowing nebula, distant glittering stars and deep void of space",
+
+    // 121-130
+    "/cyberpunk": "Cyberpunk aesthetic visual of [OBJETO], drenched in electric magenta and neon cyan lights, wet reflective rainy street asphalt, glowing holographic glitch accents",
+    "/futuristic": "Sleek futuristic concept design of [OBJETO], pristine white and brushed titanium materials, illuminated blue status LEDs, clean sci-fi laboratory environment",
+    "/fire": "High-speed action photograph of [OBJETO] engulfed in dynamic swirling flames and bright glowing ember sparks, intense fiery warmth, dark dramatic background",
+    "/ice": "Spectacular frozen studio visual of [OBJETO] encased in clear sculpted crystalline ice, frosted surface textures, sub-zero cold blue rim lighting, condensation mist",
+    "/fireAndIce": "Striking dual-contrast conceptual visual of [OBJETO], one half surrounded by roaring fire and embers, the other half frozen in jagged crystalline ice and snow",
+    "/smoke": "Mysterious atmospheric portrait of [OBJETO] emerging from billowing swirls of dense colored smoke, volumetric cinematic lighting piercing the haze, moody ambiance",
+    "/storm": "Epic dramatic landscape featuring [OBJETO] amidst a powerful thunderstorm, dark ominous tempest clouds, violent lightning bolts illuminating the horizon, wind and rain",
+    "/energy": "Futuristic visual of [OBJETO] crackling with vivid electric lightning arcs and glowing plasma energy, luminous blue particle aura, high-voltage power effect",
+    "/splash": "High-speed macro splash photography of [OBJETO] plunging into water, crystal-clear water droplet explosion, frozen liquid crown, immaculate studio lighting",
+    "/waterSplashAd": "Dynamic commercial beverage advertisement of [OBJETO] surrounded by an explosive vortex of crystal clear splashing water and fresh flying lime slices, refreshing summer lighting",
+
+    // 131-136
+    "/explosion": "Dynamic action shot of [OBJETO] at the epicenter of a cinematic shockwave explosion, shattering debris, dust clouds, dramatic backlighting, high-speed shutter",
+    "/productexplosion": "Deconstructed commercial product explosion of [OBJETO], surrounded by flying raw ingredients, micro powders and flavor bursts frozen in mid-air on a clean studio background",
+    "/portrait": "Intimate studio photographic portrait focusing on [OBJETO] as the main character protagonist, expressive character lighting, rich textures, deep storytelling depth",
+    "/floating": "Surreal zero-gravity levitation of [OBJETO] floating effortlessly in mid-air, surrounded by gentle hovering geometric particles, clean minimalist pastel studio background",
+    "/hologram": "Futuristic glowing 3D hologram of [OBJETO] projected into the air, cyan neon wireframe light rays, digital telemetry data HUD elements, sci-fi cybernetic interface",
+    "/neon": "Vibrant night photography of [OBJETO] illuminated by bold glowing neon light tubes, electric pink and ultraviolet glows, sleek reflective surfaces, retro-futuristic synthwave mood"
 };
 
-function capitalizeSentence(value) {
-    const text = String(value || '').trim();
-    return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
-}
-
-function buildImagePrompt(command, meaning) {
-    const normalizedCommand = String(command || '').trim();
-    const commandName = normalizedCommand.replace(/^\/+/, '');
-    const customInstruction = IMAGE_PROMPT_OVERRIDES[normalizedCommand];
-    const instruction = customInstruction || `Aplica este tratamiento visual de forma claramente reconocible: ${capitalizeSentence(meaning)}.`;
-    return `genera una imagen con ${commandName} de un/una (añade aquí el objeto). ${instruction} ${IMAGE_PROMPT_COPY_GUIDANCE}`;
-}
-
 const IMAGE_COMMAND_PROMPTS = new Map(
-    ALL_IMAGE_COMMANDS.map(([command, meaning]) => [command, buildImagePrompt(command, meaning)])
+    Object.entries(PROMPT_TEMPLATES)
 );
 
 function getImageCommandKey(trick) {
-    return typeof trick?.codeSnippet === 'string' ? trick.codeSnippet.trim() : '';
+    return typeof trick?.codeSnippet === "string" ? trick.codeSnippet.trim() : "";
 }
 
 function isImageCommandTrick(trick) {
@@ -279,7 +428,7 @@ function isImageCommandTrick(trick) {
 
 function getTrickCopyText(trick) {
     const commandPrompt = IMAGE_COMMAND_PROMPTS.get(getImageCommandKey(trick));
-    return commandPrompt || String(trick?.codeSnippet || '');
+    return commandPrompt || String(trick?.codeSnippet || "");
 }
 function hasSortOrder(trick) { return Number.isFinite(Number(trick.sortOrder)); }
 function compareTricks(a, b) {
