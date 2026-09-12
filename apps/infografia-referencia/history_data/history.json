@@ -1,0 +1,1780 @@
+[
+    {
+        "id": "h_mtlg597c",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"español\",\"titulo_detectado\":\"INFOGRAFÍA\",\"tema_detectado\":\"Definición, ventajas, desventajas y consejos sobre el uso de infografías.\",\"estructura\":{\"orientacion\":\"vertical\",\"composicion\":\"Basada en bloques de contenido dispuestos en una cuadrícula flexible. La parte superior e inferior ocupan el ancho completo, mientras que la sección central se divide en dos columnas.\",\"flujo_lectura\":\"De arriba hacia abajo. Comienza con el título, sigue con la definición, luego las dos columnas de ventajas y desventajas, y finaliza con los bloques inferiores sobre redes sociales y consejos.\",\"numero_bloques\":6,\"zonas\":[{\"posicion\":\"superior-centro\",\"funcion\":\"título principal\",\"contenido_resumido\":\"El título 'INFOGRAFÍA' en mayúsculas.\"},{\"posicion\":\"superior-izquierda\",\"funcion\":\"bloque de definición\",\"contenido_resumido\":\"Un bloque de color lila claro que define qué es una infografía.\"},{\"posicion\":\"superior-derecha\",\"funcion\":\"ilustración de apoyo\",\"contenido_resumido\":\"Un bloque con un gráfico de tarta y un gráfico de barras para ejemplificar el contenido de una infografía.\"},{\"posicion\":\"centro-izquierda\",\"funcion\":\"lista de ventajas\",\"contenido_resumido\":\"Un bloque de color azul claro que lista cuatro ventajas, cada una con un icono.\"},{\"posicion\":\"centro-derecha\",\"funcion\":\"lista de desventajas\",\"contenido_resumido\":\"Un bloque de color rosa claro que lista tres desventajas, cada una con un icono de advertencia.\"},{\"posicion\":\"inferior-izquierda\",\"funcion\":\"bloque de aplicación\",\"contenido_resumido\":\"Iconos de redes sociales y un texto que explica la utilidad de las infografías en estas plataformas.\"},{\"posicion\":\"inferior-derecha\",\"funcion\":\"lista de consejos\",\"contenido_resumido\":\"Un bloque de color lila oscuro que ofrece una lista de cuatro consejos para crear infografías.\"}]},\"estilo\":{\"medio\":\"digital\",\"paleta_aproximada\":[\"#fdf6f6\",\"#4b3d67\",\"#e6e0f8\",\"#dbe7fb\",\"#fbe3e3\",\"#c5b4e3\",\"#f9d771\"],\"tipografia\":\"Una fuente sans-serif moderna y redondeada. Se usa en negrita y mayúsculas para el título principal y los encabezados de bloque. El cuerpo del texto utiliza la misma fuente en peso regular y minúsculas.\",\"formas\":\"Rectángulos con esquinas muy redondeadas que funcionan como contenedores para cada bloque de información.\",\"iconografia\":\"Iconos de estilo 'outline' (contorno) con rellenos de color sólido y líneas gruesas. Son simples, minimalistas y temáticos (bombillas, personas, advertencias, gráficos).\",\"fondo\":\"Un color sólido de fondo, en un tono rosa muy pálido o crema.\",\"conectores\":\"No se utilizan líneas ni flechas para conectar los bloques; la conexión se establece por proximidad y por el flujo de lectura natural de la composición.\"},\"texto_visible\":[\"INFOGRAFÍA\",\"¿Qué es una infografia?\",\"Es una representación visual que combina imagenes, gráficos y texto para explicar informacion de forma clara y atractiva\",\"VENTAJAS\",\"Facilitan la comprensión\",\"Atraen la atención\",\"Son rápidas de leer\",\"Ideales para redes sociales\",\"DESVENTAJAS\",\"Pueden saturar si hay mucho texto\",\"Requieren diseño atractivo\",\"A veces simplifican demasiado la información\",\"Las infografias aumentan la interacción y son ideales para compartir información râpida.\",\"Consejos:\",\"• Usa colores llamativos pero equilibrados\",\"• Incluye iconos e imagenes\",\"• Organiza la información de forma clara\",\"• Utiliza titulos cortos y directos\"],\"elementos_visuales\":[\"Bloque rectangular lila claro con texto de definición.\",\"Bloque rectangular blanco con ilustración de un gráfico circular y un gráfico de barras.\",\"Bloque rectangular azul claro con cuatro puntos de texto y cuatro iconos.\",\"Tres iconos de bombilla encendida, de contorno morado y relleno amarillo.\",\"Un icono de dos figuras humanas (usuarios), de contorno y relleno en tonos de lila y rosa.\",\"Bloque rectangular rosa claro con tres puntos de texto y tres iconos.\",\"Tres iconos de señal de advertencia triangular, de contorno morado y relleno amarillo, con un signo de exclamación dentro.\",\"Icono del logotipo de Instagram.\",\"Icono del logotipo de Facebook.\",\"Icono del logotipo de TikTok.\",\"Icono de flecha de compartir.\",\"Bloque rectangular lila oscuro con una lista de consejos.\"],\"reglas_para_replicar\":[\"Utilizar una paleta de colores pastel y amigables (lilas, azules, rosas) sobre un fondo de color muy claro y neutro.\",\"Estructurar el contenido en bloques de información con forma de rectángulos de esquinas muy redondeadas.\",\"Asignar un color de fondo distinto a cada bloque para crear contraste y separación visual.\",\"Emplear una tipografía sans-serif, usando negrita y mayúsculas para los títulos y peso regular para el texto de cuerpo, asegurando una alta legibilidad.\",\"Establecer una jerarquía visual clara: título principal grande, seguido de títulos de sección y finalmente el texto descriptivo.\",\"Acompañar los puntos de las listas con iconos simples y estilizados que representen visualmente el concepto.\",\"Organizar el layout de forma equilibrada, usando columnas para comparar información y dejando suficiente espacio en blanco entre los elementos para evitar la saturación visual.\",\"Mantener un estilo gráfico coherente en todos los iconos (grosor de línea, paleta de colores, nivel de detalle).\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"4eeae2317b39abf2374a49c292ee88d9-349x523.png\",\"medidas\":{\"width\":349,\"height\":523,\"aspectRatio\":\"0.667\"},\"paleta_local\":[\"#ffe0e0\",\"#e0e0ff\",\"#e0c0ff\",\"#a080ff\",\"#e0e0e0\",\"#a080e0\",\"#c0a0e0\"]}. Datos proporcionados por el usuario: descripción libre: explodedview de un podenco canario; título: [VACÍO]; subtítulo: [VACÍO]; secciones y datos: [VACÍO]. Si algún campo está vacío, complétalo automáticamente de forma coherente con el resto de la información y con el tema que se pueda inferir; si todos están vacíos, elige un tema educativo claro y desarrolla título, subtítulo y secciones suficientes para una infografía completa. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "4eeae2317b39abf2374a49c292ee88d9-349x523.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "español",
+                "titulo_detectado": "INFOGRAFÍA",
+                "tema_detectado": "Definición, ventajas, desventajas y consejos sobre el uso de infografías.",
+                "estructura": {
+                    "orientacion": "vertical",
+                    "composicion": "Basada en bloques de contenido dispuestos en una cuadrícula flexible. La parte superior e inferior ocupan el ancho completo, mientras que la sección central se divide en dos columnas.",
+                    "flujo_lectura": "De arriba hacia abajo. Comienza con el título, sigue con la definición, luego las dos columnas de ventajas y desventajas, y finaliza con los bloques inferiores sobre redes sociales y consejos.",
+                    "numero_bloques": 6,
+                    "zonas": [
+                        {
+                            "posicion": "superior-centro",
+                            "funcion": "título principal",
+                            "contenido_resumido": "El título 'INFOGRAFÍA' en mayúsculas."
+                        },
+                        {
+                            "posicion": "superior-izquierda",
+                            "funcion": "bloque de definición",
+                            "contenido_resumido": "Un bloque de color lila claro que define qué es una infografía."
+                        },
+                        {
+                            "posicion": "superior-derecha",
+                            "funcion": "ilustración de apoyo",
+                            "contenido_resumido": "Un bloque con un gráfico de tarta y un gráfico de barras para ejemplificar el contenido de una infografía."
+                        },
+                        {
+                            "posicion": "centro-izquierda",
+                            "funcion": "lista de ventajas",
+                            "contenido_resumido": "Un bloque de color azul claro que lista cuatro ventajas, cada una con un icono."
+                        },
+                        {
+                            "posicion": "centro-derecha",
+                            "funcion": "lista de desventajas",
+                            "contenido_resumido": "Un bloque de color rosa claro que lista tres desventajas, cada una con un icono de advertencia."
+                        },
+                        {
+                            "posicion": "inferior-izquierda",
+                            "funcion": "bloque de aplicación",
+                            "contenido_resumido": "Iconos de redes sociales y un texto que explica la utilidad de las infografías en estas plataformas."
+                        },
+                        {
+                            "posicion": "inferior-derecha",
+                            "funcion": "lista de consejos",
+                            "contenido_resumido": "Un bloque de color lila oscuro que ofrece una lista de cuatro consejos para crear infografías."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "digital",
+                    "paleta_aproximada": [
+                        "#fdf6f6",
+                        "#4b3d67",
+                        "#e6e0f8",
+                        "#dbe7fb",
+                        "#fbe3e3",
+                        "#c5b4e3",
+                        "#f9d771"
+                    ],
+                    "tipografia": "Una fuente sans-serif moderna y redondeada. Se usa en negrita y mayúsculas para el título principal y los encabezados de bloque. El cuerpo del texto utiliza la misma fuente en peso regular y minúsculas.",
+                    "formas": "Rectángulos con esquinas muy redondeadas que funcionan como contenedores para cada bloque de información.",
+                    "iconografia": "Iconos de estilo 'outline' (contorno) con rellenos de color sólido y líneas gruesas. Son simples, minimalistas y temáticos (bombillas, personas, advertencias, gráficos).",
+                    "fondo": "Un color sólido de fondo, en un tono rosa muy pálido o crema.",
+                    "conectores": "No se utilizan líneas ni flechas para conectar los bloques; la conexión se establece por proximidad y por el flujo de lectura natural de la composición."
+                },
+                "texto_visible": [
+                    "INFOGRAFÍA",
+                    "¿Qué es una infografia?",
+                    "Es una representación visual que combina imagenes, gráficos y texto para explicar informacion de forma clara y atractiva",
+                    "VENTAJAS",
+                    "Facilitan la comprensión",
+                    "Atraen la atención",
+                    "Son rápidas de leer",
+                    "Ideales para redes sociales",
+                    "DESVENTAJAS",
+                    "Pueden saturar si hay mucho texto",
+                    "Requieren diseño atractivo",
+                    "A veces simplifican demasiado la información",
+                    "Las infografias aumentan la interacción y son ideales para compartir información râpida.",
+                    "Consejos:",
+                    "• Usa colores llamativos pero equilibrados",
+                    "• Incluye iconos e imagenes",
+                    "• Organiza la información de forma clara",
+                    "• Utiliza titulos cortos y directos"
+                ],
+                "elementos_visuales": [
+                    "Bloque rectangular lila claro con texto de definición.",
+                    "Bloque rectangular blanco con ilustración de un gráfico circular y un gráfico de barras.",
+                    "Bloque rectangular azul claro con cuatro puntos de texto y cuatro iconos.",
+                    "Tres iconos de bombilla encendida, de contorno morado y relleno amarillo.",
+                    "Un icono de dos figuras humanas (usuarios), de contorno y relleno en tonos de lila y rosa.",
+                    "Bloque rectangular rosa claro con tres puntos de texto y tres iconos.",
+                    "Tres iconos de señal de advertencia triangular, de contorno morado y relleno amarillo, con un signo de exclamación dentro.",
+                    "Icono del logotipo de Instagram.",
+                    "Icono del logotipo de Facebook.",
+                    "Icono del logotipo de TikTok.",
+                    "Icono de flecha de compartir.",
+                    "Bloque rectangular lila oscuro con una lista de consejos."
+                ],
+                "reglas_para_replicar": [
+                    "Utilizar una paleta de colores pastel y amigables (lilas, azules, rosas) sobre un fondo de color muy claro y neutro.",
+                    "Estructurar el contenido en bloques de información con forma de rectángulos de esquinas muy redondeadas.",
+                    "Asignar un color de fondo distinto a cada bloque para crear contraste y separación visual.",
+                    "Emplear una tipografía sans-serif, usando negrita y mayúsculas para los títulos y peso regular para el texto de cuerpo, asegurando una alta legibilidad.",
+                    "Establecer una jerarquía visual clara: título principal grande, seguido de títulos de sección y finalmente el texto descriptivo.",
+                    "Acompañar los puntos de las listas con iconos simples y estilizados que representen visualmente el concepto.",
+                    "Organizar el layout de forma equilibrada, usando columnas para comparar información y dejando suficiente espacio en blanco entre los elementos para evitar la saturación visual.",
+                    "Mantener un estilo gráfico coherente en todos los iconos (grosor de línea, paleta de colores, nivel de detalle)."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "4eeae2317b39abf2374a49c292ee88d9-349x523.png",
+                "medidas": {
+                    "width": 349,
+                    "height": 523,
+                    "aspectRatio": "0.667"
+                },
+                "paleta_local": [
+                    "#ffe0e0",
+                    "#e0e0ff",
+                    "#e0c0ff",
+                    "#a080ff",
+                    "#e0e0e0",
+                    "#a080e0",
+                    "#c0a0e0"
+                ]
+            },
+            "aspectRatio": "16:9"
+        },
+        "createdAt": "2026-09-03T11:33:26.616Z",
+        "imageFile": "h_mtlg597c",
+        "imageUrl": "./history_data/h_mtlg597c.png"
+    },
+    {
+        "id": "h_mt682mn5",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"español\",\"titulo_detectado\":\"Evolución del Ser Humano\",\"tema_detectado\":\"Evolución humana\",\"estructura\":{\"orientacion\":\"horizontal\",\"composicion\":\"Composición centrada con un diagrama principal en forma de árbol evolutivo que ocupa el área central. A ambos lados de este diagrama se disponen dos columnas con bloques de información. El título se ubica en la parte superior central y una conclusión en la parte inferior central.\",\"flujo_lectura\":\"El flujo comienza en el título superior, continúa por la columna de la izquierda de arriba hacia abajo (bloques 1-4), luego la columna de la derecha de arriba hacia abajo (bloques 5-8). El diagrama central funciona como un ancla visual que conecta y resume la información.\",\"numero_bloques\":8,\"zonas\":[{\"posicion\":\"superior-central\",\"funcion\":\"título\",\"contenido_resumido\":\"Título principal 'Evolución del Ser Humano' y subtítulo 'De los primeros homininos a Homo sapiens'.\"},{\"posicion\":\"izquierda\",\"funcion\":\"sección informativa\",\"contenido_resumido\":\"Columna titulada 'PRIMEROS HOMININOS' que contiene 4 tarjetas numeradas (1-4) describiendo las primeras especies de homininos.\"},{\"posicion\":\"derecha\",\"funcion\":\"sección informativa\",\"contenido_resumido\":\"Columna titulada 'HACIA HOMO SAPIENS' que contiene 4 tarjetas numeradas (5-8) describiendo especies más recientes y la expansión global.\"},{\"posicion\":\"central\",\"funcion\":\"diagrama principal\",\"contenido_resumido\":\"Ilustración de un árbol evolutivo estilizado dentro de un círculo, mostrando cráneos y bustos de homininos en sus ramas, y un grupo de humanos modernos en la base.\"},{\"posicion\":\"inferior-central\",\"funcion\":\"conclusión\",\"contenido_resumido\":\"Banner con la frase 'LA EVOLUCIÓN HUMANA ES UN ÁRBOL, NO UNA ESCALERA'.\"}]},\"estilo\":{\"medio\":\"ilustración digital\",\"paleta_aproximada\":[\"#ffffe0\",\"#3b75a4\",\"#9c6dae\",\"#d16b54\",\"#e8a858\",\"#8db051\",\"#5a8b4c\",\"#2c3e50\"],\"tipografia\":\"Se utilizan dos familias de fuentes sans-serif. Una es muy gruesa, condensada y en mayúsculas para los títulos de sección ('PRIMEROS HOMININOS'). La misma, en formato de título, se usa para el título principal y los nombres de las especies. La segunda es una fuente sans-serif estándar y más ligera para los párrafos descriptivos.\",\"formas\":\"Predominan las formas rectangulares con esquinas muy redondeadas para las tarjetas de información. El elemento central es circular. Los conectores y el árbol usan líneas orgánicas y curvas.\",\"iconografia\":\"Estilo realista y detallado. Incluye ilustraciones de bustos de homininos, escenas de su vida en sus hábitats, cráneos, un cerebro, un globo terráqueo, fósiles y herramientas de piedra. No se usan iconos abstractos o simplificados.\",\"fondo\":\"Un color crema muy claro y sólido. Sobre este fondo, hay una capa sutil de líneas finas y nodos que se asemejan a un circuito electrónico, aportando una textura moderna.\",\"conectores\":\"El principal conector es el árbol evolutivo central, cuyas ramas se extienden hacia los lados, codificadas por colores (azul, rojo, verde) que se corresponden con los bordes de las tarjetas. Las ramas tienen un estilo híbrido entre orgánico y tecnológico, con nodos circulares. Líneas finas conectan los números con sus respectivas tarjetas.\"},\"texto_visible\":[\"Evolución del Ser Humano\",\"De los primeros homininos a Homo sapiens\",\"PRIMEROS HOMININOS\",\"1\",\"Sahelanthropus tchadensis\",\"Hace 7-6 millones de años. Presenta rasgos asociados al bipedismo.\",\"2\",\"Australopithecus afarensis\",\"Hace 3,9-2,9 millones de años. Caminaba habitualmente sobre dos piernas.\",\"3\",\"Homo habilis\",\"Hace 2,4-1,4 millones de años. Asociado a antiguas herramientas de piedra.\",\"4\",\"Homo erectus\",\"Hace 1,9 millones-110.000 años. Se expandió fuera de África y usó tecnología más compleja.\",\"HACIA HOMO SAPIENS\",\"5\",\"Homo heidelbergensis\",\"Hace 700.000-200.000 años. Relacionado con linajes humanos posteriores.\",\"6\",\"Neandertales\",\"Hace 400.000-40.000 años. Vivieron en Eurasia y se cruzaron con Homo sapiens.\",\"7\",\"Homo sapiens\",\"Desde hace unos 300.000 años. Surgió en África y desarrolló culturas muy diversas.\",\"8\",\"Expansión global\",\"Desde hace unos 70.000 años. Las poblaciones humanas llegaron a casi todo el planeta.\",\"LA EVOLUCIÓN HUMANA ES UN ÁRBOL, NO UNA ESCALERA\"],\"elementos_visuales\":[\"Ilustración de un árbol evolutivo estilizado con ramas de colores.\",\"Ilustración de un cerebro en la parte superior del árbol.\",\"Serie de ilustraciones de cráneos de homininos dispuestos en las ramas del árbol.\",\"Serie de ilustraciones de bustos de homininos, una por cada tarjeta informativa.\",\"Serie de ilustraciones de escenas de la vida de los homininos (paisajes, uso de herramientas, vida en cuevas, arte, navegación).\",\"Ilustración de un grupo de humanos modernos de diversas etnias en la base del árbol.\",\"Ilustración de un globo terráqueo con flechas rojas indicando rutas migratorias.\",\"Iconos decorativos de un fósil de ammonite y una herramienta de piedra tallada.\",\"Círculos de colores con números del 1 al 8 para identificar cada bloque.\",\"Líneas de fondo que simulan un circuito impreso.\"],\"reglas_para_replicar\":[\"Mantener una composición simétrica y centrada, con un elemento gráfico principal en el medio flanqueado por columnas de texto.\",\"El elemento central debe ser un diagrama tipo árbol o red que conecte visualmente todos los bloques de información.\",\"Agrupar los bloques de información en tarjetas rectangulares con esquinas redondeadas.\",\"Cada tarjeta debe contener un número, un título, un texto corto, una ilustración principal (ej. un retrato) y una ilustración secundaria (ej. una escena).\",\"Establecer una jerarquía tipográfica clara: usar una fuente muy gruesa y destacada para títulos y otra más ligera para el texto descriptivo.\",\"Utilizar una paleta de colores consistente para codificar la información, asociando los colores de las ramas del diagrama central con los bordes o elementos de las tarjetas correspondientes.\",\"El estilo de las ilustraciones debe ser realista y detallado.\",\"El fondo debe ser de un color claro y neutro, pudiendo incluir un patrón gráfico muy sutil que no compita con el contenido principal.\",\"Incluir un título principal en la parte superior y una frase de cierre o conclusión en un banner en la parte inferior.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"Imagen de Codex 23 ago 2026, 14_35_16.png\",\"medidas\":{\"width\":1660,\"height\":947,\"aspectRatio\":\"1.753\"},\"paleta_local\":[\"#ffffe0\",\"#e0e0e0\",\"#e0e0c0\",\"#c0c0c0\",\"#ffe0c0\",\"#ffe0e0\",\"#c0e0e0\"]}. Contenido libre del usuario: quiero que el tema principal sea la evolución del ferrari. Título exacto: Derívalo del contenido. Subtítulo exacto: Sin subtítulo obligatorio. Secciones exactas (una por línea, separadas por |): Organiza el contenido libre en secciones claras. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "Imagen de Codex 23 ago 2026, 14_35_16.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "español",
+                "titulo_detectado": "Evolución del Ser Humano",
+                "tema_detectado": "Evolución humana",
+                "estructura": {
+                    "orientacion": "horizontal",
+                    "composicion": "Composición centrada con un diagrama principal en forma de árbol evolutivo que ocupa el área central. A ambos lados de este diagrama se disponen dos columnas con bloques de información. El título se ubica en la parte superior central y una conclusión en la parte inferior central.",
+                    "flujo_lectura": "El flujo comienza en el título superior, continúa por la columna de la izquierda de arriba hacia abajo (bloques 1-4), luego la columna de la derecha de arriba hacia abajo (bloques 5-8). El diagrama central funciona como un ancla visual que conecta y resume la información.",
+                    "numero_bloques": 8,
+                    "zonas": [
+                        {
+                            "posicion": "superior-central",
+                            "funcion": "título",
+                            "contenido_resumido": "Título principal 'Evolución del Ser Humano' y subtítulo 'De los primeros homininos a Homo sapiens'."
+                        },
+                        {
+                            "posicion": "izquierda",
+                            "funcion": "sección informativa",
+                            "contenido_resumido": "Columna titulada 'PRIMEROS HOMININOS' que contiene 4 tarjetas numeradas (1-4) describiendo las primeras especies de homininos."
+                        },
+                        {
+                            "posicion": "derecha",
+                            "funcion": "sección informativa",
+                            "contenido_resumido": "Columna titulada 'HACIA HOMO SAPIENS' que contiene 4 tarjetas numeradas (5-8) describiendo especies más recientes y la expansión global."
+                        },
+                        {
+                            "posicion": "central",
+                            "funcion": "diagrama principal",
+                            "contenido_resumido": "Ilustración de un árbol evolutivo estilizado dentro de un círculo, mostrando cráneos y bustos de homininos en sus ramas, y un grupo de humanos modernos en la base."
+                        },
+                        {
+                            "posicion": "inferior-central",
+                            "funcion": "conclusión",
+                            "contenido_resumido": "Banner con la frase 'LA EVOLUCIÓN HUMANA ES UN ÁRBOL, NO UNA ESCALERA'."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "ilustración digital",
+                    "paleta_aproximada": [
+                        "#ffffe0",
+                        "#3b75a4",
+                        "#9c6dae",
+                        "#d16b54",
+                        "#e8a858",
+                        "#8db051",
+                        "#5a8b4c",
+                        "#2c3e50"
+                    ],
+                    "tipografia": "Se utilizan dos familias de fuentes sans-serif. Una es muy gruesa, condensada y en mayúsculas para los títulos de sección ('PRIMEROS HOMININOS'). La misma, en formato de título, se usa para el título principal y los nombres de las especies. La segunda es una fuente sans-serif estándar y más ligera para los párrafos descriptivos.",
+                    "formas": "Predominan las formas rectangulares con esquinas muy redondeadas para las tarjetas de información. El elemento central es circular. Los conectores y el árbol usan líneas orgánicas y curvas.",
+                    "iconografia": "Estilo realista y detallado. Incluye ilustraciones de bustos de homininos, escenas de su vida en sus hábitats, cráneos, un cerebro, un globo terráqueo, fósiles y herramientas de piedra. No se usan iconos abstractos o simplificados.",
+                    "fondo": "Un color crema muy claro y sólido. Sobre este fondo, hay una capa sutil de líneas finas y nodos que se asemejan a un circuito electrónico, aportando una textura moderna.",
+                    "conectores": "El principal conector es el árbol evolutivo central, cuyas ramas se extienden hacia los lados, codificadas por colores (azul, rojo, verde) que se corresponden con los bordes de las tarjetas. Las ramas tienen un estilo híbrido entre orgánico y tecnológico, con nodos circulares. Líneas finas conectan los números con sus respectivas tarjetas."
+                },
+                "texto_visible": [
+                    "Evolución del Ser Humano",
+                    "De los primeros homininos a Homo sapiens",
+                    "PRIMEROS HOMININOS",
+                    "1",
+                    "Sahelanthropus tchadensis",
+                    "Hace 7-6 millones de años. Presenta rasgos asociados al bipedismo.",
+                    "2",
+                    "Australopithecus afarensis",
+                    "Hace 3,9-2,9 millones de años. Caminaba habitualmente sobre dos piernas.",
+                    "3",
+                    "Homo habilis",
+                    "Hace 2,4-1,4 millones de años. Asociado a antiguas herramientas de piedra.",
+                    "4",
+                    "Homo erectus",
+                    "Hace 1,9 millones-110.000 años. Se expandió fuera de África y usó tecnología más compleja.",
+                    "HACIA HOMO SAPIENS",
+                    "5",
+                    "Homo heidelbergensis",
+                    "Hace 700.000-200.000 años. Relacionado con linajes humanos posteriores.",
+                    "6",
+                    "Neandertales",
+                    "Hace 400.000-40.000 años. Vivieron en Eurasia y se cruzaron con Homo sapiens.",
+                    "7",
+                    "Homo sapiens",
+                    "Desde hace unos 300.000 años. Surgió en África y desarrolló culturas muy diversas.",
+                    "8",
+                    "Expansión global",
+                    "Desde hace unos 70.000 años. Las poblaciones humanas llegaron a casi todo el planeta.",
+                    "LA EVOLUCIÓN HUMANA ES UN ÁRBOL, NO UNA ESCALERA"
+                ],
+                "elementos_visuales": [
+                    "Ilustración de un árbol evolutivo estilizado con ramas de colores.",
+                    "Ilustración de un cerebro en la parte superior del árbol.",
+                    "Serie de ilustraciones de cráneos de homininos dispuestos en las ramas del árbol.",
+                    "Serie de ilustraciones de bustos de homininos, una por cada tarjeta informativa.",
+                    "Serie de ilustraciones de escenas de la vida de los homininos (paisajes, uso de herramientas, vida en cuevas, arte, navegación).",
+                    "Ilustración de un grupo de humanos modernos de diversas etnias en la base del árbol.",
+                    "Ilustración de un globo terráqueo con flechas rojas indicando rutas migratorias.",
+                    "Iconos decorativos de un fósil de ammonite y una herramienta de piedra tallada.",
+                    "Círculos de colores con números del 1 al 8 para identificar cada bloque.",
+                    "Líneas de fondo que simulan un circuito impreso."
+                ],
+                "reglas_para_replicar": [
+                    "Mantener una composición simétrica y centrada, con un elemento gráfico principal en el medio flanqueado por columnas de texto.",
+                    "El elemento central debe ser un diagrama tipo árbol o red que conecte visualmente todos los bloques de información.",
+                    "Agrupar los bloques de información en tarjetas rectangulares con esquinas redondeadas.",
+                    "Cada tarjeta debe contener un número, un título, un texto corto, una ilustración principal (ej. un retrato) y una ilustración secundaria (ej. una escena).",
+                    "Establecer una jerarquía tipográfica clara: usar una fuente muy gruesa y destacada para títulos y otra más ligera para el texto descriptivo.",
+                    "Utilizar una paleta de colores consistente para codificar la información, asociando los colores de las ramas del diagrama central con los bordes o elementos de las tarjetas correspondientes.",
+                    "El estilo de las ilustraciones debe ser realista y detallado.",
+                    "El fondo debe ser de un color claro y neutro, pudiendo incluir un patrón gráfico muy sutil que no compita con el contenido principal.",
+                    "Incluir un título principal en la parte superior y una frase de cierre o conclusión en un banner en la parte inferior."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "Imagen de Codex 23 ago 2026, 14_35_16.png",
+                "medidas": {
+                    "width": 1660,
+                    "height": 947,
+                    "aspectRatio": "1.753"
+                },
+                "paleta_local": [
+                    "#ffffe0",
+                    "#e0e0e0",
+                    "#e0e0c0",
+                    "#c0c0c0",
+                    "#ffe0c0",
+                    "#ffe0e0",
+                    "#c0e0e0"
+                ]
+            },
+            "aspectRatio": ""
+        },
+        "createdAt": "2026-08-23T19:50:54.497Z",
+        "imageFile": "h_mt682mn5",
+        "imageUrl": "./history_data/h_mt682mn5.png"
+    },
+    {
+        "id": "h_mt62qrj3",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"es\",\"titulo_detectado\":\"Chatbots y Emociones: Guía para Proteger a tus Hijos\",\"tema_detectado\":\"Riesgos y protección de niños frente a chatbots\",\"estructura\":{\"orientacion\":\"horizontal\",\"composicion\":\"centralizada con ramificaciones\",\"flujo_lectura\":\"de izquierda a derecha, siguiendo las ramificaciones de un mapa mental\",\"numero_bloques\":9,\"zonas\":[{\"posicion\":\"superior central\",\"funcion\":\"título principal\",\"contenido_resumido\":\"Título de la infografía.\"},{\"posicion\":\"centro\",\"funcion\":\"núcleo temático\",\"contenido_resumido\":\"Representación central de un cerebro con un chatbot y una silueta de niño, dividiendo la infografía en problema y solución.\"},{\"posicion\":\"izquierda central\",\"funcion\":\"categoría principal\",\"contenido_resumido\":\"Etiqueta 'EL PROBLEMA: LOS RIESGOS OCULTOS'.\"},{\"posicion\":\"derecha central\",\"funcion\":\"categoría principal\",\"contenido_resumido\":\"Etiqueta 'LA SOLUCIÓN: ¿CÓMO PROTEGERLOS?'.\"},{\"posicion\":\"izquierda superior\",\"funcion\":\"subtema\",\"contenido_resumido\":\"La ilusión de empatía: los chatbots simulan emociones pero carecen de comprensión real. Ilustración de un robot, una máscara y una persona.\"},{\"posicion\":\"izquierda media\",\"funcion\":\"subtema\",\"contenido_resumido\":\"Dependencia emocional peligrosa: el uso puede llevar al aislamiento social. Ilustración de un niño en una burbuja con una tablet.\"},{\"posicion\":\"izquierda inferior\",\"funcion\":\"subtema\",\"contenido_resumido\":\"Confesiones de alto riesgo: la ausencia de juicio anima a compartir información sensible. Ilustración de un niño con un móvil y un servidor AI.\"},{\"posicion\":\"izquierda inferior central\",\"funcion\":\"subtema\",\"contenido_resumido\":\"Asociación con un menor bienestar: el uso intensivo está vinculado a peor salud psicológica. Ilustración de un árbol, un cerebro y un monitor triste.\"},{\"posicion\":\"derecha superior\",\"funcion\":\"subtema\",\"contenido_resumido\":\"Fomenta la comunicación abierta: hablar con ellos sobre sus 'amigos' virtuales. Ilustración de una madre y un hijo conversando.\"},{\"posicion\":\"derecha media\",\"funcion\":\"subtema\",\"contenido_resumido\":\"Educa sobre los límites de la IA: explicar que un chatbot no es real. Ilustración de un niño con un robot.\"},{\"posicion\":\"derecha inferior\",\"funcion\":\"subtema\",\"contenido_resumido\":\"Fortalece las conexiones reales: promueve amistades y actividades fuera de la pantalla. Ilustración de niños jugando al aire libre.\"},{\"posicion\":\"derecha inferior derecha\",\"funcion\":\"subtema\",\"contenido_resumido\":\"Establece límites y supervisa: controla apps, tiempos y contenido. Ilustración de un reloj, carpetas y logos de redes sociales.\"}]},\"estilo\":{\"medio\":\"digital\",\"paleta_aproximada\":[\"#ffffe0\",\"#ffffff\",\"#e0e0e0\",\"#c0e0e0\",\"#c0c0c0\",\"#a0a0a0\",\"#e0e0c0\"],\"tipografia\":\"Sans-serif, legible, con títulos en negrita y texto de apoyo más pequeño.\",\"formas\":\"Orgánicas y redondeadas para las ilustraciones y los nodos de información. Líneas curvas para los conectores que simulan circuitos o ramas.\",\"iconografia\":\"Ilustraciones de estilo cartoon, amigable y didáctico, con personajes humanos, robots, cerebros, dispositivos electrónicos y elementos de la naturaleza.\",\"fondo\":\"Color crema o beige claro, uniforme, que simula un papel o lienzo.\",\"conectores\":\"Líneas que simulan circuitos electrónicos o ramas de un árbol, de colores variados (azul, verde, rojo, naranja) que parten del centro y se ramifican hacia los bloques de información.\"},\"texto_visible\":[\"Chatbots y Emociones:\",\"Guía para Proteger a tus Hijos\",\"La ilusión de empatía\",\"Los chatbots simulan emociones, pero carecen de comprensión y reciprocidad humana real.\",\"Dependencia emocional peligrosa\",\"Su uso puede llevar al aislamiento social y debilitar las relaciones humanas verdaderas.\",\"EL PROBLEMA:\",\"LOS RIESGOS OCULTOS\",\"Confesiones de alto riesgo\",\"miedos,\",\"angustias,\",\"pensamientos suicidas\",\"La ausencia de juicio anima a compartir información sensible: miedos, angustias e incluso pensamientos suicidas.\",\"Asociación con un menor bienestar\",\"El uso intensivo como \\\"compañía\\\" está vinculado a una peor salud psicológica.\",\"LA SOLUCIÓN:\",\"¿CÓMO PROTEGERLOS?\",\"Fomenta la comunicación abierta\",\"Habla con ellos sobre sus \\\"amigos\\\" virtuales y lo que comparten, sin juzgar.\",\"Educa sobre los límites de la IA\",\"Explícales que un chatbot no es una persona real y no puede sentir ni querer.\",\"Fortalece las conexiones reales\",\"Promueve amistades y actividades fuera de la pantalla; es su mayor protección.\",\"Establece límites y supervisa\",\"Controla las apps que usan, establece tiempos y asegúrate de que el contenido es apropiado.\",\"NotebookLM\"],\"elementos_visuales\":[\"Ilustración de un robot con cara amigable, una máscara de rostro humano y una figura humana con un corazón visible.\",\"Ilustración de un niño sentado con una tablet dentro de una burbuja, con siluetas de personas fuera de ella.\",\"Ilustración de un niño mirando un teléfono móvil con burbujas de texto que contienen 'miedos, angustias, pensamientos suicidas', y un servidor con el texto 'AI' y un escudo de seguridad.\",\"Ilustración de un árbol con raíces, un cerebro humano con conexiones neuronales y un monitor de computadora con una cara triste y una flecha descendente.\",\"Ilustración de un cerebro humano con una pantalla de chatbot y una silueta de niño dentro de un corazón, todo dentro de un círculo central.\",\"Ilustración de una mujer y un niño sentados en el suelo, conversando, con burbujas de diálogo.\",\"Ilustración de un niño tocando un robot con un corazón en el pecho y un cerebro flotando cerca.\",\"Ilustración de varios niños jugando al fútbol y acampando al aire libre, con un sol en el cielo.\",\"Ilustración de un reloj, carpetas de archivos, y logos de redes sociales (Facebook, Instagram, YouTube, TikTok, Twitter, Snapchat, un icono de juego) siendo manipulados por una mano.\",\"Icono de un cerebro en la parte superior central.\",\"Icono de una bombilla en la parte superior derecha.\"],\"reglas_para_replicar\":[\"Utilizar un fondo de color claro y uniforme.\",\"Emplear una tipografía sans-serif legible para títulos y texto, con jerarquía de tamaño y negritas.\",\"Diseñar un elemento central que actúe como núcleo temático, con ilustraciones representativas del tema principal.\",\"Dividir el contenido en dos secciones principales (problema y solución) que se ramifiquen desde el núcleo central.\",\"Usar conectores curvos y de colores variados que simulen circuitos o ramas para unir el núcleo con los subtemas.\",\"Cada subtema debe tener un título conciso, un breve texto explicativo y una ilustración de estilo cartoon que lo represente.\",\"Las ilustraciones deben ser amigables, claras y directamente relacionadas con el contenido del texto.\",\"Mantener una densidad visual equilibrada, con suficiente espacio en blanco para no saturar la información.\",\"Utilizar una paleta de colores suaves y agradables, con toques de color en los conectores y elementos clave de las ilustraciones.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"unnamed.png\",\"medidas\":{\"width\":640,\"height\":357,\"aspectRatio\":\"1.793\"},\"paleta_local\":[\"#ffffe0\",\"#ffffff\",\"#e0e0e0\",\"#c0e0e0\",\"#c0c0c0\",\"#a0a0a0\",\"#e0e0c0\"]}. Contenido libre del usuario: el sujeto principal es el podenco canario. Título exacto: Derívalo del contenido. Subtítulo exacto: Sin subtítulo obligatorio. Secciones exactas (una por línea, separadas por |): Organiza el contenido libre en secciones claras. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "unnamed.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "es",
+                "titulo_detectado": "Chatbots y Emociones: Guía para Proteger a tus Hijos",
+                "tema_detectado": "Riesgos y protección de niños frente a chatbots",
+                "estructura": {
+                    "orientacion": "horizontal",
+                    "composicion": "centralizada con ramificaciones",
+                    "flujo_lectura": "de izquierda a derecha, siguiendo las ramificaciones de un mapa mental",
+                    "numero_bloques": 9,
+                    "zonas": [
+                        {
+                            "posicion": "superior central",
+                            "funcion": "título principal",
+                            "contenido_resumido": "Título de la infografía."
+                        },
+                        {
+                            "posicion": "centro",
+                            "funcion": "núcleo temático",
+                            "contenido_resumido": "Representación central de un cerebro con un chatbot y una silueta de niño, dividiendo la infografía en problema y solución."
+                        },
+                        {
+                            "posicion": "izquierda central",
+                            "funcion": "categoría principal",
+                            "contenido_resumido": "Etiqueta 'EL PROBLEMA: LOS RIESGOS OCULTOS'."
+                        },
+                        {
+                            "posicion": "derecha central",
+                            "funcion": "categoría principal",
+                            "contenido_resumido": "Etiqueta 'LA SOLUCIÓN: ¿CÓMO PROTEGERLOS?'."
+                        },
+                        {
+                            "posicion": "izquierda superior",
+                            "funcion": "subtema",
+                            "contenido_resumido": "La ilusión de empatía: los chatbots simulan emociones pero carecen de comprensión real. Ilustración de un robot, una máscara y una persona."
+                        },
+                        {
+                            "posicion": "izquierda media",
+                            "funcion": "subtema",
+                            "contenido_resumido": "Dependencia emocional peligrosa: el uso puede llevar al aislamiento social. Ilustración de un niño en una burbuja con una tablet."
+                        },
+                        {
+                            "posicion": "izquierda inferior",
+                            "funcion": "subtema",
+                            "contenido_resumido": "Confesiones de alto riesgo: la ausencia de juicio anima a compartir información sensible. Ilustración de un niño con un móvil y un servidor AI."
+                        },
+                        {
+                            "posicion": "izquierda inferior central",
+                            "funcion": "subtema",
+                            "contenido_resumido": "Asociación con un menor bienestar: el uso intensivo está vinculado a peor salud psicológica. Ilustración de un árbol, un cerebro y un monitor triste."
+                        },
+                        {
+                            "posicion": "derecha superior",
+                            "funcion": "subtema",
+                            "contenido_resumido": "Fomenta la comunicación abierta: hablar con ellos sobre sus 'amigos' virtuales. Ilustración de una madre y un hijo conversando."
+                        },
+                        {
+                            "posicion": "derecha media",
+                            "funcion": "subtema",
+                            "contenido_resumido": "Educa sobre los límites de la IA: explicar que un chatbot no es real. Ilustración de un niño con un robot."
+                        },
+                        {
+                            "posicion": "derecha inferior",
+                            "funcion": "subtema",
+                            "contenido_resumido": "Fortalece las conexiones reales: promueve amistades y actividades fuera de la pantalla. Ilustración de niños jugando al aire libre."
+                        },
+                        {
+                            "posicion": "derecha inferior derecha",
+                            "funcion": "subtema",
+                            "contenido_resumido": "Establece límites y supervisa: controla apps, tiempos y contenido. Ilustración de un reloj, carpetas y logos de redes sociales."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "digital",
+                    "paleta_aproximada": [
+                        "#ffffe0",
+                        "#ffffff",
+                        "#e0e0e0",
+                        "#c0e0e0",
+                        "#c0c0c0",
+                        "#a0a0a0",
+                        "#e0e0c0"
+                    ],
+                    "tipografia": "Sans-serif, legible, con títulos en negrita y texto de apoyo más pequeño.",
+                    "formas": "Orgánicas y redondeadas para las ilustraciones y los nodos de información. Líneas curvas para los conectores que simulan circuitos o ramas.",
+                    "iconografia": "Ilustraciones de estilo cartoon, amigable y didáctico, con personajes humanos, robots, cerebros, dispositivos electrónicos y elementos de la naturaleza.",
+                    "fondo": "Color crema o beige claro, uniforme, que simula un papel o lienzo.",
+                    "conectores": "Líneas que simulan circuitos electrónicos o ramas de un árbol, de colores variados (azul, verde, rojo, naranja) que parten del centro y se ramifican hacia los bloques de información."
+                },
+                "texto_visible": [
+                    "Chatbots y Emociones:",
+                    "Guía para Proteger a tus Hijos",
+                    "La ilusión de empatía",
+                    "Los chatbots simulan emociones, pero carecen de comprensión y reciprocidad humana real.",
+                    "Dependencia emocional peligrosa",
+                    "Su uso puede llevar al aislamiento social y debilitar las relaciones humanas verdaderas.",
+                    "EL PROBLEMA:",
+                    "LOS RIESGOS OCULTOS",
+                    "Confesiones de alto riesgo",
+                    "miedos,",
+                    "angustias,",
+                    "pensamientos suicidas",
+                    "La ausencia de juicio anima a compartir información sensible: miedos, angustias e incluso pensamientos suicidas.",
+                    "Asociación con un menor bienestar",
+                    "El uso intensivo como \"compañía\" está vinculado a una peor salud psicológica.",
+                    "LA SOLUCIÓN:",
+                    "¿CÓMO PROTEGERLOS?",
+                    "Fomenta la comunicación abierta",
+                    "Habla con ellos sobre sus \"amigos\" virtuales y lo que comparten, sin juzgar.",
+                    "Educa sobre los límites de la IA",
+                    "Explícales que un chatbot no es una persona real y no puede sentir ni querer.",
+                    "Fortalece las conexiones reales",
+                    "Promueve amistades y actividades fuera de la pantalla; es su mayor protección.",
+                    "Establece límites y supervisa",
+                    "Controla las apps que usan, establece tiempos y asegúrate de que el contenido es apropiado.",
+                    "NotebookLM"
+                ],
+                "elementos_visuales": [
+                    "Ilustración de un robot con cara amigable, una máscara de rostro humano y una figura humana con un corazón visible.",
+                    "Ilustración de un niño sentado con una tablet dentro de una burbuja, con siluetas de personas fuera de ella.",
+                    "Ilustración de un niño mirando un teléfono móvil con burbujas de texto que contienen 'miedos, angustias, pensamientos suicidas', y un servidor con el texto 'AI' y un escudo de seguridad.",
+                    "Ilustración de un árbol con raíces, un cerebro humano con conexiones neuronales y un monitor de computadora con una cara triste y una flecha descendente.",
+                    "Ilustración de un cerebro humano con una pantalla de chatbot y una silueta de niño dentro de un corazón, todo dentro de un círculo central.",
+                    "Ilustración de una mujer y un niño sentados en el suelo, conversando, con burbujas de diálogo.",
+                    "Ilustración de un niño tocando un robot con un corazón en el pecho y un cerebro flotando cerca.",
+                    "Ilustración de varios niños jugando al fútbol y acampando al aire libre, con un sol en el cielo.",
+                    "Ilustración de un reloj, carpetas de archivos, y logos de redes sociales (Facebook, Instagram, YouTube, TikTok, Twitter, Snapchat, un icono de juego) siendo manipulados por una mano.",
+                    "Icono de un cerebro en la parte superior central.",
+                    "Icono de una bombilla en la parte superior derecha."
+                ],
+                "reglas_para_replicar": [
+                    "Utilizar un fondo de color claro y uniforme.",
+                    "Emplear una tipografía sans-serif legible para títulos y texto, con jerarquía de tamaño y negritas.",
+                    "Diseñar un elemento central que actúe como núcleo temático, con ilustraciones representativas del tema principal.",
+                    "Dividir el contenido en dos secciones principales (problema y solución) que se ramifiquen desde el núcleo central.",
+                    "Usar conectores curvos y de colores variados que simulen circuitos o ramas para unir el núcleo con los subtemas.",
+                    "Cada subtema debe tener un título conciso, un breve texto explicativo y una ilustración de estilo cartoon que lo represente.",
+                    "Las ilustraciones deben ser amigables, claras y directamente relacionadas con el contenido del texto.",
+                    "Mantener una densidad visual equilibrada, con suficiente espacio en blanco para no saturar la información.",
+                    "Utilizar una paleta de colores suaves y agradables, con toques de color en los conectores y elementos clave de las ilustraciones."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "unnamed.png",
+                "medidas": {
+                    "width": 640,
+                    "height": 357,
+                    "aspectRatio": "1.793"
+                },
+                "paleta_local": [
+                    "#ffffe0",
+                    "#ffffff",
+                    "#e0e0e0",
+                    "#c0e0e0",
+                    "#c0c0c0",
+                    "#a0a0a0",
+                    "#e0e0c0"
+                ]
+            },
+            "aspectRatio": ""
+        },
+        "createdAt": "2026-08-23T17:21:42.879Z",
+        "imageFile": "h_mt62qrj3",
+        "imageUrl": "./history_data/h_mt62qrj3.png"
+    },
+    {
+        "id": "h_mt62cq5l",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"es\",\"titulo_detectado\":\"CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS\",\"tema_detectado\":\"Creación de infografías\",\"estructura\":{\"orientacion\":\"vertical\",\"composicion\":\"asimétrica con elementos distribuidos en un flujo de lectura en zigzag\",\"flujo_lectura\":\"de izquierda a derecha y de arriba abajo, siguiendo líneas punteadas\",\"numero_bloques\":13,\"zonas\":[{\"posicion\":\"superior central\",\"funcion\":\"título principal\",\"contenido_resumido\":\"Título grande 'CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS' con el usuario '@CREATIVE_NURSE'.\"},{\"posicion\":\"izquierda superior\",\"funcion\":\"paso 1\",\"contenido_resumido\":\"Bombilla con 'idea' y texto 'LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD'.\"},{\"posicion\":\"derecha superior\",\"funcion\":\"paso 2\",\"contenido_resumido\":\"Lupa, monitor con 'Google' y libro. Texto 'BUSCA TODA LA INFORMACIÓN QUE NECESITES' y 'USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...'.\"},{\"posicion\":\"izquierda media\",\"funcion\":\"paso 3 (A)\",\"contenido_resumido\":\"Letra 'A' grande y texto 'ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS'.\"},{\"posicion\":\"derecha media\",\"funcion\":\"advertencia\",\"contenido_resumido\":\"Símbolo de advertencia y texto 'RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL'.\"},{\"posicion\":\"izquierda media-baja\",\"funcion\":\"paso 4 (S)\",\"contenido_resumido\":\"Letra 'S' grande y texto 'SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE'.\"},{\"posicion\":\"centro\",\"funcion\":\"proceso de organización\",\"contenido_resumido\":\"Piezas de rompecabezas que se unen, conectadas por flechas, representando la organización de la información.\"},{\"posicion\":\"derecha media-baja\",\"funcion\":\"paso 5\",\"contenido_resumido\":\"Esquema de documento y lápiz. Texto 'HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA'.\"},{\"posicion\":\"izquierda inferior\",\"funcion\":\"paso 6 (O)\",\"contenido_resumido\":\"Letra 'O' grande y texto 'ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS'.\"},{\"posicion\":\"derecha inferior\",\"funcion\":\"herramientas\",\"contenido_resumido\":\"Texto 'UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA' con lista de herramientas y logos de Ai y Ps.\"},{\"posicion\":\"izquierda inferior (consejos)\",\"funcion\":\"consejos de diseño\",\"contenido_resumido\":\"Bloque con consejos sobre colores, fuentes y disfrutar el proceso.\"},{\"posicion\":\"centro inferior\",\"funcion\":\"énfasis visual\",\"contenido_resumido\":\"Texto 'LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!' y un cartel con '+ILUSTRACIONES - PALABRAS'.\"},{\"posicion\":\"pie de página\",\"funcion\":\"información de contacto\",\"contenido_resumido\":\"Logotipo 'ENFERMERÍA creativa' y redes sociales.\"}]},\"estilo\":{\"medio\":\"digital\",\"paleta_aproximada\":[\"#ffe0c0\",\"#e0e0c0\",\"#c0c0a0\",\"#e0c0c0\",\"#c0a0a0\",\"#a0a080\",\"#a0a0a0\"],\"tipografia\":\"serifa para títulos y texto principal, sans-serif para subtítulos y detalles\",\"formas\":\"rectángulos, círculos, formas orgánicas (bombilla, lupa, rompecabezas)\",\"iconografia\":\"ilustraciones lineales y planas en negro (bombilla, lupa, monitor, libro, piezas de rompecabezas, símbolo de advertencia, documento, lápiz, logos de software)\",\"fondo\":\"color beige claro con textura de papel o cartón, con puntos y líneas punteadas que conectan elementos\",\"conectores\":\"líneas punteadas curvas y flechas que guían el flujo de lectura\"},\"texto_visible\":[\"CONSEJOS PRÁCTICOS PARA REALIZAR\",\"INFOGRAFÍAS\",\"@CREATIVE_NURSE\",\"idea\",\"BUSCA TODA LA INFORMACIÓN QUE NECESITES\",\"Google\",\"LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD\",\"A\",\"ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS\",\"S\",\"SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE\",\"USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...\",\"RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL\",\"HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA\",\"O\",\"ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS\",\"UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA\",\"LÁPIZ Y PAPEL\",\"POWER POINT O WORD\",\"CANVA O PICKTOCHART\",\"ILLUSTRATOR\",\"PHOTOSHOP...\",\"Ai\",\"Ps\",\"LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!\",\"+ILUSTRACIONES\",\"PALABRAS\",\"CONSEJOS PRÁCTICOS\",\"USA POCOS COLORES Y COMBÍNALOS BIEN\",\"(EN ESTA INFOGRAFÍA HAY SOLO DOS COLORES)\",\"DOS TIPOS DE FUENTE SON MÁS QUE SUFICIENTE ...\",\"¡NO ABUSES!\",\"DISFRUTA DE LO QUE HACES!!!!\",\"ENFERMERÍA creativa\"],\"elementos_visuales\":[\"bombilla con la palabra 'idea'\",\"lupa\",\"monitor de computadora con la palabra 'Google'\",\"libro abierto\",\"letras grandes 'A', 'S', 'O'\",\"símbolo de advertencia\",\"piezas de rompecabezas\",\"esquema de documento con un lápiz\",\"logos de Adobe Illustrator (Ai) y Photoshop (Ps)\",\"cartel con texto\",\"logotipo 'ENFERMERÍA creativa'\"],\"reglas_para_replicar\":[\"Utilizar un fondo de color beige claro con textura sutil de papel o cartón.\",\"Emplear líneas punteadas curvas para conectar visualmente los bloques de información y guiar el flujo de lectura.\",\"Usar una paleta de colores limitada a tonos neutros y un color de acento (negro para las ilustraciones y texto principal).\",\"Combinar tipografías serifas para títulos y texto principal con sans-serif para subtítulos y detalles.\",\"Las ilustraciones deben ser lineales, simples y en color negro, sin rellenos complejos.\",\"Organizar el contenido en bloques asimétricos, siguiendo un patrón de zigzag o escalera.\",\"Utilizar letras grandes y destacadas para iniciar secciones importantes.\",\"Incluir un bloque de consejos de diseño en la parte inferior izquierda.\",\"Añadir un bloque de énfasis sobre la importancia de lo visual en la parte inferior central.\",\"Incorporar un pie de página con información de contacto o marca en la esquina inferior derecha.\",\"Las flechas deben ser simples y en color negro para indicar la progresión.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"64313d2737ad980719f452d7d525733d.png\",\"medidas\":{\"width\":564,\"height\":797,\"aspectRatio\":\"0.708\"},\"paleta_local\":[\"#ffe0c0\",\"#e0e0c0\",\"#c0c0a0\",\"#e0c0c0\",\"#c0a0a0\",\"#a0a080\",\"#a0a0a0\"]}. Contenido libre del usuario: el sujeto centra es el podenco canario. Título exacto: Derívalo del contenido. Subtítulo exacto: Sin subtítulo obligatorio. Secciones exactas (una por línea, separadas por |): Organiza el contenido libre en secciones claras. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "64313d2737ad980719f452d7d525733d.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "es",
+                "titulo_detectado": "CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS",
+                "tema_detectado": "Creación de infografías",
+                "estructura": {
+                    "orientacion": "vertical",
+                    "composicion": "asimétrica con elementos distribuidos en un flujo de lectura en zigzag",
+                    "flujo_lectura": "de izquierda a derecha y de arriba abajo, siguiendo líneas punteadas",
+                    "numero_bloques": 13,
+                    "zonas": [
+                        {
+                            "posicion": "superior central",
+                            "funcion": "título principal",
+                            "contenido_resumido": "Título grande 'CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS' con el usuario '@CREATIVE_NURSE'."
+                        },
+                        {
+                            "posicion": "izquierda superior",
+                            "funcion": "paso 1",
+                            "contenido_resumido": "Bombilla con 'idea' y texto 'LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD'."
+                        },
+                        {
+                            "posicion": "derecha superior",
+                            "funcion": "paso 2",
+                            "contenido_resumido": "Lupa, monitor con 'Google' y libro. Texto 'BUSCA TODA LA INFORMACIÓN QUE NECESITES' y 'USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...'."
+                        },
+                        {
+                            "posicion": "izquierda media",
+                            "funcion": "paso 3 (A)",
+                            "contenido_resumido": "Letra 'A' grande y texto 'ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS'."
+                        },
+                        {
+                            "posicion": "derecha media",
+                            "funcion": "advertencia",
+                            "contenido_resumido": "Símbolo de advertencia y texto 'RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL'."
+                        },
+                        {
+                            "posicion": "izquierda media-baja",
+                            "funcion": "paso 4 (S)",
+                            "contenido_resumido": "Letra 'S' grande y texto 'SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE'."
+                        },
+                        {
+                            "posicion": "centro",
+                            "funcion": "proceso de organización",
+                            "contenido_resumido": "Piezas de rompecabezas que se unen, conectadas por flechas, representando la organización de la información."
+                        },
+                        {
+                            "posicion": "derecha media-baja",
+                            "funcion": "paso 5",
+                            "contenido_resumido": "Esquema de documento y lápiz. Texto 'HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA'."
+                        },
+                        {
+                            "posicion": "izquierda inferior",
+                            "funcion": "paso 6 (O)",
+                            "contenido_resumido": "Letra 'O' grande y texto 'ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS'."
+                        },
+                        {
+                            "posicion": "derecha inferior",
+                            "funcion": "herramientas",
+                            "contenido_resumido": "Texto 'UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA' con lista de herramientas y logos de Ai y Ps."
+                        },
+                        {
+                            "posicion": "izquierda inferior (consejos)",
+                            "funcion": "consejos de diseño",
+                            "contenido_resumido": "Bloque con consejos sobre colores, fuentes y disfrutar el proceso."
+                        },
+                        {
+                            "posicion": "centro inferior",
+                            "funcion": "énfasis visual",
+                            "contenido_resumido": "Texto 'LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!' y un cartel con '+ILUSTRACIONES - PALABRAS'."
+                        },
+                        {
+                            "posicion": "pie de página",
+                            "funcion": "información de contacto",
+                            "contenido_resumido": "Logotipo 'ENFERMERÍA creativa' y redes sociales."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "digital",
+                    "paleta_aproximada": [
+                        "#ffe0c0",
+                        "#e0e0c0",
+                        "#c0c0a0",
+                        "#e0c0c0",
+                        "#c0a0a0",
+                        "#a0a080",
+                        "#a0a0a0"
+                    ],
+                    "tipografia": "serifa para títulos y texto principal, sans-serif para subtítulos y detalles",
+                    "formas": "rectángulos, círculos, formas orgánicas (bombilla, lupa, rompecabezas)",
+                    "iconografia": "ilustraciones lineales y planas en negro (bombilla, lupa, monitor, libro, piezas de rompecabezas, símbolo de advertencia, documento, lápiz, logos de software)",
+                    "fondo": "color beige claro con textura de papel o cartón, con puntos y líneas punteadas que conectan elementos",
+                    "conectores": "líneas punteadas curvas y flechas que guían el flujo de lectura"
+                },
+                "texto_visible": [
+                    "CONSEJOS PRÁCTICOS PARA REALIZAR",
+                    "INFOGRAFÍAS",
+                    "@CREATIVE_NURSE",
+                    "idea",
+                    "BUSCA TODA LA INFORMACIÓN QUE NECESITES",
+                    "Google",
+                    "LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD",
+                    "A",
+                    "ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS",
+                    "S",
+                    "SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE",
+                    "USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...",
+                    "RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL",
+                    "HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA",
+                    "O",
+                    "ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS",
+                    "UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA",
+                    "LÁPIZ Y PAPEL",
+                    "POWER POINT O WORD",
+                    "CANVA O PICKTOCHART",
+                    "ILLUSTRATOR",
+                    "PHOTOSHOP...",
+                    "Ai",
+                    "Ps",
+                    "LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!",
+                    "+ILUSTRACIONES",
+                    "PALABRAS",
+                    "CONSEJOS PRÁCTICOS",
+                    "USA POCOS COLORES Y COMBÍNALOS BIEN",
+                    "(EN ESTA INFOGRAFÍA HAY SOLO DOS COLORES)",
+                    "DOS TIPOS DE FUENTE SON MÁS QUE SUFICIENTE ...",
+                    "¡NO ABUSES!",
+                    "DISFRUTA DE LO QUE HACES!!!!",
+                    "ENFERMERÍA creativa"
+                ],
+                "elementos_visuales": [
+                    "bombilla con la palabra 'idea'",
+                    "lupa",
+                    "monitor de computadora con la palabra 'Google'",
+                    "libro abierto",
+                    "letras grandes 'A', 'S', 'O'",
+                    "símbolo de advertencia",
+                    "piezas de rompecabezas",
+                    "esquema de documento con un lápiz",
+                    "logos de Adobe Illustrator (Ai) y Photoshop (Ps)",
+                    "cartel con texto",
+                    "logotipo 'ENFERMERÍA creativa'"
+                ],
+                "reglas_para_replicar": [
+                    "Utilizar un fondo de color beige claro con textura sutil de papel o cartón.",
+                    "Emplear líneas punteadas curvas para conectar visualmente los bloques de información y guiar el flujo de lectura.",
+                    "Usar una paleta de colores limitada a tonos neutros y un color de acento (negro para las ilustraciones y texto principal).",
+                    "Combinar tipografías serifas para títulos y texto principal con sans-serif para subtítulos y detalles.",
+                    "Las ilustraciones deben ser lineales, simples y en color negro, sin rellenos complejos.",
+                    "Organizar el contenido en bloques asimétricos, siguiendo un patrón de zigzag o escalera.",
+                    "Utilizar letras grandes y destacadas para iniciar secciones importantes.",
+                    "Incluir un bloque de consejos de diseño en la parte inferior izquierda.",
+                    "Añadir un bloque de énfasis sobre la importancia de lo visual en la parte inferior central.",
+                    "Incorporar un pie de página con información de contacto o marca en la esquina inferior derecha.",
+                    "Las flechas deben ser simples y en color negro para indicar la progresión."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "64313d2737ad980719f452d7d525733d.png",
+                "medidas": {
+                    "width": 564,
+                    "height": 797,
+                    "aspectRatio": "0.708"
+                },
+                "paleta_local": [
+                    "#ffe0c0",
+                    "#e0e0c0",
+                    "#c0c0a0",
+                    "#e0c0c0",
+                    "#c0a0a0",
+                    "#a0a080",
+                    "#a0a0a0"
+                ]
+            },
+            "aspectRatio": "1:1"
+        },
+        "createdAt": "2026-08-23T17:10:47.913Z",
+        "imageFile": "h_mt62cq5l",
+        "imageUrl": "./history_data/h_mt62cq5l.png"
+    },
+    {
+        "id": "h_mt629th0",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"es\",\"titulo_detectado\":\"CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS\",\"tema_detectado\":\"Creación de infografías\",\"estructura\":{\"orientacion\":\"vertical\",\"composicion\":\"asimétrica con elementos distribuidos en un flujo de lectura en zigzag\",\"flujo_lectura\":\"de izquierda a derecha y de arriba abajo, siguiendo líneas punteadas\",\"numero_bloques\":13,\"zonas\":[{\"posicion\":\"superior central\",\"funcion\":\"título principal\",\"contenido_resumido\":\"Título grande 'CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS' con el usuario '@CREATIVE_NURSE'.\"},{\"posicion\":\"izquierda superior\",\"funcion\":\"paso 1\",\"contenido_resumido\":\"Bombilla con 'idea' y texto 'LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD'.\"},{\"posicion\":\"derecha superior\",\"funcion\":\"paso 2\",\"contenido_resumido\":\"Lupa, monitor con 'Google' y libro. Texto 'BUSCA TODA LA INFORMACIÓN QUE NECESITES' y 'USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...'.\"},{\"posicion\":\"izquierda media\",\"funcion\":\"paso 3 (A)\",\"contenido_resumido\":\"Letra 'A' grande y texto 'ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS'.\"},{\"posicion\":\"derecha media\",\"funcion\":\"advertencia\",\"contenido_resumido\":\"Símbolo de advertencia y texto 'RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL'.\"},{\"posicion\":\"izquierda media-baja\",\"funcion\":\"paso 4 (S)\",\"contenido_resumido\":\"Letra 'S' grande y texto 'SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE'.\"},{\"posicion\":\"centro\",\"funcion\":\"proceso de organización\",\"contenido_resumido\":\"Piezas de rompecabezas que se unen, conectadas por flechas, representando la organización de la información.\"},{\"posicion\":\"derecha media-baja\",\"funcion\":\"paso 5\",\"contenido_resumido\":\"Esquema de documento y lápiz. Texto 'HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA'.\"},{\"posicion\":\"izquierda inferior\",\"funcion\":\"paso 6 (O)\",\"contenido_resumido\":\"Letra 'O' grande y texto 'ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS'.\"},{\"posicion\":\"derecha inferior\",\"funcion\":\"herramientas\",\"contenido_resumido\":\"Texto 'UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA' con lista de herramientas y logos de Ai y Ps.\"},{\"posicion\":\"izquierda inferior (consejos)\",\"funcion\":\"consejos de diseño\",\"contenido_resumido\":\"Bloque con consejos sobre colores, fuentes y disfrutar el proceso.\"},{\"posicion\":\"centro inferior\",\"funcion\":\"énfasis visual\",\"contenido_resumido\":\"Texto 'LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!' y un cartel con '+ILUSTRACIONES - PALABRAS'.\"},{\"posicion\":\"pie de página\",\"funcion\":\"información de contacto\",\"contenido_resumido\":\"Logotipo 'ENFERMERÍA creativa' y redes sociales.\"}]},\"estilo\":{\"medio\":\"digital\",\"paleta_aproximada\":[\"#ffe0c0\",\"#e0e0c0\",\"#c0c0a0\",\"#e0c0c0\",\"#c0a0a0\",\"#a0a080\",\"#a0a0a0\"],\"tipografia\":\"serifa para títulos y texto principal, sans-serif para subtítulos y detalles\",\"formas\":\"rectángulos, círculos, formas orgánicas (bombilla, lupa, rompecabezas)\",\"iconografia\":\"ilustraciones lineales y planas en negro (bombilla, lupa, monitor, libro, piezas de rompecabezas, símbolo de advertencia, documento, lápiz, logos de software)\",\"fondo\":\"color beige claro con textura de papel o cartón, con puntos y líneas punteadas que conectan elementos\",\"conectores\":\"líneas punteadas curvas y flechas que guían el flujo de lectura\"},\"texto_visible\":[\"CONSEJOS PRÁCTICOS PARA REALIZAR\",\"INFOGRAFÍAS\",\"@CREATIVE_NURSE\",\"idea\",\"BUSCA TODA LA INFORMACIÓN QUE NECESITES\",\"Google\",\"LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD\",\"A\",\"ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS\",\"S\",\"SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE\",\"USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...\",\"RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL\",\"HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA\",\"O\",\"ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS\",\"UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA\",\"LÁPIZ Y PAPEL\",\"POWER POINT O WORD\",\"CANVA O PICKTOCHART\",\"ILLUSTRATOR\",\"PHOTOSHOP...\",\"Ai\",\"Ps\",\"LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!\",\"+ILUSTRACIONES\",\"PALABRAS\",\"CONSEJOS PRÁCTICOS\",\"USA POCOS COLORES Y COMBÍNALOS BIEN\",\"(EN ESTA INFOGRAFÍA HAY SOLO DOS COLORES)\",\"DOS TIPOS DE FUENTE SON MÁS QUE SUFICIENTE ...\",\"¡NO ABUSES!\",\"DISFRUTA DE LO QUE HACES!!!!\",\"ENFERMERÍA creativa\"],\"elementos_visuales\":[\"bombilla con la palabra 'idea'\",\"lupa\",\"monitor de computadora con la palabra 'Google'\",\"libro abierto\",\"letras grandes 'A', 'S', 'O'\",\"símbolo de advertencia\",\"piezas de rompecabezas\",\"esquema de documento con un lápiz\",\"logos de Adobe Illustrator (Ai) y Photoshop (Ps)\",\"cartel con texto\",\"logotipo 'ENFERMERÍA creativa'\"],\"reglas_para_replicar\":[\"Utilizar un fondo de color beige claro con textura sutil de papel o cartón.\",\"Emplear líneas punteadas curvas para conectar visualmente los bloques de información y guiar el flujo de lectura.\",\"Usar una paleta de colores limitada a tonos neutros y un color de acento (negro para las ilustraciones y texto principal).\",\"Combinar tipografías serifas para títulos y texto principal con sans-serif para subtítulos y detalles.\",\"Las ilustraciones deben ser lineales, simples y en color negro, sin rellenos complejos.\",\"Organizar el contenido en bloques asimétricos, siguiendo un patrón de zigzag o escalera.\",\"Utilizar letras grandes y destacadas para iniciar secciones importantes.\",\"Incluir un bloque de consejos de diseño en la parte inferior izquierda.\",\"Añadir un bloque de énfasis sobre la importancia de lo visual en la parte inferior central.\",\"Incorporar un pie de página con información de contacto o marca en la esquina inferior derecha.\",\"Las flechas deben ser simples y en color negro para indicar la progresión.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"64313d2737ad980719f452d7d525733d.png\",\"medidas\":{\"width\":564,\"height\":797,\"aspectRatio\":\"0.708\"},\"paleta_local\":[\"#ffe0c0\",\"#e0e0c0\",\"#c0c0a0\",\"#e0c0c0\",\"#c0a0a0\",\"#a0a080\",\"#a0a0a0\"]}. Contenido libre del usuario: el sujeto centra es el podenco canario. Título exacto: Derívalo del contenido. Subtítulo exacto: Sin subtítulo obligatorio. Secciones exactas (una por línea, separadas por |): Organiza el contenido libre en secciones claras. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "64313d2737ad980719f452d7d525733d.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "es",
+                "titulo_detectado": "CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS",
+                "tema_detectado": "Creación de infografías",
+                "estructura": {
+                    "orientacion": "vertical",
+                    "composicion": "asimétrica con elementos distribuidos en un flujo de lectura en zigzag",
+                    "flujo_lectura": "de izquierda a derecha y de arriba abajo, siguiendo líneas punteadas",
+                    "numero_bloques": 13,
+                    "zonas": [
+                        {
+                            "posicion": "superior central",
+                            "funcion": "título principal",
+                            "contenido_resumido": "Título grande 'CONSEJOS PRÁCTICOS PARA REALIZAR INFOGRAFÍAS' con el usuario '@CREATIVE_NURSE'."
+                        },
+                        {
+                            "posicion": "izquierda superior",
+                            "funcion": "paso 1",
+                            "contenido_resumido": "Bombilla con 'idea' y texto 'LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD'."
+                        },
+                        {
+                            "posicion": "derecha superior",
+                            "funcion": "paso 2",
+                            "contenido_resumido": "Lupa, monitor con 'Google' y libro. Texto 'BUSCA TODA LA INFORMACIÓN QUE NECESITES' y 'USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...'."
+                        },
+                        {
+                            "posicion": "izquierda media",
+                            "funcion": "paso 3 (A)",
+                            "contenido_resumido": "Letra 'A' grande y texto 'ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS'."
+                        },
+                        {
+                            "posicion": "derecha media",
+                            "funcion": "advertencia",
+                            "contenido_resumido": "Símbolo de advertencia y texto 'RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL'."
+                        },
+                        {
+                            "posicion": "izquierda media-baja",
+                            "funcion": "paso 4 (S)",
+                            "contenido_resumido": "Letra 'S' grande y texto 'SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE'."
+                        },
+                        {
+                            "posicion": "centro",
+                            "funcion": "proceso de organización",
+                            "contenido_resumido": "Piezas de rompecabezas que se unen, conectadas por flechas, representando la organización de la información."
+                        },
+                        {
+                            "posicion": "derecha media-baja",
+                            "funcion": "paso 5",
+                            "contenido_resumido": "Esquema de documento y lápiz. Texto 'HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA'."
+                        },
+                        {
+                            "posicion": "izquierda inferior",
+                            "funcion": "paso 6 (O)",
+                            "contenido_resumido": "Letra 'O' grande y texto 'ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS'."
+                        },
+                        {
+                            "posicion": "derecha inferior",
+                            "funcion": "herramientas",
+                            "contenido_resumido": "Texto 'UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA' con lista de herramientas y logos de Ai y Ps."
+                        },
+                        {
+                            "posicion": "izquierda inferior (consejos)",
+                            "funcion": "consejos de diseño",
+                            "contenido_resumido": "Bloque con consejos sobre colores, fuentes y disfrutar el proceso."
+                        },
+                        {
+                            "posicion": "centro inferior",
+                            "funcion": "énfasis visual",
+                            "contenido_resumido": "Texto 'LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!' y un cartel con '+ILUSTRACIONES - PALABRAS'."
+                        },
+                        {
+                            "posicion": "pie de página",
+                            "funcion": "información de contacto",
+                            "contenido_resumido": "Logotipo 'ENFERMERÍA creativa' y redes sociales."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "digital",
+                    "paleta_aproximada": [
+                        "#ffe0c0",
+                        "#e0e0c0",
+                        "#c0c0a0",
+                        "#e0c0c0",
+                        "#c0a0a0",
+                        "#a0a080",
+                        "#a0a0a0"
+                    ],
+                    "tipografia": "serifa para títulos y texto principal, sans-serif para subtítulos y detalles",
+                    "formas": "rectángulos, círculos, formas orgánicas (bombilla, lupa, rompecabezas)",
+                    "iconografia": "ilustraciones lineales y planas en negro (bombilla, lupa, monitor, libro, piezas de rompecabezas, símbolo de advertencia, documento, lápiz, logos de software)",
+                    "fondo": "color beige claro con textura de papel o cartón, con puntos y líneas punteadas que conectan elementos",
+                    "conectores": "líneas punteadas curvas y flechas que guían el flujo de lectura"
+                },
+                "texto_visible": [
+                    "CONSEJOS PRÁCTICOS PARA REALIZAR",
+                    "INFOGRAFÍAS",
+                    "@CREATIVE_NURSE",
+                    "idea",
+                    "BUSCA TODA LA INFORMACIÓN QUE NECESITES",
+                    "Google",
+                    "LO PRIMERO ES TENER UNA IDEA SOBRE UN TEMA QUE TE INTERESE O QUE ESTE DE ACTUALIDAD",
+                    "A",
+                    "ANALIZA TODA LA INFORMACIÓN QUE SEA DE TU INTERÉS",
+                    "S",
+                    "SELECCIONA AQUELLA INFORMACIÓN QUE TE RESULTE INTERESANTE",
+                    "USA BUSCADORES COMO GOOGLE, BIBLIOTECAS VIRTUALES, REVISTAS...",
+                    "RECUERDA QUE GOOGLE ES UN BUSCADOR... CERCIÓRATE DE SI PUEDES USAR EL CONTENIDO QUE ENCUENTRES EN ÉL",
+                    "HAZ UN ESQUEMA EN UN TROZO DE PAPEL DE TU IDEA",
+                    "O",
+                    "ORDENA LA INFORMACIÓN DE LA FORMA MÁS SENCILLA QUE PUEDAS",
+                    "UTILIZA LA HERRAMIENTA QUE TE SEA MÁS CÓMODA PARA DARLE VIDA A TU INFOGRAFÍA",
+                    "LÁPIZ Y PAPEL",
+                    "POWER POINT O WORD",
+                    "CANVA O PICKTOCHART",
+                    "ILLUSTRATOR",
+                    "PHOTOSHOP...",
+                    "Ai",
+                    "Ps",
+                    "LO MÁS IMPORTANTE ES QUE LA INFOGRAFÍA SEA LO MÁS VISUAL POSIBLE!!!",
+                    "+ILUSTRACIONES",
+                    "PALABRAS",
+                    "CONSEJOS PRÁCTICOS",
+                    "USA POCOS COLORES Y COMBÍNALOS BIEN",
+                    "(EN ESTA INFOGRAFÍA HAY SOLO DOS COLORES)",
+                    "DOS TIPOS DE FUENTE SON MÁS QUE SUFICIENTE ...",
+                    "¡NO ABUSES!",
+                    "DISFRUTA DE LO QUE HACES!!!!",
+                    "ENFERMERÍA creativa"
+                ],
+                "elementos_visuales": [
+                    "bombilla con la palabra 'idea'",
+                    "lupa",
+                    "monitor de computadora con la palabra 'Google'",
+                    "libro abierto",
+                    "letras grandes 'A', 'S', 'O'",
+                    "símbolo de advertencia",
+                    "piezas de rompecabezas",
+                    "esquema de documento con un lápiz",
+                    "logos de Adobe Illustrator (Ai) y Photoshop (Ps)",
+                    "cartel con texto",
+                    "logotipo 'ENFERMERÍA creativa'"
+                ],
+                "reglas_para_replicar": [
+                    "Utilizar un fondo de color beige claro con textura sutil de papel o cartón.",
+                    "Emplear líneas punteadas curvas para conectar visualmente los bloques de información y guiar el flujo de lectura.",
+                    "Usar una paleta de colores limitada a tonos neutros y un color de acento (negro para las ilustraciones y texto principal).",
+                    "Combinar tipografías serifas para títulos y texto principal con sans-serif para subtítulos y detalles.",
+                    "Las ilustraciones deben ser lineales, simples y en color negro, sin rellenos complejos.",
+                    "Organizar el contenido en bloques asimétricos, siguiendo un patrón de zigzag o escalera.",
+                    "Utilizar letras grandes y destacadas para iniciar secciones importantes.",
+                    "Incluir un bloque de consejos de diseño en la parte inferior izquierda.",
+                    "Añadir un bloque de énfasis sobre la importancia de lo visual en la parte inferior central.",
+                    "Incorporar un pie de página con información de contacto o marca en la esquina inferior derecha.",
+                    "Las flechas deben ser simples y en color negro para indicar la progresión."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "64313d2737ad980719f452d7d525733d.png",
+                "medidas": {
+                    "width": 564,
+                    "height": 797,
+                    "aspectRatio": "0.708"
+                },
+                "paleta_local": [
+                    "#ffe0c0",
+                    "#e0e0c0",
+                    "#c0c0a0",
+                    "#e0c0c0",
+                    "#c0a0a0",
+                    "#a0a080",
+                    "#a0a0a0"
+                ]
+            },
+            "aspectRatio": "9:16"
+        },
+        "createdAt": "2026-08-23T17:08:32.244Z",
+        "imageFile": "h_mt629th0",
+        "imageUrl": "./history_data/h_mt629th0.png"
+    },
+    {
+        "id": "h_mt620ygj",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"es\",\"titulo_detectado\":\"Infographic\",\"tema_detectado\":\"Tipos de gráficos y procesos\",\"estructura\":{\"orientacion\":\"horizontal\",\"composicion\":\"modular\",\"flujo_lectura\":\"de izquierda a derecha y de arriba abajo\",\"numero_bloques\":11,\"zonas\":[{\"posicion\":\"superior central\",\"funcion\":\"titulo\",\"contenido_resumido\":\"Título principal 'Infographic'.\"},{\"posicion\":\"superior izquierda\",\"funcion\":\"seccion\",\"contenido_resumido\":\"Sección 'FLOW CHART' con un diagrama de flujo vertical de 5 pasos numerados y coloreados.\"},{\"posicion\":\"superior centro-izquierda\",\"funcion\":\"seccion\",\"contenido_resumido\":\"Sección 'DIAGRAMS' con un diagrama de barras horizontales apiladas, cada una con un icono y texto.\"},{\"posicion\":\"superior centro-derecha\",\"funcion\":\"seccion\",\"contenido_resumido\":\"Sección 'PIE CHARTS' con cuatro bloques de texto rectangulares con esquinas redondeadas y números de identificación.\"},{\"posicion\":\"superior derecha\",\"funcion\":\"seccion\",\"contenido_resumido\":\"Sección 'BAR CHARTS' con cuatro bloques de texto rectangulares con esquinas redondeadas, números de identificación y un círculo central.\"},{\"posicion\":\"inferior izquierda\",\"funcion\":\"seccion\",\"contenido_resumido\":\"Sección 'AUDITS' con tres círculos grandes, cada uno con un icono y texto descriptivo debajo, conectados por una línea punteada.\"},{\"posicion\":\"inferior centro\",\"funcion\":\"seccion\",\"contenido_resumido\":\"Sección 'ACCOUNTABILITY' con tres círculos grandes, cada uno con un icono y texto descriptivo debajo, conectados por una línea punteada.\"},{\"posicion\":\"inferior derecha\",\"funcion\":\"seccion\",\"contenido_resumido\":\"Sección 'GRAPHS' con un gráfico circular segmentado en 5 partes numeradas y coloreadas, con texto descriptivo alrededor.\"},{\"posicion\":\"cabecera de columna 1\",\"funcion\":\"etiqueta de categoria\",\"contenido_resumido\":\"Etiqueta 'FLOW CHART'.\"},{\"posicion\":\"cabecera de columna 2\",\"funcion\":\"etiqueta de categoria\",\"contenido_resumido\":\"Etiqueta 'DIAGRAMS'.\"},{\"posicion\":\"cabecera de columna 3\",\"funcion\":\"etiqueta de categoria\",\"contenido_resumido\":\"Etiqueta 'PIE CHARTS'.\"},{\"posicion\":\"cabecera de columna 4\",\"funcion\":\"etiqueta de categoria\",\"contenido_resumido\":\"Etiqueta 'BAR CHARTS'.\"},{\"posicion\":\"cabecera de columna 5\",\"funcion\":\"etiqueta de categoria\",\"contenido_resumido\":\"Etiqueta 'GRAPHS'.\"}]},\"estilo\":{\"medio\":\"digital\",\"paleta_aproximada\":[\"#ffffff\",\"#a000ff\",\"#e0e0e0\",\"#c0c0c0\",\"#ffc040\",\"#ff00c0\",\"#a0a0a0\",\"#00ffff\",\"#00ff00\",\"#ff0000\",\"#0000ff\",\"#ffa500\"],\"tipografia\":\"sans-serif, negrita para títulos y subtítulos, regular para contenido\",\"formas\":\"rectángulos con esquinas redondeadas, círculos, flechas, líneas\",\"iconografia\":\"iconos planos y lineales dentro de círculos o formas, representando conceptos como documentos, seguridad, inspección, entrenamiento\",\"fondo\":\"blanco, con una banda superior de color morado intenso para el título principal y bandas de colores variados para las categorías superiores\",\"conectores\":\"líneas punteadas, flechas, líneas sólidas que unen elementos\"},\"texto_visible\":[\"Infographic\",\"FLOW CHART\",\"DIAGRAMS\",\"PIE CHARTS\",\"BAR CHARTS\",\"GRAPHS\",\"01\",\"02\",\"03\",\"04\",\"05\",\"AUDITS\",\"ACCOUNTABILITY\",\"VERIFICATION\",\"CERTIFICATIONS\",\"TRAINING\",\"Video Displays In Motor Vehicles\",\"Video Displays in Monitoring or Control Devices\",\"Devices Ceasing to be Covered\",\"Video Displays in Household Equipment\",\"IEC 63474\",\"IEC 63474\",\"SASO IEC 62321\",\"SASO IEC TR 62476\",\"Industry Best Practices\",\"Environmental Impact\",\"Health and Safety Concerns\",\"Regulatory Compliance\",\"Supply Chain Management\"],\"elementos_visuales\":[{\"tipo\":\"diagrama de flujo\",\"descripcion\":\"Cinco bloques horizontales con esquinas redondeadas, numerados del 01 al 05, conectados por flechas curvas. Cada bloque tiene un color diferente (azul, amarillo, morado, verde, rojo) y un icono circular con el número.\"},{\"tipo\":\"diagrama de barras apiladas\",\"descripcion\":\"Cinco barras horizontales de diferentes longitudes y colores (rojo, naranja, morado, verde, azul), cada una con un icono circular y texto a la izquierda.\"},{\"tipo\":\"cuadrícula de bloques\",\"descripcion\":\"Cuatro bloques rectangulares con esquinas redondeadas, dispuestos en una cuadrícula 2x2, cada uno con texto y un pequeño marcador de color con un número (01, 02, 03, 04).\"},{\"tipo\":\"diagrama circular con bloques\",\"descripcion\":\"Cuatro bloques rectangulares con esquinas redondeadas, dispuestos alrededor de un círculo central blanco, cada uno con un número (01, 02, 03, 04) y texto. Los números están en marcadores de color (naranja, verde, rojo, gris).\"},{\"tipo\":\"secuencia de iconos\",\"descripcion\":\"Tres círculos grandes con bordes finos, cada uno conteniendo un icono (documento, escudo con lupa, documento con lupa) y texto descriptivo debajo ('VERIFICATION', 'CERTIFICATIONS'). Conectados por una línea punteada horizontal.\"},{\"tipo\":\"secuencia de iconos\",\"descripcion\":\"Tres círculos grandes con bordes finos, cada uno conteniendo un icono (documento, documento, persona exponiendo) y texto descriptivo debajo ('ACCOUNTABILITY', 'TRAINING'). Conectados por una línea punteada horizontal.\"},{\"tipo\":\"gráfico circular\",\"descripcion\":\"Un círculo dividido en cinco segmentos de diferentes colores (azul, verde, amarillo, naranja, rojo), numerados del 01 al 05, con texto descriptivo alrededor de cada segmento.\"}],\"reglas_para_replicar\":[\"Mantener la estructura de cuadrícula principal de 2 filas y 5 columnas para las secciones de contenido.\",\"Utilizar una banda superior de color sólido para el título principal.\",\"Usar bandas de color sólido para las etiquetas de categoría de la fila superior.\",\"Emplear rectángulos con esquinas redondeadas para los bloques de contenido textual.\",\"Utilizar círculos para agrupar iconos y números en los diagramas de flujo y barras.\",\"Mantener la paleta de colores vibrantes y variados para diferenciar elementos y secciones.\",\"Usar líneas punteadas para conectar elementos secuenciales en la fila inferior.\",\"Asegurar que los iconos sean planos y representativos del contenido.\",\"Mantener la tipografía sans-serif, usando negritas para títulos y subtítulos y regular para el cuerpo del texto.\",\"La densidad visual debe ser media, con suficiente espacio en blanco para la legibilidad.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"infografia.png\",\"medidas\":{\"width\":680,\"height\":409,\"aspectRatio\":\"1.663\"},\"paleta_local\":[\"#ffffff\",\"#a000ff\",\"#e0e0e0\",\"#c0c0c0\",\"#ffc040\",\"#ff00c0\",\"#a0a0a0\"]}. Contenido libre del usuario: características del podenco canario. Título exacto: Podenco Canario. Subtítulo exacto: Sin subtítulo obligatorio. Secciones exactas (una por línea, separadas por |): Organiza el contenido libre en secciones claras. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "infografia.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "es",
+                "titulo_detectado": "Infographic",
+                "tema_detectado": "Tipos de gráficos y procesos",
+                "estructura": {
+                    "orientacion": "horizontal",
+                    "composicion": "modular",
+                    "flujo_lectura": "de izquierda a derecha y de arriba abajo",
+                    "numero_bloques": 11,
+                    "zonas": [
+                        {
+                            "posicion": "superior central",
+                            "funcion": "titulo",
+                            "contenido_resumido": "Título principal 'Infographic'."
+                        },
+                        {
+                            "posicion": "superior izquierda",
+                            "funcion": "seccion",
+                            "contenido_resumido": "Sección 'FLOW CHART' con un diagrama de flujo vertical de 5 pasos numerados y coloreados."
+                        },
+                        {
+                            "posicion": "superior centro-izquierda",
+                            "funcion": "seccion",
+                            "contenido_resumido": "Sección 'DIAGRAMS' con un diagrama de barras horizontales apiladas, cada una con un icono y texto."
+                        },
+                        {
+                            "posicion": "superior centro-derecha",
+                            "funcion": "seccion",
+                            "contenido_resumido": "Sección 'PIE CHARTS' con cuatro bloques de texto rectangulares con esquinas redondeadas y números de identificación."
+                        },
+                        {
+                            "posicion": "superior derecha",
+                            "funcion": "seccion",
+                            "contenido_resumido": "Sección 'BAR CHARTS' con cuatro bloques de texto rectangulares con esquinas redondeadas, números de identificación y un círculo central."
+                        },
+                        {
+                            "posicion": "inferior izquierda",
+                            "funcion": "seccion",
+                            "contenido_resumido": "Sección 'AUDITS' con tres círculos grandes, cada uno con un icono y texto descriptivo debajo, conectados por una línea punteada."
+                        },
+                        {
+                            "posicion": "inferior centro",
+                            "funcion": "seccion",
+                            "contenido_resumido": "Sección 'ACCOUNTABILITY' con tres círculos grandes, cada uno con un icono y texto descriptivo debajo, conectados por una línea punteada."
+                        },
+                        {
+                            "posicion": "inferior derecha",
+                            "funcion": "seccion",
+                            "contenido_resumido": "Sección 'GRAPHS' con un gráfico circular segmentado en 5 partes numeradas y coloreadas, con texto descriptivo alrededor."
+                        },
+                        {
+                            "posicion": "cabecera de columna 1",
+                            "funcion": "etiqueta de categoria",
+                            "contenido_resumido": "Etiqueta 'FLOW CHART'."
+                        },
+                        {
+                            "posicion": "cabecera de columna 2",
+                            "funcion": "etiqueta de categoria",
+                            "contenido_resumido": "Etiqueta 'DIAGRAMS'."
+                        },
+                        {
+                            "posicion": "cabecera de columna 3",
+                            "funcion": "etiqueta de categoria",
+                            "contenido_resumido": "Etiqueta 'PIE CHARTS'."
+                        },
+                        {
+                            "posicion": "cabecera de columna 4",
+                            "funcion": "etiqueta de categoria",
+                            "contenido_resumido": "Etiqueta 'BAR CHARTS'."
+                        },
+                        {
+                            "posicion": "cabecera de columna 5",
+                            "funcion": "etiqueta de categoria",
+                            "contenido_resumido": "Etiqueta 'GRAPHS'."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "digital",
+                    "paleta_aproximada": [
+                        "#ffffff",
+                        "#a000ff",
+                        "#e0e0e0",
+                        "#c0c0c0",
+                        "#ffc040",
+                        "#ff00c0",
+                        "#a0a0a0",
+                        "#00ffff",
+                        "#00ff00",
+                        "#ff0000",
+                        "#0000ff",
+                        "#ffa500"
+                    ],
+                    "tipografia": "sans-serif, negrita para títulos y subtítulos, regular para contenido",
+                    "formas": "rectángulos con esquinas redondeadas, círculos, flechas, líneas",
+                    "iconografia": "iconos planos y lineales dentro de círculos o formas, representando conceptos como documentos, seguridad, inspección, entrenamiento",
+                    "fondo": "blanco, con una banda superior de color morado intenso para el título principal y bandas de colores variados para las categorías superiores",
+                    "conectores": "líneas punteadas, flechas, líneas sólidas que unen elementos"
+                },
+                "texto_visible": [
+                    "Infographic",
+                    "FLOW CHART",
+                    "DIAGRAMS",
+                    "PIE CHARTS",
+                    "BAR CHARTS",
+                    "GRAPHS",
+                    "01",
+                    "02",
+                    "03",
+                    "04",
+                    "05",
+                    "AUDITS",
+                    "ACCOUNTABILITY",
+                    "VERIFICATION",
+                    "CERTIFICATIONS",
+                    "TRAINING",
+                    "Video Displays In Motor Vehicles",
+                    "Video Displays in Monitoring or Control Devices",
+                    "Devices Ceasing to be Covered",
+                    "Video Displays in Household Equipment",
+                    "IEC 63474",
+                    "IEC 63474",
+                    "SASO IEC 62321",
+                    "SASO IEC TR 62476",
+                    "Industry Best Practices",
+                    "Environmental Impact",
+                    "Health and Safety Concerns",
+                    "Regulatory Compliance",
+                    "Supply Chain Management"
+                ],
+                "elementos_visuales": [
+                    {
+                        "tipo": "diagrama de flujo",
+                        "descripcion": "Cinco bloques horizontales con esquinas redondeadas, numerados del 01 al 05, conectados por flechas curvas. Cada bloque tiene un color diferente (azul, amarillo, morado, verde, rojo) y un icono circular con el número."
+                    },
+                    {
+                        "tipo": "diagrama de barras apiladas",
+                        "descripcion": "Cinco barras horizontales de diferentes longitudes y colores (rojo, naranja, morado, verde, azul), cada una con un icono circular y texto a la izquierda."
+                    },
+                    {
+                        "tipo": "cuadrícula de bloques",
+                        "descripcion": "Cuatro bloques rectangulares con esquinas redondeadas, dispuestos en una cuadrícula 2x2, cada uno con texto y un pequeño marcador de color con un número (01, 02, 03, 04)."
+                    },
+                    {
+                        "tipo": "diagrama circular con bloques",
+                        "descripcion": "Cuatro bloques rectangulares con esquinas redondeadas, dispuestos alrededor de un círculo central blanco, cada uno con un número (01, 02, 03, 04) y texto. Los números están en marcadores de color (naranja, verde, rojo, gris)."
+                    },
+                    {
+                        "tipo": "secuencia de iconos",
+                        "descripcion": "Tres círculos grandes con bordes finos, cada uno conteniendo un icono (documento, escudo con lupa, documento con lupa) y texto descriptivo debajo ('VERIFICATION', 'CERTIFICATIONS'). Conectados por una línea punteada horizontal."
+                    },
+                    {
+                        "tipo": "secuencia de iconos",
+                        "descripcion": "Tres círculos grandes con bordes finos, cada uno conteniendo un icono (documento, documento, persona exponiendo) y texto descriptivo debajo ('ACCOUNTABILITY', 'TRAINING'). Conectados por una línea punteada horizontal."
+                    },
+                    {
+                        "tipo": "gráfico circular",
+                        "descripcion": "Un círculo dividido en cinco segmentos de diferentes colores (azul, verde, amarillo, naranja, rojo), numerados del 01 al 05, con texto descriptivo alrededor de cada segmento."
+                    }
+                ],
+                "reglas_para_replicar": [
+                    "Mantener la estructura de cuadrícula principal de 2 filas y 5 columnas para las secciones de contenido.",
+                    "Utilizar una banda superior de color sólido para el título principal.",
+                    "Usar bandas de color sólido para las etiquetas de categoría de la fila superior.",
+                    "Emplear rectángulos con esquinas redondeadas para los bloques de contenido textual.",
+                    "Utilizar círculos para agrupar iconos y números en los diagramas de flujo y barras.",
+                    "Mantener la paleta de colores vibrantes y variados para diferenciar elementos y secciones.",
+                    "Usar líneas punteadas para conectar elementos secuenciales en la fila inferior.",
+                    "Asegurar que los iconos sean planos y representativos del contenido.",
+                    "Mantener la tipografía sans-serif, usando negritas para títulos y subtítulos y regular para el cuerpo del texto.",
+                    "La densidad visual debe ser media, con suficiente espacio en blanco para la legibilidad."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "infografia.png",
+                "medidas": {
+                    "width": 680,
+                    "height": 409,
+                    "aspectRatio": "1.663"
+                },
+                "paleta_local": [
+                    "#ffffff",
+                    "#a000ff",
+                    "#e0e0e0",
+                    "#c0c0c0",
+                    "#ffc040",
+                    "#ff00c0",
+                    "#a0a0a0"
+                ]
+            },
+            "aspectRatio": "16:9"
+        },
+        "createdAt": "2026-08-23T17:01:38.803Z",
+        "imageFile": "h_mt620ygj",
+        "imageUrl": "./history_data/h_mt620ygj.png"
+    },
+    {
+        "id": "h_mt6137y4",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"es\",\"titulo_detectado\":\"Chatbots y Emociones: Guía para Proteger a tus Hijos\",\"tema_detectado\":\"Riesgos y protección de niños frente a chatbots y la inteligencia artificial\",\"estructura\":{\"orientacion\":\"horizontal\",\"composicion\":\"simétrica con un punto central y ramificaciones\",\"flujo_lectura\":\"De izquierda a derecha, siguiendo las ramificaciones de un mapa mental desde el centro.\",\"numero_bloques\":10,\"zonas\":[{\"posicion\":\"superior central\",\"funcion\":\"título principal\",\"contenido_resumido\":\"Chatbots y Emociones: Guía para Proteger a tus Hijos\"},{\"posicion\":\"centro\",\"funcion\":\"núcleo temático\",\"contenido_resumido\":\"Cerebro con corazón y chatbot, silueta de niño, representando la interacción entre IA y emociones infantiles.\"},{\"posicion\":\"izquierda central\",\"funcion\":\"encabezado de sección\",\"contenido_resumido\":\"EL PROBLEMA: LOS RIESGOS OCULTOS\"},{\"posicion\":\"derecha central\",\"funcion\":\"encabezado de sección\",\"contenido_resumido\":\"LA SOLUCIÓN: ¿CÓMO PROTEGERLOS?\"},{\"posicion\":\"izquierda superior\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"La ilusión de empatía: Los chatbots simulan emociones, pero carecen de comprensión y reciprocidad humana real. Ilustración de robot, máscaras y figura humana.\"},{\"posicion\":\"izquierda media\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"Dependencia emocional peligrosa: Su uso puede llevar al aislamiento social y debilitar las relaciones humanas verdaderas. Ilustración de niño con tablet en burbuja.\"},{\"posicion\":\"izquierda inferior\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"Confesiones de alto riesgo: La ausencia de juicio anima a compartir información sensible: miedos, angustias e incluso pensamientos suicidas. Ilustración de niño con móvil y chatbot.\"},{\"posicion\":\"inferior izquierda\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"Asociación con un menor bienestar: El uso intensivo como 'compañía' está vinculado a una peor salud psicológica. Ilustración de árbol, cerebro y monitor triste.\"},{\"posicion\":\"derecha superior\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"Fomenta la comunicación abierta: Habla con ellos sobre sus 'amigos' virtuales y lo que comparten, sin juzgar. Ilustración de madre e hijo conversando.\"},{\"posicion\":\"derecha media\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"Educa sobre los límites de la IA: Explícales que un chatbot no es una persona real y no puede sentir ni querer. Ilustración de niño con robot y cerebro.\"},{\"posicion\":\"derecha inferior\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"Fortalece las conexiones reales: Promueve amistades y actividades fuera de la pantalla; es su mayor protección. Ilustración de niños jugando al aire libre.\"},{\"posicion\":\"inferior derecha\",\"funcion\":\"bloque de contenido\",\"contenido_resumido\":\"Establece límites y supervisa: Controla las apps que usan, establece tiempos y asegúrate de que el contenido es apropiado. Ilustración de reloj, carpetas y logos de apps.\"}]},\"estilo\":{\"medio\":\"digital\",\"paleta_aproximada\":[\"#ffffe0\",\"#ffffff\",\"#e0e0e0\",\"#c0e0e0\",\"#c0c0c0\",\"#a0a0a0\",\"#e0e0c0\"],\"tipografia\":\"Sans-serif, legible, con títulos en negrita y texto de apoyo más pequeño.\",\"formas\":\"Orgánicas y redondeadas para las ilustraciones y los nodos del mapa mental. Líneas rectas y angulares para los circuitos que conectan los nodos.\",\"iconografia\":\"Ilustraciones de estilo cartoon, amigables y didácticas, con representaciones de niños, robots, cerebros, emociones y elementos tecnológicos.\",\"fondo\":\"Color crema o beige claro, uniforme, con un patrón sutil de circuitos electrónicos en tonos más claros que se extiende por toda la infografía.\",\"conectores\":\"Líneas que simulan circuitos electrónicos, ramificándose desde el centro hacia los diferentes bloques de información, indicando relaciones y flujo.\"},\"texto_visible\":[\"Chatbots y Emociones:\",\"Guía para Proteger a tus Hijos\",\"La ilusión de empatía\",\"Los chatbots simulan emociones, pero carecen de comprensión y reciprocidad humana real.\",\"Dependencia emocional peligrosa\",\"Su uso puede llevar al aislamiento social y debilitar las relaciones humanas verdaderas.\",\"miedos,\",\"angustias,\",\"pensamientos suicidas\",\"Confesiones de alto riesgo\",\"La ausencia de juicio anima a compartir información sensible: miedos, angustias e incluso pensamientos suicidas.\",\"EL PROBLEMA:\",\"LOS RIESGOS OCULTOS\",\"Asociación con un menor bienestar\",\"El uso intensivo como \\\"compañía\\\" está vinculado a una peor salud psicológica.\",\"LA SOLUCIÓN:\",\"¿CÓMO PROTEGERLOS?\",\"Fomenta la comunicación abierta\",\"Habla con ellos sobre sus \\\"amigos\\\" virtuales y lo que comparten, sin juzgar.\",\"Educa sobre los límites de la IA\",\"Explícales que un chatbot no es una persona real y no puede sentir ni querer.\",\"Fortalece las conexiones reales\",\"Promueve amistades y actividades fuera de la pantalla; es su mayor protección.\",\"Establece límites y supervisa\",\"Controla las apps que usan, establece tiempos y asegúrate de que el contenido es apropiado.\",\"NotebookLM\"],\"elementos_visuales\":[\"Ilustración de un robot y dos máscaras (una feliz, una triste) junto a una figura humana con el corazón expuesto.\",\"Ilustración de un niño sentado usando una tablet dentro de una burbuja, con siluetas de personas alrededor.\",\"Ilustración de un niño usando un smartphone, con burbujas de diálogo mostrando 'miedos, angustias, pensamientos suicidas' y un icono de IA con un escudo.\",\"Ilustración de un árbol con raíces, un cerebro humano conectado a un cerebro con cables y un monitor de computadora con una cara triste.\",\"Ilustración de una madre y un hijo sentados conversando, con burbujas de diálogo.\",\"Ilustración de un niño interactuando con un robot, con un cerebro flotando cerca del robot.\",\"Ilustración de niños jugando al fútbol y acampando al aire libre.\",\"Ilustración de un reloj, carpetas y logos de aplicaciones (Facebook, Instagram, YouTube, TikTok, etc.) con una mano tocando una pantalla.\",\"Ilustración central de un cerebro con un corazón, un chatbot sonriente y la silueta de un niño, rodeados por un círculo y ramificaciones de circuitos.\",\"Icono de un cerebro en la parte superior izquierda.\",\"Icono de una bombilla en la parte superior derecha.\",\"Icono de un sol en la parte inferior derecha.\"],\"reglas_para_replicar\":[\"Utilizar un fondo de color claro (crema/beige) con un patrón sutil de circuitos electrónicos.\",\"Diseñar la infografía como un mapa mental con un punto central y ramificaciones que conectan los bloques de información.\",\"Usar ilustraciones de estilo cartoon, amigables y didácticas, para cada punto clave.\",\"Emplear una tipografía sans-serif clara y legible, con títulos en negrita y texto de apoyo más pequeño.\",\"Mantener una paleta de colores suaves y armoniosos, con tonos pastel y colores primarios para los elementos clave.\",\"Dividir el contenido en dos secciones principales ('El Problema' y 'La Solución') con encabezados claros.\",\"Conectar los bloques de información con líneas que simulan circuitos electrónicos, partiendo del centro.\",\"Asegurar que cada bloque de contenido tenga un título corto y descriptivo, acompañado de una breve explicación y una ilustración relevante.\",\"Mantener una densidad visual equilibrada, evitando la sobrecarga de información en cualquier sección.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"unnamed.png\",\"medidas\":{\"width\":640,\"height\":357,\"aspectRatio\":\"1.793\"},\"paleta_local\":[\"#ffffe0\",\"#ffffff\",\"#e0e0e0\",\"#c0e0e0\",\"#c0c0c0\",\"#a0a0a0\",\"#e0e0c0\"]}. Contenido libre del usuario: Infografía educativa sobre la evolución del ser humano para estudiantes. Presenta la evolución como un árbol ramificado y no como una escalera lineal.. Título exacto: Evolución del Ser Humano. Subtítulo exacto: De los primeros homininos a Homo sapiens. Secciones exactas (una por línea, separadas por |): Australopithecus afarensis | Hace 3,9–2,9 millones de años | Bipedismo habitual\nHomo habilis | Hace 2,4–1,4 millones de años | Herramientas de piedra\nHomo erectus | Hace 1,9 millones–110.000 años | Expansión fuera de África\nNeandertales | Hace 400.000–40.000 años | Vivieron en Eurasia\nHomo sapiens | Desde hace unos 300.000 años | Surgió en África. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "unnamed.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "es",
+                "titulo_detectado": "Chatbots y Emociones: Guía para Proteger a tus Hijos",
+                "tema_detectado": "Riesgos y protección de niños frente a chatbots y la inteligencia artificial",
+                "estructura": {
+                    "orientacion": "horizontal",
+                    "composicion": "simétrica con un punto central y ramificaciones",
+                    "flujo_lectura": "De izquierda a derecha, siguiendo las ramificaciones de un mapa mental desde el centro.",
+                    "numero_bloques": 10,
+                    "zonas": [
+                        {
+                            "posicion": "superior central",
+                            "funcion": "título principal",
+                            "contenido_resumido": "Chatbots y Emociones: Guía para Proteger a tus Hijos"
+                        },
+                        {
+                            "posicion": "centro",
+                            "funcion": "núcleo temático",
+                            "contenido_resumido": "Cerebro con corazón y chatbot, silueta de niño, representando la interacción entre IA y emociones infantiles."
+                        },
+                        {
+                            "posicion": "izquierda central",
+                            "funcion": "encabezado de sección",
+                            "contenido_resumido": "EL PROBLEMA: LOS RIESGOS OCULTOS"
+                        },
+                        {
+                            "posicion": "derecha central",
+                            "funcion": "encabezado de sección",
+                            "contenido_resumido": "LA SOLUCIÓN: ¿CÓMO PROTEGERLOS?"
+                        },
+                        {
+                            "posicion": "izquierda superior",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "La ilusión de empatía: Los chatbots simulan emociones, pero carecen de comprensión y reciprocidad humana real. Ilustración de robot, máscaras y figura humana."
+                        },
+                        {
+                            "posicion": "izquierda media",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "Dependencia emocional peligrosa: Su uso puede llevar al aislamiento social y debilitar las relaciones humanas verdaderas. Ilustración de niño con tablet en burbuja."
+                        },
+                        {
+                            "posicion": "izquierda inferior",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "Confesiones de alto riesgo: La ausencia de juicio anima a compartir información sensible: miedos, angustias e incluso pensamientos suicidas. Ilustración de niño con móvil y chatbot."
+                        },
+                        {
+                            "posicion": "inferior izquierda",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "Asociación con un menor bienestar: El uso intensivo como 'compañía' está vinculado a una peor salud psicológica. Ilustración de árbol, cerebro y monitor triste."
+                        },
+                        {
+                            "posicion": "derecha superior",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "Fomenta la comunicación abierta: Habla con ellos sobre sus 'amigos' virtuales y lo que comparten, sin juzgar. Ilustración de madre e hijo conversando."
+                        },
+                        {
+                            "posicion": "derecha media",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "Educa sobre los límites de la IA: Explícales que un chatbot no es una persona real y no puede sentir ni querer. Ilustración de niño con robot y cerebro."
+                        },
+                        {
+                            "posicion": "derecha inferior",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "Fortalece las conexiones reales: Promueve amistades y actividades fuera de la pantalla; es su mayor protección. Ilustración de niños jugando al aire libre."
+                        },
+                        {
+                            "posicion": "inferior derecha",
+                            "funcion": "bloque de contenido",
+                            "contenido_resumido": "Establece límites y supervisa: Controla las apps que usan, establece tiempos y asegúrate de que el contenido es apropiado. Ilustración de reloj, carpetas y logos de apps."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "digital",
+                    "paleta_aproximada": [
+                        "#ffffe0",
+                        "#ffffff",
+                        "#e0e0e0",
+                        "#c0e0e0",
+                        "#c0c0c0",
+                        "#a0a0a0",
+                        "#e0e0c0"
+                    ],
+                    "tipografia": "Sans-serif, legible, con títulos en negrita y texto de apoyo más pequeño.",
+                    "formas": "Orgánicas y redondeadas para las ilustraciones y los nodos del mapa mental. Líneas rectas y angulares para los circuitos que conectan los nodos.",
+                    "iconografia": "Ilustraciones de estilo cartoon, amigables y didácticas, con representaciones de niños, robots, cerebros, emociones y elementos tecnológicos.",
+                    "fondo": "Color crema o beige claro, uniforme, con un patrón sutil de circuitos electrónicos en tonos más claros que se extiende por toda la infografía.",
+                    "conectores": "Líneas que simulan circuitos electrónicos, ramificándose desde el centro hacia los diferentes bloques de información, indicando relaciones y flujo."
+                },
+                "texto_visible": [
+                    "Chatbots y Emociones:",
+                    "Guía para Proteger a tus Hijos",
+                    "La ilusión de empatía",
+                    "Los chatbots simulan emociones, pero carecen de comprensión y reciprocidad humana real.",
+                    "Dependencia emocional peligrosa",
+                    "Su uso puede llevar al aislamiento social y debilitar las relaciones humanas verdaderas.",
+                    "miedos,",
+                    "angustias,",
+                    "pensamientos suicidas",
+                    "Confesiones de alto riesgo",
+                    "La ausencia de juicio anima a compartir información sensible: miedos, angustias e incluso pensamientos suicidas.",
+                    "EL PROBLEMA:",
+                    "LOS RIESGOS OCULTOS",
+                    "Asociación con un menor bienestar",
+                    "El uso intensivo como \"compañía\" está vinculado a una peor salud psicológica.",
+                    "LA SOLUCIÓN:",
+                    "¿CÓMO PROTEGERLOS?",
+                    "Fomenta la comunicación abierta",
+                    "Habla con ellos sobre sus \"amigos\" virtuales y lo que comparten, sin juzgar.",
+                    "Educa sobre los límites de la IA",
+                    "Explícales que un chatbot no es una persona real y no puede sentir ni querer.",
+                    "Fortalece las conexiones reales",
+                    "Promueve amistades y actividades fuera de la pantalla; es su mayor protección.",
+                    "Establece límites y supervisa",
+                    "Controla las apps que usan, establece tiempos y asegúrate de que el contenido es apropiado.",
+                    "NotebookLM"
+                ],
+                "elementos_visuales": [
+                    "Ilustración de un robot y dos máscaras (una feliz, una triste) junto a una figura humana con el corazón expuesto.",
+                    "Ilustración de un niño sentado usando una tablet dentro de una burbuja, con siluetas de personas alrededor.",
+                    "Ilustración de un niño usando un smartphone, con burbujas de diálogo mostrando 'miedos, angustias, pensamientos suicidas' y un icono de IA con un escudo.",
+                    "Ilustración de un árbol con raíces, un cerebro humano conectado a un cerebro con cables y un monitor de computadora con una cara triste.",
+                    "Ilustración de una madre y un hijo sentados conversando, con burbujas de diálogo.",
+                    "Ilustración de un niño interactuando con un robot, con un cerebro flotando cerca del robot.",
+                    "Ilustración de niños jugando al fútbol y acampando al aire libre.",
+                    "Ilustración de un reloj, carpetas y logos de aplicaciones (Facebook, Instagram, YouTube, TikTok, etc.) con una mano tocando una pantalla.",
+                    "Ilustración central de un cerebro con un corazón, un chatbot sonriente y la silueta de un niño, rodeados por un círculo y ramificaciones de circuitos.",
+                    "Icono de un cerebro en la parte superior izquierda.",
+                    "Icono de una bombilla en la parte superior derecha.",
+                    "Icono de un sol en la parte inferior derecha."
+                ],
+                "reglas_para_replicar": [
+                    "Utilizar un fondo de color claro (crema/beige) con un patrón sutil de circuitos electrónicos.",
+                    "Diseñar la infografía como un mapa mental con un punto central y ramificaciones que conectan los bloques de información.",
+                    "Usar ilustraciones de estilo cartoon, amigables y didácticas, para cada punto clave.",
+                    "Emplear una tipografía sans-serif clara y legible, con títulos en negrita y texto de apoyo más pequeño.",
+                    "Mantener una paleta de colores suaves y armoniosos, con tonos pastel y colores primarios para los elementos clave.",
+                    "Dividir el contenido en dos secciones principales ('El Problema' y 'La Solución') con encabezados claros.",
+                    "Conectar los bloques de información con líneas que simulan circuitos electrónicos, partiendo del centro.",
+                    "Asegurar que cada bloque de contenido tenga un título corto y descriptivo, acompañado de una breve explicación y una ilustración relevante.",
+                    "Mantener una densidad visual equilibrada, evitando la sobrecarga de información en cualquier sección."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "unnamed.png",
+                "medidas": {
+                    "width": 640,
+                    "height": 357,
+                    "aspectRatio": "1.793"
+                },
+                "paleta_local": [
+                    "#ffffe0",
+                    "#ffffff",
+                    "#e0e0e0",
+                    "#c0e0e0",
+                    "#c0c0c0",
+                    "#a0a0a0",
+                    "#e0e0c0"
+                ]
+            },
+            "aspectRatio": "16:9"
+        },
+        "createdAt": "2026-08-23T16:35:24.796Z",
+        "imageFile": "h_mt6137y4",
+        "imageUrl": "./history_data/h_mt6137y4.png"
+    },
+    {
+        "id": "h_mt60u6sv",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-max",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"es\",\"titulo_detectado\":\"La ballena Franca\",\"tema_detectado\":\"Biología y comportamiento de la ballena franca\",\"estructura\":{\"orientacion\":\"horizontal\",\"composicion\":\"multibloque con una ilustración central dominante\",\"flujo_lectura\":\"de izquierda a derecha y de arriba hacia abajo, con la ilustración de la ballena como eje central\",\"numero_bloques\":13,\"zonas\":[{\"posicion\":\"superior izquierda\",\"funcion\":\"título principal y descripción general\",\"contenido_resumido\":\"Título 'La ballena Franca' y texto introductorio sobre la especie.\"},{\"posicion\":\"superior izquierda, debajo del título\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Cédula de identidad con datos de avistamientos.\"},{\"posicion\":\"media izquierda\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'Las barbas' con descripción y comparación de tamaño.\"},{\"posicion\":\"inferior izquierda\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'El almuerzo' y 'Cómo comen' con ilustraciones de krill y proceso de alimentación.\"},{\"posicion\":\"superior central\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'Cómo respiran' con evolución y proceso de respiración.\"},{\"posicion\":\"superior central derecha\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'El ciclo vital' con diagrama de fases de reproducción y alimentación.\"},{\"posicion\":\"superior derecha\",\"funcion\":\"comparación de tamaño\",\"contenido_resumido\":\"Sección 'Ni tan grande ni tan pequeña' con siluetas de diferentes ballenas.\"},{\"posicion\":\"media derecha\",\"funcion\":\"datos estadísticos\",\"contenido_resumido\":\"Sección 'Datos generales' con tabla de medidas y características.\"},{\"posicion\":\"central inferior\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'Aleta pectoral' con ilustración de la estructura ósea.\"},{\"posicion\":\"inferior central\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección '¿A dónde emigran?' con mapa de rutas migratorias.\"},{\"posicion\":\"inferior derecha\",\"funcion\":\"datos estadísticos\",\"contenido_resumido\":\"Sección 'Una lenta recuperación' con gráficos de población.\"},{\"posicion\":\"inferior derecha\",\"funcion\":\"fuente\",\"contenido_resumido\":\"Fuente de la información.\"},{\"posicion\":\"central\",\"funcion\":\"ilustración principal\",\"contenido_resumido\":\"Gran ilustración de una ballena franca.\"}]},\"estilo\":{\"medio\":\"impreso\",\"paleta_aproximada\":[\"#e0c0a0\",\"#e0e0c0\",\"#c0a080\",\"#c0c0a0\",\"#e0e0a0\",\"#ffe0c0\",\"#806060\"],\"tipografia\":\"serifa para títulos y sans-serif para el cuerpo del texto, con variaciones de tamaño y negrita para jerarquía\",\"formas\":\"rectangulares para bloques de texto, circulares y ovaladas para diagramas de ciclo, siluetas de animales\",\"iconografia\":\"ilustraciones detalladas de ballenas, krill, estructuras óseas, mapas, gráficos de barras, iconos de personas y animales\",\"fondo\":\"textura de papel envejecido o pergamino en tonos beige y marrón claro\",\"conectores\":\"líneas finas para señalar partes de ilustraciones, flechas para indicar flujo en diagramas, líneas curvas para el ciclo vital\"},\"texto_visible\":[\"La ballena Franca\",\"Es una de las 11 especies que hay en el mundo. Todos los años, entre agosto y diciembre, unos 500 ejemplares de ballena Franca Austral llegan a la Península Valdés, en Chubut, para criar a sus ballenatos. Ese es uno de los pocos lugares del mundo donde se las puede ver en su hábitat natural.\",\"CEDULA DE IDENTIDAD\",\"Para identificarlas se toman fotografías aéreas. La cabeza presenta una serie de callosidades que no varían con el paso del tiempo y son distintas en cada individuo. Así, como si de huellas dactilares se tratara, se han podido identificar y pisar 1.300 animales.\",\"Nombre\",\"Anna\",\"Primer\",\"36-10-04\",\"avistamiento\",\"14.30\",\"Número de avistamientos en la Península Valdés\",\"LAS BARBAS\",\"En lugar de dientes tienen 400 barbas de queratina, un tejido similar al de las uñas humanas.\",\"Extremo sujeto a la mandíbula superior.\",\"Parte interior desflecada para tamizar la comida.\",\"2.6m\",\"Comparación de tamaño con una persona\",\"EL ALMUERZO\",\"6 cm\",\"Los grandes bancos de krill son su principal alimento. Una ballena franca es capaz de comer más de 300 kilos en una hora.\",\"COMO RESPIRAN\",\"Como todos los mamíferos, las ballenas tienen pulmones. Originalmente eran animales terrestres que evolucionaron y se adaptaron al agua. En el esqueleto más antiguo que se conoce, los orificios nasales estaban en el extremo de la cabeza. Luego se fueron desplazando.\",\"Inspiración\",\"Arqueocete\",\"90%\",\"20%\",\"Expiración\",\"Ballena actual\",\"EL CICLO VITAL\",\"Las ballenas se reproducen en invierno en aguas cálidas. Durante el verano viajan para alimentarse en aguas frías. Tienen una cría cada tres años.\",\"INVIERNO\",\"AGUAS CÁLIDAS\",\"Territorio de reproducción\",\"12\",\"Parto\",\"Concepción\",\"Embarazo\",\"Amamantamiento\",\"Mitad del embarazo\",\"Separación de la madre\",\"18\",\"Territorio de alimentación\",\"AGUAS FRÍAS\",\"VERANO\",\"Descanso\",\"Cría la ballena vuelve a iniciarse el ciclo, que dura tres años.\",\"Durante el período de alimentación aumentan de peso hasta un 40%. La grasa almacenada les permite sobrevivir a los inviernos, cuando ayunan, y sirve como aislante térmico.\",\"Ni tan grande ni tan pequeña\",\"BALLENA AZUL. La más grande.\",\"32 m\",\"FRANCA AUSTRAL\",\"Amenazada de extinción\",\"17 cm\",\"El espesor varía según la zona del cuerpo.\",\"40 cm\",\"FRANCA PIGMEA.\",\"La más pequeña.\",\"6 m\",\"Datos generales\",\"Longitud\",\"Macho\",\"14 m\",\"Hembra\",\"16 m\",\"Al nacer\",\"5 m\",\"Aleta caudal\",\"5 m\",\"Peso de un adulto\",\"40 tn\",\"El equivalente a 10 elefantes\",\"Peso al nacer\",\"2,5 tn\",\"Tiempo de vida\",\"60 años\",\"Velocidad\",\"30 km/h\",\"Profundidad de descenso\",\"300 m\",\"Restos de huesos pélvicos. En embriones de 2 cm se pueden apreciar adosados a la columna. Luego, cuando crece, se disipan.\",\"¿A DÓNDE EMIGRAN?\",\"Las zonas donde viven en verano siguen siendo un misterio. Sin embargo, las áreas donde fueron cazadas, hasta su prohibición, permiten suponer que viven entre los paralelos 20 y 60.\",\"Registros de captura, 1785-1913\",\"380.000\",\"180.000\",\"Una lenta recuperación\",\"En todo el mundo\",\"En este período fueron cazadas hasta casi su extinción\",\"1.000\",\"1800\",\"1995\",\"En la Península Valdés\",\"La población se duplica cada diez años. Cada temporada crece un 7%\",\"250\",\"500\",\"1965\",\"1995\",\"Según distintas estimaciones\",\"Infografía: JAIME SERRA\",\"COMO COMEN\",\"1 Nadando a poca velocidad con la boca abierta.\",\"2 Se comida entre con el agua.\",\"3 El agua es expulsada con la lengua a través de las barbas, donde queda atrapada la comida.\",\"Mancha ventral de color blanco que caracteriza a la especie.\",\"Escápula\",\"Húmero\",\"Radio\",\"Cúbito\",\"Carpas\",\"Metacarpianos\",\"Falanges\",\"ALETA PECTORAL\",\"Aparentemente es muy diferente de la pata de un mamífero. Pero su estructura es muy parecida. Tiene los mismos huesos, pero adaptados al agua.\",\"Fuente: Guillermo Harris, Patagonia Natural, Ballenas y delfines, vistas y sonidos. Susana R. Burman, Dios Ediciones, Casa Provincial del Chubut.\"],\"elementos_visuales\":[\"ilustración principal de una ballena franca en tonos marrones y grises, con manchas blancas\",\"ilustraciones de cráneos de ballena (arqueocete y ballena actual)\",\"diagrama de barras para 'Inspiración' y 'Expiración'\",\"diagrama de ciclo vital con líneas curvas rojas y azules y números\",\"siluetas de tres tipos de ballenas (azul, franca austral, pigmea) con sus longitudes\",\"icono de una persona para comparación de tamaño\",\"ilustración de una barba de ballena\",\"ilustración de krill\",\"ilustraciones del proceso de alimentación de la ballena\",\"ilustración de la estructura ósea de la aleta pectoral\",\"mapa mundial con puntos rojos indicando zonas de captura\",\"gráficos de barras para la recuperación de la población de ballenas\"],\"reglas_para_replicar\":[\"Utilizar una ilustración central dominante de la especie principal, con un estilo de dibujo detallado y tonos realistas.\",\"Organizar la información en bloques de texto y gráficos alrededor de la ilustración central, manteniendo un equilibrio visual.\",\"Emplear un fondo con textura de papel envejecido o pergamino para dar un aspecto clásico y natural.\",\"Usar una paleta de colores cálidos y terrosos (beige, marrón, ocre, gris) con toques de color (rojo, azul) para resaltar información clave en diagramas.\",\"Combinar tipografías serif para títulos y sans-serif para el cuerpo del texto, variando tamaños y pesos para establecer jerarquía.\",\"Incluir ilustraciones detalladas y científicamente precisas de elementos relacionados con el tema (anatomía, alimentación, evolución).\",\"Utilizar diagramas de flujo, ciclos y gráficos de barras para presentar datos complejos de manera clara y concisa.\",\"Emplear líneas finas y flechas como conectores para guiar la vista del lector y señalar elementos en las ilustraciones.\",\"Mantener una densidad visual media, con suficiente espacio en blanco para evitar la saturación, pero con abundante información en cada bloque.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"media_1982728df15a0655daa969a56ada47a87897dfcc6.png\",\"medidas\":{\"width\":750,\"height\":460,\"aspectRatio\":\"1.630\"},\"paleta_local\":[\"#e0c0a0\",\"#e0e0c0\",\"#c0a080\",\"#c0c0a0\",\"#e0e0a0\",\"#ffe0c0\",\"#806060\"]}. Contenido libre del usuario: quiero que el sujeto principal sea un podenco canario.. Título exacto: Podenco Canario. Subtítulo exacto: Sin subtítulo obligatorio. Secciones exactas (una por línea, separadas por |): Organiza el contenido libre en secciones claras. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "media_1982728df15a0655daa969a56ada47a87897dfcc6.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "es",
+                "titulo_detectado": "La ballena Franca",
+                "tema_detectado": "Biología y comportamiento de la ballena franca",
+                "estructura": {
+                    "orientacion": "horizontal",
+                    "composicion": "multibloque con una ilustración central dominante",
+                    "flujo_lectura": "de izquierda a derecha y de arriba hacia abajo, con la ilustración de la ballena como eje central",
+                    "numero_bloques": 13,
+                    "zonas": [
+                        {
+                            "posicion": "superior izquierda",
+                            "funcion": "título principal y descripción general",
+                            "contenido_resumido": "Título 'La ballena Franca' y texto introductorio sobre la especie."
+                        },
+                        {
+                            "posicion": "superior izquierda, debajo del título",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Cédula de identidad con datos de avistamientos."
+                        },
+                        {
+                            "posicion": "media izquierda",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'Las barbas' con descripción y comparación de tamaño."
+                        },
+                        {
+                            "posicion": "inferior izquierda",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'El almuerzo' y 'Cómo comen' con ilustraciones de krill y proceso de alimentación."
+                        },
+                        {
+                            "posicion": "superior central",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'Cómo respiran' con evolución y proceso de respiración."
+                        },
+                        {
+                            "posicion": "superior central derecha",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'El ciclo vital' con diagrama de fases de reproducción y alimentación."
+                        },
+                        {
+                            "posicion": "superior derecha",
+                            "funcion": "comparación de tamaño",
+                            "contenido_resumido": "Sección 'Ni tan grande ni tan pequeña' con siluetas de diferentes ballenas."
+                        },
+                        {
+                            "posicion": "media derecha",
+                            "funcion": "datos estadísticos",
+                            "contenido_resumido": "Sección 'Datos generales' con tabla de medidas y características."
+                        },
+                        {
+                            "posicion": "central inferior",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'Aleta pectoral' con ilustración de la estructura ósea."
+                        },
+                        {
+                            "posicion": "inferior central",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección '¿A dónde emigran?' con mapa de rutas migratorias."
+                        },
+                        {
+                            "posicion": "inferior derecha",
+                            "funcion": "datos estadísticos",
+                            "contenido_resumido": "Sección 'Una lenta recuperación' con gráficos de población."
+                        },
+                        {
+                            "posicion": "inferior derecha",
+                            "funcion": "fuente",
+                            "contenido_resumido": "Fuente de la información."
+                        },
+                        {
+                            "posicion": "central",
+                            "funcion": "ilustración principal",
+                            "contenido_resumido": "Gran ilustración de una ballena franca."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "impreso",
+                    "paleta_aproximada": [
+                        "#e0c0a0",
+                        "#e0e0c0",
+                        "#c0a080",
+                        "#c0c0a0",
+                        "#e0e0a0",
+                        "#ffe0c0",
+                        "#806060"
+                    ],
+                    "tipografia": "serifa para títulos y sans-serif para el cuerpo del texto, con variaciones de tamaño y negrita para jerarquía",
+                    "formas": "rectangulares para bloques de texto, circulares y ovaladas para diagramas de ciclo, siluetas de animales",
+                    "iconografia": "ilustraciones detalladas de ballenas, krill, estructuras óseas, mapas, gráficos de barras, iconos de personas y animales",
+                    "fondo": "textura de papel envejecido o pergamino en tonos beige y marrón claro",
+                    "conectores": "líneas finas para señalar partes de ilustraciones, flechas para indicar flujo en diagramas, líneas curvas para el ciclo vital"
+                },
+                "texto_visible": [
+                    "La ballena Franca",
+                    "Es una de las 11 especies que hay en el mundo. Todos los años, entre agosto y diciembre, unos 500 ejemplares de ballena Franca Austral llegan a la Península Valdés, en Chubut, para criar a sus ballenatos. Ese es uno de los pocos lugares del mundo donde se las puede ver en su hábitat natural.",
+                    "CEDULA DE IDENTIDAD",
+                    "Para identificarlas se toman fotografías aéreas. La cabeza presenta una serie de callosidades que no varían con el paso del tiempo y son distintas en cada individuo. Así, como si de huellas dactilares se tratara, se han podido identificar y pisar 1.300 animales.",
+                    "Nombre",
+                    "Anna",
+                    "Primer",
+                    "36-10-04",
+                    "avistamiento",
+                    "14.30",
+                    "Número de avistamientos en la Península Valdés",
+                    "LAS BARBAS",
+                    "En lugar de dientes tienen 400 barbas de queratina, un tejido similar al de las uñas humanas.",
+                    "Extremo sujeto a la mandíbula superior.",
+                    "Parte interior desflecada para tamizar la comida.",
+                    "2.6m",
+                    "Comparación de tamaño con una persona",
+                    "EL ALMUERZO",
+                    "6 cm",
+                    "Los grandes bancos de krill son su principal alimento. Una ballena franca es capaz de comer más de 300 kilos en una hora.",
+                    "COMO RESPIRAN",
+                    "Como todos los mamíferos, las ballenas tienen pulmones. Originalmente eran animales terrestres que evolucionaron y se adaptaron al agua. En el esqueleto más antiguo que se conoce, los orificios nasales estaban en el extremo de la cabeza. Luego se fueron desplazando.",
+                    "Inspiración",
+                    "Arqueocete",
+                    "90%",
+                    "20%",
+                    "Expiración",
+                    "Ballena actual",
+                    "EL CICLO VITAL",
+                    "Las ballenas se reproducen en invierno en aguas cálidas. Durante el verano viajan para alimentarse en aguas frías. Tienen una cría cada tres años.",
+                    "INVIERNO",
+                    "AGUAS CÁLIDAS",
+                    "Territorio de reproducción",
+                    "12",
+                    "Parto",
+                    "Concepción",
+                    "Embarazo",
+                    "Amamantamiento",
+                    "Mitad del embarazo",
+                    "Separación de la madre",
+                    "18",
+                    "Territorio de alimentación",
+                    "AGUAS FRÍAS",
+                    "VERANO",
+                    "Descanso",
+                    "Cría la ballena vuelve a iniciarse el ciclo, que dura tres años.",
+                    "Durante el período de alimentación aumentan de peso hasta un 40%. La grasa almacenada les permite sobrevivir a los inviernos, cuando ayunan, y sirve como aislante térmico.",
+                    "Ni tan grande ni tan pequeña",
+                    "BALLENA AZUL. La más grande.",
+                    "32 m",
+                    "FRANCA AUSTRAL",
+                    "Amenazada de extinción",
+                    "17 cm",
+                    "El espesor varía según la zona del cuerpo.",
+                    "40 cm",
+                    "FRANCA PIGMEA.",
+                    "La más pequeña.",
+                    "6 m",
+                    "Datos generales",
+                    "Longitud",
+                    "Macho",
+                    "14 m",
+                    "Hembra",
+                    "16 m",
+                    "Al nacer",
+                    "5 m",
+                    "Aleta caudal",
+                    "5 m",
+                    "Peso de un adulto",
+                    "40 tn",
+                    "El equivalente a 10 elefantes",
+                    "Peso al nacer",
+                    "2,5 tn",
+                    "Tiempo de vida",
+                    "60 años",
+                    "Velocidad",
+                    "30 km/h",
+                    "Profundidad de descenso",
+                    "300 m",
+                    "Restos de huesos pélvicos. En embriones de 2 cm se pueden apreciar adosados a la columna. Luego, cuando crece, se disipan.",
+                    "¿A DÓNDE EMIGRAN?",
+                    "Las zonas donde viven en verano siguen siendo un misterio. Sin embargo, las áreas donde fueron cazadas, hasta su prohibición, permiten suponer que viven entre los paralelos 20 y 60.",
+                    "Registros de captura, 1785-1913",
+                    "380.000",
+                    "180.000",
+                    "Una lenta recuperación",
+                    "En todo el mundo",
+                    "En este período fueron cazadas hasta casi su extinción",
+                    "1.000",
+                    "1800",
+                    "1995",
+                    "En la Península Valdés",
+                    "La población se duplica cada diez años. Cada temporada crece un 7%",
+                    "250",
+                    "500",
+                    "1965",
+                    "1995",
+                    "Según distintas estimaciones",
+                    "Infografía: JAIME SERRA",
+                    "COMO COMEN",
+                    "1 Nadando a poca velocidad con la boca abierta.",
+                    "2 Se comida entre con el agua.",
+                    "3 El agua es expulsada con la lengua a través de las barbas, donde queda atrapada la comida.",
+                    "Mancha ventral de color blanco que caracteriza a la especie.",
+                    "Escápula",
+                    "Húmero",
+                    "Radio",
+                    "Cúbito",
+                    "Carpas",
+                    "Metacarpianos",
+                    "Falanges",
+                    "ALETA PECTORAL",
+                    "Aparentemente es muy diferente de la pata de un mamífero. Pero su estructura es muy parecida. Tiene los mismos huesos, pero adaptados al agua.",
+                    "Fuente: Guillermo Harris, Patagonia Natural, Ballenas y delfines, vistas y sonidos. Susana R. Burman, Dios Ediciones, Casa Provincial del Chubut."
+                ],
+                "elementos_visuales": [
+                    "ilustración principal de una ballena franca en tonos marrones y grises, con manchas blancas",
+                    "ilustraciones de cráneos de ballena (arqueocete y ballena actual)",
+                    "diagrama de barras para 'Inspiración' y 'Expiración'",
+                    "diagrama de ciclo vital con líneas curvas rojas y azules y números",
+                    "siluetas de tres tipos de ballenas (azul, franca austral, pigmea) con sus longitudes",
+                    "icono de una persona para comparación de tamaño",
+                    "ilustración de una barba de ballena",
+                    "ilustración de krill",
+                    "ilustraciones del proceso de alimentación de la ballena",
+                    "ilustración de la estructura ósea de la aleta pectoral",
+                    "mapa mundial con puntos rojos indicando zonas de captura",
+                    "gráficos de barras para la recuperación de la población de ballenas"
+                ],
+                "reglas_para_replicar": [
+                    "Utilizar una ilustración central dominante de la especie principal, con un estilo de dibujo detallado y tonos realistas.",
+                    "Organizar la información en bloques de texto y gráficos alrededor de la ilustración central, manteniendo un equilibrio visual.",
+                    "Emplear un fondo con textura de papel envejecido o pergamino para dar un aspecto clásico y natural.",
+                    "Usar una paleta de colores cálidos y terrosos (beige, marrón, ocre, gris) con toques de color (rojo, azul) para resaltar información clave en diagramas.",
+                    "Combinar tipografías serif para títulos y sans-serif para el cuerpo del texto, variando tamaños y pesos para establecer jerarquía.",
+                    "Incluir ilustraciones detalladas y científicamente precisas de elementos relacionados con el tema (anatomía, alimentación, evolución).",
+                    "Utilizar diagramas de flujo, ciclos y gráficos de barras para presentar datos complejos de manera clara y concisa.",
+                    "Emplear líneas finas y flechas como conectores para guiar la vista del lector y señalar elementos en las ilustraciones.",
+                    "Mantener una densidad visual media, con suficiente espacio en blanco para evitar la saturación, pero con abundante información en cada bloque."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "media_1982728df15a0655daa969a56ada47a87897dfcc6.png",
+                "medidas": {
+                    "width": 750,
+                    "height": 460,
+                    "aspectRatio": "1.630"
+                },
+                "paleta_local": [
+                    "#e0c0a0",
+                    "#e0e0c0",
+                    "#c0a080",
+                    "#c0c0a0",
+                    "#e0e0a0",
+                    "#ffe0c0",
+                    "#806060"
+                ]
+            },
+            "aspectRatio": "16:9"
+        },
+        "createdAt": "2026-08-23T16:28:23.407Z",
+        "imageFile": "h_mt60u6sv",
+        "imageUrl": "./history_data/h_mt60u6sv.png"
+    },
+    {
+        "id": "h_mt60p5hi",
+        "app": "infografia_referencia",
+        "type": "image",
+        "model": "flux-2-pro",
+        "data": {
+            "prompt": "Crea una infografía final en español. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: {\"tipo\":\"infografia\",\"idioma_detectado\":\"es\",\"titulo_detectado\":\"La ballena Franca\",\"tema_detectado\":\"Biología y comportamiento de la ballena franca\",\"estructura\":{\"orientacion\":\"horizontal\",\"composicion\":\"multibloque con una ilustración central dominante\",\"flujo_lectura\":\"de izquierda a derecha y de arriba hacia abajo, con la ilustración de la ballena como eje central\",\"numero_bloques\":13,\"zonas\":[{\"posicion\":\"superior izquierda\",\"funcion\":\"título principal y descripción general\",\"contenido_resumido\":\"Título 'La ballena Franca' y texto introductorio sobre la especie.\"},{\"posicion\":\"superior izquierda, debajo del título\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Cédula de identidad con datos de avistamientos.\"},{\"posicion\":\"media izquierda\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'Las barbas' con descripción y comparación de tamaño.\"},{\"posicion\":\"inferior izquierda\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'El almuerzo' y 'Cómo comen' con ilustraciones de krill y proceso de alimentación.\"},{\"posicion\":\"superior central\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'Cómo respiran' con evolución y proceso de respiración.\"},{\"posicion\":\"superior central derecha\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'El ciclo vital' con diagrama de fases de reproducción y alimentación.\"},{\"posicion\":\"superior derecha\",\"funcion\":\"comparación de tamaño\",\"contenido_resumido\":\"Sección 'Ni tan grande ni tan pequeña' con siluetas de diferentes ballenas.\"},{\"posicion\":\"media derecha\",\"funcion\":\"datos estadísticos\",\"contenido_resumido\":\"Sección 'Datos generales' con tabla de medidas y características.\"},{\"posicion\":\"central inferior\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección 'Aleta pectoral' con ilustración de la estructura ósea.\"},{\"posicion\":\"inferior central\",\"funcion\":\"información detallada\",\"contenido_resumido\":\"Sección '¿A dónde emigran?' con mapa de rutas migratorias.\"},{\"posicion\":\"inferior derecha\",\"funcion\":\"datos estadísticos\",\"contenido_resumido\":\"Sección 'Una lenta recuperación' con gráficos de población.\"},{\"posicion\":\"inferior derecha\",\"funcion\":\"fuente\",\"contenido_resumido\":\"Fuente de la información.\"},{\"posicion\":\"central\",\"funcion\":\"ilustración principal\",\"contenido_resumido\":\"Gran ilustración de una ballena franca.\"}]},\"estilo\":{\"medio\":\"impreso\",\"paleta_aproximada\":[\"#e0c0a0\",\"#e0e0c0\",\"#c0a080\",\"#c0c0a0\",\"#e0e0a0\",\"#ffe0c0\",\"#806060\"],\"tipografia\":\"serifa para títulos y sans-serif para el cuerpo del texto, con variaciones de tamaño y negrita para jerarquía\",\"formas\":\"rectangulares para bloques de texto, circulares y ovaladas para diagramas de ciclo, siluetas de animales\",\"iconografia\":\"ilustraciones detalladas de ballenas, krill, estructuras óseas, mapas, gráficos de barras, iconos de personas y animales\",\"fondo\":\"textura de papel envejecido o pergamino en tonos beige y marrón claro\",\"conectores\":\"líneas finas para señalar partes de ilustraciones, flechas para indicar flujo en diagramas, líneas curvas para el ciclo vital\"},\"texto_visible\":[\"La ballena Franca\",\"Es una de las 11 especies que hay en el mundo. Todos los años, entre agosto y diciembre, unos 500 ejemplares de ballena Franca Austral llegan a la Península Valdés, en Chubut, para criar a sus ballenatos. Ese es uno de los pocos lugares del mundo donde se las puede ver en su hábitat natural.\",\"CEDULA DE IDENTIDAD\",\"Para identificarlas se toman fotografías aéreas. La cabeza presenta una serie de callosidades que no varían con el paso del tiempo y son distintas en cada individuo. Así, como si de huellas dactilares se tratara, se han podido identificar y pisar 1.300 animales.\",\"Nombre\",\"Anna\",\"Primer\",\"36-10-04\",\"avistamiento\",\"14.30\",\"Número de avistamientos en la Península Valdés\",\"LAS BARBAS\",\"En lugar de dientes tienen 400 barbas de queratina, un tejido similar al de las uñas humanas.\",\"Extremo sujeto a la mandíbula superior.\",\"Parte interior desflecada para tamizar la comida.\",\"2.6m\",\"Comparación de tamaño con una persona\",\"EL ALMUERZO\",\"6 cm\",\"Los grandes bancos de krill son su principal alimento. Una ballena franca es capaz de comer más de 300 kilos en una hora.\",\"COMO RESPIRAN\",\"Como todos los mamíferos, las ballenas tienen pulmones. Originalmente eran animales terrestres que evolucionaron y se adaptaron al agua. En el esqueleto más antiguo que se conoce, los orificios nasales estaban en el extremo de la cabeza. Luego se fueron desplazando.\",\"Inspiración\",\"Arqueocete\",\"90%\",\"20%\",\"Expiración\",\"Ballena actual\",\"EL CICLO VITAL\",\"Las ballenas se reproducen en invierno en aguas cálidas. Durante el verano viajan para alimentarse en aguas frías. Tienen una cría cada tres años.\",\"INVIERNO\",\"AGUAS CÁLIDAS\",\"Territorio de reproducción\",\"12\",\"Parto\",\"Concepción\",\"Embarazo\",\"Amamantamiento\",\"Mitad del embarazo\",\"Separación de la madre\",\"18\",\"Territorio de alimentación\",\"AGUAS FRÍAS\",\"VERANO\",\"Descanso\",\"Cría la ballena vuelve a iniciarse el ciclo, que dura tres años.\",\"Durante el período de alimentación aumentan de peso hasta un 40%. La grasa almacenada les permite sobrevivir a los inviernos, cuando ayunan, y sirve como aislante térmico.\",\"Ni tan grande ni tan pequeña\",\"BALLENA AZUL. La más grande.\",\"32 m\",\"FRANCA AUSTRAL\",\"Amenazada de extinción\",\"17 cm\",\"El espesor varía según la zona del cuerpo.\",\"40 cm\",\"FRANCA PIGMEA.\",\"La más pequeña.\",\"6 m\",\"Datos generales\",\"Longitud\",\"Macho\",\"14 m\",\"Hembra\",\"16 m\",\"Al nacer\",\"5 m\",\"Aleta caudal\",\"5 m\",\"Peso de un adulto\",\"40 tn\",\"El equivalente a 10 elefantes\",\"Peso al nacer\",\"2,5 tn\",\"Tiempo de vida\",\"60 años\",\"Velocidad\",\"30 km/h\",\"Profundidad de descenso\",\"300 m\",\"Restos de huesos pélvicos. En embriones de 2 cm se pueden apreciar adosados a la columna. Luego, cuando crece, se disipan.\",\"¿A DÓNDE EMIGRAN?\",\"Las zonas donde viven en verano siguen siendo un misterio. Sin embargo, las áreas donde fueron cazadas, hasta su prohibición, permiten suponer que viven entre los paralelos 20 y 60.\",\"Registros de captura, 1785-1913\",\"380.000\",\"180.000\",\"Una lenta recuperación\",\"En todo el mundo\",\"En este período fueron cazadas hasta casi su extinción\",\"1.000\",\"1800\",\"1995\",\"En la Península Valdés\",\"La población se duplica cada diez años. Cada temporada crece un 7%\",\"250\",\"500\",\"1965\",\"1995\",\"Según distintas estimaciones\",\"Infografía: JAIME SERRA\",\"COMO COMEN\",\"1 Nadando a poca velocidad con la boca abierta.\",\"2 Se comida entre con el agua.\",\"3 El agua es expulsada con la lengua a través de las barbas, donde queda atrapada la comida.\",\"Mancha ventral de color blanco que caracteriza a la especie.\",\"Escápula\",\"Húmero\",\"Radio\",\"Cúbito\",\"Carpas\",\"Metacarpianos\",\"Falanges\",\"ALETA PECTORAL\",\"Aparentemente es muy diferente de la pata de un mamífero. Pero su estructura es muy parecida. Tiene los mismos huesos, pero adaptados al agua.\",\"Fuente: Guillermo Harris, Patagonia Natural, Ballenas y delfines, vistas y sonidos. Susana R. Burman, Dios Ediciones, Casa Provincial del Chubut.\"],\"elementos_visuales\":[\"ilustración principal de una ballena franca en tonos marrones y grises, con manchas blancas\",\"ilustraciones de cráneos de ballena (arqueocete y ballena actual)\",\"diagrama de barras para 'Inspiración' y 'Expiración'\",\"diagrama de ciclo vital con líneas curvas rojas y azules y números\",\"siluetas de tres tipos de ballenas (azul, franca austral, pigmea) con sus longitudes\",\"icono de una persona para comparación de tamaño\",\"ilustración de una barba de ballena\",\"ilustración de krill\",\"ilustraciones del proceso de alimentación de la ballena\",\"ilustración de la estructura ósea de la aleta pectoral\",\"mapa mundial con puntos rojos indicando zonas de captura\",\"gráficos de barras para la recuperación de la población de ballenas\"],\"reglas_para_replicar\":[\"Utilizar una ilustración central dominante de la especie principal, con un estilo de dibujo detallado y tonos realistas.\",\"Organizar la información en bloques de texto y gráficos alrededor de la ilustración central, manteniendo un equilibrio visual.\",\"Emplear un fondo con textura de papel envejecido o pergamino para dar un aspecto clásico y natural.\",\"Usar una paleta de colores cálidos y terrosos (beige, marrón, ocre, gris) con toques de color (rojo, azul) para resaltar información clave en diagramas.\",\"Combinar tipografías serif para títulos y sans-serif para el cuerpo del texto, variando tamaños y pesos para establecer jerarquía.\",\"Incluir ilustraciones detalladas y científicamente precisas de elementos relacionados con el tema (anatomía, alimentación, evolución).\",\"Utilizar diagramas de flujo, ciclos y gráficos de barras para presentar datos complejos de manera clara y concisa.\",\"Emplear líneas finas y flechas como conectores para guiar la vista del lector y señalar elementos en las ilustraciones.\",\"Mantener una densidad visual media, con suficiente espacio en blanco para evitar la saturación, pero con abundante información en cada bloque.\"],\"elementos_que_no_deben_copiarse\":[\"marcas de agua\",\"logotipos\",\"texto temático original\"],\"archivo\":\"media_1982728df15a0655daa969a56ada47a87897dfcc6.png\",\"medidas\":{\"width\":750,\"height\":460,\"aspectRatio\":\"1.630\"},\"paleta_local\":[\"#e0c0a0\",\"#e0e0c0\",\"#c0a080\",\"#c0c0a0\",\"#e0e0a0\",\"#ffe0c0\",\"#806060\"]}. Contenido libre del usuario: quiero que el sujeto principal sea un podenco canario.. Título exacto: Podenco Canario. Subtítulo exacto: Sin subtítulo obligatorio. Secciones exactas (una por línea, separadas por |): Organiza el contenido libre en secciones claras. Público: Público general. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.",
+            "reference": "media_1982728df15a0655daa969a56ada47a87897dfcc6.png",
+            "analysis": {
+                "tipo": "infografia",
+                "idioma_detectado": "es",
+                "titulo_detectado": "La ballena Franca",
+                "tema_detectado": "Biología y comportamiento de la ballena franca",
+                "estructura": {
+                    "orientacion": "horizontal",
+                    "composicion": "multibloque con una ilustración central dominante",
+                    "flujo_lectura": "de izquierda a derecha y de arriba hacia abajo, con la ilustración de la ballena como eje central",
+                    "numero_bloques": 13,
+                    "zonas": [
+                        {
+                            "posicion": "superior izquierda",
+                            "funcion": "título principal y descripción general",
+                            "contenido_resumido": "Título 'La ballena Franca' y texto introductorio sobre la especie."
+                        },
+                        {
+                            "posicion": "superior izquierda, debajo del título",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Cédula de identidad con datos de avistamientos."
+                        },
+                        {
+                            "posicion": "media izquierda",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'Las barbas' con descripción y comparación de tamaño."
+                        },
+                        {
+                            "posicion": "inferior izquierda",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'El almuerzo' y 'Cómo comen' con ilustraciones de krill y proceso de alimentación."
+                        },
+                        {
+                            "posicion": "superior central",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'Cómo respiran' con evolución y proceso de respiración."
+                        },
+                        {
+                            "posicion": "superior central derecha",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'El ciclo vital' con diagrama de fases de reproducción y alimentación."
+                        },
+                        {
+                            "posicion": "superior derecha",
+                            "funcion": "comparación de tamaño",
+                            "contenido_resumido": "Sección 'Ni tan grande ni tan pequeña' con siluetas de diferentes ballenas."
+                        },
+                        {
+                            "posicion": "media derecha",
+                            "funcion": "datos estadísticos",
+                            "contenido_resumido": "Sección 'Datos generales' con tabla de medidas y características."
+                        },
+                        {
+                            "posicion": "central inferior",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección 'Aleta pectoral' con ilustración de la estructura ósea."
+                        },
+                        {
+                            "posicion": "inferior central",
+                            "funcion": "información detallada",
+                            "contenido_resumido": "Sección '¿A dónde emigran?' con mapa de rutas migratorias."
+                        },
+                        {
+                            "posicion": "inferior derecha",
+                            "funcion": "datos estadísticos",
+                            "contenido_resumido": "Sección 'Una lenta recuperación' con gráficos de población."
+                        },
+                        {
+                            "posicion": "inferior derecha",
+                            "funcion": "fuente",
+                            "contenido_resumido": "Fuente de la información."
+                        },
+                        {
+                            "posicion": "central",
+                            "funcion": "ilustración principal",
+                            "contenido_resumido": "Gran ilustración de una ballena franca."
+                        }
+                    ]
+                },
+                "estilo": {
+                    "medio": "impreso",
+                    "paleta_aproximada": [
+                        "#e0c0a0",
+                        "#e0e0c0",
+                        "#c0a080",
+                        "#c0c0a0",
+                        "#e0e0a0",
+                        "#ffe0c0",
+                        "#806060"
+                    ],
+                    "tipografia": "serifa para títulos y sans-serif para el cuerpo del texto, con variaciones de tamaño y negrita para jerarquía",
+                    "formas": "rectangulares para bloques de texto, circulares y ovaladas para diagramas de ciclo, siluetas de animales",
+                    "iconografia": "ilustraciones detalladas de ballenas, krill, estructuras óseas, mapas, gráficos de barras, iconos de personas y animales",
+                    "fondo": "textura de papel envejecido o pergamino en tonos beige y marrón claro",
+                    "conectores": "líneas finas para señalar partes de ilustraciones, flechas para indicar flujo en diagramas, líneas curvas para el ciclo vital"
+                },
+                "texto_visible": [
+                    "La ballena Franca",
+                    "Es una de las 11 especies que hay en el mundo. Todos los años, entre agosto y diciembre, unos 500 ejemplares de ballena Franca Austral llegan a la Península Valdés, en Chubut, para criar a sus ballenatos. Ese es uno de los pocos lugares del mundo donde se las puede ver en su hábitat natural.",
+                    "CEDULA DE IDENTIDAD",
+                    "Para identificarlas se toman fotografías aéreas. La cabeza presenta una serie de callosidades que no varían con el paso del tiempo y son distintas en cada individuo. Así, como si de huellas dactilares se tratara, se han podido identificar y pisar 1.300 animales.",
+                    "Nombre",
+                    "Anna",
+                    "Primer",
+                    "36-10-04",
+                    "avistamiento",
+                    "14.30",
+                    "Número de avistamientos en la Península Valdés",
+                    "LAS BARBAS",
+                    "En lugar de dientes tienen 400 barbas de queratina, un tejido similar al de las uñas humanas.",
+                    "Extremo sujeto a la mandíbula superior.",
+                    "Parte interior desflecada para tamizar la comida.",
+                    "2.6m",
+                    "Comparación de tamaño con una persona",
+                    "EL ALMUERZO",
+                    "6 cm",
+                    "Los grandes bancos de krill son su principal alimento. Una ballena franca es capaz de comer más de 300 kilos en una hora.",
+                    "COMO RESPIRAN",
+                    "Como todos los mamíferos, las ballenas tienen pulmones. Originalmente eran animales terrestres que evolucionaron y se adaptaron al agua. En el esqueleto más antiguo que se conoce, los orificios nasales estaban en el extremo de la cabeza. Luego se fueron desplazando.",
+                    "Inspiración",
+                    "Arqueocete",
+                    "90%",
+                    "20%",
+                    "Expiración",
+                    "Ballena actual",
+                    "EL CICLO VITAL",
+                    "Las ballenas se reproducen en invierno en aguas cálidas. Durante el verano viajan para alimentarse en aguas frías. Tienen una cría cada tres años.",
+                    "INVIERNO",
+                    "AGUAS CÁLIDAS",
+                    "Territorio de reproducción",
+                    "12",
+                    "Parto",
+                    "Concepción",
+                    "Embarazo",
+                    "Amamantamiento",
+                    "Mitad del embarazo",
+                    "Separación de la madre",
+                    "18",
+                    "Territorio de alimentación",
+                    "AGUAS FRÍAS",
+                    "VERANO",
+                    "Descanso",
+                    "Cría la ballena vuelve a iniciarse el ciclo, que dura tres años.",
+                    "Durante el período de alimentación aumentan de peso hasta un 40%. La grasa almacenada les permite sobrevivir a los inviernos, cuando ayunan, y sirve como aislante térmico.",
+                    "Ni tan grande ni tan pequeña",
+                    "BALLENA AZUL. La más grande.",
+                    "32 m",
+                    "FRANCA AUSTRAL",
+                    "Amenazada de extinción",
+                    "17 cm",
+                    "El espesor varía según la zona del cuerpo.",
+                    "40 cm",
+                    "FRANCA PIGMEA.",
+                    "La más pequeña.",
+                    "6 m",
+                    "Datos generales",
+                    "Longitud",
+                    "Macho",
+                    "14 m",
+                    "Hembra",
+                    "16 m",
+                    "Al nacer",
+                    "5 m",
+                    "Aleta caudal",
+                    "5 m",
+                    "Peso de un adulto",
+                    "40 tn",
+                    "El equivalente a 10 elefantes",
+                    "Peso al nacer",
+                    "2,5 tn",
+                    "Tiempo de vida",
+                    "60 años",
+                    "Velocidad",
+                    "30 km/h",
+                    "Profundidad de descenso",
+                    "300 m",
+                    "Restos de huesos pélvicos. En embriones de 2 cm se pueden apreciar adosados a la columna. Luego, cuando crece, se disipan.",
+                    "¿A DÓNDE EMIGRAN?",
+                    "Las zonas donde viven en verano siguen siendo un misterio. Sin embargo, las áreas donde fueron cazadas, hasta su prohibición, permiten suponer que viven entre los paralelos 20 y 60.",
+                    "Registros de captura, 1785-1913",
+                    "380.000",
+                    "180.000",
+                    "Una lenta recuperación",
+                    "En todo el mundo",
+                    "En este período fueron cazadas hasta casi su extinción",
+                    "1.000",
+                    "1800",
+                    "1995",
+                    "En la Península Valdés",
+                    "La población se duplica cada diez años. Cada temporada crece un 7%",
+                    "250",
+                    "500",
+                    "1965",
+                    "1995",
+                    "Según distintas estimaciones",
+                    "Infografía: JAIME SERRA",
+                    "COMO COMEN",
+                    "1 Nadando a poca velocidad con la boca abierta.",
+                    "2 Se comida entre con el agua.",
+                    "3 El agua es expulsada con la lengua a través de las barbas, donde queda atrapada la comida.",
+                    "Mancha ventral de color blanco que caracteriza a la especie.",
+                    "Escápula",
+                    "Húmero",
+                    "Radio",
+                    "Cúbito",
+                    "Carpas",
+                    "Metacarpianos",
+                    "Falanges",
+                    "ALETA PECTORAL",
+                    "Aparentemente es muy diferente de la pata de un mamífero. Pero su estructura es muy parecida. Tiene los mismos huesos, pero adaptados al agua.",
+                    "Fuente: Guillermo Harris, Patagonia Natural, Ballenas y delfines, vistas y sonidos. Susana R. Burman, Dios Ediciones, Casa Provincial del Chubut."
+                ],
+                "elementos_visuales": [
+                    "ilustración principal de una ballena franca en tonos marrones y grises, con manchas blancas",
+                    "ilustraciones de cráneos de ballena (arqueocete y ballena actual)",
+                    "diagrama de barras para 'Inspiración' y 'Expiración'",
+                    "diagrama de ciclo vital con líneas curvas rojas y azules y números",
+                    "siluetas de tres tipos de ballenas (azul, franca austral, pigmea) con sus longitudes",
+                    "icono de una persona para comparación de tamaño",
+                    "ilustración de una barba de ballena",
+                    "ilustración de krill",
+                    "ilustraciones del proceso de alimentación de la ballena",
+                    "ilustración de la estructura ósea de la aleta pectoral",
+                    "mapa mundial con puntos rojos indicando zonas de captura",
+                    "gráficos de barras para la recuperación de la población de ballenas"
+                ],
+                "reglas_para_replicar": [
+                    "Utilizar una ilustración central dominante de la especie principal, con un estilo de dibujo detallado y tonos realistas.",
+                    "Organizar la información en bloques de texto y gráficos alrededor de la ilustración central, manteniendo un equilibrio visual.",
+                    "Emplear un fondo con textura de papel envejecido o pergamino para dar un aspecto clásico y natural.",
+                    "Usar una paleta de colores cálidos y terrosos (beige, marrón, ocre, gris) con toques de color (rojo, azul) para resaltar información clave en diagramas.",
+                    "Combinar tipografías serif para títulos y sans-serif para el cuerpo del texto, variando tamaños y pesos para establecer jerarquía.",
+                    "Incluir ilustraciones detalladas y científicamente precisas de elementos relacionados con el tema (anatomía, alimentación, evolución).",
+                    "Utilizar diagramas de flujo, ciclos y gráficos de barras para presentar datos complejos de manera clara y concisa.",
+                    "Emplear líneas finas y flechas como conectores para guiar la vista del lector y señalar elementos en las ilustraciones.",
+                    "Mantener una densidad visual media, con suficiente espacio en blanco para evitar la saturación, pero con abundante información en cada bloque."
+                ],
+                "elementos_que_no_deben_copiarse": [
+                    "marcas de agua",
+                    "logotipos",
+                    "texto temático original"
+                ],
+                "archivo": "media_1982728df15a0655daa969a56ada47a87897dfcc6.png",
+                "medidas": {
+                    "width": 750,
+                    "height": 460,
+                    "aspectRatio": "1.630"
+                },
+                "paleta_local": [
+                    "#e0c0a0",
+                    "#e0e0c0",
+                    "#c0a080",
+                    "#c0c0a0",
+                    "#e0e0a0",
+                    "#ffe0c0",
+                    "#806060"
+                ]
+            },
+            "aspectRatio": "16:9"
+        },
+        "createdAt": "2026-08-23T16:24:28.422Z",
+        "imageFile": "h_mt60p5hi",
+        "imageUrl": "./history_data/h_mt60p5hi.png"
+    }
+]

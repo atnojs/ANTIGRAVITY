@@ -1,0 +1,92 @@
+[
+    {
+        "id": "clases-de-baile010-ritmo-de-media-noche",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "clases-de-baile/010-ritmo-de-media-noche"
+        },
+        "createdAt": "2026-08-30T14:20:28.613Z"
+    },
+    {
+        "id": "primos003-la-prima-del-pueblo",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "primos/003-la-prima-del-pueblo"
+        },
+        "createdAt": "2026-08-06T18:01:24.457Z"
+    },
+    {
+        "id": "desconocidos001-el-ultimo-tren",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "desconocidos/001-el-ultimo-tren"
+        },
+        "createdAt": "2026-07-27T20:51:03.001Z"
+    },
+    {
+        "id": "cunados005-carne-de-familia",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "cunados/005-carne-de-familia"
+        },
+        "createdAt": "2026-07-22T18:58:36.886Z"
+    },
+    {
+        "id": "cunados004-la-visita-del-finde",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "cunados/004-la-visita-del-finde"
+        },
+        "createdAt": "2026-07-22T18:58:28.284Z"
+    },
+    {
+        "id": "cunados003-el-ultimo-verano",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "cunados/003-el-ultimo-verano"
+        },
+        "createdAt": "2026-07-22T18:58:19.294Z"
+    },
+    {
+        "id": "cunados002-dias-contados",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "cunados/002-dias-contados"
+        },
+        "createdAt": "2026-07-22T18:58:11.102Z"
+    },
+    {
+        "id": "cunados001-la-casa-de-la-playa-en-septiembre",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "cunados/001-la-casa-de-la-playa-en-septiembre"
+        },
+        "createdAt": "2026-07-22T18:58:01.830Z"
+    },
+    {
+        "id": "primos002-la-boda-de-la-prima",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "primos/002-la-boda-de-la-prima"
+        },
+        "createdAt": "2026-07-22T18:57:48.496Z"
+    },
+    {
+        "id": "primos001-mi-prima-la-de-valencia",
+        "app": "relatos-read-01",
+        "type": "read",
+        "data": {
+            "storyId": "primos/001-mi-prima-la-de-valencia"
+        },
+        "createdAt": "2026-07-22T18:57:39.658Z"
+    }
+]

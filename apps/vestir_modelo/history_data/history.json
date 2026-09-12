@@ -1,0 +1,26 @@
+[
+    {
+        "id": "h_1784045089645_hpcoq61opjw1r",
+        "app": "vestir_modelo",
+        "type": "image",
+        "data": {
+            "prompt": "Neón y Noche",
+            "description": "Ciudad de noche, luces de neón."
+        },
+        "createdAt": "2026-07-14T16:04:49.645Z",
+        "imageFile": "h_1784045089645_hpcoq61opjw1r",
+        "imageUrl": "./history_data/h_1784045089645_hpcoq61opjw1r.png"
+    },
+    {
+        "id": "h_1784044846607_vbckdqm1fha0",
+        "app": "vestir_modelo",
+        "type": "image",
+        "data": {
+            "prompt": "Paseo por el Parque",
+            "description": "Estilo casual y espontáneo."
+        },
+        "createdAt": "2026-07-14T16:00:46.607Z",
+        "imageFile": "h_1784044846607_vbckdqm1fha0",
+        "imageUrl": "./history_data/h_1784044846607_vbckdqm1fha0.png"
+    }
+]

@@ -1,0 +1,145 @@
+[
+    {
+        "id": "h_1785279376348_1fyg393ih3aft",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "ChatGPT Image 28 jul 2026, 22_53_19.webp",
+            "mime": "image/webp",
+            "size": 71944
+        },
+        "createdAt": "2026-07-28T22:56:16.348Z",
+        "imageFile": "h_1785279376348_1fyg393ih3aft",
+        "imageUrl": "./history_data/h_1785279376348_1fyg393ih3aft.webp"
+    },
+    {
+        "id": "h_1784229757823_pg373m1yukfzl",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.jpg",
+            "mime": "image/jpeg",
+            "size": 60773
+        },
+        "createdAt": "2026-07-16T19:22:37.823Z",
+        "imageFile": "h_1784229757823_pg373m1yukfzl",
+        "imageUrl": "./history_data/h_1784229757823_pg373m1yukfzl.jpg"
+    },
+    {
+        "id": "h_1784229697664_12x7jl21tiyoyf",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.webp",
+            "mime": "image/webp",
+            "size": 589940
+        },
+        "createdAt": "2026-07-16T19:21:37.664Z",
+        "imageFile": "h_1784229697664_12x7jl21tiyoyf",
+        "imageUrl": "./history_data/h_1784229697664_12x7jl21tiyoyf.webp"
+    },
+    {
+        "id": "h_1784225043875_1bpbkuqvz59n",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.png",
+            "mime": "image/png",
+            "size": 2131234
+        },
+        "createdAt": "2026-07-16T18:04:03.875Z",
+        "imageFile": "h_1784225043875_1bpbkuqvz59n",
+        "imageUrl": "./history_data/h_1784225043875_1bpbkuqvz59n.png"
+    },
+    {
+        "id": "h_1784224986625_1iataq51iq13xr",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.png",
+            "mime": "image/png",
+            "size": 2131234
+        },
+        "createdAt": "2026-07-16T18:03:06.625Z",
+        "imageFile": "h_1784224986625_1iataq51iq13xr",
+        "imageUrl": "./history_data/h_1784224986625_1iataq51iq13xr.png"
+    },
+    {
+        "id": "h_1784224471594_1idcvt91j4u9gk",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.jpg",
+            "mime": "image/jpeg",
+            "size": 49820
+        },
+        "createdAt": "2026-07-16T17:54:31.594Z",
+        "imageFile": "h_1784224471594_1idcvt91j4u9gk",
+        "imageUrl": "./history_data/h_1784224471594_1idcvt91j4u9gk.jpg"
+    },
+    {
+        "id": "h_1784224343001_mbzjtq9bbkfm",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.webp",
+            "mime": "image/webp",
+            "size": 50480
+        },
+        "createdAt": "2026-07-16T17:52:23.002Z",
+        "imageFile": "h_1784224343001_mbzjtq9bbkfm",
+        "imageUrl": "./history_data/h_1784224343001_mbzjtq9bbkfm.webp"
+    },
+    {
+        "id": "h_1784223974615_m9prfj1vztt0c",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.png",
+            "mime": "image/png",
+            "size": 5875
+        },
+        "createdAt": "2026-07-16T17:46:14.615Z",
+        "imageFile": "h_1784223974615_m9prfj1vztt0c",
+        "imageUrl": "./history_data/h_1784223974615_m9prfj1vztt0c.png"
+    },
+    {
+        "id": "h_1784223845267_1nys4hireibth",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagfe.jpg",
+            "mime": "image/jpeg",
+            "size": 2741
+        },
+        "createdAt": "2026-07-16T17:44:05.267Z",
+        "imageFile": "h_1784223845267_1nys4hireibth",
+        "imageUrl": "./history_data/h_1784223845267_1nys4hireibth.jpg"
+    },
+    {
+        "id": "h_1784222119855_dofjqq19rc7xm",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagtte.jpg",
+            "mime": "image/jpeg",
+            "size": 215779
+        },
+        "createdAt": "2026-07-16T17:15:19.855Z",
+        "imageFile": "h_1784222119855_dofjqq19rc7xm",
+        "imageUrl": "./history_data/h_1784222119855_dofjqq19rc7xm.jpg"
+    },
+    {
+        "id": "h_1784222119650_czs9s1o19tfd",
+        "app": "conversor_multimedia",
+        "type": "image",
+        "data": {
+            "name": "imagfe.jpg",
+            "mime": "image/jpeg",
+            "size": 311742
+        },
+        "createdAt": "2026-07-16T17:15:19.650Z",
+        "imageFile": "h_1784222119650_czs9s1o19tfd",
+        "imageUrl": "./history_data/h_1784222119650_czs9s1o19tfd.jpg"
+    }
+]
