@@ -4,14 +4,15 @@
  * 🎨 ESTILO JSON — PROXY PHP (Multi-Backend)
  * Flujo:
  *   1) analizarEstilo : imagen de referencia -> JSON de estilo
- *                       (visión: Gemini o OpenRouter gpt-4o-mini)
+ *                       (visión: Gemini gemini-3.8-flash / OpenRouter gemini-3.8-flash)
  *   2) mejorarPrompt  : DeepSeek (texto) afina las instrucciones extra
  *   3) aplicarEstilo  : imagen del sujeto + JSON de estilo -> nueva imagen
- *                       ┌─ flux-pro / flux-max → BFL async (submit+poll)
+ *                       ┌─ openai-medium/high/xhigh/max-flare/max-sunburst → gpt-image-2.5-flare/sunburst (edits)
  *                       └─ gemini-flash / gemini-pro → OpenRouter sync
+ * FLUX quedó FUERA de la lista blanca (400 "Modelo no soportado").
  *
  * Claves (cascada, fuente real = SetEnv del .htaccess raíz de Hostinger):
- *   F                  -> FLUX / Black Forest Labs (generar imagen)
+ *   OPENAI_API_KEY / O -> OpenAI Images (gpt-image-2.5)
  *   A                  -> Gemini (visión para analizar el estilo)
  *   OPENROUTNER_API_KEY / C -> OpenRouter (Gemini img + visión respaldo)
  *   B / DEEPSEEK_API_KEY -> DeepSeek (texto, Mejorar Prompt)
@@ -118,7 +119,6 @@ try {
     }
 
     $task = $json['task'] ?? '';
-    if ($task === 'aplicarEstilo') ag_image_response($json, __DIR__);
 
     // Helper genérico de POST JSON
     $callApi = function ($url, $body, $headers, $timeout = 60) {
@@ -200,9 +200,8 @@ try {
                     'temperature' => 0.4,
                 ],
             ];
-            // Varios modelos como respaldo: el 2.5-flash directo da 404 a cuentas nuevas;
-            // si uno está saturado (429/503) probamos el siguiente automáticamente.
-            $gemModelos = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash-lite'];
+            // §6: análisis de texto/visión con Gemini 3.8 Flash (Google directo).
+            $gemModelos = ['gemini-3.8-flash'];
             $lastMsg = '';
             $lastStatus = 502;
             foreach ($gemModelos as $model) {
@@ -228,7 +227,7 @@ try {
             }
         }
 
-        // ---- Respaldo: OpenRouter gpt-4o-mini (json_object) ----
+        // ---- Respaldo: OpenRouter gemini-3.8-flash (json_object) (§6) ----
         if ($estilo === null && !empty($orKey)) {
             $dataUrl = 'data:' . $mimeType . ';base64,' . $pureB64;
             $sysText = 'Eres un analista visual experto. ' . $instruccion
@@ -237,7 +236,7 @@ try {
             [$status, $data] = $callApi(
                 'https://openrouter.ai/api/v1/chat/completions',
                 [
-                    'model' => 'openai/gpt-4o-mini',
+                    'model' => 'google/gemini-3.8-flash',
                     'response_format' => ['type' => 'json_object'],
                     'messages' => [
                         ['role' => 'system', 'content' => $sysText],
@@ -343,16 +342,35 @@ try {
     // TAREA 3: APLICAR ESTILO (FLUX 2 img2img o Gemini vía OpenRouter)
     // ═══════════════════════════════════════════════
     if ($task === 'aplicarEstilo') {
-        // ── Modelo unificado: model (nuevo) o calidad (backward compat).
-        // Fallback seguro: Gemini 3.1 Flash.
-        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'gemini-flash'));
+        // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. FLUX rechazado. ──
+        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'openai-medium'));
+        $modelCatalog = [
+            'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+            'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+            'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+            'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+            'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+            'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+            'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+        ];
+        if (!isset($modelCatalog[$reqModel])) {
+            throw new Exception('Modelo no soportado.', 400);
+        }
+        $selectedModel = $modelCatalog[$reqModel];
+        $isOpenAI = ($selectedModel['backend'] === 'openai');
+        $isGemini = ($selectedModel['backend'] === 'gemini');
 
-        // ── Despacho: flux-* → BFL async, gemini-* → OpenRouter sync ──
-        $isFlux   = (strpos($reqModel, 'flux') === 0);
-        $isGemini = (strpos($reqModel, 'gemini') === 0);
-
-        if ($isFlux && empty($fluxKey)) {
-            throw new Exception('API Key de FLUX (F) no configurada.', 401);
+        if ($isOpenAI) {
+            $openaiKey = '';
+            if (defined('O')) $openaiKey = O;
+            elseif (defined('OPENAI_API_KEY')) $openaiKey = OPENAI_API_KEY;
+            foreach (['OPENAI_API_KEY', 'REDIRECT_OPENAI_API_KEY', 'O', 'REDIRECT_O'] as $v) {
+                if (!empty($openaiKey)) break;
+                $openaiKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
+            }
+            if (empty($openaiKey)) {
+                throw new Exception('API Key de OpenAI (OPENAI_API_KEY/O) no configurada.', 401);
+            }
         }
         if ($isGemini && empty($orKey)) {
             throw new Exception('API Key de OpenRouter (Gemini) no configurada.', 401);
@@ -424,89 +442,83 @@ try {
             if ($w >= $h) $w -= 32; else $h -= 32;
         }
 
-        // ═══ RAMA FLUX (BFL async: submit + polling + download) ═══
-        if ($isFlux) {
-            $FLUX_MODELOS = ['flux-pro' => 'flux-2-pro', 'flux-max' => 'flux-2-max'];
-            $endpoint = $FLUX_MODELOS[$reqModel] ?? 'flux-2-pro';
+        // ═══ RAMA OPENAI (GPT Image 2.5: /v1/images/edits con el sujeto como referencia) ═══
+        if ($isOpenAI) {
+            $tmpPath = tempnam(sys_get_temp_dir(), 'openai_img_');
+            if ($tmpPath === false || file_put_contents($tmpPath, $decoded) === false) {
+                if ($tmpPath !== false) @unlink($tmpPath);
+                throw new Exception('No se pudo preparar la imagen para OpenAI.', 500);
+            }
 
-            $payload = [
-                'prompt' => $fullPrompt,
-                'width'  => $w,
-                'height' => $h,
-                'input_image' => $subject,
-                'output_format' => 'jpeg',
+            // Tamaño WxH: múltiplos de 16 y presupuesto mínimo de 1.048.576 px.
+            $oaiW = $w; $oaiH = $h;
+            if ($oaiW * $oaiH < 1048576) {
+                $scale = sqrt(1048576 / ($oaiW * $oaiH));
+                $oaiW = max(16, (int)(round($oaiW * $scale / 16) * 16));
+                $oaiH = max(16, (int)(round($oaiH * $scale / 16) * 16));
+            }
+
+            $fields = [
+                'model'   => $selectedModel['model'],
+                'prompt'  => $fullPrompt,
+                'quality' => $selectedModel['quality'],
+                'size'    => $oaiW . 'x' . $oaiH,
+                'image[]' => new CURLFile($tmpPath, 'image/jpeg', 'sujeto.jpg'),
             ];
-
-            // 1) ENVIAR TAREA
-            [$submitCode, $submit] = $callApi(
-                'https://api.bfl.ai/v1/' . $endpoint,
-                $payload,
-                ['Content-Type: application/json', 'accept: application/json', 'x-key: ' . $fluxKey],
-                30
-            );
-            if ($submitCode !== 200) {
-                $em = $submit['detail'] ?? ('HTTP ' . $submitCode);
-                if (is_array($em)) $em = json_encode($em);
-                throw new Exception('FLUX: ' . $em, $submitCode);
-            }
-            $pollUrl = $submit['polling_url'] ?? '';
-            $costCreditos = (float) ($submit['cost'] ?? 0);
-            if ($pollUrl === '') {
-                throw new Exception('FLUX no devolvió polling_url.', 502);
-            }
-
-            // 2) POLLING hasta Ready (máx ~90s)
-            $imageUrl = '';
-            for ($i = 0; $i < 60; $i++) {
-                usleep(1500000);
-                $ch = curl_init($pollUrl);
-                curl_setopt_array($ch, [
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_HTTPHEADER => ['accept: application/json', 'x-key: ' . $fluxKey],
-                    CURLOPT_TIMEOUT => 20,
-                    CURLOPT_SSL_VERIFYPEER => true,
-                ]);
-                $pollResp = curl_exec($ch);
-                $pollCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                if ($pollCode !== 200) continue;
-                $pr = json_decode($pollResp, true);
-                $st = $pr['status'] ?? '';
-                if ($st === 'Ready') {
-                    $imageUrl = $pr['result']['sample'] ?? '';
-                    break;
-                }
-                if (in_array($st, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
-                    throw new Exception('FLUX rechazó la tarea: ' . $st, 422);
-                }
-            }
-            if ($imageUrl === '') {
-                throw new Exception('FLUX tardó demasiado en generar la imagen. Inténtalo de nuevo.', 504);
-            }
-
-            // 3) Descargar la imagen y devolver como data URL
-            $ch = curl_init($imageUrl);
+            $ch = curl_init('https://api.openai.com/v1/images/edits');
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 60,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $fields,
+                CURLOPT_HTTPHEADER => ['Authorization: *** ' . $openaiKey],
+                CURLOPT_TIMEOUT => 180,
+                CURLOPT_CONNECTTIMEOUT => 20,
                 CURLOPT_SSL_VERIFYPEER => true,
             ]);
-            $imgBin = curl_exec($ch);
-            $imgType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/jpeg';
-            $imgOk = (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200);
+            $resp = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $err = curl_error($ch);
             curl_close($ch);
+            @unlink($tmpPath);
 
-            if (!$imgOk || $imgBin === false || $imgBin === '') {
-                throw new Exception('No se pudo descargar la imagen generada por FLUX.', 502);
+            if ($resp === false) {
+                throw new Exception('Error de conexión con OpenAI: ' . $err, 502);
+            }
+            $jr = json_decode((string)$resp, true);
+            if ($code >= 400 || !is_array($jr)) {
+                $message = is_array($jr) ? (string)($jr['error']['message'] ?? ('HTTP ' . $code)) : ('HTTP ' . $code);
+                throw new Exception('OpenAI: ' . $message, $code >= 400 ? $code : 502);
+            }
+
+            $imageData = (string)($jr['data'][0]['b64_json'] ?? '');
+            $mimeOut = 'image/png';
+            if ($imageData === '' && !empty($jr['data'][0]['url'])) {
+                $ch = curl_init((string)$jr['data'][0]['url']);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_TIMEOUT => 60,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                ]);
+                $download = curl_exec($ch);
+                $downloadType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+                curl_close($ch);
+                if (is_string($download) && $download !== '') {
+                    $imageData = base64_encode($download);
+                    if (is_string($downloadType) && strpos($downloadType, 'image/') === 0) $mimeOut = $downloadType;
+                }
+            }
+            if ($imageData === '') {
+                throw new Exception('OpenAI no devolvió ninguna imagen.', 502);
             }
 
             echo json_encode([
                 'success'  => true,
-                'imageUrl' => 'data:' . $imgType . ';base64,' . base64_encode($imgBin),
-                'coste'    => $costCreditos * 0.01,
+                'imageUrl' => 'data:' . $mimeOut . ';base64,' . $imageData,
+                'coste'    => 0,
                 'modelo'   => $reqModel,
-                'width'    => $w,
-                'height'   => $h,
+                'width'    => $oaiW,
+                'height'   => $oaiH,
             ]);
             exit;
         }

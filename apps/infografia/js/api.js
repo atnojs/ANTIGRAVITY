@@ -69,7 +69,7 @@ FUENTE APORTADA: ${source || 'No aportada'}`;
           action: 'generate-text',
           system: systemPrompt,
           prompt: userPrompt,
-          model: 'openai/gpt-4o-mini'
+          model: 'google/gemini-3.8-flash'
         })
       });
       const json = await resp.json();
@@ -89,7 +89,7 @@ FUENTE APORTADA: ${source || 'No aportada'}`;
       data = await this.callAPI(
         'https://openrouter.ai/api/v1/chat/completions',
         apiKey,
-        'openai/gpt-4o-mini',
+        'google/gemini-3.8-flash',
         systemPrompt,
         userPrompt,
         true

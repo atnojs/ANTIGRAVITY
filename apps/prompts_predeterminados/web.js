@@ -93,7 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
     const modelLabels = {
         'openai-medium': 'MEDIUM',
-        'openai-high': 'HIGHT',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO'
     };

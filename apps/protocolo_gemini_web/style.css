@@ -325,3 +325,65 @@ h3 {
         transform: rotate(360deg);
     }
 }
+
+/* ════
+   SELECTOR DE MODELO IA (canónico 7 botones)
+   ════ */
+.model-provider-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.model-provider-column {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.model-provider-title {
+    color: var(--text-dim);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.model-toggle-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+}
+
+.model-toggle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.model-toggle:hover {
+    color: var(--text-main);
+    border-color: var(--glass-border);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.model-toggle.active {
+    background: var(--accent-gradient);
+    color: #ccffff;
+    text-shadow: 0 0 8px var(--neon-blue);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-neon);
+}

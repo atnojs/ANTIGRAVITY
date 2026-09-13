@@ -19,7 +19,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php'; // Proxy PHP para Gemini
-    const GEMINI_MODEL = 'gemini-3.1-flash-image-preview'; // Modelo con generación de imagen fiel
+    const GEMINI_MODEL = 'gemini-3.1-flash-image-preview'; // Modelo con generación de imagen fiel (legacy)
+
+    // ===== Selector de modelo IA (catálogo canónico 2.5, 7 botones) =====
+    const MODEL_LABELS = {
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO'
+    };
+    let selectedModel = 'openai-medium';
+
+    function initModelSelector() {
+        const buttons = document.querySelectorAll('#generator-modal .model-toggle');
+        buttons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const next = btn.dataset.model;
+                if (!MODEL_LABELS[next]) return;
+                selectedModel = next;
+                buttons.forEach((b) => {
+                    const on = b.dataset.model === next;
+                    b.classList.toggle('active', on);
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+            });
+        });
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM
@@ -692,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Usar el proxy PHP
         const requestBody = {
-            model: GEMINI_MODEL,
+            model: selectedModel,
             prompt: `INSTRUCCIONES CRÍTICAS OBLIGATORIAS:
 
 1. IDENTIDAD FACIAL: La cara del sujeto en el resultado DEBE ser IDÉNTICA a la cara de la imagen de referencia. Preserva TODOS los rasgos faciales exactos: ojos, nariz, boca, forma de cara, arrugas, expresión. La similitud facial es LA PRIORIDAD MÁXIMA.
@@ -828,5 +856,6 @@ ESTILO A APLICAR: ${prompt}`,
     // ═══════════════════════════════════════════════════════════════
 
     loadState();
+    initModelSelector();
 });
 

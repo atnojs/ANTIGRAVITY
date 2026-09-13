@@ -73,7 +73,18 @@ $MODELOS_IMG = [
     'normal' => 'google/gemini-3.1-flash-image',
     'pro'    => 'google/gemini-3-pro-image',
 ];
-$MODELO_TEXTO = 'google/gemini-3.1-flash';
+$MODELO_TEXTO = 'google/gemini-3.8-flash';
+
+// ===== Clave OpenAI: SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV) =====
+$openaiKey = '';
+foreach ([getenv('OPENAI_API_KEY'), getenv('REDIRECT_OPENAI_API_KEY'), $_SERVER['OPENAI_API_KEY'] ?? '', $_SERVER['REDIRECT_OPENAI_API_KEY'] ?? '', $_ENV['OPENAI_API_KEY'] ?? '', $_ENV['REDIRECT_OPENAI_API_KEY'] ?? ''] as $v) {
+    if (!empty($v)) { $openaiKey = (string)$v; break; }
+}
+if ($openaiKey === '') {
+    foreach ([getenv('O'), getenv('REDIRECT_O'), $_SERVER['O'] ?? '', $_SERVER['REDIRECT_O'] ?? '', $_ENV['O'] ?? '', $_ENV['REDIRECT_O'] ?? ''] as $v) {
+        if (!empty($v)) { $openaiKey = (string)$v; break; }
+    }
+}
 
 $openRouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -149,7 +160,25 @@ if ($accion === 'mejorar') {
 // ACCIÓN: generar / editar imagen
 // ============================================================
 $calidad = $data['calidad'] ?? 'normal';
-$model = $MODELOS_IMG[$calidad] ?? $MODELOS_IMG['normal'];
+
+// ===== Lista blanca exacta de modelos (FLUX fuera) =====
+$CATALOGO = [
+    'openai-medium'       => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-xhigh'        => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-max-sunburst' => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'gemini-flash'        => ['provider' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'          => ['provider' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+];
+$reqModel = strtolower((string)($data['model'] ?? ''));
+if ($reqModel !== '' && !isset($CATALOGO[$reqModel])) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
+    exit;
+}
+$usarCatalogo = isset($CATALOGO[$reqModel]);
+$model = $usarCatalogo ? $CATALOGO[$reqModel]['model'] : ($MODELOS_IMG[$calidad] ?? $MODELOS_IMG['normal']);
 
 // Construir el contenido del mensaje
 if ($accion === 'editar') {
@@ -168,6 +197,104 @@ if ($accion === 'editar') {
     $contenido = [
         ['type' => 'text', 'text' => $prompt],
     ];
+}
+
+// ====================================================================
+// BACKEND: OPENAI GPT IMAGE 2.5 (Images API) — solo modelos openai-*
+// ====================================================================
+if ($usarCatalogo && $CATALOGO[$reqModel]['provider'] === 'openai') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $fields = [
+        'model'   => $CATALOGO[$reqModel]['model'],
+        'prompt'  => $prompt,
+        'quality' => $CATALOGO[$reqModel]['quality'],
+        'size'    => '1024x1024',
+    ];
+    $endpoint = 'https://api.openai.com/v1/images/generations';
+    $headers = ['Authorization: Bearer ' . $openaiKey, 'Content-Type: application/json'];
+    $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $tmp = null;
+    if ($accion === 'editar') {
+        $pure = preg_replace('#^data:[^;]+;base64,#i', '', $imagenEntrada);
+        $mime = 'image/jpeg';
+        if (preg_match('#^data:(image/[a-z0-9.+-]+);base64,#i', $imagenEntrada, $m) === 1) $mime = strtolower($m[1]);
+        $binary = base64_decode($pure, true);
+        if ($binary === false || $binary === '') {
+            http_response_code(400);
+            echo json_encode(['error' => ['message' => 'Imagen de entrada no válida.']]);
+            exit;
+        }
+        $tmp = tempnam(sys_get_temp_dir(), 'openai_img_');
+        if ($tmp === false || file_put_contents($tmp, $binary) === false) {
+            if ($tmp !== false) @unlink($tmp);
+            http_response_code(500);
+            echo json_encode(['error' => ['message' => 'No se pudo preparar la imagen para OpenAI.']]);
+            exit;
+        }
+        $ext = stripos($mime, 'png') !== false ? 'png' : (stripos($mime, 'webp') !== false ? 'webp' : 'jpg');
+        $fields['image[]'] = new CURLFile($tmp, $mime, 'referencia.' . $ext);
+        $endpoint = 'https://api.openai.com/v1/images/edits';
+        $headers = ['Authorization: Bearer ' . $openaiKey];
+        $postFields = $fields;
+    }
+    $ch = curl_init($endpoint);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $postFields,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_TIMEOUT => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
+        CURLOPT_SSL_VERIFYPEER => true,
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+    if ($tmp !== null) @unlink($tmp);
+    if ($curlError) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error de conexión: ' . $curlError]]);
+        exit;
+    }
+    if ($httpCode !== 200) {
+        $errBody = json_decode($response, true);
+        $errMsg = $errBody['error']['message'] ?? 'HTTP ' . $httpCode;
+        if (is_array($errMsg)) $errMsg = json_encode($errMsg);
+        http_response_code($httpCode);
+        echo json_encode(['error' => ['message' => 'OpenAI: ' . $errMsg]]);
+        exit;
+    }
+    $r = json_decode($response, true);
+    $b64 = (string)($r['data'][0]['b64_json'] ?? '');
+    $mimeOut = 'image/png';
+    if ($b64 === '' && !empty($r['data'][0]['url'])) {
+        $ch = curl_init((string)$r['data'][0]['url']);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_TIMEOUT => 60]);
+        $download = curl_exec($ch);
+        $downloadType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        curl_close($ch);
+        if (is_string($download) && $download !== '') {
+            $b64 = base64_encode($download);
+            if (is_string($downloadType) && strpos($downloadType, 'image/') === 0) $mimeOut = $downloadType;
+        }
+    }
+    if ($b64 === '') {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'OpenAI no devolvió ninguna imagen.']]);
+        exit;
+    }
+    echo json_encode([
+        'success' => true,
+        'image'   => 'data:' . $mimeOut . ';base64,' . $b64,
+        'cost'    => 0,
+        'model'   => $CATALOGO[$reqModel]['model'],
+    ]);
+    exit;
 }
 
 $payload = [

@@ -1,9 +1,13 @@
 <?php
 // ============================================================
-// PROXY PHP — Copiar Estilo (dual-backend)
-// Soporta FLUX 2 Pro/Max (BFL, clave F) + Gemini via OpenRouter (clave R).
-// Mantiene compatibilidad con análisis Gemini texto (passthrough).
-// FLUX = asíncrono (submit+poll), Gemini = síncrono (OpenRouter).
+// PROXY PHP — Copiar Estilo (OpenAI GPT Image 2.5 + Gemini)
+// Catálogo canónico (canonical-image-model.php):
+//   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
+//   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
+//   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
+// FLUX quedó FUERA de la lista blanca (400 "Modelo no soportado"); el código
+// FLUX de más abajo se conserva muerto (no alcanzable).
+// Análisis de texto/visión (passthrough Gemini directo, clave A): gemini-3.8-flash.
 // ============================================================
 declare(strict_types=1);
 ini_set('display_errors', '0');
@@ -94,7 +98,7 @@ if (isset($req['contents'])) {
             exit;
         }
 
-        $model = (string)($req['model'] ?? 'gemini-3.1-flash-preview');
+        $model = (string)($req['model'] ?? 'gemini-3.8-flash');
         $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($geminiDirectKey);
 
         $payload = ['contents' => $req['contents']];

@@ -234,6 +234,7 @@
       image: base64Data,
       mimeType: mimeType,
       model: selectedModel,
+      prompt: prompt,
       width: dims.width,
       height: dims.height
     };
@@ -528,10 +529,13 @@
         '<span class="model-selector-label">Modelo IA</span>' +
         '<div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">' +
           '<div class="model-provider-column">' +
-            '<span class="model-provider-title">OPENAI</span>' +
+            '<span class="model-provider-title">OPENAI 2.5</span>' +
             '<div class="model-toggle-group">' +
               '<button id="ai-quality-openai-medium" class="ai-quality-btn model-toggle active" data-model="openai-medium" type="button" title="OpenAI Medium" aria-pressed="true">MEDIUM</button>' +
-              '<button id="ai-quality-openai-high" class="ai-quality-btn model-toggle" data-model="openai-high" type="button" title="OpenAI High" aria-pressed="false">HIGHT</button>' +
+              '<button id="ai-quality-openai-high" class="ai-quality-btn model-toggle" data-model="openai-high" type="button" title="OpenAI High" aria-pressed="false">HIGH</button>' +
+              '<button id="ai-quality-openai-xhigh" class="ai-quality-btn model-toggle" data-model="openai-xhigh" type="button" title="OpenAI XHigh" aria-pressed="false">XHIGH</button>' +
+              '<button id="ai-quality-openai-maxflare" class="ai-quality-btn model-toggle" data-model="openai-max-flare" type="button" title="OpenAI Max Flare" aria-pressed="false">MAX FLARE</button>' +
+              '<button id="ai-quality-openai-maxsunburst" class="ai-quality-btn model-toggle" data-model="openai-max-sunburst" type="button" title="OpenAI Max Sunburst" aria-pressed="false">MAX SUNBURST</button>' +
             '</div>' +
           '</div>' +
           '<div class="model-provider-column">' +

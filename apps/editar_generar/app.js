@@ -58,7 +58,10 @@ const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16'
 
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
-    'openai-high': 'HIGHT',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO'
 };
@@ -322,7 +325,7 @@ Responde SOLO con un JSON válido, sin texto adicional, con esta estructura:
         const result = await callProxy('', [], {
             action: 'text',
             system: systemInstructions,
-            model: 'openrouter/auto',
+            model: 'google/gemini-3.8-flash',
             temperature: 0.7,
             max_tokens: 2000
         }, basePrompt);
@@ -965,7 +968,7 @@ const App = () => {
                               <span className="model-selector-label">Modelo IA</span>
                               <div className="model-provider-layout grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
                                 {[
-                                  { provider: 'OPENAI', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGHT' }] },
+                                  { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
                                   { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider}>

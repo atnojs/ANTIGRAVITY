@@ -1,10 +1,14 @@
 <?php
 /**
- * PROXY UNIFICADO — Upscaler Pro
- * Soporta FLUX 2 Pro/Max (BFL, clave F) + Gemini via OpenRouter (clave R).
+ * PROXY UNIFICADO — Upscaler Pro (OpenAI GPT Image 2.5 + Gemini)
+ * Delega en canonical-image-model.php (ag_image_response) cuando llega 'model':
+ *   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
+ *   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
+ *   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
+ * FLUX quedó FUERA de la lista blanca (400 "Modelo no soportado"); el código
+ * FLUX/Gemini de más abajo se conserva muerto (no alcanzable).
  * Contrato: recibe {imageData, mimeType, prompt, model?, task?}
  *           responde  {success:true, imageUrl, model}  o  {image, mimeType}
- * FLUX = async (submit+poll), Gemini = sync via OpenRouter.
  */
 declare(strict_types=1);
 ini_set('display_errors', '0');

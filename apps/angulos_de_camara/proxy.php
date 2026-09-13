@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 /**
  * Proxy canónico Antigravity.
  * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
  */
-declare(strict_types=1);
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -284,7 +284,15 @@ if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
     'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
     'actions'=>['generate','openrouter','text','health'],
-    'fluxModels'=>['pro'=>'flux-2-pro', 'max'=>'flux-2-max'],
+    'models'=>[
+        'openai-medium'       => 'gpt-image-2.5-flare',
+        'openai-high'         => 'gpt-image-2.5-flare',
+        'openai-xhigh'        => 'gpt-image-2.5-sunburst',
+        'openai-max-flare'    => 'gpt-image-2.5-flare',
+        'openai-max-sunburst' => 'gpt-image-2.5-sunburst',
+        'gemini-flash'        => 'google/gemini-3.1-flash-image',
+        'gemini-pro'          => 'google/gemini-3-pro-image',
+    ],
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);

@@ -439,6 +439,59 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     });
 };
 
+// ===== Selector de modelo: lista blanca de 7 modelos (MEDIUM activo) =====
+const MODEL_LABELS = {
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO',
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST'
+};
+
+const ModelSelector = ({ selectedModel, onChange, disabled }) => (
+    <div className="mt-3">
+        <label className="block text-xs font-semibold mb-2 text-slate-300">Modelo IA</label>
+        <div className="flex flex-col gap-2">
+            <div>
+                <span className="text-[10px] font-bold text-cyan-400/80 uppercase tracking-widest">OPENAI 2.5</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                    {['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'].map((m) => (
+                        <button
+                            key={m}
+                            type="button"
+                            onClick={() => onChange(m)}
+                            disabled={disabled}
+                            className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === m
+                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                                : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                            aria-pressed={selectedModel === m}
+                        >{MODEL_LABELS[m]}</button>
+                    ))}
+                </div>
+            </div>
+            <div>
+                <span className="text-[10px] font-bold text-blue-400/80 uppercase tracking-widest">GEMINI</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                    {['gemini-flash', 'gemini-pro'].map((m) => (
+                        <button
+                            key={m}
+                            type="button"
+                            onClick={() => onChange(m)}
+                            disabled={disabled}
+                            className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === m
+                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                                : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                            aria-pressed={selectedModel === m}
+                        >{MODEL_LABELS[m]}</button>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 const App = () => {
     const [business, setBusiness] = useState('');
     const [businessCategory, setBusinessCategory] = useState(null);
@@ -454,6 +507,7 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [history, setHistory] = useState([]);
     const [toast, setToast] = useState(null);
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
     // Cargar historial al inicio usando IndexedDB
@@ -522,7 +576,7 @@ const App = () => {
             const response = await fetch(API_PROXY_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: aiSystemPrompt })
+                body: JSON.stringify({ prompt: aiSystemPrompt, action: 'mejorar' })
             });
 
             if (!response.ok) throw new Error('Error en API');
@@ -641,7 +695,7 @@ const App = () => {
                 const response = await fetch(API_PROXY_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: img.prompt })
+                    body: JSON.stringify({ prompt: img.prompt, model: selectedModel })
                 });
 
                 if (!response.ok) throw new Error('API Error');
@@ -660,8 +714,10 @@ const App = () => {
                 // Ajustar según respuesta real. Si falla, usar placeholder para demo.
 
                 let imageUrl = '';
-                // Intento de parseo de respuesta estándar Gemini Image
-                if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
+                // Respuesta OpenAI Images API (b64 plano) o Gemini Image
+                if (data.image) {
+                    imageUrl = `data:${data.mimeType || 'image/png'};base64,${data.image}`;
+                } else if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
                     imageUrl = `data:image/png;base64,${data.candidates[0].content.parts[0].inlineData.data}`;
                 } else if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
                     // Si devuelve texto, es que falló la generación de imagen
@@ -695,14 +751,16 @@ const App = () => {
             const response = await fetch(API_PROXY_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: img.prompt })
+                body: JSON.stringify({ prompt: img.prompt, model: selectedModel })
             });
 
             if (!response.ok) throw new Error('API Error');
             const data = await response.json();
 
             let imageUrl = '';
-            if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
+            if (data.image) {
+                imageUrl = `data:${data.mimeType || 'image/png'};base64,${data.image}`;
+            } else if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
                 imageUrl = `data:image/png;base64,${data.candidates[0].content.parts[0].inlineData.data}`;
             } else {
                 throw new Error('No image data');
@@ -879,9 +937,11 @@ const App = () => {
                                 </div>
 
                                 {business && (
-                                    <div className="pt-2 space-y-3">
-                                        <button
-                                            onClick={() => setShowSelector(true)}
+                                    <>
+                                        <ModelSelector selectedModel={selectedModel} onChange={setSelectedModel} disabled={isGenerating || isImproving} />
+                                        <div className="pt-2 space-y-3">
+                                            <button
+                                                onClick={() => setShowSelector(true)}
                                             disabled={isGenerating || isImproving}
                                             className="w-full py-3 glass-button rounded-xl text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:border-cyan-400/50 disabled:opacity-50 flex items-center justify-center gap-2"
                                         >
@@ -910,6 +970,7 @@ const App = () => {
                                             )}
                                         </button>
                                     </div>
+                                    </>
                                 )}
                             </div>
                         </div>

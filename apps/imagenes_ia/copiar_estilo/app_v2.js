@@ -1,6 +1,17 @@
 // --- CONSTANTES DE FORMATO ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
+// --- Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. FLUX fuera. ---
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
 // --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
 window.selectedModel = 'openai-medium';
 document.addEventListener('DOMContentLoaded', () => {
@@ -268,7 +279,7 @@ El campo "prompt" debe ser extremadamente detallado, de al menos 150 palabras. C
     }
 
     const payload = {
-        model: "gemini-3.1-flash-preview",
+        model: "gemini-3.8-flash",
         contents: [{ parts: [
             { text: promptText },
             { inlineData: { mimeType: styleData.mimeType, data: styleData.data } }

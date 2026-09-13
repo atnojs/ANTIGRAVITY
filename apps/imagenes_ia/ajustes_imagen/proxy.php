@@ -1,11 +1,15 @@
 <?php
 // ============================================================
-// PROXY PHP — Edición de imágenes con FLUX (Black Forest Labs)
-// Bloque "IA FLUX — 10 Herramientas" de la app ajustes_imagen.
-// Migrado de Gemini a FLUX (BFL). Edición imagen→imagen con flux-2-pro.
-// Clave FLUX en variable de entorno 'F' del .htaccess raíz (SetEnv F "bfl_...").
-// BFL es ASÍNCRONO: este proxy hace submit + polling del lado servidor.
-// Contrato con el frontend: recibe {image (base64), mimeType, prompt}
+// PROXY PHP — Edición de imágenes con IA (OpenAI GPT Image 2.5 + Gemini)
+// Bloque "IA — 10 Herramientas" de la app ajustes_imagen.
+// Migrado al contrato canónico (canonical-image-model.php):
+//   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
+//   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
+//   gemini-flash → google/gemini-3.1-flash-image (OpenRouter)
+//   gemini-pro   → google/gemini-3-pro-image     (OpenRouter)
+// FLUX quedó FUERA de la lista blanca (400 "Modelo no soportado"); el código
+// FLUX antiguo de más abajo se conserva muerto (no alcanzable).
+// Contrato con el frontend: recibe {image (base64), mimeType, prompt, model?}
 //                           responde {image (base64), mimeType}
 // ============================================================
 declare(strict_types=1);

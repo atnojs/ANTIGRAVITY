@@ -582,10 +582,11 @@ if ($apiKey === null) {
     ]);
 }
 
+// Migración 2.5 (ESPEC_MIGRACION §6): todo el texto pasa a Gemini 3.8 Flash vía OpenRouter.
 $modelMap = [
-    'auto' => 'openrouter/auto',
-    'balanced' => 'openai/gpt-4o-mini',
-    'premium' => 'openai/gpt-4o',
+    'auto' => 'google/gemini-3.8-flash',
+    'balanced' => 'google/gemini-3.8-flash',
+    'premium' => 'google/gemini-3.8-flash',
 ];
 
 $tokenMap = [

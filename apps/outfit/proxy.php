@@ -1,11 +1,12 @@
 <?php
+declare(strict_types=1);
 require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 // ==========================================================
 // PROXY CambioOutfit (image-to-image)
-// 4 modelos: Gemini Flash/Pro (clave G) + FLUX Pro/Max (clave F)
-// También maneja texto (DeepSeek, clave B) y visión (Gemini, clave G).
-// ===========================================================
-declare(strict_types=1);
+// 7 modelos: OpenAI Image 2.5 (5 calidades, clave OPENAI_API_KEY/O)
+// + Gemini Flash/Pro via OpenRouter (clave R). FLUX fuera de la lista blanca.
+// También maneja texto y visión (Gemini 3.8 Flash).
+// ==========================================================
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
@@ -343,16 +344,13 @@ function handleFluxImage(array $req, string $modelInput): void {
 }
 
 // ===========================================================
-// TEXTO (DeepSeek - clave B)
+// TEXTO (Gemini 3.8 Flash via OpenRouter - clave R)
 // ===========================================================
 function handleText(array $req): void {
-    $apiKey = getKey('B');
-    if (!$apiKey) {
-        $apiKey = getenv('DEEPSEEK_API_KEY') ?: '';
-    }
+    $apiKey = getKey('R');
     if (!$apiKey) {
         http_response_code(500);
-        echo json_encode(['error' => ['message' => 'API key DeepSeek (B) no configurada.']]);
+        echo json_encode(['error' => ['message' => 'API key OpenRouter (R) no configurada.']]);
         exit;
     }
 
@@ -364,7 +362,7 @@ function handleText(array $req): void {
     }
 
     $payload = [
-        'model'       => 'deepseek-chat',
+        'model'       => 'google/gemini-3.8-flash',
         'messages'    => [
             ['role' => 'user', 'content' => $prompt]
         ],
@@ -372,7 +370,7 @@ function handleText(array $req): void {
         'temperature' => 0.7,
     ];
 
-    $ch = curl_init('https://api.deepseek.com/chat/completions');
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
@@ -381,14 +379,14 @@ function handleText(array $req): void {
             'Authorization: Bearer ' . $apiKey,
         ],
         CURLOPT_POSTFIELDS     => json_encode($payload),
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT        => 120,
+        CURLOPT_CONNECTTIMEOUT => 15,
     ]);
     $response = curl_exec($ch);
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     if (curl_errno($ch)) {
         http_response_code(502);
-        echo json_encode(['error' => ['message' => 'Error DeepSeek: ' . curl_error($ch)]]);
+        echo json_encode(['error' => ['message' => 'Error OpenRouter: ' . curl_error($ch)]]);
         curl_close($ch);
         exit;
     }
@@ -407,7 +405,7 @@ function handleText(array $req): void {
 }
 
 // ===========================================================
-// VISION (Gemini - clave G)
+// VISION (Gemini 3.8 Flash directo - clave G o A)
 // ===========================================================
 function handleVision(array $req): void {
     $apiKey = getKey('G');
@@ -441,7 +439,7 @@ function handleVision(array $req): void {
         exit;
     }
 
-    $model    = 'gemini-3.1-flash-image';
+    $model    = 'gemini-3.8-flash';
     $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
     $payload = [

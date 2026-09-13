@@ -48,7 +48,10 @@ const ASPECT_RATIOS = [
 
 const MODELS = [
     { id: 'openai-medium', label: 'MEDIUM' },
-    { id: 'openai-high', label: 'HIGHT' },
+    { id: 'openai-high', label: 'HIGH' },
+    { id: 'openai-xhigh', label: 'XHIGH' },
+    { id: 'openai-max-flare', label: 'MAX FLARE' },
+    { id: 'openai-max-sunburst', label: 'MAX SUNBURST' },
     { id: 'gemini-flash', label: '3.1 FLASH' },
     { id: 'gemini-pro', label: '3 PRO' }
 ];
@@ -161,7 +164,7 @@ const generateImage = async (params) => {
 const enhancePromptAPI = async (basePrompt) => {
     try {
         const sys = 'Eres un experto en mejora de prompts para generacion de imagenes. Respeta la intencion del usuario. No inventes sujetos nuevos. Genera 4 variantes en espanol: Descriptiva, Cinematografica, Artistica, Minimalista. Responde SOLO JSON: [{"type":"Descriptiva","text":"..."},{"type":"Cinematografica","text":"..."},{"type":"Artistica","text":"..."},{"type":"Minimalista","text":"..."}]';
-        const r = await callProxy('',[],{action:'text',system:sys,model:'openrouter/auto',temperature:0.7,max_tokens:2000},basePrompt);
+        const r = await callProxy('',[],{action:'text',system:sys,model:'google/gemini-3.8-flash',temperature:0.7,max_tokens:2000},basePrompt);
         if (!r?.success || !r?.text) return [];
         const raw = String(r.text||'').trim(); const m = raw.match(/\[[\s\S]*\]/);
         const parsed = JSON.parse(m?m[0]:raw);
@@ -173,7 +176,7 @@ const analyzeImageAPI = async (imgB64, promptText) => {
     try {
         const compressed = await resizeImg(imgB64); const b64 = compressed.split(',')[1];
         const sys = 'Eres un experto en edicion de imagenes. Analiza esta imagen y genera 4 variantes para editarla: Iluminacion, Fondo, Detalles, Calidad. Responde SOLO JSON: [{"type":"Iluminacion","text":"..."},{"type":"Fondo","text":"..."},{"type":"Detalles","text":"..."},{"type":"Calidad","text":"..."}]';
-        const r = await callProxy('',[],{action:'text',system:sys,model:'openai/gpt-4o',temperature:0.7,max_tokens:2000,imagen:b64},promptText||'Analiza esta imagen y sugiere mejoras');
+        const r = await callProxy('',[],{action:'text',system:sys,model:'google/gemini-3.8-flash',temperature:0.7,max_tokens:2000,imagen:b64},promptText||'Analiza esta imagen y sugiere mejoras');
         if (!r?.success || !r?.text) return [];
         const raw = String(r.text||'').trim(); const m = raw.match(/\[[\s\S]*\]/);
         const parsed = JSON.parse(m?m[0]:raw);
@@ -452,14 +455,14 @@ const App = () => {
                         <span className="model-selector-label">Modelo IA</span>
                         <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                             {[
-                                { provider: 'OPENAI', ids: ['openai-medium', 'openai-high'] },
+                                { provider: 'OPENAI 2.5', ids: ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'] },
                                 { provider: 'GEMINI', ids: ['gemini-flash', 'gemini-pro'] }
                             ].map(group => (
                                 <div className="model-provider-column" key={group.provider}>
                                     <span className="model-provider-title">{group.provider}</span>
                                     <div className="model-toggle-group">
                                         {MODELS.filter(m => group.ids.includes(m.id)).map(m => (
-                                            <button type="button" key={m.id} onClick={()=>setSelectedModel(m.id)} className={`model-toggle ${selectedModel===m.id?'active':''}`} aria-pressed={selectedModel===m.id}>
+                                            <button type="button" key={m.id} data-model={m.id} onClick={()=>setSelectedModel(m.id)} className={`model-toggle ${selectedModel===m.id?'active':''}`} aria-pressed={selectedModel===m.id}>
                                                 {m.label}
                                             </button>
                                         ))}

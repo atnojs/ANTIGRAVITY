@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 /**
  * Proxy multimodelo de Estilizador de Prompts.
- * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
+ * OPENAI_API_KEY/O = OpenAI Image 2.5, R = OpenRouter (Gemini imagen y texto 3.8 Flash).
  */
-declare(strict_types=1);
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -235,7 +235,7 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
         ? 'Analiza la referencia visual. Usa esta orientación del usuario solo para nombrar mejor el estilo, nunca para describir contenido o geometría: ' . $guidance
         : 'Analiza la referencia visual. Clasifica primero si es estilo o plantilla y separa rigurosamente lo transferible de lo que pertenece al contenido original.';
 
-    $models = ['google/gemini-3.7-flash', 'openai/gpt-5.6-sol'];
+    $models = ['google/gemini-3.8-flash'];
     $decoded = null;
     $analysisModel = '';
     foreach ($models as $model) {
@@ -368,7 +368,7 @@ function handleAdaptPrompt(array $request): void {
 
     $system = 'Transforma el texto recibido en un tratamiento artístico para aplicar sobre una imagen base inmutable. Conserva exclusivamente los rasgos de firma visual que aparezcan de forma explícita en la entrada: medio, género, dirección artística, estética, técnica, paleta, iluminación, texturas, materiales, acabado, atmósfera, realismo, efectos y motivos narrativos. No añadas ninguna técnica, efecto, material, color o motivo mencionado solamente en estas instrucciones. Elimina cualquier indicación sobre el contenido o la geometría de la imagen. Si una técnica de la entrada está localizada en una parte concreta, no la elimines: conviértela en una capa global distribuida por todo el fotograma. Si la entrada contiene motivos narrativos o escenas secundarias, consérvalos únicamente como siluetas o superposiciones semitransparentes no estructurales. Puedes conservar acabados superficiales como humedad, brillo o rugosidad solo cuando estén presentes en la entrada, aplicándolos sobre los materiales existentes sin cambiar su forma. PROHIBIDO escribir en la salida: sujeto, hombre, mujer, persona, retrato, rostro, cara, perfil, expresión, mirada, pose, orientación, primer plano, plano, zoom, cámara, lente, encuadre, perspectiva, composición, vertical, horizontal, fotografía o imagen de referencia, relación de aspecto, resolución, dimensiones o proporciones. Tampoco describas el peinado, vestuario, objetos, lugar o fondo. No narres la escena original ni uses frases como "la imagen presenta". Empieza obligatoriamente con "Aplica a toda la imagen" y redacta en modo imperativo un único párrafo específico en español, sin título, listas, comillas ni Markdown, con un máximo de 1300 caracteres. Ejemplo: si la entrada incluye cartel de fantasía oscura, ampliación lateral, acabado húmedo, doble exposición con siluetas y formato 9:16, conserva únicamente cartel de fantasía oscura, acabado húmedo y doble exposición global con siluetas narrativas.';
     $payload = [
-        'model' => 'openai/gpt-4o-mini',
+        'model' => 'google/gemini-3.8-flash',
         'messages' => [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => $source],
@@ -397,7 +397,7 @@ function handleAdaptPrompt(array $request): void {
     respond(200, [
         'success' => true,
         'provider' => 'openrouter',
-        'model' => 'openai/gpt-4o-mini',
+        'model' => 'google/gemini-3.8-flash',
         'format' => 'text',
         'sourceType' => 'text',
         'adaptedPrompt' => $adapted,
@@ -629,20 +629,26 @@ $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
+    'configured'=>[
+        'openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '',
+        'openrouter'=>getSecret('R') !== '',
+    ],
     'actions'=>['adapt','generate','health'],
     'models'=>[
-        'gemini-flash' => 'google/gemini-3.1-flash-image',
-        'gemini-pro'   => 'google/gemini-3-pro-image',
-        'flux-pro'     => 'flux-2-pro',
-        'flux-max'     => 'flux-2-max',
+        'openai-medium'       => 'gpt-image-2.5-flare (medium)',
+        'openai-high'         => 'gpt-image-2.5-flare (high)',
+        'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
+        'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
+        'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+        'gemini-flash'        => 'google/gemini-3.1-flash-image',
+        'gemini-pro'          => 'google/gemini-3-pro-image',
     ],
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if ($action === 'adapt') handleAdaptPrompt($request);
 if ($action === 'generate') handleGenerate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);

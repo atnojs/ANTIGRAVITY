@@ -111,7 +111,7 @@ let selectedModel = 'openai-medium';
 let selectedAR = '1:1';
 let selectedRes = 1024;
 // Etiquetas legibles para metadatos (resultado / popup historial)
-const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGHT', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
+const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
 const getModelLabel = (m) => MODEL_LABELS[m] || m;
 let promptVariants = [];
 
@@ -581,7 +581,7 @@ async function improvePrompt() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'openrouter',
-        model: 'openai/gpt-4o-mini',
+        model: 'google/gemini-3.8-flash',
         prompt: 'Mejora este prompt base de fotografía publicitaria. Devuelve EXACTAMENTE 4 variantes mejoradas, todas en inglés, con enfoques distintos (1 fiel al original, 2 cinematográfica, 3 comercial/catálogo, 4 creativa). Conserva SIEMPRE los elementos esenciales del original: sujeto, acción, escenario, prendas, complementos, iluminación y estilo. Responde SOLO con un JSON válido: {"variants": ["...", "...", "...", "..."]}, sin texto adicional. Prompt base: ' + base
       })
     });

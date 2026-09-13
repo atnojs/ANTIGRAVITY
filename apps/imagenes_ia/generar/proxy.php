@@ -1,6 +1,7 @@
 <?php
-// Proxy Gemini — PHP 8+, cURL habilitado.
-// Basado en el patrón robusto de dibujo_lineas.
+// Proxy Gemini (texto/visión, clave A). §6: gemini-3.8-flash.
+// La generación de imágenes va por proxy_models.php (canonical-image-model.php:
+// OpenAI 2.5 + Gemini, FLUX rechazado).
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -75,7 +76,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 // Modelo
-$model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
+$model = (string)($req['model'] ?? 'gemini-3.8-flash');
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
 // Construir payload — soporte passthrough + formato sencillo

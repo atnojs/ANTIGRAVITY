@@ -28,6 +28,17 @@
     ultimaImagen: ""    // última imagen generada (para "editar esta")
   };
 
+  // Etiquetas del catálogo canónico 2.5 (spec §5)
+  var MODEL_LABELS = {
+    "openai-medium": "MEDIUM",
+    "openai-high": "HIGH",
+    "openai-xhigh": "XHIGH",
+    "openai-max-flare": "MAX FLARE",
+    "openai-max-sunburst": "MAX SUNBURST",
+    "gemini-flash": "3.1 FLASH",
+    "gemini-pro": "3 PRO"
+  };
+
   // ---------- Tema claro/oscuro ----------
   function initTheme() {
     var saved = localStorage.getItem("gen_theme");
@@ -63,7 +74,8 @@
         buttons.forEach(function (other) { other.classList.remove("active"); other.setAttribute("aria-pressed", "false"); });
         button.classList.add("active");
         button.setAttribute("aria-pressed", "true");
-        state.selectedModel = button.getAttribute("data-model") || "openai-medium";
+        var next = button.getAttribute("data-model") || "openai-medium";
+        state.selectedModel = MODEL_LABELS[next] ? next : "openai-medium";
       });
     });
   }

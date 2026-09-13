@@ -169,6 +169,66 @@ select option:focus {
     height: calc(100vh - 100px);
 }
 
+/* === Selector de Modelo IA (7 botones — catálogo 2.5) === */
+.model-provider-layout {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+}
+.model-provider-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+.model-provider-title {
+    color: var(--muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.model-toggle-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+}
+.model-toggle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    padding: 0.5rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: visible !important;
+}
+.model-toggle:hover {
+    color: var(--text);
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 12px var(--glow-soft, rgba(46, 232, 255, 0.2));
+}
+.model-toggle.active {
+    background: linear-gradient(135deg, #0c1445, #22d3ee);
+    color: #CCFFFF;
+    text-shadow: 0 0 8px var(--glow-strong);
+    border-color: var(--border);
+    box-shadow: 0 0 18px var(--glow-strong);
+}
+
 @media (max-width: 1024px) {
     .editor-grid {
         grid-template-columns: 1fr;

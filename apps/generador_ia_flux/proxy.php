@@ -2,6 +2,14 @@
 // ============================================================
 // PROXY PHP - Generador / Editor de imágenes OpenAI y Gemini.
 // Compatible Hostinger (cascade de fuentes de clave).
+// Catálogo 2.5 vía canonical-image-model.php: openai-medium/high
+// (gpt-image-2.5-flare), openai-xhigh (gpt-image-2.5-sunburst),
+// openai-max-flare (gpt-image-2.5-flare/max), openai-max-sunburst
+// (gpt-image-2.5-sunburst/max) + gemini-flash/pro (OpenRouter R).
+// La llamada OpenAI (generations/edits) la ejecuta
+// ag_image_generate() de canonical-image-model.php.
+// FLUX: rechazado con 400 por la lista blanca (código BFL legado queda
+// inalcanzable para el selector, se conserva sin tocar).
 // ============================================================
 
 header('Content-Type: application/json; charset=utf-8');

@@ -375,7 +375,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   function formatResultMeta(data) {
     const model = {
       'openai-medium': 'MEDIUM',
-      'openai-high': 'HIGHT',
+      'openai-high': 'HIGH',
+      'openai-xhigh': 'XHIGH',
+      'openai-max-flare': 'MAX FLARE',
+      'openai-max-sunburst': 'MAX SUNBURST',
       'gemini-flash': '3.1 FLASH',
       'gemini-pro': '3 PRO',
       'google/gemini-3.1-flash-image': '3.1 FLASH',
@@ -620,7 +623,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       els.serviceStatus.classList.toggle('online', openai && openrouter);
       els.serviceStatus.classList.toggle('partial', openai !== openrouter);
       els.serviceStatus.textContent = openai && openrouter
-        ? '4 modelos disponibles'
+        ? '7 modelos disponibles'
         : openai || openrouter
           ? 'Servicio parcialmente configurado'
           : 'Faltan claves del servidor';

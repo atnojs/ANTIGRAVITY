@@ -60,8 +60,8 @@ try {
         throw new Exception('El campo "prompt" es obligatorio.', 400);
     }
 
-    // Gemini 3.1 Flash es el modelo predeterminado.
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
+    // App de SOLO TEXTO: Gemini 3.8 Flash (§6 de la spec de migración).
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=' . urlencode($apiKey);
 
     $body = [
         'contents' => [

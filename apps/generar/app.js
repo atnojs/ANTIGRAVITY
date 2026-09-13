@@ -13,6 +13,20 @@ const {
 // --- CONSTANTES (ORIGINAL) ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
+// ===== Selector de modelo (7 botones, catálogo 2.5) =====
+const DEFAULT_MODEL = 'openai-medium';
+let ACTIVE_MODEL = DEFAULT_MODEL;
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+const TEXT_MODEL = 'gemini-3.8-flash'; // texto/visión (spec §6)
+
 const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     return new Promise((resolve) => {
         const img = new Image();
@@ -156,7 +170,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en espaÃ±ol
                 }
             }
         };
-        const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+        const result = await callProxy(TEXT_MODEL, contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -195,7 +209,7 @@ const generateImage = async (params) => {
             }
         }
     };
-    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const result = await callProxy(ACTIVE_MODEL, contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -212,7 +226,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('gemini-3.1-flash-image-preview', contents, config);
+    const result = await callProxy(ACTIVE_MODEL, contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -405,6 +419,13 @@ const App = () => {
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
+    const [selectedModel, setSelectedModel] = useState(ACTIVE_MODEL);
+
+    const handleModelSelect = (m) => {
+        if (!MODEL_LABELS[m]) return;
+        ACTIVE_MODEL = m;
+        setSelectedModel(m);
+    };
 
     const fileInputRef = useRef(null);
 
@@ -634,6 +655,29 @@ const App = () => {
                                             <span className="text-[9px] font-bold tracking-tighter">{ar.name}</span>
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Modelo IA</label>
+                                <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                                    <div className="model-provider-column">
+                                        <span className="model-provider-title">OPENAI 2.5</span>
+                                        <div className="model-toggle-group">
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-medium' ? 'active' : ''}`} data-model="openai-medium" aria-pressed={selectedModel === 'openai-medium'} onClick={() => handleModelSelect('openai-medium')}>MEDIUM</button>
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-high' ? 'active' : ''}`} data-model="openai-high" aria-pressed={selectedModel === 'openai-high'} onClick={() => handleModelSelect('openai-high')}>HIGH</button>
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-xhigh' ? 'active' : ''}`} data-model="openai-xhigh" aria-pressed={selectedModel === 'openai-xhigh'} onClick={() => handleModelSelect('openai-xhigh')}>XHIGH</button>
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-max-flare' ? 'active' : ''}`} data-model="openai-max-flare" aria-pressed={selectedModel === 'openai-max-flare'} onClick={() => handleModelSelect('openai-max-flare')}>MAX FLARE</button>
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-max-sunburst' ? 'active' : ''}`} data-model="openai-max-sunburst" aria-pressed={selectedModel === 'openai-max-sunburst'} onClick={() => handleModelSelect('openai-max-sunburst')}>MAX SUNBURST</button>
+                                        </div>
+                                    </div>
+                                    <div className="model-provider-column">
+                                        <span className="model-provider-title">GEMINI</span>
+                                        <div className="model-toggle-group">
+                                            <button type="button" className={`model-toggle ${selectedModel === 'gemini-flash' ? 'active' : ''}`} data-model="gemini-flash" aria-pressed={selectedModel === 'gemini-flash'} onClick={() => handleModelSelect('gemini-flash')}>3.1 FLASH</button>
+                                            <button type="button" className={`model-toggle ${selectedModel === 'gemini-pro' ? 'active' : ''}`} data-model="gemini-pro" aria-pressed={selectedModel === 'gemini-pro'} onClick={() => handleModelSelect('gemini-pro')}>3 PRO</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

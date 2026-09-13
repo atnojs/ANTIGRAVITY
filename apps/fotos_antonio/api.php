@@ -46,6 +46,7 @@ function handleChatFixed($db)
     $data = json_decode(file_get_contents('php://input'), true);
     $userMsg = $data['message'] ?? '';
     $conversacionId = $data['conversacion_id'] ?? null;
+    $model = (string)($data['model'] ?? 'openai-medium');
 
     if (empty($userMsg))
         throw new Exception("Mensaje vacío");
@@ -63,7 +64,7 @@ function handleChatFixed($db)
     $referencias = $db->obtenerReferencias();
 
     // 4. Lógica del Agente (Fase 1 y 2: Análisis y Cualificación)
-    $agenteDecision = consultarAgenteFixed($userMsg, $historial, $referencias);
+    $agenteDecision = consultarAgenteFixed($userMsg, $historial, $referencias, $model);
 
     // 5. Guardar y devolver respuesta
     $imagenUrl = $agenteDecision['imagen_url'] ?? null;
@@ -80,7 +81,7 @@ function handleChatFixed($db)
 /**
  * Consulta al agente - Versión corregida sin envío de imágenes
  */
-function consultarAgenteFixed($userPrompt, $historial, $referencias)
+function consultarAgenteFixed($userPrompt, $historial, $referencias, $imageModel = 'openai-medium')
 {
     // Usar proxy en lugar de conexión directa
     $url = "proxy.php";
@@ -122,7 +123,7 @@ function consultarAgenteFixed($userPrompt, $historial, $referencias)
     Referencias (descripciones):\n$refText";
 
     $payload = [
-        "model" => GEMINI_MODEL,
+        "model" => "gemini-3.8-flash",
         "contents" => [
             ["parts" => [["text" => $systemPrompt . "\n\nUSUARIO: " . $userPrompt]]]
         ],
@@ -157,7 +158,7 @@ function consultarAgenteFixed($userPrompt, $historial, $referencias)
         }
         
         if (isset($jsonRes['requiere_generacion']) && $jsonRes['requiere_generacion'] && isset($jsonRes['megaprompt'])) {
-            $jsonRes['imagen_url'] = generarImagenFixed($jsonRes['megaprompt']);
+            $jsonRes['imagen_url'] = generarImagenFixed($jsonRes['megaprompt'], $imageModel);
         }
         
         return $jsonRes;
@@ -174,13 +175,13 @@ function consultarAgenteFixed($userPrompt, $historial, $referencias)
 /**
  * Genera imagen usando el proxy - Versión corregida
  */
-function generarImagenFixed($megaprompt)
+function generarImagenFixed($megaprompt, $model = 'openai-medium')
 {
     // Usar proxy para generación de imágenes
     $url = "proxy.php";
     
     $payload = [
-        "model" => GEMINI_MODEL,
+        "model" => $model,
         "contents" => [["parts" => [["text" => $megaprompt]]]],
         "generationConfig" => ["responseModalities" => ["IMAGE"]]
     ];

@@ -253,3 +253,82 @@ textarea {
 .loading-text{color:#e5e7eb;font-size:1.125rem;font-weight:500;text-align:center}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes spin-reverse{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+
+/* ════
+   SELECTOR DE MODELO IA (canónico 7 botones)
+   ════ */
+.chat-input-area .model-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+    width: 100%;
+}
+
+.model-selector-label {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.model-provider-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+}
+
+.model-provider-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+}
+
+.model-provider-title {
+    color: var(--muted);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.model-toggle-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+}
+
+.model-toggle {
+    font-family: inherit;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.model-toggle:hover {
+    color: var(--text);
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.model-toggle.active {
+    background: linear-gradient(135deg, #22d3ee, #3b82f6);
+    color: #ccffff;
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+    border-color: var(--border);
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.35);
+}

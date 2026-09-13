@@ -948,3 +948,57 @@ body.edit-mode .category-btn:active {
         grid-template-columns: 1fr;
     }
 }
+/* === Selector de Modelo IA (catálogo 2.5, 7 botones) === */
+.model-provider-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+}
+.model-provider-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    width: 100%;
+}
+.model-provider-title {
+    color: #94a3b8;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.model-toggle-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    width: 100%;
+}
+.model-toggle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: visible !important;
+}
+.model-toggle:hover {
+    color: #e5e7eb;
+    border-color: rgba(46, 232, 255, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 12px rgba(46, 232, 255, 0.2);
+}
+.model-toggle.active {
+    background: linear-gradient(135deg, #0891b2, #22d3ee);
+    color: #041847;
+    border-color: transparent;
+    box-shadow: 0 0 16px rgba(46, 232, 255, 0.45);
+    font-weight: 600;
+}

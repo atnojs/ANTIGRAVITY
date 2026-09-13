@@ -13,6 +13,17 @@ const CONFIG = {
     INITIAL_SLOTS: 4
 };
 
+// Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. FLUX fuera.
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
 // --- HISTORIAL PERSISTENTE CON INDEXEDDB ---
 const DB_NAME = 'combinar_imagenes_db';
 const DB_VERSION = 1;
@@ -374,11 +385,13 @@ function setupModelSelector() {
             btn.classList.add('active');
             btn.setAttribute('aria-pressed', 'true');
             state.selectedModel = btn.dataset.model;
+            state.selectedModelLabel = MODEL_LABELS[state.selectedModel] || state.selectedModel;
             window.selectedModel = state.selectedModel;
         });
     });
     // Exponer valor inicial
     window.selectedModel = state.selectedModel;
+    state.selectedModelLabel = MODEL_LABELS[state.selectedModel] || state.selectedModel;
 }
 
 function setupResSelector() {
