@@ -235,7 +235,7 @@ function handleTranslate(array $request): void {
     ];
     $payload = ['messages' => $messages, 'stream' => false, 'model' => 'google/gemini-3.8-flash', 'temperature' => 0.2, 'max_tokens' => 4096];
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
-        'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
+        'Authorization: Bearer ' . $key, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
     if ($status < 200 || $status >= 300 || isset($response['error'])) {
         $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);

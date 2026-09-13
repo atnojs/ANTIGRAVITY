@@ -68,9 +68,9 @@ $task = $input['task'];
 
 // ─── ENHANCE PROMPT → DeepSeek ───────────────────────────────
 if ($task === 'enhancePrompt') {
-    $apiKey = getSecret('D') ?: getSecret('B') ?: getSecret('DEEPSEEK_API_KEY');
+    $apiKey = getSecret('R');
     if (!$apiKey) {
-        echo json_encode(['error' => ['message' => 'API key DeepSeek (D/B) no configurada']]);
+        echo json_encode(['error' => ['message' => 'API key OpenRouter (R) no configurada']]);
         exit;
     }
 
@@ -187,17 +187,16 @@ exit;
  * Llamar a DeepSeek (Chat Completions API) para mejorar prompts.
  */
 function callDeepSeek(string $apiKey, string $systemPrompt, string $userMessage): array {
-    $url = 'https://api.deepseek.com/v1/chat/completions';
+    $url = 'https://openrouter.ai/api/v1/chat/completions';
 
     $body = json_encode([
-        'model' => 'deepseek-chat',
+        'model' => 'google/gemini-3.8-flash',
         'messages' => [
             ['role' => 'system', 'content' => $systemPrompt],
             ['role' => 'user', 'content' => $userMessage]
         ],
         'temperature' => 0.9,
-        'max_tokens' => 2000,
-        'stream' => false
+        'max_tokens' => 2000
     ]);
 
     $headers = [
@@ -232,7 +231,7 @@ function callOpenAI(string $apiKey, array $selected, string $prompt, array $imag
         'size'    => $size,
     ];
     $endpoint = 'https://api.openai.com/v1/images/generations';
-    $headers = ['Authorization: *** ' . $apiKey, 'Content-Type: application/json'];
+    $headers = ['Authorization: Bearer ' . $apiKey, 'Content-Type: application/json'];
     $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $tmp = null;
 
@@ -254,7 +253,7 @@ function callOpenAI(string $apiKey, array $selected, string $prompt, array $imag
         $ext = strpos($mime, 'png') !== false ? 'png' : (strpos($mime, 'webp') !== false ? 'webp' : 'jpg');
         $fields['image[]'] = new CURLFile($tmp, $mime, 'referencia.' . $ext);
         $endpoint = 'https://api.openai.com/v1/images/edits';
-        $headers = ['Authorization: *** ' . $apiKey];
+        $headers = ['Authorization: Bearer ' . $apiKey];
         $postFields = $fields;
     }
 

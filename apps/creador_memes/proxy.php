@@ -226,7 +226,7 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
     ];
 
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
-        'Authorization: *** ' . $orKey, 'Content-Type: application/json', 'accept: application/json'
+        'Authorization: Bearer ' . $orKey, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
 
     if ($status < 200 || $status >= 300 || isset($response['error'])) {
