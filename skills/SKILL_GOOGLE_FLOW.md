@@ -7,7 +7,7 @@ description: "SOLO para videos gratis (Veo) vía Google Flow con la CLI instalad
 
 ## Imágenes: selector canónico
 
-Esta skill no define un selector de imágenes propio. Cuando una app o web incluya generación o edición de imágenes, copiar el bloque vigente de `apps/dibujo_lineas_copia`: `OPENAI` a la izquierda (`MEDIUM` activo por defecto y `HIGHT`) y `GEMINI` a la derecha (`3.1 FLASH` y `3 PRO`). No reutilizar selectores, proveedores ni ejemplos anteriores.
+Esta skill no define un selector de imágenes propio. Cuando una app o web incluya generación o edición de imágenes, copiar el bloque vigente de `apps/dibujo_lineas_copia`: `OPENAI 2.5` a la izquierda (`MEDIUM` activo por defecto, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`) y `GEMINI` a la derecha (`3.1 FLASH` y `3 PRO`). No reutilizar selectores, proveedores ni ejemplos anteriores.
 
 ## Instrucciones de ejecución (videos)
 

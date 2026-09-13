@@ -147,8 +147,8 @@ Toda interfaz debe:
 ## Reglas para apps de generación o edición de imágenes
 
 1. El único selector multimodelo permitido es el bloque vigente de `apps/dibujo_lineas_copia`. Antes de tocarlo, leer completos `index.html`, `app.css` y `app.js` de esa app.
-2. Mantener dos grupos: `OPENAI` a la izquierda con `MEDIUM` activo por defecto y `HIGHT`; `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. No añadir otros proveedores ni recuperar bloques anteriores.
-3. Mapear `openai-medium` y `openai-high` a `gpt-image-2` directo con calidad `medium` y `high`; mapear `gemini-flash` y `gemini-pro` a `google/gemini-3.1-flash-image` y `google/gemini-3-pro-image` mediante OpenRouter.
+2. Mantener dos grupos: `OPENAI 2.5` a la izquierda con `MEDIUM` activo por defecto, `HIGH`, `XHIGH`, `MAX FLARE` y `MAX SUNBURST`; `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. No añadir otros proveedores ni recuperar bloques anteriores.
+3. Mapear `openai-medium` y `openai-high` a `gpt-image-2.5-flare` con calidad `medium` y `high`; `openai-xhigh` a `gpt-image-2.5-sunburst` con calidad `xhigh`; `openai-max-flare` a `gpt-image-2.5-flare` con calidad `max`; `openai-max-sunburst` a `gpt-image-2.5-sunburst` con calidad `max` (OpenAI directo, clave `O`). Mapear `gemini-flash` y `gemini-pro` a `google/gemini-3.1-flash-image` y `google/gemini-3-pro-image` mediante OpenRouter (clave `R`). En apps de solo texto o descripción de imágenes, usar `google/gemini-3.8-flash` (OpenRouter).
 4. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
 5. Separar claramente imagen de entrada, referencias, prompt, formato y opciones de calidad.
 6. Conservar identidad, composición o elementos protegidos al editar una imagen.
