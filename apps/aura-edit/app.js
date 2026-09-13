@@ -6,6 +6,16 @@ import { Sparkles, Upload, ImageIcon, Check, ArrowRight, ArrowLeft, Download, Tr
 const STORAGE_KEY = 'aura_edit_history';
 const API_ENDPOINT = 'proxy.php';
 
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
 // Estilos disponibles
 const AVAILABLE_STYLES = [
   {
@@ -397,6 +407,7 @@ function App() {
   const [loadingText, setLoadingText] = useState('');
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
+  const [selectedModel, setSelectedModel] = useState('openai-medium');
 
   // Cargar historial de localStorage (OBLIGATORIO)
   useEffect(() => {
@@ -472,6 +483,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          model: selectedModel,
           prompt: `Transform this image into ${style.prompt}. Maintain the composition and subject matter but apply the artistic style described.`,
           base64ImageData: base64Data,
           mimeType: mimeType,
@@ -643,6 +655,44 @@ function App() {
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+                <div className="glass rounded-2xl p-5">
+                  <h3 className="font-montserrat font-bold text-white mb-3 text-sm">Modelo IA</h3>
+                  <div role="group" aria-label="Seleccionar modelo" className="space-y-2">
+                    <span className="text-[10px] uppercase tracking-widest text-muted">OPENAI 2.5</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { id: 'openai-medium', name: 'MEDIUM' },
+                        { id: 'openai-high', name: 'HIGH' },
+                        { id: 'openai-xhigh', name: 'XHIGH' },
+                        { id: 'openai-max-flare', name: 'MAX FLARE' },
+                        { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }
+                      ].map(m => (
+                        <button
+                          type="button"
+                          key={m.id}
+                          onClick={() => setSelectedModel(m.id)}
+                          className={`px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                          aria-pressed={selectedModel === m.id}
+                        >{m.name}</button>
+                      ))}
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest text-muted">GEMINI</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { id: 'gemini-flash', name: '3.1 FLASH' },
+                        { id: 'gemini-pro', name: '3 PRO' }
+                      ].map(m => (
+                        <button
+                          type="button"
+                          key={m.id}
+                          onClick={() => setSelectedModel(m.id)}
+                          className={`px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                          aria-pressed={selectedModel === m.id}
+                        >{m.name}</button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="glass rounded-2xl p-5">

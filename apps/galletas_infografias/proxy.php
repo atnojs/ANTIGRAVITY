@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 /**
  * Proxy canónico Antigravity.
- * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
+ * OPENAI_API_KEY/O = OpenAI Image 2.5, R = OpenRouter (Gemini imagen y texto 3.8 Flash).
  */
-declare(strict_types=1);
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -147,10 +147,9 @@ function handleOpenRouter(array $request): void {
     }
     $payload = ['messages' => array_values($messages), 'stream' => false];
     $model = trim((string)($request['model'] ?? ''));
-    if ($model !== '') {
-        if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
-        $payload['model'] = $model;
-    }
+    if ($model === '') $model = 'google/gemini-3.8-flash';
+    if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
+    $payload['model'] = $model;
     if (isset($request['temperature']) && is_numeric($request['temperature'])) $payload['temperature'] = max(0.0, min(2.0, (float)$request['temperature']));
     if (isset($request['max_tokens']) && is_numeric($request['max_tokens'])) $payload['max_tokens'] = max(1, min(32768, (int)$request['max_tokens']));
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
@@ -234,7 +233,7 @@ function handleTranslate(array $request): void {
         ['role' => 'system', 'content' => $systemPrompt],
         ['role' => 'user', 'content' => $text]
     ];
-    $payload = ['messages' => $messages, 'stream' => false, 'model' => 'openai/gpt-4o-mini', 'temperature' => 0.2, 'max_tokens' => 4096];
+    $payload = ['messages' => $messages, 'stream' => false, 'model' => 'google/gemini-3.8-flash', 'temperature' => 0.2, 'max_tokens' => 4096];
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
         'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
@@ -246,7 +245,7 @@ function handleTranslate(array $request): void {
     if ($translated === '') respond(502, ['success' => false, 'error' => 'La traducción devolvió un resultado vacío.']);
     respond(200, [
         'success' => true, 'translated' => $translated,
-        'original' => $text, 'target' => $target, 'model' => (string)($response['model'] ?? 'openai/gpt-4o-mini')
+        'original' => $text, 'target' => $target, 'model' => (string)($response['model'] ?? 'google/gemini-3.8-flash')
     ]);
 }
 
@@ -254,15 +253,23 @@ $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
+    'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== ''],
     'actions'=>['generate','openrouter','text','health'],
-    'fluxModels'=>['pro'=>'flux-2-pro', 'max'=>'flux-2-max'],
+    'models'=>[
+        'openai-medium'       => 'gpt-image-2.5-flare (medium)',
+        'openai-high'         => 'gpt-image-2.5-flare (high)',
+        'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
+        'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
+        'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+        'gemini-flash'        => 'google/gemini-3.1-flash-image',
+        'gemini-pro'          => 'google/gemini-3-pro-image',
+    ],
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? $request['service'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') ag_image_response($request, __DIR__);
 if ($action === 'translate') handleTranslate($request);

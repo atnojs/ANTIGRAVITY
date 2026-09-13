@@ -1,10 +1,11 @@
 <?php
 /**
  * PROXY PHP — Generador/Editor unificado
- * Soporta FLUX 2 Pro/Max (BFL, clave F) + Gemini via OpenRouter (clave R).
+ * Generación de imágenes: catálogo canónico 7 modelos (OpenAI Image 2.5 +
+ * Gemini via OpenRouter). FLUX fuera de la lista blanca.
+ * Texto/visión: Gemini 3.8 Flash via OpenRouter (clave R).
  * Contrato: recibe {prompt, imagen?, calidad?, model?}
  *           responde  {success:true, imageUrl, model}
- * FLUX = async (submit+poll), Gemini = sync.
  */
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
@@ -79,9 +80,9 @@ if ($action === 'text' || $action === 'openrouter') {
         exit;
     }
     $systemText = trim((string)($data['system'] ?? ''));
-    $textModel = trim((string)($data['model'] ?? 'openai/gpt-4o'));
+    $textModel = trim((string)($data['model'] ?? 'google/gemini-3.8-flash'));
     if ($textModel === '' || strlen($textModel) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $textModel) !== 1) {
-        $textModel = 'openai/gpt-4o';
+        $textModel = 'google/gemini-3.8-flash';
     }
     
     // Detectar imagen opcional para análisis visual

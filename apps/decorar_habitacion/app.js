@@ -1188,7 +1188,7 @@ function App() {
             <h3 className="font-semibold mb-2">Modelo IA</h3>
             <div className="model-provider-layout grid grid-cols-2 gap-2" role="group" aria-label="Seleccionar modelo">
               {[
-                { provider: 'OPENAI', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGHT' }] },
+                { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGH' }, { id: 'openai-xhigh', label: 'XHIGH' }, { id: 'openai-max-flare', label: 'MAX FLARE' }, { id: 'openai-max-sunburst', label: 'MAX SUNBURST' }] },
                 { provider: 'GEMINI', models: [{ id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
               ].map((group) => (
                 <div className="model-provider-column" key={group.provider}>

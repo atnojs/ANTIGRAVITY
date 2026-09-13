@@ -4,6 +4,16 @@ import { Upload, Wand2, Download, Trash2, Image, Loader2, Eye, History, Sparkles
 
 const STORAGE_KEY = 'illusion_diffusion_history';
 
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
 function App() {
     // Estado principal
     const [containerImage, setContainerImage] = useState(null);
@@ -20,6 +30,7 @@ function App() {
     const dragMovedRef = useRef(false);
     const dragStartRef = useRef({ x: 0, y: 0 });
     const [history, setHistory] = useState([]);
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
     const [isGenerating, setIsGenerating] = useState(false);
     const [viewerImage, setViewerImage] = useState(null);
     const [canvasViewerImage, setCanvasViewerImage] = useState(null);
@@ -434,6 +445,40 @@ function App() {
 
                 {/* Controls */}
                 <div className="controls-section glass">
+                    <div role="group" aria-label="Seleccionar modelo" className="mb-4">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Modelo IA</span>
+                        <div className="flex flex-wrap gap-2 mt-2 items-center">
+                            <span className="text-[10px] uppercase tracking-widest text-gray-500">OPENAI 2.5</span>
+                            {[
+                                { id: 'openai-medium', name: 'MEDIUM' },
+                                { id: 'openai-high', name: 'HIGH' },
+                                { id: 'openai-xhigh', name: 'XHIGH' },
+                                { id: 'openai-max-flare', name: 'MAX FLARE' },
+                                { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }
+                            ].map(m => (
+                                <button
+                                    type="button"
+                                    key={m.id}
+                                    onClick={() => setSelectedModel(m.id)}
+                                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
+                                    aria-pressed={selectedModel === m.id}
+                                >{m.name}</button>
+                            ))}
+                            <span className="text-[10px] uppercase tracking-widest text-gray-500">GEMINI</span>
+                            {[
+                                { id: 'gemini-flash', name: '3.1 FLASH' },
+                                { id: 'gemini-pro', name: '3 PRO' }
+                            ].map(m => (
+                                <button
+                                    type="button"
+                                    key={m.id}
+                                    onClick={() => setSelectedModel(m.id)}
+                                    className={`px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
+                                    aria-pressed={selectedModel === m.id}
+                                >{m.name}</button>
+                            ))}
+                        </div>
+                    </div>
                     <div className="sliders-row">
                         <div className="control-group">
                             <div className="control-label">

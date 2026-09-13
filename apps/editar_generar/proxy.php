@@ -105,9 +105,9 @@ if ($action === 'text' || $action === 'openrouter') {
         exit;
     }
     $systemText = trim((string)($data['system'] ?? ''));
-    $textModel = trim((string)($data['model'] ?? 'openai/gpt-4o'));
+    $textModel = trim((string)($data['model'] ?? 'google/gemini-3.8-flash'));
     if ($textModel === '' || strlen($textModel) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $textModel) !== 1) {
-        $textModel = 'openai/gpt-4o';
+        $textModel = 'google/gemini-3.8-flash';
     }
     
     // Detectar imagen opcional para análisis visual
@@ -172,5 +172,9 @@ if ($action === 'text' || $action === 'openrouter') {
 
 // Todas las solicitudes de imagen pasan por el contrato canónico.
 // Esto elimina cualquier ruta heredada de Flux y mantiene únicamente:
-// openai-medium, openai-high, gemini-flash y gemini-pro.
+// openai-medium, openai-high, openai-xhigh, openai-max-flare,
+// openai-max-sunburst, gemini-flash y gemini-pro.
+// Catálogo OpenAI 2.5 delegado a canonical-image-model.php:
+// gpt-image-2.5-flare (medium/high/max).
+// gpt-image-2.5-sunburst (xhigh/max).
 ag_image_response($data, __DIR__);

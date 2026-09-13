@@ -2,14 +2,39 @@
  * ════
  * 🧬 PROTOCOLO GEMINI v14.0 - CON HISTORIAL PERSISTENTE SERVER-SIDE
  * ════
- * Modelo: gemini-3.1-flash-image-preview
+ * Selector: OpenAI Image 2.5 (5 calidades) + Gemini (3.1 Flash / 3 Pro)
  * Incluye: HistoryManager (IndexedDB + servidor PHP), Lightbox, Botones de acción
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONSTANTES ---
     const PROXY_URL = 'proxy.php';
-    const MODEL = 'gemini-3.1-flash-image-preview';
+    const DEFAULT_MODEL = 'openai-medium';
+    let selectedModel = DEFAULT_MODEL;
+    const MODEL_LABELS = {
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO'
+    };
+
+    // --- SELECTOR DE MODELO (7 botones, MEDIUM activo) ---
+    const modelToggles = document.querySelectorAll('.model-toggle');
+    const setSelectedModel = (model) => {
+        selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
+        modelToggles.forEach((button) => {
+            const isActive = button.dataset.model === selectedModel;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+    };
+    modelToggles.forEach((button) => {
+        button.addEventListener('click', () => setSelectedModel(button.dataset.model));
+    });
+    setSelectedModel(DEFAULT_MODEL);
 
     // --- ESTADO ---
     let identityImage = null;
@@ -359,7 +384,7 @@ RESULT: The person in the second image now has the face and hair from the first 
         const b64_2 = img2.split(',')[1];
 
         const requestBody = {
-            model: MODEL,
+            model: selectedModel,
             contents: [{
                 parts: [
                 { text: prompt },

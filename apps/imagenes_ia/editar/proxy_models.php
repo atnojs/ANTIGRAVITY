@@ -1,10 +1,14 @@
 <?php
 /**
- * PROXY PHP — Generador/Editor unificado
- * Soporta FLUX 2 Pro/Max (BFL, clave F) + Gemini via OpenRouter (clave R).
- * Contrato: recibe {prompt, imagen?, calidad?, model?}
+ * PROXY PHP — Generador/Editor unificado (OpenAI GPT Image 2.5 + Gemini)
+ * Delega en canonical-image-model.php (ag_image_response):
+ *   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
+ *   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
+ *   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
+ * FLUX quedó FUERA de la lista blanca (400 "Modelo no soportado"); el código
+ * FLUX de más abajo se conserva muerto (no alcanzable).
+ * Contrato: recibe {prompt, imagen?, model?}
  *           responde  {success:true, imageUrl, model}
- * FLUX = async (submit+poll), Gemini = sync.
  */
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');

@@ -14,6 +14,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
 
+    // ===== Selector de modelo (7 botones, MEDIUM activo por defecto) =====
+    const DEFAULT_MODEL = 'openai-medium';
+    let selectedModel = DEFAULT_MODEL;
+    const MODEL_LABELS = {
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO',
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST'
+    };
+    const modelToggles = document.querySelectorAll('.model-toggle');
+    const setSelectedModel = (model) => {
+        selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
+        modelToggles.forEach((button) => {
+            const isActive = button.dataset.model === selectedModel;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+    };
+    modelToggles.forEach((button) => {
+        button.addEventListener('click', () => setSelectedModel(button.dataset.model));
+    });
+    setSelectedModel(DEFAULT_MODEL);
+
     let imageQueue = [];
 
     imageInput.addEventListener('change', (e) => {
@@ -69,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         image: base64,
                         mimeType: file.type || 'image/jpeg',
+                        model: selectedModel,
                         prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page..."
                     })
                 });

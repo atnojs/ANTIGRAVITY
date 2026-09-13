@@ -1040,7 +1040,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         <label className="block text-sm font-medium text-gray-300">Modelo IA</label>
         <div className="model-provider-layout mt-2 grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
           {[
-            { provider: 'OPENAI', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGHT' }] },
+            { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGH' }, { id: 'openai-xhigh', label: 'XHIGH' }, { id: 'openai-max-flare', label: 'MAX FLARE' }, { id: 'openai-max-sunburst', label: 'MAX SUNBURST' }] },
             { provider: 'GEMINI', models: [{ id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
           ].map((group) => (
             <div className="model-provider-column min-w-0" key={group.provider}>

@@ -895,7 +895,7 @@ const App = () => {
                               <span className="model-selector-label">Modelo IA</span>
                               <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
                                 {[
-                                  { provider: 'OPENAI', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGHT']] },
+                                  { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-xhigh', 'XHIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-max-sunburst', 'MAX SUNBURST']] },
                                   { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>

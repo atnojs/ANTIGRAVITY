@@ -1,7 +1,9 @@
 <?php
-// Proxy Gemini + FLUX — PHP 8+, cURL habilitado.
-// Basado en el patrón robusto de dibujo_lineas.
-// Soporta Gemini directo (clave A) + FLUX BFL async (clave F).
+// Proxy Gemini (texto/visión, clave A) + FLUX legacy muerto.
+// Análisis de texto/visión (§6): gemini-3.8-flash.
+// FLUX quedó fuera de la lista blanca (los selectores ya no lo envían).
+// La generación de imágenes va por proxy_models.php (canonical-image-model.php:
+// OpenAI 2.5 + Gemini, FLUX rechazado).
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -70,7 +72,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 // Detectar backend según el modelo
-$modelParam = strtolower((string)($req['model'] ?? 'gemini-3.1-flash-image-preview'));
+$modelParam = strtolower((string)($req['model'] ?? 'gemini-3.8-flash'));
 
 // ====================================================================
 // BACKEND: FLUX (BFL) — async submit + poll

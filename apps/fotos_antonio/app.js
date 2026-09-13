@@ -12,6 +12,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentConversationId = null;
 
+    // --- SELECTOR DE MODELO (7 botones, MEDIUM activo) ---
+    const DEFAULT_MODEL = 'openai-medium';
+    let selectedModel = DEFAULT_MODEL;
+    const MODEL_LABELS = {
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO'
+    };
+    const modelToggles = document.querySelectorAll('.model-toggle');
+    const setSelectedModel = (model) => {
+        selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
+        modelToggles.forEach((button) => {
+            const isActive = button.dataset.model === selectedModel;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+    };
+    modelToggles.forEach((button) => {
+        button.addEventListener('click', () => setSelectedModel(button.dataset.model));
+    });
+    setSelectedModel(DEFAULT_MODEL);
+
     // Ajuste automático de altura del textarea
     userInput.addEventListener('input', function () {
         this.style.height = 'auto';
@@ -47,7 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: message,
-                    conversacion_id: currentConversationId
+                    conversacion_id: currentConversationId,
+                    model: selectedModel
                 })
             });
 

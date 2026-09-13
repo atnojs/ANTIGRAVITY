@@ -3,6 +3,12 @@
 // PROXY PHP - Generador / Editor de imágenes con IA (OpenRouter)
 // Oculta la clave OPENROUTER_API_KEY del frontend.
 // Compatible Hostinger (cascade de 7 fuentes de clave).
+// Catálogo 2.5 vía canonical-image-model.php: openai-medium/high
+// (gpt-image-2.5-flare), openai-xhigh (gpt-image-2.5-sunburst),
+// openai-max-flare (gpt-image-2.5-flare/max), openai-max-sunburst
+// (gpt-image-2.5-sunburst/max) + gemini-flash/pro (OpenRouter R).
+// La llamada OpenAI (generations/edits) la ejecuta
+// ag_image_generate() de canonical-image-model.php. FLUX: 400.
 // ============================================================
 
 header('Content-Type: application/json; charset=utf-8');

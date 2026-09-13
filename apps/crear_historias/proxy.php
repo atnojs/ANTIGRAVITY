@@ -1,5 +1,12 @@
 <?php
 // Proxy for StoryWeaver Character Generator
+// Catálogo 2.5: openai-medium/high (gpt-image-2.5-flare),
+// openai-xhigh (gpt-image-2.5-sunburst), openai-max-flare
+// (gpt-image-2.5-flare/max), openai-max-sunburst
+// (gpt-image-2.5-sunburst/max) + gemini-flash/pro (Google directo, A).
+// La llamada OpenAI (generations/edits) la ejecuta ag_image_response()
+// de canonical-image-model.php. FLUX: rechazado (400).
+// Texto/visión (enhancePrompt / analyzeMaskPosition): gemini-3.8-flash.
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 header("Access-Control-Allow-Origin: *");
@@ -56,9 +63,24 @@ try {
   if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
 
   $task        = $json['task'] ?? '';
-  if ($task === 'generateImage' || (($json['provider'] ?? '') === 'flux')) {
-      if (!isset(ag_image_catalog()[(string)($json['model'] ?? '')])) $json['model'] = 'openai-medium';
-      ag_image_response($json, __DIR__);
+  // Selección de modelo: lista blanca (catálogo 2.5 + backend Gemini directo propio).
+  $requestedModel = strtolower(trim((string)($json['model'] ?? '')));
+  if ($requestedModel === 'gemini-3.1-flash-image-preview' || $requestedModel === 'gemini-3.1-flash-image') $requestedModel = 'gemini-flash';
+  if ($requestedModel === 'gemini-3-pro-image-preview' || $requestedModel === 'gemini-3-pro-image') $requestedModel = 'gemini-pro';
+  if ($task === 'generateImage') {
+      // FLUX: rechazado (400), fuera de la lista blanca.
+      if (strpos($requestedModel, 'flux') === 0 || (($json['provider'] ?? '') === 'flux')) {
+          http_response_code(400);
+          echo json_encode(['error' => 'Modelo no soportado.']);
+          exit;
+      }
+      // OpenAI 2.5 → contrato canónico ag_image_response (gpt-image-2.5).
+      if ($requestedModel === '' || strpos($requestedModel, 'openai-') === 0) {
+          if ($requestedModel === '') $json['model'] = 'openai-medium';
+          ag_image_response($json, __DIR__);
+      }
+      // gemini-flash / gemini-pro / legacy → backend Gemini directo (clave A)
+      // de esta app, CONSERVADO tal cual (cae al bloque siguiente).
   }
   $provider    = $json['provider'] ?? 'gemini'; 
   $prompt      = (string)($json['prompt'] ?? '');
@@ -98,7 +120,7 @@ try {
   // --- TAREA: MEJORAR PROMPT ---
   if ($task === 'enhancePrompt') {
     if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=' . urlencode($apiKey);
     $isMaskMode = $json['isMaskMode'] ?? false;
 
     if ($isMaskMode) {
@@ -126,9 +148,8 @@ try {
   if ($task === 'analyzeMaskPosition') {
       if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
       
-      // Usamos Gemini 1.5 Flash o Pro para análisis de visión (o el mismo 3-pro si soporta vision)
-      // Gemini 3.1 Flash es el modelo predeterminado para velocidad.
-      $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
+      // Análisis de visión de máscara: texto/visión → gemini-3.8-flash (spec §6)
+      $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=' . urlencode($apiKey);
       
       // La imagen viene en $images[0]
       if (empty($images) || empty($images[0]['data'])) throw new Exception('No se recibió la imagen para analizar.', 400);
@@ -194,7 +215,7 @@ try {
     } else {
         if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
         
-        $model = 'gemini-3.1-flash-image-preview'; 
+        $model = ($requestedModel === 'gemini-pro') ? 'gemini-3-pro-image-preview' : 'gemini-3.1-flash-image-preview';
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent?key=' . urlencode($apiKey);
 
         $parts = [];

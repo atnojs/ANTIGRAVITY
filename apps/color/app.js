@@ -30,11 +30,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedAR = '9:16';   // formato fijo por defecto
     const selectedRes = 512;     // resolución fija por defecto
 
+    // Etiquetas del catálogo canónico 2.5 (spec §5)
+    const MODEL_LABELS = {
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO'
+    };
+
     // ─── Selectores de modelo ─────────────────────────────────
     const modelBtns = document.querySelectorAll('#model-selector .model-toggle');
     modelBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            selectedModel = btn.dataset.model || 'openai-medium';
+            const next = btn.dataset.model || 'openai-medium';
+            if (!MODEL_LABELS[next]) return;
+            selectedModel = next;
             modelBtns.forEach(b => {
                 const on = b === btn;
                 b.classList.toggle('active', on);

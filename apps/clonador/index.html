@@ -61,6 +61,29 @@
                 <p class="micro-text">La IA escaneará la luz, ropa y ambiente de esta foto.</p>
             </div>
 
+            <div class="control-group">
+                <label class="section-label">MODELO IA</label>
+                <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                    <div class="model-provider-column">
+                        <span class="model-provider-title">OPENAI 2.5</span>
+                        <div class="model-toggle-group">
+                            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
+                            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGH</button>
+                            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false">XHIGH</button>
+                            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false">MAX FLARE</button>
+                            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false">MAX SUNBURST</button>
+                        </div>
+                    </div>
+                    <div class="model-provider-column">
+                        <span class="model-provider-title">GEMINI</span>
+                        <div class="model-toggle-group">
+                            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
+                            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="action-area">
                 <button id="generate-btn" class="btn-primary" disabled>
                     <i data-lucide="play-circle"></i>
@@ -109,7 +132,7 @@
     </div>
 
     <script src="history-manager.js?v=5"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
     <script>lucide.createIcons();</script>
 </body>
 

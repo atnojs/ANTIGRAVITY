@@ -1,7 +1,7 @@
 <?php
 /**
  * Proxy canónico Antigravity para Infográfica AI.
- * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
+ * R = OpenRouter (texto y visión con Gemini 3.8 Flash).
  */
 declare(strict_types=1);
 
@@ -15,7 +15,7 @@ header('Cache-Control: no-store');
 const MAX_REQUEST_BYTES = 32 * 1024 * 1024;
 const MAX_PROMPT_BYTES = 12000;
 const MAX_SYSTEM_BYTES = 16000;
-const ALLOWED_MODELS = ['openai/gpt-4o-mini'];
+const ALLOWED_MODELS = ['google/gemini-3.8-flash'];
 
 function respond(int $status, array $payload): void {
     http_response_code($status);
@@ -138,7 +138,7 @@ Formato exacto:
 PROMPT;
 
     $payload = [
-        'model' => 'openai/gpt-4o-mini',
+        'model' => 'google/gemini-3.8-flash',
         'messages' => [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => [
@@ -168,7 +168,7 @@ PROMPT;
     $content = (string)($response['choices'][0]['message']['content'] ?? '');
     if ($content === '') respond(502, ['success' => false, 'error' => 'La IA devolvió un análisis vacío.']);
     $json = extractJSON($content);
-    respond(200, ['success' => true, 'provider' => 'openrouter', 'model' => 'openai/gpt-4o-mini', 'text' => $content, 'json' => $json]);
+    respond(200, ['success' => true, 'provider' => 'openrouter', 'model' => 'google/gemini-3.8-flash', 'text' => $content, 'json' => $json]);
 }
 
 if ($action === 'generate-text') {
@@ -177,7 +177,7 @@ if ($action === 'generate-text') {
 
     $system = trim((string)($request['system'] ?? ''));
     $prompt = trim((string)($request['prompt'] ?? ''));
-    $model = trim((string)($request['model'] ?? 'openai/gpt-4o-mini'));
+    $model = trim((string)($request['model'] ?? 'google/gemini-3.8-flash'));
 
     if ($system === '' && $prompt === '') respond(400, ['success' => false, 'error' => 'Faltan system o prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);

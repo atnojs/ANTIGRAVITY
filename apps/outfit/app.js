@@ -726,7 +726,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const getModelLabel = (model) => {
         const labels = {
             'openai-medium': 'MEDIUM',
-            'openai-high': 'HIGHT',
+            'openai-high': 'HIGH',
+            'openai-xhigh': 'XHIGH',
+            'openai-max-flare': 'MAX FLARE',
+            'openai-max-sunburst': 'MAX SUNBURST',
             'gemini-flash': '3.1 FLASH',
             'gemini-pro': '3 PRO'
         };
@@ -1326,7 +1329,9 @@ document.addEventListener('DOMContentLoaded', () => {
             prompt: prompt,
             model: selectedModel,
             width: dims.width,
-            height: dims.height
+            height: dims.height,
+            aspectRatio: selectedAR,
+            resolution: selectedRes
         });
 
         if (!data.image) {

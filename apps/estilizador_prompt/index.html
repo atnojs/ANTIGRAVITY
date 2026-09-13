@@ -49,7 +49,7 @@
                 <span class="style-upload-icon" aria-hidden="true">▧</span>
                 <span>
                   <strong>Subir imagen de referencia</strong>
-                  <small>Gemini 3.7 Flash analizará composición, textos, entorno, luz y estilo; Sol actuará como respaldo si el análisis queda incompleto.</small>
+                  <small>Gemini 3.8 Flash analizará composición, textos, entorno, luz y estilo de la referencia.</small>
                 </span>
               </label>
               <div id="style-image-preview-card" class="style-image-preview-card" hidden>
@@ -179,10 +179,13 @@
                 <span class="model-selector-label">Modelo IA</span>
                 <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                   <div class="model-provider-column">
-                    <span class="model-provider-title">OPENAI</span>
+                    <span class="model-provider-title">OPENAI 2.5</span>
                     <div class="model-toggle-group">
             <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
-            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGHT</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false">XHIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false">MAX FLARE</button>
+            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false">MAX SUNBURST</button>
                     </div>
                   </div>
                   <div class="model-provider-column">
@@ -257,6 +260,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="history-manager.js?v=1"></script>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

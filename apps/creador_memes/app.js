@@ -32,6 +32,8 @@
     t._timeout = setTimeout(function () { t.classList.remove("show"); }, 3500);
   }
 
+  var MODEL_LABELS = { "openai-medium": "MEDIUM", "openai-high": "HIGH", "openai-xhigh": "XHIGH", "openai-max-flare": "MAX FLARE", "openai-max-sunburst": "MAX SUNBURST", "gemini-flash": "3.1 FLASH", "gemini-pro": "3 PRO" };
+
   // ===== STATE =====
   var state = {
     aspectRatio: "1:1",
@@ -205,7 +207,7 @@
         action: "openrouter",
         system: systemPrompt,
         prompt: "Genera una idea de meme viral completamente nueva y original. Sé creativo, sorprendente. Elige un tema actual o una situación cotidiana relatable. Todo en español.",
-        model: "openai/gpt-4o-mini",
+        model: "google/gemini-3.8-flash",
         temperature: 1.0,
         max_tokens: 800
       })
@@ -276,7 +278,7 @@
         action: "openrouter",
         system: systemPrompt,
         prompt: "Convierte esta idea en un prompt en español para generación de imágenes:\\n\\n\"" + idea + "\"\\n\\nEntrega solo el prompt final.",
-        model: "openai/gpt-4o-mini",
+        model: "google/gemini-3.8-flash",
         temperature: 0.7, max_tokens: 600
       })
     })

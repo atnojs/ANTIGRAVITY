@@ -88,6 +88,15 @@ async function clearStorage() {
 }
 
 // --- ESTADO ---
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
 const state = {
     styleImage: null,     // { data(b64 puro), mimeType, preview(dataURL) }
     subjectImage: null,   // idem

@@ -265,6 +265,17 @@ function generateVideoWithVeo(imageDataUrl, prompt, modelName, generateAudio, au
         });
 }
 
+// ===== Selector de modelo: lista blanca de 7 modelos (MEDIUM activo) =====
+const MODEL_LABELS = {
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO',
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST'
+};
+
 function App() {
     const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -277,6 +288,7 @@ function App() {
     const [currentStep, setCurrentStep] = useState('input'); // input | processing | results
     const [videoQualityModal, setVideoQualityModal] = useState(null); // { proposalIdx, assetIdx, currentAsset, prompt, audioPrompt, generateAudio }  
     const [regenerateModal, setRegenerateModal] = useState(null); // { proposalIdx, assetIdx, currentAsset, prompt }
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
 
     // Persistencia de historial con IndexedDB (sin límite de 5MB)
     const historyLoaded = useRef(false);
@@ -320,7 +332,7 @@ function App() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'generate_image',
-                    model: 'gemini-3.1-flash-image-preview',
+                    model: selectedModel,
                     prompt: prompt,
                     base64ImageData: base64Image.split(',')[1],
                     mimeType: base64Image.split(';')[0].split(':')[1]
@@ -330,6 +342,10 @@ function App() {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const data = await response.json();
+            // Respuesta OpenAI Images API (b64 plano)
+            if (data.image) {
+                return `data:${data.mimeType || 'image/png'};base64,${data.image}`;
+            }
             // El modelo gemini-3.1-flash-image-preview devuelve la imagen en candidates[0].content.parts
             // Buscamos la part que tenga inlineData
             const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
@@ -643,6 +659,44 @@ function App() {
                                             placeholder="Ej: Elegante reloj de cuero negro con esfera plateada, estilo minimalista..."
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 min-h-[150px] focus:outline-none focus:border-cyan-400/50 transition-all text-white placeholder:text-white/20"
                                         />
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-bold text-cyan-400 uppercase tracking-widest pl-1">Modelo IA</label>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-cyan-300/70 uppercase tracking-widest">OPENAI 2.5</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'].map((m) => (
+                                                    <button
+                                                        key={m}
+                                                        type="button"
+                                                        onClick={() => setSelectedModel(m)}
+                                                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
+                                                            ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-300/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
+                                                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}
+                                                        aria-pressed={selectedModel === m}
+                                                    >{MODEL_LABELS[m]}</button>
+                                                ))}
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-fuchsia-300/70 uppercase tracking-widest">GEMINI</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['gemini-flash', 'gemini-pro'].map((m) => (
+                                                    <button
+                                                        key={m}
+                                                        type="button"
+                                                        onClick={() => setSelectedModel(m)}
+                                                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
+                                                            ? 'bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white border-fuchsia-300/60 shadow-[0_0_12px_rgba(217,70,239,0.4)]'
+                                                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}
+                                                        aria-pressed={selectedModel === m}
+                                                    >{MODEL_LABELS[m]}</button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <button
