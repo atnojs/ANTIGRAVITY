@@ -195,7 +195,7 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
     $aspect = (string)($req['generationConfig']['imageConfig']['aspectRatio'] ?? $req['aspectRatio'] ?? '1:1');
     $endpoint = 'https://api.openai.com/v1/images/generations';
     $fields = ['model' => $selected['model'], 'prompt' => $prompt, 'quality' => $selected['quality'], 'size' => openAiSize($aspect)];
-    $headers = ['Authorization: *** ' . $openaiKey, 'Content-Type: application/json'];
+    $headers = ['Authorization: Bearer ' . $openaiKey, 'Content-Type: application/json'];
     $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $tmpPath = null;
 
@@ -225,7 +225,7 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
         $ext = str_contains($mime, 'png') ? 'png' : (str_contains($mime, 'webp') ? 'webp' : 'jpg');
         $fields['image[]'] = new CURLFile($tmpPath, $mime, 'referencia.' . $ext);
         $endpoint = 'https://api.openai.com/v1/images/edits';
-        $headers = ['Authorization: *** ' . $openaiKey];
+        $headers = ['Authorization: Bearer ' . $openaiKey];
         $postFields = $fields;
     }
 

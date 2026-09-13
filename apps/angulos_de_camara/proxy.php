@@ -199,7 +199,7 @@ function handleGemini(array $request): void {
     ];
 
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
-        'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
+        'Authorization: Bearer ' . $key, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
 
     if ($status < 200 || $status >= 300 || isset($response['error'])) {

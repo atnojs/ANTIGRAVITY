@@ -27,25 +27,18 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// ===== CLAVE DeepSeek ('B'): cascade de fuentes (Hostinger) =====
+// ===== CLAVE OpenRouter ('R'): cascade de fuentes (Hostinger) =====
 $apiKey = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    if (defined('B') && B !== '') $apiKey = B;
-}
-if (empty($apiKey)) $apiKey = getenv('B');
-if (empty($apiKey)) $apiKey = getenv('REDIRECT_B');
-if (empty($apiKey)) $apiKey = getenv('DEEPSEEK_API_KEY');
-if (empty($apiKey)) $apiKey = getenv('REDIRECT_DEEPSEEK_API_KEY');
-if (empty($apiKey)) $apiKey = $_SERVER['B'] ?? '';
-if (empty($apiKey)) $apiKey = $_SERVER['REDIRECT_B'] ?? '';
-if (empty($apiKey)) $apiKey = $_ENV['B'] ?? '';
-if (empty($apiKey)) $apiKey = $_ENV['REDIRECT_B'] ?? '';
+if (empty($apiKey)) $apiKey = getenv('R');
+if (empty($apiKey)) $apiKey = getenv('REDIRECT_R');
+if (empty($apiKey)) $apiKey = $_SERVER['R'] ?? '';
+if (empty($apiKey)) $apiKey = $_SERVER['REDIRECT_R'] ?? '';
+if (empty($apiKey)) $apiKey = $_ENV['R'] ?? '';
+if (empty($apiKey)) $apiKey = $_ENV['REDIRECT_R'] ?? '';
 
 if (empty($apiKey)) {
     http_response_code(401);
-    echo json_encode(['error' => ['message' => 'API Key de DeepSeek no configurada. Añade SetEnv B "sk-..." al .htaccess raíz de Hostinger.']]);
+    echo json_encode(['error' => ['message' => 'API Key de OpenRouter (R) no configurada. Añade SetEnv R al .htaccess raíz de Hostinger.']]);
     exit;
 }
 
@@ -101,19 +94,18 @@ $userMsg = "Genera exactamente $count propuestas de diseño publicitario premium
     . "Cada 'palette' debe tener exactamente 6 códigos HEX válidos. Usa comillas dobles en todo el JSON.";
 
 $payload = [
-    'model' => 'deepseek-chat',
+    'model' => 'google/gemini-3.8-flash',
     'messages' => [
         ['role' => 'system', 'content' => $systemMsg],
         ['role' => 'user',   'content' => $userMsg],
     ],
     'temperature' => 0.8,
     'max_tokens' => 2000,
-    'response_format' => ['type' => 'json_object'],
 ];
 
 $ch = curl_init();
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'https://api.deepseek.com/chat/completions',
+    CURLOPT_URL => 'https://openrouter.ai/api/v1/chat/completions',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
@@ -133,14 +125,14 @@ curl_close($ch);
 
 if ($err) {
     http_response_code(502);
-    echo json_encode(['error' => ['message' => 'Error de conexión con DeepSeek: ' . $err]]);
+    echo json_encode(['error' => ['message' => 'Error de conexión con OpenRouter: ' . $err]]);
     exit;
 }
 $respData = json_decode($resp, true);
 if ($code >= 400 || isset($respData['error'])) {
     $msg = $respData['error']['message'] ?? ('Error HTTP ' . $code);
     http_response_code($code ?: 500);
-    echo json_encode(['error' => ['message' => 'DeepSeek: ' . $msg]]);
+    echo json_encode(['error' => ['message' => 'OpenRouter: ' . $msg]]);
     exit;
 }
 

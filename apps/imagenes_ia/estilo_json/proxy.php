@@ -285,8 +285,8 @@ try {
     // TAREA 2: MEJORAR PROMPT (DeepSeek · texto · deepseek-chat)
     // ═══════════════════════════════════════════════
     if ($task === 'mejorarPrompt') {
-        if (empty($dsKey)) {
-            throw new Exception('API Key de DeepSeek no configurada (para Mejorar Prompt).', 401);
+        if (empty($orKey)) {
+            throw new Exception('API Key de OpenRouter (R) no configurada (para Mejorar Prompt).', 401);
         }
 
         $prompt = (string) ($json['prompt'] ?? '');
@@ -305,19 +305,18 @@ try {
             . ($estiloTxt !== '' ? ("\n\nEstilo (JSON): " . $estiloTxt) : '');
 
         [$status, $data] = $callApi(
-            'https://api.deepseek.com/chat/completions',
+            'https://openrouter.ai/api/v1/chat/completions',
             [
-                'model' => 'deepseek-chat',
+                'model' => 'google/gemini-3.8-flash',
                 'messages' => [
                     ['role' => 'system', 'content' => $sysText],
                     ['role' => 'user', 'content' => $userIdea],
                 ],
                 'temperature' => 0.8,
-                'stream' => false,
             ],
             [
                 'Content-Type: application/json',
-                'Authorization: Bearer ' . $dsKey,
+                'Authorization: Bearer ' . $orKey,
             ],
             60
         );
@@ -325,7 +324,7 @@ try {
         if ($status < 200 || $status >= 300) {
             $msg = $data['error']['message'] ?? ('HTTP ' . $status);
             if (is_array($msg)) $msg = json_encode($msg);
-            throw new Exception('DeepSeek: ' . $msg, $status);
+            throw new Exception('OpenRouter: ' . $msg, $status);
         }
 
         $text = (string) ($data['choices'][0]['message']['content'] ?? '');
@@ -470,7 +469,7 @@ try {
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $fields,
-                CURLOPT_HTTPHEADER => ['Authorization: *** ' . $openaiKey],
+                CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $openaiKey],
                 CURLOPT_TIMEOUT => 180,
                 CURLOPT_CONNECTTIMEOUT => 20,
                 CURLOPT_SSL_VERIFYPEER => true,
@@ -548,7 +547,7 @@ try {
                 ],
                 [
                     'Content-Type: application/json',
-                    'Authorization: *** ' . $orKey,
+                    'Authorization: Bearer ' . $orKey,
                     'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
                     'X-Title: Estilo JSON',
                 ],
