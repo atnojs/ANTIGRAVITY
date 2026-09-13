@@ -1,7 +1,7 @@
 <?php
 // DEBUG TEMPORAL — solo nombres de variables, nunca valores.
 header('Content-Type: application/json');
-$patterns = ['/OPENAI/i', '/^O$/i', '/^R$/i', '/^F$/i', '/^A$/i', '/^B$/i', '/GEMINI/i', '/API/i', '/KEY/i'];
+$patterns = ['/OPENAI/i', '/^O$/i', '/^REDIRECT_O$/i', '/^R$/i', '/^REDIRECT_R$/i', '/^F$/i', '/^REDIRECT_F$/i', '/^A$/i', '/^REDIRECT_A$/i', '/^B$/i', '/GEMINI/i', '/API/i', '/KEY/i', '/REDIRECT/i'];
 $found = [];
 foreach ($patterns as $p) {
     foreach (array_keys($_SERVER) as $k) {
