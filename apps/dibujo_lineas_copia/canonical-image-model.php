@@ -1,14 +1,21 @@
 <?php
 declare(strict_types=1);
 
-/* Contrato único de generación de imágenes para todas las aplicaciones. */
+/* Contrato único de generación de imágenes para todas las aplicaciones.
+   Modelos vigentes (2026-09-13):
+   - OpenAI GPT Image 2.5 directo: openai-medium / openai-high (flare),
+     openai-xhigh (sunburst), openai-max-flare, openai-max-sunburst.
+   - Gemini vía OpenRouter: gemini-flash (3.1 Flash), gemini-pro (3 Pro). */
 function ag_image_catalog(): array
 {
     return [
-        'openai-medium' => ['provider'=>'openai', 'model'=>'gpt-image-2', 'quality'=>'medium'],
-        'openai-high'   => ['provider'=>'openai', 'model'=>'gpt-image-2', 'quality'=>'high'],
-        'gemini-flash'  => ['provider'=>'gemini', 'model'=>'google/gemini-3.1-flash-image'],
-        'gemini-pro'    => ['provider'=>'gemini', 'model'=>'google/gemini-3-pro-image'],
+        'openai-medium'       => ['provider'=>'openai', 'model'=>'gpt-image-2.5-flare', 'quality'=>'medium'],
+        'openai-high'         => ['provider'=>'openai', 'model'=>'gpt-image-2.5-flare', 'quality'=>'high'],
+        'openai-xhigh'        => ['provider'=>'openai', 'model'=>'gpt-image-2.5-sunburst', 'quality'=>'xhigh'],
+        'openai-max-flare'    => ['provider'=>'openai', 'model'=>'gpt-image-2.5-flare', 'quality'=>'max'],
+        'openai-max-sunburst' => ['provider'=>'openai', 'model'=>'gpt-image-2.5-sunburst', 'quality'=>'max'],
+        'gemini-flash'        => ['provider'=>'gemini', 'model'=>'google/gemini-3.1-flash-image'],
+        'gemini-pro'          => ['provider'=>'gemini', 'model'=>'google/gemini-3-pro-image'],
     ];
 }
 
@@ -118,15 +125,15 @@ function ag_image_generate(array $request, string $configDir = ''): array
     if ($selected['provider'] === 'openai') {
         $key = ag_image_key($configDir, 'OPENAI_API_KEY', 'O');
         if ($key === '') throw new RuntimeException('La clave de OpenAI no está configurada.', 500);
-        $fields = ['model'=>'gpt-image-2', 'prompt'=>$prompt, 'quality'=>$selected['quality'], 'size'=>ag_image_size($request)];
+        $fields = ['model'=>$selected['model'], 'prompt'=>$prompt, 'quality'=>$selected['quality'], 'size'=>ag_image_size($request)];
         $endpoint = 'https://api.openai.com/v1/images/generations'; $tmp = null;
-        $headers = ['Authorization: Bearer '.$key, 'Content-Type: application/json'];
+        $headers = ['Authorization: *** '.$key, 'Content-Type: application/json'];
         $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($images !== []) {
             [$binary, $mime] = ag_image_input($images[0]); $tmp = tempnam(sys_get_temp_dir(), 'ag_image_');
             if ($tmp === false || file_put_contents($tmp, $binary) === false) throw new RuntimeException('No se pudo preparar la imagen.', 500);
             $ext = str_contains($mime, 'png') ? 'png' : (str_contains($mime, 'webp') ? 'webp' : 'jpg'); $fields['image[]'] = new CURLFile($tmp, $mime, 'referencia.'.$ext); $endpoint = 'https://api.openai.com/v1/images/edits';
-            $headers = ['Authorization: Bearer '.$key];
+            $headers = ['Authorization: *** '.$key];
             $postFields = $fields;
         }
         $ch = curl_init($endpoint); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$postFields, CURLOPT_HTTPHEADER=>$headers, CURLOPT_CONNECTTIMEOUT=>20, CURLOPT_TIMEOUT=>180]);
@@ -144,7 +151,7 @@ function ag_image_generate(array $request, string $configDir = ''): array
     $key = ag_image_key($configDir, 'R'); if ($key === '') throw new RuntimeException('La clave de OpenRouter no está configurada.', 500);
     $content = [['type'=>'text','text'=>$prompt]];
     foreach ($images as $image) { [, $mime] = ag_image_input($image); $pure = preg_replace('#^data:[^;]+;base64,#i', '', trim($image)); $content[] = ['type'=>'image_url','image_url'=>['url'=>'data:'.$mime.';base64,'.$pure]]; }
-    $data = ag_image_json('https://openrouter.ai/api/v1/chat/completions', ['Authorization: Bearer '.$key,'Content-Type: application/json'], ['model'=>$selected['model'],'modalities'=>['image','text'],'messages'=>[['role'=>'user','content'=>$content]],'max_tokens'=>8000,'image_config'=>['aspect_ratio'=>ag_image_aspect((string)($request['aspectRatio'] ?? '1:1'))]]);
+    $data = ag_image_json('https://openrouter.ai/api/v1/chat/completions', ['Authorization: *** '.$key,'Content-Type: application/json'], ['model'=>$selected['model'],'modalities'=>['image','text'],'messages'=>[['role'=>'user','content'=>$content]],'max_tokens'=>8000,'image_config'=>['aspect_ratio'=>ag_image_aspect((string)($request['aspectRatio'] ?? '1:1'))]]);
     $url = (string)($data['choices'][0]['message']['images'][0]['image_url']['url'] ?? ''); if (strpos($url, 'data:') !== 0) throw new RuntimeException('Gemini no devolvió una imagen.', 502);
     $b64 = substr($url, strpos($url, ',') + 1); $mime = 'image/png'; if (preg_match('#^data:(image/[^;]+);#i', $url, $m) === 1) $mime = strtolower($m[1]);
     return ag_image_result($b64, $mime, $selected, 'gemini');

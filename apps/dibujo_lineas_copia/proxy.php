@@ -1,9 +1,10 @@
 <?php
 // ============================================================
 // PROXY PHP — Imagenes Lineales (unificado)
-// Soporta Gemini via OpenRouter (clave R) y GPT Image 2 directo de OpenAI
+// Soporta Gemini via OpenRouter (clave R) y GPT Image 2.5 directo de OpenAI
 // (OPENAI_API_KEY o clave O).
-// Selector de modelo: openai-medium / openai-high / gemini-flash / gemini-pro.
+// Selector de modelo: openai-medium / openai-high / openai-xhigh /
+// openai-max-flare / openai-max-sunburst / gemini-flash / gemini-pro.
 // Contrato: recibe {image, mimeType, model?, prompt?}
 //           responde  {image, mimeType}
 // ============================================================
@@ -140,10 +141,13 @@ $geminiRatio = geminiAspectRatio($sourceWidth, $sourceHeight);
 
 // ===== Seleccion de modelo (lista blanca exacta) =====
 $modelCatalog = [
-    'openai-medium' => ['backend' => 'openai', 'quality' => 'medium'],
-    'openai-high'   => ['backend' => 'openai', 'quality' => 'high'],
-    'gemini-flash'  => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
-    'gemini-pro'    => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
 ];
 $reqModel = strtolower((string)($req['model'] ?? 'openai-medium'));
 if (!isset($modelCatalog[$reqModel])) {
@@ -154,6 +158,7 @@ if (!isset($modelCatalog[$reqModel])) {
 $selected = $modelCatalog[$reqModel];
 $backend = $selected['backend'];
 $geminiModel = $selected['model'] ?? '';
+$openaiModel = $selected['model'] ?? 'gpt-image-2.5-flare';
 $openaiQuality = $selected['quality'] ?? 'medium';
 
 // ====================================================================
@@ -231,7 +236,7 @@ if ($backend === 'gemini') {
 }
 
 // ====================================================================
-// BACKEND: OPENAI GPT IMAGE 2 (Images API, edicion sincrona)
+// BACKEND: OPENAI GPT IMAGE 2.5 (Images API, edicion sincrona)
 // ====================================================================
 if ($backend === 'openai') {
     if ($openaiKey === '') {
@@ -253,7 +258,7 @@ if ($backend === 'openai') {
 
     $uploadName = 'referencia.' . (stripos($mimeType, 'png') !== false ? 'png' : (stripos($mimeType, 'webp') !== false ? 'webp' : 'jpg'));
     $payload = [
-        'model'  => 'gpt-image-2',
+        'model'  => $openaiModel,
         'prompt' => $prompt,
         'quality'=> $openaiQuality,
         'size'   => $openaiSize,
@@ -324,4 +329,4 @@ if ($backend === 'openai') {
 
 // Modelo no reconocido
 http_response_code(400);
-echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-medium, openai-high, gemini-flash o gemini-pro.']]);
+echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash o gemini-pro.']]);

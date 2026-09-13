@@ -29,7 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'openai-medium': 'MEDIUM',
-        'openai-high': 'HIGHT'
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST'
     };
     const modelToggles = document.querySelectorAll('.model-toggle');
 
