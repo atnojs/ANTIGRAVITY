@@ -46,12 +46,12 @@ Aplicar exactamente las reglas de integración, seguridad y persistencia definid
 
 En el entorno privado de Hostinger:
 
-- `O` corresponde a OpenAI Images directo (`gpt-image-2`).
+- `O` corresponde a OpenAI Images directo (`gpt-image-2.5-flare` y `gpt-image-2.5-sunburst`).
 - `R` corresponde a OpenRouter para Gemini y texto.
 
 No intercambiar las letras ni revelar los valores. El frontend nunca debe contener o recibir las claves.
 
-En cualquier app de generación o edición de imágenes, el único selector permitido es el que esté implementado en ese momento en `apps/dibujo_lineas_copia`. Actualmente contiene dos bloques: `OPENAI` a la izquierda con `MEDIUM` activo por defecto y `HIGHT`, y `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. Leer su `index.html`, `app.css` y `app.js` antes de tocar el selector; no recuperar variantes anteriores.
+En cualquier app de generación o edición de imágenes, el único selector permitido es el que esté implementado en ese momento en `apps/dibujo_lineas_copia`. Actualmente (2026-09-13) contiene dos bloques: `OPENAI 2.5` a la izquierda con `MEDIUM` activo por defecto, `HIGH`, `XHIGH`, `MAX FLARE` y `MAX SUNBURST`, y `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. Mapeo canónico: `openai-medium`/`openai-high` → `gpt-image-2.5-flare` con quality `medium`/`high`; `openai-xhigh` → `gpt-image-2.5-sunburst` quality `xhigh`; `openai-max-flare` → `gpt-image-2.5-flare` quality `max`; `openai-max-sunburst` → `gpt-image-2.5-sunburst` quality `max`; `gemini-flash`/`gemini-pro` → `google/gemini-3.1-flash-image`/`google/gemini-3-pro-image` vía OpenRouter. En apps de solo texto o descripción de imágenes, el modelo es `google/gemini-3.8-flash` (OpenRouter). Leer su `index.html`, `app.css` y `app.js` antes de tocar el selector; no recuperar variantes anteriores.
 
 Mientras una IA esté trabajando, usar la experiencia de carga definida en la maestra y mostrar exactamente el texto `IA generando lo solicitado...`.
 
