@@ -1413,25 +1413,27 @@ textarea::placeholder {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2px;
+  gap: .18rem;
   width: 100%;
-  padding: 3px;
-  border-radius: 12px;
-  background: rgba(0, 16, 24, 0.35);
+  padding: .3rem;
+  border-radius: 999px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  box-shadow: 0 0 12px var(--shadow-light);
+  box-shadow: 0 0 12px var(--glow-soft);
 }
 
 .model-toggle-group button.model-toggle {
   min-width: 0;
   width: auto;
-  padding: 7px 5px;
+  padding: .38rem .34rem;
   border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--muted);
   font-family: 'Electrolize', sans-serif;
-  font-size: 0.64rem;
+  font-size: 0.63rem;
   letter-spacing: 0.02em;
   white-space: nowrap;
   text-transform: uppercase;
@@ -1445,16 +1447,17 @@ textarea::placeholder {
 
 .model-toggle-group button.model-toggle:hover {
   color: var(--text);
-  border-color: var(--acc);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 12px var(--shadow-light);
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 12px var(--glow-soft);
 }
 
 .model-toggle-group button.model-toggle.active {
   background: linear-gradient(135deg, var(--contenedor), var(--acc));
   color: #CCFFFF;
   text-shadow: 0 0 8px var(--glow);
-  border-color: var(--acc);
+  border-color: var(--border-strong);
   box-shadow: 0 0 18px var(--glow);
 }
 
