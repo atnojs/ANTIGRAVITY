@@ -389,7 +389,7 @@ body::after {
 }
 
 /* ================================================================
-   FILA 4: PERSONALIZA (izq) + CONTROLES (der) — MISMA LÍNEA
+   FILA 4: PERSONALIZA (izq) + GENERAR (centro) + CONTROLES (der) — MISMA LÍNEA
    ================================================================ */
 .row-bottom {
   display: flex;
@@ -597,33 +597,35 @@ body::after {
    ================================================================ */
 .section-generate {
   display: flex;
+  align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
 }
 
 .btn-generate {
-  width: 100%;
-  max-width: 450px;
-  padding: 14px 28px;
+  padding: 12px 22px;
   border-radius: 999px;
-  border: 1px solid var(--cian);
-  background: linear-gradient(135deg, var(--cian), var(--verde));
-  color: #001018;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--cian);
   font-family: var(--font);
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 0 28px var(--glow), 0 8px 24px rgba(0,0,0,0.4);
-  transition: all 0.25s;
+  box-shadow: 0 0 14px var(--glow-soft);
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
 .btn-generate:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 0 40px var(--glow), 0 12px 32px rgba(0,0,0,0.5);
+  background: linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)),var(--card-bg);
+  border-color: var(--cian);
+  color: #fff;
+  box-shadow: 0 0 18px var(--glow-soft);
 }
 .btn-generate:disabled { opacity: 0.5; cursor: wait; }
 .btn-generate:focus-visible { outline: 2px solid var(--cian); outline-offset: 3px; }
@@ -941,6 +943,10 @@ body::after {
   }
   .section-personaliza {
     flex: 1 1 auto;
+  }
+  .btn-generate {
+    width: 100%;
+    max-width: 340px;
   }
   .section-controls {
     flex: 0 0 auto;
