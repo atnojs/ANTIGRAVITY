@@ -125,3 +125,4 @@ apps/editar_generar_1/5/
 
 apps/viaje_tiempo/.diag/
 skills/diag_mic.py
+!apps/prompts_predeterminados/estado_galeria.json

@@ -1,0 +1,231 @@
+{
+    "background": "",
+    "columns": [
+        {
+            "title": "Galeria",
+            "tools": [
+                {
+                    "id": "p_1767279495568",
+                    "name": "Navidad",
+                    "isPanelHeader": true,
+                    "tools": [
+                        {
+                            "id": "img_1767282859411",
+                            "name": "Bola de Cristal",
+                            "websiteUrl": "uploads\/art_69599348191bb.png",
+                            "briefDescription": "Crea una felicitaci\u00f3n navide\u00f1a profesional en la que salga el logo de Mira Pa\u00b4Lante y la chica de la imagen en una bola de nieve deseando una feliz entrada a 2026, post edici\u00f3n profesional"
+                        },
+                        {
+                            "id": "img_1767279515662",
+                            "name": "Actores como Reyes Magos",
+                            "websiteUrl": "uploads\/art_6959935b42fd8.png",
+                            "briefDescription": "Quiero  felicitar el 2026 con los Reyes Magos, pero atento al detalle: Melchor va a tener la cara de Brad Pitt, Gaspar es Tom Cruise y Baltasar tiene la cara de Will Smith."
+                        },
+                        {
+                            "id": "img_1767288701073",
+                            "name": "Fiesta Noche Vieja",
+                            "websiteUrl": "uploads\/art_6959936de7258.png",
+                            "briefDescription": "crea una felicitaci\u00f3n en la que estamos en el mayor fiest\u00f3n de Nochevieja: bola discoteca, gafas de sol, chaqueta de lentejuelas, serpentinas y matasuegras; que parezca una foto robada, post edici\u00f3n profesional, como siempre."
+                        },
+                        {
+                            "id": "img_1767481444973",
+                            "name": "Retrato Navide\u00f1o",
+                            "websiteUrl": "uploads\/art_6959a0fa60cb0.png",
+                            "briefDescription": "Transforma la foto cargada en un retrato navide\u00f1o c\u00e1lido y cuidado. Mant\u00e9n EXACTAMENTE el rostro real de la persona, su tono de piel, expresi\u00f3n y rasgos. Redefine su estilo con una iluminaci\u00f3n navide\u00f1a suave, con delicados reflejos dorados. Rod\u00e9ala de elementos festivos como ramas de abeto, peque\u00f1as luces c\u00e1lidas y un sutil resplandor desenfocado. A\u00f1ade rojos intensos, verdes bosque y texturas acogedoras que recuerden a las tarjetas navide\u00f1as cl\u00e1sicas. La imagen final debe sentirse elegante, c\u00e1lida y atemporal, no caricaturesca."
+                        },
+                        {
+                            "id": "img_1767546780904",
+                            "name": "Postal Navide\u00f1a",
+                            "websiteUrl": "uploads\/art_695aa03281769.png",
+                            "briefDescription": "Transforma la foto de referencia en una tarjeta navide\u00f1a c\u00e1lida y elegante, con estilo festivo, iluminaci\u00f3n acogedora, decoraci\u00f3n sutil y un parecido natural y fotorrealista cuidadosamente conservado. Incluye de forma opcional un texto navide\u00f1o discreto o un breve saludo de temporada que complemente la imagen sin restar protagonismo al sujeto."
+                        }
+                    ]
+                },
+                {
+                    "id": "p_1767286421704",
+                    "name": "Retratos",
+                    "isPanelHeader": true,
+                    "tools": [
+                        {
+                            "id": "img_1767279424316",
+                            "name": "Blanco y Negro Bohemio",
+                            "websiteUrl": "uploads\/art_69597c7d29f0d.webp",
+                            "briefDescription": "Based on the person in the reference image, a man with a short beard is leaning against a dark studio wall with his eyes closed in a contemplative pose, holding a glass with a drink. He is wearing a crisp white button-down shirt and black trousers. The image is a high-contrast black and white studio portrait with moody, dramatic side lighting that sculpts his features and the fabric of his shirt, emphasizing a quiet, introspective mood."
+                        },
+                        {
+                            "id": "img_1767285401007",
+                            "name": "RRSS",
+                            "websiteUrl": "uploads\/art_69597c5a3e4e7.webp",
+                            "briefDescription": "Cinematic 8K portrait based on image reference, subject deeply engrossed looking down at a smartphone held in hands. Subject is wearing large black over-ear wireless headphones resting around neck and a light-colored beige bomber jacket. Surrounding the subject is a glowing, futuristic halo of floating 3D social media and app icons (Instagram, Facebook, WhatsApp, YouTube, Gmail, Music). These icons are interconnected by luminous, flowing neon-blue digital data streaks forming a circular web. Soft professional studio lighting highlighting the digital glow, warm blurred wooden wall background, shallow depth of field, highly detailed textures."
+                        },
+                        {
+                            "id": "img_1767383241814",
+                            "name": "Colage",
+                            "websiteUrl": "uploads\/art_69597d0ea9978.webp",
+                            "briefDescription": "Based on the person in the reference image, recreate a professional yet creative studio portrait. The person is standing in the foreground with their arms crossed confidently, wearing a black t-shirt with custom white text and blue distressed jeans. The unique background consists of a collage wall made up of numerous small, black-and-white portrait photos of the same person in various poses, creating a \"wallpaper\" effect. The lighting is clean and balanced, similar to a professional headshot, with a soft key light on the subject to make them stand out from the busy background. The overall composition is sharp and high-resolution, conveying a brand-focused or \"digital creator\" aesthetic with a modern, professional vibe."
+                        },
+                        {
+                            "id": "img_1767378376371",
+                            "name": "Ambiente Chill",
+                            "websiteUrl": "uploads\/art_69597cdcab42c.webp",
+                            "briefDescription": "Based on the person in the reference image, recreate the scene featuring a man sitting relaxed in a wooden boat. The man is wearing a light blue unbuttoned shirt over a white t-shirt, paired with beige chinos and white leather sneakers. He is wearing silver over-ear headphones, eyes closed with a serene expression, basking in golden hour sunlight. The environment is a tranquil lake filled with lush green lily pads and blooming pink lotus flowers. In the background, soft rolling hills and a clear blue sky meet the horizon. The lighting is warm, natural, and cinematic, emphasizing a \"chill\" and peaceful atmosphere with soft shadows and high-quality photography detail."
+                        }
+                    ]
+                },
+                {
+                    "id": "p_1767546059720",
+                    "name": "Varios",
+                    "isPanelHeader": true,
+                    "tools": [
+                        {
+                            "id": "img_1767380651780",
+                            "name": "Estilo Bandai",
+                            "websiteUrl": "uploads\/art_69597cf98ac3a.webp",
+                            "briefDescription": "Based on the person in the reference image, transform them into a highly detailed 1\/7 scale collectible action figure standing on a wooden office desk. The subject is dressed in a professional black long-sleeved shirt with suspenders and dark trousers, striking a confident pose with one hand on their chin. In the background, a large computer monitor displays a 3D modeling software interface with a digital wireframe sculpt of the character. To the right of the figure, include a stylized product packaging box featuring vibrant anime-style 2D illustrations of the person against an orange and red radial sunburst background, complete with \"MODEL FIGURE SERIES\" text and toy brand logos. The environment is a warm, cozy studio with a blurred bookshelf in the distance. The lighting is cinematic and soft, emphasizing the matte texture of the physical figure and the glow from the computer screen, high-quality toy photography, 8k resolution, macro lens aesthetic."
+                        },
+                        {
+                            "id": "img_1767545469412",
+                            "name": "Anime Retro",
+                            "websiteUrl": "uploads\/art_695a9c0752071.png",
+                            "briefDescription": "Transform the subject into a retro-futuristic Japanese anime character from the 1980s. Use bold lines, slightly exaggerated facial features, and cel-shaded shadows typical of hand-drawn animation. Apply vibrant but slightly desaturated colors and dramatic neon lighting.\nPlace the character in a dynamic cyberpunk environment with neon signs, ambient fog, and a touch of film grain. The final image should convey the energy, style, and nostalgia of a completely hand-drawn 1980s science fiction illustration."
+                        }
+                    ]
+                },
+                {
+                    "id": "p_1767648466750",
+                    "name": "Iluminaci\u00f3n de retrato cinematogr\u00e1fico",
+                    "isPanelHeader": true,
+                    "tools": [
+                        {
+                            "id": "img_1767645650387",
+                            "name": "Iluminaci\u00f3n Rembrandt",
+                            "websiteUrl": "uploads\/art_695c2312031b9.jpg",
+                            "briefDescription": "Iluminaci\u00f3n lateral que crea una zona de sombra en la cara o el sujeto, dejando un tri\u00e1ngulo caracter\u00edstico de luz en la mejilla de la parte en sombra. Est\u00e9tica cinematogr\u00e1fica y ligeramente dram\u00e1tica, con contraste moderado y ambiente art\u00edstico. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767645965137",
+                            "name": "Butterfly Lighting (Iluminaci\u00f3n Mariposa) ",
+                            "websiteUrl": "uploads\/art_695c253232227.jpg",
+                            "briefDescription": "Iluminaci\u00f3n frontal y elevada que genera una peque\u00f1a sombra suave justo debajo de la nariz. Est\u00e9tica limpia, elegante y de belleza cl\u00e1sica, con luz suave y uniforme que estiliza los rasgos. Ambiente claro y equilibrado. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767646221098",
+                            "name": "Split Lighting (Iluminaci\u00f3n Dividida)",
+                            "websiteUrl": "uploads\/art_695c28c83e1a4.jpg",
+                            "briefDescription": "Iluminaci\u00f3n dividida con una luz lateral que ilumina solo la mitad del rostro o del sujeto, dejando la otra mitad en sombra profunda. Est\u00e9tica de alto contraste con sensaci\u00f3n dram\u00e1tica y cinematogr\u00e1fica, inspirada en el cine negro. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767648259843",
+                            "name": "Low Key (Clave Baja)",
+                            "websiteUrl": "uploads\/art_695c2cf0df9fd.jpg",
+                            "briefDescription": "Imagen en clave baja con iluminaci\u00f3n m\u00ednima. Predominan sombras profundas y negros intensos, con solo una peque\u00f1a cantidad de luz que define parcialmente la forma del sujeto. Est\u00e9tica de cine negro, ambiente tenso y misterioso. Contraste fuerte y atm\u00f3sfera oscura. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767648558034",
+                            "name": "High Key (Clave Alta)",
+                            "websiteUrl": "uploads\/art_695c2e4c21e9a.jpg",
+                            "briefDescription": "Imagen en clave alta con iluminaci\u00f3n muy brillante y uniforme. Fondo claro y casi sobreexpuesto, bajo contraste y ambiente positivo y ligero. Luz blanca suave envolviendo la escena con est\u00e9tica limpia y et\u00e9rea. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767705412624",
+                            "name": "Monster Lighting (Luz Nadir)",
+                            "websiteUrl": "uploads\/art_695d0c732122c.jpg",
+                            "briefDescription": "Iluminaci\u00f3n desde abajo que proyecta sombras dram\u00e1ticas hacia arriba en el sujeto. Est\u00e9tica inspirada en cine de terror, creando un aspecto inquietante y antinatural. Ambiente oscuro con fuerte contraste. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767705608413",
+                            "name": "Top Lighting (Luz Cenital)",
+                            "websiteUrl": "uploads\/art_695d0ce3bf034.jpg",
+                            "briefDescription": "Iluminaci\u00f3n proveniente directamente desde arriba. Se crean sombras marcadas bajo los ojos, nariz y barbilla, aportando un aspecto intenso y algo siniestro. Ambiente dram\u00e1tico con alto contraste. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767705719400",
+                            "name": "Backlight (Contraluz)",
+                            "websiteUrl": "uploads\/art_695d0d4f2a89b.jpg",
+                            "briefDescription": "Contraluz fuerte con una luz brillante detr\u00e1s del sujeto, creando un borde luminoso alrededor de la silueta. El sujeto aparece m\u00e1s oscuro que el fondo, con ambiente cinematogr\u00e1fico y ligera neblina que resalta el halo de luz. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767705821967",
+                            "name": "Color Gel \/ Neon (Iluminaci\u00f3n de Color",
+                            "websiteUrl": "uploads\/art_695d0db285c9b.jpg",
+                            "briefDescription": "Iluminaci\u00f3n bicolor con geles de color en tonos cian y magenta, estilo ne\u00f3n cinematogr\u00e1fico. Est\u00e9tica moderna, estilizada y expresiva, con ambiente nocturno o de club. Colores saturados y contrastados. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767705926650",
+                            "name": "Volumetric Lighting (Rayos de Luz)",
+                            "websiteUrl": "uploads\/art_695d0e2fdb24f.jpg",
+                            "briefDescription": "Iluminaci\u00f3n volum\u00e9trica con rayos de luz visibles atravesando polvo o niebla en el aire. Sensaci\u00f3n atmosf\u00e9rica, profunda y cinematogr\u00e1fica, con luz entrando desde una fuente direccional. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767706050675",
+                            "name": "Practical Lighting (Luz Motivada \/ Pr\u00e1ctica)",
+                            "websiteUrl": "uploads\/art_695d0e9aa7d93.jpg",
+                            "briefDescription": "Iluminaci\u00f3n motivada por una fuente visible dentro de la escena, como una l\u00e1mpara o luz ambiental realista. Atm\u00f3sfera c\u00e1lida, \u00edntima y natural, estilo cine indie. La luz parece justificada por el entorno. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1767706156765",
+                            "name": "Silhouette (Silueta Pura)",
+                            "websiteUrl": "uploads\/art_695d0f1d67eb4.jpg",
+                            "briefDescription": "Escena en la que el sujeto aparece como una silueta negra s\u00f3lida contra un fondo muy luminoso. Alto contraste, sin detalles visibles en el sujeto, solo su contorno recortado. Est\u00e9tica minimalista y misteriosa. Fotograf\u00eda realista en formato cuadrado 1:1."
+                        },
+                        {
+                            "id": "img_1768405871597",
+                            "name": "Los Oscar",
+                            "websiteUrl": "uploads\/art_6967bc083ce27.jpg",
+                            "briefDescription": "Genera una **foto cinematogr\u00e1fica hiperrealista** con la foto subida, manteniendo intactos el rostro, peinado y el tono de piel.\nLa escena se desarrolla en una **glamorosa fiesta posterior a los Oscar**, con una tenue iluminaci\u00f3n dorada, l\u00e1mparas de ara\u00f1a y tonos de alfombra roja.\n\nLa **perspectiva** viene de un reflejo en el espejo: la persona sostiene un tel\u00e9fono inteligente con el brazo extendido, tom\u00e1ndose una selfie grupal con celebridades detr\u00e1s.\n**Expresi\u00f3n:** sonrisa natural, segura pero sincera.\n\n**Vestuario:** esmoquin negro elegante con solapas de sat\u00e9n, camisa blanca impecable y pajarita negra.\n\nDetr\u00e1s de la persona, reflejadas en el espejo, hay un grupo de celebridades de primer nivel riendo, haciendo referencia a la famosa selfie de Ellen DeGeneres.\n\nLos **rostros** deben verse aut\u00e9nticos, con \u00e1ngulos variados, dispersi\u00f3n natural de la luz y una ligera distorsi\u00f3n de la lente de la c\u00e1mara del tel\u00e9fono.\n\n**Ambiente:** c\u00e1lido, glamuroso y lleno de energ\u00eda.\n**Iluminaci\u00f3n:** sutiles reflejos en el borde de las l\u00e1mparas de ara\u00f1a, compensados por el brillo de la luz de la pantalla del tel\u00e9fono en los rostros.\n\nRealismo cinematogr\u00e1fico editorial, ligero grano para mayor autenticidad, **relaci\u00f3n de aspecto 4:5 vertical**.\n"
+                        },
+                        {
+                            "id": "img_1768406025857",
+                            "name": "Los Oscar",
+                            "websiteUrl": "uploads\/art_6967bca27c491.jpg",
+                            "briefDescription": "Genera una **foto cinematogr\u00e1fica hiperrealista** con la foto subida, manteniendo intactos el rostro, peinado y el tono de piel.\nLa escena se desarrolla en una **glamorosa fiesta posterior a los Oscar**, con una tenue iluminaci\u00f3n dorada, l\u00e1mparas de ara\u00f1a y tonos de alfombra roja.\n\nLa **perspectiva** viene de un reflejo en el espejo: la persona sostiene un tel\u00e9fono inteligente con el brazo extendido, tom\u00e1ndose una selfie grupal con celebridades detr\u00e1s.\n**Expresi\u00f3n:** sonrisa natural, segura pero sincera.\n\n**Vestuario:** esmoquin negro elegante con solapas de sat\u00e9n, camisa blanca impecable y pajarita negra.\n\nDetr\u00e1s de la persona, reflejadas en el espejo, hay un grupo de celebridades de primer nivel riendo, haciendo referencia a la famosa selfie de Ellen DeGeneres.\n\nLos **rostros** deben verse aut\u00e9nticos, con \u00e1ngulos variados, dispersi\u00f3n natural de la luz y una ligera distorsi\u00f3n de la lente de la c\u00e1mara del tel\u00e9fono.\n\n**Ambiente:** c\u00e1lido, glamuroso y lleno de energ\u00eda.\n**Iluminaci\u00f3n:** sutiles reflejos en el borde de las l\u00e1mparas de ara\u00f1a, compensados por el brillo de la luz de la pantalla del tel\u00e9fono en los rostros.\n\nRealismo cinematogr\u00e1fico editorial, ligero grano para mayor autenticidad, **relaci\u00f3n de aspecto 4:5 vertical**.\n"
+                        }
+                    ]
+                },
+                {
+                    "id": "img_1767379714046",
+                    "name": "Superh\u00e9roes",
+                    "websiteUrl": "uploads\/art_69597cec89880.webp",
+                    "briefDescription": "Based on the person in the reference image, recreate a wide-angle mobile selfie shot taken in the middle of a crowded, sunlit Times Square. The person is positioned in the center-foreground, wearing a simple black t-shirt, smiling and holding a smartphone to take a group photo. Surrounding them is a diverse group of iconic superheroes in highly detailed, cinematic costumes, including characters resembling Superman, Wonder Woman, Batman, Wolverine, The Flash, and Aquaman. The superheroes are posing playfully for the selfie\u2014some giving a thumbs up, others smiling or looking heroic. The background is filled with the blurred architectural elements of a bustling city, tall buildings, and bright digital billboards. The lighting is bright, natural daylight, creating a vibrant, high-energy, and modern atmosphere with sharp details and a realistic, crowded urban feel."
+                },
+                {
+                    "id": "img_1767382622878",
+                    "name": "Polaroid",
+                    "websiteUrl": "uploads\/art_69597d0391468.webp",
+                    "briefDescription": "Using the subject(s) contained in the provided reference image as the central focus, recreate the scene as a vintage-style instant photograph. The subject(s) (whether person, animal, or object) must be authentically adapted into the following aesthetic:\n\nThe image is encased in a classic white Polaroid border. The lighting must mimic a traditional vintage camera flash\u2014bright and direct on the subject(s), creating a sharp contrast, a slight vignette, and soft shadows against the background. The background should be changed to a minimalist, vertical-pleated white curtain or backdrop. The overall aesthetic must be deeply nostalgic, featuring a desaturated color palette, visible film grain, soft focus, and the characteristic chemical development texture of an authentic Polaroid print."
+                },
+                {
+                    "id": "img_1767546520770",
+                    "name": "InkWork",
+                    "websiteUrl": "uploads\/art_695a9f2e609ed.png",
+                    "briefDescription": "Crea una ilustraci\u00f3n en tinta en blanco y negro del sujeto o de la imagen, usando trazos de pincel audaces, l\u00edneas expresivas y movimiento din\u00e1mico. Si hay una persona, conserva su forma reconocible; de lo contrario, representa la escena u objeto aplicando el mismo estilo de tinta de alto contraste."
+                },
+                {
+                    "id": "img_1767558270207",
+                    "name": "Illusion Diffusion",
+                    "websiteUrl": "uploads\/art_695acd13c5115.jpg",
+                    "briefDescription": "."
+                },
+                {
+                    "id": "img_1767875929128",
+                    "name": "Raro",
+                    "websiteUrl": "uploads\/art_6967b9992d130.jpg",
+                    "briefDescription": "Retrato en 8K ultra-cinematogr\u00e1fico e hiperrealista. Usa la imagen subida como referencia absoluta e inalterable del sujeto: identidad, forma, n\u00famero de sujetos, postura, proporciones, vestimenta, accesorios, objetos visibles y cualquier elemento presente deben mantenerse exactamente como en la imagen original, sin a\u00f1adir, eliminar ni modificar nada. transmitiendo una presencia emocional calmada pero poderosa. Utiliza la imagen cargada como referencia facial exacta al 100%: la estructura facial, el tono de piel, las facciones y las proporciones deben permanecer inalteradas.\nDetr\u00e1s del sujeto, se forma un creciente resplandeciente de energ\u00eda el\u00e9ctrica azul y p\u00farpura que envuelve su cuerpo de forma din\u00e1mica: surgiendo del suelo, arque\u00e1ndose tras su espalda y fluyendo sobre su cabeza como un halo el\u00e9ctrico centelleante.\nEl arco el\u00e9ctrico emite chispas v\u00edvidas, brasas brillantes, humo suave y part\u00edculas luminosas, con partes de la energ\u00eda disolvi\u00e9ndose parcialmente en polvo fino cerca de su espalda, a\u00f1adiendo movimiento y profundidad.\nEl entorno es minimalista y melanc\u00f3lico, ambientado bajo un cielo oscuro y nublado cargado de truenos, realzado con una sutil niebla rastrera cerca del suelo.\nLa iluminaci\u00f3n es dram\u00e1tica y cinematogr\u00e1fica, con una fuerte luz de contorno que perfila la silueta, sombras profundas, alto contraste, rayos de luz volum\u00e9tricos y una profundidad de campo reducida.\nLas texturas son ultra-detalladas y fotorrealistas, con poros de piel realistas, detalles en la tela y part\u00edculas atmosf\u00e9ricas.\nLa gradaci\u00f3n de color es cinematogr\u00e1fica y emocional, con reflejos en azul y p\u00farpura fr\u00edo que contrastan con tonos neutros oscuros.\nRealismo al estilo Unreal Engine, sombras suaves, profundidad de calidad cinematogr\u00e1fica, atm\u00f3sfera poderosa y emocional, sin texto, sin logotipos, sin distorsiones.\nRelaci\u00f3n de aspecto: 9:16 Calidad: Ultra-realista, cinematogr\u00e1fica, 8K Estado de \u00e1nimo: Poderoso, misterioso, emocional, fantas\u00eda cinematogr\u00e1fica moderna.\nAseg\u00farate de que se ocupa el 100% del lienzo de la imagen generada .\n"
+                },
+                {
+                    "id": "img_1770413276024",
+                    "name": "Fotos ",
+                    "websiteUrl": "uploads\/art_698f866b0da20.png",
+                    "briefDescription": "Create 9 ultra-realistic 8K portraits of the same person using the uploaded photo exactly (100% identical facial identity). Arrange them in a 3x3 grid (portrait ratio) with each image showing him in a different color suit and tie (mix of solid and checked). Each scene should feature a unique pose, gesture, and background color tone."
+                },
+                {
+                    "id": "img_1770985209282",
+                    "name": "Restaurar Fotos",
+                    "websiteUrl": "uploads\/art_698f862ae183f.webp",
+                    "briefDescription": "Act\u00faa como un experto en restauraci\u00f3n fotogr\u00e1fica profesional y postproducci\u00f3n cinematogr\u00e1fica especializado en retratos hiperrealista de alta fidelidad."
+                }
+            ]
+        }
+    ],
+    "ultima_actualizacion": "2026-02-13 20:15:39"
+}
