@@ -1242,7 +1242,7 @@ function App() {
             <h2 className="text-lg font-semibold mb-3 text-center gradient-text app-section-title">Estilos Disponibles para {ROOM_CONFIG[selectedRoom].name}</h2>
             <div className="style-buttons-container">
               {availableStyles.map((style) => (
-                <button key={style} className="px-3 py-2 rounded-lg bg-gray-900 text-white disabled:opacity-50 btn-3d" onClick={() => generateOne(style)} disabled={!canGenerate} type="button">
+                <button key={style} className="style-btn" onClick={() => generateOne(style)} disabled={!canGenerate} type="button">
                   {style}
                 </button>
               ))}
