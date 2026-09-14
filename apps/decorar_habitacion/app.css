@@ -1413,7 +1413,7 @@ textarea::placeholder {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   width: 100%;
   padding: 3px;
   border-radius: 12px;
@@ -1425,7 +1425,7 @@ textarea::placeholder {
 .model-toggle-group button.model-toggle {
   min-width: 0;
   width: auto;
-  padding: 7px 6px;
+  padding: 7px 5px;
   border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
