@@ -399,7 +399,7 @@ body::after {
 
 /* PERSONALIZA (izquierda) */
 .section-personaliza {
-  flex: 0 1 460px;
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -479,7 +479,7 @@ body::after {
 
 /* CONTROLES (derecha): 3 líneas apiladas */
 .section-controls {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
