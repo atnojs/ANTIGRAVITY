@@ -1502,9 +1502,9 @@ body.edit-mode .category-btn:active {
 }
 
 .model-provider-layout {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
     width: 100%;
 }
 
@@ -1512,7 +1512,8 @@ body.edit-mode .category-btn:active {
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: .35rem;
 }
 
 .model-provider-title {
@@ -1524,37 +1525,56 @@ body.edit-mode .category-btn:active {
 }
 
 .model-toggle-group {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
     width: 100%;
+    padding: .3rem;
+    border-radius: 999px;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    box-shadow: 0 0 12px var(--glow-soft);
 }
 
 .model-toggle {
     min-width: 0;
-    width: 100%;
-    padding: 7px 4px;
-    border: 1px solid var(--border-strong);
+    width: auto;
+    padding: .55rem 1rem;
+    border: 1px solid transparent;
     border-radius: 999px;
     background: transparent;
     color: var(--muted);
     cursor: pointer;
     font: inherit;
-    font-size: .68rem;
-    font-weight: 700;
+    font-size: .9rem;
+    font-weight: 400;
+    letter-spacing: .04em;
     line-height: 1.2;
     white-space: nowrap;
+    text-transform: uppercase;
     transition: var(--transition-main);
 }
 
 .model-toggle:hover {
-    color: var(--neon-cyan);
+    color: var(--text);
+    border-color: var(--border-strong);
     background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 12px var(--glow-soft);
 }
 
 .model-toggle.active {
-    border-color: var(--neon-cyan);
-    background: #00D0D0;
-    color: #061018;
-    box-shadow: 0 0 20px rgba(0, 208, 208, .45);
+    background: linear-gradient(135deg, #174F7A, var(--acc));
+    color: #CCFFFF;
+    text-shadow: 0 0 8px var(--glow);
+    border-color: var(--border-strong);
+    box-shadow: 0 0 18px var(--glow);
+}
+
+@media (max-width: 640px) {
+    .model-toggle-group { gap: .3rem; }
+    .model-toggle { font-size: .7rem; padding: .45rem .6rem; letter-spacing: .02em; }
 }
