@@ -972,9 +972,10 @@ body::after {
 /* Disposición canónica del selector de modelos por proveedor. */
 .model-provider-layout {
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: stretch;
+  gap: .75rem;
   width: 100%;
 }
 .model-provider-column {
