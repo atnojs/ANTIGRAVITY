@@ -399,7 +399,8 @@ body::after {
 
 /* PERSONALIZA (izquierda) */
 .section-personaliza {
-  flex: 1;
+  flex: 0 1 460px;
+  min-width: 0;
 }
 
 .prompt-wrap {
@@ -478,16 +479,22 @@ body::after {
 
 /* CONTROLES (derecha): 3 líneas apiladas */
 .section-controls {
-  flex: 0 0 300px;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .controls-stack {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+/* Modelo ocupa toda la fila inferior */
+.controls-stack .control-line:nth-child(3) {
+  grid-column: 1 / -1;
 }
 
 .control-line {
@@ -508,6 +515,7 @@ body::after {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .toggle-btn {
@@ -597,7 +605,7 @@ body::after {
   max-width: 450px;
   padding: 14px 28px;
   border-radius: 999px;
-  border: none;
+  border: 1px solid var(--cian);
   background: linear-gradient(135deg, var(--cian), var(--verde));
   color: #001018;
   font-family: var(--font);
@@ -618,6 +626,7 @@ body::after {
   box-shadow: 0 0 40px var(--glow), 0 12px 32px rgba(0,0,0,0.5);
 }
 .btn-generate:disabled { opacity: 0.5; cursor: wait; }
+.btn-generate:focus-visible { outline: 2px solid var(--cian); outline-offset: 3px; }
 
 .spinner-generate {
   width: 18px; height: 18px;
@@ -929,6 +938,9 @@ body::after {
   }
   .row-bottom {
     flex-direction: column;
+  }
+  .section-personaliza {
+    flex: 1 1 auto;
   }
   .section-controls {
     flex: 0 0 auto;
