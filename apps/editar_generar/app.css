@@ -750,10 +750,10 @@ textarea:focus-visible {
   color:var(--muted);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
 }
 .model-selector .model-toggle-group{
-  display:flex;flex-wrap:wrap;justify-content:center;gap:.3rem;max-width:100%;
+  display:flex;flex-wrap:wrap;justify-content:center;gap:.22rem;max-width:100%;
 }
 .model-selector .model-toggle{
-  font-size:.68rem;letter-spacing:.03em;padding:.4rem .5rem;
+  font-size:.64rem;letter-spacing:.02em;padding:.38rem .4rem;
 }
 
 /* Botones de relación de aspecto: legibles y coherentes con el selector Holaa */
