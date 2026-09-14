@@ -1403,10 +1403,17 @@ textarea::placeholder {
 }
 
 /* --- Selector de Modelo IA (patrón canónico toggles pill hoola, SKILL_MAESTRA) --- */
+/* Layout en filas: OPENAI 2.5 arriba, GEMINI debajo */
+.model-provider-layout {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
 .model-toggle-group {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
   width: 100%;
   padding: 3px;
   border-radius: 12px;
@@ -1417,15 +1424,15 @@ textarea::placeholder {
 
 .model-toggle-group button.model-toggle {
   min-width: 0;
-  width: 100%;
-  padding: 7px 5px;
+  width: auto;
+  padding: 7px 6px;
   border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--muted);
   font-family: 'Electrolize', sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.025em;
+  font-size: 0.64rem;
+  letter-spacing: 0.02em;
   white-space: nowrap;
   text-transform: uppercase;
   cursor: pointer;
