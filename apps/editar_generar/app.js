@@ -966,14 +966,14 @@ const App = () => {
                             {/* ── Selector de Modelo IA (canonico hoola) ── */}
                             <div className="model-selector">
                               <span className="model-selector-label">Modelo IA</span>
-                              <div className="model-provider-layout grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
+                              <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                                 {[
                                   { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
                                   { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider}>
-                                    <span className="model-provider-title btn-canon text-[9px] text-cyan-400 block text-center mb-1">{group.provider}</span>
-                                    <div className="model-toggle-group grid grid-cols-2 gap-1">
+                                    <span className="model-provider-title btn-canon">{group.provider}</span>
+                                    <div className="model-toggle-group">
                                       {group.models.map(m => (
                                         <button
                                           type="button"
