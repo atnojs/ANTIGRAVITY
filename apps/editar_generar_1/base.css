@@ -53,6 +53,16 @@
     /* Typography */
     --font-display: 'Montserrat', sans-serif;
     --font-body: 'Poppins', sans-serif;
+
+    /* Kit tooltip de modelos */
+    --contenedor:#174F7A;
+    --acc:#00D0D0;
+    --border-strong:#00D0D0;
+    --glow:rgba(0,208,208,.8);
+    --glow-soft:rgba(0,208,208,.4);
+    --faint:#669999;
+    --muted:#94a3b8;
+    --font-ui:'Electrolize',system-ui,sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
