@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=17" />
+  <link rel="stylesheet" href="app.css?v=18" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -46,14 +46,15 @@
     <!-- Selector de modelo (patrón canónico toggles pill hoola, SKILL_MAESTRA) -->
     <div id="model-selector" class="model-selector">
       <span class="model-selector-label">Modelo IA</span>
+      <span class="model-quality-hint">De Menor a Mayor Calidad</span>
       <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
         <div class="model-provider-column">
           <span class="model-provider-title">OPENAI 2.5</span>
           <div class="model-toggle-group">
             <button type="button" id="model-openai-medium" class="model-toggle active" data-model="openai-medium" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>
-            <button type="button" id="model-openai-high" class="model-toggle" data-model="openai-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">HIGH</button>
+            <button type="button" id="model-openai-high" class="model-toggle" data-model="openai-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente">HIGH</button>
             <button type="button" id="model-openai-xhigh" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>
-            <button type="button" id="model-openai-maxflare" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MAX FLARE</button>
+            <button type="button" id="model-openai-maxflare" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst">MAX FLARE</button>
             <button type="button" id="model-openai-maxsunburst" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">MAX SUNBURST</button>
           </div>
         </div>

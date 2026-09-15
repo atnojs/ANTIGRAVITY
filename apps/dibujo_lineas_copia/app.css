@@ -235,6 +235,10 @@ h1{
 .model-selector-label{
   color:var(--muted);font-size:.8rem;letter-spacing:0.08em;text-transform:uppercase;
 }
+.model-quality-hint{
+  color:var(--faint);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  text-shadow:0 0 8px var(--glow-soft);
+}
 .model-toggle-group{
   display:inline-flex;gap:.5rem;padding:.3rem;border-radius:999px;
   background:var(--card-bg);border:1px solid var(--border);
