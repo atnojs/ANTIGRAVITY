@@ -530,19 +530,21 @@
         '<div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">' +
           '<div class="model-provider-column">' +
             '<span class="model-provider-title">OPENAI 2.5</span>' +
+            '<span class="model-quality-hint">De Menor a Mayor Calidad</span>' +
             '<div class="model-toggle-group">' +
-              '<button id="ai-quality-openai-medium" class="ai-quality-btn model-toggle active" data-model="openai-medium" type="button" title="OpenAI Medium" aria-pressed="true">MEDIUM</button>' +
-              '<button id="ai-quality-openai-high" class="ai-quality-btn model-toggle" data-model="openai-high" type="button" title="OpenAI High" aria-pressed="false">HIGH</button>' +
-              '<button id="ai-quality-openai-xhigh" class="ai-quality-btn model-toggle" data-model="openai-xhigh" type="button" title="OpenAI XHigh" aria-pressed="false">XHIGH</button>' +
-              '<button id="ai-quality-openai-maxflare" class="ai-quality-btn model-toggle" data-model="openai-max-flare" type="button" title="OpenAI Max Flare" aria-pressed="false">MAX FLARE</button>' +
-              '<button id="ai-quality-openai-maxsunburst" class="ai-quality-btn model-toggle" data-model="openai-max-sunburst" type="button" title="OpenAI Max Sunburst" aria-pressed="false">MAX SUNBURST</button>' +
+              '<button id="ai-quality-openai-medium" class="ai-quality-btn model-toggle active" data-model="openai-medium" type="button" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>' +
+              '<button id="ai-quality-openai-high" class="ai-quality-btn model-toggle" data-model="openai-high" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente">HIGH</button>' +
+              '<button id="ai-quality-openai-xhigh" class="ai-quality-btn model-toggle" data-model="openai-xhigh" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>' +
+              '<button id="ai-quality-openai-maxflare" class="ai-quality-btn model-toggle" data-model="openai-max-flare" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst">MAX FLARE</button>' +
+              '<button id="ai-quality-openai-maxsunburst" class="ai-quality-btn model-toggle" data-model="openai-max-sunburst" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">MAX SUNBURST</button>' +
             '</div>' +
           '</div>' +
           '<div class="model-provider-column">' +
             '<span class="model-provider-title">GEMINI</span>' +
+            '<span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>' +
             '<div class="model-toggle-group">' +
-              '<button id="ai-quality-gemini-flash" class="ai-quality-btn model-toggle" data-model="gemini-flash" type="button" title="Gemini 3.1 Flash" aria-pressed="false">3.1 FLASH</button>' +
-              '<button id="ai-quality-gemini-pro" class="ai-quality-btn model-toggle" data-model="gemini-pro" type="button" title="Gemini 3 Pro" aria-pressed="false">3 PRO</button>' +
+              '<button id="ai-quality-gemini-flash" class="ai-quality-btn model-toggle" data-model="gemini-flash" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>' +
+              '<button id="ai-quality-gemini-pro" class="ai-quality-btn model-toggle" data-model="gemini-pro" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -639,6 +641,49 @@
       qb.setAttribute('aria-pressed', qb.classList.contains('active') ? 'true' : 'false');
     });
     window.selectedAIModel = selectedModel;
+
+    // ===== Tooltip de modelos (popup hover, kit canónico) =====
+    var modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip && !window.__modelTooltipInit) {
+      window.__modelTooltipInit = true;
+      var TOOLTIP_GAP = 10;
+      var hideModelTooltip = function () {
+        modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+        modelTooltip.setAttribute('aria-hidden', 'true');
+        modelTooltip.textContent = '';
+      };
+      var showModelTooltip = function (button) {
+        var text = (button.getAttribute('data-tooltip') || '').trim();
+        if (!text) { hideModelTooltip(); return; }
+        modelTooltip.textContent = text;
+        modelTooltip.classList.remove('tip-above', 'tip-below');
+        modelTooltip.classList.add('visible');
+        modelTooltip.setAttribute('aria-hidden', 'false');
+        var rect = button.getBoundingClientRect();
+        var tw = modelTooltip.offsetWidth;
+        var th = modelTooltip.offsetHeight;
+        var left = rect.left + rect.width / 2 - tw / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        var top = rect.top - th - TOOLTIP_GAP;
+        if (top < 8) {
+          top = rect.bottom + TOOLTIP_GAP;
+          modelTooltip.classList.add('tip-below');
+        } else {
+          modelTooltip.classList.add('tip-above');
+        }
+        modelTooltip.style.left = left + 'px';
+        modelTooltip.style.top = top + 'px';
+      };
+      var tooltipButtons = section.querySelectorAll('.model-toggle');
+      tooltipButtons.forEach(function (button) {
+        button.addEventListener('mouseenter', function () { showModelTooltip(button); });
+        button.addEventListener('mouseleave', hideModelTooltip);
+        button.addEventListener('focus', function () { showModelTooltip(button); });
+        button.addEventListener('blur', hideModelTooltip);
+      });
+      window.addEventListener('scroll', hideModelTooltip, true);
+      window.addEventListener('resize', hideModelTooltip);
+    }
         // Add tool buttons
     var grid = document.getElementById('ai-tools-grid');
     if (!grid) return;
