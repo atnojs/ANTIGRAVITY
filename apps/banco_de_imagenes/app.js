@@ -450,42 +450,107 @@ const MODEL_LABELS = {
     'openai-max-sunburst': 'MAX SUNBURST'
 };
 
+// Tooltips del selector de modelos (popup hover)
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+};
+
 const ModelSelector = ({ selectedModel, onChange, disabled }) => (
     <div className="mt-3">
         <label className="block text-xs font-semibold mb-2 text-slate-300">Modelo IA</label>
         <div className="flex flex-col gap-2">
             <div>
-                <span className="text-[10px] font-bold text-cyan-400/80 uppercase tracking-widest">OPENAI 2.5</span>
+                <span className="model-provider-title block">OPENAI 2.5</span>
+                <span className="model-quality-hint block">De Menor a Mayor Calidad</span>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                    {['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'].map((m) => (
-                        <button
-                            key={m}
-                            type="button"
-                            onClick={() => onChange(m)}
-                            disabled={disabled}
-                            className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === m
-                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
-                                : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
-                            aria-pressed={selectedModel === m}
-                        >{MODEL_LABELS[m]}</button>
-                    ))}
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-medium')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-medium'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-medium'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-medium'] || ''}
+                    >{MODEL_LABELS['openai-medium']}</button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-high')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-high'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-high'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-high'] || ''}
+                    >{MODEL_LABELS['openai-high']}</button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-xhigh')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-xhigh'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-xhigh'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
+                    >{MODEL_LABELS['openai-xhigh']}</button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-max-flare')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-max-flare'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-max-flare'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-flare'] || ''}
+                    >{MODEL_LABELS['openai-max-flare']}</button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-max-sunburst')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-max-sunburst'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-max-sunburst'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-sunburst'] || ''}
+                    >{MODEL_LABELS['openai-max-sunburst']}</button>
                 </div>
             </div>
             <div>
-                <span className="text-[10px] font-bold text-blue-400/80 uppercase tracking-widest">GEMINI</span>
+                <span className="model-provider-title block">GEMINI</span>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                    {['gemini-flash', 'gemini-pro'].map((m) => (
-                        <button
-                            key={m}
-                            type="button"
-                            onClick={() => onChange(m)}
-                            disabled={disabled}
-                            className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === m
-                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
-                                : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
-                            aria-pressed={selectedModel === m}
-                        >{MODEL_LABELS[m]}</button>
-                    ))}
+                    <button
+                        type="button"
+                        onClick={() => onChange('gemini-flash')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'gemini-flash'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'gemini-flash'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-flash'] || ''}
+                    >{MODEL_LABELS['gemini-flash']}</button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('gemini-pro')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'gemini-pro'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'gemini-pro'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-pro'] || ''}
+                    >{MODEL_LABELS['gemini-pro']}</button>
                 </div>
             </div>
         </div>
@@ -1214,4 +1279,6 @@ const App = () => {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
 
