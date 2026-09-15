@@ -667,16 +667,19 @@ function App() {
                                             <div className="flex items-center gap-1.5">
                                                 <span className="text-[10px] font-bold text-cyan-300/70 uppercase tracking-widest">OPENAI 2.5</span>
                                             </div>
+                                            <span className="model-quality-hint" style={{ display: 'block' }}>De Menor a Mayor Calidad</span>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'].map((m) => (
                                                     <button
                                                         key={m}
                                                         type="button"
                                                         onClick={() => setSelectedModel(m)}
-                                                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
+                                                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
                                                             ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-300/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
                                                             : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}
                                                         aria-pressed={selectedModel === m}
+                                                        aria-describedby="model-tooltip"
+                                                        data-tooltip={window.MODEL_TOOLTIP_TEXTS[m] || ''}
                                                     >{MODEL_LABELS[m]}</button>
                                                 ))}
                                             </div>
@@ -689,10 +692,12 @@ function App() {
                                                         key={m}
                                                         type="button"
                                                         onClick={() => setSelectedModel(m)}
-                                                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
+                                                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
                                                             ? 'bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white border-fuchsia-300/60 shadow-[0_0_12px_rgba(217,70,239,0.4)]'
                                                             : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}
                                                         aria-pressed={selectedModel === m}
+                                                        aria-describedby="model-tooltip"
+                                                        data-tooltip={window.MODEL_TOOLTIP_TEXTS[m] || ''}
                                                     >{MODEL_LABELS[m]}</button>
                                                 ))}
                                             </div>
@@ -999,5 +1004,52 @@ function App() {
     );
 }
 
+// ===== Textos de popup por modelo (kit canónico) =====
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+};
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+
+// ===== Tooltip de modelos (popup hover, delegado) =====
+(function initModelTooltip() {
+    const tooltip = document.getElementById('model-tooltip');
+    if (!tooltip) return;
+    const TOOLTIP_GAP = 10;
+    const hide = () => {
+        tooltip.classList.remove('visible', 'tip-above', 'tip-below');
+        tooltip.setAttribute('aria-hidden', 'true');
+        tooltip.textContent = '';
+    };
+    const show = (btn) => {
+        const text = (btn.getAttribute('data-tooltip') || '').trim();
+        if (!text) { hide(); return; }
+        tooltip.textContent = text;
+        tooltip.classList.remove('tip-above', 'tip-below');
+        tooltip.classList.add('visible');
+        tooltip.setAttribute('aria-hidden', 'false');
+        const rect = btn.getBoundingClientRect();
+        const tw = tooltip.offsetWidth;
+        const th = tooltip.offsetHeight;
+        let left = rect.left + rect.width / 2 - tw / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = rect.top - th - TOOLTIP_GAP;
+        if (top < 8) { top = rect.bottom + TOOLTIP_GAP; tooltip.classList.add('tip-below'); }
+        else { tooltip.classList.add('tip-above'); }
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+    };
+    document.addEventListener('mouseover', (e) => { const b = e.target.closest('.model-toggle'); if (b) show(b); });
+    document.addEventListener('mouseout', (e) => { const b = e.target.closest('.model-toggle'); if (b) hide(); });
+    document.addEventListener('focusin', (e) => { const b = e.target.closest('.model-toggle'); if (b) show(b); });
+    document.addEventListener('focusout', (e) => { const b = e.target.closest('.model-toggle'); if (b) hide(); });
+    window.addEventListener('scroll', hide, true);
+    window.addEventListener('resize', hide);
+})();
