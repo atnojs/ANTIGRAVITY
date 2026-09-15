@@ -1192,18 +1192,18 @@
           <div class="model-provider-column">
             <span class="model-provider-title">OPENAI 2.5</span>
             <div class="model-toggle-group">
-              <button type="button" class="model-toggle" data-model="openai-medium" aria-pressed="false">MEDIUM</button>
-              <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGH</button>
-              <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false">XHIGH</button>
-              <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false">MAX FLARE</button>
-              <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false">MAX SUNBURST</button>
+              <button type="button" class="model-toggle" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="false">MEDIUM</button>
+              <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+              <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+              <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+              <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
             </div>
           </div>
           <div class="model-provider-column">
             <span class="model-provider-title">GEMINI</span>
             <div class="model-toggle-group">
-              <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
-              <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+              <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+              <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
             </div>
           </div>
         </div>
@@ -1460,6 +1460,55 @@
     loadImages();
     initModelSelector();
 
+    const modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip) {
+      const TOOLTIP_GAP = 10;
+      const hideModelTooltip = () => {
+        modelTooltip.classList.remove('visible','tip-above','tip-below');
+        modelTooltip.setAttribute('aria-hidden','true');
+        modelTooltip.textContent = '';
+      };
+      const showModelTooltip = (button) => {
+        const text = (button.dataset.tooltip || '').trim();
+        if (!text) { hideModelTooltip(); return; }
+        modelTooltip.textContent = text;
+        modelTooltip.classList.remove('tip-above','tip-below');
+        modelTooltip.classList.add('visible');
+        modelTooltip.setAttribute('aria-hidden','false');
+        const rect = button.getBoundingClientRect();
+        const tw = modelTooltip.offsetWidth;
+        const th = modelTooltip.offsetHeight;
+        let left = rect.left + rect.width / 2 - tw / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = rect.top - th - TOOLTIP_GAP;
+        if (top < 8) {
+          top = rect.bottom + TOOLTIP_GAP;
+          modelTooltip.classList.add('tip-below');
+        } else {
+          modelTooltip.classList.add('tip-above');
+        }
+        modelTooltip.style.left = left + 'px';
+        modelTooltip.style.top = top + 'px';
+      };
+      const bindModelTooltipEvents = (button) => {
+        button.addEventListener('mouseenter', () => showModelTooltip(button));
+        button.addEventListener('mouseleave', hideModelTooltip);
+        button.addEventListener('focus', () => showModelTooltip(button));
+        button.addEventListener('blur', hideModelTooltip);
+      };
+      document.querySelectorAll('.model-toggle').forEach(bindModelTooltipEvents);
+      // El sheet móvil re-renderiza sus botones: delegación para cubrirlos también
+      document.addEventListener('mouseenter', (e) => {
+        const btn = e.target.closest ? e.target.closest('.model-toggle') : null;
+        if (btn && !btn.dataset.tooltipBound) { btn.dataset.tooltipBound = '1'; bindModelTooltipEvents(btn); }
+      }, true);
+      document.addEventListener('focusin', (e) => {
+        const btn = e.target.closest ? e.target.closest('.model-toggle') : null;
+        if (btn && !btn.dataset.tooltipBound) { btn.dataset.tooltipBound = '1'; bindModelTooltipEvents(btn); }
+      });
+      window.addEventListener('scroll', hideModelTooltip, true);
+      window.addEventListener('resize', hideModelTooltip);
+    }
     // Desktop sidebar starts expanded
     dom.mainContent.classList.add('sidebar-expanded', 'settings-visible');
 
