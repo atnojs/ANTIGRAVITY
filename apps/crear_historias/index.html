@@ -42,6 +42,11 @@
       }
     </style>
 
+<style>
+      :root{--contenedor:#174F7A;--acc:#00D0D0;--border-strong:#00D0D0;--glow:rgba(0,208,208,.8);--glow-soft:rgba(0,208,208,.4);--faint:#669999;--font-ui:'Electrolize',system-ui,sans-serif;}
+      .model-tooltip{position:fixed;z-index:10000;max-width:300px;padding:.55rem 1.05rem;background:linear-gradient(135deg,var(--contenedor),var(--acc));border:1px solid var(--border-strong);border-radius:999px;color:#CCFFFF;font-family:var(--font-ui);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;text-align:center;text-shadow:0 0 8px var(--glow);box-shadow:0 0 18px var(--glow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease,visibility .18s ease;} .model-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)} .model-tooltip::after{content:"";position:absolute;left:50%;width:11px;height:11px;background:var(--acc);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg);} .model-tooltip.tip-below{transform:translateY(-6px) scale(.97)} .model-tooltip.tip-below.visible{transform:translateY(0) scale(1)} .model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none} .model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none} @media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
+      .model-quality-hint{color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 8px var(--glow-soft)}
+    </style>
 <link rel="stylesheet" href="/index.css">
   <script type="importmap">
 {
@@ -112,6 +117,7 @@ Instrucción de Escena: ${p}
 </head>
   <body class="bg-gray-950 text-white h-screen overflow-hidden">
     <div id="root" class="h-full"></div>
+  <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
   <script src="history-manager.js"></script>
 <script src="lightbox.js"></script>
 
@@ -120,18 +126,19 @@ Instrucción de Escena: ${p}
   <div style="display:flex;gap:0.5rem;align-items:center;">
     <span style="font-size:0.6rem;letter-spacing:0.1em;color:#6b7280;text-transform:uppercase;">OpenAI 2.5</span>
     <div style="display:flex;gap:0.25rem;flex-wrap:wrap;justify-content:center;">
-      <button type="button" class="story-model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
-      <button type="button" class="story-model-toggle" data-model="openai-high" aria-pressed="false">HIGH</button>
-      <button type="button" class="story-model-toggle" data-model="openai-xhigh" aria-pressed="false">XHIGH</button>
-      <button type="button" class="story-model-toggle" data-model="openai-max-flare" aria-pressed="false">MAX FLARE</button>
-      <button type="button" class="story-model-toggle" data-model="openai-max-sunburst" aria-pressed="false">MAX SUNBURST</button>
+      <button type="button" class="story-model-toggle active" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="true">MEDIUM</button>
+      <button type="button" class="story-model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+      <button type="button" class="story-model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+      <button type="button" class="story-model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+      <button type="button" class="story-model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
     </div>
     <span style="font-size:0.6rem;letter-spacing:0.1em;color:#6b7280;text-transform:uppercase;">Gemini</span>
     <div style="display:flex;gap:0.25rem;">
-      <button type="button" class="story-model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
-      <button type="button" class="story-model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+      <button type="button" class="story-model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+      <button type="button" class="story-model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
     </div>
   </div>
+  <span class="model-quality-hint">De Menor a Mayor Calidad</span>
 </div>
 <script>
 (function () {
@@ -163,6 +170,46 @@ Instrucción de Escena: ${p}
         b.setAttribute("aria-pressed", on ? "true" : "false");
       });
     });
+  }
+
+  const modelTooltip = document.getElementById('model-tooltip');
+  if (modelTooltip) {
+      const TOOLTIP_GAP = 10;
+      const hideModelTooltip = () => {
+          modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+          modelTooltip.setAttribute('aria-hidden', 'true');
+          modelTooltip.textContent = '';
+      };
+      const showModelTooltip = (button) => {
+          const text = (button.dataset.tooltip || '').trim();
+          if (!text) { hideModelTooltip(); return; }
+          modelTooltip.textContent = text;
+          modelTooltip.classList.remove('tip-above', 'tip-below');
+          modelTooltip.classList.add('visible');
+          modelTooltip.setAttribute('aria-hidden', 'false');
+          const rect = button.getBoundingClientRect();
+          const tw = modelTooltip.offsetWidth;
+          const th = modelTooltip.offsetHeight;
+          let left = rect.left + rect.width / 2 - tw / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+          let top = rect.top - th - TOOLTIP_GAP;
+          if (top < 8) {
+              top = rect.bottom + TOOLTIP_GAP;
+              modelTooltip.classList.add('tip-below');
+          } else {
+              modelTooltip.classList.add('tip-above');
+          }
+          modelTooltip.style.left = left + 'px';
+          modelTooltip.style.top = top + 'px';
+      };
+      document.querySelectorAll('.story-model-toggle').forEach((button) => {
+          button.addEventListener('mouseenter', () => showModelTooltip(button));
+          button.addEventListener('mouseleave', hideModelTooltip);
+          button.addEventListener('focus', () => showModelTooltip(button));
+          button.addEventListener('blur', hideModelTooltip);
+      });
+      window.addEventListener('scroll', hideModelTooltip, true);
+      window.addEventListener('resize', hideModelTooltip);
   }
 })();
 </script>
