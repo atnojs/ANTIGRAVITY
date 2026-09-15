@@ -1005,7 +1005,12 @@ input[type="text"]:focus {
 }
 
 .model-provider-column { gap: 0.45rem; }
-.model-provider-title { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.1em; }
+.model-provider-title { color: var(--muted); font-size: 1.05rem; letter-spacing: .08em; }
+
+/* Kit tooltip modelos (canónico dibujo_lineas_copia) */
+.model-tooltip{position:fixed;z-index:10000;max-width:300px;padding:.55rem 1.05rem;background:linear-gradient(135deg,var(--contenedor),var(--acc));border:1px solid var(--border-strong);border-radius:999px;color:#CCFFFF;font-family:var(--font-ui);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;text-align:center;text-shadow:0 0 8px var(--glow);box-shadow:0 0 18px var(--glow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease,visibility .18s ease} .model-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)} .model-tooltip::after{content:"";position:absolute;left:50%;width:11px;height:11px;background:var(--acc);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg)} .model-tooltip.tip-below{transform:translateY(-6px) scale(.97)} .model-tooltip.tip-below.visible{transform:translateY(0) scale(1)} .model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none} .model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none} @media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
+.model-quality-hint{color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 8px var(--glow-soft)}
+
 .model-toggle-group { display: inline-flex; gap: 0.5rem; padding: 0.3rem; border: 1px solid var(--border); border-radius: 999px; background: var(--card-bg); box-shadow: 0 0 12px var(--glow-soft); }
 .model-toggle { min-height: 40px; padding: 0.55rem 0.85rem; border: 1px solid transparent; border-radius: 999px; color: var(--muted); background: transparent; font-family: var(--font-ui); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
 .model-toggle:hover { border-color: var(--border-strong); color: var(--text); background: rgba(255, 255, 255, 0.08); box-shadow: 0 0 12px var(--glow-soft); }
