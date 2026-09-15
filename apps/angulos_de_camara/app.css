@@ -901,10 +901,15 @@ header p {
 }
 .model-provider-title {
   color: var(--muted, #99CCCC);
-  font-size: .68rem;
-  letter-spacing: .1em;
+  font-size: 1.05rem;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
+
+/* Kit tooltip modelos (canónico dibujo_lineas_copia) */
+.model-tooltip{position:fixed;z-index:10000;max-width:300px;padding:.55rem 1.05rem;background:linear-gradient(135deg,var(--contenedor),var(--acc));border:1px solid var(--border-strong);border-radius:999px;color:#CCFFFF;font-family:var(--font-ui);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;text-align:center;text-shadow:0 0 8px var(--glow);box-shadow:0 0 18px var(--glow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease,visibility .18s ease} .model-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)} .model-tooltip::after{content:"";position:absolute;left:50%;width:11px;height:11px;background:var(--acc);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg)} .model-tooltip.tip-below{transform:translateY(-6px) scale(.97)} .model-tooltip.tip-below.visible{transform:translateY(0) scale(1)} .model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none} .model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none} @media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
+.model-quality-hint{color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 8px var(--glow-soft)}
+
 @media (max-width: 700px) {
   .model-provider-layout { gap: .5rem; }
   .model-toggle-group { gap: .2rem; }

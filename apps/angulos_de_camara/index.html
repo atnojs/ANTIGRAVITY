@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
   <!-- CSS Hoola -->
-  <link rel="stylesheet" href="app.css?v=8">
+  <link rel="stylesheet" href="app.css?v=9">
 </head>
 <body>
 
@@ -56,19 +56,21 @@
           <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
             <div class="model-provider-column">
               <span class="model-provider-title">OPENAI 2.5</span>
+              <span class="model-quality-hint">De Menor a Mayor Calidad</span>
               <div class="model-toggle-group">
-            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true">MEDIUM</button>
-            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false">HIGH</button>
-            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false">XHIGH</button>
-            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false">MAX FLARE</button>
-            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false">MAX SUNBURST</button>
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
               </div>
             </div>
             <div class="model-provider-column">
               <span class="model-provider-title">GEMINI</span>
+              <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
               <div class="model-toggle-group">
-            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false">3.1 FLASH</button>
-            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false">3 PRO</button>
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
               </div>
             </div>
           </div>
@@ -194,11 +196,12 @@
   </div>
 
   <!-- JSZip para descarga ZIP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <!-- HistoryManager canónico (servidor) -->
   <script src="history-manager.js"></script>
   <!-- Lógica de la app -->
-  <script src="app.js?v=8" defer></script>
+  <script src="app.js?v=9" defer></script>
 </body>
 </html>
