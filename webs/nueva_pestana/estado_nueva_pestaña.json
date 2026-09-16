@@ -45,8 +45,8 @@
                     "tools": [
                         {
                             "id": "tool_1783858061641",
-                            "name": "B\u00f3veda",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/boveda_privada/",
+                            "name": "Bóveda",
+                            "websiteUrl": "https://atnojs.es/apps/boveda_privada/",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -55,7 +55,7 @@
                         {
                             "id": "tool_1784296473541",
                             "name": "Memes",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/creador_memes/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/creador_memes/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -63,8 +63,8 @@
                         },
                         {
                             "id": "tool_1759530981185",
-                            "name": "Convertir Im\u00e1genes en L\u00edneas",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/dibujo_lineas_copia/index.html",
+                            "name": "Convertir Imágenes en Líneas",
+                            "websiteUrl": "https://atnojs.es/apps/dibujo_lineas_copia/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -72,8 +72,8 @@
                         },
                         {
                             "id": "tool_1766278784352",
-                            "name": "Editar/Crear Im\u00e1genes",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/editar_generar/index.html",
+                            "name": "Editar/Crear Imágenes",
+                            "websiteUrl": "https://atnojs.es/apps/editar_generar/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -81,8 +81,8 @@
                         },
                         {
                             "id": "tool_1764437677320",
-                            "name": "Ajustes de Im\u00e1genes",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/imagenes_ia/ajustes_imagen/index.html",
+                            "name": "Ajustes de Imágenes",
+                            "websiteUrl": "https://atnojs.es/apps/imagenes_ia/ajustes_imagen/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -90,8 +90,8 @@
                         },
                         {
                             "id": "tool_1766589208173",
-                            "name": "Generar / Editar / Estilos Visuales de Im\u00e1genes",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/imagenes_ia/index.html",
+                            "name": "Generar / Editar / Estilos Visuales de Imágenes",
+                            "websiteUrl": "https://atnojs.es/apps/imagenes_ia/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -100,7 +100,7 @@
                         {
                             "id": "tool_1783284636506",
                             "name": "Convertidor",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/conversor_multimedia/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/conversor_multimedia/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -109,7 +109,7 @@
                         {
                             "id": "tool_1783541277384",
                             "name": "Relatos",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/relatos/index.html#",
+                            "websiteUrl": "https://atnojs.es/webs/relatos/index.html#",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -118,7 +118,7 @@
                         {
                             "id": "tool_1763592981201",
                             "name": "Outfit",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/outfit/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/outfit/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -127,7 +127,7 @@
                         {
                             "id": "tool_1760356531782",
                             "name": "Vestir a un/una Modelo",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/vestir_modelo/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/vestir_modelo/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -136,7 +136,7 @@
                         {
                             "id": "tool_1759531030667",
                             "name": "Ficha de Producto",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/ficha_producto/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/ficha_producto/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -144,8 +144,8 @@
                         },
                         {
                             "id": "tool_1759531054685",
-                            "name": "Generador de \u00c1ngulos de C\u00e1mara",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/angulos_de_camara/index.html",
+                            "name": "Generador de Ángulos de Cámara",
+                            "websiteUrl": "https://atnojs.es/apps/angulos_de_camara/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -154,7 +154,7 @@
                         {
                             "id": "tool_1759531110073",
                             "name": "Crea Composiciones",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/escenario_modelo/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/escenario_modelo/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -163,7 +163,7 @@
                         {
                             "id": "tool_1759531086967",
                             "name": "Asistente Inmobiliario",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/asistente_inmoviliario/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/asistente_inmoviliario/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -171,8 +171,8 @@
                         },
                         {
                             "id": "tool_1762703188655",
-                            "name": "Decorar Habitaci\u00f3n",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/decorar_habitacion/index.html",
+                            "name": "Decorar Habitación",
+                            "websiteUrl": "https://atnojs.es/apps/decorar_habitacion/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -181,7 +181,7 @@
                         {
                             "id": "tool_1759530956867",
                             "name": "Genera Paletas de Color de una Imagen",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/color/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/color/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -190,7 +190,7 @@
                         {
                             "id": "tool_1767475283443",
                             "name": "Fotos Profesionales",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/prompts_predeterminados/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/prompts_predeterminados/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -199,7 +199,7 @@
                         {
                             "id": "tool_1784320438751",
                             "name": "Crea / Mejora tu Prompt",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/prompt_copilot_premium/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/prompt_copilot_premium/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -208,7 +208,7 @@
                         {
                             "id": "tool_1784664395020",
                             "name": "Hermes Academy",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/hermes_academy/",
+                            "websiteUrl": "https://atnojs.es/apps/hermes_academy/",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -217,7 +217,7 @@
                         {
                             "id": "tool_1787417156458",
                             "name": "Shorts Varios",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/carpetas_nuevas/index.html?carpeta=imagenes",
+                            "websiteUrl": "https://atnojs.es/webs/carpetas_nuevas/index.html?carpeta=imagenes",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -225,8 +225,8 @@
                         },
                         {
                             "id": "tool_1787506939810",
-                            "name": "Generar Infograf\u00edas",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/infografia-referencia/index.html",
+                            "name": "Generar Infografías",
+                            "websiteUrl": "https://atnojs.es/apps/infografia-referencia/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -235,7 +235,7 @@
                         {
                             "id": "tool_1788036533157",
                             "name": "Ajusta Imagen a Cualquier Prompt",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/estilizador_prompt/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/estilizador_prompt/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -244,7 +244,7 @@
                         {
                             "id": "tool_1788381943399",
                             "name": "TrickVault",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/trickvault/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/trickvault/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -252,8 +252,8 @@
                         },
                         {
                             "id": "tool_1788382073348",
-                            "name": "C\u00f3digos Secretos IA",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/codigos_secretos_ia/index.html",
+                            "name": "Códigos Secretos IA",
+                            "websiteUrl": "https://atnojs.es/apps/codigos_secretos_ia/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -261,8 +261,8 @@
                         },
                         {
                             "id": "tool_1788463139860",
-                            "name": "C\u00f3digos Im\u00e1genes",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/codigos_imagen/index.html",
+                            "name": "Códigos Imágenes",
+                            "websiteUrl": "https://atnojs.es/apps/codigos_imagen/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -271,7 +271,7 @@
                         {
                             "id": "tool_1788555486665",
                             "name": "1111",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/curso-ia-2026/index.html",
+                            "websiteUrl": "https://atnojs.es/webs/curso-ia-2026/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -298,7 +298,7 @@
                             "name": "DeepSeek",
                             "websiteUrl": "https://chat.deepseek.com/sign_in",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/deepseek.png",
+                            "iconHtml": "https://atnojs.es/iconos/deepseek.png",
                             "tags": [],
                             "timestampAdded": 1766690608073
                         },
@@ -316,7 +316,7 @@
                             "name": "Gemini",
                             "websiteUrl": "https://consent.google.com/m?continue=https://gemini.google.com/&gl=ES&m=0&pc=bard&cm=2&hl=es&src=1",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/gemini.png",
+                            "iconHtml": "https://atnojs.es/iconos/gemini.png",
                             "tags": [],
                             "timestampAdded": 1766686079295
                         },
@@ -325,7 +325,7 @@
                             "name": "ChatGPT",
                             "websiteUrl": "https://chat.openai.com",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/chatgpt1.png",
+                            "iconHtml": "https://atnojs.es/iconos/chatgpt1.png",
                             "tags": [],
                             "timestampAdded": 1766686441851
                         },
@@ -334,7 +334,7 @@
                             "name": "Grok",
                             "websiteUrl": "https://x.ai/grok",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/grok.png",
+                            "iconHtml": "https://atnojs.es/iconos/grok.png",
                             "tags": [],
                             "timestampAdded": 1766689553989
                         },
@@ -343,7 +343,7 @@
                             "name": "Qwen",
                             "websiteUrl": "https://chat.qwen.ai/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/qwen.png",
+                            "iconHtml": "https://atnojs.es/iconos/qwen.png",
                             "tags": [],
                             "timestampAdded": 1766691022114
                         },
@@ -351,7 +351,7 @@
                             "id": "tool_1759531138391",
                             "name": "Meta",
                             "websiteUrl": "https://www.meta.ai/",
-                            "briefDescription": "Buena para v\u00eddeos.",
+                            "briefDescription": "Buena para vídeos.",
                             "iconHtml": "https://static.xx.fbcdn.net/rsrc.php/yw/r/RW7TzFbdkIL.ico",
                             "tags": [],
                             "timestampAdded": 1768087203602
@@ -370,7 +370,7 @@
                             "name": "Lovable",
                             "websiteUrl": "https://lovable.dev/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/lovable.webp",
+                            "iconHtml": "https://atnojs.es/iconos/lovable.webp",
                             "tags": [],
                             "timestampAdded": 1766690684641
                         },
@@ -388,7 +388,7 @@
                             "name": "Claude",
                             "websiteUrl": "https://claude.ai/login?from=logout",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/claude.png",
+                            "iconHtml": "https://atnojs.es/iconos/claude.png",
                             "tags": [],
                             "timestampAdded": 1766689451536
                         },
@@ -397,7 +397,7 @@
                             "name": "Perplexity",
                             "websiteUrl": "https://www.perplexity.ai/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/perplexity.png",
+                            "iconHtml": "https://atnojs.es/iconos/perplexity.png",
                             "tags": [],
                             "timestampAdded": 1766691229482
                         },
@@ -406,7 +406,7 @@
                             "name": "Manus",
                             "websiteUrl": "https://manus.im/app",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/manus.webp",
+                            "iconHtml": "https://atnojs.es/iconos/manus.webp",
                             "tags": [],
                             "timestampAdded": 1770582438712
                         },
@@ -415,7 +415,7 @@
                             "name": "Minimax M2.1",
                             "websiteUrl": "https://agent.minimax.io/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/minimax.webp",
+                            "iconHtml": "https://atnojs.es/iconos/minimax.webp",
                             "tags": [],
                             "timestampAdded": 1770582417836
                         },
@@ -424,7 +424,7 @@
                             "name": "Fugo",
                             "websiteUrl": "https://console.sakana.ai/overview",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/fugo.png",
                             "tags": [],
                             "timestampAdded": 1782211368159
                         },
@@ -433,16 +433,16 @@
                             "name": "MIMO",
                             "websiteUrl": "https://account.xiaomi.com/fe/service/login/password?_group=DEFAULT&sid=api-platform&qs=%253Fcallback%253Dhttps%25253A%25252F%25252Fplatform.xiaomimimo.com%25252Fsts%25253Fsign%25253DM7gfywevl3CG5YTTcZDifhK6IK8%2525253D%252526followup%25253Dhttps%2525253A%2525252F%2525252Fplatform.xiaomimimo.com%2525252Fconsole%2525252Fbalance%2526sid%253Dapi-platform%2526_group%253DDEFAULT&callback=https%3A%2F%2Fplatform.xiaomimimo.com%2Fsts%3Fsign%3DM7gfywevl3CG5YTTcZDifhK6IK8%253D%26followup%3Dhttps%253A%252F%252Fplatform.xiaomimimo.com%252Fconsole%252Fbalance&_sign=iV9Q5kxBqXGdbkb6kmapXvJrkZM%3D&serviceParam=%7B%22checkSafePhone%22%3Afalse%2C%22checkSafeAddress%22%3Afalse%2C%22lsrp_score%22%3A0.0%7D&showActiveX=false&theme=&needTheme=false&bizDeviceType=&_locale=en_US",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/mimo.png",
                             "tags": [],
                             "timestampAdded": 1782762089329
                         },
                         {
                             "id": "tool_1783173566179",
                             "name": "Conversor Digital",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/conversor_multimedia/index.html",
+                            "websiteUrl": "https://atnojs.es/apps/conversor_multimedia/index.html",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/conversor.svg",
                             "tags": [],
                             "timestampAdded": 1783173566179
                         },
@@ -451,7 +451,7 @@
                             "name": "Deepseek",
                             "websiteUrl": "https://www.deepseek.com/en/",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/deepseek.png",
                             "tags": [],
                             "timestampAdded": 1788642858803
                         }
@@ -476,7 +476,7 @@
                             "name": "NoteBookLM",
                             "websiteUrl": "https://notebooklm.google.com/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/notebooklm.jpg",
+                            "iconHtml": "https://atnojs.es/iconos/notebooklm.jpg",
                             "tags": [],
                             "timestampAdded": 1766689761022
                         },
@@ -485,7 +485,7 @@
                             "name": "Google AI Studio",
                             "websiteUrl": "https://aistudio.google.com/prompts/new_chat",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/google_ai_studio.jpg",
+                            "iconHtml": "https://atnojs.es/iconos/google_ai_studio.jpg",
                             "tags": [],
                             "timestampAdded": 1766689619123
                         },
@@ -494,7 +494,7 @@
                             "name": "Resize",
                             "websiteUrl": "https://resize.com/app",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/resize.png",
+                            "iconHtml": "https://atnojs.es/iconos/resize.png",
                             "tags": [],
                             "timestampAdded": 1766689675438
                         }
@@ -508,7 +508,7 @@
                         {
                             "id": "tool_1759615954131",
                             "name": "Web de Apps",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/web_apps/1archivos_originales/index.html",
+                            "websiteUrl": "https://atnojs.es/webs/web_apps/1archivos_originales/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -517,7 +517,7 @@
                         {
                             "id": "tool_1759615992233",
                             "name": "Web de Camisetas",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/Paginas/pagina_camisetas/index.html",
+                            "websiteUrl": "https://atnojs.es/Paginas/pagina_camisetas/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -525,7 +525,7 @@
                         },
                         {
                             "id": "tool_1759616092523",
-                            "name": "Mira Pa\u00b4Lante",
+                            "name": "Mira Pa´Lante",
                             "websiteUrl": "https://www.mirapalante.es/",
                             "briefDescription": "",
                             "iconHtml": "<i class=\"fa-solid fa-globe\"></i>",
@@ -535,7 +535,7 @@
                         {
                             "id": "tool_1759875866274",
                             "name": "Privada",
-                            "websiteUrl": "https://www.atnojs-es-301632.hostingersite.com/webs/pagina_privada/privada.html",
+                            "websiteUrl": "https://atnojs.es/webs/pagina_privada/privada.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -544,7 +544,7 @@
                         {
                             "id": "tool_1764374210390",
                             "name": "Atnojs",
-                            "websiteUrl": "https://www.atnojs-es-301632.hostingersite.com/webs/nueva_pagina_principal/index_mejorado.html",
+                            "websiteUrl": "https://atnojs.es/webs/nueva_pagina_principal/index_mejorado.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -552,8 +552,8 @@
                         },
                         {
                             "id": "tool_1767288872486",
-                            "name": "Galer\u00eda de Prompts para Im\u00e1genes",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/prompts/index.html",
+                            "name": "Galería de Prompts para Imágenes",
+                            "websiteUrl": "https://atnojs.es/apps/prompts/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -570,7 +570,7 @@
                             "id": "tool_1766143577432",
                             "name": "Stitch",
                             "websiteUrl": "https://stitch.withgoogle.com/?pli=1",
-                            "briefDescription": "Genera dise\u00f1os de Apps/Webs.",
+                            "briefDescription": "Genera diseños de Apps/Webs.",
                             "iconHtml": "https://derechadiario.com.ar/filesedc/uploads/image/post/google-stitch-apps_1200_800.webp",
                             "tags": [],
                             "timestampAdded": 1766692256553
@@ -579,7 +579,7 @@
                             "id": "tool_1766181642078",
                             "name": "Mixboard",
                             "websiteUrl": "https://labs.google.com/mixboard/welcome",
-                            "briefDescription": "Crea m\u00faltiples im\u00e1genes creativas simult\u00e1neamente.",
+                            "briefDescription": "Crea múltiples imágenes creativas simultáneamente.",
                             "iconHtml": "https://www.agenciaseoonline.com/wp-content/uploads/2025/10/Blog-IAsistentes-10-1.webp",
                             "tags": [],
                             "timestampAdded": 1767138985969
@@ -633,7 +633,7 @@
                             "id": "tool_1767138764547",
                             "name": "Flow",
                             "websiteUrl": "https://labs.google/flow/about",
-                            "briefDescription": "Crear v\u00eddeos a partir de im\u00e1genes.",
+                            "briefDescription": "Crear vídeos a partir de imágenes.",
                             "iconHtml": "https://static2.pisapapeles.net/uploads/2025/05/Google-Flow-logo-1280w-720h.jpg.jpg",
                             "tags": [],
                             "timestampAdded": 1767141476927
@@ -642,7 +642,7 @@
                             "id": "tool_1767139259896",
                             "name": "Music Fx Dj",
                             "websiteUrl": "https://labs.google/fx/tools/music-fx-dj/unsupported-country",
-                            "briefDescription": "Mezcla m\u00fasica infinita de forma autom\u00e1tica.",
+                            "briefDescription": "Mezcla música infinita de forma automática.",
                             "iconHtml": "<i class=\"fa-solid fa-globe\"></i>",
                             "tags": [],
                             "timestampAdded": 1771191252538
@@ -651,8 +651,8 @@
                             "id": "tool_1767139354313",
                             "name": "Genera Voces",
                             "websiteUrl": "https://aistudio.google.com/generate-speech",
-                            "briefDescription": "Crea m\u00fasica a partir de texto. Genera voces realistas con control total.",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/google_ai_studio.jpg",
+                            "briefDescription": "Crea música a partir de texto. Genera voces realistas con control total.",
+                            "iconHtml": "https://atnojs.es/iconos/google_ai_studio.jpg",
                             "tags": [],
                             "timestampAdded": 1771191240122
                         },
@@ -669,7 +669,7 @@
                             "id": "tool_1767139650909",
                             "name": "Jules",
                             "websiteUrl": "https://jules.google/",
-                            "briefDescription": "Agente aut\u00f3nomo para programar c\u00f3digo colaborativo.",
+                            "briefDescription": "Agente autónomo para programar código colaborativo.",
                             "iconHtml": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvAXEz4EsU3RQHCV96BAfJusei09ZBjQOG2g&s",
                             "tags": [],
                             "timestampAdded": 1767142101394
@@ -678,7 +678,7 @@
                             "id": "tool_1767139715558",
                             "name": "Colab",
                             "websiteUrl": "https://colab.research.google.com/",
-                            "briefDescription": "Ejecuta c\u00f3digo Python desde la nube.",
+                            "briefDescription": "Ejecuta código Python desde la nube.",
                             "iconHtml": "https://w7.pngwing.com/pngs/968/991/png-transparent-google-colab-logo-tech-companies.png",
                             "tags": [],
                             "timestampAdded": 1767142142892
@@ -696,7 +696,7 @@
                             "id": "tool_1766178575829",
                             "name": "Pomelli",
                             "websiteUrl": "https://labs.google.com/pomelli/about/",
-                            "briefDescription": "Crea campa\u00f1as de redes con tu marca.",
+                            "briefDescription": "Crea campañas de redes con tu marca.",
                             "iconHtml": "https://pbs.twimg.com/media/G4x5MxSbkAAv3Pk.jpg",
                             "tags": [],
                             "timestampAdded": 1766692340236
@@ -758,7 +758,7 @@
                             "name": "Instagram",
                             "websiteUrl": "https://www.instagram.com/accounts/login/?next=https%3A%2F%2Fwww.instagram.com%2Fantonio_m_jimenez_%2Fsaved%2Fall-posts%2F%3F__coig_login%3D1#",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/instagram.webp",
+                            "iconHtml": "https://atnojs.es/iconos/instagram.webp",
                             "tags": [],
                             "timestampAdded": 1770583226378
                         },
@@ -782,8 +782,8 @@
                             "id": "tool_1768075485717",
                             "name": "TopView",
                             "websiteUrl": "https://www.topview.ai/account/signin",
-                            "briefDescription": "Clona v\u00eddeos virales para publicitar productos.",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/topview.webp",
+                            "briefDescription": "Clona vídeos virales para publicitar productos.",
+                            "iconHtml": "https://atnojs.es/iconos/topview.webp",
                             "tags": [],
                             "timestampAdded": 1770581863316
                         },
@@ -792,16 +792,16 @@
                             "name": "Black Forest Labs",
                             "websiteUrl": "https://bfl.ai/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/black.webp",
+                            "iconHtml": "https://atnojs.es/iconos/black.webp",
                             "tags": [],
                             "timestampAdded": 1770582088808
                         },
                         {
                             "id": "tool_1768078905558",
-                            "name": "Crea Im\u00e1genes con Nano Banana",
+                            "name": "Crea Imágenes con Nano Banana",
                             "websiteUrl": "https://geminigen.ai/app/imagen/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/nano.webp",
+                            "iconHtml": "https://atnojs.es/iconos/nano.webp",
                             "tags": [],
                             "timestampAdded": 1770583430722
                         },
@@ -810,16 +810,16 @@
                             "name": "Crear Avatares",
                             "websiteUrl": "https://apob.ai/es/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/apob.png",
+                            "iconHtml": "https://atnojs.es/iconos/apob.png",
                             "tags": [],
                             "timestampAdded": 1770581151950
                         },
                         {
                             "id": "tool_1770234562523",
-                            "name": "Editor de Im\u00e1genes",
+                            "name": "Editor de Imágenes",
                             "websiteUrl": "https://imageeditor.online/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/imageeditor.webp",
+                            "iconHtml": "https://atnojs.es/iconos/imageeditor.webp",
                             "tags": [],
                             "timestampAdded": 1770583324400
                         },
@@ -828,7 +828,7 @@
                             "name": "Arena",
                             "websiteUrl": "https://www.arena.ai",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/arenaai.webp",
+                            "iconHtml": "https://atnojs.es/iconos/arenaai.webp",
                             "tags": [],
                             "timestampAdded": 1770581584221
                         },
@@ -837,13 +837,13 @@
                             "name": "Freepik",
                             "websiteUrl": "https://www.freepik.com/ik",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/freepik.jpg",
+                            "iconHtml": "https://atnojs.es/iconos/freepik.jpg",
                             "tags": [],
                             "timestampAdded": 1770581132065
                         },
                         {
                             "id": "tool_1782142288158",
-                            "name": "Generadores de V\u00eddeo",
+                            "name": "Generadores de Vídeo",
                             "websiteUrl": "https://www.buzzy.now/",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
@@ -941,7 +941,7 @@
                         {
                             "id": "tool_1786902180781",
                             "name": "Vero",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/vero.html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/vero.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -950,7 +950,7 @@
                         {
                             "id": "tool_1786902203068",
                             "name": "Vero1",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/vero1.html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/vero1.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -959,7 +959,7 @@
                         {
                             "id": "tool_1786909688916",
                             "name": "vero(2)",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/vero(2).html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/vero(2).html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -968,7 +968,7 @@
                         {
                             "id": "tool_1786909775280",
                             "name": "vero(1)",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/vero(1).html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/vero(1).html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -977,7 +977,7 @@
                         {
                             "id": "tool_1786909879612",
                             "name": "vero(o)",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/vero(o).html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/vero(o).html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -986,7 +986,7 @@
                         {
                             "id": "tool_1786910714945",
                             "name": "vero2",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/vero2.html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/vero2.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -995,7 +995,7 @@
                         {
                             "id": "tool_1786911587977",
                             "name": "vero(3)",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/vero(3).html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/vero(3).html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -1004,7 +1004,7 @@
                         {
                             "id": "tool_1786955071567",
                             "name": "El Rinconcito",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/el_rinconcito/index.php",
+                            "websiteUrl": "https://atnojs.es/webs/vero/el_rinconcito/index.php",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -1013,7 +1013,7 @@
                         {
                             "id": "tool_1787152298745",
                             "name": "Facturas",
-                            "websiteUrl": "https://atnojs-es-301632.hostingersite.com/webs/vero/facturas/index.html",
+                            "websiteUrl": "https://atnojs.es/webs/vero/facturas/index.html",
                             "briefDescription": "",
                             "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                             "tags": [],
@@ -1024,7 +1024,7 @@
                 {
                     "id": "tool_1766699435761",
                     "name": "Loging Firebase",
-                    "websiteUrl": "https://atnojs-es-301632.hostingersite.com/Paginas/tutoriales/firebase_login/index.html",
+                    "websiteUrl": "https://atnojs.es/Paginas/tutoriales/firebase_login/index.html",
                     "briefDescription": "",
                     "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                     "tags": [],
@@ -1060,7 +1060,7 @@
                 {
                     "id": "tool_1713352521819",
                     "name": "Aplicaciones",
-                    "websiteUrl": "https://atnojs-es-301632.hostingersite.com/aplicaciones.html",
+                    "websiteUrl": "https://atnojs.es/aplicaciones.html",
                     "briefDescription": "",
                     "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
                     "tags": [],
@@ -1105,5 +1105,5 @@
             ]
         }
     ],
-    "ultima_actualizacion": "2026-09-05 21:14:35"
+    "ultima_actualizacion": "2026-09-16 15:53:59"
 }
