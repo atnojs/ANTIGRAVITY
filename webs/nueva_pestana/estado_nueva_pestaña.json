@@ -298,7 +298,7 @@
                             "name": "DeepSeek",
                             "websiteUrl": "https://chat.deepseek.com/sign_in",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/deepseek.png",
+                            "iconHtml": "https://atnojs.es/iconos/deepseek.png",
                             "tags": [],
                             "timestampAdded": 1766690608073
                         },
@@ -316,7 +316,7 @@
                             "name": "Gemini",
                             "websiteUrl": "https://consent.google.com/m?continue=https://gemini.google.com/&gl=ES&m=0&pc=bard&cm=2&hl=es&src=1",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/gemini.png",
+                            "iconHtml": "https://atnojs.es/iconos/gemini.png",
                             "tags": [],
                             "timestampAdded": 1766686079295
                         },
@@ -325,7 +325,7 @@
                             "name": "ChatGPT",
                             "websiteUrl": "https://chat.openai.com",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/chatgpt1.png",
+                            "iconHtml": "https://atnojs.es/iconos/chatgpt1.png",
                             "tags": [],
                             "timestampAdded": 1766686441851
                         },
@@ -334,7 +334,7 @@
                             "name": "Grok",
                             "websiteUrl": "https://x.ai/grok",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/grok.png",
+                            "iconHtml": "https://atnojs.es/iconos/grok.png",
                             "tags": [],
                             "timestampAdded": 1766689553989
                         },
@@ -343,7 +343,7 @@
                             "name": "Qwen",
                             "websiteUrl": "https://chat.qwen.ai/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/qwen.png",
+                            "iconHtml": "https://atnojs.es/iconos/qwen.png",
                             "tags": [],
                             "timestampAdded": 1766691022114
                         },
@@ -370,7 +370,7 @@
                             "name": "Lovable",
                             "websiteUrl": "https://lovable.dev/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/lovable.webp",
+                            "iconHtml": "https://atnojs.es/iconos/lovable.webp",
                             "tags": [],
                             "timestampAdded": 1766690684641
                         },
@@ -388,7 +388,7 @@
                             "name": "Claude",
                             "websiteUrl": "https://claude.ai/login?from=logout",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/claude.png",
+                            "iconHtml": "https://atnojs.es/iconos/claude.png",
                             "tags": [],
                             "timestampAdded": 1766689451536
                         },
@@ -397,7 +397,7 @@
                             "name": "Perplexity",
                             "websiteUrl": "https://www.perplexity.ai/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/perplexity.png",
+                            "iconHtml": "https://atnojs.es/iconos/perplexity.png",
                             "tags": [],
                             "timestampAdded": 1766691229482
                         },
@@ -406,7 +406,7 @@
                             "name": "Manus",
                             "websiteUrl": "https://manus.im/app",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/manus.webp",
+                            "iconHtml": "https://atnojs.es/iconos/manus.webp",
                             "tags": [],
                             "timestampAdded": 1770582438712
                         },
@@ -415,7 +415,7 @@
                             "name": "Minimax M2.1",
                             "websiteUrl": "https://agent.minimax.io/",
                             "briefDescription": "",
-                            "iconHtml": "www.atnojs-es-301632.hostingersite.com/iconos/minimax.webp",
+                            "iconHtml": "https://atnojs.es/iconos/minimax.webp",
                             "tags": [],
                             "timestampAdded": 1770582417836
                         },
@@ -424,7 +424,7 @@
                             "name": "Fugo",
                             "websiteUrl": "https://console.sakana.ai/overview",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/fugo.png",
                             "tags": [],
                             "timestampAdded": 1782211368159
                         },
@@ -433,7 +433,7 @@
                             "name": "MIMO",
                             "websiteUrl": "https://account.xiaomi.com/fe/service/login/password?_group=DEFAULT&sid=api-platform&qs=%253Fcallback%253Dhttps%25253A%25252F%25252Fplatform.xiaomimimo.com%25252Fsts%25253Fsign%25253DM7gfywevl3CG5YTTcZDifhK6IK8%2525253D%252526followup%25253Dhttps%2525253A%2525252F%2525252Fplatform.xiaomimimo.com%2525252Fconsole%2525252Fbalance%2526sid%253Dapi-platform%2526_group%253DDEFAULT&callback=https%3A%2F%2Fplatform.xiaomimimo.com%2Fsts%3Fsign%3DM7gfywevl3CG5YTTcZDifhK6IK8%253D%26followup%3Dhttps%253A%252F%252Fplatform.xiaomimimo.com%252Fconsole%252Fbalance&_sign=iV9Q5kxBqXGdbkb6kmapXvJrkZM%3D&serviceParam=%7B%22checkSafePhone%22%3Afalse%2C%22checkSafeAddress%22%3Afalse%2C%22lsrp_score%22%3A0.0%7D&showActiveX=false&theme=&needTheme=false&bizDeviceType=&_locale=en_US",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/mimo.png",
                             "tags": [],
                             "timestampAdded": 1782762089329
                         },
@@ -442,7 +442,7 @@
                             "name": "Conversor Digital",
                             "websiteUrl": "https://atnojs-es-301632.hostingersite.com/apps/conversor_multimedia/index.html",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/conversor.svg",
                             "tags": [],
                             "timestampAdded": 1783173566179
                         },
@@ -451,7 +451,7 @@
                             "name": "Deepseek",
                             "websiteUrl": "https://www.deepseek.com/en/",
                             "briefDescription": "",
-                            "iconHtml": "<img src=\"/imagenes/logo_antonio.png\" style=\"width:100%; height:100%; object-fit:contain;\">",
+                            "iconHtml": "https://atnojs.es/iconos/deepseek.png",
                             "tags": [],
                             "timestampAdded": 1788642858803
                         }
@@ -1105,5 +1105,5 @@
             ]
         }
     ],
-    "ultima_actualizacion": "2026-09-05 21:14:35"
+    "ultima_actualizacion": "2026-09-16 15:51:27"
 }
