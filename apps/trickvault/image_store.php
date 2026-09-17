@@ -75,6 +75,73 @@ function localImagePath(string $url): ?string {
     return uploadsDir() . '/' . $matches[1];
 }
 
+function compressToTarget(string $binary, int $targetBytes): array {
+    // Devuelve [binary, extension] con la imagen recomprimida a <= targetBytes.
+    // Si GD no está disponible o la imagen no se puede procesar, devuelve [null, null]
+    // para guardar la original sin romper el flujo.
+    if (!function_exists('imagecreatefromstring')) return [null, null];
+
+    $img = @imagecreatefromstring($binary);
+    if ($img === false) return [null, null];
+
+    $width = imagesx($img);
+    $height = imagesy($img);
+    if ($width < 1 || $height < 1) { imagedestroy($img); return [null, null]; }
+
+    // Guarda de memoria: no decodificar imágenes enormes.
+    if (($width * $height * 4) > 48000000) { imagedestroy($img); return [null, null]; }
+
+    $webpAvailable = function_exists('imagewebp');
+    $ext = $webpAvailable ? 'webp' : 'jpg';
+    $candidates = [];
+
+    $encode = function ($im, int $quality) use ($webpAvailable): string {
+        ob_start();
+        if ($webpAvailable) { imagewebp($im, null, $quality); } else { imagejpeg($im, null, $quality); }
+        $data = (string)ob_get_clean();
+        return $data;
+    };
+
+    $tries = [
+        [1200, [78, 70, 62, 55, 48, 42, 36]],
+        [960,  [52, 45, 38, 32]],
+        [768,  [45, 38, 32, 28]],
+        [614,  [38, 32, 28, 24]],
+    ];
+
+    foreach ($tries as [$maxSide, $qualities]) {
+        $scale = min(1, $maxSide / max($width, $height));
+        $nw = max(1, (int)round($width * $scale));
+        $nh = max(1, (int)round($height * $scale));
+        $resized = imagecreatetruecolor($nw, $nh);
+        if ($resized === false) continue;
+        imagealphablending($resized, false);
+        imagesavealpha($resized, true);
+        imagecopyresampled($resized, $img, 0, 0, 0, 0, $nw, $nh, $width, $height);
+        $width = $nw; $height = $nh;
+        imagedestroy($img);
+        $img = $resized;
+        foreach ($qualities as $quality) {
+            $data = $encode($img, $quality);
+            if ($data === '') continue;
+            if (strlen($data) <= $targetBytes) {
+                imagedestroy($img);
+                return [$data, $ext];
+            }
+            $candidates[] = $data;
+        }
+    }
+
+    imagedestroy($img);
+
+    // Mejor esfuerzo: devolver el candidato más ligero aunque supere el objetivo.
+    $best = null;
+    foreach ($candidates as $data) {
+        if ($best === null || strlen($data) < strlen($best)) $best = $data;
+    }
+    return $best !== null ? [$best, $ext] : [null, null];
+}
+
 function requireEditSession(): void {
     $authenticated = ($_SESSION['trickvault_edit'] ?? false) === true;
     $authenticatedAt = (int)($_SESSION['trickvault_edit_at'] ?? 0);
@@ -145,7 +212,14 @@ if ($action === 'save') {
         respond(415, ['success' => false, 'error' => 'La imagen no es válida o supera los 8 MB.']);
     }
 
-    $filename = 'example_' . $trickId . '_' . bin2hex(random_bytes(6)) . '.' . $allowed[$mime];
+    $compressed = compressToTarget($binary, 60 * 1024);
+    $extension = $allowed[$mime];
+    if ($compressed[0] !== null) {
+        $binary = $compressed[0];
+        $extension = $compressed[1];
+    }
+
+    $filename = 'example_' . $trickId . '_' . bin2hex(random_bytes(6)) . '.' . $extension;
     $path = uploadsDir() . '/' . $filename;
     if (file_put_contents($path, $binary, LOCK_EX) === false) {
         flock($lock, LOCK_UN);
