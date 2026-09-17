@@ -488,6 +488,34 @@ async function authenticateRemote(password) {
     return true;
 }
 
+/* Comprime la imagen para que no supere 60 KB (regla de la app). */
+function fitImageToLimit(image) {
+    const maxBytes = 60 * 1024;
+    let fallback = '';
+    for (const maxSide of [1400, 1000, 720]) {
+        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+        for (const quality of [0.82, 0.7, 0.6, 0.5, 0.42, 0.35]) {
+            const candidate = canvas.toDataURL('image/jpeg', quality);
+            fallback = candidate;
+            if (Math.floor(candidate.length * 3 / 4) <= maxBytes) return candidate;
+        }
+    }
+    return fallback;
+}
+
+function fitDataUrlToLimit(dataUrl) {
+    return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => resolve(fitImageToLimit(image));
+        image.onerror = () => resolve(dataUrl);
+        image.src = dataUrl;
+    });
+}
+
 async function uploadRemoteImage(trickId, imageData) {
     const formData = new FormData();
     formData.append('trickId', trickId);
@@ -669,13 +697,7 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
         reader.onload = () => {
             const image = new Image();
             image.onload = () => {
-                const maxSize = 1400;
-                const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
-                const canvas = document.createElement('canvas');
-                canvas.width = Math.max(1, Math.round(image.width * scale));
-                canvas.height = Math.max(1, Math.round(image.height * scale));
-                canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                const dataUrl = fitImageToLimit(image);
                 setForm(prev => ({ ...prev, imageUrl: dataUrl }));
                 setFormError('');
             };
@@ -1095,6 +1117,7 @@ function App() {
         for (const trick of tricks) {
             let imageUrl = trick.imageUrl || '';
             if (typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) {
+                imageUrl = await fitDataUrlToLimit(imageUrl);
                 imageUrl = await uploadRemoteImage(trick.id, imageUrl);
                 changed = true;
             }
