@@ -1209,7 +1209,7 @@ function App() {
             return true;
         } catch (error) {
             console.error('[TrickVault] No se pudo guardar la imagen:', error);
-            addToast('No se pudo guardar la imagen en Hostinger', 'error');
+            addToast(`No se pudo guardar la imagen en Hostinger: ${error.message}`, 'error');
             return false;
         }
     }, [editingTrick, setTricks]);
