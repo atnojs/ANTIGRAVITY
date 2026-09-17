@@ -20,8 +20,8 @@ session_set_cookie_params([
 ]);
 session_start();
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_DATA_URL_CHARS = 12 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 60 * 1024;
+const MAX_DATA_URL_CHARS = 96 * 1024;
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -127,7 +127,7 @@ if ($action === 'save') {
     if ($dataUrl === '' || strlen($dataUrl) > MAX_DATA_URL_CHARS) {
         flock($lock, LOCK_UN);
         fclose($lock);
-        respond(413, ['success' => false, 'error' => 'La imagen está vacía o supera el tamaño permitido.']);
+        respond(413, ['success' => false, 'error' => 'La imagen está vacía o supera los 60 KB permitidos.']);
     }
     if (preg_match('#^data:image/(png|jpe?g|webp|gif);base64,(.+)$#is', $dataUrl, $matches) !== 1) {
         flock($lock, LOCK_UN);
@@ -142,7 +142,7 @@ if ($action === 'save') {
     if ($binary === false || strlen($binary) > MAX_IMAGE_BYTES || !isset($allowed[$mime])) {
         flock($lock, LOCK_UN);
         fclose($lock);
-        respond(415, ['success' => false, 'error' => 'La imagen no es válida o supera los 8 MB.']);
+        respond(415, ['success' => false, 'error' => 'La imagen no es válida o supera los 60 KB.']);
     }
 
     $filename = 'example_' . $trickId . '_' . bin2hex(random_bytes(6)) . '.' . $allowed[$mime];
