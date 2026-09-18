@@ -839,6 +839,36 @@ h1, h2, h3, h4, .font-montserrat {
 
 .modal.folder-modal { max-width: 380px; }
 
+.prompt-full-preview {
+    margin-top: 0.75rem;
+    padding: 0.7rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 208, 208, 0.4);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.prompt-full-preview label {
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.prompt-full-preview textarea {
+    width: 100%;
+    min-height: 90px;
+    resize: vertical;
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--acc);
+    font-family: 'Fira Code', monospace;
+    font-size: 0.78rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.55rem;
+}
+
+.prompt-full-preview .btn {
+    margin-top: 0.5rem;
+}
+
 .modal-body .form-error {
     color: var(--neon-pink);
     font-size: 0.85rem;
