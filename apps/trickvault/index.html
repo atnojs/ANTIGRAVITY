@@ -199,6 +199,9 @@ const ADDITIONAL_IMAGE_COMMANDS = [
     ['/floating', 'Flotando con elementos alrededor'],
     ['/hologram', 'Hologramas e interfaces digitales'],
     ['/neon', 'Luces futuristas'],
+    ['/flashcard', 'tarjetas de estudio sobre el tema'],
+    ['/mindmap', 'mapa mental sobre el tema'],
+    ['/stickynotes', 'panel de post-its sobre el tema'],
 ];
 
 const ALL_IMAGE_COMMANDS = [
@@ -411,7 +414,12 @@ const PROMPT_TEMPLATES = {
     "/portrait": "Intimate studio photographic portrait focusing on [OBJETO] as the main character protagonist, expressive character lighting, rich textures, deep storytelling depth",
     "/floating": "Surreal zero-gravity levitation of [OBJETO] floating effortlessly in mid-air, surrounded by gentle hovering geometric particles, clean minimalist pastel studio background",
     "/hologram": "Futuristic glowing 3D hologram of [OBJETO] projected into the air, cyan neon wireframe light rays, digital telemetry data HUD elements, sci-fi cybernetic interface",
-    "/neon": "Vibrant night photography of [OBJETO] illuminated by bold glowing neon light tubes, electric pink and ultraviolet glows, sleek reflective surfaces, retro-futuristic synthwave mood"
+    "/neon": "Vibrant night photography of [OBJETO] illuminated by bold glowing neon light tubes, electric pink and ultraviolet glows, sleek reflective surfaces, retro-futuristic synthwave mood",
+
+    // 137-139 (Comandos de estudio — reels maestropacovivas/Código AdriA 2026-09)
+    "/flashcard": "Educational study flashcards set about [OBJETO], clean white flashcard grid with bold question titles and concise answer text, colorful category headers, neat organized layout on a soft pastel background, modern educational infographic style, sharp readable typography, 8k resolution",
+    "/mindmap": "Colorful mind map diagram about [OBJETO], central topic node with branching curved connectors to subtopic bubbles, small icons and short labels, clean flat vector infographic style, balanced radial layout, soft gradient background, modern study poster design",
+    "/stickynotes": "Cork board covered with colorful sticky notes about [OBJETO], handwritten-style short notes and tiny doodle icons, pushpins, warm cozy study workspace aesthetic, overhead flat lay, bright cheerful colors"
 };
 
 const IMAGE_COMMAND_PROMPTS = new Map(
