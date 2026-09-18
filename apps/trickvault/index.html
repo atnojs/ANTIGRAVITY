@@ -609,9 +609,13 @@ function useLocalStorage(key, initial) {
             if (!saved) return initial;
             const parsed = JSON.parse(saved);
             if (!Array.isArray(parsed)) return initial;
-            const existingIds = new Set(parsed.map(item => item.id));
+            const filtered = parsed.filter(item => !REMOVED_IMAGE_IDS.has(String(item.id)));
+            if (filtered.length !== parsed.length) {
+                localStorage.setItem(key, JSON.stringify(filtered));
+            }
+            const existingIds = new Set(filtered.map(item => item.id));
             const newSeedItems = initial.filter(item => !existingIds.has(item.id));
-            const merged = newSeedItems.length ? [...newSeedItems, ...parsed] : parsed;
+            const merged = newSeedItems.length ? [...newSeedItems, ...filtered] : filtered;
             return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(merged));
         } catch { return initial; }
     });
