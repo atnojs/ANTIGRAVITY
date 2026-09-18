@@ -1033,13 +1033,14 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId,
 /* ═══════════════════════════════════════════════
    COMPONENT: CategoryGrid (Main Dashboard)
    ═══════════════════════════════════════════════ */
-function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFolder }) {
+function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFolder, onReorderFolders }) {
     const counts = useMemo(() => {
         const map = {};
         tricks.forEach(t => { map[t.category] = (map[t.category] || 0) + 1; });
         return map;
     }, [tricks]);
     const favCount = useMemo(() => tricks.filter(t => t.isFavorite).length, [tricks]);
+    const [dragOverFolderId, setDragOverFolderId] = useState(null);
 
     const cardKeyDown = (event, id) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -1048,17 +1049,43 @@ function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFold
         }
     };
 
+    const handleFolderDragStart = (event, cat) => {
+        if (!canEdit) return;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('folder/id', cat.id);
+    };
+
+    const handleFolderDragOver = (event, cat) => {
+        if (!canEdit || !event.dataTransfer.types.includes('folder/id')) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        if (dragOverFolderId !== cat.id) setDragOverFolderId(cat.id);
+    };
+
+    const handleFolderDrop = (event, cat) => {
+        if (!canEdit) return;
+        event.preventDefault();
+        const sourceId = event.dataTransfer.getData('folder/id');
+        setDragOverFolderId(null);
+        if (sourceId && sourceId !== cat.id) onReorderFolders(sourceId, cat.id);
+    };
+
     return (
         <div className="category-grid">
             {folders.map(cat => (
                 <div
                     key={cat.id}
-                    className={`category-card ${cat.color}-border`}
+                    className={`category-card ${cat.color}-border ${dragOverFolderId === cat.id ? 'is-drag-over' : ''}`}
                     onClick={() => onSelectCategory(cat.id)}
                     onKeyDown={(e) => cardKeyDown(e, cat.id)}
                     role="button"
                     tabIndex="0"
                     aria-label={`${cat.label}: ${counts[cat.id] || 0} trucos`}
+                    draggable={canEdit}
+                    onDragStart={(e) => handleFolderDragStart(e, cat)}
+                    onDragOver={(e) => handleFolderDragOver(e, cat)}
+                    onDrop={(e) => handleFolderDrop(e, cat)}
+                    onDragEnd={() => setDragOverFolderId(null)}
                 >
                     {canEdit && (
                         <button
@@ -1095,10 +1122,11 @@ function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFold
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickList (Category View)
    ═══════════════════════════════════════════════ */
-function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter, onReorder }) {
+function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter, onReorder, onMoveTrick, onSelectFolder }) {
     const cat = getCat(categoryId, folders);
     const [draggingId, setDraggingId] = useState(null);
     const [dragOverId, setDragOverId] = useState(null);
+    const [dragOverFolder, setDragOverFolder] = useState(null);
 
     const filtered = useMemo(() => {
         let result = categoryId === 'favorites'
@@ -1141,6 +1169,42 @@ function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, o
                 <h2>{cat?.icon} {cat?.label} <span style={{color:'var(--muted)',fontSize:'0.9rem',fontWeight:400}}>({filtered.length} trucos)</span></h2>
                 {canEdit && <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Truco</button>}
             </div>
+
+            {canEdit && (
+                <div className="folder-rail" role="group" aria-label="Mover tarjeta a otra carpeta">
+                    <span className="folder-rail-label">Arrastra una tarjeta aquí para moverla:</span>
+                    {folders.map(f => (
+                        <button
+                            key={f.id}
+                            type="button"
+                            className={`folder-chip ${f.id === categoryId ? 'current' : ''} ${dragOverFolder === f.id ? 'drag-over' : ''}`}
+                            onClick={() => onSelectFolder(f.id)}
+                            onDragOver={(e) => { e.preventDefault(); if (dragOverFolder !== f.id) setDragOverFolder(f.id); }}
+                            onDragLeave={() => setDragOverFolder(prev => prev === f.id ? null : prev)}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setDragOverFolder(null);
+                                const id = e.dataTransfer.getData('text/plain');
+                                if (id) onMoveTrick(id, f.id);
+                            }}
+                        >{f.icon} {f.label}</button>
+                    ))}
+                    <button
+                        type="button"
+                        className={`folder-chip fav-chip ${dragOverFolder === 'favorites' ? 'drag-over' : ''}`}
+                        title="Soltar aquí marca la tarjeta como favorita"
+                        onClick={() => onSelectFolder('favorites')}
+                        onDragOver={(e) => { e.preventDefault(); if (dragOverFolder !== 'favorites') setDragOverFolder('favorites'); }}
+                        onDragLeave={() => setDragOverFolder(prev => prev === 'favorites' ? null : prev)}
+                        onDrop={(e) => {
+                            e.preventDefault();
+                            setDragOverFolder(null);
+                            const id = e.dataTransfer.getData('text/plain');
+                            if (id) onMoveTrick(id, 'favorites');
+                        }}
+                    >⭐ Favoritos</button>
+                </div>
+            )}
 
             {canEdit && categoryId !== 'favorites' && <p className="drag-hint">⠿ Arrastra las tarjetas para cambiar su posición.</p>}
 
@@ -1418,6 +1482,44 @@ function App() {
         addToast('📁 Carpeta creada');
     }, [folders, setFolders]);
 
+    const reorderFolders = useCallback((sourceId, targetId) => {
+        setFolders(prev => {
+            const sourceIndex = prev.findIndex(f => f.id === sourceId);
+            const targetIndex = prev.findIndex(f => f.id === targetId);
+            if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(sourceIndex, 1);
+            next.splice(targetIndex, 0, moved);
+            return next;
+        });
+        addToast('📂 Carpetas reordenadas');
+    }, [setFolders]);
+
+    const moveTrickToFolder = useCallback((trickId, targetFolderId) => {
+        setTricks(prev => {
+            let movedTrick = null;
+            const next = prev.map(t => {
+                if (t.id !== trickId) return t;
+                if (targetFolderId === 'favorites') {
+                    movedTrick = { ...t, isFavorite: true };
+                    return movedTrick;
+                }
+                if (t.category === targetFolderId) return t;
+                const maxOrder = prev
+                    .filter(x => x.category === targetFolderId)
+                    .reduce((max, x) => hasSortOrder(x) ? Math.max(max, Number(x.sortOrder)) : max, -1);
+                movedTrick = { ...t, category: targetFolderId, sortOrder: maxOrder + 1 };
+                return movedTrick;
+            });
+            return next;
+        });
+        if (targetFolderId === 'favorites') {
+            addToast('⭐ Añadida a favoritos');
+        } else {
+            addToast('📂 Tarjeta movida de carpeta');
+        }
+    }, [setTricks]);
+
     const deleteFolder = useCallback((folder) => {
         withEditAccess(() => {
             if (!confirm(`¿Eliminar la carpeta "${folder.label}"? Sus tarjetas pasarán a "Trucos y atajos".`)) return;
@@ -1657,6 +1759,7 @@ function App() {
                         onSelectCategory={selectCategory}
                         canEdit={editUnlocked}
                         onDeleteFolder={deleteFolder}
+                        onReorderFolders={reorderFolders}
                     />
                 </div>
             )}
@@ -1679,6 +1782,8 @@ function App() {
                     filter={filter}
                     setFilter={setFilter}
                     onReorder={reorderTricks}
+                    onMoveTrick={moveTrickToFolder}
+                    onSelectFolder={selectCategory}
                 />
             )}
 
