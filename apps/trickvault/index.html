@@ -225,6 +225,16 @@ const ALL_IMAGE_COMMANDS = [
     ...ADDITIONAL_IMAGE_COMMANDS.filter(([command]) => !INSTAGRAM_COMMANDS.some(([existingCommand]) => existingCommand === command)),
 ];
 
+// Códigos eliminados por Antonio (2026-09-18): no se regeneran al recargar.
+const REMOVED_IMAGE_IDS = new Set([
+    'ig-dcek-020', 'ig-dcek-099', 'ig-dcek-100',
+    'ig-dcek-113', 'ig-dcek-114', 'ig-dcek-115', 'ig-dcek-116', 'ig-dcek-117',
+    'ig-dcek-118', 'ig-dcek-119', 'ig-dcek-120', 'ig-dcek-121', 'ig-dcek-122',
+    'ig-dcek-123', 'ig-dcek-124', 'ig-dcek-125', 'ig-dcek-126', 'ig-dcek-127',
+    'ig-dcek-128', 'ig-dcek-129', 'ig-dcek-130', 'ig-dcek-131', 'ig-dcek-132',
+    'ig-dcek-133', 'ig-dcek-134', 'ig-dcek-135', 'ig-dcek-136'
+]);
+
 
 
 const SEED_TRICKS = [
@@ -239,19 +249,23 @@ const SEED_TRICKS = [
     { id: 's9', title: 'Método Ivy Lee: productividad diaria', description: 'Cada noche escribe las 6 tareas más importantes para mañana, ordenadas por prioridad. Al día siguiente empieza por la #1 y no pases a la siguiente hasta terminar.', category: 'productividad', tags: ['productividad', 'metodo', 'focus'], codeSnippet: '📋 Cada noche:\n1. Escribe 6 tareas para mañana\n2. Priorízalas (1 = más importante)\n\n🌅 Al día siguiente:\n1. Empieza por la tarea #1\n2. No pases a #2 hasta terminar #1\n3. Las no acabadas pasan a mañana', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 10 },
     { id: 's10', title: 'Regla 5-5-5 para tomar decisiones', description: 'Pregúntate: ¿esto importará en 5 minutos, 5 meses o 5 años? La respuesta te ayuda a calibrar cuánta energía mental merece cada decisión.', category: 'productividad', tags: ['decisiones', 'mentalidad', 'minimalismo'], codeSnippet: '⏱️ ¿Importará en 5 MINUTOS?\n   → Déjalo pasar. No reacciones.\n\n📅 ¿Importará en 5 MESES?\n   → Dedícale atención moderada.\n\n🎯 ¿Importará en 5 AÑOS?\n   → Esto SÍ merece tu mejor energía.', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 9 },
     { id: 's11', title: 'El truco del patito de goma (Rubber Duck Debugging)', description: 'Cuando estés atascado con un bug, explícaselo en voz alta a un objeto inanimado (como un patito de goma). El mero hecho de verbalizar el problema te hace ver la solución.', category: 'otros', tags: ['debugging', 'pensamiento', 'metodologia'], codeSnippet: '🐤 Pasos del Rubber Duck Debugging:\n1. Coge un patito (o cualquier objeto)\n2. Explícale el problema línea por línea\n3. No asumas nada - explícalo TODO\n4. La solución suele aparecer a mitad de la explicación', difficulty: 'beginner', sourceUrl: 'https://es.wikipedia.org/wiki/M%C3%A9todo_de_depuraci%C3%B3n_del_patito_de_goma', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 11 },
-    ...ALL_IMAGE_COMMANDS.map(([command, meaning], index) => ({
-        id: `ig-dcek-${String(index + 1).padStart(3, '0')}`,
-        title: `${command} — ${meaning}`,
-        description: '',
-        category: 'ia',
-        tags: ['comandos de imagen', 'imagen', 'Instagram'],
-        codeSnippet: command,
-        difficulty: 'beginner',
-        sourceUrl: 'https://www.instagram.com/p/DcekG11IJf-/',
-        imageUrl: '',
-        isFavorite: false,
-        createdAt: Date.UTC(2026, 7, 25) - index,
-    })),
+    ...ALL_IMAGE_COMMANDS.flatMap(([command, meaning], index) => {
+        const seedId = `ig-dcek-${String(index + 1).padStart(3, '0')}`;
+        if (REMOVED_IMAGE_IDS.has(seedId)) return [];
+        return [{
+            id: seedId,
+            title: `${command} — ${meaning}`,
+            description: '',
+            category: 'ia',
+            tags: ['comandos de imagen', 'imagen', 'Instagram'],
+            codeSnippet: command,
+            difficulty: 'beginner',
+            sourceUrl: 'https://www.instagram.com/p/DcekG11IJf-/',
+            imageUrl: '',
+            isFavorite: false,
+            createdAt: Date.UTC(2026, 7, 25) - index,
+        }];
+    }),
 ];
 
 /* ═══════════════════════════════════════════════
