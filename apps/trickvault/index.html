@@ -218,6 +218,12 @@ const ADDITIONAL_IMAGE_COMMANDS = [
     ['/wideangle', 'gran angular'],
     ['/overtheshoulder', 'toma sobre el hombro'],
     ['/profesión', 'te viste de la profesión que digas'],
+    ['/visualizelearning', 'visualización interactiva de un proceso'],
+    ['/generatehandwritingimage', 'apuntes manuscritos'],
+    ['/infochart', 'infografía con gráficos y datos'],
+    ['/infograph', 'infografía por capas'],
+    ['/anatomy', 'despiece etiquetado estilo lámina'],
+    ['/roadmap', 'hoja de ruta por fases'],
 ];
 
 const ALL_IMAGE_COMMANDS = [
@@ -467,7 +473,15 @@ const PROMPT_TEMPLATES = {
     "/sideview": "Side profile view of [OBJETO], lateral camera angle, clean composition, soft background bokeh, professional portrait photography",
     "/wideangle": "Wide angle shot of [OBJETO], expansive field of view showing more of the scene, dramatic perspective, professional photography style",
     "/overtheshoulder": "Over the shoulder shot of [OBJETO], candid view from behind the subject, natural spontaneous framing, cinematic depth of field",
-    "/profesión": "Professional uniform portrait of [OBJETO] dressed as the requested profession, authentic work attire and props, confident pose, realistic workplace environment"
+    "/profesión": "Professional uniform portrait of [OBJETO] dressed as the requested profession, authentic work attire and props, confident pose, realistic workplace environment",
+
+    // 156-161 (short YouTube 5 códigos + reels Código AdriA, 2026-09)
+    "/visualizelearning": "Interactive educational visualization of [OBJETO], clean modern UI with adjustable sliders and real-time diagrams, colorful icons and labels, dark interface with glowing accents, scientific learning tool aesthetic",
+    "/generatehandwritingimage": "Handwritten study notes about [OBJETO], neat cursive handwriting on lined notebook paper, clear diagrams and formulas, highlighted key points, authentic student notebook aesthetic, high resolution",
+    "/infochart": "Modern educational infographic about [OBJETO], clean layout with data charts, bar graphs, comparison tables and icons, professional design, balanced colors, high readability",
+    "/infograph": "Detailed scientific infographic poster about [OBJETO], layered diagram sections with labels and descriptions, color-coded zones, clean modern design, educational poster style",
+    "/anatomy": "Technical anatomy diagram of [OBJETO], labeled parts with connector lines, science textbook illustration style, clean white background, precise engineering drawing",
+    "/roadmap": "Visual project roadmap for [OBJETO], horizontal timeline with three phases, milestone nodes, icons and short labels, clean modern infographic style, soft gradient background"
 };
 
 const IMAGE_COMMAND_PROMPTS = new Map(
