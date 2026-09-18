@@ -202,6 +202,22 @@ const ADDITIONAL_IMAGE_COMMANDS = [
     ['/flashcard', 'tarjetas de estudio sobre el tema'],
     ['/mindmap', 'mapa mental sobre el tema'],
     ['/stickynotes', 'panel de post-its sobre el tema'],
+    ['/4K', 'sube la foto a resolución 4K'],
+    ['/whiteteeth', 'blanqueamiento dental'],
+    ['/srinkless', 'piel lisa, sin arrugas'],
+    ['/together', 'junta a dos personas en una foto'],
+    ['/nombrafamoso', 'selfie con un famoso'],
+    ['/ythumbnail', 'miniatura para YouTube'],
+    ['/repairhd', 'restaura una foto antigua en HD'],
+    ['/fullcolour', 'colorea una foto en blanco y negro'],
+    ['/transferoutfit', 'te cambia la ropa'],
+    ['/fullbody', 'foto de cuerpo entero'],
+    ['/transfer', 'te transporta a otro escenario'],
+    ['/droneview', 'perspectiva aérea de dron'],
+    ['/sideview', 'vista lateral'],
+    ['/wideangle', 'gran angular'],
+    ['/overtheshoulder', 'toma sobre el hombro'],
+    ['/profesión', 'te viste de la profesión que digas'],
 ];
 
 const ALL_IMAGE_COMMANDS = [
@@ -419,7 +435,25 @@ const PROMPT_TEMPLATES = {
     // 137-139 (Comandos de estudio — reels maestropacovivas/Código AdriA 2026-09)
     "/flashcard": "Educational study flashcards set about [OBJETO], clean white flashcard grid with bold question titles and concise answer text, colorful category headers, neat organized layout on a soft pastel background, modern educational infographic style, sharp readable typography, 8k resolution",
     "/mindmap": "Colorful mind map diagram about [OBJETO], central topic node with branching curved connectors to subtopic bubbles, small icons and short labels, clean flat vector infographic style, balanced radial layout, soft gradient background, modern study poster design",
-    "/stickynotes": "Cork board covered with colorful sticky notes about [OBJETO], handwritten-style short notes and tiny doodle icons, pushpins, warm cozy study workspace aesthetic, overhead flat lay, bright cheerful colors"
+    "/stickynotes": "Cork board covered with colorful sticky notes about [OBJETO], handwritten-style short notes and tiny doodle icons, pushpins, warm cozy study workspace aesthetic, overhead flat lay, bright cheerful colors",
+
+    // 140-155 (20 códigos secretos ChatGPT — short YouTube #_NGr7DrnMUw, 2026-09)
+    "/4K": "Ultra high definition 4K remaster of [OBJETO], dramatically enhanced resolution and sharpness, crisp micro details, refined textures, professional photo restoration quality",
+    "/whiteteeth": "Dental whitening retouch of [OBJETO], bright natural white smile, subtle realistic teeth whitening, healthy fresh look, natural lighting, photorealistic",
+    "/srinkless": "Skin smoothing retouch of [OBJETO], subtle wrinkle reduction and youthful glow, natural flawless complexion, soft studio portrait lighting, realistic photorealistic result",
+    "/together": "Two people together in the same photo, [OBJETO] standing side by side smiling, natural interaction, seamless realistic composite, balanced studio lighting",
+    "/nombrafamoso": "Realistic celebrity selfie photo with [OBJETO], famous person taking a friendly selfie next to the subject, candid phone camera look, natural indoor lighting, photorealistic",
+    "/ythumbnail": "High-impact YouTube thumbnail of [OBJETO], bold colorful design, expressive face, vivid contrast, clean composition, eye-catching typography space, professional thumbnail style",
+    "/repairhd": "HD restoration of old damaged photo of [OBJETO], repaired scratches and tears, restored sharpness and color, vintage photo brought back to life, high quality restoration",
+    "/fullcolour": "Colorized version of black and white photo of [OBJETO], natural realistic skin tones, historically accurate colors, vibrant modern colorization, restored detail",
+    "/transferoutfit": "Outfit transfer of [OBJETO], subject wearing a stylish new clothing combination, realistic fabric folds and fit, natural full body pose, clean studio background",
+    "/fullbody": "Full body shot of [OBJETO], head to toe framing, natural standing pose, complete outfit visible, clean studio background, professional photography",
+    "/transfer": "Scene transfer of [OBJETO], subject transported to a famous landmark location, realistic integration with environment lighting and shadows, cinematic travel photography",
+    "/droneview": "Drone view aerial perspective of [OBJETO], high angle top-down shot, dramatic scale, cinematic aerial photography, sharp details",
+    "/sideview": "Side profile view of [OBJETO], lateral camera angle, clean composition, soft background bokeh, professional portrait photography",
+    "/wideangle": "Wide angle shot of [OBJETO], expansive field of view showing more of the scene, dramatic perspective, professional photography style",
+    "/overtheshoulder": "Over the shoulder shot of [OBJETO], candid view from behind the subject, natural spontaneous framing, cinematic depth of field",
+    "/profesión": "Professional uniform portrait of [OBJETO] dressed as the requested profession, authentic work attire and props, confident pose, realistic workplace environment"
 };
 
 const IMAGE_COMMAND_PROMPTS = new Map(
