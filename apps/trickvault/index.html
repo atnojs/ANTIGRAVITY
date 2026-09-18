@@ -30,18 +30,72 @@ const AUTH_URL = 'auth.php';
 const IMAGE_PROMPT_HINT = 'Úsalo junto con un sujeto concreto y un encuadre o formato';
 const IMAGE_PROMPT_COPY_GUIDANCE = 'Úsalo junto con un sujeto concreto y un encuadre o formato.';
 
-const CATEGORIES = [
-    { id: 'terminal',    label: 'Terminal / Linux',   icon: '🖥️',  color: 'cyan',    bgIcon: '💻' },
-    { id: 'css',         label: 'CSS / Diseño',       icon: '🎨',  color: 'pink',    bgIcon: '✨' },
-    { id: 'productividad', label: 'Productividad',    icon: '⚡',  color: 'emerald', bgIcon: '🚀' },
-    { id: 'ia',          label: 'IA / Prompts',       icon: '🤖',  color: 'purple',  bgIcon: '🧠' },
-    { id: 'dev-web',     label: 'Desarrollo Web',     icon: '🌐',  color: 'cyan',    bgIcon: '⚛️' },
-    { id: 'javascript',  label: 'JavaScript / TS',    icon: '📜',  color: 'amber',   bgIcon: '🟨' },
-    { id: 'python',      label: 'Python',             icon: '🐍',  color: 'emerald', bgIcon: '📦' },
-    { id: 'devops',      label: 'DevOps / Docker',    icon: '🐳',  color: 'purple',  bgIcon: '☸️' },
-    { id: 'vscode',      label: 'VS Code / Editores', icon: '📝',  color: 'cyan',    bgIcon: '🔧' },
-    { id: 'otros',       label: 'Otros',              icon: '📌',  color: 'pink',    bgIcon: '💡' },
+const DEFAULT_FOLDERS = [
+    { id: 'visuales',    label: 'Estilos visuales',        icon: '🎨',  color: 'pink',    bgIcon: '🖌️' },
+    { id: 'estudio',     label: 'Estudiar e infografías',  icon: '📚',  color: 'cyan',    bgIcon: '🧠' },
+    { id: 'camara',      label: 'Cámara y planos',         icon: '🎥',  color: 'purple',  bgIcon: '📷' },
+    { id: 'luz',         label: 'Iluminación y ambiente',  icon: '💡',  color: 'amber',   bgIcon: '🌅' },
+    { id: 'tecnicos',    label: 'Esquemas técnicos',       icon: '⚙️',  color: 'cyan',    bgIcon: '📐' },
+    { id: 'producto',    label: 'Producto y publicidad',   icon: '🛍️',  color: 'emerald', bgIcon: '📦' },
+    { id: 'persona',     label: 'Retoque y persona',       icon: '✨',  color: 'pink',    bgIcon: '🧑‍🎤' },
+    { id: 'escenarios',  label: 'Escenarios y efectos',    icon: '🌍',  color: 'purple',  bgIcon: '🏔️' },
+    { id: 'trucos',      label: 'Trucos y atajos',         icon: '💻',  color: 'emerald', bgIcon: '⌨️' },
 ];
+const FAVORITES_FOLDER = { id: 'favorites', label: 'Favoritos', icon: '⭐', color: 'amber', bgIcon: '💛' };
+const FOLDERS_KEY = 'trickvault_folders';
+
+// Mapa comando de imagen -> carpeta
+const CODE_FOLDER = {
+    // Esquemas técnicos
+    '/xray': 'tecnicos', '/explodedview': 'tecnicos', '/cutaway': 'tecnicos', '/crosssection': 'tecnicos',
+    '/teardown': 'tecnicos', '/schematic': 'tecnicos', '/ghostedview': 'tecnicos', '/skeletalview': 'tecnicos',
+    '/layerview': 'tecnicos', '/partsdiagram': 'tecnicos', '/blueprint': 'tecnicos', '/isometric': 'tecnicos',
+    '/orthographic': 'tecnicos', '/patentdrawing': 'tecnicos', '/wireframe': 'tecnicos', '/floorplan': 'tecnicos',
+    '/dimensioned': 'tecnicos', '/anatomy': 'tecnicos',
+    // Estudiar e infografías
+    '/infographic': 'estudio', '/annotated': 'estudio', '/flowchart': 'estudio', '/timeline': 'estudio',
+    '/flashcard': 'estudio', '/mindmap': 'estudio', '/stickynotes': 'estudio', '/visualizelearning': 'estudio',
+    '/generatehandwritingimage': 'estudio', '/infochart': 'estudio', '/infograph': 'estudio', '/roadmap': 'estudio',
+    // Estilos visuales
+    '/handwritten': 'visuales', '/napkinsketch': 'visuales', '/whiteboard': 'visuales', '/moodboard': 'visuales',
+    '/pencilsketch': 'visuales', '/notebookpage': 'visuales', '/collage': 'visuales', '/redpen': 'visuales',
+    '/storyboard': 'visuales', '/tornpaper': 'visuales', '/actionfigure': 'visuales', '/claymation': 'visuales',
+    '/papercraft': 'visuales', '/lowpoly': 'visuales', '/pixelart': 'visuales', '/linocut': 'visuales',
+    '/risograph': 'visuales', '/halftone': 'visuales', '/stainedglass': 'visuales', '/chromemetal': 'visuales',
+    '/embroidery': 'visuales', '/minime': 'visuales', '/statue': 'visuales', '/silhouettestudy': 'visuales',
+    '/duotoneportrait': 'visuales', '/stickersheet': 'visuales', '/patterntile': 'visuales',
+    // Cámara y planos
+    '/macro': 'camara', '/shallowdepth': 'camara', '/bokeh': 'camara', '/longexposure': 'camara',
+    '/tiltshift': 'camara', '/35mm': 'camara', '/anamorphic': 'camara', '/lowangle': 'camara',
+    '/overhead': 'camara', '/dutchangle': 'camara', '/extremecloseup': 'camara', '/backview': 'camara',
+    '/droneview': 'camara', '/sideview': 'camara', '/wideangle': 'camara', '/overtheshoulder': 'camara',
+    // Iluminación y ambiente
+    '/cinematic': 'luz', '/goldenhour': 'luz', '/bluehour': 'luz', '/rimlight': 'luz', '/backlight': 'luz',
+    '/softlighting': 'luz', '/dramaticlighting': 'luz', '/volumetriclight': 'luz', '/lowkey': 'luz', '/highkey': 'luz',
+    '/cyberpunk': 'luz', '/futuristic': 'luz', '/fire': 'luz', '/ice': 'luz', '/fireAndIce': 'luz', '/smoke': 'luz',
+    '/storm': 'luz', '/energy': 'luz', '/neon': 'luz',
+    // Producto y publicidad
+    '/knolling': 'producto', '/productshot': 'producto', '/packaging': 'producto', '/flatlay': 'producto',
+    '/heroshot': 'producto', '/floatingproduct': 'producto', '/ghostmannequin': 'producto', '/splashshot': 'producto',
+    '/devicemockup': 'producto', '/screenmockup': 'producto', '/boxmockup': 'producto', '/labelmockup': 'producto',
+    '/apparelmockup': 'producto', '/embossedlogo': 'producto', '/foilstamp': 'producto', '/shelfshot': 'producto',
+    '/sizecomparison': 'producto', '/colorway': 'producto', '/billboard': 'producto', '/showcase': 'producto',
+    '/premiumshowcase': 'producto', '/metaad': 'producto', '/newspaperad': 'producto', '/billboardmockup': 'producto',
+    '/3Dbillboard': 'producto', '/paperbag': 'producto', '/storefrontbranding': 'producto', '/cupbranding': 'producto',
+    '/luxury': 'producto', '/perfumead': 'producto', '/luxurywatchad': 'producto', '/glassreflection': 'producto',
+    '/surrealad': 'producto', '/ythumbnail': 'producto',
+    // Retoque y persona
+    '/charactersheet': 'persona', '/turnaround': 'persona', '/expressionsheet': 'persona', '/costumedesign': 'persona',
+    '/environmentalportrait': 'persona', '/magazinecover': 'persona', '/movieposter': 'persona', '/bookcover': 'persona',
+    '/albumcover': 'persona', '/newspaper': 'persona', '/quotecard': 'persona', '/4K': 'persona',
+    '/whiteteeth': 'persona', '/srinkless': 'persona', '/together': 'persona', '/nombrafamoso': 'persona',
+    '/repairhd': 'persona', '/fullcolour': 'persona', '/transferoutfit': 'persona', '/fullbody': 'persona',
+    '/transfer': 'persona', '/profesión': 'persona',
+    // Escenarios y efectos
+    '/nature': 'escenarios', '/jungle': 'escenarios', '/desert': 'escenarios', '/ocean': 'escenarios',
+    '/underwater': 'escenarios', '/space': 'escenarios', '/splash': 'escenarios', '/waterSplashAd': 'escenarios',
+    '/explosion': 'escenarios', '/productexplosion': 'escenarios', '/floating': 'escenarios', '/hologram': 'escenarios',
+};
 
 const DIFFICULTIES = [
     { value: 'beginner',     label: 'Principiante' },
@@ -262,7 +316,7 @@ const SEED_TRICKS = [
             id: seedId,
             title: `${command} — ${meaning}`,
             description: '',
-            category: 'ia',
+            category: CODE_FOLDER[command] || 'trucos',
             tags: ['comandos de imagen', 'imagen', 'Instagram'],
             codeSnippet: command,
             difficulty: 'beginner',
@@ -279,7 +333,34 @@ const SEED_TRICKS = [
    ═══════════════════════════════════════════════ */
 function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
 function formatDate(ts) { return new Date(ts).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
-function getCat(id) { return CATEGORIES.find(c => c.id === id); }
+function getCat(id, folders) {
+    if (id === 'favorites') return FAVORITES_FOLDER;
+    const list = folders && folders.length ? folders : DEFAULT_FOLDERS;
+    return list.find(c => c.id === id);
+}
+function readFolderIds() {
+    try {
+        const saved = localStorage.getItem(FOLDERS_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length) return parsed.map(f => f.id);
+        }
+    } catch { /* ignorar */ }
+    return DEFAULT_FOLDERS.map(f => f.id);
+}
+function normalizeTrickCategory(item, folderIds) {
+    const mapped = CODE_FOLDER[getImageCommandKey(item)];
+    if (mapped && folderIds.includes(mapped)) {
+        return item.category === mapped ? item : { ...item, category: mapped };
+    }
+    const cat = String(item.category || '');
+    if (cat && folderIds.includes(cat)) return item;
+    return item.category === 'trucos' ? item : { ...item, category: 'trucos' };
+}
+function normalizeTrickCategories(items) {
+    const folderIds = readFolderIds();
+    return items.map(item => normalizeTrickCategory(item, folderIds));
+}
 function isLegacyImageCommandDescription(description) {
     return typeof description === 'string' && /^Comando \d+ del carrusel «250 comandos de imagen» de ninodirector\.\s*Úsalo junto con un sujeto concreto y un encuadre o formato\.?$/i.test(description.trim());
 }
@@ -620,16 +701,17 @@ function useLocalStorage(key, initial) {
     const [val, setVal] = useState(() => {
         try {
             const saved = localStorage.getItem(key);
-            if (!saved) return initial;
+            if (!saved) return normalizeTrickOrder(normalizeTrickCategories(initial));
             const parsed = JSON.parse(saved);
-            if (!Array.isArray(parsed)) return initial;
+            if (!Array.isArray(parsed)) return normalizeTrickOrder(normalizeTrickCategories(initial));
             const filtered = parsed.filter(item => !REMOVED_IMAGE_IDS.has(String(item.id)));
-            if (filtered.length !== parsed.length) {
-                localStorage.setItem(key, JSON.stringify(filtered));
+            const migrated = normalizeTrickCategories(filtered);
+            if (filtered.length !== parsed.length || migrated.some((item, i) => item.category !== filtered[i].category)) {
+                localStorage.setItem(key, JSON.stringify(migrated));
             }
-            const existingIds = new Set(filtered.map(item => item.id));
+            const existingIds = new Set(migrated.map(item => item.id));
             const newSeedItems = initial.filter(item => !existingIds.has(item.id));
-            const merged = newSeedItems.length ? [...newSeedItems, ...filtered] : filtered;
+            const merged = newSeedItems.length ? [...newSeedItems, ...migrated] : migrated;
             return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(merged));
         } catch { return initial; }
     });
@@ -640,6 +722,26 @@ function useLocalStorage(key, initial) {
     }, [key, val]);
 
     return [val, setVal];
+}
+
+function useFolders() {
+    const [folders, setFolders] = useState(() => {
+        try {
+            const saved = localStorage.getItem(FOLDERS_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length) return parsed;
+            }
+        } catch { /* ignorar */ }
+        return DEFAULT_FOLDERS;
+    });
+
+    useEffect(() => {
+        try { localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders)); }
+        catch(e) { console.warn('localStorage full', e); }
+    }, [folders]);
+
+    return [folders, setFolders];
 }
 
 /* ═══════════════════════════════════════════════
@@ -740,7 +842,7 @@ function PasswordModal({ onSubmit, onClose }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickForm (Add / Edit Modal)
    ═══════════════════════════════════════════════ */
-function TrickForm({ trick, onSave, onClose, onDelete }) {
+function TrickForm({ trick, folders, onSave, onClose, onDelete }) {
     const isEdit = !!trick;
     const [formError, setFormError] = useState('');
     const [saving, setSaving] = useState(false);
@@ -748,7 +850,7 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
         ...trick,
         tags: Array.isArray(trick.tags) ? trick.tags.join(', ') : (trick.tags || '')
     } : {
-        title: '', description: '', category: 'terminal', tags: '',
+        title: '', description: '', category: 'trucos', tags: '',
         codeSnippet: '', imageUrl: '', sourceUrl: '', difficulty: 'beginner', isFavorite: false
     });
 
@@ -802,7 +904,7 @@ function TrickForm({ trick, onSave, onClose, onDelete }) {
     const fields = [
         { label: 'Título *', name: 'title', type: 'text', placeholder: 'Ej: Atajo para buscar en el historial' },
         { label: 'Descripción *', name: 'description', type: 'textarea', placeholder: 'Explica el truco, cuándo usarlo y por qué es útil...', rows: 3 },
-        { label: 'Categoría', name: 'category', type: 'select', options: CATEGORIES.map(c => ({ value: c.id, label: `${c.icon} ${c.label}` })) },
+        { label: 'Carpeta', name: 'category', type: 'select', options: (folders && folders.length ? folders : DEFAULT_FOLDERS).map(c => ({ value: c.id, label: `${c.icon} ${c.label}` })) },
     ];
 
     return (
@@ -931,31 +1033,61 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId,
 /* ═══════════════════════════════════════════════
    COMPONENT: CategoryGrid (Main Dashboard)
    ═══════════════════════════════════════════════ */
-function CategoryGrid({ tricks, onSelectCategory }) {
+function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFolder }) {
     const counts = useMemo(() => {
         const map = {};
         tricks.forEach(t => { map[t.category] = (map[t.category] || 0) + 1; });
         return map;
     }, [tricks]);
+    const favCount = useMemo(() => tricks.filter(t => t.isFavorite).length, [tricks]);
+
+    const cardKeyDown = (event, id) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onSelectCategory(id);
+        }
+    };
 
     return (
         <div className="category-grid">
-            {CATEGORIES.map(cat => (
+            {folders.map(cat => (
                 <div
                     key={cat.id}
                     className={`category-card ${cat.color}-border`}
                     onClick={() => onSelectCategory(cat.id)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectCategory(cat.id); } }}
+                    onKeyDown={(e) => cardKeyDown(e, cat.id)}
                     role="button"
                     tabIndex="0"
                     aria-label={`${cat.label}: ${counts[cat.id] || 0} trucos`}
                 >
+                    {canEdit && (
+                        <button
+                            className="folder-delete"
+                            onClick={(e) => { e.stopPropagation(); onDeleteFolder(cat); }}
+                            aria-label={`Eliminar carpeta ${cat.label}`}
+                            title="Eliminar carpeta"
+                        >✕</button>
+                    )}
                     <div className="bg-icon">{cat.bgIcon}</div>
                     <div className={`cat-icon ${cat.color}`}>{cat.icon}</div>
                     <h3>{cat.label}</h3>
                     <span className="cat-count">{counts[cat.id] || 0} trucos</span>
                 </div>
             ))}
+
+            <div
+                className="category-card favorites-card"
+                onClick={() => onSelectCategory('favorites')}
+                onKeyDown={(e) => cardKeyDown(e, 'favorites')}
+                role="button"
+                tabIndex="0"
+                aria-label={`Favoritos: ${favCount} trucos`}
+            >
+                <div className="bg-icon">💛</div>
+                <div className="cat-icon amber">⭐</div>
+                <h3>Favoritos</h3>
+                <span className="cat-count">{favCount} trucos</span>
+            </div>
         </div>
     );
 }
@@ -963,13 +1095,15 @@ function CategoryGrid({ tricks, onSelectCategory }) {
 /* ═══════════════════════════════════════════════
    COMPONENT: TrickList (Category View)
    ═══════════════════════════════════════════════ */
-function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter, onReorder }) {
-    const cat = getCat(categoryId);
+function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter, onReorder }) {
+    const cat = getCat(categoryId, folders);
     const [draggingId, setDraggingId] = useState(null);
     const [dragOverId, setDragOverId] = useState(null);
 
     const filtered = useMemo(() => {
-        let result = tricks.filter(t => t.category === categoryId);
+        let result = categoryId === 'favorites'
+            ? tricks.filter(t => t.isFavorite)
+            : tricks.filter(t => t.category === categoryId);
         if (search.trim()) {
             const q = search.toLowerCase();
             result = result.filter(t => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || t.tags.some(tg => tg.toLowerCase().includes(q)));
@@ -1001,14 +1135,14 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
 
     return (
         <div>
-            <button className="back-nav" onClick={onBack}>← Volver a categorías</button>
+            <button className="back-nav" onClick={onBack}>← Volver a carpetas</button>
 
             <div className="section-header">
                 <h2>{cat?.icon} {cat?.label} <span style={{color:'var(--muted)',fontSize:'0.9rem',fontWeight:400}}>({filtered.length} trucos)</span></h2>
                 {canEdit && <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Truco</button>}
             </div>
 
-            {canEdit && <p className="drag-hint">⠿ Arrastra las tarjetas para cambiar su posición.</p>}
+            {canEdit && categoryId !== 'favorites' && <p className="drag-hint">⠿ Arrastra las tarjetas para cambiar su posición.</p>}
 
             {filtered.length === 0 ? (
                 <div className="empty-state">
@@ -1046,7 +1180,7 @@ function TrickList({ tricks, categoryId, onBack, onToggleFav, onEdit, onImageCli
 /* ═══════════════════════════════════════════════
    COMPONENT: GlobalSearch
    ═══════════════════════════════════════════════ */
-function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
+function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
     const [query, setQuery] = useState('');
 
     const results = useMemo(() => {
@@ -1056,7 +1190,7 @@ function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onImageCl
             t.title.toLowerCase().includes(q) ||
             t.description.toLowerCase().includes(q) ||
             t.tags.some(tg => tg.toLowerCase().includes(q)) ||
-            (getCat(t.category)?.label || '').toLowerCase().includes(q)
+            (getCat(t.category, folders)?.label || '').toLowerCase().includes(q)
         ).sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
     }, [tricks, query]);
 
@@ -1085,7 +1219,7 @@ function GlobalSearch({ tricks, onSelectCategory, onToggleFav, onEdit, onImageCl
                         <div key={t.id} style={{position:'relative'}}>
                             <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} canEdit={canEdit} />
                             <button className="btn btn-glass btn-sm" style={{position:'absolute',top:'0.5rem',right:'4rem',zIndex:2}} onClick={() => onSelectCategory(t.category)} title="Ir a la categoría">
-                                📂 {getCat(t.category)?.label}
+                                📂 {getCat(t.category, folders)?.label}
                             </button>
                         </div>
                     ))}
@@ -1149,10 +1283,61 @@ function ExportImport({ tricks, onImport }) {
 }
 
 /* ═══════════════════════════════════════════════
+   COMPONENT: FolderForm (Nueva carpeta)
+   ═══════════════════════════════════════════════ */
+function FolderForm({ onSave, onClose }) {
+    const [label, setLabel] = useState('');
+    const [icon, setIcon] = useState('📁');
+    const [color, setColor] = useState('cyan');
+    const [error, setError] = useState('');
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        const clean = String(label || '').trim();
+        if (!clean) { setError('Escribe un nombre para la carpeta.'); return; }
+        onSave({ label: clean, icon: icon.trim() || '📁', color });
+        onClose();
+    }
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal folder-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="folder-form-title">
+                <div className="modal-header">
+                    <h2 id="folder-form-title">📁 Nueva carpeta</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="modal-body">
+                        <label>Nombre de la carpeta *</label>
+                        <input type="text" value={label} onChange={(e) => { setLabel(e.target.value); setError(''); }} placeholder="Ej: Ideas para Instagram" autoFocus />
+                        <label>Emoji</label>
+                        <input type="text" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="📁" maxLength="4" />
+                        <label>Color</label>
+                        <select value={color} onChange={(e) => setColor(e.target.value)}>
+                            <option value="cyan">Cian</option>
+                            <option value="purple">Morado</option>
+                            <option value="emerald">Verde</option>
+                            <option value="pink">Rosa</option>
+                            <option value="amber">Ámbar</option>
+                        </select>
+                        {error && <p className="form-error">{error}</p>}
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary">Crear carpeta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
    APP ROOT
    ═══════════════════════════════════════════════ */
 function App() {
     const [tricks, setTricks] = useLocalStorage(STORAGE_KEY, SEED_TRICKS);
+    const [folders, setFolders] = useFolders();
     const [view, setView] = useState('categories'); // 'categories' | 'category' | 'search'
     const [currentCategory, setCurrentCategory] = useState(null);
     const [search, setSearch] = useState('');
@@ -1166,6 +1351,7 @@ function App() {
     const [editUnlocked, setEditUnlocked] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [pendingEditAction, setPendingEditAction] = useState(null);
+    const [showFolderForm, setShowFolderForm] = useState(false);
     const initialTricksRef = useRef(tricks);
 
     function addToast(msg, type = 'success') {
@@ -1220,6 +1406,31 @@ function App() {
     const toggleFav = useCallback((id) => {
         setTricks(prev => prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t));
     }, [setTricks]);
+
+    const createFolder = useCallback(({ label, icon, color }) => {
+        const clean = String(label || '').trim();
+        if (!clean) return;
+        if (folders.some(f => f.label.toLowerCase() === clean.toLowerCase())) {
+            addToast('Ya existe una carpeta con ese nombre', 'error');
+            return;
+        }
+        setFolders(prev => [...prev, { id: 'f_' + uid(), label: clean, icon: icon || '📁', color: color || 'cyan', bgIcon: '🗂️' }]);
+        addToast('📁 Carpeta creada');
+    }, [folders, setFolders]);
+
+    const deleteFolder = useCallback((folder) => {
+        withEditAccess(() => {
+            if (!confirm(`¿Eliminar la carpeta "${folder.label}"? Sus tarjetas pasarán a "Trucos y atajos".`)) return;
+            if (folders.length <= 1) {
+                addToast('No puedes eliminar la última carpeta', 'error');
+                return;
+            }
+            const target = folder.id === 'trucos' ? (folders.find(f => f.id !== 'trucos')?.id || 'trucos') : 'trucos';
+            setTricks(prev => prev.map(t => t.category === folder.id ? { ...t, category: target } : t));
+            setFolders(prev => prev.filter(f => f.id !== folder.id));
+            addToast('🗑️ Carpeta eliminada', 'error');
+        });
+    }, [folders, setFolders, setTricks, withEditAccess]);
 
     const reorderTricks = useCallback((categoryId, sourceId, targetId) => {
         setTricks(prev => {
@@ -1423,7 +1634,7 @@ function App() {
             {view === 'categories' && (
                 <div className="stats-bar">
                     <span className="stat-chip">💎 <span className="count">{tricks.length}</span> trucos</span>
-                    <span className="stat-chip">📂 <span className="count">{new Set(tricks.map(t => t.category)).size}</span> categorías</span>
+                    <span className="stat-chip">📂 <span className="count">{folders.length + 1}</span> carpetas</span>
                     <span className="stat-chip">⭐ <span className="count">{totalFavs}</span> favoritos</span>
                 </div>
             )}
@@ -1432,16 +1643,28 @@ function App() {
             {view === 'categories' && (
                 <div>
                     <div className="section-header">
-                        <h2>📂 Categorías</h2>
-                        {editUnlocked && <button className="btn btn-primary btn-sm" onClick={openAddForm}>✨ Nuevo Truco</button>}
+                        <h2>📂 Carpetas</h2>
+                        {editUnlocked && (
+                            <div style={{ display: 'flex', gap: '0.6rem' }}>
+                                <button className="btn btn-glass btn-sm" onClick={() => setShowFolderForm(true)}>➕ Nueva carpeta</button>
+                                <button className="btn btn-primary btn-sm" onClick={openAddForm}>✨ Nuevo Truco</button>
+                            </div>
+                        )}
                     </div>
-                    <CategoryGrid tricks={tricks} onSelectCategory={selectCategory} />
+                    <CategoryGrid
+                        tricks={tricks}
+                        folders={folders}
+                        onSelectCategory={selectCategory}
+                        canEdit={editUnlocked}
+                        onDeleteFolder={deleteFolder}
+                    />
                 </div>
             )}
 
             {view === 'category' && currentCategory && (
                 <TrickList
                     tricks={tricks}
+                    folders={folders}
                     categoryId={currentCategory}
                     onBack={goHome}
                     onToggleFav={toggleFav}
@@ -1462,6 +1685,7 @@ function App() {
             {view === 'search' && (
                 <GlobalSearch
                     tricks={tricks}
+                    folders={folders}
                     onSelectCategory={selectCategory}
                     onToggleFav={toggleFav}
                     onEdit={openEditForm}
@@ -1474,7 +1698,11 @@ function App() {
 
             {/* MODALS */}
             {showForm && (
-                <TrickForm trick={editingTrick} onSave={saveTrick} onDelete={deleteEditingTrick} onClose={() => { setShowForm(false); setEditingTrick(null); }} />
+                <TrickForm trick={editingTrick} folders={folders} onSave={saveTrick} onDelete={deleteEditingTrick} onClose={() => { setShowForm(false); setEditingTrick(null); }} />
+            )}
+
+            {showFolderForm && (
+                <FolderForm onSave={createFolder} onClose={() => setShowFolderForm(false)} />
             )}
 
             {lightboxSrc && (

@@ -321,9 +321,17 @@ h1, h2, h3, h4, .font-montserrat {
    ═══════════════════════════════════════════ */
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 1.25rem;
     margin-bottom: 2rem;
+}
+
+@media (max-width: 1100px) {
+    .category-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 680px) {
+    .category-grid { grid-template-columns: repeat(2, 1fr); gap: 0.9rem; }
 }
 
 .category-card {
@@ -336,6 +344,41 @@ h1, h2, h3, h4, .font-montserrat {
     cursor: pointer;
     transition: var(--transition-main);
     overflow: hidden;
+}
+
+.category-card.favorites-card {
+    border-color: rgba(251, 191, 36, 0.45);
+    background: linear-gradient(160deg, rgba(251, 191, 36, 0.10), var(--card-bg) 55%);
+    box-shadow: 0 0 18px rgba(251, 191, 36, 0.12);
+}
+
+.category-card.favorites-card:hover {
+    box-shadow: 0 15px 45px rgba(251, 191, 36, 0.22);
+}
+
+.category-card .folder-delete {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 3;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.category-card .folder-delete:hover {
+    background: rgba(239, 68, 68, 0.5);
+    color: #fff;
+    transform: scale(1.08);
 }
 
 .category-card:hover {
@@ -722,6 +765,14 @@ h1, h2, h3, h4, .font-montserrat {
 .modal-body textarea::placeholder { color: var(--muted); }
 
 .modal-body textarea { resize: vertical; min-height: 80px; }
+
+.modal.folder-modal { max-width: 380px; }
+
+.modal-body .form-error {
+    color: var(--neon-pink);
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0;
+}
 
 .image-upload-field {
     margin-top: 0.75rem;
