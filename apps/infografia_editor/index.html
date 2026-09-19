@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infografix — Generador y Editor de Infografías Didácticas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="theme-tech">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo-area">
+      <div class="logo-icon">📊</div>
+      <div>
+        <h1 class="logo-title">Infografix</h1>
+        <p class="logo-subtitle">Generador y Editor Didáctico Interactivo</p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <!-- Formato -->
+      <div class="control-group">
+        <label>Formato:</label>
+        <select id="formatSelect">
+          <option value="vertical">Vertical (Póster / Móvil)</option>
+          <option value="landscape">Horizontal (16:9)</option>
+          <option value="square">Cuadrado (Post)</option>
+        </select>
+      </div>
+
+      <!-- Tema de color -->
+      <div class="control-group">
+        <label>Estilo Visual:</label>
+        <select id="themeSelect">
+          <option value="theme-tech">Modo Tech Oscuro</option>
+          <option value="theme-cyan">Cyan Neón Futurista</option>
+          <option value="theme-pastel">Didáctico Pastel</option>
+          <option value="theme-editorial">Editorial Suave</option>
+          <option value="theme-minimal">Blanco Minimal</option>
+        </select>
+      </div>
+
+      <button id="exportBtn" class="btn btn-primary">
+        <span>📸</span> Descargar PNG
+      </button>
+      <button id="copyHtmlBtn" class="btn btn-secondary">
+        <span>📋</span> Copiar Código
+      </button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- PANEL LATERAL DE EDICIÓN Y PLANTILLAS -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h2 class="section-title">1. Elegir Tipo de Infografía</h2>
+        <div class="template-grid">
+          <button class="tpl-card active" data-template="process">
+            <span class="tpl-icon">⚡</span>
+            <div class="tpl-info">
+              <strong>Proceso Paso a Paso</strong>
+              <small>Flujos, roadmaps y etapas didácticas</small>
+            </div>
+          </button>
+          <button class="tpl-card" data-template="proscons">
+            <span class="tpl-icon">⚖️</span>
+            <div class="tpl-info">
+              <strong>Comparativa / Pros vs Contras</strong>
+              <small>Análisis de dos opciones enfrentadas</small>
+            </div>
+          </button>
+          <button class="tpl-card" data-template="pyramid">
+            <span class="tpl-icon">🔺</span>
+            <div class="tpl-info">
+              <strong>Pirámide Jerárquica</strong>
+              <small>Niveles, taxonomías y prioridades</small>
+            </div>
+          </button>
+          <button class="tpl-card" data-template="cycle">
+            <span class="tpl-icon">🔄</span>
+            <div class="tpl-info">
+              <strong>Ciclo Continuo</strong>
+              <small>Métodos iterativos y secuencias en bucle</small>
+            </div>
+          </button>
+          <button class="tpl-card" data-template="stats">
+            <span class="tpl-icon">📈</span>
+            <div class="tpl-info">
+              <strong>Métricas Clave</strong>
+              <small>Cifras de impacto y resúmenes</small>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h2 class="section-title">2. Personalización General</h2>
+        <div class="field-row">
+          <label for="inputTitle">Título de la Infografía</label>
+          <input type="text" id="inputTitle" placeholder="Ej: Ciclo del Método Científico" />
+        </div>
+        <div class="field-row">
+          <label for="inputSubtitle">Subtítulo / Idea Principal</label>
+          <input type="text" id="inputSubtitle" placeholder="Ej: Pasos fundamentales para validar hipótesis" />
+        </div>
+        <div class="field-row">
+          <label for="inputSource">Fuente / Autoría</label>
+          <input type="text" id="inputSource" placeholder="Ej: Laboratorio de Ciencias • 2026" />
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-header-flex">
+          <h2 class="section-title">3. Elementos Didácticos</h2>
+          <button id="addItemBtn" class="btn btn-sm btn-accent">+ Agregar Elemento</button>
+        </div>
+        <div id="elementsList" class="elements-editor-list">
+          <!-- Items generados dinámicamente -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA CENTRAL DE PREVISUALIZACIÓN / LIENZO -->
+    <main class="canvas-area">
+      <div class="canvas-toolbar">
+        <div class="hint-pill">💡 Haz clic sobre cualquier texto o tarjeta en el lienzo para editarlo al instante</div>
+        <div class="zoom-controls">
+          <button id="zoomOutBtn" class="btn-icon" title="Reducir zoom">−</button>
+          <span id="zoomLevel">100%</span>
+          <button id="zoomInBtn" class="btn-icon" title="Aumentar zoom">+</button>
+        </div>
+      </div>
+
+      <div class="canvas-viewport">
+        <!-- CONTENEDOR INFOGRAFÍA (EXPORTABLE) -->
+        <div id="infographicCanvas" class="infographic-container format-vertical">
+          <!-- Encabezado Infografía -->
+          <div class="info-header">
+            <div class="badge-tag" id="canvasBadge">INFOGRAFÍA DIDÁCTICA</div>
+            <h1 class="canvas-title" id="canvasTitle" contenteditable="true">Las 4 Fases del Aprendizaje Significativo</h1>
+            <p class="canvas-subtitle" id="canvasSubtitle" contenteditable="true">Estructura didáctica para asimilar y aplicar conceptos complejos de forma duradera</p>
+          </div>
+
+          <!-- Cuerpo dinámico de la infografía según plantilla -->
+          <div id="canvasBody" class="info-body layout-process">
+            <!-- Renderizado por JS -->
+          </div>
+
+          <!-- Pie de la infografía -->
+          <div class="info-footer">
+            <div class="footer-source" id="canvasSource" contenteditable="true">Fuente: Metodología Didáctica Activa • 2026</div>
+            <div class="footer-brand">Infografix Studio</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
