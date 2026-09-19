@@ -398,7 +398,7 @@ async function generateAdText(audience, length, tone) {
 
     const payload = {
         endpoint: 'generateContent',
-        model: 'gemini-3.1-flash-image-preview',
+        model: 'gemini-3.8-flash',
         data: {
             contents: [{
                 parts: [{ text: prompt }, ...imageParts]
@@ -407,7 +407,8 @@ async function generateAdText(audience, length, tone) {
     };
     
     const result = await apiCallWithRetry(payload);
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    const parts = result.candidates?.[0]?.content?.parts || [];
+    const text = parts.filter(p => p && p.text && !p.thought).map(p => p.text).join('').trim();
 
     return text || "No se pudo generar el texto del anuncio. Por favor, revisa las imágenes e inténtalo de nuevo.";
 }

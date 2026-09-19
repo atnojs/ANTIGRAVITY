@@ -75,7 +75,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 // Modelo
-$model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
+$model = (string)($req['model'] ?? 'gemini-3.8-flash');
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
 // Construir payload — soporte passthrough + formato sencillo
