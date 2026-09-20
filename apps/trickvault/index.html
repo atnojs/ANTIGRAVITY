@@ -29,6 +29,7 @@ const IMAGE_STORE_URL = 'image_store.php';
 const AUTH_URL = 'auth.php';
 const IMAGE_PROMPT_HINT = 'Úsalo junto con un sujeto concreto y un encuadre o formato';
 const IMAGE_PROMPT_COPY_GUIDANCE = 'Úsalo junto con un sujeto concreto y un encuadre o formato.';
+const IMAGE_STYLE_PREFIX_TEXT = "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style.";
 
 const DEFAULT_FOLDERS = [
     { id: 'visuales',    label: 'Estilos visuales',        icon: '🎨',  color: 'pink',    bgIcon: '🖌️' },
@@ -535,8 +536,75 @@ const SEED_COMMAND_IMAGES = {
     '/anatomicalposter': 'uploads/ig-dcek-173.jpg',
     '/comicstrip': 'uploads/ig-dcek-174.jpg',
     '/decisiontree': 'uploads/ig-dcek-175.jpg'
+    '/handwritten': 'uploads/visual-ig-dcek-021.jpg',
+    '/napkinsketch': 'uploads/visual-ig-dcek-022.jpg',
+    '/whiteboard': 'uploads/visual-ig-dcek-023.jpg',
+    '/moodboard': 'uploads/visual-ig-dcek-024.jpg',
+    '/pencilsketch': 'uploads/visual-ig-dcek-025.jpg',
+    '/notebookpage': 'uploads/visual-ig-dcek-026.jpg',
+    '/collage': 'uploads/visual-ig-dcek-027.jpg',
+    '/redpen': 'uploads/visual-ig-dcek-028.jpg',
+    '/storyboard': 'uploads/visual-ig-dcek-029.jpg',
+    '/tornpaper': 'uploads/visual-ig-dcek-030.jpg',
+    '/actionfigure': 'uploads/visual-ig-dcek-033.jpg',
+    '/claymation': 'uploads/visual-ig-dcek-071.jpg',
+    '/papercraft': 'uploads/visual-ig-dcek-072.jpg',
+    '/lowpoly': 'uploads/visual-ig-dcek-073.jpg',
+    '/pixelart': 'uploads/visual-ig-dcek-074.jpg',
+    '/linocut': 'uploads/visual-ig-dcek-075.jpg',
+    '/risograph': 'uploads/visual-ig-dcek-076.jpg',
+    '/halftone': 'uploads/visual-ig-dcek-077.jpg',
+    '/stainedglass': 'uploads/visual-ig-dcek-078.jpg',
+    '/chromemetal': 'uploads/visual-ig-dcek-079.jpg',
+    '/embroidery': 'uploads/visual-ig-dcek-080.jpg',
+    '/minime': 'uploads/visual-ig-dcek-085.jpg',
+    '/statue': 'uploads/visual-ig-dcek-086.jpg',
+    '/silhouettestudy': 'uploads/visual-ig-dcek-087.jpg',
+    '/duotoneportrait': 'uploads/visual-ig-dcek-089.jpg',
+    '/stickersheet': 'uploads/visual-ig-dcek-095.jpg',
+    '/8k': 'uploads/visual-ig-dcek-176.jpg',
+    '/hdreal': 'uploads/visual-ig-dcek-177.jpg',
+    '/ultrarealistic': 'uploads/visual-ig-dcek-178.jpg',
+    '/filmgrain': 'uploads/visual-ig-dcek-199.jpg',
+    '/vintage': 'uploads/visual-ig-dcek-202.jpg',
+    '/retro': 'uploads/visual-ig-dcek-203.jpg',
+    '/oldmoney': 'uploads/visual-ig-dcek-204.jpg',
+    '/minimalist': 'uploads/visual-ig-dcek-205.jpg',
+    '/editorial': 'uploads/visual-ig-dcek-206.jpg',
+    '/fashion': 'uploads/visual-ig-dcek-207.jpg',
+    '/streetstyle': 'uploads/visual-ig-dcek-208.jpg',
+    '/cinematiccolor': 'uploads/visual-ig-dcek-234.jpg',
+    '/vintagecolor': 'uploads/visual-ig-dcek-235.jpg',
+    '/pastelcolor': 'uploads/visual-ig-dcek-236.jpg',
+    '/warmcolor': 'uploads/visual-ig-dcek-237.jpg',
+    '/coolcolor': 'uploads/visual-ig-dcek-238.jpg',
+    '/moodycolor': 'uploads/visual-ig-dcek-239.jpg',
+    '/vibrantcolor': 'uploads/visual-ig-dcek-240.jpg',
+    '/negativespace': 'uploads/visual-ig-dcek-245.jpg',
+    '/foodphoto': 'uploads/visual-ig-dcek-267.jpg',
+    '/interior': 'uploads/visual-ig-dcek-268.jpg',
+    '/blackandwhite': 'uploads/visual-ig-dcek-269.jpg',
+    '/abstract': 'uploads/visual-ig-dcek-272.jpg',
+    '/workspace': 'uploads/visual-ig-dcek-277.jpg',
+    '/anime': 'uploads/visual-ig-dcek-278.jpg',
+    '/3drender': 'uploads/visual-ig-dcek-279.jpg',
+    '/quotes': 'uploads/visual-ig-dcek-280.jpg',
+    '/hdr': 'uploads/visual-ig-dcek-289.jpg',
+    '/polaroid': 'uploads/visual-ig-dcek-292.jpg',
+    '/noir': 'uploads/visual-ig-dcek-293.jpg',
+    '/doubleexposure': 'uploads/visual-ig-dcek-294.jpg',
+    '/dreamcore': 'uploads/visual-ig-dcek-295.jpg',
+    '/glassart': 'uploads/visual-ig-dcek-297.jpg',
+    '/glitch': 'uploads/visual-ig-dcek-298.jpg',
+    '/watercolor': 'uploads/visual-ig-dcek-301.jpg',
+    '/oilpainting': 'uploads/visual-ig-dcek-306.jpg',
+    '/comicbook': 'uploads/visual-ig-dcek-309.jpg',
+    '/detective': 'uploads/visual-ig-dcek-310.jpg',
+    '/disposablecamera': 'uploads/visual-ig-dcek-311.jpg',
+    '/sketch': 'uploads/visual-ig-dcek-313.jpg',
+    '/neonoir': 'uploads/visual-ig-dcek-323.jpg',
+    '/mercury': 'uploads/visual-ig-dcek-324.jpg',
 };
-
 const SEED_TRICKS = [
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'terminal', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
     { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'css', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
@@ -987,10 +1055,18 @@ function isImageCommandTrick(trick) {
 }
 
 function getTrickCopyText(trick) {
-    const custom = String(trick?.customPrompt || '').trim();
-    if (custom) return custom;
-    const commandPrompt = IMAGE_COMMAND_PROMPTS.get(getImageCommandKey(trick));
-    return commandPrompt || String(trick?.codeSnippet || "");
+    const commandKey = getImageCommandKey(trick);
+    const base = (() => {
+        const custom = String(trick?.customPrompt || '').trim();
+        if (custom) return custom;
+        return IMAGE_COMMAND_PROMPTS.get(commandKey) || String(trick?.codeSnippet || "");
+    })();
+    const inVisuales = CODE_FOLDER[commandKey] === 'visuales' || String(trick?.category || '') === 'visuales';
+    if (!inVisuales || !IMAGE_COMMAND_PROMPTS.has(commandKey)) return base;
+    if (base.includes(IMAGE_STYLE_PREFIX_TEXT)) {
+        return base.trim().startsWith(commandKey) ? base : `${commandKey} ${base}`;
+    }
+    return `${commandKey} ${IMAGE_STYLE_PREFIX_TEXT} ${base}`;
 }
 function hasSortOrder(trick) { return Number.isFinite(Number(trick.sortOrder)); }
 function compareTricks(a, b) {
