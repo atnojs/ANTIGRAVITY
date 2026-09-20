@@ -520,6 +520,19 @@ const REMOVED_IMAGE_IDS = new Set([
 
 
 
+const SEED_COMMAND_IMAGES = {
+    '/venndiagram': 'uploads/ig-dcek-162.jpg',
+    '/conceptmap': 'uploads/ig-dcek-163.jpg',
+    '/pyramidchart': 'uploads/ig-dcek-164.jpg',
+    '/cheatsheet': 'uploads/ig-dcek-165.jpg',
+    '/cornellnotes': 'uploads/ig-dcek-166.jpg',
+    '/funnelchart': 'uploads/ig-dcek-169.jpg',
+    '/fishbone': 'uploads/ig-dcek-170.jpg',
+    '/matrix2x2': 'uploads/ig-dcek-171.jpg',
+    '/cyclicalprocess': 'uploads/ig-dcek-172.jpg',
+    '/decisiontree': 'uploads/ig-dcek-175.jpg'
+};
+
 const SEED_TRICKS = [
     { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'terminal', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
     { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'css', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
@@ -544,7 +557,7 @@ const SEED_TRICKS = [
             codeSnippet: command,
             difficulty: 'beginner',
             sourceUrl: 'https://www.instagram.com/p/DcekG11IJf-/',
-            imageUrl: '',
+            imageUrl: SEED_COMMAND_IMAGES[command] || '',
             isFavorite: false,
             createdAt: Date.UTC(2026, 7, 25) - index,
         }];
