@@ -1326,6 +1326,23 @@ async function loadRemoteImages() {
     return payload.images && typeof payload.images === 'object' ? payload.images : {};
 }
 
+async function loadRemoteFavorites() {
+    const response = await fetch(`${IMAGE_STORE_URL}?action=fav_list&t=${Date.now()}`, { cache: 'no-store', credentials: 'same-origin' });
+    const payload = await readServerJson(response);
+    return { exists: !!payload.exists, ids: Array.isArray(payload.ids) ? payload.ids : [] };
+}
+
+async function saveRemoteFavorites(ids) {
+    const formData = new FormData();
+    formData.append('ids', JSON.stringify(ids));
+    await fetch(`${IMAGE_STORE_URL}?action=fav_save`, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+}
+
 async function authenticateRemote(password) {
     const formData = new FormData();
     formData.append('password', password);
@@ -2193,7 +2210,12 @@ function App() {
     }, [pendingEditAction, migrateLocalImages]);
 
     const toggleFav = useCallback((id) => {
-        setTricks(prev => prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t));
+        setTricks(prev => {
+            const next = prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t);
+            const favIds = next.filter(t => t.isFavorite).map(t => t.id);
+            saveRemoteFavorites(favIds).catch(e => console.warn('[TrickVault] No se pudo guardar favoritos en el servidor:', e));
+            return next;
+        });
     }, [setTricks]);
 
     const createFolder = useCallback(({ label, icon, color }) => {
@@ -2414,6 +2436,29 @@ function App() {
         }
 
         syncImagesFromHostinger();
+        return () => { cancelled = true; };
+    }, [setTricks]);
+
+    // Favoritos: fuente de verdad en el servidor (sobreviven pushes y recargas).
+    useEffect(() => {
+        let cancelled = false;
+
+        async function syncFavoritesFromHostinger() {
+            try {
+                const remote = await loadRemoteFavorites();
+                if (cancelled) return;
+                if (remote.exists) {
+                    setTricks(prev => prev.map(t => ({ ...t, isFavorite: remote.ids.includes(t.id) })));
+                } else {
+                    const localIds = initialTricksRef.current.filter(t => t.isFavorite).map(t => t.id);
+                    saveRemoteFavorites(localIds).catch(e => console.warn('[TrickVault] No se pudo iniciar favoritos en el servidor:', e));
+                }
+            } catch (error) {
+                console.error('[TrickVault] No se pudieron cargar los favoritos de Hostinger:', error);
+            }
+        }
+
+        syncFavoritesFromHostinger();
         return () => { cancelled = true; };
     }, [setTricks]);
 

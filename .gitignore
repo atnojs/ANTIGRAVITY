@@ -52,6 +52,7 @@ _public_html.zip
 *.mov
 *.mkv
 **/uploads/
+**/image_data/favorites.json
 **/output/
 
 # Modelos de Inteligencia Artificial (AI Weights) y archivos pesados

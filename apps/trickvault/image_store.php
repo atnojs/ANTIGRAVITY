@@ -54,6 +54,19 @@ function mappingFile(): string {
     return dataDir() . '/images.json';
 }
 
+function favoritesFile(): string {
+    return dataDir() . '/favorites.json';
+}
+
+function loadFavorites(): array {
+    $path = favoritesFile();
+    if (!is_file($path)) return [];
+    $raw = file_get_contents($path);
+    if ($raw === false || $raw === '') return [];
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? array_values(array_filter($decoded, 'is_string')) : [];
+}
+
 function loadImages(): array {
     $path = mappingFile();
     if (!is_file($path)) return [];
@@ -169,6 +182,39 @@ if ($method === 'GET' && $action === 'list') {
     flock($lock, LOCK_UN);
     fclose($lock);
     respond(200, ['success' => true, 'images' => (object)$images]);
+}
+
+// Favoritos: lectura pública y guardado sin sesión (lista saneada de ids).
+if ($method === 'GET' && $action === 'fav_list') {
+    $ids = loadFavorites();
+    respond(200, ['success' => true, 'exists' => is_file(favoritesFile()), 'ids' => $ids]);
+}
+
+if ($method === 'POST' && $action === 'fav_save') {
+    $raw = (string)($_POST['ids'] ?? '');
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+        respond(400, ['success' => false, 'error' => 'Lista de favoritos no válida.']);
+    }
+    $clean = [];
+    foreach ($decoded as $id) {
+        if (!is_string($id)) continue;
+        $safe = sanitizeId($id);
+        if ($safe === '' || in_array($safe, $clean, true) || count($clean) >= 500) continue;
+        $clean[] = $safe;
+    }
+    $lock = fopen(dataDir() . '/favorites.lock', 'c+');
+    if ($lock === false || !flock($lock, LOCK_EX)) {
+        if ($lock !== false) fclose($lock);
+        respond(500, ['success' => false, 'error' => 'No se pudo bloquear el registro de favoritos.']);
+    }
+    $written = file_put_contents(favoritesFile(), json_encode($clean, JSON_UNESCAPED_UNICODE), LOCK_EX);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    if ($written === false) {
+        respond(500, ['success' => false, 'error' => 'No se pudo guardar la lista de favoritos.']);
+    }
+    respond(200, ['success' => true, 'ids' => $clean]);
 }
 
 if ($method !== 'POST') {
