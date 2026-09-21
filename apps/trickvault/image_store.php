@@ -185,6 +185,12 @@ if ($method === 'GET' && $action === 'list') {
 }
 
 // Favoritos: lectura pública y guardado sin sesión (lista saneada de ids).
+if ($method === 'POST' && $action === 'fav_delete') {
+    $path = favoritesFile();
+    if (is_file($path)) @unlink($path);
+    respond(200, ['success' => true, 'exists' => false]);
+}
+
 if ($method === 'GET' && $action === 'fav_list') {
     $ids = loadFavorites();
     respond(200, ['success' => true, 'exists' => is_file(favoritesFile()), 'ids' => $ids]);
