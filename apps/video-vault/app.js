@@ -57,19 +57,21 @@ const CATEGORIES = [
 let activeFilter = null;
 let searchTerm = '';
 let editMode = false;
-let videoData = {}; // { commandId: base64DataURL }
+let videoData = {}; // { commandId: {filename, url} }
 
-// Load saved videos from localStorage
-try {
-  const saved = localStorage.getItem('videoVaultVideos');
-  if (saved) videoData = JSON.parse(saved);
-} catch(e) {}
-
-const STORAGE_KEY = 'videoVaultVideos';
-function saveVideos() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(videoData)); } catch(e) {
-    // localStorage full, warn user
-    alert('No se pudo guardar el vídeo. El archivo es demasiado grande para el almacenamiento local.');
+// Load saved videos from server
+async function loadVideos() {
+  try {
+    const resp = await fetch('load_videos.php?t=' + Date.now());
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.success && data.videos) {
+        videoData = data.videos;
+        applyFilters();
+      }
+    }
+  } catch(e) {
+    // PHP not available, silently ignore
   }
 }
 
@@ -93,6 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFilters();
   renderGrid(VIDEO_COMMANDS);
   updateSectionTitle();
+
+  // Load saved videos from server
+  loadVideos();
 
   const saved = localStorage.getItem('videoVaultTheme');
   if (saved === 'light') document.body.classList.add('light');
@@ -283,28 +288,53 @@ window.openModal = openModal;
 window.copyText = copyText;
 
 // ── VIDEO UPLOAD / DELETE ──
-window.handleVideoUpload = function(id, input) {
+window.handleVideoUpload = async function(id, input) {
   const file = input.files?.[0];
   if (!file) return;
 
-  // Check file size (max 50MB for localStorage)
-  if (file.size > 50 * 1024 * 1024) {
-    alert('El vídeo es demasiado grande. Máximo 50MB.');
+  // Check file size
+  if (file.size > 100 * 1024 * 1024) {
+    alert('El vídeo es demasiado grande. Máximo 100MB.');
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    videoData[id] = e.target.result;
-    saveVideos();
-    applyFilters(); // Re-render to show preview
-  };
-  reader.readAsDataURL(file);
+  const formData = new FormData();
+  formData.append('video', file);
+  formData.append('command_id', id);
+
+  try {
+    const resp = await fetch('upload_video.php', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+      videoData[id] = { filename: data.filename, url: data.url };
+      applyFilters();
+    } else {
+      alert('Error al subir: ' + (data.error || 'desconocido'));
+    }
+  } catch(e) {
+    alert('Error de conexión al subir el vídeo.');
+  }
 };
 
-window.deleteVideo = function(id) {
+window.deleteVideo = async function(id) {
   if (!confirm('¿Eliminar este vídeo de muestra?')) return;
-  delete videoData[id];
-  saveVideos();
-  applyFilters();
+  const entry = videoData[id];
+  if (!entry) return;
+
+  try {
+    const resp = await fetch('delete_video.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: entry.filename })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      delete videoData[id];
+      applyFilters();
+    } else {
+      alert('Error al eliminar: ' + (data.error || 'desconocido'));
+    }
+  } catch(e) {
+    alert('Error de conexión al eliminar el vídeo.');
+  }
 };
