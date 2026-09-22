@@ -56,6 +56,22 @@ const CATEGORIES = [
 // ── STATE ──
 let activeFilter = null;
 let searchTerm = '';
+let editMode = false;
+let videoData = {}; // { commandId: base64DataURL }
+
+// Load saved videos from localStorage
+try {
+  const saved = localStorage.getItem('videoVaultVideos');
+  if (saved) videoData = JSON.parse(saved);
+} catch(e) {}
+
+const STORAGE_KEY = 'videoVaultVideos';
+function saveVideos() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(videoData)); } catch(e) {
+    // localStorage full, warn user
+    alert('No se pudo guardar el vídeo. El archivo es demasiado grande para el almacenamiento local.');
+  }
+}
 
 const grid = document.getElementById('commands-grid');
 const filtersEl = document.getElementById('filters');
@@ -96,6 +112,17 @@ document.addEventListener('DOMContentLoaded', () => {
   modalClose.addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // Edit mode toggle
+  const editBtn = document.getElementById('edit-toggle-btn');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      editMode = !editMode;
+      editBtn.classList.toggle('active', editMode);
+      editBtn.textContent = editMode ? '✏️ Edición activa' : '✏️ Modo edición';
+      applyFilters();
+    });
+  }
 });
 
 // ── FILTERS ──
@@ -169,8 +196,9 @@ function renderGrid(commands) {
   grid.innerHTML = commands.map(cmd => {
     const cat = CATEGORIES.find(c => c.id === cmd.cat);
     const badge = cat ? cat.badge : 'default';
+    const hasVideo = !!videoData[cmd.id];
     return `
-      <div class="story-card" data-id="${cmd.id}" onclick="openModal('${cmd.id}')">
+      <div class="story-card edit-mode-card" data-id="${cmd.id}" onclick="openModal('${cmd.id}')">
         <div class="badges">
           <span class="badge ${badge}">${cat ? cat.emoji + ' ' + cat.name : cmd.cat}</span>
         </div>
@@ -184,6 +212,14 @@ function renderGrid(commands) {
         <div class="meta">
           <span>🎯 ${cmd.example}</span>
         </div>
+        <div class="video-actions${editMode ? ' show' : ''}">
+          <input type="file" accept="video/*" id="vid-input-${cmd.id}" style="display:none" onchange="event.stopPropagation();handleVideoUpload('${cmd.id}', this)" />
+          <label for="vid-input-${cmd.id}" class="vid-btn ${hasVideo ? 'has-video' : ''}" onclick="event.stopPropagation();">
+            ${hasVideo ? '🎬 Vídeo subido' : '📹 Subir vídeo'}
+          </label>
+          ${hasVideo ? `<button class="vid-btn danger" onclick="event.stopPropagation();deleteVideo('${cmd.id}')">🗑️ Eliminar</button>` : ''}
+        </div>
+        ${hasVideo ? `<div class="video-preview show"><video src="${videoData[cmd.id]}" controls></video></div>` : `<div class="video-preview" id="vid-preview-${cmd.id}"></div>`}
       </div>
     `;
   }).join('');
@@ -245,3 +281,30 @@ async function copyText(btn, text) {
 
 window.openModal = openModal;
 window.copyText = copyText;
+
+// ── VIDEO UPLOAD / DELETE ──
+window.handleVideoUpload = function(id, input) {
+  const file = input.files?.[0];
+  if (!file) return;
+
+  // Check file size (max 50MB for localStorage)
+  if (file.size > 50 * 1024 * 1024) {
+    alert('El vídeo es demasiado grande. Máximo 50MB.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    videoData[id] = e.target.result;
+    saveVideos();
+    applyFilters(); // Re-render to show preview
+  };
+  reader.readAsDataURL(file);
+};
+
+window.deleteVideo = function(id) {
+  if (!confirm('¿Eliminar este vídeo de muestra?')) return;
+  delete videoData[id];
+  saveVideos();
+  applyFilters();
+};

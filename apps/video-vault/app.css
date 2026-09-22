@@ -332,3 +332,41 @@ body::after {
   .hero { padding: 40px 0 24px; }
   .story-grid { grid-template-columns: 1fr; }
 }
+
+/* EDIT MODE */
+.edit-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--card);
+  color: var(--text-dim); font-size: 0.82rem; cursor: pointer;
+  font-family: var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase;
+  transition: all 0.2s;
+}
+.edit-toggle:hover { border-color: var(--border-strong); color: var(--accent); box-shadow: 0 0 12px var(--glow-soft); }
+.edit-toggle.active { background: linear-gradient(135deg, var(--teal-3), var(--teal-2)); color: var(--cyan); border-color: var(--border-strong); box-shadow: 0 0 16px var(--glow-soft); }
+
+.story-card.edit-mode-card { padding-bottom: 14px; }
+.video-actions {
+  display: none; gap: 8px; margin-top: 12px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.video-actions.show { display: flex; flex-wrap: wrap; }
+.video-actions .vid-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text-dim); cursor: pointer;
+  font-family: var(--font-ui); font-size: 0.72rem; letter-spacing: 0.04em;
+  transition: all 0.18s;
+}
+.video-actions .vid-btn:hover { border-color: var(--border-strong); color: var(--accent); box-shadow: 0 0 10px var(--glow-soft); }
+.video-actions .vid-btn.danger { border-color: rgba(255,80,80,0.4); color: #ff6666; }
+.video-actions .vid-btn.danger:hover { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 10px rgba(255,68,68,0.3); }
+.video-actions .vid-btn.has-video { border-color: var(--accent-2); color: var(--accent-2); }
+
+.video-preview {
+  display: none; width: 100%; max-height: 160px; border-radius: 8px;
+  margin-top: 10px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.video-preview.show { display: block; }
+.video-preview video { width: 100%; height: auto; display: block; }
