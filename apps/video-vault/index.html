@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Vault — Comandos de Vídeo IA</title>
+  <meta name="description" content="Catálogo de comandos y prompts para crear vídeos con IA: Gemini, FLUX, y más.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=1" />
+  <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner wrap">
+      <div class="brand"><span class="dot">●</span> Video Vault <small>comandos IA</small></div>
+      <div class="header-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Buscar comandos..." />
+      </div>
+      <button class="theme-toggle" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero wrap">
+    <h1>Catálogo de <span class="accent">Comandos de Vídeo</span></h1>
+    <p>Comandos y prompts para crear efectos de vídeo con IA: movimientos de cámara, transiciones, iluminación y más.</p>
+    <div class="hero-stats">
+      <div><b id="total-commands">0</b> Comandos</div>
+      <div><b id="total-categories">0</b> Categorías</div>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <div class="filters wrap" id="filters"></div>
+
+  <!-- GRID -->
+  <main class="wrap" id="main-content">
+    <div class="section-title">
+      <h2 id="section-title">Todos los comandos</h2>
+      <span class="line"></span>
+      <span class="count" id="section-count">0</span>
+    </div>
+    <div class="story-grid" id="commands-grid"></div>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="command-modal">
+      <button class="modal-close" id="modal-close">✕</button>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer wrap">
+    Video Vault · Catálogo de comandos de vídeo para IA
+  </footer>
+
+</div>
+
+<script src="history-manager.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
