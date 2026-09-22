@@ -1,64 +1,67 @@
 /* ================================================================
-   VIDEO VAULT — Catálogo de comandos de vídeo para IA
+   VIDEO VAULT — Catálogo de prompts reales para generar vídeos con IA
    ================================================================ */
 
 const VIDEO_COMMANDS = [
-  // ── MOVIMIENTO DE CÁMARA ──
-  { id: 'c01', cat: 'mov', name: '/orbit360', title: 'Órbita 360°', desc: 'La cámara da una vuelta completa alrededor del sujeto, creando un efecto cinemático envolvente.', prompt: 'Camera orbits 360 degrees around the subject in a smooth circular motion, maintaining focus on the center.', example: 'Producto girando sobre su eje como en un comercial' },
-  { id: 'c02', cat: 'mov', name: '/dronerise', title: 'Elevación de dron', desc: 'La cámara se eleva como un dron revelando gradualmente el escenario completo.', prompt: 'Drone-style camera rising upward, slowly revealing the full scene from bottom to top.', example: 'Una casa vista desde el jardín que sube hasta mostrar todo el vecindario' },
-  { id: 'c03', cat: 'mov', name: '/cranedown', title: 'Grúa descendente', desc: 'La cámara desciende en picado controlado, como una grúa de cine, para revelar el sujeto desde arriba.', prompt: 'Cinematic crane shot, camera smoothly descending from above to reveal the subject at ground level.', example: 'Vista aérea de una ciudad que baja hasta una persona en la calle' },
-  { id: 'c04', cat: 'mov', name: '/dollyzoom', title: 'Dolly Zoom (Vertigo)', desc: 'Efecto Vertigo: la cámara se acerca mientras el zoom se aleja (o viceversa), distorsionando la perspectiva.', prompt: 'Dolly zoom effect: camera moves forward while zooming out, creating a disorienting perspective distortion. The background stretches while the subject stays the same size.', example: 'Pasillo que parece alargarse mientras la persona al fondo no se mueve' },
-  { id: 'c05', cat: 'mov', name: '/followcam', title: 'Cámara en seguimiento', desc: 'La cámara sigue a un sujeto en movimiento, manteniéndolo centrado en el encuadre.', prompt: 'Tracking shot: camera follows the moving subject smoothly, keeping them centered in frame as they move through the environment.', example: 'Alguien caminando por la calle, la cámara lo sigue de lado' },
+  // ── RUNWAY GEN-4 ──
+  { id: 'r01', cat: 'runway', name: 'Movimiento de cámara 360°', title: 'Órbita alrededor del sujeto', tool: 'Runway Gen-4', desc: 'Travelling circular alrededor de un sujeto u objeto, manteniéndolo centrado mientras el fondo se desplaza.', prompt: 'A cinematic drone shot orbiting 360 degrees around a [subject], smooth camera movement, the background rotates behind the subject, 4k, high detail, natural lighting, slow rotation.', example: 'Una bailarina girando, la cámara orbita a su alrededor mostrando el escenario completo' },
+  { id: 'r02', cat: 'runway', name: 'Cámara lenta cinemática', title: 'Slow motion fluido', tool: 'Runway Gen-4', desc: 'Movimiento a cámara superlenta con fluidez y detalle, como en producciones cinematográficas.', prompt: 'Slow motion cinematography, 120fps equivalent, smooth fluid movement, [subject] moves gracefully through frame, every detail visible, cinematic lighting, shallow depth of field, film grain.', example: 'Una copa de vino cayendo al suelo, el líquido se derrama en cámara superlenta' },
+  { id: 'r03', cat: 'runway', name: 'Zoom dramático', title: 'Zoom in/out con intención', tool: 'Runway Gen-4', desc: 'Zoom lento y dramático que acerca o aleja la atención del sujeto principal.', prompt: 'Dramatic slow zoom in on [subject], the camera pushes in steadily, increasing tension, cinematic composition, shallow depth of field, ambient lighting, 4k resolution.', example: 'Zoom lento al rostro de una persona que está a punto de decir algo importante' },
+  { id: 'r04', cat: 'runway', name: 'Time-lapse atmosférico', title: 'Aceleración del tiempo', tool: 'Runway Gen-4', desc: 'Time-lapse con transiciones suaves, mostrando el paso del tiempo de forma natural.', prompt: 'Timelapse of [scene], clouds moving fast across the sky, changing light conditions, people walking quickly, sun rising and setting, smooth transition between day and night, cinematic color grading.', example: 'Atardecer en la playa: el sol se pone rápido, las nubes se mueven, las luces se encienden' },
+  { id: 'r05', cat: 'runway', name: 'Travelling lateral', title: 'Seguimiento lateral', tool: 'Runway Gen-4', desc: 'La cámara se desplaza lateralmente siguiendo a un sujeto en movimiento.', prompt: 'Tracking shot moving left to right parallel to [subject], smooth camera movement, subject in focus with motion blur on background, cinematic composition, natural lighting.', example: 'Una persona caminando por una calle comercial, la cámara la sigue de lado al mismo ritmo' },
+  { id: 'r06', cat: 'runway', name: 'De día a noche', title: 'Transición día/noche', tool: 'Runway Gen-4', desc: 'Transición fluida donde la escena pasa de día a noche iluminada.', prompt: 'Seamless transition from day to night, [scene] gradually darkens, street lamps turn on one by one, windows light up, sky changes from blue to orange to dark blue with stars, cinematic timelapse.', example: 'Una calle cualquiera que pasa del mediodía a la noche estrellada en 3 segundos' },
 
-  // ── TRANSICIONES ──
-  { id: 't01', cat: 'trans', name: '/morph', title: 'Morph / Transformación', desc: 'Transición fluida donde un objeto se transforma en otro mediante deformación continua.', prompt: 'Seamless morph transition: the first object gradually deforms and transforms into the second object over 3 seconds, with smooth vertex interpolation.', example: 'Un coche que se convierte en un tigre corriendo' },
-  { id: 't02', cat: 'trans', name: '/wipe', title: 'Cortinilla', desc: 'Transición con una línea que barre la pantalla revelando la nueva escena.', prompt: 'Wipe transition: a moving edge sweeps across the frame, revealing the next scene behind it. Clean horizontal or diagonal edge.', example: 'De playa a montaña, una línea horizontal desplaza la imagen anterior' },
-  { id: 't03', cat: 'trans', name: '/dissolve', title: 'Disolución', desc: 'Transición suave donde la primera imagen se desvanece mientras la segunda aparece.', prompt: 'Cross dissolve: first image fades out while second image fades in simultaneously, with a smooth 2-second overlap.', example: 'Foto antigua que se desvanece y deja ver la misma escena en la actualidad' },
-  { id: 't04', cat: 'trans', name: '/glitch', title: 'Glitch / Fallo digital', desc: 'Transición con fallos digitales, artefactos y distorsión de píxeles entre escenas.', prompt: 'Digital glitch transition: pixelation, RGB splitting, screen tearing, and digital artifacts disrupt the first scene before resolving into the second.', example: 'Escena de ciudad que se rompe en píxeles y se recompone en un paisaje' },
+  // ── KLING AI ──
+  { id: 'k01', cat: 'kling', name: 'Cámara en mano (cinema verité)', title: 'Estilo documental', tool: 'Kling AI', desc: 'Movimiento orgánico de cámara al hombro, con micro-vibraciones naturales que dan realismo.', prompt: 'Handheld camera style, natural micro-movements, documentary feel, [subject] in frame, slight camera shake, realistic motion blur, available lighting, natural colors.', example: 'Una entrevista documental con cámara al hombro, movimiento orgánico y real' },
+  { id: 'k02', cat: 'kling', name: 'Física realista', title: 'Objetos con física real', tool: 'Kling AI', desc: 'Simulación realista de física en objetos: gravedad, colisiones, líquidos.', prompt: 'Realistic physics simulation, [object] falling and bouncing naturally, gravity affects movement, realistic collisions, liquid splashing with surface tension, cloth simulation with natural draping.', example: 'Una manzana cayendo de una mesa y rodando por el suelo con física real' },
+  { id: 'k03', cat: 'kling', name: 'Agua y fluidos', title: 'Comportamiento de líquidos', tool: 'Kling AI', desc: 'Simulación detallada de agua, líquidos y fluidos con física precisa.', prompt: 'Fluid simulation, water flowing naturally, splashes with droplets, surface ripples, liquid pouring from container, realistic viscosity and surface tension, slow motion detail.', example: 'Agua cayendo de una jarra a un vaso, con salpicaduras y ondas realistas' },
+  { id: 'k04', cat: 'kling', name: 'Desprendimiento textura', title: 'De textura a objeto', tool: 'Kling AI', desc: 'Una textura o patrón 2D cobra volumen y se convierte en un objeto 3D.', prompt: '2D texture transforming into 3D object, [pattern/texture] gains depth and volume, emerges from flat surface, realistic shadows and light interaction, smooth metamorphosis.', example: 'Un patrón de cuadros en una pared que cobra volumen y se convierte en un cubo 3D' },
 
-  // ── ILUMINACIÓN ──
-  { id: 'l01', cat: 'light', name: '/lightreveal', title: 'Revelación con luz', desc: 'La luz revela gradualmente el objeto, iluminándolo desde la oscuridad.', prompt: 'Light reveal: a beam of light slowly sweeps across the scene from left to right, illuminating the subject gradually out of darkness.', example: 'Una escultura oscura que se ilumina como con un reflector móvil' },
-  { id: 'l02', cat: 'light', name: '/godrays', title: 'Rayos divinos', desc: 'Rayos de luz volumétricos que atraviesan nubes/ventanas, creando atmósfera dramática.', prompt: 'Volumetric god rays: shafts of warm sunlight piercing through clouds or windows, with visible dust particles, creating dramatic atmospheric lighting.', example: 'Sol entrando por una ventana con polvo visible en el aire' },
-  { id: 'l03', cat: 'light', name: '/neonpulse', title: 'Neón pulsante', desc: 'Iluminación de neón que pulsa rítmicamente, ideal para escenas nocturnas o cyberpunk.', prompt: 'Pulsing neon lighting: the scene is lit by neon lights that rhythmically pulse and shift color, with reflections on wet surfaces. Cyberpunk atmosphere.', example: 'Calle mojada con neón azul y rosa que late al ritmo de la música' },
-  { id: 'l04', cat: 'light', name: '/silhouette', title: 'Silueta al contraluz', desc: 'El sujeto aparece en silueta oscura contra una fuente de luz brillante al fondo.', prompt: 'Dramatic backlight silhouette: strong light source behind the subject, rendering them as a dark silhouette with rim lighting on edges.', example: 'Dos personas besándose al atardecer, solo sus siluetas contra el sol' },
+  // ── PIKA 2.0 ──
+  { id: 'p01', cat: 'pika', name: 'Efecto plastilina', title: 'Stop-motion claymation', tool: 'Pika 2.0', desc: 'Estilo de animación en plastilina con movimiento entrecortado característico.', prompt: 'Claymation style stop-motion animation, slightly jerky movement, visible fingerprints on surfaces, plasticine texture, warm lighting, handmade aesthetic, frame-by-frame feel.', example: 'Figuras de plastilina caminando con el característico movimiento a trompicones' },
+  { id: 'p02', cat: 'pika', name: 'Estilo acuarela animada', title: 'Acuarela en movimiento', tool: 'Pika 2.0', desc: 'Animación con estética de acuarela, los colores fluyen como pintura húmeda.', prompt: 'Watercolor painting come to life, colors bleeding and flowing like wet paint on paper, soft edges, pigment textures visible, gentle movement, artistic style, hand-painted feel.', example: 'Un paisaje marino donde el agua se mueve como acuarela fresca sobre papel' },
+  { id: 'p03', cat: 'pika', name: 'Efecto boceto animado', title: 'Dibujo a lápiz que cobra vida', tool: 'Pika 2.0', desc: 'Un boceto a lápiz empieza a moverse, manteniendo la textura del grafito.', prompt: 'Pencil sketch animation, hand-drawn lines visible, graphite texture, [subject] moves while maintaining sketch aesthetic, rough edges, monochrome or subtle color, artistic transition.', example: 'Un retrato boceto a lápiz que sonríe y parpadea manteniendo el estilo de dibujo' },
+  { id: 'p04', cat: 'pika', name: 'Pixel art animado', title: 'Estilo retro 8-bit', tool: 'Pika 2.0', desc: 'Animación en estilo pixel art con resolución baja, como un videojuego clásico.', prompt: 'Pixel art animation, 8-bit style, low resolution grid visible, [subject] moving with pixel-perfect animation, retro video game aesthetic, limited color palette, chiptune vibe.', example: 'Un personaje pixelado de videojuego clásico caminando por un bosque 8-bit' },
+  { id: 'p05', cat: 'pika', name: 'Efecto VHS retro', title: 'Cinta de vídeo antigua', tool: 'Pika 2.0', desc: 'Estilo de vídeo grabado en VHS con líneas de barrido y colores degradados.', prompt: 'Retro VHS tape effect, scanlines, chromatic aberration, tracking distortion, color bleeding, grainy texture, timestamp overlay, 80s/90s handheld camcorder aesthetic.', example: 'Un recuerdo de los 90: colores desgastados, líneas de barrido, fecha grabada en la esquina' },
 
-  // ── TIEMPO ──
-  { id: 'tm01', cat: 'time', name: '/timelapse', title: 'Time-lapse', desc: 'Aceleración del tiempo, mostrando el paso de horas/días en segundos.', prompt: 'Timelapse: accelerated passage of time, showing the scene changing over hours in seconds. Fast-moving clouds, shifting shadows, people moving quickly.', example: 'Amanecer en la ciudad: el sol sale, las nubes se mueven rápido, las luces se encienden' },
-  { id: 'tm02', cat: 'time', name: '/slowmo', title: 'Cámara lenta', desc: 'Ralentización del movimiento para apreciar cada detalle, como en escenas de acción.', prompt: 'Slow motion: extreme slow-motion effect at 120fps, every detail of movement is visible and fluid. 4x slower than real time.', example: 'Una gota de agua cayendo, estallando en cámara superlenta' },
-  { id: 'tm03', cat: 'time', name: '/reverse', title: 'Reproducción inversa', desc: 'La escena se reproduce hacia atrás, como rebobinando la realidad.', prompt: 'Reverse playback: the entire scene plays backwards. Water flows upward, objects reassemble, time flows in reverse. Smooth backward motion.', example: 'Una taza rota que se reconstruye sola y salta a la mesa' },
-  { id: 'tm04', cat: 'time', name: '/bullet', title: 'Tiempo bala (Matrix)', desc: 'Efecto Matrix: el tiempo se congela mientras la cámara orbita alrededor del sujeto.', prompt: 'Bullet time effect: time appears frozen while the camera rapidly orbits around the subject. Inspired by Matrix. Everything is still except the camera movement.', example: 'Una patada voladora congelada, la cámara gira alrededor' },
+  // ── LUMA DREAM MACHINE ──
+  { id: 'l01', cat: 'luma', name: 'Elevación de cámara (drone)', title: 'Drone rising', tool: 'Luma Dream Machine', desc: 'La cámara se eleva desde el suelo revelando la escena completa como un drone.', prompt: 'Drone camera rising from ground level to bird\'s eye view, revealing the full landscape, smooth ascent, wide angle perspective, natural sunlight, cinematic composition.', example: 'Desde el suelo subiendo hasta ver toda la ciudad desde arriba como un drone' },
+  { id: 'l02', cat: 'luma', name: 'Vuelo a través de escena', title: 'Fly-through', tool: 'Luma Dream Machine', desc: 'La cámara vuela a través de un espacio, recorriendo el escenario en primera persona.', prompt: 'First person fly-through of [scene], camera moving forward through the space, discovering details progressively, immersive perspective, smooth motion, realistic depth.', example: 'Volando a baja altura entre callejones de una ciudad antigua' },
+  { id: 'l03', cat: 'luma', name: 'Transición de fundido', title: 'Cross-dissolve', tool: 'Luma Dream Machine', desc: 'Transición suave donde una escena se desvanece mientras aparece la siguiente.', prompt: 'Crossfade transition between two scenes, first image fades out while second fades in, smooth 2-second overlap, matching composition between scenes, seamless blend.', example: 'Una persona mayor que se desvanece y deja ver la misma persona de joven' },
+  { id: 'l04', cat: 'luma', name: 'Efecto espejo líquido', title: 'Reflejo ondulado', tool: 'Luma Dream Machine', desc: 'Una superficie reflectante aparece bajo el sujeto, con ondas sutiles en el reflejo.', prompt: 'Mirror reflection on water surface beneath [subject], perfect reflection with subtle ripples, the reflection distorts slightly with movement, natural water texture, ambient lighting.', example: 'Bailarín sobre un charco que refleja su silueta con ondas sutiles' },
 
-  // ── ESTILO Y EFECTOS ──
-  { id: 's01', cat: 'style', name: '/teardown', title: 'Desmontaje', desc: 'El objeto se desmonta pieza por pieza, separando sus componentes ante la cámara.', prompt: 'Teardown effect: the object disassembles into its component parts, each piece floating apart from the others in a controlled manner.', example: 'Un reloj que se desmonta: engranajes y piezas flotando separadamente' },
-  { id: 's02', cat: 'style', name: '/claymation', title: 'Claymation / Stop-motion', desc: 'Animación en estilo plastilina, con movimientos entrecortados característicos del stop-motion.', prompt: 'Claymation style: the animation looks like stop-motion clay animation, with slightly jerky frame-by-frame movement. Plasticine textures and visible fingerprints.', example: 'Figura de plastilina caminando con el típico movimiento de stop-motion' },
-  { id: 's03', cat: 'style', name: '/watercolor', title: 'Acuarela viva', desc: 'La imagen se transforma en una acuarela donde los colores fluyen y se mezclan como pintura húmeda.', prompt: 'Living watercolor effect: the scene turns into a watercolor painting where colors flow and bleed into each other like wet paint on paper. Soft edges, pigment textures.', example: 'Paisaje que fluye como acuarela fresca, colores mezclándose' },
-  { id: 's04', cat: 'style', name: '/vhs', title: 'Efecto VHS / Retro', desc: 'Estilo vídeo antiguo con líneas de barrido, cromado degradado y estática.', prompt: 'Retro VHS effect: scanlines, chroma bleeding, tracking distortion, color degradation, and static noise. Looks like an old VHS tape recording from the 80s.', example: 'Recuerdo de los 90 con textura VHS, líneas y colores degradados' },
-  { id: 's05', cat: 'style', name: '/levitate', title: 'Levitación', desc: 'El sujeto flota y levita suavemente, desafiando la gravedad.', prompt: 'Levitation effect: the subject slowly floats upward, defying gravity. Clothing and hair float naturally as if underwater. Smooth, dreamlike floating motion.', example: 'Una persona flotando en su sala de estar, con la ropa ondeando suavemente' },
-  { id: 's06', cat: 'style', name: '/pixelate', title: 'Pixelado progresivo', desc: 'La imagen se pixela progresivamente, como un mosaico que revela o esconde detalles.', prompt: 'Progressive pixelation: the scene transitions through increasing levels of pixelation, from detailed to heavily pixelated mosaic, or vice versa.', example: 'Foto de rostro que se pixela hasta ser irreconocible como en los documentales' },
+  // ── MINIMAX / HAILUO ──
+  { id: 'm01', cat: 'minimax', name: 'Efecto morphing', title: 'Transformación de un objeto en otro', tool: 'Minimax / Hailuo', desc: 'Un objeto se transforma fluidamente en otro mediante morphing continuo.', prompt: 'Seamless morphing transformation, [object A] gradually transforms into [object B], smooth shape interpolation, texture blends between forms, organic transition, no cuts.', example: 'Un coche deportivo que se transforma en un tigre mientras corre' },
+  { id: 'm02', cat: 'minimax', name: 'Desmontaje de objeto', title: 'Teardown en el aire', tool: 'Minimax / Hailuo', desc: 'Un objeto se desmonta pieza a pieza, con los componentes flotando en el espacio.', prompt: 'Object teardown effect, [object] disassembles into individual components, parts float apart in slow motion, mechanical parts separate cleanly, technical aesthetic, detailed textures.', example: 'Un reloj de pulsera que se desmonta: engranajes, ejes y piezas flotando separadamente' },
+  { id: 'm03', cat: 'minimax', name: 'Partículas y explosión', title: 'Efecto partículas', tool: 'Minimax / Hailuo', desc: 'Un objeto estalla en miles de partículas que se dispersan en todas direcciones.', prompt: 'Particle explosion effect, [object] bursts into thousands of particles, particles scatter in all directions, glowing fragments, slow motion, dramatic lighting, cinematic impact.', example: 'Una escultura de cristal que explota en mil fragmentos brillantes' },
+  { id: 'm04', cat: 'minimax', name: 'Crecimiento orgánico', title: 'Flor creciendo en segundos', tool: 'Minimax / Hailuo', desc: 'Crecimiento acelerado de un elemento orgánico: planta, flor, cristal.', prompt: 'Time-lapse growth of [organic subject], from seed to full bloom, roots spreading underground, stem reaching upward, leaves unfurling, flowers opening, detailed textures, natural lighting.', example: 'Una rosa que crece desde semilla hasta flor abierta en 5 segundos' },
 
-  // ── COMPOSICIÓN ──
-  { id: 'cm01', cat: 'comp', name: '/split', title: 'Pantalla dividida', desc: 'La escena se divide en múltiples paneles mostrando diferentes ángulos simultáneamente.', prompt: 'Split screen: the frame divides into multiple panels, each showing a different angle or scene simultaneously. Clean borders between panels.', example: 'Llamada de Zoom creativa: 4 paneles mostrando a la misma persona desde 4 ángulos' },
-  { id: 'cm02', cat: 'comp', name: '/zoomout', title: 'Zoom out cósmico', desc: 'Zoom out extremo que revela el contexto completo, desde el detalle hasta el macro.', prompt: 'Cosmic zoom out: extreme pull-back from microscopic detail to cosmic scale. From a leaf to the forest to the planet to the solar system in one continuous shot.', example: 'De una hormiga en una hoja... al bosque... al planeta... al sistema solar' },
-  { id: 'cm03', cat: 'comp', name: '/clone', title: 'Clonación', desc: 'Múltiples copias del mismo sujeto aparecen en escena, interactuando entre sí.', prompt: 'Clone effect: multiple identical copies of the same subject appear in the frame simultaneously, each one doing something different. Perfect synchronization.', example: 'Una persona tocando la guitarra, otra cantando y otra bailando — la misma persona las tres' },
-  { id: 'cm04', cat: 'comp', name: '/reflection', title: 'Reflejo', desc: 'Superficie reflectante aparece bajo el sujeto, duplicándolo como un espejo.', prompt: 'Mirror reflection: a reflective surface appears beneath the subject, creating a perfect mirror image. The reflection ripples and distorts naturally.', example: 'Bailarín sobre un lago helado, su reflejo perfecto en el hielo' },
-  { id: 'cm05', cat: 'comp', name: '/portal', title: 'Portal dimensional', desc: 'Se abre un portal que conecta dos escenas, pudiendo la cámara atravesarlo.', prompt: 'Dimensional portal: a glowing portal opens in mid-air, revealing a completely different scene on the other side. The camera smoothly passes through the portal.', example: 'De una habitación a una playa tropical a través de un portal brillante' },
+  // ── GEMINI 2.0 ──
+  { id: 'g01', cat: 'gemini', name: 'Revelación con luz', title: 'Light reveal', tool: 'Gemini 2.0', desc: 'Un rayo de luz revela gradualmente el sujeto, iluminándolo desde la oscuridad.', prompt: 'A beam of light slowly sweeps across a dark scene, gradually revealing the subject. Light reveals details one by one. Dramatic shadows. Cinematic atmosphere.', example: 'Un objeto en una habitación oscura que se ilumina lentamente como con un reflector' },
+  { id: 'g02', cat: 'gemini', name: 'Efecto levitación', title: 'Levitación natural', tool: 'Gemini 2.0', desc: 'Un sujeto levita suavemente desafiando la gravedad, con ropa y pelo flotando.', prompt: 'A person floats slowly upward in a room. Clothing and hair drift naturally as if underwater. Soft, dreamlike floating motion. Warm ambient lighting. Peaceful expression.', example: 'Una persona en su salón flotando suavemente hacia el techo' },
+  { id: 'g03', cat: 'gemini', name: 'Cambio de estación', title: 'Primavera a invierno', tool: 'Gemini 2.0', desc: 'Un paisaje cambia de estación con transición fluida: hojas que caen, nieve que cubre.', prompt: 'A landscape smoothly transitions from spring to winter. Green leaves turn yellow, orange, red and fall. Snow begins to fall and covers the ground. Temperature feels colder. Smooth morph.', example: 'Un árbol que pasa de verde primaveral a otoño y luego a nevado en 4 segundos' },
+  { id: 'g04', cat: 'gemini', name: 'Miniatura (tilt-shift)', title: 'Efecto maqueta', tool: 'Gemini 2.0', desc: 'Una escena real parece una maqueta en miniatura con desenfoque tilt-shift.', prompt: 'Tilt-shift miniature effect. A real city scene looks like a tiny model. Selective blur at top and bottom. Bright, oversaturated colors. Objects appear small like toys. Playful perspective.', example: 'Una ciudad real que parece un set de trenes en miniatura' },
+
+  // ── STABLE VIDEO DIFFUSION ──
+  { id: 's01', cat: 'svd', name: 'Imagen a vídeo', title: 'Animar una foto fija', tool: 'Stable Video Diff.', desc: 'Convierte una imagen fija en un vídeo corto con movimiento sutil y fluido.', prompt: 'Animate this image with subtle motion. [Subject] moves naturally and slowly. Background has gentle ambient movement. Smooth transitions. Photorealistic style. No distortion.', example: 'Una foto de un paisaje que cobra vida con nubes moviéndose lentamente' },
+  { id: 's02', cat: 'svd', name: 'Bucle infinito (loop)', title: 'Loop perfecto', tool: 'Stable Video Diff.', desc: 'Genera un vídeo en bucle infinito donde el final vuelve al principio sin costura.', prompt: 'Seamless looping video. The end of the animation transitions perfectly back to the start without visible seam. Continuous motion loop. Smooth infinite playback. No jump cuts.', example: 'Una noria girando eternamente, el final enlaza perfectamente con el principio' },
+  { id: 's03', cat: 'svd', name: 'Cámara lenta extrema', title: 'Movimiento ultralento', tool: 'Stable Video Diff.', desc: 'Movimiento extremadamente lento que revela detalles imperceptibles a velocidad normal.', prompt: 'Extreme slow motion, 240fps equivalent. [Subject] moves almost imperceptibly slow. Every micro-detail visible. Liquid movements, floating particles. Hypnotic, meditative pace.', example: 'Una pluma cayendo en cámara superlenta, cada fibra se mueve individualmente' },
 ];
 
 const CATEGORIES = [
-  { id: 'mov', name: 'Movimiento', emoji: '🎥', badge: 'cat-mov' },
-  { id: 'trans', name: 'Transiciones', emoji: '🔄', badge: 'cat-trans' },
-  { id: 'light', name: 'Iluminación', emoji: '💡', badge: 'cat-light' },
-  { id: 'time', name: 'Tiempo', emoji: '⏱️', badge: 'cat-time' },
-  { id: 'style', name: 'Estilo', emoji: '🎨', badge: 'cat-style' },
-  { id: 'comp', name: 'Composición', emoji: '🎬', badge: 'cat-comp' },
+  { id: 'runway', name: 'Runway Gen-4', emoji: '🎬', desc: 'Fotorrealismo cinematográfico' },
+  { id: 'kling', name: 'Kling AI', emoji: '🎯', desc: 'Física realista y simulación' },
+  { id: 'pika', name: 'Pika 2.0', emoji: '🎨', desc: 'Estilos artísticos y animación' },
+  { id: 'luma', name: 'Luma Dream Machine', emoji: '🚀', desc: 'Vuelos de cámara y transiciones' },
+  { id: 'minimax', name: 'Minimax / Hailuo', emoji: '💫', desc: 'Efectos y morphing' },
+  { id: 'gemini', name: 'Gemini 2.0', emoji: '🔮', desc: 'Efectos visuales con IA de Google' },
+  { id: 'svd', name: 'Stable Video Diff.', emoji: '📷', desc: 'Imagen a vídeo y bucles' },
 ];
 
 // ── STATE ──
 let activeFilter = null;
 let searchTerm = '';
-let hasClipboard = navigator.clipboard && navigator.clipboard.writeText;
 
-// ── DOM REFS ──
 const grid = document.getElementById('commands-grid');
 const filtersEl = document.getElementById('filters');
 const searchInput = document.getElementById('search-input');
@@ -80,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGrid(VIDEO_COMMANDS);
   updateSectionTitle();
 
-  // Theme toggle
   const saved = localStorage.getItem('videoVaultTheme');
   if (saved === 'light') document.body.classList.add('light');
   themeToggle.textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
@@ -91,13 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('videoVaultTheme', isLight ? 'light' : 'dark');
   });
 
-  // Search
   searchInput.addEventListener('input', () => {
     searchTerm = searchInput.value.trim().toLowerCase();
     applyFilters();
   });
 
-  // Modal close
   modalClose.addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
@@ -108,7 +108,7 @@ function renderFilters() {
   filtersEl.innerHTML = '';
   const all = document.createElement('button');
   all.className = `chip${activeFilter === null ? ' active' : ''}`;
-  all.textContent = '🎬 Todos';
+  all.textContent = '🎬 Todas las herramientas';
   all.addEventListener('click', () => { activeFilter = null; applyFilters(); });
   filtersEl.appendChild(all);
 
@@ -124,17 +124,16 @@ function renderFilters() {
 function applyFilters() {
   let filtered = VIDEO_COMMANDS;
 
-  // Category filter
   if (activeFilter) {
     filtered = filtered.filter(c => c.cat === activeFilter);
   }
 
-  // Search
   if (searchTerm) {
     filtered = filtered.filter(c =>
       c.name.toLowerCase().includes(searchTerm) ||
       c.title.toLowerCase().includes(searchTerm) ||
-      c.desc.toLowerCase().includes(searchTerm)
+      c.desc.toLowerCase().includes(searchTerm) ||
+      c.tool.toLowerCase().includes(searchTerm)
     );
   }
 
@@ -152,7 +151,6 @@ function updateFilterChips() {
   });
 }
 
-// ── SECTION TITLE ──
 function updateSectionTitle() {
   if (activeFilter) {
     const cat = CATEGORIES.find(c => c.id === activeFilter);
@@ -160,7 +158,7 @@ function updateSectionTitle() {
   } else if (searchTerm) {
     sectionTitle.textContent = '🔍 Resultados';
   } else {
-    sectionTitle.textContent = '🎬 Todos los comandos';
+    sectionTitle.textContent = '🎬 Todos los prompts de vídeo';
   }
   const visible = grid.querySelectorAll('.story-card').length;
   sectionCount.textContent = visible;
@@ -169,23 +167,23 @@ function updateSectionTitle() {
 // ── RENDER GRID ──
 function renderGrid(commands) {
   if (commands.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>No se encontraron comandos</p></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>No se encontraron prompts</p></div>`;
+    sectionCount.textContent = '0';
     return;
   }
 
   grid.innerHTML = commands.map(cmd => {
     const cat = CATEGORIES.find(c => c.id === cmd.cat);
-    const badge = cat ? cat.badge : 'default';
+    const color = `var(--${cmd.cat === 'runway' ? 'accent' : cmd.cat === 'kling' ? 'accent-2' : cmd.cat === 'pika' ? 'cyan' : cmd.cat === 'luma' ? 'teal-1' : cmd.cat === 'minimax' ? 'teal-2' : cmd.cat === 'gemini' ? 'teal-3' : 'accent'})`;
     return `
       <div class="story-card" data-id="${cmd.id}" onclick="openModal('${cmd.id}')">
         <div class="badges">
-          <span class="badge ${badge}">${cat ? cat.emoji + ' ' + cat.name : cmd.cat}</span>
+          <span class="badge default">${cat ? cat.emoji + ' ' + cmd.tool : cmd.tool}</span>
         </div>
-        <button class="copy-btn" onclick="event.stopPropagation(); copyCommand('${cmd.id}', this)" title="Copiar comando">
+        <button class="copy-btn" onclick="event.stopPropagation(); copyText(this, '${cmd.prompt.replace(/'/g, "\\'")}')" title="Copiar prompt">
           📋 Copiar
         </button>
-        <div class="cmd-name">${cmd.name}</div>
-        <div class="cmd-title">${cmd.title}</div>
+        <div class="cmd-name" style="font-size:1.1rem">${cmd.name}</div>
         <div class="cmd-desc">${cmd.desc}</div>
         <div class="cmd-prompt-preview">${cmd.prompt}</div>
         <div class="meta">
@@ -202,27 +200,25 @@ function openModal(id) {
   if (!cmd) return;
 
   const cat = CATEGORIES.find(c => c.id === cmd.cat);
-  const badge = cat ? cat.badge : 'default';
 
   modalBody.innerHTML = `
-    <div class="cmd-badge badge ${badge}">${cat ? cat.emoji + ' ' + cat.name : cmd.cat}</div>
-    <div class="cmd-name-big">${cmd.name}</div>
-    <div class="cmd-title-big">${cmd.title}</div>
+    <div class="cmd-badge badge default" style="font-size:0.85rem;margin-bottom:10px">${cat ? cat.emoji + ' ' + cmd.tool : cmd.tool}</div>
+    <div class="cmd-name-big" style="font-size:1.5rem">${cmd.name}</div>
+    <div class="cmd-title-big" style="font-size:1rem;color:var(--text-dim);margin-bottom:16px">${cmd.title}</div>
     <div class="cmd-desc-full">${cmd.desc}</div>
-    <label style="font-size:0.78rem;color:var(--text-faint);letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:6px;">Prompt completo:</label>
+    <label style="font-size:0.78rem;color:var(--text-faint);letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:6px;">Prompt completo (copiar y pegar en la herramienta):</label>
     <div class="cmd-prompt-full">${cmd.prompt}</div>
-    <button class="cmd-copy-btn" id="modal-copy-btn">📋 Copiar comando</button>
-        ${cmd.example ? `<div class="cmd-example"><b>💡 Ejemplo:</b> ${cmd.example}</div>` : ''}
-      `;
+    <button class="cmd-copy-btn" id="modal-copy-btn">📋 Copiar prompt</button>
+    ${cmd.example ? `<div class="cmd-example"><b>💡 Ejemplo de uso:</b> ${cmd.example}</div>` : ''}
+  `;
 
-      modalOverlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+  modalOverlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 
-      // Set up copy button event
-      const copyBtn = document.getElementById('modal-copy-btn');
-      if (copyBtn) {
-        copyBtn.onclick = () => copyCommandModal(copyBtn, cmd.name, cmd.prompt);
-      }
+  const copyBtn = document.getElementById('modal-copy-btn');
+  if (copyBtn) {
+    copyBtn.onclick = () => copyText(copyBtn, cmd.prompt);
+  }
 }
 
 function closeModal() {
@@ -231,35 +227,12 @@ function closeModal() {
 }
 
 // ── COPY ──
-async function copyCommand(id, btn) {
-  const cmd = VIDEO_COMMANDS.find(c => c.id === id);
-  if (!cmd) return;
-  try {
-    await navigator.clipboard.writeText(cmd.name);
-    btn.textContent = '✅ Copiado';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '📋 Copiar'; btn.classList.remove('copied'); }, 2000);
-  } catch {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = cmd.name;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    btn.textContent = '✅ Copiado';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '📋 Copiar'; btn.classList.remove('copied'); }, 2000);
-  }
-}
-
-async function copyCommandModal(btn, name, prompt) {
-  const text = `${name} — ${prompt}`;
+async function copyText(btn, text) {
   try {
     await navigator.clipboard.writeText(text);
     btn.textContent = '✅ Copiado';
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '📋 Copiar comando'; btn.classList.remove('copied'); }, 2000);
+    setTimeout(() => { btn.textContent = btn.id === 'modal-copy-btn' ? '📋 Copiar prompt' : '📋 Copiar'; btn.classList.remove('copied'); }, 2000);
   } catch {
     const ta = document.createElement('textarea');
     ta.value = text;
@@ -269,11 +242,9 @@ async function copyCommandModal(btn, name, prompt) {
     document.body.removeChild(ta);
     btn.textContent = '✅ Copiado';
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '📋 Copiar comando'; btn.classList.remove('copied'); }, 2000);
+    setTimeout(() => { btn.textContent = btn.id === 'modal-copy-btn' ? '📋 Copiar prompt' : '📋 Copiar'; btn.classList.remove('copied'); }, 2000);
   }
 }
 
-// Expose for onclick
 window.openModal = openModal;
-window.copyCommand = copyCommand;
-window.copyCommandModal = copyCommandModal;
+window.copyText = copyText;
