@@ -1,73 +1,1509 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Video Vault — Comandos de Vídeo IA</title>
-  <meta name="description" content="Catálogo de comandos y prompts para crear vídeos con IA: Gemini, FLUX, y más.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=1" />
-  <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="VideoVault — Colección personal de comandos y prompts de vídeo con IA organizados por categorías">
+    <title>VideoVault — Tu Colección de Comandos de Vídeo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="app.css?v=20260923-videovault">
 </head>
 <body>
-<div class="app">
+    <div id="root"></div>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="header-inner wrap">
-      <div class="brand"><span class="dot">●</span> Video Vault <small>comandos IA</small></div>
-      <div class="header-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="search-input" placeholder="Buscar comandos..." />
-      </div>
-      <button class="theme-toggle" id="themeToggle">🌙</button>
-    </div>
-  </header>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
 
-  <!-- HERO -->
-  <section class="hero wrap">
-    <h1>Catálogo de <span class="accent">Comandos de Vídeo</span></h1>
-    <p>Comandos y prompts para crear efectos de vídeo con IA: movimientos de cámara, transiciones, iluminación y más.</p>
-    <div class="hero-stats">
-      <div><b id="total-commands">0</b> Comandos</div>
-      <div><b id="total-categories">0</b> Categorías</div>
-    </div>
-    <div style="margin-top:20px">
-      <button class="edit-toggle" id="edit-toggle-btn">✏️ Modo edición</button>
-    </div>
-  </section>
+    <script type="text/babel" data-type="module">
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
 
-  <!-- FILTERS -->
-  <div class="filters wrap" id="filters"></div>
+/* ═══════════════════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════════════════ */
+const STORAGE_KEY = 'videovault_data';
+const VIDEO_STORE_URL = 'video_store.php';
+const AUTH_URL = 'auth.php';
+const VIDEO_PROMPT_HINT = 'Úsalo junto con un sujeto concreto y el movimiento o encuadre que quieras conseguir';
 
-  <!-- GRID -->
-  <main class="wrap" id="main-content">
-    <div class="section-title">
-      <h2 id="section-title">Todos los comandos</h2>
-      <span class="line"></span>
-      <span class="count" id="section-count">0</span>
-    </div>
-    <div class="story-grid" id="commands-grid"></div>
-  </main>
+const DEFAULT_FOLDERS = [
+    { id: 'mov',     label: 'Movimiento de cámara',   icon: '🎥', color: 'cyan',    bgIcon: '📹' },
+    { id: 'trans',   label: 'Transiciones',           icon: '🔄', color: 'purple',  bgIcon: '🎞️' },
+    { id: 'light',   label: 'Iluminación y ambiente', icon: '💡', color: 'amber',   bgIcon: '🌅' },
+    { id: 'time',    label: 'Tiempo',                 icon: '⏱️', color: 'cyan',    bgIcon: '⏳' },
+    { id: 'style',   label: 'Estilo y efectos',       icon: '🎨', color: 'pink',    bgIcon: '🖌️' },
+    { id: 'comp',    label: 'Composición',            icon: '🎬', color: 'purple',  bgIcon: '🧩' },
+    { id: 'trucos',  label: 'Trucos y atajos',        icon: '💻', color: 'emerald', bgIcon: '⌨️' },
+];
+const FAVORITES_FOLDER = { id: 'favorites', label: 'Favoritos', icon: '⭐', color: 'amber', bgIcon: '💛' };
+const FOLDERS_KEY = 'videovault_folders';
 
-  <!-- MODAL -->
-  <div class="modal-overlay hidden" id="modal-overlay">
-    <div class="modal" id="command-modal">
-      <button class="modal-close" id="modal-close">✕</button>
-      <div class="modal-body" id="modal-body"></div>
-    </div>
-  </div>
+// ── Catálogo de comandos de vídeo IA ──
+const VIDEO_COMMANDS = [
+  // ── MOVIMIENTO DE CÁMARA ──
+  { id: 'c01', cat: 'mov', name: '/orbit360', title: 'Órbita 360°', desc: 'La cámara da una vuelta completa alrededor del sujeto, creando un efecto cinemático envolvente.', prompt: 'Camera orbits 360 degrees around the subject in a smooth circular motion, maintaining focus on the center.', example: 'Producto girando sobre su eje como en un comercial' },
+  { id: 'c02', cat: 'mov', name: '/dronerise', title: 'Elevación de dron', desc: 'La cámara se eleva como un dron revelando gradualmente el escenario completo.', prompt: 'Drone-style camera rising upward, slowly revealing the full scene from bottom to top.', example: 'Una casa vista desde el jardín que sube hasta mostrar todo el vecindario' },
+  { id: 'c03', cat: 'mov', name: '/cranedown', title: 'Grúa descendente', desc: 'La cámara desciende en picado controlado, como una grúa de cine, para revelar el sujeto desde arriba.', prompt: 'Cinematic crane shot, camera smoothly descending from above to reveal the subject at ground level.', example: 'Vista aérea de una ciudad que baja hasta una persona en la calle' },
+  { id: 'c04', cat: 'mov', name: '/dollyzoom', title: 'Dolly Zoom (Vertigo)', desc: 'Efecto Vertigo: la cámara se acerca mientras el zoom se aleja (o viceversa), distorsionando la perspectiva.', prompt: 'Dolly zoom effect: camera moves forward while zooming out, creating a disorienting perspective distortion. The background stretches while the subject stays the same size.', example: 'Pasillo que parece alargarse mientras la persona al fondo no se mueve' },
+  { id: 'c05', cat: 'mov', name: '/followcam', title: 'Cámara en seguimiento', desc: 'La cámara sigue a un sujeto en movimiento, manteniéndolo centrado en el encuadre.', prompt: 'Tracking shot: camera follows the moving subject smoothly, keeping them centered in frame as they move through the environment.', example: 'Alguien caminando por la calle, la cámara lo sigue de lado' },
 
-  <!-- FOOTER -->
-  <footer class="site-footer wrap">
-    Video Vault · Catálogo de comandos de vídeo para IA
-  </footer>
+  // ── TRANSICIONES ──
+  { id: 't01', cat: 'trans', name: '/morph', title: 'Morph / Transformación', desc: 'Transición fluida donde un objeto se transforma en otro mediante deformación continua.', prompt: 'Seamless morph transition: the first object gradually deforms and transforms into the second object over 3 seconds, with smooth vertex interpolation.', example: 'Un coche que se convierte en un tigre corriendo' },
+  { id: 't02', cat: 'trans', name: '/wipe', title: 'Cortinilla', desc: 'Transición con una línea que barre la pantalla revelando la nueva escena.', prompt: 'Wipe transition: a moving edge sweeps across the frame, revealing the next scene behind it. Clean horizontal or diagonal edge.', example: 'De playa a montaña, una línea horizontal desplaza la imagen anterior' },
+  { id: 't03', cat: 'trans', name: '/dissolve', title: 'Disolución', desc: 'Transición suave donde la primera imagen se desvanece mientras la segunda aparece.', prompt: 'Cross dissolve: first image fades out while second image fades in simultaneously, with a smooth 2-second overlap.', example: 'Foto antigua que se desvanece y deja ver la misma escena en la actualidad' },
+  { id: 't04', cat: 'trans', name: '/glitch', title: 'Glitch / Fallo digital', desc: 'Transición con fallos digitales, artefactos y distorsión de píxeles entre escenas.', prompt: 'Digital glitch transition: pixelation, RGB splitting, screen tearing, and digital artifacts disrupt the first scene before resolving into the second.', example: 'Escena de ciudad que se rompe en píxeles y se recompone en un paisaje' },
 
-</div>
+  // ── ILUMINACIÓN ──
+  { id: 'l01', cat: 'light', name: '/lightreveal', title: 'Revelación con luz', desc: 'La luz revela gradualmente el objeto, iluminándolo desde la oscuridad.', prompt: 'Light reveal: a beam of light slowly sweeps across the scene from left to right, illuminating the subject gradually out of darkness.', example: 'Una escultura oscura que se ilumina como con un reflector móvil' },
+  { id: 'l02', cat: 'light', name: '/godrays', title: 'Rayos divinos', desc: 'Rayos de luz volumétricos que atraviesan nubes/ventanas, creando atmósfera dramática.', prompt: 'Volumetric god rays: shafts of warm sunlight piercing through clouds or windows, with visible dust particles, creating dramatic atmospheric lighting.', example: 'Sol entrando por una ventana con polvo visible en el aire' },
+  { id: 'l03', cat: 'light', name: '/neonpulse', title: 'Neón pulsante', desc: 'Iluminación de neón que pulsa rítmicamente, ideal para escenas nocturnas o cyberpunk.', prompt: 'Pulsing neon lighting: the scene is lit by neon lights that rhythmically pulse and shift color, with reflections on wet surfaces. Cyberpunk atmosphere.', example: 'Calle mojada con neón azul y rosa que late al ritmo de la música' },
+  { id: 'l04', cat: 'light', name: '/silhouette', title: 'Silueta al contraluz', desc: 'El sujeto aparece en silueta oscura contra una fuente de luz brillante al fondo.', prompt: 'Dramatic backlight silhouette: strong light source behind the subject, rendering them as a dark silhouette with rim lighting on edges.', example: 'Dos personas besándose al atardecer, solo sus siluetas contra el sol' },
 
-<script src="history-manager.js?v=1"></script>
-<script src="app.js?v=1"></script>
+  // ── TIEMPO ──
+  { id: 'tm01', cat: 'time', name: '/timelapse', title: 'Time-lapse', desc: 'Aceleración del tiempo, mostrando el paso de horas/días en segundos.', prompt: 'Timelapse: accelerated passage of time, showing the scene changing over hours in seconds. Fast-moving clouds, shifting shadows, people moving quickly.', example: 'Amanecer en la ciudad: el sol sale, las nubes se mueven rápido, las luces se encienden' },
+  { id: 'tm02', cat: 'time', name: '/slowmo', title: 'Cámara lenta', desc: 'Ralentización del movimiento para apreciar cada detalle, como en escenas de acción.', prompt: 'Slow motion: extreme slow-motion effect at 120fps, every detail of movement is visible and fluid. 4x slower than real time.', example: 'Una gota de agua cayendo, estallando en cámara superlenta' },
+  { id: 'tm03', cat: 'time', name: '/reverse', title: 'Reproducción inversa', desc: 'La escena se reproduce hacia atrás, como rebobinando la realidad.', prompt: 'Reverse playback: the entire scene plays backwards. Water flows upward, objects reassemble, time flows in reverse. Smooth backward motion.', example: 'Una taza rota que se reconstruye sola y salta a la mesa' },
+  { id: 'tm04', cat: 'time', name: '/bullet', title: 'Tiempo bala (Matrix)', desc: 'Efecto Matrix: el tiempo se congela mientras la cámara orbita alrededor del sujeto.', prompt: 'Bullet time effect: time appears frozen while the camera rapidly orbits around the subject. Inspired by Matrix. Everything is still except the camera movement.', example: 'Una patada voladora congelada, la cámara gira alrededor' },
+
+  // ── ESTILO Y EFECTOS ──
+  { id: 's01', cat: 'style', name: '/teardown', title: 'Desmontaje', desc: 'El objeto se desmonta pieza por pieza, separando sus componentes ante la cámara.', prompt: 'Teardown effect: the object disassembles into its component parts, each piece floating apart from the others in a controlled manner.', example: 'Un reloj que se desmonta: engranajes y piezas flotando separadamente' },
+  { id: 's02', cat: 'style', name: '/claymation', title: 'Claymation / Stop-motion', desc: 'Animación en estilo plastilina, con movimientos entrecortados característicos del stop-motion.', prompt: 'Claymation style: the animation looks like stop-motion clay animation, with slightly jerky frame-by-frame movement. Plasticine textures and visible fingerprints.', example: 'Figura de plastilina caminando con el típico movimiento de stop-motion' },
+  { id: 's03', cat: 'style', name: '/watercolor', title: 'Acuarela viva', desc: 'La imagen se transforma en una acuarela donde los colores fluyen y se mezclan como pintura húmeda.', prompt: 'Living watercolor effect: the scene turns into a watercolor painting where colors flow and bleed into each other like wet paint on paper. Soft edges, pigment textures.', example: 'Paisaje que fluye como acuarela fresca, colores mezclándose' },
+  { id: 's04', cat: 'style', name: '/vhs', title: 'Efecto VHS / Retro', desc: 'Estilo vídeo antiguo con líneas de barrido, cromado degradado y estática.', prompt: 'Retro VHS effect: scanlines, chroma bleeding, tracking distortion, color degradation, and static noise. Looks like an old VHS tape recording from the 80s.', example: 'Recuerdo de los 90 con textura VHS, líneas y colores degradados' },
+  { id: 's05', cat: 'style', name: '/levitate', title: 'Levitación', desc: 'El sujeto flota y levita suavemente, desafiando la gravedad.', prompt: 'Levitation effect: the subject slowly floats upward, defying gravity. Clothing and hair float naturally as if underwater. Smooth, dreamlike floating motion.', example: 'Una persona flotando en su sala de estar, con la ropa ondeando suavemente' },
+  { id: 's06', cat: 'style', name: '/pixelate', title: 'Pixelado progresivo', desc: 'La imagen se pixela progresivamente, como un mosaico que revela o esconde detalles.', prompt: 'Progressive pixelation: the scene transitions through increasing levels of pixelation, from detailed to heavily pixelated mosaic, or vice versa.', example: 'Foto de rostro que se pixela hasta ser irreconocible como en los documentales' },
+
+  // ── COMPOSICIÓN ──
+  { id: 'cm01', cat: 'comp', name: '/split', title: 'Pantalla dividida', desc: 'La escena se divide en múltiples paneles mostrando diferentes ángulos simultáneamente.', prompt: 'Split screen: the frame divides into multiple panels, each showing a different angle or scene simultaneously. Clean borders between panels.', example: 'Llamada de Zoom creativa: 4 paneles mostrando a la misma persona desde 4 ángulos' },
+  { id: 'cm02', cat: 'comp', name: '/zoomout', title: 'Zoom out cósmico', desc: 'Zoom out extremo que revela el contexto completo, desde el detalle hasta el macro.', prompt: 'Cosmic zoom out: extreme pull-back from microscopic detail to cosmic scale. From a leaf to the forest to the planet to the solar system in one continuous shot.', example: 'De una hormiga en una hoja... al bosque... al planeta... al sistema solar' },
+  { id: 'cm03', cat: 'comp', name: '/clone', title: 'Clonación', desc: 'Múltiples copias del mismo sujeto aparecen en escena, interactuando entre sí.', prompt: 'Clone effect: multiple identical copies of the same subject appear in the frame simultaneously, each one doing something different. Perfect synchronization.', example: 'Una persona tocando la guitarra, otra cantando y otra bailando — la misma persona las tres' },
+  { id: 'cm04', cat: 'comp', name: '/reflection', title: 'Reflejo', desc: 'Superficie reflectante aparece bajo el sujeto, duplicándolo como un espejo.', prompt: 'Mirror reflection: a reflective surface appears beneath the subject, creating a perfect mirror image. The reflection ripples and distorts naturally.', example: 'Bailarín sobre un lago helado, su reflejo perfecto en el hielo' },
+  { id: 'cm05', cat: 'comp', name: '/portal', title: 'Portal dimensional', desc: 'Se abre un portal que conecta dos escenas, pudiendo la cámara atravesarlo.', prompt: 'Dimensional portal: a glowing portal opens in mid-air, revealing a completely different scene on the other side. The camera smoothly passes through the portal.', example: 'De una habitación a una playa tropical a través de un portal brillante' },
+];
+
+// Mapa comando de vídeo -> carpeta (derivado del catálogo)
+const CODE_FOLDER = Object.fromEntries(VIDEO_COMMANDS.map((c) => [c.name, c.cat]));
+
+// Dificultad asignada por comando
+const VIDEO_DIFFICULTY = {
+    c01: 'beginner', c02: 'beginner', c03: 'intermediate', c04: 'advanced', c05: 'beginner',
+    t01: 'advanced', t02: 'beginner', t03: 'beginner', t04: 'intermediate',
+    l01: 'beginner', l02: 'intermediate', l03: 'intermediate', l04: 'beginner',
+    tm01: 'beginner', tm02: 'intermediate', tm03: 'intermediate', tm04: 'advanced',
+    s01: 'advanced', s02: 'beginner', s03: 'intermediate', s04: 'beginner', s05: 'intermediate', s06: 'intermediate',
+    cm01: 'intermediate', cm02: 'advanced', cm03: 'advanced', cm04: 'intermediate', cm05: 'advanced',
+};
+
+const DIFFICULTIES = [
+    { value: 'beginner',     label: 'Principiante' },
+    { value: 'intermediate', label: 'Intermedio' },
+    { value: 'advanced',     label: 'Avanzado' },
+];
+
+const TAG_COLORS = ['', 'purple', 'emerald', 'pink', 'amber'];
+
+// Códigos eliminados por Antonio: no se regeneran al recargar.
+const REMOVED_VIDEO_IDS = new Set([]);
+
+const SEED_TRICKS = VIDEO_COMMANDS.map((cmd, index) => {
+    const folder = DEFAULT_FOLDERS.find((f) => f.id === cmd.cat);
+    return {
+        id: cmd.id,
+        title: `${cmd.name} — ${cmd.title}`,
+        description: cmd.desc,
+        category: cmd.cat,
+        tags: ['comandos de vídeo', 'vídeo', folder ? folder.label : 'vídeo'],
+        codeSnippet: cmd.name,
+        difficulty: VIDEO_DIFFICULTY[cmd.id] || 'beginner',
+        sourceUrl: '',
+        videoUrl: '',
+        isFavorite: false,
+        createdAt: Date.UTC(2026, 8, 20) - index,
+    };
+});
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════ */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
+function formatDate(ts) { return new Date(ts).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
+function getCat(id, folders) {
+    if (id === 'favorites') return FAVORITES_FOLDER;
+    const list = folders && folders.length ? folders : DEFAULT_FOLDERS;
+    return list.find(c => c.id === id);
+}
+function readFolderIds() {
+    try {
+        const saved = localStorage.getItem(FOLDERS_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length) return parsed.map(f => f.id);
+        }
+    } catch { /* ignorar */ }
+    return DEFAULT_FOLDERS.map(f => f.id);
+}
+function normalizeTrickCategory(item, folderIds) {
+    const mapped = CODE_FOLDER[getCommandKey(item)];
+    if (mapped && folderIds.includes(mapped)) {
+        return item.category === mapped ? item : { ...item, category: mapped };
+    }
+    const cat = String(item.category || '');
+    if (cat && folderIds.includes(cat)) return item;
+    return item.category === 'trucos' ? item : { ...item, category: 'trucos' };
+}
+function normalizeTrickCategories(items) {
+    const folderIds = readFolderIds();
+    return items.map(item => normalizeTrickCategory(item, folderIds));
+}
+
+function getCommandKey(trick) {
+    return typeof trick?.codeSnippet === "string" ? trick.codeSnippet.trim() : "";
+}
+function getVideoCommandPrompt(commandKey) {
+    const found = VIDEO_COMMANDS.find(c => c.name === commandKey);
+    return found ? found.prompt : '';
+}
+function isVideoCommandTrick(trick) {
+    return getVideoCommandPrompt(getCommandKey(trick)) !== '';
+}
+function getTrickCopyText(trick) {
+    const commandKey = getCommandKey(trick);
+    const base = (() => {
+        const custom = String(trick?.customPrompt || '').trim();
+        if (custom) return custom;
+        return getVideoCommandPrompt(commandKey) || String(trick?.codeSnippet || "");
+    })();
+    if (!getVideoCommandPrompt(commandKey)) return base;
+    return `${commandKey} ${base}`;
+}
+function isVideoMedia(url) {
+    if (typeof url !== 'string' || url === '') return false;
+    if (/\.(mp4|webm|mov|avi|mkv|ogv|gif)([?#]|$)/i.test(url)) return true;
+    return url.includes('/videos/');
+}
+function hasSortOrder(trick) { return Number.isFinite(Number(trick.sortOrder)); }
+function compareTricks(a, b) {
+    const aOrder = hasSortOrder(a) ? Number(a.sortOrder) : null;
+    const bOrder = hasSortOrder(b) ? Number(b.sortOrder) : null;
+    if (aOrder !== null && bOrder !== null) return aOrder - bOrder;
+    if (aOrder !== null) return -1;
+    if (bOrder !== null) return 1;
+    return b.createdAt - a.createdAt;
+}
+function normalizeTrickOrder(items) {
+    const usedByCategory = new Map();
+    const nextByCategory = new Map();
+    items.forEach(item => {
+        if (!hasSortOrder(item)) return;
+        if (!usedByCategory.has(item.category)) usedByCategory.set(item.category, new Set());
+        usedByCategory.get(item.category).add(Number(item.sortOrder));
+    });
+    return items.map(item => {
+        if (hasSortOrder(item)) return item;
+        const used = usedByCategory.get(item.category) || new Set();
+        let next = nextByCategory.get(item.category) || 0;
+        while (used.has(next)) next += 1;
+        used.add(next);
+        usedByCategory.set(item.category, used);
+        nextByCategory.set(item.category, next + 1);
+        return { ...item, sortOrder: next };
+    });
+}
+
+async function readServerJson(response) {
+    let payload;
+    try { payload = await response.json(); }
+    catch { throw new Error(`El servidor devolvió una respuesta inválida (HTTP ${response.status}).`); }
+    if (!response.ok || payload.success === false) {
+        throw new Error(payload.error || `Error del servidor (HTTP ${response.status}).`);
+    }
+    return payload;
+}
+
+async function loadRemoteVideos() {
+    const response = await fetch(`${VIDEO_STORE_URL}?action=list&t=${Date.now()}`, { cache: 'no-store', credentials: 'same-origin' });
+    const payload = await readServerJson(response);
+    return payload.videos && typeof payload.videos === 'object' ? payload.videos : {};
+}
+
+async function loadRemoteFavorites() {
+    const response = await fetch(`${VIDEO_STORE_URL}?action=fav_list&t=${Date.now()}`, { cache: 'no-store', credentials: 'same-origin' });
+    const payload = await readServerJson(response);
+    return { exists: !!payload.exists, ids: Array.isArray(payload.ids) ? payload.ids : [] };
+}
+
+async function saveRemoteFavorites(ids) {
+    const formData = new FormData();
+    formData.append('ids', JSON.stringify(ids));
+    await fetch(`${VIDEO_STORE_URL}?action=fav_save`, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+}
+
+async function authenticateRemote(password) {
+    const formData = new FormData();
+    formData.append('password', password);
+    const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+    await readServerJson(response);
+    return true;
+}
+
+async function uploadRemoteVideo(trickId, file) {
+    const formData = new FormData();
+    formData.append('trickId', trickId);
+    formData.append('video', file);
+    const response = await fetch(`${VIDEO_STORE_URL}?action=save`, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+    const payload = await readServerJson(response);
+    if (!payload.url) throw new Error('El servidor no devolvió la dirección del vídeo.');
+    return payload.url;
+}
+
+async function removeRemoteVideo(trickId) {
+    const formData = new FormData();
+    formData.append('trickId', trickId);
+    const response = await fetch(`${VIDEO_STORE_URL}?action=delete`, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: formData
+    });
+    return readServerJson(response);
+}
+
+/* ═══════════════════════════════════════════════
+   HOOK: useLocalStorage
+   ═══════════════════════════════════════════════ */
+function useLocalStorage(key, initial) {
+    const [val, setVal] = useState(() => {
+        try {
+            const saved = localStorage.getItem(key);
+            if (!saved) return normalizeTrickOrder(normalizeTrickCategories(initial));
+            const parsed = JSON.parse(saved);
+            if (!Array.isArray(parsed)) return normalizeTrickOrder(normalizeTrickCategories(initial));
+            const filtered = parsed.filter(item => !REMOVED_VIDEO_IDS.has(String(item.id)));
+            const migrated = normalizeTrickCategories(filtered);
+            if (filtered.length !== parsed.length || migrated.some((item, i) => item.category !== filtered[i].category)) {
+                localStorage.setItem(key, JSON.stringify(migrated));
+            }
+            const existingIds = new Set(migrated.map(item => item.id));
+            const newSeedItems = initial.filter(item => !existingIds.has(item.id));
+            const merged = newSeedItems.length ? [...newSeedItems, ...migrated] : migrated;
+            return normalizeTrickOrder(merged);
+        } catch { return initial; }
+    });
+
+    useEffect(() => {
+        try { localStorage.setItem(key, JSON.stringify(val)); }
+        catch(e) { console.warn('localStorage full', e); }
+    }, [key, val]);
+
+    return [val, setVal];
+}
+
+function useFolders() {
+    const [folders, setFolders] = useState(() => {
+        try {
+            const saved = localStorage.getItem(FOLDERS_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length) return parsed;
+            }
+        } catch { /* ignorar */ }
+        return DEFAULT_FOLDERS;
+    });
+
+    useEffect(() => {
+        try { localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders)); }
+        catch(e) { console.warn('localStorage full', e); }
+    }, [folders]);
+
+    return [folders, setFolders];
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: Toast
+   ═══════════════════════════════════════════════ */
+function Toast({ toasts, removeToast }) {
+    if (!toasts.length) return null;
+    return (
+        <div className="toast-container">
+            {toasts.map(t => (
+                <div key={t.id} className={`toast ${t.type}`} onClick={() => removeToast(t.id)}>
+                    {t.msg}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: Lightbox (imagen o vídeo)
+   ═══════════════════════════════════════════════ */
+function Lightbox({ src, onClose }) {
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    const isVideo = isVideoMedia(src);
+
+    return (
+        <div className="lightbox" onClick={onClose}>
+            {isVideo ? (
+                <video src={src} controls autoPlay loop className="lightbox-video" onClick={(e) => e.stopPropagation()} />
+            ) : (
+                <img src={src} alt="Vista ampliada" />
+            )}
+            <button className="lightbox-close" onClick={onClose} aria-label="Cerrar lightbox">✕</button>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: PasswordModal (Edit access)
+   ═══════════════════════════════════════════════ */
+function PasswordModal({ onSubmit, onClose }) {
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        if (submitting) return;
+        if (!password) {
+            setError('Introduce la contraseña para continuar.');
+            return;
+        }
+        setSubmitting(true);
+        const accepted = await onSubmit(password);
+        if (!accepted) {
+            setError('Contraseña incorrecta.');
+            setPassword('');
+            setSubmitting(false);
+        }
+    }
+
+    return (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal" role="dialog" aria-modal="true" aria-label="Contraseña de edición">
+                <div className="modal-header">
+                    <h2>🔒 Edición protegida</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="modal-body">
+                        <p style={{marginTop:0,color:'var(--muted)'}}>Introduce la contraseña para añadir, editar o eliminar comandos.</p>
+                        <label htmlFor="edit-password">Contraseña</label>
+                        <input
+                            id="edit-password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                            autoFocus
+                            autoComplete="current-password"
+                        />
+                        {error && <p role="alert" style={{color:'var(--neon-pink)',margin:'0.5rem 0 0',fontSize:'0.85rem'}}>{error}</p>}
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-glass" onClick={onClose} disabled={submitting}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Comprobando…' : '🔓 Continuar'}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: TrickForm (Add / Edit Modal)
+   ═══════════════════════════════════════════════ */
+function TrickForm({ trick, folders, onSave, onClose, onDelete }) {
+    const isEdit = !!trick;
+    const [formError, setFormError] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [promptCopied, setPromptCopied] = useState(false);
+    const fullPrompt = isEdit && isVideoCommandTrick(trick) ? getTrickCopyText(trick) : '';
+    const [promptDraft, setPromptDraft] = useState(fullPrompt);
+    const [videoPreview, setVideoPreview] = useState(trick?.videoUrl || '');
+    const [videoFile, setVideoFile] = useState(null);
+    const [form, setForm] = useState(() => trick ? {
+        ...trick,
+        tags: Array.isArray(trick.tags) ? trick.tags.join(', ') : (trick.tags || '')
+    } : {
+        title: '', description: '', category: 'trucos', tags: '',
+        codeSnippet: '', videoUrl: '', sourceUrl: '', difficulty: 'beginner', isFavorite: false
+    });
+
+    function handleChange(e) {
+        const { name, value, type, checked } = e.target;
+        setFormError('');
+        setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    }
+
+    function handleVideoChange(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('video/') && file.type !== 'image/gif') {
+            setFormError('Selecciona un archivo de vídeo válido.');
+            e.target.value = '';
+            return;
+        }
+        if (file.size > 100 * 1024 * 1024) {
+            setFormError('El vídeo supera los 100 MB.');
+            e.target.value = '';
+            return;
+        }
+        if (videoPreview && videoPreview.startsWith('blob:')) URL.revokeObjectURL(videoPreview);
+        const preview = URL.createObjectURL(file);
+        setVideoFile(file);
+        setVideoPreview(preview);
+        setFormError('');
+        e.target.value = '';
+    }
+
+    function removeVideo() {
+        if (videoPreview && videoPreview.startsWith('blob:')) URL.revokeObjectURL(videoPreview);
+        setVideoFile(null);
+        setVideoPreview('');
+        setForm(prev => ({ ...prev, videoUrl: '' }));
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        if (saving) return;
+        const title = String(form.title || '').trim();
+        const description = String(form.description || '').trim();
+        if (!title) {
+            setFormError('Completa el título para guardar la tarjeta.');
+            return;
+        }
+        const tags = (Array.isArray(form.tags) ? form.tags : String(form.tags || '').split(','))
+            .map(t => t.trim()).filter(Boolean);
+        let customPrompt = '';
+        if (fullPrompt) {
+            const draft = promptDraft.trim();
+            if (draft && draft !== fullPrompt) customPrompt = draft;
+        }
+        setSaving(true);
+        const saved = await onSave({ ...form, title, description, tags, customPrompt, videoFile });
+        if (saved === false) setSaving(false);
+    }
+
+    const fields = [
+        { label: 'Título *', name: 'title', type: 'text', placeholder: 'Ej: /orbit360 — Órbita completa' },
+        { label: 'Descripción', name: 'description', type: 'textarea', placeholder: 'Explica el efecto, cuándo usarlo y por qué es útil...', rows: 3 },
+        { label: 'Código / Comando', name: 'codeSnippet', type: 'textarea', placeholder: 'Ej: /orbit360 o un comando de vídeo…', rows: 3 },
+        { label: 'Carpeta', name: 'category', type: 'select', options: (folders && folders.length ? folders : DEFAULT_FOLDERS).map(c => ({ value: c.id, label: `${c.icon} ${c.label}` })) },
+    ];
+
+    return (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal" role="dialog" aria-modal="true" aria-label={isEdit ? 'Editar comando' : 'Nuevo comando'}>
+                <div className="modal-header">
+                    <h2>{isEdit ? '✏️ Editar Comando' : '🎬 Nuevo Comando'}</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="modal-body">
+                        {fields.map(f => {
+                            if (f.type === 'select') return (
+                                <div key={f.name}>
+                                    <label htmlFor={`field-${f.name}`}>{f.label}</label>
+                                    <select id={`field-${f.name}`} name={f.name} value={form[f.name]} onChange={handleChange}>
+                                        {f.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                    </select>
+                                </div>
+                            );
+                            if (f.type === 'textarea') return (
+                                <div key={f.name}>
+                                    <label htmlFor={`field-${f.name}`}>{f.label}</label>
+                                    <textarea id={`field-${f.name}`} name={f.name} value={form[f.name]} onChange={handleChange} placeholder={f.placeholder} rows={f.rows || 3} />
+                                </div>
+                            );
+                            return (
+                                <div key={f.name}>
+                                    <label htmlFor={`field-${f.name}`}>{f.label}</label>
+                                    <input id={`field-${f.name}`} name={f.name} type={f.type} value={form[f.name]} onChange={handleChange} placeholder={f.placeholder} />
+                                </div>
+                            );
+                        })}
+                        {fullPrompt && (
+                            <div className="prompt-full-preview">
+                                <label htmlFor="field-full-prompt">📋 Prompt completo (el que se copia con el botón de la tarjeta)</label>
+                                <textarea id="field-full-prompt" value={promptDraft} rows={6} onChange={(e) => setPromptDraft(e.target.value)} />
+                                <button
+                                    type="button"
+                                    className="btn btn-glass btn-sm"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(promptDraft).then(() => {
+                                            setPromptCopied(true);
+                                            setTimeout(() => setPromptCopied(false), 2000);
+                                        }).catch(() => {});
+                                    }}
+                                >{promptCopied ? '✓ Copiado' : '📋 Copiar prompt'}</button>
+                            </div>
+                        )}
+                        <div className="video-upload-field">
+                            <label htmlFor="field-video">Vídeo de ejemplo</label>
+                            <input id="field-video" type="file" accept="video/*,.gif" onChange={handleVideoChange} />
+                            <p className="field-help">Añade un vídeo para verlo dentro de esta tarjeta.</p>
+                            {(videoPreview || form.videoUrl) && (
+                                <div className="video-upload-preview">
+                                    <video src={videoPreview || form.videoUrl} controls muted playsInline />
+                                    <button type="button" className="btn btn-glass btn-sm" onClick={removeVideo}>Quitar vídeo</button>
+                                </div>
+                            )}
+                        </div>
+                        {formError && <p className="form-error" role="alert">{formError}</p>}
+                        <label style={{display:'flex',alignItems:'center',gap:'0.5rem',cursor:'pointer',marginTop:'0.5rem'}}>
+                            <input type="checkbox" name="isFavorite" checked={form.isFavorite} onChange={handleChange} style={{width:'auto'}} />
+                            <span style={{color:'var(--neon-pink)',fontSize:'0.9rem'}}>⭐ Marcar como favorito</span>
+                        </label>
+                    </div>
+                    <div className="modal-footer">
+                        {isEdit && <button type="button" className="btn btn-danger" onClick={onDelete} style={{marginRight:'auto'}}>🗑️ Eliminar</button>}
+                        <button type="button" className="btn btn-glass" onClick={onClose} disabled={saving}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : (isEdit ? '💾 Guardar Cambios' : '🎬 Crear Comando')}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: TrickCard
+   ═══════════════════════════════════════════════ */
+function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit = false, canDrag = false, isDragging = false, isDragOver = false, onDragStart, onDragOver, onDrop, onDragEnd }) {
+    function handleDragStart(event) {
+        if (!canDrag || event.target.closest('button, input, a, video')) {
+            event.preventDefault();
+            return;
+        }
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', trick.id);
+        }
+        onDragStart?.(event, trick);
+    }
+
+    return (
+        <div
+            className={['trick-card', trick.isFavorite ? 'favorite' : '', canDrag ? 'is-draggable' : '', isDragging ? 'is-dragging' : '', isDragOver ? 'is-drag-over' : ''].filter(Boolean).join(' ')}
+            draggable={canDrag}
+            onDragStart={handleDragStart}
+            onDragOver={(event) => {
+                if (!canDrag || !onDragOver) return;
+                event.preventDefault();
+                onDragOver(event, trick);
+            }}
+            onDrop={(event) => {
+                if (!canDrag || !onDrop) return;
+                event.preventDefault();
+                onDrop(event, trick);
+            }}
+            onDragEnd={onDragEnd}
+        >
+            <div className="trick-card-header">
+                <h3>{trick.title}</h3>
+                <div className="actions">
+                    {canDrag && <span className="drag-handle" title="Arrastra para recolocar" aria-label="Arrastra para recolocar">⠿</span>}
+                    <button className={`fav-btn ${trick.isFavorite ? 'active' : ''}`} onClick={() => onToggleFav(trick.id)} title={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-label={trick.isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'} aria-pressed={trick.isFavorite}>{trick.isFavorite ? '⭐' : '☆'}</button>
+                    {canEdit && <button onClick={() => onEdit(trick)} title="Editar" aria-label="Editar comando">✏️</button>}
+                </div>
+            </div>
+
+            {trick.description && <p className="description">{trick.description}</p>}
+
+            {trick.videoUrl && (
+                <div className="trick-video-wrap" onClick={(e) => { e.stopPropagation(); onImageClick(trick.videoUrl); }} title="Ver vídeo">
+                    <video src={trick.videoUrl} className="trick-video" muted playsInline preload="metadata" />
+                    <span className="video-play-badge" aria-hidden="true">▶</span>
+                </div>
+            )}
+
+            {trick.codeSnippet && (
+                <div className="code-snippet" onSelectStart={(event) => event.preventDefault()}>
+                    <button className={`copy-btn ${copiedId === trick.id ? 'copied' : ''}`} onClick={() => onCopy(trick)} title={isVideoCommandTrick(trick) ? 'Copiar prompt completo' : 'Copiar código'} aria-label={isVideoCommandTrick(trick) ? 'Copiar prompt completo al portapapeles' : 'Copiar código al portapapeles'}>
+                        {copiedId === trick.id ? '✓' : '📋'}
+                    </button>
+                    <span className="code-value">{trick.codeSnippet}</span>
+                </div>
+            )}
+
+            <div className="card-footer">
+                <span className="date">{formatDate(trick.createdAt)}</span>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: CategoryGrid (Main Dashboard)
+   ═══════════════════════════════════════════════ */
+function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFolder, onReorderFolders }) {
+    const counts = useMemo(() => {
+        const map = {};
+        tricks.forEach(t => { map[t.category] = (map[t.category] || 0) + 1; });
+        return map;
+    }, [tricks]);
+    const favCount = useMemo(() => tricks.filter(t => t.isFavorite).length, [tricks]);
+    const [dragOverFolderId, setDragOverFolderId] = useState(null);
+
+    const cardKeyDown = (event, id) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onSelectCategory(id);
+        }
+    };
+
+    const handleFolderDragStart = (event, cat) => {
+        if (!canEdit) return;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('folder/id', cat.id);
+    };
+
+    const handleFolderDragOver = (event, cat) => {
+        if (!canEdit || !event.dataTransfer.types.includes('folder/id')) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        if (dragOverFolderId !== cat.id) setDragOverFolderId(cat.id);
+    };
+
+    const handleFolderDrop = (event, cat) => {
+        if (!canEdit) return;
+        event.preventDefault();
+        const sourceId = event.dataTransfer.getData('folder/id');
+        setDragOverFolderId(null);
+        if (sourceId && sourceId !== cat.id) onReorderFolders(sourceId, cat.id);
+    };
+
+    return (
+        <div className="category-grid">
+            {folders.map(cat => (
+                <div
+                    key={cat.id}
+                    className={`category-card ${cat.color}-border ${dragOverFolderId === cat.id ? 'is-drag-over' : ''}`}
+                    onClick={() => onSelectCategory(cat.id)}
+                    onKeyDown={(e) => cardKeyDown(e, cat.id)}
+                    role="button"
+                    tabIndex="0"
+                    aria-label={`${cat.label}: ${counts[cat.id] || 0} comandos`}
+                    draggable={canEdit}
+                    onDragStart={(e) => handleFolderDragStart(e, cat)}
+                    onDragOver={(e) => handleFolderDragOver(e, cat)}
+                    onDrop={(e) => handleFolderDrop(e, cat)}
+                    onDragEnd={() => setDragOverFolderId(null)}
+                >
+                    {canEdit && (
+                        <button
+                            className="folder-delete"
+                            onClick={(e) => { e.stopPropagation(); onDeleteFolder(cat); }}
+                            aria-label={`Eliminar carpeta ${cat.label}`}
+                            title="Eliminar carpeta"
+                        >✕</button>
+                    )}
+                    <div className="bg-icon">{cat.bgIcon}</div>
+                    <div className={`cat-icon ${cat.color}`}>{cat.icon}</div>
+                    <h3>{cat.label}</h3>
+                    <span className="cat-count">{counts[cat.id] || 0} comandos</span>
+                </div>
+            ))}
+
+            <div
+                className="category-card favorites-card"
+                onClick={() => onSelectCategory('favorites')}
+                onKeyDown={(e) => cardKeyDown(e, 'favorites')}
+                role="button"
+                tabIndex="0"
+                aria-label={`Favoritos: ${favCount} comandos`}
+            >
+                <div className="bg-icon">💛</div>
+                <div className="cat-icon amber">⭐</div>
+                <h3>Favoritos</h3>
+                <span className="cat-count">{favCount} comandos</span>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: TrickList (Category View)
+   ═══════════════════════════════════════════════ */
+function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, onImageClick, onCopy, copiedId, onAdd, canEdit, search, setSearch, filter, setFilter, onReorder, onMoveTrick, onSelectFolder }) {
+    const cat = getCat(categoryId, folders);
+    const [draggingId, setDraggingId] = useState(null);
+    const [dragOverId, setDragOverId] = useState(null);
+    const [dragOverFolder, setDragOverFolder] = useState(null);
+
+    const filtered = useMemo(() => {
+        let result = categoryId === 'favorites'
+            ? tricks.filter(t => t.isFavorite)
+            : tricks.filter(t => t.category === categoryId);
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            result = result.filter(t => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || t.tags.some(tg => tg.toLowerCase().includes(q)));
+        }
+        if (filter === 'favorites') result = result.filter(t => t.isFavorite);
+        if (filter === 'beginner' || filter === 'intermediate' || filter === 'advanced') result = result.filter(t => t.difficulty === filter);
+        return result.sort(compareTricks);
+    }, [tricks, categoryId, search, filter]);
+
+    function handleDragStart(event, trick) {
+        setDraggingId(trick.id);
+        setDragOverId(null);
+    }
+
+    function handleDragOver(event, trick) {
+        if (draggingId && trick.id !== draggingId) setDragOverId(trick.id);
+    }
+
+    function resetDragState() {
+        setDraggingId(null);
+        setDragOverId(null);
+    }
+
+    function handleDrop(event, trick) {
+        const sourceId = event.dataTransfer?.getData('text/plain') || draggingId;
+        if (sourceId && sourceId !== trick.id) onReorder(categoryId, sourceId, trick.id);
+        resetDragState();
+    }
+
+    return (
+        <div>
+            <button className="back-nav" onClick={onBack}>← Volver a carpetas</button>
+
+            <div className="section-header">
+                <h2>{cat?.icon} {cat?.label} <span style={{color:'var(--muted)',fontSize:'0.9rem',fontWeight:400}}>({filtered.length} comandos)</span></h2>
+                {canEdit && <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Comando</button>}
+            </div>
+
+            {canEdit && (
+                <div className="folder-rail" role="group" aria-label="Mover tarjeta a otra carpeta">
+                    <span className="folder-rail-label">Arrastra una tarjeta aquí para moverla:</span>
+                    {folders.map(f => (
+                        <button
+                            key={f.id}
+                            type="button"
+                            className={`folder-chip ${f.id === categoryId ? 'current' : ''} ${dragOverFolder === f.id ? 'drag-over' : ''}`}
+                            onClick={() => onSelectFolder(f.id)}
+                            onDragOver={(e) => { e.preventDefault(); if (dragOverFolder !== f.id) setDragOverFolder(f.id); }}
+                            onDragLeave={() => setDragOverFolder(prev => prev === f.id ? null : prev)}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setDragOverFolder(null);
+                                const id = e.dataTransfer.getData('text/plain');
+                                if (id) onMoveTrick(id, f.id);
+                            }}
+                        >{f.icon} {f.label}</button>
+                    ))}
+                    <button
+                        type="button"
+                        className={`folder-chip fav-chip ${dragOverFolder === 'favorites' ? 'drag-over' : ''}`}
+                        title="Soltar aquí marca la tarjeta como favorita"
+                        onClick={() => onSelectFolder('favorites')}
+                        onDragOver={(e) => { e.preventDefault(); if (dragOverFolder !== 'favorites') setDragOverFolder('favorites'); }}
+                        onDragLeave={() => setDragOverFolder(prev => prev === 'favorites' ? null : prev)}
+                        onDrop={(e) => {
+                            e.preventDefault();
+                            setDragOverFolder(null);
+                            const id = e.dataTransfer.getData('text/plain');
+                            if (id) onMoveTrick(id, 'favorites');
+                        }}
+                    >⭐ Favoritos</button>
+                </div>
+            )}
+
+            {canEdit && categoryId !== 'favorites' && <p className="drag-hint">⠿ Arrastra las tarjetas para cambiar su posición.</p>}
+
+            {filtered.length === 0 ? (
+                <div className="empty-state">
+                    <div className="empty-icon">📭</div>
+                    <h3>No hay comandos aquí todavía</h3>
+                    <p>{search ? 'Prueba con otros términos de búsqueda' : '¡Añade tu primer comando!'}</p>
+                </div>
+            ) : (
+                <div className="tricks-grid">
+                    {filtered.map(t => (
+                        <TrickCard
+                            key={t.id}
+                            trick={t}
+                            onToggleFav={onToggleFav}
+                            onEdit={onEdit}
+                            onImageClick={onImageClick}
+                            onCopy={onCopy}
+                            copiedId={copiedId}
+                            canEdit={canEdit}
+                            canDrag={canEdit}
+                            isDragging={draggingId === t.id}
+                            isDragOver={dragOverId === t.id}
+                            onDragStart={handleDragStart}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                            onDragEnd={resetDragState}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: GlobalSearch
+   ═══════════════════════════════════════════════ */
+function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, onImageClick, onCopy, copiedId, canEdit }) {
+    const [query, setQuery] = useState('');
+
+    const results = useMemo(() => {
+        if (!query.trim()) return [];
+        const q = query.toLowerCase();
+        return tricks.filter(t =>
+            t.title.toLowerCase().includes(q) ||
+            t.description.toLowerCase().includes(q) ||
+            t.tags.some(tg => tg.toLowerCase().includes(q)) ||
+            (getCat(t.category, folders)?.label || '').toLowerCase().includes(q)
+        ).sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+    }, [tricks, query]);
+
+    return (
+        <div>
+            <div className="section-header">
+                <h2>🔍 Búsqueda Global</h2>
+            </div>
+            <div className="stats-bar">
+                <div className="search-wrap">
+                    <span className="search-icon">🔍</span>
+                    <input type="text" placeholder="Buscar en todos los comandos..." value={query} onChange={e => setQuery(e.target.value)} autoFocus aria-label="Buscar en todos los comandos" />
+                </div>
+                {query && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
+            </div>
+
+            {query && results.length === 0 ? (
+                <div className="empty-state">
+                    <div className="empty-icon">🔎</div>
+                    <h3>Sin resultados</h3>
+                    <p>Prueba con otros términos</p>
+                </div>
+            ) : query && (
+                <div className="tricks-grid">
+                    {results.map(t => (
+                        <div key={t.id} style={{position:'relative'}}>
+                            <TrickCard trick={t} onToggleFav={onToggleFav} onEdit={onEdit} onImageClick={onImageClick} onCopy={onCopy} copiedId={copiedId} canEdit={canEdit} />
+                            <button className="btn btn-glass btn-sm" style={{position:'absolute',top:'0.5rem',right:'4rem',zIndex:2}} onClick={() => onSelectCategory(t.category)} title="Ir a la categoría">
+                                📂 {getCat(t.category, folders)?.label}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: ExportImport
+   ═══════════════════════════════════════════════ */
+function ExportImport({ tricks, onImport }) {
+    const [show, setShow] = useState(false);
+    const [importData, setImportData] = useState('');
+    const fileRef = useRef(null);
+
+    function handleExport() {
+        const blob = new Blob([JSON.stringify(tricks, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `videovault-backup-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function handleFileImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (Array.isArray(data) && data.every(d => d.id && d.title && d.category)) {
+                    onImport(data);
+                } else {
+                    alert('El archivo no tiene el formato correcto de VideoVault.');
+                }
+            } catch { alert('Error al leer el archivo JSON.'); }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
+
+    return (
+        <div style={{position:'relative'}}>
+            <button className="btn btn-glass btn-sm" onClick={() => setShow(!show)}>⚙️ Datos</button>
+            {show && (
+                <div style={{position:'absolute',top:'100%',right:0, marginTop:'0.5rem', padding:'1rem', borderRadius:'var(--radius-md)', background:'var(--card-bg)', backdropFilter:'blur(20px)', border:'1px solid var(--border)', zIndex:100, minWidth:'220px', display:'flex', flexDirection:'column', gap:'0.75rem'}}>
+                    <button className="btn btn-glass btn-sm" onClick={handleExport}>📥 Exportar JSON</button>
+                    <label className="btn btn-glass btn-sm" style={{cursor:'pointer',textAlign:'center'}}>
+                        📤 Importar JSON
+                        <input type="file" accept=".json" ref={fileRef} onChange={handleFileImport} style={{display:'none'}} />
+                    </label>
+                    <span style={{fontSize:'0.7rem',color:'var(--muted)'}}>{tricks.length} comandos guardados</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT: FolderForm (Nueva carpeta)
+   ═══════════════════════════════════════════════ */
+function FolderForm({ onSave, onClose }) {
+    const [label, setLabel] = useState('');
+    const [icon, setIcon] = useState('📁');
+    const [color, setColor] = useState('cyan');
+    const [error, setError] = useState('');
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        const clean = String(label || '').trim();
+        if (!clean) { setError('Escribe un nombre para la carpeta.'); return; }
+        onSave({ label: clean, icon: icon.trim() || '📁', color });
+        onClose();
+    }
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal folder-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="folder-form-title">
+                <div className="modal-header">
+                    <h2 id="folder-form-title">📁 Nueva carpeta</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="modal-body">
+                        <label>Nombre de la carpeta *</label>
+                        <input type="text" value={label} onChange={(e) => { setLabel(e.target.value); setError(''); }} placeholder="Ej: Ideas para vídeos" autoFocus />
+                        <label>Emoji</label>
+                        <input type="text" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="📁" maxLength="4" />
+                        <label>Color</label>
+                        <select value={color} onChange={(e) => setColor(e.target.value)}>
+                            <option value="cyan">Cian</option>
+                            <option value="purple">Morado</option>
+                            <option value="emerald">Verde</option>
+                            <option value="pink">Rosa</option>
+                            <option value="amber">Ámbar</option>
+                        </select>
+                        {error && <p className="form-error">{error}</p>}
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-glass" onClick={onClose}>Cancelar</button>
+                        <button type="submit" className="btn btn-primary">Crear carpeta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+/* ═══════════════════════════════════════════════
+   APP ROOT
+   ═══════════════════════════════════════════════ */
+function App() {
+    const [tricks, setTricks] = useLocalStorage(STORAGE_KEY, SEED_TRICKS);
+    const [folders, setFolders] = useFolders();
+    const [view, setView] = useState('categories'); // 'categories' | 'category' | 'search'
+    const [currentCategory, setCurrentCategory] = useState(null);
+    const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('');
+    const [showForm, setShowForm] = useState(false);
+    const [editingTrick, setEditingTrick] = useState(null);
+    const [lightboxSrc, setLightboxSrc] = useState(null);
+    const [copiedId, setCopiedId] = useState(null);
+    const [toasts, setToasts] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [editUnlocked, setEditUnlocked] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [pendingEditAction, setPendingEditAction] = useState(null);
+    const [showFolderForm, setShowFolderForm] = useState(false);
+    const initialTricksRef = useRef(tricks);
+
+    function addToast(msg, type = 'success') {
+        const id = uid();
+        setToasts(prev => [...prev, { id, msg, type }]);
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+    }
+
+    function removeToast(id) { setToasts(prev => prev.filter(t => t.id !== id)); }
+
+    const withEditAccess = useCallback((action) => {
+        if (editUnlocked) {
+            action();
+            return;
+        }
+        setPendingEditAction(() => action);
+        setShowPasswordModal(true);
+    }, [editUnlocked]);
+
+    const migrateLocalVideos = useCallback(async () => {
+        let changed = false;
+        const next = [];
+        for (const trick of tricks) {
+            let videoUrl = trick.videoUrl || '';
+            if (typeof videoUrl === 'string' && videoUrl.startsWith('data:video/')) {
+                try {
+                    const blob = await (await fetch(videoUrl)).blob();
+                    const file = new File([blob], 'video.mp4', { type: blob.type || 'video/mp4' });
+                    videoUrl = await uploadRemoteVideo(trick.id, file);
+                    changed = true;
+                } catch (error) {
+                    console.warn('[VideoVault] No se pudo migrar el vídeo local:', error);
+                }
+            }
+            next.push({ ...trick, videoUrl });
+        }
+        if (changed) setTricks(next);
+        return next;
+    }, [tricks, setTricks]);
+
+    const submitEditPassword = useCallback(async (password) => {
+        try {
+            await authenticateRemote(password);
+            await migrateLocalVideos();
+            const action = pendingEditAction;
+            setEditUnlocked(true);
+            setShowPasswordModal(false);
+            setPendingEditAction(null);
+            if (action) action();
+            return true;
+        } catch (error) {
+            console.error('[VideoVault] No se pudo iniciar la sesión de edición:', error);
+            return false;
+        }
+    }, [pendingEditAction, migrateLocalVideos]);
+
+    const toggleFav = useCallback((id) => {
+        setTricks(prev => {
+            const next = prev.map(t => t.id === id ? { ...t, isFavorite: !t.isFavorite } : t);
+            const favIds = next.filter(t => t.isFavorite).map(t => t.id);
+            saveRemoteFavorites(favIds).catch(e => console.warn('[VideoVault] No se pudo guardar favoritos en el servidor:', e));
+            return next;
+        });
+    }, [setTricks]);
+
+    const createFolder = useCallback(({ label, icon, color }) => {
+        const clean = String(label || '').trim();
+        if (!clean) return;
+        if (folders.some(f => f.label.toLowerCase() === clean.toLowerCase())) {
+            addToast('Ya existe una carpeta con ese nombre', 'error');
+            return;
+        }
+        setFolders(prev => [...prev, { id: 'f_' + uid(), label: clean, icon: icon || '📁', color: color || 'cyan', bgIcon: '🗂️' }]);
+        addToast('📁 Carpeta creada');
+    }, [folders, setFolders]);
+
+    const reorderFolders = useCallback((sourceId, targetId) => {
+        setFolders(prev => {
+            const sourceIndex = prev.findIndex(f => f.id === sourceId);
+            const targetIndex = prev.findIndex(f => f.id === targetId);
+            if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return prev;
+            const next = [...prev];
+            const [moved] = next.splice(sourceIndex, 1);
+            next.splice(targetIndex, 0, moved);
+            return next;
+        });
+        addToast('📂 Carpetas reordenadas');
+    }, [setFolders]);
+
+    const moveTrickToFolder = useCallback((trickId, targetFolderId) => {
+        setTricks(prev => {
+            let movedTrick = null;
+            const next = prev.map(t => {
+                if (t.id !== trickId) return t;
+                if (targetFolderId === 'favorites') {
+                    movedTrick = { ...t, isFavorite: true };
+                    return movedTrick;
+                }
+                if (t.category === targetFolderId) return t;
+                const maxOrder = prev
+                    .filter(x => x.category === targetFolderId)
+                    .reduce((max, x) => hasSortOrder(x) ? Math.max(max, Number(x.sortOrder)) : max, -1);
+                movedTrick = { ...t, category: targetFolderId, sortOrder: maxOrder + 1 };
+                return movedTrick;
+            });
+            return next;
+        });
+        if (targetFolderId === 'favorites') {
+            addToast('⭐ Añadida a favoritos');
+        } else {
+            addToast('📂 Tarjeta movida de carpeta');
+        }
+    }, [setTricks]);
+
+    const deleteFolder = useCallback((folder) => {
+        withEditAccess(() => {
+            if (!confirm(`¿Eliminar la carpeta "${folder.label}"? Sus tarjetas pasarán a "Trucos y atajos".`)) return;
+            if (folders.length <= 1) {
+                addToast('No puedes eliminar la última carpeta', 'error');
+                return;
+            }
+            const target = folder.id === 'trucos' ? (folders.find(f => f.id !== 'trucos')?.id || 'trucos') : 'trucos';
+            setTricks(prev => prev.map(t => t.category === folder.id ? { ...t, category: target } : t));
+            setFolders(prev => prev.filter(f => f.id !== folder.id));
+            addToast('🗑️ Carpeta eliminada', 'error');
+        });
+    }, [folders, setFolders, setTricks, withEditAccess]);
+
+    const reorderTricks = useCallback((categoryId, sourceId, targetId) => {
+        setTricks(prev => {
+            const categoryTricks = prev.filter(t => t.category === categoryId).sort(compareTricks);
+            const sourceIndex = categoryTricks.findIndex(t => t.id === sourceId);
+            const targetIndex = categoryTricks.findIndex(t => t.id === targetId);
+            if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return prev;
+            const [moved] = categoryTricks.splice(sourceIndex, 1);
+            categoryTricks.splice(targetIndex, 0, moved);
+            const orderById = new Map(categoryTricks.map((trick, index) => [trick.id, index]));
+            return prev.map(trick => orderById.has(trick.id) ? { ...trick, sortOrder: orderById.get(trick.id) } : trick);
+        });
+    }, [setTricks]);
+
+    const deleteEditingTrick = useCallback(() => {
+        if (!editingTrick) return;
+        withEditAccess(() => {
+            if (!confirm('¿Eliminar este comando para siempre?')) return;
+            const deletedId = editingTrick.id;
+            if (editingTrick.videoUrl) {
+                removeRemoteVideo(deletedId).catch(error => console.error('[VideoVault] No se pudo borrar el vídeo remoto:', error));
+            }
+            setTricks(prev => prev.filter(t => t.id !== deletedId));
+            setShowForm(false);
+            setEditingTrick(null);
+            addToast('🗑️ Comando eliminado', 'error');
+        });
+    }, [editingTrick, setTricks, withEditAccess]);
+
+    const saveTrick = useCallback(async (formData) => {
+        try {
+            const targetId = editingTrick?.id || uid();
+            const normalized = {
+                ...formData,
+                title: String(formData.title || '').trim(),
+                description: String(formData.description || '').trim(),
+                tags: Array.isArray(formData.tags) ? formData.tags : [],
+            };
+            delete normalized.videoFile;
+
+            if (formData.videoFile) {
+                normalized.videoUrl = await uploadRemoteVideo(targetId, formData.videoFile);
+            } else if (editingTrick?.videoUrl && !normalized.videoUrl) {
+                await removeRemoteVideo(targetId);
+            }
+
+            if (editingTrick) {
+                setTricks(prev => prev.map(t => t.id === targetId ? { ...t, ...normalized } : t));
+                addToast('✅ Comando actualizado');
+            } else {
+                setTricks(prev => {
+                    const maxOrder = prev
+                        .filter(trick => trick.category === normalized.category)
+                        .reduce((max, trick) => hasSortOrder(trick) ? Math.max(max, Number(trick.sortOrder)) : max, -1);
+                    const newTrick = { ...normalized, id: targetId, createdAt: Date.now(), sortOrder: maxOrder + 1 };
+                    return [newTrick, ...prev];
+                });
+                addToast('✨ Comando creado');
+            }
+            setShowForm(false);
+            setEditingTrick(null);
+            return true;
+        } catch (error) {
+            console.error('[VideoVault] No se pudo guardar el vídeo:', error);
+            addToast(`No se pudo guardar el vídeo en Hostinger: ${error.message}`, 'error');
+            return false;
+        }
+    }, [editingTrick, setTricks]);
+
+    const handleCopy = useCallback(async (trick) => {
+        try {
+            const copyText = getTrickCopyText(trick);
+            await navigator.clipboard.writeText(copyText);
+            setCopiedId(trick.id);
+            addToast(isVideoCommandTrick(trick) ? '📋 Prompt completo copiado' : '📋 Código copiado al portapapeles');
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch {
+            addToast('Error al copiar', 'error');
+        }
+    }, []);
+
+    const handleImport = useCallback((importedTricks) => {
+        withEditAccess(() => {
+            const existingIds = new Set(tricks.map(t => t.id));
+            const newOnes = importedTricks.filter(t => !existingIds.has(t.id));
+            if (newOnes.length === 0) {
+                addToast('No hay comandos nuevos para importar', 'error');
+                return;
+            }
+            setTricks(prev => [...newOnes, ...prev]);
+            addToast(`📤 ${newOnes.length} comandos importados`);
+        });
+    }, [tricks, setTricks, withEditAccess]);
+
+    const selectCategory = useCallback((catId) => {
+        setCurrentCategory(catId);
+        setView('category');
+        setSearch('');
+        setFilter('');
+    }, []);
+
+    const goHome = useCallback(() => {
+        setView('categories');
+        setCurrentCategory(null);
+        setSearch('');
+        setFilter('');
+    }, []);
+
+    const openAddForm = useCallback(() => {
+        withEditAccess(() => {
+            setEditingTrick(null);
+            setShowForm(true);
+        });
+    }, [withEditAccess]);
+
+    const openEditForm = useCallback((trick) => {
+        withEditAccess(() => {
+            setEditingTrick(trick);
+            setShowForm(true);
+        });
+    }, [withEditAccess]);
+
+    const toggleEditMode = useCallback(() => {
+        if (editUnlocked) {
+            setEditUnlocked(false);
+            setShowForm(false);
+            setEditingTrick(null);
+            setShowPasswordModal(false);
+            setPendingEditAction(null);
+            return;
+        }
+        withEditAccess(() => setEditUnlocked(true));
+    }, [editUnlocked, withEditAccess]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function syncVideosFromHostinger() {
+            try {
+                const remoteVideos = await loadRemoteVideos();
+                const next = [];
+
+                for (const trick of initialTricksRef.current) {
+                    let videoUrl = trick.videoUrl || '';
+                    if (!(typeof videoUrl === 'string' && videoUrl.startsWith('data:')) && remoteVideos[trick.id]) {
+                        videoUrl = remoteVideos[trick.id];
+                    }
+                    next.push({ ...trick, videoUrl });
+                }
+
+                if (!cancelled) setTricks(next);
+            } catch (error) {
+                console.error('[VideoVault] No se pudieron cargar los vídeos de Hostinger:', error);
+            }
+        }
+
+        syncVideosFromHostinger();
+        return () => { cancelled = true; };
+    }, [setTricks]);
+
+    // Favoritos: fuente de verdad en el servidor (sobreviven pushes y recargas).
+    useEffect(() => {
+        let cancelled = false;
+
+        async function syncFavoritesFromHostinger() {
+            try {
+                const remote = await loadRemoteFavorites();
+                if (cancelled) return;
+                if (remote.exists) {
+                    setTricks(prev => prev.map(t => ({ ...t, isFavorite: remote.ids.includes(t.id) })));
+                } else {
+                    const localIds = initialTricksRef.current.filter(t => t.isFavorite).map(t => t.id);
+                    saveRemoteFavorites(localIds).catch(e => console.warn('[VideoVault] No se pudo iniciar favoritos en el servidor:', e));
+                }
+            } catch (error) {
+                console.error('[VideoVault] No se pudieron cargar los favoritos de Hostinger:', error);
+            }
+        }
+
+        syncFavoritesFromHostinger();
+        return () => { cancelled = true; };
+    }, [setTricks]);
+
+    // Simulated loading for premium feel
+    useEffect(() => {
+        setLoading(true);
+        const t = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(t);
+    }, []);
+
+    const totalFavs = useMemo(() => tricks.filter(t => t.isFavorite).length, [tricks]);
+    const globalSearchQuery = search; // used across views
+
+    return (
+        <div className={`app-container ${view === 'categories' ? 'home-mode' : ''}`}>
+            {loading && (
+                <div className="loading-overlay">
+                    <div className="spinner-triple">
+                        <div className="ring ring-1"></div>
+                        <div className="ring ring-2"></div>
+                        <div className="ring ring-3"></div>
+                    </div>
+                    <p className="loading-text">Cargando VideoVault...</p>
+                </div>
+            )}
+
+            {/* TÍTULO CENTRADO */}
+            <div className="app-branding" aria-label="VideoVault">
+                <span className="app-logo">🎬</span>
+                <div className="app-title-wrap">
+                    <div className="app-title">VideoVault</div>
+                    <div className="app-subtitle">Tu colección de comandos de vídeo</div>
+                </div>
+            </div>
+
+            <div className="prompt-guide" role="note">
+                <span className="prompt-guide-icon" aria-hidden="true">💡</span>
+                <div>
+                    <span className="prompt-guide-kicker">CÓDIGOS DE VÍDEO · GUÍA RÁPIDA</span>
+                    <p>{VIDEO_PROMPT_HINT}</p>
+                </div>
+            </div>
+
+            {/* STATS — solo aparecen en la portada */}
+            {view === 'categories' && (
+                <div className="stats-bar">
+                    <span className="stat-chip">🎬 <span className="count">{tricks.length}</span> comandos</span>
+                    <span className="stat-chip">📂 <span className="count">{folders.length + 1}</span> carpetas</span>
+                    <span className="stat-chip">⭐ <span className="count">{totalFavs}</span> favoritos</span>
+                </div>
+            )}
+
+            {/* MAIN CONTENT */}
+            {view === 'categories' && (
+                <div>
+                    <div className="section-header">
+                        <h2>📂 Carpetas</h2>
+                        {editUnlocked && (
+                            <div style={{ display: 'flex', gap: '0.6rem' }}>
+                                <button className="btn btn-glass btn-sm" onClick={() => setShowFolderForm(true)}>➕ Nueva carpeta</button>
+                                <button className="btn btn-primary btn-sm" onClick={openAddForm}>✨ Nuevo Comando</button>
+                            </div>
+                        )}
+                    </div>
+                    <CategoryGrid
+                        tricks={tricks}
+                        folders={folders}
+                        onSelectCategory={selectCategory}
+                        canEdit={editUnlocked}
+                        onDeleteFolder={deleteFolder}
+                        onReorderFolders={reorderFolders}
+                    />
+                </div>
+            )}
+
+            {view === 'category' && currentCategory && (
+                <TrickList
+                    tricks={tricks}
+                    folders={folders}
+                    categoryId={currentCategory}
+                    onBack={goHome}
+                    onToggleFav={toggleFav}
+                    onEdit={openEditForm}
+                    onImageClick={setLightboxSrc}
+                    onCopy={handleCopy}
+                    copiedId={copiedId}
+                    onAdd={openAddForm}
+                    canEdit={editUnlocked}
+                    search={search}
+                    setSearch={setSearch}
+                    filter={filter}
+                    setFilter={setFilter}
+                    onReorder={reorderTricks}
+                    onMoveTrick={moveTrickToFolder}
+                    onSelectFolder={selectCategory}
+                />
+            )}
+
+            {view === 'search' && (
+                <GlobalSearch
+                    tricks={tricks}
+                    folders={folders}
+                    onSelectCategory={selectCategory}
+                    onToggleFav={toggleFav}
+                    onEdit={openEditForm}
+                    onImageClick={setLightboxSrc}
+                    onCopy={handleCopy}
+                    copiedId={copiedId}
+                    canEdit={editUnlocked}
+                />
+            )}
+
+            {/* MODALS */}
+            {showForm && (
+                <TrickForm trick={editingTrick} folders={folders} onSave={saveTrick} onDelete={deleteEditingTrick} onClose={() => { setShowForm(false); setEditingTrick(null); }} />
+            )}
+
+            {showFolderForm && (
+                <FolderForm onSave={createFolder} onClose={() => setShowFolderForm(false)} />
+            )}
+
+            {lightboxSrc && (
+                <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+            )}
+
+            {showPasswordModal && (
+                <PasswordModal
+                    onSubmit={submitEditPassword}
+                    onClose={() => { setShowPasswordModal(false); setPendingEditAction(null); }}
+                />
+            )}
+
+            <Toast toasts={toasts} removeToast={removeToast} />
+
+            {/* FOOTER */}
+            <footer className="app-footer">
+                <button
+                    type="button"
+                    className="edit-access-trigger"
+                    onClick={toggleEditMode}
+                    aria-label={editUnlocked ? 'Salir del modo edición' : 'Activar edición'}
+                    title={editUnlocked ? 'Salir del modo edición' : 'Activar edición'}
+                >✏️</button>
+                VideoVault — Hecho con 🎬 y Neon Glassmorphism
+            </footer>
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
 </body>
 </html>
