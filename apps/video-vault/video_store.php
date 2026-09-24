@@ -100,6 +100,8 @@ function scanLegacyVideos(array $videos): array {
     $changed = false;
     foreach ($entries as $file) {
         if ($file === '.' || $file === '..') continue;
+        // Los archivos del sistema nuevo ('example_<id>_<hash>.ext') no son legacy.
+        if (strpos($file, 'example_') === 0) continue;
         if (preg_match('/^([a-zA-Z0-9_-]+)_[0-9a-f]+\.(mp4|webm|mov|avi|mkv|ogv|gif)$/i', $file, $matches) === 1) {
             $id = $matches[1];
             if (!isset($videos[$id])) {
@@ -276,6 +278,16 @@ if ($action === 'delete') {
     if ($previousPath !== null && is_file($previousPath)) {
         @unlink($previousPath);
     }
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'id' => $trickId]);
+}
+
+// Quita SOLO la entrada del registro (sin borrar el archivo). Útil para
+// limpiar claves duplicadas/ruido que compartan archivo con una tarjeta real.
+if ($action === 'clean_key') {
+    unset($videos[$trickId]);
+    saveVideos($videos);
     flock($lock, LOCK_UN);
     fclose($lock);
     respond(200, ['success' => true, 'id' => $trickId]);
