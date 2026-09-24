@@ -255,8 +255,29 @@ async function authenticateRemote(password) {
         credentials: 'same-origin',
         body: formData
     });
-    await readServerJson(response);
-    return true;
+    const payload = await readServerJson(response);
+    return payload.success === true;
+}
+
+// Seed de vídeos estáticos (video_seed.json): si el usuario quita el vídeo
+// de una tarjeta, se anota aquí para que el seed no lo reponga al recargar.
+function markSkippedVideoId(trickId) {
+    try {
+        const raw = localStorage.getItem('videovault_skipped_videos');
+        const list = raw ? JSON.parse(raw) : [];
+        if (!list.includes(trickId)) {
+            list.push(trickId);
+            localStorage.setItem('videovault_skipped_videos', JSON.stringify(list));
+        }
+    } catch (e) { /* ignorar */ }
+}
+
+function unmarkSkippedVideoId(trickId) {
+    try {
+        const raw = localStorage.getItem('videovault_skipped_videos');
+        const list = raw ? JSON.parse(raw) : [];
+        localStorage.setItem('videovault_skipped_videos', JSON.stringify(list.filter(i => i !== trickId)));
+    } catch (e) { /* ignorar */ }
 }
 
 async function uploadRemoteVideo(trickId, file) {
@@ -1216,8 +1237,10 @@ function App() {
 
             if (formData.videoFile) {
                 normalized.videoUrl = await uploadRemoteVideo(targetId, formData.videoFile);
+                unmarkSkippedVideoId(targetId);
             } else if (editingTrick?.videoUrl && !normalized.videoUrl) {
                 await removeRemoteVideo(targetId);
+                markSkippedVideoId(targetId);
             }
 
             if (editingTrick) {
@@ -1311,15 +1334,37 @@ function App() {
     useEffect(() => {
         let cancelled = false;
 
+        function readSkippedVideoIds() {
+            try {
+                const raw = localStorage.getItem('videovault_skipped_videos');
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+
+        async function loadSeedVideos() {
+            try {
+                const response = await fetch(`video_seed.json?t=${Date.now()}`, { cache: 'no-store', credentials: 'same-origin' });
+                const payload = await readServerJson(response);
+                return payload && typeof payload === 'object' ? payload : {};
+            } catch (error) {
+                return {};
+            }
+        }
+
         async function syncVideosFromHostinger() {
             try {
                 const remoteVideos = await loadRemoteVideos();
+                const seedVideos = await loadSeedVideos();
+                const skipped = readSkippedVideoIds();
                 const next = [];
 
                 for (const trick of initialTricksRef.current) {
                     let videoUrl = trick.videoUrl || '';
                     if (!(typeof videoUrl === 'string' && videoUrl.startsWith('data:')) && remoteVideos[trick.id]) {
                         videoUrl = remoteVideos[trick.id];
+                    }
+                    if (!videoUrl && seedVideos[trick.id] && !skipped.includes(trick.id)) {
+                        videoUrl = seedVideos[trick.id];
                     }
                     next.push({ ...trick, videoUrl });
                 }
