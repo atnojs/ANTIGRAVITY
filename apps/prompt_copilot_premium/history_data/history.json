@@ -1,0 +1,415 @@
+[
+    {
+        "id": "6e1abbc1e4c14ded90471d21a83d49d1",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "6e1abbc1e4c14ded90471d21a83d49d1",
+            "title": "Diseño de página web para pintura textil creativa",
+            "original": "Diseño de página web para pintura textil creativa\nPrompt final\n[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.\nMejoras aplicadas\nEstructuración clara del objetivo y funcionalidades de la web\nDefinición de criterios de aceptación para asegurar funcionalidad\nSupuestos y pendientes\nDiseño responsivo para acceso desde dispositivos móviles y de escritorio\nSistema de gestión para el personal de la página\nValidación\nVerificar que los usuarios pueden registrarse para talleres y clases\nComprobar que el personal puede gestionar eventos",
+            "prompt": "Crear una página web sobre pintura textil creativa con las siguientes características:\n\n## Objetivo\nDesarrollar una plataforma web que permita a los usuarios ver ejemplos de talleres, registrarse para asistir a talleres y clases, y acceder a contenido educativo sobre pintura textil.\n\n## Público objetivo\nPersonas de cualquier edad por encima de 6 años interesadas en talleres y clases de pintura textil.\n\n## Alcance\nLa web debe incluir secciones dedicadas a talleres y clases, proporcionando detalles sobre duración, materiales necesarios y localización de los eventos.\n\n## Requisitos técnicos\n- Diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n- Sistema de gestión para el personal que permita la creación y administración de eventos.\n\n## Interfaz\n- Pantallas para visualizar talleres y clases.\n- Formulario de inscripción para usuarios.\n- Panel de gestión para el personal.\n\n## Comportamiento esperado\n- Los usuarios deben poder ver ejemplos de talleres y registrarse para talleres y clases.\n- El personal debe poder crear y gestionar talleres y clases.\n\n## Criterios de aceptación\n1. Los usuarios pueden ver ejemplos de talleres.\n2. Los usuarios pueden registrarse para talleres y clases.\n3. El personal puede crear y gestionar talleres y clases.\n4. La web es accesible desde dispositivos móviles y de escritorio.\n5. La información sobre duración y materiales está claramente presentada.\n\n## Propuestas\n- Propuesta de stack tecnológico: Utilizar HTML, CSS y JavaScript para el frontend, y un framework como Django o Node.js para el backend.\n- Propuesta de base de datos: Usar una base de datos relacional como PostgreSQL para gestionar la información de usuarios y eventos.\n\n## Validación\n- Verificar que los usuarios pueden registrarse para talleres y clases.\n- Comprobar que el personal puede gestionar eventos.",
+            "mode": "improver",
+            "score": 92,
+            "metrics": {
+                "claridad": 95,
+                "contexto": 90,
+                "restricciones": 85,
+                "formato": 95,
+                "verificacion": 95
+            },
+            "changes": [
+                "Clarificación del objetivo y público objetivo.",
+                "Definición de requisitos técnicos y propuestas de tecnología.",
+                "Estructuración clara de interfaz y comportamiento esperado."
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio.",
+                "Sistema de gestión para el personal de la página."
+            ],
+            "validation": [
+                "Verificar que los usuarios pueden registrarse para talleres y clases.",
+                "Comprobar que el personal puede gestionar eventos."
+            ],
+            "createdAt": "2026-08-16T19:24:31.373Z",
+            "updatedAt": "2026-08-16T19:24:31.373Z",
+            "meta": {
+                "taskType": "programacion",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-16T19:24:31.373Z"
+    },
+    {
+        "id": "f35b6efc5a274920b56d8a265f851de8",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "f35b6efc5a274920b56d8a265f851de8",
+            "title": "Diseño de página web para pintura textil creativa",
+            "original": "Diseño de página web para pintura textil creativa\nPrompt final\n[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.\nMejoras aplicadas\nEstructuración clara del objetivo y funcionalidades de la web\nDefinición de criterios de aceptación para asegurar funcionalidad\nSupuestos y pendientes\nDiseño responsivo para acceso desde dispositivos móviles y de escritorio\nSistema de gestión para el personal de la página\nValidación\nVerificar que los usuarios pueden registrarse para talleres y clases\nComprobar que el personal puede gestionar eventos",
+            "prompt": "Crear una página web interactiva dedicada a la pintura textil creativa. La web debe permitir a los usuarios ver ejemplos de talleres, registrarse para asistir a talleres y acceder a clases. La audiencia incluye personas de cualquier edad por encima de 6 años interesadas en talleres y clases de pintura textil. La web debe incluir secciones detalladas para talleres y clases, especificando duración, materiales y localización.\n\nPropuesta: Implementar un diseño responsivo para asegurar accesibilidad desde dispositivos móviles y de escritorio.\n\nArquitectura de pantallas:\n1. Pantalla de inicio con ejemplos de talleres y clases.\n2. Pantalla de detalles de talleres y clases con información sobre duración, materiales y localización.\n3. Formulario de inscripción para usuarios.\n4. Sistema de gestión para el personal, permitiendo la creación y gestión de eventos.\n\nFlujos y estados:\n- Estado vacío: Página de inicio sin talleres activos.\n- Estado carga: Cargando detalles de talleres y clases.\n- Estado error: Error al cargar información o al registrarse.\n- Estado éxito: Registro exitoso en talleres o clases.\n\nValidaciones:\n- Verificar que los usuarios pueden registrarse para talleres y clases.\n- Comprobar que el personal puede gestionar eventos.\n\nCriterios de aceptación:\n1. Los usuarios pueden ver ejemplos de talleres.\n2. Los usuarios pueden registrarse para talleres y clases.\n3. El personal puede crear y gestionar talleres y clases.\n4. La web es accesible desde dispositivos móviles y de escritorio.\n5. La información sobre duración y materiales está claramente presentada.",
+            "mode": "improver",
+            "score": 95,
+            "metrics": {
+                "claridad": 95,
+                "contexto": 90,
+                "restricciones": 90,
+                "formato": 95,
+                "verificacion": 95
+            },
+            "changes": [
+                "Clarificación de la audiencia y propósito de la web.",
+                "Definición detallada de la arquitectura de pantallas y flujos.",
+                "Incorporación de estados de la aplicación para mejorar la experiencia del usuario."
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio.",
+                "Sistema de gestión para el personal de la página."
+            ],
+            "validation": [
+                "Verificar que los usuarios pueden registrarse para talleres y clases.",
+                "Comprobar que el personal puede gestionar eventos."
+            ],
+            "createdAt": "2026-08-16T19:21:26.926Z",
+            "updatedAt": "2026-08-16T19:21:26.926Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-16T19:21:26.926Z"
+    },
+    {
+        "id": "ab7be2d47ec1498b8121c2309030264e",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "ab7be2d47ec1498b8121c2309030264e",
+            "title": "Desarrollo de página web para pintura textil creativa",
+            "original": "# Objetivo\nCrear una página web dedicada a la pintura textil creativa, permitiendo a los usuarios explorar ejemplos de talleres, registrarse para asistir a ellos y acceder a clases.\n\n## Contexto\nLa página está dirigida a personas mayores de 6 años interesadas en talleres y clases de pintura textil.\n\n## Materiales de entrada\nIncluir ejemplos visuales de talleres y clases, detalles sobre duración, materiales necesarios y localización de los eventos.\n\n## Requisitos\n- Diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n- Pantallas para visualizar talleres y clases.\n- Formulario de inscripción para usuarios.\n- Sistema de gestión para que el personal pueda crear y gestionar eventos.\n\n## Restricciones\nNo se especifican requisitos técnicos adicionales.\n\n## Criterios de aceptación\n1. Los usuarios pueden ver ejemplos de talleres.\n2. Los usuarios pueden registrarse para talleres y clases.\n3. El personal puede crear y gestionar talleres y clases.\n4. La web es accesible desde dispositivos móviles y de escritorio.\n5. La información sobre duración y materiales está claramente presentada.\n\n## Formato de entrega\nLa página debe ser funcional y accesible, cumpliendo con los criterios de aceptación mencionados.",
+            "prompt": "Desarrolla una página web dedicada a la pintura textil creativa que permita a los usuarios explorar ejemplos de talleres, registrarse para asistir a ellos y acceder a clases. La página debe estar dirigida a personas mayores de 6 años interesadas en talleres y clases de pintura textil. Incluye ejemplos visuales de talleres y clases, detalles sobre duración, materiales necesarios y localización de los eventos. Asegúrate de que el diseño sea responsivo para acceso desde dispositivos móviles y de escritorio. Implementa pantallas para visualizar talleres y clases, un formulario de inscripción para usuarios, y un sistema de gestión para que el personal pueda crear y gestionar eventos. Los usuarios deben poder ver ejemplos de talleres, registrarse para talleres y clases, y el personal debe poder crear y gestionar talleres y clases. La web debe ser accesible desde dispositivos móviles y de escritorio, y la información sobre duración y materiales debe estar claramente presentada. La página debe ser funcional y accesible, cumpliendo con los criterios de aceptación mencionados.",
+            "mode": "improver",
+            "score": 92,
+            "metrics": {
+                "claridad": 95,
+                "contexto": 90,
+                "restricciones": 85,
+                "formato": 95,
+                "verificacion": 95
+            },
+            "changes": [
+                "Consolidación de requisitos y criterios de aceptación en un solo flujo de trabajo.",
+                "Eliminación de etiquetas y metadatos no necesarios para el prompt final."
+            ],
+            "assumptions": [],
+            "validation": [
+                "El diseño debe ser responsivo y accesible desde dispositivos móviles y de escritorio.",
+                "Los usuarios pueden ver ejemplos de talleres y registrarse para ellos.",
+                "El personal puede crear y gestionar talleres y clases."
+            ],
+            "createdAt": "2026-08-16T16:10:53.187Z",
+            "updatedAt": "2026-08-16T16:10:53.187Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-16T16:10:53.187Z"
+    },
+    {
+        "id": "892296ed8d0643509fd833624ddf491b",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "892296ed8d0643509fd833624ddf491b",
+            "title": "Diseño de Página Web para Pintura Textil Creativa",
+            "original": "Diseño de página web para pintura textil creativa\nPrompt final\n[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.\nMejoras aplicadas\nEstructuración clara del objetivo y funcionalidades de la web\nDefinición de criterios de aceptación para asegurar funcionalidad\nSupuestos y pendientes\nDiseño responsivo para acceso desde dispositivos móviles y de escritorio\nSistema de gestión para el personal de la página\nValidación\nVerificar que los usuarios pueden registrarse para talleres y clases\nComprobar que el personal puede gestionar eventos",
+            "prompt": "# Objetivo\nCrear una página web dedicada a la pintura textil creativa, permitiendo a los usuarios explorar ejemplos de talleres, registrarse para asistir a ellos y acceder a clases.\n\n## Contexto\nLa página está dirigida a personas mayores de 6 años interesadas en talleres y clases de pintura textil.\n\n## Materiales de entrada\nIncluir ejemplos visuales de talleres y clases, detalles sobre duración, materiales necesarios y localización de los eventos.\n\n## Requisitos\n- Diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n- Pantallas para visualizar talleres y clases.\n- Formulario de inscripción para usuarios.\n- Sistema de gestión para que el personal pueda crear y gestionar eventos.\n\n## Restricciones\nNo se especifican requisitos técnicos adicionales.\n\n## Criterios de aceptación\n1. Los usuarios pueden ver ejemplos de talleres.\n2. Los usuarios pueden registrarse para talleres y clases.\n3. El personal puede crear y gestionar talleres y clases.\n4. La web es accesible desde dispositivos móviles y de escritorio.\n5. La información sobre duración y materiales está claramente presentada.\n\n## Formato de entrega\nLa página debe ser funcional y accesible, cumpliendo con los criterios de aceptación mencionados.",
+            "mode": "improver",
+            "score": 92,
+            "metrics": {
+                "claridad": 95,
+                "contexto": 90,
+                "restricciones": 85,
+                "formato": 95,
+                "verificacion": 95
+            },
+            "changes": [
+                "Clarificación del objetivo y funcionalidades de la web.",
+                "Definición detallada de los criterios de aceptación."
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio.",
+                "Sistema de gestión para el personal de la página."
+            ],
+            "validation": [
+                "Verificar que los usuarios pueden registrarse para talleres y clases.",
+                "Comprobar que el personal puede gestionar eventos."
+            ],
+            "createdAt": "2026-08-16T15:54:55.883Z",
+            "updatedAt": "2026-08-16T15:54:55.883Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-16T15:54:55.883Z"
+    },
+    {
+        "id": "71c9314cb99b445da9e5a6e2f6e7e7ca",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "71c9314cb99b445da9e5a6e2f6e7e7ca",
+            "title": "Diseño de página web para pintura textil creativa",
+            "original": "Diseño de página web para pintura textil creativa\nPrompt final\n[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.\nMejoras aplicadas\nEstructuración clara del objetivo y funcionalidades de la web\nDefinición de criterios de aceptación para asegurar funcionalidad\nSupuestos y pendientes\nDiseño responsivo para acceso desde dispositivos móviles y de escritorio\nSistema de gestión para el personal de la página\nValidación\nVerificar que los usuarios pueden registrarse para talleres y clases\nComprobar que el personal puede gestionar eventos",
+            "prompt": "[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.",
+            "mode": "copilot",
+            "score": 85,
+            "metrics": {
+                "claridad": 90,
+                "contexto": 80,
+                "restricciones": 80,
+                "formato": 90,
+                "verificacion": 80
+            },
+            "changes": [
+                "Estructuración clara del objetivo y funcionalidades de la web",
+                "Definición de criterios de aceptación para asegurar funcionalidad"
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio",
+                "Sistema de gestión para el personal de la página"
+            ],
+            "validation": [
+                "Verificar que los usuarios pueden registrarse para talleres y clases",
+                "Comprobar que el personal puede gestionar eventos"
+            ],
+            "createdAt": "2026-08-16T15:47:06.714Z",
+            "updatedAt": "2026-08-16T15:47:06.714Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-16T15:47:06.714Z"
+    },
+    {
+        "id": "7cca0e305d67475b9cb697b424ef0493",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "7cca0e305d67475b9cb697b424ef0493",
+            "title": "Diseño de página web para pintura textil creativa",
+            "original": "Diseño de página web para pintura textil creativa\nPrompt final\n[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.\nMejoras aplicadas\nEstructuración clara del objetivo y funcionalidades de la web\nDefinición de criterios de aceptación para asegurar funcionalidad\nSupuestos y pendientes\nDiseño responsivo para acceso desde dispositivos móviles y de escritorio\nSistema de gestión para el personal de la página\nValidación\nVerificar que los usuarios pueden registrarse para talleres y clases\nComprobar que el personal puede gestionar eventos",
+            "prompt": "[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.",
+            "mode": "copilot",
+            "score": 85,
+            "metrics": {
+                "claridad": 90,
+                "contexto": 80,
+                "restricciones": 80,
+                "formato": 90,
+                "verificacion": 80
+            },
+            "changes": [
+                "Estructuración clara del objetivo y funcionalidades de la web",
+                "Definición de criterios de aceptación para asegurar funcionalidad"
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio",
+                "Sistema de gestión para el personal de la página"
+            ],
+            "validation": [
+                "Verificar que los usuarios pueden registrarse para talleres y clases",
+                "Comprobar que el personal puede gestionar eventos"
+            ],
+            "createdAt": "2026-08-16T15:46:02.561Z",
+            "updatedAt": "2026-08-16T15:46:02.561Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-16T15:46:02.561Z"
+    },
+    {
+        "id": "81481532b7dd4583a0ee8c0a1f57f52b",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "81481532b7dd4583a0ee8c0a1f57f52b",
+            "title": "Diseño de página web para pintura textil creativa",
+            "original": "Diseño de página web para pintura textil creativa\nPrompt final\n[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.\nMejoras aplicadas\nEstructuración clara del objetivo y funcionalidades de la web\nDefinición de criterios de aceptación para asegurar funcionalidad\nSupuestos y pendientes\nDiseño responsivo para acceso desde dispositivos móviles y de escritorio\nSistema de gestión para el personal de la página\nValidación\nVerificar que los usuarios pueden registrarse para talleres y clases\nComprobar que el personal puede gestionar eventos",
+            "prompt": "[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.",
+            "mode": "copilot",
+            "score": 85,
+            "metrics": {
+                "claridad": 90,
+                "contexto": 80,
+                "restricciones": 85,
+                "formato": 90,
+                "verificacion": 80
+            },
+            "changes": [
+                "Estructuración clara del objetivo y funcionalidades de la web",
+                "Definición de criterios de aceptación para asegurar funcionalidad"
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio",
+                "Sistema de gestión para el personal de la página"
+            ],
+            "validation": [
+                "Verificar que los usuarios pueden registrarse para talleres y clases",
+                "Comprobar que el personal puede gestionar eventos"
+            ],
+            "createdAt": "2026-08-16T15:38:00.143Z",
+            "updatedAt": "2026-08-16T15:38:00.143Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-16T15:38:00.143Z"
+    },
+    {
+        "id": "ad0bdcfc00354d9e89b27940a6da62eb",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "ad0bdcfc00354d9e89b27940a6da62eb",
+            "title": "Diseño de página web para talleres de pintura textil",
+            "original": "[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.",
+            "prompt": "Diseña una página web enfocada en pintura textil creativa. La web debe permitir a los usuarios ver ejemplos de talleres, registrarse para asistir a talleres y clases, y acceder a información detallada sobre cada evento. El público objetivo incluye personas de cualquier edad por encima de 6 años, interesadas en talleres y clases de pintura textil. La web debe incluir secciones específicas para talleres y clases, con detalles sobre duración, materiales y localización. Asegúrate de que el diseño sea responsivo para acceso desde dispositivos móviles y de escritorio. La interfaz debe incluir pantallas para visualizar talleres y clases, un formulario de inscripción, y un sistema de gestión para el personal que permita crear y gestionar eventos. Los criterios de aceptación son: 1) Los usuarios pueden ver ejemplos de talleres. 2) Los usuarios pueden registrarse para talleres y clases. 3) El personal puede crear y gestionar talleres y clases. 4) La web es accesible desde dispositivos móviles y de escritorio. 5) La información sobre duración y materiales está claramente presentada.",
+            "mode": "improver",
+            "score": 85,
+            "metrics": {
+                "claridad": 90,
+                "contexto": 80,
+                "restricciones": 85,
+                "formato": 80,
+                "verificacion": 90
+            },
+            "changes": [
+                "Clarificación del objetivo y público objetivo.",
+                "Especificación de los criterios de aceptación."
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio."
+            ],
+            "validation": [
+                "Verificar que los usuarios puedan ver ejemplos de talleres.",
+                "Confirmar que los usuarios puedan registrarse para talleres y clases.",
+                "Asegurar que el personal pueda crear y gestionar talleres y clases.",
+                "Comprobar que la web es accesible desde dispositivos móviles y de escritorio.",
+                "Revisar que la información sobre duración y materiales esté claramente presentada."
+            ],
+            "createdAt": "2026-08-15T20:48:18.535Z",
+            "updatedAt": "2026-08-15T20:48:18.535Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-15T20:48:18.535Z"
+    },
+    {
+        "id": "3b1a8b6078dc4924a3528f3563974369",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "3b1a8b6078dc4924a3528f3563974369",
+            "title": "Desarrollo de página web para talleres de pintura textil",
+            "original": "[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.",
+            "prompt": "[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.",
+            "mode": "copilot",
+            "score": 85,
+            "metrics": {
+                "claridad": 90,
+                "contexto": 85,
+                "restricciones": 80,
+                "formato": 85,
+                "verificacion": 85
+            },
+            "changes": [
+                "Se añadió un supuesto sobre el diseño responsivo para dispositivos móviles y de escritorio.",
+                "Se especificaron los criterios de aceptación para asegurar la funcionalidad clave de la web."
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio."
+            ],
+            "validation": [
+                "Verificar que los usuarios puedan ver ejemplos de talleres y registrarse.",
+                "Comprobar que el personal pueda gestionar talleres y clases.",
+                "Asegurar que la web es accesible desde dispositivos móviles y de escritorio.",
+                "Revisar que la información sobre duración y materiales esté clara."
+            ],
+            "createdAt": "2026-08-15T20:46:22.074Z",
+            "updatedAt": "2026-08-15T20:46:22.074Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-15T20:46:22.074Z"
+    },
+    {
+        "id": "e77dd1aa09214caeb75f8a63ddb72669",
+        "app": "prompt_copilot_premium",
+        "type": "item",
+        "model": "prompt_copilot_premium",
+        "data": {
+            "id": "e77dd1aa09214caeb75f8a63ddb72669",
+            "title": "Diseño de página web para pintura textil creativa",
+            "original": "quiero crear una página web que trate sobre la pintura textil creativa. La web debe tener un área donde se pueden ver ejemplos de talleres y donde se puedan cerrar la asistencia a los talleres una vez sean creados por el personal de la página web. También debe tener otro apartado donde se imparten clases. las clases y los talleres tienen una duración de dos horas y media. en los talleres se incluye todo el material necesario para poder terminar con exito el proyecto elegido. en las clases los alumnos contarán con todo tio de formación teniendo en cuenta el nivel individualizado. las clases se imparten en nuestro local llamado \"El rinconcito\". los talleres se pueden impartir en nuestro local y también en exteriores si se solicitan, ya sean talleres organizados por alguna asociación o talleres privados.",
+            "prompt": "[OBJETIVO]: Crear una página web sobre pintura textil creativa que permita a los usuarios ver ejemplos de talleres, cerrar asistencia a talleres y acceder a clases.\n[USUARIO]: Personas de cualquier edad por encima de 6 años, interesados en talleres y clases de pintura textil.\n[ALCANCE]: La web incluirá secciones para talleres y clases, con detalles sobre duración, materiales y localización.\n[REQUISITOS TÉCNICOS]: No especificados, pero se asume un diseño responsivo para acceso desde dispositivos móviles y de escritorio.\n[INTERFAZ]: Pantallas para visualizar talleres y clases, formulario de inscripción, y un sistema de gestión para el personal.\n[COMPORTAMIENTO]: Los usuarios pueden ver y registrarse en talleres y clases. El personal puede crear y gestionar eventos.\n[CRITERIOS DE ACEPTACIÓN]: 1. Los usuarios pueden ver ejemplos de talleres. 2. Los usuarios pueden registrarse para talleres y clases. 3. El personal puede crear y gestionar talleres y clases. 4. La web es accesible desde dispositivos móviles y de escritorio. 5. La información sobre duración y materiales está claramente presentada.",
+            "mode": "copilot",
+            "score": 85,
+            "metrics": {
+                "claridad": 90,
+                "contexto": 80,
+                "restricciones": 70,
+                "formato": 90,
+                "verificacion": 80
+            },
+            "changes": [
+                "Estructuración clara del objetivo y funcionalidades de la web",
+                "Definición de criterios de aceptación para asegurar funcionalidad"
+            ],
+            "assumptions": [
+                "Diseño responsivo para acceso desde dispositivos móviles y de escritorio",
+                "Sistema de gestión para el personal de la página"
+            ],
+            "validation": [
+                "Verificar que los usuarios pueden registrarse para talleres y clases",
+                "Comprobar que el personal puede gestionar eventos"
+            ],
+            "createdAt": "2026-08-15T19:49:14.714Z",
+            "updatedAt": "2026-08-15T19:52:27.915Z",
+            "meta": {
+                "taskType": "auto",
+                "targetTool": "universal",
+                "resolvedModel": "openai/gpt-4o"
+            }
+        },
+        "createdAt": "2026-08-15T19:49:14.714Z"
+    }
+]
