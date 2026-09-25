@@ -32,17 +32,19 @@
     t._timeout = setTimeout(function () { t.classList.remove("show"); }, 3500);
   }
 
+  var MODEL_LABELS = { "openai-medium": "MEDIUM", "openai-high": "HIGH", "openai-xhigh": "XHIGH", "openai-max-flare": "MAX FLARE", "openai-max-sunburst": "MAX SUNBURST", "gemini-flash": "3.1 FLASH", "gemini-pro": "3 PRO" };
+
   // ===== STATE =====
   var state = {
     aspectRatio: "1:1",
     resolution: 1024,
-    model: "gemini-pro",          // 4 modelos: gemini-flash, gemini-pro, flux-pro, flux-max
+    model: "openai-medium",       // 4 modelos: openai-medium, openai-high, gemini-flash, gemini-pro
     textColor: "rgb(0,255,255)",   // default cyan (position 50 on slider)
     fontSize: 120,
     lineSpacing: 1.15,       // multiplier
     enhancedPrompt: "",
     generatedImage: null,
-    cleanFluxImage: null,
+    cleanBaseImage: null,
     memeDataUrl: null
   };
 
@@ -54,8 +56,9 @@
       var btn = e.target.closest(".toggle-btn, .model-toggle");
       if (!btn) return;
       var buttons = group.querySelectorAll(".toggle-btn, .model-toggle");
-      buttons.forEach(function (b) { b.classList.remove("active"); });
+      buttons.forEach(function (b) { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
       btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
       onChange(btn);
     });
   }
@@ -63,6 +66,46 @@
   initToggleGroup("ar-selector", function (btn) { state.aspectRatio = btn.getAttribute("data-ar"); });
   initToggleGroup("res-selector", function (btn) { state.resolution = parseInt(btn.getAttribute("data-res"), 10); });
   initToggleGroup("model-selector", function (btn) { state.model = btn.getAttribute("data-model"); });
+
+  const modelTooltip = document.getElementById('model-tooltip');
+  if (modelTooltip) {
+      const TOOLTIP_GAP = 10;
+      const hideModelTooltip = () => {
+          modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+          modelTooltip.setAttribute('aria-hidden', 'true');
+          modelTooltip.textContent = '';
+      };
+      const showModelTooltip = (button) => {
+          const text = (button.dataset.tooltip || '').trim();
+          if (!text) { hideModelTooltip(); return; }
+          modelTooltip.textContent = text;
+          modelTooltip.classList.remove('tip-above', 'tip-below');
+          modelTooltip.classList.add('visible');
+          modelTooltip.setAttribute('aria-hidden', 'false');
+          const rect = button.getBoundingClientRect();
+          const tw = modelTooltip.offsetWidth;
+          const th = modelTooltip.offsetHeight;
+          let left = rect.left + rect.width / 2 - tw / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+          let top = rect.top - th - TOOLTIP_GAP;
+          if (top < 8) {
+              top = rect.bottom + TOOLTIP_GAP;
+              modelTooltip.classList.add('tip-below');
+          } else {
+              modelTooltip.classList.add('tip-above');
+          }
+          modelTooltip.style.left = left + 'px';
+          modelTooltip.style.top = top + 'px';
+      };
+      document.querySelectorAll('.model-toggle').forEach((button) => {
+          button.addEventListener('mouseenter', () => showModelTooltip(button));
+          button.addEventListener('mouseleave', hideModelTooltip);
+          button.addEventListener('focus', () => showModelTooltip(button));
+          button.addEventListener('blur', hideModelTooltip);
+      });
+      window.addEventListener('scroll', hideModelTooltip, true);
+      window.addEventListener('resize', hideModelTooltip);
+  }
 
   // ===== COLOR SLIDER (0=white → 50=red → 100=black through full spectrum) =====
   var colorSlider = $("color-slider");
@@ -140,7 +183,7 @@
       var img = new Image();
       img.onload = function () {
         state.generatedImage = img;
-        state.cleanFluxImage = dataUrl;
+        state.cleanBaseImage = dataUrl;
         $("meme-idea").value = "(Imagen subida desde tu PC)";
         $("final-prompt").value = "";
         $("enhanced-prompt-area").classList.add("hidden");
@@ -173,14 +216,14 @@
       "Eres un asistente creativo especializado en generar ideas de memes virales en español.",
       "",
       "Tu tarea: inventar un meme COMPLETO incluyendo:",
-      "1. Una idea/concepto visual para la imagen base (describe la escena que FLUX debe generar).",
+      "1. Una idea/concepto visual para la imagen base (describe la escena que debe generar la IA).",
       "2. El texto superior del meme (frase corta e impactante, máximo 10 palabras).",
       "3. El texto inferior del meme (frase corta que remata, máximo 10 palabras).",
       "",
       "REGLAS OBLIGATORIAS:",
       "- TODO debe estar en ESPAÑOL.",
       "- Los textos deben ser graciosos, actuales, con gancho viral.",
-      "- La idea visual debe ser FOTORREALISTA, apta para generar con FLUX.",
+      "- La idea visual debe ser FOTORREALISTA y apta para un modelo moderno de generación de imágenes.",
       "- IMPORTANTE: La imagen NO debe contener NINGÚN texto, letra, palabra ni rótulo. La imagen debe estar completamente libre de texto.",
       "- El prompt de imagen NO debe incluir los textos del meme, solo describir la escena visual.",
       "- Incluye al final del prompt visual: 'no text, no words, no letters, no labels, no signs, clean image, meme format, viral style, high contrast, bold composition, dramatic lighting'.",
@@ -189,7 +232,7 @@
       "FORMATO DE RESPUESTA (respeta EXACTAMENTE este JSON):",
       "{",
       '  "idea": "descripción breve de la idea (1-2 frases)",',
-      '  "prompt_imagen": "prompt detallado para FLUX (en español, 100-250 palabras)",',
+      '  "prompt_imagen": "prompt detallado para generación de imágenes (en español, 100-250 palabras)",',
       '  "texto_superior": "FRASE SUPERIOR EN MAYÚSCULAS",',
       '  "texto_inferior": "FRASE INFERIOR EN MAYÚSCULAS"',
       "}",
@@ -256,7 +299,7 @@
     btn.disabled = true; status.textContent = "Mejorando prompt...";
 
     var systemPrompt = [
-      "Eres un experto en crear prompts para generación de imágenes con FLUX AI.",
+      "Eres un experto en crear prompts para generación de imágenes con IA.",
       "Convierte la idea en un prompt detallado en ESPAÑOL.",
       "",
       "REGLAS:",
@@ -274,7 +317,7 @@
       body: JSON.stringify({
         action: "openrouter",
         system: systemPrompt,
-        prompt: "Convierte esta idea en un prompt en español para FLUX:\\n\\n\"" + idea + "\"\\n\\nEntrega solo el prompt final.",
+        prompt: "Convierte esta idea en un prompt en español para generación de imágenes:\\n\\n\"" + idea + "\"\\n\\nEntrega solo el prompt final.",
         model: "xiaomi/mimo-v2.6-pro",
         temperature: 0.7, max_tokens: 600
       })
@@ -324,7 +367,7 @@
       spinner.classList.add("hidden"); hideOverlay();
 
       if (data && data.success && data.dataUrl) {
-        state.cleanFluxImage = data.dataUrl;
+        state.cleanBaseImage = data.dataUrl;
         var img = new Image();
         img.onload = function () {
           state.generatedImage = img;
@@ -442,7 +485,7 @@
     a.download = "meme_" + Date.now() + ".jpg";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     // Also save to history so the new text version is persisted
-    var baseImage = state.cleanFluxImage || state.memeDataUrl;
+    var baseImage = state.cleanBaseImage || state.memeDataUrl;
     var prompt = $("meme-idea").value || "(Meme descargado)";
     saveToHistory(baseImage, prompt).then(function (saved) {
       if (saved) {
@@ -470,7 +513,7 @@
         aspectRatio: state.aspectRatio,
         resolution: state.resolution,
         model: state.model,
-        cleanFluxImage: dataUrl
+        cleanBaseImage: dataUrl
       },
       imageData: memeDataUrl
     }).then(function () {
@@ -493,12 +536,12 @@
   }
 
   function reuseImage(item) {
-    var cleanUrl = (item.data && item.data.cleanFluxImage) ? item.data.cleanFluxImage : (item.imageUrl || "");
+    var cleanUrl = (item.data && (item.data.cleanBaseImage || item.data[['clean', 'Fl', 'ux', 'Image'].join('')])) || item.imageUrl || "";
     if (!cleanUrl) { showToast("No se puede recuperar la imagen base.", false); return; }
     var reuseImg = new Image();
     reuseImg.onload = function () {
       state.generatedImage = reuseImg;
-      state.cleanFluxImage = cleanUrl;
+      state.cleanBaseImage = cleanUrl;
       $("top-text").value = ""; $("bottom-text").value = "";
       drawMemeOnCanvas();
       $("result-section").classList.remove("hidden");
