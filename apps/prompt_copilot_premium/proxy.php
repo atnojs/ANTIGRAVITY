@@ -90,12 +90,6 @@ function resolveApiKey(): ?string
             if (is_string($val) && trim($val) !== '') { $candidates[] = $val; }
         }
     }
-    if (is_file($configPath)) {
-        $config = require $configPath;
-        if (is_array($config) && isset($config['openrouter_api_key']) && is_string($config['openrouter_api_key']) && trim($config['openrouter_api_key']) !== '') {
-            $candidates[] = $config['openrouter_api_key'];
-        }
-    }
     foreach ($candidates as $c) {
         if (trim($c) !== '') { return trim($c); }
     }
