@@ -16,7 +16,7 @@ $results = [
 try {
     // TEST 1: Verificar archivos del sistema
     $results['tests']['file_system'] = [
-        'config_php' => file_exists(__DIR__ . '/config.php'),
+        'config_php' => false,
         'proxy_php' => file_exists(__DIR__ . '/proxy.php'),
         'ai_tools_js' => file_exists(__DIR__ . '/ai-tools.js'),
         'app_compiled_js' => file_exists(__DIR__ . '/app-compiled.js')
@@ -24,11 +24,7 @@ try {
 
     // TEST 2: Verificar configuración de API
     $apiKey = '';
-    if (file_exists(__DIR__ . '/config.php')) {
-        include __DIR__ . '/config.php';
-        $apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
-    }
-
+    
     $results['tests']['api_config'] = [
         'api_key_present' => !empty($apiKey),
         'api_key_length' => strlen($apiKey)
