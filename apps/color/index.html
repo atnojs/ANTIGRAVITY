@@ -8,7 +8,7 @@
   <title>Crea Paletas</title>
   <link rel="stylesheet" href="base.css?v=3" />
   <link rel="stylesheet" href="components.css?v=4" />
-  <link rel="stylesheet" href="app.css?v=3" />
+  <link rel="stylesheet" href="app.css?v=7" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon" />
   <!-- Fuente requerida por el estilo hoola/relatos -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,15 +19,16 @@
 </head>
 
 <body>
-  <div class="container">
-    <header>
-      <h1>Crea Paletas de Color</h1>
-      <p>Genera imágenes publicitarias premium a partir de un color o una imagen. Descubre paletas de colores
+  <div class="main-layout">
+    <main class="container main-col">
+    <header class="app-header">
+      <h1 class="app-title">Crea Paletas de Color</h1>
+      <p class="app-subtitle">Genera imágenes publicitarias premium a partir de un color o una imagen. Descubre paletas de colores
         complementarias, análogas y monocromáticas que cobran vida con IA.</p>
     </header>
 
-    <main>
-      <div class="input-selector">
+    <section class="app-container" aria-label="Configuración de la paleta">
+    <div class="input-selector">
         <button id="color-mode-btn" class="active" aria-pressed="true">Color</button>
         <button id="image-mode-btn" aria-pressed="false">Imagen</button>
       </div>
@@ -67,10 +68,21 @@
 
         <div id="output-options">
           <div class="option-group">
-            <p class="option-label">Calidad</p>
-            <div class="quality-selector">
-              <button type="button" id="quality-pro-btn" class="quality-option active" data-quality="pro" aria-pressed="true">PRO<small>equilibrada</small></button>
-              <button type="button" id="quality-max-btn" class="quality-option" data-quality="max" aria-pressed="false">MAX<small>máxima</small></button>
+            <p class="option-label">Modelo de generación</p>
+            <div id="model-selector" class="model-selector model-provider-layout" role="group" aria-label="Seleccionar modelo">
+              <div class="model-provider-column"><span class="model-provider-title">OPENAI 2.5</span>
+              <span class="model-quality-hint">De Menor a Mayor Calidad</span><div class="model-toggle-group">
+                <button type="button" class="model-toggle active" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="true">MEDIUM</button>
+                <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+                <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+                <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+                <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button></div>
+              </div>
+              <div class="model-provider-column"><span class="model-provider-title">GEMINI</span>
+              <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span><div class="model-toggle-group">
+                <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+                <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button></div>
+              </div>
             </div>
           </div>
         </div>
@@ -80,17 +92,21 @@
 
       <div id="loader" class="hidden"></div>
 
-      <section id="results-container" class="results-container" aria-live="polite"></section>
-      <section id="history-container" class="history-container" aria-live="polite" style="margin-top:2rem">
-        <h2 style="color:white;margin-bottom:1rem;display:none" id="history-title">Historial</h2>
-        <div id="history-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem"></div>
-      </section>
+      <section id="results-container" class="results-container hidden" aria-live="polite"></section>
+    </section>
     </main>
+
+    <aside id="history-container" class="history-col" aria-labelledby="history-title">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <p id="history-empty" class="history-empty">No hay generaciones guardadas aún.</p>
+      <button id="history-clear-btn" class="btn-danger-outline" type="button" style="display:none;">Limpiar</button>
+    </aside>
   </div>
 
   <!-- Loading Overlay Universal (SKILL_MAESTRA) -->
-  <div id="loading-overlay" class="loading-overlay hidden" style="display:none" role="status" aria-live="polite" aria-busy="true">
-    <div class="spinner-triple">
+  <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner-triple" aria-hidden="true">
       <div class="ring ring-1"></div>
       <div class="ring ring-2"></div>
       <div class="ring ring-3"></div>
@@ -104,11 +120,9 @@
     </div>
   </div>
 
-  <script>
-  (function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();
-  </script>
-  <script src="history-manager.js?v=5"></script>
-  <script src="app.js?v=4"></script>
+    <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+<script src="history-manager.js?v=5"></script>
+  <script src="app.js?v=8"></script>
   <footer>
     <p id="footer-text">&copy; 2025 Atnojs. Todos los derechos reservados.</p>
   </footer>
