@@ -164,7 +164,7 @@ const generateImage = async (params) => {
 const enhancePromptAPI = async (basePrompt) => {
     try {
         const sys = 'Eres un experto en mejora de prompts para generacion de imagenes. Respeta la intencion del usuario. No inventes sujetos nuevos. Genera 4 variantes en espanol: Descriptiva, Cinematografica, Artistica, Minimalista. Responde SOLO JSON: [{"type":"Descriptiva","text":"..."},{"type":"Cinematografica","text":"..."},{"type":"Artistica","text":"..."},{"type":"Minimalista","text":"..."}]';
-        const r = await callProxy('',[],{action:'text',system:sys,model:'google/gemini-3.8-flash',temperature:0.7,max_tokens:2000},basePrompt);
+        const r = await callProxy('',[],{action:'text',system:sys,model:'xiaomi/mimo-v2.6-pro',temperature:0.7,max_tokens:2000},basePrompt);
         if (!r?.success || !r?.text) return [];
         const raw = String(r.text||'').trim(); const m = raw.match(/\[[\s\S]*\]/);
         const parsed = JSON.parse(m?m[0]:raw);
@@ -176,7 +176,7 @@ const analyzeImageAPI = async (imgB64, promptText) => {
     try {
         const compressed = await resizeImg(imgB64); const b64 = compressed.split(',')[1];
         const sys = 'Eres un experto en edicion de imagenes. Analiza esta imagen y genera 4 variantes para editarla: Iluminacion, Fondo, Detalles, Calidad. Responde SOLO JSON: [{"type":"Iluminacion","text":"..."},{"type":"Fondo","text":"..."},{"type":"Detalles","text":"..."},{"type":"Calidad","text":"..."}]';
-        const r = await callProxy('',[],{action:'text',system:sys,model:'google/gemini-3.8-flash',temperature:0.7,max_tokens:2000,imagen:b64},promptText||'Analiza esta imagen y sugiere mejoras');
+        const r = await callProxy('',[],{action:'text',system:sys,model:'xiaomi/mimo-v2.6-pro',temperature:0.7,max_tokens:2000,imagen:b64},promptText||'Analiza esta imagen y sugiere mejoras');
         if (!r?.success || !r?.text) return [];
         const raw = String(r.text||'').trim(); const m = raw.match(/\[[\s\S]*\]/);
         const parsed = JSON.parse(m?m[0]:raw);
