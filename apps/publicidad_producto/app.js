@@ -265,10 +265,11 @@ function generateVideoWithVeo(imageDataUrl, prompt, modelName, generateAudio, au
         });
 }
 
-// ===== Selector de modelo: lista blanca de 7 modelos (MEDIUM activo) =====
+// ===== Selector de modelo: lista blanca de 8 modelos (MEDIUM activo) =====
 const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO',
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
     'openai-xhigh': 'XHIGH',
@@ -326,37 +327,53 @@ function App() {
     };
 
     const callGeminiImage = async (prompt, base64Image) => {
-        try {
-            const response = await fetch('proxy.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'generate_image',
-                    model: selectedModel,
-                    prompt: prompt,
-                    base64ImageData: base64Image.split(',')[1],
-                    mimeType: base64Image.split(';')[0].split(':')[1]
-                })
-            });
+        // qwen-pro tarda más que el timeout de nginx (~55s): el proxy guarda el
+        // resultado en caché (qwen_cache/) y responde 'processing' mientras el
+        // worker termina de generarlo; aquí se espera activamente.
+        const isQwen = selectedModel === 'qwen-pro';
+        const maxAttempts = isQwen ? 36 : 1;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const response = await fetch('proxy.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'generate_image',
+                        model: selectedModel,
+                        prompt: prompt,
+                        base64ImageData: base64Image.split(',')[1],
+                        mimeType: base64Image.split(';')[0].split(':')[1]
+                    })
+                });
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-            const data = await response.json();
-            // Respuesta OpenAI Images API (b64 plano)
-            if (data.image) {
-                return `data:${data.mimeType || 'image/png'};base64,${data.image}`;
+                const data = await response.json();
+                if (data && data.status === 'processing') {
+                    if (attempt < maxAttempts - 1) {
+                        await new Promise(r => setTimeout(r, 5000));
+                        continue;
+                    }
+                    throw new Error("El modelo sigue generando la imagen.");
+                }
+                // Respuesta OpenAI Images API (b64 plano)
+                if (data.image) {
+                    return `data:${data.mimeType || 'image/png'};base64,${data.image}`;
+                }
+                // El modelo gemini-3.1-flash-image-preview devuelve la imagen en candidates[0].content.parts
+                // Buscamos la part que tenga inlineData
+                const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                if (imagePart) {
+                    return `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                }
+                throw new Error("No se recibió imagen de la IA");
+            } catch (err) {
+                console.error("Error en callGeminiImage:", err);
+                if (!isQwen || attempt === maxAttempts - 1) return null;
+                await new Promise(r => setTimeout(r, 5000));
             }
-            // El modelo gemini-3.1-flash-image-preview devuelve la imagen en candidates[0].content.parts
-            // Buscamos la part que tenga inlineData
-            const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-            if (imagePart) {
-                return `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
-            }
-            throw new Error("No se recibió imagen de la IA");
-        } catch (err) {
-            console.error("Error en callGeminiImage:", err);
-            return null;
         }
+        return null;
     };
 
     const generateAds = async () => {
@@ -701,6 +718,25 @@ function App() {
                                                     >{MODEL_LABELS[m]}</button>
                                                 ))}
                                             </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-emerald-300/70 uppercase tracking-widest">QWEN</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['qwen-pro'].map((m) => (
+                                                    <button
+                                                        key={m}
+                                                        type="button"
+                                                        data-model="qwen-pro"
+                                                        onClick={() => setSelectedModel(m)}
+                                                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
+                                                            ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white border-emerald-300/60 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                                                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}
+                                                        aria-pressed={selectedModel === m}
+                                                        aria-describedby="model-tooltip"
+                                                        data-tooltip={window.MODEL_TOOLTIP_TEXTS[m] || ''}
+                                                    >{MODEL_LABELS[m]}</button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1012,7 +1048,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
