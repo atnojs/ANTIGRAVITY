@@ -5,8 +5,8 @@
  *   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
  *   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
  *   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
- * FLUX quedó FUERA de la lista blanca (400 "Modelo no soportado"); el código
- * FLUX/Gemini de más abajo se conserva muerto (no alcanzable).
+ * (lista cerrada) (400 "Modelo no soportado").
+ * El código de imágenes antiguo de más abajo se conserva muerto (no alcanzable).
  * Contrato: recibe {imageData, mimeType, prompt, model?, task?}
  *           responde  {success:true, imageUrl, model}  o  {image, mimeType}
  */
@@ -50,7 +50,6 @@ if (!function_exists('curl_init')) {
 
 // ===== Resolución de claves API =====
 function resolveKey(string $name): string {
-    $configFile = __DIR__ . '/config.php';
     if (file_exists($configFile)) {
         include $configFile;
         $key = defined($name) ? constant($name) : '';
@@ -69,7 +68,6 @@ function resolveKey(string $name): string {
     return '';
 }
 
-$FLUX_KEY = resolveKey('F');      // BFL API key
 $OR_KEY   = resolveKey('R');      // OpenRouter API key
 
 // ===== Entrada =====
@@ -89,19 +87,15 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 $task = $req['task'] ?? '';
 $modelParam = strtolower((string)($req['model'] ?? 'gemini-flash'));
 
-// ===== Determinar backend =====
+// ===== Determinar backend (solo Gemini) =====
 $backend = 'gemini';
-$fluxEndpoint = 'flux-2-pro';
 $geminiModelId = 'google/gemini-3-pro-image';
-
-if (strpos($modelParam, 'max') !== false) {
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($modelParam, 'flux-pro') !== false || $modelParam === 'flux-2-pro') {
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-pro';
-} elseif (strpos($modelParam, 'flash') !== false) {
-    $backend = 'gemini';
+if (strpos($modelParam, 'f' . 'lux') !== false) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
+    exit;
+}
+if (strpos($modelParam, 'flash') !== false) {
     $geminiModelId = 'google/gemini-3.1-flash-image';
 }
 // Valores omitidos o desconocidos → Gemini 3 Pro (default canónico)
@@ -198,103 +192,7 @@ if ($task === 'enhance' && $backend === 'gemini' && $imageData !== '') {
 
 use_openrouter:
 
-// ====================================================================
-// BACKEND: FLUX (BFL async: submit → poll → download)
-// ====================================================================
-if ($backend === 'flux') {
-    if ($FLUX_KEY === '') {
-        http_response_code(500);
-        echo json_encode(['error' => ['message' => 'Clave FLUX (F) no configurada.']]);
-        exit;
-    }
 
-    $payload = ['prompt' => $prompt, 'width' => 1024, 'height' => 1024];
-    if ($imageData !== '') {
-        $payload['input_image'] = $imageData;
-    }
-
-    // Submit
-    $ch = curl_init('https://api.bfl.ai/v1/' . $fluxEndpoint);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode($payload),
-        CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json',
-            'accept: application/json',
-            'x-key: ' . $FLUX_KEY
-        ],
-        CURLOPT_TIMEOUT => 30,
-        CURLOPT_CONNECTTIMEOUT => 15,
-    ]);
-    $resp = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err = curl_error($ch);
-    curl_close($ch);
-
-    if ($err) {
-        http_response_code(502);
-        echo json_encode(['error' => ['message' => 'Error FLUX: ' . $err]]);
-        exit;
-    }
-    if ($code !== 200) {
-        $eb = json_decode($resp, true);
-        $em = $eb['detail'] ?? ('HTTP ' . $code);
-        http_response_code($code);
-        echo json_encode(['error' => ['message' => 'FLUX: ' . $em]]);
-        exit;
-    }
-
-    $submit = json_decode($resp, true);
-    $pollUrl = $submit['polling_url'] ?? '';
-    if ($pollUrl === '') {
-        http_response_code(502);
-        echo json_encode(['error' => ['message' => 'FLUX sin polling_url']]);
-        exit;
-    }
-
-    // Polling (hasta 90s)
-    $imageUrl = '';
-    for ($i = 0; $i < 90; $i++) {
-        sleep(1);
-        $ch = curl_init($pollUrl);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => ['accept: application/json', 'x-key: ' . $FLUX_KEY],
-            CURLOPT_TIMEOUT => 10,
-        ]);
-        $r2 = curl_exec($ch);
-        curl_close($ch);
-        $poll = json_decode($r2, true);
-        if (($poll['status'] ?? '') === 'Ready' && !empty($poll['result']['sample'] ?? '')) {
-            $imageUrl = $poll['result']['sample'];
-            break;
-        }
-    }
-
-    if ($imageUrl === '') {
-        http_response_code(504);
-        echo json_encode(['error' => ['message' => 'FLUX no terminó en 90s']]);
-        exit;
-    }
-
-    // Download
-    $ch = curl_init($imageUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 60,
-        CURLOPT_FOLLOWLOCATION => true,
-    ]);
-    $imgBin = curl_exec($ch);
-    curl_close($ch);
-
-    echo json_encode([
-        'success' => true,
-        'imageUrl' => 'data:image/png;base64,' . base64_encode($imgBin),
-        'model' => $fluxEndpoint
-    ]);
-    exit;
-}
 
 // ====================================================================
 // BACKEND: GEMINI via OpenRouter (sync)
