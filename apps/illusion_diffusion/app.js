@@ -4,6 +4,16 @@ import { Upload, Wand2, Download, Trash2, Image, Loader2, Eye, History, Sparkles
 
 const STORAGE_KEY = 'illusion_diffusion_history';
 
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
 function App() {
     // Estado principal
     const [containerImage, setContainerImage] = useState(null);
@@ -20,6 +30,7 @@ function App() {
     const dragMovedRef = useRef(false);
     const dragStartRef = useRef({ x: 0, y: 0 });
     const [history, setHistory] = useState([]);
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
     const [isGenerating, setIsGenerating] = useState(false);
     const [viewerImage, setViewerImage] = useState(null);
     const [canvasViewerImage, setCanvasViewerImage] = useState(null);
@@ -434,6 +445,54 @@ function App() {
 
                 {/* Controls */}
                 <div className="controls-section glass">
+                    <div role="group" aria-label="Seleccionar modelo" className="mb-4">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Modelo IA</span>
+                        <div className="flex flex-wrap gap-3 mt-2 items-start">
+                            <div className="flex flex-col items-center gap-1">
+                                <span className="model-provider-title">OPENAI 2.5</span>
+                                <span className="model-quality-hint">De Menor a Mayor Calidad</span>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {[
+                                        { id: 'openai-medium', name: 'MEDIUM' },
+                                        { id: 'openai-high', name: 'HIGH' },
+                                        { id: 'openai-xhigh', name: 'XHIGH' },
+                                        { id: 'openai-max-flare', name: 'MAX FLARE' },
+                                        { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }
+                                    ].map(m => (
+                                        <button
+                                            type="button"
+                                            key={m.id}
+                                            onClick={() => setSelectedModel(m.id)}
+                                            className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
+                                            aria-pressed={selectedModel === m.id}
+                                            aria-describedby="model-tooltip"
+                                            data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                        >{m.name}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <span className="model-provider-title">GEMINI</span>
+                                <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {[
+                                        { id: 'gemini-flash', name: '3.1 FLASH' },
+                                        { id: 'gemini-pro', name: '3 PRO' }
+                                    ].map(m => (
+                                        <button
+                                            type="button"
+                                            key={m.id}
+                                            onClick={() => setSelectedModel(m.id)}
+                                            className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
+                                            aria-pressed={selectedModel === m.id}
+                                            aria-describedby="model-tooltip"
+                                            data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                        >{m.name}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div className="sliders-row">
                         <div className="control-group">
                             <div className="control-label">
@@ -583,5 +642,18 @@ function App() {
 }
 
 // Mount React App
+// ===== Tooltip de modelos: textos canónicos por id (kit popups) =====
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+};
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
+
+// ===== Tooltip de modelos (popup hover, kit canónico) =====
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();

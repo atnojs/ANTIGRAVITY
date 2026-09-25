@@ -15,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="app.css?v=3">
 
     <script>
         window.onerror = function (msg, url, line, col, error) {
@@ -41,7 +41,9 @@
 
 <body>
     <div id="root"></div>
-    <script type="text/babel" data-type="module" data-presets="react" src="app.js"></script>
+    <!-- Tooltip de modelos (popup hover) -->
+    <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+    <script type="text/babel" data-type="module" data-presets="react" src="app.js?v=3"></script>
 </body>
 
 </html>
