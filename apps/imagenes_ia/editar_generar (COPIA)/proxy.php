@@ -5,6 +5,9 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
+$agBody = json_decode(file_get_contents('php://input') ?: '', true);
+if (is_array($agBody) && empty($agBody['action'])) ag_image_response($agBody, __DIR__);
 
 // CORS
 header('Access-Control-Allow-Origin: *');
@@ -55,7 +58,7 @@ function loadKey(string $name): string {
 $GEMINI_KEY = loadKey('A');
 
 // Entrada
-$requestBody = file_get_contents('php://input');
+$requestBody = is_array($agBody) ? json_encode($agBody) : file_get_contents('php://input');
 if (empty($requestBody)) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Cuerpo vacío.']]);
