@@ -42,6 +42,11 @@
       }
     </style>
 
+<style>
+      :root{--contenedor:#174F7A;--acc:#00D0D0;--border-strong:#00D0D0;--glow:rgba(0,208,208,.8);--glow-soft:rgba(0,208,208,.4);--faint:#669999;--font-ui:'Electrolize',system-ui,sans-serif;}
+      .model-tooltip{position:fixed;z-index:10000;max-width:300px;padding:.55rem 1.05rem;background:linear-gradient(135deg,var(--contenedor),var(--acc));border:1px solid var(--border-strong);border-radius:999px;color:#CCFFFF;font-family:var(--font-ui);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;text-align:center;text-shadow:0 0 8px var(--glow);box-shadow:0 0 18px var(--glow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease,visibility .18s ease;} .model-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)} .model-tooltip::after{content:"";position:absolute;left:50%;width:11px;height:11px;background:var(--acc);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg);} .model-tooltip.tip-below{transform:translateY(-6px) scale(.97)} .model-tooltip.tip-below.visible{transform:translateY(0) scale(1)} .model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none} .model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none} @media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
+      .model-quality-hint{color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 8px var(--glow-soft)}
+    </style>
 <link rel="stylesheet" href="/index.css">
   <script type="importmap">
 {
@@ -108,11 +113,105 @@ Error generating stack: `+e.message+`
 `,m.forEach((_,T)=>{G+=`- Personaje ${T+1}: ${_.name}
 `})),G+=`
 Instrucción de Escena: ${p}
-`,G+="Estilo: Consistente, alta calidad, renderizado 4K.";const j=await fetch("proxy.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:"generateImage",provider:"gemini",prompt:G,images:B,aspectRatio:Q,modalities:["IMAGE"]})});if(!j.ok){const _=await j.text();throw new Error(`Error del servidor (${j.status}): ${_}`)}const P=await j.json();if(P.error)throw new Error(P.error);if(P.image)return`data:${P.mimeType||"image/png"};base64,${P.image}`;throw new Error("La respuesta del servidor no contenía una imagen válida.")},Tv=()=>{const[p,R]=Mt.useState(!1),[Q,m]=Mt.useState([{id:"1",name:"Personaje 1",imageData:"",mimeType:"",isSelected:!0},{id:"2",name:"Personaje 2",imageData:"",mimeType:"",isSelected:!1},{id:"3",name:"Personaje 3",imageData:"",mimeType:"",isSelected:!1},{id:"4",name:"Personaje 4",imageData:"",mimeType:"",isSelected:!1}]),[B,G]=Mt.useState(It.SixteenNine),[j,P]=Mt.useState(""),[_,T]=Mt.useState([{id:vf(),text:""}]),[K,N]=Mt.useState([]),[el,Hl]=Mt.useState(!1);Mt.useEffect(()=>{(async()=>{const rl=await bv();R(rl)})()},[]);const J=(hl,rl)=>{m(cl=>cl.map(q=>q.id===hl?{...q,...rl}:q))},ul=(hl,rl)=>{T(cl=>cl.map(q=>q.id===hl?{...q,text:rl}:q))},Nl=()=>{_.length<20&&T(hl=>[...hl,{id:vf(),text:""}])},Cl=hl=>{_.length>1&&T(rl=>rl.filter(cl=>cl.id!==hl))},Dt=async()=>{const hl=_.filter(gl=>gl.text.trim()!=="");if(hl.length===0){alert("Por favor añade al menos un prompt.");return}if(Q.filter(gl=>gl.isSelected&&gl.imageData).length===0&&Q.some(gl=>gl.isSelected)){alert("Has seleccionado personajes sin imagen. Por favor sube una imagen o desmárcalos.");return}Hl(!0);const cl=hl.map((gl,$l)=>({id:vf(),promptId:gl.id,promptText:gl.text,imageUrl:null,timestamp:new Date,status:"loading",orderIndex:$l}));N(cl);const q=B===It.Custom?j:B,ql=cl.map(async gl=>{try{const $l=await zv(gl.promptText,Q,q);N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"success",imageUrl:$l}:zl))}catch($l){N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"error",errorMessage:$l.message}:zl))}});await Promise.all(ql),Hl(!1)},Rl=()=>{K.filter(rl=>rl.status==="success"&&rl.imageUrl).forEach(rl=>{const cl=document.createElement("a");cl.href=rl.imageUrl;const q=new Date,ql=String(q.getDate()).padStart(2,"0"),$l=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][q.getMonth()],Kl=q.getFullYear(),zl=String(rl.orderIndex+1).padStart(3,"0");cl.download=`${zl}_${ql}${$l}${Kl}.png`,document.body.appendChild(cl),cl.click(),document.body.removeChild(cl)})};return A.jsxs("div",{className:"flex flex-col md:flex-row h-screen w-screen bg-black overflow-hidden font-sans",children:[A.jsx("div",{className:"w-full md:w-[400px] lg:w-[450px] flex-shrink-0 h-[40vh] md:h-full relative z-20 shadow-2xl",children:A.jsx(gv,{characters:Q,onUpdateCharacter:J,aspectRatio:B,setAspectRatio:G,customRatio:j,setCustomRatio:P,prompts:_,onUpdatePrompt:ul,onAddPrompt:Nl,onRemovePrompt:Cl,onGenerate:Dt,isGenerating:el})}),A.jsx("div",{className:"flex-1 h-[60vh] md:h-full relative z-10",children:A.jsx(Sv,{images:K,onDownloadAll:Rl})})]})},Uo=document.getElementById("root");if(!Uo)throw new Error("Could not find root element to mount to");const Ev=ov.createRoot(Uo);Ev.render(A.jsx(ev.StrictMode,{children:A.jsx(Tv,{})}));</script>
+`,G+="Estilo: Consistente, alta calidad, renderizado 4K.";const j=await fetch("proxy.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:"generateImage",provider:"gemini",prompt:G,images:B,aspectRatio:Q,modalities:["IMAGE"],model:window.__storyModel||"openai-medium"})});if(!j.ok){const _=await j.text();throw new Error(`Error del servidor (${j.status}): ${_}`)}const P=await j.json();if(P.error)throw new Error(P.error);if(P.image)return`data:${P.mimeType||"image/png"};base64,${P.image}`;throw new Error("La respuesta del servidor no contenía una imagen válida.")},Tv=()=>{const[p,R]=Mt.useState(!1),[Q,m]=Mt.useState([{id:"1",name:"Personaje 1",imageData:"",mimeType:"",isSelected:!0},{id:"2",name:"Personaje 2",imageData:"",mimeType:"",isSelected:!1},{id:"3",name:"Personaje 3",imageData:"",mimeType:"",isSelected:!1},{id:"4",name:"Personaje 4",imageData:"",mimeType:"",isSelected:!1}]),[B,G]=Mt.useState(It.SixteenNine),[j,P]=Mt.useState(""),[_,T]=Mt.useState([{id:vf(),text:""}]),[K,N]=Mt.useState([]),[el,Hl]=Mt.useState(!1);Mt.useEffect(()=>{(async()=>{const rl=await bv();R(rl)})()},[]);const J=(hl,rl)=>{m(cl=>cl.map(q=>q.id===hl?{...q,...rl}:q))},ul=(hl,rl)=>{T(cl=>cl.map(q=>q.id===hl?{...q,text:rl}:q))},Nl=()=>{_.length<20&&T(hl=>[...hl,{id:vf(),text:""}])},Cl=hl=>{_.length>1&&T(rl=>rl.filter(cl=>cl.id!==hl))},Dt=async()=>{const hl=_.filter(gl=>gl.text.trim()!=="");if(hl.length===0){alert("Por favor añade al menos un prompt.");return}if(Q.filter(gl=>gl.isSelected&&gl.imageData).length===0&&Q.some(gl=>gl.isSelected)){alert("Has seleccionado personajes sin imagen. Por favor sube una imagen o desmárcalos.");return}Hl(!0);const cl=hl.map((gl,$l)=>({id:vf(),promptId:gl.id,promptText:gl.text,imageUrl:null,timestamp:new Date,status:"loading",orderIndex:$l}));N(cl);const q=B===It.Custom?j:B,ql=cl.map(async gl=>{try{const $l=await zv(gl.promptText,Q,q);N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"success",imageUrl:$l}:zl))}catch($l){N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"error",errorMessage:$l.message}:zl))}});await Promise.all(ql),Hl(!1)},Rl=()=>{K.filter(rl=>rl.status==="success"&&rl.imageUrl).forEach(rl=>{const cl=document.createElement("a");cl.href=rl.imageUrl;const q=new Date,ql=String(q.getDate()).padStart(2,"0"),$l=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][q.getMonth()],Kl=q.getFullYear(),zl=String(rl.orderIndex+1).padStart(3,"0");cl.download=`${zl}_${ql}${$l}${Kl}.png`,document.body.appendChild(cl),cl.click(),document.body.removeChild(cl)})};return A.jsxs("div",{className:"flex flex-col md:flex-row h-screen w-screen bg-black overflow-hidden font-sans",children:[A.jsx("div",{className:"w-full md:w-[400px] lg:w-[450px] flex-shrink-0 h-[40vh] md:h-full relative z-20 shadow-2xl",children:A.jsx(gv,{characters:Q,onUpdateCharacter:J,aspectRatio:B,setAspectRatio:G,customRatio:j,setCustomRatio:P,prompts:_,onUpdatePrompt:ul,onAddPrompt:Nl,onRemovePrompt:Cl,onGenerate:Dt,isGenerating:el})}),A.jsx("div",{className:"flex-1 h-[60vh] md:h-full relative z-10",children:A.jsx(Sv,{images:K,onDownloadAll:Rl})})]})},Uo=document.getElementById("root");if(!Uo)throw new Error("Could not find root element to mount to");const Ev=ov.createRoot(Uo);Ev.render(A.jsx(ev.StrictMode,{children:A.jsx(Tv,{})}));</script>
 </head>
   <body class="bg-gray-950 text-white h-screen overflow-hidden">
     <div id="root" class="h-full"></div>
+  <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
   <script src="history-manager.js"></script>
 <script src="lightbox.js"></script>
+
+<!-- Selector de modelo IA (catálogo 2.5, 7 botones, MEDIUM activo). Fuera de #root para no interferir con React. -->
+<div id="story-model-selector" style="position:fixed;bottom:0.75rem;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:0.25rem;background:rgba(17,24,39,0.88);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.12);border-radius:1rem;padding:0.5rem 0.75rem;">
+  <div style="display:flex;gap:0.5rem;align-items:center;">
+    <span style="font-size:0.6rem;letter-spacing:0.1em;color:#6b7280;text-transform:uppercase;">OpenAI 2.5</span>
+    <div style="display:flex;gap:0.25rem;flex-wrap:wrap;justify-content:center;">
+      <button type="button" class="story-model-toggle active" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="true">MEDIUM</button>
+      <button type="button" class="story-model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+      <button type="button" class="story-model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+      <button type="button" class="story-model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+      <button type="button" class="story-model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
+    </div>
+    <span style="font-size:0.6rem;letter-spacing:0.1em;color:#6b7280;text-transform:uppercase;">Gemini</span>
+    <div style="display:flex;gap:0.25rem;">
+      <button type="button" class="story-model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+      <button type="button" class="story-model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
+    </div>
+  </div>
+  <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+</div>
+<script>
+(function () {
+  "use strict";
+  var MODEL_LABELS = {
+    "openai-medium": "MEDIUM",
+    "openai-high": "HIGH",
+    "openai-xhigh": "XHIGH",
+    "openai-max-flare": "MAX FLARE",
+    "openai-max-sunburst": "MAX SUNBURST",
+    "gemini-flash": "3.1 FLASH",
+    "gemini-pro": "3 PRO"
+  };
+  window.__storyModel = "openai-medium";
+  var bar = document.getElementById("story-model-selector");
+  var style = document.createElement("style");
+  style.textContent = ".story-model-toggle{font-size:0.62rem;letter-spacing:0.04em;padding:0.3rem 0.55rem;border-radius:999px;border:1px solid transparent;background:transparent;color:#9ca3af;cursor:pointer;text-transform:uppercase;white-space:nowrap;transition:all .2s ease;}.story-model-toggle:hover{color:#fff;border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);}.story-model-toggle.active{background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;border-color:transparent;box-shadow:0 0 12px rgba(6,182,212,0.5);}";
+  document.head.appendChild(style);
+  if (bar) {
+    bar.addEventListener("click", function (e) {
+      var btn = e.target.closest(".story-model-toggle");
+      if (!btn) return;
+      var next = btn.getAttribute("data-model");
+      if (!MODEL_LABELS[next]) return;
+      window.__storyModel = next;
+      bar.querySelectorAll(".story-model-toggle").forEach(function (b) {
+        var on = b.getAttribute("data-model") === next;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    });
+  }
+
+  const modelTooltip = document.getElementById('model-tooltip');
+  if (modelTooltip) {
+      const TOOLTIP_GAP = 10;
+      const hideModelTooltip = () => {
+          modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+          modelTooltip.setAttribute('aria-hidden', 'true');
+          modelTooltip.textContent = '';
+      };
+      const showModelTooltip = (button) => {
+          const text = (button.dataset.tooltip || '').trim();
+          if (!text) { hideModelTooltip(); return; }
+          modelTooltip.textContent = text;
+          modelTooltip.classList.remove('tip-above', 'tip-below');
+          modelTooltip.classList.add('visible');
+          modelTooltip.setAttribute('aria-hidden', 'false');
+          const rect = button.getBoundingClientRect();
+          const tw = modelTooltip.offsetWidth;
+          const th = modelTooltip.offsetHeight;
+          let left = rect.left + rect.width / 2 - tw / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+          let top = rect.top - th - TOOLTIP_GAP;
+          if (top < 8) {
+              top = rect.bottom + TOOLTIP_GAP;
+              modelTooltip.classList.add('tip-below');
+          } else {
+              modelTooltip.classList.add('tip-above');
+          }
+          modelTooltip.style.left = left + 'px';
+          modelTooltip.style.top = top + 'px';
+      };
+      document.querySelectorAll('.story-model-toggle').forEach((button) => {
+          button.addEventListener('mouseenter', () => showModelTooltip(button));
+          button.addEventListener('mouseleave', hideModelTooltip);
+          button.addEventListener('focus', () => showModelTooltip(button));
+          button.addEventListener('blur', hideModelTooltip);
+      });
+      window.addEventListener('scroll', hideModelTooltip, true);
+      window.addEventListener('resize', hideModelTooltip);
+  }
+})();
+</script>
 </body>
 </html>
