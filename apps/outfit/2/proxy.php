@@ -4,13 +4,8 @@
 // 1. Establecer el tipo de contenido de la respuesta a JSON.
 header('Content-Type: application/json');
 
-// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+// ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
 $apiKey = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('A') ? A : '';
-}
 if (!$apiKey || empty($apiKey)) {
     $apiKey = getenv('A');
 }
