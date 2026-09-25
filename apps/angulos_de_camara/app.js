@@ -60,7 +60,7 @@ let currentImageMimeType = null;
 
 // === Selector de modelo IA (patrón canónico: OpenAI / Gemini) ===
 let selectedModel = 'openai-medium';
-const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
+const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO' };
 const modelToggles = document.querySelectorAll('.model-toggle');
 modelToggles.forEach(btn => {
   btn.addEventListener('click', () => {
