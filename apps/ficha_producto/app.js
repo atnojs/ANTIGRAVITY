@@ -1038,10 +1038,11 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
 
       <div>
         <label className="block text-sm font-medium text-gray-300">Modelo IA</label>
-        <div className="model-provider-layout mt-2 grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
+        <div className="model-provider-layout mt-2 grid grid-cols-3 gap-3" role="group" aria-label="Seleccionar modelo">
           {[
             { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGH' }, { id: 'openai-xhigh', label: 'XHIGH' }, { id: 'openai-max-flare', label: 'MAX FLARE' }, { id: 'openai-max-sunburst', label: 'MAX SUNBURST' }] },
             { provider: 'GEMINI', models: [{ id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
+            { provider: 'QWEN', models: [{ id: 'qwen-pro', label: 'QWEN 3 PRO' }] },
           ].map((group) => (
             <div className="model-provider-column min-w-0" key={group.provider}>
               <span className="model-provider-title block text-center mb-1">{group.provider}</span>
@@ -2293,6 +2294,7 @@ const App = () => {
       'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
       'gemini-flash': 'Texto en imágenes, Rápido.',
       'gemini-pro': 'Máxima calidad, Perfecto para texto',
+      'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
   };
 
   const container = document.getElementById("root");
