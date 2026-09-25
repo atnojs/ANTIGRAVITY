@@ -1,0 +1,2 @@
+const{contextBridge,ipcRenderer}=require('electron');
+contextBridge.exposeInMainWorld('infografiaDesktop',{openGoogle:()=>ipcRenderer.invoke('open-google'),getLatestDownload:()=>ipcRenderer.invoke('latest-download'),startWatcher:()=>ipcRenderer.invoke('start-watcher'),onDownloadedImage:(callback)=>{const handler=(_e,file)=>callback(file);ipcRenderer.on('downloaded-image',handler);return()=>ipcRenderer.removeListener('downloaded-image',handler)}});
