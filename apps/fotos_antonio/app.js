@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentConversationId = null;
 
-    // --- SELECTOR DE MODELO (7 botones, MEDIUM activo) ---
+    // --- SELECTOR DE MODELO (8 botones, MEDIUM activo) ---
     const DEFAULT_MODEL = 'openai-medium';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
         'gemini-flash': '3.1 FLASH',
-        'gemini-pro': '3 PRO'
+        'gemini-pro': '3 PRO',
+        'qwen-pro': 'QWEN 3 PRO'
     };
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modelTooltip.style.left = left + 'px';
             modelTooltip.style.top = top + 'px';
         };
-        document.querySelectorAll('.model-toggle').forEach((button) => {
+        document.querySelectorAll('[data-tooltip]').forEach((button) => {
             button.addEventListener('mouseenter', () => showModelTooltip(button));
             button.addEventListener('mouseleave', hideModelTooltip);
             button.addEventListener('focus', () => showModelTooltip(button));
