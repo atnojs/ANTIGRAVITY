@@ -43,10 +43,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ---------- API KEY (B) — cascadeo robusto ----------
 $API_KEY = '';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('B') ? B : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('B');
 }

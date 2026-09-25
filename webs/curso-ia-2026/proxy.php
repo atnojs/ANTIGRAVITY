@@ -25,12 +25,6 @@ function respond(int $status, array $payload): void {
 }
 
 function getSecret(string $name): string {
-    if (is_file($config)) {
-        include_once $config;
-        if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
-            return trim((string)constant($name));
-        }
-    }
     $values = [
         getenv($name), getenv('REDIRECT_' . $name),
         $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '',

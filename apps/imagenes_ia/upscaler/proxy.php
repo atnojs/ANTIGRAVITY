@@ -50,11 +50,6 @@ if (!function_exists('curl_init')) {
 
 // ===== Resolución de claves API =====
 function resolveKey(string $name): string {
-    if (file_exists($configFile)) {
-        include $configFile;
-        $key = defined($name) ? constant($name) : '';
-        if (!empty($key)) return (string)$key;
-    }
     foreach ([
         getenv($name),
         getenv('REDIRECT_' . $name),

@@ -45,11 +45,6 @@ if (!function_exists('curl_init')) {
 
 // ===== Resolución de claves: R (OpenRouter) y A (Gemini directa, legacy) =====
 function resolveKey(string $name): string {
-    if (file_exists($configFile)) {
-        include $configFile;
-        $k = defined($name) ? constant($name) : '';
-        if (!empty($k)) return (string)$k;
-    }
     foreach ([
         getenv($name),
         getenv('REDIRECT_' . $name),

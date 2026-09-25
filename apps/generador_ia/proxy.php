@@ -47,10 +47,6 @@ if (is_array($canonicalBody)) {
 $apiKey = '';
 
 // 1. Config file local (máxima prioridad)
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('OPENROUTER_API_KEY') ? OPENROUTER_API_KEY : '';
-}
 
 // 2-7. Variables de entorno / superglobales
 if (empty($apiKey)) $apiKey = getenv('OPENROUTER_API_KEY');
