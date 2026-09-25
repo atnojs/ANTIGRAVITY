@@ -32,7 +32,48 @@
     t._timeout = setTimeout(function () { t.classList.remove("show"); }, 3500);
   }
 
-  var MODEL_LABELS = { "openai-medium": "MEDIUM", "openai-high": "HIGH", "openai-xhigh": "XHIGH", "openai-max-flare": "MAX FLARE", "openai-max-sunburst": "MAX SUNBURST", "gemini-flash": "3.1 FLASH", "gemini-pro": "3 PRO" };
+  var MODEL_LABELS = { "openai-medium": "MEDIUM", "openai-high": "HIGH", "openai-xhigh": "XHIGH", "openai-max-flare": "MAX FLARE", "openai-max-sunburst": "MAX SUNBURST", "gemini-flash": "3.1 FLASH", "gemini-pro": "3 PRO", "qwen-pro": "QWEN 3 PRO" };
+
+  // Para qwen-pro (más lento que el timeout de nginx, ~55s) se espera
+  // activamente: el proxy guarda el resultado en caché y responde
+  // 'processing' mientras el worker termina de generarlo.
+  async function callGenerateWithWait(body, maxAttempts) {
+    maxAttempts = maxAttempts || 36;
+    var slowModel = body && body.model === "qwen-pro";
+    if (!slowModel) {
+      var res = await fetch("proxy.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      return res.json();
+    }
+    var lastError = "Sin respuesta del modelo.";
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        var r = await fetch("proxy.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        var json = await r.json().catch(function () { return null; });
+        if (r.ok && json && json.status === "processing") {
+          lastError = "Generando...";
+        } else if (json && json.success && json.dataUrl) {
+          return json;
+        } else if (json && json.error) {
+          lastError = (json.error.message || json.error);
+          if (r.status < 500) throw new Error(lastError);
+        } else {
+          lastError = "Error HTTP " + r.status;
+        }
+      } catch (e) {
+        lastError = (e && e.message) || lastError;
+      }
+      if (attempt < maxAttempts - 1) await new Promise(function (resolve) { setTimeout(resolve, 5000); });
+    }
+    throw new Error(lastError);
+  }
 
   // ===== STATE =====
   var state = {
@@ -352,16 +393,11 @@
     btn.disabled = true; btnText.textContent = "GENERANDO..."; spinner.classList.remove("hidden");
     showOverlay("Generando imagen base con IA...");
 
-    fetch("proxy.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "generate", prompt: prompt,
-        model: state.model, aspectRatio: state.aspectRatio,
-        resolution: state.resolution, output_format: "jpeg"
-      })
+    callGenerateWithWait({
+      action: "generate", prompt: prompt,
+      model: state.model, aspectRatio: state.aspectRatio,
+      resolution: state.resolution, output_format: "jpeg"
     })
-    .then(function (r) { return r.json(); })
     .then(function (data) {
       btn.disabled = false; btnText.textContent = "GENERAR MEME";
       spinner.classList.add("hidden"); hideOverlay();
