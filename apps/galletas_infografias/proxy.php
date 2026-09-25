@@ -143,7 +143,7 @@ function handleOpenRouter(array $request): void {
             respond(400, ['success' => false, 'error' => 'La estructura de messages no es válida.']);
         }
     }
-    $payload = ['messages' => array_values($messages), 'stream' => false];
+    $payload = ['messages' => array_values($messages), 'stream' => false, 'model' => 'xiaomi/mimo-v2.6-pro']; // modelo de texto por defecto
     $model = trim((string)($request['model'] ?? ''));
     if ($model !== '') {
         if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
@@ -178,7 +178,7 @@ function handleTranslate(array $request): void {
         ['role' => 'system', 'content' => $systemPrompt],
         ['role' => 'user', 'content' => $text]
     ];
-    $payload = ['messages' => $messages, 'stream' => false, 'model' => 'openai/gpt-4o-mini', 'temperature' => 0.2, 'max_tokens' => 4096];
+    $payload = ['messages' => $messages, 'stream' => false, 'model' => 'xiaomi/mimo-v2.6-pro', 'temperature' => 0.2, 'max_tokens' => 4096];
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
         'Authorization: *** ' . $key, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
@@ -190,7 +190,7 @@ function handleTranslate(array $request): void {
     if ($translated === '') respond(502, ['success' => false, 'error' => 'La traducción devolvió un resultado vacío.']);
     respond(200, [
         'success' => true, 'translated' => $translated,
-        'original' => $text, 'target' => $target, 'model' => (string)($response['model'] ?? 'openai/gpt-4o-mini')
+        'original' => $text, 'target' => $target, 'model' => (string)($response['model'] ?? 'xiaomi/mimo-v2.6-pro')
     ]);
 }
 
