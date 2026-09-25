@@ -7,14 +7,9 @@ error_reporting(E_ALL);
 try {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
 
-  // API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+  // API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
   $apiKey = '';
-  $configFile = __DIR__ . '/config.php';
-  if (file_exists($configFile)) {
-      include $configFile;
-      $apiKey = defined('A') ? A : '';
-  }
-  if (!$apiKey || empty($apiKey)) {
+    if (!$apiKey || empty($apiKey)) {
       $apiKey = getenv('A');
   }
   if (!$apiKey || empty($apiKey)) {
@@ -38,15 +33,12 @@ try {
       exit;
   }
 
-  $replicateKey = getenv('REPLICATE_API_FLUX') 
-    ?: ($_SERVER['REPLICATE_API_FLUX'] ?? $_SERVER['REDIRECT_REPLICATE_API_TOKEN'] ?? null);
-
-  $input = file_get_contents('php://input');
+ $input = file_get_contents('php://input');
   $json = json_decode($input, true);
   if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
 
   $task        = $json['task'] ?? '';
-  if ($task === 'generateImage' || (($json['provider'] ?? '') === 'flux')) {
+  if ($task === 'generateImage') {
       if (!isset(ag_image_catalog()[(string)($json['model'] ?? '')])) $json['model'] = 'openai-medium';
       ag_image_response($json, __DIR__);
   }
@@ -205,26 +197,7 @@ Genera EXACTAMENTE 4 objetos JSON, uno por cada tipo. En ESPAÑOL.";
 
   // --- TAREA: GENERAR IMAGEN ---
   if ($task === 'generateImage') {
-    if ($provider === 'flux') {
-        if (!$replicateKey) throw new Exception('Falta token de Replicate (flux)', 500);
-        $url = "https://api.replicate.com/v1/models/black-forest-labs/flux-2-pro/predictions";
-        $body = [
-            'input' => [
-                'prompt' => $prompt,
-                'aspect_ratio' => $aspectRatio ?: "1:1",
-                'output_format' => "jpg",
-                'output_quality' => 90,
-                'safety_tolerance' => 5
-            ]
-        ];
-        $headers = [ "Authorization: Bearer $replicateKey", "Content-Type: application/json", "Prefer: wait" ];
-        $data = $callApi($url, $body, $headers);
-        $imageUrl = $data['output'] ?? null;
-        if (!$imageUrl) throw new Exception('Flux no devolvió imagen.', 502);
-        $imgData = file_get_contents($imageUrl);
-        echo json_encode(['image' => base64_encode($imgData), 'mimeType' => 'image/jpeg', 'type' => 'image']);
-        exit;
-    } else {
+    
         if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
         
         $model = 'gemini-3.1-flash-image-preview'; 
@@ -283,7 +256,6 @@ Genera EXACTAMENTE 4 objetos JSON, uno por cada tipo. En ESPAÑOL.";
         // Debug: capturar la respuesta completa para diagnóstico
         $debug = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         throw new Exception('Gemini no generó imagen ni texto. Respuesta: ' . substr($debug, 0, 500));
-    }
   }
 } catch (Throwable $e) {
   http_response_code(500);
