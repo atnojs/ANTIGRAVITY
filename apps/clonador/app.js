@@ -2,7 +2,7 @@
  * ════
  * 🧬 PROTOCOLO GEMINI v14.0 - CON HISTORIAL PERSISTENTE SERVER-SIDE
  * ════
- * Selector: OpenAI Image 2.5 (5 calidades) + Gemini (3.1 Flash / 3 Pro)
+ * Selector: OpenAI Image 2.5 (5 calidades) + Gemini (3.1 Flash / 3 Pro) + QWEN 3 PRO
  * Incluye: HistoryManager (IndexedDB + servidor PHP), Lightbox, Botones de acción
  */
 
@@ -18,10 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
         'gemini-flash': '3.1 FLASH',
-        'gemini-pro': '3 PRO'
+        'gemini-pro': '3 PRO',
+        'qwen-pro': 'QWEN 3 PRO'
     };
 
-    // --- SELECTOR DE MODELO (7 botones, MEDIUM activo) ---
+    // --- SELECTOR DE MODELO (8 botones, MEDIUM activo) ---
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {
         selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modelTooltip.style.left = left + 'px';
         modelTooltip.style.top = top + 'px';
       };
-      document.querySelectorAll('.model-toggle').forEach((button) => {
+      document.querySelectorAll('.model-toggle, [data-tooltip]').forEach((button) => {
         button.addEventListener('mouseenter', () => showModelTooltip(button));
         button.addEventListener('mouseleave', hideModelTooltip);
         button.addEventListener('focus', () => showModelTooltip(button));
@@ -399,6 +400,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // ════
     // TRANSFORMACIÓN API
     // ════
+    // Llamada al proxy. Para qwen-pro (más lento que el timeout de nginx,
+    // ~55s) se espera activamente: el proxy guarda el resultado en caché y
+    // responde 'processing' mientras el worker termina de generarlo.
+    async function callProxyWithWait(body, maxAttempts = 36) {
+        const slowModel = body && body.model === 'qwen-pro';
+        let lastError = 'Sin respuesta del modelo.';
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const res = await fetch(PROXY_URL, { method: 'POST', body: JSON.stringify(body) });
+                const json = await res.json().catch(() => null);
+                if (res.ok && json && json.status === 'processing') {
+                    lastError = 'Generando...';
+                } else if (res.ok && json && !json.error) {
+                    return json;
+                } else if (json && json.error && json.error.message) {
+                    lastError = json.error.message;
+                    if (!slowModel || res.status < 500) throw new Error(lastError);
+                } else {
+                    lastError = `Error HTTP ${res.status}`;
+                }
+            } catch (e) {
+                if (!slowModel) throw e;
+                lastError = (e && e.message) || lastError;
+            }
+            if (!slowModel) throw new Error(lastError);
+            if (attempt < maxAttempts - 1) await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+        throw new Error(lastError);
+    }
+
     async function transformImage(img1, img2) {
         const prompt = `FACE + HAIR SWAP: Replace the head (face + hair) from the SECOND IMAGE with the head (face + hair) from the FIRST IMAGE.
 
@@ -444,8 +475,7 @@ RESULT: The person in the second image now has the face and hair from the first 
             }
         };
 
-        const res = await fetch(PROXY_URL, { method: 'POST', body: JSON.stringify(requestBody) });
-        const data = await res.json();
+        const data = await callProxyWithWait(requestBody);
 
         // Información detallada de errores de seguridad
         if (data.debug?.blockReason) {
