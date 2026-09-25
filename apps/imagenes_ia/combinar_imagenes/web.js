@@ -13,7 +13,7 @@ const CONFIG = {
     INITIAL_SLOTS: 4
 };
 
-// Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. FLUX fuera.
+// Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada)
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',

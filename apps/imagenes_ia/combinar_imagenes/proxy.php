@@ -5,7 +5,7 @@
  * ============================================
  * Backends: OpenAI GPT Image 2.5 (directo, clave OPENAI_API_KEY/O) + Gemini (OpenRouter, clave R)
  * DeepSeek para mejorar prompts (texto, clave D/B/DEEPSEEK_API_KEY)
- * FLUX quedó fuera de la lista blanca (400 "Modelo no soportado").
+ * (lista cerrada) (400 "Modelo no soportado").
  *
  * Claves de entorno (resueltas por entorno: getenv/REDIRECT_/$_SERVER/$_ENV):
  *   OPENAI_API_KEY / O — OpenAI Images (gpt-image-2.5-flare / gpt-image-2.5-sunburst)
@@ -36,17 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 /**
  * Helper de claves en cascada (skill maestra):
- * config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+ * .htaccess raiz → getenv → REDIRECT_ → $_SERVER → $_ENV
  */
 function getSecret(string $name): string {
-    $config = __DIR__ . '/config.php';
-    if (is_file($config)) {
-        include_once $config;
-        if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
-            return trim((string)constant($name));
-        }
-    }
-    $values = [
+        $values = [
         getenv($name), getenv('REDIRECT_' . $name),
         $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '',
         $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? '',
@@ -136,7 +129,7 @@ if ($task === 'combineImages') {
         exit;
     }
 
-    // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. FLUX fuera. ──
+    // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada) ──
     $modelCatalog = [
         'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
         'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
@@ -306,147 +299,6 @@ function callOpenAI(string $apiKey, array $selected, string $prompt, array $imag
 }
 
 /**
- * Llamar a FLUX (BFL API v2) para generar imagen combinada.
- * Endpoints canónicos (skill maestra): flux-2-pro / flux-2-max
- * API: https://api.bfl.ai/v1/{model} → {id, polling_url} → GET polling_url
- */
-function callFlux(string $apiKey, string $fluxEndpoint, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
-    // Dimensiones según aspect ratio (múltiplos de 32, máx 4 MP)
-    $dims = aspectRatioToDims($aspectRatio, min($targetPx, 2048));
-
-    // Imágenes de entrada: fondo primero, luego el resto (hasta 8)
-    $inputs = [];
-    if ($background && !empty($background['data'])) {
-        $inputs[] = ['data' => $background['data'], 'mimeType' => $background['mimeType'] ?? 'image/jpeg'];
-    }
-    foreach ($images as $img) {
-        $inputs[] = ['data' => $img['data'], 'mimeType' => $img['mimeType'] ?? 'image/jpeg'];
-    }
-    if (count($inputs) > 8) {
-        return ['error' => ['message' => 'FLUX admite máximo 8 imágenes por combinación']];
-    }
-
-    $payload = [
-        'prompt' => $prompt,
-        'width' => $dims['w'],
-        'height' => $dims['h'],
-        'steps' => 50,
-        'prompt_upsampling' => false,
-        'seed' => random_int(0, 999999),
-        'safety_tolerance' => 5,
-        'output_format' => 'jpeg'
-    ];
-
-    // Enviar imágenes como input_image, input_image_2, ...
-    $hasInput = false;
-    foreach ($inputs as $i => $img) {
-        $data = $img['data'];
-        if (strpos($data, 'data:') === 0) {
-            $data = substr($data, strpos($data, ',') + 1);
-        }
-        $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = $data;
-        $hasInput = true;
-    }
-
-    $url = 'https://api.bfl.ai/v1/' . $fluxEndpoint;
-    $headers = [
-        'Content-Type: application/json',
-        'accept: application/json',
-        'x-key: ' . $apiKey
-    ];
-
-    [$submitStatus, $submit] = bflJson($url, 'POST', $headers, $payload);
-
-    if ($submitStatus < 200 || $submitStatus >= 300 || isset($submit['error'])) {
-        $detail = $submit['detail'] ?? $submit['error'] ?? $submit['message'] ?? ('HTTP ' . $submitStatus);
-        return ['error' => ['message' => 'FLUX rechazó la solicitud: ' . $detail]];
-    }
-
-    // API v2: respuesta { id, polling_url }
-    $pollUrl = (string)($submit['polling_url'] ?? '');
-    $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
-    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) {
-        return ['error' => ['message' => 'URL de seguimiento FLUX no válida']];
-    }
-
-    // Polling (máx ~90 s)
-    $resultUrl = '';
-    $last = 'Pending';
-    for ($i = 0; $i < 90; $i++) {
-        usleep(1000000);
-        [$pollStatus, $poll] = bflJson($pollUrl, 'GET', $headers, null);
-        if ($pollStatus !== 200 || isset($poll['error'])) continue;
-        $last = (string)($poll['status'] ?? 'Pending');
-        if ($last === 'Ready') {
-            $resultUrl = (string)($poll['result']['sample'] ?? '');
-            break;
-        }
-        if (in_array($last, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
-            return ['error' => ['message' => 'FLUX no pudo completar la tarea: ' . $last]];
-        }
-    }
-
-    if ($resultUrl === '' || parse_url($resultUrl, PHP_URL_SCHEME) !== 'https') {
-        return ['error' => ['message' => 'FLUX tardó demasiado (estado: ' . $last . ')']];
-    }
-
-    // Descargar la imagen resultante
-    $ch = curl_init($resultUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 15,
-        CURLOPT_TIMEOUT => 60,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS => 3,
-    ]);
-    $binary = curl_exec($ch);
-    $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    if ($binary === false || $binary === '' || $downloadStatus !== 200) {
-        return ['error' => ['message' => 'No se pudo descargar el resultado de FLUX']];
-    }
-
-    return [
-        'images' => [[
-            'data' => base64_encode($binary),
-            'mimeType' => 'image/jpeg'
-        ]]
-    ];
-}
-
-/**
- * Petición JSON a BFL devolviendo [status, body].
- */
-function bflJson(string $url, string $method, array $headers, ?array $body = null, int $timeout = 60): array {
-    $ch = curl_init($url);
-    $options = [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CUSTOMREQUEST => $method,
-        CURLOPT_HTTPHEADER => $headers,
-        CURLOPT_CONNECTTIMEOUT => 15,
-        CURLOPT_TIMEOUT => $timeout,
-        CURLOPT_FOLLOWLOCATION => false,
-    ];
-    if ($body !== null) {
-        $options[CURLOPT_POSTFIELDS] = json_encode($body);
-    }
-    curl_setopt_array($ch, $options);
-    $raw = curl_exec($ch);
-    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
-
-    if ($raw === false || $raw === '') {
-        return [$status, ['error' => ['message' => $error !== '' ? $error : 'Respuesta vacía de BFL']]];
-    }
-    $data = json_decode($raw, true);
-    if (!is_array($data)) {
-        return [$status, ['error' => ['message' => 'Respuesta no JSON de BFL (HTTP ' . $status . ')']]];
-    }
-    return [$status, $data];
-}
-
-/**
  * Llamar a Gemini (vía OpenRouter, clave R) para generar imagen combinada.
  * Modelos canónicos (skill maestra): google/gemini-3.1-flash-image / google/gemini-3-pro-image
  */
@@ -605,7 +457,7 @@ function aspectRatioToDims(string $ar, int $maxSide): array {
 
     [$w, $h] = $map[$ar] ?? [1, 1];
 
-    // Redondear a múltiplos de 32 (requisito de BFL flux-2)
+    // Redondear a múltiplos de 32 (requisito de los modelos de imagen)
     if ($w >= $h) {
         return ['w' => round32($maxSide), 'h' => round32($maxSide * $h / $w)];
     } else {
