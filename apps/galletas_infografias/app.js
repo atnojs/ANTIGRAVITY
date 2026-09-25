@@ -1,6 +1,6 @@
 /**
  * Galletas de Infografías — app.js v2
- * Explora galletas con prompts, escribe tu objeto y genera infografías con FLUX.
+ * Explora galletas con prompts, escribe tu objeto y genera infografías con IA.
  */
 (function () {
   'use strict';
@@ -148,6 +148,47 @@
     setupCookieEditor();
     setupCategoryEditor();
     setupToggleGroups();
+    setupModelSelector();
+    // ===== Tooltip de modelos (popup hover) =====
+    const modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip) {
+        const TOOLTIP_GAP = 10;
+        const hideModelTooltip = () => {
+            modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+            modelTooltip.setAttribute('aria-hidden', 'true');
+            modelTooltip.textContent = '';
+        };
+        const showModelTooltip = (button) => {
+            const text = (button.dataset.tooltip || '').trim();
+            if (!text) { hideModelTooltip(); return; }
+            modelTooltip.textContent = text;
+            modelTooltip.classList.remove('tip-above', 'tip-below');
+            modelTooltip.classList.add('visible');
+            modelTooltip.setAttribute('aria-hidden', 'false');
+            const rect = button.getBoundingClientRect();
+            const tw = modelTooltip.offsetWidth;
+            const th = modelTooltip.offsetHeight;
+            let left = rect.left + rect.width / 2 - tw / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+            let top = rect.top - th - TOOLTIP_GAP;
+            if (top < 8) {
+                top = rect.bottom + TOOLTIP_GAP;
+                modelTooltip.classList.add('tip-below');
+            } else {
+                modelTooltip.classList.add('tip-above');
+            }
+            modelTooltip.style.left = left + 'px';
+            modelTooltip.style.top = top + 'px';
+        };
+        document.querySelectorAll('.model-toggle').forEach((button) => {
+            button.addEventListener('mouseenter', () => showModelTooltip(button));
+            button.addEventListener('mouseleave', hideModelTooltip);
+            button.addEventListener('focus', () => showModelTooltip(button));
+            button.addEventListener('blur', hideModelTooltip);
+        });
+        window.addEventListener('scroll', hideModelTooltip, true);
+        window.addEventListener('resize', hideModelTooltip);
+    }
     setupPreviewImageUpload();
     window.__galletas_domready = true;
   }
@@ -667,13 +708,40 @@
     return active ? active.dataset.value : '';
   }
 
+  function setupModelSelector() {
+    const selector = document.getElementById('model-selector');
+    if (!selector) return;
+    selector.addEventListener('click', (event) => {
+      const button = event.target.closest('.model-toggle');
+      if (!button) return;
+      selector.querySelectorAll('.model-toggle').forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-pressed', 'false'); });
+      button.classList.add('active');
+      button.setAttribute('aria-pressed', 'true');
+    });
+  }
+
+  function getModel() {
+    const active = document.querySelector('#model-selector .model-toggle.active');
+    return active?.dataset.model || 'openai-medium';
+  }
+
+  function setModel(model) {
+    const selector = document.getElementById('model-selector');
+    if (!selector) return;
+    selector.querySelectorAll('.model-toggle').forEach((button) => {
+      const active = button.dataset.model === model;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+  }
+
   function resetToggleGroups() {
     // AR: restaurar a 1:1
     setToggle('ar-toggles', '1:1');
     // Res: restaurar a 1024
     setToggle('res-toggles', '1024');
-    // Modelo: restaurar a pro
-    setToggle('model-toggles', 'pro');
+    // Modelo: restaurar a OpenAI Medium
+    setModel('openai-medium');
   }
 
   function setToggle(groupId, value) {
@@ -990,7 +1058,7 @@
   }
 
   // ═══════════════════════════════════════════
-  // GENERAR INFOGRAFÍA CON FLUX
+  // GENERAR INFOGRAFÍA CON IA
   // ═══════════════════════════════════════════
   async function generateInfographic() {
     if (!currentModalCookie) return;
@@ -1008,14 +1076,14 @@
     // Leer ajustes de los toggles
     const ar = getToggleValue('ar-toggles') || '1:1';
     const resolution = parseInt(getToggleValue('res-toggles')) || 1024;
-    const quality = getToggleValue('model-toggles') || 'pro';
+    const model = getModel();
 
     // Mostrar loading overlay
     const loading = document.getElementById('loading-overlay');
     loading.classList.remove('hidden');
     loading.style.display = 'flex';
     document.getElementById('loading-text').textContent = 'IA generando lo solicitado...';
-    document.getElementById('secondary-status').textContent = 'Creando infografía con FLUX (' + quality.toUpperCase() + ') a ' + resolution + 'px...';
+    document.getElementById('secondary-status').textContent = 'Creando infografía con ' + model.toUpperCase() + ' a ' + resolution + 'px...';
 
     // Ocultar resultado anterior
     document.getElementById('result-section').classList.add('hidden');
@@ -1026,11 +1094,12 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          service: 'flux',
+          service: 'generate',
+          model: model,
           prompt: fullPrompt,
           aspectRatio: ar,
           resolution: resolution,
-          quality: quality
+          quality: model
         })
       });
 
@@ -1064,7 +1133,7 @@
       }
     } catch (err) {
       console.error('Error al generar infografía:', err);
-      alert('Error al generar la infografía: ' + err.message + '\n\nVerifica que la clave FLUX (F) esté configurada en el .htaccess raíz de Hostinger.');
+      alert('Error al generar la infografía: ' + err.message + '\n\nVerifica las claves del proveedor en el servidor.');
     } finally {
       loading.classList.add('hidden');
       loading.style.display = 'none';
@@ -1114,7 +1183,7 @@
     } catch (err) {
       console.error('Error al traducir:', err);
       // Fallback: traducción simple con aviso
-      alert('No se pudo traducir automáticamente. Usa el prompt en español: FLUX también lo entiende perfectamente.');
+      alert('No se pudo traducir automáticamente. Puedes usar el prompt en español.');
     } finally {
       btn.disabled = false;
     }
