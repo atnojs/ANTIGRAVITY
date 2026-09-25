@@ -36,7 +36,43 @@
     "openai-max-flare": "MAX FLARE",
     "openai-max-sunburst": "MAX SUNBURST",
     "gemini-flash": "3.1 FLASH",
-    "gemini-pro": "3 PRO"
+    "gemini-pro": "3 PRO",
+    "qwen-pro": "QWEN 3 PRO"
+  };
+
+  // Llamada al proxy. Para qwen-pro (más lento que el timeout de nginx,
+  // ~55s) se espera activamente: el proxy guarda el resultado en qwen_cache/
+  // y responde 'processing' mientras el worker termina de generarlo.
+  var delay = function (ms) { return new Promise(function (res) { setTimeout(res, ms); }); };
+  var callProxyWithWait = async function (payload, maxAttempts) {
+    maxAttempts = maxAttempts || 36;
+    var slowModel = payload && payload.model === "qwen-pro";
+    var lastError = "Sin respuesta del modelo.";
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        var res = await fetch("proxy.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        var j = await res.json().catch(function () { return null; });
+        if (res.ok && j && (j.imageUrl || (j.success && j.image))) return { ok: true, j: j };
+        if (j && j.status === "processing") {
+          lastError = "Generando...";
+        } else if (j && j.error) {
+          lastError = (j.error.message) ? j.error.message : "Error desconocido";
+          if (!slowModel || res.status < 500) return { ok: false, j: j };
+        } else {
+          lastError = "Error HTTP " + res.status;
+          if (!slowModel) return { ok: false, j: { error: { message: lastError } } };
+        }
+      } catch (err) {
+        if (!slowModel) return { ok: false, j: { error: { message: "Fallo de conexión: " + err.message } } };
+        lastError = (err && err.message) || lastError;
+      }
+      if (attempt < maxAttempts - 1) await delay(5000);
+    }
+    return { ok: false, j: { error: { message: lastError } } };
   };
 
   // ---------- Tema claro/oscuro ----------
@@ -144,12 +180,7 @@
     var payload = { prompt: prompt, model: state.selectedModel };
     if (state.mode === "editar") payload.imagen = state.imagenBase64;
 
-    fetch("proxy.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    callProxyWithWait(payload)
       .then(function (res) {
         $("btnGenerate").disabled = false;
         hideOverlay();
