@@ -1,0 +1,14 @@
+{
+  "name": "replica-infografica",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicación de escritorio para transformar una referencia visual en una nueva infografía.",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check electron/main.js && node --check electron/preload.js && node --check app.js"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1"
+  }
+}
