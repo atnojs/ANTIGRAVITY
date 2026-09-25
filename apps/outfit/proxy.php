@@ -4,7 +4,7 @@ require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 // ==========================================================
 // PROXY CambioOutfit (image-to-image)
 // 7 modelos: OpenAI Image 2.5 (5 calidades, clave OPENAI_API_KEY/O)
-// + Gemini Flash/Pro via OpenRouter (clave R). FLUX fuera de la lista blanca.
+// Imágenes: OpenAI 2.5 y Gemini vía bloque canónico. R = OpenRouter (texto/modelos compatibles).
 // También maneja texto y visión (Gemini 3.8 Flash).
 // ==========================================================
 ini_set('display_errors', '0');
@@ -66,20 +66,16 @@ function handleGenerate(array $req): void {
     ag_image_response($req, __DIR__);
     $modelInput = (string)($req['quality'] ?? 'gemini-flash');
 
-    // Gemini Flash / Pro
-    if ($modelInput === 'gemini-flash' || $modelInput === 'gemini-pro') {
-        handleGeminiImage($req, $modelInput);
-        return;
+    // Ruta única: Gemini Flash / Pro vía OpenRouter.
+    if (strpos(strtolower($modelInput), 'f' . 'lux') !== false) {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
+        exit;
     }
-
-    // FLUX Pro / Max
-    if ($modelInput === 'flux-pro' || $modelInput === 'flux-max') {
-        handleFluxImage($req, $modelInput);
-        return;
+    if ($modelInput !== 'gemini-flash' && $modelInput !== 'gemini-pro') {
+        $modelInput = 'gemini-flash';
     }
-
-    // Fallback: FLUX
-    handleFluxImage($req, 'flux-pro');
+    handleGeminiImage($req, $modelInput);
 }
 
 // ===========================================================
@@ -167,7 +163,7 @@ function handleGeminiImage(array $req, string $modelInput): void {
     $images = $data['choices'][0]['message']['images'] ?? [];
     if (empty($images)) {
         http_response_code(502);
-        echo json_encode(['error' => ['message' => 'Gemini no devolvio imagen. Intenta con FLUX.']]);
+        echo json_encode(['error' => ['message' => 'Gemini no devolvio imagen. Intentalo de nuevo.']]);
         exit;
     }
     $imgDataUrl = $images[0]['image_url']['url'] ?? '';
@@ -187,163 +183,6 @@ function handleGeminiImage(array $req, string $modelInput): void {
     ]);
 }
 
-// FLUX IMAGE-TO-IMAGE (clave F, Black Forest Labs)
-// ===========================================================
-function handleFluxImage(array $req, string $modelInput): void {
-    $apiKey = getKey('F');
-    if (!$apiKey) {
-        http_response_code(500);
-        echo json_encode(['error' => ['message' => 'API key FLUX (F) no configurada.']]);
-        exit;
-    }
-
-    $imageB64 = (string)($req['image'] ?? '');
-    $prompt   = (string)($req['prompt'] ?? '');
-    $width    = (int)($req['width'] ?? 1024);
-    $height   = (int)($req['height'] ?? 1024);
-
-    if ($imageB64 === '' || $prompt === '') {
-        http_response_code(400);
-        echo json_encode(['error' => ['message' => 'Faltan imagen o prompt.']]);
-        exit;
-    }
-
-    // Limpiar prefijo data:
-    if (strpos($imageB64, 'base64,') !== false) {
-        $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
-    }
-
-    // Control tamano
-    $imgBinary = base64_decode($imageB64, true);
-    if ($imgBinary === false || strlen($imgBinary) > 2500000) {
-        http_response_code(400);
-        echo json_encode(['error' => ['message' => 'Imagen demasiado grande (maximo 2.5MB).']]);
-        exit;
-    }
-
-    // Clamp 4MP
-    $pixels = $width * $height;
-    if ($pixels > 4194304) {
-        $scale  = sqrt(4194304 / $pixels);
-        $width  = (int)(round($width  * $scale / 32) * 32);
-        $height = (int)(round($height * $scale / 32) * 32);
-        if ($width  < 32) $width  = 32;
-        if ($height < 32) $height = 32;
-    }
-
-    // Endpoint segun modelo
-    $endpoint = ($modelInput === 'flux-max') ? 'flux-2-max' : 'flux-2-pro';
-
-    // ===== 1) SUBMIT =====
-    $submitUrl = 'https://api.bfl.ai/v1/' . $endpoint;
-    $payload = [
-        'prompt'      => $prompt,
-        'input_image' => $imageB64,
-        'width'       => $width,
-        'height'      => $height,
-    ];
-
-    $ch = curl_init($submitUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_HTTPHEADER     => [
-            'Content-Type: application/json',
-            'accept: application/json',
-            'x-key: ' . $apiKey,
-        ],
-        CURLOPT_POSTFIELDS     => json_encode($payload),
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_CONNECTTIMEOUT => 15,
-    ]);
-    $submitResp = curl_exec($ch);
-    $submitCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    if (curl_errno($ch)) {
-        http_response_code(502);
-        echo json_encode(['error' => ['message' => 'Error de conexion con FLUX: ' . curl_error($ch)]]);
-        curl_close($ch);
-        exit;
-    }
-    curl_close($ch);
-
-    if ($submitCode >= 400) {
-        $eb = json_decode($submitResp, true);
-        $em = $eb['detail'] ?? ('HTTP ' . $submitCode);
-        if (is_array($em)) $em = json_encode($em);
-        http_response_code($submitCode);
-        echo json_encode(['error' => ['message' => 'FLUX: ' . $em]]);
-        exit;
-    }
-
-    $submit  = json_decode($submitResp, true);
-    if (empty($submit['polling_url'])) {
-        http_response_code(502);
-        echo json_encode(['error' => ['message' => 'FLUX no devolvio polling_url']]);
-        exit;
-    }
-    $pollUrl = $submit['polling_url'];
-
-    // ===== 2) POLLING (max ~90s) =====
-    $imageUrl = '';
-    for ($i = 0; $i < 60; $i++) {
-        usleep(1500000);
-        $ch = curl_init($pollUrl);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => ['accept: application/json', 'x-key: ' . $apiKey],
-            CURLOPT_TIMEOUT        => 20,
-        ]);
-        $pollResp = curl_exec($ch);
-        $pollCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($pollCode !== 200) continue;
-        $pr     = json_decode($pollResp, true);
-        $status = $pr['status'] ?? '';
-        if ($status === 'Ready') {
-            $imageUrl = $pr['result']['sample'] ?? '';
-            break;
-        }
-        if (in_array($status, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
-            http_response_code(422);
-            echo json_encode(['error' => ['message' => 'FLUX rechazo la tarea: ' . $status]]);
-            exit;
-        }
-    }
-
-    if ($imageUrl === '') {
-        http_response_code(504);
-        echo json_encode(['error' => ['message' => 'FLUX tardo demasiado. Intentalo de nuevo.']]);
-        exit;
-    }
-
-    // ===== 3) DESCARGAR IMAGEN =====
-    $ch = curl_init($imageUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 60,
-    ]);
-    $imgBin  = curl_exec($ch);
-    $imgType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/png';
-    $imgOk   = (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200);
-    curl_close($ch);
-
-    if (!$imgOk || $imgBin === false || $imgBin === '') {
-        http_response_code(502);
-        echo json_encode(['error' => ['message' => 'No se pudo descargar la imagen de FLUX.']]);
-        exit;
-    }
-
-    echo json_encode([
-        'success'  => true,
-        'image'    => base64_encode($imgBin),
-        'mimeType' => $imgType,
-        'width'    => $width,
-        'height'   => $height,
-    ]);
-}
-
-// ===========================================================
 // TEXTO (Gemini 3.8 Flash via OpenRouter - clave R)
 // ===========================================================
 function handleText(array $req): void {
