@@ -896,7 +896,8 @@ const App = () => {
                               <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
                                 {[
                                   { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-xhigh', 'XHIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-max-sunburst', 'MAX SUNBURST']] },
-                                  { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                                  { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] },
+                                  { provider: 'QWEN', models: [['qwen-pro', 'QWEN 3 PRO']] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
                                     <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
@@ -905,7 +906,7 @@ const App = () => {
                                       : <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden', display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>De Menor a Mayor Calidad</span>}
                                     <div className="model-toggle-group" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                                       {group.models.map(([id, name]) => (
-                                        <button type="button" key={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id} aria-describedby="model-tooltip"
+                                        <button type="button" key={id} data-model={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id} aria-describedby="model-tooltip"
                                           data-tooltip={window.MODEL_TOOLTIP_TEXTS[id] || ''}
                                           className={`model-toggle ${selectedModel === id ? 'active' : ''}`}>{name}</button>
                                       ))}
@@ -1022,7 +1023,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
 const root = createRoot(document.getElementById('root'));
