@@ -24,9 +24,9 @@ Aplicación web para crear y mejorar prompts profesionales mediante Método Copi
    SetEnv R "sk-or-v1-TU_CLAVE"
    ```
 
-   Mantén `F` reservado para FLUX y `R` para OpenRouter.
+   Mantén `F` reservado para la IA generativa de imágenes y `R` para OpenRouter.
 
-4. Alternativa: copia `config.example.php` como `config.php`, introduce la clave y no subas ese archivo a Git.
+4. Alternativa: copia `config.example.php` como `.htaccess raiz`, introduce la clave y no subas ese archivo a Git.
 5. Da permiso de escritura al servidor sobre `history_data/` sin hacer la carpeta pública.
 6. Abre `proxy.php` en el navegador. Debe responder con `configured: true`.
 7. Abre `index.html` y prueba generación, historial, recarga, edición y eliminación.
@@ -44,7 +44,7 @@ Los modelos solo se seleccionan mediante un mapa cerrado en `proxy.php`; el nave
 ## Seguridad
 
 - No pongas la clave en `app.js`, HTML ni repositorios.
-- No publiques `config.php`.
+- No publiques `.htaccess raiz`.
 - Mantén `.htaccess` activo para bloquear `skills/` e `history_data/`.
 - Usa HTTPS en producción.
 
