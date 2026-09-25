@@ -4,6 +4,8 @@
  * PROXY UNIFICADO — Combinar Imágenes
  * ============================================
  * Backends: OpenAI GPT Image 2.5 (directo, clave OPENAI_API_KEY/O) + Gemini (OpenRouter, clave R)
+ * + QWEN 3 PRO (OpenRouter Images API, clave R; con keepalive + qwen_cache/lock
+ *   porque tarda ~100s/imagen y nginx corta a ~55s).
  * DeepSeek para mejorar prompts (texto, clave D/B/DEEPSEEK_API_KEY)
  * (lista cerrada) (400 "Modelo no soportado").
  *
@@ -129,7 +131,7 @@ if ($task === 'combineImages') {
         exit;
     }
 
-    // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada) ──
+    // ── Catálogo canónico (2026-09-25): OpenAI 2.5 (5 calidades) + Gemini + QWEN 3 PRO. (lista cerrada) ──
     $modelCatalog = [
         'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
         'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
@@ -138,6 +140,7 @@ if ($task === 'combineImages') {
         'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
         'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
         'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+        'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
     ];
     if (!isset($modelCatalog[$model])) {
         http_response_code(400);
@@ -154,6 +157,17 @@ if ($task === 'combineImages') {
             exit;
         }
         $result = callGemini($apiKey, $selected['model'], $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
+    } elseif ($backend === 'qwen') {
+        // QWEN IMAGE 3 PRO (OpenRouter Images API). La llamada puede superar el
+        // timeout de nginx (~55s): callQwen gestiona keepalive + caché/lock,
+        // emite la respuesta JSON final y sale.
+        $apiKey = getSecret('R'); // OpenRouter
+        if (!$apiKey) {
+            echo json_encode(['error' => ['message' => 'API key OpenRouter (R) no configurada']]);
+            exit;
+        }
+        callQwen($apiKey, $selected['model'], $prompt, $images, $backgroundImage, $aspectRatio);
+        exit;
     } else {
         $apiKey = getSecret('OPENAI_API_KEY') ?: getSecret('O');
         if (!$apiKey) {
@@ -381,6 +395,151 @@ function callGemini(string $apiKey, string $geminiModelId, string $prompt, array
     }
 
     return ['images' => $images_out];
+}
+
+/**
+ * Llamar a QWEN IMAGE 3 PRO (OpenRouter Images API, clave R).
+ * Qwen tarda ~100s/imagen y nginx corta la conexión a ~55s sin tráfico:
+ *  - keepalive: se emiten espacios periódicos (curl_multi) que no invalidan
+ *    el JSON final (el parser tolera espacio en blanco inicial);
+ *  - caché/lock en carpeta de la app (qwen_cache/): sys_get_temp_dir() NO
+ *    persiste entre peticiones en Hostinger. Un worker guarda el resultado y
+ *    los reintentos del frontend lo recogen o esperan con 'processing'.
+ * Emite la respuesta final con la MISMA forma JSON que el resto de rutas
+ * ({images: [{data, mimeType}]}) y SALE.
+ */
+function callQwen(string $apiKey, string $qwenModelId, string $prompt, array $images, ?array $background, string $aspectRatio): void {
+    // Proporciones REALES de Qwen: se elige la más cercana a la composición.
+    $qwenAllowed = [
+        '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+        '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+        '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+        '9:16' => 9 / 16, '16:9' => 16 / 9,
+    ];
+    $parts = explode(':', trim((string)$aspectRatio));
+    $target = max(1, (int)($parts[0] ?? 1)) / max(1, (int)($parts[1] ?? 1));
+    $qwenRatio = '1:1'; $qwenDistance = PHP_FLOAT_MAX;
+    foreach ($qwenAllowed as $label => $value) {
+        $current = abs($target - $value);
+        if ($current < $qwenDistance) { $qwenDistance = $current; $qwenRatio = $label; }
+    }
+
+    $payload = [
+        'model'         => $qwenModelId,
+        'prompt'        => $prompt,
+        'resolution'    => '1K',
+        'aspect_ratio'  => $qwenRatio,
+        'n'             => 1,
+        'output_format' => 'png',
+    ];
+
+    // Referencias: el fondo primero (si existe) y hasta 4 imágenes en total.
+    $refs = [];
+    if ($background && !empty($background['data'])) {
+        $refs[] = ['data' => (string)$background['data'], 'mimeType' => (string)($background['mimeType'] ?? 'image/jpeg')];
+    }
+    foreach ($images as $img) {
+        if (!empty($img['data'])) { $refs[] = ['data' => (string)$img['data'], 'mimeType' => (string)($img['mimeType'] ?? 'image/jpeg')]; }
+    }
+    foreach (array_slice($refs, 0, 4) as $ref) {
+        $data = $ref['data'];
+        if (strpos($data, 'data:') === 0) { $data = substr($data, strpos($data, ',') + 1); }
+        $payload['input_references'][] = [
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . $ref['mimeType'] . ';base64,' . $data],
+        ];
+    }
+
+    // Caché + candado en carpeta de la app (Hostinger no persiste /tmp).
+    $cacheKey = hash('sha256', $qwenModelId . '|' . $prompt . '|' . json_encode($payload['input_references'] ?? []) . '|' . $qwenRatio);
+    $cacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
+    $lockFile = $cacheFile . '.lock';
+
+    if (is_file($cacheFile)) {
+        $cached = json_decode((string)@file_get_contents($cacheFile), true);
+        if (is_array($cached) && !empty($cached['b64'])) {
+            echo json_encode(['images' => [['data' => $cached['b64'], 'mimeType' => 'image/png']]]);
+            exit;
+        }
+    }
+    if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+        http_response_code(202);
+        echo json_encode(['status' => 'processing']);
+        exit;
+    }
+
+    ignore_user_abort(true);
+    set_time_limit(180);
+    @file_put_contents($lockFile, (string)time());
+    register_shutdown_function(static function () use ($lockFile, $cacheFile) {
+        // Si la generación terminó sin guardar caché, libera el candado.
+        if (is_file($lockFile) && !is_file($cacheFile)) @unlink($lockFile);
+    });
+
+    // Mantener viva la conexión con nginx (corta a ~55s sin tráfico): se
+    // emiten espacios periódicos que no invalidan el JSON final.
+    while (ob_get_level() > 0) { @ob_end_flush(); }
+    @ob_implicit_flush(true);
+
+    $ch = curl_init('https://openrouter.ai/api/v1/images');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiKey,
+        ],
+        CURLOPT_TIMEOUT => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
+    ]);
+    $mh = curl_multi_init();
+    curl_multi_add_handle($mh, $ch);
+    do {
+        $status = curl_multi_exec($mh, $active);
+        if ($active) {
+            curl_multi_select($mh, 3.0);
+            echo str_repeat(' ', 64) . "\n";
+            @flush();
+        }
+    } while ($active && $status === CURLM_OK);
+    $resp = (string)curl_multi_getcontent($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_multi_remove_handle($mh, $ch);
+    curl_multi_close($mh);
+    curl_close($ch);
+
+    if ($err) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error conexion OpenRouter: ' . $err]]);
+        exit;
+    }
+    if ($code >= 400) {
+        $eb = json_decode($resp, true);
+        $em = $eb['error']['message'] ?? $eb['error'] ?? ('HTTP ' . $code);
+        if (is_array($em)) $em = json_encode($em);
+        http_response_code($code);
+        echo json_encode(['error' => ['message' => 'OpenRouter: ' . $em]]);
+        exit;
+    }
+
+    $jr = json_decode($resp, true);
+    $imageData = (string)($jr['data'][0]['b64_json'] ?? '');
+    if ($imageData === '') {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Qwen no devolvio imagen.']]);
+        exit;
+    }
+
+    // Guarda el resultado: los reintentos del frontend lo recogen aunque
+    // nginx haya cortado la respuesta original por timeout.
+    @file_put_contents($cacheFile, json_encode(['b64' => $imageData]));
+    @unlink($lockFile);
+    echo json_encode(['images' => [['data' => $imageData, 'mimeType' => 'image/png']]]);
+    exit;
 }
 
 // ═══════════════════════════════════════════════════════════════

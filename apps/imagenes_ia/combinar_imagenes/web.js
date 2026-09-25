@@ -13,7 +13,7 @@ const CONFIG = {
     INITIAL_SLOTS: 4
 };
 
-// Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada)
+// Catálogo canónico (2026-09-25): OpenAI 2.5 (5 calidades) + Gemini + QWEN 3 PRO. (lista cerrada)
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
@@ -21,7 +21,8 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
 };
 
 // --- HISTORIAL PERSISTENTE CON INDEXEDDB ---
@@ -497,6 +498,40 @@ function setEnhancing(isEnhancing) {
         : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21"/><path d="M17 3v4"/><path d="M21 5h-4"/></svg> Mejorar Prompt`;
 }
 
+// Llamada al proxy con espera activa. Para qwen-pro (más lento que el timeout
+// de nginx, ~55s) el proxy guarda el resultado en caché y responde
+// 'processing' mientras el worker termina de generarlo: reintentamos hasta
+// recoger la imagen (patrón canónico dibujo_lineas_copia).
+async function proxyFetchWithWait(body, maxAttempts = 36) {
+    const slowModel = body && body.model === 'qwen-pro';
+    let lastError = 'Sin respuesta del modelo.';
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            const res = await fetch(CONFIG.PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const json = await res.json().catch(() => null);
+            if (res.ok && json && json.images && json.images.length > 0) return json;
+            if (json && json.status === 'processing') {
+                lastError = 'Generando...';
+            } else if (json && json.error && json.error.message) {
+                lastError = json.error.message;
+                if (!slowModel || res.status < 500) throw new Error(lastError);
+            } else {
+                lastError = `Error HTTP ${res.status}`;
+            }
+        } catch (e) {
+            if (!slowModel) throw e;
+            lastError = (e && e.message) || lastError;
+        }
+        if (!slowModel) throw new Error(lastError);
+        if (attempt < maxAttempts - 1) await new Promise(r => setTimeout(r, 5000));
+    }
+    throw new Error(lastError);
+}
+
 async function handleGenerate() {
     // Filtrar imágenes reales (no null)
     const activeImages = state.images.filter(img => img !== null);
@@ -539,13 +574,7 @@ async function handleGenerate() {
             targetPx: state.selectedRes
         };
 
-        const response = await fetch(CONFIG.PROXY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestData)
-        });
-
-        const data = await response.json();
+        const data = await proxyFetchWithWait(requestData);
 
         if (data.error) throw new Error(data.error.message || data.error);
 
