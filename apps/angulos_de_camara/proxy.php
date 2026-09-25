@@ -3,7 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 /**
  * Proxy canónico Antigravity.
- * F = FLUX (imágenes), R = OpenRouter (texto/modelos compatibles).
+ * R = OpenRouter (texto/modelos compatibles).
  */
 
 ini_set('display_errors', '0');
@@ -25,7 +25,6 @@ function respond(int $status, array $payload): void {
 }
 
 function getSecret(string $name): string {
-    $config = __DIR__ . '/config.php';
     if (is_file($config)) {
         include_once $config;
         if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
@@ -224,65 +223,11 @@ function handleGemini(array $request): void {
     ]);
 }
 
-function handleFlux(array $request): void {
-    $key = getSecret('F');
-    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
-    $prompt = trim((string)($request['prompt'] ?? ''));
-    if ($prompt === '') respond(400, ['success' => false, 'error' => 'Falta el prompt.']);
-    if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
-    $quality = strtolower((string)($request['quality'] ?? 'pro'));
-    $models = ['pro'=>'flux-2-pro', 'max'=>'flux-2-max'];
-    if (!isset($models[$quality])) respond(400, ['success' => false, 'error' => 'La calidad debe ser PRO o MAX.']);
-    $format = strtolower((string)($request['output_format'] ?? 'png'));
-    if (!in_array($format, ['png','jpeg','webp'], true)) respond(400, ['success' => false, 'error' => 'Formato no permitido.']);
-    [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
-    $payload = ['prompt'=>$prompt, 'width'=>$width, 'height'=>$height, 'output_format'=>$format];
-    $images = [];
-    if (isset($request['image']) && is_string($request['image']) && trim($request['image']) !== '') $images[] = $request['image'];
-    if (isset($request['images']) && is_array($request['images'])) {
-        foreach ($request['images'] as $image) if (is_string($image) && trim($image) !== '') $images[] = $image;
-    }
-    if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Máximo ocho imágenes de referencia.']);
-    foreach ($images as $i => $image) $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = base64Image($image);
-    if (isset($request['seed']) && is_numeric($request['seed'])) $payload['seed'] = (int)$request['seed'];
-    $headers = ['accept: application/json', 'Content-Type: application/json', 'x-key: ' . $key];
-    [$status, $submit] = requestJson('https://api.bfl.ai/v1/' . $models[$quality], 'POST', $headers, $payload);
-    if ($status < 200 || $status >= 300) respond($status ?: 502, ['success'=>false, 'error'=>'FLUX rechazó la solicitud.', 'detail'=>$submit['detail'] ?? $submit]);
-    $pollUrl = (string)($submit['polling_url'] ?? '');
-    $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
-    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) respond(502, ['success'=>false, 'error'=>'URL de seguimiento FLUX no válida.']);
-    $resultUrl = '';
-    $last = 'Pending';
-    for ($i = 0; $i < 90; $i++) {
-        usleep(1000000);
-        [$pollStatus, $poll] = requestJson($pollUrl, 'GET', ['accept: application/json', 'x-key: ' . $key], null, 20);
-        if ($pollStatus !== 200) continue;
-        $last = (string)($poll['status'] ?? 'Pending');
-        if ($last === 'Ready') { $resultUrl = (string)($poll['result']['sample'] ?? ''); break; }
-        if (in_array($last, ['Error','Failed','Request Moderated','Content Moderated'], true)) respond(422, ['success'=>false, 'error'=>'FLUX no pudo completar la tarea.', 'status'=>$last]);
-    }
-    if ($resultUrl === '' || parse_url($resultUrl, PHP_URL_SCHEME) !== 'https') respond(504, ['success'=>false, 'error'=>'FLUX tardó demasiado.', 'status'=>$last]);
-    $ch = curl_init($resultUrl);
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_CONNECTTIMEOUT=>15, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_MAXREDIRS=>3]);
-    $binary = curl_exec($ch);
-    $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $mime = (string)(curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/png');
-    curl_close($ch);
-    if ($binary === false || $binary === '' || $downloadStatus !== 200) respond(502, ['success'=>false, 'error'=>'No se pudo descargar el resultado.']);
-    $base64 = base64_encode($binary);
-    respond(200, [
-        'success'=>true, 'provider'=>'flux', 'model'=>$models[$quality], 'quality'=>$quality,
-        'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
-        'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
-        'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
-    ]);
-}
-
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== ''],
+    'configured'=>['openrouter'=>getSecret('R') !== ''],
     'actions'=>['generate','openrouter','text','health'],
     'models'=>[
         'openai-medium'       => 'gpt-image-2.5-flare',
@@ -298,12 +243,12 @@ if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no per
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['flux'=>getSecret('F') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openrouter'=>getSecret('R') !== '']]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') {
     ag_image_response($request, __DIR__);
-    $reqModel = strtolower((string)($request['model'] ?? ''));
+    $reqModel = strtolower((string)($request['model'] ?? 'gemini-flash'));
+    if (preg_match('#f'.'lux#i', $reqModel) === 1) respond(400, ['success'=>false, 'error'=>'Modelo no soportado.']);
     if (strpos($reqModel, 'gemini') !== false) handleGemini($request);
-    handleFlux($request);
 }
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
