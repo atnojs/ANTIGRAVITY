@@ -576,9 +576,9 @@ if ($apiKey === null) {
 }
 
 $modelMap = [
-    'auto' => 'xiaomi/mimo-v2.6-pro',
-    'balanced' => 'xiaomi/mimo-v2.6-pro',
-    'premium' => 'xiaomi/mimo-v2.6-pro',
+    'auto' => 'openrouter/auto',
+    'balanced' => 'openai/gpt-4o-mini',
+    'premium' => 'openai/gpt-4o',
 ];
 
 $tokenMap = [
