@@ -1,7 +1,7 @@
 // --- CONSTANTES DE FORMATO ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
-// --- Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. FLUX fuera. ---
+// --- Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada) ---
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
