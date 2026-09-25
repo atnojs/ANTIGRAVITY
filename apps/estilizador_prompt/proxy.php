@@ -234,7 +234,7 @@ function handleStyleImageAnalysis(string $key, string $styleImage, string $guida
         ? 'Analiza la referencia visual. Usa esta orientación del usuario solo para nombrar mejor el estilo, nunca para describir contenido o geometría: ' . $guidance
         : 'Analiza la referencia visual. Clasifica primero si es estilo o plantilla y separa rigurosamente lo transferible de lo que pertenece al contenido original.';
 
-    $models = ['google/gemini-3.8-flash'];
+    $models = ['xiaomi/mimo-v2.6-pro'];
     $decoded = null;
     $analysisModel = '';
     foreach ($models as $model) {
@@ -367,7 +367,7 @@ function handleAdaptPrompt(array $request): void {
 
     $system = 'Transforma el texto recibido en un tratamiento artístico para aplicar sobre una imagen base inmutable. Conserva exclusivamente los rasgos de firma visual que aparezcan de forma explícita en la entrada: medio, género, dirección artística, estética, técnica, paleta, iluminación, texturas, materiales, acabado, atmósfera, realismo, efectos y motivos narrativos. No añadas ninguna técnica, efecto, material, color o motivo mencionado solamente en estas instrucciones. Elimina cualquier indicación sobre el contenido o la geometría de la imagen. Si una técnica de la entrada está localizada en una parte concreta, no la elimines: conviértela en una capa global distribuida por todo el fotograma. Si la entrada contiene motivos narrativos o escenas secundarias, consérvalos únicamente como siluetas o superposiciones semitransparentes no estructurales. Puedes conservar acabados superficiales como humedad, brillo o rugosidad solo cuando estén presentes en la entrada, aplicándolos sobre los materiales existentes sin cambiar su forma. PROHIBIDO escribir en la salida: sujeto, hombre, mujer, persona, retrato, rostro, cara, perfil, expresión, mirada, pose, orientación, primer plano, plano, zoom, cámara, lente, encuadre, perspectiva, composición, vertical, horizontal, fotografía o imagen de referencia, relación de aspecto, resolución, dimensiones o proporciones. Tampoco describas el peinado, vestuario, objetos, lugar o fondo. No narres la escena original ni uses frases como "la imagen presenta". Empieza obligatoriamente con "Aplica a toda la imagen" y redacta en modo imperativo un único párrafo específico en español, sin título, listas, comillas ni Markdown, con un máximo de 1300 caracteres. Ejemplo: si la entrada incluye cartel de fantasía oscura, ampliación lateral, acabado húmedo, doble exposición con siluetas y formato 9:16, conserva únicamente cartel de fantasía oscura, acabado húmedo y doble exposición global con siluetas narrativas.';
     $payload = [
-        'model' => 'google/gemini-3.8-flash',
+        'model' => 'xiaomi/mimo-v2.6-pro',
         'messages' => [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => $source],
@@ -396,7 +396,7 @@ function handleAdaptPrompt(array $request): void {
     respond(200, [
         'success' => true,
         'provider' => 'openrouter',
-        'model' => 'google/gemini-3.8-flash',
+        'model' => 'xiaomi/mimo-v2.6-pro',
         'format' => 'text',
         'sourceType' => 'text',
         'adaptedPrompt' => $adapted,
