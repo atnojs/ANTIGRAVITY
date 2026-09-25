@@ -69,7 +69,7 @@ FUENTE APORTADA: ${source || 'No aportada'}`;
           action: 'generate-text',
           system: systemPrompt,
           prompt: userPrompt,
-          model: 'google/gemini-3.8-flash'
+          model: 'xiaomi/mimo-v2.6-pro'
         })
       });
       const json = await resp.json();
@@ -89,7 +89,7 @@ FUENTE APORTADA: ${source || 'No aportada'}`;
       data = await this.callAPI(
         'https://openrouter.ai/api/v1/chat/completions',
         apiKey,
-        'google/gemini-3.8-flash',
+        'xiaomi/mimo-v2.6-pro',
         systemPrompt,
         userPrompt,
         true
