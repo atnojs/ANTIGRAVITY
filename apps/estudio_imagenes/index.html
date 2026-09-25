@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=4">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
 </head>
 <body>
@@ -52,13 +52,29 @@
           <textarea id="promptBox" class="prompt-box" placeholder="Ej: un faro solitario en un acantilado al atardecer, estilo acuarela"></textarea>
 
           <div class="controls-row">
-            <div class="control-group">
-              <label for="calidadSel">Calidad</label>
-              <select id="calidadSel" class="select-native">
-                <option value="barato">Barato · ~2 cént.</option>
-                <option value="normal" selected>Normal · ~4 cént. (recomendado)</option>
-                <option value="pro">Pro · ~13 cént.</option>
-              </select>
+            <div class="control-group" style="width:100%">
+              <label>Modelo IA</label>
+              <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                <div class="model-provider-column">
+                  <span class="model-provider-title">OPENAI 2.5</span>
+                  <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+                  <div class="model-toggle-group">
+                    <button type="button" class="model-toggle active" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="true">MEDIUM</button>
+                    <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+                    <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+                    <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+                    <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
+                  </div>
+                </div>
+                <div class="model-provider-column">
+                  <span class="model-provider-title">GEMINI</span>
+                  <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+                  <div class="model-toggle-group">
+                    <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+                    <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -138,8 +154,9 @@
       <p id="secondary-status" class="secondary-status">Procesando solicitud...</p>
     </div>
   </div>
+  <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
 
   <script src="history-manager.js?v=5"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
