@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="stylesheet" href="styles.css?v=7">
 </head>
 
 <body>
@@ -176,11 +176,26 @@
                     <div class="grid-cell full">
                         <div class="model-selector" id="modelSelector">
                             <span class="model-selector-label">Modelo IA</span>
-                            <div class="model-toggle-group" id="modelToggleGroup" role="group" aria-label="Seleccionar modelo">
-                                <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
-                                <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
-                                <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
-                                <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+                            <div class="model-provider-layout" id="modelToggleGroup" role="group" aria-label="Seleccionar modelo">
+                                <div class="model-provider-column">
+                                    <span class="model-provider-title">OPENAI 2.5</span>
+                                    <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+                                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente">HIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst">MAX FLARE</button>
+            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">MAX SUNBURST</button>
+                                    </div>
+                                </div>
+                                <div class="model-provider-column">
+                                    <span class="model-provider-title">GEMINI</span>
+                                    <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+                                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <button class="btn-generate btn-3d" id="btnGenerate">
@@ -269,8 +284,10 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="history-manager.js?v=5"></script>
-    <script src="app.js?v=5"></script>
+    <!-- Tooltip de modelos (popup hover) -->
+<div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+<script src="history-manager.js?v=5"></script>
+    <script src="app.js?v=8"></script>
 </body>
 
 </html>
