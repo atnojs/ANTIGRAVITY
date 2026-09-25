@@ -4,6 +4,7 @@
  * ═══════════════════════════════════════════════════════════════════
  * Modelo: gemini-3.1-flash-image-preview
  * Usa el mismo patrón que editar_imagen (que SÍ funciona)
+ * Texto/análisis (MIMO 2.6 PRO): xiaomi/mimo-v2.6-pro vía OpenRouter.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,10 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
         'gemini-flash': '3.1 FLASH',
-        'gemini-pro': '3 PRO'
+        'gemini-pro': '3 PRO',
+        'qwen-pro': 'QWEN 3 PRO'
     };
 
-    // --- SELECTOR DE MODELO (7 botones, MEDIUM activo) ---
+    // --- SELECTOR DE MODELO (8 botones, MEDIUM activo) ---
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {
         selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
@@ -70,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modelTooltip.style.left = left + 'px';
             modelTooltip.style.top = top + 'px';
         };
-        document.querySelectorAll('.model-toggle').forEach((button) => {
+        document.querySelectorAll('[data-tooltip]').forEach((button) => {
             button.addEventListener('mouseenter', () => showModelTooltip(button));
             button.addEventListener('mouseleave', hideModelTooltip);
             button.addEventListener('focus', () => showModelTooltip(button));
@@ -201,26 +203,46 @@ Ensure the output is a complete, high-quality portrait that maintains the subjec
         const b64_1 = img1.split(',')[1];
         const b64_2 = img2.split(',')[1];
 
-        const res = await fetch(PROXY_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                model: selectedModel,
-                contents: [{
-                    parts: [
-                        { inlineData: { data: b64_1, mimeType: 'image/png' } },
-                        { inlineData: { data: b64_2, mimeType: 'image/png' } },
-                        { text: prompt }
-                    ]
-                }],
-                generationConfig: {
-                    imageConfig: {
-                        aspectRatio: '1:1'
-                    }
+        const requestBody = JSON.stringify({
+            model: selectedModel,
+            contents: [{
+                parts: [
+                    { inlineData: { data: b64_1, mimeType: 'image/png' } },
+                    { inlineData: { data: b64_2, mimeType: 'image/png' } },
+                    { text: prompt }
+                ]
+            }],
+            generationConfig: {
+                imageConfig: {
+                    aspectRatio: '1:1'
                 }
-            })
+            }
         });
 
-        const data = await res.json();
+        // qwen-pro tarda más que el timeout de nginx (~55s): el proxy guarda el
+        // resultado en caché (qwen_cache/) y responde 'processing' mientras el
+        // worker termina de generarlo; aquí se espera activamente.
+        const isQwen = selectedModel === 'qwen-pro';
+        const maxAttempts = isQwen ? 36 : 1;
+        let data = null;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const res = await fetch(PROXY_URL, {
+                    method: 'POST',
+                    body: requestBody
+                });
+                data = await res.json();
+            } catch (e) {
+                if (!isQwen || attempt === maxAttempts - 1) throw e;
+                await new Promise(r => setTimeout(r, 5000));
+                continue;
+            }
+            if (data && data.status === 'processing' && attempt < maxAttempts - 1) {
+                await new Promise(r => setTimeout(r, 5000));
+                continue;
+            }
+            break;
+        }
         addLog('API Response: ' + JSON.stringify(data).substring(0, 300) + '...');
 
         if (data.error) {
