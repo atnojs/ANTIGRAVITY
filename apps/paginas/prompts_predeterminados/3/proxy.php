@@ -28,13 +28,8 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+// API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
 }
