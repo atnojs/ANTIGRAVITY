@@ -18,14 +18,9 @@ try {
         throw new Exception('Método no permitido. Usa POST.', 405);
     }
 
-    // ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+    // ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
     $apiKey = '';
-    $configFile = __DIR__ . '/config.php';
-    if (file_exists($configFile)) {
-        include $configFile;
-        $apiKey = defined('A') ? A : '';
-    }
-    if (!$apiKey || empty($apiKey)) {
+        if (!$apiKey || empty($apiKey)) {
         $apiKey = getenv('A');
     }
     if (!$apiKey || empty($apiKey)) {
@@ -60,8 +55,8 @@ try {
         throw new Exception('El campo "prompt" es obligatorio.', 400);
     }
 
-    // CORREGIDO: Usar modelo Gemini-2.0-flash que existe
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($apiKey);
+    // App de SOLO TEXTO: Gemini 3.8 Flash (§6 de la spec de migración).
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=' . urlencode($apiKey);
 
     $body = [
         'contents' => [
