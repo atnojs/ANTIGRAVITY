@@ -4,6 +4,10 @@ import { Upload, Wand2, Download, Trash2, Image, Loader2, Eye, History, Sparkles
 
 const STORAGE_KEY = 'illusion_diffusion_history';
 
+// Modelo de texto/análisis (spec §6, MIMO): las llamadas de TEXTO con
+// gemini-3.8-flash van reenrutadas a MIMO 2.6 PRO (xiaomi/mimo-v2.6-pro) vía
+// OpenRouter en proxy.php (clave R); las llamadas de IMAGEN usan los modelos
+// del selector y quedan idénticas (Google directo / OpenAI).
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
@@ -11,7 +15,8 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
 };
 
 function App() {
@@ -491,6 +496,25 @@ function App() {
                                     ))}
                                 </div>
                             </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <span className="model-provider-title">QWEN</span>
+                                <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {[
+                                        { id: 'qwen-pro', name: 'QWEN 3 PRO' }
+                                    ].map(m => (
+                                        <button
+                                            type="button"
+                                            key={m.id}
+                                            onClick={() => setSelectedModel(m.id)}
+                                            className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
+                                            aria-pressed={selectedModel === m.id}
+                                            aria-describedby="model-tooltip"
+                                            data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                        >{m.name}</button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className="sliders-row">
@@ -650,7 +674,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
