@@ -192,6 +192,39 @@ function imageDims(uri) {
   });
 }
 
+// Llamada al proxy con espera activa. Para qwen-pro (más lento que el
+// timeout de nginx, ~55s) el proxy guarda el resultado en caché y responde
+// 'processing' mientras el worker termina de generarlo.
+async function callProxyWithWait(body, maxAttempts = 36) {
+  const slowModel = body && body.model === "qwen-pro";
+  let lastError = "Sin respuesta del modelo.";
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const res = await fetch(PROXY_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json && json.image) return json;
+      if (json && json.status === "processing") {
+        lastError = "Generando...";
+      } else if (json && json.error) {
+        lastError = String((json.error && json.error.message) || json.error);
+        if (!slowModel || res.status < 500) throw new Error(lastError);
+      } else {
+        lastError = `Error ${res.status}`;
+      }
+    } catch (e) {
+      if (!slowModel) throw e;
+      lastError = (e && e.message) || lastError;
+    }
+    if (!slowModel) throw new Error(lastError);
+    if (attempt < maxAttempts - 1) await new Promise((r) => setTimeout(r, 5000));
+  }
+  throw new Error(lastError);
+}
+
 // Llama al proxy de generación (editar imagen->imagen). Devuelve un data URI JPEG/PNG.
 // b64img: base64 PURO (sin prefijo data:).
 // dimsInfo: resultado de computeTargetDims -> { native:{width,height}, target:{w,h}, upscale }.
@@ -207,18 +240,7 @@ async function callImageModel(b64img, prompt, dimsInfo, model) {
     body.height = dimsInfo.native.height;
   }
 
-  const res = await fetch(PROXY_BASE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const json = await res.json().catch(() => null);
-  if (!res.ok || !json) {
-    const msg = (json && json.error && json.error.message) || `Error ${res.status}`;
-    throw new Error(msg);
-  }
-  if (json.error) throw new Error(json.error.message || "Error del proveedor");
+  const json = await callProxyWithWait(body);
   if (!json.image) throw new Error("El proveedor no devolvió imagen.");
   const mime = json.mimeType || "image/jpeg";
   let uri = `data:${mime};base64,${json.image}`;
@@ -1190,6 +1212,7 @@ function App() {
               {[
                 { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGH' }, { id: 'openai-xhigh', label: 'XHIGH' }, { id: 'openai-max-flare', label: 'MAX FLARE' }, { id: 'openai-max-sunburst', label: 'MAX SUNBURST' }] },
                 { provider: 'GEMINI', models: [{ id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
+                { provider: 'QWEN', models: [{ id: 'qwen-pro', label: 'QWEN 3 PRO' }] },
               ].map((group) => (
                 <div className="model-provider-column" key={group.provider}>
                   <span className="model-provider-title block text-center mb-1">{group.provider}</span>
@@ -1386,7 +1409,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

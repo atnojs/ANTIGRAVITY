@@ -202,6 +202,176 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 $action = (string)($req['action'] ?? '');
+
+// ============================================================
+//  RAMA QWEN IMAGE 3 PRO (OpenRouter Image API) — keepalive + caché
+// ============================================================
+// Qwen tarda ~100s/imagen y nginx corta a ~55s: un worker genera y guarda
+// el resultado (ignore_user_abort) en qwen_cache/ (carpeta de la app:
+// sys_get_temp_dir() NO persiste entre peticiones en Hostinger) y los
+// reintentos del frontend recogen el caché o esperan con 'processing'.
+if (!in_array($action, ['analyze', 'detect', 'crop'], true) && strtolower((string)($req['model'] ?? '')) === 'qwen-pro') {
+    $orKeyQ = '';
+    if (!defined('R')) {
+        $rCfg = __DIR__ . '/config.php';
+        if (file_exists($rCfg)) { include_once $rCfg; }
+    }
+    if (defined('R') && R !== '') { $orKeyQ = (string)R; }
+    if ($orKeyQ === '') { $orKeyQ = readKey('R'); }
+    if ($orKeyQ === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada en el servidor.']]);
+        exit;
+    }
+
+    $imageB64 = (string)($req['image'] ?? '');
+    if (strpos($imageB64, 'base64,') !== false) {
+        $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
+    }
+    if ($imageB64 === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Falta la imagen.']]);
+        exit;
+    }
+    $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
+    $prompt   = (string)($req['prompt'] ?? '');
+
+    // Qwen solo admite un set fijo de proporciones: se elige la más cercana
+    // a la imagen fuente (nunca se finge una proporción inexistente).
+    $qwenAllowed = [
+        '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+        '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+        '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+        '9:16' => 9 / 16, '16:9' => 16 / 9,
+    ];
+    $srcW = (int)($req['width'] ?? 0);
+    $srcH = (int)($req['height'] ?? 0);
+    if ($srcW <= 0 || $srcH <= 0) {
+        $info = @getimagesizefromstring((string)base64_decode($imageB64));
+        $srcW = (int)($info[0] ?? 0);
+        $srcH = (int)($info[1] ?? 0);
+    }
+    $targetRatio = ($srcW > 0 && $srcH > 0) ? $srcW / $srcH : 1.0;
+    $qwenRatio = '1:1'; $qwenDistance = PHP_FLOAT_MAX;
+    foreach ($qwenAllowed as $label => $value) {
+        $current = abs($targetRatio - $value);
+        if ($current < $qwenDistance) { $qwenDistance = $current; $qwenRatio = $label; }
+    }
+
+    $qwenPayload = [
+        'model'         => 'qwen/qwen-image-3-pro',
+        'prompt'        => $prompt,
+        'resolution'    => '1K',
+        'aspect_ratio'  => $qwenRatio,
+        'n'             => 1,
+        'output_format' => 'png',
+        'input_references' => [[
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . $imageB64],
+        ]],
+    ];
+
+    $cacheKey = hash('sha256', 'qwen-pro|' . $prompt . '|' . $imageB64 . '|' . $qwenRatio);
+    $cacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
+    $lockFile = $cacheFile . '.lock';
+
+    if (is_file($cacheFile)) {
+        $cached = json_decode((string)@file_get_contents($cacheFile), true);
+        if (is_array($cached) && !empty($cached['b64'])) {
+            $info = @getimagesizefromstring((string)base64_decode((string)$cached['b64']));
+            echo json_encode([
+                'image'    => $cached['b64'],
+                'mimeType' => 'image/png',
+                'width'    => (int)($info[0] ?? 0),
+                'height'   => (int)($info[1] ?? 0),
+            ]);
+            exit;
+        }
+    }
+    if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+        http_response_code(202);
+        echo json_encode(['status' => 'processing']);
+        exit;
+    }
+
+    ignore_user_abort(true);
+    set_time_limit(180);
+    @file_put_contents($lockFile, (string)time());
+    register_shutdown_function(static function () use ($lockFile, $cacheFile) {
+        // Si la generación terminó sin guardar caché, libera el candado.
+        if (is_file($lockFile) && !is_file($cacheFile)) @unlink($lockFile);
+    });
+
+    // Mantener viva la conexión con nginx (corta a ~55s sin tráfico): la
+    // generación puede tardar más; se emiten espacios periódicos que no
+    // invalidan el JSON final (el parser tolera espacio en blanco inicial).
+    while (ob_get_level() > 0) { @ob_end_flush(); }
+    @ob_implicit_flush(true);
+
+    $ch = curl_init('https://openrouter.ai/api/v1/images');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($qwenPayload),
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $orKeyQ,
+        ],
+        CURLOPT_TIMEOUT        => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
+    ]);
+    $mh = curl_multi_init();
+    curl_multi_add_handle($mh, $ch);
+    do {
+        $status = curl_multi_exec($mh, $active);
+        if ($active) {
+            curl_multi_select($mh, 3.0);
+            echo str_repeat(' ', 64) . "\n";
+            @flush();
+        }
+    } while ($active && $status === CURLM_OK);
+    $respQ = (string)curl_multi_getcontent($ch);
+    $codeQ = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $errQ  = curl_error($ch);
+    curl_multi_remove_handle($mh, $ch);
+    curl_multi_close($mh);
+    curl_close($ch);
+
+    if ($errQ) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error conexion OpenRouter: ' . $errQ]]);
+        exit;
+    }
+    $dataQ = json_decode($respQ, true);
+    if ($codeQ >= 400 || isset($dataQ['error'])) {
+        $msg = $dataQ['error']['message'] ?? $dataQ['error'] ?? ('HTTP ' . $codeQ);
+        if (is_array($msg)) $msg = json_encode($msg);
+        http_response_code($codeQ >= 400 ? $codeQ : 502);
+        echo json_encode(['error' => ['message' => 'OpenRouter: ' . $msg]]);
+        exit;
+    }
+    $imageData = $dataQ['data'][0]['b64_json'] ?? '';
+    if ($imageData === '') {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Qwen no devolvió ninguna imagen.']]);
+        exit;
+    }
+    // Guarda el resultado: los reintentos del frontend lo recogen aunque
+    // nginx haya cortado la respuesta original por timeout.
+    @file_put_contents($cacheFile, json_encode(['b64' => $imageData]));
+    @unlink($lockFile);
+    $info = @getimagesizefromstring((string)base64_decode($imageData));
+    echo json_encode([
+        'image'    => $imageData,
+        'mimeType' => 'image/png',
+        'width'    => (int)($info[0] ?? 0),
+        'height'   => (int)($info[1] ?? 0),
+    ]);
+    exit;
+}
+
 if (!in_array($action, ['analyze', 'detect', 'crop'], true)) {
     ag_image_response($req, __DIR__);
 }
