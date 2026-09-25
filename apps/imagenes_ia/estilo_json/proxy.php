@@ -4,17 +4,16 @@
  * 🎨 ESTILO JSON — PROXY PHP (Multi-Backend)
  * Flujo:
  *   1) analizarEstilo : imagen de referencia -> JSON de estilo
- *                       (visión: Gemini o OpenRouter gpt-4o-mini)
+ *                       (visión: Gemini gemini-3.8-flash / OpenRouter gemini-3.8-flash)
  *   2) mejorarPrompt  : DeepSeek (texto) afina las instrucciones extra
  *   3) aplicarEstilo  : imagen del sujeto + JSON de estilo -> nueva imagen
- *                       ┌─ flux-pro / flux-max → BFL async (submit+poll)
+ *                       ┌─ openai-medium/high/xhigh/max-flare/max-sunburst → gpt-image-2.5-flare/sunburst (edits)
  *                       └─ gemini-flash / gemini-pro → OpenRouter sync
  *
  * Claves (cascada, fuente real = SetEnv del .htaccess raíz de Hostinger):
- *   F                  -> FLUX / Black Forest Labs (generar imagen)
+ *   OPENAI_API_KEY / O -> OpenAI Images (gpt-image-2.5)
  *   A                  -> Gemini (visión para analizar el estilo)
- *   OPENROUTNER_API_KEY / C -> OpenRouter (Gemini img + visión respaldo)
- *   B / DEEPSEEK_API_KEY -> DeepSeek (texto, Mejorar Prompt)
+ *   R                  -> OpenRouter (Gemini img + visión respaldo + Mejorar Prompt)
  * ============================================================
  */
 declare(strict_types=1);
@@ -22,6 +21,7 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 set_time_limit(130);
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
@@ -33,28 +33,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 try {
     // ── Endpoint de salud (GET): comprueba que el proxy responde y qué claves hay ──
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $fluxOk = false; $gemOk = false; $orOk = false; $dsOk = false;
-        $configFile = __DIR__ . '/config.php';
-        if (file_exists($configFile)) {
-            include $configFile;
-            if (defined('F')) $fluxOk = (F !== '');
-            if (defined('A')) $gemOk = (A !== '');
-            if (defined('R')) $orOk = (R !== '');
-            if (defined('DEEPSEEK_API_KEY')) $dsOk = (DEEPSEEK_API_KEY !== '');
+        $gemOk = false; $orOk = false; $dsOk = false;
+        foreach (['A', 'REDIRECT_A'] as $v) {
+            $gemOk = $gemOk || !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
         }
-        foreach (['F', 'REDIRECT_F', 'BFL_API_KEY', 'REDIRECT_BFL_API_KEY'] as $v) {
-            if ($fluxOk) break;
-            $fluxOk = !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
+        foreach (['R', 'REDIRECT_R'] as $v) {
+            $orOk = $orOk || !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
         }
-        foreach (['R', 'REDIRECT_R', 'OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
-            if ($orOk) break;
-            $orOk = !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
-        }
+        $dsOk = $orOk;
         echo json_encode([
             'success' => true,
             'service' => 'estilo-json-proxy',
             'configured' => [
-                'flux' => $fluxOk,
                 'gemini_vision' => $gemOk,
                 'openrouter' => $orOk,
                 'deepseek' => $dsOk,
@@ -70,42 +60,22 @@ try {
         throw new Exception('cURL no habilitado en el servidor.', 500);
     }
 
-    // ── Claves API (config.php local → env → REDIRECT_ → $_SERVER → $_ENV) ──
-    $fluxKey = '';
+    // ── Claves API (solo env: getenv / REDIRECT_ / $_SERVER / $_ENV — patrón getSecret) ──
     $gemKey  = '';
     $orKey   = '';
     $dsKey   = '';
-    $configFile = __DIR__ . '/config.php';
-    if (file_exists($configFile)) {
-        include $configFile;
-        if (defined('F')) $fluxKey = F;
-        elseif (defined('BFL_API_KEY')) $fluxKey = BFL_API_KEY;
-        if (defined('A')) $gemKey = A;
-        elseif (defined('GEMINI_API_KEY')) $gemKey = GEMINI_API_KEY;
-        if (defined('R')) $orKey = R;
-        elseif (defined('OPENROUTER_API_KEY')) $orKey = OPENROUTER_API_KEY;
-        if (defined('DEEPSEEK_API_KEY')) $dsKey = DEEPSEEK_API_KEY;
-    }
-    // FLUX (F / BFL_API_KEY)
-    foreach (['F', 'REDIRECT_F', 'BFL_API_KEY', 'REDIRECT_BFL_API_KEY'] as $v) {
-        if (!empty($fluxKey)) break;
-        $fluxKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
-    }
     // Gemini (visión, para analizar el estilo -> JSON) — clave 'A' del .htaccess raíz
-    foreach (['A', 'REDIRECT_A', 'GEMINI_API_KEY', 'REDIRECT_GEMINI_API_KEY'] as $v) {
+    foreach (['A', 'REDIRECT_A'] as $v) {
         if (!empty($gemKey)) break;
         $gemKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
     }
-    // OpenRouter (Gemini imagen + visión respaldo) — clave canónica 'R' del .htaccess raíz
-    foreach (['R', 'REDIRECT_R', 'OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
+    // OpenRouter (Gemini imagen + visión respaldo + Mejorar Prompt) — clave canónica 'R' del .htaccess raíz
+    foreach (['R', 'REDIRECT_R'] as $v) {
         if (!empty($orKey)) break;
         $orKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
     }
-    // DeepSeek (texto, Mejorar Prompt) — DEEPSEEK_API_KEY o la clave 'B' del servidor
-    foreach (['DEEPSEEK_API_KEY', 'REDIRECT_DEEPSEEK_API_KEY', 'B', 'REDIRECT_B'] as $v) {
-        if (!empty($dsKey)) break;
-        $dsKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
-    }
+    // Mejorar Prompt (texto) usa la misma clave canónica 'R' (OpenRouter)
+    $dsKey = $orKey;
 
     // ── Leer body ──
     $input = file_get_contents('php://input');
@@ -145,7 +115,7 @@ try {
     // TAREA 1: ANALIZAR ESTILO (imagen -> JSON)
     // Preferente: Gemini con responseSchema (JSON ESTRICTO garantizado).
     // Respaldo:   OpenRouter gpt-4o-mini (json_object) si no hay clave Gemini.
-    // Gemini SOLO LEE la imagen para el JSON; las imágenes se GENERAN con FLUX.
+    // Gemini SOLO LEE la imagen para el JSON; las imágenes se GENERAN con OpenAI/Gemini.
     // ═══════════════════════════════════════════════
     if ($task === 'analizarEstilo') {
         if (empty($gemKey) && empty($orKey)) {
@@ -198,9 +168,8 @@ try {
                     'temperature' => 0.4,
                 ],
             ];
-            // Varios modelos como respaldo: el 2.5-flash directo da 404 a cuentas nuevas;
-            // si uno está saturado (429/503) probamos el siguiente automáticamente.
-            $gemModelos = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash-lite'];
+            // §6: análisis de texto/visión con Gemini 3.8 Flash (Google directo).
+            $gemModelos = ['gemini-3.8-flash'];
             $lastMsg = '';
             $lastStatus = 502;
             foreach ($gemModelos as $model) {
@@ -226,7 +195,7 @@ try {
             }
         }
 
-        // ---- Respaldo: OpenRouter gpt-4o-mini (json_object) ----
+        // ---- Respaldo: OpenRouter gemini-3.8-flash (json_object) (§6) ----
         if ($estilo === null && !empty($orKey)) {
             $dataUrl = 'data:' . $mimeType . ';base64,' . $pureB64;
             $sysText = 'Eres un analista visual experto. ' . $instruccion
@@ -235,7 +204,7 @@ try {
             [$status, $data] = $callApi(
                 'https://openrouter.ai/api/v1/chat/completions',
                 [
-                    'model' => 'openai/gpt-4o-mini',
+                    'model' => 'google/gemini-3.8-flash',
                     'response_format' => ['type' => 'json_object'],
                     'messages' => [
                         ['role' => 'system', 'content' => $sysText],
@@ -284,15 +253,15 @@ try {
     // TAREA 2: MEJORAR PROMPT (DeepSeek · texto · deepseek-chat)
     // ═══════════════════════════════════════════════
     if ($task === 'mejorarPrompt') {
-        if (empty($dsKey)) {
-            throw new Exception('API Key de DeepSeek no configurada (para Mejorar Prompt).', 401);
+        if (empty($orKey)) {
+            throw new Exception('API Key de OpenRouter (R) no configurada (para Mejorar Prompt).', 401);
         }
 
         $prompt = (string) ($json['prompt'] ?? '');
         $estilo = $json['estilo'] ?? null;
         $estiloTxt = is_array($estilo) ? json_encode($estilo, JSON_UNESCAPED_UNICODE) : '';
 
-        $sysText = "Eres un experto en prompts para IA de imágenes (FLUX). "
+        $sysText = "Eres un experto en prompts para IA de imágenes. "
             . "El usuario aplicará un ESTILO ya analizado (te lo paso como JSON) al sujeto "
             . "de una imagen que él sube. A partir de su idea y de ese estilo, redacta 4 "
             . "variantes de instrucción en español, concisas (máx. 2 líneas cada una), que "
@@ -304,19 +273,18 @@ try {
             . ($estiloTxt !== '' ? ("\n\nEstilo (JSON): " . $estiloTxt) : '');
 
         [$status, $data] = $callApi(
-            'https://api.deepseek.com/chat/completions',
+            'https://openrouter.ai/api/v1/chat/completions',
             [
-                'model' => 'deepseek-chat',
+                'model' => 'google/gemini-3.8-flash',
                 'messages' => [
                     ['role' => 'system', 'content' => $sysText],
                     ['role' => 'user', 'content' => $userIdea],
                 ],
                 'temperature' => 0.8,
-                'stream' => false,
             ],
             [
                 'Content-Type: application/json',
-                'Authorization: Bearer ' . $dsKey,
+                'Authorization: Bearer ' . $orKey,
             ],
             60
         );
@@ -324,7 +292,7 @@ try {
         if ($status < 200 || $status >= 300) {
             $msg = $data['error']['message'] ?? ('HTTP ' . $status);
             if (is_array($msg)) $msg = json_encode($msg);
-            throw new Exception('DeepSeek: ' . $msg, $status);
+            throw new Exception('OpenRouter: ' . $msg, $status);
         }
 
         $text = (string) ($data['choices'][0]['message']['content'] ?? '');
@@ -338,19 +306,36 @@ try {
     }
 
     // ═══════════════════════════════════════════════
-    // TAREA 3: APLICAR ESTILO (FLUX 2 img2img o Gemini vía OpenRouter)
+    // TAREA 3: APLICAR ESTILO (OpenAI GPT Image o Gemini vía OpenRouter)
     // ═══════════════════════════════════════════════
     if ($task === 'aplicarEstilo') {
-        // ── Modelo unificado: model (nuevo) o calidad (backward compat).
-        // Fallback seguro según skill_maestra: gemini-pro (3 PRO).
-        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'gemini-pro'));
+        // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. ──
+        $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'openai-medium'));
+        $modelCatalog = [
+            'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+            'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+            'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+            'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+            'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+            'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+            'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+        ];
+        if (!isset($modelCatalog[$reqModel])) {
+            throw new Exception('Modelo no soportado.', 400);
+        }
+        $selectedModel = $modelCatalog[$reqModel];
+        $isOpenAI = ($selectedModel['backend'] === 'openai');
+        $isGemini = ($selectedModel['backend'] === 'gemini');
 
-        // ── Despacho: flux-* → BFL async, gemini-* → OpenRouter sync ──
-        $isFlux   = (strpos($reqModel, 'flux') === 0);
-        $isGemini = (strpos($reqModel, 'gemini') === 0);
-
-        if ($isFlux && empty($fluxKey)) {
-            throw new Exception('API Key de FLUX (F) no configurada.', 401);
+        if ($isOpenAI) {
+            $openaiKey = '';
+            foreach (['OPENAI_API_KEY', 'REDIRECT_OPENAI_API_KEY', 'O', 'REDIRECT_O'] as $v) {
+                if (!empty($openaiKey)) break;
+                $openaiKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
+            }
+            if (empty($openaiKey)) {
+                throw new Exception('API Key de OpenAI (OPENAI_API_KEY/O) no configurada.', 401);
+            }
         }
         if ($isGemini && empty($orKey)) {
             throw new Exception('API Key de OpenRouter (Gemini) no configurada.', 401);
@@ -422,89 +407,83 @@ try {
             if ($w >= $h) $w -= 32; else $h -= 32;
         }
 
-        // ═══ RAMA FLUX (BFL async: submit + polling + download) ═══
-        if ($isFlux) {
-            $FLUX_MODELOS = ['flux-pro' => 'flux-2-pro', 'flux-max' => 'flux-2-max'];
-            $endpoint = $FLUX_MODELOS[$reqModel] ?? 'flux-2-pro';
+        // ═══ RAMA OPENAI (GPT Image 2.5: /v1/images/edits con el sujeto como referencia) ═══
+        if ($isOpenAI) {
+            $tmpPath = tempnam(sys_get_temp_dir(), 'openai_img_');
+            if ($tmpPath === false || file_put_contents($tmpPath, $decoded) === false) {
+                if ($tmpPath !== false) @unlink($tmpPath);
+                throw new Exception('No se pudo preparar la imagen para OpenAI.', 500);
+            }
 
-            $payload = [
-                'prompt' => $fullPrompt,
-                'width'  => $w,
-                'height' => $h,
-                'input_image' => $subject,
-                'output_format' => 'jpeg',
+            // Tamaño WxH: múltiplos de 16 y presupuesto mínimo de 1.048.576 px.
+            $oaiW = $w; $oaiH = $h;
+            if ($oaiW * $oaiH < 1048576) {
+                $scale = sqrt(1048576 / ($oaiW * $oaiH));
+                $oaiW = max(16, (int)(round($oaiW * $scale / 16) * 16));
+                $oaiH = max(16, (int)(round($oaiH * $scale / 16) * 16));
+            }
+
+            $fields = [
+                'model'   => $selectedModel['model'],
+                'prompt'  => $fullPrompt,
+                'quality' => $selectedModel['quality'],
+                'size'    => $oaiW . 'x' . $oaiH,
+                'image[]' => new CURLFile($tmpPath, 'image/jpeg', 'sujeto.jpg'),
             ];
-
-            // 1) ENVIAR TAREA
-            [$submitCode, $submit] = $callApi(
-                'https://api.bfl.ai/v1/' . $endpoint,
-                $payload,
-                ['Content-Type: application/json', 'accept: application/json', 'x-key: ' . $fluxKey],
-                30
-            );
-            if ($submitCode !== 200) {
-                $em = $submit['detail'] ?? ('HTTP ' . $submitCode);
-                if (is_array($em)) $em = json_encode($em);
-                throw new Exception('FLUX: ' . $em, $submitCode);
-            }
-            $pollUrl = $submit['polling_url'] ?? '';
-            $costCreditos = (float) ($submit['cost'] ?? 0);
-            if ($pollUrl === '') {
-                throw new Exception('FLUX no devolvió polling_url.', 502);
-            }
-
-            // 2) POLLING hasta Ready (máx ~90s)
-            $imageUrl = '';
-            for ($i = 0; $i < 60; $i++) {
-                usleep(1500000);
-                $ch = curl_init($pollUrl);
-                curl_setopt_array($ch, [
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_HTTPHEADER => ['accept: application/json', 'x-key: ' . $fluxKey],
-                    CURLOPT_TIMEOUT => 20,
-                    CURLOPT_SSL_VERIFYPEER => true,
-                ]);
-                $pollResp = curl_exec($ch);
-                $pollCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                if ($pollCode !== 200) continue;
-                $pr = json_decode($pollResp, true);
-                $st = $pr['status'] ?? '';
-                if ($st === 'Ready') {
-                    $imageUrl = $pr['result']['sample'] ?? '';
-                    break;
-                }
-                if (in_array($st, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
-                    throw new Exception('FLUX rechazó la tarea: ' . $st, 422);
-                }
-            }
-            if ($imageUrl === '') {
-                throw new Exception('FLUX tardó demasiado en generar la imagen. Inténtalo de nuevo.', 504);
-            }
-
-            // 3) Descargar la imagen y devolver como data URL
-            $ch = curl_init($imageUrl);
+            $ch = curl_init('https://api.openai.com/v1/images/edits');
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 60,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $fields,
+                CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $openaiKey],
+                CURLOPT_TIMEOUT => 180,
+                CURLOPT_CONNECTTIMEOUT => 20,
                 CURLOPT_SSL_VERIFYPEER => true,
             ]);
-            $imgBin = curl_exec($ch);
-            $imgType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: 'image/jpeg';
-            $imgOk = (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200);
+            $resp = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $err = curl_error($ch);
             curl_close($ch);
+            @unlink($tmpPath);
 
-            if (!$imgOk || $imgBin === false || $imgBin === '') {
-                throw new Exception('No se pudo descargar la imagen generada por FLUX.', 502);
+            if ($resp === false) {
+                throw new Exception('Error de conexión con OpenAI: ' . $err, 502);
+            }
+            $jr = json_decode((string)$resp, true);
+            if ($code >= 400 || !is_array($jr)) {
+                $message = is_array($jr) ? (string)($jr['error']['message'] ?? ('HTTP ' . $code)) : ('HTTP ' . $code);
+                throw new Exception('OpenAI: ' . $message, $code >= 400 ? $code : 502);
+            }
+
+            $imageData = (string)($jr['data'][0]['b64_json'] ?? '');
+            $mimeOut = 'image/png';
+            if ($imageData === '' && !empty($jr['data'][0]['url'])) {
+                $ch = curl_init((string)$jr['data'][0]['url']);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_TIMEOUT => 60,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                ]);
+                $download = curl_exec($ch);
+                $downloadType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+                curl_close($ch);
+                if (is_string($download) && $download !== '') {
+                    $imageData = base64_encode($download);
+                    if (is_string($downloadType) && strpos($downloadType, 'image/') === 0) $mimeOut = $downloadType;
+                }
+            }
+            if ($imageData === '') {
+                throw new Exception('OpenAI no devolvió ninguna imagen.', 502);
             }
 
             echo json_encode([
                 'success'  => true,
-                'imageUrl' => 'data:' . $imgType . ';base64,' . base64_encode($imgBin),
-                'coste'    => $costCreditos * 0.01,
+                'imageUrl' => 'data:' . $mimeOut . ';base64,' . $imageData,
+                'coste'    => 0,
                 'modelo'   => $reqModel,
-                'width'    => $w,
-                'height'   => $h,
+                'width'    => $oaiW,
+                'height'   => $oaiH,
             ]);
             exit;
         }
@@ -534,7 +513,7 @@ try {
                 ],
                 [
                     'Content-Type: application/json',
-                    'Authorization: *** ' . $orKey,
+                    'Authorization: Bearer ' . $orKey,
                     'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
                     'X-Title: Estilo JSON',
                 ],
