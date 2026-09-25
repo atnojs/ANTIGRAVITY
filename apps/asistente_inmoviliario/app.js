@@ -398,7 +398,7 @@ async function generateAdText(audience, length, tone) {
 
     const payload = {
         endpoint: 'generateContent',
-        model: 'gemini-3.8-flash',
+        model: 'xiaomi/mimo-v2.6-pro',
         data: {
             contents: [{
                 parts: [{ text: prompt }, ...imageParts]
@@ -437,6 +437,47 @@ function displayResults(images, text) {
     resultsSection.classList.remove('hidden');
     lucide.createIcons();
     resultsSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===== Tooltip de modelo (popup hover, patrón canónico) =====
+const modelTooltip = document.getElementById('model-tooltip');
+if (modelTooltip) {
+  const TOOLTIP_GAP = 10;
+  const hideModelTooltip = () => {
+    modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+    modelTooltip.setAttribute('aria-hidden', 'true');
+    modelTooltip.textContent = '';
+  };
+  const showModelTooltip = (el) => {
+    const text = (el.dataset.tooltip || '').trim();
+    if (!text) { hideModelTooltip(); return; }
+    modelTooltip.textContent = text;
+    modelTooltip.classList.remove('tip-above', 'tip-below');
+    modelTooltip.classList.add('visible');
+    modelTooltip.setAttribute('aria-hidden', 'false');
+    const rect = el.getBoundingClientRect();
+    const tw = modelTooltip.offsetWidth;
+    const th = modelTooltip.offsetHeight;
+    let left = rect.left + rect.width / 2 - tw / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+    let top = rect.top - th - TOOLTIP_GAP;
+    if (top < 8) {
+      top = rect.bottom + TOOLTIP_GAP;
+      modelTooltip.classList.add('tip-below');
+    } else {
+      modelTooltip.classList.add('tip-above');
+    }
+    modelTooltip.style.left = left + 'px';
+    modelTooltip.style.top = top + 'px';
+  };
+  document.querySelectorAll('[data-tooltip]').forEach((el) => {
+    el.addEventListener('mouseenter', () => showModelTooltip(el));
+    el.addEventListener('mouseleave', hideModelTooltip);
+    el.addEventListener('focus', () => showModelTooltip(el));
+    el.addEventListener('blur', hideModelTooltip);
+  });
+  window.addEventListener('scroll', hideModelTooltip, true);
+  window.addEventListener('resize', hideModelTooltip);
 }
 
 

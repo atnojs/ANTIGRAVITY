@@ -14,7 +14,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Estilos -->
-  <link rel="stylesheet" href="app.css?v=6"/>
+  <link rel="stylesheet" href="app.css?v=7"/>
 </head>
 <body>
   <div class="main-layout">
@@ -69,7 +69,7 @@
       </div>
 
       <div class="center">
-        <button id="generate-btn" type="button" class="btn btn-primary">Generar Anuncio</button>
+        <button id="generate-btn" type="button" class="btn btn-primary" aria-describedby="model-tooltip" data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato">Generar Anuncio</button>
       </div>
     </section>
 
@@ -119,7 +119,10 @@
     <img id="lightboxImg" src="" alt="Imagen ampliada" />
   </div>
 
+  <!-- Tooltip de modelo (popup hover) -->
+  <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+
   <script src="history-manager.js?v=5"></script>
-  <script src="app.js?v=7" type="module"></script>
+  <script src="app.js?v=8" type="module"></script>
 </body>
 </html>
