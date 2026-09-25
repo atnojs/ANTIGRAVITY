@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const PROXY_URL = 'proxy.php'; // Proxy PHP para Gemini
     const GEMINI_MODEL = 'gemini-3.1-flash-image-preview'; // Modelo con generación de imagen fiel (legacy)
 
-    // ===== Selector de modelo IA (catálogo canónico 2.5, 7 botones) =====
+    // ===== Selector de modelo IA (catálogo canónico 2.5, 8 botones) =====
+    // (El texto/análisis va a xiaomi/mimo-v2.6-pro vía OpenRouter en proxy.php.)
     const MODEL_LABELS = {
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
@@ -29,7 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
         'gemini-flash': '3.1 FLASH',
-        'gemini-pro': '3 PRO'
+        'gemini-pro': '3 PRO',
+        'qwen-pro': 'QWEN 3 PRO'
     };
     let selectedModel = 'openai-medium';
 
@@ -888,7 +890,7 @@ ESTILO A APLICAR: ${prompt}`,
         modelTooltip.style.left = left + 'px';
         modelTooltip.style.top = top + 'px';
       };
-      document.querySelectorAll('.model-toggle').forEach((button) => {
+      document.querySelectorAll('[data-tooltip]').forEach((button) => {
         button.addEventListener('mouseenter', () => showModelTooltip(button));
         button.addEventListener('mouseleave', hideModelTooltip);
         button.addEventListener('focus', () => showModelTooltip(button));
