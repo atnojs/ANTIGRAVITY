@@ -94,7 +94,7 @@ $userMsg = "Genera exactamente $count propuestas de diseño publicitario premium
     . "Cada 'palette' debe tener exactamente 6 códigos HEX válidos. Usa comillas dobles en todo el JSON.";
 
 $payload = [
-    'model' => 'google/gemini-3.8-flash',
+    'model' => 'xiaomi/mimo-v2.6-pro',
     'messages' => [
         ['role' => 'system', 'content' => $systemMsg],
         ['role' => 'user',   'content' => $userMsg],
