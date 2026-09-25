@@ -32,6 +32,38 @@
     { id: '4:5', label: '4:5 Retrato', subLabel: 'Feed estándar, diseño de alta altura', displayRatio: '4:5', icon: 'fa-image' }
   ];
 
+  // ===== Selector de modelo IA (catálogo canónico 2.5, 7 botones) =====
+  const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+  };
+  const MODEL_ORDER = ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst', 'gemini-flash', 'gemini-pro'];
+
+  function renderModelButtons() {
+    document.querySelectorAll('.model-toggle').forEach(btn => {
+      const on = btn.dataset.model === state.settings.model;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  function initModelSelector() {
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.model-toggle');
+      if (!btn) return;
+      const next = btn.dataset.model;
+      if (!MODEL_LABELS[next]) return;
+      state.settings.model = next;
+      renderModelButtons();
+    });
+    renderModelButtons();
+  }
+
   const INITIAL_GALLERY = [
     { id: 'init-1', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', prompt: 'Escultura abstracta fluida en 3D, capas de vidrio coloridas con iluminación ambiental suave y formas de arcilla, presentación corporativa minimalista, renderizado visual prístino', style: 'Comercial 3D', aspectRatio: '1:1', seed: 4892019384, steps: 50, cfgScale: 7.5, sampler: 'DPM++ 2M SDE Karras', generationTime: '1.12s', description: 'Simulación física fluida que muestra dispersión cromática dentro de formas de vidrio en capas.', tags: ['Render 3D', 'Vibrante', 'Efecto Vidrio', 'Abstracto'], referenceImage: null, createdAt: '2026-05-27T18:00:00Z' },
     { id: 'init-2', url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=800&q=80', prompt: 'Personaje de anime futurista mirando hacia una avenida de Tokio empapada de neón, visor con pantalla holográfica, texturas de pintura dinámica de alto contraste, púrpuras y rosas profundos', style: 'Anime', aspectRatio: '9:16', seed: 2210495811, steps: 60, cfgScale: 8.0, sampler: 'DPM++ 2M SDE Karras', generationTime: '1.42s', description: 'Paisaje de anime que resalta carteles de neón refractados en prendas de vinilo mojadas.', tags: ['Cyberpunk', 'Vocaloid', 'Studio Ghibli', 'Fondo Móvil'], referenceImage: null, createdAt: '2026-05-27T18:30:00Z' },
@@ -142,7 +174,8 @@
       referenceImage: null,
       steps: 50,
       cfgScale: 7.5,
-      sampler: 'DPM++ 2M SDE Karras'
+      sampler: 'DPM++ 2M SDE Karras',
+      model: 'openai-medium'
     },
     images: [],
     isGenerating: false,
@@ -323,7 +356,7 @@
       const data = await callProxy('optimize', {
         prompt: prompt,
         style: getActiveStyleName(),
-        model: 'gemini-2.5-flash'
+        model: 'gemini-3.8-flash'
       });
 
       // Gemini returns candidates[0].content.parts[0].text
@@ -383,7 +416,8 @@
       prompt: prompt,
       style: styleName,
       aspectRatio: state.settings.aspectRatioId,
-      referenceImage: state.settings.referenceImage
+      referenceImage: state.settings.referenceImage,
+      model: state.settings.model
     });
 
     if (imgResult && imgResult.error) throw new Error(imgResult.error);
@@ -405,7 +439,7 @@
       const tagData = await callProxy('generate', {
         prompt: prompt,
         style: styleName,
-        model: 'gemini-2.5-flash'
+        model: 'gemini-3.8-flash'
       });
       if (tagData.candidates?.[0]?.content?.parts?.[0]?.text) {
         try {
@@ -1153,6 +1187,28 @@
         <div class="aspect-grid" id="aspect-grid-mobile">${aspectHtml}</div>
       </div>
       <div style="margin-bottom:1.5rem;">
+        <label class="settings-label"><i class="fa-solid fa-robot"></i> Modelo de Generación</label>
+        <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+          <div class="model-provider-column">
+            <span class="model-provider-title">OPENAI 2.5</span>
+            <div class="model-toggle-group">
+              <button type="button" class="model-toggle" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="false">MEDIUM</button>
+              <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+              <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+              <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+              <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
+            </div>
+          </div>
+          <div class="model-provider-column">
+            <span class="model-provider-title">GEMINI</span>
+            <div class="model-toggle-group">
+              <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+              <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:1.5rem;">
         <label class="settings-label"><i class="fa-solid fa-upload"></i> Imagen de Referencia</label>
         <div class="dropzone" id="dropzone-mobile">
           <input type="file" accept="image/*" class="sr-only" id="ref-file-input-mobile">
@@ -1225,6 +1281,7 @@
 
     // Bind mobile dropzone
     setupDropzone('dropzone-mobile', 'ref-file-input-mobile', 'btn-clear-ref-mobile');
+    renderModelButtons();
   }
 
   // ===================== DROPZONE =====================
@@ -1401,7 +1458,57 @@
 
   function init() {
     loadImages();
+    initModelSelector();
 
+    const modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip) {
+      const TOOLTIP_GAP = 10;
+      const hideModelTooltip = () => {
+        modelTooltip.classList.remove('visible','tip-above','tip-below');
+        modelTooltip.setAttribute('aria-hidden','true');
+        modelTooltip.textContent = '';
+      };
+      const showModelTooltip = (button) => {
+        const text = (button.dataset.tooltip || '').trim();
+        if (!text) { hideModelTooltip(); return; }
+        modelTooltip.textContent = text;
+        modelTooltip.classList.remove('tip-above','tip-below');
+        modelTooltip.classList.add('visible');
+        modelTooltip.setAttribute('aria-hidden','false');
+        const rect = button.getBoundingClientRect();
+        const tw = modelTooltip.offsetWidth;
+        const th = modelTooltip.offsetHeight;
+        let left = rect.left + rect.width / 2 - tw / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = rect.top - th - TOOLTIP_GAP;
+        if (top < 8) {
+          top = rect.bottom + TOOLTIP_GAP;
+          modelTooltip.classList.add('tip-below');
+        } else {
+          modelTooltip.classList.add('tip-above');
+        }
+        modelTooltip.style.left = left + 'px';
+        modelTooltip.style.top = top + 'px';
+      };
+      const bindModelTooltipEvents = (button) => {
+        button.addEventListener('mouseenter', () => showModelTooltip(button));
+        button.addEventListener('mouseleave', hideModelTooltip);
+        button.addEventListener('focus', () => showModelTooltip(button));
+        button.addEventListener('blur', hideModelTooltip);
+      };
+      document.querySelectorAll('.model-toggle').forEach(bindModelTooltipEvents);
+      // El sheet móvil re-renderiza sus botones: delegación para cubrirlos también
+      document.addEventListener('mouseenter', (e) => {
+        const btn = e.target.closest ? e.target.closest('.model-toggle') : null;
+        if (btn && !btn.dataset.tooltipBound) { btn.dataset.tooltipBound = '1'; bindModelTooltipEvents(btn); }
+      }, true);
+      document.addEventListener('focusin', (e) => {
+        const btn = e.target.closest ? e.target.closest('.model-toggle') : null;
+        if (btn && !btn.dataset.tooltipBound) { btn.dataset.tooltipBound = '1'; bindModelTooltipEvents(btn); }
+      });
+      window.addEventListener('scroll', hideModelTooltip, true);
+      window.addEventListener('resize', hideModelTooltip);
+    }
     // Desktop sidebar starts expanded
     dom.mainContent.classList.add('sidebar-expanded', 'settings-visible');
 
