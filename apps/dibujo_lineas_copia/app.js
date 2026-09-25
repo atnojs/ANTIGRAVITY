@@ -144,6 +144,39 @@ previewGrid.addEventListener('click', (e) => {
     // Función auxiliar para pausa entre peticiones
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
+    // Llamada al proxy. Para qwen-pro (más lento que el timeout de nginx,
+    // ~55s) se espera activamente: el proxy guarda el resultado en caché y
+    // responde 'processing' mientras el worker termina de generarlo.
+    const callProxyWithWait = async (body, maxAttempts = 36) => {
+        const slowModel = body && body.model === 'qwen-pro';
+        let lastError = 'Sin respuesta del modelo.';
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const res = await fetch(PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const json = await res.json().catch(() => null);
+                if (res.ok && json && (json.image || json.text)) return json;
+                if (json && json.status === 'processing') {
+                    lastError = 'Generando...';
+                } else if (json && json.error && json.error.message) {
+                    lastError = json.error.message;
+                    if (!slowModel || res.status < 500) throw new Error(lastError);
+                } else {
+                    lastError = `Error HTTP ${res.status}`;
+                }
+            } catch (e) {
+                if (!slowModel) throw e;
+                lastError = (e && e.message) || lastError;
+            }
+            if (!slowModel) throw new Error(lastError);
+            if (attempt < maxAttempts - 1) await delay(5000);
+        }
+        throw new Error(lastError);
+    };
+
     startButton.addEventListener('click', async () => {
         startButton.disabled = true;
         processingSection.classList.remove('hidden');
@@ -170,22 +203,14 @@ previewGrid.addEventListener('click', (e) => {
                     rd.readAsDataURL(file);
                 });
 
-                const res = await fetch(PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
+                const requestBody = {
                         image: base64,
                         mimeType: file.type || 'image/jpeg',
                         model: selectedModel,
-                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page... (truncado)"
-                    })
-                });
+                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page. Convert all visual elements (people, objects, backgrounds) into consistent, smooth, distinct black outlines using clean uniform lines. Completely eliminate all colors, gradients, shading, textures, and gray fills: the result must be purely black lines on pure white background. Simplify complex shapes to create clear areas of white space easy to color. Maintain the original composition, perspective, and key elements. The final drawing must be sharp, without artifacts or smudges, ready to be printed and hand-colored."
+                };
 
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.error?.message || `Error HTTP ${res.status}`);
-                }
+                const data = await callProxyWithWait(requestBody);
 
                 if (data.image) {
                     const resultAspectRatio = data.aspectRatio || '1:1';
