@@ -1,0 +1,3008 @@
+[
+    {
+        "id": "mtxent4mj065fw",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_47__1_",
+            "aspectRatio": "61:67",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:25:07.126Z",
+        "imageFile": "mtxent4mj065fw",
+        "imageUrl": "./history_data/mtxent4mj065fw.png"
+    },
+    {
+        "id": "mtxemxp6yrzd7w",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_47__2_",
+            "aspectRatio": "19:24",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:24:26.394Z",
+        "imageFile": "mtxemxp6yrzd7w",
+        "imageUrl": "./history_data/mtxemxp6yrzd7w.png"
+    },
+    {
+        "id": "mtxem7r9mahg6f",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_47__3_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:23:52.773Z",
+        "imageFile": "mtxem7r9mahg6f",
+        "imageUrl": "./history_data/mtxem7r9mahg6f.png"
+    },
+    {
+        "id": "mtxekeaug38wul",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_46__3_",
+            "aspectRatio": "17:15",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:22:27.942Z",
+        "imageFile": "mtxekeaug38wul",
+        "imageUrl": "./history_data/mtxekeaug38wul.png"
+    },
+    {
+        "id": "mtxejl6jt79k2f",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_46__4_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:21:50.203Z",
+        "imageFile": "mtxejl6jt79k2f",
+        "imageUrl": "./history_data/mtxejl6jt79k2f.png"
+    },
+    {
+        "id": "mtxeirrypk9gmp",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_46__5_",
+            "aspectRatio": "63:65",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:21:12.094Z",
+        "imageFile": "mtxeirrypk9gmp",
+        "imageUrl": "./history_data/mtxeirrypk9gmp.png"
+    },
+    {
+        "id": "mtxehxc7v5un1a",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_46__6_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:20:32.647Z",
+        "imageFile": "mtxehxc7v5un1a",
+        "imageUrl": "./history_data/mtxehxc7v5un1a.png"
+    },
+    {
+        "id": "mtxe5mfepkbuyh",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45__3_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:10:58.634Z",
+        "imageFile": "mtxe5mfepkbuyh",
+        "imageUrl": "./history_data/mtxe5mfepkbuyh.png"
+    },
+    {
+        "id": "mtxe5arxd10dv1",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45__5_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:10:43.533Z",
+        "imageFile": "mtxe5arxd10dv1",
+        "imageUrl": "./history_data/mtxe5arxd10dv1.png"
+    },
+    {
+        "id": "mtxe4xt3dhbl98",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45__6_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:10:26.727Z",
+        "imageFile": "mtxe4xt3dhbl98",
+        "imageUrl": "./history_data/mtxe4xt3dhbl98.png"
+    },
+    {
+        "id": "mtxe4ma0ke9vzy",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45__7_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:10:11.784Z",
+        "imageFile": "mtxe4ma0ke9vzy",
+        "imageUrl": "./history_data/mtxe4ma0ke9vzy.png"
+    },
+    {
+        "id": "mtxe4bq5w43ljj",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45__8_",
+            "aspectRatio": "53:79",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:09:58.109Z",
+        "imageFile": "mtxe4bq5w43ljj",
+        "imageUrl": "./history_data/mtxe4bq5w43ljj.png"
+    },
+    {
+        "id": "mtxdz0mrgkfj1p",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_44__6_",
+            "aspectRatio": "27:38",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:05:50.451Z",
+        "imageFile": "mtxdz0mrgkfj1p",
+        "imageUrl": "./history_data/mtxdz0mrgkfj1p.png"
+    },
+    {
+        "id": "mtxdy94bqjbclf",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:05:14.795Z",
+        "imageFile": "mtxdy94bqjbclf",
+        "imageUrl": "./history_data/mtxdy94bqjbclf.png"
+    },
+    {
+        "id": "mtxdxfjz9c3uoy",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45__1_",
+            "aspectRatio": "15:17",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:04:36.479Z",
+        "imageFile": "mtxdxfjz9c3uoy",
+        "imageUrl": "./history_data/mtxdxfjz9c3uoy.png"
+    },
+    {
+        "id": "mtxdwqar184uey",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_45__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:04:03.747Z",
+        "imageFile": "mtxdwqar184uey",
+        "imageUrl": "./history_data/mtxdwqar184uey.png"
+    },
+    {
+        "id": "mtxdtag1909g3a",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_44__2_",
+            "aspectRatio": "48:85",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:01:23.233Z",
+        "imageFile": "mtxdtag1909g3a",
+        "imageUrl": "./history_data/mtxdtag1909g3a.png"
+    },
+    {
+        "id": "mtxdsoxdaj6pjv",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_44__3_",
+            "aspectRatio": "19:24",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:00:55.345Z",
+        "imageFile": "mtxdsoxdaj6pjv",
+        "imageUrl": "./history_data/mtxdsoxdaj6pjv.png"
+    },
+    {
+        "id": "mtxdrylprh5275",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_44__4_",
+            "aspectRatio": "15:11",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T20:00:21.229Z",
+        "imageFile": "mtxdrylprh5275",
+        "imageUrl": "./history_data/mtxdrylprh5275.png"
+    },
+    {
+        "id": "mtxdradkx1z5c5",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_44__5_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:59:49.832Z",
+        "imageFile": "mtxdradkx1z5c5",
+        "imageUrl": "./history_data/mtxdradkx1z5c5.png"
+    },
+    {
+        "id": "mtxdmo634miel6",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__7_",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:56:14.427Z",
+        "imageFile": "mtxdmo634miel6",
+        "imageUrl": "./history_data/mtxdmo634miel6.png"
+    },
+    {
+        "id": "mtxdmes1g1ibyq",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__8_",
+            "aspectRatio": "53:79",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:56:02.257Z",
+        "imageFile": "mtxdmes1g1ibyq",
+        "imageUrl": "./history_data/mtxdmes1g1ibyq.png"
+    },
+    {
+        "id": "mtxdm4eihqibk5",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__10_",
+            "aspectRatio": "29:36",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:55:48.810Z",
+        "imageFile": "mtxdm4eihqibk5",
+        "imageUrl": "./history_data/mtxdm4eihqibk5.png"
+    },
+    {
+        "id": "mtxdluiam4jm0o",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_44__1_",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:55:35.986Z",
+        "imageFile": "mtxdluiam4jm0o",
+        "imageUrl": "./history_data/mtxdluiam4jm0o.png"
+    },
+    {
+        "id": "mtxdcxye5cp0gk",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__3_",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:48:40.550Z",
+        "imageFile": "mtxdcxye5cp0gk",
+        "imageUrl": "./history_data/mtxdcxye5cp0gk.png"
+    },
+    {
+        "id": "mtxdcn039fso8g",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__4_",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:48:26.355Z",
+        "imageFile": "mtxdcn039fso8g",
+        "imageUrl": "./history_data/mtxdcn039fso8g.png"
+    },
+    {
+        "id": "mtxdcdkun7hmrj",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__5_",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:48:14.142Z",
+        "imageFile": "mtxdcdkun7hmrj",
+        "imageUrl": "./history_data/mtxdcdkun7hmrj.png"
+    },
+    {
+        "id": "mtxdc3nlwvof4e",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__6_",
+            "aspectRatio": "53:79",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:48:01.281Z",
+        "imageFile": "mtxdc3nlwvof4e",
+        "imageUrl": "./history_data/mtxdc3nlwvof4e.png"
+    },
+    {
+        "id": "mtxd664zru0frs",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_42__7_",
+            "aspectRatio": "23:45",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:43:24.563Z",
+        "imageFile": "mtxd664zru0frs",
+        "imageUrl": "./history_data/mtxd664zru0frs.png"
+    },
+    {
+        "id": "mtxd5j1dzs9iv2",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43",
+            "aspectRatio": "47:87",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:42:54.625Z",
+        "imageFile": "mtxd5j1dzs9iv2",
+        "imageUrl": "./history_data/mtxd5j1dzs9iv2.png"
+    },
+    {
+        "id": "mtxd4vkqyqow0n",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__1_",
+            "aspectRatio": "19:24",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:42:24.218Z",
+        "imageFile": "mtxd4vkqyqow0n",
+        "imageUrl": "./history_data/mtxd4vkqyqow0n.png"
+    },
+    {
+        "id": "mtxd43to9bixsc",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_43__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:41:48.252Z",
+        "imageFile": "mtxd43to9bixsc",
+        "imageUrl": "./history_data/mtxd43to9bixsc.png"
+    },
+    {
+        "id": "mtxckhy6hu8a08",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_38__5_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:26:33.438Z",
+        "imageFile": "mtxckhy6hu8a08",
+        "imageUrl": "./history_data/mtxckhy6hu8a08.png"
+    },
+    {
+        "id": "mtxck8wmq7ci0k",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_42",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:26:21.718Z",
+        "imageFile": "mtxck8wmq7ci0k",
+        "imageUrl": "./history_data/mtxck8wmq7ci0k.png"
+    },
+    {
+        "id": "mtxcjyjie9590g",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_42__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:26:08.286Z",
+        "imageFile": "mtxcjyjie9590g",
+        "imageUrl": "./history_data/mtxcjyjie9590g.png"
+    },
+    {
+        "id": "mtxcjnaw8golg9",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_42__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:25:53.720Z",
+        "imageFile": "mtxcjnaw8golg9",
+        "imageUrl": "./history_data/mtxcjnaw8golg9.png"
+    },
+    {
+        "id": "mtxchgp8fbien3",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_38__5_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:24:11.852Z",
+        "imageFile": "mtxchgp8fbien3",
+        "imageUrl": "./history_data/mtxchgp8fbien3.png"
+    },
+    {
+        "id": "mtxcgjlvdzthz5",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_42",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:23:28.963Z",
+        "imageFile": "mtxcgjlvdzthz5",
+        "imageUrl": "./history_data/mtxcgjlvdzthz5.png"
+    },
+    {
+        "id": "mtxcfkjo07iorv",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_42__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:22:43.524Z",
+        "imageFile": "mtxcfkjo07iorv",
+        "imageUrl": "./history_data/mtxcfkjo07iorv.png"
+    },
+    {
+        "id": "mtxcene91gg5ky",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_42__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:22:00.561Z",
+        "imageFile": "mtxcene91gg5ky",
+        "imageUrl": "./history_data/mtxcene91gg5ky.png"
+    },
+    {
+        "id": "mtxc9d58tzi1r4",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_38__1_",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:17:53.996Z",
+        "imageFile": "mtxc9d58tzi1r4",
+        "imageUrl": "./history_data/mtxc9d58tzi1r4.png"
+    },
+    {
+        "id": "mtxc94orm6tybc",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_38__2_",
+            "aspectRatio": "53:79",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:17:43.035Z",
+        "imageFile": "mtxc94orm6tybc",
+        "imageUrl": "./history_data/mtxc94orm6tybc.png"
+    },
+    {
+        "id": "mtxc8w6gqhzvvx",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_38__3_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:17:32.008Z",
+        "imageFile": "mtxc8w6gqhzvvx",
+        "imageUrl": "./history_data/mtxc8w6gqhzvvx.png"
+    },
+    {
+        "id": "mtxc8n0hy1kw3c",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_38__4_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:17:20.129Z",
+        "imageFile": "mtxc8n0hy1kw3c",
+        "imageUrl": "./history_data/mtxc8n0hy1kw3c.png"
+    },
+    {
+        "id": "mtxc5g8omhlu5o",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_37",
+            "aspectRatio": "65:63",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:14:51.384Z",
+        "imageFile": "mtxc5g8omhlu5o",
+        "imageUrl": "./history_data/mtxc5g8omhlu5o.png"
+    },
+    {
+        "id": "mtxc4pmehfkdx4",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_37__1_",
+            "aspectRatio": "53:77",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:14:16.886Z",
+        "imageFile": "mtxc4pmehfkdx4",
+        "imageUrl": "./history_data/mtxc4pmehfkdx4.png"
+    },
+    {
+        "id": "mtxc3z7xy0yxcd",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_37__2_",
+            "aspectRatio": "59:70",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:13:42.669Z",
+        "imageFile": "mtxc3z7xy0yxcd",
+        "imageUrl": "./history_data/mtxc3z7xy0yxcd.png"
+    },
+    {
+        "id": "mtxc34fx2iu1fn",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-11_at_15_40_38",
+            "aspectRatio": "19:24",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T19:13:02.781Z",
+        "imageFile": "mtxc34fx2iu1fn",
+        "imageUrl": "./history_data/mtxc34fx2iu1fn.png"
+    },
+    {
+        "id": "mtx6rxb9t9tkzg",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337732",
+            "aspectRatio": "7:12",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:44:22.245Z",
+        "imageFile": "mtx6rxb9t9tkzg",
+        "imageUrl": "./history_data/mtx6rxb9t9tkzg.png"
+    },
+    {
+        "id": "mtx6q8vaim3mra",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337733",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:43:03.910Z",
+        "imageFile": "mtx6q8vaim3mra",
+        "imageUrl": "./history_data/mtx6q8vaim3mra.png"
+    },
+    {
+        "id": "mtx6pzksui66lv",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337734",
+            "aspectRatio": "53:79",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:42:51.868Z",
+        "imageFile": "mtx6pzksui66lv",
+        "imageUrl": "./history_data/mtx6pzksui66lv.png"
+    },
+    {
+        "id": "mtx6pooc1hpryo",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337735",
+            "aspectRatio": "24:43",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:42:37.740Z",
+        "imageFile": "mtx6pooc1hpryo",
+        "imageUrl": "./history_data/mtx6pooc1hpryo.png"
+    },
+    {
+        "id": "mtx6pe7x5j3s89",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337736",
+            "aspectRatio": "53:79",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:42:24.189Z",
+        "imageFile": "mtx6pe7x5j3s89",
+        "imageUrl": "./history_data/mtx6pe7x5j3s89.png"
+    },
+    {
+        "id": "mtx6o5z892w9az",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337737",
+            "aspectRatio": "56:75",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:41:26.852Z",
+        "imageFile": "mtx6o5z892w9az",
+        "imageUrl": "./history_data/mtx6o5z892w9az.png"
+    },
+    {
+        "id": "mtx6nw9pfd1ciw",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337738",
+            "aspectRatio": "29:36",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:41:14.269Z",
+        "imageFile": "mtx6nw9pfd1ciw",
+        "imageUrl": "./history_data/mtx6nw9pfd1ciw.png"
+    },
+    {
+        "id": "mtx6nmbxsyeems",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337739",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:41:01.389Z",
+        "imageFile": "mtx6nmbxsyeems",
+        "imageUrl": "./history_data/mtx6nmbxsyeems.png"
+    },
+    {
+        "id": "mtx6ncnda79294",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: 337740",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:40:48.841Z",
+        "imageFile": "mtx6ncnda79294",
+        "imageUrl": "./history_data/mtx6ncnda79294.png"
+    },
+    {
+        "id": "mtx6m0o96yepl3",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337743",
+            "aspectRatio": "19:24",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:39:46.665Z",
+        "imageFile": "mtx6m0o96yepl3",
+        "imageUrl": "./history_data/mtx6m0o96yepl3.png"
+    },
+    {
+        "id": "mtx6l8dhbcbyae",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337742",
+            "aspectRatio": "48:85",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:39:09.989Z",
+        "imageFile": "mtx6l8dhbcbyae",
+        "imageUrl": "./history_data/mtx6l8dhbcbyae.png"
+    },
+    {
+        "id": "mtx6klcik1uftw",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337741",
+            "aspectRatio": "48:85",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:38:40.146Z",
+        "imageFile": "mtx6klcik1uftw",
+        "imageUrl": "./history_data/mtx6klcik1uftw.png"
+    },
+    {
+        "id": "mtx6jycrpepgxt",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337744",
+            "aspectRatio": "15:11",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:38:10.347Z",
+        "imageFile": "mtx6jycrpepgxt",
+        "imageUrl": "./history_data/mtx6jycrpepgxt.png"
+    },
+    {
+        "id": "mtx6i7a12vp0k9",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337745",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:36:48.601Z",
+        "imageFile": "mtx6i7a12vp0k9",
+        "imageUrl": "./history_data/mtx6i7a12vp0k9.png"
+    },
+    {
+        "id": "mtx6heim7j0hbw",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337746",
+            "aspectRatio": "27:38",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:36:11.326Z",
+        "imageFile": "mtx6heim7j0hbw",
+        "imageUrl": "./history_data/mtx6heim7j0hbw.png"
+    },
+    {
+        "id": "mtx6glemncq70e",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337748",
+            "aspectRatio": "15:17",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:35:33.598Z",
+        "imageFile": "mtx6glemncq70e",
+        "imageUrl": "./history_data/mtx6glemncq70e.png"
+    },
+    {
+        "id": "mtx6fro1hzjfmy",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337749",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:34:55.057Z",
+        "imageFile": "mtx6fro1hzjfmy",
+        "imageUrl": "./history_data/mtx6fro1hzjfmy.png"
+    },
+    {
+        "id": "mtx6ai10v9chcb",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337751",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:30:49.284Z",
+        "imageFile": "mtx6ai10v9chcb",
+        "imageUrl": "./history_data/mtx6ai10v9chcb.png"
+    },
+    {
+        "id": "mtx69ka3m79o9e",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337752",
+            "aspectRatio": "57:71",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:30:05.547Z",
+        "imageFile": "mtx69ka3m79o9e",
+        "imageUrl": "./history_data/mtx69ka3m79o9e.png"
+    },
+    {
+        "id": "mtx68s6587m97p",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337753",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:29:29.117Z",
+        "imageFile": "mtx68s6587m97p",
+        "imageUrl": "./history_data/mtx68s6587m97p.png"
+    },
+    {
+        "id": "mtx67uavr7budp",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337754",
+            "aspectRatio": "63:65",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T16:28:45.223Z",
+        "imageFile": "mtx67uavr7budp",
+        "imageUrl": "./history_data/mtx67uavr7budp.png"
+    },
+    {
+        "id": "mtx4ei7e28ca0z",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337761",
+            "aspectRatio": "2:3",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T15:37:56.907Z",
+        "imageFile": "mtx4ei7e28ca0z",
+        "imageUrl": "./history_data/mtx4ei7e28ca0z.png"
+    },
+    {
+        "id": "mtx4dhslehj62u",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: 337762",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-11T15:37:09.717Z",
+        "imageFile": "mtx4dhslehj62u",
+        "imageUrl": "./history_data/mtx4dhslehj62u.png"
+    },
+    {
+        "id": "mtveu3f9jbqm9l",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-10_at_11_52_29",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-10T10:54:28.053Z",
+        "imageFile": "mtveu3f9jbqm9l",
+        "imageUrl": "./history_data/mtveu3f9jbqm9l.png"
+    },
+    {
+        "id": "mttzpqs4rh0hry",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-09_at_10_48_03",
+            "aspectRatio": "55:74",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-09T11:03:24.628Z",
+        "imageFile": "mttzpqs4rh0hry",
+        "imageUrl": "./history_data/mttzpqs4rh0hry.png"
+    },
+    {
+        "id": "mttzoos50t16t8",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-09_at_10_33_20",
+            "aspectRatio": "71:57",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-09T11:02:35.381Z",
+        "imageFile": "mttzoos50t16t8",
+        "imageUrl": "./history_data/mttzoos50t16t8.png"
+    },
+    {
+        "id": "mtrk8dvplnqgya",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_10",
+            "aspectRatio": "43:95",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:14:28.165Z",
+        "imageFile": "mtrk8dvplnqgya",
+        "imageUrl": "./history_data/mtrk8dvplnqgya.png"
+    },
+    {
+        "id": "mtrk7n4g4zhz49",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_10__1_",
+            "aspectRatio": "43:95",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:13:53.488Z",
+        "imageFile": "mtrk7n4g4zhz49",
+        "imageUrl": "./history_data/mtrk7n4g4zhz49.png"
+    },
+    {
+        "id": "mtrk6r6n2gzid7",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_11",
+            "aspectRatio": "43:95",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:13:12.095Z",
+        "imageFile": "mtrk6r6n2gzid7",
+        "imageUrl": "./history_data/mtrk6r6n2gzid7.png"
+    },
+    {
+        "id": "mtrk60iysxzsjc",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_11__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:12:37.546Z",
+        "imageFile": "mtrk60iysxzsjc",
+        "imageUrl": "./history_data/mtrk60iysxzsjc.png"
+    },
+    {
+        "id": "mtrk4e1igy4dbd",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_11__2_",
+            "aspectRatio": "85:48",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:11:21.750Z",
+        "imageFile": "mtrk4e1igy4dbd",
+        "imageUrl": "./history_data/mtrk4e1igy4dbd.png"
+    },
+    {
+        "id": "mtrk3g8a9obi9k",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_11__3_",
+            "aspectRatio": "3:2",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:10:37.930Z",
+        "imageFile": "mtrk3g8a9obi9k",
+        "imageUrl": "./history_data/mtrk3g8a9obi9k.png"
+    },
+    {
+        "id": "mtrk2lwao2pcem",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_11__4_",
+            "aspectRatio": "74:55",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:09:58.618Z",
+        "imageFile": "mtrk2lwao2pcem",
+        "imageUrl": "./history_data/mtrk2lwao2pcem.png"
+    },
+    {
+        "id": "mtrk1m8gvc0i3e",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-07_at_18_22_11__5_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-07T18:09:12.400Z",
+        "imageFile": "mtrk1m8gvc0i3e",
+        "imageUrl": "./history_data/mtrk1m8gvc0i3e.png"
+    },
+    {
+        "id": "mtq5z00jmupqpk",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-03_at_11_10_20",
+            "aspectRatio": "79:53",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T18:47:29.491Z",
+        "imageFile": "mtq5z00jmupqpk",
+        "imageUrl": "./history_data/mtq5z00jmupqpk.png"
+    },
+    {
+        "id": "mtq5yjm4uzl4bd",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-high",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-03_at_11_10_20",
+            "aspectRatio": "80:51",
+            "size": "",
+            "model": "openai-high",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T18:47:08.236Z",
+        "imageFile": "mtq5yjm4uzl4bd",
+        "imageUrl": "./history_data/mtq5yjm4uzl4bd.png"
+    },
+    {
+        "id": "mtq5ejig71xn72",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-03_at_11_10_20",
+            "aspectRatio": "80:51",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T18:31:34.984Z",
+        "imageFile": "mtq5ejig71xn72",
+        "imageUrl": "./history_data/mtq5ejig71xn72.png"
+    },
+    {
+        "id": "mtq4feto0q0l9p",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: ChatGPT_Image_2_sept_2026__19_37_54",
+            "aspectRatio": "85:48",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T18:04:15.948Z",
+        "imageFile": "mtq4feto0q0l9p",
+        "imageUrl": "./history_data/mtq4feto0q0l9p.png"
+    },
+    {
+        "id": "mtq3pc0a3nnkaf",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: ChatGPT_Image_2_sept_2026__19_37_54",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:43:59.242Z",
+        "imageFile": "mtq3pc0a3nnkaf",
+        "imageUrl": "./history_data/mtq3pc0a3nnkaf.png"
+    },
+    {
+        "id": "mtq3opr177rpbl",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: ChatGPT_Image_2_sept_2026__19_37_54",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:43:30.397Z",
+        "imageFile": "mtq3opr177rpbl",
+        "imageUrl": "./history_data/mtq3opr177rpbl.png"
+    },
+    {
+        "id": "mtq3off1mvsqjm",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: ChatGPT_Image_2_sept_2026__19_38_03",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:43:17.005Z",
+        "imageFile": "mtq3off1mvsqjm",
+        "imageUrl": "./history_data/mtq3off1mvsqjm.png"
+    },
+    {
+        "id": "mtq3o6fxbnh0j3",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: ChatGPT_Image_2_sept_2026__19_38_03",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:43:05.373Z",
+        "imageFile": "mtq3o6fxbnh0j3",
+        "imageUrl": "./history_data/mtq3o6fxbnh0j3.png"
+    },
+    {
+        "id": "mtq3o4ypvvymit",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: Imagen_de_Codex_2_sept_2026__19_54_33",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:43:03.457Z",
+        "imageFile": "mtq3o4ypvvymit",
+        "imageUrl": "./history_data/mtq3o4ypvvymit.png"
+    },
+    {
+        "id": "mtq3nqd0sno4nm",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-06_at_12_20_58",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:42:44.532Z",
+        "imageFile": "mtq3nqd0sno4nm",
+        "imageUrl": "./history_data/mtq3nqd0sno4nm.png"
+    },
+    {
+        "id": "mtq3n1rs2x18pc",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: Imagen_de_Codex_2_sept_2026__19_54_33",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:42:12.664Z",
+        "imageFile": "mtq3n1rs2x18pc",
+        "imageUrl": "./history_data/mtq3n1rs2x18pc.png"
+    },
+    {
+        "id": "mtq3llhip0ofxo",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "openai-medium",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-06_at_12_20_58",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "openai-medium",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T17:41:04.902Z",
+        "imageFile": "mtq3llhip0ofxo",
+        "imageUrl": "./history_data/mtq3llhip0ofxo.png"
+    },
+    {
+        "id": "mtpw1mmwmejjs1",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-06_at_15_03_33",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T14:09:35.960Z",
+        "imageFile": "mtpw1mmwmejjs1",
+        "imageUrl": "./history_data/mtpw1mmwmejjs1.png"
+    },
+    {
+        "id": "mtpw1e9diir96h",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-06_at_15_03_34",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T14:09:25.105Z",
+        "imageFile": "mtpw1e9diir96h",
+        "imageUrl": "./history_data/mtpw1e9diir96h.png"
+    },
+    {
+        "id": "mtpqovxc6jg8i0",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-06_at_12_38_47",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T11:39:43.392Z",
+        "imageFile": "mtpqovxc6jg8i0",
+        "imageUrl": "./history_data/mtpqovxc6jg8i0.png"
+    },
+    {
+        "id": "mtpq33t7r05c0z",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-06_at_12_20_58",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T11:22:47.179Z",
+        "imageFile": "mtpq33t7r05c0z",
+        "imageUrl": "./history_data/mtpq33t7r05c0z.png"
+    },
+    {
+        "id": "mtpou2tcwtle8m",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-06_at_11_38_34",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-06T10:47:46.368Z",
+        "imageFile": "mtpou2tcwtle8m",
+        "imageUrl": "./history_data/mtpou2tcwtle8m.png"
+    },
+    {
+        "id": "mtochs0ef8vest",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-05_at_10_08_34",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-05T12:14:30.926Z",
+        "imageFile": "mtochs0ef8vest",
+        "imageUrl": "./history_data/mtochs0ef8vest.png"
+    },
+    {
+        "id": "mtochim4nwz9cq",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-05_at_10_08_34__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-05T12:14:18.748Z",
+        "imageFile": "mtochim4nwz9cq",
+        "imageUrl": "./history_data/mtochim4nwz9cq.png"
+    },
+    {
+        "id": "mtoch93fw6v8a4",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-05_at_10_08_34__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-05T12:14:06.411Z",
+        "imageFile": "mtoch93fw6v8a4",
+        "imageUrl": "./history_data/mtoch93fw6v8a4.png"
+    },
+    {
+        "id": "mtmqjfzkhmiwb3",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-04_at_09_39_34",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-04T09:12:10.928Z",
+        "imageFile": "mtmqjfzkhmiwb3",
+        "imageUrl": "./history_data/mtmqjfzkhmiwb3.png"
+    },
+    {
+        "id": "mtmqj6d7fwbou6",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-04_at_09_39_34__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-04T09:11:58.459Z",
+        "imageFile": "mtmqj6d7fwbou6",
+        "imageUrl": "./history_data/mtmqj6d7fwbou6.png"
+    },
+    {
+        "id": "mtmqixldbu9fnm",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-04_at_09_39_34__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-04T09:11:47.089Z",
+        "imageFile": "mtmqixldbu9fnm",
+        "imageUrl": "./history_data/mtmqixldbu9fnm.png"
+    },
+    {
+        "id": "mtmqior7kvmngs",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-04_at_09_39_35",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-04T09:11:35.635Z",
+        "imageFile": "mtmqior7kvmngs",
+        "imageUrl": "./history_data/mtmqior7kvmngs.png"
+    },
+    {
+        "id": "mtj55k7kaeldyk",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-09-01_at_20_31_57",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-09-01T20:50:12.752Z",
+        "imageFile": "mtj55k7kaeldyk",
+        "imageUrl": "./history_data/mtj55k7kaeldyk.png"
+    },
+    {
+        "id": "mthk8lamxbmoay",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-31_at_15_44_38",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-31T18:16:56.014Z",
+        "imageFile": "mthk8lamxbmoay",
+        "imageUrl": "./history_data/mthk8lamxbmoay.png"
+    },
+    {
+        "id": "mthk8be4fxxz6x",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-31_at_19_05_14",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-31T18:16:43.180Z",
+        "imageFile": "mthk8be4fxxz6x",
+        "imageUrl": "./history_data/mthk8be4fxxz6x.png"
+    },
+    {
+        "id": "mthk83tb1mdelg",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-31_at_17_19_08",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-31T18:16:33.359Z",
+        "imageFile": "mthk83tb1mdelg",
+        "imageUrl": "./history_data/mthk83tb1mdelg.png"
+    },
+    {
+        "id": "mthk7u7kml19fw",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-31_at_17_19_08__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-31T18:16:20.912Z",
+        "imageFile": "mthk7u7kml19fw",
+        "imageUrl": "./history_data/mthk7u7kml19fw.png"
+    },
+    {
+        "id": "mtg9307j2wmemn",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-30_at_21_15_53",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-30T20:16:53.455Z",
+        "imageFile": "mtg9307j2wmemn",
+        "imageUrl": "./history_data/mtg9307j2wmemn.png"
+    },
+    {
+        "id": "mtg92qqbw541q6",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-30_at_21_15_53__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-30T20:16:41.171Z",
+        "imageFile": "mtg92qqbw541q6",
+        "imageUrl": "./history_data/mtg92qqbw541q6.png"
+    },
+    {
+        "id": "mtg56yi3eky71w",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-30_at_17_44_05",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-30T18:27:59.403Z",
+        "imageFile": "mtg56yi3eky71w",
+        "imageUrl": "./history_data/mtg56yi3eky71w.png"
+    },
+    {
+        "id": "mtg56pnn6bmjb6",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-30_at_17_44_05__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-30T18:27:47.939Z",
+        "imageFile": "mtg56pnn6bmjb6",
+        "imageUrl": "./history_data/mtg56pnn6bmjb6.png"
+    },
+    {
+        "id": "mtg56et9ira9u0",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-30_at_17_44_05__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-30T18:27:33.885Z",
+        "imageFile": "mtg56et9ira9u0",
+        "imageUrl": "./history_data/mtg56et9ira9u0.png"
+    },
+    {
+        "id": "mtg565gm2rr79o",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-30_at_17_44_06",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-30T18:27:21.766Z",
+        "imageFile": "mtg565gm2rr79o",
+        "imageUrl": "./history_data/mtg565gm2rr79o.png"
+    },
+    {
+        "id": "mt7oqo6y9oc4w9",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-24_at_21_17_46",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-24T20:25:16.282Z",
+        "imageFile": "mt7oqo6y9oc4w9",
+        "imageUrl": "./history_data/mt7oqo6y9oc4w9.png"
+    },
+    {
+        "id": "mt685uirdhkxew",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-23_at_20_52_50",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-23T19:53:24.675Z",
+        "imageFile": "mt685uirdhkxew",
+        "imageUrl": "./history_data/mt685uirdhkxew.png"
+    },
+    {
+        "id": "mt60yqw0m46ba6",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "flux-pro",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-23_at_17_28_56",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "flux-pro",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-23T16:31:56.064Z",
+        "imageFile": "mt60yqw0m46ba6",
+        "imageUrl": "./history_data/mt60yqw0m46ba6.png"
+    },
+    {
+        "id": "msvum5jwfso6lg",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__6_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:36:29.084Z",
+        "imageFile": "msvum5jwfso6lg",
+        "imageUrl": "./history_data/msvum5jwfso6lg.png"
+    },
+    {
+        "id": "msvulwztljw20s",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__7_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:36:17.993Z",
+        "imageFile": "msvulwztljw20s",
+        "imageUrl": "./history_data/msvulwztljw20s.png"
+    },
+    {
+        "id": "msvulnq9yis05l",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__8_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:36:05.985Z",
+        "imageFile": "msvulnq9yis05l",
+        "imageUrl": "./history_data/msvulnq9yis05l.png"
+    },
+    {
+        "id": "msvuleh3xezswx",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__9_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:35:53.991Z",
+        "imageFile": "msvuleh3xezswx",
+        "imageUrl": "./history_data/msvuleh3xezswx.png"
+    },
+    {
+        "id": "msvul3pi0srb1q",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:35:40.038Z",
+        "imageFile": "msvul3pi0srb1q",
+        "imageUrl": "./history_data/msvul3pi0srb1q.png"
+    },
+    {
+        "id": "msvuku8pl5hnlp",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:35:27.769Z",
+        "imageFile": "msvuku8pl5hnlp",
+        "imageUrl": "./history_data/msvuku8pl5hnlp.png"
+    },
+    {
+        "id": "msvukjmu59xdou",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:35:14.023Z",
+        "imageFile": "msvukjmu59xdou",
+        "imageUrl": "./history_data/msvukjmu59xdou.png"
+    },
+    {
+        "id": "msvuk9pgwkc9z4",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__3_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:35:01.156Z",
+        "imageFile": "msvuk9pgwkc9z4",
+        "imageUrl": "./history_data/msvuk9pgwkc9z4.png"
+    },
+    {
+        "id": "msvuk15qvg266f",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__4_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:34:50.078Z",
+        "imageFile": "msvuk15qvg266f",
+        "imageUrl": "./history_data/msvuk15qvg266f.png"
+    },
+    {
+        "id": "msvujqese2y1hd",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__5_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:34:36.148Z",
+        "imageFile": "msvujqese2y1hd",
+        "imageUrl": "./history_data/msvujqese2y1hd.png"
+    },
+    {
+        "id": "msvujijrezhxdb",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__6_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:34:25.959Z",
+        "imageFile": "msvujijrezhxdb",
+        "imageUrl": "./history_data/msvujijrezhxdb.png"
+    },
+    {
+        "id": "msvuj9xmr4vyou",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__7_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:34:14.794Z",
+        "imageFile": "msvuj9xmr4vyou",
+        "imageUrl": "./history_data/msvuj9xmr4vyou.png"
+    },
+    {
+        "id": "msvuj1b9v6v47v",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__8_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:34:03.621Z",
+        "imageFile": "msvuj1b9v6v47v",
+        "imageUrl": "./history_data/msvuj1b9v6v47v.png"
+    },
+    {
+        "id": "msvuisbls6onpr",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__9_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:33:51.969Z",
+        "imageFile": "msvuisbls6onpr",
+        "imageUrl": "./history_data/msvuisbls6onpr.png"
+    },
+    {
+        "id": "msvuiipf6k6qh4",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__10_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:33:39.507Z",
+        "imageFile": "msvuiipf6k6qh4",
+        "imageUrl": "./history_data/msvuiipf6k6qh4.png"
+    },
+    {
+        "id": "msvui7523raal3",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__11_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:33:24.518Z",
+        "imageFile": "msvui7523raal3",
+        "imageUrl": "./history_data/msvui7523raal3.png"
+    },
+    {
+        "id": "msvuhv44ijknhr",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__12_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:33:08.932Z",
+        "imageFile": "msvuhv44ijknhr",
+        "imageUrl": "./history_data/msvuhv44ijknhr.png"
+    },
+    {
+        "id": "msvuhl5qmfd6ht",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_06__13_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:32:56.030Z",
+        "imageFile": "msvuhl5qmfd6ht",
+        "imageUrl": "./history_data/msvuhl5qmfd6ht.png"
+    },
+    {
+        "id": "msvuhcqmwps1dr",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_07",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:32:45.118Z",
+        "imageFile": "msvuhcqmwps1dr",
+        "imageUrl": "./history_data/msvuhcqmwps1dr.png"
+    },
+    {
+        "id": "msvuafn60i27iq",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_03__4_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:27:22.290Z",
+        "imageFile": "msvuafn60i27iq",
+        "imageUrl": "./history_data/msvuafn60i27iq.png"
+    },
+    {
+        "id": "msvua6bm1ifqbb",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_04",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:27:10.210Z",
+        "imageFile": "msvua6bm1ifqbb",
+        "imageUrl": "./history_data/msvua6bm1ifqbb.png"
+    },
+    {
+        "id": "msvu9wqr4ojf4f",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_04__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:26:57.795Z",
+        "imageFile": "msvu9wqr4ojf4f",
+        "imageUrl": "./history_data/msvu9wqr4ojf4f.png"
+    },
+    {
+        "id": "msvu9n0cpbypio",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_04__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:26:45.180Z",
+        "imageFile": "msvu9n0cpbypio",
+        "imageUrl": "./history_data/msvu9n0cpbypio.png"
+    },
+    {
+        "id": "msvu9dp8yx01k4",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:26:33.116Z",
+        "imageFile": "msvu9dp8yx01k4",
+        "imageUrl": "./history_data/msvu9dp8yx01k4.png"
+    },
+    {
+        "id": "msvu91188r8hzc",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:26:16.700Z",
+        "imageFile": "msvu91188r8hzc",
+        "imageUrl": "./history_data/msvu91188r8hzc.png"
+    },
+    {
+        "id": "msvu8p2e9ld3bz",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:26:01.190Z",
+        "imageFile": "msvu8p2e9ld3bz",
+        "imageUrl": "./history_data/msvu8p2e9ld3bz.png"
+    },
+    {
+        "id": "msvu89vglkftmf",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__3_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:25:41.500Z",
+        "imageFile": "msvu89vglkftmf",
+        "imageUrl": "./history_data/msvu89vglkftmf.png"
+    },
+    {
+        "id": "msvu7y8z244rq6",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__4_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:25:26.435Z",
+        "imageFile": "msvu7y8z244rq6",
+        "imageUrl": "./history_data/msvu7y8z244rq6.png"
+    },
+    {
+        "id": "msvu7olgbrbjfm",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_05__5_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:25:13.924Z",
+        "imageFile": "msvu7olgbrbjfm",
+        "imageUrl": "./history_data/msvu7olgbrbjfm.png"
+    },
+    {
+        "id": "msvu4qvkn4ovoe",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_02",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:22:56.912Z",
+        "imageFile": "msvu4qvkn4ovoe",
+        "imageUrl": "./history_data/msvu4qvkn4ovoe.png"
+    },
+    {
+        "id": "msvu4hybqw5hgw",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_03",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:22:45.347Z",
+        "imageFile": "msvu4hybqw5hgw",
+        "imageUrl": "./history_data/msvu4hybqw5hgw.png"
+    },
+    {
+        "id": "msvu48fbgtxjxq",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_03__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:22:32.999Z",
+        "imageFile": "msvu48fbgtxjxq",
+        "imageUrl": "./history_data/msvu48fbgtxjxq.png"
+    },
+    {
+        "id": "msvu3yez8amuf5",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_03__2_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:22:20.027Z",
+        "imageFile": "msvu3yez8amuf5",
+        "imageUrl": "./history_data/msvu3yez8amuf5.png"
+    },
+    {
+        "id": "msvu3p5021v37h",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_03__3_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:22:08.004Z",
+        "imageFile": "msvu3p5021v37h",
+        "imageUrl": "./history_data/msvu3p5021v37h.png"
+    },
+    {
+        "id": "msvu3golfts35b",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_03__4_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:21:57.045Z",
+        "imageFile": "msvu3golfts35b",
+        "imageUrl": "./history_data/msvu3golfts35b.png"
+    },
+    {
+        "id": "msvu37keozwagu",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_04",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:21:45.230Z",
+        "imageFile": "msvu37keozwagu",
+        "imageUrl": "./history_data/msvu37keozwagu.png"
+    },
+    {
+        "id": "msvu2y2wg8xwv1",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-16_at_14_05_04__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-16T13:21:32.936Z",
+        "imageFile": "msvu2y2wg8xwv1",
+        "imageUrl": "./history_data/msvu2y2wg8xwv1.png"
+    },
+    {
+        "id": "msrrtrwao3h2l5",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: combinacion_1786474850545",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-13T17:07:21.082Z",
+        "imageFile": "msrrtrwao3h2l5",
+        "imageUrl": "./history_data/msrrtrwao3h2l5.png"
+    },
+    {
+        "id": "msrrswh2hqyjb9",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-pro",
+        "data": {
+            "prompt": "Dibujo lineal: combinacion_1786474850545",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-pro",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-13T17:06:40.358Z",
+        "imageFile": "msrrswh2hqyjb9",
+        "imageUrl": "./history_data/msrrswh2hqyjb9.png"
+    },
+    {
+        "id": "msrouvsvr18aje",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "flux-pro",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-13_at_16_32_57",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "flux-pro",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-13T15:44:13.951Z",
+        "imageFile": "msrouvsvr18aje",
+        "imageUrl": "./history_data/msrouvsvr18aje.png"
+    },
+    {
+        "id": "msrotu4gt3pxye",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-13_at_16_32_57",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-13T15:43:25.120Z",
+        "imageFile": "msrotu4gt3pxye",
+        "imageUrl": "./history_data/msrotu4gt3pxye.png"
+    },
+    {
+        "id": "msqfa55yos8s4x",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-12_at_19_14_48__1_",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-12T18:28:23.590Z",
+        "imageFile": "msqfa55yos8s4x",
+        "imageUrl": "./history_data/msqfa55yos8s4x.png"
+    },
+    {
+        "id": "msqf9v9cfy6n51",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-12_at_19_14_34",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-12T18:28:10.752Z",
+        "imageFile": "msqf9v9cfy6n51",
+        "imageUrl": "./history_data/msqf9v9cfy6n51.png"
+    },
+    {
+        "id": "msqf9kagsylgt0",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-12_at_19_14_38",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-12T18:27:56.536Z",
+        "imageFile": "msqf9kagsylgt0",
+        "imageUrl": "./history_data/msqf9kagsylgt0.png"
+    },
+    {
+        "id": "msqf99fe1cp2vc",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-12_at_19_14_39",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-12T18:27:42.458Z",
+        "imageFile": "msqf99fe1cp2vc",
+        "imageUrl": "./history_data/msqf99fe1cp2vc.png"
+    },
+    {
+        "id": "msqf8z4b26tf9w",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: WhatsApp_Image_2026-08-12_at_19_14_48",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-12T18:27:29.099Z",
+        "imageFile": "msqf8z4b26tf9w",
+        "imageUrl": "./history_data/msqf8z4b26tf9w.png"
+    },
+    {
+        "id": "msqe0iw7i90vyx",
+        "app": "dibujo_lineas_copia",
+        "type": "image",
+        "model": "gemini-flash",
+        "data": {
+            "prompt": "Dibujo lineal: combinacion_1786474614429",
+            "aspectRatio": "1:1",
+            "size": "",
+            "model": "gemini-flash",
+            "style": {
+                "type": "line_art"
+            }
+        },
+        "createdAt": "2026-08-12T17:52:55.207Z",
+        "imageFile": "msqe0iw7i90vyx",
+        "imageUrl": "./history_data/msqe0iw7i90vyx.png"
+    }
+]
