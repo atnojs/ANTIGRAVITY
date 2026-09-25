@@ -72,7 +72,7 @@ $MODELOS_IMG = [
     'normal' => 'google/gemini-3.1-flash-image',
     'pro'    => 'google/gemini-3-pro-image',
 ];
-$MODELO_TEXTO = 'google/gemini-3.8-flash';
+$MODELO_TEXTO = 'xiaomi/mimo-v2.6-pro';
 
 // ===== Clave OpenAI: SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV) =====
 $openaiKey = '';
