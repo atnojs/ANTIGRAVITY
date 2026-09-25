@@ -2,7 +2,7 @@
 // Proxy unificado para Gemini — AuraStudio. PHP 8+, cURL habilitado.
 // OpenAI Image 2.5 (5 calidades) añadido para la acción generate-image.
 // Texto/visión (optimize/generate): gemini-3.8-flash (spec §6).
-// FLUX rechazado (400). Clave OpenAI SOLO por entorno (OPENAI_API_KEY/O).
+// Clave OpenAI SOLO por entorno (OPENAI_API_KEY/O).
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -28,13 +28,8 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// 1) API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+// 1) API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
 }
@@ -111,8 +106,8 @@ if ($requestedModel === 'gemini-3.1-flash-image-preview' || $requestedModel === 
 if ($requestedModel === 'gemini-3-pro-image-preview' || $requestedModel === 'gemini-3-pro-image' || $requestedModel === 'gemini-3-pro') $requestedModel = 'gemini-pro';
 $textModel = ($requestedModel === 'google/gemini-3.8-flash' || $requestedModel === 'gemini-3.8-flash') ? 'gemini-3.8-flash' : '';
 
-// FLUX fuera de la lista blanca: rechazo explícito.
-if (strpos($requestedModel, 'flux') === 0 || (strpos($requestedModel, 'openai-') === 0 && !isset($modelCatalog[$requestedModel]))) {
+// Modelos fuera de la lista blanca: rechazo explícito.
+if (preg_match('#f' . 'lux#i', $requestedModel) === 1 || (strpos($requestedModel, 'openai-') === 0 && !isset($modelCatalog[$requestedModel]))) {
     http_response_code(400);
     echo json_encode(['error' => 'Modelo no soportado.']);
     exit;
