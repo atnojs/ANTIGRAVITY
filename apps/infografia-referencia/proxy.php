@@ -146,7 +146,7 @@ function handleOpenRouter(array $request): void {
     }
     $payload = ['messages' => array_values($messages), 'stream' => false];
     $model = trim((string)($request['model'] ?? ''));
-    if ($model === '') $model = 'google/gemini-3.8-flash';
+    if ($model === '') $model = 'xiaomi/mimo-v2.6-pro';
     if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
     $payload['model'] = $model;
     if (isset($request['temperature']) && is_numeric($request['temperature'])) $payload['temperature'] = max(0.0, min(2.0, (float)$request['temperature']));
@@ -188,7 +188,7 @@ PROMPT;
     ]];
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
         'Authorization: Bearer ' . $key, 'Content-Type: application/json', 'accept: application/json'
-    ], ['model' => 'google/gemini-3.8-flash', 'messages' => $messages, 'temperature' => 0.1, 'max_tokens' => 5000, 'stream' => false], 120);
+    ], ['model' => 'xiaomi/mimo-v2.6-pro', 'messages' => $messages, 'temperature' => 0.1, 'max_tokens' => 5000, 'stream' => false], 120);
     if ($status < 200 || $status >= 300 || isset($response['error'])) {
         $detail = $response['error']['message'] ?? $response['error'] ?? ('HTTP ' . $status);
         respond($status >= 400 && $status < 600 ? $status : 502, ['success' => false, 'error' => 'No se pudo analizar la infografía.', 'detail' => $detail]);
@@ -197,7 +197,7 @@ PROMPT;
     $text = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', $text) ?? $text;
     $analysis = json_decode(trim($text), true);
     if (!is_array($analysis)) respond(502, ['success' => false, 'error' => 'El analizador no devolvió un JSON válido. Vuelve a intentarlo.']);
-    respond(200, ['success' => true, 'analysis' => $analysis, 'model' => (string)($response['model'] ?? 'google/gemini-3.8-flash')]);
+    respond(200, ['success' => true, 'analysis' => $analysis, 'model' => (string)($response['model'] ?? 'xiaomi/mimo-v2.6-pro')]);
 }
 
 
