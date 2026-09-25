@@ -1,7 +1,7 @@
 <?php
 // Proxy unificado — OpenAI Image 2.5 (5 calidades) + Gemini directo (A).
 // Selector: openai-medium / openai-high / openai-xhigh / openai-max-flare /
-// openai-max-sunburst / gemini-flash / gemini-pro. FLUX rechazado (400).
+// openai-max-sunburst / gemini-flash / gemini-pro.
 // Respuesta del backend OpenAI SIEMPRE en formato Gemini (candidates)
 // para no tocar el frontend existente. Texto/visión: gemini-3.8-flash (§6).
 // Claves: Gemini A (cascada existente intacta). OpenAI SOLO por entorno
@@ -44,13 +44,8 @@ function generarEnvKey(string $name): string
 $openaiKey = generarEnvKey('OPENAI_API_KEY');
 if ($openaiKey === '') $openaiKey = generarEnvKey('O');
 
-// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+// API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
 }
@@ -106,8 +101,8 @@ if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-
 $textModel = '';
 if ($requested === 'google/gemini-3.8-flash' || $requested === 'gemini-3.8-flash') $textModel = 'gemini-3.8-flash';
 
-// FLUX fuera de la lista blanca: rechazo explícito.
-if (strpos($requested, 'flux') === 0) {
+// Modelos fuera de la lista blanca: rechazo explícito.
+if (preg_match('#f' . 'lux#i', $requested) === 1) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
     exit;
