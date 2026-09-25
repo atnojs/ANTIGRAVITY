@@ -6,6 +6,27 @@ import { Sparkles, Upload, ImageIcon, Check, ArrowRight, ArrowLeft, Download, Tr
 const STORAGE_KEY = 'aura_edit_history';
 const API_ENDPOINT = 'proxy.php';
 
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
+// Tooltips del selector de modelos (popup hover)
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+};
+
 // Estilos disponibles
 const AVAILABLE_STYLES = [
   {
@@ -397,6 +418,7 @@ function App() {
   const [loadingText, setLoadingText] = useState('');
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
+  const [selectedModel, setSelectedModel] = useState('openai-medium');
 
   // Cargar historial de localStorage (OBLIGATORIO)
   useEffect(() => {
@@ -472,6 +494,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          model: selectedModel,
           prompt: `Transform this image into ${style.prompt}. Maintain the composition and subject matter but apply the artistic style described.`,
           base64ImageData: base64Data,
           mimeType: mimeType,
@@ -643,6 +666,74 @@ function App() {
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+                <div className="glass rounded-2xl p-5">
+                  <h3 className="font-montserrat font-bold text-white mb-3 text-sm">Modelo IA</h3>
+                  <div role="group" aria-label="Seleccionar modelo" className="space-y-2">
+                    <span className="model-provider-title">OPENAI 2.5</span>
+                    <span className="model-quality-hint block">De Menor a Mayor Calidad</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedModel('openai-medium')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-medium' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-medium'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-medium'] || ''}
+                      >MEDIUM</button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedModel('openai-high')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-high' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-high'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-high'] || ''}
+                      >HIGH</button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedModel('openai-xhigh')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-xhigh' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-xhigh'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
+                      >XHIGH</button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedModel('openai-max-flare')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-max-flare' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-max-flare'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-flare'] || ''}
+                      >MAX FLARE</button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedModel('openai-max-sunburst')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-max-sunburst' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-max-sunburst'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-sunburst'] || ''}
+                      >MAX SUNBURST</button>
+                    </div>
+                    <span className="model-provider-title">GEMINI</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedModel('gemini-flash')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'gemini-flash' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'gemini-flash'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-flash'] || ''}
+                      >3.1 FLASH</button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedModel('gemini-pro')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'gemini-pro' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'gemini-pro'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-pro'] || ''}
+                      >3 PRO</button>
+                    </div>
                   </div>
                 </div>
                 <div className="glass rounded-2xl p-5">
@@ -820,3 +911,5 @@ function Router() {
 // Render
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<Router />);
+
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
