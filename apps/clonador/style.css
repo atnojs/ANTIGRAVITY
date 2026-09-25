@@ -640,6 +640,19 @@ h3 {
     width: 100%;
 }
 
+.model-provider-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1.4rem;
+}
+
+@media (max-width: 700px) {
+    .model-provider-row {
+        gap: .5rem;
+    }
+}
+
 .model-provider-column {
     display: flex;
     flex-direction: column;
