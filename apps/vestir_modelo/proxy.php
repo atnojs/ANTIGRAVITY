@@ -144,7 +144,7 @@ function handleOpenRouter(array $request): void {
             respond(400, ['success' => false, 'error' => 'La estructura de messages no es válida.']);
         }
     }
-    $payload = ['messages' => array_values($messages), 'stream' => false];
+    $payload = ['messages' => array_values($messages), 'stream' => false, 'model' => 'xiaomi/mimo-v2.6-pro']; // modelo de texto por defecto
     $model = trim((string)($request['model'] ?? ''));
     if ($model !== '') {
         if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
