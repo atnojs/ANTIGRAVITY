@@ -24,7 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-high': 'HIGH',
         'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
-        'openai-max-sunburst': 'MAX SUNBURST'
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'qwen-pro': 'QWEN 3 PRO'
     };
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {
@@ -104,6 +105,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función auxiliar para pausa entre peticiones
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
+    // Llamada al proxy. Para qwen-pro (más lento que el timeout de nginx,
+    // ~55s) se espera activamente: el proxy guarda el resultado en caché y
+    // responde 'processing' mientras el worker termina de generarlo.
+    const callProxyWithWait = async (body, maxAttempts = 36) => {
+        const slowModel = body && body.model === 'qwen-pro';
+        let lastError = 'Sin respuesta del modelo.';
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const res = await fetch(PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const json = await res.json().catch(() => null);
+                if (res.ok && json && (json.image || json.text)) return json;
+                if (json && json.status === 'processing') {
+                    lastError = 'Generando...';
+                } else if (json && json.error && json.error.message) {
+                    lastError = json.error.message;
+                    if (!slowModel || res.status < 500) throw new Error(lastError);
+                } else {
+                    lastError = `Error HTTP ${res.status}`;
+                }
+            } catch (e) {
+                if (!slowModel) throw e;
+                lastError = (e && e.message) || lastError;
+            }
+            if (!slowModel) throw new Error(lastError);
+            if (attempt < maxAttempts - 1) await delay(5000);
+        }
+        throw new Error(lastError);
+    };
+
     startButton.addEventListener('click', async () => {
         startButton.disabled = true;
         processingSection.classList.remove('hidden');
@@ -129,22 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     rd.readAsDataURL(file);
                 });
 
-                const res = await fetch(PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        image: base64,
-                        mimeType: file.type || 'image/jpeg',
-                        model: selectedModel,
-                        prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page..."
-                    })
+                const data = await callProxyWithWait({
+                    image: base64,
+                    mimeType: file.type || 'image/jpeg',
+                    model: selectedModel,
+                    prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page..."
                 });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.error?.message || `Error HTTP ${res.status}`);
-                }
 
                 if (data.image) {
                     var imgDataUrl = "data:" + (data.mimeType || 'image/png') + ";base64," + data.image;
