@@ -133,6 +133,8 @@
             margin-left: 10px;
         }
     </style>
+    <!-- Incluimos la librería pdf.js LOCALMENTE -->
+    <script src="pdf.mjs" type="module"></script>
 </head>
 <body>
 
@@ -153,11 +155,11 @@
 
     <script type="module">
         // --- CONFIGURACIÓN DE PDF.JS ---
-        import * as pdfjsLib from './pdf.mjs';
-        pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.mjs'; // Ruta a tu worker local
+        const pdfjsLib = globalThis.pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.mjs'; // Ruta a tu worker local
 
         // --- CONFIGURACIÓN DEL PDF ---
-        const urlArchivoPDF = './coreldraw2024.pdf'; // Tu PDF en la misma carpeta
+        const urlArchivoPDF = 'coreldraw2024.pdf'; // Tu PDF en la misma carpeta
 
         // --- VARIABLES Y ELEMENTOS DEL DOM ---
         let lineasDeIndiceProcesadas = []; // Guardaremos objetos con { temaCompleto, numeroPagina }
