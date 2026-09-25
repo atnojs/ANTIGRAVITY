@@ -9,14 +9,13 @@ header('Content-Type: application/json; charset=utf-8');
 
 try {
     // 1. Verificar si existe el archivo de configuración
-    $hasConfig = file_exists($configFile);
+    $hasConfig = false;
 
     if (!$hasConfig) {
         throw new Exception('Archivo .htaccess raiz no encontrado');
     }
 
     // 2. Cargar la clave API
-    include $configFile;
     $apiKey = defined('GEMINI_API_KEY') ? GEMINI_API_KEY : '';
 
     if (empty($apiKey)) {

@@ -18,12 +18,6 @@ try {
 
     // 2. Verificar archivos de configuración
 
-    if (file_exists($configFile)) {
-        include $configFile;
-        $diagnostic['api_keys']['GEMINI_API_KEY'] = defined('GEMINI_API_KEY') ?
-            (strlen(GEMINI_API_KEY) > 0 ? 'Configurada (' . strlen(GEMINI_API_KEY) . ' caracteres)' : 'Vacía') :
-            'No definida';
-    }
 
     // 3. Verificar variables de entorno
     $envKeys = ['GEMINI_API_KEY', 'REDIRECT_GEMINI_API_KEY'];
