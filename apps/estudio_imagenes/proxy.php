@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // ===== 7 FUENTES DE API KEY (Hostinger) =====
 $apiKey = '';
 
-$configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
     $apiKey = defined('OPENROUTER_API_KEY') ? OPENROUTER_API_KEY : '';
@@ -44,7 +43,7 @@ if (empty($apiKey)) $apiKey = $_ENV['REDIRECT_OPENROUTER_API_KEY'] ?? '';
 // La clave "AQUI_TU_API_KEY" del placeholder no es válida
 if (empty($apiKey) || $apiKey === 'AQUI_TU_API_KEY') {
     http_response_code(401);
-    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea config.php con define("OPENROUTER_API_KEY", "tu-key");']]);
+    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea .htaccess raiz con define("OPENROUTER_API_KEY", "tu-key");']]);
     exit;
 }
 
@@ -161,7 +160,7 @@ if ($accion === 'mejorar') {
 // ============================================================
 $calidad = $data['calidad'] ?? 'normal';
 
-// ===== Lista blanca exacta de modelos (FLUX fuera) =====
+// ===== Lista blanca exacta de modelos (lista cerrada) =====
 $CATALOGO = [
     'openai-medium'       => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
