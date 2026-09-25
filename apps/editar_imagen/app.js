@@ -13,6 +13,18 @@ const {
 // --- CONSTANTES (ORIGINAL) ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
+let currentModel = 'openai-medium';
+
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
     const targets = [
@@ -156,7 +168,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy('gemini-3.8-flash', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -195,7 +207,7 @@ const generateImage = async (params) => {
             }
         }
     };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
+    const result = await callProxy(currentModel || 'openai-medium', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -212,7 +224,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
+    const result = await callProxy(currentModel || 'openai-medium', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -405,6 +417,10 @@ const App = () => {
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
+
+    // Sincronizar modelo con variable de módulo (usada por los servicios)
+    useEffect(() => { currentModel = selectedModel; }, [selectedModel]);
 
     const fileInputRef = useRef(null);
 
@@ -425,9 +441,37 @@ const App = () => {
             });
     }, []);
 
-    // Auto-open file selector on mount for edit mode
+    // Recibe imágenes generadas por otras apps Antigravity en el mismo dominio.
     useEffect(() => {
-        setTimeout(() => fileInputRef.current?.click(), 100);
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('handoff') !== 'folio') return;
+            const raw = localStorage.getItem('antigravity-image-handoff');
+            if (!raw) return;
+            const handoff = JSON.parse(raw);
+            if (!handoff?.dataUrl?.startsWith('data:image/')) return;
+            const img = new Image();
+            img.onload = () => {
+                const detectedAR = getClosestAspectRatio(img.width, img.height);
+                setMode('remix');
+                setView('editor');
+                setSelectedAR(detectedAR);
+                setOriginalImageAR(detectedAR);
+                setRemixSource(handoff.dataUrl);
+                setPrompt(`Edita la infografía «${handoff.title || 'Folio'}»`);
+                localStorage.removeItem('antigravity-image-handoff');
+            };
+            img.src = handoff.dataUrl;
+        } catch (handoffError) {
+            console.warn('No se pudo importar la imagen de Folio:', handoffError);
+        }
+    }, []);
+
+    // Auto-open file selector salvo cuando llega una imagen desde Folio.
+    useEffect(() => {
+        if (new URLSearchParams(window.location.search).get('handoff') !== 'folio') {
+            setTimeout(() => fileInputRef.current?.click(), 100);
+        }
     }, []);
 
     const handleStart = (m) => {
@@ -643,6 +687,35 @@ const App = () => {
                                 </div>
                             </div>
 
+                            {/* ── Selector de Modelo IA (canónico 7 botones) ── */}
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Modelo IA</label>
+                                <div className="grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
+                                    {[
+                                      { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
+                                      { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] }
+                                    ].map(group => (
+                                      <div key={group.provider}>
+                                        <span className="model-provider-title block text-center mb-1">{group.provider}</span>
+                                        {group.provider === 'OPENAI 2.5' ? <span className="model-quality-hint block text-center mb-1">De Menor a Mayor Calidad</span> : <span className="model-quality-hint block text-center mb-1" aria-hidden="true" style={{visibility:'hidden'}}>De Menor a Mayor Calidad</span>}
+                                        <div className="grid grid-cols-2 gap-1">
+                                          {group.models.map(m => (
+                                            <button
+                                              type="button"
+                                              key={m.id}
+                                              onClick={() => setSelectedModel(m.id)}
+                                              className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === m.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                              aria-pressed={selectedModel === m.id}
+                                              aria-describedby="model-tooltip"
+                                              data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                            >{m.name}</button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="pt-6 order-last">
                                 <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
@@ -736,6 +809,20 @@ const App = () => {
 };
 
 const root = createRoot(document.getElementById('root'));
+/* === Popups de modelos (kit canónico): textos por id === */
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+};
+
 root.render(<App />);
+
+/* === Tooltip de modelos: lógica delegada (kit canónico) === */
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
 
 
