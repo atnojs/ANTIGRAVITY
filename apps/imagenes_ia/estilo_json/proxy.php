@@ -4,7 +4,7 @@
  * 🎨 ESTILO JSON — PROXY PHP (Multi-Backend)
  * Flujo:
  *   1) analizarEstilo : imagen de referencia -> JSON de estilo
- *                       (visión: Gemini gemini-3.8-flash / OpenRouter gemini-3.8-flash)
+ *                       (visión: OpenRouter xiaomi/mimo-v2.6-pro / respaldo Gemini gemini-3.8-flash)
  *   2) mejorarPrompt  : DeepSeek (texto) afina las instrucciones extra
  *   3) aplicarEstilo  : imagen del sujeto + JSON de estilo -> nueva imagen
  *                       ┌─ openai-medium/high/xhigh/max-flare/max-sunburst → gpt-image-2.5-flare/sunburst (edits)
@@ -113,8 +113,8 @@ try {
 
     // ═══════════════════════════════════════════════
     // TAREA 1: ANALIZAR ESTILO (imagen -> JSON)
-    // Preferente: Gemini con responseSchema (JSON ESTRICTO garantizado).
-    // Respaldo:   OpenRouter gpt-4o-mini (json_object) si no hay clave Gemini.
+    // Preferente: OpenRouter xiaomi/mimo-v2.6-pro (json_object) — modelo de texto: xiaomi/mimo-v2.6-pro vía OpenRouter.
+    // Respaldo:   Gemini con responseSchema (JSON ESTRICTO garantizado), Google directo.
     // Gemini SOLO LEE la imagen para el JSON; las imágenes se GENERAN con OpenAI/Gemini.
     // ═══════════════════════════════════════════════
     if ($task === 'analizarEstilo') {
@@ -146,8 +146,58 @@ try {
         $estilo = null;
         $cost = 0.0;
 
-        // ---- Vía preferente: GEMINI con responseSchema (JSON estricto) ----
-        if (!empty($gemKey)) {
+        // ---- Vía preferente: OpenRouter xiaomi/mimo-v2.6-pro (json_object) (§6) ----
+        // modelo de texto: xiaomi/mimo-v2.6-pro vía OpenRouter
+        if ($estilo === null && !empty($orKey)) {
+            $dataUrl = 'data:' . $mimeType . ';base64,' . $pureB64;
+            $sysText = 'Eres un analista visual experto. ' . $instruccion
+                . ' Devuelve ÚNICAMENTE un objeto JSON con EXACTAMENTE estas claves: '
+                . implode(', ', $CLAVES) . '.';
+            [$status, $data] = $callApi(
+                'https://openrouter.ai/api/v1/chat/completions',
+                [
+                    'model' => 'xiaomi/mimo-v2.6-pro',
+                    'response_format' => ['type' => 'json_object'],
+                    'messages' => [
+                        ['role' => 'system', 'content' => $sysText],
+                        ['role' => 'user', 'content' => [
+                            ['type' => 'text', 'text' => 'Analiza el ESTILO visual y devuelve el JSON.'],
+                            ['type' => 'image_url', 'image_url' => ['url' => $dataUrl]],
+                        ]],
+                    ],
+                    'max_tokens' => 700,
+                    'temperature' => 0.4,
+                ],
+                [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $orKey,
+                    'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+                    'X-Title: Estilo JSON',
+                ],
+                90
+            );
+            if ($status < 200 || $status >= 300) {
+                $msg = $data['error']['message'] ?? ('HTTP ' . $status);
+                if (is_array($msg)) $msg = json_encode($msg);
+                // Si falla y hay respaldo Gemini, seguimos con él; si no, error real
+                if (empty($gemKey)) {
+                    throw new Exception('OpenRouter: ' . $msg, $status);
+                }
+            }
+            $text = (string) ($data['choices'][0]['message']['content'] ?? '');
+            $clean = trim($text);
+            $clean = preg_replace('/^```(?:json)?\s*/i', '', $clean);
+            $clean = preg_replace('/\s*```$/', '', $clean);
+            $parsed = json_decode($clean, true);
+            if (!is_array($parsed) && preg_match('/\{.*\}/s', $clean, $m)) {
+                $parsed = json_decode($m[0], true);
+            }
+            if (is_array($parsed)) $estilo = $parsed;
+            $cost = (float) ($data['usage']['cost'] ?? 0);
+        }
+
+        // ---- Respaldo: Gemini con responseSchema (JSON estricto) — Google directo ----
+        if ($estilo === null && !empty($gemKey)) {
             $props = [];
             foreach ($CLAVES as $c) { $props[$c] = ['type' => 'STRING']; }
             $schema = [
@@ -189,56 +239,10 @@ try {
                 // Solo seguimos probando otros modelos si fue sobrecarga/no disponible
                 if (!in_array($status, [429, 500, 503, 404], true)) break;
             }
-            // Si Gemini falló del todo y NO hay OpenRouter, informamos con el error real
-            if ($estilo === null && empty($orKey)) {
+            // Si el respaldo Gemini también falló, informamos con el error real
+            if ($estilo === null) {
                 throw new Exception('Gemini (análisis de estilo): ' . $lastMsg, $lastStatus);
             }
-        }
-
-        // ---- Respaldo: OpenRouter gemini-3.8-flash (json_object) (§6) ----
-        if ($estilo === null && !empty($orKey)) {
-            $dataUrl = 'data:' . $mimeType . ';base64,' . $pureB64;
-            $sysText = 'Eres un analista visual experto. ' . $instruccion
-                . ' Devuelve ÚNICAMENTE un objeto JSON con EXACTAMENTE estas claves: '
-                . implode(', ', $CLAVES) . '.';
-            [$status, $data] = $callApi(
-                'https://openrouter.ai/api/v1/chat/completions',
-                [
-                    'model' => 'google/gemini-3.8-flash',
-                    'response_format' => ['type' => 'json_object'],
-                    'messages' => [
-                        ['role' => 'system', 'content' => $sysText],
-                        ['role' => 'user', 'content' => [
-                            ['type' => 'text', 'text' => 'Analiza el ESTILO visual y devuelve el JSON.'],
-                            ['type' => 'image_url', 'image_url' => ['url' => $dataUrl]],
-                        ]],
-                    ],
-                    'max_tokens' => 700,
-                    'temperature' => 0.4,
-                ],
-                [
-                    'Content-Type: application/json',
-                    'Authorization: Bearer ' . $orKey,
-                    'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
-                    'X-Title: Estilo JSON',
-                ],
-                90
-            );
-            if ($status < 200 || $status >= 300) {
-                $msg = $data['error']['message'] ?? ('HTTP ' . $status);
-                if (is_array($msg)) $msg = json_encode($msg);
-                throw new Exception('OpenRouter: ' . $msg, $status);
-            }
-            $text = (string) ($data['choices'][0]['message']['content'] ?? '');
-            $clean = trim($text);
-            $clean = preg_replace('/^```(?:json)?\s*/i', '', $clean);
-            $clean = preg_replace('/\s*```$/', '', $clean);
-            $parsed = json_decode($clean, true);
-            if (!is_array($parsed) && preg_match('/\{.*\}/s', $clean, $m)) {
-                $parsed = json_decode($m[0], true);
-            }
-            if (is_array($parsed)) $estilo = $parsed;
-            $cost = (float) ($data['usage']['cost'] ?? 0);
         }
 
         if (!is_array($estilo)) {
@@ -251,6 +255,7 @@ try {
 
     // ═══════════════════════════════════════════════
     // TAREA 2: MEJORAR PROMPT (DeepSeek · texto · deepseek-chat)
+    // modelo de texto: xiaomi/mimo-v2.6-pro vía OpenRouter
     // ═══════════════════════════════════════════════
     if ($task === 'mejorarPrompt') {
         if (empty($orKey)) {
@@ -275,7 +280,7 @@ try {
         [$status, $data] = $callApi(
             'https://openrouter.ai/api/v1/chat/completions',
             [
-                'model' => 'google/gemini-3.8-flash',
+                'model' => 'xiaomi/mimo-v2.6-pro',
                 'messages' => [
                     ['role' => 'system', 'content' => $sysText],
                     ['role' => 'user', 'content' => $userIdea],
