@@ -2,10 +2,11 @@
 declare(strict_types=1);
 
 /* Contrato único de generación de imágenes para todas las aplicaciones.
-   Modelos vigentes (2026-09-13):
+   Modelos vigentes (2026-09-25):
    - OpenAI GPT Image 2.5 directo: openai-medium / openai-high (flare),
      openai-xhigh (sunburst), openai-max-flare, openai-max-sunburst.
-   - Gemini vía OpenRouter: gemini-flash (3.1 Flash), gemini-pro (3 Pro). */
+   - Gemini vía OpenRouter: gemini-flash (3.1 Flash), gemini-pro (3 Pro).
+   - Qwen Image 3 Pro vía OpenRouter Image API: qwen-pro. */
 function ag_image_catalog(): array
 {
     return [
@@ -16,6 +17,7 @@ function ag_image_catalog(): array
         'openai-max-sunburst' => ['provider'=>'openai', 'model'=>'gpt-image-2.5-sunburst', 'quality'=>'max'],
         'gemini-flash'        => ['provider'=>'gemini', 'model'=>'google/gemini-3.1-flash-image'],
         'gemini-pro'          => ['provider'=>'gemini', 'model'=>'google/gemini-3-pro-image'],
+        'qwen-pro'            => ['provider'=>'qwen', 'model'=>'qwen/qwen-image-3-pro'],
     ];
 }
 
@@ -145,6 +147,30 @@ function ag_image_generate(array $request, string $configDir = ''): array
         }
         $b64 = (string)($data['data'][0]['b64_json'] ?? ''); if ($b64 === '') throw new RuntimeException('OpenAI no devolvió ninguna imagen.', 502);
         return ag_image_result($b64, 'image/png', $selected, 'openai');
+    }
+
+    if ($selected['provider'] === 'qwen') {
+        // Qwen Image 3 Pro vía OpenRouter Image API (POST /api/v1/images).
+        $key = ag_image_key($configDir, 'R');
+        if ($key === '') throw new RuntimeException('La clave de OpenRouter no está configurada.', 500);
+        $qwenAllowed = ['1:1'=>1.0,'1:2'=>1/2,'1:4'=>1/4,'2:1'=>2.0,'2:3'=>2/3,'3:2'=>3/2,'3:4'=>3/4,'4:1'=>4.0,'4:3'=>4/3,'4:5'=>4/5,'5:4'=>5/4,'9:16'=>9/16,'16:9'=>16/9];
+        $parts = explode(':', ag_image_aspect((string)($request['aspectRatio'] ?? '1:1')));
+        $target = max(1, (int)$parts[0]) / max(1, (int)$parts[1]);
+        $ratioLabel = '1:1'; $best = PHP_FLOAT_MAX;
+        foreach ($qwenAllowed as $label => $value) {
+            $current = abs($target - $value);
+            if ($current < $best) { $best = $current; $ratioLabel = $label; }
+        }
+        $fields = ['model'=>$selected['model'], 'prompt'=>$prompt, 'resolution'=>'1K', 'aspect_ratio'=>$ratioLabel, 'n'=>1, 'output_format'=>'png'];
+        foreach (array_slice($images, 0, 4) as $image) {
+            [, $mime] = ag_image_input($image);
+            $pure = preg_replace('#^data:[^;]+;base64,#i', '', trim($image));
+            $fields['input_references'][] = ['type'=>'image_url', 'image_url'=>['url'=>'data:'.$mime.';base64,'.$pure]];
+        }
+        $data = ag_image_json('https://openrouter.ai/api/v1/images', ['Authorization: Bearer '.$key, 'Content-Type: application/json'], $fields);
+        $b64 = (string)($data['data'][0]['b64_json'] ?? '');
+        if ($b64 === '') throw new RuntimeException('Qwen no devolvió ninguna imagen.', 502);
+        return ag_image_result($b64, 'image/png', $selected, 'qwen');
     }
 
     $key = ag_image_key($configDir, 'R'); if ($key === '') throw new RuntimeException('La clave de OpenRouter no está configurada.', 500);

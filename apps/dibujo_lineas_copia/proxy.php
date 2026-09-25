@@ -374,7 +374,7 @@ if ($backend === 'qwen') {
         CURLOPT_POSTFIELDS     => json_encode($payload),
         CURLOPT_HTTPHEADER     => [
             'Content-Type: application/json',
-            'Authorization: *** '.$orKey,
+            'Authorization: Bearer '.$orKey,
         ],
         CURLOPT_TIMEOUT        => 180,
         CURLOPT_CONNECTTIMEOUT => 20,
