@@ -97,7 +97,7 @@
               <span class="style-badge" id="style-badge">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> Estilo: Fotorrealista
               </span>
-              <button class="btn-optimize" id="btn-optimize">
+              <button class="btn-optimize" id="btn-optimize" aria-describedby="model-tooltip" data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> Mejorar Redacción
               </button>
             </div>
@@ -105,7 +105,7 @@
         </div>
 
         <!-- Generate Button -->
-        <button class="btn-generate active" id="btn-generate">
+        <button class="btn-generate active" id="btn-generate" aria-describedby="model-tooltip" data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato">
           <i class="fa-solid fa-bolt"></i> Generar Imagen <i class="fa-solid fa-arrow-right"></i>
         </button>
 
@@ -208,6 +208,12 @@
           <div class="model-toggle-group">
             <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
             <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
+          </div>
+        </div>
+        <div class="model-provider-column">
+          <span class="model-provider-title">QWEN</span>
+          <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="qwen-pro" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible" aria-pressed="false">QWEN 3 PRO</button>
           </div>
         </div>
       </div>
@@ -328,7 +334,7 @@
 <!-- JS -->
 <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
 <script src="history-manager.js?v=5"></script>
-<script src="app.js?v=3" defer></script>
+<script src="app.js?v=4" defer></script>
 <script src="lightbox.js"></script>
 </body>
 </html>
