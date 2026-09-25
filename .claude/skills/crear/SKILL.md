@@ -13,7 +13,7 @@ Actuar como Director de Producto que coordina las skills especializadas para gar
 
 1. **Idioma español estricto**: NUNCA generar texto ni audio en otro idioma. Todo prompt a IA debe incluir: *"todo texto o audio generado debe estar obligatoriamente en español."*
 2. **No regenerar desde cero**: si hay archivos base, modificarlos quirúrgicamente (ver `cirujano-codigo-produccion`).
-3. **Modelo IA por defecto**: `FLUX` (Black Forest Labs).
+3. **Bloque de modelos de imagen**: usar únicamente el selector canónico de `apps/dibujo_lineas_copia`: `OPENAI` a la izquierda (`MEDIUM` activo por defecto y `HIGHT`) y `GEMINI` a la derecha (`3.1 FLASH` y `3 PRO`). No añadir proveedores ni conservar selectores anteriores.
 
 ## 🧠 Skills integradas
 
