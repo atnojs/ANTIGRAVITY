@@ -381,6 +381,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       'openai-max-sunburst': 'MAX SUNBURST',
       'gemini-flash': '3.1 FLASH',
       'gemini-pro': '3 PRO',
+      'qwen-pro': 'QWEN 3 PRO',
       'google/gemini-3.1-flash-image': '3.1 FLASH',
       'google/gemini-3-pro-image': '3 PRO',
       'gpt-image-2': 'GPT Image 2'
