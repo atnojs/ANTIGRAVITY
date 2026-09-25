@@ -75,6 +75,7 @@ Reglas de integración:
 - Resolver ambas claves en servidor mediante `config.php`, `getenv`, variantes `REDIRECT_`, `$_SERVER` y `$_ENV`.
 - Usar FLUX para toda generación o edición de imágenes.
 - Usar OpenRouter para texto, razonamiento u otras tareas compatibles mediante la acción `openrouter` o `text` del proxy.
+- En apps de solo texto o descripción de imágenes, el modelo de texto es `xiaomi/mimo-v2.6-pro` (OpenRouter). Es el modelo de texto por defecto en todas las apps; las llamadas de texto/visión de los proxies que usaban la API de Google se resuelven con este modelo vía OpenRouter (clave `R`), conservando el contrato de respuesta con el frontend.
 - En OpenRouter, fijar el destino servidor a `https://openrouter.ai/api/v1/chat/completions`, autenticar con `Authorization: Bearer <R>` y no aceptar una URL remota enviada por el frontend.
 - Aceptar solo métodos, acciones, modelos y parámetros validados.
 - Validar JSON, tamaños, tipos MIME, dimensiones, IDs y respuestas externas.
