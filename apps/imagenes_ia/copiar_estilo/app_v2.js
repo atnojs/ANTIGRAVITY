@@ -1,16 +1,68 @@
 // --- CONSTANTES DE FORMATO ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
+// --- Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada) ---
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
 // --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
-window.selectedModel = 'gemini-pro';
+window.selectedModel = 'openai-medium';
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.model-toggle').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
             window.selectedModel = btn.dataset.model;
         });
     });
+    // ===== Tooltip de modelos (popup hover) =====
+    const modelTooltip = document.getElementById('model-tooltip');
+        if (modelTooltip) {
+            const TOOLTIP_GAP = 10;
+            const hideModelTooltip = () => {
+                modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+                modelTooltip.setAttribute('aria-hidden', 'true');
+                modelTooltip.textContent = '';
+            };
+            const showModelTooltip = (button) => {
+                const text = (button.dataset.tooltip || '').trim();
+                if (!text) { hideModelTooltip(); return; }
+                modelTooltip.textContent = text;
+                modelTooltip.classList.remove('tip-above', 'tip-below');
+                modelTooltip.classList.add('visible');
+                modelTooltip.setAttribute('aria-hidden', 'false');
+                const rect = button.getBoundingClientRect();
+                const tw = modelTooltip.offsetWidth;
+                const th = modelTooltip.offsetHeight;
+                let left = rect.left + rect.width / 2 - tw / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+                let top = rect.top - th - TOOLTIP_GAP;
+                if (top < 8) {
+                    top = rect.bottom + TOOLTIP_GAP;
+                    modelTooltip.classList.add('tip-below');
+                } else {
+                    modelTooltip.classList.add('tip-above');
+                }
+                modelTooltip.style.left = left + 'px';
+                modelTooltip.style.top = top + 'px';
+            };
+            document.querySelectorAll('.model-toggle').forEach((button) => {
+                button.addEventListener('mouseenter', () => showModelTooltip(button));
+                button.addEventListener('mouseleave', hideModelTooltip);
+                button.addEventListener('focus', () => showModelTooltip(button));
+                button.addEventListener('blur', hideModelTooltip);
+            });
+            window.addEventListener('scroll', hideModelTooltip, true);
+            window.addEventListener('resize', hideModelTooltip);
+        }
 });
 
 // --- HISTORIAL PERSISTENTE CON INDEXEDDB (Patrón editar/app.js) ---
@@ -267,7 +319,7 @@ El campo "prompt" debe ser extremadamente detallado, de al menos 150 palabras. C
     }
 
     const payload = {
-        model: "gemini-2.5-flash",
+        model: "gemini-3.8-flash",
         contents: [{ parts: [
             { text: promptText },
             { inlineData: { mimeType: styleData.mimeType, data: styleData.data } }
@@ -814,7 +866,7 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: window.selectedModel || 'gemini-pro',
+            model: window.selectedModel || 'openai-medium',
             image: subjectData.data,
             mimeType: subjectData.mimeType,
             prompt: promptInstructions
