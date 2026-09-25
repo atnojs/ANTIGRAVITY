@@ -9,11 +9,10 @@ header('Content-Type: application/json; charset=utf-8');
 
 try {
     // 1. Verificar si existe el archivo de configuración
-    $configFile = __DIR__ . '/config.php';
     $hasConfig = file_exists($configFile);
 
     if (!$hasConfig) {
-        throw new Exception('Archivo config.php no encontrado');
+        throw new Exception('Archivo .htaccess raiz no encontrado');
     }
 
     // 2. Cargar la clave API
@@ -87,7 +86,7 @@ try {
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage(),
-        'config_file_exists' => file_exists(__DIR__ . '/config.php')
+        'config_file_exists' => false
     ], JSON_PRETTY_PRINT);
 }
 ?>

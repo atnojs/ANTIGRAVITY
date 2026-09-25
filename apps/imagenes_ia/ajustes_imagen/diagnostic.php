@@ -17,8 +17,6 @@ try {
     ];
 
     // 2. Verificar archivos de configuración
-    $configFile = __DIR__ . '/config.php';
-    $diagnostic['config_files']['config.php'] = file_exists($configFile);
 
     if (file_exists($configFile)) {
         include $configFile;
