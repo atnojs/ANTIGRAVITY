@@ -13,6 +13,17 @@ const CONFIG = {
     INITIAL_SLOTS: 4
 };
 
+// Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada)
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
 // --- HISTORIAL PERSISTENTE CON INDEXEDDB ---
 const DB_NAME = 'combinar_imagenes_db';
 const DB_VERSION = 1;
@@ -88,7 +99,7 @@ const state = {
     images: new Array(CONFIG.MAX_IMAGES).fill(null), // Array fijo con tamaño máximo, lleno de nulls inicialmente
     history: [],
     selectedAR: '1:1',
-    selectedModel: 'gemini-pro', // Modelo IA: 'gemini-flash' | 'gemini-pro' (default) | 'flux-pro' | 'flux-max'
+    selectedModel: 'openai-medium',
     selectedRes: 1024, // Resolución (lado objetivo px): 512 / 1024 / 2048 / 4096
     isGenerating: false,
     isEnhancing: false,
@@ -140,6 +151,47 @@ async function init() {
     setupARSelector();
     setupResSelector();
     setupModelSelector();
+    // ===== Tooltip de modelos (popup hover) =====
+    const modelTooltip = document.getElementById('model-tooltip');
+        if (modelTooltip) {
+            const TOOLTIP_GAP = 10;
+            const hideModelTooltip = () => {
+                modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+                modelTooltip.setAttribute('aria-hidden', 'true');
+                modelTooltip.textContent = '';
+            };
+            const showModelTooltip = (button) => {
+                const text = (button.dataset.tooltip || '').trim();
+                if (!text) { hideModelTooltip(); return; }
+                modelTooltip.textContent = text;
+                modelTooltip.classList.remove('tip-above', 'tip-below');
+                modelTooltip.classList.add('visible');
+                modelTooltip.setAttribute('aria-hidden', 'false');
+                const rect = button.getBoundingClientRect();
+                const tw = modelTooltip.offsetWidth;
+                const th = modelTooltip.offsetHeight;
+                let left = rect.left + rect.width / 2 - tw / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+                let top = rect.top - th - TOOLTIP_GAP;
+                if (top < 8) {
+                    top = rect.bottom + TOOLTIP_GAP;
+                    modelTooltip.classList.add('tip-below');
+                } else {
+                    modelTooltip.classList.add('tip-above');
+                }
+                modelTooltip.style.left = left + 'px';
+                modelTooltip.style.top = top + 'px';
+            };
+            document.querySelectorAll('.model-toggle').forEach((button) => {
+                button.addEventListener('mouseenter', () => showModelTooltip(button));
+                button.addEventListener('mouseleave', hideModelTooltip);
+                button.addEventListener('focus', () => showModelTooltip(button));
+                button.addEventListener('blur', hideModelTooltip);
+            });
+            window.addEventListener('scroll', hideModelTooltip, true);
+            window.addEventListener('resize', hideModelTooltip);
+        }
+
     setupPromptEnhancement();
     elements.btnGenerate.addEventListener('click', handleGenerate);
     setupLightbox();
@@ -365,19 +417,22 @@ function setupARSelector() {
 }
 
 function setupModelSelector() {
-    const toggleGroup = document.querySelector('.model-toggle-group');
+    const toggleGroup = document.querySelector('.model-provider-layout');
     if (!toggleGroup) return;
     const buttons = toggleGroup.querySelectorAll('.model-toggle');
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
-            buttons.forEach(b => b.classList.remove('active'));
+            buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
-            state.selectedModel = btn.dataset.model; // 'flux-pro' | 'gemini-flash' | 'gemini-pro' | 'flux-max'
+            btn.setAttribute('aria-pressed', 'true');
+            state.selectedModel = btn.dataset.model;
+            state.selectedModelLabel = MODEL_LABELS[state.selectedModel] || state.selectedModel;
             window.selectedModel = state.selectedModel;
         });
     });
     // Exponer valor inicial
     window.selectedModel = state.selectedModel;
+    state.selectedModelLabel = MODEL_LABELS[state.selectedModel] || state.selectedModel;
 }
 
 function setupResSelector() {
@@ -394,12 +449,11 @@ function setupResSelector() {
     updateResNote();
 }
 
-// FLUX 2 tope duro: 4 MP (~2048 px de lado). A 4096 la imagen se genera al
-// máximo nativo (4MP) y se reescala en el navegador; avisamos al usuario.
+// A 4096 la imagen se genera al máximo nativo y se reescala en el navegador.
 function updateResNote() {
     if (!elements.resNote) return;
     if (state.selectedRes >= 4096) {
-        elements.resNote.textContent = 'FLUX genera hasta 4 MP nativos (~2048 px); 4096 se reescala en tu equipo.';
+        elements.resNote.textContent = 'La salida de 4096 px se reescala en tu equipo desde el máximo nativo del modelo.';
     } else {
         elements.resNote.textContent = '';
     }

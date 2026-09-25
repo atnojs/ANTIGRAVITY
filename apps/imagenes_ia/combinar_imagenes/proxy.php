@@ -3,23 +3,25 @@
  * ============================================
  * PROXY UNIFICADO — Combinar Imágenes
  * ============================================
- * Dual backend: FLUX (BFL API) + Gemini (Google AI)
- * DeepSeek para mejorar prompts (texto)
+ * Backends: OpenAI GPT Image 2.5 (directo, clave OPENAI_API_KEY/O) + Gemini (OpenRouter, clave R)
+ * DeepSeek para mejorar prompts (texto, clave D/B/DEEPSEEK_API_KEY)
+ * (lista cerrada) (400 "Modelo no soportado").
  *
- * Claves de entorno:
- *   F  — FLUX API key (BFL, generación de imágenes)
- *   R  — OpenRouter (Gemini imagen, vía el .htaccess raíz)
+ * Claves de entorno (resueltas por entorno: getenv/REDIRECT_/$_SERVER/$_ENV):
+ *   OPENAI_API_KEY / O — OpenAI Images (gpt-image-2.5-flare / gpt-image-2.5-sunburst)
+ *   R  — OpenRouter (Gemini imagen)
  *   D / B / DEEPSEEK_API_KEY  — DeepSeek (para enhancePrompt)
  *
  * Endpoints:
  *   POST { task: 'enhancePrompt', prompt, images[]?, hasBackground }
  *        → DeepSeek genera 4 opciones de prompt mejorado
  *   POST { task: 'combineImages', images[], backgroundImage?, prompt, aspectRatio, model, targetPx }
- *        → FLUX o Gemini según el campo 'model'
+ *        → OpenAI 2.5 o Gemini según el campo 'model'
  * ============================================
  */
 
 header('Content-Type: application/json');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -34,17 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 /**
  * Helper de claves en cascada (skill maestra):
- * config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+ * .htaccess raiz → getenv → REDIRECT_ → $_SERVER → $_ENV
  */
 function getSecret(string $name): string {
-    $config = __DIR__ . '/config.php';
-    if (is_file($config)) {
-        include_once $config;
-        if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
-            return trim((string)constant($name));
-        }
-    }
-    $values = [
+        $values = [
         getenv($name), getenv('REDIRECT_' . $name),
         $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '',
         $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? '',
@@ -66,9 +61,9 @@ $task = $input['task'];
 
 // ─── ENHANCE PROMPT → DeepSeek ───────────────────────────────
 if ($task === 'enhancePrompt') {
-    $apiKey = getSecret('D') ?: getSecret('B') ?: getSecret('DEEPSEEK_API_KEY');
+    $apiKey = getSecret('R');
     if (!$apiKey) {
-        echo json_encode(['error' => ['message' => 'API key DeepSeek (D/B) no configurada']]);
+        echo json_encode(['error' => ['message' => 'API key OpenRouter (R) no configurada']]);
         exit;
     }
 
@@ -120,9 +115,9 @@ PROMPT;
     exit;
 }
 
-// ─── COMBINE IMAGES → FLUX o Gemini ──────────────────────────
+// ─── COMBINE IMAGES → OpenAI 2.5 o Gemini ──────────────────
 if ($task === 'combineImages') {
-    $model = strtolower((string)($input['model'] ?? 'gemini-pro'));
+    $model = strtolower((string)($input['model'] ?? 'openai-medium'));
     $prompt = $input['prompt'] ?? '';
     $aspectRatio = $input['aspectRatio'] ?? '1:1';
     $targetPx = $input['targetPx'] ?? 1024;
@@ -134,21 +129,23 @@ if ($task === 'combineImages') {
         exit;
     }
 
-    // ── Mapeo canónico skill maestra (4 modelos) ──
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-pro';
-    $geminiModelId = 'google/gemini-3.1-flash-image';
-
-    if (strpos($model, 'max') !== false) {
-        $backend = 'flux';
-        $fluxEndpoint = 'flux-2-max';
-    } elseif (strpos($model, 'gemini') !== false && strpos($model, 'pro') !== false) {
-        $backend = 'gemini';
-        $geminiModelId = 'google/gemini-3-pro-image';
-    } elseif (strpos($model, 'flash') !== false) {
-        $backend = 'gemini';
-        $geminiModelId = 'google/gemini-3.1-flash-image';
+    // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. (lista cerrada) ──
+    $modelCatalog = [
+        'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+        'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+        'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+        'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+        'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+        'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+        'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    ];
+    if (!isset($modelCatalog[$model])) {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
+        exit;
     }
+    $selected = $modelCatalog[$model];
+    $backend = $selected['backend'];
 
     if ($backend === 'gemini') {
         $apiKey = getSecret('R'); // OpenRouter
@@ -156,14 +153,14 @@ if ($task === 'combineImages') {
             echo json_encode(['error' => ['message' => 'API key OpenRouter (R) no configurada']]);
             exit;
         }
-        $result = callGemini($apiKey, $geminiModelId, $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
+        $result = callGemini($apiKey, $selected['model'], $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
     } else {
-        $apiKey = getSecret('F'); // FLUX / BFL
+        $apiKey = getSecret('OPENAI_API_KEY') ?: getSecret('O');
         if (!$apiKey) {
-            echo json_encode(['error' => ['message' => 'API key FLUX (F) no configurada']]);
+            echo json_encode(['error' => ['message' => 'API key OpenAI (OPENAI_API_KEY/O) no configurada']]);
             exit;
         }
-        $result = callFlux($apiKey, $fluxEndpoint, $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
+        $result = callOpenAI($apiKey, $selected, $prompt, $images, $backgroundImage, $aspectRatio, $targetPx);
     }
 
     echo json_encode($result);
@@ -183,17 +180,16 @@ exit;
  * Llamar a DeepSeek (Chat Completions API) para mejorar prompts.
  */
 function callDeepSeek(string $apiKey, string $systemPrompt, string $userMessage): array {
-    $url = 'https://api.deepseek.com/v1/chat/completions';
+    $url = 'https://openrouter.ai/api/v1/chat/completions';
 
     $body = json_encode([
-        'model' => 'deepseek-chat',
+        'model' => 'google/gemini-3.8-flash',
         'messages' => [
             ['role' => 'system', 'content' => $systemPrompt],
             ['role' => 'user', 'content' => $userMessage]
         ],
         'temperature' => 0.9,
-        'max_tokens' => 2000,
-        'stream' => false
+        'max_tokens' => 2000
     ]);
 
     $headers = [
@@ -206,144 +202,100 @@ function callDeepSeek(string $apiKey, string $systemPrompt, string $userMessage)
 }
 
 /**
- * Llamar a FLUX (BFL API v2) para generar imagen combinada.
- * Endpoints canónicos (skill maestra): flux-2-pro / flux-2-max
- * API: https://api.bfl.ai/v1/{model} → {id, polling_url} → GET polling_url
+ * Llamar a OpenAI GPT Image 2.5 (Images API) para generar la imagen combinada.
+ * Con imagen de referencia → /v1/images/edits (multipart); sin referencia → generations.
+ * Referencia única: el fondo si existe, si no la primera imagen.
  */
-function callFlux(string $apiKey, string $fluxEndpoint, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
-    // Dimensiones según aspect ratio (múltiplos de 32, máx 4 MP)
-    $dims = aspectRatioToDims($aspectRatio, min($targetPx, 2048));
-
-    // Imágenes de entrada: fondo primero, luego el resto (hasta 8)
-    $inputs = [];
+function callOpenAI(string $apiKey, array $selected, string $prompt, array $images, ?array $background, string $aspectRatio, int $targetPx): array {
+    $ref = null;
     if ($background && !empty($background['data'])) {
-        $inputs[] = ['data' => $background['data'], 'mimeType' => $background['mimeType'] ?? 'image/jpeg'];
-    }
-    foreach ($images as $img) {
-        $inputs[] = ['data' => $img['data'], 'mimeType' => $img['mimeType'] ?? 'image/jpeg'];
-    }
-    if (count($inputs) > 8) {
-        return ['error' => ['message' => 'FLUX admite máximo 8 imágenes por combinación']];
+        $ref = ['data' => $background['data'], 'mimeType' => $background['mimeType'] ?? 'image/jpeg'];
+    } elseif (!empty($images[0]['data'])) {
+        $ref = $images[0];
     }
 
-    $payload = [
-        'prompt' => $prompt,
-        'width' => $dims['w'],
-        'height' => $dims['h'],
-        'steps' => 50,
-        'prompt_upsampling' => false,
-        'seed' => random_int(0, 999999),
-        'safety_tolerance' => 5,
-        'output_format' => 'jpeg'
+    // Tamaño WxH válido para la API Images (múltiplos de 16, presupuesto >= 1MP).
+    $size = ag_image_size(['aspectRatio' => $aspectRatio, 'targetPx' => $targetPx]);
+
+    $fields = [
+        'model'   => $selected['model'],
+        'prompt'  => $prompt,
+        'quality' => $selected['quality'],
+        'size'    => $size,
     ];
+    $endpoint = 'https://api.openai.com/v1/images/generations';
+    $headers = ['Authorization: Bearer ' . $apiKey, 'Content-Type: application/json'];
+    $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $tmp = null;
 
-    // Enviar imágenes como input_image, input_image_2, ...
-    $hasInput = false;
-    foreach ($inputs as $i => $img) {
-        $data = $img['data'];
+    if ($ref !== null) {
+        $data = $ref['data'];
         if (strpos($data, 'data:') === 0) {
             $data = substr($data, strpos($data, ',') + 1);
         }
-        $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = $data;
-        $hasInput = true;
-    }
-
-    $url = 'https://api.bfl.ai/v1/' . $fluxEndpoint;
-    $headers = [
-        'Content-Type: application/json',
-        'accept: application/json',
-        'x-key: ' . $apiKey
-    ];
-
-    [$submitStatus, $submit] = bflJson($url, 'POST', $headers, $payload);
-
-    if ($submitStatus < 200 || $submitStatus >= 300 || isset($submit['error'])) {
-        $detail = $submit['detail'] ?? $submit['error'] ?? $submit['message'] ?? ('HTTP ' . $submitStatus);
-        return ['error' => ['message' => 'FLUX rechazó la solicitud: ' . $detail]];
-    }
-
-    // API v2: respuesta { id, polling_url }
-    $pollUrl = (string)($submit['polling_url'] ?? '');
-    $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
-    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) {
-        return ['error' => ['message' => 'URL de seguimiento FLUX no válida']];
-    }
-
-    // Polling (máx ~90 s)
-    $resultUrl = '';
-    $last = 'Pending';
-    for ($i = 0; $i < 90; $i++) {
-        usleep(1000000);
-        [$pollStatus, $poll] = bflJson($pollUrl, 'GET', $headers, null);
-        if ($pollStatus !== 200 || isset($poll['error'])) continue;
-        $last = (string)($poll['status'] ?? 'Pending');
-        if ($last === 'Ready') {
-            $resultUrl = (string)($poll['result']['sample'] ?? '');
-            break;
+        $binary = base64_decode($data, true);
+        if ($binary === false || $binary === '') {
+            return ['error' => ['message' => 'Imagen de referencia no válida']];
         }
-        if (in_array($last, ['Error', 'Failed', 'Request Moderated', 'Content Moderated'], true)) {
-            return ['error' => ['message' => 'FLUX no pudo completar la tarea: ' . $last]];
+        $tmp = tempnam(sys_get_temp_dir(), 'openai_img_');
+        if ($tmp === false || file_put_contents($tmp, $binary) === false) {
+            if ($tmp !== false) @unlink($tmp);
+            return ['error' => ['message' => 'No se pudo preparar la imagen para OpenAI']];
         }
+        $mime = $ref['mimeType'] ?? 'image/jpeg';
+        $ext = strpos($mime, 'png') !== false ? 'png' : (strpos($mime, 'webp') !== false ? 'webp' : 'jpg');
+        $fields['image[]'] = new CURLFile($tmp, $mime, 'referencia.' . $ext);
+        $endpoint = 'https://api.openai.com/v1/images/edits';
+        $headers = ['Authorization: Bearer ' . $apiKey];
+        $postFields = $fields;
     }
 
-    if ($resultUrl === '' || parse_url($resultUrl, PHP_URL_SCHEME) !== 'https') {
-        return ['error' => ['message' => 'FLUX tardó demasiado (estado: ' . $last . ')']];
-    }
-
-    // Descargar la imagen resultante
-    $ch = curl_init($resultUrl);
+    $ch = curl_init($endpoint);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 15,
-        CURLOPT_TIMEOUT => 60,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS => 3,
-    ]);
-    $binary = curl_exec($ch);
-    $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    if ($binary === false || $binary === '' || $downloadStatus !== 200) {
-        return ['error' => ['message' => 'No se pudo descargar el resultado de FLUX']];
-    }
-
-    return [
-        'images' => [[
-            'data' => base64_encode($binary),
-            'mimeType' => 'image/jpeg'
-        ]]
-    ];
-}
-
-/**
- * Petición JSON a BFL devolviendo [status, body].
- */
-function bflJson(string $url, string $method, array $headers, ?array $body = null, int $timeout = 60): array {
-    $ch = curl_init($url);
-    $options = [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $postFields,
         CURLOPT_HTTPHEADER => $headers,
-        CURLOPT_CONNECTTIMEOUT => 15,
-        CURLOPT_TIMEOUT => $timeout,
-        CURLOPT_FOLLOWLOCATION => false,
-    ];
-    if ($body !== null) {
-        $options[CURLOPT_POSTFIELDS] = json_encode($body);
-    }
-    curl_setopt_array($ch, $options);
+        CURLOPT_CONNECTTIMEOUT => 20,
+        CURLOPT_TIMEOUT => 180,
+    ]);
     $raw = curl_exec($ch);
     $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
     curl_close($ch);
+    if ($tmp !== null) @unlink($tmp);
 
-    if ($raw === false || $raw === '') {
-        return [$status, ['error' => ['message' => $error !== '' ? $error : 'Respuesta vacía de BFL']]];
+    if ($raw === false) {
+        return ['error' => ['message' => 'Error conectando con OpenAI: ' . $error]];
     }
-    $data = json_decode($raw, true);
-    if (!is_array($data)) {
-        return [$status, ['error' => ['message' => 'Respuesta no JSON de BFL (HTTP ' . $status . ')']]];
+    $jr = json_decode((string)$raw, true);
+    if (!is_array($jr) || $status < 200 || $status >= 300) {
+        $message = is_array($jr) ? (string)($jr['error']['message'] ?? 'OpenAI no pudo completar la solicitud.') : 'OpenAI no pudo completar la solicitud.';
+        return ['error' => ['message' => $message]];
     }
-    return [$status, $data];
+
+    $b64 = (string)($jr['data'][0]['b64_json'] ?? '');
+    $mimeOut = 'image/png';
+    if ($b64 === '' && !empty($jr['data'][0]['url'])) {
+        $ch = curl_init((string)$jr['data'][0]['url']);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => 60,
+        ]);
+        $download = curl_exec($ch);
+        $downloadType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        curl_close($ch);
+        if (is_string($download) && $download !== '') {
+            $b64 = base64_encode($download);
+            if (is_string($downloadType) && strpos($downloadType, 'image/') === 0) $mimeOut = $downloadType;
+        }
+    }
+    if ($b64 === '') {
+        return ['error' => ['message' => 'OpenAI no devolvió ninguna imagen']];
+    }
+
+    return ['images' => [['data' => $b64, 'mimeType' => $mimeOut]]];
 }
 
 /**
@@ -505,7 +457,7 @@ function aspectRatioToDims(string $ar, int $maxSide): array {
 
     [$w, $h] = $map[$ar] ?? [1, 1];
 
-    // Redondear a múltiplos de 32 (requisito de BFL flux-2)
+    // Redondear a múltiplos de 32 (requisito de los modelos de imagen)
     if ($w >= $h) {
         return ['w' => round32($maxSide), 'h' => round32($maxSide * $h / $w)];
     } else {
