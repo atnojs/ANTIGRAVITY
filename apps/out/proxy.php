@@ -1,5 +1,5 @@
 <?php
-// proxy.php — Cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+// proxy.php — Cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', '0');
@@ -7,11 +7,6 @@ error_reporting(E_ALL);
 
 // API Key — cascadeo robusto
 $apiKey = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('A') ? A : '';
-}
 if (!$apiKey || empty($apiKey)) {
     $apiKey = getenv('A');
 }
