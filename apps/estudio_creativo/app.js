@@ -47,10 +47,13 @@ const ASPECT_RATIOS = [
 ];
 
 const MODELS = [
-    { id: 'gemini-flash', label: '3.1FLASH' },
-    { id: 'gemini-pro', label: '3 PRO' },
-    { id: 'flux-pro', label: 'FLUX PRO' },
-    { id: 'flux-max', label: 'FLUX MAX' }
+    { id: 'openai-medium', label: 'MEDIUM' },
+    { id: 'openai-high', label: 'HIGH' },
+    { id: 'openai-xhigh', label: 'XHIGH' },
+    { id: 'openai-max-flare', label: 'MAX FLARE' },
+    { id: 'openai-max-sunburst', label: 'MAX SUNBURST' },
+    { id: 'gemini-flash', label: '3.1 FLASH' },
+    { id: 'gemini-pro', label: '3 PRO' }
 ];
 const getModelLabel = (m) => (MODELS.find(x => x.id === m) || {}).label || m || '—';
 
@@ -153,7 +156,7 @@ const generateImage = async (params) => {
     if (params.sourceImage) { const b64 = params.sourceImage.split(',')[1]; parts.push({inlineData:{data:b64,mimeType:'image/jpeg'}}); }
     const contents = [{parts}];
     const cfg = {aspectRatio:params.aspectRatio, resolution:'1K', generationConfig:{imageConfig:{aspectRatio:params.aspectRatio}}};
-    const r = await callProxy('flux', contents, cfg, finalPrompt);
+    const r = await callProxy(window.selectedModel || 'openai-medium', contents, cfg, finalPrompt);
     if (!r?.success || !r?.imageUrl) throw new Error(r?.error?.message || 'No se pudo generar la imagen');
     return r.imageUrl;
 };
@@ -161,7 +164,7 @@ const generateImage = async (params) => {
 const enhancePromptAPI = async (basePrompt) => {
     try {
         const sys = 'Eres un experto en mejora de prompts para generacion de imagenes. Respeta la intencion del usuario. No inventes sujetos nuevos. Genera 4 variantes en espanol: Descriptiva, Cinematografica, Artistica, Minimalista. Responde SOLO JSON: [{"type":"Descriptiva","text":"..."},{"type":"Cinematografica","text":"..."},{"type":"Artistica","text":"..."},{"type":"Minimalista","text":"..."}]';
-        const r = await callProxy('',[],{action:'text',system:sys,model:'openrouter/auto',temperature:0.7,max_tokens:2000},basePrompt);
+        const r = await callProxy('',[],{action:'text',system:sys,model:'xiaomi/mimo-v2.6-pro',temperature:0.7,max_tokens:2000},basePrompt);
         if (!r?.success || !r?.text) return [];
         const raw = String(r.text||'').trim(); const m = raw.match(/\[[\s\S]*\]/);
         const parsed = JSON.parse(m?m[0]:raw);
@@ -202,12 +205,12 @@ const Splash = ({ onSelect }) => (
             <div className="splash-card" onClick={() => onSelect('remix')}>
                 <div className="splash-card-icon"><W size={32}/></div>
                 <h2>Editar Imagen</h2>
-                <p>Transforma imagenes existentes con la potencia de FLUX y Gemini. Sube tu foto, describe los cambios y la IA los aplica.</p>
+                <p>Transforma imagenes existentes con los modelos de OpenAI y Gemini. Sube tu foto, describe los cambios y la IA los aplica.</p>
             </div>
             <div className="splash-card" onClick={() => onSelect('text-to-image')}>
                 <div className="splash-card-icon"><S size={32}/></div>
                 <h2>Generar Imagenes</h2>
-                <p>Describe tu vision y FLUX o Gemini la materializaran en alta resolucion. 14 estilos artisticos, 4 modelos y control total.</p>
+                <p>Describe tu vision y los modelos de OpenAI o Gemini la materializaran en alta resolucion. 14 estilos artisticos, 4 modelos y control total.</p>
             </div>
         </div>
     </div>
@@ -282,7 +285,7 @@ const App = () => {
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLES[0]);
     const [selectedAR, setSelectedAR] = useState('1:1');
-    const [selectedModel, setSelectedModel] = useState('gemini-pro');
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -450,11 +453,22 @@ const App = () => {
 
                     <div className="model-selector">
                         <span className="model-selector-label">Modelo IA</span>
-                        <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-                            {MODELS.map(m => (
-                                <button key={m.id} onClick={()=>setSelectedModel(m.id)} className={`model-toggle ${selectedModel===m.id?'active':''}`} aria-pressed={selectedModel===m.id}>
-                                    {m.label}
-                                </button>
+                        <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                            {[
+                                { provider: 'OPENAI 2.5', ids: ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'] },
+                                { provider: 'GEMINI', ids: ['gemini-flash', 'gemini-pro'] }
+                            ].map(group => (
+                                <div className="model-provider-column" key={group.provider}>
+                                    <span className="model-provider-title">{group.provider}</span>
+                                    {group.provider === 'OPENAI 2.5' ? <span className="model-quality-hint">De Menor a Mayor Calidad</span> : <span className="model-quality-hint" aria-hidden="true" style={{visibility:'hidden'}}>De Menor a Mayor Calidad</span>}
+                                    <div className="model-toggle-group">
+                                        {MODELS.filter(m => group.ids.includes(m.id)).map(m => (
+                                            <button type="button" key={m.id} data-model={m.id} onClick={()=>setSelectedModel(m.id)} className={`model-toggle ${selectedModel===m.id?'active':''}`} aria-pressed={selectedModel===m.id} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}>
+                                                {m.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -498,4 +512,18 @@ const App = () => {
 };
 
 /* ─── BOOT ─── */
+/* === Popups de modelos (kit canónico): textos por id === */
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+};
+
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+/* === Tooltip de modelos: lógica delegada (kit canónico) === */
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
