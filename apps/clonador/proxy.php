@@ -4,7 +4,7 @@
 // (Google directo, clave A por entorno).
 // Selector: openai-medium / openai-high / openai-xhigh /
 // openai-max-flare / openai-max-sunburst / gemini-flash /
-// gemini-pro. FLUX rechazado (400 "Modelo no soportado").
+// gemini-pro. Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
 // tocar los frontends existentes.
 // Claves: SOLO entorno (getenv/REDIRECT_/$_SERVER/$_ENV).
