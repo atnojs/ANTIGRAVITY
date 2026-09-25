@@ -9,13 +9,11 @@
  *   3) aplicarEstilo  : imagen del sujeto + JSON de estilo -> nueva imagen
  *                       ┌─ openai-medium/high/xhigh/max-flare/max-sunburst → gpt-image-2.5-flare/sunburst (edits)
  *                       └─ gemini-flash / gemini-pro → OpenRouter sync
- * FLUX quedó FUERA de la lista blanca (400 "Modelo no soportado").
  *
  * Claves (cascada, fuente real = SetEnv del .htaccess raíz de Hostinger):
  *   OPENAI_API_KEY / O -> OpenAI Images (gpt-image-2.5)
  *   A                  -> Gemini (visión para analizar el estilo)
- *   OPENROUTNER_API_KEY / C -> OpenRouter (Gemini img + visión respaldo)
- *   B / DEEPSEEK_API_KEY -> DeepSeek (texto, Mejorar Prompt)
+ *   R                  -> OpenRouter (Gemini img + visión respaldo + Mejorar Prompt)
  * ============================================================
  */
 declare(strict_types=1);
@@ -35,28 +33,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 try {
     // ── Endpoint de salud (GET): comprueba que el proxy responde y qué claves hay ──
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $fluxOk = false; $gemOk = false; $orOk = false; $dsOk = false;
-        $configFile = __DIR__ . '/config.php';
-        if (file_exists($configFile)) {
-            include $configFile;
-            if (defined('F')) $fluxOk = (F !== '');
-            if (defined('A')) $gemOk = (A !== '');
-            if (defined('R')) $orOk = (R !== '');
-            if (defined('DEEPSEEK_API_KEY')) $dsOk = (DEEPSEEK_API_KEY !== '');
+        $gemOk = false; $orOk = false; $dsOk = false;
+        foreach (['A', 'REDIRECT_A'] as $v) {
+            $gemOk = $gemOk || !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
         }
-        foreach (['F', 'REDIRECT_F', 'BFL_API_KEY', 'REDIRECT_BFL_API_KEY'] as $v) {
-            if ($fluxOk) break;
-            $fluxOk = !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
+        foreach (['R', 'REDIRECT_R'] as $v) {
+            $orOk = $orOk || !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
         }
-        foreach (['R', 'REDIRECT_R', 'OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
-            if ($orOk) break;
-            $orOk = !empty(getenv($v)) || !empty($_SERVER[$v] ?? '') || !empty($_ENV[$v] ?? '');
-        }
+        $dsOk = $orOk;
         echo json_encode([
             'success' => true,
             'service' => 'estilo-json-proxy',
             'configured' => [
-                'flux' => $fluxOk,
                 'gemini_vision' => $gemOk,
                 'openrouter' => $orOk,
                 'deepseek' => $dsOk,
@@ -72,42 +60,22 @@ try {
         throw new Exception('cURL no habilitado en el servidor.', 500);
     }
 
-    // ── Claves API (config.php local → env → REDIRECT_ → $_SERVER → $_ENV) ──
-    $fluxKey = '';
+    // ── Claves API (solo env: getenv / REDIRECT_ / $_SERVER / $_ENV — patrón getSecret) ──
     $gemKey  = '';
     $orKey   = '';
     $dsKey   = '';
-    $configFile = __DIR__ . '/config.php';
-    if (file_exists($configFile)) {
-        include $configFile;
-        if (defined('F')) $fluxKey = F;
-        elseif (defined('BFL_API_KEY')) $fluxKey = BFL_API_KEY;
-        if (defined('A')) $gemKey = A;
-        elseif (defined('GEMINI_API_KEY')) $gemKey = GEMINI_API_KEY;
-        if (defined('R')) $orKey = R;
-        elseif (defined('OPENROUTER_API_KEY')) $orKey = OPENROUTER_API_KEY;
-        if (defined('DEEPSEEK_API_KEY')) $dsKey = DEEPSEEK_API_KEY;
-    }
-    // FLUX (F / BFL_API_KEY)
-    foreach (['F', 'REDIRECT_F', 'BFL_API_KEY', 'REDIRECT_BFL_API_KEY'] as $v) {
-        if (!empty($fluxKey)) break;
-        $fluxKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
-    }
     // Gemini (visión, para analizar el estilo -> JSON) — clave 'A' del .htaccess raíz
-    foreach (['A', 'REDIRECT_A', 'GEMINI_API_KEY', 'REDIRECT_GEMINI_API_KEY'] as $v) {
+    foreach (['A', 'REDIRECT_A'] as $v) {
         if (!empty($gemKey)) break;
         $gemKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
     }
-    // OpenRouter (Gemini imagen + visión respaldo) — clave canónica 'R' del .htaccess raíz
-    foreach (['R', 'REDIRECT_R', 'OPENROUTER_API_KEY', 'REDIRECT_OPENROUTER_API_KEY', 'C', 'REDIRECT_C'] as $v) {
+    // OpenRouter (Gemini imagen + visión respaldo + Mejorar Prompt) — clave canónica 'R' del .htaccess raíz
+    foreach (['R', 'REDIRECT_R'] as $v) {
         if (!empty($orKey)) break;
         $orKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
     }
-    // DeepSeek (texto, Mejorar Prompt) — DEEPSEEK_API_KEY o la clave 'B' del servidor
-    foreach (['DEEPSEEK_API_KEY', 'REDIRECT_DEEPSEEK_API_KEY', 'B', 'REDIRECT_B'] as $v) {
-        if (!empty($dsKey)) break;
-        $dsKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
-    }
+    // Mejorar Prompt (texto) usa la misma clave canónica 'R' (OpenRouter)
+    $dsKey = $orKey;
 
     // ── Leer body ──
     $input = file_get_contents('php://input');
@@ -147,7 +115,7 @@ try {
     // TAREA 1: ANALIZAR ESTILO (imagen -> JSON)
     // Preferente: Gemini con responseSchema (JSON ESTRICTO garantizado).
     // Respaldo:   OpenRouter gpt-4o-mini (json_object) si no hay clave Gemini.
-    // Gemini SOLO LEE la imagen para el JSON; las imágenes se GENERAN con FLUX.
+    // Gemini SOLO LEE la imagen para el JSON; las imágenes se GENERAN con OpenAI/Gemini.
     // ═══════════════════════════════════════════════
     if ($task === 'analizarEstilo') {
         if (empty($gemKey) && empty($orKey)) {
@@ -293,7 +261,7 @@ try {
         $estilo = $json['estilo'] ?? null;
         $estiloTxt = is_array($estilo) ? json_encode($estilo, JSON_UNESCAPED_UNICODE) : '';
 
-        $sysText = "Eres un experto en prompts para IA de imágenes (FLUX). "
+        $sysText = "Eres un experto en prompts para IA de imágenes. "
             . "El usuario aplicará un ESTILO ya analizado (te lo paso como JSON) al sujeto "
             . "de una imagen que él sube. A partir de su idea y de ese estilo, redacta 4 "
             . "variantes de instrucción en español, concisas (máx. 2 líneas cada una), que "
@@ -338,10 +306,10 @@ try {
     }
 
     // ═══════════════════════════════════════════════
-    // TAREA 3: APLICAR ESTILO (FLUX 2 img2img o Gemini vía OpenRouter)
+    // TAREA 3: APLICAR ESTILO (OpenAI GPT Image o Gemini vía OpenRouter)
     // ═══════════════════════════════════════════════
     if ($task === 'aplicarEstilo') {
-        // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. FLUX rechazado. ──
+        // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. ──
         $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'openai-medium'));
         $modelCatalog = [
             'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
@@ -361,8 +329,6 @@ try {
 
         if ($isOpenAI) {
             $openaiKey = '';
-            if (defined('O')) $openaiKey = O;
-            elseif (defined('OPENAI_API_KEY')) $openaiKey = OPENAI_API_KEY;
             foreach (['OPENAI_API_KEY', 'REDIRECT_OPENAI_API_KEY', 'O', 'REDIRECT_O'] as $v) {
                 if (!empty($openaiKey)) break;
                 $openaiKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
