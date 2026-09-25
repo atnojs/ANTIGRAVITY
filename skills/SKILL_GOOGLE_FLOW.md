@@ -1,23 +1,13 @@
 ---
 name: google-flow
-description: "SOLO para videos gratis (Veo) vía Google Flow con la CLI instalada en E:/herramientas/google-flow. Activar cuando Antonio pida videos 'con Flow' o 'con Veo', o un guion con escenas de video. NO usarla para imágenes sueltas: es lenta (2-4 min/imagen vía navegador) y la calidad es inferior; las imágenes se generan SIEMPRE con FLUX (ver sección 'Imágenes')."
+description: "SOLO para videos gratis (Veo) vía Google Flow con la CLI instalada en E:/herramientas/google-flow. Activar cuando Antonio pida videos 'con Flow' o 'con Veo', o un guion con escenas de video. Para selectores de generación o edición de imágenes, usar la referencia canónica de apps/dibujo_lineas_copia."
 ---
 
 # Google Flow (labs.google) — herramienta instalada
 
-## Imágenes: NO usar Flow — usar FLUX (validado 2026-07-16)
+## Imágenes: selector canónico
 
-Comparativa real medida: Flow/Nano Banana = 2-4 min por imagen, aspecto artificial y falla contando objetos; FLUX 2 MAX vía el proxy de producción de Antonio = ~22 s, fotorrealista y clavó el encargo a la primera. Para generar una imagen suelta:
-
-```bash
-# payload en archivo (evita problemas de comillas/acentos en git-bash)
-# {"prompt": "...", "calidad": "pro"}   calidad: barato|normal|pro -> klein/pro/max
-curl -s -X POST "https://atnojs.es/apps/generador_ia_flux/proxy.php" \
-  -H "Content-Type: application/json" --data-binary @payload.json -o resp.json
-# resp.json: {success, imageUrl (data URL base64), coste, modelo} -> decodificar y guardar
-```
-
-Nota: ese proxy genera 1024×1024; para otros formatos usar un proxy de app que acepte `width`/`height` (p. ej. `apps/outfit/proxy.php`).
+Esta skill no define un selector de imágenes propio. Cuando una app o web incluya generación o edición de imágenes, copiar el bloque vigente de `apps/dibujo_lineas_copia`: `OPENAI 2.5` a la izquierda (`MEDIUM` activo por defecto, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`) y `GEMINI` a la derecha (`3.1 FLASH` y `3 PRO`). No reutilizar selectores, proveedores ni ejemplos anteriores.
 
 ## Instrucciones de ejecución (videos)
 
@@ -32,4 +22,4 @@ Nota: ese proxy genera 1024×1024; para otros formatos usar un proxy de app que 
 - Si Google vuelve a cambiar la UI y fallan los selectores, diagnosticar con Playwright sobre el perfil persistente y ajustar `flow_provider/` (patrón ya aplicado en ese commit).
 - En LOTES de videos correr con `FLOW_HEADLESS=true` (sin ventana): con ventana visible Chrome puede cerrarse a mitad y se pierde todo. Para `login` sí se necesita la ventana visible. Detalles y flujo de video-vault: `SKILL_VIDEOVAULT_VIDEOS.md`.
 - Abre Chrome visible en el escritorio mientras trabaja: es normal (salvo lotes, ver punto anterior).
-- Esta herramienta es local y NO sustituye la regla FLUX de las apps web del proyecto.
+- Esta herramienta es local y no sustituye el bloque canónico de modelos de `apps/dibujo_lineas_copia` en las apps web del proyecto.

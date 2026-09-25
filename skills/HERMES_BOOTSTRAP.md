@@ -20,7 +20,7 @@ Antes de planificar, editar, generar archivos o ejecutar acciones:
 4. `SKILL_MEJORADOR_PROMPT.md` se aplica cuando el usuario pide mejorar u optimizar un prompt. No debe bloquear una tarea de código esperando que el usuario reformule una petición ya suficientemente clara.
 5. Las demás skills son especializadas: aplicarlas solo cuando el encargo encaje con su función y siempre subordinadas a la maestra en trabajos de producción.
 6. `restos.txt` es un archivo de reserva, no una fuente activa de instrucciones.
-7. `proxy.php`, `history.php` y `history-manager.js` son recursos canónicos, no skills.
+7. `history.php` y `history-manager.js` son recursos canónicos, no skills. Cada `proxy.php` debe ajustarse a la app y a la lista blanca de modelos definida en `SKILL_MAESTRA.md`.
 8. Las skills nativas antiguas de `E:/hermes-data/skills/antigravity` son auxiliares. Ante cualquier diferencia, prevalece la biblioteca canónica de `E:/ANTIGRAVITY/skills`.
 
 ## Flujo de producción
@@ -37,20 +37,21 @@ Para cualquier creación o modificación:
 
 ## Infraestructura obligatoria de apps y webs
 
-Toda app o web debe integrar copias de estos recursos:
+Toda app o web debe integrar copias de estos recursos de historial:
 
-- `E:/ANTIGRAVITY/skills/proxy.php`
 - `E:/ANTIGRAVITY/skills/history.php`
 - `E:/ANTIGRAVITY/skills/history-manager.js`
 
-Aplicar exactamente las reglas de integración, seguridad y persistencia definidas en `SKILL_MAESTRA.md`. El servidor es la fuente de verdad del historial; no sustituirlo por `localStorage`.
+Aplicar exactamente las reglas de integración, seguridad y persistencia definidas en `SKILL_MAESTRA.md`. El servidor es la fuente de verdad del historial; no sustituirlo por `localStorage`. El proxy de una app de imágenes debe aceptar únicamente los cuatro identificadores del bloque canónico y usar `openai-medium` como valor predeterminado.
 
 En el entorno privado de Hostinger:
 
-- `F` corresponde a FLUX.
-- `R` corresponde a OpenRouter.
+- `O` corresponde a OpenAI Images directo (`gpt-image-2.5-flare` y `gpt-image-2.5-sunburst`).
+- `R` corresponde a OpenRouter para Gemini y texto.
 
 No intercambiar las letras ni revelar los valores. El frontend nunca debe contener o recibir las claves.
+
+En cualquier app de generación o edición de imágenes, el único selector permitido es el que esté implementado en ese momento en `apps/dibujo_lineas_copia`. Actualmente (2026-09-13) contiene dos bloques: `OPENAI 2.5` a la izquierda con `MEDIUM` activo por defecto, `HIGH`, `XHIGH`, `MAX FLARE` y `MAX SUNBURST`, y `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. Mapeo canónico: `openai-medium`/`openai-high` → `gpt-image-2.5-flare` con quality `medium`/`high`; `openai-xhigh` → `gpt-image-2.5-sunburst` quality `xhigh`; `openai-max-flare` → `gpt-image-2.5-flare` quality `max`; `openai-max-sunburst` → `gpt-image-2.5-sunburst` quality `max`; `gemini-flash`/`gemini-pro` → `google/gemini-3.1-flash-image`/`google/gemini-3-pro-image` vía OpenRouter. En apps de solo texto o descripción de imágenes, el modelo es `xiaomi/mimo-v2.6-pro` (OpenRouter). Leer su `index.html`, `app.css` y `app.js` antes de tocar el selector; no recuperar variantes anteriores.
 
 Mientras una IA esté trabajando, usar la experiencia de carga definida en la maestra y mostrar exactamente el texto `IA generando lo solicitado...`.
 
