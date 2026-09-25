@@ -3,9 +3,16 @@
 // PROXY PHP - Generador / Editor de imágenes con IA (OpenRouter)
 // Oculta la clave OPENROUTER_API_KEY del frontend.
 // Compatible Hostinger (cascade de 7 fuentes de clave).
+// Catálogo 2.5 vía canonical-image-model.php: openai-medium/high
+// (gpt-image-2.5-flare), openai-xhigh (gpt-image-2.5-sunburst),
+// openai-max-flare (gpt-image-2.5-flare/max), openai-max-sunburst
+// (gpt-image-2.5-sunburst/max) + gemini-flash/pro (OpenRouter R).
+// La llamada OpenAI (generations/edits) la ejecuta
+// ag_image_generate() de canonical-image-model.php.
 // ============================================================
 
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -22,11 +29,24 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$canonicalBody = json_decode((string)file_get_contents('php://input'), true);
+if (is_array($canonicalBody)) {
+    try {
+        $result = ag_image_generate($canonicalBody, __DIR__);
+        echo json_encode($result, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    } catch (Throwable $error) {
+        $status = (int)$error->getCode();
+        if ($status < 400 || $status > 599) $status = 500;
+        http_response_code($status);
+        echo json_encode(['error'=>['message'=>$error->getMessage()]], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    }
+    exit;
+}
+
 // ===== CLAVE API: cascade de fuentes (Hostinger) =====
 $apiKey = '';
 
 // 1. Config file local (máxima prioridad)
-$configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
     $apiKey = defined('OPENROUTER_API_KEY') ? OPENROUTER_API_KEY : '';
@@ -42,7 +62,7 @@ if (empty($apiKey)) $apiKey = $_ENV['REDIRECT_OPENROUTER_API_KEY'] ?? '';
 
 if (empty($apiKey)) {
     http_response_code(401);
-    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea config.php con define("OPENROUTER_API_KEY", "tu-key");']]);
+    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea .htaccess raiz con define("OPENROUTER_API_KEY", "tu-key");']]);
     exit;
 }
 
@@ -61,7 +81,7 @@ $prompt = (string)$data['prompt'];
 // Presets de calidad -> modelo real de OpenRouter (mismos que el script original)
 $MODELOS = [
     'barato' => 'google/gemini-3.1-flash-lite-image',
-    'normal' => 'google/gemini-2.5-flash-image',
+    'normal' => 'google/gemini-3.1-flash-image',
     'pro'    => 'google/gemini-3-pro-image',
 ];
 $calidad = $data['calidad'] ?? 'normal';
