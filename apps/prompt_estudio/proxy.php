@@ -575,6 +575,7 @@ if ($apiKey === null) {
     ]);
 }
 
+// Migración 2.5 (ESPEC_MIGRACION §6): todo el texto pasa a Gemini 3.8 Flash vía OpenRouter.
 $modelMap = [
     'auto' => 'xiaomi/mimo-v2.6-pro',
     'balanced' => 'xiaomi/mimo-v2.6-pro',
