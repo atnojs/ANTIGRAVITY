@@ -30,13 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+// ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
 }
@@ -71,6 +66,28 @@ if (!is_array($req)) {
 
 $BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 $action = (string)($req['action'] ?? 'generate_image');
+
+// ===== Clave OpenAI: SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV) =====
+$openaiKey = '';
+foreach ([getenv('OPENAI_API_KEY'), getenv('REDIRECT_OPENAI_API_KEY'), $_SERVER['OPENAI_API_KEY'] ?? '', $_SERVER['REDIRECT_OPENAI_API_KEY'] ?? '', $_ENV['OPENAI_API_KEY'] ?? '', $_ENV['REDIRECT_OPENAI_API_KEY'] ?? ''] as $v) {
+    if (!empty($v)) { $openaiKey = (string)$v; break; }
+}
+if ($openaiKey === '') {
+    foreach ([getenv('O'), getenv('REDIRECT_O'), $_SERVER['O'] ?? '', $_SERVER['REDIRECT_O'] ?? '', $_ENV['O'] ?? '', $_ENV['REDIRECT_O'] ?? ''] as $v) {
+        if (!empty($v)) { $openaiKey = (string)$v; break; }
+    }
+}
+
+// ===== Lista blanca exacta de modelos de imagen (lista cerrada) =====
+$modelCatalog = [
+    'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
+    'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
+];
 
 /**
  * Función auxiliar para hacer peticiones HTTP sin cURL
@@ -119,9 +136,107 @@ function make_request($url, $method = 'GET', $headers = [], $body = null)
     ];
 }
 
-// ─── ACCIÓN: Generar imagen con Gemini ───────────────────────
+// ─── ACCIÓN: Generar imagen (OpenAI 2.5 o Gemini, lista blanca) ───
 if ($action === 'generate_image') {
-    $model = (string)($req['model'] ?? 'gemini-2.5-flash-image');
+    $reqModel = strtolower((string)($req['model'] ?? 'openai-medium'));
+    if (!isset($modelCatalog[$reqModel])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Modelo no soportado.']);
+        exit;
+    }
+    $selected = $modelCatalog[$reqModel];
+
+    // ─── BACKEND: OPENAI GPT IMAGE 2.5 (con o sin imagen de referencia) ───
+    if ($selected['backend'] === 'openai') {
+        if ($openaiKey === '') {
+            http_response_code(500);
+            echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+            exit;
+        }
+        $prompt = trim((string)($req['prompt'] ?? ''));
+        if ($prompt === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Falta el prompt.']);
+            exit;
+        }
+        $fields = ['model' => $selected['model'], 'prompt' => $prompt, 'quality' => $selected['quality'], 'size' => '1024x1024'];
+        $endpointOai = 'https://api.openai.com/v1/images/generations';
+        $headers = ['Authorization: Bearer ' . $openaiKey, 'Content-Type: application/json'];
+        $postFields = json_encode($fields);
+        $tmp = null;
+        $imageB64 = (string)($req['base64ImageData'] ?? '');
+        if ($imageB64 !== '') {
+            $mime = (string)($req['mimeType'] ?? 'image/jpeg');
+            $binary = base64_decode($imageB64, true);
+            if ($binary === false || $binary === '') {
+                http_response_code(400);
+                echo json_encode(['error' => 'Imagen de referencia no válida.']);
+                exit;
+            }
+            $tmp = tempnam(sys_get_temp_dir(), 'openai_img_');
+            if ($tmp === false || file_put_contents($tmp, $binary) === false) {
+                if ($tmp !== false) @unlink($tmp);
+                http_response_code(500);
+                echo json_encode(['error' => 'No se pudo preparar la imagen para OpenAI.']);
+                exit;
+            }
+            $ext = stripos($mime, 'png') !== false ? 'png' : (stripos($mime, 'webp') !== false ? 'webp' : 'jpg');
+            $fields['image[]'] = new CURLFile($tmp, $mime, 'referencia.' . $ext);
+            $endpointOai = 'https://api.openai.com/v1/images/edits';
+            $headers = ['Authorization: Bearer ' . $openaiKey];
+            $postFields = $fields;
+        }
+        $ch = curl_init($endpointOai);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $postFields,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 180,
+            CURLOPT_CONNECTTIMEOUT => 20,
+        ]);
+        $resp = curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err = curl_error($ch);
+        curl_close($ch);
+        if ($tmp !== null) @unlink($tmp);
+        if ($err) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'Error de conexion con OpenAI: ' . $err]]);
+            exit;
+        }
+        $data = json_decode($resp, true);
+        if ($code >= 400 || isset($data['error'])) {
+            $msg = $data['error']['message'] ?? ('HTTP ' . $code);
+            if (is_array($msg)) $msg = json_encode($msg);
+            http_response_code($code >= 400 ? $code : 502);
+            echo json_encode(['error' => ['message' => 'OpenAI: ' . $msg]]);
+            exit;
+        }
+        $b64 = (string)($data['data'][0]['b64_json'] ?? '');
+        $mimeOut = 'image/png';
+        if ($b64 === '' && !empty($data['data'][0]['url'])) {
+            $ch = curl_init((string)$data['data'][0]['url']);
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_TIMEOUT => 60]);
+            $download = curl_exec($ch);
+            $downloadType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+            curl_close($ch);
+            if (is_string($download) && $download !== '') {
+                $b64 = base64_encode($download);
+                if (is_string($downloadType) && strpos($downloadType, 'image/') === 0) $mimeOut = $downloadType;
+            }
+        }
+        if ($b64 === '') {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'OpenAI no devolvio ninguna imagen.']]);
+            exit;
+        }
+        echo json_encode(['image' => $b64, 'mimeType' => $mimeOut]);
+        exit;
+    }
+
+    // ─── BACKEND: GEMINI (Google directo, clave A) — conservado tal cual ───
+    $model = $selected['model'];
     $endpoint = "{$BASE_URL}/models/{$model}:generateContent?key={$API_KEY}";
 
     if (isset($req['contents'])) {
