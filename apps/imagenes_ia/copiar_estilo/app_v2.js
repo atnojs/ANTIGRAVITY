@@ -9,7 +9,8 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
 };
 
 // --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
@@ -54,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 modelTooltip.style.left = left + 'px';
                 modelTooltip.style.top = top + 'px';
             };
-            document.querySelectorAll('.model-toggle').forEach((button) => {
+            document.querySelectorAll('[data-tooltip]').forEach((button) => {
                 button.addEventListener('mouseenter', () => showModelTooltip(button));
                 button.addEventListener('mouseleave', hideModelTooltip);
                 button.addEventListener('focus', () => showModelTooltip(button));
@@ -319,7 +320,7 @@ El campo "prompt" debe ser extremadamente detallado, de al menos 150 palabras. C
     }
 
     const payload = {
-        model: "gemini-3.8-flash",
+        model: "xiaomi/mimo-v2.6-pro",
         contents: [{ parts: [
             { text: promptText },
             { inlineData: { mimeType: styleData.mimeType, data: styleData.data } }
