@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=19" />
+  <link rel="stylesheet" href="app.css?v=20" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -57,19 +57,19 @@
             <button type="button" id="model-openai-maxsunburst" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">MAX SUNBURST</button>
           </div>
         </div>
-        <div class="model-provider-column">
-          <span class="model-provider-title">GEMINI</span>
-          <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
-          <div class="model-toggle-group">
-            <button type="button" id="model-g31" class="model-toggle" data-model="gemini-flash" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>
-            <button type="button" id="model-g3" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>
+        <div class="model-provider-row">
+          <div class="model-provider-column">
+            <span class="model-provider-title">GEMINI</span>
+            <div class="model-toggle-group">
+              <button type="button" id="model-g31" class="model-toggle" data-model="gemini-flash" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>
+              <button type="button" id="model-g3" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>
+            </div>
           </div>
-        </div>
-        <div class="model-provider-column">
-          <span class="model-provider-title">QWEN</span>
-          <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
-          <div class="model-toggle-group">
-            <button type="button" id="model-qwen-pro" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>
+          <div class="model-provider-column">
+            <span class="model-provider-title">QWEN</span>
+            <div class="model-toggle-group">
+              <button type="button" id="model-qwen-pro" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>
+            </div>
           </div>
         </div>
       </div>
