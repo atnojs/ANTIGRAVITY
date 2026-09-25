@@ -113,7 +113,7 @@ var LESSONS_HERMES = [
       "Hermes Agent incluye más de 60 herramientas integradas organizadas en toolsets: terminal, archivos, búsqueda web, navegador, generación de imágenes, TTS (texto a voz), memoria, skills, delegación, cron y mucho más.",
       "El núcleo del agente incluye: bucle cerrado de aprendizaje (crea y mejora skills automáticamente), memoria persistente entre sesiones, archivos de contexto por proyecto (AGENTS.md, CLAUDE.md), personalidad configurable (SOUL.md) y sistema de perfiles múltiples.",
       "Automatización: trabajos cron con entrega a cualquier plataforma de mensajería, pipelines de datos sin intervención manual y delegación de tareas a subagentes que trabajan en paralelo.",
-      "Medios y web: búsqueda web con extracción inteligente de contenido, navegador headless para interactuar con páginas, generación de imágenes vía DALL·E/FLUX, texto a voz en múltiples voces, y modo de voz completo en CLI y mensajería."
+      "Medios y web: búsqueda web con extracción inteligente de contenido, navegador headless para interactuar con páginas, generación de imágenes vía DALL·E/IA, texto a voz en múltiples voces, y modo de voz completo en CLI y mensajería."
     ],
     "tips": [],
     "commands": [
@@ -427,7 +427,7 @@ var LESSONS_HERMES = [
       "Nous Portal es el servicio de suscripción oficial de Nous Research para Hermes Agent. Una única suscripción mensual cubre: acceso a 300+ modelos de IA a través de OpenRouter, más el Tool Gateway completo (búsqueda web, generación de imágenes, texto a voz y navegador cloud).",
       "La configuración no puede ser más sencilla: ejecuta hermes setup --portal, inicia sesión con OAuth, y en un minuto tienes todo listo. Sin hacer malabares con 5 claves API diferentes de 5 proveedores distintos.",
       "La suscripción incluye acceso a modelos premium como Claude, GPT-4, Gemini, Llama y modelos especializados. Puedes cambiar de modelo en cualquier momento sin cambiar de proveedor ni de configuración.",
-      "El Tool Gateway incluido unifica herramientas que normalmente requerirían suscripciones separadas: búsqueda web (Google), generación de imágenes (DALL·E/FLUX), síntesis de voz (múltiples voces) y navegador cloud (Playwright)."
+      "El Tool Gateway incluido unifica herramientas que normalmente requerirían suscripciones separadas: búsqueda web (Google), generación de imágenes (DALL·E/IA), síntesis de voz (múltiples voces) y navegador cloud (Playwright)."
     ],
     "tips": [
       "Si usas Hermes a diario, la suscripción a Portal se amortiza rápido al evitar tener que contratar y configurar 4-5 servicios distintos.",
@@ -445,7 +445,7 @@ var LESSONS_HERMES = [
     "icon": "🌉",
     "desc": "Acceso unificado a búsqueda web, generación de imágenes, TTS y navegador cloud mediante el Portal de Nous.",
     "paragraphs": [
-      "El Tool Gateway de Nous Portal proporciona cuatro herramientas cloud unificadas bajo una misma suscripción: búsqueda web (Google), generación de imágenes (DALL·E/FLUX), texto a voz (múltiples voces y proveedores) y navegador cloud (Playwright headless).",
+      "El Tool Gateway de Nous Portal proporciona cuatro herramientas cloud unificadas bajo una misma suscripción: búsqueda web (Google), generación de imágenes (DALL·E/IA), texto a voz (múltiples voces y proveedores) y navegador cloud (Playwright headless).",
       "La gran ventaja es la simplicidad: activas las 4 herramientas con un solo OAuth. No necesitas crear cuentas de desarrollador en Google, OpenAI, ElevenLabs ni proveedores de navegadores cloud. Todo funciona desde el minuto uno.",
       "Puedes mezclar y combinar: usa el modelo que quieras (OpenAI, Anthropic, etc.) con las herramientas del Gateway. No estás atado a un ecosistema cerrado. El Gateway funciona como un complemento independiente del proveedor de modelos.",
       "La elegibilidad es simple: cualquier suscriptor de Nous Portal tiene acceso completo al Tool Gateway. No hay límites de uso abusivos ni costes ocultos por herramienta."
