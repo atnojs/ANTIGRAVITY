@@ -30,13 +30,8 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+// API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
 $apiKey = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('A') ? A : '';
-}
 if (!$apiKey || empty($apiKey)) {
     $apiKey = getenv('A');
 }
@@ -89,7 +84,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !isset($requestData['prompt']) || t
 
 $prompt = $requestData['prompt'];
 
-// ===== Lista blanca exacta de modelos (FLUX fuera) =====
+// ===== Lista blanca exacta de modelos (lista cerrada) =====
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
