@@ -271,7 +271,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy('gemini-3.8-flash', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -287,7 +287,7 @@ const callModelImage = async ({ prompt, aspectRatio, sourceImage, targetPx = 102
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: window.selectedModel || 'flux-pro',
+            model: window.selectedModel || 'openai-medium',
             prompt,
             imagen: sourceImage || undefined,
             aspectRatio,
@@ -521,7 +521,7 @@ const App = () => {
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
-    const [selectedModel, setSelectedModel] = useState('flux-pro');
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
 
     useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
@@ -790,19 +790,21 @@ const App = () => {
                             {/* ── Selector de Modelo IA (canonico hoola) ── */}
                             <div className="model-selector">
                               <span className="model-selector-label">Modelo IA</span>
-                              <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                              <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
                                 {[
-                                  { id: 'flux-pro', name: 'Flux Pro', cls: 'flux' },
-                                  { id: 'gemini-flash', name: '3.1 Flash', cls: '' },
-                                  { id: 'gemini-pro', name: '3 Pro', cls: '' },
-                                  { id: 'flux-max', name: 'Flux Max', cls: 'flux' }
-                                ].map(m => (
-                                  <button
-                                    type="button"
-                                    key={m.id}
-                                    onClick={() => setSelectedModel(m.id)}
-                                    className={`model-toggle ${selectedModel === m.id ? 'active' + (m.cls ? ' ' + m.cls : '') : ''}`}
-                                  >{m.name}</button>
+                                  { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-xhigh', 'XHIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-max-sunburst', 'MAX SUNBURST']] },
+                                  { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                                ].map(group => (
+                                  <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
+                                    <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
+                                    <span className="model-quality-hint" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem', ...(group.provider === 'GEMINI' ? { visibility: 'hidden' } : {}) }}>De Menor a Mayor Calidad</span>
+                                    <div className="model-toggle-group" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                                      {group.models.map(([id, name]) => (
+                                        <button type="button" key={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS[id] || ''}
+                                          className={`model-toggle ${selectedModel === id ? 'active' : ''}`}>{name}</button>
+                                      ))}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             </div>
@@ -903,7 +905,19 @@ const App = () => {
     );
 };
 
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+};
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
 
 
