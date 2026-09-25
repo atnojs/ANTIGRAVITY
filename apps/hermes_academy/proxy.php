@@ -145,8 +145,8 @@ function handleOpenRouter(array $request): void {
         }
     }
     $payload = ['messages' => array_values($messages), 'stream' => false];
-    // §6: texto/visión por defecto → gemini-3.8-flash (el frontend puede pasar otro modelo válido)
-    $model = trim((string)($request['model'] ?? 'google/gemini-3.8-flash'));
+    // §6: texto/visión por defecto → xiaomi/mimo-v2.6-pro (el frontend puede pasar otro modelo válido)
+    $model = trim((string)($request['model'] ?? 'xiaomi/mimo-v2.6-pro'));
     if ($model !== '') {
         if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
         $payload['model'] = $model;
