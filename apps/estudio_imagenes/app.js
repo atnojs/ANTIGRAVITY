@@ -59,7 +59,7 @@
   function money(n) { return '$' + (Number(n) || 0).toFixed(4); }
   function moneyEur(n) { return '(~' + ((Number(n) || 0) * EUR).toFixed(3) + ' €)'; }
 
-  // ── Selector de modelo (7 botones, MEDIUM activo por defecto) ──
+  // ── Selector de modelo (8 botones, MEDIUM activo por defecto) ──
   var DEFAULT_MODEL = 'openai-medium';
   var selectedModel = DEFAULT_MODEL;
   var MODEL_LABELS = {
@@ -69,7 +69,8 @@
     'openai-high': 'HIGH',
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
-    'openai-max-sunburst': 'MAX SUNBURST'
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'qwen-pro': 'QWEN 3 PRO'
   };
   function setSelectedModel(model) {
     selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
