@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1); // <--- IMPORTANTE: primera lÃ­nea
 
 // ===============================
@@ -43,7 +43,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ---------- API KEY (B) — cascadeo robusto ----------
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
     $API_KEY = defined('B') ? B : '';
@@ -95,7 +94,7 @@ if (!is_array($req)) {
 }
 
 // ---------- MODELO ----------
-$model  = $req['model']  ?? 'gemini-2.5-flash-image';
+$model  = $req['model']  ?? 'gemini-3.1-flash-image-preview';
 $action = $req['action'] ?? 'generate';
 
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
