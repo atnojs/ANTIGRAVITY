@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isProcessing = false;
     const usedSurpriseStyles = new Set();
     let historyItems = [];
-    let selectedModel = 'gemini-pro';
+    let selectedModel = 'openai-medium';
+    const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -127,11 +128,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== SELECTORES =====
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.model-toggle').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.model-toggle').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
             selectedModel = btn.dataset.model;
         });
     });
+
+    // ===== Tooltip de modelos (popup hover) =====
+    const modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip) {
+        const TOOLTIP_GAP = 10;
+        const hideModelTooltip = () => {
+            modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+            modelTooltip.setAttribute('aria-hidden', 'true');
+            modelTooltip.textContent = '';
+        };
+        const showModelTooltip = (button) => {
+            const text = (button.dataset.tooltip || '').trim();
+            if (!text) { hideModelTooltip(); return; }
+            modelTooltip.textContent = text;
+            modelTooltip.classList.remove('tip-above', 'tip-below');
+            modelTooltip.classList.add('visible');
+            modelTooltip.setAttribute('aria-hidden', 'false');
+            const rect = button.getBoundingClientRect();
+            const tw = modelTooltip.offsetWidth;
+            const th = modelTooltip.offsetHeight;
+            let left = rect.left + rect.width / 2 - tw / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+            let top = rect.top - th - TOOLTIP_GAP;
+            if (top < 8) {
+                top = rect.bottom + TOOLTIP_GAP;
+                modelTooltip.classList.add('tip-below');
+            } else {
+                modelTooltip.classList.add('tip-above');
+            }
+            modelTooltip.style.left = left + 'px';
+            modelTooltip.style.top = top + 'px';
+        };
+        document.querySelectorAll('.model-toggle').forEach((button) => {
+            button.addEventListener('mouseenter', () => showModelTooltip(button));
+            button.addEventListener('mouseleave', hideModelTooltip);
+            button.addEventListener('focus', () => showModelTooltip(button));
+            button.addEventListener('blur', hideModelTooltip);
+        });
+        window.addEventListener('scroll', hideModelTooltip, true);
+        window.addEventListener('resize', hideModelTooltip);
+    }
     document.querySelectorAll('.ar-selector button').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.ar-selector button').forEach(b => b.classList.remove('active'));
@@ -264,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const setProcessing = v => { isProcessing = v; updateButtons(); };
 
     // ===== LLAMADA AL PROXY CANÓNICO =====
-    const callFlux = async (prompt, modelB64, outfitB64) => {
+    const callImageModel = async (prompt, modelB64, outfitB64) => {
         const payload = {
             action: 'generate',
             model: selectedModel,
@@ -340,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             for (const comp of toGen) {
                 try {
-                    const { imageUrl } = await callFlux(comp.prompt, modelFile.base64, outfitFile.base64);
+                    const { imageUrl } = await callImageModel(comp.prompt, modelFile.base64, outfitFile.base64);
                     await historyManager.save({
                         type: 'image',
                         data: { prompt: comp.title, description: comp.description },
@@ -365,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setProcessing(true);
         try {
             const style = await buildSurpriseStyle();
-            const { imageUrl } = await callFlux(style.prompt, modelFile.base64, outfitFile.base64);
+            const { imageUrl } = await callImageModel(style.prompt, modelFile.base64, outfitFile.base64);
             await historyManager.save({ type: 'image', data: { prompt: style.title, description: style.description }, imageData: imageUrl });
             historyItems = historyManager.getAll();
             renderHistory();
