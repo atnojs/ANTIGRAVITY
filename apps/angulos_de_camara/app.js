@@ -1,4 +1,4 @@
-// === Ángulos de Cámara — FLUX + Historial servidor ===
+// === Ángulos de Cámara — IA + Historial servidor ===
 // === Elementos del DOM ===
 const dropZone = document.getElementById('drop-zone');
 const dropZoneContent = document.getElementById('drop-zone-content');
@@ -18,8 +18,7 @@ const clearHistoryBtn = document.getElementById('clear-history-btn');
 const showHistoryBtn = document.getElementById('show-history-btn');
 const loadingOverlay = document.getElementById('loadingOverlay');
 
-// Selectores de calidad / formato / resolución (toggles)
-const qualityBtns = document.querySelectorAll('.quality-btn');
+// Selectores de formato / resolución (toggles)
 const aspectRatioToggles = document.getElementById('aspect-ratio-toggles');
 const resolutionToggles = document.getElementById('resolution-toggles');
 const outputFormatToggles = document.getElementById('output-format-toggles');
@@ -58,18 +57,58 @@ const hm = new HistoryManager('angulos_de_camara');
 // === Estado ===
 let currentImageData = null;
 let currentImageMimeType = null;
-let currentQuality = 'pro';
 
-// === Selector de modelo IA (patrón canónico: 3.1FLASH / 3 PRO / FLUX PRO / FLUX MAX) ===
-let selectedModel = 'gemini-pro';
+// === Selector de modelo IA (patrón canónico: OpenAI / Gemini) ===
+let selectedModel = 'openai-medium';
+const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
 const modelToggles = document.querySelectorAll('.model-toggle');
 modelToggles.forEach(btn => {
   btn.addEventListener('click', () => {
-    modelToggles.forEach(b => b.classList.remove('active'));
+    modelToggles.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
     selectedModel = btn.dataset.model;
   });
 });
+const modelTooltip = document.getElementById('model-tooltip');
+if (modelTooltip) {
+  const TOOLTIP_GAP = 10;
+  const hideModelTooltip = () => {
+    modelTooltip.classList.remove('visible','tip-above','tip-below');
+    modelTooltip.setAttribute('aria-hidden','true');
+    modelTooltip.textContent = '';
+  };
+  const showModelTooltip = (button) => {
+    const text = (button.dataset.tooltip || '').trim();
+    if (!text) { hideModelTooltip(); return; }
+    modelTooltip.textContent = text;
+    modelTooltip.classList.remove('tip-above','tip-below');
+    modelTooltip.classList.add('visible');
+    modelTooltip.setAttribute('aria-hidden','false');
+    const rect = button.getBoundingClientRect();
+    const tw = modelTooltip.offsetWidth;
+    const th = modelTooltip.offsetHeight;
+    let left = rect.left + rect.width / 2 - tw / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+    let top = rect.top - th - TOOLTIP_GAP;
+    if (top < 8) {
+      top = rect.bottom + TOOLTIP_GAP;
+      modelTooltip.classList.add('tip-below');
+    } else {
+      modelTooltip.classList.add('tip-above');
+    }
+    modelTooltip.style.left = left + 'px';
+    modelTooltip.style.top = top + 'px';
+  };
+  document.querySelectorAll('.model-toggle').forEach((button) => {
+    button.addEventListener('mouseenter', () => showModelTooltip(button));
+    button.addEventListener('mouseleave', hideModelTooltip);
+    button.addEventListener('focus', () => showModelTooltip(button));
+    button.addEventListener('blur', hideModelTooltip);
+  });
+  window.addEventListener('scroll', hideModelTooltip, true);
+  window.addEventListener('resize', hideModelTooltip);
+}
 
 // === Prompts por tipo de plano ===
 const prompts = {
@@ -109,7 +148,7 @@ function getRandomBackground() {
   return backgrounds[Math.floor(Math.random() * backgrounds.length)];
 }
 
-// ===== PRE-PROMPT CANÓNICO FLUX =====
+// ===== PRE-PROMPT CANÓNICO DE IMAGEN =====
 function composePrePrompt(userPrompt) {
   const PRE = [
     'Renderizado fotorrealista con calidad de catálogo premium.',
@@ -235,15 +274,6 @@ shotOptions.forEach(btn => {
   });
 });
 
-// ===== SELECTORES DE CALIDAD =====
-qualityBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    qualityBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentQuality = btn.dataset.quality;
-  });
-});
-
 // ===== EVENT LISTENERS =====
 dropZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
@@ -284,7 +314,7 @@ function handleFiles(files) {
   reader.readAsDataURL(file);
 }
 
-// ===== GENERAR IMÁGENES (FLUX) =====
+// ===== GENERAR IMÁGENES =====
 generateBtn.addEventListener('click', async () => {
   if (!currentImageData) return;
   generateBtn.disabled = true;
@@ -350,7 +380,7 @@ async function generateAllShots() {
       bgOverride = ` Ignore any previous background. Place the object in ${getRandomBackground()}, photorealistic.`;
     }
 
-    await callFluxAPI(cardId, shotType, bgOverride);
+    await callImageModel(cardId, shotType, bgOverride);
   }
 
   hideLoadingOverlay();
@@ -395,7 +425,7 @@ function addActionButtons(container, shotType, cardId) {
     else if (bgOption === 'same-realistic') bgOverride = ` Place in ${getRandomBackground()}, photorealistic.`;
     else bgOverride = ` Place in ${getRandomBackground()}, photorealistic.`;
 
-    await callFluxAPI(cardId, shotType, bgOverride);
+    await callImageModel(cardId, shotType, bgOverride);
     generateBtn.disabled = false;
   });
 
@@ -423,8 +453,8 @@ function removeImageCard(cardId) {
   }, 300);
 }
 
-// ===== LLAMADA A FLUX (proxy canónico) =====
-async function callFluxAPI(cardId, shotType, backgroundOverride) {
+// ===== LLAMADA AL MODELO SELECCIONADO (proxy canónico) =====
+async function callImageModel(cardId, shotType, backgroundOverride) {
   const card = document.getElementById(cardId);
   if (!card) return;
   const imgContainer = card.querySelector('.image-container');
@@ -444,7 +474,6 @@ async function callFluxAPI(cardId, shotType, backgroundOverride) {
     action: 'generate',
     prompt: finalPrompt,
     model: selectedModel,
-    quality: currentQuality,
     output_format: outputFormat,
     aspectRatio: aspectRatio,
     resolution: resolution,
@@ -460,15 +489,15 @@ async function callFluxAPI(cardId, shotType, backgroundOverride) {
     const result = await response.json();
 
     if (!result.success) {
-      throw new Error(result.error || 'Error del servidor FLUX');
+      throw new Error(result.error || 'Error del servidor de imágenes');
     }
 
-    // FLUX devuelve dataUrl directamente
+    // El proxy devuelve dataUrl directamente
     const dataUrl = result.dataUrl;
     const mimeType = result.mimeType || 'image/png';
 
     if (!dataUrl) {
-      throw new Error('FLUX no devolvió una imagen.');
+      throw new Error('El proveedor no devolvió una imagen.');
     }
 
     // Post-procesar
@@ -483,7 +512,7 @@ async function callFluxAPI(cardId, shotType, backgroundOverride) {
     img.addEventListener('click', () => openLightbox(processed));
 
     const ext = mimeType.includes('png') ? 'png' : mimeType.includes('webp') ? 'webp' : 'jpg';
-    img.dataset.filename = `${shotType.replace(/\s+/g, '_')}_${currentQuality}.${ext}`;
+    img.dataset.filename = `${shotType.replace(/\s+/g, '_')}_${selectedModel}.${ext}`;
     img.dataset.base64 = processed.split(',')[1] || '';
 
     // Botón descarga
@@ -502,7 +531,7 @@ async function callFluxAPI(cardId, shotType, backgroundOverride) {
       data: {
         shotType: shotType,
         shotTypeLabel: shotTypes[shotType],
-        quality: currentQuality,
+        model: selectedModel,
         aspectRatio: aspectRatio,
         resolution: resolution
       },
@@ -512,7 +541,7 @@ async function callFluxAPI(cardId, shotType, backgroundOverride) {
     // Recargar UI historial
     loadHistoryUI({ forceShow: false });
   } catch (error) {
-    console.error('Error FLUX:', error);
+    console.error('Error de generación:', error);
     if (loader) loader.style.display = 'none';
     if (errorMsg) {
       errorMsg.textContent = error.message || 'Error inesperado.';

@@ -1,10 +1,10 @@
-<!-- Ángulos de Cámara — Estilo Hoola (FLUX + Historial servidor) -->
+<!-- Ángulos de Cámara — Estilo Hoola (IA + Historial servidor) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <meta name="description" content="Generador de ángulos de cámara con IA FLUX. Arrastra una imagen y obtén perspectivas diferentes al instante."/>
+  <meta name="description" content="Generador de ángulos de cámara con IA. Arrastra una imagen y obtén perspectivas diferentes al instante."/>
   <title>Ángulos de Cámara</title>
   <link rel="icon" href="https://atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 
@@ -17,14 +17,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
   <!-- CSS Hoola -->
-  <link rel="stylesheet" href="app.css?v=7">
+  <link rel="stylesheet" href="app.css?v=9">
 </head>
 <body>
 
   <div class="container">
     <header>
       <h1>Generador de Ángulos de Cámara</h1>
-      <p>Arrastra una imagen y obtén 5 perspectivas de cámara diferentes al instante con IA FLUX.</p>
+      <p>Arrastra una imagen y obtén 5 perspectivas de cámara diferentes al instante con IA.</p>
     </header>
 
     <main class="app-container glass-hover">
@@ -50,22 +50,31 @@
             <button class="shot-option glass-hover" data-shot="top-down">Plano Cenital</button>
           </div>
 
-        <!-- Selector de modelo IA (patrón canónico toggles pill hoola, SKILL_MAESTRA) -->
-        <div class="model-selector">
+        <!-- Selector de modelo IA (patrón canónico SKILL_MAESTRA) -->
+        <div id="model-selector" class="model-selector">
           <span class="model-selector-label">Modelo IA</span>
-          <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-            <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
-            <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
-            <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
-            <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+          <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+            <div class="model-provider-column">
+              <span class="model-provider-title">OPENAI 2.5</span>
+              <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+              <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
+              </div>
+            </div>
+            <div class="model-provider-column">
+              <span class="model-provider-title">GEMINI</span>
+              <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+              <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
+              </div>
+            </div>
           </div>
         </div>
-
-          <!-- Selector de calidad PRO / MAX -->
-          <div class="quality-selector">
-            <button class="quality-btn active" data-quality="pro">PRO</button>
-            <button class="quality-btn" data-quality="max">MAX</button>
-          </div>
 
           <!-- Formato + Resolución + Tipo en fila única -->
           <div class="format-row">
@@ -187,11 +196,12 @@
   </div>
 
   <!-- JSZip para descarga ZIP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <!-- HistoryManager canónico (servidor) -->
   <script src="history-manager.js"></script>
   <!-- Lógica de la app -->
-  <script src="app.js?v=6" defer></script>
+  <script src="app.js?v=9" defer></script>
 </body>
 </html>
