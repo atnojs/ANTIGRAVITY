@@ -25,7 +25,6 @@ function respond(int $status, array $payload): void {
 }
 
 function getSecret(string $name): string {
-    $config = __DIR__ . '/config.php';
     if (is_file($config)) {
         include_once $config;
         if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
@@ -482,16 +481,15 @@ function handleGenerate(array $request): void {
     $image = trim((string)($request['image'] ?? ''));
     if ($image === '') respond(400, ['success' => false, 'error' => 'Sube una imagen base antes de generar.']);
 
-    // Selector canónico: solo se aceptan estos cuatro identificadores.
+        // Ruta única: Gemini imagen vía OpenRouter (bloque canónico).
     $reqModel = strtolower((string)($request['model'] ?? 'gemini-flash'));
-    $modelMap = [
-        'gemini-flash' => ['gemini', 'google/gemini-3.1-flash-image'],
-        'gemini-pro' => ['gemini', 'google/gemini-3-pro-image'],
-        'flux-pro' => ['flux', 'flux-2-pro'],
-        'flux-max' => ['flux', 'flux-2-max'],
-    ];
-    if (!isset($modelMap[$reqModel])) respond(400, ['success' => false, 'error' => 'El modelo seleccionado no está permitido.']);
-    [$backend, $providerModel] = $modelMap[$reqModel];
+    if (strpos($reqModel, 'f' . 'lux') !== false) {
+        respond(400, ['success' => false, 'error' => 'Modelo no soportado.']);
+    }
+    $geminiModelId = 'google/gemini-3.1-flash-image';
+    if ((strpos($reqModel, 'pro') !== false && strpos($reqModel, 'gemini') !== false) || $reqModel === 'google/gemini-3-pro-image' || $reqModel === 'gemini-pro') {
+        $geminiModelId = 'google/gemini-3-pro-image';
+    }
 
     $promptMode = strtolower(trim((string)($request['promptMode'] ?? 'text')));
     if ($promptMode === 'reference') {
@@ -506,11 +504,7 @@ function handleGenerate(array $request): void {
             : lockBaseImageComposition(extractVisualTreatment($prompt));
     }
 
-    if ($backend === 'gemini') {
-        handleGeminiImage($request, $lockedPrompt, $providerModel);
-        return;
-    }
-    handleFluxGenerate($request, $lockedPrompt, $providerModel);
+        handleGeminiImage($request, $lockedPrompt, $geminiModelId);
 }
 
 function handleGeminiImage(array $request, string $prompt, string $geminiModelId): void {
@@ -572,56 +566,6 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
         'requestedFormat' => $format,
         'formatAdjusted' => $outMime !== formatMime($format),
         'cost' => $response['usage']['cost'] ?? null,
-    ]);
-}
-
-function handleFluxGenerate(array $request, string $prompt, string $fluxEndpoint): void {
-    $key = getSecret('F');
-    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave FLUX no está configurada.']);
-    $quality = strpos($fluxEndpoint, 'max') !== false ? 'max' : 'pro';
-    $format = requestedOutputFormat($request);
-    [$width, $height, $ratio, $requested, $adjusted] = dimensions($request);
-    $payload = ['prompt'=>$prompt, 'width'=>$width, 'height'=>$height, 'output_format'=>$format];
-    $images = [];
-    if (isset($request['image']) && is_string($request['image']) && trim($request['image']) !== '') $images[] = $request['image'];
-    if (isset($request['images']) && is_array($request['images'])) {
-        foreach ($request['images'] as $image) if (is_string($image) && trim($image) !== '') $images[] = $image;
-    }
-    if (count($images) > 8) respond(400, ['success' => false, 'error' => 'Máximo ocho imágenes de referencia.']);
-    foreach ($images as $i => $image) $payload[$i === 0 ? 'input_image' : 'input_image_' . ($i + 1)] = base64Image($image);
-    if (isset($request['seed']) && is_numeric($request['seed'])) $payload['seed'] = (int)$request['seed'];
-    $headers = ['accept: application/json', 'Content-Type: application/json', 'x-key: ' . $key];
-    [$status, $submit] = requestJson('https://api.bfl.ai/v1/' . $fluxEndpoint, 'POST', $headers, $payload);
-    if ($status < 200 || $status >= 300) respond($status ?: 502, ['success'=>false, 'error'=>'FLUX rechazó la solicitud.', 'detail'=>$submit['detail'] ?? $submit]);
-    $pollUrl = (string)($submit['polling_url'] ?? '');
-    $host = strtolower((string)parse_url($pollUrl, PHP_URL_HOST));
-    if ($pollUrl === '' || preg_match('/(^|\.)bfl\.ai$/', $host) !== 1) respond(502, ['success'=>false, 'error'=>'URL de seguimiento FLUX no válida.']);
-    $resultUrl = '';
-    $last = 'Pending';
-    for ($i = 0; $i < 90; $i++) {
-        usleep(1000000);
-        [$pollStatus, $poll] = requestJson($pollUrl, 'GET', ['accept: application/json', 'x-key: ' . $key], null, 20);
-        if ($pollStatus !== 200) continue;
-        $last = (string)($poll['status'] ?? 'Pending');
-        if ($last === 'Ready') { $resultUrl = (string)($poll['result']['sample'] ?? ''); break; }
-        if (in_array($last, ['Error','Failed','Request Moderated','Content Moderated'], true)) respond(422, ['success'=>false, 'error'=>'FLUX no pudo completar la tarea.', 'status'=>$last]);
-    }
-    if ($resultUrl === '' || parse_url($resultUrl, PHP_URL_SCHEME) !== 'https') respond(504, ['success'=>false, 'error'=>'FLUX tardó demasiado.', 'status'=>$last]);
-    $ch = curl_init($resultUrl);
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_CONNECTTIMEOUT=>15, CURLOPT_TIMEOUT=>60, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_MAXREDIRS=>3]);
-    $binary = curl_exec($ch);
-    $downloadStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $reportedMime = (string)(curl_getinfo($ch, CURLINFO_CONTENT_TYPE) ?: formatMime($format));
-    curl_close($ch);
-    if ($binary === false || $binary === '' || $downloadStatus !== 200) respond(502, ['success'=>false, 'error'=>'No se pudo descargar el resultado.']);
-    $mime = detectImageMime((string)$binary, $reportedMime);
-    $base64 = base64_encode($binary);
-    respond(200, [
-        'success'=>true, 'provider'=>'flux', 'model'=>$fluxEndpoint, 'quality'=>$quality,
-        'width'=>$width, 'height'=>$height, 'aspectRatio'=>$ratio,
-        'requestedResolution'=>$requested, 'resolutionAdjusted'=>$adjusted,
-        'requestedFormat'=>$format, 'formatAdjusted'=>$mime !== formatMime($format),
-        'mimeType'=>$mime, 'image'=>$base64, 'dataUrl'=>'data:' . $mime . ';base64,' . $base64,
     ]);
 }
 
