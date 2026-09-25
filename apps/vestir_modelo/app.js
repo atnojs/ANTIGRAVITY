@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const usedSurpriseStyles = new Set();
     let historyItems = [];
     let selectedModel = 'openai-medium';
-    const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
+    const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO' };
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -319,7 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         let attempt = 0;
-        const maxAttempts = 3;
+        // qwen-pro tarda más que el timeout de nginx (~55s): el proxy guarda el
+        // resultado en caché (qwen_cache/) y responde 'processing' mientras el
+        // worker termina de generarlo; aquí se espera activamente.
+        const isQwen = selectedModel === 'qwen-pro';
+        const maxAttempts = isQwen ? 36 : 3;
         while (attempt < maxAttempts) {
             try {
                 showLoading();
@@ -329,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
+                if (data && data.status === 'processing') throw new Error('Generando...');
                 if (!res.ok || !data.success) throw new Error(data.error || data.detail || `Error HTTP ${res.status}`);
                 const imageUrl = data.dataUrl || (data.image ? `data:${data.mimeType || 'image/png'};base64,${data.image}` : '');
                 if (!imageUrl) throw new Error('No se recibió imagen.');
@@ -337,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(`Intento ${attempt + 1}:`, err);
                 attempt++;
                 if (attempt >= maxAttempts) throw err;
-                await new Promise(r => setTimeout(r, 2000 * attempt));
+                await new Promise(r => setTimeout(r, isQwen ? 5000 : 2000 * attempt));
             }
         }
     };
