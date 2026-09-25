@@ -44,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
-    const PROXY_URL = 'proxy.php'; // Proxy PHP para FLUX (Black Forest Labs)
-    let selectedQuality = 'pro'; // Calidad FLUX: 'pro' (~$0.03) | 'max' (~$0.07)
+    const PROXY_URL = 'proxy.php';
+    let selectedModel = 'openai-medium';
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
@@ -91,11 +91,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const genUploadArea = document.getElementById('gen-upload-area');
 
     // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
+    const modelLabels = {
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO'
+    };
     function showGenLoading(statusMsg) {
         const txt = document.getElementById('loading-text');
         const sec = document.getElementById('secondary-status');
         if (txt) txt.textContent = 'IA generando lo solicitado...';
-        if (sec) sec.textContent = statusMsg || 'Procesando solicitud...';
+        if (sec) sec.textContent = statusMsg || (modelLabels[selectedModel] || 'MEDIUM') + ' · procesando...';
         genLoading.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -292,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showAuthError(errorMsg);
         } finally {
             authGoogleBtn.disabled = false;
-            authGoogleBtn.innerHTML = '<i class="fa fa-google"></i> Continuar con Google';
+            authGoogleBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 8px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continuar con Google';
         }
     }
 
@@ -1192,17 +1201,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ═══════════════════════════════════════════════════════════════
-    // LLAMADA A FLUX (Black Forest Labs)
+    // Llamada al modelo de imágenes seleccionado
     // ═══════════════════════════════════════════════════════════════
 
-    // Selector de calidad PRO / MAX
-    const qualitySelector = document.getElementById('quality-selector');
-    if (qualitySelector) {
-        qualitySelector.addEventListener('click', (e) => {
-            const btn = e.target.closest('.quality-option');
+    // Selector de modelo IA (4 modelos, barra segmentada)
+    const modelSelector = document.getElementById('model-selector');
+    if (modelSelector) {
+        modelSelector.addEventListener('click', (e) => {
+            const btn = e.target.closest('.model-toggle');
             if (!btn) return;
-            selectedQuality = btn.dataset.quality || 'pro';
-            qualitySelector.querySelectorAll('.quality-option').forEach((b) => {
+            selectedModel = btn.dataset.model || 'openai-medium';
+            modelSelector.querySelectorAll('.model-toggle').forEach((b) => {
                 const isActive = (b === btn);
                 b.classList.toggle('active', isActive);
                 b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
@@ -1210,6 +1219,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip) {
+        const TOOLTIP_GAP = 10;
+        const hideModelTooltip = () => {
+            modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+            modelTooltip.setAttribute('aria-hidden', 'true');
+            modelTooltip.textContent = '';
+        };
+        const showModelTooltip = (button) => {
+            const text = (button.dataset.tooltip || '').trim();
+            if (!text) { hideModelTooltip(); return; }
+            modelTooltip.textContent = text;
+            modelTooltip.classList.remove('tip-above', 'tip-below');
+            modelTooltip.classList.add('visible');
+            modelTooltip.setAttribute('aria-hidden', 'false');
+            const rect = button.getBoundingClientRect();
+            const tw = modelTooltip.offsetWidth;
+            const th = modelTooltip.offsetHeight;
+            let left = rect.left + rect.width / 2 - tw / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+            let top = rect.top - th - TOOLTIP_GAP;
+            if (top < 8) {
+                top = rect.bottom + TOOLTIP_GAP;
+                modelTooltip.classList.add('tip-below');
+            } else {
+                modelTooltip.classList.add('tip-above');
+            }
+            modelTooltip.style.left = left + 'px';
+            modelTooltip.style.top = top + 'px';
+        };
+        document.querySelectorAll('.model-toggle').forEach((button) => {
+            button.addEventListener('mouseenter', () => showModelTooltip(button));
+            button.addEventListener('mouseleave', hideModelTooltip);
+            button.addEventListener('focus', () => showModelTooltip(button));
+            button.addEventListener('blur', hideModelTooltip);
+        });
+        window.addEventListener('scroll', hideModelTooltip, true);
+        window.addEventListener('resize', hideModelTooltip);
+    }
     genSubmitBtn.onclick = async () => {
         const prompt = genPromptInput.value.trim();
 
@@ -1284,15 +1332,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Modo normal: llamar a FLUX (Black Forest Labs) vía proxy
+        // Modo normal: llamar al proxy de generación
         genResults.innerHTML = '';
         showGenLoading('Generando imagen...');
         genSubmitBtn.disabled = true;
 
         try {
             try {
-                // Generar 1 imagen con IA (FLUX)
-                const imageData = await generateWithFlux(prompt, genBaseImage);
+                // Generar 1 imagen con IA
+                const imageData = await generateWithImageModel(prompt, genBaseImage);
 
                 hideGenLoading();
                 genResults.innerHTML = '';
@@ -1360,14 +1408,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    async function generateWithFlux(prompt, baseImage) {
+    async function generateWithImageModel(prompt, baseImage) {
         // Enriquecer el prompt para edición imagen→imagen (aplicar estilo a la foto).
         let finalPrompt = prompt;
         let imageB64 = '';
         let mimeType = 'image/jpeg';
 
         if (baseImage) {
-            // base64 PURO (sin prefijo data:) para BFL
+            // Normalizar la referencia para el proxy
             imageB64 = baseImage.includes(',') ? baseImage.split(',')[1] : baseImage;
             mimeType = baseImage.match(/data:(.*?);/)?.[1] || 'image/jpeg';
             finalPrompt = `Apply the following artistic style/transformation to the provided input image, keeping its main subject, pose and composition recognizable: ${prompt}`;
@@ -1375,12 +1423,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const requestBody = {
             prompt: finalPrompt,
-            image: imageB64,
+            image: baseImage || '',
             mimeType: mimeType,
-            quality: selectedQuality
+            model: selectedModel
         };
 
-        console.log('Request a FLUX:', JSON.stringify({ ...requestBody, image: imageB64 ? '[base64]' : '' }).substring(0, 300) + '...');
+        console.log('Request al generador:', JSON.stringify({ ...requestBody, image: imageB64 ? '[base64]' : '' }).substring(0, 300) + '...');
 
         const response = await fetch(PROXY_URL, {
             method: 'POST',
@@ -1397,13 +1445,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const data = await response.json();
-        console.log('Respuesta de FLUX:', JSON.stringify({ ...data, imageUrl: data.imageUrl ? '[dataURL]' : '' }).substring(0, 300));
+        const imageData = data.dataUrl || data.imageUrl || (data.image && data.mimeType
+            ? `data:${data.mimeType};base64,${data.image}`
+            : '');
+        console.log('Respuesta del generador:', JSON.stringify({ ...data, image: data.image ? '[base64]' : '', dataUrl: data.dataUrl ? '[dataURL]' : '', imageUrl: data.imageUrl ? '[dataURL]' : '' }).substring(0, 300));
 
-        if (data.success && data.imageUrl) {
-            return data.imageUrl; // data URL lista para el frontend/historial
+        if (data.success && imageData) {
+            return imageData; // data URL lista para el frontend/historial
         }
 
-        const msg = data?.error?.message || 'No se recibió imagen de FLUX.';
+        const msg = data?.error?.message || data?.error || data?.detail || 'El modelo no devolvió ninguna imagen.';
         throw new Error(msg);
     }
 
@@ -1504,4 +1555,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadState();
 });
-
