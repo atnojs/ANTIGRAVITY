@@ -58,6 +58,7 @@ $modelCatalog = [
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
+    'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
 ];
 
 // ===== Entrada =====
@@ -81,6 +82,9 @@ $requested = strtolower(trim((string)($req['model'] ?? 'openai-medium')));
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';
 // Modelo de TEXTO/VISIÓN (spec §6): xiaomi/mimo-v2.6-pro vía OpenRouter.
+// gemini-3.8-flash queda SOLO como id documentado de compatibilidad:
+// toda llamada con él es de TEXTO y se reenruta a MiMo (OpenRouter,
+// clave R). Las llamadas de IMAGEN (*-image*, FLUX) quedan idénticas.
 $textModel = '';
 if ($requested === 'google/gemini-3.8-flash' || $requested === 'gemini-3.8-flash') $textModel = 'gemini-3.8-flash';
 
@@ -290,6 +294,186 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 }
 
 // ====================================================================
+// BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API, con keepalive anti-504)
+// Qwen tarda ~100s/imagen y nginx corta a ~55s: se mantiene viva la
+// conexion con pings (curl_multi + espacios + flush) y se cachea el
+// resultado en qwen_cache/ (carpeta de la app: sys_get_temp_dir() NO
+// persiste entre peticiones en Hostinger). Respuesta en FORMA GEMINI
+// (candidates), como el resto de rutas del proxy.
+// ====================================================================
+if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] === 'qwen') {
+    $orKey = '';
+    foreach ([getenv('R'), getenv('REDIRECT_R'), $_SERVER['R'] ?? '', $_SERVER['REDIRECT_R'] ?? '', $_ENV['R'] ?? '', $_ENV['REDIRECT_R'] ?? ''] as $v) {
+        if (!empty($v)) { $orKey = (string)$v; break; }
+    }
+    if ($orKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']]);
+        exit;
+    }
+    if ($prompt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Falta el prompt.']]);
+        exit;
+    }
+
+    $imageB64 = ''; $qwenMime = 'image/png';
+    if ($images !== []) {
+        $imageB64 = trim((string)$images[0]['data']);
+        $qwenMime = (string)($images[0]['mimeType'] ?? 'image/jpeg');
+        if (preg_match('#^data:(image/[a-z0-9.+-]+);base64,#i', $imageB64, $qm) === 1) {
+            $qwenMime = strtolower($qm[1]);
+            $imageB64 = substr($imageB64, strpos($imageB64, ',') + 1);
+        }
+    }
+
+    // Qwen solo admite un set fijo de proporciones: se elige la mas
+    // cercana a la imagen fuente (nunca se finge una proporcion inexistente).
+    $qwenAllowed = [
+        '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+        '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+        '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+        '9:16' => 9 / 16, '16:9' => 16 / 9,
+    ];
+    $targetRatio = 0.0;
+    if ($imageB64 !== '') {
+        $srcInfo = @getimagesizefromstring((string)base64_decode($imageB64));
+        if (is_array($srcInfo) && (int)$srcInfo[0] > 0 && (int)$srcInfo[1] > 0) $targetRatio = (int)$srcInfo[0] / (int)$srcInfo[1];
+    }
+    if ($targetRatio <= 0) {
+        $aspect = (string)($req['generationConfig']['imageConfig']['aspectRatio'] ?? $req['aspectRatio'] ?? '1:1');
+        $parts = explode(':', $aspect);
+        $rw = max(1, (int)($parts[0] ?? 1));
+        $rh = max(1, (int)($parts[1] ?? 1));
+        $targetRatio = $rw / $rh;
+    }
+    $qwenRatio = '1:1'; $qwenDistance = PHP_FLOAT_MAX;
+    foreach ($qwenAllowed as $label => $value) {
+        $current = abs($targetRatio - $value);
+        if ($current < $qwenDistance) { $qwenDistance = $current; $qwenRatio = $label; }
+    }
+
+    $qwenPayload = [
+        'model'         => $modelCatalog[$requested]['model'],
+        'prompt'        => $prompt,
+        'resolution'    => '1K',
+        'aspect_ratio'  => $qwenRatio,
+        'n'             => 1,
+        'output_format' => 'png',
+    ];
+    if ($imageB64 !== '') {
+        $qwenPayload['input_references'] = [[
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . $qwenMime . ';base64,' . $imageB64],
+        ]];
+    }
+
+    $cacheKey = hash('sha256', $modelCatalog[$requested]['model'] . '|' . $prompt . '|' . $imageB64 . '|' . $qwenRatio);
+    $cacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
+    $lockFile = $cacheFile . '.lock';
+
+    if (is_file($cacheFile)) {
+        $cached = json_decode((string)@file_get_contents($cacheFile), true);
+        if (is_array($cached) && !empty($cached['b64'])) {
+            sendGeminiStyleImage((string)base64_decode((string)$cached['b64']), 'image/png');
+        }
+    }
+    if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+        // Otra peticion genera esta misma imagen: se espera el cacheo
+        // manteniendo viva la conexion con espacios (mismo contrato JSON).
+        $deadline = time() + 135;
+        while (time() < $deadline) {
+            echo str_repeat(' ', 64) . "\n";
+            @flush();
+            sleep(3);
+            clearstatcache(true, $cacheFile);
+            if (is_file($cacheFile)) {
+                $cached = json_decode((string)@file_get_contents($cacheFile), true);
+                if (is_array($cached) && !empty($cached['b64'])) {
+                    sendGeminiStyleImage((string)base64_decode((string)$cached['b64']), 'image/png');
+                }
+            }
+            if (!is_file($lockFile)) break;
+        }
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Qwen sigue generando la imagen; reintenta en unos segundos.']]);
+        exit;
+    }
+
+    ignore_user_abort(true);
+    set_time_limit(180);
+    @file_put_contents($lockFile, (string)time());
+    register_shutdown_function(static function () use ($lockFile, $cacheFile) {
+        // Si la generacion termino sin guardar cache, libera el candado.
+        if (is_file($lockFile) && !is_file($cacheFile)) @unlink($lockFile);
+    });
+
+    // Mantener viva la conexion con nginx (corta a ~55s sin trafico): se
+    // emiten espacios periodicos que no invalidan el JSON final (el
+    // parser tolera espacio en blanco inicial).
+    while (ob_get_level() > 0) { @ob_end_flush(); }
+    @ob_implicit_flush(true);
+
+    $ch = curl_init('https://openrouter.ai/api/v1/images');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($qwenPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: Bearer '.$orKey,
+        ],
+        CURLOPT_TIMEOUT        => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
+    ]);
+    $mh = curl_multi_init();
+    curl_multi_add_handle($mh, $ch);
+    do {
+        $status = curl_multi_exec($mh, $active);
+        if ($active) {
+            curl_multi_select($mh, 3.0);
+            echo str_repeat(' ', 64) . "\n";
+            @flush();
+        }
+    } while ($active && $status === CURLM_OK);
+    $resp = (string)curl_multi_getcontent($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_multi_remove_handle($mh, $ch);
+    curl_multi_close($mh);
+    curl_close($ch);
+
+    if ($err) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error conexion OpenRouter: ' . $err]]);
+        exit;
+    }
+    if ($code >= 400) {
+        $eb = json_decode($resp, true);
+        $em = $eb['error']['message'] ?? $eb['error'] ?? ('HTTP ' . $code);
+        if (is_array($em)) $em = json_encode($em);
+        http_response_code($code >= 400 && $code < 600 ? $code : 502);
+        echo json_encode(['error' => ['message' => 'OpenRouter: ' . (string)$em]]);
+        exit;
+    }
+
+    $jr = json_decode($resp, true);
+    $imageData = (string)($jr['data'][0]['b64_json'] ?? '');
+    if ($imageData === '') {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Qwen no devolvio imagen.']]);
+        exit;
+    }
+    // Guarda el resultado: los reintentos del frontend lo recogen aunque
+    // nginx haya cortado la respuesta original por timeout.
+    @file_put_contents($cacheFile, json_encode(['b64' => $imageData]));
+    @unlink($lockFile);
+    sendGeminiStyleImage((string)base64_decode($imageData), 'image/png');
+}
+
+// ====================================================================
 // BACKEND: GEMINI (Google directo, passthrough SIN cambios)
 // ====================================================================
 
@@ -419,6 +603,7 @@ $mimoTextCall = function (array $req, array $genCfg) {
 
     // ── respuesta con forma Gemini (contrato intacto)
     $gem = [
+        'model' => 'xiaomi/mimo-v2.6-pro',
         'candidates' => [[
             'content' => ['role' => 'model', 'parts' => [['text' => $text]]],
             'finishReason' => 'STOP',
@@ -439,9 +624,10 @@ $wantsImageOut = (stripos($reqModelName, 'image') !== false)
         && in_array('IMAGE', array_map('strtoupper', $genCfg['responseModalities']), true));
 
 // Modelo de texto: xiaomi/mimo-v2.6-pro vía OpenRouter (clave R).
-// Solo la ruta de texto/visión usa el helper; la ruta de imagen
-// (clave A / OpenAI) queda exactamente igual.
-if ($textModel !== '' && !$wantsImageOut) {
+// TODA llamada de texto se reenruta aquí (también la que iba a Google
+// directa con clave A: MiMo solo existe en OpenRouter). La ruta de
+// IMAGEN (clave A / OpenAI, modelos *-image*) queda exactamente igual.
+if ($textModel !== '') {
     [$httpcode, $response] = $mimoTextCall($req, $genCfg);
     http_response_code((int)$httpcode);
     echo $response;
