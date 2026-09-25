@@ -1090,23 +1090,45 @@
     document.getElementById('btn-download').classList.add('hidden');
 
     try {
-      const response = await fetch('proxy.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service: 'generate',
-          model: model,
-          prompt: fullPrompt,
-          aspectRatio: ar,
-          resolution: resolution,
-          quality: model
-        })
+      // Para qwen-pro (más lento que el timeout de nginx, ~55s) se espera
+      // activamente: el proxy guarda el resultado en qwen_cache/ y responde
+      // 'processing' mientras el worker termina de generarlo.
+      const slowModel = model === 'qwen-pro';
+      const requestBody = JSON.stringify({
+        service: 'generate',
+        model: model,
+        prompt: fullPrompt,
+        aspectRatio: ar,
+        resolution: resolution,
+        quality: model
       });
+      const maxAttempts = slowModel ? 36 : 1;
+      let data = null;
+      let lastError = 'Error desconocido al generar la infografía';
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const response = await fetch('proxy.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody
+        });
+        const json = await response.json().catch(() => null);
+        if (json && json.status === 'processing') {
+          lastError = 'Generando...';
+        } else if (json && json.success) {
+          data = json;
+          break;
+        } else if (json && json.error) {
+          lastError = json.error.message || (typeof json.error === 'string' ? json.error : lastError);
+          if (!slowModel || response.status < 500) throw new Error(lastError);
+        } else {
+          lastError = 'Error HTTP ' + response.status;
+          if (!slowModel) throw new Error(lastError);
+        }
+        if (attempt < maxAttempts - 1) await new Promise(resolve => setTimeout(resolve, 5000));
+      }
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error?.message || 'Error desconocido al generar la infografía');
+      if (!data) {
+        throw new Error(lastError);
       }
 
       // Mostrar resultado en la zona superior del modal
