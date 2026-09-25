@@ -1,19 +1,15 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 try {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
 
-  // API Key — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+  // API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
   $apiKey = '';
-  $configFile = __DIR__ . '/config.php';
-  if (file_exists($configFile)) {
-      include $configFile;
-      $apiKey = defined('A') ? A : '';
-  }
-  if (!$apiKey || empty($apiKey)) {
+    if (!$apiKey || empty($apiKey)) {
       $apiKey = getenv('A');
   }
   if (!$apiKey || empty($apiKey)) {
@@ -37,14 +33,15 @@ try {
       exit;
   }
 
-  $replicateKey = getenv('REPLICATE_API_FLUX') 
-    ?: ($_SERVER['REPLICATE_API_FLUX'] ?? $_SERVER['REDIRECT_REPLICATE_API_TOKEN'] ?? null);
-
-  $input = file_get_contents('php://input');
+ $input = file_get_contents('php://input');
   $json = json_decode($input, true);
   if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
 
   $task        = $json['task'] ?? '';
+  if ($task === 'generateImage') {
+      if (!isset(ag_image_catalog()[(string)($json['model'] ?? '')])) $json['model'] = 'openai-medium';
+      ag_image_response($json, __DIR__);
+  }
   $provider    = $json['provider'] ?? 'gemini'; 
   $prompt      = (string)($json['prompt'] ?? '');
   $images      = $json['images'] ?? [];
@@ -83,7 +80,7 @@ try {
   if ($task === 'enhancePrompt') {
     if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
 
-    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($apiKey);
+    $modelUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=' . urlencode($apiKey);
 
     $sysPrompt = "Eres un experto en prompts de arte IA. Genera 4 versiones mejoradas del prompt en ESPAÑOL. Separa con '|||'.";
     
@@ -118,50 +115,11 @@ try {
   // --- TAREA: GENERAR IMAGEN ---
   if ($task === 'generateImage') {
 
-    // ====== FLUX ======
-    if ($provider === 'flux') {
-
-        if (!$replicateKey) throw new Exception('Falta token de Replicate (flux)', 500);
-
-        $url = "https://api.replicate.com/v1/models/black-forest-labs/flux-2-pro/predictions";
-
-        $body = [
-            'input' => [
-                'prompt' => $prompt,
-                'aspect_ratio' => $aspectRatio ?: "1:1",
-                'output_format' => "jpg",
-                'output_quality' => 90,
-                'safety_tolerance' => 5
-            ]
-        ];
-
-        $headers = [ 
-          "Authorization: Bearer $replicateKey", 
-          "Content-Type: application/json", 
-          "Prefer: wait" 
-        ];
-
-        $data = $callApi($url, $body, $headers);
-
-        $imageUrl = $data['output'] ?? null;
-        if (!$imageUrl) throw new Exception('Flux no devolvió imagen.', 502);
-
-        $imgData = file_get_contents($imageUrl);
-
-        echo json_encode([
-          'image' => base64_encode($imgData), 
-          'mimeType' => 'image/jpeg', 
-          'type' => 'image'
-        ]);
-        exit;
-    }
-
-    // ====== GEMINI ======
-    else {
+    
 
         if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
 
-        $model = 'gemini-2.5-flash-image'; 
+        $model = 'gemini-3.1-flash-image-preview'; 
 
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/' 
               . rawurlencode($model) 
@@ -238,7 +196,6 @@ try {
           . ($data['promptFeedback']['blockReason'] ?? 'Desconocido')
         );
     }
-  }
 
 } catch (Throwable $e) {
   http_response_code(500);
