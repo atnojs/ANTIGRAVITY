@@ -2,13 +2,12 @@
 header('Content-Type: application/json');
 
 $apiKey = '';
-$configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
     $apiKey = defined('A') ? A : '';
 }
 
-// Si no está en config.php, buscar en variables de entorno (incluyendo prefijos de redirección FastCGI)
+// Si no está en .htaccess raiz, buscar en variables de entorno (incluyendo prefijos de redirección FastCGI)
 if (!$apiKey || empty($apiKey)) {
     $apiKey = getenv('A');
 }

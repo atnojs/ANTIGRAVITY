@@ -1,17 +1,17 @@
 <?php
 // ============================================================
 // PROXY PHP — Imagenes Lineales (unificado)
-// Soporta FLUX 2 Pro (BFL, clave F) + Gemini via OpenRouter (clave R).
-// Selector de modelo desde el frontend: flux / gemini flash / gemini pro.
-// FLUX = asincrono (submit+poll), Gemini = sincrono.
+// Soporta Gemini via OpenRouter (clave R) y GPT Image 2.5 directo de OpenAI
+// (OPENAI_API_KEY o clave O).
+// Selector de modelo: openai-medium / openai-high / openai-xhigh /
+// openai-max-flare / openai-max-sunburst / gemini-flash / gemini-pro / qwen-pro.
 // Contrato: recibe {image, mimeType, model?, prompt?}
 //           responde  {image, mimeType}
 // ============================================================
 header('Content-Type: application/json');
 
-// ===== Claves: F (FLUX-BFL) y R (OpenRouter) =====
+// ===== Claves: R (OpenRouter), OPENAI_API_KEY/O (OpenAI) =====
 function getKey(string $name): string {
-    $config = __DIR__ . '/config.php';
     if (file_exists($config)) { include $config; $k = defined($name) ? constant($name) : ''; if ($k !== '') return $k; }
     foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name]??'', $_SERVER['REDIRECT_'.$name]??'', $_ENV[$name]??'', $_ENV['REDIRECT_'.$name]??''] as $v) {
         if (!empty($v)) return (string)$v;
@@ -19,8 +19,70 @@ function getKey(string $name): string {
     return '';
 }
 
-$fluxKey = getKey('F');
+function gcdInt(int $a, int $b): int {
+    $a = abs($a); $b = abs($b);
+    while ($b !== 0) { $tmp = $a % $b; $a = $b; $b = $tmp; }
+    return $a > 0 ? $a : 1;
+}
+
+function imageAspectLabel(int $width, int $height): string {
+    if ($width <= 0 || $height <= 0) return '1:1';
+    $g = gcdInt($width, $height);
+    return intdiv($width, $g) . ':' . intdiv($height, $g);
+}
+
+function sendImageResponse(string $binary, string $mimeType = 'image/png'): void {
+    $info = @getimagesizefromstring($binary);
+    $width = (int)($info[0] ?? 0);
+    $height = (int)($info[1] ?? 0);
+    echo json_encode([
+        'image'       => base64_encode($binary),
+        'mimeType'    => $mimeType,
+        'width'       => $width,
+        'height'      => $height,
+        'aspectRatio' => imageAspectLabel($width, $height),
+    ]);
+    exit;
+}
+
+function openAiOutputSize(int $sourceWidth, int $sourceHeight): string {
+    if ($sourceWidth <= 0 || $sourceHeight <= 0) return '1024x1024';
+
+    // GPT Image 2 permite tamaños arbitrarios en múltiplos de 16.
+    // Usamos aproximadamente 1 MP para conservar el AR sin disparar el coste.
+    $ratio = max(1 / 3, min(3, $sourceWidth / $sourceHeight));
+    $targetPixels = 1048576;
+    $width = (int)(round(sqrt($targetPixels * $ratio) / 16) * 16);
+    $height = (int)(round(sqrt($targetPixels / $ratio) / 16) * 16);
+    $width = max(16, $width);
+    $height = max(16, $height);
+
+    // Redondeo defensivo para cumplir el límite 3:1 de la API.
+    while ($width / $height > 3) $height += 16;
+    while ($height / $width > 3) $width += 16;
+    return $width . 'x' . $height;
+}
+
+function geminiAspectRatio(int $sourceWidth, int $sourceHeight): string {
+    if ($sourceWidth <= 0 || $sourceHeight <= 0) return '1:1';
+    $ratio = $sourceWidth / $sourceHeight;
+    $allowed = [
+        '1:1' => 1.0, '2:3' => 2 / 3, '3:2' => 3 / 2,
+        '3:4' => 3 / 4, '4:3' => 4 / 3, '4:5' => 4 / 5,
+        '5:4' => 5 / 4, '9:16' => 9 / 16, '16:9' => 16 / 9,
+        '21:9' => 21 / 9,
+    ];
+    $best = '1:1'; $distance = PHP_FLOAT_MAX;
+    foreach ($allowed as $label => $value) {
+        $current = abs($ratio - $value);
+        if ($current < $distance) { $distance = $current; $best = $label; }
+    }
+    return $best;
+}
+
 $orKey   = getKey('R');
+$openaiKey = getKey('OPENAI_API_KEY');
+if ($openaiKey === '') $openaiKey = getKey('O');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -52,136 +114,52 @@ if ($imageB64 === '') {
     exit;
 }
 
-// Validacion tamano
-$imgBinary = base64_decode($imageB64);
+// Preparar base64 puro (sin prefijo data:) antes de decodificar.
+if (strpos($imageB64, 'base64,') !== false) {
+    $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
+}
+
+// Validacion tamano y dimensiones de la imagen original.
+$imgBinary = base64_decode($imageB64, true);
+if ($imgBinary === false || $imgBinary === '') {
+    http_response_code(400);
+    echo json_encode(['error'=>['message'=>'Imagen base64 invalida.']]);
+    exit;
+}
 if (strlen($imgBinary) > 2500000) {
     http_response_code(400);
     echo json_encode(['error'=>['message'=>'Imagen demasiado grande (maximo 2.5MB).']]);
     exit;
 }
 
-// Preparar base64 puro (sin prefijo data:)
-if (strpos($imageB64, 'base64,') !== false) {
-    $imageB64 = substr($imageB64, strpos($imageB64, 'base64,') + 7);
-}
+$imageInfo = @getimagesizefromstring($imgBinary);
+$sourceWidth = (int)($imageInfo[0] ?? 0);
+$sourceHeight = (int)($imageInfo[1] ?? 0);
+$openaiSize = openAiOutputSize($sourceWidth, $sourceHeight);
+$geminiRatio = geminiAspectRatio($sourceWidth, $sourceHeight);
 
-// ===== Seleccion de modelo =====
-$reqModel = strtolower((string)($req['model'] ?? 'gemini-pro'));
-$backend = null;
-$geminiModel = 'google/gemini-3.1-flash-image';
-$fluxEndpoint = 'flux-2-pro';
-
-if (strpos($reqModel, 'max') !== false) {
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($reqModel, 'gemini') !== false && strpos($reqModel, 'pro') !== false) {
-    $backend = 'gemini';
-    $geminiModel = 'google/gemini-3-pro-image';
-} elseif (strpos($reqModel, 'gemini') !== false || strpos($reqModel, 'flash') !== false) {
-    $backend = 'gemini';
-    $geminiModel = 'google/gemini-3.1-flash-image';
-} else {
-    // 'flux-pro', 'flux', 'pro' -> flux-2-pro
-    $backend = 'flux';
-}
-
-// ====================================================================
-// BACKEND: FLUX (BFL async)
-// ====================================================================
-if ($backend === 'flux') {
-    if ($fluxKey === '') {
-        http_response_code(500);
-        echo json_encode(['error'=>['message'=>'Clave FLUX (F) no configurada.']]);
-        exit;
-    }
-
-    $payload = [
-        'prompt'      => $prompt,
-        'input_image' => $imageB64,
-    ];
-
-    // 1) Submit
-    $ch = curl_init('https://api.bfl.ai/v1/' . $fluxEndpoint);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => json_encode($payload),
-        CURLOPT_HTTPHEADER     => [
-            'Content-Type: application/json',
-            'accept: application/json',
-            'x-key: ' . $fluxKey,
-        ],
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_CONNECTTIMEOUT => 15,
-    ]);
-    $resp = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err  = curl_error($ch);
-    curl_close($ch);
-
-    if ($err) {
-        http_response_code(502);
-        echo json_encode(['error'=>['message'=>'Error conexion FLUX: '.$err]]);
-        exit;
-    }
-    if ($code !== 200) {
-        $eb = json_decode($resp, true);
-        $em = $eb['detail'] ?? $eb['error'] ?? ('HTTP '.$code);
-        http_response_code($code);
-        echo json_encode(['error'=>['message'=>'FLUX: '.$em]]);
-        exit;
-    }
-
-    $submit = json_decode($resp, true);
-    $pollUrl = $submit['polling_url'] ?? '';
-    if ($pollUrl === '') {
-        http_response_code(502);
-        echo json_encode(['error'=>['message'=>'FLUX no devolvio polling_url']]);
-        exit;
-    }
-
-    // 2) Polling (max 90s)
-    $imageUrl = '';
-    for ($i = 0; $i < 60; $i++) {
-        sleep(1);
-        $ch = curl_init($pollUrl); // BFL usa GET al poll_url (comportamiento real de la API BFL)
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => ['accept: application/json', 'x-key: ' . $fluxKey],
-            CURLOPT_TIMEOUT        => 10,
-        ]);
-        $r2 = curl_exec($ch);
-        $c2 = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        $poll = json_decode($r2, true);
-        if (($poll['status'] ?? '') === 'Ready' && !empty($poll['result']['sample'] ?? '')) {
-            $imageUrl = $poll['result']['sample'];
-            break;
-        }
-    }
-
-    if ($imageUrl === '') {
-        http_response_code(504);
-        echo json_encode(['error'=>['message'=>'FLUX no termino en 90s']]);
-        exit;
-    }
-
-    // 3) Download
-    $ch = curl_init($imageUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 60,
-        CURLOPT_FOLLOWLOCATION => true,
-    ]);
-    $imgBin = curl_exec($ch);
-    curl_close($ch);
-
-    echo json_encode([
-        'image'    => base64_encode($imgBin),
-        'mimeType' => 'image/png',
-    ]);
+// ===== Seleccion de modelo (lista blanca exacta) =====
+$modelCatalog = [
+    'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
+];
+$reqModel = strtolower((string)($req['model'] ?? 'openai-medium'));
+if (!isset($modelCatalog[$reqModel])) {
+    http_response_code(400);
+    echo json_encode(['error'=>['message'=>'Modelo no soportado.']]);
     exit;
 }
+$selected = $modelCatalog[$reqModel];
+$backend = $selected['backend'];
+$geminiModel = $selected['model'] ?? '';
+$openaiModel = $selected['model'] ?? 'gpt-image-2.5-flare';
+$openaiQuality = $selected['quality'] ?? 'medium';
 
 // ====================================================================
 // BACKEND: GEMINI (OpenRouter sync)
@@ -203,6 +181,8 @@ if ($backend === 'gemini') {
         'modalities' => ['image','text'],
         'messages'   => [['role'=>'user','content'=>$content]],
         'max_tokens' => 8000,
+        // OpenRouter reenvía esta configuración al proveedor Gemini.
+        'image_config' => ['aspect_ratio' => $geminiRatio],
     ];
 
     $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
@@ -252,13 +232,183 @@ if ($backend === 'gemini') {
     }
 
     $imgB64 = substr($imgDataUrl, strpos($imgDataUrl, ',') + 1);
-    echo json_encode([
-        'image'    => base64_encode(base64_decode($imgB64)),
-        'mimeType' => 'image/png',
+    sendImageResponse(base64_decode($imgB64), 'image/png');
+}
+
+// ====================================================================
+// BACKEND: OPENAI GPT IMAGE 2.5 (Images API, edicion sincrona)
+// ====================================================================
+if ($backend === 'openai') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error'=>['message'=>'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+
+    // GPT Image 2 recibe la referencia como multipart/form-data.
+    // Se usa un fichero temporal para que funcione también en instalaciones
+    // PHP donde CURLStringFile no está disponible.
+    $tmpPath = tempnam(sys_get_temp_dir(), 'openai_img_');
+    if ($tmpPath === false || file_put_contents($tmpPath, $imgBinary) === false) {
+        if ($tmpPath !== false) @unlink($tmpPath);
+        http_response_code(500);
+        echo json_encode(['error'=>['message'=>'No se pudo preparar la imagen para OpenAI.']]);
+        exit;
+    }
+
+    $uploadName = 'referencia.' . (stripos($mimeType, 'png') !== false ? 'png' : (stripos($mimeType, 'webp') !== false ? 'webp' : 'jpg'));
+    $payload = [
+        'model'  => $openaiModel,
+        'prompt' => $prompt,
+        'quality'=> $openaiQuality,
+        'size'   => $openaiSize,
+        'image[]'=> new CURLFile($tmpPath, $mimeType, $uploadName),
+    ];
+
+    $ch = curl_init('https://api.openai.com/v1/images/edits');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => [
+            'Authorization: Bearer ' . $openaiKey,
+        ],
+        CURLOPT_TIMEOUT        => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
     ]);
-    exit;
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+    @unlink($tmpPath);
+
+    if ($err) {
+        http_response_code(502);
+        echo json_encode(['error'=>['message'=>'Error de conexion con OpenAI: ' . $err]]);
+        exit;
+    }
+    if ($code >= 400) {
+        $eb = json_decode($resp, true);
+        $em = $eb['error']['message'] ?? $eb['error'] ?? ('HTTP ' . $code);
+        if (is_array($em)) $em = json_encode($em);
+        http_response_code($code);
+        echo json_encode(['error'=>['message'=>'OpenAI: ' . $em]]);
+        exit;
+    }
+
+    $jr = json_decode($resp, true);
+    $imageData = $jr['data'][0]['b64_json'] ?? '';
+    $mimeOut = 'image/png';
+
+    // Algunos proveedores pueden devolver una URL en vez de b64_json.
+    if ($imageData === '' && !empty($jr['data'][0]['url'])) {
+        $imageUrl = (string)$jr['data'][0]['url'];
+        $ch = curl_init($imageUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT        => 60,
+        ]);
+        $download = curl_exec($ch);
+        $downloadType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        curl_close($ch);
+        if (is_string($download) && $download !== '') {
+            $imageData = base64_encode($download);
+            if (is_string($downloadType) && strpos($downloadType, 'image/') === 0) $mimeOut = $downloadType;
+        }
+    }
+
+    if ($imageData === '') {
+        http_response_code(502);
+        echo json_encode(['error'=>['message'=>'OpenAI no devolvio ninguna imagen.']]);
+        exit;
+    }
+
+    sendImageResponse(base64_decode($imageData), $mimeOut);
+}
+
+// ====================================================================
+// BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API, sincrono)
+// ====================================================================
+if ($backend === 'qwen') {
+    if ($orKey === '') {
+        http_response_code(500);
+        echo json_encode(['error'=>['message'=>'Clave OpenRouter (R) no configurada.']]);
+        exit;
+    }
+
+    // Qwen solo admite un set fijo de proporciones: se elige la mas cercana
+    // a la imagen fuente (nunca se finge una proporción inexistente).
+    $qwenAllowed = [
+        '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+        '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+        '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+        '9:16' => 9 / 16, '16:9' => 16 / 9,
+    ];
+    $targetRatio = ($sourceWidth > 0 && $sourceHeight > 0) ? $sourceWidth / $sourceHeight : 1.0;
+    $qwenRatio = '1:1'; $qwenDistance = PHP_FLOAT_MAX;
+    foreach ($qwenAllowed as $label => $value) {
+        $current = abs($targetRatio - $value);
+        if ($current < $qwenDistance) { $qwenDistance = $current; $qwenRatio = $label; }
+    }
+
+    $payload = [
+        'model'         => $geminiModel,
+        'prompt'        => $prompt,
+        'resolution'    => '1K',
+        'aspect_ratio'  => $qwenRatio,
+        'n'             => 1,
+        'output_format' => 'png',
+    ];
+    if ($imageB64 !== '') {
+        $payload['input_references'] = [[
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . $imageB64],
+        ]];
+    }
+
+    $ch = curl_init('https://openrouter.ai/api/v1/images');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($payload),
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: *** '.$orKey,
+        ],
+        CURLOPT_TIMEOUT        => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+
+    if ($err) {
+        http_response_code(502);
+        echo json_encode(['error'=>['message'=>'Error conexion OpenRouter: '.$err]]);
+        exit;
+    }
+    if ($code >= 400) {
+        $eb = json_decode($resp, true);
+        $em = $eb['error']['message'] ?? $eb['error'] ?? ('HTTP '.$code);
+        if (is_array($em)) $em = json_encode($em);
+        http_response_code($code);
+        echo json_encode(['error'=>['message'=>'OpenRouter: '.$em]]);
+        exit;
+    }
+
+    $jr = json_decode($resp, true);
+    $imageData = $jr['data'][0]['b64_json'] ?? '';
+    if ($imageData === '') {
+        http_response_code(502);
+        echo json_encode(['error'=>['message'=>'Qwen no devolvio imagen.']]);
+        exit;
+    }
+
+    sendImageResponse(base64_decode($imageData), 'image/png');
 }
 
 // Modelo no reconocido
 http_response_code(400);
-echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa flux, gemini-flash o gemini-pro.']]);
+echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash, gemini-pro o qwen-pro.']]);

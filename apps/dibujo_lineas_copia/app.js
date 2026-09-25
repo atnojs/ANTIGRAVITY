@@ -23,17 +23,74 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo (toggle 4 botones) =====
-        // Por defecto: 3 PRO (gemini-pro) segun SKILL_MAESTRA
-        let selectedModel = 'gemini-pro';
-const MODEL_LABELS = { 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'flux-pro': 'FLUX PRO', 'flux-max': 'FLUX MAX' };
-        const modelToggles = document.querySelectorAll('.model-toggle');
-        modelToggles.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modelToggles.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedModel = btn.dataset.model;
-            });
+    const DEFAULT_MODEL = 'openai-medium';
+    let selectedModel = DEFAULT_MODEL;
+    const MODEL_LABELS = {
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO',
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'qwen-pro': 'QWEN 3 PRO'
+    };
+    const modelToggles = document.querySelectorAll('.model-toggle');
+
+    const setSelectedModel = (model) => {
+        selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
+        modelToggles.forEach((button) => {
+            const isActive = button.dataset.model === selectedModel;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
         });
+    };
+
+    modelToggles.forEach((button) => {
+        button.addEventListener('click', () => setSelectedModel(button.dataset.model));
+    });
+    setSelectedModel(DEFAULT_MODEL);
+
+    // ===== Tooltip de modelos (popup hover) =====
+    const modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip) {
+        const TOOLTIP_GAP = 10;
+        const hideModelTooltip = () => {
+            modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+            modelTooltip.setAttribute('aria-hidden', 'true');
+            modelTooltip.textContent = '';
+        };
+        const showModelTooltip = (button) => {
+            const text = (button.dataset.tooltip || '').trim();
+            if (!text) { hideModelTooltip(); return; }
+            modelTooltip.textContent = text;
+            modelTooltip.classList.remove('tip-above', 'tip-below');
+            modelTooltip.classList.add('visible');
+            modelTooltip.setAttribute('aria-hidden', 'false');
+            const rect = button.getBoundingClientRect();
+            const tw = modelTooltip.offsetWidth;
+            const th = modelTooltip.offsetHeight;
+            let left = rect.left + rect.width / 2 - tw / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+            let top = rect.top - th - TOOLTIP_GAP;
+            if (top < 8) {
+                top = rect.bottom + TOOLTIP_GAP;
+                modelTooltip.classList.add('tip-below');
+            } else {
+                modelTooltip.classList.add('tip-above');
+            }
+            modelTooltip.style.left = left + 'px';
+            modelTooltip.style.top = top + 'px';
+        };
+        modelToggles.forEach((button) => {
+            button.addEventListener('mouseenter', () => showModelTooltip(button));
+            button.addEventListener('mouseleave', hideModelTooltip);
+            button.addEventListener('focus', () => showModelTooltip(button));
+            button.addEventListener('blur', hideModelTooltip);
+        });
+        window.addEventListener('scroll', hideModelTooltip, true);
+        window.addEventListener('resize', hideModelTooltip);
+    }
 
     let imageQueue = [];
 
@@ -131,10 +188,12 @@ previewGrid.addEventListener('click', (e) => {
                 }
 
                 if (data.image) {
+                    const resultAspectRatio = data.aspectRatio || '1:1';
                     var imgDataUrl = "data:" + (data.mimeType || 'image/png') + ";base64," + data.image;
                     const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
+                    item.dataset.aspectRatio = resultAspectRatio;
                     item.innerHTML = `
                         <div class="gallery-model-badge">${MODEL_LABELS[selectedModel] || selectedModel}</div>
                         <img src="${imgDataUrl}" alt="Dibujo lineal">
@@ -143,12 +202,12 @@ previewGrid.addEventListener('click', (e) => {
                         </div>
                     `;
                     resultsGallery.appendChild(item);
-                    saveHistoryItemToDb({
+                    await saveHistoryItemToDb({
                         id: Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
                         url: imgDataUrl,
                         prompt: 'Dibujo lineal: ' + safeName,
                         model: selectedModel,
-                        aspectRatio: '1:1',
+                        aspectRatio: resultAspectRatio,
                         size: '',
                         style: { type: 'line_art' },
                         createdAt: Date.now()
@@ -178,7 +237,7 @@ previewGrid.addEventListener('click', (e) => {
     startButton.disabled = false;
     startButton.innerHTML = `🚀 Iniciar Procesamiento (${imageQueue.length})`;
     galleryTitle.classList.remove('hidden');
-        loadAndRenderHistory();
+        await loadAndRenderHistory();
     });
 
     // ... (El resto del código de HistoryManager y funciones de UI se mantiene igual)
