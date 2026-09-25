@@ -73,6 +73,142 @@ try {
           if ($requestedModel === '') $json['model'] = 'openai-medium';
           ag_image_response($json, __DIR__);
       }
+      // qwen-pro → OpenRouter Image API con keepalive + caché/lock en carpeta
+      // de la app (nginx corta a ~55s y Qwen tarda ~100s/imagen).
+      if ($requestedModel === 'qwen-pro') {
+          // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+          $orKey = '';
+          if (!defined('R')) {
+              $rCfg = __DIR__ . '/config.php';
+              if (file_exists($rCfg)) { include_once $rCfg; }
+          }
+          if (defined('R') && R !== '') { $orKey = (string)R; }
+          if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
+          if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
+          if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
+          if ($orKey === '') throw new Exception('Clave OpenRouter (R) no configurada.', 500);
+
+          $qwenPrompt = (string)($json['prompt'] ?? '');
+          $qwenImages = $json['images'] ?? [];
+          $ratioLabel = (string)($json['aspectRatio'] ?? '1:1');
+
+          // Proporciones REALES de Qwen: se elige la más cercana a la pedida
+          // (nunca se finge una proporción inexistente).
+          $qwenAllowed = [
+              '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+              '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+              '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+              '9:16' => 9 / 16, '16:9' => 16 / 9,
+          ];
+          $ratioParts = explode(':', $ratioLabel);
+          $target = ((int)($ratioParts[0] ?? 1) > 0 && (int)($ratioParts[1] ?? 1) > 0)
+              ? (int)$ratioParts[0] / (int)$ratioParts[1] : 1.0;
+          $best = PHP_FLOAT_MAX; $qwenRatio = '1:1';
+          foreach ($qwenAllowed as $label => $value) {
+              $current = abs($target - $value);
+              if ($current < $best) { $best = $current; $qwenRatio = $label; }
+          }
+
+          $qwenPayload = [
+              'model'         => 'qwen/qwen-image-3-pro',
+              'prompt'        => $qwenPrompt,
+              'resolution'    => '1K',
+              'aspect_ratio'  => $qwenRatio,
+              'n'             => 1,
+              'output_format' => 'png',
+          ];
+          foreach (array_slice($qwenImages, 0, 4) as $img) {
+              if (!empty($img['data'])) {
+                  $qwenPayload['input_references'][] = [
+                      'type' => 'image_url',
+                      'image_url' => ['url' => 'data:' . ($img['mimeType'] ?? 'image/png') . ';base64,' . $img['data']],
+                  ];
+              }
+          }
+
+          // Un worker genera y guarda el resultado (ignore_user_abort); los
+          // reintentos del frontend recogen el caché o esperan con
+          // 'processing'. El caché va en carpeta de la app: sys_get_temp_dir()
+          // NO persiste entre peticiones en Hostinger.
+          $cacheKey = hash('sha256', 'qwen-pro|' . $qwenPrompt . '|' . json_encode($qwenImages) . '|' . $qwenRatio);
+          $cacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+          if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+          $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
+          $lockFile = $cacheFile . '.lock';
+
+          if (is_file($cacheFile)) {
+              $cached = json_decode((string)@file_get_contents($cacheFile), true);
+              if (is_array($cached) && !empty($cached['b64'])) {
+                  echo json_encode(['image' => $cached['b64'], 'mimeType' => 'image/png', 'type' => 'image']);
+                  exit;
+              }
+          }
+          if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+              http_response_code(202);
+              echo json_encode(['status' => 'processing']);
+              exit;
+          }
+
+          ignore_user_abort(true);
+          set_time_limit(180);
+          @file_put_contents($lockFile, (string)time());
+          register_shutdown_function(static function () use ($lockFile, $cacheFile) {
+              // Si la generación terminó sin guardar caché, libera el candado.
+              if (is_file($lockFile) && !is_file($cacheFile)) @unlink($lockFile);
+          });
+
+          // Mantener viva la conexión con nginx (corta a ~55s sin tráfico):
+          // se emiten espacios periódicos que no invalidan el JSON final
+          // (el parser tolera espacio en blanco inicial).
+          while (ob_get_level() > 0) { @ob_end_flush(); }
+          @ob_implicit_flush(true);
+
+          $ch = curl_init('https://openrouter.ai/api/v1/images');
+          curl_setopt_array($ch, [
+              CURLOPT_RETURNTRANSFER => true,
+              CURLOPT_POST           => true,
+              CURLOPT_POSTFIELDS     => json_encode($qwenPayload),
+              CURLOPT_HTTPHEADER     => [
+                  'Content-Type: application/json',
+                  'Authorization: Bearer ' . $orKey,
+              ],
+              CURLOPT_TIMEOUT        => 180,
+              CURLOPT_CONNECTTIMEOUT => 20,
+          ]);
+          $mh = curl_multi_init();
+          curl_multi_add_handle($mh, $ch);
+          do {
+              $status = curl_multi_exec($mh, $active);
+              if ($active) {
+                  curl_multi_select($mh, 3.0);
+                  echo str_repeat(' ', 64) . "\n";
+                  @flush();
+              }
+          } while ($active && $status === CURLM_OK);
+          $resp = (string)curl_multi_getcontent($ch);
+          $httpcode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+          $curlerr = curl_error($ch);
+          curl_multi_remove_handle($mh, $ch);
+          curl_multi_close($mh);
+          curl_close($ch);
+
+          if ($curlerr) throw new Exception('Error conexion OpenRouter: ' . $curlerr, 502);
+          $data = json_decode($resp, true);
+          if ($httpcode >= 400 || isset($data['error'])) {
+              $msg = $data['error']['message'] ?? $data['error'] ?? ('HTTP ' . $httpcode);
+              if (is_array($msg)) $msg = json_encode($msg);
+              throw new Exception('OpenRouter: ' . $msg, $httpcode >= 400 ? $httpcode : 502);
+          }
+          $imageB64 = (string)($data['data'][0]['b64_json'] ?? '');
+          if ($imageB64 === '') throw new Exception('Qwen no devolvió ninguna imagen.', 502);
+
+          // Guarda el resultado: los reintentos del frontend lo recogen aunque
+          // nginx haya cortado la respuesta original por timeout.
+          @file_put_contents($cacheFile, json_encode(['b64' => $imageB64]));
+          @unlink($lockFile);
+          echo json_encode(['image' => $imageB64, 'mimeType' => 'image/png', 'type' => 'image']);
+          exit;
+      }
       // gemini-flash / gemini-pro / legacy → backend Gemini directo (clave A)
       // de esta app, CONSERVADO tal cual (cae al bloque siguiente).
   }
