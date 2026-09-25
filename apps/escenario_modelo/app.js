@@ -111,7 +111,7 @@ let selectedModel = 'openai-medium';
 let selectedAR = '1:1';
 let selectedRes = 1024;
 // Etiquetas legibles para metadatos (resultado / popup historial)
-const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
+const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO' };
 const getModelLabel = (m) => MODEL_LABELS[m] || m;
 let promptVariants = [];
 
