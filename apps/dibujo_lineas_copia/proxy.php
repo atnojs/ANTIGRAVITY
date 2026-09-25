@@ -396,6 +396,12 @@ if ($backend === 'qwen') {
         if (is_file($lockFile) && !is_file($cacheFile)) @unlink($lockFile);
     });
 
+    // Mantener viva la conexión con nginx (corta a ~55s sin tráfico): la
+    // generación puede tardar más; se emiten espacios periódicos que no
+    // invalidan el JSON final (el parser tolera espacio en blanco inicial).
+    while (ob_get_level() > 0) { @ob_end_flush(); }
+    @ob_implicit_flush(true);
+
     $ch = curl_init('https://openrouter.ai/api/v1/images');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -408,9 +414,21 @@ if ($backend === 'qwen') {
         CURLOPT_TIMEOUT        => 180,
         CURLOPT_CONNECTTIMEOUT => 20,
     ]);
-    $resp = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $mh = curl_multi_init();
+    curl_multi_add_handle($mh, $ch);
+    do {
+        $status = curl_multi_exec($mh, $active);
+        if ($active) {
+            curl_multi_select($mh, 3.0);
+            echo str_repeat(' ', 64) . "\n";
+            @flush();
+        }
+    } while ($active && $status === CURLM_OK);
+    $resp = (string)curl_multi_getcontent($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $err  = curl_error($ch);
+    curl_multi_remove_handle($mh, $ch);
+    curl_multi_close($mh);
     curl_close($ch);
 
     if ($err) {
