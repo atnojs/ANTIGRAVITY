@@ -22,7 +22,7 @@ apps/fotos_antonio/
 ├── components.css      # Estilos de componentes
 ├── api.php             # API principal
 ├── proxy.php           # Proxy para Google Gemini API
-├── config.php          # Configuración de la aplicación
+├── .htaccess raiz          # Configuración de la aplicación
 ├── simple_db.php       # Base de datos simplificada (JSON)
 ├── db.php              # Base de datos MySQL (original)
 ├── schema.sql          # Esquema de base de datos
@@ -43,7 +43,7 @@ apps/fotos_antonio/
 ### 2. Configuración
 
 #### a) Configurar API Key de Google Gemini
-Editar `config.php` y establecer la variable de entorno `C` con tu API Key:
+Editar `.htaccess raiz` y establecer la variable de entorno `C` con tu API Key:
 
 ```php
 define('GEMINI_API_KEY', getenv('C') ?: 'TU_API_KEY_AQUI');
@@ -123,7 +123,7 @@ Si necesitas migrar a MySQL:
 mysql -u root -p < schema.sql
 ```
 
-2. Configurar credenciales en `config.php`:
+2. Configurar credenciales en `.htaccess raiz`:
 ```php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'fotos_antonio');
