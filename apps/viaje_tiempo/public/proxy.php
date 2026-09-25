@@ -45,13 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+// ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
 }
@@ -88,7 +83,7 @@ if (!$requestData) {
 }
 
 // 3. Determinar el modelo, el endpoint y los datos extras
-$model = $requestData['model'] ?? 'gemini-2.5-flash-image';
+$model = $requestData['model'] ?? 'gemini-3.1-flash-image-preview';
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$API_KEY}";
 
 // 4. Preparar payload
