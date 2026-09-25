@@ -84,12 +84,19 @@
                                 <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>
                             </div>
                         </div>
+                        <div class="model-provider-column">
+                            <span class="model-provider-title">QWEN</span>
+                            <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+                            <div class="model-toggle-group">
+                                <button type="button" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <form id="chat-form">
                     <div class="input-wrapper">
                         <textarea id="user-input" placeholder="Describe tu visión técnica..." rows="1"></textarea>
-                        <button type="submit" id="btn-send" class="btn-send">
+                        <button type="submit" id="btn-send" class="btn-send" aria-describedby="model-tooltip" data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                             </svg>
@@ -113,7 +120,7 @@
     <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
 
     <script src="history-manager.js?v=5"></script>
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 
 </html>
