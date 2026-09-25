@@ -1,0 +1,272 @@
+[
+    {
+        "id": "h_1784379652216_gz01uw12nz60f",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "side",
+            "shotTypeLabel": "Plano Lateral",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-18T13:00:52.216Z",
+        "imageFile": "h_1784379652216_gz01uw12nz60f",
+        "imageUrl": "./history_data/h_1784379652216_gz01uw12nz60f.jpg"
+    },
+    {
+        "id": "h_1784379635332_1nusn5t1c1ps71",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "medium",
+            "shotTypeLabel": "Plano Medio",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-18T13:00:35.332Z",
+        "imageFile": "h_1784379635332_1nusn5t1c1ps71",
+        "imageUrl": "./history_data/h_1784379635332_1nusn5t1c1ps71.jpg"
+    },
+    {
+        "id": "h_1784379618444_3kivgx1d7d0hb",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "general",
+            "shotTypeLabel": "Plano General",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-18T13:00:18.444Z",
+        "imageFile": "h_1784379618444_3kivgx1d7d0hb",
+        "imageUrl": "./history_data/h_1784379618444_3kivgx1d7d0hb.jpg"
+    },
+    {
+        "id": "h_1784376010018_1kango81dmsj5b",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "top-down",
+            "shotTypeLabel": "Plano Cenital",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-18T12:00:10.018Z",
+        "imageFile": "h_1784376010018_1kango81dmsj5b",
+        "imageUrl": "./history_data/h_1784376010018_1kango81dmsj5b.jpg"
+    },
+    {
+        "id": "h_1784375996854_tr34em940d5x",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "side",
+            "shotTypeLabel": "Plano Lateral",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-18T11:59:56.854Z",
+        "imageFile": "h_1784375996854_tr34em940d5x",
+        "imageUrl": "./history_data/h_1784375996854_tr34em940d5x.jpg"
+    },
+    {
+        "id": "h_1784375986796_haki8gjm0cn6",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "close-up",
+            "shotTypeLabel": "Primer Plano",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-18T11:59:46.796Z",
+        "imageFile": "h_1784375986796_haki8gjm0cn6",
+        "imageUrl": "./history_data/h_1784375986796_haki8gjm0cn6.jpg"
+    },
+    {
+        "id": "h_1784375969963_1hgejqt17kc5xj",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "medium",
+            "shotTypeLabel": "Plano Medio",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-18T11:59:29.963Z",
+        "imageFile": "h_1784375969963_1hgejqt17kc5xj",
+        "imageUrl": "./history_data/h_1784375969963_1hgejqt17kc5xj.jpg"
+    },
+    {
+        "id": "h_1784375957464_idxvgezgpnoh",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "general",
+            "shotTypeLabel": "Plano General",
+            "quality": "pro",
+            "aspectRatio": "2:3",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-18T11:59:17.464Z",
+        "imageFile": "h_1784375957464_idxvgezgpnoh",
+        "imageUrl": "./history_data/h_1784375957464_idxvgezgpnoh.jpg"
+    },
+    {
+        "id": "h_1784138317044_7dnerd1lg7xe9",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "top-down",
+            "shotTypeLabel": "Plano Cenital",
+            "quality": "pro",
+            "aspectRatio": "1:1",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-15T17:58:37.044Z",
+        "imageFile": "h_1784138317044_7dnerd1lg7xe9",
+        "imageUrl": "./history_data/h_1784138317044_7dnerd1lg7xe9.jpg"
+    },
+    {
+        "id": "h_1784138302214_109zt9ft99e60",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "side",
+            "shotTypeLabel": "Plano Lateral",
+            "quality": "pro",
+            "aspectRatio": "1:1",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-15T17:58:22.214Z",
+        "imageFile": "h_1784138302214_109zt9ft99e60",
+        "imageUrl": "./history_data/h_1784138302214_109zt9ft99e60.jpg"
+    },
+    {
+        "id": "h_1784138284645_i8i8wkvaqs43",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "close-up",
+            "shotTypeLabel": "Primer Plano",
+            "quality": "pro",
+            "aspectRatio": "1:1",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-15T17:58:04.645Z",
+        "imageFile": "h_1784138284645_i8i8wkvaqs43",
+        "imageUrl": "./history_data/h_1784138284645_i8i8wkvaqs43.jpg"
+    },
+    {
+        "id": "h_1784138266916_13giawmlatkwq",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "medium",
+            "shotTypeLabel": "Plano Medio",
+            "quality": "pro",
+            "aspectRatio": "1:1",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-15T17:57:46.916Z",
+        "imageFile": "h_1784138266916_13giawmlatkwq",
+        "imageUrl": "./history_data/h_1784138266916_13giawmlatkwq.jpg"
+    },
+    {
+        "id": "h_1784138253728_h0eibp3z8uxa",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "general",
+            "shotTypeLabel": "Plano General",
+            "quality": "pro",
+            "aspectRatio": "1:1",
+            "resolution": 1024
+        },
+        "createdAt": "2026-07-15T17:57:33.728Z",
+        "imageFile": "h_1784138253728_h0eibp3z8uxa",
+        "imageUrl": "./history_data/h_1784138253728_h0eibp3z8uxa.jpg"
+    },
+    {
+        "id": "h_1784046957011_1vggby71expx2k",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "top-down",
+            "shotTypeLabel": "Plano Cenital",
+            "quality": "pro",
+            "aspectRatio": "16:9",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-14T16:35:57.011Z",
+        "imageFile": "h_1784046957011_1vggby71expx2k",
+        "imageUrl": "./history_data/h_1784046957011_1vggby71expx2k.jpg"
+    },
+    {
+        "id": "h_1784046937120_1mcdxci1jh7z57",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "side",
+            "shotTypeLabel": "Plano Lateral",
+            "quality": "pro",
+            "aspectRatio": "16:9",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-14T16:35:37.120Z",
+        "imageFile": "h_1784046937120_1mcdxci1jh7z57",
+        "imageUrl": "./history_data/h_1784046937120_1mcdxci1jh7z57.jpg"
+    },
+    {
+        "id": "h_1784046917338_9dbtjfhf42qy",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "close-up",
+            "shotTypeLabel": "Primer Plano",
+            "quality": "pro",
+            "aspectRatio": "16:9",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-14T16:35:17.338Z",
+        "imageFile": "h_1784046917338_9dbtjfhf42qy",
+        "imageUrl": "./history_data/h_1784046917338_9dbtjfhf42qy.jpg"
+    },
+    {
+        "id": "h_1784046897200_156j7k4eip75e",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "medium",
+            "shotTypeLabel": "Plano Medio",
+            "quality": "pro",
+            "aspectRatio": "16:9",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-14T16:34:57.200Z",
+        "imageFile": "h_1784046897200_156j7k4eip75e",
+        "imageUrl": "./history_data/h_1784046897200_156j7k4eip75e.jpg"
+    },
+    {
+        "id": "h_1784046875271_1333sk864h2re",
+        "app": "angulos_de_camara",
+        "type": "image",
+        "data": {
+            "shotType": "general",
+            "shotTypeLabel": "Plano General",
+            "quality": "pro",
+            "aspectRatio": "16:9",
+            "resolution": 512
+        },
+        "createdAt": "2026-07-14T16:34:35.271Z",
+        "imageFile": "h_1784046875271_1333sk864h2re",
+        "imageUrl": "./history_data/h_1784046875271_1333sk864h2re.jpg"
+    }
+]
