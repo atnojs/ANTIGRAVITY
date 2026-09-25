@@ -38,7 +38,7 @@ try {
   $API_KEY = getenv('GOOGLE_API_KEY');
   if(!$API_KEY){ $API_KEY = 'AIzaSyA1uwquL3vheNtPpvT5qLcbj6kFlBm9JEg'; }
 
-  $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=" . urlencode($API_KEY);
+  $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=" . urlencode($API_KEY);
 
   $parts = [];
   $text = "Integra de forma realista todas las imágenes en la base. Ajusta luz, sombras, perspectiva y color.";

@@ -7,7 +7,7 @@ try {
     echo "<pre>" . substr($token, 0, 60) . "...</pre>";
 
     // llamada mínima a Vertex AI (echo simple)
-    $MODEL_ID = "gemini-2.5-flash-image";
+    $MODEL_ID = "gemini-3.1-flash-image-preview";
     $body = [
         "contents" => [[ "parts" => [[ "text" => "Ping de prueba desde Vertex AI" ]] ]]
     ];

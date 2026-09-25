@@ -22,7 +22,7 @@ function call_vertex_verbose($model_id, $body) {
   return [$code, $url, $resp];
 }
 
-$model = "gemini-2.5-flash-image";
+$model = "gemini-3.1-flash-image-preview";
 $body  = ["contents"=>[[ "parts"=>[[ "text"=>"Ping de prueba" ]] ]]];
 
 list($code, $url, $resp) = call_vertex_verbose($model, $body);
