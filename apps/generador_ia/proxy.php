@@ -8,7 +8,7 @@
 // openai-max-flare (gpt-image-2.5-flare/max), openai-max-sunburst
 // (gpt-image-2.5-sunburst/max) + gemini-flash/pro (OpenRouter R).
 // La llamada OpenAI (generations/edits) la ejecuta
-// ag_image_generate() de canonical-image-model.php. FLUX: 400.
+// ag_image_generate() de canonical-image-model.php.
 // ============================================================
 
 header('Content-Type: application/json; charset=utf-8');
@@ -47,7 +47,6 @@ if (is_array($canonicalBody)) {
 $apiKey = '';
 
 // 1. Config file local (máxima prioridad)
-$configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
     $apiKey = defined('OPENROUTER_API_KEY') ? OPENROUTER_API_KEY : '';
@@ -63,7 +62,7 @@ if (empty($apiKey)) $apiKey = $_ENV['REDIRECT_OPENROUTER_API_KEY'] ?? '';
 
 if (empty($apiKey)) {
     http_response_code(401);
-    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea config.php con define("OPENROUTER_API_KEY", "tu-key");']]);
+    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea .htaccess raiz con define("OPENROUTER_API_KEY", "tu-key");']]);
     exit;
 }
 
