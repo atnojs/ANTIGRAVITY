@@ -102,7 +102,7 @@ const server = http.createServer((req, res) => {
             return;
         }
 
-        const model = reqData.model || 'gemini-2.5-flash';
+        const model = reqData.model || 'gemini-3.1-flash-preview';
         const payload = buildGeminiPayload(reqData);
 
         if (!payload) {
@@ -120,5 +120,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '127.0.0.1', () => {
     console.log(`Gemini Proxy activo en http://127.0.0.1:${PORT}/api/generate`);
-    console.log(`Modelo por defecto: gemini-2.5-flash`);
+    console.log(`Modelo por defecto: gemini-3.1-flash-preview`);
 });
