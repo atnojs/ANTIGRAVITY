@@ -90,11 +90,17 @@
                             <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>
                         </div>
                     </div>
+                    <div class="model-provider-column">
+                        <span class="model-provider-title">QWEN</span>
+                        <div class="model-toggle-group">
+                            <button type="button" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="action-area">
-                <button id="generate-btn" class="btn-primary" disabled>
+                <button id="generate-btn" class="btn-primary" aria-describedby="model-tooltip" data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato" disabled>
                     <i data-lucide="play-circle"></i>
                     INICIAR CLONADO
                 </button>
@@ -146,7 +152,7 @@
 
     <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
     <script>lucide.createIcons();</script>
 </body>
 
