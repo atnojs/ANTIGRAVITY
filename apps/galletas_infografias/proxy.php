@@ -146,7 +146,7 @@ function handleOpenRouter(array $request): void {
     }
     $payload = ['messages' => array_values($messages), 'stream' => false];
     $model = trim((string)($request['model'] ?? ''));
-    if ($model === '') $model = 'google/gemini-3.8-flash';
+    if ($model === '') $model = 'xiaomi/mimo-v2.6-pro';
     if (strlen($model) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $model) !== 1) respond(400, ['success' => false, 'error' => 'Modelo no válido.']);
     $payload['model'] = $model;
     if (isset($request['temperature']) && is_numeric($request['temperature'])) $payload['temperature'] = max(0.0, min(2.0, (float)$request['temperature']));
@@ -178,7 +178,7 @@ function handleTranslate(array $request): void {
         ['role' => 'system', 'content' => $systemPrompt],
         ['role' => 'user', 'content' => $text]
     ];
-    $payload = ['messages' => $messages, 'stream' => false, 'model' => 'google/gemini-3.8-flash', 'temperature' => 0.2, 'max_tokens' => 4096];
+    $payload = ['messages' => $messages, 'stream' => false, 'model' => 'xiaomi/mimo-v2.6-pro', 'temperature' => 0.2, 'max_tokens' => 4096];
     [$status, $response] = requestJson('https://openrouter.ai/api/v1/chat/completions', 'POST', [
         'Authorization: Bearer ' . $key, 'Content-Type: application/json', 'accept: application/json'
     ], $payload, 120);
@@ -190,7 +190,7 @@ function handleTranslate(array $request): void {
     if ($translated === '') respond(502, ['success' => false, 'error' => 'La traducción devolvió un resultado vacío.']);
     respond(200, [
         'success' => true, 'translated' => $translated,
-        'original' => $text, 'target' => $target, 'model' => (string)($response['model'] ?? 'google/gemini-3.8-flash')
+        'original' => $text, 'target' => $target, 'model' => (string)($response['model'] ?? 'xiaomi/mimo-v2.6-pro')
     ]);
 }
 
