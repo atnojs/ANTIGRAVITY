@@ -38,7 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
         'gemini-flash': '3.1 FLASH',
-        'gemini-pro': '3 PRO'
+        'gemini-pro': '3 PRO',
+        'qwen-pro': 'QWEN 3 PRO'
     };
 
     // ─── Selectores de modelo ─────────────────────────────────
@@ -409,17 +410,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return data.concepts || [];
     }
 
-    async function fetchImageModel(payload) {
-        const response = await fetch('proxy.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-        if (!response.ok || data.error) {
-            throw new Error(data.error?.message || 'Error al generar la imagen.');
+    // Para qwen-pro (más lento que el timeout de nginx, ~55s) se espera
+    // activamente: el proxy guarda el resultado en caché y responde
+    // 'processing' mientras el worker termina de generarlo.
+    async function fetchImageModel(payload, maxAttempts = 36) {
+        const slowModel = payload && payload.model === 'qwen-pro';
+        let lastError = 'Sin respuesta del modelo.';
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const response = await fetch('proxy.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await response.json().catch(() => null);
+                if (response.ok && data && data.status === 'processing') {
+                    lastError = 'Generando...';
+                } else if (response.ok && data && !data.error && (data.image || data.dataUrl || data.imageUrl)) {
+                    return data;
+                } else if (data && data.error) {
+                    lastError = data.error.message || data.error;
+                    if (!slowModel || response.status < 500) throw new Error(lastError);
+                } else {
+                    lastError = `Error HTTP ${response.status}`;
+                }
+            } catch (e) {
+                if (!slowModel) throw e;
+                lastError = (e && e.message) || lastError;
+            }
+            if (!slowModel) throw new Error(lastError);
+            if (attempt < maxAttempts - 1) await new Promise((resolve) => setTimeout(resolve, 5000));
         }
-        return data;
+        throw new Error(lastError);
     }
 
     // Construye el prompt final para el modelo seleccionado
