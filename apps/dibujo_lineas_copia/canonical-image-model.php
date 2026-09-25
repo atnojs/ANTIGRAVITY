@@ -32,7 +32,6 @@ function ag_image_key(string $configDir, string ...$names): string
 {
     static $configLoaded = [];
     if ($configDir !== '' && !isset($configLoaded[$configDir])) {
-        $config = rtrim($configDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'config.php';
         if (is_file($config)) include_once $config;
         $configLoaded[$configDir] = true;
     }

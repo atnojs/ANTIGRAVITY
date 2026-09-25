@@ -4,7 +4,7 @@
 // Soporta Gemini via OpenRouter (clave R) y GPT Image 2.5 directo de OpenAI
 // (OPENAI_API_KEY o clave O).
 // Selector de modelo: openai-medium / openai-high / openai-xhigh /
-// openai-max-flare / openai-max-sunburst / gemini-flash / gemini-pro.
+// openai-max-flare / openai-max-sunburst / gemini-flash / gemini-pro / qwen-pro.
 // Contrato: recibe {image, mimeType, model?, prompt?}
 //           responde  {image, mimeType}
 // ============================================================
@@ -12,7 +12,6 @@ header('Content-Type: application/json');
 
 // ===== Claves: R (OpenRouter), OPENAI_API_KEY/O (OpenAI) =====
 function getKey(string $name): string {
-    $config = __DIR__ . '/config.php';
     if (file_exists($config)) { include $config; $k = defined($name) ? constant($name) : ''; if ($k !== '') return $k; }
     foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name]??'', $_SERVER['REDIRECT_'.$name]??'', $_ENV[$name]??'', $_ENV['REDIRECT_'.$name]??''] as $v) {
         if (!empty($v)) return (string)$v;
@@ -148,6 +147,7 @@ $modelCatalog = [
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
 ];
 $reqModel = strtolower((string)($req['model'] ?? 'openai-medium'));
 if (!isset($modelCatalog[$reqModel])) {
@@ -327,6 +327,88 @@ if ($backend === 'openai') {
     sendImageResponse(base64_decode($imageData), $mimeOut);
 }
 
+// ====================================================================
+// BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API, sincrono)
+// ====================================================================
+if ($backend === 'qwen') {
+    if ($orKey === '') {
+        http_response_code(500);
+        echo json_encode(['error'=>['message'=>'Clave OpenRouter (R) no configurada.']]);
+        exit;
+    }
+
+    // Qwen solo admite un set fijo de proporciones: se elige la mas cercana
+    // a la imagen fuente (nunca se finge una proporción inexistente).
+    $qwenAllowed = [
+        '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+        '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+        '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+        '9:16' => 9 / 16, '16:9' => 16 / 9,
+    ];
+    $targetRatio = ($sourceWidth > 0 && $sourceHeight > 0) ? $sourceWidth / $sourceHeight : 1.0;
+    $qwenRatio = '1:1'; $qwenDistance = PHP_FLOAT_MAX;
+    foreach ($qwenAllowed as $label => $value) {
+        $current = abs($targetRatio - $value);
+        if ($current < $qwenDistance) { $qwenDistance = $current; $qwenRatio = $label; }
+    }
+
+    $payload = [
+        'model'         => $geminiModel,
+        'prompt'        => $prompt,
+        'resolution'    => '1K',
+        'aspect_ratio'  => $qwenRatio,
+        'n'             => 1,
+        'output_format' => 'png',
+    ];
+    if ($imageB64 !== '') {
+        $payload['input_references'] = [[
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . $imageB64],
+        ]];
+    }
+
+    $ch = curl_init('https://openrouter.ai/api/v1/images');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($payload),
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: *** '.$orKey,
+        ],
+        CURLOPT_TIMEOUT        => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
+    ]);
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+
+    if ($err) {
+        http_response_code(502);
+        echo json_encode(['error'=>['message'=>'Error conexion OpenRouter: '.$err]]);
+        exit;
+    }
+    if ($code >= 400) {
+        $eb = json_decode($resp, true);
+        $em = $eb['error']['message'] ?? $eb['error'] ?? ('HTTP '.$code);
+        if (is_array($em)) $em = json_encode($em);
+        http_response_code($code);
+        echo json_encode(['error'=>['message'=>'OpenRouter: '.$em]]);
+        exit;
+    }
+
+    $jr = json_decode($resp, true);
+    $imageData = $jr['data'][0]['b64_json'] ?? '';
+    if ($imageData === '') {
+        http_response_code(502);
+        echo json_encode(['error'=>['message'=>'Qwen no devolvio imagen.']]);
+        exit;
+    }
+
+    sendImageResponse(base64_decode($imageData), 'image/png');
+}
+
 // Modelo no reconocido
 http_response_code(400);
-echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash o gemini-pro.']]);
+echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash, gemini-pro o qwen-pro.']]);
