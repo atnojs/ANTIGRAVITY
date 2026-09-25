@@ -4,7 +4,8 @@
  * 🎨 ESTILO JSON — PROXY PHP (Multi-Backend)
  * Flujo:
  *   1) analizarEstilo : imagen de referencia -> JSON de estilo
- *                       (visión: OpenRouter xiaomi/mimo-v2.6-pro / respaldo Gemini gemini-3.8-flash)
+ *                       (visión/texto: OpenRouter xiaomi/mimo-v2.6-pro; la antigua
+ *                        ruta Google directa con gemini-3.8-flash quedó reenrutada)
  *   2) mejorarPrompt  : DeepSeek (texto) afina las instrucciones extra
  *   3) aplicarEstilo  : imagen del sujeto + JSON de estilo -> nueva imagen
  *                       ┌─ openai-medium/high/xhigh/max-flare/max-sunburst → gpt-image-2.5-flare/sunburst (edits)
@@ -196,52 +197,69 @@ try {
             $cost = (float) ($data['usage']['cost'] ?? 0);
         }
 
-        // ---- Respaldo: Gemini con responseSchema (JSON estricto) — Google directo ----
-        if ($estilo === null && !empty($gemKey)) {
-            $props = [];
-            foreach ($CLAVES as $c) { $props[$c] = ['type' => 'STRING']; }
-            $schema = [
-                'type' => 'OBJECT',
-                'properties' => $props,
-                'required' => ['estilo_general', 'iluminacion', 'paleta_colores', 'composicion', 'prompt_estilo'],
-            ];
-            $gemBody = [
-                'contents' => [[
-                    'parts' => [
-                        ['text' => $instruccion],
-                        ['inline_data' => ['mime_type' => $mimeType, 'data' => $pureB64]],
+        // ---- Respaldo: texto/visión vía OpenRouter xiaomi/mimo-v2.6-pro ----
+        // La antigua ruta Google directa (generativelanguage, clave A, modelo de
+        // texto gemini-3.8-flash) queda reenrutada a OpenRouter: MiMo solo existe
+        // en OpenRouter. La respuesta se devuelve en FORMA GEMINI para no romper
+        // el contrato con el consumidor.
+        if ($estilo === null && !empty($orKey)) {
+            $sysText = 'Eres un analista visual experto. ' . $instruccion
+                . ' Devuelve ÚNICAMENTE un objeto JSON con EXACTAMENTE estas claves: '
+                . implode(', ', $CLAVES) . '.';
+            [$status, $orResp] = $callApi(
+                'https://openrouter.ai/api/v1/chat/completions',
+                [
+                    'model' => 'xiaomi/mimo-v2.6-pro',
+                    'response_format' => ['type' => 'json_object'],
+                    'messages' => [
+                        ['role' => 'system', 'content' => $sysText],
+                        ['role' => 'user', 'content' => [
+                            ['type' => 'text', 'text' => 'Analiza el ESTILO visual y devuelve el JSON.'],
+                            ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . $pureB64]],
+                        ]],
                     ],
-                ]],
-                'generationConfig' => [
-                    'responseMimeType' => 'application/json',
-                    'responseSchema' => $schema,
+                    'max_tokens' => 700,
                     'temperature' => 0.4,
                 ],
+                [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $orKey,
+                    'HTTP-Referer: ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+                    'X-Title: Estilo JSON',
+                ],
+                90
+            );
+            // FORMA GEMINI (contrato intacto): mismo consumo que la ruta anterior.
+            $data = [
+                'model' => 'xiaomi/mimo-v2.6-pro',
+                'candidates' => [[
+                    'content' => ['role' => 'model', 'parts' => [[
+                        'text' => (string) ($orResp['choices'][0]['message']['content'] ?? ''),
+                    ]]],
+                    'finishReason' => 'STOP',
+                ]],
             ];
-            // §6: análisis de texto/visión con Gemini 3.8 Flash (Google directo).
-            $gemModelos = ['gemini-3.8-flash'];
             $lastMsg = '';
             $lastStatus = 502;
-            foreach ($gemModelos as $model) {
-                $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model
-                    . ':generateContent?key=' . urlencode($gemKey);
-                [$status, $data] = $callApi($url, $gemBody, ['Content-Type: application/json'], 90);
-                if ($status >= 200 && $status < 300) {
-                    $text = (string) ($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
-                    if ($text !== '') {
-                        $parsed = json_decode($text, true);
-                        if (is_array($parsed)) { $estilo = $parsed; break; }
+            if ($status >= 200 && $status < 300) {
+                $text = (string) ($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+                if ($text !== '') {
+                    $clean = trim($text);
+                    $clean = preg_replace('/^```(?:json)?\s*/i', '', $clean);
+                    $clean = preg_replace('/\s*```$/', '', $clean);
+                    $parsed = json_decode($clean, true);
+                    if (!is_array($parsed) && preg_match('/\{.*\}/s', $clean, $m)) {
+                        $parsed = json_decode($m[0], true);
                     }
+                    if (is_array($parsed)) { $estilo = $parsed; }
                 }
-                $lastStatus = $status ?: 502;
-                $lastMsg = $data['error']['message'] ?? ('HTTP ' . $status);
-                if (is_array($lastMsg)) $lastMsg = json_encode($lastMsg);
-                // Solo seguimos probando otros modelos si fue sobrecarga/no disponible
-                if (!in_array($status, [429, 500, 503, 404], true)) break;
             }
-            // Si el respaldo Gemini también falló, informamos con el error real
+            // Si el respaldo MiMo también falló, informamos con el error real
             if ($estilo === null) {
-                throw new Exception('Gemini (análisis de estilo): ' . $lastMsg, $lastStatus);
+                $lastStatus = $status ?: 502;
+                $lastMsg = $orResp['error']['message'] ?? ('HTTP ' . $status);
+                if (is_array($lastMsg)) $lastMsg = json_encode($lastMsg);
+                throw new Exception('MiMo (análisis de estilo): ' . $lastMsg, $lastStatus);
             }
         }
 
@@ -324,6 +342,7 @@ try {
             'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
             'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
             'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+            'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
         ];
         if (!isset($modelCatalog[$reqModel])) {
             throw new Exception('Modelo no soportado.', 400);
@@ -331,6 +350,7 @@ try {
         $selectedModel = $modelCatalog[$reqModel];
         $isOpenAI = ($selectedModel['backend'] === 'openai');
         $isGemini = ($selectedModel['backend'] === 'gemini');
+        $isQwen   = ($selectedModel['backend'] === 'qwen');
 
         if ($isOpenAI) {
             $openaiKey = '';
@@ -344,6 +364,9 @@ try {
         }
         if ($isGemini && empty($orKey)) {
             throw new Exception('API Key de OpenRouter (Gemini) no configurada.', 401);
+        }
+        if ($isQwen && empty($orKey)) {
+            throw new Exception('API Key de OpenRouter (Qwen) no configurada.', 401);
         }
 
         // Imagen del NUEVO sujeto (base64 con o sin prefijo data:)
@@ -554,6 +577,141 @@ try {
                 'modelo'   => $reqModel,
                 'width'    => $w,
                 'height'   => $h,
+            ]);
+            exit;
+        }
+
+        // ═══ RAMA QWEN (OpenRouter Image API, sincrono) ═══
+        if ($isQwen) {
+            // Qwen solo admite un set fijo de proporciones: se elige la mas
+            // cercana a la imagen fuente (nunca se finge una proporcion inexistente).
+            $qwenAllowed = [
+                '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+                '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+                '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+                '9:16' => 9 / 16, '16:9' => 16 / 9,
+            ];
+            $srcInfo = @getimagesizefromstring((string)$decoded);
+            $targetRatio = (is_array($srcInfo) && $srcInfo[0] > 0 && $srcInfo[1] > 0)
+                ? $srcInfo[0] / $srcInfo[1]
+                : ($ah > 0 ? $aw / $ah : 1.0);
+            $qwenRatio = '1:1'; $qwenDistance = PHP_FLOAT_MAX;
+            foreach ($qwenAllowed as $label => $value) {
+                $current = abs($targetRatio - $value);
+                if ($current < $qwenDistance) { $qwenDistance = $current; $qwenRatio = $label; }
+            }
+
+            $payload = [
+                'model'         => $selectedModel['model'],
+                'prompt'        => $fullPrompt,
+                'resolution'    => '1K',
+                'aspect_ratio'  => $qwenRatio,
+                'n'             => 1,
+                'output_format' => 'png',
+            ];
+            $payload['input_references'] = [[
+                'type' => 'image_url',
+                'image_url' => ['url' => 'data:image/jpeg;base64,' . $subject],
+            ]];
+
+            // Qwen Image 3 Pro tarda ~100s/imagen y nginx corta la conexion a
+            // los ~55s: se mantiene viva con pings (curl_multi + espacios +
+            // flush) y el resultado se cachea en qwen_cache/ (carpeta de la
+            // app: sys_get_temp_dir() NO persiste entre peticiones en Hostinger).
+            $cacheKey = hash('sha256', $selectedModel['model'] . '|' . $fullPrompt . '|' . $subject . '|' . $qwenRatio);
+            $cacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+            if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+            $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
+            $lockFile = $cacheFile . '.lock';
+
+            if (is_file($cacheFile)) {
+                $cached = json_decode((string)@file_get_contents($cacheFile), true);
+                if (is_array($cached) && !empty($cached['b64'])) {
+                    $info = @getimagesizefromstring((string)base64_decode($cached['b64']));
+                    echo json_encode([
+                        'success'  => true,
+                        'imageUrl' => 'data:image/png;base64,' . $cached['b64'],
+                        'coste'    => 0,
+                        'modelo'   => $reqModel,
+                        'width'    => (int)($info[0] ?? $w),
+                        'height'   => (int)($info[1] ?? $h),
+                    ]);
+                    exit;
+                }
+            }
+            if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+                http_response_code(202);
+                echo json_encode(['status' => 'processing']);
+                exit;
+            }
+
+            ignore_user_abort(true);
+            set_time_limit(180);
+            @file_put_contents($lockFile, (string)time());
+            register_shutdown_function(static function () use ($lockFile, $cacheFile) {
+                // Si la generacion termino sin guardar caché, libera el candado.
+                if (is_file($lockFile) && !is_file($cacheFile)) @unlink($lockFile);
+            });
+
+            while (ob_get_level() > 0) { @ob_end_flush(); }
+            @ob_implicit_flush(true);
+
+            $ch = curl_init('https://openrouter.ai/api/v1/images');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => json_encode($payload),
+                CURLOPT_HTTPHEADER     => [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $orKey,
+                ],
+                CURLOPT_TIMEOUT        => 180,
+                CURLOPT_CONNECTTIMEOUT => 20,
+            ]);
+            $mh = curl_multi_init();
+            curl_multi_add_handle($mh, $ch);
+            do {
+                $mStatus = curl_multi_exec($mh, $active);
+                if ($active) {
+                    curl_multi_select($mh, 3.0);
+                    echo str_repeat(' ', 64) . "\n";
+                    @flush();
+                }
+            } while ($active && $mStatus === CURLM_OK);
+            $resp = (string)curl_multi_getcontent($ch);
+            $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $err  = curl_error($ch);
+            curl_multi_remove_handle($mh, $ch);
+            curl_multi_close($mh);
+            curl_close($ch);
+
+            if ($err) {
+                throw new Exception('Error conexión OpenRouter: ' . $err, 502);
+            }
+            $qwenResp = json_decode($resp, true);
+            if ($code >= 400) {
+                $em = is_array($qwenResp) ? ($qwenResp['error']['message'] ?? $qwenResp['error'] ?? ('HTTP ' . $code)) : ('HTTP ' . $code);
+                if (is_array($em)) $em = json_encode($em);
+                throw new Exception('OpenRouter Qwen: ' . $em, $code);
+            }
+            $imageData = is_array($qwenResp) ? (string)($qwenResp['data'][0]['b64_json'] ?? '') : '';
+            if ($imageData === '') {
+                throw new Exception('Qwen no devolvió ninguna imagen.', 502);
+            }
+
+            // Guarda el resultado: los reintentos del frontend lo recogen aunque
+            // nginx haya cortado la respuesta original por timeout.
+            @file_put_contents($cacheFile, json_encode(['b64' => $imageData]));
+            @unlink($lockFile);
+
+            $info = @getimagesizefromstring((string)base64_decode($imageData));
+            echo json_encode([
+                'success'  => true,
+                'imageUrl' => 'data:image/png;base64,' . $imageData,
+                'coste'    => 0,
+                'modelo'   => $reqModel,
+                'width'    => (int)($info[0] ?? $w),
+                'height'   => (int)($info[1] ?? $h),
             ]);
             exit;
         }

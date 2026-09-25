@@ -105,7 +105,7 @@
                         <textarea id="jsonBox" class="json-box" spellcheck="false"
                             placeholder="Aquí aparecerá el JSON del estilo cuando subas la imagen de referencia..."
                             readonly></textarea>
-                        <button class="btn-reanalyze hidden" id="btnReanalyze">Reanalizar estilo</button>
+                        <button class="btn-reanalyze hidden" id="btnReanalyze" aria-describedby="model-tooltip" data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato">Reanalizar estilo</button>
                     </div>
 
                     <!-- FILA 2 · CENTRO: INSTRUCCIONES EXTRA -->
@@ -194,6 +194,13 @@
                                     <div class="model-toggle-group">
             <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>
             <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>
+                                    </div>
+                                </div>
+                                <div class="model-provider-column">
+                                    <span class="model-provider-title">QWEN</span>
+                                    <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+                                    <div class="model-toggle-group">
+            <button type="button" id="model-qwen-pro" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>
                                     </div>
                                 </div>
                             </div>
@@ -287,7 +294,7 @@
     <!-- Tooltip de modelos (popup hover) -->
 <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
 <script src="history-manager.js?v=5"></script>
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
 </body>
 
 </html>

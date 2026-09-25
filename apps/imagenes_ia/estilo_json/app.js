@@ -95,7 +95,8 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
 };
 const state = {
     styleImage: null,     // { data(b64 puro), mimeType, preview(dataURL) }
@@ -180,7 +181,7 @@ async function init() {
                 modelTooltip.style.left = left + 'px';
                 modelTooltip.style.top = top + 'px';
             };
-            document.querySelectorAll('.model-toggle').forEach((button) => {
+            document.querySelectorAll('[data-tooltip]').forEach((button) => {
                 button.addEventListener('mouseenter', () => showModelTooltip(button));
                 button.addEventListener('mouseleave', hideModelTooltip);
                 button.addEventListener('focus', () => showModelTooltip(button));
@@ -290,6 +291,8 @@ function removeSubject() {
 
 // ═══════════════════════════════════════════════
 // PASO 1: ANALIZAR ESTILO -> JSON (automático)
+// El análisis de texto/visión lo hace MIMO 2.6 PRO (xiaomi/mimo-v2.6-pro)
+// vía OpenRouter en el proxy (Gemini gemini-3.8-flash solo como documentación).
 // ═══════════════════════════════════════════════
 async function analizarEstilo() {
     if (!state.styleImage) { showError('Sube primero una imagen de estilo'); return; }
