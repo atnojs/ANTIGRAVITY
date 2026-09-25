@@ -447,7 +447,8 @@ const MODEL_LABELS = {
     'openai-high': 'HIGH',
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
-    'openai-max-sunburst': 'MAX SUNBURST'
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'qwen-pro': 'QWEN 3 PRO'
 };
 
 // Tooltips del selector de modelos (popup hover)
@@ -458,7 +459,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
 const ModelSelector = ({ selectedModel, onChange, disabled }) => (
@@ -551,6 +553,22 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                         aria-describedby="model-tooltip"
                         data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-pro'] || ''}
                     >{MODEL_LABELS['gemini-pro']}</button>
+                </div>
+            </div>
+            <div>
+                <span className="model-provider-title block">QWEN</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                    <button
+                        type="button"
+                        onClick={() => onChange('qwen-pro')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'qwen-pro'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'qwen-pro'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['qwen-pro'] || ''}
+                    >{MODEL_LABELS['qwen-pro']}</button>
                 </div>
             </div>
         </div>
