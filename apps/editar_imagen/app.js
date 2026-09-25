@@ -20,7 +20,8 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
 };
 
 let currentModel = 'openai-medium';
@@ -131,16 +132,36 @@ const PROXY_URL = './proxy.php';
 
 const callProxy = async (model, contents, config = {}) => {
     const payload = { model, contents, ...config };
-    const response = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Error ${response.status}: ${text}`);
+    // qwen-pro tarda más que el timeout de nginx (~55s): el proxy guarda el
+    // resultado en qwen_cache/ y responde 'processing' hasta que termina.
+    const slowModel = payload.model === 'qwen-pro';
+    const maxAttempts = slowModel ? 36 : 1;
+    let lastError = 'Sin respuesta del modelo.';
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            const response = await fetch(PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const raw = await response.text();
+            let json = null;
+            try { json = JSON.parse(raw); } catch (e) {}
+            if (json && json.status === 'processing') {
+                lastError = 'Generando...';
+            } else if (response.ok) {
+                return json;
+            } else {
+                lastError = `Error ${response.status}: ${raw}`;
+                if (!slowModel || response.status < 500) throw new Error(lastError);
+            }
+        } catch (e) {
+            if (!slowModel) throw e;
+            lastError = (e && e.message) || lastError;
+        }
+        if (attempt < maxAttempts - 1) await new Promise(res => setTimeout(res, 5000));
     }
-    return await response.json();
+    throw new Error(lastError);
 };
 
 const enhancePrompt = async (basePrompt) => {
@@ -168,7 +189,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-3.8-flash', contents, config);
+        const result = await callProxy('xiaomi/mimo-v2.6-pro', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -621,6 +642,8 @@ const App = () => {
                                         onClick={handleEnhance}
                                         disabled={isEnhancing || !prompt.trim()}
                                         title="mejorar prompt con IA"
+                                        aria-describedby="model-tooltip"
+                                        data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato"
                                         className="absolute bottom-4 right-4 p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl hover:bg-cyan-500/30 transition-all z-30"
                                     >
                                         {isEnhancing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
@@ -693,7 +716,8 @@ const App = () => {
                                 <div className="grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
                                     {[
                                       { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
-                                      { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] }
+                                      { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
+                                      { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] }
                                     ].map(group => (
                                       <div key={group.provider}>
                                         <span className="model-provider-title block text-center mb-1">{group.provider}</span>
@@ -707,6 +731,7 @@ const App = () => {
                                               className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === m.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
                                               aria-pressed={selectedModel === m.id}
                                               aria-describedby="model-tooltip"
+                                              data-model={m.id}
                                               data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
                                             >{m.name}</button>
                                           ))}
@@ -818,11 +843,12 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
 };
 
 root.render(<App />);
 
 /* === Tooltip de modelos: lógica delegada (kit canónico) === */
-(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
 
 
