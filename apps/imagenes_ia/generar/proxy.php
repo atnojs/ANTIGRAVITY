@@ -1,5 +1,8 @@
 <?php
-// Proxy Gemini (texto/visión, clave A). §6: gemini-3.8-flash.
+// Proxy Gemini (texto/visión, clave A). §6: modelo de texto gemini-3.8-flash
+// (documentación: el texto real va por xiaomi/mimo-v2.6-pro vía OpenRouter;
+//  gemini-3.8-flash solo queda como modelo por defecto de la ruta de IMAGEN
+//  Google directa, que se conserva byte-idéntica).
 // La generación de imágenes va por proxy_models.php (canonical-image-model.php:
 // OpenAI 2.5 + Gemini, Otros modelos rechazados).
 declare(strict_types=1);
@@ -206,6 +209,172 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     exit;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API, sincrono)
+// Catálogo: 'qwen-pro' => ['backend'=>'qwen', 'model'=>'qwen/qwen-image-3-pro']
+// Qwen tarda ~100s/imagen y nginx corta la conexion a los ~55s: se
+// mantiene viva con pings (curl_multi + espacios + flush) y se guarda
+// el resultado en qwen_cache/ (carpeta de la app: sys_get_temp_dir()
+// NO persiste entre peticiones en Hostinger).
+// ══════════════════════════════════════════════════════════════════════
+$qwenCatalog = ['qwen-pro' => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro']];
+$qwenReqModel = strtolower((string)($req['model'] ?? ''));
+if (isset($qwenCatalog[$qwenReqModel])) {
+    $qwenKey = getKey('R');
+    if ($qwenKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']]);
+        exit;
+    }
+
+    $qwenPrompt = trim((string)($req['prompt'] ?? ''));
+    if ($qwenPrompt === '' && isset($req['contents'][0]['parts'])) {
+        foreach ($req['contents'][0]['parts'] as $qwenPart) {
+            if (!empty($qwenPart['text'])) { $qwenPrompt = trim((string)$qwenPart['text']); break; }
+        }
+    }
+    if ($qwenPrompt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Falta el prompt.']]);
+        exit;
+    }
+
+    $qwenImagen = isset($req['imagen']) ? (string)$req['imagen'] : '';
+    if ($qwenImagen === '' && isset($req['contents'][0]['parts'])) {
+        foreach ($req['contents'][0]['parts'] as $qwenPart) {
+            if (!empty($qwenPart['inlineData']['data'])) { $qwenImagen = (string)$qwenPart['inlineData']['data']; break; }
+        }
+    }
+    $qwenMime = 'image/jpeg';
+    $qwenB64 = $qwenImagen;
+    if (strpos($qwenB64, 'data:') === 0 && strpos($qwenB64, ',') !== false) {
+        if (preg_match('#^data:(image/[a-z0-9.+-]+);#i', $qwenB64, $qwenM)) { $qwenMime = strtolower($qwenM[1]); }
+        $qwenB64 = substr($qwenB64, strpos($qwenB64, ',') + 1);
+    }
+
+    // Qwen solo admite un set fijo de proporciones: se elige la mas cercana
+    // a la imagen fuente (nunca se finge una proporcion inexistente).
+    $qwenAllowed = [
+        '1:1' => 1.0, '1:2' => 1 / 2, '1:4' => 1 / 4, '2:1' => 2.0,
+        '2:3' => 2 / 3, '3:2' => 3 / 2, '3:4' => 3 / 4, '4:1' => 4.0,
+        '4:3' => 4 / 3, '4:5' => 4 / 5, '5:4' => 5 / 4,
+        '9:16' => 9 / 16, '16:9' => 16 / 9,
+    ];
+    $qwenTarget = 1.0;
+    $qwenInfo = $qwenB64 !== '' ? @getimagesizefromstring((string)base64_decode($qwenB64)) : false;
+    if (is_array($qwenInfo) && $qwenInfo[0] > 0 && $qwenInfo[1] > 0) {
+        $qwenTarget = $qwenInfo[0] / $qwenInfo[1];
+    } else {
+        $qwenParts = explode(':', (string)($req['aspectRatio'] ?? '1:1'));
+        $qwenRW = max(1.0, (float)($qwenParts[0] ?? 1));
+        $qwenRH = max(1.0, (float)($qwenParts[1] ?? 1));
+        $qwenTarget = $qwenRW / $qwenRH;
+    }
+    $qwenRatio = '1:1'; $qwenDistance = PHP_FLOAT_MAX;
+    foreach ($qwenAllowed as $qwenLabel => $qwenValue) {
+        $qwenCurrent = abs($qwenTarget - $qwenValue);
+        if ($qwenCurrent < $qwenDistance) { $qwenDistance = $qwenCurrent; $qwenRatio = $qwenLabel; }
+    }
+
+    $qwenPayload = [
+        'model'         => $qwenCatalog[$qwenReqModel]['model'],
+        'prompt'        => $qwenPrompt,
+        'resolution'    => '1K',
+        'aspect_ratio'  => $qwenRatio,
+        'n'             => 1,
+        'output_format' => 'png',
+    ];
+    if ($qwenB64 !== '') {
+        $qwenPayload['input_references'] = [[
+            'type' => 'image_url',
+            'image_url' => ['url' => 'data:' . $qwenMime . ';base64,' . $qwenB64],
+        ]];
+    }
+
+    $qwenCacheKey = hash('sha256', $qwenPayload['model'] . '|' . $qwenPrompt . '|' . $qwenB64 . '|' . $qwenRatio);
+    $qwenCacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+    if (!is_dir($qwenCacheDir)) @mkdir($qwenCacheDir, 0755, true);
+    $qwenCacheFile = $qwenCacheDir . DIRECTORY_SEPARATOR . 'qwen_' . $qwenCacheKey . '.json';
+    $qwenLockFile = $qwenCacheFile . '.lock';
+
+    if (is_file($qwenCacheFile)) {
+        $qwenCached = json_decode((string)@file_get_contents($qwenCacheFile), true);
+        if (is_array($qwenCached) && !empty($qwenCached['b64'])) {
+            echo json_encode(['success' => true, 'imageUrl' => 'data:image/png;base64,' . $qwenCached['b64'], 'model' => 'qwen-pro', 'modelo' => 'qwen-pro']);
+            exit;
+        }
+    }
+    if (is_file($qwenLockFile) && (time() - (int)@filemtime($qwenLockFile)) < 300) {
+        http_response_code(202);
+        echo json_encode(['status' => 'processing']);
+        exit;
+    }
+
+    ignore_user_abort(true);
+    set_time_limit(180);
+    @file_put_contents($qwenLockFile, (string)time());
+    register_shutdown_function(static function () use ($qwenLockFile, $qwenCacheFile) {
+        // Si la generacion termino sin guardar cache, libera el candado.
+        if (is_file($qwenLockFile) && !is_file($qwenCacheFile)) @unlink($qwenLockFile);
+    });
+
+    while (ob_get_level() > 0) { @ob_end_flush(); }
+    @ob_implicit_flush(true);
+
+    $qwenCh = curl_init('https://openrouter.ai/api/v1/images');
+    curl_setopt_array($qwenCh, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($qwenPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $qwenKey,
+        ],
+        CURLOPT_TIMEOUT        => 180,
+        CURLOPT_CONNECTTIMEOUT => 20,
+    ]);
+    $qwenMh = curl_multi_init();
+    curl_multi_add_handle($qwenMh, $qwenCh);
+    do {
+        $qwenMStatus = curl_multi_exec($qwenMh, $qwenActive);
+        if ($qwenActive) {
+            curl_multi_select($qwenMh, 3.0);
+            echo str_repeat(' ', 64) . "\n";
+            @flush();
+        }
+    } while ($qwenActive && $qwenMStatus === CURLM_OK);
+    $qwenResp = (string)curl_multi_getcontent($qwenCh);
+    $qwenCode = (int)curl_getinfo($qwenCh, CURLINFO_HTTP_CODE);
+    $qwenErr  = curl_error($qwenCh);
+    curl_multi_remove_handle($qwenMh, $qwenCh);
+    curl_multi_close($qwenMh);
+    curl_close($qwenCh);
+
+    if ($qwenErr) {
+        echo json_encode(['error' => ['message' => 'Error conexion OpenRouter: ' . $qwenErr]]);
+        exit;
+    }
+    $qwenJson = json_decode($qwenResp, true);
+    if ($qwenCode >= 400) {
+        $qwenMsg = is_array($qwenJson) ? ($qwenJson['error']['message'] ?? $qwenJson['error'] ?? ('HTTP ' . $qwenCode)) : ('HTTP ' . $qwenCode);
+        if (is_array($qwenMsg)) $qwenMsg = json_encode($qwenMsg);
+        echo json_encode(['error' => ['message' => 'OpenRouter Qwen: ' . $qwenMsg]]);
+        exit;
+    }
+    $qwenImage = is_array($qwenJson) ? (string)($qwenJson['data'][0]['b64_json'] ?? '') : '';
+    if ($qwenImage === '') {
+        echo json_encode(['error' => ['message' => 'Qwen no devolvio imagen.']]);
+        exit;
+    }
+
+    // Guarda el resultado: los reintentos del frontend lo recogen aunque
+    // nginx haya cortado la respuesta original por timeout.
+    @file_put_contents($qwenCacheFile, json_encode(['b64' => $qwenImage]));
+    @unlink($qwenLockFile);
+    echo json_encode(['success' => true, 'imageUrl' => 'data:image/png;base64,' . $qwenImage, 'model' => 'qwen-pro', 'modelo' => 'qwen-pro']);
+    exit;
+}
+
 // ── Detección texto vs imagen — el texto va por xiaomi/mimo-v2.6-pro vía OpenRouter ──
 $genCfg = [];
 if (isset($req['generationConfig']) && is_array($req['generationConfig'])) { $genCfg = $req['generationConfig']; }
@@ -219,7 +388,7 @@ if (!$wantsImageOut && !isset($req['contents']) && !isset($req['payload']) && is
     $wantsImageOut = true;
 }
 
-// Modelo
+// Modelo (el default solo aplica a la ruta de IMAGEN Google directa, intacta)
 $model = (string)($req['model'] ?? 'gemini-3.8-flash');
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 

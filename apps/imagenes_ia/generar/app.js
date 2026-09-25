@@ -311,7 +311,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-3.8-flash', contents, config);
+        const result = await callProxy('xiaomi/mimo-v2.6-pro', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -323,7 +323,9 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
 const IMAGE_PROXY_URL = './proxy_models.php';
 
 const callModelImage = async ({ prompt, aspectRatio, sourceImage, targetPx = 1024, resolution = '1K' }) => {
-    const response = await fetch(IMAGE_PROXY_URL, {
+    // Qwen va por proxy.php (keepalive + qwen_cache/); el resto por proxy_models.php
+    const isQwen = (window.selectedModel || '') === 'qwen-pro';
+    const response = await fetch(isQwen ? PROXY_URL : IMAGE_PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -472,6 +474,8 @@ const StructuredPromptFields = ({ fields, onChange, onEnhance, isEnhancing, isGe
                 disabled={isEnhancing || isGenerating || !hasAnyValue}
                 title="mejorar prompt con IA"
                 aria-label="Mejorar los campos del prompt con IA"
+                aria-describedby="model-tooltip"
+                data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato"
                 className="structured-enhance-button"
             >
                 {isEnhancing ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
@@ -908,14 +912,15 @@ const App = () => {
                               <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
                                 {[
                                   { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-xhigh', 'XHIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-max-sunburst', 'MAX SUNBURST']] },
-                                  { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                                  { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] },
+                                  { provider: 'QWEN', models: [['qwen-pro', 'QWEN 3 PRO']] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
                                     <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
-                                    <span className="model-quality-hint" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem', ...(group.provider === 'GEMINI' ? { visibility: 'hidden' } : {}) }}>De Menor a Mayor Calidad</span>
+                                    <span className="model-quality-hint" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem', ...(group.provider === 'OPENAI 2.5' ? {} : { visibility: 'hidden' }) }}>De Menor a Mayor Calidad</span>
                                     <div className="model-toggle-group" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                                       {group.models.map(([id, name]) => (
-                                        <button type="button" key={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS[id] || ''}
+                                        <button type="button" key={id} data-model={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS[id] || ''}
                                           className={`model-toggle ${selectedModel === id ? 'active' : ''}`}>{name}</button>
                                       ))}
                                     </div>
@@ -1029,11 +1034,12 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
 
-(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
 
