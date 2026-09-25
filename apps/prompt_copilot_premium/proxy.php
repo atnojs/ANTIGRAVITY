@@ -532,9 +532,9 @@ if ($apiKey === null) {
 }
 
 $modelMap = [
-    'rapido' => 'openai/gpt-4o-mini',
-    'profesional' => 'openai/gpt-4o',
-    'exhaustivo' => 'openai/gpt-4o',
+    'rapido' => 'xiaomi/mimo-v2.6-pro',
+    'profesional' => 'xiaomi/mimo-v2.6-pro',
+    'exhaustivo' => 'xiaomi/mimo-v2.6-pro',
 ];
 $tokenMap = [
     'rapido' => 2000,
