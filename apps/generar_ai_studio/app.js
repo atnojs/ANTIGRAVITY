@@ -40,9 +40,10 @@
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
   };
-  const MODEL_ORDER = ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst', 'gemini-flash', 'gemini-pro'];
+  const MODEL_ORDER = ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst', 'gemini-flash', 'gemini-pro', 'qwen-pro'];
 
   function renderModelButtons() {
     document.querySelectorAll('.model-toggle').forEach(btn => {
@@ -356,7 +357,7 @@
       const data = await callProxy('optimize', {
         prompt: prompt,
         style: getActiveStyleName(),
-        model: 'gemini-3.8-flash'
+        model: 'xiaomi/mimo-v2.6-pro'
       });
 
       // Gemini returns candidates[0].content.parts[0].text
@@ -439,7 +440,7 @@
       const tagData = await callProxy('generate', {
         prompt: prompt,
         style: styleName,
-        model: 'gemini-3.8-flash'
+        model: 'xiaomi/mimo-v2.6-pro'
       });
       if (tagData.candidates?.[0]?.content?.parts?.[0]?.text) {
         try {
@@ -1206,6 +1207,12 @@
               <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
             </div>
           </div>
+          <div class="model-provider-column">
+            <span class="model-provider-title">QWEN</span>
+            <div class="model-toggle-group">
+              <button type="button" class="model-toggle" data-model="qwen-pro" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible" aria-pressed="false">QWEN 3 PRO</button>
+            </div>
+          </div>
         </div>
       </div>
       <div style="margin-bottom:1.5rem;">
@@ -1497,6 +1504,8 @@
         button.addEventListener('blur', hideModelTooltip);
       };
       document.querySelectorAll('.model-toggle').forEach(bindModelTooltipEvents);
+      // Botones de análisis/descripción (MIMO) fuera del selector
+      document.querySelectorAll('[data-tooltip]:not(.model-toggle)').forEach(bindModelTooltipEvents);
       // El sheet móvil re-renderiza sus botones: delegación para cubrirlos también
       document.addEventListener('mouseenter', (e) => {
         const btn = e.target.closest ? e.target.closest('.model-toggle') : null;
