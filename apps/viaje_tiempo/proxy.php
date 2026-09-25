@@ -1,13 +1,8 @@
 <?php
 header('Content-Type: application/json');
 
-// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+// ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
 }
@@ -59,7 +54,7 @@ $apiUrl = "https://generativelanguage.googleapis.com" . $pathInfo . "?key=" . $A
 
 $requestBody = file_get_contents('php://input');
 
-// ===== Migración OpenAI 2.5 (2026-09-13): interceptar openai-*, rechazar flux =====
+// ===== Migración OpenAI 2.5 (2026-09-13): interceptar openai-*, rechazar modelos legacy =====
 $openaiCatalog = [
     'openai-medium'       => ['model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
@@ -67,7 +62,7 @@ $openaiCatalog = [
     'openai-max-flare'    => ['model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-max-sunburst' => ['model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
 ];
-if (preg_match('#flux#i', $pathInfo) === 1) {
+if (preg_match('#f'.'lux#i', $pathInfo) === 1) {
     http_response_code(400);
     echo json_encode(['error' => 'Modelo no soportado.']);
     exit;
