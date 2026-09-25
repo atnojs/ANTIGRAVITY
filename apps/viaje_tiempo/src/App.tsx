@@ -168,6 +168,22 @@ interface TravelEntry {
   createdAt: any;
 }
 
+// --- Selector de modelo (migración 2026-09-13: OpenAI 2.5 + Gemini) ---
+const MODEL_OPTIONS: { id: string; label: string; group: string }[] = [
+  { id: 'openai-medium', label: 'MEDIUM', group: 'OPENAI 2.5' },
+  { id: 'openai-high', label: 'HIGH', group: 'OPENAI 2.5' },
+  { id: 'openai-xhigh', label: 'XHIGH', group: 'OPENAI 2.5' },
+  { id: 'openai-max-flare', label: 'MAX FLARE', group: 'OPENAI 2.5' },
+  { id: 'openai-max-sunburst', label: 'MAX SUNBURST', group: 'OPENAI 2.5' },
+  { id: 'gemini-flash', label: '3.1 FLASH', group: 'GEMINI' },
+  { id: 'gemini-pro', label: '3 PRO', group: 'GEMINI' },
+];
+const GEMINI_IMAGE_MODELS: Record<string, string> = {
+  'gemini-flash': 'gemini-3.1-flash-image-preview',
+  'gemini-pro': 'gemini-3-pro-image-preview',
+};
+const TEXT_VISION_MODEL = 'gemini-3.8-flash';
+
 // --- Components ---
 
 export default function App() {
@@ -176,6 +192,7 @@ export default function App() {
   const [view, setView] = useState<'home' | 'booth' | 'gallery'>('home');
   const [selectedScene, setSelectedScene] = useState(HISTORICAL_SCENES[0]);
   const [selectedAR, setSelectedAR] = useState<'1:1' | '3:4' | '4:3' | '9:16' | '16:9'>('1:1');
+  const [selectedModel, setSelectedModel] = useState('openai-medium');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [travels, setTravels] = useState<TravelEntry[]>([]);
@@ -353,9 +370,9 @@ export default function App() {
       });
       const base64Data = capturedImage.split(',')[1];
 
-      // Step 1: Analyze the original photo with gemini-2.5-flash-image (modelo verificado del proyecto)
+      // Step 1: Analyze the original photo with gemini-3.8-flash (§6 visión)
       const analysisResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model: TEXT_VISION_MODEL,
         contents: {
           parts: [
             {
@@ -376,9 +393,9 @@ export default function App() {
         throw new Error("La IA no pudo analizar la imagen original.");
       }
 
-      // Step 2: Generate TWO distinct prompts for variety
+      // Step 2: Generate TWO distinct prompts for variety (§6 texto)
       const promptResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model: TEXT_VISION_MODEL,
         contents: `Based on this person's analysis: "${analysisText}", and the historical scene "${selectedScene.name}" (${selectedScene.era}), 
                    generate TWO distinct and detailed image generation prompts. 
                    The prompts should describe the person as a character in that era, maintaining their likeness but changing clothing and background.
@@ -396,29 +413,55 @@ export default function App() {
 
       // Step 3: Generate TWO historical photos using the dynamic prompts
       const generateImage = async (index: number) => {
-        const generationResponse = await ai.models.generateContent({
-          model: 'gemini-2.5-flash-image',
-          contents: {
-            parts: [
-              {
-                inlineData: {
-                  data: base64Data,
-                  mimeType: 'image/jpeg'
-                }
-              },
-              {
-                text: `${dynamicPrompts[index]} 
+        const textInstruction = `${dynamicPrompts[index]} 
                        Ensure the person's unique facial features, expression, and pose from the original photo are preserved exactly. 
-                       The aspect ratio must be ${selectedAR}.`
-              }
-            ]
-          },
-          config: {
-            imageConfig: {
-              aspectRatio: selectedAR
-            }
+                       The aspect ratio must be ${selectedAR}.`;
+
+        let generationResponse: any;
+        if (selectedModel.startsWith('openai-')) {
+          // Backend OpenAI 2.5 vía proxy (devuelve JSON con forma Gemini generateContent)
+          const apiBase = window.location.pathname.replace(/\/$/, '') + '/api';
+          const res = await fetch(`${apiBase}/v1beta/models/${selectedModel}:generateContent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: {
+                parts: [
+                  { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
+                  { text: textInstruction }
+                ]
+              },
+              config: { imageConfig: { aspectRatio: selectedAR } }
+            })
+          });
+          const payload = await res.json();
+          if (!res.ok) {
+            throw new Error(payload?.error?.message || `OpenAI HTTP ${res.status}`);
           }
-        });
+          generationResponse = payload;
+        } else {
+          generationResponse = await ai.models.generateContent({
+            model: GEMINI_IMAGE_MODELS[selectedModel] || 'gemini-3.1-flash-image-preview',
+            contents: {
+              parts: [
+                {
+                  inlineData: {
+                    data: base64Data,
+                    mimeType: 'image/jpeg'
+                  }
+                },
+                {
+                  text: textInstruction
+                }
+              ]
+            },
+            config: {
+              imageConfig: {
+                aspectRatio: selectedAR
+              }
+            }
+          });
+        }
 
         if (!generationResponse.candidates?.[0]?.content?.parts) {
           throw new Error(`La IA no devolvió ninguna imagen para la variación ${index + 1}.`);
@@ -726,7 +769,32 @@ export default function App() {
                       ) : (
                         <div className="space-y-8">
                           <h3 className="text-3xl font-light">¿Confirmar imagen?</h3>
-                          <div className="flex gap-4">
+                          <div className="space-y-4">
+                            <h4 className="text-xs uppercase tracking-widest text-zinc-500">Modelo de Imagen</h4>
+                            {['OPENAI 2.5', 'GEMINI'].map((group) => (
+                              <div key={group} className="flex flex-col items-center gap-2">
+                                <span className={cn("text-[10px] uppercase tracking-widest", group === 'OPENAI 2.5' ? 'text-orange-400/80' : 'text-cyan-400/80')}>{group}</span>
+                                <div className="flex flex-wrap justify-center gap-2">
+                                  {MODEL_OPTIONS.filter((o) => o.group === group).map((option) => (
+                                    <button
+                                      key={option.id}
+                                      onClick={() => setSelectedModel(option.id)}
+                                      className={cn(
+                                        "px-3 py-1.5 rounded-full border text-[11px] font-medium transition-all",
+                                        selectedModel === option.id
+                                          ? "border-orange-500 bg-orange-500 text-white"
+                                          : "border-white/15 bg-white/5 text-zinc-300 hover:border-white/30"
+                                      )}
+                                      aria-pressed={selectedModel === option.id}
+                                    >
+                                      {option.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex gap-4 justify-center">
                             <button 
                               onClick={() => {
                                 setCapturedImage(null);
