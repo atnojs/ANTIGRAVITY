@@ -53,7 +53,8 @@ const MODELS = [
     { id: 'openai-max-flare', label: 'MAX FLARE' },
     { id: 'openai-max-sunburst', label: 'MAX SUNBURST' },
     { id: 'gemini-flash', label: '3.1 FLASH' },
-    { id: 'gemini-pro', label: '3 PRO' }
+    { id: 'gemini-pro', label: '3 PRO' },
+    { id: 'qwen-pro', label: 'QWEN 3 PRO' }
 ];
 const getModelLabel = (m) => (MODELS.find(x => x.id === m) || {}).label || m || '—';
 
@@ -456,7 +457,8 @@ const App = () => {
                         <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                             {[
                                 { provider: 'OPENAI 2.5', ids: ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'] },
-                                { provider: 'GEMINI', ids: ['gemini-flash', 'gemini-pro'] }
+                                { provider: 'GEMINI', ids: ['gemini-flash', 'gemini-pro'] },
+                                { provider: 'QWEN', ids: ['qwen-pro'] }
                             ].map(group => (
                                 <div className="model-provider-column" key={group.provider}>
                                     <span className="model-provider-title">{group.provider}</span>
@@ -521,6 +523,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
