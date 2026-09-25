@@ -740,12 +740,15 @@ textarea:focus-visible {
   border-color:var(--border-strong);box-shadow:0 0 18px var(--glow);
 }
 
-/* Layout en filas: OPENAI arriba, GEMINI debajo */
+/* Layout en filas: OPENAI arriba, GEMINI+QWEN juntos en una fila debajo */
 .model-provider-layout{
   display:flex;flex-direction:column;gap:.8rem;width:100%;max-width:100%;
 }
+.model-provider-row{
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:.8rem 1.4rem;width:100%;max-width:100%;
+}
 .model-provider-column{
-  display:flex;flex-direction:column;align-items:center;gap:.35rem;width:100%;max-width:100%;
+  display:flex;flex-direction:column;align-items:center;gap:.35rem;width:auto;min-width:0;
 }
 .model-provider-title{
   color:var(--muted);font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase;

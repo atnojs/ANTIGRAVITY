@@ -1001,27 +1001,33 @@ const App = () => {
                               <span className="model-selector-label">Modelo IA</span>
                               <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                                 {[
-                                  { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
-                                  { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
-                                  { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] }
-                                ].map(group => (
-                                  <div className="model-provider-column" key={group.provider}>
-                                    <span className="model-provider-title btn-canon">{group.provider}</span>
-                                    {group.provider === 'OPENAI 2.5' && <span className="model-quality-hint">De Menor a Mayor Calidad</span>}
-                                    <div className="model-toggle-group">
-                                      {group.models.map(m => (
-                                        <button
-                                          type="button"
-                                          key={m.id}
-                                          onClick={() => setSelectedModel(m.id)}
-                                          className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
-                                          aria-pressed={selectedModel === m.id}
-                                          aria-describedby="model-tooltip"
-                                          data-model={m.id}
-                                          data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
-                                        >{m.name}</button>
-                                      ))}
-                                    </div>
+                                  [{ provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] }],
+                                  [
+                                    { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
+                                    { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] }
+                                  ]
+                                ].map((row, rowIndex) => (
+                                  <div className="model-provider-row" key={rowIndex}>
+                                    {row.map(group => (
+                                      <div className="model-provider-column" key={group.provider}>
+                                        <span className="model-provider-title btn-canon">{group.provider}</span>
+                                        {group.provider === 'OPENAI 2.5' && <span className="model-quality-hint">De Menor a Mayor Calidad</span>}
+                                        <div className="model-toggle-group">
+                                          {group.models.map(m => (
+                                            <button
+                                              type="button"
+                                              key={m.id}
+                                              onClick={() => setSelectedModel(m.id)}
+                                              className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
+                                              aria-pressed={selectedModel === m.id}
+                                              aria-describedby="model-tooltip"
+                                              data-model={m.id}
+                                              data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                            >{m.name}</button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
                                 ))}
                               </div>
