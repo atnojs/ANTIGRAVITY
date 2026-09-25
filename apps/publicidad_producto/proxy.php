@@ -30,13 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ===== API KEY: config.php + cascade (patrón dibujo_lineas) =====
+// ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $API_KEY = defined('A') ? A : '';
-}
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
 }
@@ -83,7 +78,7 @@ if ($openaiKey === '') {
     }
 }
 
-// ===== Lista blanca exacta de modelos de imagen (FLUX fuera) =====
+// ===== Lista blanca exacta de modelos de imagen (lista cerrada) =====
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
