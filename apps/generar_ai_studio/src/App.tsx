@@ -505,7 +505,7 @@ export default function App() {
                       <span className="text-emerald-400">CONECTADO</span>
                     </div>
                     <p className="text-[10px] text-slate-500 leading-relaxed font-sans">
-                      AuraStudio se conecta al servidor a través de la API oficial de Gemini (con el modelo solicitado <code className="text-xs bg-black/40 px-1 py-0.5 rounded text-[#EC4899] font-mono">gemini-2.5-flash-image</code>) para optimizar tus prompts y generar etiquetas.
+                      AuraStudio se conecta al servidor a través de la API oficial de Gemini (con el modelo solicitado <code className="text-xs bg-black/40 px-1 py-0.5 rounded text-[#EC4899] font-mono">gemini-3.1-flash-image-preview</code>) para optimizar tus prompts y generar etiquetas.
                     </p>
                   </div>
                 </div>
