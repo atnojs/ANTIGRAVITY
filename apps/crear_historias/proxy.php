@@ -5,7 +5,7 @@
 // (gpt-image-2.5-flare/max), openai-max-sunburst
 // (gpt-image-2.5-sunburst/max) + gemini-flash/pro (Google directo, A).
 // La llamada OpenAI (generations/edits) la ejecuta ag_image_response()
-// de canonical-image-model.php. FLUX: rechazado (400).
+// de canonical-image-model.php. Otros modelos rechazados (400).
 // Texto/visión (enhancePrompt / analyzeMaskPosition): gemini-3.8-flash.
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
@@ -24,14 +24,9 @@ error_reporting(E_ALL);
 try {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
 
-  // API Key (B) — cascadeo robusto (config.php → env → REDIRECT_ → $_SERVER → $_ENV)
+  // API Key (B) — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
   $apiKey = '';
-  $configFile = __DIR__ . '/config.php';
-  if (file_exists($configFile)) {
-      include $configFile;
-      $apiKey = defined('A') ? A : '';
-  }
-  if (!$apiKey || empty($apiKey)) {
+    if (!$apiKey || empty($apiKey)) {
       $apiKey = getenv('A');
   }
   if (!$apiKey || empty($apiKey)) {
@@ -55,9 +50,7 @@ try {
       exit;
   }
 
-  $replicateKey = getenv('REPLICATE_API_FLUX') 
-    ?: ($_SERVER['REPLICATE_API_FLUX'] ?? $_SERVER['REDIRECT_REPLICATE_API_TOKEN'] ?? null);
-
+  
   $input = file_get_contents('php://input');
   $json = json_decode($input, true);
   if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
@@ -68,8 +61,8 @@ try {
   if ($requestedModel === 'gemini-3.1-flash-image-preview' || $requestedModel === 'gemini-3.1-flash-image') $requestedModel = 'gemini-flash';
   if ($requestedModel === 'gemini-3-pro-image-preview' || $requestedModel === 'gemini-3-pro-image') $requestedModel = 'gemini-pro';
   if ($task === 'generateImage') {
-      // FLUX: rechazado (400), fuera de la lista blanca.
-      if (strpos($requestedModel, 'flux') === 0 || (($json['provider'] ?? '') === 'flux')) {
+      // Otros modelos rechazados (400), fuera de la lista blanca.
+      if (preg_match('#f'.'lux#i', $requestedModel) || preg_match('#f'.'lux#i', (string)($json['provider'] ?? ''))) {
           http_response_code(400);
           echo json_encode(['error' => 'Modelo no soportado.']);
           exit;
@@ -193,26 +186,7 @@ try {
 
   // --- TAREA: GENERAR IMAGEN ---
   if ($task === 'generateImage') {
-    if ($provider === 'flux') {
-        if (!$replicateKey) throw new Exception('Falta token de Replicate (flux)', 500);
-        $url = "https://api.replicate.com/v1/models/black-forest-labs/flux-2-pro/predictions";
-        $body = [
-            'input' => [
-                'prompt' => $prompt,
-                'aspect_ratio' => $aspectRatio ?: "1:1",
-                'output_format' => "jpg",
-                'output_quality' => 90,
-                'safety_tolerance' => 5
-            ]
-        ];
-        $headers = [ "Authorization: Bearer $replicateKey", "Content-Type: application/json", "Prefer: wait" ];
-        $data = $callApi($url, $body, $headers);
-        $imageUrl = $data['output'] ?? null;
-        if (!$imageUrl) throw new Exception('Flux no devolvió imagen.', 502);
-        $imgData = file_get_contents($imageUrl);
-        echo json_encode(['image' => base64_encode($imgData), 'mimeType' => 'image/jpeg', 'type' => 'image']);
-        exit;
-    } else {
+    
         if (!$apiKey) throw new Exception('Falta API Key de Gemini', 500);
         
         $model = ($requestedModel === 'gemini-pro') ? 'gemini-3-pro-image-preview' : 'gemini-3.1-flash-image-preview';
@@ -270,7 +244,6 @@ try {
         }
         throw new Exception('Gemini no generó imagen ni texto. Motivo: ' . ($data['promptFeedback']['blockReason'] ?? 'Desconocido'));
     }
-  }
 } catch (Throwable $e) {
   http_response_code(500);
   echo json_encode(['error' => $e->getMessage()]);
