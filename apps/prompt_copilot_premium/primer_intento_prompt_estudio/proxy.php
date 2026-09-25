@@ -116,15 +116,8 @@ function resolveApiKey(): ?string
         }
     }
 
-    // config.php local
-    $configPath = __DIR__ . '/config.php';
-    if (is_file($configPath)) {
-        $config = require $configPath;
-        if (is_array($config) && isset($config['openrouter_api_key']) && is_string($config['openrouter_api_key']) && trim($config['openrouter_api_key']) !== '') {
-            $candidates[] = $config['openrouter_api_key'];
-        }
-    }
-
+    // .htaccess raiz local
+    
     foreach ($candidates as $candidate) {
         if (trim($candidate) !== '') {
             return trim($candidate);
@@ -305,7 +298,7 @@ function buildUserInstruction(array $input, string $detectedMode): string
         'chatgpt' => 'ChatGPT / OpenAI',
         'claude' => 'Claude',
         'gemini' => 'Gemini',
-        'image' => 'Flux u otra herramienta de imagen',
+        'image' => 'IA generativa de imágenes',
         'coding' => 'Agente de programación o herramienta de código',
     ];
 
@@ -578,7 +571,7 @@ $apiKey = resolveApiKey();
 if ($apiKey === null) {
     respond(503, [
         'ok' => false,
-        'error' => 'La app todavía no tiene configurada la clave de OpenRouter en el servidor. Añade la variable R o un config.php privado.',
+        'error' => 'La app todavía no tiene configurada la clave de OpenRouter en el servidor. Añade la variable R o un .htaccess raiz privado.',
     ]);
 }
 
