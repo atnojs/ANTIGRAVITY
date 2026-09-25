@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1); // <--- IMPORTANTE: primera lÃ­nea
 
 // ===============================
@@ -43,7 +43,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ---------- API KEY (B) — cascadeo robusto ----------
 $API_KEY = '';
-$configFile = __DIR__ . '/config.php';
 if (file_exists($configFile)) {
     include $configFile;
     $API_KEY = defined('B') ? B : '';
