@@ -15,6 +15,12 @@
     --muted: #94a3b8;                  /* Texto secundario/muted */
     --border: rgba(34, 211, 238, 0.2); /* Bordes sutiles cyan */
     --card-bg: rgba(15, 23, 42, 0.4); /* Fondo de cards/panels */
+    --contenedor: #174F7A;
+    --border-strong: #00D0D0;
+    --glow: rgba(0, 208, 208, 0.8);
+    --glow-soft: rgba(0, 208, 208, 0.4);
+    --faint: #669999;
+    --font-ui: 'Electrolize', system-ui, sans-serif;
     --shadow-color: rgba(0, 0, 0, 0.5);
 
     /* ═══════════════════════════════════════
