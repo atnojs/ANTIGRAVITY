@@ -367,6 +367,33 @@ if ($backend === 'qwen') {
         ]];
     }
 
+    // Qwen Image 3 Pro puede tardar más que el timeout de nginx (~55s):
+    // un worker genera y guarda el resultado (ignore_user_abort), y los
+    // reintentos del frontend recogen el caché o esperan con 'processing'.
+    $cacheKey = hash('sha256', $geminiModel . '|' . $prompt . '|' . $imageB64 . '|' . $qwenRatio);
+    $cacheFile = rtrim(sys_get_temp_dir(), '/\\') . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
+    $lockFile = $cacheFile . '.lock';
+
+    if (is_file($cacheFile)) {
+        $cached = json_decode((string)@file_get_contents($cacheFile), true);
+        if (is_array($cached) && !empty($cached['b64'])) {
+            sendImageResponse(base64_decode($cached['b64']), 'image/png');
+        }
+    }
+    if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+        http_response_code(202);
+        echo json_encode(['status' => 'processing']);
+        exit;
+    }
+
+    ignore_user_abort(true);
+    set_time_limit(180);
+    @file_put_contents($lockFile, (string)time());
+    register_shutdown_function(static function () use ($lockFile, $cacheFile) {
+        // Si la generación terminó sin guardar caché, libera el candado.
+        if (is_file($lockFile) && !is_file($cacheFile)) @unlink($lockFile);
+    });
+
     $ch = curl_init('https://openrouter.ai/api/v1/images');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -406,6 +433,10 @@ if ($backend === 'qwen') {
         exit;
     }
 
+    // Guarda el resultado: los reintentos del frontend lo recogen aunque
+    // nginx haya cortado la respuesta original por timeout.
+    @file_put_contents($cacheFile, json_encode(['b64' => $imageData]));
+    @unlink($lockFile);
     sendImageResponse(base64_decode($imageData), 'image/png');
 }
 
