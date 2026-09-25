@@ -137,12 +137,48 @@ Instrucción de Escena: ${p}
       <button type="button" class="story-model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
       <button type="button" class="story-model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
     </div>
+    <span style="font-size:0.6rem;letter-spacing:0.1em;color:#6b7280;text-transform:uppercase;">Qwen</span>
+    <div style="display:flex;gap:0.25rem;">
+      <button type="button" class="story-model-toggle" data-model="qwen-pro" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible" aria-pressed="false">QWEN 3 PRO</button>
+    </div>
   </div>
   <span class="model-quality-hint">De Menor a Mayor Calidad</span>
 </div>
 <script>
 (function () {
   "use strict";
+
+  // Reintentos activos para qwen-pro (más lento que el timeout de nginx,
+  // ~55s): el proxy guarda el resultado en caché y responde 'processing'
+  // mientras el worker termina de generarlo; también se reintenta si nginx
+  // corta la conexión. El resto de llamadas pasan intactas.
+  var __origFetch = window.fetch ? window.fetch.bind(window) : null;
+  if (__origFetch) {
+    window.fetch = function (input, init) {
+      var url = typeof input === 'string' ? input : (input && input.url) || '';
+      var isQwen = !!(init && typeof init.body === 'string' && init.body.indexOf('qwen-pro') !== -1);
+      if (!isQwen || url.indexOf('proxy.php') === -1) return __origFetch(input, init);
+      var attempt = 0;
+      var maxAttempts = 36;
+      var run = function () {
+        return __origFetch(input, init).then(function (res) {
+          var retryable = res.status === 202 || res.status >= 500;
+          if (!retryable || attempt >= maxAttempts) return res;
+          return res.clone().json().catch(function () { return null; }).then(function (json) {
+            if (res.status === 202 && !(json && json.status === 'processing')) return res;
+            attempt++;
+            return new Promise(function (r) { setTimeout(r, 5000); }).then(run);
+          });
+        }).catch(function (e) {
+          if (attempt >= maxAttempts) throw e;
+          attempt++;
+          return new Promise(function (r) { setTimeout(r, 5000); }).then(run);
+        });
+      };
+      return run();
+    };
+  }
+
   var MODEL_LABELS = {
     "openai-medium": "MEDIUM",
     "openai-high": "HIGH",
@@ -150,7 +186,8 @@ Instrucción de Escena: ${p}
     "openai-max-flare": "MAX FLARE",
     "openai-max-sunburst": "MAX SUNBURST",
     "gemini-flash": "3.1 FLASH",
-    "gemini-pro": "3 PRO"
+    "gemini-pro": "3 PRO",
+    "qwen-pro": "QWEN 3 PRO"
   };
   window.__storyModel = "openai-medium";
   var bar = document.getElementById("story-model-selector");
