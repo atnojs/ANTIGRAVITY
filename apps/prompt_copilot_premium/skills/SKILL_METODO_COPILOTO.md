@@ -5,7 +5,7 @@ description: Aplica el Método Copiloto de NextGen IA Hub para construir prompts
 
 # Método Copiloto — NextGen IA Hub
 
-Convertir ideas en prompts profesionales usando el proceso de 2 fases: **primero crea el prompt, después ejecútalo**. No mezclar nunca ambas fases.
+Convertir ideas en prompts profesionales, completos y ejecutables usando el proceso de 2 fases: **primero crea el prompt, después ejecútalo**. No mezclar nunca ambas fases. Cuando la idea sea breve, desarrollarla con decisiones profesionales marcadas como propuestas en lugar de devolver una plantilla superficial.
 
 ## Principio fundamental
 
@@ -17,7 +17,7 @@ No se necesita memorizar cientos de prompts. Se necesita aprender a convertir un
 
 Trabajar en **DOS FASES SEPARADAS**:
 
-1. **FASE 1 (esta conversación):** Usar la plantilla para DEFINIR y CREAR el prompt. Hacer preguntas, detectar huecos. Entregar SOLO el prompt final.
+1. **FASE 1 (esta conversación):** Usar la plantilla para DEFINIR y CREAR el prompt. Detectar huecos y hacer preguntas solo cuando falte una decisión crítica; si el usuario pide un prompt listo, resolver los detalles secundarios con propuestas profesionales y entregar la mejor versión posible.
 2. **FASE 2 (otra IA o conversación):** Copiar el prompt generado y EJECUTAR la tarea.
 
 **No mezclar fases.** Si el usuario pide ejecutar la tarea en esta misma conversación, recordarle la regla y preguntar si quiere romperla conscientemente.
@@ -37,6 +37,9 @@ Antes de aplicar cualquier plantilla, preguntar al usuario cuál necesita:
 ### Activación
 Cuando el usuario diga: "quiero crear una app/web/herramienta para…", "necesito una herramienta que…", o mencione desarrollo de software sin tener claro el tipo de solución.
 
+### Entrega inmediata
+Si la persona ya ha proporcionado una idea y pide mejorarla o convertirla en prompt, no detengas la respuesta para recopilar datos secundarios. Produce un prompt profesional con objetivo, usuarios, alcance, arquitectura, flujos, estados, contenido, restricciones, decisiones propuestas, criterios de aceptación y formato de entrega cuando correspondan. Marca como propuesta todo lo que no esté confirmado.
+
 ### Instrucción universal (pegar al final de cualquier plantilla)
 
 ```
@@ -49,9 +52,9 @@ No ejecutes el prompt. Detente después de entregarlo.
 
 ### Proceso para Plantilla 1
 
-1. **EXPLICAR:** Pedir al usuario que explique su idea en lenguaje natural.
-2. **ORDENAR:** Recopilar objetivo, problema, usuario, funciones, condiciones.
-3. **PREGUNTAR:** Hacer estas preguntas clave:
+1. **EXPLICAR:** Interpretar la idea en lenguaje natural y extraer el objetivo real.
+2. **ORDENAR:** Recopilar objetivo, problema, usuario, funciones, condiciones, entregables y criterios de calidad.
+3. **PREGUNTAR:** Detectar huecos, contradicciones y decisiones pendientes; preguntar solo por lo que cambiaría sustancialmente el resultado. Si el usuario pide el prompt en esta petición, continuar con una propuesta completa en lugar de detenerse.
    - ¿Qué tipo de solución necesita? (web app, móvil, panel/tabla, hoja de cálculo, base de datos, automatización, o combinación)
    - Si no lo tiene claro, comparar brevemente las opciones según uso, complejidad, acceso multidispositivo y tipo de información.
    - ¿Consultar/modificar desde cualquier dispositivo?
