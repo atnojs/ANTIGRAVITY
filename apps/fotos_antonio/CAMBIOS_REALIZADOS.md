@@ -30,7 +30,7 @@ Error: `"Cannot read 'clipboard' (this model does not support image input)"` al 
   - Maneja errores de conexión
   - Soporta diferentes modelos de Gemini
 
-### 4. **Configuración Actualizada** (`config.php`)
+### 4. **Configuración Actualizada** (`.htaccess raiz`)
 - **Cambios**:
   - Credenciales de DB con valores por defecto
   - Modelo Gemini configurado correctamente
@@ -57,7 +57,7 @@ apps/fotos_antonio/
 ├── api.php            # API corregida (sin error clipboard)
 ├── simple_db.php      # Base de datos JSON
 ├── proxy.php          # Proxy para Gemini API
-├── config.php         # Configuración
+├── .htaccess raiz         # Configuración
 ├── app.js             # Frontend corregido
 ├── data/              # Datos en JSON
 │   ├── conversaciones.json
