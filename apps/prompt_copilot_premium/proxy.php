@@ -609,9 +609,9 @@ if ($apiKey === null) {
 
 // Migración 2.5 (ESPEC_MIGRACION §6): todo el texto pasa a Gemini 3.8 Flash vía OpenRouter.
 $modelMap = [
-    'rapido' => 'google/gemini-3.8-flash',
-    'profesional' => 'google/gemini-3.8-flash',
-    'exhaustivo' => 'google/gemini-3.8-flash',
+    'rapido' => 'xiaomi/mimo-v2.6-pro',
+    'profesional' => 'xiaomi/mimo-v2.6-pro',
+    'exhaustivo' => 'xiaomi/mimo-v2.6-pro',
 ];
 $tokenMap = [
     'rapido' => 2000,
