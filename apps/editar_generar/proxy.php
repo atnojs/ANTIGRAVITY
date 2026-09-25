@@ -52,6 +52,7 @@ function recordStat(string $modelo): void {
 
 // ===== Claves =====
 function getKey(string $name): string {
+    $config = __DIR__ . '/config.php';
     if (file_exists($config)) { include $config; $k = defined($name) ? constant($name) : ''; if ($k !== '') return $k; }
     foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name]??'', $_SERVER['REDIRECT_'.$name]??'', $_ENV[$name]??'', $_ENV['REDIRECT_'.$name]??''] as $v) {
         if (!empty($v)) return (string)$v;

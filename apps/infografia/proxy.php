@@ -24,6 +24,7 @@ function respond(int $status, array $payload): void {
 }
 
 function getSecret(string $name): string {
+    $config = __DIR__ . '/config.php';
     if (is_file($config)) {
         include_once $config;
         if (defined($name) && is_string(constant($name)) && constant($name) !== '') {
