@@ -26,9 +26,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Sistema de Diseño Premium -->
-    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="base.css?v=1">
     <link rel="stylesheet" href="components.css">
-    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="app.css?v=1">
 
     <!-- Tailwind Config -->
     <script>
@@ -95,8 +95,10 @@
 
     <div id="root"></div>
 
+    <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+
     <!-- Scripts: cargan en orden. Babel compila app.js y React reemplaza #root -->
-    <script type="text/babel" src="app.js"></script>
+    <script type="text/babel" src="app.js?v=3"></script>
 
     <!-- Ocultar preloader cuando React monte -->
     <script>

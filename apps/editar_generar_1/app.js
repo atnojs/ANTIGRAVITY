@@ -53,6 +53,29 @@ const Share2 = (p) => <Icon name="share-2" {...p} />;
 // --- CONSTANTES (ORIGINAL) ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
+const MODEL_LABELS = {
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
+};
+
+// Tooltips del selector de modelos (popup hover)
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+};
+
+let currentModel = 'openai-medium';
+
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
     const targets = [
@@ -271,7 +294,7 @@ Analiza este prompt original: "${basePrompt}" y genera 4 variantes en español (
                 }
             }
         };
-        const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy('gemini-3.8-flash', contents, config);
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         return text ? JSON.parse(text) : [];
     } catch (e) {
@@ -310,7 +333,7 @@ const generateImage = async (params) => {
             }
         }
     };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy(currentModel || 'openai-medium', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -327,7 +350,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('gemini-2.5-flash-image', contents, config);
+        const result = await callProxy(currentModel || 'openai-medium', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -530,6 +553,10 @@ const App = () => {
 
     const [progress, setProgress] = useState(0);
     const [progressStatus, setProgressStatus] = useState('');
+    const [selectedModel, setSelectedModel] = useState('openai-medium');
+
+    // Sincronizar modelo con variable de módulo (usada por los servicios)
+    useEffect(() => { currentModel = selectedModel; }, [selectedModel]);
 
     const fileInputRef = useRef(null);
 
@@ -790,6 +817,91 @@ const App = () => {
                                 </div>
                             </div>
 
+                            {/* ── Selector de Modelo IA (canónico 7 botones) ── */}
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Modelo IA</label>
+                                <div className="grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
+                                    {[
+                                      { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
+                                      { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] }
+                                    ].map(group => (
+                                      <div key={group.provider}>
+                                        <span className="model-provider-title block text-center mb-1">{group.provider}</span>
+                                        {group.provider === 'OPENAI 2.5' ? (
+                                            <span className="model-quality-hint block text-center">De Menor a Mayor Calidad</span>
+                                        ) : (
+                                            <span className="model-quality-hint block text-center" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
+                                        )}
+                                        <div className="grid grid-cols-2 gap-1">
+                                          {group.provider === 'OPENAI 2.5' ? (
+                                            <Fragment>
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedModel('openai-medium')}
+                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-medium' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                                aria-pressed={selectedModel === 'openai-medium'}
+                                                aria-describedby="model-tooltip"
+                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-medium'] || ''}
+                                              >MEDIUM</button>
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedModel('openai-high')}
+                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-high' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                                aria-pressed={selectedModel === 'openai-high'}
+                                                aria-describedby="model-tooltip"
+                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-high'] || ''}
+                                              >HIGH</button>
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedModel('openai-xhigh')}
+                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-xhigh' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                                aria-pressed={selectedModel === 'openai-xhigh'}
+                                                aria-describedby="model-tooltip"
+                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
+                                              >XHIGH</button>
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedModel('openai-max-flare')}
+                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-max-flare' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                                aria-pressed={selectedModel === 'openai-max-flare'}
+                                                aria-describedby="model-tooltip"
+                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-flare'] || ''}
+                                              >MAX FLARE</button>
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedModel('openai-max-sunburst')}
+                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-max-sunburst' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                                aria-pressed={selectedModel === 'openai-max-sunburst'}
+                                                aria-describedby="model-tooltip"
+                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-sunburst'] || ''}
+                                              >MAX SUNBURST</button>
+                                            </Fragment>
+                                          ) : (
+                                            <Fragment>
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedModel('gemini-flash')}
+                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'gemini-flash' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                                aria-pressed={selectedModel === 'gemini-flash'}
+                                                aria-describedby="model-tooltip"
+                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-flash'] || ''}
+                                              >3.1 FLASH</button>
+                                              <button
+                                                type="button"
+                                                onClick={() => setSelectedModel('gemini-pro')}
+                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'gemini-pro' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                                aria-pressed={selectedModel === 'gemini-pro'}
+                                                aria-describedby="model-tooltip"
+                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-pro'] || ''}
+                                              >3 PRO</button>
+                                            </Fragment>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="pt-6 order-last">
                                 <button onClick={() => handleGenerate()} disabled={isGenerateDisabled} className="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold rounded-[2rem] flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-[0_0_20px_rgba(46,232,255,0.3)] btn-3d disabled:opacity-20">
                                     {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
@@ -889,5 +1001,7 @@ const App = () => {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
 
 
