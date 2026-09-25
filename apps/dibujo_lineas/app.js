@@ -14,6 +14,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
 
+    // ===== Selector de modelo (7 botones, MEDIUM activo por defecto) =====
+    const DEFAULT_MODEL = 'openai-medium';
+    let selectedModel = DEFAULT_MODEL;
+    const MODEL_LABELS = {
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO',
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-max-sunburst': 'MAX SUNBURST'
+    };
+    const modelToggles = document.querySelectorAll('.model-toggle');
+    const setSelectedModel = (model) => {
+        selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
+        modelToggles.forEach((button) => {
+            const isActive = button.dataset.model === selectedModel;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+    };
+    modelToggles.forEach((button) => {
+        button.addEventListener('click', () => setSelectedModel(button.dataset.model));
+    });
+    setSelectedModel(DEFAULT_MODEL);
+
+    const modelTooltip = document.getElementById('model-tooltip');
+    if (modelTooltip) {
+        const TOOLTIP_GAP = 10;
+        const hideModelTooltip = () => {
+            modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+            modelTooltip.setAttribute('aria-hidden', 'true');
+            modelTooltip.textContent = '';
+        };
+        const showModelTooltip = (button) => {
+            const text = (button.dataset.tooltip || '').trim();
+            if (!text) { hideModelTooltip(); return; }
+            modelTooltip.textContent = text;
+            modelTooltip.classList.remove('tip-above', 'tip-below');
+            modelTooltip.classList.add('visible');
+            modelTooltip.setAttribute('aria-hidden', 'false');
+            const rect = button.getBoundingClientRect();
+            const tw = modelTooltip.offsetWidth;
+            const th = modelTooltip.offsetHeight;
+            let left = rect.left + rect.width / 2 - tw / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+            let top = rect.top - th - TOOLTIP_GAP;
+            if (top < 8) {
+                top = rect.bottom + TOOLTIP_GAP;
+                modelTooltip.classList.add('tip-below');
+            } else {
+                modelTooltip.classList.add('tip-above');
+            }
+            modelTooltip.style.left = left + 'px';
+            modelTooltip.style.top = top + 'px';
+        };
+        document.querySelectorAll('.model-toggle').forEach((button) => {
+            button.addEventListener('mouseenter', () => showModelTooltip(button));
+            button.addEventListener('mouseleave', hideModelTooltip);
+            button.addEventListener('focus', () => showModelTooltip(button));
+            button.addEventListener('blur', hideModelTooltip);
+        });
+        window.addEventListener('scroll', hideModelTooltip, true);
+        window.addEventListener('resize', hideModelTooltip);
+    }
+
     let imageQueue = [];
 
     imageInput.addEventListener('change', (e) => {
@@ -69,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         image: base64,
                         mimeType: file.type || 'image/jpeg',
+                        model: selectedModel,
                         prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page..."
                     })
                 });
