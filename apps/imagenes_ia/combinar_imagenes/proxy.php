@@ -183,7 +183,7 @@ function callDeepSeek(string $apiKey, string $systemPrompt, string $userMessage)
     $url = 'https://openrouter.ai/api/v1/chat/completions';
 
     $body = json_encode([
-        'model' => 'google/gemini-3.8-flash',
+        'model' => 'xiaomi/mimo-v2.6-pro',
         'messages' => [
             ['role' => 'system', 'content' => $systemPrompt],
             ['role' => 'user', 'content' => $userMessage]
