@@ -239,30 +239,53 @@
       height: dims.height
     };
 
-    const response = await fetch('proxy.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      let errMsg = 'Error HTTP ' + response.status;
+    // Para qwen-pro (más lento que el timeout de nginx, ~55s) se espera
+    // activamente: el proxy guarda el resultado en caché y responde
+    // 'processing' mientras el worker termina de generarlo (patrón canónico).
+    const slowModel = selectedModel === 'qwen-pro';
+    const maxAttempts = slowModel ? 36 : 1;
+    let lastError = 'Sin respuesta del modelo.';
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        const errData = await response.json();
-        errMsg = (errData.error && errData.error.message) || errData.error || errMsg;
-      } catch (e) { /* ignore */ }
-      throw new Error(errMsg);
-    }
+        const response = await fetch('proxy.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-    const result = await response.json();
-    if (result.error) throw new Error((result.error && result.error.message) || result.error);
-    if (result.image) {
-      var dataUrl = 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.image;
-      // Si el proveedor generó a menor resolución que la pedida,
-      // escalamos client-side a las dimensiones finales solicitadas.
-      return await upscaleDataUrl(dataUrl, dims.width, dims.height);
+        if (response.status === 202) {
+          lastError = 'Generando...';
+        } else if (!response.ok) {
+          let errMsg = 'Error HTTP ' + response.status;
+          try {
+            const errData = await response.json();
+            errMsg = (errData.error && errData.error.message) || errData.error || errMsg;
+          } catch (e) { /* ignore */ }
+          lastError = errMsg;
+          if (!slowModel || response.status < 500) throw new Error(errMsg);
+        } else {
+          const result = await response.json();
+          if (result.status === 'processing') {
+            lastError = 'Generando...';
+          } else if (result.error) {
+            throw new Error((result.error && result.error.message) || result.error);
+          } else if (result.image) {
+            var dataUrl = 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.image;
+            // Si el proveedor generó a menor resolución que la pedida,
+            // escalamos client-side a las dimensiones finales solicitadas.
+            return await upscaleDataUrl(dataUrl, dims.width, dims.height);
+          } else {
+            lastError = 'El proveedor no devolvió imagen.';
+            if (!slowModel) throw new Error(lastError);
+          }
+        }
+      } catch (e) {
+        if (!slowModel) throw e;
+        lastError = (e && e.message) || lastError;
+      }
+      if (attempt < maxAttempts - 1) await new Promise(function (r) { setTimeout(r, 5000); });
     }
-    throw new Error('El proveedor no devolvió imagen.');
+    throw new Error(lastError);
   }
 
   function updateAppImage(dataUrl, toolLabel) {
@@ -545,6 +568,13 @@
             '<div class="model-toggle-group">' +
               '<button id="ai-quality-gemini-flash" class="ai-quality-btn model-toggle" data-model="gemini-flash" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>' +
               '<button id="ai-quality-gemini-pro" class="ai-quality-btn model-toggle" data-model="gemini-pro" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="model-provider-column">' +
+            '<span class="model-provider-title">QWEN</span>' +
+            '<span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>' +
+            '<div class="model-toggle-group">' +
+              '<button id="ai-quality-qwen-pro" class="ai-quality-btn model-toggle" data-model="qwen-pro" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
