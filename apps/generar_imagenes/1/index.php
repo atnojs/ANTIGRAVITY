@@ -22,7 +22,7 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
   <!-- Estilos adaptados -->
-  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="app.css?v=4" />
 
   <!-- Firebase SDKs (from CDN) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -37,7 +37,7 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
 
 <body>
   <div id="root"></div>
-  <script type="text/babel" data-presets="env,react" src="app.js?v=3"></script>
+  <script type="text/babel" data-presets="env,react" src="app.js?v=4"></script>
   <noscript>Activa JavaScript para usar esta aplicación.</noscript>
 </body>
 
