@@ -168,7 +168,7 @@ interface TravelEntry {
   createdAt: any;
 }
 
-// --- Selector de modelo (migración 2026-09-13: OpenAI 2.5 + Gemini, FLUX fuera) ---
+// --- Selector de modelo (migración 2026-09-13: OpenAI 2.5 + Gemini) ---
 const MODEL_OPTIONS: { id: string; label: string; group: string }[] = [
   { id: 'openai-medium', label: 'MEDIUM', group: 'OPENAI 2.5' },
   { id: 'openai-high', label: 'HIGH', group: 'OPENAI 2.5' },
