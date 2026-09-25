@@ -336,7 +336,7 @@ Responde SOLO con un JSON válido, sin texto adicional, con esta estructura:
         const result = await callProxy('', [], {
             action: 'text',
             system: systemInstructions,
-            model: 'google/gemini-3.8-flash',
+            model: 'xiaomi/mimo-v2.6-pro',
             temperature: 0.7,
             max_tokens: 2000
         }, basePrompt);
@@ -707,7 +707,7 @@ const App = () => {
                 const result = await callProxy('', [], {
                     action: 'text',
                     system: systemInstructions,
-                    model: 'openai/gpt-4o',
+                    model: 'xiaomi/mimo-v2.6-pro',
                     temperature: 0.7,
                     max_tokens: 2000,
                     imagen: base64Data
