@@ -46,11 +46,11 @@ infografia/
 
 La vía recomendada es configurar la clave en el servidor:
 
-1. Copia `config.example.php` como `config.php`.
+1. Copia `config.example.php` como `.htaccess raiz`.
 2. Sustituye el valor de `R` por la clave de OpenRouter.
 3. Alternativamente, define la variable de entorno `R` en el hosting.
 
-`config.php` está excluido de Git. La interfaz también admite una clave personal guardada en el navegador como fallback.
+`.htaccess raiz` está excluido de Git. La interfaz también admite una clave personal guardada en el navegador como fallback.
 
 ## 🌐 Publicación
 
