@@ -196,7 +196,7 @@ const App: React.FC = () => {
 
       // Structure data for Gemini Proxy
       const payload = {
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-3.1-flash-image-preview',
         prompt: prompt,
         contents: [
           {
