@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="app.css?v=13" />
+  <link rel="stylesheet" href="app.css?v=20" />
 </head>
 <body>
 
@@ -92,6 +92,13 @@
           </div>
         </div>
 
+      <!-- ===== GENERAR (entre los dos campos) ===== -->
+      <div class="section-generate">
+        <button id="generate-btn" class="btn-generate">
+          <span id="generate-btn-text">GENERAR OUTFIT</span>
+          <div id="loader" class="spinner-generate hidden"></div>
+        </button>
+      </div>
         <div class="section-card section-controls" id="section-controls">
           <div class="controls-stack">
             <div class="control-line">
@@ -115,24 +122,33 @@
             </div>
             <div class="control-line">
               <span class="control-line-label">Modelo</span>
-              <div class="toggle-row model-selector" id="model-selector">
-                <button class="toggle-btn" data-model="gemini-flash">3.1 FLASH</button>
-                <button class="toggle-btn active" data-model="gemini-pro">3 PRO</button>
-                <button class="toggle-btn" data-model="flux-pro">FLUX PRO</button>
-                <button class="toggle-btn" data-model="flux-max">FLUX MAX</button>
+              <div id="model-selector" class="model-selector">
+                <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+                  <div class="model-provider-column">
+                    <span class="model-provider-title">OPENAI 2.5</span>
+                    <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="true">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
+                    </div>
+                  </div>
+                  <div class="model-provider-column">
+                    <span class="model-provider-title">GEMINI</span>
+                    <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ===== GENERAR ===== -->
-      <section class="section-generate">
-        <button id="generate-btn" class="btn-generate">
-          <span id="generate-btn-text">GENERAR OUTFIT</span>
-          <div id="loader" class="spinner-generate hidden"></div>
-        </button>
-      </section>
 
       <!-- ===== DESCRIBIR ESTILO ===== -->
       <div id="style-description-section" class="section-card hidden">
@@ -158,7 +174,8 @@
 <!-- Toast -->
 <div id="toast" class="toast-bar"><p id="toast-message"></p></div>
 
+<div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
 <script src="history-manager.js?v=1"></script>
-<script src="app.js?v=15"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

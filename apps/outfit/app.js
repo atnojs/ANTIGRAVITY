@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoading = false;
     let activeCategory = null;
 
-    // Selectores FLUX
-    let selectedModel = 'gemini-pro';
+    // Selector de modelo IA
+    let selectedModel = 'openai-medium';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -725,10 +725,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper para etiqueta legible del modelo
     const getModelLabel = (model) => {
         const labels = {
+            'openai-medium': 'MEDIUM',
+            'openai-high': 'HIGH',
+            'openai-xhigh': 'XHIGH',
+            'openai-max-flare': 'MAX FLARE',
+            'openai-max-sunburst': 'MAX SUNBURST',
             'gemini-flash': '3.1 FLASH',
-            'gemini-pro': '3 PRO',
-            'flux-pro': 'FLUX PRO',
-            'flux-max': 'FLUX MAX'
+            'gemini-pro': '3 PRO'
         };
         return labels[model] || model;
     };
@@ -745,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
             height = resolution;
             width = Math.round(resolution * ratio);
         }
-        // Redondear a múltiplos de 32 (requisito FLUX)
+        // Redondear a múltiplos de 32 para mantener dimensiones compatibles.
         width = Math.max(32, Math.round(width / 32) * 32);
         height = Math.max(32, Math.round(height / 32) * 32);
         return { width, height };
@@ -782,13 +785,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const setupSelectors = () => {
         //Selector Modelo IA (4 modelos)
-        document.querySelectorAll('#model-selector .toggle-btn').forEach(btn => {
+        document.querySelectorAll('#model-selector .model-toggle').forEach(btn => {
           btn.addEventListener('click', () => {
-            document.querySelectorAll('#model-selector .toggle-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#model-selector .model-toggle').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
             selectedModel = btn.dataset.model;
           });
         });
+
+        const modelTooltip = document.getElementById('model-tooltip');
+        if (modelTooltip) {
+            const TOOLTIP_GAP = 10;
+            const hideModelTooltip = () => {
+                modelTooltip.classList.remove('visible', 'tip-above', 'tip-below');
+                modelTooltip.setAttribute('aria-hidden', 'true');
+                modelTooltip.textContent = '';
+            };
+            const showModelTooltip = (button) => {
+                const text = (button.dataset.tooltip || '').trim();
+                if (!text) { hideModelTooltip(); return; }
+                modelTooltip.textContent = text;
+                modelTooltip.classList.remove('tip-above', 'tip-below');
+                modelTooltip.classList.add('visible');
+                modelTooltip.setAttribute('aria-hidden', 'false');
+                const rect = button.getBoundingClientRect();
+                const tw = modelTooltip.offsetWidth;
+                const th = modelTooltip.offsetHeight;
+                let left = rect.left + rect.width / 2 - tw / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+                let top = rect.top - th - TOOLTIP_GAP;
+                if (top < 8) {
+                    top = rect.bottom + TOOLTIP_GAP;
+                    modelTooltip.classList.add('tip-below');
+                } else {
+                    modelTooltip.classList.add('tip-above');
+                }
+                modelTooltip.style.left = left + 'px';
+                modelTooltip.style.top = top + 'px';
+            };
+            document.querySelectorAll('.model-toggle').forEach((button) => {
+                button.addEventListener('mouseenter', () => showModelTooltip(button));
+                button.addEventListener('mouseleave', hideModelTooltip);
+                button.addEventListener('focus', () => showModelTooltip(button));
+                button.addEventListener('blur', hideModelTooltip);
+            });
+            window.addEventListener('scroll', hideModelTooltip, true);
+            window.addEventListener('resize', hideModelTooltip);
+        }
         // Formato AR
         document.querySelectorAll('#ar-selector .toggle-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1323,9 +1367,11 @@ document.addEventListener('DOMContentLoaded', () => {
             action: 'generate',
             image: base64Image,
             prompt: prompt,
-            quality: selectedModel,
+            model: selectedModel,
             width: dims.width,
-            height: dims.height
+            height: dims.height,
+            aspectRatio: selectedAR,
+            resolution: selectedRes
         });
 
         if (!data.image) {
