@@ -57,10 +57,13 @@ const Check = (p) => <Icon name="check" {...p} />;
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
 const MODEL_LABELS = {
-    'gemini-flash': '3.1FLASH',
-    'gemini-pro': '3 PRO',
-    'flux-pro': 'FLUX PRO',
-    'flux-max': 'FLUX MAX'
+    'openai-medium': 'MEDIUM',
+    'openai-high': 'HIGH',
+    'openai-xhigh': 'XHIGH',
+    'openai-max-flare': 'MAX FLARE',
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-flash': '3.1 FLASH',
+    'gemini-pro': '3 PRO'
 };
 const getModelLabel = (m) => MODEL_LABELS[m] || m || '—';
 
@@ -281,6 +284,17 @@ const clearHistoryFromDb = async (mode) => {
 // --- SERVICES CORREGIDOS ---
 const PROXY_URL = './proxy.php';
 
+// Textos de popup por modelo (kit canónico dibujo_lineas_copia)
+window.MODEL_TOOLTIP_TEXTS = {
+    'openai-medium': 'Fondo transparente, Muy rápido',
+    'openai-high': 'Fondo transparente',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-max-flare': 'Más barato que Sunburst',
+    'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-flash': 'Texto en imágenes, Rápido.',
+    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+};
+
 const callProxy = async (model, contents, config = {}, promptText = '') => {
     // Garantizamos que el objeto enviado siempre lleve parametro 'prompt'
     const payload = { 
@@ -322,7 +336,7 @@ Responde SOLO con un JSON válido, sin texto adicional, con esta estructura:
         const result = await callProxy('', [], {
             action: 'text',
             system: systemInstructions,
-            model: 'openrouter/auto',
+            model: 'xiaomi/mimo-v2.6-pro',
             temperature: 0.7,
             max_tokens: 2000
         }, basePrompt);
@@ -374,7 +388,7 @@ const generateImage = async (params) => {
     };
 
     // Pasamos 'finalPrompt' como parámetro explícito
-    const result = await callProxy('flux', contents, config, finalPrompt);
+    const result = await callProxy(window.selectedModel || 'openai-medium', contents, config, finalPrompt);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "No se pudo generar la imagen");
     }
@@ -390,7 +404,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { aspectRatio: params.aspectRatio, resolution: '1K', generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy('flux', contents, config);
+    const result = await callProxy(window.selectedModel || 'openai-medium', contents, config);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "Error en la edición conversacional");
     }
@@ -622,7 +636,7 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
-  const [selectedModel, setSelectedModel] = useState('gemini-pro');
+  const [selectedModel, setSelectedModel] = useState('openai-medium');
 
   // Sincronizar modelo con variable global (accesible desde callProxy)
   useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
@@ -963,19 +977,28 @@ const App = () => {
                             {/* ── Selector de Modelo IA (canonico hoola) ── */}
                             <div className="model-selector">
                               <span className="model-selector-label">Modelo IA</span>
-                              <div className="model-toggle-group" role="group" aria-label="Seleccionar modelo">
+                              <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                                 {[
-                                  { id: 'gemini-flash', name: '3.1FLASH' },
-                                  { id: 'gemini-pro', name: '3 PRO' },
-                                  { id: 'flux-pro', name: 'FLUX PRO' },
-                                  { id: 'flux-max', name: 'FLUX MAX' }
-                                ].map(m => (
-                                  <button
-                                    key={m.id}
-                                    onClick={() => setSelectedModel(m.id)}
-                                    className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
-                                    aria-pressed={selectedModel === m.id}
-                                  >{m.name}</button>
+                                  { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
+                                  { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] }
+                                ].map(group => (
+                                  <div className="model-provider-column" key={group.provider}>
+                                    <span className="model-provider-title btn-canon">{group.provider}</span>
+                                    {group.provider === 'OPENAI 2.5' && <span className="model-quality-hint">De Menor a Mayor Calidad</span>}
+                                    <div className="model-toggle-group">
+                                      {group.models.map(m => (
+                                        <button
+                                          type="button"
+                                          key={m.id}
+                                          onClick={() => setSelectedModel(m.id)}
+                                          className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
+                                          aria-pressed={selectedModel === m.id}
+                                          aria-describedby="model-tooltip"
+                                          data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                        >{m.name}</button>
+                                      ))}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             </div>
@@ -1081,3 +1104,39 @@ const App = () => {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+
+// Tooltip de modelos (popup hover) — delegación global (funciona con re-renders de React)
+(function initModelTooltip() {
+    const tooltip = document.getElementById('model-tooltip');
+    if (!tooltip) return;
+    const TOOLTIP_GAP = 10;
+    const hide = () => {
+        tooltip.classList.remove('visible', 'tip-above', 'tip-below');
+        tooltip.setAttribute('aria-hidden', 'true');
+        tooltip.textContent = '';
+    };
+    const show = (btn) => {
+        const text = (btn.getAttribute('data-tooltip') || '').trim();
+        if (!text) { hide(); return; }
+        tooltip.textContent = text;
+        tooltip.classList.remove('tip-above', 'tip-below');
+        tooltip.classList.add('visible');
+        tooltip.setAttribute('aria-hidden', 'false');
+        const rect = btn.getBoundingClientRect();
+        const tw = tooltip.offsetWidth;
+        const th = tooltip.offsetHeight;
+        let left = rect.left + rect.width / 2 - tw / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = rect.top - th - TOOLTIP_GAP;
+        if (top < 8) { top = rect.bottom + TOOLTIP_GAP; tooltip.classList.add('tip-below'); }
+        else { tooltip.classList.add('tip-above'); }
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+    };
+    document.addEventListener('mouseover', (e) => { const b = e.target.closest('.model-toggle'); if (b) show(b); });
+    document.addEventListener('mouseout', (e) => { const b = e.target.closest('.model-toggle'); if (b) hide(); });
+    document.addEventListener('focusin', (e) => { const b = e.target.closest('.model-toggle'); if (b) show(b); });
+    document.addEventListener('focusout', (e) => { const b = e.target.closest('.model-toggle'); if (b) hide(); });
+    window.addEventListener('scroll', hide, true);
+    window.addEventListener('resize', hide);
+})();
