@@ -19,5 +19,12 @@ export default defineConfig(() => {
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
+    // index.html raíz es el BUILD publicado (estático para Hostinger).
+    // La plantilla de desarrollo vive en index.dev.html y es la entrada del build.
+    build: {
+      rollupOptions: {
+        input: { index: path.resolve(__dirname, 'index.dev.html') },
+      },
+    },
   };
 });
