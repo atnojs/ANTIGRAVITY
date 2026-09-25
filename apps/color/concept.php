@@ -2,7 +2,7 @@
 // ============================================================
 // PROXY PHP - Conceptos de diseño con DeepSeek (API directa)
 // Genera 3 propuestas (nombre + 6 HEX + tipografía Google Fonts + prompt
-// de imagen para FLUX) a partir de un color base o descripción.
+// de imagen) a partir de un color base o descripción.
 // Oculta la clave DeepSeek (variable 'B' del .htaccess raíz de Hostinger).
 // DeepSeek es SÍNCRONO: una sola llamada.
 // ============================================================
@@ -87,7 +87,7 @@ $userMsg = "Genera exactamente $count propuestas de diseño publicitario premium
     . "      \"harmony\": \"Complementaria|Análoga|Monocromática|...\",\n"
     . "      \"palette\": [\"#RRGGBB\", \"#RRGGBB\", \"#RRGGBB\", \"#RRGGBB\", \"#RRGGBB\", \"#RRGGBB\"],\n"
     . "      \"font\": { \"name\": \"Nombre de una tipografía de Google Fonts\", \"url\": \"https://fonts.google.com/specimen/Nombre\" },\n"
-    . "      \"imagePrompt\": \"Prompt en inglés, detallado, para un modelo de imagen (FLUX). Describe una imagen publicitaria premium con estética glassmorphism/neón que use la paleta indicada. Incluye la instrucción sobre el texto.\"\n"
+    . "      \"imagePrompt\": \"Prompt en inglés, detallado, para un modelo de imagen. Describe una imagen publicitaria premium con estética glassmorphism/neón que use la paleta indicada. Incluye la instrucción sobre el texto.\"\n"
     . "    }\n"
     . "  ]\n"
     . "}\n"
