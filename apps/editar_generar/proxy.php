@@ -104,9 +104,9 @@ if ($action === 'text' || $action === 'openrouter') {
         exit;
     }
     $systemText = trim((string)($data['system'] ?? ''));
-    $textModel = trim((string)($data['model'] ?? 'google/gemini-3.8-flash'));
+    $textModel = trim((string)($data['model'] ?? 'xiaomi/mimo-v2.6-pro'));
     if ($textModel === '' || strlen($textModel) > 160 || preg_match('#^[a-zA-Z0-9._:/-]+$#', $textModel) !== 1) {
-        $textModel = 'google/gemini-3.8-flash';
+        $textModel = 'xiaomi/mimo-v2.6-pro';
     }
     
     // Detectar imagen opcional para análisis visual
