@@ -238,7 +238,7 @@
             });
         },
 
-        generateImage(prompt, provider = 'gemini', images = [], aspectRatio = '', modalities = ['IMAGE'], maskDataObj = null) {
+        generateImage(prompt, provider = 'openai-medium', images = [], aspectRatio = '', modalities = ['IMAGE'], maskDataObj = null) {
             const finalImages = [...images];
             let maskPayload = null;
 
@@ -248,11 +248,11 @@
                     maskPayload = { data: parts[1], mimeType: 'image/png' };
                 }
             }
-            const temp = (maskDataObj || images.length === 1 && provider === 'gemini') ? 0.3 : 0.6;
+            const temp = (maskDataObj || images.length === 1 && provider.indexOf('gemini') === 0) ? 0.3 : 0.6;
 
             const payload = {
                 task: 'generateImage',
-                provider,
+                model: provider,
                 prompt,
                 images: finalImages,
                 maskImage: maskPayload,
@@ -261,7 +261,7 @@
                 generationConfig: { responseModalities: modalities, temperature: temp }
             };
 
-            if (modalities.includes('IMAGE') && provider === 'gemini') {
+            if (modalities.includes('IMAGE') && provider.indexOf('gemini') === 0) {
                 payload.imageConfig = { gradingPreset: 'filmic-soft', perceivedGamma: 1.03 };
             }
             return this.call(payload);
@@ -1267,7 +1267,7 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
 
 const App = () => {
         const [prompt, setPrompt] = useState('');
-        const [provider, setProvider] = useState('gemini');
+        const [provider, setProvider] = useState('openai-medium');
         const [baseImages, setBaseImages] = useState([]);
         const [images, setImages] = useState([]);
         const [history, setHistory] = useState([]);
@@ -1448,7 +1448,7 @@ const App = () => {
                 return;
             }
 
-            setIsLoading(true); setLoadingMsg(`Generando Imagen con ${provider === 'gemini' ? 'Nano Banana Pro' : 'Flux.2'}...`); setError('');
+            setIsLoading(true); setLoadingMsg('IA generando lo solicitado...'); setError('');
 
             let maskData = null;
             if (baseImages.length > 0) {
@@ -1459,7 +1459,7 @@ const App = () => {
                 const blocks = [];
                 let imagesToSend = [];
 
-                if (maskData && provider === 'gemini') {
+                if (maskData && provider.indexOf('gemini') === 0) {
                     setLoadingMsg('Fusionando mÃ¡scara visual...');
                     const combinedImagePart = await combineBaseAndMaskVisual(baseImages[0].url, maskData.visual);
                     imagesToSend = [combinedImagePart];
@@ -1474,7 +1474,7 @@ const App = () => {
                         imagesToSend = await Promise.all(baseImages.map(img => fileToPart(img.file)));
                     }
 
-                    if (provider === 'gemini') {
+                    if (provider.indexOf('gemini') === 0) {
                         if (MAP_REALISM[realism]) blocks.push(MAP_REALISM[realism]);
                         if (MAP_CREATIVO[creative]) blocks.push(MAP_CREATIVO[creative]);
                         if (aspectRatio && baseImages.length === 0) blocks.push(`AspectRatio: ${aspectRatio}.`);
@@ -1486,7 +1486,7 @@ const App = () => {
                     if (!allowText) blocks.push("NO TEXT.");
                     if (allowText && customText) blocks.push(`Text: "${customText}"`);
                     if (allowObjs) blocks.push("Add objects.");
-                    if (logoMode === 'Conservar logos' && provider === 'gemini') blocks.push("Preserve logos.");
+                    if (logoMode === 'Conservar logos' && provider.indexOf('gemini') === 0) blocks.push("Preserve logos.");
                     blocks.push(`USER PROMPT: ${effPrompt}`);
                 }
 
@@ -1536,9 +1536,7 @@ const App = () => {
                     imagesToSend = [await fileToPart(await dataURLtoFile(baseImgObj.src))];
                 }
 
-                const editProvider = 'gemini';
-
-                const res = await api.generateImage(blocks.join(' '), editProvider, imagesToSend, null, ['IMAGE'], maskDataObj);
+                const res = await api.generateImage(blocks.join(' '), provider, imagesToSend, null, ['IMAGE'], maskDataObj);
 
                 if (res.type === 'image') {
                     const newInlineImg = {
@@ -1623,16 +1621,26 @@ const App = () => {
                         <input id="base-upload" type="file" accept="image/*" onChange={onUploadBase} style={{ display: 'none' }} />
 
                         <div style={{ marginBottom: '1rem', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <CustomSelect
-                                label="Elige Modelo de GeneraciÃ³n"
-                                value={provider}
-                                onChange={setProvider}
-                                options={[
-                                    { value: 'gemini', label: 'Nano Banana Pro' },
-                                    { value: 'flux', label: 'Flux.2 Pro' }
-                                ]}
-                            />
-                            {provider === 'flux' && <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '5px' }}>* Flux es excelente para fotorrealismo.</p>}
+                            <div style={{ fontSize: '.78rem', fontWeight: 700, letterSpacing: '.08em', color: 'var(--muted)', marginBottom: '.6rem' }}>MODELO IA</div>
+                            <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.65rem' }}>
+                                {[
+                                    { name: 'OPENAI', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGHT']] },
+                                    { name: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                                ].map(group => (
+                                    <div className="model-provider-column" key={group.name} style={{ minWidth: 0 }}>
+                                        <div className="model-provider-title" style={{ textAlign: 'center', fontSize: '.7rem', fontWeight: 800, letterSpacing: '.1em', marginBottom: '.35rem', color: 'var(--muted)' }}>{group.name}</div>
+                                        <div className="model-toggle-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.35rem' }}>
+                                            {group.models.map(([value, label]) => (
+                                                <button key={value} type="button" className="btn btn-3d btn-sm"
+                                                    aria-pressed={provider === value} onClick={() => setProvider(value)}
+                                                    style={{ padding: '.55rem .3rem', fontSize: '.72rem', background: provider === value ? 'linear-gradient(135deg, #22d3ee, #a78bfa)' : 'rgba(255,255,255,.06)', color: provider === value ? '#0c1445' : 'var(--text)' }}>
+                                                    {label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         {baseImages.length > 0 && (
