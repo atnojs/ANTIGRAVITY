@@ -27,6 +27,14 @@
     --radius-lg: 24px;
     --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Tokens kit tooltip (canónico) */
+    --contenedor: #174F7A;
+    --border-strong: #00D0D0;
+    --glow: rgba(0,208,208,.8);
+    --glow-soft: rgba(0,208,208,.4);
+    --faint: #669999;
+    --font-ui: 'Electrolize', system-ui, sans-serif;
+
     color-scheme: dark;
 }
 
@@ -620,4 +628,71 @@ h3 {
     display: block;
     margin-top: 4px;
     opacity: 0.6;
+}
+
+/* ════
+   SELECTOR DE MODELO IA (canónico 7 botones)
+   ════ */
+.model-provider-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.model-provider-column {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.model-provider-title {
+    color: var(--muted);
+    font-size: 1.05rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+/* Kit tooltip modelos (canónico dibujo_lineas_copia) */
+.model-tooltip{position:fixed;z-index:10000;max-width:300px;padding:.55rem 1.05rem;background:linear-gradient(135deg,var(--contenedor),var(--acc));border:1px solid var(--border-strong);border-radius:999px;color:#CCFFFF;font-family:var(--font-ui);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;text-align:center;text-shadow:0 0 8px var(--glow);box-shadow:0 0 18px var(--glow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease,visibility .18s ease} .model-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)} .model-tooltip::after{content:"";position:absolute;left:50%;width:11px;height:11px;background:var(--acc);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg)} .model-tooltip.tip-below{transform:translateY(-6px) scale(.97)} .model-tooltip.tip-below.visible{transform:translateY(0) scale(1)} .model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none} .model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none} @media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
+.model-quality-hint{color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 8px var(--glow-soft)}
+
+
+.model-toggle-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+}
+
+.model-toggle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.model-toggle:hover {
+    color: var(--text);
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.model-toggle.active {
+    background: var(--accent-gradient);
+    color: #ccffff;
+    text-shadow: 0 0 8px var(--glow-strong);
+    border-color: var(--border);
+    box-shadow: 0 0 18px var(--glow-strong);
 }
