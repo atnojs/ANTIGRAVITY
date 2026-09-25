@@ -15,7 +15,7 @@ header('Cache-Control: no-store');
 const MAX_REQUEST_BYTES = 32 * 1024 * 1024;
 const MAX_PROMPT_BYTES = 12000;
 const MAX_SYSTEM_BYTES = 16000;
-const ALLOWED_MODELS = ['google/gemini-3.8-flash'];
+const ALLOWED_MODELS = ['xiaomi/mimo-v2.6-pro'];
 
 function respond(int $status, array $payload): void {
     http_response_code($status);
@@ -137,7 +137,7 @@ Formato exacto:
 PROMPT;
 
     $payload = [
-        'model' => 'google/gemini-3.8-flash',
+        'model' => 'xiaomi/mimo-v2.6-pro',
         'messages' => [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => [
@@ -167,7 +167,7 @@ PROMPT;
     $content = (string)($response['choices'][0]['message']['content'] ?? '');
     if ($content === '') respond(502, ['success' => false, 'error' => 'La IA devolvió un análisis vacío.']);
     $json = extractJSON($content);
-    respond(200, ['success' => true, 'provider' => 'openrouter', 'model' => 'google/gemini-3.8-flash', 'text' => $content, 'json' => $json]);
+    respond(200, ['success' => true, 'provider' => 'openrouter', 'model' => 'xiaomi/mimo-v2.6-pro', 'text' => $content, 'json' => $json]);
 }
 
 if ($action === 'generate-text') {
@@ -176,7 +176,7 @@ if ($action === 'generate-text') {
 
     $system = trim((string)($request['system'] ?? ''));
     $prompt = trim((string)($request['prompt'] ?? ''));
-    $model = trim((string)($request['model'] ?? 'google/gemini-3.8-flash'));
+    $model = trim((string)($request['model'] ?? 'xiaomi/mimo-v2.6-pro'));
 
     if ($system === '' && $prompt === '') respond(400, ['success' => false, 'error' => 'Faltan system o prompt.']);
     if (strlen($prompt) > MAX_PROMPT_BYTES) respond(413, ['success' => false, 'error' => 'El prompt es demasiado largo.']);
