@@ -107,7 +107,7 @@ if (!$apiKey || empty($apiKey)) {
 Si hay un archivo `.htaccess` en la carpeta de la app:
 
 1. Verificar que la directiva `SetEnv` usa el nombre correcto de variable.
-2. Ejemplo: `SetEnv F "AQUI_TU_API_KEY"` o `SetEnv A "AQUI_TU_API_KEY"`.
+2. Para el bloque de imágenes canónico de `apps/dibujo_lineas_copia`, usar `SetEnv O "AQUI_TU_API_KEY_OPENAI"` y `SetEnv R "AQUI_TU_API_KEY_OPENROUTER"`. No introducir otras letras de proveedor.
 3. Si NO existe `.htaccess`, no crearlo — `config.php` actúa como fuente primaria.
 
 ## 6. Reglas para proxy seguro
