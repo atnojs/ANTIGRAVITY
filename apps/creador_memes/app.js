@@ -247,7 +247,7 @@
         action: "openrouter",
         system: systemPrompt,
         prompt: "Genera una idea de meme viral completamente nueva y original. Sé creativo, sorprendente. Elige un tema actual o una situación cotidiana relatable. Todo en español.",
-        model: "google/gemini-3.8-flash",
+        model: "xiaomi/mimo-v2.6-pro",
         temperature: 1.0,
         max_tokens: 800
       })
@@ -318,7 +318,7 @@
         action: "openrouter",
         system: systemPrompt,
         prompt: "Convierte esta idea en un prompt en español para generación de imágenes:\\n\\n\"" + idea + "\"\\n\\nEntrega solo el prompt final.",
-        model: "google/gemini-3.8-flash",
+        model: "xiaomi/mimo-v2.6-pro",
         temperature: 0.7, max_tokens: 600
       })
     })
