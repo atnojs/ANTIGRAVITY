@@ -63,7 +63,8 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
 };
 const getModelLabel = (m) => MODEL_LABELS[m] || m || '—';
 
@@ -292,7 +293,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
 const callProxy = async (model, contents, config = {}, promptText = '') => {
@@ -303,16 +305,36 @@ const callProxy = async (model, contents, config = {}, promptText = '') => {
         contents, 
         ...config 
     };
-    const response = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Error ${response.status}: ${text}`);
+    // qwen-pro tarda más que el timeout de nginx (~55s): el proxy guarda el
+    // resultado en qwen_cache/ y responde 'processing' hasta que termina.
+    const slowModel = payload.model === 'qwen-pro';
+    const maxAttempts = slowModel ? 36 : 1;
+    let lastError = 'Sin respuesta del modelo.';
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            const response = await fetch(PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const raw = await response.text();
+            let json = null;
+            try { json = JSON.parse(raw); } catch (e) {}
+            if (json && json.status === 'processing') {
+                lastError = 'Generando...';
+            } else if (response.ok) {
+                return json;
+            } else {
+                lastError = `Error ${response.status}: ${raw}`;
+                if (!slowModel || response.status < 500) throw new Error(lastError);
+            }
+        } catch (e) {
+            if (!slowModel) throw e;
+            lastError = (e && e.message) || lastError;
+        }
+        if (attempt < maxAttempts - 1) await new Promise(res => setTimeout(res, 5000));
     }
-    return await response.json();
+    throw new Error(lastError);
 };
 
 const enhancePrompt = async (basePrompt) => {
@@ -980,7 +1002,8 @@ const App = () => {
                               <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                                 {[
                                   { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
-                                  { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] }
+                                  { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
+                                  { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider}>
                                     <span className="model-provider-title btn-canon">{group.provider}</span>
@@ -994,6 +1017,7 @@ const App = () => {
                                           className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
                                           aria-pressed={selectedModel === m.id}
                                           aria-describedby="model-tooltip"
+                                          data-model={m.id}
                                           data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
                                         >{m.name}</button>
                                       ))}
