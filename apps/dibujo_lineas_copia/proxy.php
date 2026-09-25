@@ -371,7 +371,9 @@ if ($backend === 'qwen') {
     // un worker genera y guarda el resultado (ignore_user_abort), y los
     // reintentos del frontend recogen el caché o esperan con 'processing'.
     $cacheKey = hash('sha256', $geminiModel . '|' . $prompt . '|' . $imageB64 . '|' . $qwenRatio);
-    $cacheFile = rtrim(sys_get_temp_dir(), '/\\') . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
+    $cacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . 'qwen_' . $cacheKey . '.json';
     $lockFile = $cacheFile . '.lock';
 
     if (is_file($cacheFile)) {
