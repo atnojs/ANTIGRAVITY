@@ -11,7 +11,7 @@ La aplicación debe decidir automáticamente qué skill usar cuando la persona n
 
 ## Público
 
-Personas principiantes que usan ChatGPT, Claude, Gemini, Flux o agentes de programación, pero no conocen conceptos técnicos de prompting.
+Personas principiantes que usan ChatGPT, Claude, Gemini, herramientas de IA generativa o agentes de programación, pero no conocen conceptos técnicos de prompting.
 
 ## Experiencia principal
 
@@ -39,7 +39,7 @@ Personas principiantes que usan ChatGPT, Claude, Gemini, Flux o agentes de progr
 
 - Frontend ligero en HTML, CSS y JavaScript sin frameworks innecesarios.
 - Backend PHP con un único `proxy.php` para OpenRouter.
-- Clave únicamente en servidor mediante la variable `R`, `REDIRECT_R`, `OPENROUTER_API_KEY` o `config.php` privado.
+- Clave únicamente en servidor mediante la variable `R`, `REDIRECT_R`, `OPENROUTER_API_KEY` o `.htaccess raiz` privado.
 - Endpoint remoto fijo; no aceptar URLs arbitrarias desde el navegador.
 - Validar acciones, modelos, tamaños, campos y respuestas.
 - Mantener las skills en archivos Markdown protegidos frente al acceso web directo.

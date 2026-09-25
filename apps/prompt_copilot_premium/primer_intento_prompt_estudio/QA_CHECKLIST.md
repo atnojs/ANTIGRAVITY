@@ -24,7 +24,7 @@
 
 ## Seguridad
 
-- [ ] `skills/`, `history_data/` y `config.php` no son accesibles por URL.
+- [ ] `skills/`, `history_data/` y `.htaccess raiz` no son accesibles por URL.
 - [ ] El frontend no contiene claves ni endpoints configurables.
 - [ ] `proxy.php` solo acepta modelos, modos y campos permitidos.
 - [ ] `history.php` solo acepta el namespace fijo.

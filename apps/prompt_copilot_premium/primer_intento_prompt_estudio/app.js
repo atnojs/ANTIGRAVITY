@@ -539,7 +539,7 @@
       const data = await response.json();
       if (data.ok && !data.configured) {
         elements.requestError.textContent = data.message || 'Falta configurar la clave R de OpenRouter en el servidor.';
-        toast(data.message || 'API no configurada. Revisa config.php o la variable R en el servidor.', 'error');
+        toast(data.message || 'API no configurada. Revisa .htaccess raiz o la variable R en el servidor.', 'error');
       } else if (!data.ok) {
         toast(data.error || 'El servidor devolvió un error inesperado.', 'error');
       }
