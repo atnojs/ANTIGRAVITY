@@ -23,9 +23,10 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
-    'gemini-pro': '3 PRO'
+    'gemini-pro': '3 PRO',
+    'qwen-pro': 'QWEN 3 PRO'
 };
-const TEXT_MODEL = 'gemini-3.8-flash'; // texto/visión (spec §6)
+const TEXT_MODEL = 'xiaomi/mimo-v2.6-pro'; // texto/visión: MIMO 2.6 PRO (OpenRouter)
 
 const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     return new Promise((resolve) => {
@@ -592,6 +593,8 @@ const App = () => {
                                         onClick={handleEnhance}
                                         disabled={isEnhancing || !prompt.trim()}
                                         title="mejorar prompt con IA"
+                                        aria-describedby="model-tooltip"
+                                        data-tooltip="MIMO 2.6 PRO: Analiza tus fotos con detalle, 1M de contexto, Muy barato"
                                         className="absolute bottom-4 right-4 p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl hover:bg-cyan-500/30 transition-all z-30"
                                     >
                                         {isEnhancing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
@@ -678,6 +681,13 @@ const App = () => {
                                         <div className="model-toggle-group">
                                             <button type="button" className={`model-toggle ${selectedModel === 'gemini-flash' ? 'active' : ''}`} data-model="gemini-flash" aria-pressed={selectedModel === 'gemini-flash'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-flash'] || ''} onClick={() => handleModelSelect('gemini-flash')}>3.1 FLASH</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'gemini-pro' ? 'active' : ''}`} data-model="gemini-pro" aria-pressed={selectedModel === 'gemini-pro'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-pro'] || ''} onClick={() => handleModelSelect('gemini-pro')}>3 PRO</button>
+                                        </div>
+                                    </div>
+                                    <div className="model-provider-column">
+                                        <span className="model-provider-title">QWEN</span>
+                                        <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
+                                        <div className="model-toggle-group">
+                                            <button type="button" className={`model-toggle ${selectedModel === 'qwen-pro' ? 'active' : ''}`} data-model="qwen-pro" aria-pressed={selectedModel === 'qwen-pro'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['qwen-pro'] || ''} onClick={() => handleModelSelect('qwen-pro')}>QWEN 3 PRO</button>
                                         </div>
                                     </div>
                                 </div>
@@ -783,14 +793,15 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
 
 // ===== Tooltip de modelos (popup hover, kit canónico) =====
-(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('.model-toggle');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('.model-toggle');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
+(function initModelTooltip(){const tooltip=document.getElementById('model-tooltip');if(!tooltip)return;const TOOLTIP_GAP=10;const hide=()=>{tooltip.classList.remove('visible','tip-above','tip-below');tooltip.setAttribute('aria-hidden','true');tooltip.textContent='';};const show=(btn)=>{const text=(btn.getAttribute('data-tooltip')||'').trim();if(!text){hide();return;}tooltip.textContent=text;tooltip.classList.remove('tip-above','tip-below');tooltip.classList.add('visible');tooltip.setAttribute('aria-hidden','false');const rect=btn.getBoundingClientRect();const tw=tooltip.offsetWidth;const th=tooltip.offsetHeight;let left=rect.left+rect.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));let top=rect.top-th-TOOLTIP_GAP;if(top<8){top=rect.bottom+TOOLTIP_GAP;tooltip.classList.add('tip-below');}else{tooltip.classList.add('tip-above');}tooltip.style.left=left+'px';tooltip.style.top=top+'px';};document.addEventListener('mouseover',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)show(b);});document.addEventListener('mouseout',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)hide();});document.addEventListener('focusin',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)show(b);});document.addEventListener('focusout',(e)=>{const b=e.target.closest('[data-tooltip]');if(b)hide();});window.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);})();
 
 
 
