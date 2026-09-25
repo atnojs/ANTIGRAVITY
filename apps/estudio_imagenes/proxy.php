@@ -29,10 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // ===== 7 FUENTES DE API KEY (Hostinger) =====
 $apiKey = '';
 
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('OPENROUTER_API_KEY') ? OPENROUTER_API_KEY : '';
-}
 if (empty($apiKey)) $apiKey = getenv('OPENROUTER_API_KEY');
 if (empty($apiKey)) $apiKey = getenv('REDIRECT_OPENROUTER_API_KEY');
 if (empty($apiKey)) $apiKey = $_SERVER['OPENROUTER_API_KEY'] ?? '';
