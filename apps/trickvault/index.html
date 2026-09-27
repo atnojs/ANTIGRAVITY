@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20260919-back-fixed">
+    <link rel="stylesheet" href="app.css?v=20260927-updatedat">
 </head>
 <body>
     <div id="root"></div>
@@ -1097,6 +1097,7 @@ const SEED_COMMAND_IMAGES = {
             imageUrl: SEED_COMMAND_IMAGES[command] || '',
             isFavorite: false,
             createdAt: Date.UTC(2026, 7, 25) - index,
+            updatedAt: (index <= 248 ? Date.UTC(2026, 7, 25) : index <= 351 ? Date.UTC(2026, 8, 20) : index <= 464 ? Date.UTC(2026, 8, 25) : Date.UTC(2026, 8, 26)),
         }];
     }),
 ];
@@ -2163,6 +2164,9 @@ function TrickCard({ trick, onToggleFav, onEdit, onImageClick, onCopy, copiedId,
 
             <div className="card-footer">
                 <span className="date">{formatDate(trick.createdAt)}</span>
+                {trick.updatedAt && trick.updatedAt !== trick.createdAt && (
+                    <span className="date-updated">Actualizado {formatDate(trick.updatedAt)}</span>
+                )}
             </div>
         </div>
     );
@@ -2722,14 +2726,14 @@ function App() {
             }
 
             if (editingTrick) {
-                setTricks(prev => prev.map(t => t.id === targetId ? { ...t, ...normalized } : t));
+                setTricks(prev => prev.map(t => t.id === targetId ? { ...t, ...normalized, updatedAt: Date.now() } : t));
                 addToast('✅ Truco actualizado');
             } else {
                 setTricks(prev => {
                     const maxOrder = prev
                         .filter(trick => trick.category === normalized.category)
                         .reduce((max, trick) => hasSortOrder(trick) ? Math.max(max, Number(trick.sortOrder)) : max, -1);
-                    const newTrick = { ...normalized, id: targetId, createdAt: Date.now(), sortOrder: maxOrder + 1 };
+                    const newTrick = { ...normalized, id: targetId, createdAt: Date.now(), updatedAt: Date.now(), sortOrder: maxOrder + 1 };
                     return [newTrick, ...prev];
                 });
                 addToast('✨ Truco creado');
