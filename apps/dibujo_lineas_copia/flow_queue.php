@@ -114,7 +114,14 @@ if ($action === 'poll' || $action === 'complete' || $action === 'fail') {
         foreach ($files as $file) {
             $job = fq_load_job($file);
             if ($job === null) { continue; }
-            if (($job['status'] ?? '') === 'pending') {
+            $st = $job['status'] ?? '';
+            // Reclama huérfanos: si lleva >10 min en processing (worker murió a mitad), vuelve a pending.
+            if ($st === 'processing' && ($now = time()) - (int)($job['createdAt'] ?? 0) > 600) {
+                $job['status'] = 'pending';
+                fq_save_job($file, $job);
+                $st = 'pending';
+            }
+            if ($st === 'pending') {
                 $job['status'] = 'processing';
                 fq_save_job($file, $job);
                 fq_out(['ok' => true, 'job' => [
