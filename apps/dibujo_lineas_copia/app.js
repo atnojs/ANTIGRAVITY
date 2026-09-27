@@ -23,10 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo (toggle 4 botones) =====
-    const DEFAULT_MODEL = 'flow';
+    const DEFAULT_MODEL = 'openai-medium';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
-        'flow': 'NANO BANANA',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'openai-medium': 'MEDIUM',
@@ -178,41 +177,6 @@ previewGrid.addEventListener('click', (e) => {
         throw new Error(lastError);
     };
 
-    // ===== FLOW (gratis, genera en el PC de Antonio vía cola flow_queue.php) =====
-    const FLOW_QUEUE_URL = 'flow_queue.php';
-    const callFlowQueue = async (prompt, imageDataUrl, ratio = '1:1') => {
-        const req = await fetch(FLOW_QUEUE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'request', prompt, ratio, image: imageDataUrl })
-        });
-        const rj = await req.json().catch(() => null);
-        if (!rj || !rj.ok) throw new Error((rj && rj.error) || 'No se pudo encolar en Flow.');
-        const id = rj.id;
-        for (let i = 0; i < 100; i++) {
-            await delay(5000);
-            const st = await fetch(FLOW_QUEUE_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'status', id })
-            }).then(r => r.json()).catch(() => null);
-            if (!st || !st.ok) continue;
-            if (st.status === 'done') {
-                const imgRes = await fetch(st.image + '?t=' + Date.now());
-                const blob = await imgRes.blob();
-                const b64 = await new Promise(res => {
-                    const rd = new FileReader();
-                    rd.onload = () => res(rd.result.split(',')[1]);
-                    rd.readAsDataURL(blob);
-                });
-                return { image: b64, mimeType: 'image/jpeg', aspectRatio: ratio };
-            }
-            if (st.status === 'error') throw new Error(st.error || 'Flow falló.');
-            if (loadingStatus) loadingStatus.textContent = 'Flow generando en tu PC (2-4 min)...';
-        }
-        throw new Error('Flow tardó demasiado. Reintenta más tarde.');
-    };
-
     startButton.addEventListener('click', async () => {
         startButton.disabled = true;
         processingSection.classList.remove('hidden');
@@ -246,9 +210,7 @@ previewGrid.addEventListener('click', (e) => {
                         prompt: "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page. Convert all visual elements (people, objects, backgrounds) into consistent, smooth, distinct black outlines using clean uniform lines. Completely eliminate all colors, gradients, shading, textures, and gray fills: the result must be purely black lines on pure white background. Simplify complex shapes to create clear areas of white space easy to color. Maintain the original composition, perspective, and key elements. The final drawing must be sharp, without artifacts or smudges, ready to be printed and hand-colored."
                 };
 
-                const data = selectedModel === 'flow'
-                    ? await callFlowQueue(requestBody.prompt, "data:" + requestBody.mimeType + ";base64," + base64, '1:1')
-                    : await callProxyWithWait(requestBody);
+                const data = await callProxyWithWait(requestBody);
 
                 if (data.image) {
                     const resultAspectRatio = data.aspectRatio || '1:1';
