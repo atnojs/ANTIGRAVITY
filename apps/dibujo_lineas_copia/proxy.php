@@ -85,37 +85,70 @@ function dallePrompt(string $prompt): string {
 
 // Modelo de VISIÓN del proyecto (OpenRouter xiaomi/mimo-v2.6-pro, clave R):
 // traduce la imagen de referencia a texto porque DALL-E 3 no puede ver imágenes.
-function visionDescribeImage(string $binary, string $mimeType, string $orKey): string {
-    if ($orKey === '' || $binary === '') return '';
+// $reason devuelve el motivo exacto del fallo para poder mostrarlo al usuario.
+function visionShorten(string $text, int $max): string {
+    $text = trim((string)preg_replace('/\s+/', ' ', $text));
+    if (function_exists('mb_substr')) return mb_substr($text, 0, $max, 'UTF-8');
+    return rtrim(substr($text, 0, $max), "\xC0-\xFF\x80-\xBF");
+}
+
+function visionDescribeImage(string $binary, string $mimeType, string $orKey, string &$reason = ''): string {
+    if ($orKey === '') { $reason = 'la clave OpenRouter (R) no está disponible para esta app'; return ''; }
+    if ($binary === '') { $reason = 'la imagen de referencia llegó vacía'; return ''; }
+
+    // Mismo payload que el resto del proyecto (apps/decorar_habitacion,
+    // apps/outfit): imagen primero, texto después y sin límite de tokens.
     $payload = [
-        'model'      => 'xiaomi/mimo-v2.6-pro',
-        'max_tokens' => 900,
-        'messages'   => [[
+        'model'    => 'xiaomi/mimo-v2.6-pro',
+        'stream'   => false,
+        'messages' => [[
             'role'    => 'user',
             'content' => [
-                ['type' => 'text', 'text' => 'Describe en español, con detalle y sin interpretar, la imagen adjunta: personas, objetos, encuadre, perspectiva, poses, ropa, entorno y elementos principales. Responde solo con la descripción, sin títulos ni listas.'],
                 ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . base64_encode($binary)]],
+                ['type' => 'text', 'text' => 'Describe en español, con detalle y sin interpretar, la imagen adjunta: personas, objetos, encuadre, perspectiva, poses, ropa, entorno y elementos principales. Responde solo con la descripción, sin títulos ni listas.'],
             ],
         ]],
     ];
-    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Authorization: Bearer ' . $orKey],
-        CURLOPT_TIMEOUT        => 90,
-        CURLOPT_CONNECTTIMEOUT => 15,
-    ]);
-    $resp = curl_exec($ch);
-    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    if (!is_string($resp) || $resp === '' || $code < 200 || $code >= 300) return '';
-    $data = json_decode($resp, true);
-    if (!is_array($data)) return '';
-    $content = $data['choices'][0]['message']['content'] ?? '';
-    if (is_array($content)) { $text = ''; foreach ($content as $part) if (isset($part['text'])) $text .= ' ' . $part['text']; $content = $text; }
-    return trim((string)$content);
+
+    $lastReason = 'sin respuesta del modelo de visión';
+    // Dos intentos: cubre cortes transitorios de OpenRouter sin gastar en DALL-E 3.
+    for ($attempt = 0; $attempt < 2; $attempt++) {
+        $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Authorization: Bearer ' . $orKey, 'accept: application/json'],
+            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_CONNECTTIMEOUT => 20,
+        ]);
+        $resp = curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
+        curl_close($ch);
+
+        if (!is_string($resp) || $resp === '') {
+            $lastReason = 'sin respuesta de OpenRouter (' . ($err !== '' ? $err : 'tiempo agotado') . ')';
+            continue;
+        }
+        $data = json_decode($resp, true);
+        if ($code < 200 || $code >= 300 || !is_array($data)) {
+            $msg = is_array($data) ? ($data['error']['message'] ?? ('HTTP ' . $code)) : ('HTTP ' . $code);
+            if (is_array($msg)) $msg = json_encode($msg, JSON_UNESCAPED_UNICODE);
+            $lastReason = 'OpenRouter HTTP ' . $code . ': ' . visionShorten((string)$msg, 200);
+            // 401/403/404 no se arreglan reintentando; 429 y 5xx sí.
+            if ($code >= 400 && $code < 500 && $code !== 429) break;
+            continue;
+        }
+        $content = $data['choices'][0]['message']['content'] ?? '';
+        if (is_array($content)) { $text = ''; foreach ($content as $part) if (isset($part['text'])) $text .= ' ' . $part['text']; $content = $text; }
+        $text = trim((string)$content);
+        if ($text !== '') return $text;
+        $lastReason = 'el modelo de visión devolvió texto vacío';
+    }
+
+    $reason = $lastReason;
+    return '';
 }
 
 function geminiAspectRatio(int $sourceWidth, int $sourceHeight): string {
@@ -310,10 +343,11 @@ if ($backend === 'openai') {
     // se traduce a una descripcion con el modelo de vision (clave R).
     // ================================================================
     if ($openaiGenerationOnly) {
-        $description = visionDescribeImage($imgBinary, $mimeType, $orKey);
+        $reason = '';
+        $description = visionDescribeImage($imgBinary, $mimeType, $orKey, $reason);
         if ($description === '') {
             http_response_code(502);
-            echo json_encode(['error'=>['message'=>'No se pudo analizar la imagen de referencia (modelo de vision no disponible). Prueba de nuevo o elige otro modelo.']]);
+            echo json_encode(['error'=>['message'=>'No se pudo analizar la imagen de referencia: ' . $reason . '. Prueba de nuevo o elige otro modelo.']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             exit;
         }
 

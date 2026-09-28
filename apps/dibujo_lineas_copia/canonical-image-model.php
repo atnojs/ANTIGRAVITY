@@ -139,44 +139,50 @@ function ag_image_dalle_prompt(string $prompt): string
     return (string)preg_replace('/(?:[\xC0-\xFF][\x80-\xBF]*)$/', '', $cut);
 }
 
-function ag_image_describe(string $image, string $configDir, string $mimeHint = ''): string
+function ag_image_describe(string $image, string $configDir, string $mimeHint = '', string &$reason = ''): string
 {
     $key = ag_image_key($configDir, 'R');
-    if ($key === '') return '';
+    if ($key === '') { $reason = 'la clave OpenRouter (R) no está disponible'; return ''; }
     $image = trim($image);
     // El contrato canónico acepta base64 puro: se reconstruye el data URL con el
     // MIME real declarado por la app para que el modelo de visión no lo rechace.
     if ($mimeHint !== '' && strpos($image, 'data:') !== 0) $image = 'data:' . $mimeHint . ';base64,' . $image;
     [$binary, $mime] = ag_image_input($image);
+    // Mismo payload que el resto del proyecto: imagen primero, texto después y
+    // sin límite de tokens.
     $payload = [
         'model' => 'xiaomi/mimo-v2.6-pro',
-        'max_tokens' => 900,
+        'stream' => false,
         'messages' => [[
             'role' => 'user',
             'content' => [
-                ['type'=>'text','text'=>'Describe en español, con detalle y sin interpretar, la imagen adjunta: personas, objetos, encuadre, perspectiva, poses, ropa, entorno y elementos principales. Responde solo con la descripción, sin títulos ni listas.'],
                 ['type'=>'image_url','image_url'=>['url'=>'data:'.$mime.';base64,'.base64_encode($binary)]],
+                ['type'=>'text','text'=>'Describe en español, con detalle y sin interpretar, la imagen adjunta: personas, objetos, encuadre, perspectiva, poses, ropa, entorno y elementos principales. Responde solo con la descripción, sin títulos ni listas.'],
             ],
         ]],
     ];
     try {
         $data = ag_image_json('https://openrouter.ai/api/v1/chat/completions', ['Authorization: Bearer '.$key, 'Content-Type: application/json'], $payload);
     } catch (Throwable $error) {
+        $reason = 'error del modelo de visión: ' . $error->getMessage();
         return '';
     }
     $content = $data['choices'][0]['message']['content'] ?? '';
     if (is_array($content)) { $text = ''; foreach ($content as $part) if (isset($part['text'])) $text .= ' ' . $part['text']; $content = $text; }
-    return trim((string)$content);
+    $content = trim((string)$content);
+    if ($content === '') { $reason = 'el modelo de visión devolvió texto vacío'; return ''; }
+    return $content;
 }
 
 function ag_image_dalle(array $selected, string $prompt, array $request, array $images, string $configDir, string $key): array
 {
     $description = '';
     if ($images !== []) {
-        $description = ag_image_describe($images[0], $configDir, (string)($request['mimeType'] ?? ''));
+        $reason = '';
+        $description = ag_image_describe($images[0], $configDir, (string)($request['mimeType'] ?? ''), $reason);
         // Sin descripción no hay conversión posible: mejor fallar antes de gastar
         // una generación que devolver un dibujo ajeno a la imagen subida.
-        if ($description === '') throw new RuntimeException('No se pudo analizar la imagen de referencia (modelo de visión no disponible). Prueba de nuevo o elige otro modelo.', 502);
+        if ($description === '') throw new RuntimeException('No se pudo analizar la imagen de referencia: ' . ($reason !== '' ? $reason : 'modelo de visión no disponible') . '. Prueba de nuevo o elige otro modelo.', 502);
         $prompt .= "\n\nReferencia visual de la imagen original (conserva composición, encuadre y elementos):\n" . $description;
     }
     $size = ag_image_dalle_size($request);
