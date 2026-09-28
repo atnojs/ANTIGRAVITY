@@ -22,19 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingText = document.getElementById('loading-text');
     const loadingStatus = document.getElementById('secondary-status');
 
-    // ===== Selector de modelo (toggle 4 botones) =====
-    const DEFAULT_MODEL = 'openai-medium';
+    // ===== Selector de modelo =====
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad media.
+    const DEFAULT_MODEL = 'openai-image-2';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
+        'openai-image-2': 'IMAGE 2',
+        'openai-image-2-high': 'IMAGE 2 HIGH',
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
         'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
-        'openai-mini': 'OPENAI MINI',
-        'openai-mini-high': 'OPENAI MINI HIGH',
         'qwen-pro': 'QWEN 3 PRO'
     };
     const modelToggles = document.querySelectorAll('.model-toggle');

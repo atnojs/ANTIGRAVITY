@@ -21,7 +21,7 @@ Selector de agentes (encima del cuadro de texto):
 | 14 | **Revisor Adversario** | Busca bugs y fallos de seguridad antes de entregar. |
 | 15 | **Orquestador Multiagente** | Divide el trabajo, asigna y coordina agentes. |
 | 16 | **Diseño Hoola** | Identidad visual, copywriting y landing pages. |
-| 17 | **Imágenes IA** | Prompts para DALL-E 3 y control de calidad de imagen. |
+| 17 | **Imágenes IA** | Prompts para OpenAI image 2 y control de calidad de imagen. |
 
 Los cuatro primeros son los mismos que explica el vídeo
 [Crea AGENTES de IA en DEEPSEEK HARNESS](https://www.youtube.com/watch?v=_YjTRMExXjQ&t=335s)

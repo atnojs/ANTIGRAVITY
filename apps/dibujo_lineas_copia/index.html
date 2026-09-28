@@ -50,7 +50,7 @@
           <span class="model-provider-title">OPENAI 2.5</span>
           <span class="model-quality-hint">De Menor a Mayor Calidad</span>
           <div class="model-toggle-group">
-            <button type="button" id="model-openai-medium" class="model-toggle active" data-model="openai-medium" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>
+            <button type="button" id="model-openai-medium" class="model-toggle" data-model="openai-medium" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>
             <button type="button" id="model-openai-high" class="model-toggle" data-model="openai-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente">HIGH</button>
             <button type="button" id="model-openai-xhigh" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>
             <button type="button" id="model-openai-maxflare" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst">MAX FLARE</button>
@@ -72,11 +72,11 @@
             </div>
           </div>
           <div class="model-provider-column">
-            <span class="model-provider-title">OPENAI MINI</span>
-            <span class="model-quality-hint">Control de costes</span>
+            <span class="model-provider-title">IMAGE 2</span>
+            <span class="model-quality-hint">Modelo base</span>
             <div class="model-toggle-group">
-              <button type="button" id="model-mini" class="model-toggle" data-model="openai-mini" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="El más económico de OpenAI (gpt-image-1-mini). Edita tu foto igual que los demás modelos.">MEDIUM</button>
-              <button type="button" id="model-mini-high" class="model-toggle" data-model="openai-mini-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-1-mini en calidad alta. Un paso por encima de MEDIUM.">HIGH</button>
+              <button type="button" id="model-image-2" class="model-toggle active" data-model="openai-image-2" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media. Edita tu foto a dibujo lineal.">MEDIUM</button>
+              <button type="button" id="model-image-2-high" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.">HIGH</button>
             </div>
           </div>
         </div>
@@ -121,6 +121,6 @@
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <script src="history-manager.js?v=8"></script>
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>

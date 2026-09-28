@@ -1,13 +1,11 @@
 <?php
 // ============================================================
 // PROXY PHP — Imagenes Lineales (unificado)
-// Soporta Gemini via OpenRouter (clave R), GPT Image directo de OpenAI
-// (OPENAI_API_KEY o clave O) y la opcion economica gpt-image-1-mini.
-// Selector de modelo: openai-mini / openai-mini-high / openai-medium /
+// Soporta Gemini via OpenRouter (clave R) y GPT Image directo de OpenAI
+// (OPENAI_API_KEY o clave O).
+// Selector de modelo: openai-image-2 / openai-image-2-high / openai-medium /
 // openai-high / openai-xhigh / openai-max-flare / openai-max-sunburst /
 // gemini-flash / gemini-pro / qwen-pro.
-// NOTA: dall-e-3 ya no existe en la cuenta de OpenAI (verificado con
-// {"action":"models"}); la familia vigente es gpt-image-*.
 // Contrato: recibe {image, mimeType, model?, prompt?}
 //           responde  {image, mimeType}
 // ============================================================
@@ -117,10 +115,10 @@ $modelCatalog = [
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-    // Opcion economica real: gpt-image-1-mini (el modelo de imagen mas barato de
-    // la cuenta) edita la foto subida igual que los demas, sin puentes.
-    'openai-mini'         => ['backend' => 'openai', 'model' => 'gpt-image-1-mini', 'quality' => 'medium'],
-    'openai-mini-high'    => ['backend' => 'openai', 'model' => 'gpt-image-1-mini', 'quality' => 'high'],
+    // Modelo base del proyecto: OpenAI image-2 (gpt-image-2). Edita la foto subida
+    // por /v1/images/edits, igual que el resto de modelos.
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
@@ -172,7 +170,7 @@ if (strtolower(trim((string)($req['action'] ?? ''))) === 'models') {
         $ids = [];
         foreach (($data['data'] ?? []) as $model) {
             $id = (string)($model['id'] ?? '');
-            if ($id !== '' && preg_match('/image|dall/i', $id) === 1) $ids[] = $id;
+            if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
         }
         sort($ids);
         if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
@@ -530,4 +528,4 @@ if ($backend === 'qwen') {
 
 // Modelo no reconocido
 http_response_code(400);
-echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-mini, openai-mini-high, openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash, gemini-pro o qwen-pro.']]);
+echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-image-2, openai-image-2-high, openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash, gemini-pro o qwen-pro.']]);
