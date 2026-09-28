@@ -763,13 +763,16 @@ if ($method === 'GET') respond(200, [
         'openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '',
         'openrouter'=>getSecret('R') !== '',
     ],
-    'actions'=>['adapt','generate','health'],
+    'actions'=>['adapt','generate','health','models'],
     'models'=>[
         'openai-medium'       => 'gpt-image-2.5-flare (medium)',
         'openai-high'         => 'gpt-image-2.5-flare (high)',
         'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
         'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
         'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+        'openai-image-2'      => 'gpt-image-2 (medium)',
+        'openai-image-2-high' => 'gpt-image-2 (high)',
+        'gemini-2'            => 'google/gemini-2.5-flash-image',
         'gemini-flash'        => 'google/gemini-3.1-flash-image',
         'gemini-pro'          => 'google/gemini-3-pro-image',
         'qwen-pro'            => 'qwen/qwen-image-3-pro',
@@ -779,7 +782,8 @@ if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no per
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== ''], 'models'=>array_keys(ag_image_catalog())]);
+if ($action === 'models') respond(200, ['success'=>true, 'models'=>array_keys(ag_image_catalog())]);
 if ($action === 'adapt') handleAdaptPrompt($request);
 if ($action === 'generate') handleGenerate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
