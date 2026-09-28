@@ -12,7 +12,7 @@ Cuando la tarea coincida con una de las skills disponibles, carga y aplica la sk
 
 ### crear-editar
 
-Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fija las reglas OBLIGATORIAS (estilo hoola, imágenes con FLUX, selectores PRO/MAX + formato + resolución, historial en servidor, proxy.php, diseño responsive, commit+push) y llama a las skills de detalle según haga falta. Úsala en cuanto la tarea sea "crea una app/web…", "haz una herramienta…", "edita / mejora / añade / cambia X en esta app".
+Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fija las reglas OBLIGATORIAS (estilo hoola, imágenes con DALL-E 3, selectores de calidad + formato + resolución, historial en servidor, proxy.php, diseño responsive, commit+push) y llama a las skills de detalle según haga falta. Úsala en cuanto la tarea sea "crea una app/web…", "haz una herramienta…", "edita / mejora / añade / cambia X en esta app".
 
 ## Skills de detalle y apoyo
 
@@ -38,7 +38,7 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 ### flux-bfl-imagenes
 
-Úsala para generar o editar imágenes con FLUX (Black Forest Labs): API asíncrona, proxy de polling, selectores PRO/MAX + formato + resolución.
+(Eliminada)
 
 ### estilo-web-relatos
 
@@ -48,23 +48,18 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 Úsala para dar historial persistente mediante PHP en Hostinger.
 
-### mejorar-prompt
-
-Úsala para afinar u optimizar un prompt o un encargo vago antes de crear nada.
-
 ## Reglas críticas del proyecto
 
-- Las imágenes se generan/editan SIEMPRE con FLUX (Black Forest Labs).
+- Las imágenes se generan/editan SIEMPRE con DALL-E 3 (OpenAI image-3/medium).
 - El estilo es SIEMPRE hoola/relatos: cian `#00D0D0` + verde `#26C626`, tipografía Electrolize, glassmorphism.
 - Todo lo que se cree o edite debe ser RESPONSIVE (se ve y funciona bien en móvil, tablet y escritorio).
-- Las apps que generen/editen imagen deben llevar selectores PRO/MAX + formato (AR) + resolución (512/1024/2048/4096).
+- Las apps que generen/editen imagen deben llevar selectores de calidad + formato (AR) + resolución (512/1024/2048/4096).
 - El historial es SIEMPRE persistente en el servidor mediante PHP en Hostinger.
 - No reescribas archivos completos desde cero si ya existen archivos del usuario. Modifica únicamente los bloques necesarios.
 - Antes de editar código, lee y comprende el archivo original.
 - Conserva las funcionalidades, rutas, nombres de archivos, IDs, clases y funciones existentes salvo petición expresa.
 - No introduzcas dependencias nuevas salvo que sean necesarias y estén justificadas.
 - No insertes claves API reales en archivos compartidos, documentación, ejemplos o código frontend.
-- La clave de FLUX va en `SetEnv F "bfl_..."` del `.htaccess` RAÍZ de Hostinger, NUNCA en git.
 - Si detectas una clave API expuesta, avisa de que debe revocarse y regenerarse.
 - En proyectos web, revisa accesibilidad básica: contraste, atributos `alt`, `loading="lazy"`, foco visible y estados de carga.
 - Haz commit + push tras CADA cambio de archivo (el webhook de Hostinger despliega automáticamente).
