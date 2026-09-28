@@ -1060,6 +1060,15 @@ h1, h2, h3, h4, .font-montserrat {
     font-weight: 700;
 }
 
+.section-header .search-wrap {
+    flex: 1 1 260px;
+}
+
+@media (max-width: 768px) {
+    .section-header { flex-direction: column; align-items: stretch; }
+    .section-header .search-wrap { max-width: none; }
+}
+
 /* ═══════════════════════════════════════════
    PORTADA — ESTILO HOOLA / RELATOS
    ═══════════════════════════════════════════ */

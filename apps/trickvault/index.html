@@ -2411,7 +2411,7 @@ function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, o
             : tricks.filter(t => t.category === categoryId);
         if (search.trim()) {
             const q = search.toLowerCase();
-            result = result.filter(t => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || t.tags.some(tg => tg.toLowerCase().includes(q)));
+            result = result.filter(t => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || (t.codeSnippet || '').toLowerCase().includes(q) || t.tags.some(tg => tg.toLowerCase().includes(q)));
         }
         if (filter === 'favorites') result = result.filter(t => t.isFavorite);
         if (filter === 'beginner' || filter === 'intermediate' || filter === 'advanced') result = result.filter(t => t.difficulty === filter);
@@ -2444,6 +2444,16 @@ function TrickList({ tricks, folders, categoryId, onBack, onToggleFav, onEdit, o
 
             <div className="section-header">
                 <h2>{cat?.icon} {cat?.label} <span style={{color:'var(--muted)',fontSize:'0.9rem',fontWeight:400}}>({filtered.length} trucos)</span></h2>
+                <div className="search-wrap folder-search">
+                    <span className="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        placeholder={`Buscar código por nombre en ${cat?.label || 'esta carpeta'}...`}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        aria-label={`Buscar código por nombre en ${cat?.label || 'esta carpeta'}`}
+                    />
+                </div>
                 {canEdit && <button className="btn btn-primary btn-sm" onClick={onAdd}>✨ Nuevo Truco</button>}
             </div>
 
