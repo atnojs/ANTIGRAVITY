@@ -1,0 +1,18 @@
+# Plantillas de skills y endpoints de referencia: NO accesibles por web.
+#
+# Este repositorio se despliega en la raiz publica de Hostinger. Aqui vive la
+# copia canonica de proxy.php y history.php, que leen las claves del entorno y
+# llaman a OpenAI / OpenRouter. Publicos serian un proxy de IA gratuito para
+# cualquiera, pagado con tu saldo. Se deniega el directorio entero.
+#
+# Cada app lleva su propia copia, asi que denegar aqui no rompe ninguna.
+# Sintaxis doble: Apache 2.4 y 2.2 / LiteSpeed.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

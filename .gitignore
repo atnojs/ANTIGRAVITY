@@ -115,6 +115,8 @@ apps/decorar_habitacion/crops/
 !apps/banco_de_imagenes/config.php
 !apps/banco_de_imagenes/history_data/.htaccess
 !tools/.htaccess
+!skills/.htaccess
+!agent/.htaccess
 
 # Ignorar historiales e imágenes generadas
 **/history_data/
