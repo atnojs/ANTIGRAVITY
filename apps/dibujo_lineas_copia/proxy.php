@@ -12,12 +12,16 @@
 header('Content-Type: application/json');
 
 // ===== Claves: R (OpenRouter), OPENAI_API_KEY/O (OpenAI) =====
+// Prioridad: entorno (.htaccess raíz con SetEnv) y solo después el config.php
+// local de la app. Ese config.php no está en git y puede contener claves
+// antiguas: si se resuelve primero, una rotación de claves deja la app con 401
+// (comprobado en producción con apps/dibujo_lineas_copia/config.php).
 function getKey(string $name): string {
-    $config = __DIR__ . '/config.php';
-    if (file_exists($config)) { include $config; $k = defined($name) ? constant($name) : ''; if ($k !== '') return $k; }
     foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name]??'', $_SERVER['REDIRECT_'.$name]??'', $_ENV[$name]??'', $_ENV['REDIRECT_'.$name]??''] as $v) {
         if (!empty($v)) return (string)$v;
     }
+    $config = __DIR__ . '/config.php';
+    if (file_exists($config)) { include $config; $k = defined($name) ? constant($name) : ''; if ($k !== '') return $k; }
     return '';
 }
 
