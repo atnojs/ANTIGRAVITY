@@ -191,6 +191,24 @@ const ASPECT_RATIOS = [
     { id: AspectRatio.ULTRAWIDE, name: '21:9', icon: <Smartphone size={18} /> },
 ];
 
+// Resolución de salida (lado largo). Valores admitidos por el contrato canónico
+// (ag_image_size): 512, 1024, 2048 y 4096. OpenAI aplica su presupuesto de
+// píxeles (mínimo 1 MP, tope 4 MP), así que 512 acaba en 1 MP y 4096 en el tope.
+const RESOLUTIONS = [512, 1024, 2048, 4096];
+
+// Etiqueta de resolución para la tarjeta y el lightbox. Tolera el valor
+// heredado '1K' de las imágenes guardadas antes de existir este selector.
+const getSizeLabel = (size) => {
+    const value = String(size === undefined || size === null ? '' : size).trim();
+    if (value === '') return '—';
+    return /^\d+$/.test(value) ? `${value}px` : value;
+};
+
+// El contrato canónico solo traduce 'resolution' a tamaño real en los modelos
+// OpenAI (size en píxeles). Gemini y Qwen fijan 1K internamente, así que el
+// selector se desactiva con ellos para no dar una falsa sensación de control.
+const supportsResolution = (modelId) => /^openai-/.test(String(modelId || ''));
+
 // ── VIAJE EN EL TIEMPO: 15 eras históricas ──
 // Cada era aporta un sufijo de transformación (personaje + entorno + vestimenta)
 // que se inyecta en el prompt manteniendo los rasgos faciales de la persona.
@@ -405,7 +423,7 @@ const generateImage = async (params) => {
     const contents = [{ parts }];
     const config = {
         aspectRatio: params.aspectRatio,
-        resolution: '1K',
+        resolution: params.resolution || 1024,
         generationConfig: {
             imageConfig: {
                 aspectRatio: params.aspectRatio
@@ -429,7 +447,7 @@ const editImageConversation = async (params) => {
             { text: params.instruction }
         ]
     }];
-    const config = { aspectRatio: params.aspectRatio, resolution: '1K', generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
+    const config = { aspectRatio: params.aspectRatio, resolution: params.resolution || 1024, generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
     const result = await callProxy(window.selectedModel || 'openai-medium', contents, config);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "Error en la edición conversacional");
@@ -542,7 +560,7 @@ const ImageCard = ({ image, onDelete, onRegenerate, onEdit, onClick }) => {
         <div onClick={() => onClick && onClick(image)} className="group relative glass rounded-[2.5rem] overflow-hidden flex flex-col glass-hover cursor-zoom-in border-white/10 shadow-2xl">
             <div className="absolute top-4 left-4 z-10">
                 <div className="px-3 py-1 glass rounded-full text-[9px] uppercase text-white/90 border-white/5 backdrop-blur-md btn-canon">
-                    {image.era && image.era.shortName && image.era.shortName !== 'Sin Era' ? `${image.era.shortName} | ` : ''}{image.style ? image.style.name : 'Estilo'} | {image.aspectRatio} | {getModelLabel(image.model)}
+                    {image.era && image.era.shortName && image.era.shortName !== 'Sin Era' ? `${image.era.shortName} | ` : ''}{image.style ? image.style.name : 'Estilo'} | {image.aspectRatio} | {getSizeLabel(image.size)} | {getModelLabel(image.model)}
                 </div>
             </div>
             <div className="relative aspect-square bg-slate-950 overflow-hidden flex items-center justify-center">
@@ -654,6 +672,7 @@ const App = () => {
     const [selectedStyle, setSelectedStyle] = useState(STYLE_GROUPS.fotografia[1]);
     const [selectedEra, setSelectedEra] = useState(HISTORICAL_ERAS[0]);
     const [selectedAR, setSelectedAR] = useState(AspectRatio.SQUARE);
+    const [selectedRes, setSelectedRes] = useState(1024);
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -792,6 +811,7 @@ const App = () => {
                 prompt: effectivePrompt,
                 styleSuffix,
                 aspectRatio: selectedAR,
+                resolution: selectedRes,
                 sourceImage: finalSourceImage
             });
 
@@ -809,7 +829,7 @@ const App = () => {
                 era: selectedEra,
                 aspectRatio: selectedAR,
                 model: selectedModel,
-                size: '1K',
+                size: selectedRes,
                 mode: mode,
                 createdAt: Date.now()
             };
@@ -846,6 +866,7 @@ const App = () => {
         if (img.era) setSelectedEra(img.era);
         setSelectedAR(img.aspectRatio);
         if (img.model) setSelectedModel(img.model);
+        if (/^\d+$/.test(String(img.size || ''))) setSelectedRes(Number(img.size));
         handleGenerate(img.prompt);
     };
 
@@ -862,9 +883,10 @@ const App = () => {
             const updatedUrl = await editImageConversation({
                 originalImage: compressedOriginal,
                 instruction: editInstruction,
-                aspectRatio: editImage.aspectRatio
+                aspectRatio: editImage.aspectRatio,
+                resolution: selectedRes
             });
-            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, mode: mode, model: selectedModel, createdAt: Date.now() };
+            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, mode: mode, model: selectedModel, size: selectedRes, createdAt: Date.now() };
             await saveHistoryItemToDb(updatedImage);
             setImages([updatedImage, ...images]);
             setEditImage(null);
@@ -872,6 +894,7 @@ const App = () => {
     };
 
     const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim()) || (mode === 'remix' && !remixSource);
+    const resolutionApplies = supportsResolution(selectedModel);
 
     return (
         <ApiKeyChecker>
@@ -1001,6 +1024,28 @@ const App = () => {
                                 </div>
                             </div>
 
+                            <div className="space-y-4">
+                                <label className="btn-canon text-[11px] text-cyan-400">Resolución</label>
+                                <div className="grid grid-cols-4 gap-2" role="group" aria-label="Seleccionar resolución">
+                                    {RESOLUTIONS.map((res) => (
+                                        <button
+                                            key={res}
+                                            type="button"
+                                            onClick={() => setSelectedRes(res)}
+                                            disabled={!resolutionApplies}
+                                            aria-pressed={selectedRes === res}
+                                            className={`aspect-ratio-button ${selectedRes === res ? 'active' : ''} disabled:opacity-30 disabled:cursor-not-allowed`}
+                                        >
+                                            <div className="flex items-center justify-center"><LayoutGrid size={18} /></div>
+                                            <span className="btn-canon text-[9px]">{res}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <span className="model-quality-hint">
+                                    {resolutionApplies ? 'Lado largo · OpenAI ajusta a 1-4 MP' : 'No aplica: Gemini y Qwen fijan 1K'}
+                                </span>
+                            </div>
+
                             {/* ── Selector de Modelo IA (canonico hoola) ── */}
                             <div className="model-selector">
                               <span className="model-selector-label">Modelo IA</span>
@@ -1090,7 +1135,7 @@ const App = () => {
                                         {lightboxImage.era && lightboxImage.era.shortName && lightboxImage.era.shortName !== 'Sin Era' ? <span className="text-cyan-400">{lightboxImage.era.shortName}</span> : null}
                                         <span className="text-cyan-400">{lightboxImage.aspectRatio}</span>
                                         <span className="text-cyan-400">{getModelLabel(lightboxImage.model)}</span>
-                                        <span>RES: {lightboxImage.size}</span>
+                                        <span>RES: {getSizeLabel(lightboxImage.size)}</span>
                                         <span className="text-gray-600">ID: {lightboxImage.id}</span>
                                     </div>
                                 </div>
