@@ -7,14 +7,9 @@
 // ============================================================
 header('Content-Type: application/json');
 
-// ===== CLAVE FLUX (variable 'F'): cascade .htaccess raíz / entorno =====
-// (Mismo patrón que 'A' para Gemini. La clave va en SetEnv F "bfl_..." del .htaccess raíz.)
+// ===== CLAVE FLUX (variable 'F'): fuente única, el entorno del .htaccess raíz =====
+// (La clave va en SetEnv F "bfl_..." del .htaccess raíz de Hostinger.)
 $apiKey = '';
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('F') ? F : '';
-}
 if (!$apiKey || empty($apiKey)) { $apiKey = getenv('F'); }
 if (!$apiKey || empty($apiKey)) { $apiKey = getenv('REDIRECT_F'); }
 if (!$apiKey || empty($apiKey)) { $apiKey = $_SERVER['F'] ?? ''; }

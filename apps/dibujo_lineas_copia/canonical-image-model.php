@@ -38,16 +38,15 @@ function ag_image_selected(string $requested): array
     return ['id'=>$requested] + $catalog[$requested];
 }
 
+// Fuente ÚNICA de claves: el entorno, con las claves protegidas en el .htaccess
+// raíz de Hostinger (SetEnv). No se leen ficheros de configuración locales ni
+// constantes de clave: un fichero con claves antiguas provocaba 401 al rotarlas.
+// El parámetro $configDir se conserva solo por compatibilidad de firma con las
+// apps que llaman a ag_image_generate($request, $configDir).
 function ag_image_key(string $configDir, string ...$names): string
 {
-    static $configLoaded = [];
-    if ($configDir !== '' && !isset($configLoaded[$configDir])) {
-        if ($configDir !== '' && is_file($configDir . '/config.php')) include_once $configDir . '/config.php';
-        $configLoaded[$configDir] = true;
-    }
     foreach ($names as $name) {
-        if (defined($name) && is_string(constant($name)) && trim(constant($name)) !== '') return trim(constant($name));
-        foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_'.$name] ?? '', $_ENV[$name] ?? ''] as $value) {
+        foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_'.$name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_'.$name] ?? ''] as $value) {
             if (is_string($value) && trim($value) !== '') return trim($value);
         }
     }

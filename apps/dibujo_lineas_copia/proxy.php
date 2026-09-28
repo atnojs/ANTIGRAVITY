@@ -12,16 +12,14 @@
 header('Content-Type: application/json');
 
 // ===== Claves: R (OpenRouter), OPENAI_API_KEY/O (OpenAI) =====
-// Prioridad: entorno (.htaccess raíz con SetEnv) y solo después el config.php
-// local de la app. Ese config.php no está en git y puede contener claves
-// antiguas: si se resuelve primero, una rotación de claves deja la app con 401
-// (comprobado en producción con apps/dibujo_lineas_copia/config.php).
+// Fuente ÚNICA: el entorno, con las claves protegidas en el .htaccess raíz de
+// Hostinger (SetEnv R / SetEnv OPENAI_API_KEY). No se leen ficheros de
+// configuración locales ni constantes de clave: un fichero con claves antiguas
+// provocaba 401 al rotarlas.
 function getKey(string $name): string {
     foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name]??'', $_SERVER['REDIRECT_'.$name]??'', $_ENV[$name]??'', $_ENV['REDIRECT_'.$name]??''] as $v) {
-        if (!empty($v)) return (string)$v;
+        if (is_string($v) && trim($v) !== '') return trim($v);
     }
-    $config = __DIR__ . '/config.php';
-    if (file_exists($config)) { include $config; $k = defined($name) ? constant($name) : ''; if ($k !== '') return $k; }
     return '';
 }
 
@@ -196,6 +194,33 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     exit;
 }
 
+// ===== Seleccion de modelo (lista blanca exacta) =====
+$modelCatalog = [
+    'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    // DALL-E 3: solo generacion (sin edicion), calidad standard / hd.
+    'dall-e-3'            => ['backend' => 'openai', 'model' => 'dall-e-3', 'quality' => 'standard', 'generation_only' => true],
+    'dall-e-3-hd'         => ['backend' => 'openai', 'model' => 'dall-e-3', 'quality' => 'hd', 'generation_only' => true],
+    'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
+];
+
+// ===== Comprobacion de salud (no gasta API): que claves ve el entorno y que
+// modelos acepta el proxy. Uso: POST {"action":"health"}. Nunca devuelve claves.
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['openai' => $openaiKey !== '', 'openrouter' => $orKey !== ''],
+        'models'     => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 $imageB64 = (string)($req['image'] ?? '');
 $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
 $prompt   = (string)($req['prompt'] ?? "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page. Convert all visual elements (people, objects, backgrounds) into consistent, smooth, distinct black outlines using clean uniform lines. Completely eliminate all colors, gradients, shading, textures, and gray fills: the result must be purely black lines on pure white background. Simplify complex shapes to create clear areas of white space easy to color. Maintain the original composition, perspective, and key elements. The final drawing must be sharp, without artifacts or smudges, ready to be printed and hand-colored.");
@@ -230,20 +255,6 @@ $sourceHeight = (int)($imageInfo[1] ?? 0);
 $openaiSize = openAiOutputSize($sourceWidth, $sourceHeight);
 $geminiRatio = geminiAspectRatio($sourceWidth, $sourceHeight);
 
-// ===== Seleccion de modelo (lista blanca exacta) =====
-$modelCatalog = [
-    'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
-    'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
-    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
-    'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
-    'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-    // DALL-E 3: solo generacion (sin edicion), calidad standard / hd.
-    'dall-e-3'            => ['backend' => 'openai', 'model' => 'dall-e-3', 'quality' => 'standard', 'generation_only' => true],
-    'dall-e-3-hd'         => ['backend' => 'openai', 'model' => 'dall-e-3', 'quality' => 'hd', 'generation_only' => true],
-    'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
-    'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
-    'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
-];
 $reqModel = strtolower((string)($req['model'] ?? 'openai-medium'));
 if (!isset($modelCatalog[$reqModel])) {
     http_response_code(400);

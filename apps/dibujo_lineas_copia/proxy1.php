@@ -2,12 +2,9 @@
 header('Content-Type: application/json');
 
 $apiKey = '';
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('A') ? A : '';
-}
 
-// Si no está en .htaccess raiz, buscar en variables de entorno (incluyendo prefijos de redirección FastCGI)
+// La clave vive en el .htaccess raíz de Hostinger (SetEnv) y se resuelve solo
+// desde el entorno (incluidos los prefijos de redirección de FastCGI).
 if (!$apiKey || empty($apiKey)) {
     $apiKey = getenv('A');
 }
