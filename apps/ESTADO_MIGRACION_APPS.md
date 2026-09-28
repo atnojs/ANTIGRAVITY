@@ -8,6 +8,27 @@ el protocolo tal cual. Todo lo verificado está marcado; lo que no, también.
 > pasas a la siguiente hasta verificarla en producción. Trabaja sobre `main`, sin ramas ni
 > worktrees. Al terminar cada app, actualiza su fila en el §6.1.
 
+### Cómo arrancar esta noche (el usuario NO estará disponible)
+
+1. **Lee este documento entero antes de tocar nada.**
+2. **Crea un objetivo persistente** para que el trabajo siga en rondas automáticas aunque
+   nadie responda. Usa `create_goal` con este objetivo:
+
+   > Actualizar las apps del §6.1 de apps/ESTADO_MIGRACION_APPS.md una a una, verificando
+   > cada una en producción antes de pasar a la siguiente: sin FLUX, sin DALL-E, sin
+   > config.php (claves solo del entorno), historial en history_store/ no versionado, y
+   > gemini-2 integrado con los botones de menor a mayor capacidad. Mantener actualizado el
+   > §6.1 del documento. Ignorar por completo el §6.2.
+
+3. **Trabaja en bucle**: siguiente app del §6.1 → protocolo §4 → verificar en producción →
+   marcar la fila como ✅ en el §6.1 → commit → siguiente app. No pidas confirmación para
+   cada paso: el usuario quiere encontrarlo hecho.
+4. **Si el contexto se agota**: no dejes una app a medias. Termina la que tengas entre
+   manos (o revierte sus cambios), actualiza el §6.1 con el estado real y deja escrito
+   cuál es la siguiente app. Así una tercera sesión puede continuar sin preguntar.
+5. **No inventes nada**: los identificadores de modelo, los precios y las carpetas se
+   comprueban con las herramientas del §5 y con la cuenta real.
+
 ---
 
 ## 1. Objetivo
