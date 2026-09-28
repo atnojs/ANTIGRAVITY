@@ -30,6 +30,10 @@ Instrucciones para que un modelo se conecte a GitHub..txt
 config.php
 secreto.json
 auth_zoer.php
+# Credenciales de cliente de Google (OAuth). El fichero real lleva el ID y el
+# dominio en el nombre:
+# client_secret_<id>-<hash>.apps.googleusercontent.com.json
+client_secret*.json
 
 # Basura de la descarga
 _public_html.zip
