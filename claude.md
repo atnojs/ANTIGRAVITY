@@ -10,11 +10,31 @@ Cuando la tarea coincida con una de las skills disponibles, carga y aplica la sk
 
 ## Skill maestra (cárgala SIEMPRE para crear o editar apps/webs)
 
-### crear-editar
+### crear
 
 Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fija las reglas OBLIGATORIAS (estilo hoola, imágenes con DALL-E 3, selectores de calidad + formato + resolución, historial en servidor, proxy.php, diseño responsive, commit+push) y llama a las skills de detalle según haga falta. Úsala en cuanto la tarea sea "crea una app/web…", "haz una herramienta…", "edita / mejora / añade / cambia X en esta app".
 
 ## Skills de detalle y apoyo
+
+### analista-visual-pro
+
+Úsala para el análisis visual hiperpreciso de una imagen: describirla, clonarla o extraer su prompt.
+
+### arquitecto-backend-php-hostinger
+
+Úsala cuando haya que configurar un proxy PHP seguro para llamadas a APIs de IA en Hostinger o proteger claves API.
+
+### auditor-lighthouse-accesibilidad
+
+Úsala de forma obligatoria como control de calidad técnico final antes de dar por completado un desarrollo o edición web.
+
+### brainstorming-pro
+
+Úsala para generar opciones creativas con criterio (nombres, hooks, formatos, enfoques) y obtener una recomendación clara.
+
+### cirujano-codigo-produccion
+
+Úsala siempre que haya que corregir, mejorar o refactorizar código existente sin destruir lo que ya funciona.
 
 ### director-orquestador-multiagente
 
@@ -24,29 +44,17 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 Úsala cuando se solicite crear un nuevo skill reutilizable o convertir un procedimiento en instrucciones estructuradas.
 
-### cirujano-codigo-produccion
-
-Úsala siempre que haya que corregir, mejorar o refactorizar código existente sin destruir lo que ya funciona.
-
-### auditor-lighthouse-accesibilidad
-
-Úsala como control de calidad final en desarrollos web o ediciones de HTML, CSS, JSX o TSX.
-
-### arquitecto-backend-php-hostinger
-
-Úsala cuando haya que configurar un proxy PHP seguro para llamadas a APIs de IA en Hostinger o proteger claves API.
-
-### flux-bfl-imagenes
-
-(Eliminada)
-
-### estilo-web-relatos
-
-Úsala para aplicar el estilo hoola/relatos (cian #00D0D0 + verde #26C626, Electrolize, glassmorphism) a una app o web.
-
 ### history-server
 
 Úsala para dar historial persistente mediante PHP en Hostinger.
+
+### planificacion-pro
+
+Úsala para convertir una idea en un plan ejecutable por fases, con checklist, riesgos y entregables.
+
+### style-guide-antigravity
+
+Úsala para aplicar el estilo hoola/relatos (cian #00D0D0 + verde #26C626, Electrolize, glassmorphism) a una app o web.
 
 ## Reglas críticas del proyecto
 
