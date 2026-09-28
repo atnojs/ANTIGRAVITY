@@ -150,6 +150,11 @@ function imageModelCatalog(): array {
         'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
         'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
         'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+        // Modelo base del proyecto: OpenAI image-2 (gpt-image-2), medium por defecto.
+        'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+        'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
+        // Gemini de menor a mayor capacidad: gemini-2 es el más ligero del grupo.
+        'gemini-2'            => ['backend' => 'gemini', 'model' => 'google/gemini-2.5-flash-image'],
         'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
         'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
     ];
@@ -157,7 +162,7 @@ function imageModelCatalog(): array {
 
 function handleImageGenerate(array $request): void {
     $catalog = imageModelCatalog();
-    $reqModel = strtolower((string)($request['model'] ?? 'openai-medium'));
+    $reqModel = strtolower((string)($request['model'] ?? 'openai-image-2'));
     if (!isset($catalog[$reqModel])) {
         respond(400, ['success' => false, 'error' => 'Modelo no soportado.']);
     }
@@ -307,14 +312,43 @@ $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['openrouter'=>getSecret('R') !== ''],
-    'actions'=>['generate','openrouter','text','download_url','health'],
+    'configured'=>['openai'=>openAiKey() !== '', 'openrouter'=>getSecret('R') !== ''],
+    'actions'=>['generate','openrouter','text','download_url','health','models'],
+    'models'=>array_keys(imageModelCatalog()),
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, [
+    'success'=>true,
+    'configured'=>['openai'=>openAiKey() !== '', 'openrouter'=>getSecret('R') !== ''],
+    'models'=>array_keys(imageModelCatalog()),
+]);
+if ($action === 'models') {
+    // Diagnóstico real: qué modelos de IMAGEN ofrece la cuenta de OpenAI.
+    $key = openAiKey();
+    if ($key === '') respond(500, ['success'=>false, 'error'=>'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']);
+    $ch = curl_init('https://api.openai.com/v1/models');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $key],
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if ($code >= 400 || !is_array($data)) respond(502, ['success'=>false, 'error'=>'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']);
+    $ids = [];
+    foreach (($data['data'] ?? []) as $model) {
+        $id = (string)($model['id'] ?? '');
+        if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+    }
+    sort($ids);
+    respond(200, ['success'=>true, 'imageModels'=>$ids]);
+}
 if ($action === 'diagnose') handleDiagnose();
 if ($action === 'setup_ytdlp') handleSetupYtDlp();
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
