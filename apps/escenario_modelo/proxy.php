@@ -475,7 +475,7 @@ $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['openrouter'=>getSecret('R') !== ''],
+    'configured'=>['openai'=>openAiKeyValue() !== '', 'openrouter'=>getSecret('R') !== ''],
     'actions'=>['generate','openrouter','text','health','models'],
     'models'=>proxyModelCatalog(),
 ]);
