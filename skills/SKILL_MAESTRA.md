@@ -540,12 +540,12 @@ El campo selector de modelo IA es una **barra de toggles pill unificada** (estil
 
 ### Orden de los modelos (menor → mayor capacidad)
 
-La referencia vigente es `apps/dibujo_lineas_copia`: los botones se agrupan por proveedor en columnas (`.model-provider-layout` → `.model-provider-column`), cada grupo con su título y su barra de píldoras. Orden actual:
+La referencia vigente es `apps/dibujo_lineas_copia`: los botones se agrupan por proveedor en columnas (`.model-provider-layout` → `.model-provider-column`), cada grupo con su título y su barra de píldoras. Regla de orden: **de izquierda a derecha, de menor a mayor calidad DENTRO de cada modelo real** (primero todos los de un modelo, en orden creciente; después los del siguiente). Orden actual:
 
-1. Columna `OPENAI 2.5` (de menor a mayor): `MEDIUM` — `openai-medium` — `gpt-image-2.5-flare` / `medium`; `HIGH` — `openai-high` — `gpt-image-2.5-flare` / `high`; `XHIGH` — `openai-xhigh` — `gpt-image-2.5-sunburst` / `xhigh`; `MAX FLARE` — `openai-max-flare` — `gpt-image-2.5-flare` / `max`; `MAX SUNBURST` — `openai-max-sunburst` — `gpt-image-2.5-sunburst` / `max`.
-2. Columna `GEMINI`: `3.1 FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`; `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image`.
+1. Columna `OPENAI 2.5`, agrupada por modelo: primero `gpt-image-2.5-flare` → `MEDIUM` (`openai-medium` / `medium`), `HIGH` (`openai-high` / `high`), `MAX FLARE` (`openai-max-flare` / `max`); después `gpt-image-2.5-sunburst` → `XHIGH` (`openai-xhigh` / `xhigh`), `MAX SUNBURST` (`openai-max-sunburst` / `max`).
+2. Columna `GEMINI` (de menor a mayor): `3.1 FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`; `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image`.
 3. Columna `QWEN`: `QWEN 3 PRO` — `qwen-pro` — `qwen/qwen-image-3-pro`.
-4. Columna `IMAGE 2`: `MEDIUM` — `openai-image-2` — `gpt-image-2` / `medium`; `HIGH` — `openai-image-2-high` — `gpt-image-2` / `high`.
+4. Columna `IMAGE 2` (de menor a mayor): `MEDIUM` — `openai-image-2` — `gpt-image-2` / `medium`; `HIGH` — `openai-image-2-high` — `gpt-image-2` / `high`.
 
 Estado inicial: **`openai-image-2` (IMAGE 2 · MEDIUM) seleccionado**. No cambiar ids, etiquetas ni el estado inicial sin petición expresa.
 
@@ -709,7 +709,7 @@ Fallback seguro para valores omitidos: `openai-image-2`. Los modelos de OpenAI s
 
 1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
 2. Probar que las barras de toggles no desbordan el panel y que no existe scroll horizontal ni texto recortado.
-3. Verificar las etiquetas y los identificadores completos de cada columna: `IMAGE 2` (`MEDIUM` = `openai-image-2`, `HIGH` = `openai-image-2-high`), `OPENAI 2.5` (`MEDIUM`, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`), `GEMINI` (`3.1 FLASH`, `3 PRO`) y `QWEN` (`QWEN 3 PRO`).
+3. Verificar las etiquetas y los identificadores completos de cada columna, en el orden de menor a mayor calidad dentro de cada modelo: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `MAX FLARE` del modelo flare; `XHIGH`, `MAX SUNBURST` del modelo sunburst), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`MEDIUM`, `HIGH`).
 4. Probar estados normal, hover y activo: activo con gradiente `contenedor→cian` y texto `#CCFFFF`.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
 6. Confirmar `openai-image-2` (IMAGE 2 · MEDIUM) como estado inicial y revisar el payload de todos los botones.
