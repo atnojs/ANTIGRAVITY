@@ -107,7 +107,7 @@
   // ============================================================
   let currentTool = null;
   let isProcessing = false;
-  let selectedModel = 'openai-medium';
+  let selectedModel = 'openai-image-2';
   let selectedAR = '1:1';      // aspect ratio elegido: '1:1','16:9','9:16','4:3','3:4'
   let selectedRes = 1024;      // resolución (lado mayor px): 512, 1024, 2048, 4096
 
@@ -555,10 +555,10 @@
             '<span class="model-provider-title">OPENAI 2.5</span>' +
             '<span class="model-quality-hint">De Menor a Mayor Calidad</span>' +
             '<div class="model-toggle-group">' +
-              '<button id="ai-quality-openai-medium" class="ai-quality-btn model-toggle active" data-model="openai-medium" type="button" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>' +
+              '<button id="ai-quality-openai-medium" class="ai-quality-btn model-toggle" data-model="openai-medium" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>' +
               '<button id="ai-quality-openai-high" class="ai-quality-btn model-toggle" data-model="openai-high" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente">HIGH</button>' +
-              '<button id="ai-quality-openai-xhigh" class="ai-quality-btn model-toggle" data-model="openai-xhigh" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>' +
               '<button id="ai-quality-openai-maxflare" class="ai-quality-btn model-toggle" data-model="openai-max-flare" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst">MAX FLARE</button>' +
+              '<button id="ai-quality-openai-xhigh" class="ai-quality-btn model-toggle" data-model="openai-xhigh" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>' +
               '<button id="ai-quality-openai-maxsunburst" class="ai-quality-btn model-toggle" data-model="openai-max-sunburst" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">MAX SUNBURST</button>' +
             '</div>' +
           '</div>' +
@@ -566,6 +566,7 @@
             '<span class="model-provider-title">GEMINI</span>' +
             '<span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>' +
             '<div class="model-toggle-group">' +
+              '<button id="ai-quality-gemini-2" class="ai-quality-btn model-toggle" data-model="gemini-2" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Gemini 2 (gemini-2.5-flash-image) · el más ligero y económico del grupo">GEMINI 2</button>' +
               '<button id="ai-quality-gemini-flash" class="ai-quality-btn model-toggle" data-model="gemini-flash" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>' +
               '<button id="ai-quality-gemini-pro" class="ai-quality-btn model-toggle" data-model="gemini-pro" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>' +
             '</div>' +
@@ -575,6 +576,14 @@
             '<span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>' +
             '<div class="model-toggle-group">' +
               '<button id="ai-quality-qwen-pro" class="ai-quality-btn model-toggle" data-model="qwen-pro" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="model-provider-column">' +
+            '<span class="model-provider-title">IMAGE 2</span>' +
+            '<span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>' +
+            '<div class="model-toggle-group">' +
+              '<button id="ai-quality-openai-image-2" class="ai-quality-btn model-toggle active" data-model="openai-image-2" type="button" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media. Edita la referencia manteniendo su identidad.">MEDIUM</button>' +
+              '<button id="ai-quality-openai-image-2-high" class="ai-quality-btn model-toggle" data-model="openai-image-2-high" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.">HIGH</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -659,7 +668,7 @@
     var qualityBtns = section.querySelectorAll('.ai-quality-btn');
     qualityBtns.forEach(function (qb) {
       qb.onclick = function () {
-        selectedModel = qb.getAttribute('data-model') || 'openai-medium';
+        selectedModel = qb.getAttribute('data-model') || 'openai-image-2';
         window.selectedAIModel = selectedModel;
         qualityBtns.forEach(function (b) {
           b.classList.remove('active');

@@ -127,24 +127,36 @@ sube la raíz completa, así que casi cualquier `/apps/<x>/index.html` responde 
 
 Orden recomendado (primero las del portal y las de más actividad):
 
-| # | App | Motivo | Historial |
-|---|---|---|---|
-| 1 | `angulos_de_camara` | portal + mucha actividad | 20 |
-| 2 | `escenario_modelo` | mucha actividad | 28 |
-| 3 | `imagenes_ia/ajustes_imagen` | mucha actividad | 23 |
-| 4 | `estilizador_prompt` | actividad | 19 |
-| 5 | `conversor_multimedia` | actividad | 13 |
-| 6 | `creador_memes` | actividad + `config.php` | 12 |
-| 7 | `infografia-referencia` | actividad | 10 |
-| 8 | `infografia` | actividad | 8 |
-| 9 | `vestir_modelo` | portal + actividad | 4 |
-| 10 | `imagenes_ia/editar_generar` | actividad | 6 |
-| 11 | `editar_generar` y `editar_generar_1` | actividad + `config.php` | 3 |
-| 12 | `galletas_infografias` | actividad + FLUX en front | 2 |
-| 13 | `prompt_copilot_premium` y `prompt_estudio` | actividad | 2 |
-| 14 | `imagenes_ia/generar`, `imagenes_ia/generar_copia`, `imagenes_ia/editar`, `imagenes_ia/copiar_estilo`, `imagenes_ia/combinar_imagenes`, `imagenes_ia/estilo_json`, `imagenes_ia/upscaler` | apps de imagen del proyecto | 0–2 |
-| 15 | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
-| 16 | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
+Estado: **✅ = migrada, commiteada y verificada en producción** (`health` con `gemini-2`,
+`history_store/` sirviendo las imágenes y orden real de los `data-model` correcto en el HTML
+servido). **⏳ = pendiente.**
+
+| # | Estado | App | Motivo | Historial |
+|---|---|---|---|---|
+| 1 | ✅ | `angulos_de_camara` | portal + mucha actividad | 20 |
+| 2 | ✅ | `escenario_modelo` | mucha actividad | 28 |
+| 3 | ⏳ | `imagenes_ia/ajustes_imagen` | mucha actividad | 23 |
+| 4 | ⏳ | `estilizador_prompt` | actividad | 19 |
+| 5 | ⏳ | `conversor_multimedia` | actividad | 13 |
+| 6 | ⏳ | `creador_memes` | actividad + `config.php` | 12 |
+| 7 | ⏳ | `infografia-referencia` | actividad | 10 |
+| 8 | ⏳ | `infografia` | actividad | 8 |
+| 9 | ⏳ | `vestir_modelo` | portal + actividad | 4 |
+| 10 | ⏳ | `imagenes_ia/editar_generar` | actividad | 6 |
+| 11 | ⏳ | `editar_generar` y `editar_generar_1` | actividad + `config.php` | 3 |
+| 12 | ⏳ | `galletas_infografias` | actividad + FLUX en front | 2 |
+| 13 | ⏳ | `prompt_copilot_premium` y `prompt_estudio` | actividad | 2 |
+| 14 | ⏳ | `imagenes_ia/generar`, `imagenes_ia/generar_copia`, `imagenes_ia/editar`, `imagenes_ia/copiar_estilo`, `imagenes_ia/combinar_imagenes`, `imagenes_ia/estilo_json`, `imagenes_ia/upscaler` | apps de imagen del proyecto | 0–2 |
+| 15 | ⏳ | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
+| 16 | ⏳ | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
+
+**Patrón aplicado por app** (§4, ya probado en las apps 1 y 2): `history.php` canónico
+copiado tal cual (datos en `history_store/`, con migración de un solo paso desde
+`history_data/`), `history-manager.js` canónico (sello anti-caché en la lista + shim de la
+API legacy), `gemini-2` como primer botón del grupo GEMINI, columna `IMAGE 2`
+(`openai-image-2` MEDIUM por defecto + `openai-image-2-high`), botones de `OPENAI 2.5` en
+orden MEDIUM, HIGH, MAX FLARE, XHIGH, MAX SUNBURST, y `action=health` que devuelve catálogo
+y claves configuradas (más `action=models` cuando la app no lo tenía).
 
 `dibujo_lineas_copia` ya está hecho y sirve de patrón (§9).
 

@@ -3492,7 +3492,7 @@ const updateSetting = (key, value) => {
 };
 
 const modelLabel = (m) => {
-  const labels = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGHT', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO' };
+  const labels = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-max-flare': 'MAX FLARE', 'openai-xhigh': 'XHIGH', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-2': 'GEMINI 2', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO', 'openai-image-2': 'IMAGE 2 MEDIUM', 'openai-image-2-high': 'IMAGE 2 HIGH' };
   return labels[m] || m;
 };
 

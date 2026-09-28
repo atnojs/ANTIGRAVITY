@@ -35,6 +35,92 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $canonicalBody = json_decode((string)file_get_contents('php://input'), true);
+$canonicalAction = strtolower(trim((string)($canonicalBody['action'] ?? '')));
+
+// Catálogo vigente del selector (identificadores -> modelo real). Fuente única:
+// ag_image_catalog() del contrato compartido (canonical-image-model.php). Nunca
+// se construye el modelo interpretando el texto que llega del cliente.
+function proxyModelCatalog(): array {
+    $catalog = function_exists('ag_image_catalog') ? ag_image_catalog() : [];
+    $out = [];
+    foreach ($catalog as $id => $entry) {
+        $out[$id] = ['backend' => $entry['provider'], 'model' => $entry['model']];
+        if (isset($entry['quality'])) $out[$id]['quality'] = $entry['quality'];
+    }
+    return $out;
+}
+
+function proxyKey(string $name): string {
+    foreach ([getenv($name), getenv('REDIRECT_' . $name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? ''] as $value) {
+        if (is_string($value) && trim($value) !== '') return trim($value);
+    }
+    return '';
+}
+
+function proxyOpenAiKey(): string {
+    $key = proxyKey('OPENAI_API_KEY');
+    if ($key === '') $key = proxyKey('O');
+    return $key;
+}
+
+// Diagnóstico (no gasta API): qué modelos de IMAGEN ofrece la cuenta de OpenAI.
+function proxyOpenAiImageModels(): array {
+    $key = proxyOpenAiKey();
+    if ($key === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $cacheDir = __DIR__ . '/qwen_cache';
+    $cacheFile = $cacheDir . '/openai_models.json';
+    $cached = is_file($cacheFile) ? json_decode((string)@file_get_contents($cacheFile), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        return (array)$cached['ids'];
+    }
+    $ch = curl_init('https://api.openai.com/v1/models');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $key],
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if ($code >= 400 || !is_array($data)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']]);
+        exit;
+    }
+    $ids = [];
+    foreach (($data['data'] ?? []) as $model) {
+        $id = (string)($model['id'] ?? '');
+        if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+    }
+    sort($ids);
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    @file_put_contents($cacheFile, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    return $ids;
+}
+
+// Salud (no gasta API): nunca devuelve claves, solo si están configuradas.
+if ($canonicalAction === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['openai' => proxyOpenAiKey() !== '', 'openrouter' => proxyKey('R') !== ''],
+        'models'     => array_keys(proxyModelCatalog()),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// Diagnóstico de modelos reales de la cuenta de OpenAI.
+if ($canonicalAction === 'models') {
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => proxyOpenAiImageModels()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 // ====================================================================
 // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Images API, sincrono + keepalive)
