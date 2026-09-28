@@ -1,9 +1,7 @@
----
-name: director-orquestador-multiagente
-description: "Activa este skill cuando se requiera coordinar tareas en paralelo con un equipo de agentes, gestionar dependencias en JSON, verificar bloqueos de archivos .lock o estructurar flujos de trabajo multiagente."
----
-
-# Director orquestador multiagente — puntero
+<!-- Fuente ÚNICA del bloque de modelos que se inserta literalmente en los punteros
+     de .claude/skills/*/SKILL.md. Si cambia algo aquí, ejecuta:
+         php tools/generar-punteros-skills.php
+     Así los 12 punteros quedan siempre idénticos y sin saltos de lectura. -->
 
 ## Modelos de imagen del proyecto (política vigente)
 
@@ -27,7 +25,3 @@ description: "Activa este skill cuando se requiera coordinar tareas en paralelo 
 - Claves solo desde el entorno (`SetEnv` del `.htaccess` raíz): `OPENAI_API_KEY` (u `O`) y `R`. El frontend nunca ve la clave.
 - Reglas completas y patrón del selector: `skills/SKILL_MAESTRA.md`. Referencia viva: `apps/dibujo_lineas_copia`.
 - **No cambies el modelo por defecto ni el catálogo sin petición expresa del usuario.**
-
-### Contenido completo de esta skill
-
-El texto íntegro de esta skill vive en **`skills/SKILL_director-orquestador-multiagente.md`** (relativo a la raíz del proyecto). Léelo y aplícalo tal cual para el resto del procedimiento. Si hay que cambiar algo de esa skill, se cambia SOLO en el árbol canónico `skills/`.

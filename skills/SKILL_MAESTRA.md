@@ -475,6 +475,8 @@ Al clonar el historial en una app nueva o existente:
    | `qwen-pro` | `qwen/qwen-image-3-pro` (OpenRouter Images API) | — |
 
    OpenAI image 2 (`gpt-image-2`) es el modelo base del proyecto y el seleccionado por defecto en calidad `medium`; image 2.5 son `gpt-image-2.5-flare` y `gpt-image-2.5-sunburst`.
+
+   Esta política está incrustada (sin saltos de lectura) en los 12 punteros de `.claude/skills/*/SKILL.md`. Su fuente única es `skills/POLITICA_modelos-imagen.md`: si cambia el catálogo, edítala ahí y ejecuta `php tools/generar-punteros-skills.php` para regenerar todos los punteros de una vez.
 4. La foto de referencia se edita SIEMPRE por `https://api.openai.com/v1/images/edits` (multipart) en los modelos de OpenAI. No enviar el parámetro `response_format`: la API actual lo rechaza con `400 Unknown parameter`. Si la respuesta trae una URL temporal en vez de `b64_json`, descargarla en el servidor antes de responder.
 5. Usar solo los identificadores de la lista anterior. Si hace falta otro modelo, comprobarlo antes con `POST {"action":"models"}` del proxy (devuelve los identificadores de imagen reales de la cuenta) y no inventarlo ni reutilizar nombres retirados.
 6. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
