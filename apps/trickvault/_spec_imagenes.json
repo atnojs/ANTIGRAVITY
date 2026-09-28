@@ -1,0 +1,122 @@
+[
+ {
+  "cmd": "/35mmfilm",
+  "folder": "visuales",
+  "id": 364,
+  "tpl": "Classic 35mm film photograph of [OBJETO], authentic analog film grain, soft vintage color palette, nostalgic timeless look, professional film camera aesthetic"
+ },
+ {
+  "cmd": "/holographic",
+  "folder": "visuales",
+  "id": 365,
+  "tpl": "Holographic effect of [OBJETO], iridescent rainbow light refraction, shimmering holographic material finish, futuristic prismatic surface, clean studio lighting"
+ },
+ {
+  "cmd": "/architecture",
+  "folder": "escenarios",
+  "id": 366,
+  "tpl": "Striking architectural photography of [OBJETO], dramatic building design, strong perspective lines, professional architecture magazine quality, clean geometric composition"
+ },
+ {
+  "cmd": "/group",
+  "folder": "persona",
+  "id": 367,
+  "tpl": "Natural group photo of [OBJETO], people posed together in a relaxed arrangement, balanced composition, warm friendly atmosphere, professional group portrait"
+ },
+ {
+  "cmd": "/candid",
+  "folder": "visuales",
+  "id": 368,
+  "tpl": "Candid spontaneous photo of [OBJETO], unposed natural moment, authentic documentary style, soft natural light, real-life atmosphere"
+ },
+ {
+  "cmd": "/illustration",
+  "folder": "visuales",
+  "id": 369,
+  "tpl": "Digital illustration of [OBJETO], vibrant colors, clean modern linework, artistic stylized interpretation, high quality illustration aesthetic"
+ },
+ {
+  "cmd": "/cartoon",
+  "folder": "visuales",
+  "id": 370,
+  "tpl": "Cartoon style image of [OBJETO], bold outlines, exaggerated playful features, animated character aesthetic, vibrant saturated colors"
+ },
+ {
+  "cmd": "/logo",
+  "folder": "producto",
+  "id": 371,
+  "tpl": "Professional logo design for [OBJETO], clean memorable brand identity, modern minimalist icon, balanced typography, versatile vector branding"
+ },
+ {
+  "cmd": "/poster",
+  "folder": "producto",
+  "id": 372,
+  "tpl": "Eye-catching poster design for [OBJETO], bold typography, dynamic graphic layout, professional promotional design, strong visual impact"
+ },
+ {
+  "cmd": "/banner",
+  "folder": "producto",
+  "id": 373,
+  "tpl": "Web banner design for [OBJETO], modern clean layout, balanced composition, professional graphic design, brand-ready social media banner"
+ },
+ {
+  "cmd": "/flyer",
+  "folder": "producto",
+  "id": 374,
+  "tpl": "Promotional flyer design for [OBJETO], clear information hierarchy, eye-catching graphics, professional print layout, modern marketing design"
+ },
+ {
+  "cmd": "/wallpaper",
+  "folder": "visuales",
+  "id": 375,
+  "tpl": "Beautiful wallpaper design featuring [OBJETO], high resolution digital art, clean aesthetic composition, subtle depth, mobile and desktop ready"
+ },
+ {
+  "cmd": "/invitation",
+  "folder": "producto",
+  "id": 376,
+  "tpl": "Elegant invitation card design for [OBJETO], refined typography, sophisticated premium layout, tasteful event stationery design"
+ },
+ {
+  "cmd": "/quitaobjeto",
+  "folder": "persona",
+  "id": 377,
+  "tpl": "Quita [OBJETO] de esta imagen por completo y reconstruye de forma realista el área detrás. Iguala el fondo, iluminación, sombras, texturas, reflejos, profundidad, perspectiva y detalles del entorno original."
+ },
+ {
+  "cmd": "/expandeimagen",
+  "folder": "persona",
+  "id": 378,
+  "tpl": "Expande esta imagen más allá de sus bordes actuales a [RELACIÓN DE ASPECTO O TAMAÑO] manteniendo todo lo que ya está dentro sin cambios. Continúa de forma natural el fondo, entorno, piso, paredes, cielo, escenario, objetos, iluminación, texturas y patrones."
+ },
+ {
+  "cmd": "/cambiahora",
+  "folder": "persona",
+  "id": 379,
+  "tpl": "Cambia esta escena de [HORA ACTUAL] a [AMANECER / HORA DORADA / ATARDECER / NOCHE]. Ajusta el cielo, dirección de la luz, temperatura de color, reflejos, sombras, ventanas y entorno para que todo coincida de forma convincente con la nueva hora."
+ },
+ {
+  "cmd": "/abreojos",
+  "folder": "persona",
+  "id": 380,
+  "tpl": "Corrige los ojos cerrados o entrecerrados de la persona para que se vean naturalmente abiertos y consistentes con su rostro, expresión, dirección de mirada, iluminación y forma de ojos. Mantén el cambio sutil y realista, sin alterar su identidad ni expresión."
+ },
+ {
+  "cmd": "/plancharopa",
+  "folder": "persona",
+  "id": 381,
+  "tpl": "Suaviza arrugas, pliegues y tela dispareja en la ropa que distraigan, manteniendo material, ajuste, costuras, textura y pliegues naturales realistas. Que el outfit se vea ordenado y presentable sin parecer pintado digitalmente."
+ },
+ {
+  "cmd": "/colorgrade",
+  "folder": "persona",
+  "id": 382,
+  "tpl": "Aplica un color grade profesional a esta imagen manteniendo los tonos de piel naturales y al sujeto sin cambios. Balancea luces y sombras, refina contraste y saturación, y dale a todo el encuadre un acabado cinematográfico consistente."
+ },
+ {
+  "cmd": "/mejora8k",
+  "folder": "persona",
+  "id": 383,
+  "tpl": "Mejora esta imagen a 8K para que se vea más nítida, limpia, clara y profesional, conservando la composición y el contenido original. Mejora detalles finos, iluminación, exposición, precisión de color, contraste y claridad general."
+ }
+]
