@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_MODEL = 'openai-image-2';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
+        'gemini-2': 'GEMINI 2',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'openai-image-2': 'IMAGE 2',

@@ -119,6 +119,7 @@ $modelCatalog = [
     // por /v1/images/edits, igual que el resto de modelos.
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'google/gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],

@@ -18,12 +18,13 @@ description: "Sistema de historial persistente server-side para apps Antigravity
 | `openai-max-flare` | `gpt-image-2.5-flare` | `max` |
 | `openai-xhigh` | `gpt-image-2.5-sunburst` | `xhigh` |
 | `openai-max-sunburst` | `gpt-image-2.5-sunburst` | `max` |
+| `gemini-2` | `google/gemini-2.5-flash-image` | — |
 | `gemini-flash` | `google/gemini-3.1-flash-image` | — |
 | `gemini-pro` | `google/gemini-3-pro-image` | — |
 | `qwen-pro` | `qwen/qwen-image-3-pro` | — |
 
 - Editar la foto de referencia: siempre `https://api.openai.com/v1/images/edits` (multipart) y **sin** `response_format`.
-- Orden de los botones: de izquierda a derecha, de menor a mayor calidad **dentro de cada modelo real** — `MEDIUM`, `HIGH`, `MAX FLARE` (gpt-image-2.5-flare); `XHIGH`, `MAX SUNBURST` (gpt-image-2.5-sunburst); `GEMINI` (`3.1 FLASH`, `3 PRO`); `QWEN` (`QWEN 3 PRO`); `IMAGE 2` (`MEDIUM` por defecto, `HIGH`).
+- Orden de los botones: de izquierda a derecha, de menor a mayor capacidad **dentro de cada modelo real** — `MEDIUM`, `HIGH`, `MAX FLARE` (gpt-image-2.5-flare); `XHIGH`, `MAX SUNBURST` (gpt-image-2.5-sunburst); `GEMINI 2`, `3.1 FLASH`, `3 PRO` (gemini-2.5-flash-image → gemini-3.1-flash-image → gemini-3-pro-image); `QWEN 3 PRO`; `IMAGE 2` (`MEDIUM` por defecto, `HIGH`).
 - Claves solo desde el entorno (`SetEnv` del `.htaccess` raíz): `OPENAI_API_KEY` (u `O`) y `R`. El frontend nunca ve la clave.
 - Reglas completas y patrón del selector: `skills/SKILL_MAESTRA.md`. Referencia viva: `apps/dibujo_lineas_copia`.
 - **No cambies el modelo por defecto ni el catálogo sin petición expresa del usuario.**
