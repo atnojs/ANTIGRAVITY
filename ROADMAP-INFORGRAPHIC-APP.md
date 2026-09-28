@@ -114,7 +114,7 @@ Lab-Report              ★                           ★                     �
 |------|-----------|-------|
 | Frontend | **HTML + CSS + JS vanilla** (SPA) | Sin dependencias, fácil de hostear en Hostinger |
 | Estilos | **Tailwind CSS vía CDN** + CSS personalizado | Rapidez + flexibilidad |
-| Generación IA | **Serverless / API** (OpenRouter + FLUX / DALL-E) | Infografía como imagen |
+| Generación IA | **Serverless / API** (OpenAI image 2 / image 2.5 por el proxy; OpenRouter para Gemini y texto) | Infografía como imagen |
 | Animaciones | **CSS Animations + Canvas/GSAP (opcional)** | Efectos de movimiento ligeros |
 | Hosting | **Hostinger** (servidor del usuario) | Ya configurado |
 
@@ -169,7 +169,7 @@ Lab-Report              ★                           ★                     �
 - [ ] Selector de público objetivo (niño / adulto / senior)
 
 ### Sprint 2 — Motor de Generación
-- [ ] Integración con API de generación de imágenes (FLUX / DALL-E)
+- [ ] Integración con la API de generación de imágenes (OpenAI image 2, `gpt-image-2`, por el proxy de la app)
 - [ ] Prompt engineering: cada estilo tiene su prompt base
 - [ ] Sistema de fallback entre modelos
 - [ ] Preview de la imagen generada
