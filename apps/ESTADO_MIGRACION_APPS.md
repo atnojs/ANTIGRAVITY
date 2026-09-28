@@ -3,6 +3,11 @@
 Documento de relevo. Si retomas este trabajo en otra sesión, **lee esto primero** y sigue
 el protocolo tal cual. Todo lo verificado está marcado; lo que no, también.
 
+> **Empieza por el §6.1** (apps en uso, en ese orden, una a una) y **no toques el §6.2**
+> (copias, backups, `dist`, espejo `public_html`, entornos). Una app = un commit, y no
+> pasas a la siguiente hasta verificarla en producción. Trabaja sobre `main`, sin ramas ni
+> worktrees. Al terminar cada app, actualiza su fila en el §6.1.
+
 ---
 
 ## 1. Objetivo
@@ -82,35 +87,66 @@ Datos que NO se deben inventar (se consultan en vivo):
   `.claude/skills/` desde `skills/POLITICA_modelos-imagen.md`.
 - `node agent/dsh/validar-agentes.mjs` → comprueba que los punteros/agentes siguen sanos.
 
-## 6. Estado por app
+## 6. Orden de trabajo (empezar SOLO por aquí)
 
-Leyenda: FLUXp/FLUXf = FLUX en proxy/frontend · cfg = referencias a `config.php` ·
-g2 = tiene `gemini-2` · hist = carpeta de historial.
+> **Instrucción para la próxima sesión**: trabaja únicamente las apps del **§6.1**, en ese
+> orden, una por una. **No toques nada del §6.2** (copias, backups, `dist`, espejo
+> `public_html`, carpetas de entorno). Si terminas el §6.1, avisa antes de seguir.
 
-| App | FLUXp | FLUXf | cfg | g2 | hist | Estado |
-|---|---|---|---|---|---|---|
-| `dibujo_lineas_copia` (canónica) | no | no | no | **sí** | store | ✅ integrado y verificado en producción (ver §9) |
-| `escenario_modelo` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `imagenes_ia/ajustes_imagen` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `angulos_de_camara` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `estilizador_prompt` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `conversor_multimedia` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `creador_memes` | no | no | sí | no | LEGACY | ⏳ pendiente |
-| `infografia-referencia` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `infografia` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `vestir_modelo` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `galletas_infografias` | no | sí | no | no | LEGACY | ⏳ pendiente |
-| `decorar_habitacion` | no | no | sí | no | LEGACY | ⏳ pendiente |
-| `editar_generar` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `prompt_copilot_premium` | no | no | no | no | LEGACY | ⏳ pendiente |
-| `aura-edit` | **sí** | no | sí | no | — | ⏳ pendiente |
-| `imagenes_ia/copiar_estilo` | no | **sí** | sí | no | — | ⏳ pendiente |
-| `clonador` | no | no | sí | sí | — | ⏳ pendiente |
-| `color`, `editar_imagen`, `fotos_antonio`, `generar`, `generar_ai_studio`, `imagenes_ia`, `imagenes_ia/editar`, `imagenes_ia/generar`, `banco_de_imagenes`, `crear_historias`, `ficha_producto`, `illusion_diffusion`, `generar_imagene_personalizadas`, `codigos_imagen`, `editar_generar_1` | no | no | **sí** | no | — | ⏳ pendiente |
-| `public_html/apps/hermes_academy/proxy.php` | **sí** | — | no | no | — | ⏳ pendiente (proxy FLUX completo) |
+### 6.1 Apps a migrar (en uso: portal + actividad real)
 
-Comando para regenerar la lista con el estado actual: `php tools/inventario-apps.php`.
+Dato importante comprobado: **todas las apps del repositorio están publicadas** (el deploy
+sube la raíz completa, así que casi cualquier `/apps/<x>/index.html` responde 200). Por eso
+"desplegada" **no** sirve como filtro. El criterio real es:
 
+- **En el portal del usuario** (listado vivo `apps/paginas/web_apps/apps_data.json`, solo
+  cuentan las que existen en el repo).
+- **Con actividad real**: tienen ficheros en `history_data/` o `history_store/` (son las
+  que se usan de verdad).
+
+Orden recomendado (primero las del portal y las de más actividad):
+
+| # | App | Motivo | Historial |
+|---|---|---|---|
+| 1 | `angulos_de_camara` | portal + mucha actividad | 20 |
+| 2 | `escenario_modelo` | mucha actividad | 28 |
+| 3 | `imagenes_ia/ajustes_imagen` | mucha actividad | 23 |
+| 4 | `estilizador_prompt` | actividad | 19 |
+| 5 | `conversor_multimedia` | actividad | 13 |
+| 6 | `creador_memes` | actividad + `config.php` | 12 |
+| 7 | `infografia-referencia` | actividad | 10 |
+| 8 | `infografia` | actividad | 8 |
+| 9 | `vestir_modelo` | portal + actividad | 4 |
+| 10 | `imagenes_ia/editar_generar` | actividad | 6 |
+| 11 | `editar_generar` y `editar_generar_1` | actividad + `config.php` | 3 |
+| 12 | `galletas_infografias` | actividad + FLUX en front | 2 |
+| 13 | `prompt_copilot_premium` y `prompt_estudio` | actividad | 2 |
+| 14 | `imagenes_ia/generar`, `imagenes_ia/generar_copia`, `imagenes_ia/editar`, `imagenes_ia/copiar_estilo`, `imagenes_ia/combinar_imagenes`, `imagenes_ia/estilo_json`, `imagenes_ia/upscaler` | apps de imagen del proyecto | 0–2 |
+| 15 | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
+| 16 | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
+
+`dibujo_lineas_copia` ya está hecho y sirve de patrón (§9).
+
+### 6.2 Ignorar por completo
+
+- `apps/Copias por si/**` y cualquier carpeta `(COPIA)` o `* (COPIA)`.
+- `apps/_*` (`_clonador`, `_illusion_diffusion (1)`, `_viaje_tiempo_backup`, `_template_proxy.php`…).
+- Carpetas numeradas de versiones: `apps/<app>/1`, `/2`, `/5`, `/3`.
+- `apps/**/dist/**`, `apps/**/build/**`, `apps/**/node_modules/**`.
+- Entornos y extracciones: `apps/dibujo_lineas/env/**`, `apps/base_library_extracted/**`,
+  `apps/compilar/**`, `apps/temp_extract/**`, `apps/PROTOCOLO GEMINI- CLONADOR DE FOTOS/**`.
+- `public_html/**`: es un **espejo publicado** del repo, no una app. Si hay que cambiar
+  algo ahí (p. ej. `public_html/apps/hermes_academy/proxy.php`, que aún es un proxy FLUX),
+  se cambia en su origen dentro de `apps/` o se trata como caso aparte.
+- `apps/Girasoles`, `apps/Premium`, `apps/amd-video-optimizer`, `apps/dev`, `apps/1`.
+- `_backups/**` y `backups/**` de la raíz (histórico).
+
+### 6.3 Cómo saber el estado actual en cualquier momento
+
+```powershell
+php tools/inventario-apps.php          # FLUX / DALL-E / config.php / gemini-2 / historial por app
+```
+La columna `g2 = NO` indica que a esa app le falta el modelo Gemini 2.
 ## 7. Paquete de trabajo ya cerrado (no hay que rehacerlo)
 
 - `config.php` eliminado del servidor de `dibujo_lineas_copia` y todas sus referencias
