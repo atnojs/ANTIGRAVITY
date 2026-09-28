@@ -48,6 +48,59 @@ function readJsonBody(): array {
     return $data;
 }
 
+// Catálogo vigente del selector (identificadores -> modelo real). Fuente única:
+// ag_image_catalog() del contrato compartido (canonical-image-model.php).
+function proxyModelCatalog(): array {
+    $catalog = function_exists('ag_image_catalog') ? ag_image_catalog() : [];
+    $out = [];
+    foreach ($catalog as $id => $entry) {
+        $out[$id] = ['backend' => $entry['provider'], 'model' => $entry['model']];
+        if (isset($entry['quality'])) $out[$id]['quality'] = $entry['quality'];
+    }
+    return $out;
+}
+
+function openAiKeyValue(): string {
+    $key = getSecret('OPENAI_API_KEY');
+    if ($key === '') $key = getSecret('O');
+    return $key;
+}
+
+// Diagnóstico (no gasta API): modelos de IMAGEN reales de la cuenta de OpenAI.
+function proxyOpenAiImageModels(): array {
+    $key = openAiKeyValue();
+    if ($key === '') respond(500, ['success'=>false, 'error'=>'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']);
+    $cacheDir = __DIR__ . '/qwen_cache';
+    $cacheFile = $cacheDir . '/openai_models.json';
+    $cached = is_file($cacheFile) ? json_decode((string)@file_get_contents($cacheFile), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        return (array)$cached['ids'];
+    }
+    $ch = curl_init('https://api.openai.com/v1/models');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $key],
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if ($code >= 400 || !is_array($data)) {
+        respond(502, ['success'=>false, 'error'=>'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']);
+    }
+    $ids = [];
+    foreach (($data['data'] ?? []) as $model) {
+        $id = (string)($model['id'] ?? '');
+        if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+    }
+    sort($ids);
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    @file_put_contents($cacheFile, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    return $ids;
+}
+
 function requestJson(string $url, string $method, array $headers, ?array $body = null, int $timeout = 45): array {
     $ch = curl_init($url);
     $options = [
@@ -395,24 +448,20 @@ $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['openrouter'=>getSecret('R') !== ''],
-    'actions'=>['generate','openrouter','text','health'],
-    'models'=>[
-        'openai-medium'       => 'gpt-image-2.5-flare',
-        'openai-high'         => 'gpt-image-2.5-flare',
-        'openai-xhigh'        => 'gpt-image-2.5-sunburst',
-        'openai-max-flare'    => 'gpt-image-2.5-flare',
-        'openai-max-sunburst' => 'gpt-image-2.5-sunburst',
-        'gemini-flash'        => 'google/gemini-3.1-flash-image',
-        'gemini-pro'          => 'google/gemini-3-pro-image',
-        'qwen-pro'            => 'qwen/qwen-image-3-pro',
-    ],
+    'configured'=>['openai'=>openAiKeyValue() !== '', 'openrouter'=>getSecret('R') !== ''],
+    'actions'=>['generate','openrouter','text','health','models'],
+    'models'=>proxyModelCatalog(),
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, [
+    'success'=>true,
+    'configured'=>['openai'=>openAiKeyValue() !== '', 'openrouter'=>getSecret('R') !== ''],
+    'models'=>array_keys(proxyModelCatalog()),
+]);
+if ($action === 'models') respond(200, ['success'=>true, 'imageModels'=>proxyOpenAiImageModels()]);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') {
     // QWEN IMAGE 3 PRO: ruta propia con keepalive + cache en la app
