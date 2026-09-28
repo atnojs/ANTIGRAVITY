@@ -221,6 +221,51 @@ if (strtolower(trim((string)($req['action'] ?? ''))) === 'health') {
     exit;
 }
 
+// Accion de diagnostico: pregunta al proveedor que modelos de IMAGEN ofrece de
+// verdad (evita adivinar identificadores). Uso: POST {"action":"models"}.
+// Nunca devuelve la clave y solo expone identificadores de imagen.
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'models') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error'=>['message'=>'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $modelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $ids = null;
+    $cached = is_file($modelsCache) ? json_decode((string)@file_get_contents($modelsCache), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = (array)$cached['ids'];
+    } else {
+        $ch = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $resp = curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $data = json_decode((string)$resp, true);
+        if ($code >= 400 || !is_array($data)) {
+            http_response_code(502);
+            echo json_encode(['error'=>['message'=>'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']]);
+            exit;
+        }
+        $ids = [];
+        foreach (($data['data'] ?? []) as $model) {
+            $id = (string)($model['id'] ?? '');
+            if ($id !== '' && preg_match('/image|dall/i', $id) === 1) $ids[] = $id;
+        }
+        sort($ids);
+        if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
+        @file_put_contents($modelsCache, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success'=>true, 'imageModels'=>$ids], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 $imageB64 = (string)($req['image'] ?? '');
 $mimeType = (string)($req['mimeType'] ?? 'image/jpeg');
 $prompt   = (string)($req['prompt'] ?? "Transform the given input image into a clean, crisp, black and white line-art drawing, specifically designed to be a high-quality coloring book page. Convert all visual elements (people, objects, backgrounds) into consistent, smooth, distinct black outlines using clean uniform lines. Completely eliminate all colors, gradients, shading, textures, and gray fills: the result must be purely black lines on pure white background. Simplify complex shapes to create clear areas of white space easy to color. Maintain the original composition, perspective, and key elements. The final drawing must be sharp, without artifacts or smudges, ready to be printed and hand-colored.");
