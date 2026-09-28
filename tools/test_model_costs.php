@@ -1,17 +1,19 @@
 <?php
-// Script de prueba para comparar generación entre modelo actual y DALL-E 3
-// Requiere OPENAI_API_KEY en el entorno.
+// Script de prueba para comparar generación (latencia y respuesta) entre los modelos
+// vigentes del proyecto: OpenAI image 2 y image 2.5.
+// Requiere OPENAI_API_KEY en el entorno. No se despliega: tools/ está denegado por web.
 
-function generate_image_test($model, $prompt) {
+function generate_image_test($model, $prompt, $quality = 'medium') {
     $apiKey = getenv('OPENAI_API_KEY');
     $url = 'https://api.openai.com/v1/images/generations';
-    
+
     $data = [
         'model' => $model,
         'prompt' => $prompt,
         'n' => 1,
         'size' => '1024x1024',
-        'quality' => 'standard' // 'hd' para DALL-E 3 tiene costo adicional
+        'quality' => $quality
+        // La API actual no admite el parámetro 'response_format' (devuelve b64_json).
     ];
 
     $start = microtime(true);
@@ -45,12 +47,21 @@ function generate_image_test($model, $prompt) {
 
 $prompt = "Un paisaje futurista estilo cian y verde neón con elementos de glassmorphism.";
 
-// Probamos con modelos conocidos de OpenAI
-echo "Probando 'dall-e-2' (Referencia antigua)...\n";
-$res1 = generate_image_test('dall-e-2', $prompt);
-print_r($res1);
+// Modelos vigentes del proyecto (ver skills/POLITICA_modelos-imagen.md).
+$casos = [
+    ['gpt-image-2', 'medium', 'image 2 · medium (modelo por defecto)'],
+    ['gpt-image-2', 'high', 'image 2 · high'],
+    ['gpt-image-2.5-flare', 'medium', 'image 2.5 flare · medium'],
+    ['gpt-image-2.5-sunburst', 'xhigh', 'image 2.5 sunburst · xhigh'],
+];
 
-echo "\nProbando 'dall-e-3' (Nuevo estándar)...\n";
-$res2 = generate_image_test('dall-e-3', $prompt);
-print_r($res2);
-?>
+foreach ($casos as [$modelo, $calidad, $etiqueta]) {
+    echo "Probando $etiqueta ($modelo / $calidad)...\n";
+    $res = generate_image_test($modelo, $prompt, $calidad);
+    printf(
+        "  HTTP %s | %.2fs | %s\n\n",
+        $res['status'],
+        $res['duration'],
+        $res['status'] === 200 ? 'imagen recibida' : ($res['response']['error']['message'] ?? $res['error'] ?: 'error desconocido')
+    );
+}

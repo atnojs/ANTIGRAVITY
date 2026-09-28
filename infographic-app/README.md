@@ -11,7 +11,7 @@ Generador de infografías con inteligencia artificial. **50 estilos únicos** pa
 - 🎨 **Artístico** (10 estilos) — creativo y visualmente impactante
 - 📊 **Técnico** (10 estilos) — científico y datos
 - 🎬 **10 efectos de movimiento** para animar la infografía
-- 🔑 API Key configurable (soporta OpenRouter, FLUX, DALL-E)
+- 🔑 Claves en el servidor (OpenAI para image 2 / image 2.5 y OpenRouter para Gemini y texto)
 
 ## 🚀 Cómo usar
 
@@ -41,10 +41,7 @@ infographic-app/
 
 ## 🔧 Configuración de API
 
-La app usa **OpenRouter** por defecto. Necesitas una API Key de:
-
-1. [OpenRouter.ai](https://openrouter.ai) — modelos FLUX, DALL-E, Stable Diffusion
-2. Ingresarla en el campo superior de la app
+La app usa el proxy del proyecto: **OpenAI image 2** (`gpt-image-2`) para generar la imagen y **OpenRouter** para texto. Las claves se configuran en el `.htaccess` raíz del servidor, nunca en la app.
 3. Se guarda en localStorage del navegador
 
 ## 🌐 Subir a Hostinger
