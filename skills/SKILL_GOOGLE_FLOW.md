@@ -7,7 +7,7 @@ description: "SOLO para videos gratis (Veo) vía Google Flow con la CLI instalad
 
 ## Imágenes: selector canónico
 
-Esta skill no define un selector de imágenes propio. Cuando una app o web incluya generación o edición de imágenes, copiar el bloque vigente de `apps/dibujo_lineas_copia`: fila superior `OPENAI 2.5` (`MEDIUM`, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`) y fila inferior `FLOW` (`NANO BANANA`, activo por defecto), `GEMINI` (`3.1 FLASH`, `3 PRO`) y `QWEN` (`QWEN 3 PRO`). No reutilizar selectores, proveedores ni ejemplos anteriores.
+Esta skill no define un selector de imágenes propio. Cuando una app o web incluya generación o edición de imágenes, copiar el bloque vigente de `apps/dibujo_lineas_copia`: fila superior `OPENAI 2.5` (`MEDIUM`, `HIGH`, `MAX FLARE` del modelo flare, y `XHIGH`, `MAX SUNBURST` del modelo sunburst) y fila inferior `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`MEDIUM` activo por defecto, `HIGH`). Orden: de izquierda a derecha, de menor a mayor calidad dentro de cada modelo real. No reutilizar selectores, proveedores ni ejemplos anteriores.
 
 El modelo `flow` NO va por proxy: usa la cola `flow_queue.php` + worker de PC (`E:/hermes-data/scripts/flow-queue-bridge.py`, cron 5 min). El frontend hace `request` y polea `status`; el worker genera con Flow y sube con `complete`. Patrón completo en `apps/dibujo_lineas_copia/`.
 
