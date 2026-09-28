@@ -1,7 +1,22 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:'openai-medium', history:null };
+  const DEFAULT_MODEL = 'openai-image-2';
+  const MODEL_LABELS = {
+    'gemini-2':'GEMINI 2',
+    'gemini-flash':'3.1 FLASH',
+    'gemini-pro':'3 PRO',
+    'openai-image-2':'IMAGE 2 MEDIUM',
+    'openai-image-2-high':'IMAGE 2 HIGH',
+    'openai-medium':'MEDIUM',
+    'openai-high':'HIGH',
+    'openai-max-flare':'MAX FLARE',
+    'openai-xhigh':'XHIGH',
+    'openai-max-sunburst':'MAX SUNBURST',
+    'qwen-pro':'QWEN 3 PRO'
+  };
+  const modelLabel = (id) => MODEL_LABELS[id] || String(id || '');
+  const state = { referenceDataUrl:'', referenceName:'', analysis:null, resultDataUrl:'', selectedModel:DEFAULT_MODEL, history:null };
   const MAX_FILE = 20 * 1024 * 1024;
 
   // Helper genérico para grupos de pills (ar-option / res-option).
@@ -129,7 +144,7 @@
       const result=await api({action:'generate',model:state.selectedModel,prompt,image:state.referenceDataUrl,aspectRatio:aspect || '1:1',resolution:Number(getPillValue('resolution-toggles')) || 1024,output_format:'png',content});
       state.resultDataUrl=result.dataUrl;$('result-image').src=state.resultDataUrl;$('result-section').hidden=false;
       try{await state.history.save({id:'h_'+Date.now().toString(36),type:'image',model:result.model,data:{prompt,reference:state.referenceName,analysis:state.analysis,aspectRatio:aspect},imageData:state.resultDataUrl,createdAt:new Date().toISOString()})}catch(e){showHistoryError(e.message)}
-      $('result-section').scrollIntoView({behavior:'smooth'});setStatus(`Infografía lista en ${result.width} × ${result.height}.`,'success');
+      $('result-section').scrollIntoView({behavior:'smooth'});setStatus(`Infografía lista en ${result.width} × ${result.height} (${modelLabel(result.model || state.selectedModel)}).`,'success');
     }catch(e){setStatus(e.message,'error')}finally{setBusy(false)}
   }
   function buildPrompt(v){return `Crea una infografía final en ${v.language==='es'?'español':'el idioma solicitado'}. Usa la imagen de entrada ÚNICAMENTE como referencia de estilo y composición. Conserva su jerarquía visual, distribución, densidad, paleta, tipo de ilustración, conectores y proporciones; reemplaza por completo el contenido temático. No copies marcas de agua, logotipos ni textos de la referencia. JSON de estilo y composición: ${JSON.stringify(v.analysis)}. Datos proporcionados por el usuario: descripción libre: ${v.free||'[VACÍO]'}; título: ${v.title||'[VACÍO]'}; subtítulo: ${v.subtitle||'[VACÍO]'}; secciones y datos: ${v.sections||'[VACÍO]'}. Si algún campo está vacío, complétalo automáticamente de forma coherente con el resto de la información y con el tema que se pueda inferir; si todos están vacíos, elige un tema educativo claro y desarrolla título, subtítulo y secciones suficientes para una infografía completa. Público: ${v.audience}. Todo texto debe ser legible, correcto y sin contenido inventado. Produce una sola infografía terminada.`}

@@ -344,26 +344,32 @@ PROMPT;
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
+// Catálogo informativo para diagnóstico: espejo de ag_image_catalog().
+$proxyModels = [
+    'openai-image-2'      => 'gpt-image-2 (medium)',
+    'openai-image-2-high' => 'gpt-image-2 (high)',
+    'openai-medium'       => 'gpt-image-2.5-flare (medium)',
+    'openai-high'         => 'gpt-image-2.5-flare (high)',
+    'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
+    'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
+    'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+    'gemini-2'            => 'google/gemini-2.5-flash-image',
+    'gemini-flash'        => 'google/gemini-3.1-flash-image',
+    'gemini-pro'          => 'google/gemini-3-pro-image',
+    'qwen-pro'            => 'qwen/qwen-image-3-pro',
+];
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
     'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== ''],
-    'actions'=>['generate','analyze_infographic','openrouter','text','health'],
-    'models'=>[
-        'openai-medium'       => 'gpt-image-2.5-flare (medium)',
-        'openai-high'         => 'gpt-image-2.5-flare (high)',
-        'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
-        'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
-        'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
-        'gemini-flash'        => 'google/gemini-3.1-flash-image',
-        'gemini-pro'          => 'google/gemini-3-pro-image',
-        'qwen-pro'            => 'qwen/qwen-image-3-pro',
-    ],
+    'actions'=>['generate','models','analyze_infographic','openrouter','text','health'],
+    'models'=>$proxyModels,
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== ''], 'models'=>$proxyModels]);
+if ($action === 'models') respond(200, ['success'=>true, 'models'=>$proxyModels]);
 if ($action === 'analyze_infographic') handleAnalyzeInfographic($request);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') {
