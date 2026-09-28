@@ -71,4 +71,7 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 - Si detectas una clave API expuesta, avisa de que debe revocarse y regenerarse.
 - En proyectos web, revisa accesibilidad básica: contraste, atributos `alt`, `loading="lazy"`, foco visible y estados de carga.
 - Haz commit + push tras CADA cambio de archivo (el webhook de Hostinger despliega automáticamente).
+- Trabaja SIEMPRE sobre la rama `main` en `E:\ANTIGRAVITY`. NO crees ramas, worktrees ni copias de trabajo: cada worktree genera una historia paralela con SHAs distintos y deja ramas huérfanas si la tarea se abandona.
+- Si por alguna razón abres una rama o un worktree, bórralos al terminar la tarea y publica siempre en `main`.
+- El repositorio se despliega en la RAÍZ PÚBLICA de Hostinger: **cualquier archivo versionado es accesible por web**. Nunca versiones scripts de prueba ni herramientas de desarrollo; déjalas en `tools/`, que está protegida por `.htaccess`.
 - Prioriza soluciones prácticas, seguras y fáciles de aplicar.
