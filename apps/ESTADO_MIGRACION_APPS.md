@@ -89,7 +89,7 @@ g2 = tiene `gemini-2` · hist = carpeta de historial.
 
 | App | FLUXp | FLUXf | cfg | g2 | hist | Estado |
 |---|---|---|---|---|---|---|
-| `dibujo_lineas_copia` (canónica) | no | no | no | **sí** | store | ✅ gemini 2 integrado (pendiente prueba real) |
+| `dibujo_lineas_copia` (canónica) | no | no | no | **sí** | store | ✅ integrado y verificado en producción (ver §9) |
 | `escenario_modelo` | no | no | no | no | LEGACY | ⏳ pendiente |
 | `imagenes_ia/ajustes_imagen` | no | no | no | no | LEGACY | ⏳ pendiente |
 | `angulos_de_camara` | no | no | no | no | LEGACY | ⏳ pendiente |
@@ -132,3 +132,30 @@ Comando para regenerar la lista con el estado actual: `php tools/inventario-apps
   cabecera `Last-Modified`.
 - Antes de dar una app por buena, comprobar el **orden real de los `data-model`** en el
   HTML servido, no solo el fichero local.
+
+## 9. Prueba real de gemini 2 en la app canónica (2026-09-28 00:2x)
+
+Petición: `POST https://atnojs.es/apps/dibujo_lineas_copia/proxy.php` con
+`{"image": <base64 de apps/creador_memes/ui-check.png>, "mimeType":"image/png", "model":"gemini-2"}`
+(sin `prompt`, así que el proxy usa su prompt de dibujo lineal).
+
+Resultado: **HTTP 200 en 11,1 s**, imagen `image/png` de 1248×832, aspect `3:2`, 1065 KB.
+
+Lo bueno: el identificador, el catálogo, la clave `R`, el endpoint de OpenRouter y la
+respuesta con imagen funcionan de punta a punta.
+
+Lo que hay que revisar (primera tarea de la próxima sesión): la imagen devuelta **conserva
+el color y reproduce la imagen de entrada** en lugar de convertirla a línea. Hipótesis, por
+orden de coste:
+
+1. La entrada de prueba es un pantallazo de interfaz (mucho texto), no una foto: **repetir
+   la prueba con una foto real** antes de tocar nada.
+2. Orden del contenido: probar `image` antes de `text` en `messages[0].content` (algunos
+   modelos de imagen son sensibles al orden).
+3. Fuerza del prompt: para `gemini-2` puede hacer falta un prompt más explícito
+   («convierte a blanco y negro, solo líneas, elimina todo color y relleno»).
+4. Si con foto real sigue sin convertir, dejarlo en el selector como opción secundaria
+   documentando su comportamiento, sin prometer estilo.
+
+El resto del catálogo (image 2 y 2.5) está probado en producción y convierte correctamente.
+
