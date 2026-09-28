@@ -82,3 +82,9 @@ Devolver el reporte en Markdown. No añadir introducciones largas, ir directo al
 ## Uso en apps de generación
 
 Este análisis se puede usar para construir prompts de generación de imágenes. El reporte completo de 8 secciones proporciona todos los detalles necesarios para que una IA generativa replique el estilo, la composición y la atmósfera de la imagen original.
+
+---
+
+## Modelos de imagen del proyecto
+
+Los prompts de imagen se escriben para el modelo que va a generar. **El modelo por defecto del proyecto es OpenAI image 2** (`gpt-image-2`, calidad `medium`, identificador `openai-image-2`); el catálogo completo y el orden del selector están en `skills/SKILL_MAESTRA.md`. Si el encargo no dice otra cosa, asume image 2 en calidad media.

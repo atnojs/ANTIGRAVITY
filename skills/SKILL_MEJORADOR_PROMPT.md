@@ -181,3 +181,9 @@ Cuando la entrada sea una idea corta como “quiero una web”, “crea una imag
 - Formato de entrega y decisiones pendientes.
 
 Las decisiones que no estén confirmadas deben escribirse como `Propuesta: ...`, `Recomendación: ...` o `[POR DEFINIR: ...]`. Una propuesta puede elegir una paleta, arquitectura de páginas, formato, stack o método de validación si eso ayuda a ejecutar la tarea, pero nunca debe disfrazarse de dato proporcionado por el usuario.
+
+---
+
+## Modelos de imagen del proyecto
+
+Los prompts de imagen se escriben para el modelo que va a generar. **El modelo por defecto del proyecto es OpenAI image 2** (`gpt-image-2`, calidad `medium`, identificador `openai-image-2`); el catálogo completo y el orden del selector están en `skills/SKILL_MAESTRA.md`. Si el encargo no dice otra cosa, asume image 2 en calidad media.

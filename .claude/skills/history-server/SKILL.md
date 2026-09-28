@@ -15,16 +15,18 @@ Proporcionar un sistema de historial para apps web alojadas en Hostinger que:
 
 ## Arquitectura
 
-Cada app tiene su propia carpeta de historial:
+Cada app tiene su propia carpeta de historial, NO versionada:
 
 ```text
 apps/<nombre-app>/
 ├── history.php              ← API REST de historial
 ├── history-manager.js       ← Cliente JavaScript
-├── history/
-│   └── data/
-│       └── history.json     ← Datos persistentes (sin límite de tamaño)
+└── history_store/           ← Datos persistentes (en .gitignore, nunca en Git)
+    ├── .htaccess            ← Imágenes públicas; JSON, .lock y PHP denegados
+    └── history.json         ← Datos persistentes (sin límite de tamaño)
 ```
+
+**Regla crítica**: los datos del historial no se versionan NUNCA. Si entran en Git, cada despliegue de Hostinger los sobrescribe con la copia del repositorio y las imágenes recién generadas desaparecen al recargar. La regla `**/history_store/` de `.gitignore` ya lo cubre; no la quites.
 
 ## Inputs esperados
 
@@ -43,7 +45,7 @@ Este archivo expone 4 endpoints:
 | `delete` | POST | `history.php?action=delete&id=X` | — |
 | `clear` | POST | `history.php?action=clear` | — |
 
-El archivo `history/data/history.json` se crea automáticamente en la primera escritura.
+El archivo `history_store/history.json` se crea automáticamente en la primera escritura, junto con el `.htaccess` que protege la carpeta.
 
 ## 2. Instalación del cliente JavaScript
 

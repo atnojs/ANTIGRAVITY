@@ -905,3 +905,9 @@ Antes de entregar, comprueba que todas las funciones operan correctamente, los d
 Utiliza la siguiente instrucción como regla central:
 
 > Analiza el prompt entregado por el usuario y transfórmalo en un prompt profesional, completo, preciso y directamente utilizable. Conserva estrictamente la intención original, los requisitos, las restricciones, los materiales y el resultado esperado. Amplía los detalles secundarios mediante criterios profesionales, sin inventar datos críticos ni añadir objetivos ajenos. Organiza el resultado utilizando los apartados: Contexto y situación, Rol del modelo, Objetivo principal, Consulta o tarea, Información y materiales de entrada, Especificaciones obligatorias, Restricciones y elementos prohibidos, Prioridades, Proceso de trabajo, Criterios de calidad, Nivel de autonomía, Formato de respuesta y Verificación final. Adapta la extensión de cada apartado al tipo de tarea. Entrega únicamente el prompt optimizado, en el idioma del usuario, sin explicaciones, sin ejecutar la tarea y listo para copiar y utilizar.
+
+---
+
+## Modelos de imagen del proyecto
+
+Los prompts de imagen se escriben para el modelo que va a generar. **El modelo por defecto del proyecto es OpenAI image 2** (`gpt-image-2`, calidad `medium`, identificador `openai-image-2`); el catálogo completo y el orden del selector están en `skills/SKILL_MAESTRA.md`. Si el encargo no dice otra cosa, asume image 2 en calidad media.

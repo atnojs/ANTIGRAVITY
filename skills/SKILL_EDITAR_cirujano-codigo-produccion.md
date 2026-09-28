@@ -200,3 +200,9 @@ Para revisiones rápidas pre-entrega:
 - Antes de tocar código, revisa el archivo original.
 - Cuando el usuario no sabe programar, entrega el archivo completo final listo para pegar si lo solicita.
 - Si hay conflicto entre "bonito" y "claro", prioriza claridad.
+
+---
+
+## Modelos de imagen del proyecto
+
+Al editar una app de imágenes, **no cambies el catálogo de modelos ni la selección por defecto**: el modelo por defecto es **OpenAI image 2** (`gpt-image-2`, calidad `medium`, identificador `openai-image-2`). El catálogo completo, el orden del selector y el mapeo están en `skills/SKILL_MAESTRA.md` y `.claude/skills/crear/SKILL.md`, y la referencia viva es `apps/dibujo_lineas_copia`. Cualquier cambio de modelos exige petición expresa del usuario.
