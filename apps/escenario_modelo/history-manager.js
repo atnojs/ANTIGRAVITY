@@ -41,7 +41,9 @@ class HistoryManager {
 
     async load() {
         const separator = this.apiUrl.includes('?') ? '&' : '?';
-        const url = `${this.apiUrl}${separator}action=list&app=${encodeURIComponent(this.appName)}`;
+        // Sello de tiempo: sin el, un proxy/CDN intermedio puede servir una lista
+        // antigua y las imagenes recien generadas no aparecen al recargar.
+        const url = `${this.apiUrl}${separator}action=list&app=${encodeURIComponent(this.appName)}&_=${Date.now()}`;
         const payload = await this._request(url);
         this.history = Array.isArray(payload.history) ? payload.history : [];
         this._notify();
@@ -151,3 +153,96 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = HistoryManager;
 }
+
+// ============================================================
+// SHIM DE COMPATIBILIDAD (API legacy)
+// ------------------------------------------------------------
+// Varias apps usan la API antigua: HistoryManager.configure(),
+// init(), loadAll(), saveItem(), deleteItem(), clearAll().
+// Este shim las delega en la API canonica (load/save/delete/clear)
+// y mapea el formato servidor (imageUrl + data) al formato antiguo
+// (url plano) que esas apps esperan al renderizar.
+// El servidor (history.php) sigue siendo la fuente de verdad.
+// ============================================================
+(function () {
+    if (typeof window === 'undefined' || !window.HistoryManager) return;
+
+    const HM = window.HistoryManager;
+    let legacyInstance = null;
+    let legacyAppName = 'default';
+
+    // configure({ dbName }) -> crea la instancia con la app legacy
+    HM.configure = function (options) {
+        legacyAppName = (options && options.dbName)
+            ? String(options.dbName).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 100)
+            : 'default';
+        legacyInstance = new HM(legacyAppName);
+        return legacyInstance;
+    };
+
+    function getLegacy() {
+        if (!legacyInstance) legacyInstance = new HM(legacyAppName);
+        return legacyInstance;
+    }
+
+    function mapLegacyItem(item) {
+        const data = item.data || {};
+        return {
+            id: item.id,
+            app: item.app,
+            type: item.type,
+            model: item.model || data.model || '',
+            url: item.imageUrl || data.url || data.dataUrl || item.url || '',
+            prompt: data.prompt || item.prompt || '',
+            aspectRatio: data.aspectRatio || item.aspectRatio || '1:1',
+            size: data.size || item.size || '',
+            style: data.style || item.style || null,
+            createdAt: item.createdAt || data.createdAt || Date.now()
+        };
+    }
+
+    // init() -> load()
+    HM.init = function () {
+        return getLegacy().load().then(function (items) {
+            return items.map(mapLegacyItem);
+        });
+    };
+
+    // loadAll() -> load() con mapeo al formato antiguo (item.url plano)
+    HM.loadAll = function () {
+        return getLegacy().load().then(function (items) {
+            return items.map(mapLegacyItem);
+        });
+    };
+
+    // saveItem({ id, url, prompt, model, ... }) -> save() canonico
+    HM.saveItem = function (item) {
+        const hm = getLegacy();
+        return hm.save({
+            id: item.id,
+            type: item.type || 'image',
+            model: item.model || 'desconocido',
+            data: {
+                prompt: item.prompt,
+                aspectRatio: item.aspectRatio || '1:1',
+                size: item.size || '',
+                model: item.model || 'desconocido',
+                style: item.style || {}
+            },
+            imageData: item.url || '',
+            createdAt: new Date(item.createdAt || Date.now()).toISOString()
+        }).then(function (entry) {
+            return mapLegacyItem(entry);
+        });
+    };
+
+    // deleteItem(id) -> delete(id)
+    HM.deleteItem = function (id) {
+        return getLegacy().delete(id);
+    };
+
+    // clearAll() -> clear()
+    HM.clearAll = function () {
+        return getLegacy().clear();
+    };
+})();
