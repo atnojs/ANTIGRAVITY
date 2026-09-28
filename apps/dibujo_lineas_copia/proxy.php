@@ -356,17 +356,61 @@ if ($backend === 'openai') {
     // DALL-E 3 (standard / hd): solo generacion de texto a imagen.
     // No existe /v1/images/edits para este modelo, asi que la referencia
     // se traduce a una descripcion con el modelo de vision (clave R).
+    // Vision + generacion superan el timeout del servidor (~55-60s): se usa
+    // el mismo patron que Qwen (cache + candado + polling) para no perder el
+    // resultado ni volver a pagar una generacion.
     // ================================================================
     if ($openaiGenerationOnly) {
-        $reason = '';
-        $description = visionDescribeImage($imgBinary, $mimeType, $orKey, $reason);
-        if ($description === '') {
-            http_response_code(502);
-            echo json_encode(['error'=>['message'=>'No se pudo analizar la imagen de referencia: ' . $reason . '. Prueba de nuevo o elige otro modelo.']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $dalleSize = dalleOutputSize($sourceWidth, $sourceHeight);
+        $cacheKey = hash('sha256', $openaiModel . '|' . $openaiQuality . '|' . $dalleSize . '|' . $prompt . '|' . $imageB64);
+        $cacheDir = __DIR__ . DIRECTORY_SEPARATOR . 'qwen_cache';
+        if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+        $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . 'dalle_' . $cacheKey . '.json';
+        $lockFile = $cacheFile . '.lock';
+
+        // Resultado ya generado: se devuelve sin volver a llamar a la API.
+        if (is_file($cacheFile)) {
+            $cached = json_decode((string)@file_get_contents($cacheFile), true);
+            if (is_array($cached)) {
+                if (!empty($cached['b64'])) sendImageResponse(base64_decode((string)$cached['b64']), 'image/png');
+                // Los fallos no recuperables (4xx) se recuerdan 2 minutos para que
+                // los reintentos del frontend no repitan el gasto ni la espera.
+                if (!empty($cached['error']) && (int)($cached['status'] ?? 502) < 500 && (time() - (int)($cached['at'] ?? 0)) < 120) {
+                    http_response_code((int)$cached['status']);
+                    echo json_encode(['error'=>['message'=>(string)$cached['error']]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    exit;
+                }
+            }
+        }
+        // Ya hay un worker generando esta misma peticion.
+        if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+            http_response_code(202);
+            echo json_encode(['status' => 'processing']);
             exit;
         }
 
-        $dalleSize = dalleOutputSize($sourceWidth, $sourceHeight);
+        // El trabajo continua aunque el servidor corte la conexion por timeout.
+        ignore_user_abort(true);
+        set_time_limit(180);
+        @file_put_contents($lockFile, (string)time());
+        register_shutdown_function(static function () use ($lockFile) {
+            if (is_file($lockFile)) @unlink($lockFile);
+        });
+
+        $fail = function (int $status, string $message) use ($cacheFile, $lockFile): void {
+            if ($status < 500) @file_put_contents($cacheFile, json_encode(['error'=>$message, 'status'=>$status, 'at'=>time()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            @unlink($lockFile);
+            http_response_code($status);
+            echo json_encode(['error'=>['message'=>$message]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        };
+
+        $reason = '';
+        $description = visionDescribeImage($imgBinary, $mimeType, $orKey, $reason);
+        // 424 (no 5xx): el fallo de vision no se arregla reintentando, asi el
+        // frontend lo muestra al momento en lugar de reintentar durante minutos.
+        if ($description === '') $fail(424, 'No se pudo analizar la imagen de referencia: ' . $reason . '. Prueba de nuevo o elige otro modelo.');
+
         $dalleBody = json_encode([
             'model'           => $openaiModel,
             'prompt'          => dallePrompt($prompt . "\n\nReferencia visual de la imagen original (conserva composicion, encuadre y elementos):\n" . $description),
@@ -375,6 +419,11 @@ if ($backend === 'openai') {
             'size'            => $dalleSize,
             'response_format' => 'b64_json',
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        // Mantener viva la conexion con el proxy del servidor mientras OpenAI
+        // genera: los espacios no invalidan el JSON final de la respuesta.
+        while (ob_get_level() > 0) { @ob_end_flush(); }
+        @ob_implicit_flush(true);
 
         $ch = curl_init('https://api.openai.com/v1/images/generations');
         curl_setopt_array($ch, [
@@ -388,30 +437,37 @@ if ($backend === 'openai') {
             CURLOPT_TIMEOUT        => 180,
             CURLOPT_CONNECTTIMEOUT => 20,
         ]);
-        $resp = curl_exec($ch);
+        $mh = curl_multi_init();
+        curl_multi_add_handle($mh, $ch);
+        do {
+            $multi = curl_multi_exec($mh, $active);
+            if ($active) {
+                curl_multi_select($mh, 3.0);
+                echo str_repeat(' ', 64) . "\n";
+                @flush();
+            }
+        } while ($active && $multi === CURLM_OK);
+        $resp = (string)curl_multi_getcontent($ch);
         $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err  = curl_error($ch);
+        curl_multi_remove_handle($mh, $ch);
+        curl_multi_close($mh);
         curl_close($ch);
 
-        if ($err) {
-            http_response_code(502);
-            echo json_encode(['error'=>['message'=>'Error de conexion con OpenAI: ' . $err]]);
-            exit;
-        }
-        $jr = json_decode((string)$resp, true);
+        if ($err !== '') $fail(502, 'Error de conexion con OpenAI: ' . $err);
+        $jr = json_decode($resp, true);
         if ($code >= 400 || !is_array($jr)) {
             $em = is_array($jr) ? ($jr['error']['message'] ?? ('HTTP ' . $code)) : ('HTTP ' . $code);
             if (is_array($em)) $em = json_encode($em);
-            http_response_code($code >= 400 ? $code : 502);
-            echo json_encode(['error'=>['message'=>'OpenAI: ' . $em]]);
-            exit;
+            $fail($code >= 400 && $code < 500 ? $code : 502, 'OpenAI: ' . $em);
         }
         $imageData = (string)($jr['data'][0]['b64_json'] ?? '');
-        if ($imageData === '') {
-            http_response_code(502);
-            echo json_encode(['error'=>['message'=>'DALL-E 3 no devolvio ninguna imagen.']]);
-            exit;
-        }
+        if ($imageData === '') $fail(502, 'DALL-E 3 no devolvio ninguna imagen.');
+
+        // Guarda el resultado: los reintentos del frontend lo recogen aunque el
+        // proxy haya cortado la respuesta original por timeout.
+        @file_put_contents($cacheFile, json_encode(['b64' => $imageData]));
+        @unlink($lockFile);
         // sendImageResponse devuelve las dimensiones reales del proveedor
         // (1024x1024, 1792x1024 o 1024x1792), nunca una resolucion fingida.
         sendImageResponse(base64_decode($imageData), 'image/png');

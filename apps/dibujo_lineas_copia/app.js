@@ -146,11 +146,12 @@ previewGrid.addEventListener('click', (e) => {
     // Función auxiliar para pausa entre peticiones
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
-    // Llamada al proxy. Para qwen-pro (más lento que el timeout de nginx,
-    // ~55s) se espera activamente: el proxy guarda el resultado en caché y
-    // responde 'processing' mientras el worker termina de generarlo.
+    // Llamada al proxy. Para los modelos lentos (qwen-pro y DALL·E 3, que además
+    // encadena el análisis de visión) se espera activamente: el proxy guarda el
+    // resultado en caché y responde 'processing' mientras el worker termina.
+    const SLOW_MODELS = ['qwen-pro', 'dall-e-3', 'dall-e-3-hd'];
     const callProxyWithWait = async (body, maxAttempts = 36) => {
-        const slowModel = body && body.model === 'qwen-pro';
+        const slowModel = body && SLOW_MODELS.indexOf(body.model) !== -1;
         let lastError = 'Sin respuesta del modelo.';
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
