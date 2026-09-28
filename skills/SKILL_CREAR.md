@@ -1,3 +1,4 @@
+---
 name: crear
 description: "Meta-skill que orquesta la creación completa de apps/webs premium Antigravity. Invoca planificación, diseño, código, historial server-side, auditoría y despliegue automáticamente. Activar cuando el usuario pida crear una app, web o herramienta nueva."
 ---
@@ -52,6 +53,8 @@ apps/<nombre-app>/
 ├── history-manager.js      ← Cliente JavaScript para historial
 └── history_store/          ← Datos de historial (auto-creado, NO versionado)
 ```
+
+Las claves NO viven en la app: van con `SetEnv` en el `.htaccess` raíz de Hostinger.
 
 ### Paso 3: Ejecución (Scaffolding)
 
