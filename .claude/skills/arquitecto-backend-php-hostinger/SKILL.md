@@ -12,18 +12,21 @@ Configurar una comunicación segura entre una aplicación web alojada en Hosting
 ## Inputs esperados
 
 - `app_directory`: ruta absoluta de la aplicación en el servidor.
-- `api_key_constant`: nombre de la constante a utilizar. Valor recomendado por defecto: `F`.
+- `provider_keys`: variables del `.htaccess` raíz que necesita la app. Mapa vigente: `R` (OpenRouter) y `OPENAI_API_KEY` (alias `O`) para OpenAI.
 
 ## 1. Regla crítica de seguridad
 
 Nunca escribas claves API reales dentro de archivos compartidos, prompts, documentación o respuestas públicas.
 
-Usa siempre uno de estos métodos:
+La ÚNICA fuente de claves del proyecto es el entorno del servidor, con `SetEnv` en el `.htaccess` raíz privado de Hostinger. No crear ni leer ficheros de claves locales (`config.php` o similares): un fichero así no está en Git, nadie lo ve, y cuando la clave se rota la app empieza a fallar con `401` sin que el error lo explique. En `apps/dibujo_lineas_copia` ocurrió exactamente eso y hubo que borrar el `config.php` del servidor.
 
-- Variable de entorno.
-- Archivo `config.php` excluido de repositorios y copias públicas.
-- Marcador seguro como `AQUI_TU_API_KEY`.
-- Panel de configuración privado del servidor.
+Métodos admitidos, en este orden:
+
+1. `SetEnv` en el `.htaccess` raíz de Hostinger (fuente de verdad).
+2. Panel de entorno del servidor (hPanel → Advanced → Environment), equivalente a lo anterior.
+3. Marcador seguro como `AQUI_TU_API_KEY` en ejemplos y plantillas, nunca una clave real.
+
+Prohibido: `define('CLAVE', '...')` en un fichero del proyecto, claves en el frontend y claves en la documentación.
 
 ## 2. Diagnóstico previo (obligatorio)
 
@@ -34,81 +37,66 @@ Antes de modificar nada, diagnosticar el estado actual:
 3. Identificar el nombre de la variable/constante usada (`F`, `A`, etc.).
 4. Verificar si existe `.htaccess` en la carpeta con directivas `SetEnv`.
 
-## 3. Generación del archivo de aislamiento
+## 3. Alta de la clave en el `.htaccess` raíz
 
-Crear `${app_directory}/config.php` con este formato seguro:
+No se crea ningún fichero dentro de la app. La clave se declara una sola vez en el `.htaccess` raíz de Hostinger (fuera del repositorio):
 
-```php
-<?php
-define('${api_key_constant}', 'AQUI_TU_API_KEY');
+```apache
+SetEnv OPENAI_API_KEY "AQUI_TU_API_KEY_OPENAI"
+SetEnv R "AQUI_TU_API_KEY_OPENROUTER"
 ```
 
-Indicar al usuario que sustituya `AQUI_TU_API_KEY` por su clave real directamente en el servidor.
+Indicar al usuario que sustituya los marcadores por sus claves reales directamente en el servidor y que compruebe el resultado con la acción de salud del proxy.
 
-## 4. Cascada de 7 fuentes en proxy.php
+Si en la carpeta de la app existe un `config.php` antiguo, BORRARLO en el servidor: ya no se lee y solo puede aportar una clave caducada.
 
-Reemplazar el bloque de inicialización de la API key en `proxy.php` con esta cascada completa que cubre todos los modos de Apache/FastCGI/FPM en Hostinger:
+## 4. Resolución de la clave en `proxy.php`
+
+Solo desde el entorno, sin leer ficheros ni constantes locales:
 
 ```php
 <?php
-$apiKey = '';
-
-// 1. Archivo de configuración local (máxima prioridad)
-$configFile = __DIR__ . '/config.php';
-if (file_exists($configFile)) {
-    include $configFile;
-    $apiKey = defined('${api_key_constant}') ? ${api_key_constant} : '';
+function getKey(string $name): string {
+    foreach ([
+        getenv($name), getenv('REDIRECT_' . $name),
+        $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '',
+        $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? '',
+    ] as $value) {
+        if (is_string($value) && trim($value) !== '') return trim($value);
+    }
+    return '';
 }
 
-// 2. Variable de entorno estándar
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('${api_key_constant}');
-}
+$openaiKey = getKey('OPENAI_API_KEY');
+if ($openaiKey === '') $openaiKey = getKey('O');
+$orKey = getKey('R');
 
-// 3. Variable de entorno con prefijo REDIRECT_ (Apache FastCGI)
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('REDIRECT_${api_key_constant}');
-}
-
-// 4. Superglobal $_SERVER
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['${api_key_constant}'] ?? '';
-}
-
-// 5. Superglobal $_SERVER con prefijo REDIRECT_
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['REDIRECT_${api_key_constant}'] ?? '';
-}
-
-// 6. Superglobal $_ENV (FPM en algunas configuraciones)
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['${api_key_constant}'] ?? '';
-}
-
-// 7. Superglobal $_ENV con prefijo REDIRECT_
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['REDIRECT_${api_key_constant}'] ?? '';
-}
-
-// Error si no se encontró la clave en ninguna fuente
-if (!$apiKey || empty($apiKey)) {
+if ($openaiKey === '') {
     http_response_code(500);
+    echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+    exit;
+}
+```
+
+Añadir además una acción de salud que informe sin gastar API y sin exponer claves:
+
+```php
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'health') {
+    http_response_code(200);
     echo json_encode([
-        'error' => [
-            'message' => 'API key no configurada de forma segura.'
-        ]
+        'success'    => true,
+        'configured' => ['openai' => $openaiKey !== '', 'openrouter' => $orKey !== ''],
+        'models'     => array_keys($modelCatalog),
     ]);
     exit;
 }
 ```
 
-## 5. Ajuste de .htaccess (si existe)
+## 5. Ajuste del `.htaccess`
 
-Si hay un archivo `.htaccess` en la carpeta de la app:
-
-1. Verificar que la directiva `SetEnv` usa el nombre correcto de variable.
-2. Para el bloque de imágenes canónico de `apps/dibujo_lineas_copia`, usar `SetEnv O "AQUI_TU_API_KEY_OPENAI"` y `SetEnv R "AQUI_TU_API_KEY_OPENROUTER"`. No introducir otras letras de proveedor.
-3. Si NO existe `.htaccess`, no crearlo — `config.php` actúa como fuente primaria.
+1. Verificar que cada `SetEnv` usa el nombre correcto: `R` (OpenRouter) y `OPENAI_API_KEY` (alias `O`) para OpenAI. No inventar letras de proveedor ni reutilizar siglas retiradas.
+2. El `.htaccess` raíz es la única fuente; no delegar en ficheros de la app.
+3. Los datos del historial viven en una carpeta no versionada (`history_store/`) con su propio `.htaccess` que sirve imágenes y deniega JSON, `.lock` y PHP.
 
 ## 6. Reglas para proxy seguro
 
@@ -131,19 +119,20 @@ Tras la migración:
 
 ```text
 public_html/
-├── app/
-│   ├── index.html
-│   ├── assets/
-│   ├── proxy.php        ← Cascada de 7 fuentes
-│   ├── config.php       ← Clave aislada (no en repo)
-│   └── .htaccess        ← Opcional, solo si ya existe
+├── .htaccess            ← Claves con SetEnv (fuera del repositorio)
+└── app/
+    ├── index.html
+    ├── assets/
+    ├── proxy.php        ← Resuelve la clave solo desde el entorno
+    └── history_store/   ← Historial no versionado (imágenes + history.json)
 ```
 
 ## 9. Reglas críticas
 
-- No subas `config.php` a repositorios públicos.
-- No incluyas claves reales en ejemplos.
+- La clave vive SOLO en el `.htaccess` raíz del servidor; nunca en un fichero de la app ni en el repositorio.
+- No incluyas claves reales en ejemplos, plantillas ni documentación.
 - No devuelvas la clave API en errores.
 - No imprimas variables sensibles con `var_dump`, `print_r` ni `console.log`.
 - Si una clave fue expuesta, recomienda revocarla y generar una nueva.
 - Diagnostica antes de tocar: lee el estado actual y confirma la variable usada.
+- Si algo falla con `401`, sospecha primero de una clave antigua servida desde un fichero local o de una caché intermedia, y compruébalo con la acción de salud y la lista real de modelos.

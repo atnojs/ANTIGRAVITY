@@ -42,16 +42,16 @@ Toda app o web debe integrar copias de estos recursos de historial:
 - `E:/ANTIGRAVITY/skills/history.php`
 - `E:/ANTIGRAVITY/skills/history-manager.js`
 
-Aplicar exactamente las reglas de integración, seguridad y persistencia definidas en `SKILL_MAESTRA.md`. El servidor es la fuente de verdad del historial; no sustituirlo por `localStorage`. El proxy de una app de imágenes debe aceptar únicamente los cuatro identificadores del bloque canónico y usar `openai-medium` como valor predeterminado.
+Aplicar exactamente las reglas de integración, seguridad y persistencia definidas en `SKILL_MAESTRA.md`. El servidor es la fuente de verdad del historial; no sustituirlo por `localStorage`. El proxy de una app de imágenes debe aceptar únicamente los identificadores del bloque canónico y usar `openai-image-2` como valor predeterminado.
 
 En el entorno privado de Hostinger:
 
-- `O` corresponde a OpenAI Images directo (`gpt-image-2.5-flare` y `gpt-image-2.5-sunburst`).
-- `R` corresponde a OpenRouter para Gemini y texto.
+- `OPENAI_API_KEY` (alias `O`) corresponde a OpenAI Images directo: `gpt-image-2` (image 2) y `gpt-image-2.5-flare` / `gpt-image-2.5-sunburst` (image 2.5).
+- `R` corresponde a OpenRouter para Gemini, Qwen y texto/visión.
 
-No intercambiar las letras ni revelar los valores. El frontend nunca debe contener o recibir las claves.
+No intercambiar las letras ni revelar los valores. El frontend nunca debe contener o recibir las claves. Las claves se resuelven SOLO desde el entorno (`getenv`, `REDIRECT_`, `$_SERVER`, `$_ENV`); no leer ficheros ni constantes locales de claves.
 
-En cualquier app de generación o edición de imágenes, el único selector permitido es el que esté implementado en ese momento en `apps/dibujo_lineas_copia`. Actualmente (2026-09-13) contiene dos bloques: `OPENAI 2.5` a la izquierda con `MEDIUM` activo por defecto, `HIGH`, `XHIGH`, `MAX FLARE` y `MAX SUNBURST`, y `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. Mapeo canónico: `openai-medium`/`openai-high` → `gpt-image-2.5-flare` con quality `medium`/`high`; `openai-xhigh` → `gpt-image-2.5-sunburst` quality `xhigh`; `openai-max-flare` → `gpt-image-2.5-flare` quality `max`; `openai-max-sunburst` → `gpt-image-2.5-sunburst` quality `max`; `gemini-flash`/`gemini-pro` → `google/gemini-3.1-flash-image`/`google/gemini-3-pro-image` vía OpenRouter. En apps de solo texto o descripción de imágenes, el modelo es `xiaomi/mimo-v2.6-pro` (OpenRouter). Leer su `index.html`, `app.css` y `app.js` antes de tocar el selector; no recuperar variantes anteriores.
+En cualquier app de generación o edición de imágenes, el único selector permitido es el que esté implementado en ese momento en `apps/dibujo_lineas_copia`. Actualmente (2026-09-28) contiene cuatro columnas: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`MEDIUM` activo por defecto, `HIGH`). Mapeo canónico: `openai-image-2`/`openai-image-2-high` → `gpt-image-2` con quality `medium`/`high`; `openai-medium`/`openai-high` → `gpt-image-2.5-flare` con quality `medium`/`high`; `openai-xhigh` → `gpt-image-2.5-sunburst` quality `xhigh`; `openai-max-flare` → `gpt-image-2.5-flare` quality `max`; `openai-max-sunburst` → `gpt-image-2.5-sunburst` quality `max`; `gemini-flash`/`gemini-pro` → `google/gemini-3.1-flash-image`/`google/gemini-3-pro-image`; `qwen-pro` → `qwen/qwen-image-3-pro` (OpenRouter). En apps de solo texto o descripción de imágenes, el modelo es `xiaomi/mimo-v2.6-pro` (OpenRouter). Los modelos de OpenAI editan por `/v1/images/edits` (multipart) y no aceptan `response_format`. Leer su `index.html`, `app.css` y `app.js` antes de tocar el selector; no recuperar variantes anteriores.
 
 Mientras una IA esté trabajando, usar la experiencia de carga definida en la maestra y mostrar exactamente el texto `IA generando lo solicitado...`.
 

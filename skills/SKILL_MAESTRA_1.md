@@ -64,7 +64,7 @@ Reglas de integración:
 4. Ejecutar `load()` al iniciar y renderizar el resultado del servidor.
 5. Usar `save()`, `delete()` y `clear()` para cualquier contenido o dato persistente. El servidor es la fuente de verdad; no sustituirlo por `localStorage` o una caché exclusivamente local.
 6. Mostrar errores de persistencia en la interfaz; no simular éxito si el servidor falla.
-7. No versionar `history_data/`, archivos generados, credenciales ni `config.php` privado.
+7. No versionar los datos del historial (`history_store/`; antes `history_data/`), archivos generados, credenciales ni ficheros de claves. El historial que está en Git lo pisa cada despliegue: las imágenes nuevas desaparecen al recargar.
 8. Verificar en producción que el historial continúa tras recargar y desde otro navegador o sesión cuando sea posible.
 9. Incluso una web sin IA debe conservar `proxy.php` como endpoint de salud; si incorpora una API, ampliar el proxy con una acción cerrada y validada, nunca con una URL arbitraria enviada por el cliente.
 
@@ -72,8 +72,8 @@ Reglas de integración:
 
 - Mantener este mapa del `.htaccess` raíz privado de Hostinger: `O` para OpenAI Images directo y `R` para OpenRouter. No intercambiarlas.
 - Guardar OpenAI como `SetEnv O "..."` y OpenRouter como `SetEnv R "..."`; nunca escribir sus valores en Git, frontend, documentación, capturas compartidas ni respuestas.
-- Resolver ambas claves en servidor mediante `config.php`, `getenv`, variantes `REDIRECT_`, `$_SERVER` y `$_ENV`.
-- En generación o edición de imágenes, usar exclusivamente el bloque vigente de `apps/dibujo_lineas_copia`: OpenAI directo para `openai-medium` y `openai-high`, y Gemini mediante OpenRouter para `gemini-flash` y `gemini-pro`.
+- Resolver ambas claves SOLO desde el entorno del servidor: `getenv`, variantes `REDIRECT_`, `$_SERVER` y `$_ENV`. No leer ficheros ni constantes locales de claves.
+- En generación o edición de imágenes, usar exclusivamente el bloque vigente de `apps/dibujo_lineas_copia`: OpenAI directo para `openai-image-2`, `openai-image-2-high` (image 2) y `openai-medium`, `openai-high`, `openai-xhigh`, `openai-max-flare`, `openai-max-sunburst` (image 2.5), y OpenRouter para `gemini-flash`, `gemini-pro` y `qwen-pro`.
 - Usar OpenRouter para texto, razonamiento u otras tareas compatibles mediante la acción `openrouter` o `text` del proxy.
 - En OpenRouter, fijar el destino servidor a `https://openrouter.ai/api/v1/chat/completions`, autenticar con `Authorization: Bearer <R>` y no aceptar una URL remota enviada por el frontend.
 - Aceptar solo métodos, acciones, modelos y parámetros validados.
@@ -147,8 +147,9 @@ Toda interfaz debe:
 ## Reglas para apps de generación o edición de imágenes
 
 1. El único selector multimodelo permitido es el bloque vigente de `apps/dibujo_lineas_copia`. Antes de tocarlo, leer completos `index.html`, `app.css` y `app.js` de esa app.
-2. Mantener dos grupos: `OPENAI 2.5` a la izquierda con `MEDIUM` activo por defecto, `HIGH`, `XHIGH`, `MAX FLARE` y `MAX SUNBURST`; `GEMINI` a la derecha con `3.1 FLASH` y `3 PRO`. No añadir otros proveedores ni recuperar bloques anteriores.
-3. Mapear `openai-medium` y `openai-high` a `gpt-image-2.5-flare` con calidad `medium` y `high`; `openai-xhigh` a `gpt-image-2.5-sunburst` con calidad `xhigh`; `openai-max-flare` a `gpt-image-2.5-flare` con calidad `max`; `openai-max-sunburst` a `gpt-image-2.5-sunburst` con calidad `max` (OpenAI directo, clave `O`). Mapear `gemini-flash` y `gemini-pro` a `google/gemini-3.1-flash-image` y `google/gemini-3-pro-image` mediante OpenRouter (clave `R`). En apps de solo texto o descripción de imágenes, usar `xiaomi/mimo-v2.6-pro` (OpenRouter).
+2. Mantener las columnas por proveedor de esa app: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`MEDIUM`, `HIGH`), con `IMAGE 2 · MEDIUM` activo por defecto. No añadir otros proveedores ni recuperar bloques anteriores.
+3. Mapeo vigente (verificado en producción el 2026-09-28): `openai-image-2` y `openai-image-2-high` → `gpt-image-2` con calidad `medium` y `high` (OpenAI directo, clave `OPENAI_API_KEY`/`O`); `openai-medium` y `openai-high` → `gpt-image-2.5-flare` con calidad `medium` y `high`; `openai-xhigh` → `gpt-image-2.5-sunburst` con calidad `xhigh`; `openai-max-flare` → `gpt-image-2.5-flare` con calidad `max`; `openai-max-sunburst` → `gpt-image-2.5-sunburst` con calidad `max`; `gemini-flash` y `gemini-pro` → `google/gemini-3.1-flash-image` y `google/gemini-3-pro-image`; `qwen-pro` → `qwen/qwen-image-3-pro` (OpenRouter, clave `R`). En apps de solo texto o descripción de imágenes, usar `xiaomi/mimo-v2.6-pro` (OpenRouter).
+   Los modelos de OpenAI se editan por `/v1/images/edits` (multipart con la imagen de referencia) y **no** aceptan `response_format` (la API responde `400 Unknown parameter`).
 4. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
 5. Separar claramente imagen de entrada, referencias, prompt, formato y opciones de calidad.
 6. Conservar identidad, composición o elementos protegidos al editar una imagen.

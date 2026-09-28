@@ -84,9 +84,9 @@ Si el skill tiene múltiples caminos, incluir un diagrama de decisión:
    - SÍ → pasar al paso 3
    - NO → crearlo desde plantilla (paso 2)
 
-2. ¿Tiene config.php?
-   - SÍ → leer constante
-   - NO → usar variables de entorno
+2. ¿Resuelve la clave solo desde el entorno (`getenv`, `REDIRECT_`, `$_SERVER`, `$_ENV`)?
+   - SÍ → correcto
+   - NO → quitar cualquier fichero o constante local de claves y usar `SetEnv` del `.htaccess` raíz
 ```
 
 ## 5. Scripts como Cajas Negras

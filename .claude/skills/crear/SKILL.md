@@ -13,7 +13,7 @@ Actuar como Director de Producto que coordina las skills especializadas para gar
 
 1. **Idioma español estricto**: NUNCA generar texto ni audio en otro idioma. Todo prompt a IA debe incluir: *"todo texto o audio generado debe estar obligatoriamente en español."*
 2. **No regenerar desde cero**: si hay archivos base, modificarlos quirúrgicamente (ver `cirujano-codigo-produccion`).
-3. **Bloque de modelos de imagen**: usar únicamente el selector canónico de `apps/dibujo_lineas_copia`: `OPENAI` a la izquierda (`MEDIUM` activo por defecto y `HIGHT`) y `GEMINI` a la derecha (`3.1 FLASH` y `3 PRO`). No añadir proveedores ni conservar selectores anteriores.
+3. **Bloque de modelos de imagen**: usar únicamente el selector canónico de `apps/dibujo_lineas_copia`: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`MEDIUM` activo por defecto, `HIGH`). Mapeo: `openai-image-2`/`openai-image-2-high` → `gpt-image-2` (image 2) quality `medium`/`high`; `openai-medium`/`openai-high` → `gpt-image-2.5-flare` (image 2.5) quality `medium`/`high`; `openai-xhigh` → `gpt-image-2.5-sunburst` quality `xhigh`; `openai-max-flare` → `gpt-image-2.5-flare` quality `max`; `openai-max-sunburst` → `gpt-image-2.5-sunburst` quality `max`; `gemini-flash`/`gemini-pro` → `google/gemini-3.1-flash-image`/`google/gemini-3-pro-image`; `qwen-pro` → `qwen/qwen-image-3-pro`. La edición va por `/v1/images/edits` (multipart) y sin `response_format`. No añadir proveedores ni conservar selectores anteriores.
 
 ## 🧠 Skills integradas
 
@@ -25,7 +25,7 @@ Al activar `crear`, se invocan automáticamente:
 | `brainstorming-pro` | Refinar ideas vagas |
 | `style-guide-antigravity` | Aplicar diseño Neon Glassmorphism |
 | `analista-visual-pro` | Prompts de imágenes si la app lo requiere |
-| `arquitecto-backend-php-hostinger` | Configurar proxy.php + config.php |
+| `arquitecto-backend-php-hostinger` | Configurar proxy.php y las claves del `.htaccess` raíz |
 | `history-server` | Historial persistente server-side |
 | `auditor-lighthouse-accesibilidad` | Control de calidad final |
 
@@ -48,23 +48,23 @@ apps/<nombre-app>/
 ├── index.html              ← Frontend principal
 ├── app.js                  ← Lógica (React/Babel o vanilla JS)
 ├── app.css                 ← Estilos (Neon Glassmorphism)
-├── proxy.php               ← Backend seguro (cascada 7 fuentes)
-├── config.php              ← Clave API aislada (.gitignore)
+├── proxy.php               ← Backend seguro (claves solo del entorno)
 ├── history.php             ← API de historial server-side
 ├── history-manager.js      ← Cliente JavaScript para historial
-└── history/data/           ← Datos de historial (auto-creado)
+└── history_store/          ← Datos de historial (auto-creado, NO versionado)
 ```
+
+Las claves NO viven en la app: van con `SetEnv` en el `.htaccess` raíz de Hostinger.
 
 ### Paso 3: Ejecución (Scaffolding)
 
 Generar archivos en `e:/ANTIGRAVITY/apps/<nombre-app>/`:
 
-1. **`proxy.php`**: Usar cascada de 7 fuentes de `arquitecto-backend-php-hostinger`.
-2. **`config.php`**: Con marcador `AQUI_TU_API_KEY`.
-3. **`history.php` + `history-manager.js`**: Copiar de `history-server/resources/`.
-4. **`index.html`**: Con dependencias a CSS del `style-guide-antigravity`.
-5. **`app.css`**: Importar `base.css` y `components.css`. Inyectar estilos extra si necesario.
-6. **`app.js`**: Implementar la lógica acordada en Paso 1.
+1. **`proxy.php`**: Resolver las claves solo desde el entorno (ver `arquitecto-backend-php-hostinger`). Nunca crear un fichero de claves local.
+2. **`history.php` + `history-manager.js`**: Copiar de `history-server/resources/`.
+3. **`index.html`**: Con dependencias a CSS del `style-guide-antigravity`.
+4. **`app.css`**: Importar `base.css` y `components.css`. Inyectar estilos extra si necesario.
+5. **`app.js`**: Implementar la lógica acordada en Paso 1.
 
 ### ⚠️ Estándar UX: Estado "PENSANDO" (OBLIGATORIO)
 
@@ -175,7 +175,7 @@ Ejecutar `auditor-lighthouse-accesibilidad` completo:
 ## Output
 
 - Carpeta del proyecto lista en `apps/<nombre-app>/`.
-- `proxy.php` con cascada de 7 fuentes.
+- `proxy.php` que resuelve las claves solo desde el entorno del servidor.
 - `history.php` + `history-manager.js` para historial server-side.
 - Confirmación de sincronización con GitHub.
 - Captura o confirmación visual: "El estado PROCESANDO funciona correctamente".

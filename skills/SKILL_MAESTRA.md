@@ -64,16 +64,16 @@ Reglas de integración:
 4. Ejecutar `load()` al iniciar y renderizar el resultado del servidor.
 5. Usar `save()`, `delete()` y `clear()` para cualquier contenido o dato persistente. El servidor es la fuente de verdad; no sustituirlo por `localStorage` o una caché exclusivamente local.
 6. Mostrar errores de persistencia en la interfaz; no simular éxito si el servidor falla.
-7. No versionar `history_data/`, archivos generados, credenciales ni `config.php` privado.
+7. No versionar los datos del historial (`history_store/`; antes `history_data/`), archivos generados, credenciales ni ficheros de claves. El historial que está en Git lo pisa cada despliegue: las imágenes nuevas desaparecen al recargar.
 8. Verificar en producción que el historial continúa tras recargar y desde otro navegador o sesión cuando sea posible.
 9. Incluso una web sin IA debe conservar `proxy.php` como endpoint de salud; si incorpora una API, ampliar el proxy con una acción cerrada y validada, nunca con una URL arbitraria enviada por el cliente.
 
 ## Backend, proveedores y seguridad
 
-- Mantener este mapa del `.htaccess` raíz privado de Hostinger: `F` para FLUX y `R` para OpenRouter. No intercambiarlas.
-- Guardar FLUX como `SetEnv F "..."` y OpenRouter como `SetEnv R "..."`; nunca escribir sus valores en Git, frontend, documentación, capturas compartidas ni respuestas.
-- Resolver ambas claves en servidor mediante `config.php`, `getenv`, variantes `REDIRECT_`, `$_SERVER` y `$_ENV`.
-- Usar FLUX para toda generación o edición de imágenes.
+- Mapa de claves del `.htaccess` raíz privado de Hostinger: `R` para OpenRouter y `OPENAI_API_KEY` (alias `O`) para OpenAI. No intercambiarlas.
+- Guardarlas como `SetEnv R "..."` y `SetEnv OPENAI_API_KEY "..."`; nunca escribir sus valores en Git, frontend, documentación, capturas compartidas ni respuestas.
+- Resolver las claves SOLO desde el entorno del servidor: `getenv`, variantes `REDIRECT_`, `$_SERVER` y `$_ENV`. No leer ficheros ni constantes locales de claves: un fichero con una clave antigua provoca `401` y, al no estar en Git, nadie lo ve.
+- Usar OpenAI directo (image 2 e image 2.5) para toda generación o edición de imágenes, y OpenRouter para Gemini, Qwen y texto/visión.
 - Usar OpenRouter para texto, razonamiento u otras tareas compatibles mediante la acción `openrouter` o `text` del proxy.
 - En apps de solo texto o descripción de imágenes, el modelo de texto es `xiaomi/mimo-v2.6-pro` (OpenRouter). Es el modelo de texto por defecto en todas las apps; las llamadas de texto/visión de los proxies que usaban la API de Google se resuelven con este modelo vía OpenRouter (clave `R`), conservando el contrato de respuesta con el frontend.
 - En OpenRouter, fijar el destino servidor a `https://openrouter.ai/api/v1/chat/completions`, autenticar con `Authorization: Bearer <R>` y no aceptar una URL remota enviada por el frontend.
@@ -457,14 +457,31 @@ Al clonar el historial en una app nueva o existente:
 
 ## Reglas para apps de generación o edición de imágenes
 
-1. En apps con selector multimodelo, generar y editar imágenes con FLUX de Black Forest Labs o Gemini mediante OpenRouter según el botón elegido; no fijar FLUX ignorando la selección del usuario.
-2. Ofrecer el selector canónico de cuatro modelos descrito al final de esta skill, relación de aspecto y resolución `512`, `1024`, `2048` y `4096`.
-3. Mapear `flux-pro` a `flux-2-pro`, `flux-max` a `flux-2-max`, `gemini-flash` a `google/gemini-3.1-flash-image` y `gemini-pro` a `google/gemini-3-pro-image`, salvo migración confirmada de la API oficial.
-4. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
-5. Separar claramente imagen de entrada, referencias, prompt, formato y opciones de calidad.
-6. Conservar identidad, composición o elementos protegidos al editar una imagen.
-7. Incluir carga real, resultado ampliable, descarga, historial persistente y mensajes de moderación/error.
-8. Descargar o persistir la imagen antes de que caduque una URL firmada del proveedor.
+1. En apps con selector multimodelo, generar y editar imágenes con el modelo real que corresponda al botón elegido; nunca fijar un modelo ignorando la selección del usuario.
+2. Ofrecer el selector canónico descrito al final de esta skill, relación de aspecto y resolución `512`, `1024`, `2048` y `4096`.
+3. Catálogo vigente de modelos (verificado en producción el 2026-09-28; es la única fuente de verdad, junto a `apps/dibujo_lineas_copia/canonical-image-model.php`):
+
+   | Identificador (payload `model`) | Modelo enviado al proveedor | `quality` |
+   |---|---|---|
+   | `openai-image-2` | `gpt-image-2` | `medium` — **por defecto** |
+   | `openai-image-2-high` | `gpt-image-2` | `high` |
+   | `openai-medium` | `gpt-image-2.5-flare` | `medium` |
+   | `openai-high` | `gpt-image-2.5-flare` | `high` |
+   | `openai-xhigh` | `gpt-image-2.5-sunburst` | `xhigh` |
+   | `openai-max-flare` | `gpt-image-2.5-flare` | `max` |
+   | `openai-max-sunburst` | `gpt-image-2.5-sunburst` | `max` |
+   | `gemini-flash` | `google/gemini-3.1-flash-image` (OpenRouter) | — |
+   | `gemini-pro` | `google/gemini-3-pro-image` (OpenRouter) | — |
+   | `qwen-pro` | `qwen/qwen-image-3-pro` (OpenRouter Images API) | — |
+
+   OpenAI image 2 (`gpt-image-2`) es el modelo base del proyecto y el seleccionado por defecto en calidad `medium`; image 2.5 son `gpt-image-2.5-flare` y `gpt-image-2.5-sunburst`.
+4. La foto de referencia se edita SIEMPRE por `https://api.openai.com/v1/images/edits` (multipart) en los modelos de OpenAI. No enviar el parámetro `response_format`: la API actual lo rechaza con `400 Unknown parameter`. Si la respuesta trae una URL temporal en vez de `b64_json`, descargarla en el servidor antes de responder.
+5. Usar solo los identificadores de la lista anterior. Si hace falta otro modelo, comprobarlo antes con `POST {"action":"models"}` del proxy (devuelve los identificadores de imagen reales de la cuenta) y no inventarlo ni reutilizar nombres retirados.
+6. Respetar límites reales del modelo. Si una combinación solicitada supera el máximo admitido, calcular dimensiones válidas y mostrar las dimensiones efectivas; nunca fingir una resolución.
+7. Separar claramente imagen de entrada, referencias, prompt, formato y opciones de calidad.
+8. Conservar identidad, composición o elementos protegidos al editar una imagen.
+9. Incluir carga real, resultado ampliable, descarga, historial persistente y mensajes de moderación/error.
+10. Descargar o persistir la imagen antes de que caduque una URL firmada del proveedor.
 
 ## Fase 4: control de calidad local
 
@@ -519,34 +536,36 @@ El campo selector de modelo IA es una **barra de toggles pill unificada** (estil
 - **Un solo contenedor** de vidrio azulado `var(--card-bg)` con borde cian `var(--border)`, radio de píldora (`999px`), halo exterior suave y `gap:.5rem` entre botones. NO botones individuales separados fuera de la barra.
 - **Botones pill** con `padding:.55rem 1rem`, borde transparente por defecto, texto `var(--muted)`, tipografía Electrolize y `text-transform:uppercase`.
 - **Estados**: el segmento activo se resalta con gradiente `var(--contenedor) → var(--acc)` (cian) y texto `#CCFFFF` con glow; los inactivos, texto `var(--muted)` sobre fondo transparente.
-- **NO usar estados separados flux/gemini**: el activo es único para los 4 modelos (sin clases `flux`/`gemini` en el HTML).
+- **NO usar estados separados por proveedor**: el activo es único (sin clases de proveedor en el HTML).
 
 ### Orden de los modelos (menor → mayor capacidad)
 
-Siempre en este orden de izquierda a derecha, de menor a mayor capacidad (validado con precios oficiales de Black Forest Labs y OpenRouter):
+La referencia vigente es `apps/dibujo_lineas_copia`: los botones se agrupan por proveedor en columnas (`.model-provider-layout` → `.model-provider-column`), cada grupo con su título y su barra de píldoras. Orden actual:
 
-1. `3.1FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`
-2. `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image` — **seleccionado por defecto**
-3. `FLUX PRO` — `flux-pro` — `flux-2-pro`
-4. `FLUX MAX` — `flux-max` — `flux-2-max`
+1. Columna `OPENAI 2.5` (de menor a mayor): `MEDIUM` — `openai-medium` — `gpt-image-2.5-flare` / `medium`; `HIGH` — `openai-high` — `gpt-image-2.5-flare` / `high`; `XHIGH` — `openai-xhigh` — `gpt-image-2.5-sunburst` / `xhigh`; `MAX FLARE` — `openai-max-flare` — `gpt-image-2.5-flare` / `max`; `MAX SUNBURST` — `openai-max-sunburst` — `gpt-image-2.5-sunburst` / `max`.
+2. Columna `GEMINI`: `3.1 FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`; `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image`.
+3. Columna `QWEN`: `QWEN 3 PRO` — `qwen-pro` — `qwen/qwen-image-3-pro`.
+4. Columna `IMAGE 2`: `MEDIUM` — `openai-image-2` — `gpt-image-2` / `medium`; `HIGH` — `openai-image-2-high` — `gpt-image-2` / `high`.
 
-No cambiar este orden ni el estado inicial: **3 PRO por defecto**.
+Estado inicial: **`openai-image-2` (IMAGE 2 · MEDIUM) seleccionado**. No cambiar ids, etiquetas ni el estado inicial sin petición expresa.
 
 ### Marcado HTML
 
+Ejemplo reducido (una columna por proveedor, con la barra de píldoras dentro):
+
 ```html
-<div class="model-selector">
-  <span class="model-selector-label">Modelo IA</span>
-  <div class="model-toggle-group" role="group" aria-label="Seleccionar modelo">
-    <button type="button" class="model-toggle" data-model="gemini-flash">3.1FLASH</button>
-    <button type="button" class="model-toggle active" data-model="gemini-pro">3 PRO</button>
-    <button type="button" class="model-toggle" data-model="flux-pro">FLUX PRO</button>
-    <button type="button" class="model-toggle" data-model="flux-max">FLUX MAX</button>
+<div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+  <div class="model-provider-column">
+    <span class="model-provider-title">IMAGE 2</span>
+    <div class="model-toggle-group">
+      <button type="button" class="model-toggle active" data-model="openai-image-2" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media.">MEDIUM</button>
+      <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta.">HIGH</button>
+    </div>
   </div>
 </div>
 ```
 
-No añadir clases `flux`/`gemini` a los botones: el activo se marca únicamente con `active`.
+No añadir clases de proveedor a los botones: el activo se marca únicamente con `active`.
 
 ### Tokens Hoola requeridos
 
@@ -640,7 +659,7 @@ className={`aspect-ratio-button ${selectedAR === ar.id ? 'active' : ''}`}
 
 ```js
 // Vanilla
-let selectedModel = 'gemini-pro';
+let selectedModel = 'openai-image-2';
 document.querySelectorAll('.model-toggle').forEach((button) => {
   button.addEventListener('click', () => {
     document.querySelectorAll('.model-toggle').forEach((item) => item.classList.remove('active'));
@@ -650,7 +669,7 @@ document.querySelectorAll('.model-toggle').forEach((button) => {
 });
 
 // React
-const [selectedModel, setSelectedModel] = useState('gemini-pro');
+const [selectedModel, setSelectedModel] = useState('openai-image-2');
 useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 // Incluir siempre en el payload: model: selectedModel
 ```
@@ -659,33 +678,41 @@ No cambiar solo el aspecto: comprobar que cada botón actualiza el estado y que 
 
 ### Mapeo seguro en PHP
 
-```php
-$reqModel = strtolower((string)($data['model'] ?? 'gemini-pro'));
-$backend = 'gemini';
-$geminiModelId = 'google/gemini-3-pro-image';
-$fluxEndpoint = 'flux-2-pro';
+Lista blanca cerrada, como en `apps/dibujo_lineas_copia/proxy.php`. No construir el modelo concatenando o interpretando el texto que llega del cliente:
 
-if (strpos($reqModel, 'max') !== false) {
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-max';
-} elseif (strpos($reqModel, 'pro') !== false && strpos($reqModel, 'flux') !== false) {
-    $backend = 'flux';
-    $fluxEndpoint = 'flux-2-pro';
-} elseif (strpos($reqModel, 'flash') !== false) {
-    $geminiModelId = 'google/gemini-3.1-flash-image';
+```php
+$modelCatalog = [
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
+    'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'medium'],
+    'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'high'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
+    'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    'qwen-pro'            => ['backend' => 'qwen',   'model' => 'qwen/qwen-image-3-pro'],
+];
+
+$reqModel = strtolower(trim((string)($data['model'] ?? 'openai-image-2')));
+if (!isset($modelCatalog[$reqModel])) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
+    exit;
 }
+$selected = $modelCatalog[$reqModel];
 ```
 
-Comparar siempre `strpos(...) !== false`; no usar el resultado como booleano. Mantener `gemini-pro` como fallback seguro para valores omitidos.
+Fallback seguro para valores omitidos: `openai-image-2`. Los modelos de OpenAI se editan por `/v1/images/edits` (multipart, con la imagen de referencia) y no aceptan `response_format`.
 
 ### Validación y publicación obligatorias
 
 1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
-2. Probar que la barra de toggles no desborda el panel y que no existe scroll horizontal ni texto recortado.
-3. Verificar las cuatro etiquetas completas: `3.1FLASH`, `3 PRO`, `FLUX PRO`, `FLUX MAX`.
+2. Probar que las barras de toggles no desbordan el panel y que no existe scroll horizontal ni texto recortado.
+3. Verificar las etiquetas y los identificadores completos de cada columna: `IMAGE 2` (`MEDIUM` = `openai-image-2`, `HIGH` = `openai-image-2-high`), `OPENAI 2.5` (`MEDIUM`, `HIGH`, `XHIGH`, `MAX FLARE`, `MAX SUNBURST`), `GEMINI` (`3.1 FLASH`, `3 PRO`) y `QWEN` (`QWEN 3 PRO`).
 4. Probar estados normal, hover y activo: activo con gradiente `contenedor→cian` y texto `#CCFFFF`.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
-6. Confirmar `gemini-pro` (3 PRO) como estado inicial y revisar el payload de los cuatro botones.
+6. Confirmar `openai-image-2` (IMAGE 2 · MEDIUM) como estado inicial y revisar el payload de todos los botones.
 7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.
 8. Revisar el diff, crear commit, hacer push a la rama de despliegue y verificar la URL real sin caché antigua.
 
