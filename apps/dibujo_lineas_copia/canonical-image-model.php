@@ -5,6 +5,9 @@ declare(strict_types=1);
    Modelos vigentes (2026-09-25):
    - OpenAI GPT Image 2.5 directo: openai-medium / openai-high (flare),
      openai-xhigh (sunburst), openai-max-flare, openai-max-sunburst.
+   - OpenAI image 2 (gpt-image-2), modelo base del proyecto:
+     openai-image-2 (medium), openai-image-2-high (high). Edita la imagen de
+     referencia por /v1/images/edits, igual que el resto de modelos OpenAI.
    - Gemini vía OpenRouter: gemini-flash (3.1 Flash), gemini-pro (3 Pro).
    - Qwen Image 3 Pro vía OpenRouter Image API: qwen-pro. */
 function ag_image_catalog(): array
@@ -15,6 +18,8 @@ function ag_image_catalog(): array
         'openai-xhigh'        => ['provider'=>'openai', 'model'=>'gpt-image-2.5-sunburst', 'quality'=>'xhigh'],
         'openai-max-flare'    => ['provider'=>'openai', 'model'=>'gpt-image-2.5-flare', 'quality'=>'max'],
         'openai-max-sunburst' => ['provider'=>'openai', 'model'=>'gpt-image-2.5-sunburst', 'quality'=>'max'],
+        'openai-image-2'      => ['provider'=>'openai', 'model'=>'gpt-image-2', 'quality'=>'medium'],
+        'openai-image-2-high' => ['provider'=>'openai', 'model'=>'gpt-image-2', 'quality'=>'high'],
         'gemini-flash'        => ['provider'=>'gemini', 'model'=>'google/gemini-3.1-flash-image'],
         'gemini-pro'          => ['provider'=>'gemini', 'model'=>'google/gemini-3-pro-image'],
         'qwen-pro'            => ['provider'=>'qwen', 'model'=>'qwen/qwen-image-3-pro'],
