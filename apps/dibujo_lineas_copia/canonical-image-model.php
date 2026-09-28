@@ -185,9 +185,19 @@ function ag_image_dalle(array $selected, string $prompt, array $request, array $
         $prompt .= "\n\nReferencia visual de la imagen original (conserva composición, encuadre y elementos):\n" . $description;
     }
     $size = ag_image_dalle_size($request);
-    $fields = ['model'=>$selected['model'], 'prompt'=>ag_image_dalle_prompt($prompt), 'n'=>1, 'quality'=>$selected['quality'], 'size'=>$size, 'response_format'=>'b64_json'];
+    // La API actual de imagenes ya NO admite response_format: devuelve b64_json
+    // por defecto y responde 400 "Unknown parameter" si se envia.
+    $fields = ['model'=>$selected['model'], 'prompt'=>ag_image_dalle_prompt($prompt), 'n'=>1, 'quality'=>$selected['quality'], 'size'=>$size];
     $data = ag_image_json('https://api.openai.com/v1/images/generations', ['Authorization: Bearer '.$key, 'Content-Type: application/json'], $fields);
     $b64 = (string)($data['data'][0]['b64_json'] ?? '');
+    // Si el proveedor devuelve una URL temporal, se descarga aqui para que no
+    // caduque antes de llegar al navegador.
+    if ($b64 === '' && !empty($data['data'][0]['url'])) {
+        $ch = curl_init((string)$data['data'][0]['url']);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_TIMEOUT=>90, CURLOPT_CONNECTTIMEOUT=>20]);
+        $download = curl_exec($ch); $downloadCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+        if (is_string($download) && $download !== '' && $downloadCode >= 200 && $downloadCode < 300) $b64 = base64_encode($download);
+    }
     if ($b64 === '') throw new RuntimeException('DALL·E 3 no devolvió ninguna imagen.', 502);
     return ag_image_result($b64, 'image/png', $selected, 'openai', [
         'size' => $size,

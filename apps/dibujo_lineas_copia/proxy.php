@@ -382,12 +382,15 @@ if ($backend === 'openai') {
                 }
             }
         }
-        // Ya hay un worker generando esta misma peticion.
-        if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 300) {
+        // Ya hay un worker generando esta misma peticion. El candado caduca solo:
+        // si el worker muere sin limpiarlo, a los 150s se reintenta en vez de
+        // dejar la app esperando "processing".
+        if (is_file($lockFile) && (time() - (int)@filemtime($lockFile)) < 150) {
             http_response_code(202);
             echo json_encode(['status' => 'processing']);
             exit;
         }
+        if (is_file($lockFile)) @unlink($lockFile);
 
         // El trabajo continua aunque el servidor corte la conexion por timeout.
         ignore_user_abort(true);
@@ -411,13 +414,14 @@ if ($backend === 'openai') {
         // frontend lo muestra al momento en lugar de reintentar durante minutos.
         if ($description === '') $fail(424, 'No se pudo analizar la imagen de referencia: ' . $reason . '. Prueba de nuevo o elige otro modelo.');
 
+        // La API actual de imagenes ya NO admite response_format: devuelve
+        // b64_json por defecto y responde 400 "Unknown parameter" si se envia.
         $dalleBody = json_encode([
-            'model'           => $openaiModel,
-            'prompt'          => dallePrompt($prompt . "\n\nReferencia visual de la imagen original (conserva composicion, encuadre y elementos):\n" . $description),
-            'n'               => 1,
-            'quality'         => $openaiQuality,
-            'size'            => $dalleSize,
-            'response_format' => 'b64_json',
+            'model'   => $openaiModel,
+            'prompt'  => dallePrompt($prompt . "\n\nReferencia visual de la imagen original (conserva composicion, encuadre y elementos):\n" . $description),
+            'n'       => 1,
+            'quality' => $openaiQuality,
+            'size'    => $dalleSize,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
 
         // Mantener viva la conexion con el proxy del servidor mientras OpenAI
@@ -462,6 +466,24 @@ if ($backend === 'openai') {
             $fail($code >= 400 && $code < 500 ? $code : 502, 'OpenAI: ' . $em);
         }
         $imageData = (string)($jr['data'][0]['b64_json'] ?? '');
+        // Algunos despliegues devuelven una URL temporal en vez de b64_json:
+        // se descarga aqui para que no caduque antes de llegar al navegador.
+        if ($imageData === '' && !empty($jr['data'][0]['url'])) {
+            $imageUrl = (string)$jr['data'][0]['url'];
+            $dl = curl_init($imageUrl);
+            curl_setopt_array($dl, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT        => 90,
+                CURLOPT_CONNECTTIMEOUT => 20,
+            ]);
+            $download = curl_exec($dl);
+            $downloadCode = (int)curl_getinfo($dl, CURLINFO_HTTP_CODE);
+            curl_close($dl);
+            if (is_string($download) && $download !== '' && $downloadCode >= 200 && $downloadCode < 300) {
+                $imageData = base64_encode($download);
+            }
+        }
         if ($imageData === '') $fail(502, 'DALL-E 3 no devolvio ninguna imagen.');
 
         // Guarda el resultado: los reintentos del frontend lo recogen aunque el

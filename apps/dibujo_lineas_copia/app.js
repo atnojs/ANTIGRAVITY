@@ -177,7 +177,8 @@ previewGrid.addEventListener('click', (e) => {
             if (!slowModel) throw new Error(lastError);
             if (attempt < maxAttempts - 1) await delay(5000);
         }
-        throw new Error(lastError);
+        // Se agotaron los reintentos sin resultado: mensaje claro en vez de "Generando...".
+        throw new Error(lastError === 'Generando...' ? 'El modelo tardó demasiado. Vuelve a intentarlo.' : lastError);
     };
 
     startButton.addEventListener('click', async () => {
