@@ -965,20 +965,6 @@ h1, h2, h3, h4, .font-montserrat {
     transform-origin: center center;
 }
 
-.lightbox-hint {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255, 255, 255, 0.75);
-    font-size: 0.85rem;
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 0.4rem 0.9rem;
-    border-radius: 999px;
-    pointer-events: none;
-}
-
 .lightbox-close {
     position: absolute;
     top: 1.5rem;
