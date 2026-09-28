@@ -2013,16 +2013,32 @@ function Toast({ toasts, removeToast }) {
    COMPONENT: Lightbox
    ═══════════════════════════════════════════════ */
 function Lightbox({ src, onClose }) {
+    const [zoom, setZoom] = useState(1);
+
     useEffect(() => {
         const handler = (e) => { if (e.key === 'Escape') onClose(); };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
     }, [onClose]);
 
+    useEffect(() => { setZoom(1); }, [src]);
+
+    const handleWheel = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setZoom(z => Math.min(6, Math.max(0.5, z * (e.deltaY < 0 ? 1.15 : 0.87))));
+    };
+
     return (
-        <div className="lightbox" onClick={onClose}>
-            <img src={src} alt="Vista ampliada" />
+        <div className="lightbox" onClick={onClose} onWheel={handleWheel}>
+            <img
+                src={src}
+                alt="Vista ampliada"
+                style={{ transform: `scale(${zoom})`, cursor: zoom > 1 ? 'zoom-out' : 'zoom-in' }}
+                onClick={(e) => e.stopPropagation()}
+            />
             <button className="lightbox-close" onClick={onClose} aria-label="Cerrar lightbox">✕</button>
+            <div className="lightbox-hint">🖱️ Rueda del ratón para zoom · Clic fuera o Esc para cerrar</div>
         </div>
     );
 }
@@ -2964,12 +2980,27 @@ function App() {
         async function syncImagesFromHostinger() {
             try {
                 const remoteImages = await loadRemoteImages();
+
+                // Mapa comando -> id de seed actual, para casar imagen por CÓDIGO
+                // (los ids del localStorage pueden estar desfasados tras añadir/quitar códigos).
+                const cmdToSeedId = {};
+                for (const t of SEED_TRICKS) {
+                    if (typeof t.codeSnippet === 'string' && t.codeSnippet.startsWith('/')) {
+                        cmdToSeedId[t.codeSnippet] = t.id;
+                    }
+                }
+
                 const next = [];
 
                 for (const trick of initialTricksRef.current) {
                     let imageUrl = trick.imageUrl || '';
-                    if (!(typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) && remoteImages[trick.id]) {
-                        imageUrl = remoteImages[trick.id];
+                    if (!(typeof imageUrl === 'string' && imageUrl.startsWith('data:image/'))) {
+                        const cmdSeedId = cmdToSeedId[trick.codeSnippet] || null;
+                        if (cmdSeedId && remoteImages[cmdSeedId]) {
+                            imageUrl = remoteImages[cmdSeedId];
+                        } else if (remoteImages[trick.id]) {
+                            imageUrl = remoteImages[trick.id];
+                        }
                     }
                     next.push({ ...trick, imageUrl });
                 }
