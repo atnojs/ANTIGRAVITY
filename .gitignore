@@ -104,6 +104,9 @@ webs/limpiador-windows/data/
 .hermes/
 _pruebas_img/
 
+# Worktrees de agentes (Codex/DSH): son copias de trabajo, no contenido del repo
+.codex-worktrees/
+
 # decorar_habitacion: datos de runtime (historial e recortes de compra) — no van a git
 apps/decorar_habitacion/history_data/
 apps/decorar_habitacion/crops/
