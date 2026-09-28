@@ -740,7 +740,7 @@ textarea:focus-visible {
   border-color:var(--border-strong);box-shadow:0 0 18px var(--glow);
 }
 
-/* Layout en filas: OPENAI arriba, GEMINI+QWEN juntos en una fila debajo */
+/* Layout en filas: OPENAI 2.5 arriba, GEMINI+QWEN+IMAGE 2 en una fila debajo */
 .model-provider-layout{
   display:flex;flex-direction:column;gap:.8rem;width:100%;max-width:100%;
 }
