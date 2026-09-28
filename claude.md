@@ -1,10 +1,14 @@
 # Instrucciones del proyecto para Claude Code
 
-Este proyecto usa skills personalizadas ubicadas en:
+El contenido canónico de las skills vive en:
 
 ```text
-.claude/skills/
+skills/
 ```
+
+`.claude/skills/<nombre>/SKILL.md` son solo **punteros** (conservan el front matter para
+que se descubran por su descripción): al abrir uno, lee el archivo `skills/<archivo>.md`
+que indica y aplícalo tal cual. No dupliques el contenido en el puntero.
 
 Cuando la tarea coincida con una de las skills disponibles, carga y aplica la skill correspondiente.
 
