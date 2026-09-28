@@ -135,12 +135,12 @@ servido). **⏳ = pendiente.**
 |---|---|---|---|---|
 | 1 | ✅ | `angulos_de_camara` | portal + mucha actividad | 20 |
 | 2 | ✅ | `escenario_modelo` | mucha actividad | 28 |
-| 3 | ⏳ | `imagenes_ia/ajustes_imagen` | mucha actividad | 23 |
-| 4 | ⏳ | `estilizador_prompt` | actividad | 19 |
-| 5 | ⏳ | `conversor_multimedia` | actividad | 13 |
-| 6 | ⏳ | `creador_memes` | actividad + `config.php` | 12 |
-| 7 | ⏳ | `infografia-referencia` | actividad | 10 |
-| 8 | ⏳ | `infografia` | actividad | 8 |
+| 3 | ✅ | `imagenes_ia/ajustes_imagen` | mucha actividad | 23 |
+| 4 | ✅ | `estilizador_prompt` | actividad | 19 |
+| 5 | ✅ | `conversor_multimedia` | actividad | 13 |
+| 6 | ✅ | `creador_memes` | actividad + `config.php` | 12 |
+| 7 | ✅ | `infografia-referencia` | actividad | 10 |
+| 8 | ✅ | `infografia` | actividad | 8 |
 | 9 | ⏳ | `vestir_modelo` | portal + actividad | 4 |
 | 10 | ⏳ | `imagenes_ia/editar_generar` | actividad | 6 |
 | 11 | ⏳ | `editar_generar` y `editar_generar_1` | actividad + `config.php` | 3 |
@@ -150,7 +150,7 @@ servido). **⏳ = pendiente.**
 | 15 | ⏳ | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
 | 16 | ⏳ | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
 
-**Patrón aplicado por app** (§4, ya probado en las apps 1 y 2): `history.php` canónico
+**Patrón aplicado por app** (§4, ya probado en las apps 1–8): `history.php` canónico
 copiado tal cual (datos en `history_store/`, con migración de un solo paso desde
 `history_data/`), `history-manager.js` canónico (sello anti-caché en la lista + shim de la
 API legacy), `gemini-2` como primer botón del grupo GEMINI, columna `IMAGE 2`
@@ -213,18 +213,26 @@ Resultado: **HTTP 200 en 11,1 s**, imagen `image/png` de 1248×832, aspect `3:2`
 Lo bueno: el identificador, el catálogo, la clave `R`, el endpoint de OpenRouter y la
 respuesta con imagen funcionan de punta a punta.
 
-Lo que hay que revisar (primera tarea de la próxima sesión): la imagen devuelta **conserva
-el color y reproduce la imagen de entrada** en lugar de convertirla a línea. Hipótesis, por
-orden de coste:
+### 9.1 Repetición con FOTO REAL (2026-09-29 01:0x) — RESUELTO
 
-1. La entrada de prueba es un pantallazo de interfaz (mucho texto), no una foto: **repetir
-   la prueba con una foto real** antes de tocar nada.
-2. Orden del contenido: probar `image` antes de `text` en `messages[0].content` (algunos
-   modelos de imagen son sensibles al orden).
-3. Fuerza del prompt: para `gemini-2` puede hacer falta un prompt más explícito
-   («convierte a blanco y negro, solo líneas, elimina todo color y relleno»).
-4. Si con foto real sigue sin convertir, dejarlo en el selector como opción secundaria
-   documentando su comportamiento, sin prometer estilo.
+Primera tarea de la sesión nocturna: repetir la prueba con una foto de verdad (hipótesis 1
+del §9). Se usó
+`apps/dibujo_lineas_local/salida/ORIGINAL_ORIGINAL_ORIGINAL_WhatsApp Image 2026-04-28 at 15.16.53.jpeg`
+(68 KB, foto de dos personas), enviada con `tools/probar-gemini2.ps1`.
+
+Resultado: **HTTP 200 en 8,4 s**, imagen `image/png` de **864×1184**, aspect `27:37`,
+1173 KB. La salida es **línea negra sobre blanco, sin color ni relleno**, con la composición
+y los rasgos de la foto original conservados (coloring page correcta). Evidencia guardada en
+`tools/evidencias/gemini2-foto-real-entrada.jpg` y
+`tools/evidencias/gemini2-foto-real-resultado.png`.
+
+Conclusión: **`gemini-2` convierte correctamente con fotos reales**. El problema observado
+en la prueba anterior era la entrada (un pantallazo de interfaz con mucho texto), no el
+modelo. No hace falta tocar el prompt ni el orden del contenido de `messages[0]`, y
+`gemini-2` se queda como opción plena del selector (no secundaria).
+
+Nota de método: al enviar la imagen desde PowerShell hay que escribir el cuerpo como bytes
+UTF-8 explícitos; con `Invoke-WebRequest -InFile` el proxy devolvía `JSON invalido`.
 
 El resto del catálogo (image 2 y 2.5) está probado en producción y convierte correctamente.
 
