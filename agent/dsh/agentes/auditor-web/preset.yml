@@ -1,0 +1,3 @@
+name: 'Auditor Web'
+description: 'Control de calidad final: rendimiento, SEO, contraste, teclado, imágenes, formularios y contenido dinámico.'
+order: 13

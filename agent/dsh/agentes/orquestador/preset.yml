@@ -1,0 +1,3 @@
+name: 'Orquestador Multiagente'
+description: 'Director multiagente: divide el trabajo, asigna tareas, gestiona dependencias y coordina el equipo.'
+order: 15

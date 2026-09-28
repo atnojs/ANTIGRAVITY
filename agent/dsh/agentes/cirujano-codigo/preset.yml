@@ -1,0 +1,3 @@
+name: 'Cirujano de Código'
+description: 'Corrige y refactoriza código existente con la intervención mínima, sin romper lo que ya funciona.'
+order: 12

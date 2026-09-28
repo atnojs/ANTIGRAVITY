@@ -1,0 +1,3 @@
+name: 'Revisor Adversario'
+description: 'Revisor crítico que busca bugs, casos límite y fallos de seguridad antes de entregar.'
+order: 14

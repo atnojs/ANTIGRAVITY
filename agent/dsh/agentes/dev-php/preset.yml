@@ -1,0 +1,3 @@
+name: 'Backend PHP Hostinger'
+description: 'Agente de código para el backend PHP en Hostinger: proxy seguro, claves aisladas e historial persistente.'
+order: 11
