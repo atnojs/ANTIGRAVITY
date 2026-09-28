@@ -114,6 +114,7 @@ apps/decorar_habitacion/crops/
 
 # Ignorar historiales e imágenes generadas
 **/history_data/
+**/history_store/
 *.jpg
 *.png
 
