@@ -2034,10 +2034,11 @@ function Lightbox({ src, onClose }) {
             <img
                 src={src}
                 alt="Vista ampliada"
+                draggable={false}
                 style={{ transform: `scale(${zoom})`, cursor: 'zoom-out' }}
+                onClick={onClose}
             />
             <button className="lightbox-close" onClick={onClose} aria-label="Cerrar lightbox">✕</button>
-            <div className="lightbox-hint">🖱️ Rueda del ratón para zoom</div>
         </div>
     );
 }
