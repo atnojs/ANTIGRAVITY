@@ -32,7 +32,7 @@
     t._timeout = setTimeout(function () { t.classList.remove("show"); }, 3500);
   }
 
-  var MODEL_LABELS = { "openai-medium": "MEDIUM", "openai-high": "HIGH", "openai-xhigh": "XHIGH", "openai-max-flare": "MAX FLARE", "openai-max-sunburst": "MAX SUNBURST", "gemini-flash": "3.1 FLASH", "gemini-pro": "3 PRO", "qwen-pro": "QWEN 3 PRO" };
+  var MODEL_LABELS = { "openai-medium": "MEDIUM", "openai-high": "HIGH", "openai-xhigh": "XHIGH", "openai-max-flare": "MAX FLARE", "openai-max-sunburst": "MAX SUNBURST", "gemini-2": "GEMINI 2", "gemini-flash": "3.1 FLASH", "gemini-pro": "3 PRO", "qwen-pro": "QWEN 3 PRO", "openai-image-2": "IMAGE 2 MEDIUM", "openai-image-2-high": "IMAGE 2 HIGH" };
 
   // Para qwen-pro (más lento que el timeout de nginx, ~55s) se espera
   // activamente: el proxy guarda el resultado en caché y responde
@@ -79,7 +79,7 @@
   var state = {
     aspectRatio: "1:1",
     resolution: 1024,
-    model: "openai-medium",       // 4 modelos: openai-medium, openai-high, gemini-flash, gemini-pro
+    model: "openai-image-2",       // por defecto IMAGE 2 MEDIUM; resto del selector: openai-medium, openai-high, openai-max-flare, openai-xhigh, openai-max-sunburst, openai-image-2-high, gemini-2, gemini-flash, gemini-pro, qwen-pro
     textColor: "rgb(0,255,255)",   // default cyan (position 50 on slider)
     fontSize: 120,
     lineSpacing: 1.15,       // multiplier
@@ -621,7 +621,7 @@
     items.forEach(function (item) {
       var imageUrl = item.imageUrl || (item.data && item.data.dataUrl) || "";
       if (!imageUrl && item.imageFile) {
-        imageUrl = "./history_data/" + encodeURIComponent(item.imageFile + ".jpg");
+        imageUrl = "./history_store/" + encodeURIComponent(item.imageFile + ".jpg");
       }
       if (!imageUrl) return;
 
