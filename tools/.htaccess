@@ -1,0 +1,15 @@
+# Herramientas de desarrollo: NUNCA accesibles por web.
+#
+# Este repositorio se despliega en la raiz publica de Hostinger, asi que mover
+# los scripts aqui NO basta: hay que denegar el acceso explicitamente.
+# Se cubren las dos sintaxis (Apache 2.4 y 2.2 / LiteSpeed) para que funcione
+# en cualquier plan de hosting.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
