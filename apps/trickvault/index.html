@@ -2034,8 +2034,7 @@ function Lightbox({ src, onClose }) {
             <img
                 src={src}
                 alt="Vista ampliada"
-                style={{ transform: `scale(${zoom})`, cursor: zoom > 1 ? 'zoom-out' : 'zoom-in' }}
-                onClick={(e) => e.stopPropagation()}
+                style={{ transform: `scale(${zoom})`, cursor: 'zoom-out' }}
             />
             <button className="lightbox-close" onClick={onClose} aria-label="Cerrar lightbox">✕</button>
             <div className="lightbox-hint">🖱️ Rueda del ratón para zoom</div>
