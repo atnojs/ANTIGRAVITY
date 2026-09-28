@@ -1,10 +1,11 @@
 <?php
 // ============================================================
 // PROXY PHP — Imagenes Lineales (unificado)
-// Soporta Gemini via OpenRouter (clave R) y GPT Image 2.5 directo de OpenAI
-// (OPENAI_API_KEY o clave O).
+// Soporta Gemini via OpenRouter (clave R), GPT Image 2.5 directo de OpenAI
+// (OPENAI_API_KEY o clave O) y DALL-E 3 (standard / HD) para control de costes.
 // Selector de modelo: openai-medium / openai-high / openai-xhigh /
-// openai-max-flare / openai-max-sunburst / gemini-flash / gemini-pro / qwen-pro.
+// openai-max-flare / openai-max-sunburst / dall-e-3 / dall-e-3-hd /
+// gemini-flash / gemini-pro / qwen-pro.
 // Contrato: recibe {image, mimeType, model?, prompt?}
 //           responde  {image, mimeType}
 // ============================================================
@@ -62,6 +63,59 @@ function openAiOutputSize(int $sourceWidth, int $sourceHeight): string {
     while ($width / $height > 3) $height += 16;
     while ($height / $width > 3) $width += 16;
     return $width . 'x' . $height;
+}
+
+// DALL-E 3 solo admite tres tamaños y no tiene endpoint de edición.
+function dalleOutputSize(int $sourceWidth, int $sourceHeight): string {
+    if ($sourceWidth <= 0 || $sourceHeight <= 0) return '1024x1024';
+    $ratio = $sourceWidth / $sourceHeight;
+    if ($ratio > 1.2) return '1792x1024';
+    if ($ratio < (1 / 1.2)) return '1024x1792';
+    return '1024x1024';
+}
+
+// Límite real del prompt de DALL-E 3: 4000 caracteres.
+function dallePrompt(string $prompt): string {
+    if (function_exists('mb_substr')) return mb_substr($prompt, 0, 4000, 'UTF-8');
+    // Sin mbstring: recorta a 4000 bytes y descarta un posible carácter UTF-8 partido
+    // (un byte suelto rompería json_encode y dejaría la petición sin cuerpo).
+    $cut = substr($prompt, 0, 4000);
+    return (string)preg_replace('/(?:[\xC0-\xFF][\x80-\xBF]*)$/', '', $cut);
+}
+
+// Modelo de VISIÓN del proyecto (OpenRouter xiaomi/mimo-v2.6-pro, clave R):
+// traduce la imagen de referencia a texto porque DALL-E 3 no puede ver imágenes.
+function visionDescribeImage(string $binary, string $mimeType, string $orKey): string {
+    if ($orKey === '' || $binary === '') return '';
+    $payload = [
+        'model'      => 'xiaomi/mimo-v2.6-pro',
+        'max_tokens' => 900,
+        'messages'   => [[
+            'role'    => 'user',
+            'content' => [
+                ['type' => 'text', 'text' => 'Describe en español, con detalle y sin interpretar, la imagen adjunta: personas, objetos, encuadre, perspectiva, poses, ropa, entorno y elementos principales. Responde solo con la descripción, sin títulos ni listas.'],
+                ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $mimeType . ';base64,' . base64_encode($binary)]],
+            ],
+        ]],
+    ];
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Authorization: Bearer ' . $orKey],
+        CURLOPT_TIMEOUT        => 90,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $resp = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if (!is_string($resp) || $resp === '' || $code < 200 || $code >= 300) return '';
+    $data = json_decode($resp, true);
+    if (!is_array($data)) return '';
+    $content = $data['choices'][0]['message']['content'] ?? '';
+    if (is_array($content)) { $text = ''; foreach ($content as $part) if (isset($part['text'])) $text .= ' ' . $part['text']; $content = $text; }
+    return trim((string)$content);
 }
 
 function geminiAspectRatio(int $sourceWidth, int $sourceHeight): string {
@@ -146,6 +200,9 @@ $modelCatalog = [
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    // DALL-E 3: solo generacion (sin edicion), calidad standard / hd.
+    'dall-e-3'            => ['backend' => 'openai', 'model' => 'dall-e-3', 'quality' => 'standard', 'generation_only' => true],
+    'dall-e-3-hd'         => ['backend' => 'openai', 'model' => 'dall-e-3', 'quality' => 'hd', 'generation_only' => true],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
@@ -161,6 +218,7 @@ $backend = $selected['backend'];
 $geminiModel = $selected['model'] ?? '';
 $openaiModel = $selected['model'] ?? 'gpt-image-2.5-flare';
 $openaiQuality = $selected['quality'] ?? 'medium';
+$openaiGenerationOnly = !empty($selected['generation_only']);
 
 // ====================================================================
 // BACKEND: GEMINI (OpenRouter sync)
@@ -244,6 +302,70 @@ if ($backend === 'openai') {
         http_response_code(500);
         echo json_encode(['error'=>['message'=>'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
         exit;
+    }
+
+    // ================================================================
+    // DALL-E 3 (standard / hd): solo generacion de texto a imagen.
+    // No existe /v1/images/edits para este modelo, asi que la referencia
+    // se traduce a una descripcion con el modelo de vision (clave R).
+    // ================================================================
+    if ($openaiGenerationOnly) {
+        $description = visionDescribeImage($imgBinary, $mimeType, $orKey);
+        if ($description === '') {
+            http_response_code(502);
+            echo json_encode(['error'=>['message'=>'No se pudo analizar la imagen de referencia (modelo de vision no disponible). Prueba de nuevo o elige otro modelo.']]);
+            exit;
+        }
+
+        $dalleSize = dalleOutputSize($sourceWidth, $sourceHeight);
+        $dalleBody = json_encode([
+            'model'           => $openaiModel,
+            'prompt'          => dallePrompt($prompt . "\n\nReferencia visual de la imagen original (conserva composicion, encuadre y elementos):\n" . $description),
+            'n'               => 1,
+            'quality'         => $openaiQuality,
+            'size'            => $dalleSize,
+            'response_format' => 'b64_json',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        $ch = curl_init('https://api.openai.com/v1/images/generations');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $dalleBody,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $openaiKey,
+            ],
+            CURLOPT_TIMEOUT        => 180,
+            CURLOPT_CONNECTTIMEOUT => 20,
+        ]);
+        $resp = curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
+        curl_close($ch);
+
+        if ($err) {
+            http_response_code(502);
+            echo json_encode(['error'=>['message'=>'Error de conexion con OpenAI: ' . $err]]);
+            exit;
+        }
+        $jr = json_decode((string)$resp, true);
+        if ($code >= 400 || !is_array($jr)) {
+            $em = is_array($jr) ? ($jr['error']['message'] ?? ('HTTP ' . $code)) : ('HTTP ' . $code);
+            if (is_array($em)) $em = json_encode($em);
+            http_response_code($code >= 400 ? $code : 502);
+            echo json_encode(['error'=>['message'=>'OpenAI: ' . $em]]);
+            exit;
+        }
+        $imageData = (string)($jr['data'][0]['b64_json'] ?? '');
+        if ($imageData === '') {
+            http_response_code(502);
+            echo json_encode(['error'=>['message'=>'DALL-E 3 no devolvio ninguna imagen.']]);
+            exit;
+        }
+        // sendImageResponse devuelve las dimensiones reales del proveedor
+        // (1024x1024, 1792x1024 o 1024x1792), nunca una resolucion fingida.
+        sendImageResponse(base64_decode($imageData), 'image/png');
     }
 
     // GPT Image 2 recibe la referencia como multipart/form-data.
@@ -463,4 +585,4 @@ if ($backend === 'qwen') {
 
 // Modelo no reconocido
 http_response_code(400);
-echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash, gemini-pro o qwen-pro.']]);
+echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, dall-e-3, dall-e-3-hd, gemini-flash, gemini-pro o qwen-pro.']]);

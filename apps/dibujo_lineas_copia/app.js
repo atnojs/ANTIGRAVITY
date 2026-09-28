@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
+        'dall-e-3': 'DALL·E 3',
+        'dall-e-3-hd': 'DALL·E 3 HD',
         'qwen-pro': 'QWEN 3 PRO'
     };
     const modelToggles = document.querySelectorAll('.model-toggle');

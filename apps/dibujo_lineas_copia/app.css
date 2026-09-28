@@ -249,7 +249,7 @@ h1{
   width:100%;
 }
 .model-provider-row{
-  display:flex;justify-content:center;align-items:flex-start;gap:1.4rem;
+  display:flex;justify-content:center;align-items:flex-start;gap:1.4rem;flex-wrap:wrap;
 }
 .model-provider-column{
   display:flex;flex-direction:column;align-items:center;gap:.35rem;
