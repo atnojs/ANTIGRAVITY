@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
-        'dall-e-3': 'DALL·E 3',
-        'dall-e-3-hd': 'DALL·E 3 HD',
+        'openai-mini': 'OPENAI MINI',
+        'openai-mini-high': 'OPENAI MINI HIGH',
         'qwen-pro': 'QWEN 3 PRO'
     };
     const modelToggles = document.querySelectorAll('.model-toggle');
@@ -146,10 +146,10 @@ previewGrid.addEventListener('click', (e) => {
     // Función auxiliar para pausa entre peticiones
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
-    // Llamada al proxy. Para los modelos lentos (qwen-pro y DALL·E 3, que además
-    // encadena el análisis de visión) se espera activamente: el proxy guarda el
-    // resultado en caché y responde 'processing' mientras el worker termina.
-    const SLOW_MODELS = ['qwen-pro', 'dall-e-3', 'dall-e-3-hd'];
+    // Llamada al proxy. Para el modelo lento (qwen-pro) se espera activamente: el
+    // proxy guarda el resultado en caché y responde 'processing' mientras el
+    // worker termina de generarlo.
+    const SLOW_MODELS = ['qwen-pro'];
     const callProxyWithWait = async (body, maxAttempts = 36) => {
         const slowModel = body && SLOW_MODELS.indexOf(body.model) !== -1;
         let lastError = 'Sin respuesta del modelo.';

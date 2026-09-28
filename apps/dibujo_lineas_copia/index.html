@@ -72,11 +72,11 @@
             </div>
           </div>
           <div class="model-provider-column">
-            <span class="model-provider-title">DALL·E 3</span>
+            <span class="model-provider-title">OPENAI MINI</span>
             <span class="model-quality-hint">Control de costes</span>
             <div class="model-toggle-group">
-              <button type="button" id="model-dalle3-std" class="model-toggle" data-model="dall-e-3" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="El más económico. Analiza tu foto con visión y DALL·E 3 dibuja desde esa descripción. Salida 1024x1024.">STANDARD</button>
-              <button type="button" id="model-dalle3-hd" class="model-toggle" data-model="dall-e-3-hd" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Más detalle (HD), lado largo hasta 1792 px. Coste superior a Standard.">HD</button>
+              <button type="button" id="model-mini" class="model-toggle" data-model="openai-mini" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="El más económico de OpenAI (gpt-image-1-mini). Edita tu foto igual que los demás modelos.">MEDIUM</button>
+              <button type="button" id="model-mini-high" class="model-toggle" data-model="openai-mini-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-1-mini en calidad alta. Un paso por encima de MEDIUM.">HIGH</button>
             </div>
           </div>
         </div>
@@ -121,6 +121,6 @@
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <script src="history-manager.js?v=8"></script>
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
 </body>
 </html>

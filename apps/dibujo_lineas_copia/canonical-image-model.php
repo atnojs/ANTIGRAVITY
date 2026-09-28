@@ -5,12 +5,6 @@ declare(strict_types=1);
    Modelos vigentes (2026-09-25):
    - OpenAI GPT Image 2.5 directo: openai-medium / openai-high (flare),
      openai-xhigh (sunburst), openai-max-flare, openai-max-sunburst.
-   - OpenAI DALL·E 3 directo (control de costes): dall-e-3 (standard) y
-     dall-e-3-hd. Solo texto→imagen: DALL·E 3 no tiene endpoint de edición,
-     así que cuando llega una imagen de referencia se traduce primero a una
-     descripción con el modelo de visión del proyecto (OpenRouter, clave R)
-     y DALL·E 3 dibuja desde esa descripción. Tamaños reales del modelo:
-     1024x1024, 1792x1024 y 1024x1792.
    - Gemini vía OpenRouter: gemini-flash (3.1 Flash), gemini-pro (3 Pro).
    - Qwen Image 3 Pro vía OpenRouter Image API: qwen-pro. */
 function ag_image_catalog(): array
@@ -21,8 +15,6 @@ function ag_image_catalog(): array
         'openai-xhigh'        => ['provider'=>'openai', 'model'=>'gpt-image-2.5-sunburst', 'quality'=>'xhigh'],
         'openai-max-flare'    => ['provider'=>'openai', 'model'=>'gpt-image-2.5-flare', 'quality'=>'max'],
         'openai-max-sunburst' => ['provider'=>'openai', 'model'=>'gpt-image-2.5-sunburst', 'quality'=>'max'],
-        'dall-e-3'            => ['provider'=>'openai', 'model'=>'dall-e-3', 'quality'=>'standard', 'generation_only'=>true],
-        'dall-e-3-hd'         => ['provider'=>'openai', 'model'=>'dall-e-3', 'quality'=>'hd', 'generation_only'=>true],
         'gemini-flash'        => ['provider'=>'gemini', 'model'=>'google/gemini-3.1-flash-image'],
         'gemini-pro'          => ['provider'=>'gemini', 'model'=>'google/gemini-3-pro-image'],
         'qwen-pro'            => ['provider'=>'qwen', 'model'=>'qwen/qwen-image-3-pro'],
@@ -38,13 +30,13 @@ function ag_image_selected(string $requested): array
     return ['id'=>$requested] + $catalog[$requested];
 }
 
-// Fuente ÚNICA de claves: el entorno, con las claves protegidas en el .htaccess
-// raíz de Hostinger (SetEnv). No se leen ficheros de configuración locales ni
-// constantes de clave: un fichero con claves antiguas provocaba 401 al rotarlas.
-// El parámetro $configDir se conserva solo por compatibilidad de firma con las
-// apps que llaman a ag_image_generate($request, $configDir).
 function ag_image_key(string $configDir, string ...$names): string
 {
+    // Fuente ÚNICA de claves: el entorno, con las claves protegidas en el .htaccess
+    // raíz de Hostinger (SetEnv). No se leen ficheros de configuración locales ni
+    // constantes de clave: un fichero con claves antiguas provocaba 401 al rotarlas.
+    // El parámetro $configDir se conserva solo por compatibilidad de firma con las
+    // apps que llaman a ag_image_generate($request, $configDir).
     foreach ($names as $name) {
         foreach ([getenv($name), getenv('REDIRECT_'.$name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_'.$name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_'.$name] ?? ''] as $value) {
             if (is_string($value) && trim($value) !== '') return trim($value);
@@ -79,14 +71,14 @@ function ag_image_input(string $value): array
     return [$binary, $mime];
 }
 
-function ag_image_result(string $b64, string $mime, array $selected, string $provider, array $meta = []): array
+function ag_image_result(string $b64, string $mime, array $selected, string $provider): array
 {
     $binary = base64_decode($b64, true);
     $info = $binary === false ? false : @getimagesizefromstring($binary);
     $width = (int)($info[0] ?? 0);
     $height = (int)($info[1] ?? 0);
     $url = 'data:' . $mime . ';base64,' . $b64;
-    return $meta + [
+    return [
         'success'=>true, 'type'=>'image', 'provider'=>$provider, 'model'=>$selected['id'],
         'mimeType'=>$mime, 'image'=>$b64, 'dataUrl'=>$url, 'imageUrl'=>$url,
         'width'=>$width, 'height'=>$height,
@@ -114,97 +106,6 @@ function ag_image_size(array $request): string
     return $width . 'x' . $height;
 }
 
-/* DALL·E 3 solo acepta texto en su API: no existe /v1/images/edits para este
-   modelo. Cuando una app envía una imagen de referencia, se traduce primero a
-   una descripción con el modelo de visión del proyecto (OpenRouter, clave R) y
-   DALL·E 3 dibuja desde esa descripción. */
-function ag_image_dalle_size(array $request): string
-{
-    $parts = explode(':', ag_image_aspect((string)($request['aspectRatio'] ?? '1:1')));
-    $ratio = max(1, (int)$parts[0]) / max(1, (int)$parts[1]);
-    // Únicos tamaños admitidos por DALL·E 3.
-    if ($ratio > 1.2) return '1792x1024';
-    if ($ratio < (1 / 1.2)) return '1024x1792';
-    return '1024x1024';
-}
-
-function ag_image_dalle_prompt(string $prompt): string
-{
-    // Límite real de DALL·E 3: 4000 caracteres de prompt.
-    if (function_exists('mb_substr')) return mb_substr($prompt, 0, 4000, 'UTF-8');
-    // Sin mbstring: recorta a 4000 bytes y descarta un posible carácter UTF-8 partido
-    // (un byte suelto rompería json_encode y dejaría la petición sin cuerpo).
-    $cut = substr($prompt, 0, 4000);
-    return (string)preg_replace('/(?:[\xC0-\xFF][\x80-\xBF]*)$/', '', $cut);
-}
-
-function ag_image_describe(string $image, string $configDir, string $mimeHint = '', string &$reason = ''): string
-{
-    $key = ag_image_key($configDir, 'R');
-    if ($key === '') { $reason = 'la clave OpenRouter (R) no está disponible'; return ''; }
-    $image = trim($image);
-    // El contrato canónico acepta base64 puro: se reconstruye el data URL con el
-    // MIME real declarado por la app para que el modelo de visión no lo rechace.
-    if ($mimeHint !== '' && strpos($image, 'data:') !== 0) $image = 'data:' . $mimeHint . ';base64,' . $image;
-    [$binary, $mime] = ag_image_input($image);
-    // Mismo payload que el resto del proyecto: imagen primero, texto después y
-    // sin límite de tokens.
-    $payload = [
-        'model' => 'xiaomi/mimo-v2.6-pro',
-        'stream' => false,
-        'messages' => [[
-            'role' => 'user',
-            'content' => [
-                ['type'=>'image_url','image_url'=>['url'=>'data:'.$mime.';base64,'.base64_encode($binary)]],
-                ['type'=>'text','text'=>'Describe en español, con detalle y sin interpretar, la imagen adjunta: personas, objetos, encuadre, perspectiva, poses, ropa, entorno y elementos principales. Responde solo con la descripción, sin títulos ni listas.'],
-            ],
-        ]],
-    ];
-    try {
-        $data = ag_image_json('https://openrouter.ai/api/v1/chat/completions', ['Authorization: Bearer '.$key, 'Content-Type: application/json'], $payload);
-    } catch (Throwable $error) {
-        $reason = 'error del modelo de visión: ' . $error->getMessage();
-        return '';
-    }
-    $content = $data['choices'][0]['message']['content'] ?? '';
-    if (is_array($content)) { $text = ''; foreach ($content as $part) if (isset($part['text'])) $text .= ' ' . $part['text']; $content = $text; }
-    $content = trim((string)$content);
-    if ($content === '') { $reason = 'el modelo de visión devolvió texto vacío'; return ''; }
-    return $content;
-}
-
-function ag_image_dalle(array $selected, string $prompt, array $request, array $images, string $configDir, string $key): array
-{
-    $description = '';
-    if ($images !== []) {
-        $reason = '';
-        $description = ag_image_describe($images[0], $configDir, (string)($request['mimeType'] ?? ''), $reason);
-        // Sin descripción no hay conversión posible: mejor fallar antes de gastar
-        // una generación que devolver un dibujo ajeno a la imagen subida.
-        if ($description === '') throw new RuntimeException('No se pudo analizar la imagen de referencia: ' . ($reason !== '' ? $reason : 'modelo de visión no disponible') . '. Prueba de nuevo o elige otro modelo.', 502);
-        $prompt .= "\n\nReferencia visual de la imagen original (conserva composición, encuadre y elementos):\n" . $description;
-    }
-    $size = ag_image_dalle_size($request);
-    // La API actual de imagenes ya NO admite response_format: devuelve b64_json
-    // por defecto y responde 400 "Unknown parameter" si se envia.
-    $fields = ['model'=>$selected['model'], 'prompt'=>ag_image_dalle_prompt($prompt), 'n'=>1, 'quality'=>$selected['quality'], 'size'=>$size];
-    $data = ag_image_json('https://api.openai.com/v1/images/generations', ['Authorization: Bearer '.$key, 'Content-Type: application/json'], $fields);
-    $b64 = (string)($data['data'][0]['b64_json'] ?? '');
-    // Si el proveedor devuelve una URL temporal, se descarga aqui para que no
-    // caduque antes de llegar al navegador.
-    if ($b64 === '' && !empty($data['data'][0]['url'])) {
-        $ch = curl_init((string)$data['data'][0]['url']);
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_TIMEOUT=>90, CURLOPT_CONNECTTIMEOUT=>20]);
-        $download = curl_exec($ch); $downloadCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
-        if (is_string($download) && $download !== '' && $downloadCode >= 200 && $downloadCode < 300) $b64 = base64_encode($download);
-    }
-    if ($b64 === '') throw new RuntimeException('DALL·E 3 no devolvió ninguna imagen.', 502);
-    return ag_image_result($b64, 'image/png', $selected, 'openai', [
-        'size' => $size,
-        'referenceMode' => $description !== '' ? 'descripcion-vision' : 'sin-referencia',
-    ]);
-}
-
 function ag_image_generate(array $request, string $configDir = ''): array
 {
     $selected = ag_image_selected((string)($request['model'] ?? ''));
@@ -224,8 +125,6 @@ function ag_image_generate(array $request, string $configDir = ''): array
     if ($selected['provider'] === 'openai') {
         $key = ag_image_key($configDir, 'OPENAI_API_KEY', 'O');
         if ($key === '') throw new RuntimeException('La clave de OpenAI no está configurada.', 500);
-        // DALL·E 3 (control de costes): solo generación, la referencia va como descripción.
-        if (!empty($selected['generation_only'])) return ag_image_dalle($selected, $prompt, $request, $images, $configDir, $key);
         $fields = ['model'=>$selected['model'], 'prompt'=>$prompt, 'quality'=>$selected['quality'], 'size'=>ag_image_size($request)];
         $endpoint = 'https://api.openai.com/v1/images/generations'; $tmp = null;
         $headers = ['Authorization: Bearer '.$key, 'Content-Type: application/json'];
