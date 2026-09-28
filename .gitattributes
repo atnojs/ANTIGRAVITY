@@ -1,0 +1,5 @@
+# Los scripts de shell deben conservar finales de linea LF aunque
+# core.autocrlf sea true (valor por defecto de Git for Windows): un CR
+# suelto al final de cada linea rompe su ejecucion, y estos scripts se
+# invocan desde los hooks de git.
+*.sh text eol=lf
