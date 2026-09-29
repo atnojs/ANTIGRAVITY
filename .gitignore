@@ -140,6 +140,12 @@ apps/decorar_habitacion/crops/
 copias_de_seguridad_de_archivos/
 *.backup_*
 *.bak
+
+# Artefactos de build: no se versionan (el §6.2 del plan de migración los excluye).
+# Incluye los config.php stub que arrastraban algunos dist/ y que no deben ser
+# accesibles por web desde la raíz pública de Hostinger.
+apps/*/dist/
+apps/*/build/
 _respaldo_*/
 _cands.txt
 _tooltip_kit/
