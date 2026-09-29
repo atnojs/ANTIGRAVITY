@@ -6,6 +6,8 @@
 //   - generar : text-to-image
 //   - editar  : image-to-image (con imagen de entrada)
 //   - mejorar : mejora un prompt (modelo de texto barato)
+//   - health  : diagnóstico (claves configuradas + catálogo), sin claves
+//   - models  : diagnóstico (ids de imagen reales de OpenAI), sin claves
 // La clave viaja SIEMPRE server-side, nunca al frontend.
 // ============================================================
 
@@ -26,7 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ===== 7 FUENTES DE API KEY (Hostinger) =====
+// ===== LEER BODY (una sola vez: lo usan health/models y el resto) =====
+$body = file_get_contents('php://input');
+$data = json_decode($body, true);
+$accion = is_array($data) ? (string)($data['action'] ?? 'generar') : 'generar';
+
+// ===== FUENTES DE API KEY (Hostinger) =====
 $apiKey = '';
 
 if (empty($apiKey)) $apiKey = getenv('OPENROUTER_API_KEY');
@@ -35,40 +42,13 @@ if (empty($apiKey)) $apiKey = $_SERVER['OPENROUTER_API_KEY'] ?? '';
 if (empty($apiKey)) $apiKey = $_SERVER['REDIRECT_OPENROUTER_API_KEY'] ?? '';
 if (empty($apiKey)) $apiKey = $_ENV['OPENROUTER_API_KEY'] ?? '';
 if (empty($apiKey)) $apiKey = $_ENV['REDIRECT_OPENROUTER_API_KEY'] ?? '';
-
-// La clave "AQUI_TU_API_KEY" del placeholder no es válida
-if (empty($apiKey) || $apiKey === 'AQUI_TU_API_KEY') {
-    http_response_code(401);
-    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea .htaccess raiz con define("OPENROUTER_API_KEY", "tu-key");']]);
-    exit;
-}
-
-// ===== LEER BODY =====
-$body = file_get_contents('php://input');
-$data = json_decode($body, true);
-
-if (!$data || !isset($data['prompt'])) {
-    http_response_code(400);
-    echo json_encode(['error' => ['message' => 'Falta el campo "prompt" en la petición']]);
-    exit;
-}
-
-$accion = $data['action'] ?? 'generar';
-$prompt = trim((string)$data['prompt']);
-
-if ($prompt === '') {
-    http_response_code(400);
-    echo json_encode(['error' => ['message' => 'El prompt está vacío']]);
-    exit;
-}
-
-// Modelos permitidos (whitelist server-side — el frontend NO elige libremente)
-$MODELOS_IMG = [
-    'barato' => 'google/gemini-3.1-flash-lite-image',
-    'normal' => 'google/gemini-3.1-flash-image',
-    'pro'    => 'google/gemini-3-pro-image',
-];
-$MODELO_TEXTO = 'xiaomi/mimo-v2.6-pro';
+// Clave canónica del .htaccess raíz (SetEnv R): respaldo si el nombre largo no está.
+if (empty($apiKey)) $apiKey = getenv('R');
+if (empty($apiKey)) $apiKey = getenv('REDIRECT_R');
+if (empty($apiKey)) $apiKey = $_SERVER['R'] ?? '';
+if (empty($apiKey)) $apiKey = $_SERVER['REDIRECT_R'] ?? '';
+if (empty($apiKey)) $apiKey = $_ENV['R'] ?? '';
+if (empty($apiKey)) $apiKey = $_ENV['REDIRECT_R'] ?? '';
 
 // ===== Clave OpenAI: SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV) =====
 $openaiKey = '';
@@ -79,6 +59,113 @@ if ($openaiKey === '') {
     foreach ([getenv('O'), getenv('REDIRECT_O'), $_SERVER['O'] ?? '', $_SERVER['REDIRECT_O'] ?? '', $_ENV['O'] ?? '', $_ENV['REDIRECT_O'] ?? ''] as $v) {
         if (!empty($v)) { $openaiKey = (string)$v; break; }
     }
+}
+
+// Modelos permitidos (whitelist server-side — el frontend NO elige libremente)
+$MODELOS_IMG = [
+    'barato' => 'google/gemini-3.1-flash-lite-image',
+    'normal' => 'google/gemini-3.1-flash-image',
+    'pro'    => 'google/gemini-3-pro-image',
+];
+$MODELO_TEXTO = 'xiaomi/mimo-v2.6-pro';
+
+// ===== Lista blanca exacta de modelos (lista cerrada, catálogo canónico) =====
+// OpenAI 2.5 (flare/sunburst), OpenAI image 2 (gpt-image-2, modelo base del
+// proyecto), Gemini vía OpenRouter y Qwen Image 3 Pro. Orden: de menor a mayor
+// capacidad dentro de cada familia real.
+$CATALOGO = [
+    'openai-medium'       => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-max-flare'    => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-xhigh'        => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-sunburst' => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2'      => ['provider' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+    'openai-image-2-high' => ['provider' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
+    'gemini-2'            => ['provider' => 'gemini', 'model' => 'google/gemini-2.5-flash-image'],
+    'gemini-flash'        => ['provider' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'          => ['provider' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    'qwen-pro'            => ['provider' => 'qwen',   'model' => 'qwen/qwen-image-3-pro'],
+];
+
+// ====================================================================
+// ACCIONES DE DIAGNÓSTICO (no gastan API): van antes de exigir prompt
+// o clave, para poder informar de la configuración real del servidor.
+// Uso: POST {"action":"health"} · POST {"action":"models"}
+// Ninguna devuelve jamás las claves.
+// ====================================================================
+if ($accion === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => [
+            'openai'     => $openaiKey !== '',
+            'openrouter' => $apiKey !== '' && $apiKey !== 'AQUI_TU_API_KEY',
+        ],
+        'models'     => array_keys($CATALOGO),
+    ]);
+    exit;
+}
+
+if ($accion === 'models') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $modelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $ids = null;
+    $cached = is_file($modelsCache) ? json_decode((string)@file_get_contents($modelsCache), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = (array)$cached['ids'];
+    } else {
+        $ch = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $modelsRaw = curl_exec($ch);
+        $modelsCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $modelsData = json_decode((string)$modelsRaw, true);
+        if ($modelsCode >= 400 || !is_array($modelsData)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $modelsCode . ').']]);
+            exit;
+        }
+        $ids = [];
+        foreach (($modelsData['data'] ?? []) as $modelsItem) {
+            $modelsId = (string)($modelsItem['id'] ?? '');
+            if ($modelsId !== '' && preg_match('/image/i', $modelsId) === 1) $ids[] = $modelsId;
+        }
+        sort($ids);
+        if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
+        @file_put_contents($modelsCache, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    echo json_encode(['success' => true, 'imageModels' => $ids]);
+    exit;
+}
+
+// La clave "AQUI_TU_API_KEY" del placeholder no es válida
+if (empty($apiKey) || $apiKey === 'AQUI_TU_API_KEY') {
+    http_response_code(401);
+    echo json_encode(['error' => ['message' => 'API Key no configurada. Crea .htaccess raiz con define("OPENROUTER_API_KEY", "tu-key");']]);
+    exit;
+}
+
+if (!is_array($data) || !isset($data['prompt'])) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'Falta el campo "prompt" en la petición']]);
+    exit;
+}
+
+$prompt = trim((string)$data['prompt']);
+
+if ($prompt === '') {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'El prompt está vacío']]);
+    exit;
 }
 
 $openRouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
@@ -156,17 +243,7 @@ if ($accion === 'mejorar') {
 // ============================================================
 $calidad = $data['calidad'] ?? 'normal';
 
-// ===== Lista blanca exacta de modelos (lista cerrada) =====
-$CATALOGO = [
-    'openai-medium'       => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
-    'openai-high'         => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
-    'openai-xhigh'        => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
-    'openai-max-flare'    => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
-    'openai-max-sunburst' => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-    'gemini-flash'        => ['provider' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
-    'gemini-pro'          => ['provider' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
-    'qwen-pro'            => ['provider' => 'qwen',   'model' => 'qwen/qwen-image-3-pro'],
-];
+// ===== Lista blanca exacta de modelos (definida arriba: $CATALOGO) =====
 $reqModel = strtolower((string)($data['model'] ?? ''));
 if ($reqModel !== '' && !isset($CATALOGO[$reqModel])) {
     http_response_code(400);
