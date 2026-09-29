@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
      <meta charset="UTF-8" />
-     <title>Galería de Prompts | AI Image Studio</title>
+     <title>GalerÃ­a de Prompts | AI Image Studio</title>
      <meta name="viewport" content="width=device-width, initial-scale=1" />
      <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
      <meta http-equiv="Pragma" content="no-cache">
@@ -18,13 +18,13 @@
 </head>
 
 <body>
-     <!-- MODAL DE AUTENTICACIÓN FIREBASE -->
+     <!-- MODAL DE AUTENTICACIÃ“N FIREBASE -->
      <div id="auth-modal" class="modal-overlay auth-modal">
           <div class="modal-content auth-modal-content">
                <div class="auth-header">
                     <i class="fa fa-user-circle auth-icon"></i>
-                    <h2>Acceso a Galería</h2>
-                    <p class="auth-subtitle">Inicia sesión o crea una cuenta para acceder a la galería</p>
+                    <h2>Acceso a GalerÃ­a</h2>
+                    <p class="auth-subtitle">Inicia sesiÃ³n o crea una cuenta para acceder a la galerÃ­a</p>
                </div>
                
                <div id="auth-login-form">
@@ -33,12 +33,12 @@
                          <input type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email" />
                     </div>
                     <div class="form-group">
-                         <label><i class="fa fa-lock"></i> Contraseña</label>
-                         <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
+                         <label><i class="fa fa-lock"></i> ContraseÃ±a</label>
+                         <input type="password" id="auth-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" />
                     </div>
                     <div id="auth-error" class="auth-error"></div>
                     <button id="auth-login-btn" class="btn-auth-login">
-                         <i class="fa fa-sign-in-alt"></i> Iniciar Sesión
+                         <i class="fa fa-sign-in-alt"></i> Iniciar SesiÃ³n
                     </button>
                      <button id="auth-register-btn" class="btn-auth-register">
                           <i class="fa fa-user-plus"></i> Crear Cuenta
@@ -61,7 +61,7 @@
                          <p id="auth-user-email" class="user-email"></p>
                     </div>
                     <button id="auth-logout-btn" class="btn-auth-logout">
-                         <i class="fa fa-sign-out-alt"></i> Cerrar Sesión
+                         <i class="fa fa-sign-out-alt"></i> Cerrar SesiÃ³n
                     </button>
                </div>
           </div>
@@ -70,7 +70,7 @@
      <div class="topbar">
           <div class="brand">
                <i class="fa fa-wand-magic-sparkles"></i>
-               Galería de Prompts para Imágenes Profesionales
+               GalerÃ­a de Prompts para ImÃ¡genes Profesionales
           </div>
           <div class="topbar-actions">
                <button id="user-auth-btn" class="btn-user-auth">
@@ -80,14 +80,14 @@
           </div>
      </div>
 
-     <!-- CONTENEDOR DE LA APP - Se muestra solo cuando el usuario está autenticado -->
+     <!-- CONTENEDOR DE LA APP - Se muestra solo cuando el usuario estÃ¡ autenticado -->
      <div id="app-container" class="hidden">
  
       <div class="container">
-          <!-- HISTORIAL DE IMÁGENES GENERADAS -->
+          <!-- HISTORIAL DE IMÃGENES GENERADAS -->
           <div id="generated-history" class="generated-history" style="display: none;">
                <div class="history-header">
-                    <h3><i class="fa fa-images"></i> Imágenes Generadas</h3>
+                    <h3><i class="fa fa-images"></i> ImÃ¡genes Generadas</h3>
                     <button id="clear-history-btn" class="btn-clear-history">
                          <i class="fa fa-trash"></i> Limpiar Todo
                     </button>
@@ -96,7 +96,7 @@
           </div>
 
           <div class="edit-mode-controls">
-               <button id="add-panel-btn" class="btn-neon">+ Añadir Categoría</button>
+               <button id="add-panel-btn" class="btn-neon">+ AÃ±adir CategorÃ­a</button>
                <button id="add-item-btn" class="btn-neon">+ Subir Nueva Imagen</button>
           </div>
 
@@ -109,15 +109,15 @@
           <div class="tiles-grid" id="tiles-grid"></div>
      </div>
 
-     <button id="edit-mode-btn" class="btn-edit-toggle">Editar Galería</button>
+     <button id="edit-mode-btn" class="btn-edit-toggle">Editar GalerÃ­a</button>
 
-     <!-- MODAL CONTRASEÑA ADMIN -->
+     <!-- MODAL CONTRASEÃ‘A ADMIN -->
      <div id="password-modal" class="modal-overlay">
           <div class="modal-content">
                <h3><i class="fa fa-lock"></i> Modo Administrador</h3>
                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="admin-password-input" placeholder="Introduce la contraseña"
+                    <label>ContraseÃ±a</label>
+                    <input type="password" id="admin-password-input" placeholder="Introduce la contraseÃ±a"
                          autocomplete="current-password" />
                </div>
                <div class="form-buttons">
@@ -134,7 +134,7 @@
           </div>
      </div>
 
-     <!-- MODAL FORMULARIO AÑADIR/EDITAR IMAGEN -->
+     <!-- MODAL FORMULARIO AÃ‘ADIR/EDITAR IMAGEN -->
      <div id="form-modal" class="modal-overlay">
           <div class="modal-content">
                <h3 id="form-title">Nueva Imagen</h3>
@@ -142,7 +142,7 @@
                <input type="hidden" id="editing-panel-id" />
 
                <div class="form-group">
-                    <label>Título del Diseño</label>
+                    <label>TÃ­tulo del DiseÃ±o</label>
                     <input type="text" id="form-title-input" />
                </div>
 
@@ -160,7 +160,7 @@
 
                <div class="form-group">
                     <label>Prompt Utilizado</label>
-                    <textarea id="form-desc-input" rows="4" placeholder="Pega el prompt aquí..."></textarea>
+                    <textarea id="form-desc-input" rows="4" placeholder="Pega el prompt aquÃ­..."></textarea>
                </div>
 
                <div class="form-buttons">
@@ -170,16 +170,16 @@
           </div>
      </div>
 
-     <!-- ═══════════════════════════════════════════════════════════════════ -->
-     <!-- MODAL GENERADOR DE IMÁGENES -->
-     <!-- ═══════════════════════════════════════════════════════════════════ -->
+     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+     <!-- MODAL GENERADOR DE IMÃGENES -->
+     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
      <div id="generator-modal" class="modal-overlay">
           <div class="modal-content generator-modal-content">
                <button id="close-generator-btn" class="close-modal-btn"><i class="fa fa-times"></i></button>
 
                <div class="generator-header">
                     <i class="fa fa-wand-magic-sparkles generator-icon"></i>
-                    <h2>Generador de Imágenes con IA</h2>
+                    <h2>Generador de ImÃ¡genes con IA</h2>
                     <p class="generator-subtitle">Sube tu foto y aplica el estilo del prompt seleccionado</p>
                </div>
 
@@ -212,33 +212,33 @@
                                              <span class="model-provider-title">OPENAI 2.5</span>
                                              <span class="model-quality-hint">De Menor a Mayor Calidad</span>
                                              <div class="model-toggle-group">
-            <button type="button" class="model-toggle" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="false">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rÃ¡pido" aria-pressed="false">MEDIUM</button>
             <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
-            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
-            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
-            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
+            <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="MÃ¡s barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="PrecisiÃ³n en ediciÃ³n, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="PrecisiÃ³n en ediciÃ³n, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
                                              </div>
                                         </div>
                                         <div class="model-provider-row">
                                         <div class="model-provider-column">
                                              <span class="model-provider-title">GEMINI</span>
                                              <div class="model-toggle-group">
-            <button type="button" class="model-toggle" data-model="gemini-2" aria-describedby="model-tooltip" data-tooltip="Gemini 2 (gemini-2.5-flash-image) · el más ligero y económico del grupo" aria-pressed="false">GEMINI 2</button>
-            <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
-            <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
+            <button type="button" class="model-toggle" data-model="gemini-2" aria-describedby="model-tooltip" data-tooltip="Gemini 2 (gemini-2.5-flash-image) Â· el mÃ¡s ligero y econÃ³mico del grupo" aria-pressed="false">GEMINI 2</button>
+            <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imÃ¡genes, RÃ¡pido." aria-pressed="false">3.1 FLASH</button>
+            <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="MÃ¡xima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
                                              </div>
                                         </div>
                                         <div class="model-provider-column">
                                              <span class="model-provider-title">QWEN</span>
                                              <div class="model-toggle-group">
-            <button type="button" class="model-toggle" data-model="qwen-pro" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible" aria-pressed="false">QWEN 3 PRO</button>
+            <button type="button" class="model-toggle" data-model="qwen-pro" aria-describedby="model-tooltip" data-tooltip="Texto nÃ­tido 10px y 12 idiomas, Layouts densos, El mÃ¡s barato, Seed reproducible" aria-pressed="false">QWEN 3 PRO</button>
                                              </div>
                                         </div>
                                         <div class="model-provider-column">
                                              <span class="model-provider-title">IMAGE 2</span>
                                              <div class="model-toggle-group">
             <button type="button" class="model-toggle active" data-model="openai-image-2" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media. Aplica el estilo a tu foto." aria-pressed="true">MEDIUM</button>
-            <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM." aria-pressed="false">HIGH</button>
+            <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. MÃ¡s detalle y coste superior a MEDIUM." aria-pressed="false">HIGH</button>
                                              </div>
                                         </div>
                                         </div>
@@ -257,7 +257,7 @@
                          <div id="gen-results" class="gen-results-grid">
                               <div class="gen-result-placeholder">
                                    <i class="fa fa-image"></i>
-                                   <span>Tu imagen aparecerá aquí</span>
+                                   <span>Tu imagen aparecerÃ¡ aquÃ­</span>
                               </div>
                          </div>
 
@@ -288,7 +288,7 @@
 <script src="firebase-app.js"></script>
       <script src="firebase-auth.js"></script>
       <script src="history-manager.js?v=10"></script>
-    <script src="web.js?v=10"></script>
+    <script src="web.js?v=11"></script>
 <script src="lightbox.js?v=4"></script>
 </body>
 
