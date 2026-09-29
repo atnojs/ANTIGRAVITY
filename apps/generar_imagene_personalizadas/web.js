@@ -26,14 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const MODEL_LABELS = {
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
-        'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
+        'openai-xhigh': 'XHIGH',
         'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-2': 'GEMINI 2',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
-        'qwen-pro': 'QWEN 3 PRO'
+        'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2': 'MEDIUM',
+        'openai-image-2-high': 'HIGH'
     };
-    let selectedModel = 'openai-medium';
+    let selectedModel = 'openai-image-2';
 
     function initModelSelector() {
         const buttons = document.querySelectorAll('#generator-modal .model-toggle');

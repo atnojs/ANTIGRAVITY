@@ -1,11 +1,12 @@
 <?php
-// Proxy unificado — OpenAI Image 2.5 (5 calidades) + Gemini directo (A).
-// Selector: openai-medium / openai-high / openai-xhigh / openai-max-flare /
-// openai-max-sunburst / gemini-flash / gemini-pro.
+// Proxy unificado — OpenAI Image 2.5 + OpenAI Image 2 + Gemini directo (A) + Qwen.
+// Selector: openai-medium / openai-high / openai-max-flare / openai-xhigh /
+// openai-max-sunburst / gemini-2 / gemini-flash / gemini-pro / qwen-pro /
+// openai-image-2 / openai-image-2-high.
 // Respuesta del backend OpenAI SIEMPRE en formato Gemini (candidates)
 // para no tocar el frontend existente.
 // Claves: Gemini A (cascada existente intacta). OpenAI SOLO por entorno
-// (OPENAI_API_KEY / O).
+// (OPENAI_API_KEY / O) y OpenRouter (R). No se lee ningún config.php.
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -85,17 +86,84 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'high'],
-    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2), por defecto.
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image-preview'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
 ];
 
+// ===== Diagnóstico del proxy (no gasta API): claves configuradas y modelos
+// vigentes. Uso: POST {"action":"health"} / POST {"action":"models"}. Nunca
+// devuelve claves. La lista de modelos sale del catálogo REAL de esta app, que
+// solo anuncia lo que este proxy sabe atender.
+$gpAction = strtolower(trim((string)($req['action'] ?? '')));
+if ($gpAction === 'health' || $gpAction === 'models') {
+    $gpConfigured = [
+        'openai'     => $openaiKey !== '',
+        'openrouter' => gpEnvKey('R') !== '',
+    ];
+    if ($gpAction === 'health') {
+        http_response_code(200);
+        echo json_encode([
+            'success'    => true,
+            'configured' => $gpConfigured,
+            'models'     => array_values(array_keys($modelCatalog)),
+            'actions'    => ['generate', 'health', 'models'],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    // action=models: consulta REAL a OpenAI, solo ids de imagen, caché 600 s.
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $gpCacheDir = __DIR__ . '/qwen_cache';
+    $gpCacheFile = $gpCacheDir . '/openai_models.json';
+    $gpCached = is_file($gpCacheFile) ? json_decode((string)@file_get_contents($gpCacheFile), true) : null;
+    if (is_array($gpCached) && (time() - (int)($gpCached['at'] ?? 0)) < 600 && !empty($gpCached['ids'])) {
+        $gpIds = array_values((array)$gpCached['ids']);
+    } else {
+        $gpCh = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($gpCh, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $gpRaw = curl_exec($gpCh);
+        $gpCode = (int)curl_getinfo($gpCh, CURLINFO_HTTP_CODE);
+        curl_close($gpCh);
+        $gpData = json_decode((string)$gpRaw, true);
+        if ($gpCode >= 400 || !is_array($gpData)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $gpCode . ').']]);
+            exit;
+        }
+        $gpIds = [];
+        foreach (($gpData['data'] ?? []) as $gpModel) {
+            $gpId = (string)($gpModel['id'] ?? '');
+            if ($gpId !== '' && preg_match('/image/i', $gpId) === 1) $gpIds[] = $gpId;
+        }
+        sort($gpIds);
+        if (!is_dir($gpCacheDir)) @mkdir($gpCacheDir, 0755, true);
+        @file_put_contents($gpCacheFile, json_encode(['at' => time(), 'ids' => $gpIds], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $gpIds], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // Selección de modelo (lista blanca)
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-medium')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
+if ($requested === 'gemini-2.5-flash-image' || $requested === 'gemini-2' || $requested === 'gemini-2.5-flash-image-preview') $requested = 'gemini-2';
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image' || $requested === 'gemini-3.1-flash-lite-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';
 // Modelo de TEXTO/VISIÓN (spec §6): xiaomi/mimo-v2.6-pro vía OpenRouter.
@@ -105,11 +173,6 @@ if ($requested === 'xiaomi/mimo-v2.6-pro' || strpos($requested, 'xiaomi/') === 0
 elseif ($requested === 'google/gemini-3.8-flash' || $requested === 'gemini-3.8-flash') $textModel = 'xiaomi/mimo-v2.6-pro';
 
 // Modelos fuera de la lista blanca: rechazo explícito.
-if (preg_match('#f' . 'lux#i', $requested) === 1) {
-    http_response_code(400);
-    echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
-    exit;
-}
 if ($textModel === '' && !isset($modelCatalog[$requested])) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
@@ -277,13 +340,8 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
@@ -423,13 +481,8 @@ if ($textModel !== '') {
 // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API, sincrono)
 // ====================================================================
 if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] === 'qwen') {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
