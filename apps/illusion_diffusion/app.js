@@ -4,6 +4,100 @@ import { Upload, Wand2, Download, Trash2, Image, Loader2, Eye, History, Sparkles
 
 const STORAGE_KEY = 'illusion_diffusion_history';
 
+// HISTORIAL DE SERVIDOR (history.php + history_store/): fuente de verdad.
+// localStorage sigue siendo la caché local que usa la UI.
+const SERVER_HISTORY_APP = 'illusion_diffusion';
+let serverHistory = null;
+
+function getServerHistory() {
+    if (!serverHistory && typeof window !== 'undefined' && typeof window.HistoryManager !== 'undefined') {
+        serverHistory = new window.HistoryManager(SERVER_HISTORY_APP);
+    }
+    return serverHistory;
+}
+
+// Convierte una entrada del servidor a la forma local (id/data/config...).
+function historyItemFromServer(item) {
+    const data = item.data || {};
+    return {
+        id: item.id,
+        data: item.imageUrl || data.dataUrl || data.url || '',
+        createdAt: data.createdAt || new Date(item.createdAt || Date.now()).getTime(),
+        containerOpacity: data.containerOpacity !== undefined ? data.containerOpacity : 50,
+        contentOpacity: data.contentOpacity !== undefined ? data.contentOpacity : 50,
+        containerBW: !!data.containerBW,
+        contentBW: !!data.contentBW,
+        fromServer: true
+    };
+}
+
+// Fusión por id: el servidor manda; lo local que no esté en el servidor se conserva.
+function mergeHistoryItems(localItems, serverItems) {
+    const byId = new Map((localItems || []).map(item => [item.id, item]));
+    (serverItems || []).forEach(serverItem => {
+        byId.set(serverItem.id, Object.assign({}, byId.get(serverItem.id) || {}, historyItemFromServer(serverItem)));
+    });
+    return Array.from(byId.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+async function loadHistoryFromServer() {
+    const hm = getServerHistory();
+    if (!hm) return [];
+    try {
+        return await hm.load();
+    } catch (error) {
+        console.warn('[Servidor] No se pudo cargar el historial; se usa solo la caché local:', error);
+        return [];
+    }
+}
+
+// Persiste una entrada en el servidor. Un fallo aquí nunca rompe la UI: la
+// entrada sigue en localStorage como caché local.
+async function saveHistoryItemToServer(localItem, model) {
+    const hm = getServerHistory();
+    if (!hm || !localItem) return;
+    try {
+        await hm.save({
+            id: localItem.id,
+            type: 'image',
+            model: model || 'openai-image-2',
+            data: {
+                prompt: '',
+                model: model || 'openai-image-2',
+                containerOpacity: localItem.containerOpacity,
+                contentOpacity: localItem.contentOpacity,
+                containerBW: localItem.containerBW,
+                contentBW: localItem.contentBW,
+                createdAt: localItem.createdAt || Date.now()
+            },
+            imageData: localItem.data || '',
+            createdAt: new Date(localItem.createdAt || Date.now()).toISOString()
+        });
+    } catch (error) {
+        console.warn('[Servidor] No se pudo guardar en el historial del servidor; queda en la caché local:', error);
+    }
+}
+
+async function deleteHistoryItemFromServer(id) {
+    const hm = getServerHistory();
+    if (!hm) return;
+    try {
+        await hm.delete(id);
+    } catch (error) {
+        console.warn('[Servidor] No se pudo borrar la entrada del historial del servidor:', error);
+    }
+}
+
+async function clearServerHistory() {
+    const hm = getServerHistory();
+    if (!hm) return;
+    try {
+        await hm.clear();
+    } catch (error) {
+        console.warn('[Servidor] No se pudo vaciar el historial del servidor:', error);
+    }
+}
+
 // Modelo de texto/análisis (spec §6, MIMO): las llamadas de TEXTO con
 // gemini-3.8-flash van reenrutadas a MIMO 2.6 PRO (xiaomi/mimo-v2.6-pro) vía
 // OpenRouter en proxy.php (clave R); las llamadas de IMAGEN usan los modelos
@@ -47,19 +141,39 @@ function App() {
     const containerInputRef = useRef(null);
     const contentInputRef = useRef(null);
 
-    // Cargar historial desde localStorage
+    // Cargar historial: localStorage (caché local) + servidor (fuente de verdad).
+    // Se fusiona por id (manda el servidor) y lo local que falte en el servidor se
+    // sube una sola vez.
     useEffect(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) {
-                    setHistory(parsed);
+        let cancelled = false;
+        (async () => {
+            let localItems = [];
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) localItems = parsed;
                 }
+            } catch (e) {
+                console.warn('Error cargando historial:', e);
             }
-        } catch (e) {
-            console.warn('Error cargando historial:', e);
-        }
+
+            const serverItems = await loadHistoryFromServer();
+            if (cancelled) return;
+
+            setHistory(mergeHistoryItems(localItems, serverItems));
+
+            const serverIds = new Set(serverItems.map(item => item.id));
+            const pendingUploads = localItems.filter(item => !serverIds.has(item.id) && item.data);
+            if (pendingUploads.length > 0) {
+                console.log('[Servidor] Subiendo entradas locales que faltaban:', pendingUploads.length);
+            }
+            for (const localItem of pendingUploads) {
+                if (cancelled) return;
+                await saveHistoryItemToServer(localItem, selectedModel);
+            }
+        })();
+        return () => { cancelled = true; };
     }, []);
 
     // Guardar historial en localStorage
@@ -311,6 +425,8 @@ function App() {
                     contentBW: contentBW
                 };
                 setHistory(prev => [newItem, ...prev]);
+                // Historial persistente en el servidor (no rompe la UI si falla).
+                saveHistoryItemToServer(newItem, selectedModel);
             } catch (e) {
                 console.error('Error generando imagen:', e);
                 alert('Error al generar la imagen');
@@ -333,12 +449,16 @@ function App() {
     // Eliminar del historial
     const removeFromHistory = (id) => {
         setHistory(prev => prev.filter(item => item.id !== id));
+        // Reflejar el borrado en el servidor (fuente de verdad).
+        deleteHistoryItemFromServer(id);
     };
 
     // Limpiar todo el historial
     const clearHistory = () => {
         if (confirm('¿Eliminar todas las imágenes del historial?')) {
             setHistory([]);
+            // Reflejar el vaciado en el servidor (fuente de verdad).
+            clearServerHistory();
         }
     };
 
