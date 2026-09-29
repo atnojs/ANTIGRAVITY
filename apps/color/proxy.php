@@ -40,11 +40,7 @@ function ag_qwen_generate(array $request): void
     if ($requested === 'qwen/qwen-image-3-pro') $requested = 'qwen-pro';
     $qwenModel = $qwenCatalog[$requested]['model'];
 
-    // Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
+    // Clave R (OpenRouter): solo entorno (getenv / REDIRECT_ / $_SERVER / $_ENV)
     $orKey = ag_qwen_key('R');
     if ($orKey === '') {
         http_response_code(500);
