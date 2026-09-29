@@ -1,6 +1,47 @@
 <?php
 header('Content-Type: application/json');
 
+// ===== Catálogo de imagen OpenAI 2.5 (lista blanca cerrada) =====
+// Vive arriba para que action=health pueda informarlo aunque falten claves.
+$openaiCatalog = [
+    'openai-medium'       => ['model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-xhigh'        => ['model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-max-sunburst' => ['model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+];
+
+// ===== Diagnóstico: action=health (GET o POST). Nunca devuelve claves. =====
+// Se resuelve ANTES de los guards de método y de clave: así informa de
+// `configured` aunque el entorno no tenga claves. Claves SOLO del entorno.
+$healthKey = static function (string $name): string {
+    foreach ([getenv($name), getenv('REDIRECT_' . $name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? ''] as $value) {
+        if (is_string($value) && trim($value) !== '') return trim($value);
+    }
+    return '';
+};
+$healthBody = json_decode((string)file_get_contents('php://input'), true);
+$healthAction = strtolower(trim((string)((is_array($healthBody) ? ($healthBody['action'] ?? '') : '') ?: ($_GET['action'] ?? ''))));
+if ($healthAction === 'health') {
+    header('Access-Control-Allow-Origin: *');
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'viaje_tiempo-proxy',
+        // Esta app SÍ genera imágenes (OpenAI 2.5 por este proxy y Gemini por
+        // passthrough a Google), así que `models` es la lista blanca real de
+        // identificadores de imagen; el modelo de texto va aparte.
+        'models'     => array_keys($openaiCatalog),
+        'textModels' => ['xiaomi/mimo-v2.6-pro'],
+        'configured' => [
+            'openai'     => $healthKey('OPENAI_API_KEY') !== '' || $healthKey('O') !== '',
+            'openrouter' => $healthKey('R') !== '',
+        ],
+        'actions'    => ['generate', 'health'],
+    ]);
+    exit;
+}
+
 // ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
 $API_KEY = '';
 if (!$API_KEY || empty($API_KEY)) {
@@ -55,13 +96,7 @@ $apiUrl = "https://generativelanguage.googleapis.com" . $pathInfo . "?key=" . $A
 $requestBody = file_get_contents('php://input');
 
 // ===== Migración OpenAI 2.5 (2026-09-13): interceptar openai-*, rechazar modelos legacy =====
-$openaiCatalog = [
-    'openai-medium'       => ['model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
-    'openai-high'         => ['model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
-    'openai-xhigh'        => ['model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
-    'openai-max-flare'    => ['model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
-    'openai-max-sunburst' => ['model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-];
+// (el catálogo $openaiCatalog se define arriba, junto al bloque de health)
 if (preg_match('#f'.'lux#i', $pathInfo) === 1) {
     http_response_code(400);
     echo json_encode(['error' => 'Modelo no soportado.']);
@@ -201,14 +236,8 @@ if (preg_match('#models/(openai-[a-z-]+):generateContent#i', $pathInfo, $m) === 
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
+    // ── Clave R (OpenRouter): SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV)
+    $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: '');
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
     if ($orKey === '') {
