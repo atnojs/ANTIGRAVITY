@@ -7,8 +7,13 @@
   <title>Abriendo Editor de Imágenes…</title>
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon">
   <script>
+    // Cache busting del HTML de entrada: se conserva el query entrante (p. ej.
+    // ?handoff=folio) y se añade un sello de tiempo para que el navegador no
+    // reutilice una copia cacheada del editor destino.
     const target = new URL('/apps/imagenes_ia/ajustes_imagen/editor_local/', window.location.origin);
-    target.search = window.location.search;
+    const params = new URLSearchParams(window.location.search);
+    params.set('_', Date.now());
+    target.search = params.toString();
     window.location.replace(target.href);
   </script>
 </head>

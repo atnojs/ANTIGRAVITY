@@ -19,12 +19,18 @@ const MODEL_LABELS = {
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
-    'qwen-pro': 'QWEN 3 PRO'
+    'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2': 'IMAGE 2 MEDIUM',
+    'openai-image-2-high': 'IMAGE 2 HIGH'
 };
 
-let currentModel = 'openai-medium';
+// Modelo por defecto del proyecto: OpenAI image 2 (gpt-image-2, calidad media).
+const DEFAULT_MODEL = 'openai-image-2';
+
+let currentModel = DEFAULT_MODEL;
 
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
@@ -228,7 +234,7 @@ const generateImage = async (params) => {
             }
         }
     };
-    const result = await callProxy(currentModel || 'openai-medium', contents, config);
+    const result = await callProxy(currentModel || DEFAULT_MODEL, contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -245,7 +251,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy(currentModel || 'openai-medium', contents, config);
+    const result = await callProxy(currentModel || DEFAULT_MODEL, contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -438,7 +444,7 @@ const App = () => {
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
-    const [selectedModel, setSelectedModel] = useState('openai-medium');
+    const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
 
     // Sincronizar modelo con variable de módulo (usada por los servicios)
     useEffect(() => { currentModel = selectedModel; }, [selectedModel]);
@@ -710,14 +716,15 @@ const App = () => {
                                 </div>
                             </div>
 
-                            {/* ── Selector de Modelo IA (canónico 7 botones) ── */}
+                            {/* ── Selector de Modelo IA (catálogo canónico) ── */}
                             <div className="space-y-4">
                                 <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Modelo IA</label>
                                 <div className="grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
                                     {[
-                                      { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
-                                      { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
-                                      { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] }
+                                      { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
+                                      { provider: 'GEMINI', models: [{ id: 'gemini-2', name: 'GEMINI 2' }, { id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
+                                      { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] },
+                                      { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
                                     ].map(group => (
                                       <div key={group.provider}>
                                         <span className="model-provider-title block text-center mb-1">{group.provider}</span>
@@ -841,9 +848,12 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-2': 'Rápido y económico, Buen texto en imágenes.',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2': 'OpenAI image 2, calidad media. Edita la imagen conservando su contenido.',
+    'openai-image-2-high': 'OpenAI image 2, calidad alta. Más detalle y líneas más limpias.',
 };
 
 root.render(<App />);
