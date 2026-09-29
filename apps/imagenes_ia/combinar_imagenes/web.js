@@ -142,10 +142,44 @@ const elements = {
 // ═══════════════════════════════════════════════
 
 async function init() {
-    // Cargar historial persistente desde IndexedDB
+    // Historial: el SERVIDOR es la fuente de verdad (history.php canónico →
+    // history_store/, no versionado). IndexedDB se conserva solo como caché local.
     try {
         await openDatabase();
-        state.history = await loadHistoryFromStorage();
+        const localItems = await loadHistoryFromStorage();
+
+        if (typeof HistoryManager === 'function') {
+            window.historyManager = new HistoryManager('combinar_imagenes');
+            const serverItems = await window.historyManager.load();
+            const vistos = new Set();
+            const mezcla = [];
+            const mapaLocal = new Map(localItems.map(item => [item.id, item]));
+
+            for (const entrada of (serverItems || [])) {
+                const local = mapaLocal.get(entrada.id);
+                const url = entrada.imageUrl || entrada.data?.dataUrl || '';
+                const mime = entrada.data?.mimeType || (url.match(/^data:([^;]+);/) || [])[1] || 'image/png';
+                const base64 = local?.data || (url.includes(',') ? url.split(',')[1] : '');
+                if (!base64) continue;
+                vistos.add(entrada.id);
+                mezcla.push({
+                    id: entrada.id,
+                    data: base64,
+                    mimeType: mime,
+                    prompt: entrada.data?.prompt || '',
+                    aspectRatio: entrada.data?.aspectRatio || '',
+                    hasBackground: !!entrada.data?.hasBackground,
+                    timestamp: Date.parse(entrada.createdAt) || Date.now()
+                });
+            }
+            for (const item of localItems) {
+                if (!vistos.has(item.id)) mezcla.push(item);
+            }
+            mezcla.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            state.history = mezcla;
+        } else {
+            state.history = localItems;
+        }
     } catch (e) {
         console.warn('Error inicializando historial:', e);
         state.history = [];
@@ -622,7 +656,25 @@ function setProcessing(isProcessing, statusText) {
 function addToHistory(imageData) {
     imageData.id = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     state.history.unshift(imageData);
-    saveItemToStorage(imageData); // Persistir en IndexedDB
+    saveItemToStorage(imageData); // Caché local (IndexedDB)
+    // Fuente de verdad: el servidor (history.php canónico, datos en history_store/).
+    // Sin esto el historial se perdía al recargar desde otro navegador o tras un deploy.
+    if (window.historyManager) {
+        window.historyManager.save({
+            id: imageData.id,
+            type: 'image',
+            model: state.selectedModel || '',
+            data: {
+                prompt: imageData.prompt || '',
+                aspectRatio: imageData.aspectRatio || '',
+                hasBackground: !!imageData.hasBackground,
+                mimeType: imageData.mimeType || 'image/jpeg',
+                model: state.selectedModel || ''
+            },
+            imageData: `data:${imageData.mimeType || 'image/jpeg'};base64,${imageData.data}`,
+            createdAt: new Date(imageData.timestamp || Date.now()).toISOString()
+        }).catch(err => console.warn('Error guardando el historial en el servidor:', err));
+    }
     renderHistory();
 }
 
@@ -728,7 +780,10 @@ function deleteFromHistory(id) {
     const index = state.history.findIndex(item => item.id === id);
     if (index !== -1) {
         state.history.splice(index, 1);
-        deleteItemFromStorage(id); // Eliminar de IndexedDB
+        deleteItemFromStorage(id); // Caché local
+        if (window.historyManager) {
+            window.historyManager.delete(id).catch(err => console.warn('Error eliminando del historial del servidor:', err));
+        }
         renderHistory();
     }
 }
