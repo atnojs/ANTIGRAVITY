@@ -8,13 +8,16 @@ const MODEL_LABELS = {
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
-    'qwen-pro': 'QWEN 3 PRO'
+    'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2': 'IMAGE 2 MEDIUM',
+    'openai-image-2-high': 'IMAGE 2 HIGH'
 };
 
 // --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
-window.selectedModel = 'openai-medium';
+window.selectedModel = 'openai-image-2';
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -867,7 +870,7 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: window.selectedModel || 'openai-medium',
+            model: window.selectedModel || 'openai-image-2',
             image: subjectData.data,
             mimeType: subjectData.mimeType,
             prompt: promptInstructions

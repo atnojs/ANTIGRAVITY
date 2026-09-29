@@ -4,6 +4,8 @@
 // Catálogo canónico (canonical-image-model.php):
 //   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
 //   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
+//   openai-image-2 → gpt-image-2 (medium), openai-image-2-high → gpt-image-2 (high)
+//   gemini-2 → google/gemini-2.5-flash-image
 //   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
 // (lista cerrada) (400 "Modelo no soportado").
 // Backend de imágenes: solo Gemini (OpenRouter).
@@ -212,6 +214,49 @@ function handleQwenImage(array $request): void {
 }
 
 $agBody = json_decode(file_get_contents('php://input') ?: '', true);
+
+// ════════════════════════════════════════════════════════════════════════
+// ACCIONES CANONICAS: health / models (diagnostico, sin gastar imagen)
+// Uso: GET proxy.php · GET proxy.php?action=health|models ·
+//      POST {"action":"health"} · POST {"action":"models"}
+// El catalogo vigente lo aporta canonical-image-model.php (lista cerrada).
+// Nunca devuelve claves.
+// ════════════════════════════════════════════════════════════════════════
+$agModels = array_keys(ag_image_catalog());
+$agActions = ['generate', 'models', 'health'];
+$agConfigured = [
+    'openai'     => ag_image_key(__DIR__, 'OPENAI_API_KEY', 'O') !== '',
+    'openrouter' => ag_image_key(__DIR__, 'R') !== '',
+];
+$agMethod = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+$agAction = strtolower(trim((string)((is_array($agBody) ? ($agBody['action'] ?? '') : '') ?: ($_GET['action'] ?? ''))));
+
+if ($agMethod === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+if ($agAction === 'health' || ($agMethod === 'GET' && $agAction === '')) {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'antigravity-ai-proxy',
+        'configured' => $agConfigured,
+        'actions'    => $agActions,
+        'models'     => $agModels,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($agAction === 'models') {
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'models'  => $agModels,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // QWEN IMAGE 3 PRO: ruta propia con keepalive + cache en la app
 // (el contrato compartido no mantiene viva la conexión y nginx
 // cortaría a los ~55s). Ver bloque BACKEND: QWEN IMAGE 3 PRO.
