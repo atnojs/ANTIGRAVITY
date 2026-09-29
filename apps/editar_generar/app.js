@@ -64,6 +64,7 @@ const MODEL_LABELS = {
     'openai-max-sunburst': 'MAX SUNBURST',
     'openai-image-2': 'IMAGE 2',
     'openai-image-2-high': 'IMAGE 2 HIGH',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO'
@@ -314,6 +315,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. Modelo base, rápido y económico.',
     'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.',
+    'gemini-2': 'Gemini 2.5 Flash Image: edición rápida y económica.',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
@@ -432,7 +434,7 @@ const generateImage = async (params) => {
     };
 
     // Pasamos 'finalPrompt' como parámetro explícito
-    const result = await callProxy(window.selectedModel || 'openai-medium', contents, config, finalPrompt);
+    const result = await callProxy(window.selectedModel || 'openai-image-2', contents, config, finalPrompt);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "No se pudo generar la imagen");
     }
@@ -448,7 +450,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { aspectRatio: params.aspectRatio, resolution: params.resolution || 1024, generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy(window.selectedModel || 'openai-medium', contents, config);
+    const result = await callProxy(window.selectedModel || 'openai-image-2', contents, config);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "Error en la edición conversacional");
     }
@@ -1053,7 +1055,7 @@ const App = () => {
                                 {[
                                   [{ provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] }],
                                   [
-                                    { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
+                                    { provider: 'GEMINI', models: [{ id: 'gemini-2', name: 'GEMINI 2' }, { id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
                                     { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] },
                                     { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
                                   ]

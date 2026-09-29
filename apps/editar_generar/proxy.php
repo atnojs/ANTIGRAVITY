@@ -23,7 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $statsFile = __DIR__ . '/stats.json';
     $stats = file_exists($statsFile) ? json_decode((string)file_get_contents($statsFile), true) : [];
     if (!is_array($stats)) $stats = [];
-    echo json_encode(['success' => true, 'stats' => $stats], JSON_UNESCAPED_SLASHES);
+    echo json_encode([
+        'success' => true,
+        'stats'   => $stats,
+        // Acciones disponibles del proxy (diagnostico; la app consume POST).
+        'actions' => ['generate', 'text', 'openrouter', 'health', 'models'],
+    ], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -59,6 +64,10 @@ function getKey(string $name): string {
 }
 
 $orKey   = getKey('R');
+// OpenAI directo (gpt-image-2 / gpt-image-2.5): misma resolucion de claves por
+// entorno que el resto de apps (OPENAI_API_KEY o la clave corta O).
+$openaiKey = getKey('OPENAI_API_KEY');
+if ($openaiKey === '') $openaiKey = getKey('O');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -85,6 +94,68 @@ if (json_last_error()!==JSON_ERROR_NONE || !is_array($data)) {
 // Contrato: {action:'text', prompt, system?, model?, imagen?} -> {success, text, model}
 // ====================================================================
 $action = strtolower((string)($data['action'] ?? ''));
+
+// ====================================================================
+// ACCIÓN HEALTH (diagnóstico sin gasto de API)
+// Informa de las claves que ve el entorno y del catálogo vigente.
+// Nunca devuelve las claves.
+// ====================================================================
+if ($action === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['openai' => $openaiKey !== '', 'openrouter' => $orKey !== ''],
+        'models'     => array_keys(ag_image_catalog()),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// ====================================================================
+// ACCIÓN MODELS (diagnóstico real contra OpenAI)
+// Pregunta a OpenAI qué modelos ofrece de verdad y expone solo los de
+// imagen. Nunca devuelve la clave.
+// ====================================================================
+if ($action === 'models') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $modelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $ids = null;
+    $cached = is_file($modelsCache) ? json_decode((string)@file_get_contents($modelsCache), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = (array)$cached['ids'];
+    } else {
+        $ch = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $resp = curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $data = json_decode((string)$resp, true);
+        if ($code >= 400 || !is_array($data)) {
+            http_response_code(502);
+            echo json_encode(['success' => false, 'error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']]);
+            exit;
+        }
+        $ids = [];
+        foreach (($data['data'] ?? []) as $model) {
+            $id = (string)($model['id'] ?? '');
+            if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+        }
+        sort($ids);
+        if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
+        @file_put_contents($modelsCache, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $ids], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 if ($action === 'text' || $action === 'openrouter') {
     if ($orKey === '') {
         http_response_code(500);
@@ -169,12 +240,14 @@ if ($action === 'text' || $action === 'openrouter') {
 }
 
 // Todas las solicitudes de imagen pasan por el contrato canónico.
-// Esto elimina cualquier ruta heredada de otros modelos y mantiene únicamente:
-// openai-medium, openai-high, openai-xhigh, openai-max-flare,
-// openai-max-sunburst, gemini-flash y gemini-pro.
+// Esto elimina cualquier ruta heredada de otros modelos y mantiene únicamente el
+// catálogo de canonical-image-model.php: openai-medium, openai-high, openai-xhigh,
+// openai-max-flare, openai-max-sunburst, openai-image-2, openai-image-2-high,
+// gemini-2, gemini-flash, gemini-pro y qwen-pro.
 // Catálogo OpenAI 2.5 delegado a canonical-image-model.php:
 // gpt-image-2.5-flare (medium/high/max).
 // gpt-image-2.5-sunburst (xhigh/max).
+// gpt-image-2 (medium/high) -> openai-image-2 / openai-image-2-high.
 // ====================================================================
 // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API)
 // Qwen tarda ~100s/imagen y nginx corta a ~55s: worker con keepalive
