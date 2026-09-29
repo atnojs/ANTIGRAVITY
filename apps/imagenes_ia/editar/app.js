@@ -161,6 +161,17 @@ const STORE_NAME = 'history';
 
 let historyDb = null;
 
+// El servidor (history.php, datos en history_store/) es la fuente de verdad; IndexedDB
+// se conserva como caché local para que la app siga funcionando sin red.
+let serverHistory = null;
+const getServerHistory = () => {
+    if (serverHistory) return serverHistory;
+    if (typeof window === 'undefined' || typeof window.HistoryManager !== 'function') return null;
+    try { serverHistory = new window.HistoryManager('imagenes_ia_editar'); }
+    catch (e) { console.warn('HistoryManager no disponible:', e); serverHistory = null; }
+    return serverHistory;
+};
+
 const openHistoryDb = () => new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onerror = () => reject(request.error);
@@ -174,20 +185,61 @@ const openHistoryDb = () => new Promise((resolve, reject) => {
 });
 
 const loadHistoryFromDb = async () => {
+    // Local primero (rápido y sin red) y después se fusiona con el servidor.
+    let items = [];
     try {
         if (!historyDb) await openHistoryDb();
-        return new Promise((resolve, reject) => {
+        items = await new Promise((resolve, reject) => {
             const tx = historyDb.transaction(STORE_NAME, 'readonly');
             const store = tx.objectStore(STORE_NAME);
             const req = store.getAll();
             req.onsuccess = () => {
-                const items = req.result || [];
-                items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                resolve(items);
+                const all = req.result || [];
+                all.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                resolve(all);
             };
             req.onerror = () => reject(req.error);
         });
-    } catch (e) { console.warn('Error cargando historial:', e); return []; }
+    } catch (e) { console.warn('Error cargando historial local:', e); }
+
+    const hm = getServerHistory();
+    if (!hm) return items;
+    try {
+        const server = await hm.load();
+        const porId = new Map();
+        for (const item of items) porId.set(String(item.id), item);
+        for (const raw of server) {
+            const data = raw.data || {};
+            const id = String(raw.id);
+            const local = porId.get(id);
+            const fusionado = {
+                id,
+                url: raw.imageUrl || data.url || local?.url || '',
+                prompt: data.prompt || local?.prompt || '',
+                model: raw.model || data.model || local?.model || '',
+                createdAt: Date.parse(raw.createdAt) || local?.createdAt || Date.now()
+            };
+            porId.set(id, { ...(local || {}), ...fusionado });
+        }
+        const fusion = Array.from(porId.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        // Sube una sola vez lo local que aún no está en el servidor.
+        const idsServidor = new Set(server.map(r => String(r.id)));
+        for (const item of items) {
+            if (idsServidor.has(String(item.id)) || !item.url) continue;
+            await saveHistoryItemToDb(item);
+            try {
+                await hm.save({
+                    id: item.id, type: 'image', model: item.model || '',
+                    data: { prompt: item.prompt || '', model: item.model || '', url: item.url },
+                    imageData: item.url, createdAt: new Date(item.createdAt || Date.now()).toISOString()
+                });
+            } catch (e) { console.warn('No se pudo subir una entrada local al historial:', e); }
+        }
+        return fusion;
+    } catch (e) {
+        console.warn('Error cargando historial del servidor:', e);
+        return items;
+    }
 };
 
 const saveHistoryItemToDb = async (item) => {
