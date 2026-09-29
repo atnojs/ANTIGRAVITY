@@ -26,6 +26,7 @@
 /* Disposición canónica del selector de modelos por proveedor. */
 .model-provider-layout {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
   gap: 1rem;

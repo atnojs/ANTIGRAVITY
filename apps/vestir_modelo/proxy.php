@@ -392,16 +392,21 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
+// Clave de OpenAI (imagen/base): solo del entorno. Nunca se devuelve.
+$openaiKey = getSecret('OPENAI_API_KEY') !== '' ? getSecret('OPENAI_API_KEY') : getSecret('O');
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['openrouter'=>getSecret('R') !== ''],
-    'actions'=>['generate','openrouter','text','health'],
+    'configured'=>['openai'=>$openaiKey !== '', 'openrouter'=>getSecret('R') !== ''],
+    'actions'=>['generate','openrouter','text','health','models'],
     'models'=>[
         'openai-medium'       => 'gpt-image-2.5-flare',
         'openai-high'         => 'gpt-image-2.5-flare',
         'openai-xhigh'        => 'gpt-image-2.5-sunburst',
         'openai-max-flare'    => 'gpt-image-2.5-flare',
         'openai-max-sunburst' => 'gpt-image-2.5-sunburst',
+        'openai-image-2'      => 'gpt-image-2',
+        'openai-image-2-high' => 'gpt-image-2',
+        'gemini-2'            => 'google/gemini-2.5-flash-image',
         'gemini-flash'        => 'google/gemini-3.1-flash-image',
         'gemini-pro'          => 'google/gemini-3-pro-image',
         'qwen-pro'            => 'qwen/qwen-image-3-pro',
@@ -411,7 +416,53 @@ if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no per
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') {
+    // Catálogo vigente: el canónico si está cargado; si no, lista blanca cerrada.
+    $healthModels = function_exists('ag_image_catalog') ? array_keys(ag_image_catalog()) : array_keys([
+        'openai-medium'       => 1,
+        'openai-high'         => 1,
+        'openai-xhigh'        => 1,
+        'openai-max-flare'    => 1,
+        'openai-max-sunburst' => 1,
+        'openai-image-2'      => 1,
+        'openai-image-2-high' => 1,
+        'gemini-2'            => 1,
+        'gemini-flash'        => 1,
+        'gemini-pro'          => 1,
+        'qwen-pro'            => 1,
+    ]);
+    respond(200, [
+        'success'=>true,
+        'configured'=>['openai'=>$openaiKey !== '', 'openrouter'=>getSecret('R') !== ''],
+        'models'=>array_values($healthModels),
+    ]);
+}
+if ($action === 'models') {
+    // Diagnóstico: pregunta a OpenAI qué modelos de imagen ofrece de verdad.
+    // Filtra identificadores con "image" y NUNCA devuelve la clave.
+    if ($openaiKey === '') respond(500, ['success'=>false, 'error'=>'La clave de OpenAI no está configurada.']);
+    $ch = curl_init('https://api.openai.com/v1/models');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT        => 30,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if ($code < 200 || $code >= 300 || !is_array($data)) {
+        respond(502, ['success'=>false, 'error'=>'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']);
+    }
+    $imageModels = [];
+    foreach (($data['data'] ?? []) as $model) {
+        $id = (string)($model['id'] ?? '');
+        if ($id !== '' && stripos($id, 'image') !== false) $imageModels[] = $id;
+    }
+    sort($imageModels);
+    respond(200, ['success'=>true, 'imageModels'=>array_values(array_unique($imageModels))]);
+}
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') handleGenerate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);

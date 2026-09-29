@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isProcessing = false;
     const usedSurpriseStyles = new Set();
     let historyItems = [];
-    let selectedModel = 'openai-medium';
-    const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO' };
+    let selectedModel = 'openai-image-2';
+    const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'openai-image-2': 'MEDIUM', 'openai-image-2-high': 'HIGH', 'gemini-2': 'GEMINI 2', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO' };
     let selectedAR = '1:1';
     let selectedRes = 1024;
 

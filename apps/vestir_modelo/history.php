@@ -6,6 +6,12 @@
  * POST ?action=save    cuerpo JSON
  * POST ?action=delete  cuerpo { app, id }
  * POST ?action=clear   cuerpo { app }
+ *
+ * Los datos viven en `history_store/` (NUNCA versionado). El almacén antiguo
+ * `history_data/` sí estaba en git y cada despliegue de Hostinger restauraba su
+ * history.json, borrando todo lo generado desde el despliegue anterior. Al
+ * primer uso se migra una sola vez: se copia el JSON y las imágenes
+ * referenciadas al almacén nuevo y se reescriben sus URL.
  */
 declare(strict_types=1);
 
@@ -19,6 +25,8 @@ header('Cache-Control: no-store');
 const MAX_HISTORY_ITEMS = 200;
 const MAX_REQUEST_BYTES = 30 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 24 * 1024 * 1024;
+const STORE_DIR = 'history_store';
+const LEGACY_DIR = 'history_data';
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -26,11 +34,87 @@ function respond(int $status, array $payload): never {
     exit;
 }
 
+function sanitizeToken(string $value, string $fallback = ''): string {
+    $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '', $value) ?? '';
+    return $sanitized !== '' ? substr($sanitized, 0, 100) : $fallback;
+}
+
+// Reglas de acceso del almacén: imágenes públicas, JSON/lock/php denegados.
+function ensureStoreAccess(string $directory): void {
+    $htaccess = $directory . '/.htaccess';
+    if (is_file($htaccess)) {
+        return;
+    }
+    $rules = "# Proteger el almacen del historial: servir solo imagenes, sin listado\n"
+        . "<IfModule mod_autoindex.c>\n    Options -Indexes\n</IfModule>\n"
+        . "<FilesMatch \"\\.(jpg|jpeg|png|gif|webp)$\">\n    Require all granted\n</FilesMatch>\n"
+        . "<FilesMatch \"\\.(json|php|lock)$\">\n    Require all denied\n</FilesMatch>\n";
+    @file_put_contents($htaccess, $rules, LOCK_EX);
+}
+
+// Migración de un solo paso desde el almacén antiguo versionado.
+function migrateLegacyStore(string $directory): void {
+    static $migrated = false;
+    if ($migrated) {
+        return;
+    }
+    $migrated = true;
+
+    if (is_file($directory . '/history.json')) {
+        return;
+    }
+    $legacyFile = __DIR__ . '/' . LEGACY_DIR . '/history.json';
+    if (!is_file($legacyFile)) {
+        return;
+    }
+    $raw = (string)@file_get_contents($legacyFile);
+    // Un BOM UTF-8 al principio rompería json_decode: se descarta si lo hubiera.
+    if (strncmp($raw, "\xEF\xBB\xBF", 3) === 0) {
+        $raw = substr($raw, 3);
+    }
+    $legacy = json_decode($raw, true);
+    if (!is_array($legacy) || $legacy === []) {
+        return;
+    }
+
+    foreach ($legacy as $index => $entry) {
+        if (!is_array($entry)) {
+            continue;
+        }
+        $base = sanitizeToken((string)($entry['imageFile'] ?? ''));
+        if ($base === '' && preg_match('#^\./' . LEGACY_DIR . '/([A-Za-z0-9_-]+)\.[A-Za-z0-9]+$#', (string)($entry['imageUrl'] ?? ''), $matches) === 1) {
+            $base = sanitizeToken($matches[1]);
+        }
+        if ($base === '') {
+            continue;
+        }
+        foreach (['png', 'jpg', 'jpeg', 'webp', 'gif'] as $extension) {
+            $source = __DIR__ . '/' . LEGACY_DIR . '/' . $base . '.' . $extension;
+            if (!is_file($source)) {
+                continue;
+            }
+            if (@copy($source, $directory . '/' . $base . '.' . $extension)) {
+                $legacy[$index]['imageFile'] = $base;
+                $legacy[$index]['imageUrl'] = './' . STORE_DIR . '/' . rawurlencode($base . '.' . $extension);
+            }
+            break;
+        }
+    }
+
+    @file_put_contents(
+        $directory . '/history.json',
+        json_encode(array_values($legacy), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        LOCK_EX
+    );
+}
+
 function dataDir(): string {
-    $directory = __DIR__ . '/history_data';
+    $directory = __DIR__ . '/' . STORE_DIR;
     if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
         respond(500, ['success' => false, 'error' => 'No se pudo crear el almacenamiento del historial.']);
     }
+    ensureStoreAccess($directory);
+    migrateLegacyStore($directory);
     return $directory;
 }
 
@@ -78,11 +162,6 @@ function readJsonBody(): array {
     return $body;
 }
 
-function sanitizeToken(string $value, string $fallback = ''): string {
-    $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '', $value) ?? '';
-    return $sanitized !== '' ? substr($sanitized, 0, 100) : $fallback;
-}
-
 function removeImageForEntry(array $entry): void {
     $imageFile = sanitizeToken((string)($entry['imageFile'] ?? ''));
     if ($imageFile === '') {
@@ -116,7 +195,7 @@ function persistImage(string $id, string $dataUrl): array {
     if (file_put_contents($path, $binary, LOCK_EX) === false) {
         respond(500, ['success' => false, 'error' => 'No se pudo guardar la imagen del historial.']);
     }
-    return [$baseName, './history_data/' . rawurlencode($baseName . '.' . $extension)];
+    return [$baseName, './' . STORE_DIR . '/' . rawurlencode($baseName . '.' . $extension)];
 }
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
