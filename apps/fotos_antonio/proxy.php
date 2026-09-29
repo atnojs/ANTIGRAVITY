@@ -196,6 +196,26 @@ $modelCatalog = [
     'qwen-pro'            => ['backend' => 'qwen',   'model' => 'qwen/qwen-image-3-pro'],
 ];
 
+// ===== Diagnóstico del proxy (no gasta API) =====
+// NOTA: el bloque de `action=health|models` vive más abajo, justo después de leer el
+// cuerpo JSON, porque necesita `$req`. Antes estaba aquí y $req aún no existía: la
+// petición caía al flujo normal y devolvía "Falta el prompt".
+
+// ===== Entrada =====
+$requestBody = file_get_contents('php://input');
+if (empty($requestBody)) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'Cuerpo vacío.']]);
+    exit;
+}
+
+$req = json_decode($requestBody, true);
+if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'JSON inválido.']]);
+    exit;
+}
+
 // ===== Diagnóstico del proxy (no gasta API): claves configuradas y modelos
 // vigentes. Uso: POST {"action":"health"} / POST {"action":"models"}. Nunca
 // devuelve claves. La lista de modelos sale del catálogo REAL de esta app.
