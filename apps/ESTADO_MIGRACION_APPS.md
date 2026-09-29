@@ -149,6 +149,7 @@ servido). **⏳ = pendiente.**
 | 14 | ✅ | `imagenes_ia/generar`, `imagenes_ia/generar_copia`, `imagenes_ia/editar`, `imagenes_ia/copiar_estilo`, `imagenes_ia/combinar_imagenes`, `imagenes_ia/estilo_json`, `imagenes_ia/upscaler` | apps de imagen del proyecto | 0–2 |
 | 15 | ✅ | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
 | 16 | ✅ | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
+| 17 | ✅ | `prompts_predeterminados`, `generador_ia`, `generador_ia_flux`, `asistente_inmoviliario`, `out` (**seguridad: filtraba la clave**), `protocolo_gemini_web`, `angulos_de_camara/images`, `viaje_tiempo` | apps con proxy propio fuera de las filas 1–16 (auditoría propia) | 0–1 |
 
 **Filas 14 y 15 verificadas en producción** (health del proxy con el catálogo vigente
 —`gemini-2` incluido— y `history.php` sirviendo desde `history_store/`; se comprueba con
@@ -188,15 +189,29 @@ el health publicado; `trickvault` no aplica). Resumen de lo hecho:
   `canonical-image-model.php` (o usan `gemini-2` como identificador) salen como `NO` aunque
   estén migradas. No sirve como criterio único sin esa corrección.
 
-**Fila 17 (pendiente de decidir).** Una auditoría de los proxies que quedan fuera de las
-filas 1–16 encontró 6 apps desplegadas con proxy propio sin migrar:
-`prompts_predeterminados` (desplegada, en uso, selector legacy de 8 botones + Firebase),
-`generador_ia`, `generador_ia_flux` (el nombre engaña: no tiene FLUX en el código),
-`asistente_inmoviliario` (texto/visión, está en el portal), `out` (passthrough genérico,
-dudosa) y `protocolo_gemini_web` (la única con `config.php` pendiente). Además hay 2
-módulos accesorios de apps ya migradas (`angulos_de_camara/images`,
-`viaje_tiempo/public`) y `viaje_tiempo` (app de texto con cascade `config.php`). No se ha
-tocado nada de la fila 17 en esta sesión.
+**Fila 17: ✅ hecha y verificada en producción** con `tools/verificar-fila17.ps1` (8/8).
+Una auditoría de los proxies que quedaban fuera de las filas 1–16 encontró 6 apps
+desplegadas con proxy propio sin migrar más 3 casos accesorios. Estado final:
+
+| App | Qué se hizo |
+|---|---|
+| `prompts_predeterminados` | selector canónico de 11 (IMAGE 2 por defecto), catálogo canónico, `health`/`models`, historial en `history_store/`, cache busting. Conserva `guardar_cambios.php`, `load_state.php`, `upload.php` y la galería |
+| `generador_ia` | selector canónico, historial canónico **conectado** (antes el contrato estaba roto: GET sin `action` y POST sin `action` daban 400), `health`/`models` |
+| `generador_ia_flux` | igual que la anterior. El nombre engaña: **no tiene FLUX en el código**. Su `GET` sin `action` devuelve `{"success":true,"stats":[]}` porque es el **contrato del plugin** `plugins/antigravity-command` (contador por modelo): se conserva y el `health` canónico se atiende antes, solo con `action` explícita |
+| `asistente_inmoviliario` | app de texto/visión: `health` con `configured` + `models: []` + `textModels`, historial canónico. Se arregló además la edición de imagen, que pedía un modelo inexistente (`gemini-3.1-flash-image-preview`): el proxy lo traduce a los identificadores vigentes |
+| `out` | **seguridad**: era un passthrough genérico que aceptaba cualquier `targetUrl`, le pegaba la clave `A` y devolvía la URL completa (con clave) en los errores ≥400, con TLS sin verificar. Ahora hay lista blanca exacta de destino, TLS verificado y errores sin URL ni eco del payload. Historial canonicalizado. **Recomendado rotar la clave `A`** por si estuvo expuesta |
+| `protocolo_gemini_web` | fuera `config.php` (2 sitios), catálogo de 11, `health`/`models`, selector canónico e historial **conectado** (el botón "Limpiar" existía sin handler) |
+| `angulos_de_camara/images` | módulo accesorio: catálogo cerrado con `gemini-2` (id directo de Google) + alias legacy, `health`/`models`. Ningún HTML del repo lo enlaza (solo se menciona en este documento) |
+| `viaje_tiempo` | **despliegue arreglado**: `index_prod.html` (el que sirve su `.htaccess`) apuntaba a unos assets inexistentes y el `index.html` de la raíz cargaba `/src/main.tsx` (ruta de desarrollo). Se reconstruyó el bundle y se apunta a él. `vite.config.ts` ya **no inyecta** `GEMINI_API_KEY` en el bundle del navegador. `public/proxy.php`: fuera el `config.php` y endurecido el puente GET de Pollinations (host validado con `parse_url` en vez de por prefijo, que se burlaba con userinfo; TLS verificado; sin redirecciones) |
+
+Notas de seguridad de la fila 17:
+- La única `AIza…` de los bundles de `viaje_tiempo` es la **API key web de Firebase**
+  (`firebase-applet-config.json`), pública por diseño. El `.env` local tiene
+  `GEMINI_API_KEY` vacía. **No hay fuga de clave de Gemini en el repositorio.**
+- `out` sí filtraba la clave `A` en los errores; ya está cerrado, pero **rotarla es
+  lo prudente**.
+- `apps/viaje_tiempo/dist/**` ya no se versiona (`.gitignore`: `apps/*/dist/`), igual que
+  `.tmp-build/`.
 
 
 **Patrón aplicado por app** (§4, ya probado en las apps 1–16): `history.php` canónico
