@@ -108,6 +108,14 @@ body {
 .model-selector-label{
   color:var(--muted); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
 }
+/* Columnas por proveedor: 4 en escritorio, 1 en movil (responsive) */
+.model-provider-layout{
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75rem; width:100%;
+}
+.model-provider-column{ min-width:0; }
+@media (max-width:640px){
+  .model-provider-layout{ grid-template-columns:minmax(0,1fr); }
+}
 .model-toggle-group{
   display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0;
   width:100%; max-width:100%; box-sizing:border-box;

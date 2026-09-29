@@ -301,7 +301,7 @@ const App = () => {
     const [source, setSource] = useState(null);
     const [sourceInfo, setSourceInfo] = useState(null);
     const [selectedESRGANModel, setSelectedESRGANModel] = useState(MODEL_OPTIONS[3]); // medium-4x por defecto
-    const [selectedModel, setSelectedModel] = useState('openai-medium'); // Modelo IA (OpenAI/Gemini)
+    const [selectedModel, setSelectedModel] = useState('openai-image-2'); // Modelo IA (OpenAI image 2 por defecto)
     const [isDinA4, setIsDinA4] = useState(false);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('');
@@ -393,14 +393,18 @@ const App = () => {
                     if (proxyData.success && proxyData.imageUrl) {
                         enhancedDataUrl = proxyData.imageUrl;
                         modelLabel = ' + ' + ({
+                            'openai-image-2': 'OpenAI image 2 Medium',
+                            'openai-image-2-high': 'OpenAI image 2 High',
                             'openai-medium': 'OpenAI Medium',
                             'openai-high': 'OpenAI High',
                             'openai-xhigh': 'OpenAI XHigh',
                             'openai-max-flare': 'OpenAI Max Flare',
                             'openai-max-sunburst': 'OpenAI Max Sunburst',
+                            'gemini-2': 'Gemini 2',
+                            'gemini-flash': 'Gemini 3.1 Flash',
                             'gemini-pro': 'Gemini 3 Pro',
-                            'gemini-flash': 'Gemini 3.1 Flash'
-                        }[window.selectedModel || selectedModel] || 'OpenAI Medium');
+                            'qwen-pro': 'Qwen 3 Pro'
+                        }[window.selectedModel || selectedModel] || 'OpenAI image 2 Medium');
                     }
                 }
             } catch (proxyErr) {
@@ -578,10 +582,12 @@ const App = () => {
                 {/* ── Selector de Modelo IA (canónico hoola) ── */}
                 <div className="model-selector">
                   <span className="model-selector-label">Modelo IA</span>
-                  <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.75rem' }}>
+                  <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                     {[
-                      { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-xhigh', 'XHIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-max-sunburst', 'MAX SUNBURST']] },
-                      { provider: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
+                      { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-xhigh', 'XHIGH'], ['openai-max-sunburst', 'MAX SUNBURST']] },
+                      { provider: 'GEMINI', models: [['gemini-2', 'GEMINI 2'], ['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] },
+                      { provider: 'QWEN', models: [['qwen-pro', 'QWEN 3 PRO']] },
+                      { provider: 'IMAGE 2', models: [['openai-image-2', 'MEDIUM'], ['openai-image-2-high', 'HIGH']] }
                     ].map(group => (
                       <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
                         <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
@@ -702,8 +708,12 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-2': 'Rápido y económico, Buen texto en imágenes.',
     'gemini-flash': 'Texto en imágenes, Rápido.',
-    'gemini-pro': 'Máxima calidad, Perfecto para texto'
+    'gemini-pro': 'Máxima calidad, Perfecto para texto',
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2': 'OpenAI image 2, calidad media. Edita la referencia conservando su estilo.',
+    'openai-image-2-high': 'OpenAI image 2, calidad alta. Más detalle y texto más nítido.'
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

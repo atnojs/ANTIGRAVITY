@@ -15,7 +15,54 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
+
+// ===== Diagnóstico: health / models (nunca devuelven claves) =====
+// Catálogo informativo, espejo de ag_image_catalog().
+$agModels = [
+    'openai-image-2'      => 'gpt-image-2 (medium)',
+    'openai-image-2-high' => 'gpt-image-2 (high)',
+    'openai-medium'       => 'gpt-image-2.5-flare (medium)',
+    'openai-high'         => 'gpt-image-2.5-flare (high)',
+    'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
+    'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
+    'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+    'gemini-2'            => 'google/gemini-2.5-flash-image',
+    'gemini-flash'        => 'google/gemini-3.1-flash-image',
+    'gemini-pro'          => 'google/gemini-3-pro-image',
+    'qwen-pro'            => 'qwen/qwen-image-3-pro',
+];
+$agConfigured = [
+    'openai'     => ag_image_key(__DIR__, 'OPENAI_API_KEY', 'O') !== '',
+    'openrouter' => ag_image_key(__DIR__, 'R') !== '',
+];
+$agMethod = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+if ($agMethod === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+if ($agMethod === 'GET') {
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'antigravity-ai-proxy',
+        'configured' => $agConfigured,
+        'actions'    => ['generate', 'models', 'health'],
+        'models'     => $agModels,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 $agBody = json_decode(file_get_contents('php://input') ?: '', true);
+$agAction = is_array($agBody) ? strtolower((string)($agBody['action'] ?? '')) : '';
+if ($agAction === 'health') {
+    echo json_encode(['success' => true, 'configured' => $agConfigured, 'models' => $agModels], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+if ($agAction === 'models') {
+    echo json_encode(['success' => true, 'models' => $agModels], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// Sin action reconocida: si viene 'model', la generación va al contrato canónico.
 if (is_array($agBody) && array_key_exists('model', $agBody)) ag_image_response($agBody, __DIR__);
 
 // CORS
