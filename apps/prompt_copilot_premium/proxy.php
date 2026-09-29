@@ -96,6 +96,26 @@ function resolveApiKey(): ?string
     return null;
 }
 
+// Clave de OpenAI. Esta app es de texto y solo usa OpenRouter; el dato se expone
+// en `action=health` para que el diagnostico sea el mismo en todas las apps.
+function resolveOpenAiKey(): ?string
+{
+    foreach (['OPENAI_API_KEY', 'O'] as $name) {
+        $candidates = [
+            getenv($name),
+            getenv('REDIRECT_' . $name),
+            $_SERVER[$name] ?? '',
+            $_SERVER['REDIRECT_' . $name] ?? '',
+            $_ENV[$name] ?? '',
+            $_ENV['REDIRECT_' . $name] ?? '',
+        ];
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && trim($candidate) !== '') { return trim($candidate); }
+        }
+    }
+    return null;
+}
+
 function detectMode(string $requestedMode, string $request): string
 {
     if ($requestedMode === 'copilot' || $requestedMode === 'improver') {
@@ -551,8 +571,10 @@ if ($method === 'GET') {
     $configured = resolveApiKey() !== null;
     respond(200, [
         'ok' => true,
+        'success' => true,
         'service' => 'Prompt Copilot Premium',
-        'configured' => $configured,
+        'configured' => ['openai' => resolveOpenAiKey() !== null, 'openrouter' => $configured],
+        'actions' => ['generate', 'health'],
         'message' => $configured ? 'Servicio preparado.' : 'Falta configurar la clave R de OpenRouter en el servidor.',
     ]);
 }
@@ -562,15 +584,25 @@ if ($method !== 'POST') {
     respond(405, ['ok' => false, 'error' => 'Método no permitido.']);
 }
 
-if (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'XMLHttpRequest') {
-    respond(400, ['ok' => false, 'error' => 'Solicitud no válida.']);
-}
-
+// `action=health` se atiende antes de exigir la cabecera XHR: es un diagnóstico
+// sin datos de la persona usuaria y así responde al mismo POST que usan las demás apps.
 $input = readJsonBody();
 $action = enumValue($input['action'] ?? '', ['generate', 'health'], 'generate');
 if ($action === 'health') {
-    $configured = resolveApiKey() !== null;
-    respond(200, ['ok' => true, 'configured' => $configured]);
+    // Contrato canónico: nunca devuelve claves, solo si están configuradas.
+    // Esta app no maneja modelos de imagen, por eso no publica `models`.
+    respond(200, [
+        'ok' => true,
+        'success' => true,
+        'configured' => [
+            'openai' => resolveOpenAiKey() !== null,
+            'openrouter' => resolveApiKey() !== null,
+        ],
+    ]);
+}
+
+if (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'XMLHttpRequest') {
+    respond(400, ['ok' => false, 'error' => 'Solicitud no válida.']);
 }
 
 $userRequest = cleanText($input['userRequest'] ?? '', MAX_REQUEST_LENGTH);

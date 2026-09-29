@@ -586,7 +586,12 @@
         return;
       }
       const data = await resp.json();
-      if (data.ok && !data.configured) {
+      // El proxy devuelve `configured` como objeto { openai, openrouter }; se sigue
+      // aceptando el boolean antiguo para no romper ninguna versión en caché.
+      const configured = (data.configured && typeof data.configured === 'object')
+        ? Boolean(data.configured.openrouter || data.configured.openai)
+        : Boolean(data.configured);
+      if (data.ok && !configured) {
         E.requestError.textContent = data.message || 'Falta configurar la clave R de OpenRouter en el servidor.';
         toast(data.message || 'API no configurada.', 'error');
       } else if (!data.ok) {
