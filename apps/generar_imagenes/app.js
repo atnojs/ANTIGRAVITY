@@ -212,6 +212,30 @@
     };
 
     /* ==== CONSTANTES BÃSICAS ==== */
+    // Modelo por defecto del proyecto (OpenAI Image 2 medium) y etiquetas legibles
+    // de los modelos del selector. Orden canonico: menor -> mayor capacidad.
+    const DEFAULT_MODEL = 'openai-image-2';
+    const MODEL_LABELS = {
+        'openai-medium': 'MEDIUM',
+        'openai-high': 'HIGH',
+        'openai-max-flare': 'MAX FLARE',
+        'openai-xhigh': 'XHIGH',
+        'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-2': 'GEMINI 2',
+        'gemini-flash': '3.1 FLASH',
+        'gemini-pro': '3 PRO',
+        'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2': 'MEDIUM',
+        'openai-image-2-high': 'HIGH'
+    };
+    const MODEL_GROUPS = [
+        { name: 'OPENAI 2.5', models: ['openai-medium', 'openai-high', 'openai-max-flare', 'openai-xhigh', 'openai-max-sunburst'] },
+        { name: 'GEMINI', models: ['gemini-2', 'gemini-flash', 'gemini-pro'] },
+        { name: 'QWEN', models: ['qwen-pro'] },
+        { name: 'IMAGE 2', models: ['openai-image-2', 'openai-image-2-high'] }
+    ];
+    const modelLabel = (model) => MODEL_LABELS[model] || String(model || '').toUpperCase();
+
     const PRE_PROMPT_BASE = "CRITICAL: ABSOLUTELY NO TEXT, NO WATERMARKS. Use the reference image as STYLE REFERENCE: copy its lighting, color palette, textures, atmosphere, composition and overall aesthetic. Apply this exact visual style to the user's request below. The generated image must look like it belongs to the same visual universe as the reference.";
     const PRE_PROMPT_INPAINT_VISUAL = "ROLE: Precise Image Editor. TASK: Edit ONLY the area highlighted with a RED semi-transparent overlay in the image. The rest of the image MUST REMAIN IDENTICAL.";
 
@@ -238,7 +262,7 @@
             });
         },
 
-        generateImage(prompt, provider = 'openai-medium', images = [], aspectRatio = '', modalities = ['IMAGE'], maskDataObj = null) {
+        generateImage(prompt, provider = DEFAULT_MODEL, images = [], aspectRatio = '', modalities = ['IMAGE'], maskDataObj = null) {
             const finalImages = [...images];
             let maskPayload = null;
 
@@ -1267,7 +1291,7 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
 
 const App = () => {
         const [prompt, setPrompt] = useState('');
-        const [provider, setProvider] = useState('openai-medium');
+        const [provider, setProvider] = useState(DEFAULT_MODEL);
         const [baseImages, setBaseImages] = useState([]);
         const [images, setImages] = useState([]);
         const [history, setHistory] = useState([]);
@@ -1622,19 +1646,18 @@ const App = () => {
 
                         <div style={{ marginBottom: '1rem', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
                             <div style={{ fontSize: '.78rem', fontWeight: 700, letterSpacing: '.08em', color: 'var(--muted)', marginBottom: '.6rem' }}>MODELO IA</div>
-                            <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.65rem' }}>
-                                {[
-                                    { name: 'OPENAI', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGHT']] },
-                                    { name: 'GEMINI', models: [['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] }
-                                ].map(group => (
+                            <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '.65rem' }}>
+                                {MODEL_GROUPS.map(group => (
                                     <div className="model-provider-column" key={group.name} style={{ minWidth: 0 }}>
                                         <div className="model-provider-title" style={{ textAlign: 'center', fontSize: '.7rem', fontWeight: 800, letterSpacing: '.1em', marginBottom: '.35rem', color: 'var(--muted)' }}>{group.name}</div>
-                                        <div className="model-toggle-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.35rem' }}>
-                                            {group.models.map(([value, label]) => (
+                                        <div className="model-toggle-group" style={{ display: 'grid', gridTemplateColumns: `repeat(${group.models.length > 2 ? 2 : group.models.length}, minmax(0, 1fr))`, gap: '.35rem' }}>
+                                            {group.models.map(value => (
                                                 <button key={value} type="button" className="btn btn-3d btn-sm"
+                                                    data-model={value}
                                                     aria-pressed={provider === value} onClick={() => setProvider(value)}
+                                                    title={modelLabel(value)}
                                                     style={{ padding: '.55rem .3rem', fontSize: '.72rem', background: provider === value ? 'linear-gradient(135deg, #22d3ee, #a78bfa)' : 'rgba(255,255,255,.06)', color: provider === value ? '#0c1445' : 'var(--text)' }}>
-                                                    {label}
+                                                    {modelLabel(value)}
                                                 </button>
                                             ))}
                                         </div>

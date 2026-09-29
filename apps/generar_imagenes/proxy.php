@@ -5,6 +5,79 @@ ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 try {
+  // Modelo OpenAI Image 2 (gpt-image-2) como respaldo del proxy.
+  $defaultOpenAiImageModel = 'openai-image-2';
+  // Diagnostico del proxy (no gasta API): que claves ve el entorno y que modelos
+  // acepta. Uso: POST {"action":"health"}. Nunca devuelve las claves.
+  $action = strtolower(trim((string)(json_decode((string)file_get_contents('php://input'), true)['action'] ?? '')));
+  if ($action === 'health' || $action === 'models') {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') throw new Exception('Método no permitido', 405);
+    $secret = function (string ...$names): string {
+      foreach ($names as $name) {
+        foreach ([getenv($name), getenv('REDIRECT_' . $name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? ''] as $value) {
+          if (is_string($value) && trim($value) !== '') return trim($value);
+        }
+      }
+      return '';
+    };
+    $imageCatalog = function_exists('ag_image_catalog') ? ag_image_catalog() : [$defaultOpenAiImageModel => []];
+    $configured = [
+      'openai' => $secret('OPENAI_API_KEY', 'O') !== '',
+      'openrouter' => $secret('R') !== '',
+    ];
+    if ($action === 'health') {
+      http_response_code(200);
+      echo json_encode([
+        'success' => true,
+        'configured' => $configured,
+        'models' => array_values(array_keys($imageCatalog)),
+        'actions' => ['generateImage', 'enhancePrompt', 'analyzeMaskPosition', 'health', 'models'],
+      ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+      exit;
+    }
+    // action=models: consulta REAL a OpenAI, solo ids de imagen, cache 600 s.
+    $openaiKey = $secret('OPENAI_API_KEY', 'O');
+    if ($openaiKey === '') {
+      http_response_code(500);
+      echo json_encode(['success' => false, 'error' => 'La clave de OpenAI (OPENAI_API_KEY/O) no está configurada en el servidor.']);
+      exit;
+    }
+    $cacheDir = __DIR__ . '/qwen_cache';
+    $cacheFile = $cacheDir . '/openai_models.json';
+    $cached = is_file($cacheFile) ? json_decode((string)@file_get_contents($cacheFile), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+      $ids = array_values((array)$cached['ids']);
+    } else {
+      $ch = curl_init('https://api.openai.com/v1/models');
+      curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 15,
+      ]);
+      $raw = curl_exec($ch);
+      $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      curl_close($ch);
+      $data = json_decode((string)$raw, true);
+      if ($code >= 400 || !is_array($data)) {
+        http_response_code(502);
+        echo json_encode(['success' => false, 'error' => 'No se pudo consultar la lista de modelos.', 'detail' => 'HTTP ' . $code]);
+        exit;
+      }
+      $ids = [];
+      foreach (($data['data'] ?? []) as $model) {
+        $id = (string)($model['id'] ?? '');
+        if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+      }
+      sort($ids);
+      if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+      @file_put_contents($cacheFile, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $ids], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+  }
+
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
 
   // API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
@@ -39,7 +112,7 @@ try {
 
   $task        = $json['task'] ?? '';
   if ($task === 'generateImage') {
-      if (!isset(ag_image_catalog()[(string)($json['model'] ?? '')])) $json['model'] = 'openai-medium';
+      if (!isset(ag_image_catalog()[(string)($json['model'] ?? '')])) $json['model'] = $defaultOpenAiImageModel;
       ag_image_response($json, __DIR__);
   }
   $provider    = $json['provider'] ?? 'gemini'; 
