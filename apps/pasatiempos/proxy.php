@@ -8,6 +8,34 @@ header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
+// ===== Diagnóstico: health / models (nunca devuelven claves) =====
+// App de SOLO TEXTO: no usa modelos de imagen, así que el catálogo va vacío y
+// 'models' solo se ofrece como acción por contrato (no hay selector que lo consuma).
+function agEnvAny(array $names): string {
+    foreach ($names as $name) {
+        foreach ([getenv($name), getenv('REDIRECT_' . $name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? ''] as $value) {
+            if (is_string($value) && trim($value) !== '') { return trim($value); }
+        }
+    }
+    return '';
+}
+function agConfigured(): array {
+    return [
+        'openai'     => agEnvAny(['OPENAI_API_KEY', 'O']) !== '',
+        'openrouter' => agEnvAny(['R']) !== '',
+    ];
+}
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'antigravity-ai-proxy',
+        'configured' => agConfigured(),
+        'actions'    => ['text', 'health', 'models'],
+        'models'     => [],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
@@ -19,16 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
-    if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
-    if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
+    // ── Clave R (OpenRouter): SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV)
+    $orKey = agEnvAny(['R']);
     if ($orKey === '') {
         return [500, json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']])];
     }
@@ -154,34 +174,27 @@ try {
         throw new Exception('Método no permitido. Usa POST.', 405);
     }
 
-    // ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
-    $apiKey = '';
-        if (!$apiKey || empty($apiKey)) {
-        $apiKey = getenv('A');
-    }
-    if (!$apiKey || empty($apiKey)) {
-        $apiKey = getenv('REDIRECT_A');
-    }
-    if (!$apiKey || empty($apiKey)) {
-        $apiKey = $_SERVER['A'] ?? '';
-    }
-    if (!$apiKey || empty($apiKey)) {
-        $apiKey = $_SERVER['REDIRECT_A'] ?? '';
-    }
-    if (!$apiKey || empty($apiKey)) {
-        $apiKey = $_ENV['A'] ?? '';
-    }
-    if (!$apiKey || empty($apiKey)) {
-        $apiKey = $_ENV['REDIRECT_A'] ?? '';
-    }
-
-    if (!$apiKey || empty($apiKey)) {
-        throw new Exception('API key de Gemini no configurada.', 500);
-    }
+    // ===== API KEY (Gemini directo): SOLO entorno (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV) =====
+    $apiKey = agEnvAny(['A']);
 
     $input = file_get_contents('php://input');
     $json = json_decode($input, true);
-    
+
+    // ===== Diagnóstico POST: health / models (sin claves; no requiere prompt ni clave) =====
+    $agAction = is_array($json) ? strtolower((string)($json['action'] ?? '')) : '';
+    if ($agAction === 'health') {
+        echo json_encode(['success' => true, 'configured' => agConfigured(), 'models' => []], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    if ($agAction === 'models') {
+        echo json_encode(['success' => true, 'models' => []], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    if ($apiKey === '') {
+        throw new Exception('API key de Gemini no configurada.', 500);
+    }
+
     if (!is_array($json)) {
         throw new Exception('JSON inválido o cuerpo vacío', 400);
     }
