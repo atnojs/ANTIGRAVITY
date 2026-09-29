@@ -462,7 +462,7 @@
         try {
           const finalPrompt = composePrePrompt(prompts[i], { integration: __detectIntegrationFromImage(__normalizeImageForApi(imageInline)) });
           const __imageNorm = __normalizeImageForApi(imageInline);
-          const __payload = { task: "generateImages", image: __imageNorm.data, mimeType: __imageNorm.mimeType, prompts: [finalPrompt], model: (window.__fichaModel || 'openai-medium') };
+          const __payload = { task: "generateImages", image: __imageNorm.data, mimeType: __imageNorm.mimeType, prompts: [finalPrompt], model: (window.__fichaModel || 'openai-image-2') };
           __extendPayloadWithConfigs(__payload, finalPrompt);
           const res = await fetch("./proxy.php", {
             method: "POST",
@@ -506,7 +506,7 @@
         image: __imageNorm.data,
         mimeType: __imageNorm.mimeType,
         prompts: [finalPrompt],
-        model: (window.__fichaModel || 'openai-medium'),
+        model: (window.__fichaModel || 'openai-image-2'),
       };
       __extendPayloadWithConfigs(__payload, finalPrompt);
       
@@ -927,7 +927,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState("");
   const [preserveLogo, setPreserveLogo] = useState(true);
-  const [selectedModel, setSelectedModel] = useState(window.__fichaModel || 'openai-medium');
+  const [selectedModel, setSelectedModel] = useState(window.__fichaModel || 'openai-image-2');
 
   const changeModel = (m) => {
     setSelectedModel(m);
@@ -1040,9 +1040,10 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
         <label className="block text-sm font-medium text-gray-300">Modelo IA</label>
         <div className="model-provider-layout mt-2 grid grid-cols-3 gap-3" role="group" aria-label="Seleccionar modelo">
           {[
-            { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGH' }, { id: 'openai-xhigh', label: 'XHIGH' }, { id: 'openai-max-flare', label: 'MAX FLARE' }, { id: 'openai-max-sunburst', label: 'MAX SUNBURST' }] },
-            { provider: 'GEMINI', models: [{ id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
+            { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGH' }, { id: 'openai-max-flare', label: 'MAX FLARE' }, { id: 'openai-xhigh', label: 'XHIGH' }, { id: 'openai-max-sunburst', label: 'MAX SUNBURST' }] },
+            { provider: 'GEMINI', models: [{ id: 'gemini-2', label: 'GEMINI 2' }, { id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
             { provider: 'QWEN', models: [{ id: 'qwen-pro', label: 'QWEN 3 PRO' }] },
+            { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', label: 'MEDIUM' }, { id: 'openai-image-2-high', label: 'HIGH' }] },
           ].map((group) => (
             <div className="model-provider-column min-w-0" key={group.provider}>
               <span className="model-provider-title block text-center mb-1">{group.provider}</span>
@@ -2292,9 +2293,12 @@ const App = () => {
       'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
       'openai-max-flare': 'Más barato que Sunburst',
       'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+      'gemini-2': 'Gemini 2 (gemini-2.5-flash-image) · el más ligero y económico del grupo',
       'gemini-flash': 'Texto en imágenes, Rápido.',
       'gemini-pro': 'Máxima calidad, Perfecto para texto',
       'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+      'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. Modelo por defecto del proyecto.',
+      'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.',
   };
 
   const container = document.getElementById("root");
