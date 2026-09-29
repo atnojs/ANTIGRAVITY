@@ -69,8 +69,80 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     exit;
 }
 
-// Modelo
-$model = (string)($req['model'] ?? 'gemini-3.1-flash-image-preview');
+// ===== Catálogo de modelos (lista blanca cerrada) =====
+// Este módulo habla DIRECTO con Google (generativelanguage), así que los ids de
+// Gemini van en formato directo, sin el prefijo "google/" del contrato de
+// OpenRouter (mismo criterio que clonador). No incluye ids openai-*/qwen-pro:
+// este proxy solo tiene backend Gemini.
+$modelCatalog = [
+    'gemini-2'     => 'gemini-2.5-flash-image',
+    'gemini-flash' => 'gemini-3.1-flash-image-preview',
+    'gemini-pro'   => 'gemini-3-pro-image-preview',
+];
+// Alias legacy: los frontends antiguos mandan el id completo de Google.
+$legacyAliases = [
+    'gemini-2.5-flash-image'         => 'gemini-2',
+    'gemini-3.1-flash-image-preview' => 'gemini-flash',
+    'gemini-3.1-flash-image'         => 'gemini-flash',
+    'gemini-3-pro-image-preview'     => 'gemini-pro',
+    'gemini-3-pro-image'             => 'gemini-pro',
+    'gemini-3-pro'                   => 'gemini-pro',
+];
+
+// ===== Comprobación de salud (no gasta API): qué clave ve el entorno y qué
+// modelos acepta el proxy. Uso: POST {"action":"health"}. Nunca devuelve claves.
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['gemini' => $API_KEY !== ''],
+        'models'     => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// Diagnóstico: pregunta a Google qué modelos de IMAGEN ofrece de verdad la clave
+// (evita adivinar identificadores). Uso: POST {"action":"models"}. Nunca
+// devuelve la clave: solo identificadores de imagen.
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'models') {
+    $ch = curl_init('https://generativelanguage.googleapis.com/v1beta/models?key=' . urlencode($API_KEY));
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if ($code >= 400 || !is_array($data)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']]);
+        exit;
+    }
+    $ids = [];
+    foreach (($data['models'] ?? []) as $entry) {
+        $id = (string)($entry['name'] ?? '');
+        if (strpos($id, 'models/') === 0) $id = substr($id, 7);
+        if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+    }
+    sort($ids);
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $ids], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// ===== Modelo (lista blanca cerrada) =====
+// Por defecto se conserva el modelo histórico del módulo (3.1 flash image).
+$requested = strtolower(trim((string)($req['model'] ?? '')));
+if ($requested === '') $requested = 'gemini-flash';
+if (isset($legacyAliases[$requested])) $requested = $legacyAliases[$requested];
+if (!isset($modelCatalog[$requested])) {
+    http_response_code(400);
+    echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
+    exit;
+}
+$model = $modelCatalog[$requested];
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
 // Construir payload — soporte passthrough + formato sencillo
