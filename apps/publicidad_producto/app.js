@@ -139,12 +139,14 @@ function batchIdToNumber(id) {
 }
 
 // Copia reducida del lote: misma estructura y mismos metadatos, sin los data URL
-// de las imágenes (esos viajan en imageData/imageUrl y no deben duplicarse).
+// de las imágenes (viajan una sola vez en imageData/imageUrl; la miniatura base
+// se recorta porque una copia completa duplicaría el peso y superaría el máximo
+// de 30 MB de history.php).
 function shrinkBatchForServer(item) {
     return {
         id: batchIdToNumber(item.id),
         timestamp: item.timestamp || '',
-        baseImage: item.baseImage || '',
+        baseImage: typeof item.baseImage === 'string' ? item.baseImage.slice(0, 200000) : '',
         proposals: (item.proposals || []).map(function (proposal) {
             return {
                 label: proposal.label,
@@ -169,8 +171,8 @@ function batchFromServerItem(entry) {
     var data = entry.data || {};
     var proposals = Array.isArray(data.proposals) ? data.proposals : [];
     var serverUrls = {
-        baseImage: entry.imageUrl || data.baseImage || '',
-        poster: (entry.images && entry.images.poster) || entry.dataUrl || '',
+        baseImage: data.baseImage || entry.imageUrl || '',
+        poster: entry.imageUrl || data.dataUrl || '',
         video: (entry.images && entry.images.video) || ''
     };
     var downloaded = false;
@@ -235,8 +237,10 @@ function findBatchImageData(batch) {
     for (var p = 0; p < proposals.length; p++) {
         var assets = proposals[p].assets || [];
         for (var a = 0; a < assets.length; a++) {
-            if (typeof assets[a].url === 'string' && assets[a].url.indexOf('data:image/') === 0) {
-                return assets[a].url;
+            var asset = assets[a];
+            if (asset.mediaType === 'video') continue;
+            if (typeof asset.url === 'string' && asset.url.indexOf('data:image/') === 0) {
+                return asset.url;
             }
         }
     }
@@ -274,11 +278,11 @@ async function saveBatchToServer(batch, model) {
             createdAt: new Date(batchIdToNumber(batch.id)).toISOString()
         };
         if (videoUrl) {
-            entry.videoData = videoUrl;
-            // history.php rechaza imageData que no sea data URL de imagen: se omite
-            // y la entrada se guarda con el vídeo anexado en data.
+            // history.php rechaza como imageData cualquier cosa que no sea una
+            // imagen data URL: el vídeo se anexa en data y la imagen (si la hay)
+            // sigue siendo la miniatura de la entrada.
             entry.data.videoUrl = videoUrl;
-            entry.imageData = '';
+            if (!imageData) entry.imageData = '';
         }
         await hm.save(entry);
     } catch (error) {
