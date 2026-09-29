@@ -30,6 +30,31 @@ function getKey(string $name): string {
 
 $orKey   = getKey('R');
 
+// ════════════════════════════════════════════════════════════════════════
+// ACCIONES CANONICAS: health / models (diagnostico, sin gastar imagen)
+// Uso: GET proxy.php?action=health|models · POST {"action":"health"|"models"}
+// El catalogo vigente lo aporta canonical-image-model.php (lista cerrada).
+// Nunca devuelve claves.
+// ════════════════════════════════════════════════════════════════════════
+$agBody = json_decode((string)file_get_contents('php://input'), true);
+$agAction = strtolower(trim((string)((is_array($agBody) ? ($agBody['action'] ?? '') : '') ?: ($_GET['action'] ?? ''))));
+if ($agAction === 'health' || $agAction === 'models') {
+    http_response_code(200);
+    echo json_encode($agAction === 'models'
+        ? ['success' => true, 'models' => array_keys(ag_image_catalog())]
+        : [
+            'success'    => true,
+            'service'    => 'antigravity-ai-proxy',
+            'configured' => [
+                'openai'     => ag_image_key(__DIR__, 'OPENAI_API_KEY', 'O') !== '',
+                'openrouter' => ag_image_key(__DIR__, 'R') !== '',
+            ],
+            'actions'    => ['generate', 'text', 'openrouter', 'health', 'models'],
+            'models'     => array_keys(ag_image_catalog()),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error'=>['message'=>'Solo POST']]);

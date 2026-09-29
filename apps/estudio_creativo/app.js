@@ -49,12 +49,15 @@ const ASPECT_RATIOS = [
 const MODELS = [
     { id: 'openai-medium', label: 'MEDIUM' },
     { id: 'openai-high', label: 'HIGH' },
-    { id: 'openai-xhigh', label: 'XHIGH' },
     { id: 'openai-max-flare', label: 'MAX FLARE' },
+    { id: 'openai-xhigh', label: 'XHIGH' },
     { id: 'openai-max-sunburst', label: 'MAX SUNBURST' },
+    { id: 'gemini-2', label: 'GEMINI 2' },
     { id: 'gemini-flash', label: '3.1 FLASH' },
     { id: 'gemini-pro', label: '3 PRO' },
-    { id: 'qwen-pro', label: 'QWEN 3 PRO' }
+    { id: 'qwen-pro', label: 'QWEN 3 PRO' },
+    { id: 'openai-image-2', label: 'MEDIUM' },
+    { id: 'openai-image-2-high', label: 'HIGH' }
 ];
 const getModelLabel = (m) => (MODELS.find(x => x.id === m) || {}).label || m || '—';
 
@@ -157,7 +160,7 @@ const generateImage = async (params) => {
     if (params.sourceImage) { const b64 = params.sourceImage.split(',')[1]; parts.push({inlineData:{data:b64,mimeType:'image/jpeg'}}); }
     const contents = [{parts}];
     const cfg = {aspectRatio:params.aspectRatio, resolution:'1K', generationConfig:{imageConfig:{aspectRatio:params.aspectRatio}}};
-    const r = await callProxy(window.selectedModel || 'openai-medium', contents, cfg, finalPrompt);
+    const r = await callProxy(window.selectedModel || 'openai-image-2', contents, cfg, finalPrompt);
     if (!r?.success || !r?.imageUrl) throw new Error(r?.error?.message || 'No se pudo generar la imagen');
     return r.imageUrl;
 };
@@ -286,7 +289,7 @@ const App = () => {
     const [enhancedPrompts, setEnhancedPrompts] = useState([]);
     const [selectedStyle, setSelectedStyle] = useState(STYLES[0]);
     const [selectedAR, setSelectedAR] = useState('1:1');
-    const [selectedModel, setSelectedModel] = useState('openai-medium');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2');
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -456,9 +459,10 @@ const App = () => {
                         <span className="model-selector-label">Modelo IA</span>
                         <div className="model-provider-layout" role="group" aria-label="Seleccionar modelo">
                             {[
-                                { provider: 'OPENAI 2.5', ids: ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'] },
-                                { provider: 'GEMINI', ids: ['gemini-flash', 'gemini-pro'] },
-                                { provider: 'QWEN', ids: ['qwen-pro'] }
+                                { provider: 'OPENAI 2.5', ids: ['openai-medium', 'openai-high', 'openai-max-flare', 'openai-xhigh', 'openai-max-sunburst'] },
+                                { provider: 'GEMINI', ids: ['gemini-2', 'gemini-flash', 'gemini-pro'] },
+                                { provider: 'QWEN', ids: ['qwen-pro'] },
+                                { provider: 'IMAGE 2', ids: ['openai-image-2', 'openai-image-2-high'] }
                             ].map(group => (
                                 <div className="model-provider-column" key={group.provider}>
                                     <span className="model-provider-title">{group.provider}</span>
@@ -521,9 +525,12 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-2': 'Gemini 2 · el más ligero y económico del grupo',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. La más rápida de su gama.',
+    'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.',
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
