@@ -163,22 +163,56 @@ function handleOpenRouter(array $request): void {
 
 function handleGenerate(array $request): void {
     $reqModel = strtolower((string)($request['model'] ?? ''));
-    if (strpos($reqModel, 'f' . 'lux') !== false) respond(400, ['success' => false, 'error' => 'Modelo no soportado.']);
-    if ($reqModel !== '' && !isset(ag_image_catalog()[$reqModel])) $request['model'] = 'gemini-flash';
+    // Lista blanca cerrada: lo que no esté en el catálogo canónico cae al modelo
+    // base del proyecto (OpenAI image 2 medium).
+    if ($reqModel === '' || !isset(ag_image_catalog()[$reqModel])) $request['model'] = 'openai-image-2';
     ag_image_response($request, __DIR__);
 }
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 if ($method === 'GET') respond(200, [
     'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['openrouter'=>getSecret('R') !== ''],
-    'actions'=>['generate','openrouter','text','health'],
+    'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== ''],
+    'actions'=>['generate','openrouter','text','health','models'],
+    'models'=>array_values(array_keys(ag_image_catalog())),
 ]);
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
 if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openrouter'=>getSecret('R') !== '']]);
+if ($action === 'health') respond(200, [
+    'success'=>true,
+    'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== ''],
+    'models'=>array_values(array_keys(ag_image_catalog())),
+]);
+if ($action === 'models') {
+    // Consulta REAL a OpenAI (no gasta generación): qué ids de imagen ofrece la
+    // cuenta ahora mismo. Nunca devuelve la clave. Caché de 600 s.
+    $openaiKey = getSecret('OPENAI_API_KEY') !== '' ? getSecret('OPENAI_API_KEY') : getSecret('O');
+    if ($openaiKey === '') respond(500, ['success'=>false, 'error'=>'La clave de OpenAI (OPENAI_API_KEY/O) no está configurada en el servidor.']);
+    $cacheDir = __DIR__ . '/qwen_cache';
+    $cacheFile = $cacheDir . '/openai_models.json';
+    $cached = is_file($cacheFile) ? json_decode((string)@file_get_contents($cacheFile), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = array_values((array)$cached['ids']);
+    } else {
+        [$status, $response] = requestJson('https://api.openai.com/v1/models', 'GET', [
+            'Authorization: Bearer ' . $openaiKey, 'accept: application/json'
+        ], null, 30);
+        if ($status < 200 || $status >= 300 || !is_array($response)) {
+            respond(502, ['success'=>false, 'error'=>'No se pudo consultar la lista de modelos de OpenAI.', 'detail'=>'HTTP ' . $status]);
+        }
+        $ids = [];
+        foreach (($response['data'] ?? []) as $model) {
+            $id = (string)($model['id'] ?? '');
+            if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+        }
+        sort($ids);
+        if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+        @file_put_contents($cacheFile, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    respond(200, ['success'=>true, 'imageModels'=>$ids]);
+}
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') handleGenerate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);
