@@ -4,9 +4,12 @@
  * Delega en canonical-image-model.php (ag_image_response):
  *   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
  *   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
- *   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
+ *   openai-image-2 / openai-image-2-high         → gpt-image-2 (medium/high)
+ *   gemini-2 → google/gemini-2.5-flash-image, gemini-flash → google/gemini-3.1-flash-image,
+ *   gemini-pro → google/gemini-3-pro-image, qwen-pro → qwen/qwen-image-3-pro
  * (lista cerrada) (400 "Modelo no soportado").
- * Backend de imágenes: solo Gemini (OpenRouter).
+ * Acciones de diagnostico: POST {"action":"health"} y POST {"action":"models"}
+ * (nunca devuelven claves; `models` consulta la API real de OpenAI y filtra ids de imagen).
  * Contrato: recibe {prompt, imagen?, model?}
  *           responde  {success:true, imageUrl, model}
  */
@@ -14,6 +17,91 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 $agBody = json_decode(file_get_contents('php://input') ?: '', true);
+
+// ════════════════════════════════════════════════════════════════════════
+// ACCIONES CANONICAS: health / models (diagnostico, sin gastar imagen)
+// Uso: POST {"action":"health"} · POST {"action":"models"}
+// El catalogo vigente lo aporta canonical-image-model.php (lista cerrada).
+// ════════════════════════════════════════════════════════════════════════
+$agMethod = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+$agAction = strtolower(trim((string)((is_array($agBody) ? ($agBody['action'] ?? '') : '') ?: ($_GET['action'] ?? ''))));
+$agConfigured = [
+    'openai' => getKey('OPENAI_API_KEY') !== '' || getKey('O') !== '',
+    'openrouter' => getKey('R') !== '',
+];
+$agActions = ['generate', 'health', 'models'];
+
+if ($agMethod === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+if ($agMethod === 'GET' && $agAction === '') {
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'service' => 'antigravity-ai-proxy',
+        'configured' => $agConfigured,
+        'actions' => $agActions,
+        'models' => array_keys(ag_image_catalog()),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($agAction === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'configured' => $agConfigured,
+        'actions' => $agActions,
+        'models' => array_keys(ag_image_catalog()),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($agAction === 'models') {
+    $agOpenAiKey = getKey('OPENAI_API_KEY') !== '' ? getKey('OPENAI_API_KEY') : getKey('O');
+    if ($agOpenAiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada.']]);
+        exit;
+    }
+    // Cache corta: evita consultar la API en cada diagnostico (sin claves dentro).
+    $agModelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $agIds = null;
+    $agCached = is_file($agModelsCache) ? json_decode((string)@file_get_contents($agModelsCache), true) : null;
+    if (is_array($agCached) && (time() - (int)($agCached['at'] ?? 0)) < 600 && !empty($agCached['ids'])) {
+        $agIds = (array)$agCached['ids'];
+    } else {
+        $agModelsCh = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($agModelsCh, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $agOpenAiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $agModelsRaw = curl_exec($agModelsCh);
+        $agModelsCode = (int)curl_getinfo($agModelsCh, CURLINFO_HTTP_CODE);
+        curl_close($agModelsCh);
+        $agModelsData = json_decode((string)$agModelsRaw, true);
+        if ($agModelsCode >= 400 || !is_array($agModelsData)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $agModelsCode . ').']]);
+            exit;
+        }
+        $agIds = [];
+        foreach (($agModelsData['data'] ?? []) as $agModel) {
+            $agModelId = (string)($agModel['id'] ?? '');
+            if ($agModelId !== '' && preg_match('/image/i', $agModelId) === 1) $agIds[] = $agModelId;
+        }
+        sort($agIds);
+        if (!is_dir(dirname($agModelsCache))) @mkdir(dirname($agModelsCache), 0755, true);
+        @file_put_contents($agModelsCache, json_encode(['at' => time(), 'ids' => $agIds], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $agIds], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 // ════════════════════════════════════════════════════════════════════════
 // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API, sincrono)
