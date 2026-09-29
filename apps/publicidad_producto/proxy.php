@@ -30,7 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ===== API KEY: .htaccess raiz + cascade (patrón dibujo_lineas) =====
+// ===== LEER BODY (una sola vez: lo usan health/models y el resto) =====
+$raw = file_get_contents('php://input') ?: '';
+$req = json_decode($raw, true);
+if (!is_array($req)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'JSON inválido.', 'raw' => $raw]);
+    exit;
+}
+
+$BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
+$action = (string)($req['action'] ?? 'generate_image');
+
+// ===== API KEY de Gemini: .htaccess raiz + cascade (patrón dibujo_lineas) =====
 $API_KEY = '';
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = getenv('A');
@@ -50,22 +62,7 @@ if (!$API_KEY || empty($API_KEY)) {
 if (!$API_KEY || empty($API_KEY)) {
     $API_KEY = $_ENV['REDIRECT_A'] ?? '';
 }
-if (!$API_KEY || empty($API_KEY)) {
-    http_response_code(500);
-    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
-    exit;
-}
-
-$raw = file_get_contents('php://input') ?: '';
-$req = json_decode($raw, true);
-if (!is_array($req)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'JSON inválido.', 'raw' => $raw]);
-    exit;
-}
-
-$BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
-$action = (string)($req['action'] ?? 'generate_image');
+// (la clave se EXIGE más abajo: las acciones de diagnóstico informan sin clave)
 
 // ===== Clave OpenAI: SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV) =====
 $openaiKey = '';
@@ -78,17 +75,83 @@ if ($openaiKey === '') {
     }
 }
 
-// ===== Lista blanca exacta de modelos de imagen (lista cerrada) =====
+// ===== Clave OpenRouter (R): Qwen Image 3 Pro + diagnóstico de salud =====
+$orKey = '';
+foreach ([getenv('R'), getenv('REDIRECT_R'), $_SERVER['R'] ?? '', $_SERVER['REDIRECT_R'] ?? '', $_ENV['R'] ?? '', $_ENV['REDIRECT_R'] ?? ''] as $v) {
+    if (!empty($v)) { $orKey = (string)$v; break; }
+}
+
+// ===== Lista blanca exacta de modelos de imagen (lista cerrada, catálogo canónico) =====
+// Gemini va DIRECTO a Google (clave A): identificadores sin prefijo "google/",
+// igual que en clonador. Orden: de menor a mayor capacidad por familia.
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
-    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
 ];
+
+// ====================================================================
+// ACCIONES DE DIAGNÓSTICO (no gastan API): van antes de exigir la clave
+// de Gemini, para poder informar de la configuración real del servidor.
+// Uso: POST {"action":"health"} · POST {"action":"models"}
+// Ninguna devuelve jamás las claves.
+// ====================================================================
+if ($action === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['openai' => $openaiKey !== '', 'openrouter' => $orKey !== ''],
+        'models'     => array_keys($modelCatalog),
+    ]);
+    exit;
+}
+
+if ($action === 'models') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $modelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $ids = null;
+    $cached = is_file($modelsCache) ? json_decode((string)@file_get_contents($modelsCache), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = (array)$cached['ids'];
+    } else {
+        $modelsRes = make_request('https://api.openai.com/v1/models', 'GET', ['Authorization: Bearer ' . $openaiKey]);
+        $modelsCode = (int)($modelsRes['status'] ?? 0);
+        $modelsData = json_decode((string)($modelsRes['body'] ?? ''), true);
+        if ($modelsCode >= 400 || !is_array($modelsData)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $modelsCode . ').']]);
+            exit;
+        }
+        $ids = [];
+        foreach (($modelsData['data'] ?? []) as $modelsItem) {
+            $modelsId = (string)($modelsItem['id'] ?? '');
+            if ($modelsId !== '' && preg_match('/image/i', $modelsId) === 1) $ids[] = $modelsId;
+        }
+        sort($ids);
+        if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
+        @file_put_contents($modelsCache, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    echo json_encode(['success' => true, 'imageModels' => $ids]);
+    exit;
+}
+
+if (!$API_KEY || empty($API_KEY)) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
+    exit;
+}
 
 /**
  * Función auxiliar para hacer peticiones HTTP sin cURL

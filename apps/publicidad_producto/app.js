@@ -265,8 +265,9 @@ function generateVideoWithVeo(imageDataUrl, prompt, modelName, generateAudio, au
         });
 }
 
-// ===== Selector de modelo: lista blanca de 8 modelos (MEDIUM activo) =====
+// ===== Selector de modelo: lista blanca canónica (IMAGE 2 MEDIUM activo) =====
 const MODEL_LABELS = {
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO',
@@ -274,7 +275,9 @@ const MODEL_LABELS = {
     'openai-high': 'HIGH',
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
-    'openai-max-sunburst': 'MAX SUNBURST'
+    'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2': 'IMAGE 2 MEDIUM',
+    'openai-image-2-high': 'IMAGE 2 HIGH'
 };
 
 function App() {
@@ -289,7 +292,7 @@ function App() {
     const [currentStep, setCurrentStep] = useState('input'); // input | processing | results
     const [videoQualityModal, setVideoQualityModal] = useState(null); // { proposalIdx, assetIdx, currentAsset, prompt, audioPrompt, generateAudio }  
     const [regenerateModal, setRegenerateModal] = useState(null); // { proposalIdx, assetIdx, currentAsset, prompt }
-    const [selectedModel, setSelectedModel] = useState('openai-medium');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2');
 
     // Persistencia de historial con IndexedDB (sin límite de 5MB)
     const historyLoaded = useRef(false);
@@ -686,10 +689,11 @@ function App() {
                                             </div>
                                             <span className="model-quality-hint" style={{ display: 'block' }}>De Menor a Mayor Calidad</span>
                                             <div className="flex flex-wrap gap-1.5">
-                                                {['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst'].map((m) => (
+                                                {['openai-medium', 'openai-high', 'openai-max-flare', 'openai-xhigh', 'openai-max-sunburst'].map((m) => (
                                                     <button
                                                         key={m}
                                                         type="button"
+                                                        data-model={m}
                                                         onClick={() => setSelectedModel(m)}
                                                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
                                                             ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-300/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
@@ -704,10 +708,11 @@ function App() {
                                                 <span className="text-[10px] font-bold text-fuchsia-300/70 uppercase tracking-widest">GEMINI</span>
                                             </div>
                                             <div className="flex flex-wrap gap-1.5">
-                                                {['gemini-flash', 'gemini-pro'].map((m) => (
+                                                {['gemini-2', 'gemini-flash', 'gemini-pro'].map((m) => (
                                                     <button
                                                         key={m}
                                                         type="button"
+                                                        data-model={m}
                                                         onClick={() => setSelectedModel(m)}
                                                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
                                                             ? 'bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white border-fuchsia-300/60 shadow-[0_0_12px_rgba(217,70,239,0.4)]'
@@ -726,10 +731,29 @@ function App() {
                                                     <button
                                                         key={m}
                                                         type="button"
-                                                        data-model="qwen-pro"
+                                                        data-model={m}
                                                         onClick={() => setSelectedModel(m)}
                                                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
                                                             ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white border-emerald-300/60 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                                                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}
+                                                        aria-pressed={selectedModel === m}
+                                                        aria-describedby="model-tooltip"
+                                                        data-tooltip={window.MODEL_TOOLTIP_TEXTS[m] || ''}
+                                                    >{MODEL_LABELS[m]}</button>
+                                                ))}
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-cyan-300/70 uppercase tracking-widest">IMAGE 2</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['openai-image-2', 'openai-image-2-high'].map((m) => (
+                                                    <button
+                                                        key={m}
+                                                        type="button"
+                                                        data-model={m}
+                                                        onClick={() => setSelectedModel(m)}
+                                                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedModel === m
+                                                            ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-300/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
                                                             : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}
                                                         aria-pressed={selectedModel === m}
                                                         aria-describedby="model-tooltip"
@@ -1047,6 +1071,9 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2': 'OpenAI Image 2 (gpt-image-2), modelo base, calidad media',
+    'openai-image-2-high': 'OpenAI Image 2 (gpt-image-2), calidad alta',
+    'gemini-2': 'Gemini 2.5 Flash Image, Rápido y económico',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
