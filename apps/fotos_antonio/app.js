@@ -12,18 +12,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentConversationId = null;
 
-    // --- SELECTOR DE MODELO (8 botones, MEDIUM activo) ---
-    const DEFAULT_MODEL = 'openai-medium';
+    // --- SELECTOR DE MODELO (canónico: OPENAI 2.5 · GEMINI · QWEN · IMAGE 2) ---
+    const DEFAULT_MODEL = 'openai-image-2';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
-        'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
+        'openai-xhigh': 'XHIGH',
         'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-2': 'GEMINI 2',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
-        'qwen-pro': 'QWEN 3 PRO'
+        'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2': 'MEDIUM',
+        'openai-image-2-high': 'HIGH'
     };
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {

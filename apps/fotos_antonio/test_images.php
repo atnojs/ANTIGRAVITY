@@ -3,7 +3,7 @@
  * Test de manejo de imágenes
  */
 
-require_once 'config.php';
+// Claves SOLO del entorno (.htaccess raíz de Hostinger).
 require_once 'simple_db.php';
 
 echo "<h1>Test de Manejo de Imágenes</h1>";

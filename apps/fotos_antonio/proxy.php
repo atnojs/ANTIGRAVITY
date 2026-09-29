@@ -51,13 +51,8 @@ function getKey(string $name): string
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
@@ -189,13 +184,78 @@ if ($openaiKey === '') $openaiKey = getKey('O');
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'high'],
-    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2), por defecto.
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image-preview'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen',   'model' => 'qwen/qwen-image-3-pro'],
 ];
+
+// ===== Diagnóstico del proxy (no gasta API): claves configuradas y modelos
+// vigentes. Uso: POST {"action":"health"} / POST {"action":"models"}. Nunca
+// devuelve claves. La lista de modelos sale del catálogo REAL de esta app.
+$faAction = strtolower(trim((string)($req['action'] ?? '')));
+if ($faAction === 'health' || $faAction === 'models') {
+    $faConfigured = [
+        'openai'     => $openaiKey !== '',
+        'openrouter' => getKey('R') !== '',
+    ];
+    if ($faAction === 'health') {
+        http_response_code(200);
+        echo json_encode([
+            'success'    => true,
+            'configured' => $faConfigured,
+            'models'     => array_values(array_keys($modelCatalog)),
+            'actions'    => ['generate', 'health', 'models'],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    // action=models: consulta REAL a OpenAI, solo ids de imagen, caché 600 s.
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $faCacheDir = __DIR__ . '/qwen_cache';
+    $faCacheFile = $faCacheDir . '/openai_models.json';
+    $faCached = is_file($faCacheFile) ? json_decode((string)@file_get_contents($faCacheFile), true) : null;
+    if (is_array($faCached) && (time() - (int)($faCached['at'] ?? 0)) < 600 && !empty($faCached['ids'])) {
+        $faIds = array_values((array)$faCached['ids']);
+    } else {
+        $faCh = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($faCh, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $faRaw = curl_exec($faCh);
+        $faCode = (int)curl_getinfo($faCh, CURLINFO_HTTP_CODE);
+        curl_close($faCh);
+        $faData = json_decode((string)$faRaw, true);
+        if ($faCode >= 400 || !is_array($faData)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $faCode . ').']]);
+            exit;
+        }
+        $faIds = [];
+        foreach (($faData['data'] ?? []) as $faModel) {
+            $faId = (string)($faModel['id'] ?? '');
+            if ($faId !== '' && preg_match('/image/i', $faId) === 1) $faIds[] = $faId;
+        }
+        sort($faIds);
+        if (!is_dir($faCacheDir)) @mkdir($faCacheDir, 0755, true);
+        @file_put_contents($faCacheFile, json_encode(['at' => time(), 'ids' => $faIds], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $faIds], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 // ===== Entrada =====
 $requestBody = file_get_contents('php://input');
@@ -213,8 +273,9 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-medium')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
+if ($requested === 'gemini-2.5-flash-image' || $requested === 'gemini-2' || $requested === 'gemini-2.5-flash-image-preview') $requested = 'gemini-2';
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';
 // Modelo de TEXTO/VISIÓN (spec §6): modelo de texto: xiaomi/mimo-v2.6-pro vía OpenRouter.
@@ -449,13 +510,8 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
         echo json_encode(['error' => ['message' => 'Falta el prompt.']]);
         exit;
     }
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }

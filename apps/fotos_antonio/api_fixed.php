@@ -4,7 +4,7 @@
  * Versión que evita el error "Cannot read clipboard"
  */
 
-require_once 'config.php';
+// Claves SOLO del entorno (.htaccess raíz de Hostinger).
 require_once 'simple_db.php';
 
 header('Content-Type: application/json');

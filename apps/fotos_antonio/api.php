@@ -4,7 +4,7 @@
  * Versión que evita el error "Cannot read clipboard"
  */
 
-require_once 'config.php';
+// Claves SOLO del entorno (.htaccess raíz de Hostinger).
 require_once 'simple_db.php';
 
 header('Content-Type: application/json');
@@ -15,13 +15,8 @@ header('Content-Type: application/json');
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
