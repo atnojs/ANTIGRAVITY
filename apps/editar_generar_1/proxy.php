@@ -1,13 +1,16 @@
 <?php
 // ============================================================
-// PROXY UNIFICADO — OpenAI Image 2.5 (5 calidades) + Gemini
-// (Google directo, clave A por entorno).
+// PROXY UNIFICADO — OpenAI Image 2.5 (5 calidades) + OpenAI image 2
+// (openai-image-2 / openai-image-2-high) + Gemini + Qwen.
 // Selector: openai-medium / openai-high / openai-xhigh /
-// openai-max-flare / openai-max-sunburst / gemini-flash /
-// gemini-pro. Otros modelos rechazados (400 "Modelo no soportado").
+// openai-max-flare / openai-max-sunburst / openai-image-2 /
+// openai-image-2-high / gemini-2 / gemini-flash / gemini-pro /
+// qwen-pro. Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
 // tocar los frontends existentes.
-// Claves: SOLO entorno (getenv/REDIRECT_/$_SERVER/$_ENV).
+// Acciones de diagnostico: {"action":"health"} y {"action":"models"}.
+// Claves: SOLO entorno (getenv/REDIRECT_/$_SERVER/$_ENV). NUNCA
+// ficheros locales de configuracion.
 // ============================================================
 declare(strict_types=1);
 ini_set('display_errors', '0');
@@ -56,6 +59,9 @@ $modelCatalog = [
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'openrouter', 'model' => 'google/gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
@@ -76,8 +82,63 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     exit;
 }
 
+// ===== Acciones de diagnostico (no gastan cuota de generacion) =====
+// health: que claves ve el entorno y que modelos acepta el proxy. NUNCA devuelve claves.
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['openai' => $openaiKey !== '', 'openrouter' => getKey('R') !== ''],
+        'models'     => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// models: lista REAL de modelos de imagen de la API de OpenAI (nunca la clave).
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'models') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el entorno.']]);
+        exit;
+    }
+    $modelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $ids = null;
+    $cached = is_file($modelsCache) ? json_decode((string)@file_get_contents($modelsCache), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = (array)$cached['ids'];
+    } else {
+        $ch = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $modelsResp = curl_exec($ch);
+        $modelsCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $modelsData = json_decode((string)$modelsResp, true);
+        if ($modelsCode >= 400 || !is_array($modelsData)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $modelsCode . ').']]);
+            exit;
+        }
+        $ids = [];
+        foreach (($modelsData['data'] ?? []) as $modelsEntry) {
+            $modelsId = (string)($modelsEntry['id'] ?? '');
+            if ($modelsId !== '' && preg_match('/image/i', $modelsId) === 1) $ids[] = $modelsId;
+        }
+        sort($ids);
+        if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
+        @file_put_contents($modelsCache, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $ids], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-medium')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';
@@ -292,6 +353,82 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 }
 
 // ====================================================================
+// BACKEND: GEMINI 2 vía OpenRouter (clave R). Modelo base (image 2.5 flash).
+// Respuesta con la MISMA forma JSON que el resto de rutas (Gemini).
+// ====================================================================
+if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] === 'openrouter') {
+    $gemini2Key = getKey('R');
+    if ($gemini2Key === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']]);
+        exit;
+    }
+    if ($prompt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => ['message' => 'Falta el prompt.']]);
+        exit;
+    }
+    $gemini2Model = $modelCatalog[$requested]['model'];
+    $gemini2Aspect = (string)($req['generationConfig']['imageConfig']['aspectRatio'] ?? $req['aspectRatio'] ?? '1:1');
+
+    $gemini2Content = [['type' => 'text', 'text' => $prompt]];
+    foreach (array_slice($images, 0, 4) as $gemini2Img) {
+        $gemini2Raw = (string)$gemini2Img['data'];
+        $gemini2Mime = (string)($gemini2Img['mimeType'] ?? 'image/jpeg');
+        if (preg_match('#^data:(image/[a-z0-9.+-]+);base64,#i', $gemini2Raw, $gemini2Match) === 1) {
+            $gemini2Mime = strtolower($gemini2Match[1]);
+            $gemini2Raw = substr($gemini2Raw, strpos($gemini2Raw, ',') + 1);
+        }
+        $gemini2Content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $gemini2Mime . ';base64,' . $gemini2Raw]];
+    }
+
+    $gemini2Payload = [
+        'model'        => $gemini2Model,
+        'modalities'   => ['image', 'text'],
+        'messages'     => [['role' => 'user', 'content' => $gemini2Content]],
+        'max_tokens'   => 8000,
+        'image_config' => ['aspect_ratio' => $gemini2Aspect],
+    ];
+
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($gemini2Payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Authorization: Bearer ' . $gemini2Key],
+        CURLOPT_TIMEOUT        => 120,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $gemini2Resp = curl_exec($ch);
+    $gemini2Code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $gemini2Err  = curl_error($ch);
+    curl_close($ch);
+
+    if ($gemini2Err) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Error conexion OpenRouter: ' . $gemini2Err]]);
+        exit;
+    }
+    $gemini2Json = json_decode((string)$gemini2Resp, true);
+    if ($gemini2Code >= 400 || (is_array($gemini2Json) && isset($gemini2Json['error']))) {
+        $gemini2Msg = is_array($gemini2Json) ? ($gemini2Json['error']['message'] ?? ('HTTP ' . $gemini2Code)) : ('HTTP ' . $gemini2Code);
+        if (is_array($gemini2Msg)) $gemini2Msg = json_encode($gemini2Msg);
+        http_response_code($gemini2Code >= 400 ? $gemini2Code : 502);
+        echo json_encode(['error' => ['message' => 'OpenRouter: ' . $gemini2Msg]]);
+        exit;
+    }
+    $gemini2Url = (string)($gemini2Json['choices'][0]['message']['images'][0]['image_url']['url'] ?? '');
+    if ($gemini2Url === '' || strpos($gemini2Url, 'data:') !== 0) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'Gemini no devolvio imagen.']]);
+        exit;
+    }
+    $gemini2MimeOut = 'image/png';
+    if (preg_match('#^data:(image/[^;]+);#i', $gemini2Url, $gemini2M) === 1) $gemini2MimeOut = strtolower($gemini2M[1]);
+    sendGeminiStyleImage(base64_decode(substr($gemini2Url, strpos($gemini2Url, ',') + 1)), $gemini2MimeOut);
+}
+
+// ====================================================================
 // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API)
 // Qwen tarda ~100s/imagen y nginx corta a ~55s: worker con keepalive
 // (pings curl_multi + espacios + flush) y caché/lock en carpeta de la
@@ -460,14 +597,9 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
+    // ── Clave R (OpenRouter): SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV).
+    // No se leen ficheros locales de configuracion ni constantes de clave.
+    $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: '');
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
     if ($orKey === '') {

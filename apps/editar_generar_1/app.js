@@ -59,6 +59,9 @@ const MODEL_LABELS = {
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2': 'MEDIUM',
+    'openai-image-2-high': 'HIGH',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO'
@@ -71,12 +74,15 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2': 'OpenAI image 2, Calidad media, El más equilibrado (por defecto)',
+    'openai-image-2-high': 'OpenAI image 2, Calidad alta',
+    'gemini-2': 'Gemini 2 (2.5 Flash Image), Rápido y barato, Buen texto',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
-let currentModel = 'openai-medium';
+let currentModel = 'openai-image-2';
 
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
@@ -254,6 +260,74 @@ const clearHistoryFromDb = async () => {
     } catch (e) { console.warn('Error limpiando historial:', e); }
 };
 
+// --- HISTORIAL PERSISTENTE EN SERVIDOR (HistoryManager canónico: history.php) ---
+// El servidor (history_store/) es la fuente de verdad; IndexedDB se conserva
+// como caché local. Guardado en el servidor tras cada generación/edición
+// correcta; la carga mezcla ambos almacenes sin duplicar (dedupe por id y URL).
+const SERVER_HISTORY_APP = 'editar_generar_1';
+const SERVER_HISTORY_LIMIT = 60;
+
+let serverHistory = null;
+const getServerHistory = () => {
+    if (!serverHistory && typeof window !== 'undefined' && typeof window.HistoryManager !== 'undefined') {
+        serverHistory = new window.HistoryManager(SERVER_HISTORY_APP);
+    }
+    return serverHistory;
+};
+
+const toServerHistoryImage = (item) => {
+    const data = item.data || {};
+    return {
+        id: item.id,
+        url: item.imageUrl || (typeof item.url === 'string' ? item.url : ''),
+        prompt: data.prompt || 'Sin prompt',
+        style: data.style && typeof data.style === 'object' ? data.style : { id: '', name: 'Original', promptSuffix: '' },
+        aspectRatio: data.aspectRatio || '1:1',
+        size: data.size || '1K',
+        model: item.model || data.model || '',
+        serverId: item.id,
+        fromServer: true,
+        createdAt: item.createdAt ? new Date(item.createdAt).getTime() : Date.now()
+    };
+};
+
+// Entrada del historial de servidor -> item de la app (solo con imagen usable).
+const fromServerEntry = (entry) => {
+    const url = entry.imageUrl || (entry.data && entry.data.url) || '';
+    if (!url) return null;
+    const mapped = toServerHistoryImage(entry);
+    return Number.isFinite(mapped.createdAt) ? mapped : { ...mapped, createdAt: Date.now() };
+};
+
+// Guarda un item en el historial de servidor (nunca bloquea la UI si falla).
+const saveServerHistoryImage = async (item) => {
+    const history = getServerHistory();
+    if (!history || !item || !item.url) return;
+    try {
+        await history.save({
+            id: item.id,
+            type: 'image',
+            model: item.model || currentModel || 'openai-image-2',
+            data: {
+                prompt: item.prompt || '',
+                aspectRatio: item.aspectRatio || '1:1',
+                size: item.size || '1K',
+                model: item.model || currentModel || 'openai-image-2',
+                style: item.style || {}
+            },
+            imageData: typeof item.url === 'string' ? item.url : '',
+            createdAt: new Date(item.createdAt || Date.now()).toISOString()
+        });
+    } catch (e) { console.warn('No se pudo guardar en el historial de servidor:', e); }
+};
+
+const loadServerHistory = async () => {
+    const history = getServerHistory();
+    if (!history) return [];
+    const items = await history.load();
+    return (Array.isArray(items) ? items : []).map(fromServerEntry).filter(Boolean);
+};
+
 // --- SERVICES (ORIGINAL LOGIC) ---
 const PROXY_URL = './proxy.php';
 
@@ -355,7 +429,7 @@ const generateImage = async (params) => {
             }
         }
     };
-        const result = await callProxy(currentModel || 'openai-medium', contents, config);
+        const result = await callProxy(currentModel || 'openai-image-2', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -372,7 +446,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-        const result = await callProxy(currentModel || 'openai-medium', contents, config);
+        const result = await callProxy(currentModel || 'openai-image-2', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -575,20 +649,38 @@ const App = () => {
 
     const [progress, setProgress] = useState(0);
     const [progressStatus, setProgressStatus] = useState('');
-    const [selectedModel, setSelectedModel] = useState('openai-medium');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2');
 
     // Sincronizar modelo con variable de módulo (usada por los servicios)
     useEffect(() => { currentModel = selectedModel; }, [selectedModel]);
 
     const fileInputRef = useRef(null);
 
-    // Cargar historial al montar
+    // Cargar historial al montar: IndexedDB (caché local) + servidor (history_store/).
+    // Se mezclan sin duplicar (por id y por URL) y se conserva el orden por fecha.
     useEffect(() => {
         const loadHistory = async () => {
+            let localItems = [];
             try {
-                const items = await loadHistoryFromDb();
-                if (items.length > 0) setImages(items);
-            } catch (e) { console.warn('Error cargando historial:', e); }
+                localItems = await loadHistoryFromDb();
+            } catch (e) { console.warn('Error cargando historial local:', e); }
+
+            let serverItems = [];
+            try {
+                serverItems = await loadServerHistory();
+            } catch (e) { console.warn('Error cargando historial de servidor:', e); }
+
+            const knownIds = new Set(localItems.map(item => item.id));
+            const knownUrls = new Set(localItems.map(item => item.url));
+            const merged = [...localItems];
+            for (const item of serverItems.slice(0, SERVER_HISTORY_LIMIT)) {
+                if (knownIds.has(item.id) || (item.url && knownUrls.has(item.url))) continue;
+                knownIds.add(item.id);
+                if (item.url) knownUrls.add(item.url);
+                merged.push(item);
+            }
+            merged.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            if (merged.length > 0) setImages(merged);
         };
         loadHistory();
     }, []);
@@ -675,12 +767,15 @@ const App = () => {
                 style: selectedStyle,
                 aspectRatio: selectedAR,
                 size: '1K',
+                model: currentModel,
                 createdAt: Date.now()
             }));
 
-            // Guardar en IndexedDB
+            // Guardar en IndexedDB (caché local)
             for (const img of newHistoryImages) {
                 await saveHistoryItemToDb(img);
+                // ...y en el historial persistente de servidor (history_store/)
+                await saveServerHistoryImage(img);
             }
 
             setProgress(100);
@@ -697,11 +792,20 @@ const App = () => {
 
     const handleDelete = async (id) => {
         await deleteHistoryItemFromDb(id);
+        // Borrado también en el servidor (history_store/), sin bloquear la UI.
+        const history = getServerHistory();
+        if (history) {
+            try { await history.delete(id); } catch (e) { console.warn('No se pudo borrar del historial de servidor:', e); }
+        }
         setImages(images.filter(img => img.id !== id));
     };
     const handleClearHistory = async () => {
         if (!confirm('¿Estás seguro de que quieres eliminar todo el historial?')) return;
         await clearHistoryFromDb();
+        const history = getServerHistory();
+        if (history) {
+            try { await history.clear(); } catch (e) { console.warn('No se pudo limpiar el historial de servidor:', e); }
+        }
         setImages([]);
     };
     const handleRegenerate = (img) => {
@@ -725,8 +829,9 @@ const App = () => {
                 instruction: editInstruction,
                 aspectRatio: editImage.aspectRatio
             });
-            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, createdAt: Date.now() };
+            const updatedImage = { ...editImage, id: Math.random().toString(36).substring(7), url: updatedUrl, model: currentModel, createdAt: Date.now(), fromServer: false, serverId: undefined };
             await saveHistoryItemToDb(updatedImage);
+            await saveServerHistoryImage(updatedImage);
             setImages([updatedImage, ...images]);
             setEditImage(null);
         } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
@@ -841,98 +946,32 @@ const App = () => {
                                 </div>
                             </div>
 
-                            {/* ── Selector de Modelo IA (canónico 7 botones) ── */}
+                            {/* ── Selector de Modelo IA (canónico 11 botones) ── */}
                             <div className="space-y-4">
                                 <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Modelo IA</label>
                                 <div className="grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
                                     {[
-                                      { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
-                                      { provider: 'GEMINI', models: [{ id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
-                                      { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] }
+                                      { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
+                                      { provider: 'GEMINI', models: [{ id: 'gemini-2', name: 'GEMINI 2' }, { id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
+                                      { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] },
+                                      { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
                                     ].map(group => (
                                       <div key={group.provider}>
                                         <span className="model-provider-title block text-center mb-1">{group.provider}</span>
-                                        {group.provider === 'OPENAI 2.5' ? (
-                                            <span className="model-quality-hint block text-center">De Menor a Mayor Calidad</span>
-                                        ) : (
-                                            <span className="model-quality-hint block text-center" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
-                                        )}
+                                        <span className="model-quality-hint block text-center" aria-hidden="true" style={{ visibility: group.provider === 'OPENAI 2.5' ? 'visible' : 'hidden' }}>De Menor a Mayor Calidad</span>
                                         <div className="grid grid-cols-2 gap-1">
-                                          {group.provider === 'OPENAI 2.5' ? (
-                                            <Fragment>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('openai-medium')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-medium' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'openai-medium'}
-                                                aria-describedby="model-tooltip"
-                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-medium'] || ''}
-                                              >MEDIUM</button>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('openai-high')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-high' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'openai-high'}
-                                                aria-describedby="model-tooltip"
-                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-high'] || ''}
-                                              >HIGH</button>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('openai-xhigh')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-xhigh' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'openai-xhigh'}
-                                                aria-describedby="model-tooltip"
-                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
-                                              >XHIGH</button>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('openai-max-flare')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-max-flare' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'openai-max-flare'}
-                                                aria-describedby="model-tooltip"
-                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-flare'] || ''}
-                                              >MAX FLARE</button>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('openai-max-sunburst')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'openai-max-sunburst' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'openai-max-sunburst'}
-                                                aria-describedby="model-tooltip"
-                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-sunburst'] || ''}
-                                              >MAX SUNBURST</button>
-                                            </Fragment>
-                                          ) : group.provider === 'GEMINI' ? (
-                                            <Fragment>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('gemini-flash')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'gemini-flash' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'gemini-flash'}
-                                                aria-describedby="model-tooltip"
-                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-flash'] || ''}
-                                              >3.1 FLASH</button>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('gemini-pro')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'gemini-pro' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'gemini-pro'}
-                                                aria-describedby="model-tooltip"
-                                                data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-pro'] || ''}
-                                              >3 PRO</button>
-                                            </Fragment>
-                                          ) : (
-                                            <Fragment>
-                                              <button
-                                                type="button"
-                                                onClick={() => setSelectedModel('qwen-pro')}
-                                                className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === 'qwen-pro' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
-                                                aria-pressed={selectedModel === 'qwen-pro'}
-                                                aria-describedby="model-tooltip"
-                                                data-model="qwen-pro"
-                                                data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible"
-                                              >QWEN 3 PRO</button>
-                                            </Fragment>
-                                          )}
+                                          {group.models.map(m => (
+                                            <button
+                                              key={m.id}
+                                              type="button"
+                                              onClick={() => setSelectedModel(m.id)}
+                                              className={`model-toggle px-2 py-2 rounded-xl border text-[10px] font-bold tracking-tighter transition-all ${selectedModel === m.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' : 'border-white/5 bg-white/5 text-gray-600 hover:border-white/10'}`}
+                                              aria-pressed={selectedModel === m.id}
+                                              aria-describedby="model-tooltip"
+                                              data-model={m.id}
+                                              data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                            >{m.name}</button>
+                                          ))}
                                         </div>
                                       </div>
                                     ))}
