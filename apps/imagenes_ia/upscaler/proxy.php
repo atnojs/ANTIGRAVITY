@@ -2,10 +2,10 @@
 /**
  * PROXY UNIFICADO — Upscaler Pro (OpenAI GPT Image 2.5 + Gemini)
  * Delega en canonical-image-model.php (ag_image_response) cuando llega 'model':
- *   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
- *   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
- *   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
- * (lista cerrada) (400 "Modelo no soportado").
+ * el catálogo vigente (lista cerrada) lo aporta ag_image_catalog(): OpenAI 2.5
+ * (medium/high/xhigh/max-flare/max-sunburst), OpenAI image 2 (medium/high),
+ * Gemini 2 / 3.1 Flash / 3 Pro y Qwen 3 Pro. Cualquier otro id responde 400
+ * "Modelo no soportado".
  * El código de imágenes antiguo de más abajo se conserva muerto (no alcanzable).
  * Contrato: recibe {imageData, mimeType, prompt, model?, task?}
  *           responde  {success:true, imageUrl, model}  o  {image, mimeType}
@@ -17,20 +17,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../../dibujo_lineas_copia/canonical-image-model.php';
 
 // ===== Diagnóstico: health / models (nunca devuelven claves) =====
-// Catálogo informativo, espejo de ag_image_catalog().
-$agModels = [
-    'openai-image-2'      => 'gpt-image-2 (medium)',
-    'openai-image-2-high' => 'gpt-image-2 (high)',
-    'openai-medium'       => 'gpt-image-2.5-flare (medium)',
-    'openai-high'         => 'gpt-image-2.5-flare (high)',
-    'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
-    'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
-    'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
-    'gemini-2'            => 'google/gemini-2.5-flash-image',
-    'gemini-flash'        => 'google/gemini-3.1-flash-image',
-    'gemini-pro'          => 'google/gemini-3-pro-image',
-    'qwen-pro'            => 'qwen/qwen-image-3-pro',
-];
+// El catálogo vigente lo aporta canonical-image-model.php (una sola fuente).
 $agConfigured = [
     'openai'     => ag_image_key(__DIR__, 'OPENAI_API_KEY', 'O') !== '',
     'openrouter' => ag_image_key(__DIR__, 'R') !== '',
@@ -46,7 +33,7 @@ if ($agMethod === 'GET') {
         'service'    => 'antigravity-ai-proxy',
         'configured' => $agConfigured,
         'actions'    => ['generate', 'models', 'health'],
-        'models'     => $agModels,
+        'models'     => array_keys(ag_image_catalog()),
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
@@ -54,11 +41,56 @@ if ($agMethod === 'GET') {
 $agBody = json_decode(file_get_contents('php://input') ?: '', true);
 $agAction = is_array($agBody) ? strtolower((string)($agBody['action'] ?? '')) : '';
 if ($agAction === 'health') {
-    echo json_encode(['success' => true, 'configured' => $agConfigured, 'models' => $agModels], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    echo json_encode(['success' => true, 'configured' => $agConfigured, 'models' => array_keys(ag_image_catalog())], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 if ($agAction === 'models') {
-    echo json_encode(['success' => true, 'models' => $agModels], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    // Consulta REAL a OpenAI (evita adivinar identificadores): filtra los ids de
+    // imagen y cachea el resultado 10 min en la carpeta de la app. Nunca
+    // devuelve la clave.
+    $agOpenaiKey = ag_image_key(__DIR__, 'OPENAI_API_KEY', 'O');
+    if ($agOpenaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    if (!function_exists('curl_init')) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => ['message' => 'cURL no habilitado en el servidor.']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    $agModelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $agIds = null;
+    $agCached = is_file($agModelsCache) ? json_decode((string)@file_get_contents($agModelsCache), true) : null;
+    if (is_array($agCached) && (time() - (int)($agCached['at'] ?? 0)) < 600 && !empty($agCached['ids'])) {
+        $agIds = (array)$agCached['ids'];
+    } else {
+        $agCh = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($agCh, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $agOpenaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $agRaw = curl_exec($agCh);
+        $agCode = (int)curl_getinfo($agCh, CURLINFO_HTTP_CODE);
+        curl_close($agCh);
+        $agData = json_decode((string)$agRaw, true);
+        if ($agCode >= 400 || !is_array($agData)) {
+            http_response_code(502);
+            echo json_encode(['success' => false, 'error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $agCode . ').']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+        $agIds = [];
+        foreach (($agData['data'] ?? []) as $agModel) {
+            $agId = (string)($agModel['id'] ?? '');
+            if ($agId !== '' && preg_match('/image/i', $agId) === 1) $agIds[] = $agId;
+        }
+        sort($agIds);
+        if (!is_dir(dirname($agModelsCache))) @mkdir(dirname($agModelsCache), 0755, true);
+        @file_put_contents($agModelsCache, json_encode(['at' => time(), 'ids' => $agIds], JSON_UNESCAPED_SLASHES));
+    }
+    echo json_encode(['success' => true, 'imageModels' => $agIds], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 

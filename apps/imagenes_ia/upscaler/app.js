@@ -311,11 +311,39 @@ const App = () => {
     const [modelsReady, setModelsReady] = useState(false);
     const fileInputRef = useRef(null);
 
-    // Inicializar DB e historial (filtrar entradas corruptas sin imagen vÃ¡lida)
+    // Inicializar DB e historial (filtrar entradas corruptas sin imagen vÃ¡lida).
+    // El SERVIDOR es la fuente de verdad (history.php canónico → history_store/,
+    // no versionado); IndexedDB se conserva como caché local.
     useEffect(() => {
-        openDb().then(() => getAllFromDb().then(items => {
+        openDb().then(() => getAllFromDb().then(async items => {
             const valid = items.filter(item => item.dataUrl && item.dataUrl.startsWith('data:'));
-            setHistory(valid);
+            let merged = valid;
+            try {
+                if (typeof HistoryManager === 'function') {
+                    window.historyManager = new HistoryManager('upscaler');
+                    const serverItems = await window.historyManager.load();
+                    const localById = new Map(valid.map(item => [item.id, item]));
+                    const vistos = new Set();
+                    const mezcla = [];
+                    for (const entrada of (serverItems || [])) {
+                        const local = localById.get(entrada.id);
+                        const url = entrada.imageUrl || (entrada.data && entrada.data.dataUrl) || '';
+                        if (!url && !local) continue;
+                        vistos.add(entrada.id);
+                        mezcla.push({
+                            id: entrada.id,
+                            dataUrl: (local && local.dataUrl) || url,
+                            name: (entrada.data && entrada.data.name) || (local && local.name) || 'Upscale',
+                            size: (entrada.data && entrada.data.size) || (local && local.size) || '',
+                            createdAt: Date.parse(entrada.createdAt) || (local && local.createdAt) || Date.now()
+                        });
+                    }
+                    for (const item of valid) if (!vistos.has(item.id)) mezcla.push(item);
+                    mezcla.sort((a, b) => b.createdAt - a.createdAt);
+                    merged = mezcla;
+                }
+            } catch (e) { console.warn('Historial del servidor:', e); }
+            setHistory(merged);
         })).catch(console.warn);
     }, []);
 
@@ -422,6 +450,23 @@ const App = () => {
 
             await saveToDb(newItem);
             setHistory(prev => [newItem, ...prev]);
+            // Fuente de verdad: el servidor (history.php canónico → history_store/).
+            // Sin esto el historial se perdía al recargar desde otro navegador o tras un deploy.
+            if (window.historyManager) {
+                window.historyManager.save({
+                    id: newItem.id,
+                    type: 'image',
+                    model: window.selectedModel || selectedModel || '',
+                    data: {
+                        name: newItem.name,
+                        size: newItem.size,
+                        model: window.selectedModel || selectedModel || '',
+                        mimeType: 'image/jpeg'
+                    },
+                    imageData: newItem.dataUrl,
+                    createdAt: new Date(newItem.createdAt).toISOString()
+                }).catch(err => console.warn('Error guardando el historial en el servidor:', err));
+            }
             setSource(null);
             setSourceInfo(null);
 
@@ -439,6 +484,10 @@ const App = () => {
         if (!confirm('Borrar esta imagen del historial?')) return;
         await deleteFromDb(id);
         setHistory(prev => prev.filter(h => h.id !== id));
+        // El servidor es la fuente de verdad: borrar también allí.
+        if (window.historyManager) {
+            window.historyManager.delete(id).catch(err => console.warn('Error eliminando del historial del servidor:', err));
+        }
     };
 
     const getTargetDimensions = () => {
