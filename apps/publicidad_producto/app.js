@@ -119,6 +119,193 @@ function saveHistoryToDB(historyArray) {
     });
 }
 
+// ─── Historial de servidor (history.php + history_store/): fuente de verdad ───
+// IndexedDB sigue siendo la caché local que usa la UI.
+const SERVER_HISTORY_APP = 'publicidad_producto';
+let serverHistory = null;
+
+function getServerHistory() {
+    if (!serverHistory && typeof window !== 'undefined' && typeof window.HistoryManager !== 'undefined') {
+        serverHistory = new window.HistoryManager(SERVER_HISTORY_APP);
+    }
+    return serverHistory;
+}
+
+// Los id de esta app son milisegundos (Date.now()); el servidor los usa como
+// cadena. Se leen siempre como número para que el borrado y la fusión cuadren.
+function batchIdToNumber(id) {
+    var asNumber = Number(id);
+    return Number.isFinite(asNumber) ? asNumber : id;
+}
+
+// Copia reducida del lote: misma estructura y mismos metadatos, sin los data URL
+// de las imágenes (esos viajan en imageData/imageUrl y no deben duplicarse).
+function shrinkBatchForServer(item) {
+    return {
+        id: batchIdToNumber(item.id),
+        timestamp: item.timestamp || '',
+        baseImage: item.baseImage || '',
+        proposals: (item.proposals || []).map(function (proposal) {
+            return {
+                label: proposal.label,
+                assets: (proposal.assets || []).map(function (asset) {
+                    return {
+                        id: asset.id,
+                        styleId: asset.styleId,
+                        label: asset.label,
+                        prompt: asset.prompt || '',
+                        videoUrl: asset.videoUrl || null,
+                        mediaType: asset.mediaType || 'image',
+                        loading: false
+                    };
+                })
+            };
+        })
+    };
+}
+
+// Reconstruye el lote local a partir de una entrada del servidor.
+function batchFromServerItem(entry) {
+    var data = entry.data || {};
+    var proposals = Array.isArray(data.proposals) ? data.proposals : [];
+    var serverUrls = {
+        baseImage: entry.imageUrl || data.baseImage || '',
+        poster: (entry.images && entry.images.poster) || entry.dataUrl || '',
+        video: (entry.images && entry.images.video) || ''
+    };
+    var downloaded = false;
+
+    var restoredProposals = proposals.map(function (proposal) {
+        return {
+            label: proposal.label,
+            assets: (proposal.assets || []).map(function (asset) {
+                var restored = Object.assign({}, asset);
+                var isVideo = (asset.mediaType === 'video') || !!asset.videoUrl;
+                if (isVideo) {
+                    restored.videoUrl = asset.videoUrl || (serverUrls.video && !downloaded ? (downloaded = true, serverUrls.video) : null);
+                    restored.url = null;
+                } else if (serverUrls.poster && !downloaded) {
+                    downloaded = true;
+                    restored.url = serverUrls.poster;
+                } else {
+                    restored.url = null;
+                }
+                restored.loading = false;
+                return normalizeAsset(restored);
+            })
+        };
+    });
+
+    return {
+        id: batchIdToNumber(entry.id),
+        baseImage: serverUrls.baseImage || '',
+        timestamp: data.timestamp || '',
+        proposals: restoredProposals,
+        fromServer: true
+    };
+}
+
+// Fusión por id: el servidor manda; lo local que no esté en el servidor se conserva.
+function mergeHistoryBatches(localItems, serverItems) {
+    var byId = new Map((localItems || []).map(function (item) { return [batchIdToNumber(item.id), item]; }));
+    (serverItems || []).forEach(function (serverItem) {
+        var item = batchFromServerItem(serverItem);
+        var previous = byId.get(item.id) || {};
+        byId.set(item.id, Object.assign({}, previous, item, { proposals: item.proposals.length ? item.proposals : previous.proposals }));
+    });
+    return Array.from(byId.values()).sort(function (a, b) { return batchIdToNumber(b.id) - batchIdToNumber(a.id); });
+}
+
+async function loadHistoryFromServer() {
+    var hm = getServerHistory();
+    if (!hm) return [];
+    try {
+        return await hm.load();
+    } catch (error) {
+        console.warn('[Servidor] No se pudo cargar el historial; se usa solo la caché local:', error);
+        return [];
+    }
+}
+
+function findBatchImageData(batch) {
+    if (batch && typeof batch.baseImage === 'string' && batch.baseImage.indexOf('data:image/') === 0) {
+        return batch.baseImage;
+    }
+    var proposals = (batch && batch.proposals) || [];
+    for (var p = 0; p < proposals.length; p++) {
+        var assets = proposals[p].assets || [];
+        for (var a = 0; a < assets.length; a++) {
+            if (typeof assets[a].url === 'string' && assets[a].url.indexOf('data:image/') === 0) {
+                return assets[a].url;
+            }
+        }
+    }
+    return '';
+}
+
+function findBatchVideoUrl(batch) {
+    var proposals = (batch && batch.proposals) || [];
+    for (var p = 0; p < proposals.length; p++) {
+        var assets = proposals[p].assets || [];
+        for (var a = 0; a < assets.length; a++) {
+            if (typeof assets[a].videoUrl === 'string' && assets[a].videoUrl.indexOf('data:video/') === 0) {
+                return assets[a].videoUrl;
+            }
+        }
+    }
+    return '';
+}
+
+// Guarda el lote en el servidor. El JSON va siempre (aunque haya vídeo de por
+// medio); la imagen solo se sube si es un data URL, que es lo que acepta
+// history.php. Un fallo aquí nunca rompe la UI: queda la caché local.
+async function saveBatchToServer(batch, model) {
+    var hm = getServerHistory();
+    if (!hm || !batch) return;
+    try {
+        var imageData = findBatchImageData(batch);
+        var videoUrl = findBatchVideoUrl(batch);
+        var entry = {
+            id: String(batch.id),
+            type: 'image',
+            model: model || 'openai-image-2',
+            data: shrinkBatchForServer(batch),
+            imageData: imageData,
+            createdAt: new Date(batchIdToNumber(batch.id)).toISOString()
+        };
+        if (videoUrl) {
+            entry.videoData = videoUrl;
+            // history.php rechaza imageData que no sea data URL de imagen: se omite
+            // y la entrada se guarda con el vídeo anexado en data.
+            entry.data.videoUrl = videoUrl;
+            entry.imageData = '';
+        }
+        await hm.save(entry);
+    } catch (error) {
+        console.warn('[Servidor] No se pudo guardar el lote en el historial del servidor; queda en la caché local:', error);
+    }
+}
+
+async function deleteBatchFromServer(id) {
+    var hm = getServerHistory();
+    if (!hm) return;
+    try {
+        await hm.delete(String(id));
+    } catch (error) {
+        console.warn('[Servidor] No se pudo borrar el lote del historial del servidor:', error);
+    }
+}
+
+async function clearServerHistory() {
+    var hm = getServerHistory();
+    if (!hm) return;
+    try {
+        await hm.clear();
+    } catch (error) {
+        console.warn('[Servidor] No se pudo vaciar el historial del servidor:', error);
+    }
+}
+
 // ─── Download Helper (blob pattern, funciona en todos los navegadores) ───
 function downloadAsset(asset) {
     var fileName = 'creative_engine_' + asset.label.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now();
@@ -294,15 +481,33 @@ function App() {
     const [regenerateModal, setRegenerateModal] = useState(null); // { proposalIdx, assetIdx, currentAsset, prompt }
     const [selectedModel, setSelectedModel] = useState('openai-image-2');
 
-    // Persistencia de historial con IndexedDB (sin límite de 5MB)
+    // Persistencia del historial: IndexedDB (caché local, sin límite de 5MB) +
+    // servidor (history.php, fuente de verdad).
     const historyLoaded = useRef(false);
     const saveTimerRef = useRef(null);
+    const serverUploadDoneRef = useRef(false);
 
     useEffect(() => {
-        loadHistoryFromDB().then(function (saved) {
-            if (saved && saved.length > 0) setHistory(saved);
+        (async function () {
+            var saved = await loadHistoryFromDB();
+            var serverItems = await loadHistoryFromServer();
+            var merged = mergeHistoryBatches(saved || [], serverItems);
+            setHistory(merged);
             historyLoaded.current = true;
-        });
+
+            // Subida única de los lotes que solo existen en la caché local.
+            if (!serverUploadDoneRef.current) {
+                serverUploadDoneRef.current = true;
+                var serverIds = new Set((serverItems || []).map(function (item) { return String(item.id); }));
+                var pending = (saved || []).filter(function (item) { return !serverIds.has(String(item.id)); });
+                if (pending.length > 0) {
+                    console.log('[Servidor] Subiendo lotes locales que faltaban:', pending.length);
+                }
+                for (var i = 0; i < pending.length; i++) {
+                    await saveBatchToServer(pending[i], selectedModel);
+                }
+            }
+        })();
     }, []);
 
     useEffect(() => {
@@ -430,8 +635,10 @@ function App() {
             }
 
             // Actualizar historial al finalizar todo usando el objeto FINAL
-            setResults(finalBatch => {
-                setHistory(prev => [finalBatch, ...prev]);
+            setResults(function (finalBatch) {
+                setHistory(function (prev) { return [finalBatch].concat(prev); });
+                // Historial persistente en el servidor (no rompe la UI si falla).
+                saveBatchToServer(finalBatch, selectedModel);
                 return finalBatch;
             });
 
@@ -489,6 +696,8 @@ function App() {
 
         setResults(newResults);
         setHistory(prev => prev.map(item => item.id === results.id ? newResults : item));
+        // La variante regenerada también se persiste en el servidor.
+        saveBatchToServer(newResults, selectedModel);
     };
 
     const [videoStatus, setVideoStatus] = useState('');
@@ -553,6 +762,8 @@ function App() {
                     updated.proposals[proposalIdx].assets[vIdx].loading = false;
                 }
                 setHistory(prevHist => prevHist.map(item => item.id === updated.id ? updated : item));
+                // El vídeo generado se refleja también en el servidor.
+                saveBatchToServer(updated, selectedModel);
                 return updated;
             });
             setVideoStatus('');
@@ -570,7 +781,14 @@ function App() {
 
     const deleteHistoryItem = (id) => {
         if (confirm("¿Eliminar este lote de anuncios?")) {
-            setHistory(prev => prev.filter(item => item.id !== id));
+            const updatedHistory = history.filter(item => item.id !== id);
+            setHistory(updatedHistory);
+            // El borrado se refleja en el servidor (fuente de verdad); si se
+            // vacía la lista, se limpia también el historial del servidor.
+            deleteBatchFromServer(id);
+            if (updatedHistory.length === 0) {
+                clearServerHistory();
+            }
             if (results && results.id === id) {
                 setResults(null);
                 setCurrentStep('input');
