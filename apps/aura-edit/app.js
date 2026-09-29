@@ -16,7 +16,7 @@ const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO',
-    'openai-image-2': 'IMAGE 2',
+    'openai-image-2': 'IMAGE 2 MEDIUM',
     'openai-image-2-high': 'IMAGE 2 HIGH'
 };
 
@@ -703,15 +703,6 @@ function App() {
                       >HIGH</button>
                       <button
                         type="button"
-                        data-model="openai-xhigh"
-                        onClick={() => setSelectedModel('openai-xhigh')}
-                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-xhigh' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
-                        aria-pressed={selectedModel === 'openai-xhigh'}
-                        aria-describedby="model-tooltip"
-                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
-                      >XHIGH</button>
-                      <button
-                        type="button"
                         data-model="openai-max-flare"
                         onClick={() => setSelectedModel('openai-max-flare')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-max-flare' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
@@ -719,6 +710,15 @@ function App() {
                         aria-describedby="model-tooltip"
                         data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-flare'] || ''}
                       >MAX FLARE</button>
+                      <button
+                        type="button"
+                        data-model="openai-xhigh"
+                        onClick={() => setSelectedModel('openai-xhigh')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-xhigh' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-xhigh'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
+                      >XHIGH</button>
                       <button
                         type="button"
                         data-model="openai-max-sunburst"
