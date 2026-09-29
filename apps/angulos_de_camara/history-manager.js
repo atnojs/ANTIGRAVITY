@@ -185,6 +185,20 @@ if (typeof module !== 'undefined' && module.exports) {
         return legacyInstance;
     }
 
+    // init() -> load()
+    HM.init = function () {
+        return getLegacy().load().then(function (items) {
+            return items.map(mapLegacyItem);
+        });
+    };
+
+    // loadAll() -> load() con mapeo al formato antiguo (item.url plano)
+    HM.loadAll = function () {
+        return getLegacy().load().then(function (items) {
+            return items.map(mapLegacyItem);
+        });
+    };
+
     function mapLegacyItem(item) {
         const data = item.data || {};
         return {
@@ -200,20 +214,6 @@ if (typeof module !== 'undefined' && module.exports) {
             createdAt: item.createdAt || data.createdAt || Date.now()
         };
     }
-
-    // init() -> load()
-    HM.init = function () {
-        return getLegacy().load().then(function (items) {
-            return items.map(mapLegacyItem);
-        });
-    };
-
-    // loadAll() -> load() con mapeo al formato antiguo (item.url plano)
-    HM.loadAll = function () {
-        return getLegacy().load().then(function (items) {
-            return items.map(mapLegacyItem);
-        });
-    };
 
     // saveItem({ id, url, prompt, model, ... }) -> save() canonico
     HM.saveItem = function (item) {

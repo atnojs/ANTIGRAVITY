@@ -217,8 +217,8 @@ if (typeof module !== 'undefined' && module.exports) {
 
     // saveItem({ id, url, prompt, model, ... }) -> save() canonico
     HM.saveItem = function (item) {
-        const history = getLegacy();
-        return history.save({
+        const hm = getLegacy();
+        return hm.save({
             id: item.id,
             type: item.type || 'image',
             model: item.model || 'desconocido',
