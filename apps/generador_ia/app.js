@@ -23,7 +23,7 @@
 
   var state = {
     mode: "crear",      // "crear" | "editar"
-    selectedModel: "openai-medium",
+    selectedModel: "openai-image-2",
     imagenBase64: "",   // data URL de la imagen a editar
     ultimaImagen: ""    // última imagen generada (para "editar esta")
   };
@@ -32,12 +32,15 @@
   var MODEL_LABELS = {
     "openai-medium": "MEDIUM",
     "openai-high": "HIGH",
-    "openai-xhigh": "XHIGH",
     "openai-max-flare": "MAX FLARE",
+    "openai-xhigh": "XHIGH",
     "openai-max-sunburst": "MAX SUNBURST",
+    "gemini-2": "GEMINI 2",
     "gemini-flash": "3.1 FLASH",
     "gemini-pro": "3 PRO",
-    "qwen-pro": "QWEN 3 PRO"
+    "qwen-pro": "QWEN 3 PRO",
+    "openai-image-2": "IMAGE 2 MEDIUM",
+    "openai-image-2-high": "IMAGE 2 HIGH"
   };
 
   // Llamada al proxy. Para qwen-pro (más lento que el timeout de nginx,
@@ -110,8 +113,8 @@
         buttons.forEach(function (other) { other.classList.remove("active"); other.setAttribute("aria-pressed", "false"); });
         button.classList.add("active");
         button.setAttribute("aria-pressed", "true");
-        var next = button.getAttribute("data-model") || "openai-medium";
-        state.selectedModel = MODEL_LABELS[next] ? next : "openai-medium";
+        var next = button.getAttribute("data-model") || "openai-image-2";
+        state.selectedModel = MODEL_LABELS[next] ? next : "openai-image-2";
       });
     });
   }
@@ -203,27 +206,22 @@
   }
 
   function mostrarResultado(data, prompt) {
-    var img = data.imageUrl;
+    var img = data.imageUrl || data.dataUrl || "";
     state.ultimaImagen = img;
     $("resultImg").src = img;
     $("btnDownload").href = img;
     $("resultMeta").innerHTML = "Modelo: <b>" + (data.model || data.modelo || state.selectedModel) + "</b> · Proveedor: <b>" + (data.provider || "IA") + "</b>";
     $("resultShow").classList.remove("is-hidden");
 
-    // Guardar en historial persistente
-    var id = "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-    fetch("history.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: id,
-        imageData: img,
-        prompt: prompt,
-        modelo: data.model || data.modelo || state.selectedModel,
-        editada: state.mode === "editar",
-        createdAt: Date.now()
-      })
-    }).then(function () { cargarHistorial(); }).catch(function () {});
+    // Guardar en el historial persistente (HistoryManager canónico).
+    guardarEnHistorial({
+      id: "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+      type: "image",
+      model: data.model || data.modelo || state.selectedModel,
+      data: { prompt: prompt, editada: state.mode === "editar" },
+      imageData: (typeof img === "string" && img.indexOf("data:image/") === 0) ? img : "",
+      createdAt: new Date().toISOString()
+    });
   }
 
   // ---------- "Editar esta" ----------
@@ -237,18 +235,82 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  // ---------- Historial ----------
-  function cargarHistorial() {
-    fetch("history.php")
+  // ---------- Historial (servidor como fuente de verdad) ----------
+  var history = null;
+  try {
+    if (typeof HistoryManager === "function") {
+      history = new HistoryManager("generador_ia");
+    }
+  } catch (err) {
+    history = null;
+  }
+
+  function guardarEnHistorial(entry) {
+    if (!history) return Promise.resolve(null);
+    return history.save(entry)
+      .then(function (saved) { cargarHistorial(); return saved; })
+      .catch(function () { return null; }); // el historial nunca rompe la generación
+  }
+
+  // Fusión del historial anterior (formato legacy, sin `app` y con el prompt y la
+  // imagen en la raíz): se vuelve a guardar bajo la app canónica sin duplicar por
+  // id y sin borrar nada. Acotado por carga y recordado en localStorage para no
+  // descargar el almacén completo en cada visita.
+  var LEGACY_MERGE_KEY = "gen_hist_legacy_merge";
+
+  function fusionarHistorialLegacy(items) {
+    if (!history) return Promise.resolve(false);
+    try {
+      if (localStorage.getItem(LEGACY_MERGE_KEY) === "1") return Promise.resolve(false);
+    } catch (err) { /* sin localStorage se intenta igualmente */ }
+    var vistos = {};
+    items.forEach(function (it) { if (it && it.id) vistos[it.id] = true; });
+    return fetch("history.php?action=list&_=" + Date.now(), { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        if (!data || !data.success) return;
-        var items = data.items || [];
+        var todos = (data && data.history) || [];
+        var pendientes = todos.filter(function (it) {
+          return it && it.id && !vistos[it.id] && (it.app || "") !== "generador_ia" &&
+            typeof it.imageData === "string" && it.imageData.indexOf("data:image/") === 0;
+        }).slice(0, 20);
+        return pendientes.reduce(function (chain, it) {
+          return chain.then(function () {
+            return history.save({
+              id: it.id,
+              type: "image",
+              model: it.modelo || it.model || "openai-image-2",
+              data: { prompt: it.prompt || (it.data && it.data.prompt) || "", editada: !!it.editada },
+              imageData: it.imageData,
+              createdAt: it.createdAt
+            });
+          });
+        }, Promise.resolve()).then(function () {
+          if (pendientes.length === 0) {
+            try { localStorage.setItem(LEGACY_MERGE_KEY, "1"); } catch (err) { /* opcional */ }
+          }
+          return pendientes.length > 0;
+        });
+      })
+      .catch(function () { return false; });
+  }
+
+  function cargarHistorial() {
+    if (!history) return Promise.resolve();
+    return history.load()
+      .then(function (items) {
+        return fusionarHistorialLegacy(items).then(function (fusionado) {
+          return fusionado ? history.load() : items;
+        });
+      })
+      .then(function (items) {
         renderGallery(items);
         $("stat-total").textContent = items.length;
         $("histCount").textContent = items.length;
-        var total = data.costeTotal || 0;
-        $("stat-gasto").textContent = "$" + Number(total).toFixed(2);
+        var total = items.reduce(function (acc, it) {
+          var coste = Number(it && it.data && it.data.coste);
+          return acc + (isFinite(coste) ? coste : 0);
+        }, 0);
+        $("stat-gasto").textContent = "$" + total.toFixed(2);
       })
       .catch(function () {});
   }
@@ -261,23 +323,28 @@
     empty.classList.add("is-hidden");
 
     items.forEach(function (it) {
+      var datos = it.data || {};
+      var url = it.imageUrl || datos.dataUrl || datos.url || "";
+      if (!url) return;
+      var prompt = datos.prompt || it.prompt || "";
+
       var card = document.createElement("div");
       card.className = "gallery-item";
 
       var img = document.createElement("img");
-      img.src = it.imageUrl;
-      img.alt = it.prompt || "imagen";
+      img.src = url;
+      img.alt = prompt || "imagen";
       img.loading = "lazy";
-      img.addEventListener("click", function () { openLightbox(it.imageUrl); });
+      img.addEventListener("click", function () { openLightbox(url); });
 
       var info = document.createElement("div");
       info.className = "g-info";
       var p = document.createElement("div");
       p.className = "g-prompt";
-      p.textContent = it.prompt || "(sin descripción)";
+      p.textContent = prompt || "(sin descripción)";
       var meta = document.createElement("div");
       meta.className = "g-meta";
-      var etiqueta = (it.editada ? "editada · " : "") + (it.calidad || "");
+      var etiqueta = (datos.editada ? "editada · " : "") + (it.model || "");
       meta.textContent = etiqueta;
       info.appendChild(p);
       info.appendChild(meta);
@@ -299,20 +366,18 @@
   }
 
   function borrarItem(id) {
-    fetch("history.php", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: id })
-    }).then(function () { cargarHistorial(); }).catch(function () {});
+    if (!history) return;
+    history.delete(id)
+      .then(function () { cargarHistorial(); })
+      .catch(function () {});
   }
 
   function vaciarTodo() {
     if (!confirm("¿Seguro que quieres borrar TODO el historial? No se puede deshacer.")) return;
-    fetch("history.php", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clearAll: true })
-    }).then(function () { cargarHistorial(); }).catch(function () {});
+    if (!history) return;
+    history.clear()
+      .then(function () { cargarHistorial(); })
+      .catch(function () {});
   }
 
   // ---------- Lightbox ----------
@@ -326,7 +391,7 @@
   }
 
   // ---------- Init ----------
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", async function () {
     initTheme();
     initModelSelector();
     // ===== Tooltip de modelos (popup hover) =====
@@ -385,6 +450,10 @@
       if (e.key === "Escape") closeLightbox();
     });
 
+    // Carga inicial del historial desde el servidor (fuente de verdad).
+    if (history) {
+      try { await history.load(); } catch (err) { /* nunca rompe la interfaz */ }
+    }
     cargarHistorial();
   });
 })();
