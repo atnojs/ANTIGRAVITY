@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeCategory = null;
 
     // Selector de modelo IA
-    let selectedModel = 'openai-medium';
+    let selectedModel = 'openai-image-2';
     let selectedAR = '1:1';
     let selectedRes = 1024;
 
@@ -730,9 +730,12 @@ document.addEventListener('DOMContentLoaded', () => {
             'openai-xhigh': 'XHIGH',
             'openai-max-flare': 'MAX FLARE',
             'openai-max-sunburst': 'MAX SUNBURST',
+            'gemini-2': 'GEMINI 2',
             'gemini-flash': '3.1 FLASH',
             'gemini-pro': '3 PRO',
-            'qwen-pro': 'QWEN 3 PRO'
+            'qwen-pro': 'QWEN 3 PRO',
+            'openai-image-2': 'IMAGE 2 MEDIUM',
+            'openai-image-2-high': 'IMAGE 2 HIGH'
         };
         return labels[model] || model;
     };

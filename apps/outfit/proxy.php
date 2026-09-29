@@ -21,6 +21,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Catálogo vigente del selector (identificadores -> modelo real). Fuente única:
+// ag_image_catalog() del contrato compartido (canonical-image-model.php). Nunca
+// se construye el modelo interpretando el texto que llega del cliente.
+function outfitModelCatalog(): array {
+    $catalog = function_exists('ag_image_catalog') ? ag_image_catalog() : [];
+    return array_keys($catalog);
+}
+
+function outfitOpenAiKey(): string {
+    $key = getKey('OPENAI_API_KEY');
+    if ($key === '') $key = getKey('O');
+    return $key;
+}
+
+// Diagnóstico (no gasta API): qué modelos de IMAGEN ofrece de verdad la cuenta
+// de OpenAI, para no adivinar identificadores. Nunca devuelve la clave.
+function outfitOpenAiImageModels(): array {
+    $key = outfitOpenAiKey();
+    if ($key === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $cacheDir = __DIR__ . '/qwen_cache';
+    $cacheFile = $cacheDir . '/openai_models.json';
+    $cached = is_file($cacheFile) ? json_decode((string)@file_get_contents($cacheFile), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        return (array)$cached['ids'];
+    }
+    $ch = curl_init('https://api.openai.com/v1/models');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $key],
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if ($code >= 400 || !is_array($data)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']]);
+        exit;
+    }
+    $ids = [];
+    foreach (($data['data'] ?? []) as $model) {
+        $id = (string)($model['id'] ?? '');
+        if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+    }
+    sort($ids);
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    @file_put_contents($cacheFile, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    return $ids;
+}
+
+// Diagnóstico por GET (no gasta API): claves configuradas, modelos y acciones.
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'antigravity-ai-proxy',
+        'configured' => [
+            'openai'     => outfitOpenAiKey() !== '',
+            'openrouter' => getKey('R') !== '',
+        ],
+        'actions'    => ['generate', 'text', 'vision', 'health', 'models'],
+        'models'     => outfitModelCatalog(),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Solo POST.']]);
@@ -180,6 +252,28 @@ $mimoTextCall = function (array $req, array $genCfg) {
 };
 
 $action = (string)($req['action'] ?? 'generate');
+
+// Salud (no gasta API): nunca devuelve claves, solo si están configuradas.
+$actionLower = strtolower(trim($action));
+if ($actionLower === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => [
+            'openai'     => outfitOpenAiKey() !== '',
+            'openrouter' => getKey('R') !== '',
+        ],
+        'models'     => outfitModelCatalog(),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// Diagnóstico de modelos reales de la cuenta de OpenAI.
+if ($actionLower === 'models') {
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => outfitOpenAiImageModels()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 // ===== RUTEO POR ACCION =====
 if ($action === 'text') {
@@ -349,6 +443,8 @@ function qwenImageRespondOutfit(string $b64): void {
 }
 
 function handleGenerate(array $req): void {
+    // Modelo por defecto del proyecto: IMAGE 2 (openai-image-2, gpt-image-2 medium).
+    if (!isset($req['model']) || trim((string)$req['model']) === '') { $req['model'] = 'openai-image-2'; }
     // QWEN 3 PRO: ruta propia con keepalive + caché en carpeta de la app.
     if (strtolower((string)($req['model'] ?? '')) === 'qwen-pro') {
         handleQwenProOutfit($req);
