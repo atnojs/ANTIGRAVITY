@@ -1,13 +1,14 @@
 <?php
 // ============================================================
-// PROXY UNIFICADO — OpenAI Image 2.5 (5 calidades) + Gemini
-// (Google directo, clave A por entorno).
-// Selector: openai-medium / openai-high / openai-xhigh /
-// openai-max-flare / openai-max-sunburst / gemini-flash /
-// gemini-pro / qwen-pro. Otros modelos rechazados (400).
+// PROXY UNIFICADO — OpenAI Image 2 (modelo base) + OpenAI Image 2.5
+// (5 calidades) + Gemini (Google directo, clave A por entorno) + Qwen.
+// Selector: openai-image-2 (por defecto) / openai-image-2-high /
+// openai-medium / openai-high / openai-max-flare / openai-xhigh /
+// openai-max-sunburst / gemini-2 / gemini-flash / gemini-pro / qwen-pro.
+// Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
 // tocar los frontends existentes.
-// Claves: SOLO entorno (getenv/REDIRECT_/$_SERVER/$_ENV).
+// Claves: SOLO entorno (getenv/REDIRECT_/$_SERVER/$_ENV). Sin fichero local de claves.
 // ============================================================
 declare(strict_types=1);
 ini_set('display_errors', '0');
@@ -48,17 +49,25 @@ function getKey(string $name): string
 $API_KEY = getKey('A'); // Gemini directo (Google AI)
 $openaiKey = getKey('OPENAI_API_KEY');
 if ($openaiKey === '') $openaiKey = getKey('O');
+$orKey = getKey('R'); // OpenRouter (Qwen / texto-visión)
 
-// ===== Catálogo canónico de modelos (lista blanca exacta) =====
+// ===== Catálogo canónico de modelos (lista blanca exacta, 11 modelos) =====
+// Gemini en id directo de Google (este proxy llama a generativelanguage), no
+// con el prefijo "google/" del contrato de OpenRouter.
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'high'],
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2). Edita la imagen de
+    // referencia por /v1/images/edits, igual que el resto de modelos OpenAI.
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
-    'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
+    'qwen-pro'            => ['backend' => 'qwen',   'model' => 'qwen/qwen-image-3-pro'],
 ];
 
 // ===== Entrada =====
@@ -76,8 +85,65 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     exit;
 }
 
+// ===== Comprobación de salud (no gasta API): qué claves ve el entorno y qué
+// modelos acepta el proxy. Uso: POST {"action":"health"}. Nunca devuelve claves.
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['openai' => $openaiKey !== '', 'openrouter' => $orKey !== ''],
+        'models'     => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// Diagnóstico: pregunta a OpenAI qué modelos de IMAGEN ofrece de verdad (evita
+// adivinar identificadores). Uso: POST {"action":"models"}. Nunca devuelve la
+// clave y solo expone identificadores de imagen.
+if (strtolower(trim((string)($req['action'] ?? ''))) === 'models') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el entorno.']]);
+        exit;
+    }
+    $modelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $ids = null;
+    $cached = is_file($modelsCache) ? json_decode((string)@file_get_contents($modelsCache), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = (array)$cached['ids'];
+    } else {
+        $ch = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $resp = curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $data = json_decode((string)$resp, true);
+        if ($code >= 400 || !is_array($data)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']]);
+            exit;
+        }
+        $ids = [];
+        foreach (($data['data'] ?? []) as $model) {
+            $id = (string)($model['id'] ?? '');
+            if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+        }
+        sort($ids);
+        if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
+        @file_put_contents($modelsCache, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $ids], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-medium')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';
@@ -294,16 +360,9 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API)
 // ====================================================================
 if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] === 'qwen') {
-    // ── Clave R (OpenRouter): misma resolución que la ruta de texto MiMo.
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
-    if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
-    if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
+    // ── Clave R (OpenRouter): SOLO desde el entorno (getenv/REDIRECT_/$_SERVER/$_ENV).
+    // Las claves viven en el .htaccess raíz del servidor: nunca en un fichero local.
+    $orKey = getKey('R');
     if ($orKey === '') {
         http_response_code(500);
         echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']]);
@@ -454,16 +513,9 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
-    if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
-    if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
+    // ── Clave R (OpenRouter): SOLO desde el entorno (getenv/REDIRECT_/$_SERVER/$_ENV).
+    // Las claves viven en el .htaccess raíz del servidor: nunca en un fichero local.
+    $orKey = getKey('R');
     if ($orKey === '') {
         return [500, json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']])];
     }

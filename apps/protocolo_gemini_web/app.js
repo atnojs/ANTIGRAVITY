@@ -13,20 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let styleImage = null;    // Referencia
 
     const PROXY_URL = 'proxy.php';
-    const DEFAULT_MODEL = 'openai-medium';
+    const DEFAULT_MODEL = 'openai-image-2';
     let selectedModel = DEFAULT_MODEL;
+    let lastPrompt = '';
     const MODEL_LABELS = {
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
         'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
         'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-2': 'GEMINI 2',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
-        'qwen-pro': 'QWEN 3 PRO'
+        'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2': 'IMAGE 2 MEDIUM',
+        'openai-image-2-high': 'IMAGE 2 HIGH'
     };
 
-    // --- SELECTOR DE MODELO (8 botones, MEDIUM activo) ---
+    // --- SELECTOR DE MODELO (11 botones, IMAGE 2 MEDIUM activo por defecto) ---
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {
         selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
@@ -102,6 +106,75 @@ document.addEventListener('DOMContentLoaded', () => {
     const step1 = document.getElementById('status-step-1');
     const step2 = document.getElementById('status-step-2');
     const step3 = document.getElementById('status-step-3');
+
+    // --- HISTORIAL PERSISTENTE (history.php + history_store/, fuente de verdad) ---
+    const historyManager = (typeof HistoryManager !== 'undefined')
+        ? new HistoryManager('protocolo_gemini_web')
+        : null;
+    // HTML inicial de la rejilla (estado vacío) para poder restaurarlo.
+    const initialGridHtml = resultsGrid.innerHTML;
+
+    function restoreEmptyState() {
+        if (!resultsGrid.querySelector('.result-card')) resultsGrid.innerHTML = initialGridHtml;
+    }
+
+    function renderHistoryItem(item) {
+        const src = item.imageUrl || (item.data && (item.data.dataUrl || item.data.url)) || '';
+        if (src) addResultCard(src, item.id);
+    }
+
+    async function loadHistory() {
+        if (!historyManager) return;
+        try {
+            const items = await historyManager.load();
+            // El servidor devuelve del más reciente al más antiguo y cada tarjeta
+            // se inserta con prepend: se recorre al revés para conservar el orden.
+            (Array.isArray(items) ? items : []).slice().reverse().forEach(renderHistoryItem);
+        } catch (error) {
+            console.warn('Historial de servidor no disponible:', error);
+        }
+    }
+
+    async function saveToHistory(src) {
+        if (!historyManager) return null;
+        try {
+            return await historyManager.save({
+                type: 'image',
+                model: selectedModel,
+                data: { prompt: lastPrompt, model: selectedModel, aspectRatio: '1:1' },
+                imageData: src
+            });
+        } catch (error) {
+            // Un fallo del historial nunca rompe la generación.
+            console.warn('No se pudo guardar en el historial:', error);
+            return null;
+        }
+    }
+
+    async function deleteFromHistory(id, card) {
+        if (!id) return;
+        if (!confirm('¿Eliminar del historial?')) return;
+        try {
+            await historyManager.delete(id);
+        } catch (error) {
+            console.warn('No se pudo eliminar del historial:', error);
+        }
+        card.remove();
+        restoreEmptyState();
+    }
+
+    async function clearHistory() {
+        if (!confirm('¿Eliminar todo el historial?')) return;
+        try {
+            if (historyManager) await historyManager.clear();
+        } catch (error) {
+            console.warn('No se pudo limpiar el historial:', error);
+        }
+        resultsGrid.innerHTML = initialGridHtml;
+    }
+
+    const clearHistoryBtn = document.getElementById('clear-history');
+    if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', clearHistory);
 
     // --- SETUP INPUTS ---
     setupUpload(dropIdentity, fileIdentity, (data) => {
@@ -181,7 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalImage = await transformImage(identityImage, styleImage);
             addLog('IMAGEN GENERADA CON ÉXITO.');
 
-            addResultCard(finalImage);
+            const entry = await saveToHistory(finalImage);
+            addResultCard(finalImage, entry ? entry.id : null);
             updateStep(step3, 'completed');
 
         } catch (error) {
@@ -202,6 +276,7 @@ Ensure the output is a complete, high-quality portrait that maintains the subjec
 
         const b64_1 = img1.split(',')[1];
         const b64_2 = img2.split(',')[1];
+        lastPrompt = prompt;
 
         const requestBody = JSON.stringify({
             model: selectedModel,
@@ -279,12 +354,29 @@ Ensure the output is a complete, high-quality portrait that maintains the subjec
         logContent.scrollTop = logContent.scrollHeight;
     }
 
-    function addResultCard(src) {
+    function addResultCard(src, id) {
         if (resultsGrid.querySelector('.empty-state')) resultsGrid.innerHTML = '';
         const card = document.createElement('div');
         card.className = 'result-card glass-hover';
+        if (id) card.dataset.id = id;
         card.innerHTML = `<img src="${src}" alt="Resultado">`;
+        if (id) {
+            const removeBtn = document.createElement('div');
+            removeBtn.className = 'remove-btn';
+            removeBtn.setAttribute('role', 'button');
+            removeBtn.setAttribute('tabindex', '0');
+            removeBtn.setAttribute('aria-label', 'Eliminar del historial');
+            removeBtn.innerHTML = '&times;';
+            removeBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteFromHistory(id, card); });
+            removeBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); deleteFromHistory(id, card); }
+            });
+            card.appendChild(removeBtn);
+        }
         resultsGrid.prepend(card);
     }
+
+    // Historial del servidor al arrancar (sustituye al estado vacío si hay items).
+    loadHistory();
 });
 
