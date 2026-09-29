@@ -310,3 +310,40 @@ UTF-8 explícitos; con `Invoke-WebRequest -InFile` el proxy devolvía `JSON inva
 
 El resto del catálogo (image 2 y 2.5) está probado en producción y convierte correctamente.
 
+
+## 10. Cierre de la migración (2026-09-29)
+
+Estado final: **§6.1 completo, filas 1–17, y verificadas en producción** (34 apps
+comprobadas una a una con `?cb=<aleatorio>`: `health` con el catálogo vigente, `history.php`
+sirviendo desde `history_store/` y orden real de `data-model` en el HTML servido).
+`§6.2` intacto (comprobado con rutas exactas: cero ficheros suyos tocados).
+
+Lo que quedaba fuera de las filas y **no necesita migración** (documentado para no
+reauditarlo):
+
+| Grupo | Apps | Por qué |
+|---|---|---|
+| Excepciones de texto/sin IA | `infografia`, `prompt_copilot_premium` (y su copia antigua), `asistente_inmoviliario`, `pasatiempos`, `rrss`, `video-vault`, `trickvault` | No manejan modelos de imagen: su `models` va vacío a propósito y solo exponen `configured`/`textModels` |
+| Páginas y webs (sin IA) | `boveda_privada`, `pagina_aplicaciones`, `pagina_camisetas`, `pagina_privada`, `nueva_pestaña`, `codigos_secretos_ia`, `promptbox`, `style_guide` y todo `paginas/**` | Son webs/páginas o prototipos sin generación de imágenes: no tienen proxy ni catálogo que migrar |
+| Editores locales | `infografia_editor`, `dibujo_lineas_local` | Funcionan en local/offline sin llamadas a APIs |
+| Ya no son apps | `agent`, `compilar`, `tools`-like, `vscode`, `prompts_personalizados` (solo un `.txt`) | No son aplicaciones desplegables |
+| Versiones y copias | `outfit/1`, `outfit/2`, `decorar_habitacion/5`, `editar_generar_1/5`, `generar_imagenes/1`, `prompts_predeterminados/1`, `imagenes_ia/*` (padre), `paginas/prompts_predeterminados`, `imagenes_ia/editar_generar (COPIA)`, `Copias por si/**` | §6.2 |
+
+Nota sobre `apps/codigos_imagen/config.php`: es una **contraseña de administración**
+(`ADMIN_PASSWORD`), no una clave de IA, y está en `.gitignore`. No se toca.
+
+Arreglos de seguridad de esta sesión, además de la migración:
+
+1. `apps/out/proxy.php`: era un passthrough que aceptaba cualquier `targetUrl`, le pegaba
+   la clave `A` y devolvía la URL **con la clave** en los errores ≥400, con TLS sin
+   verificar. Cerrado con lista blanca exacta, TLS verificado y errores sin URL ni eco.
+   **Rotar la clave `A` es lo prudente.**
+2. `apps/texto_creativo`: el navegador llamaba directo a `generativelanguage.googleapis.com`
+   con la clave que el usuario pegaba en la interfaz (guardada en `localStorage`). Ahora
+   hay `proxy.php` (clave solo del entorno) con el mismo contrato de entrada/salida.
+3. `apps/viaje_tiempo`: su `.htaccess` servía un `index_prod.html` que apuntaba a assets
+   inexistentes (app rota en producción); bundle reconstruido y apuntado. Y
+   `vite.config.ts` ya **no inyecta** claves en el bundle del navegador.
+4. `apps/viaje_tiempo/public/proxy.php`: el puente GET de Pollinations validaba el destino
+   por prefijo de cadena, evitable con userinfo en la URL (`https://image.pollinations.ai@otro-host/`).
+   Ahora valida el host real con `parse_url` y no sigue redirecciones.
