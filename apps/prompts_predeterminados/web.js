@@ -45,7 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php';
-    let selectedModel = 'openai-medium';
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad media.
+    const DEFAULT_MODEL = 'openai-image-2';
+    let selectedModel = DEFAULT_MODEL;
 
     // ═══════════════════════════════════════════════════════════════
     // ELEMENTOS DEL DOM - Autenticación
@@ -92,6 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
     const modelLabels = {
+        'gemini-2': 'GEMINI 2',
+        'openai-image-2': 'IMAGE 2',
+        'openai-image-2-high': 'IMAGE 2 HIGH',
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
         'openai-xhigh': 'XHIGH',
@@ -105,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const txt = document.getElementById('loading-text');
         const sec = document.getElementById('secondary-status');
         if (txt) txt.textContent = 'IA generando lo solicitado...';
-        if (sec) sec.textContent = statusMsg || (modelLabels[selectedModel] || 'MEDIUM') + ' · procesando...';
+        if (sec) sec.textContent = statusMsg || (modelLabels[selectedModel] || 'IMAGE 2') + ' · procesando...';
         genLoading.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -1211,7 +1216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modelSelector.addEventListener('click', (e) => {
             const btn = e.target.closest('.model-toggle');
             if (!btn) return;
-            selectedModel = btn.dataset.model || 'openai-medium';
+            selectedModel = btn.dataset.model || DEFAULT_MODEL;
             modelSelector.querySelectorAll('.model-toggle').forEach((b) => {
                 const isActive = (b === btn);
                 b.classList.toggle('active', isActive);

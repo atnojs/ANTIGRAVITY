@@ -41,6 +41,11 @@ function readJsonBody(): array {
         respond(413, ['success' => false, 'error' => 'La solicitud supera el tamaño permitido.']);
     }
     $raw = file_get_contents('php://input');
+    // En CLI (QA del proxy) php://input está vacío: se acepta STDIN, que nunca
+    // existe en el contexto web, así que el comportamiento HTTP no cambia.
+    if (($raw === false || $raw === '') && PHP_SAPI === 'cli' && defined('STDIN')) {
+        $raw = (string)stream_get_contents(STDIN);
+    }
     $data = json_decode($raw ?: '', true);
     if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
         respond(400, ['success' => false, 'error' => 'El cuerpo no contiene JSON válido.']);
@@ -323,10 +328,81 @@ function handleGenerate(array $request): void {
         respond(400, ['success' => false, 'error' => 'Modelo no soportado.']);
     }
     $geminiModelId = 'google/gemini-3.1-flash-image';
-    if ((strpos($reqModel, 'pro') !== false && strpos($reqModel, 'gemini') !== false) || $reqModel === 'google/gemini-3-pro-image' || $reqModel === 'gemini-pro') {
+    if ($reqModel === 'gemini-2' || $reqModel === 'google/gemini-2.5-flash-image') {
+        $geminiModelId = 'google/gemini-2.5-flash-image';
+    } elseif ((strpos($reqModel, 'pro') !== false && strpos($reqModel, 'gemini') !== false) || $reqModel === 'google/gemini-3-pro-image' || $reqModel === 'gemini-pro') {
         $geminiModelId = 'google/gemini-3-pro-image';
+    } elseif ($reqModel !== 'gemini-flash' && $reqModel !== 'google/gemini-3.1-flash-image') {
+        respond(400, ['success' => false, 'error' => 'Modelo no soportado.']);
     }
     handleGeminiImage($request, $prompt, $geminiModelId);
+}
+
+// ====================================================================
+// CATÁLOGO CANÓNICO (lista blanca cerrada, sin modelos retirados).
+// Gemini: gemini-2 (2.5 Flash Image) primero, luego gemini-flash (3.1)
+// y gemini-pro (3 Pro). OpenAI: gama 2.5 + image 2 (gpt-image-2).
+// Qwen: qwen-pro. Fuente única para health/models y para la ruta Gemini.
+// ====================================================================
+function ag_model_catalog(): array {
+    return [
+        'openai-medium'       => 'gpt-image-2.5-flare',
+        'openai-high'         => 'gpt-image-2.5-flare',
+        'openai-xhigh'        => 'gpt-image-2.5-sunburst',
+        'openai-max-flare'    => 'gpt-image-2.5-flare',
+        'openai-max-sunburst' => 'gpt-image-2.5-sunburst',
+        'openai-image-2'      => 'gpt-image-2',
+        'openai-image-2-high' => 'gpt-image-2',
+        'gemini-2'            => 'google/gemini-2.5-flash-image',
+        'gemini-flash'        => 'google/gemini-3.1-flash-image',
+        'gemini-pro'          => 'google/gemini-3-pro-image',
+        'qwen-pro'            => 'qwen/qwen-image-3-pro',
+    ];
+}
+
+// ====================================================================
+// MODELOS DE IMAGEN DEL PROVEEDOR (diagnóstico; nunca devuelve la clave).
+// Consulta real a https://api.openai.com/v1/models y filtra ids con "image".
+// Caché de 600 s en qwen_cache/openai_models.json.
+// ====================================================================
+function handleModels(): void {
+    $key = getSecret('OPENAI_API_KEY');
+    if ($key === '') $key = getSecret('O');
+    if ($key === '') respond(500, ['success' => false, 'error' => 'La clave de OpenAI no está configurada en el servidor.']);
+
+    $cacheFile = __DIR__ . '/qwen_cache/openai_models.json';
+    $ids = null;
+    $cached = is_file($cacheFile) ? json_decode((string)@file_get_contents($cacheFile), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $ids = (array)$cached['ids'];
+    } else {
+        $ch = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $key],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $raw = curl_exec($ch);
+        $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        if ($raw === false) respond(502, ['success' => false, 'error' => 'No se pudo consultar la lista de modelos.', 'detail' => $error]);
+        $data = json_decode((string)$raw, true);
+        if ($status < 200 || $status >= 300 || !is_array($data)) {
+            respond(502, ['success' => false, 'error' => 'No se pudo consultar la lista de modelos (HTTP ' . $status . ').']);
+        }
+        $ids = [];
+        foreach (($data['data'] ?? []) as $model) {
+            $id = (string)($model['id'] ?? '');
+            if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+        }
+        sort($ids);
+        $cacheDir = dirname($cacheFile);
+        if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+        @file_put_contents($cacheFile, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES), LOCK_EX);
+    }
+    respond(200, ['success' => true, 'imageModels' => $ids]);
 }
 
 function handleGeminiImage(array $request, string $prompt, string $geminiModelId): void {
@@ -381,26 +457,30 @@ function handleGeminiImage(array $request, string $prompt, string $geminiModelId
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
-if ($method === 'GET') respond(200, [
-    'success'=>true, 'service'=>'antigravity-ai-proxy',
-    'configured'=>['openrouter'=>getSecret('R') !== ''],
-    'actions'=>['generate','openrouter','text','health'],
-    'models'=>[
-        'openai-medium'       => 'gpt-image-2.5-flare',
-        'openai-high'         => 'gpt-image-2.5-flare',
-        'openai-xhigh'        => 'gpt-image-2.5-sunburst',
-        'openai-max-flare'    => 'gpt-image-2.5-flare',
-        'openai-max-sunburst' => 'gpt-image-2.5-sunburst',
-        'gemini-flash'        => 'google/gemini-3.1-flash-image',
-        'gemini-pro'          => 'google/gemini-3-pro-image',
-        'qwen-pro'            => 'qwen/qwen-image-3-pro',
-    ],
-]);
+if ($method === 'GET') {
+    $catalog = ag_model_catalog();
+    respond(200, [
+        'success'=>true, 'service'=>'antigravity-ai-proxy',
+        'configured'=>['openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '', 'openrouter'=>getSecret('R') !== ''],
+        'actions'=>['generate','openrouter','text','health','models'],
+        'models'=>$catalog,
+    ]);
+}
 if ($method !== 'POST') respond(405, ['success'=>false, 'error'=>'Método no permitido.']);
-if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 $request = readJsonBody();
 $action = strtolower((string)($request['action'] ?? 'generate'));
-if ($action === 'health') respond(200, ['success'=>true, 'configured'=>['openrouter'=>getSecret('R') !== '']]);
+// Diagnóstico (no gasta API, no toca cURL): qué claves ve el entorno y qué
+// modelos acepta el proxy; nunca devuelve claves.
+if ($action === 'health') respond(200, [
+    'success'=>true,
+    'configured'=>[
+        'openai'=>getSecret('OPENAI_API_KEY') !== '' || getSecret('O') !== '',
+        'openrouter'=>getSecret('R') !== '',
+    ],
+    'models'=>array_keys(ag_model_catalog()),
+]);
+if ($action === 'models') handleModels();
+if (!function_exists('curl_init')) respond(500, ['success'=>false, 'error'=>'cURL no está disponible.']);
 if (in_array($action, ['openrouter','text'], true)) handleOpenRouter($request);
 if ($action === 'generate') handleGenerate($request);
 respond(400, ['success'=>false, 'error'=>'Acción no permitida.']);

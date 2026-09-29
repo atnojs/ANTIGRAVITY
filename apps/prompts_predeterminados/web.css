@@ -1518,6 +1518,16 @@ body.edit-mode .category-btn:active {
     gap: .35rem;
 }
 
+/* Fila de proveedores (GEMINI + QWEN + IMAGE 2), patrón canónico SKILL_MAESTRA */
+.model-provider-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1.4rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
 .model-provider-title {
     color: var(--text-faint, #669999);
     font-size: 1.05rem;
@@ -1577,6 +1587,7 @@ body.edit-mode .category-btn:active {
 }
 
 @media (max-width: 640px) {
+    .model-provider-row { gap: .6rem; }
     .model-toggle-group { gap: .3rem; }
     .model-toggle { font-size: .7rem; padding: .45rem .6rem; letter-spacing: .02em; }
 }
