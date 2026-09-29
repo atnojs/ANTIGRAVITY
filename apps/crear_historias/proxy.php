@@ -1,11 +1,11 @@
 <?php
 // Proxy for StoryWeaver Character Generator
-// Catálogo 2.5: openai-medium/high (gpt-image-2.5-flare),
-// openai-xhigh (gpt-image-2.5-sunburst), openai-max-flare
-// (gpt-image-2.5-flare/max), openai-max-sunburst
-// (gpt-image-2.5-sunburst/max) + gemini-flash/pro (Google directo, A).
-// La llamada OpenAI (generations/edits) la ejecuta ag_image_response()
-// de canonical-image-model.php. Otros modelos rechazados (400).
+// Catálogo canónico (dibujo_lineas_copia/canonical-image-model.php): OPENAI 2.5
+// (openai-medium/high/max-flare/xhigh/max-sunburst), IMAGE 2 (openai-image-2,
+// openai-image-2-high), gemini-2 y qwen-pro. gemini-flash/gemini-pro siguen con
+// el backend Gemini directo de la app (clave A).
+// OpenAI (generations/edits) y gemini-2 los ejecuta ag_image_response() del
+// bloque canónico. Otros modelos rechazados (400).
 // Texto/visión (enhancePrompt / analyzeMaskPosition): modelo de texto
 // xiaomi/mimo-v2.6-pro vía OpenRouter.
 header('Content-Type: application/json; charset=utf-8');
@@ -19,11 +19,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Claves configuradas (nunca su valor) para el diagnóstico de todas las apps.
+function crear_historias_configured(): array {
+    $has = static function (string ...$names): bool {
+        foreach ($names as $name) {
+            $values = [getenv($name), getenv('REDIRECT_' . $name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? ''];
+            foreach ($values as $value) {
+                if (is_string($value) && trim($value) !== '') { return true; }
+            }
+        }
+        return false;
+    };
+    return ['openai' => $has('OPENAI_API_KEY', 'O'), 'openrouter' => $has('R')];
+}
+
+// Diagnóstico público en GET: no exige clave ni gasta API.
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => true,
+        'service' => 'crear_historias',
+        'configured' => crear_historias_configured(),
+        'actions' => ['generateImage', 'enhancePrompt', 'analyzeMaskPosition', 'health', 'models'],
+        'models' => array_keys(ag_image_catalog()),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 try {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método no permitido', 405);
+
+  $input = file_get_contents('php://input');
+  $json = json_decode($input, true);
+  if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
+
+  // Diagnóstico sin clave: action=health / action=models.
+  $earlyAction = strtolower(trim((string)($json['action'] ?? '')));
+  if ($earlyAction === 'health' || $earlyAction === 'models') {
+      http_response_code(200);
+      echo json_encode([
+          'success' => true,
+          'configured' => crear_historias_configured(),
+          'models' => array_keys(ag_image_catalog()),
+      ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+      exit;
+  }
 
   // API Key (B) — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
   $apiKey = '';
@@ -51,11 +94,6 @@ try {
       exit;
   }
 
-  
-  $input = file_get_contents('php://input');
-  $json = json_decode($input, true);
-  if (!is_array($json)) throw new Exception('JSON inválido o cuerpo vacío', 400);
-
   $task        = $json['task'] ?? '';
   // Selección de modelo: lista blanca (catálogo 2.5 + backend Gemini directo propio).
   $requestedModel = strtolower(trim((string)($json['model'] ?? '')));
@@ -68,21 +106,16 @@ try {
           echo json_encode(['error' => 'Modelo no soportado.']);
           exit;
       }
-      // OpenAI 2.5 → contrato canónico ag_image_response (gpt-image-2.5).
-      if ($requestedModel === '' || strpos($requestedModel, 'openai-') === 0) {
-          if ($requestedModel === '') $json['model'] = 'openai-medium';
+      // OpenAI 2.5 / IMAGE 2 / gemini-2 → contrato canónico ag_image_response.
+      if ($requestedModel === '' || strpos($requestedModel, 'openai-') === 0 || $requestedModel === 'gemini-2') {
+          if ($requestedModel === '') $json['model'] = 'openai-image-2';
           ag_image_response($json, __DIR__);
       }
       // qwen-pro → OpenRouter Image API con keepalive + caché/lock en carpeta
       // de la app (nginx corta a ~55s y Qwen tarda ~100s/imagen).
       if ($requestedModel === 'qwen-pro') {
-          // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+          // ── Clave R (OpenRouter): SOLO del entorno (getenv → REDIRECT_ → $_SERVER → $_ENV)
           $orKey = '';
-          if (!defined('R')) {
-              $rCfg = __DIR__ . '/config.php';
-              if (file_exists($rCfg)) { include_once $rCfg; }
-          }
-          if (defined('R') && R !== '') { $orKey = (string)R; }
           if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
           if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
           if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
@@ -253,13 +286,8 @@ try {
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO del entorno (getenv → REDIRECT_ → $_SERVER → $_ENV)
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
