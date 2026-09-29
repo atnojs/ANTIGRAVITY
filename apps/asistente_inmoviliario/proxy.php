@@ -90,6 +90,21 @@ if ($agAction === 'health' || $agAction === 'models') {
 
 // Modelo (por defecto: MiMo 2.6 Pro — modelo de texto/análisis del parque)
 $model = (string)($req['model'] ?? 'xiaomi/mimo-v2.6-pro');
+
+// Alias de modelos de IMAGEN: el frontend pide identificadores que la API de Google
+// no reconoce (`gemini-3.1-flash-image-preview`), por lo que la edición de imagen
+// (Staging Virtual / Vaciar espacio) devolvía error del proveedor. Se traducen aquí a
+// los identificadores vigentes y se conserva el contrato de respuesta que ya parsea la
+// app (candidates[0].content.parts[].inlineData.data).
+$aliasImagen = [
+    'gemini-3.1-flash-image-preview' => 'gemini-2.5-flash-image',
+    'gemini-3.1-flash-image'         => 'gemini-2.5-flash-image',
+    'gemini-3-pro-image-preview'     => 'gemini-3-pro-image',
+    'gemini-3-pro-image'             => 'gemini-3-pro-image',
+    'gemini-2.5-flash-image-preview' => 'gemini-2.5-flash-image',
+];
+$model = $aliasImagen[$model] ?? $model;
+
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
 
 // ===== Modelos de texto/análisis (MiMo) vía OpenRouter (clave R) =====
