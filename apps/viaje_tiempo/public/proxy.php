@@ -20,19 +20,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // 0. Si viene por GET con un pollinationsUrl, hacemos de puente para evitar el CSP del navegador
 if (isset($_GET['pollinationsUrl'])) {
-    $url = $_GET['pollinationsUrl'];
-    
-    // Antispam / Security Check: Solo permitir fetch a pollinations.ai (evita SSRF)
-    if (strpos($url, 'https://image.pollinations.ai/') !== 0) {
+    $url = (string)$_GET['pollinationsUrl'];
+
+    // Antispam / Security Check: solo pollinations.ai (evita SSRF).
+    // Se valida el HOST real con parse_url, no por prefijo de cadena: un prefijo se
+    // puede burlar con userinfo (`https://image.pollinations.ai@otro-host/...`) y curl
+    // acabaría conectando a otro host.
+    $partes = parse_url($url);
+    $host = strtolower((string)($partes['host'] ?? ''));
+    $esquema = strtolower((string)($partes['scheme'] ?? ''));
+    if ($esquema !== 'https' || ($host !== 'image.pollinations.ai' && $host !== 'pollinations.ai')) {
         http_response_code(403);
         exit('Forbidden target.');
     }
-    
+
     // Hostinger a veces restringe file_get_contents en URLs, mejor usar cURL puro
     header('Content-Type: image/jpeg');
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_exec($ch);
     curl_close($ch);
@@ -101,14 +109,8 @@ if (isset($requestData['generationConfig'])) {
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
+    // ── Clave R (OpenRouter): SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV)
+    $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: '');
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
     if ($orKey === '') {
