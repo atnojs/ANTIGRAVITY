@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SilhouetteText Pro - Generador Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="history-manager.js"></script>
+    <script src="history-manager.js?v=2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -185,7 +185,7 @@
                 <h1
                     class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent">
                     SilhouetteText Pro</h1>
-                <p class="text-xs text-slate-400">Generador Inteligente de Arte Tipográfico</p>
+                <p class="text-xs text-slate-400">Generador Inteligente de Arte TipogrÃ¡fico</p>
             </div>
         </div>
 
@@ -250,7 +250,7 @@
                 <!-- Typography Controls -->
                 <div class="space-y-4 relative">
                     <div class="live-indicator"></div>
-                    <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Tipografía Variable
+                    <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">TipografÃ­a Variable
                         (Tiempo Real)</label>
 
                     <div>
@@ -287,7 +287,7 @@
                         <input type="checkbox" id="autoKerning"
                             class="rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500" checked
                             onchange="app.render()">
-                        <label for="autoKerning" class="text-sm text-slate-300">Kerning inteligente automático</label>
+                        <label for="autoKerning" class="text-sm text-slate-300">Kerning inteligente automÃ¡tico</label>
                     </div>
                 </div>
 
@@ -301,7 +301,7 @@
                         <button onclick="app.setPackingMode('spiral')" id="mode-spiral"
                             class="px-3 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white transition-all">Espiral</button>
                         <button onclick="app.setPackingMode('hierarchical')" id="mode-hierarchical"
-                            class="px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-all">Jerárquico</button>
+                            class="px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-all">JerÃ¡rquico</button>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -312,22 +312,22 @@
                     </div>
 
                     <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Rotación permitida</label>
+                        <label class="text-xs text-slate-400 mb-1 block">RotaciÃ³n permitida</label>
                         <div class="flex gap-2">
                             <label class="flex items-center gap-1 text-xs text-slate-300">
                                 <input type="checkbox" id="rot0" checked
                                     class="rounded bg-slate-800 border-slate-600 text-indigo-500"
-                                    onchange="app.generateDebounced()"> 0°
+                                    onchange="app.generateDebounced()"> 0Â°
                             </label>
                             <label class="flex items-center gap-1 text-xs text-slate-300">
                                 <input type="checkbox" id="rot45"
                                     class="rounded bg-slate-800 border-slate-600 text-indigo-500"
-                                    onchange="app.generateDebounced()"> 45°
+                                    onchange="app.generateDebounced()"> 45Â°
                             </label>
                             <label class="flex items-center gap-1 text-xs text-slate-300">
                                 <input type="checkbox" id="rot90"
                                     class="rounded bg-slate-800 border-slate-600 text-indigo-500"
-                                    onchange="app.generateDebounced()"> 90°
+                                    onchange="app.generateDebounced()"> 90Â°
                             </label>
                         </div>
                     </div>
@@ -351,7 +351,7 @@
 
                     <div>
                         <div class="flex justify-between mb-1">
-                            <label class="text-xs text-slate-400">Tamaño base</label>
+                            <label class="text-xs text-slate-400">TamaÃ±o base</label>
                             <span id="sizeVal" class="text-xs text-indigo-400 font-mono">48px</span>
                         </div>
                         <input type="range" id="baseSize" min="20" max="200" value="48"
@@ -361,7 +361,7 @@
 
                     <div>
                         <div class="flex justify-between mb-1">
-                            <label class="text-xs text-slate-400">Variación de tamaño</label>
+                            <label class="text-xs text-slate-400">VariaciÃ³n de tamaÃ±o</label>
                             <span id="varVal" class="text-xs text-indigo-400 font-mono">80%</span>
                         </div>
                         <input type="range" id="sizeVariation" min="0" max="100" value="80"
@@ -426,7 +426,7 @@
                     <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Contenido</label>
 
                     <div class="flex gap-2">
-                        <input type="text" id="newWord" placeholder="Añadir palabra..."
+                        <input type="text" id="newWord" placeholder="AÃ±adir palabra..."
                             class="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
                             onkeypress="if(event.key==='Enter')app.addWord()">
                         <button onclick="app.addWord()"
@@ -438,14 +438,14 @@
                     </div>
 
                     <div>
-                        <label class="text-xs text-slate-400 mb-2 block">Temática Gemini</label>
+                        <label class="text-xs text-slate-400 mb-2 block">TemÃ¡tica Gemini</label>
                         <select id="theme"
                             class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
                             onchange="app.loadThemeWords(); app.generateDebounced();">
                             <option value="custom">Personalizado</option>
-                            <option value="technology">Tecnología</option>
+                            <option value="technology">TecnologÃ­a</option>
                             <option value="nature">Naturaleza</option>
-                            <option value="art">Arte & Diseño</option>
+                            <option value="art">Arte & DiseÃ±o</option>
                             <option value="business">Negocios</option>
                             <option value="science">Ciencia</option>
                             <option value="random">Aleatorio</option>
@@ -471,7 +471,7 @@
                     </div>
                     <button onclick="app.savePreset()"
                         class="w-full py-2 border border-dashed border-slate-600 rounded-lg text-slate-400 hover:text-white hover:border-slate-400 text-sm transition-colors">
-                        + Guardar configuración actual
+                        + Guardar configuraciÃ³n actual
                     </button>
                 </div>
             </div>
@@ -679,18 +679,17 @@
             }
 
             async analyzeImage(imageData) {
-                if (!this.apiKey) {
-                    return this.mockAnalysis();
-                }
-
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`, {
+                    // La clave NO viaja por el navegador: la resuelve proxy.php desde el
+                    // entorno del servidor (SetEnv A en el .htaccess raÃ­z de Hostinger).
+                    const response = await fetch('proxy.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
+                            model: this.model,
                             contents: [{
                                 parts: [
-                                    { text: "Analiza esta imagen y describe: 1) Qué objeto o forma representa, 2) Qué temática o categoría le corresponde (tecnología, naturaleza, arte, etc.), 3) Sugiere 20 palabras clave relacionadas para usar en un word cloud. Responde en JSON con formato: {object, category, keywords[]}" },
+                                    { text: "Analiza esta imagen y describe: 1) QuÃ© objeto o forma representa, 2) QuÃ© temÃ¡tica o categorÃ­a le corresponde (tecnologÃ­a, naturaleza, arte, etc.), 3) Sugiere 20 palabras clave relacionadas para usar en un word cloud. Responde en JSON con formato: {object, category, keywords[]}" },
                                     { inline_data: { mime_type: "image/png", data: imageData.split(',')[1] } }
                                 ]
                             }]
@@ -710,15 +709,15 @@
                 const category = categories[Math.floor(Math.random() * categories.length)];
 
                 const themes = {
-                    technology: ['innovación', 'digital', 'futuro', 'código', 'algoritmo', 'datos', 'inteligencia', 'automatización', 'red', 'cibernético', 'virtual', 'cuántico', 'robot', 'software', 'hardware', 'interface', 'usuario', 'experiencia', 'diseño', 'sistema'],
-                    nature: ['flora', 'fauna', 'ecosistema', 'biodiversidad', 'sostenible', 'orgánico', 'verde', 'vida', 'crecimiento', 'natural', 'silvestre', 'planeta', 'tierra', 'agua', 'aire', 'fuego', 'bosque', 'océano', 'montaña', 'flor'],
-                    art: ['creatividad', 'expresión', 'estética', 'composición', 'color', 'forma', 'textura', 'movimiento', 'armonía', 'contraste', 'diseño', 'visual', 'imaginación', 'inspiración', 'belleza', 'estilo', 'moderno', 'abstracto', 'contemporáneo', 'artístico'],
-                    business: ['estrategia', 'crecimiento', 'innovación', 'liderazgo', 'éxito', 'mercado', 'cliente', 'valor', 'calidad', 'servicio', 'producto', 'marca', 'visión', 'misión', 'objetivo', 'resultado', 'equipo', 'profesional', 'empresa', 'negocio'],
-                    science: ['descubrimiento', 'investigación', 'análisis', 'hipótesis', 'teoría', 'experimento', 'laboratorio', 'molécula', 'átomo', 'energía', 'física', 'química', 'biología', 'matemáticas', 'astronomía', 'genética', 'evolución', 'ecuación', 'partícula', 'universo']
+                    technology: ['innovaciÃ³n', 'digital', 'futuro', 'cÃ³digo', 'algoritmo', 'datos', 'inteligencia', 'automatizaciÃ³n', 'red', 'cibernÃ©tico', 'virtual', 'cuÃ¡ntico', 'robot', 'software', 'hardware', 'interface', 'usuario', 'experiencia', 'diseÃ±o', 'sistema'],
+                    nature: ['flora', 'fauna', 'ecosistema', 'biodiversidad', 'sostenible', 'orgÃ¡nico', 'verde', 'vida', 'crecimiento', 'natural', 'silvestre', 'planeta', 'tierra', 'agua', 'aire', 'fuego', 'bosque', 'ocÃ©ano', 'montaÃ±a', 'flor'],
+                    art: ['creatividad', 'expresiÃ³n', 'estÃ©tica', 'composiciÃ³n', 'color', 'forma', 'textura', 'movimiento', 'armonÃ­a', 'contraste', 'diseÃ±o', 'visual', 'imaginaciÃ³n', 'inspiraciÃ³n', 'belleza', 'estilo', 'moderno', 'abstracto', 'contemporÃ¡neo', 'artÃ­stico'],
+                    business: ['estrategia', 'crecimiento', 'innovaciÃ³n', 'liderazgo', 'Ã©xito', 'mercado', 'cliente', 'valor', 'calidad', 'servicio', 'producto', 'marca', 'visiÃ³n', 'misiÃ³n', 'objetivo', 'resultado', 'equipo', 'profesional', 'empresa', 'negocio'],
+                    science: ['descubrimiento', 'investigaciÃ³n', 'anÃ¡lisis', 'hipÃ³tesis', 'teorÃ­a', 'experimento', 'laboratorio', 'molÃ©cula', 'Ã¡tomo', 'energÃ­a', 'fÃ­sica', 'quÃ­mica', 'biologÃ­a', 'matemÃ¡ticas', 'astronomÃ­a', 'genÃ©tica', 'evoluciÃ³n', 'ecuaciÃ³n', 'partÃ­cula', 'universo']
                 };
 
                 return {
-                    object: 'Forma genérica',
+                    object: 'Forma genÃ©rica',
                     category: category,
                     keywords: themes[category]
                 };
@@ -748,7 +747,7 @@
                 this.gemini = new GeminiAPI();
                 this.image = null;
                 this.maskData = null;
-                this.words = ['diseño', 'creatividad', 'arte', 'innovación', 'futuro'];
+                this.words = ['diseÃ±o', 'creatividad', 'arte', 'innovaciÃ³n', 'futuro'];
                 this.placedWords = [];
                 this.zoom = 1;
                 this.isDragging = false;
@@ -797,7 +796,7 @@
 
                 this.isGenerating = false;
 
-                // Buffer canvas para composición offscreen
+                // Buffer canvas para composiciÃ³n offscreen
                 this.bufferCanvas = document.createElement('canvas');
                 this.bufferCtx = this.bufferCanvas.getContext('2d');
 
@@ -932,7 +931,7 @@
                 this.bufferCanvas.width = width;
                 this.bufferCanvas.height = height;
 
-                // Dibujar en canvas de máscara
+                // Dibujar en canvas de mÃ¡scara
                 this.maskCtx.drawImage(this.image, 0, 0, width, height);
                 this.maskData = this.maskCtx.getImageData(0, 0, width, height);
 
@@ -961,12 +960,12 @@
                     });
 
                     this.updateWordList();
-                    this.showStatus(`Análisis: ${result.object}. ${result.keywords.length} palabras sugeridas añadidas.`);
+                    this.showStatus(`AnÃ¡lisis: ${result.object}. ${result.keywords.length} palabras sugeridas aÃ±adidas.`);
 
                     setTimeout(() => this.generateQuick(), 500);
 
                 } catch (error) {
-                    this.showStatus('Error en análisis. Usando datos locales.');
+                    this.showStatus('Error en anÃ¡lisis. Usando datos locales.');
                 } finally {
                     this.showLoading(false);
                 }
@@ -990,17 +989,17 @@
                 const variation = parseInt(document.getElementById('sizeVariation').value) / 100;
                 const fontFamily = document.getElementById('fontFamily').value;
 
-                // ====== WORD CLOUD: Pre-generar instancias con distribución de tamaños tipo word cloud ======
-                // Pocas palabras MUY grandes, muchas medianas, muchísimas pequeñas
+                // ====== WORD CLOUD: Pre-generar instancias con distribuciÃ³n de tamaÃ±os tipo word cloud ======
+                // Pocas palabras MUY grandes, muchas medianas, muchÃ­simas pequeÃ±as
                 const wordInstances = [];
                 for (let i = 0; i < totalWords; i++) {
                     const word = this.getRandomWord();
 
-                    // Distribución power-law: Math.pow(random, exponent)
-                    // Exponente alto = más palabras pequeñas, menos grandes
+                    // DistribuciÃ³n power-law: Math.pow(random, exponent)
+                    // Exponente alto = mÃ¡s palabras pequeÃ±as, menos grandes
                     const t = Math.pow(Math.random(), 1.8);
 
-                    // Rango de tamaños: desde baseSize*0.15 hasta baseSize*4.0
+                    // Rango de tamaÃ±os: desde baseSize*0.15 hasta baseSize*4.0
                     const minSize = Math.max(8, baseSize * 0.15);
                     const maxSize = baseSize * (1 + variation * 3.5);
                     const size = maxSize - t * (maxSize - minSize);
@@ -1008,16 +1007,16 @@
                     const rotation = this.getRandomRotation();
                     const color = this.getWordColor();
 
-                    // Font weight varía con el tamaño: grandes=negrita, pequeñas=finas
+                    // Font weight varÃ­a con el tamaÃ±o: grandes=negrita, pequeÃ±as=finas
                     let fontWeight;
                     if (size > baseSize * 2) {
-                        fontWeight = 900; // Extra bold para las más grandes
+                        fontWeight = 900; // Extra bold para las mÃ¡s grandes
                     } else if (size > baseSize * 1.2) {
                         fontWeight = 700; // Bold para medianas-grandes
                     } else if (size > baseSize * 0.6) {
                         fontWeight = 500; // Medium para medianas
                     } else {
-                        fontWeight = 400; // Regular para pequeñas
+                        fontWeight = 400; // Regular para pequeÃ±as
                     }
 
                     wordInstances.push({ word, size, rotation, color, fontWeight });
@@ -1061,24 +1060,24 @@
                 const { word, size, rotation, color, fontWeight } = inst;
                 const widthPct = document.getElementById('fontWidth').value;
 
-                // Configurar font para medición precisa
+                // Configurar font para mediciÃ³n precisa
                 this.ctx.font = `${fontWeight || 400} ${widthPct}% ${size}px ${fontFamily}`;
                 const textMetrics = this.ctx.measureText(word);
                 const textWidth = textMetrics.width;
                 const textHeight = size * 0.85; // Altura real del texto es menor que el font-size
 
-                // Más intentos para palabras grandes (son más difíciles de colocar)
+                // MÃ¡s intentos para palabras grandes (son mÃ¡s difÃ­ciles de colocar)
                 const maxAttempts = size > 40 ? 200 : 80;
 
                 for (let attempt = 0; attempt < maxAttempts; attempt++) {
                     const x = Math.random() * this.canvas.width;
                     const y = Math.random() * this.canvas.height;
 
-                    // Solo verificar que el centro está en la máscara
+                    // Solo verificar que el centro estÃ¡ en la mÃ¡scara
                     // El recorte final (destination-in) se encarga de clipear los bordes
                     if (!this.isPointInMask(x, y)) continue;
 
-                    // Para palabras grandes, verificar algunos puntos más (pero no todos los corners)
+                    // Para palabras grandes, verificar algunos puntos mÃ¡s (pero no todos los corners)
                     if (size > 30) {
                         const hw = textWidth * 0.3; // Solo verificar al 30% del ancho
                         if (!this.isPointInMask(x - hw, y) || !this.isPointInMask(x + hw, y)) continue;
@@ -1167,11 +1166,11 @@
 
             isThemeWord(word) {
                 const themes = {
-                    technology: ['innovación', 'digital', 'futuro', 'código', 'algoritmo'],
+                    technology: ['innovaciÃ³n', 'digital', 'futuro', 'cÃ³digo', 'algoritmo'],
                     nature: ['flora', 'fauna', 'ecosistema', 'biodiversidad', 'sostenible'],
-                    art: ['creatividad', 'expresión', 'estética', 'composición', 'color'],
-                    business: ['estrategia', 'crecimiento', 'liderazgo', 'éxito', 'mercado'],
-                    science: ['descubrimiento', 'investigación', 'análisis', 'hipótesis', 'teoría']
+                    art: ['creatividad', 'expresiÃ³n', 'estÃ©tica', 'composiciÃ³n', 'color'],
+                    business: ['estrategia', 'crecimiento', 'liderazgo', 'Ã©xito', 'mercado'],
+                    science: ['descubrimiento', 'investigaciÃ³n', 'anÃ¡lisis', 'hipÃ³tesis', 'teorÃ­a']
                 };
                 return Object.values(themes).flat().includes(word);
             }
@@ -1211,7 +1210,7 @@
             }
 
             checkCollision(x, y, wordWidth, wordHeight, rotation) {
-                const padding = 1; // Mínimo 1px de separación
+                const padding = 1; // MÃ­nimo 1px de separaciÃ³n
 
                 const halfW1 = wordWidth / 2 + padding;
                 const halfH1 = wordHeight / 2 + padding;
@@ -1391,7 +1390,7 @@
                 container.innerHTML = this.words.map(word => `
                 <span class="word-entry inline-flex items-center gap-1 px-2 py-1 bg-indigo-600/30 border border-indigo-500/30 rounded text-xs text-indigo-200">
                     ${word}
-                    <button onclick="app.removeWord('${word}')" class="hover:text-white ml-1">×</button>
+                    <button onclick="app.removeWord('${word}')" class="hover:text-white ml-1">Ã—</button>
                 </span>
             `).join('');
             }
@@ -1401,12 +1400,12 @@
                 if (theme === 'custom') return;
 
                 const themes = {
-                    technology: ['innovación', 'digital', 'futuro', 'código', 'algoritmo', 'datos', 'inteligencia', 'automatización', 'red', 'cibernético', 'virtual', 'cuántico', 'robot', 'software', 'hardware', 'interface', 'usuario', 'experiencia', 'diseño', 'sistema'],
-                    nature: ['flora', 'fauna', 'ecosistema', 'biodiversidad', 'sostenible', 'orgánico', 'verde', 'vida', 'crecimiento', 'natural', 'silvestre', 'planeta', 'tierra', 'agua', 'aire', 'fuego', 'bosque', 'océano', 'montaña', 'flor'],
-                    art: ['creatividad', 'expresión', 'estética', 'composición', 'color', 'forma', 'textura', 'movimiento', 'armonía', 'contraste', 'diseño', 'visual', 'imaginación', 'inspiración', 'belleza', 'estilo', 'moderno', 'abstracto', 'contemporáneo', 'artístico'],
-                    business: ['estrategia', 'crecimiento', 'innovación', 'liderazgo', 'éxito', 'mercado', 'cliente', 'valor', 'calidad', 'servicio', 'producto', 'marca', 'visión', 'misión', 'objetivo', 'resultado', 'equipo', 'profesional', 'empresa', 'negocio'],
-                    science: ['descubrimiento', 'investigación', 'análisis', 'hipótesis', 'teoría', 'experimento', 'laboratorio', 'molécula', 'átomo', 'energía', 'física', 'química', 'biología', 'matemáticas', 'astronomía', 'genética', 'evolución', 'ecuación', 'partícula', 'universo'],
-                    random: ['aleatorio', 'caos', 'orden', 'patrón', 'estructura', 'forma', 'línea', 'punto', 'plano', 'volumen', 'espacio', 'tiempo', 'movimiento', 'estático', 'dinámico', 'flujo', 'cambio', 'permanente', 'temporal', 'eterno']
+                    technology: ['innovaciÃ³n', 'digital', 'futuro', 'cÃ³digo', 'algoritmo', 'datos', 'inteligencia', 'automatizaciÃ³n', 'red', 'cibernÃ©tico', 'virtual', 'cuÃ¡ntico', 'robot', 'software', 'hardware', 'interface', 'usuario', 'experiencia', 'diseÃ±o', 'sistema'],
+                    nature: ['flora', 'fauna', 'ecosistema', 'biodiversidad', 'sostenible', 'orgÃ¡nico', 'verde', 'vida', 'crecimiento', 'natural', 'silvestre', 'planeta', 'tierra', 'agua', 'aire', 'fuego', 'bosque', 'ocÃ©ano', 'montaÃ±a', 'flor'],
+                    art: ['creatividad', 'expresiÃ³n', 'estÃ©tica', 'composiciÃ³n', 'color', 'forma', 'textura', 'movimiento', 'armonÃ­a', 'contraste', 'diseÃ±o', 'visual', 'imaginaciÃ³n', 'inspiraciÃ³n', 'belleza', 'estilo', 'moderno', 'abstracto', 'contemporÃ¡neo', 'artÃ­stico'],
+                    business: ['estrategia', 'crecimiento', 'innovaciÃ³n', 'liderazgo', 'Ã©xito', 'mercado', 'cliente', 'valor', 'calidad', 'servicio', 'producto', 'marca', 'visiÃ³n', 'misiÃ³n', 'objetivo', 'resultado', 'equipo', 'profesional', 'empresa', 'negocio'],
+                    science: ['descubrimiento', 'investigaciÃ³n', 'anÃ¡lisis', 'hipÃ³tesis', 'teorÃ­a', 'experimento', 'laboratorio', 'molÃ©cula', 'Ã¡tomo', 'energÃ­a', 'fÃ­sica', 'quÃ­mica', 'biologÃ­a', 'matemÃ¡ticas', 'astronomÃ­a', 'genÃ©tica', 'evoluciÃ³n', 'ecuaciÃ³n', 'partÃ­cula', 'universo'],
+                    random: ['aleatorio', 'caos', 'orden', 'patrÃ³n', 'estructura', 'forma', 'lÃ­nea', 'punto', 'plano', 'volumen', 'espacio', 'tiempo', 'movimiento', 'estÃ¡tico', 'dinÃ¡mico', 'flujo', 'cambio', 'permanente', 'temporal', 'eterno']
                 };
 
                 this.words = [...themes[theme]];
@@ -1465,7 +1464,7 @@
                 // Usar el bounding rect del canvas real (incluye transforms CSS)
                 const canvasRect = this.canvas.getBoundingClientRect();
 
-                // Calcular la posición del ratón relativa al canvas renderizado
+                // Calcular la posiciÃ³n del ratÃ³n relativa al canvas renderizado
                 const canvasMouseX = e.clientX - canvasRect.left;
                 const canvasMouseY = e.clientY - canvasRect.top;
 
@@ -1476,8 +1475,8 @@
                 const canvasX = canvasMouseX * scaleX;
                 const canvasY = canvasMouseY * scaleY;
 
-                // Tamaño de la zona a capturar (en píxeles del canvas)
-                const captureSize = 64; // píxeles del canvas a mostrar en la lupa (2x zoom)
+                // TamaÃ±o de la zona a capturar (en pÃ­xeles del canvas)
+                const captureSize = 64; // pÃ­xeles del canvas a mostrar en la lupa (2x zoom)
 
                 const sourceX = canvasX - captureSize / 2;
                 const sourceY = canvasY - captureSize / 2;
@@ -1626,7 +1625,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-xs text-indigo-400 font-mono">${item.wordCount} palabras</span>
-                                <button onclick="event.stopPropagation(); app.deleteHistory(${item.id})" class="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                                <button onclick="event.stopPropagation(); app.deleteHistory(${item.id})" class="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">Ã—</button>
                             </div>
                             <p class="text-xs text-slate-400 truncate">${item.date}</p>
                             <div class="flex gap-2 mt-2">
@@ -1672,7 +1671,7 @@
             }
 
             clearHistory() {
-                if (!confirm('¿Eliminar todo el historial?')) return;
+                if (!confirm('Â¿Eliminar todo el historial?')) return;
                 this.savedHistory = [];
                 localStorage.removeItem('silhouette_history');
                 HistoryManager.clearAll();
@@ -1713,7 +1712,7 @@
                         <div class="text-sm font-medium text-slate-200">${p.name}</div>
                         <div class="text-xs text-slate-500">${p.date}</div>
                     </div>
-                    <button onclick="event.stopPropagation(); app.deletePreset(${i})" class="text-slate-500 hover:text-red-400 p-1">×</button>
+                    <button onclick="event.stopPropagation(); app.deletePreset(${i})" class="text-slate-500 hover:text-red-400 p-1">Ã—</button>
                 </div>
             `).join('');
             }
@@ -1824,7 +1823,7 @@
             }
 
             clear() {
-                if (!confirm('¿Eliminar todo el progreso?')) return;
+                if (!confirm('Â¿Eliminar todo el progreso?')) return;
                 this.placedWords = [];
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 this.showStatus('Canvas limpiado');
