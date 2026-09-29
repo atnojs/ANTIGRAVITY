@@ -27,6 +27,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
+// ════════════════════════════════════════════════════════════════════════
+// ACCIONES CANONICAS: health / models (diagnostico, sin gastar imagen)
+// Uso: GET proxy.php?action=health|models · POST {"action":"health"|"models"}
+// El catalogo vigente lo aporta canonical-image-model.php (lista cerrada).
+// Nunca devuelve claves.
+// ════════════════════════════════════════════════════════════════════════
+$agBody = json_decode((string)file_get_contents('php://input'), true);
+$agAction = strtolower(trim((string)((is_array($agBody) ? ($agBody['action'] ?? '') : '') ?: ($_GET['action'] ?? ''))));
+if ($agAction === 'health' || $agAction === 'models') {
+    http_response_code(200);
+    echo json_encode($agAction === 'models'
+        ? ['success' => true, 'models' => array_keys(ag_image_catalog())]
+        : [
+            'success'    => true,
+            'service'    => 'antigravity-ai-proxy',
+            'configured' => [
+                'openai'     => ag_image_key(__DIR__, 'OPENAI_API_KEY', 'O') !== '',
+                'openrouter' => ag_image_key(__DIR__, 'R') !== '',
+            ],
+            'actions'    => ['redecorar', 'analyze', 'detect', 'crop', 'health', 'models'],
+            'models'     => array_keys(ag_image_catalog()),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Solo POST.']]);
@@ -57,14 +81,9 @@ function readKey(string $letter): string {
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
+    // ── Clave R (OpenRouter): getenv → REDIRECT_ → $_SERVER → $_ENV
+    // (la fuente real es SetEnv R del .htaccess raíz: ninguna clave va en el repo)
+    $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: '');
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
     if ($orKey === '') {
@@ -212,11 +231,6 @@ $action = (string)($req['action'] ?? '');
 // reintentos del frontend recogen el caché o esperan con 'processing'.
 if (!in_array($action, ['analyze', 'detect', 'crop'], true) && strtolower((string)($req['model'] ?? '')) === 'qwen-pro') {
     $orKeyQ = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKeyQ = (string)R; }
     if ($orKeyQ === '') { $orKeyQ = readKey('R'); }
     if ($orKeyQ === '') {
         http_response_code(500);

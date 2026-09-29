@@ -3,9 +3,9 @@
  * Conexión a la base de datos MySQL
  */
 // Claves SOLO del entorno (.htaccess raíz de Hostinger).
-// OJO: DB_HOST/DB_NAME/DB_USER/DB_PASS nunca estuvieron definidos aquí (el
-// antiguo config.php solo definía la constante A vacía), así que esta clase ya
-// no podía conectar; se deja igual, sin tocar su lógica.
+// OJO: DB_HOST/DB_NAME/DB_USER/DB_PASS nunca estuvieron definidos (el antiguo
+// fichero de configuración solo definía una constante A vacía), así que esta
+// clase ya no podía conectar; se deja igual, sin tocar su lógica.
 
 class Database
 {
