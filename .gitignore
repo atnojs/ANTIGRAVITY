@@ -128,6 +128,14 @@ apps/decorar_habitacion/crops/
 *.jpg
 *.png
 
+# Cache en runtime de los proxies (modelos de OpenAI y resultados de Qwen).
+# Se conservan versionados el .gitignore y el .htaccess de cada carpeta (protegen
+# el directorio en la raiz publica de Hostinger); lo que no se versiona son los
+# datos: si entran en Git, cada despliegue restaura una cache antigua.
+**/qwen_cache/*.json
+**/qwen_cache/*.lock
+**/qwen_cache/*.json.lock
+
 # Ignorar copias de seguridad y pruebas temporales
 copias_de_seguridad_de_archivos/
 *.backup_*
