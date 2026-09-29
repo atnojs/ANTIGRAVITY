@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Lucide from 'lucide-react';
 
@@ -13,15 +13,18 @@ const {
 // --- CONSTANTES (ORIGINAL) ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
-// ===== Selector de modelo (7 botones, catálogo 2.5) =====
-const DEFAULT_MODEL = 'openai-medium';
+// ===== Selector de modelo (11 botones, catálogo canónico) =====
+const DEFAULT_MODEL = 'openai-image-2';
 let ACTIVE_MODEL = DEFAULT_MODEL;
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
-    'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
+    'openai-xhigh': 'XHIGH',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2': 'MEDIUM',
+    'openai-image-2-high': 'HIGH',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO'
@@ -670,8 +673,8 @@ const App = () => {
                                         <div className="model-toggle-group">
                                             <button type="button" className={`model-toggle ${selectedModel === 'openai-medium' ? 'active' : ''}`} data-model="openai-medium" aria-pressed={selectedModel === 'openai-medium'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-medium'] || ''} onClick={() => handleModelSelect('openai-medium')}>MEDIUM</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'openai-high' ? 'active' : ''}`} data-model="openai-high" aria-pressed={selectedModel === 'openai-high'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-high'] || ''} onClick={() => handleModelSelect('openai-high')}>HIGH</button>
-                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-xhigh' ? 'active' : ''}`} data-model="openai-xhigh" aria-pressed={selectedModel === 'openai-xhigh'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''} onClick={() => handleModelSelect('openai-xhigh')}>XHIGH</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'openai-max-flare' ? 'active' : ''}`} data-model="openai-max-flare" aria-pressed={selectedModel === 'openai-max-flare'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-flare'] || ''} onClick={() => handleModelSelect('openai-max-flare')}>MAX FLARE</button>
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-xhigh' ? 'active' : ''}`} data-model="openai-xhigh" aria-pressed={selectedModel === 'openai-xhigh'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''} onClick={() => handleModelSelect('openai-xhigh')}>XHIGH</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'openai-max-sunburst' ? 'active' : ''}`} data-model="openai-max-sunburst" aria-pressed={selectedModel === 'openai-max-sunburst'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-sunburst'] || ''} onClick={() => handleModelSelect('openai-max-sunburst')}>MAX SUNBURST</button>
                                         </div>
                                     </div>
@@ -679,6 +682,7 @@ const App = () => {
                                         <span className="model-provider-title">GEMINI</span>
                                         <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
                                         <div className="model-toggle-group">
+                                            <button type="button" className={`model-toggle ${selectedModel === 'gemini-2' ? 'active' : ''}`} data-model="gemini-2" aria-pressed={selectedModel === 'gemini-2'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-2'] || ''} onClick={() => handleModelSelect('gemini-2')}>GEMINI 2</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'gemini-flash' ? 'active' : ''}`} data-model="gemini-flash" aria-pressed={selectedModel === 'gemini-flash'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-flash'] || ''} onClick={() => handleModelSelect('gemini-flash')}>3.1 FLASH</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'gemini-pro' ? 'active' : ''}`} data-model="gemini-pro" aria-pressed={selectedModel === 'gemini-pro'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-pro'] || ''} onClick={() => handleModelSelect('gemini-pro')}>3 PRO</button>
                                         </div>
@@ -688,6 +692,14 @@ const App = () => {
                                         <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
                                         <div className="model-toggle-group">
                                             <button type="button" className={`model-toggle ${selectedModel === 'qwen-pro' ? 'active' : ''}`} data-model="qwen-pro" aria-pressed={selectedModel === 'qwen-pro'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['qwen-pro'] || ''} onClick={() => handleModelSelect('qwen-pro')}>QWEN 3 PRO</button>
+                                        </div>
+                                    </div>
+                                    <div className="model-provider-column">
+                                        <span className="model-provider-title">IMAGE 2</span>
+                                        <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
+                                        <div className="model-toggle-group">
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-image-2' ? 'active' : ''}`} data-model="openai-image-2" aria-pressed={selectedModel === 'openai-image-2'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2'] || ''} onClick={() => handleModelSelect('openai-image-2')}>MEDIUM</button>
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-image-2-high' ? 'active' : ''}`} data-model="openai-image-2-high" aria-pressed={selectedModel === 'openai-image-2-high'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2-high'] || ''} onClick={() => handleModelSelect('openai-image-2-high')}>HIGH</button>
                                         </div>
                                     </div>
                                 </div>
@@ -792,6 +804,9 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media.',
+    'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.',
+    'gemini-2': 'Gemini 2 (gemini-2.5-flash-image) · el más ligero y económico del grupo',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
