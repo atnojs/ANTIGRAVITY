@@ -631,7 +631,7 @@ h3 {
 }
 
 /* ════
-   SELECTOR DE MODELO IA (canónico 7 botones)
+   SELECTOR DE MODELO IA (canónico 11 botones)
    ════ */
 .model-provider-layout {
     display: flex;
@@ -644,6 +644,7 @@ h3 {
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 1.4rem;
 }
 

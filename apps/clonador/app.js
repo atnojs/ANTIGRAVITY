@@ -2,27 +2,31 @@
  * ════
  * 🧬 PROTOCOLO GEMINI v14.0 - CON HISTORIAL PERSISTENTE SERVER-SIDE
  * ════
- * Selector: OpenAI Image 2.5 (5 calidades) + Gemini (3.1 Flash / 3 Pro) + QWEN 3 PRO
+ * Selector: OpenAI image 2 (IMAGE 2: MEDIUM/HIGH, MEDIUM por defecto) + OpenAI Image 2.5 (5 calidades)
+ * + Gemini (GEMINI 2 / 3.1 Flash / 3 Pro) + QWEN 3 PRO
  * Incluye: HistoryManager (IndexedDB + servidor PHP), Lightbox, Botones de acción
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONSTANTES ---
     const PROXY_URL = 'proxy.php';
-    const DEFAULT_MODEL = 'openai-medium';
+    const DEFAULT_MODEL = 'openai-image-2';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
+        'openai-image-2': 'MEDIUM',
+        'openai-image-2-high': 'HIGH',
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
-        'openai-xhigh': 'XHIGH',
         'openai-max-flare': 'MAX FLARE',
+        'openai-xhigh': 'XHIGH',
         'openai-max-sunburst': 'MAX SUNBURST',
+        'gemini-2': 'GEMINI 2',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'qwen-pro': 'QWEN 3 PRO'
     };
 
-    // --- SELECTOR DE MODELO (8 botones, MEDIUM activo) ---
+    // --- SELECTOR DE MODELO (11 botones, IMAGE 2 MEDIUM activo por defecto) ---
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {
         selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;
