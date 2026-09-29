@@ -28,26 +28,25 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-// API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
-$API_KEY = '';
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('A');
+// ===== Claves API: SOLO del entorno (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV) =====
+// Este proxy no lee ficheros de configuración locales: las claves viven únicamente en el entorno del servidor.
+function agEnvAny(array $names): string {
+    foreach ($names as $name) {
+        foreach ([getenv($name), getenv('REDIRECT_' . $name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? ''] as $value) {
+            if (is_string($value) && trim($value) !== '') { return trim($value); }
+        }
+    }
+    return '';
 }
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = getenv('REDIRECT_A');
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['A'] ?? '';
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_SERVER['REDIRECT_A'] ?? '';
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['A'] ?? '';
-}
-if (!$API_KEY || empty($API_KEY)) {
-    $API_KEY = $_ENV['REDIRECT_A'] ?? '';
-}
+
+// Lista blanca cerrada de modelos de TEXTO/VISIÓN que acepta este proxy.
+// La app redacta el anuncio con el modelo de texto y NO tiene catálogo de
+// modelos de imagen, así que `models` va vacío a propósito y los modelos
+// reales se exponen en `textModels`.
+const TEXT_MODELS = ['xiaomi/mimo-v2.6-pro'];
+
+// API Key de Gemini — cascadeo robusto (clave legacy, solo para rutas de imagen)
+$API_KEY = agEnvAny(['A']);
 // (La comprobación de la clave Gemini se hace en la ruta que la necesita;
 //  los modelos de texto MiMo usan la clave OpenRouter R y no requieren A.)
 
@@ -71,6 +70,24 @@ if (isset($req['data']) && is_array($req['data']) && !isset($req['contents']) &&
     $req = array_merge($req, $req['data']);
 }
 
+// ===== Diagnóstico POST: health / models (sin claves; no requiere prompt ni clave) =====
+// Uso: POST {"action":"health"}. Nunca devuelve claves.
+$agAction = strtolower((string)($req['action'] ?? ''));
+if ($agAction === 'health' || $agAction === 'models') {
+    echo json_encode([
+        'success'    => true,
+        'configured' => [
+            'openai'     => agEnvAny(['OPENAI_API_KEY', 'O']) !== '',
+            'openrouter' => agEnvAny(['R']) !== '',
+        ],
+        'actions'    => ['generate', 'health', 'models'],
+        // `models` vacío a propósito: esta app no maneja modelos de imagen.
+        'models'     => [],
+        'textModels' => TEXT_MODELS,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // Modelo (por defecto: MiMo 2.6 Pro — modelo de texto/análisis del parque)
 $model = (string)($req['model'] ?? 'xiaomi/mimo-v2.6-pro');
 $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($API_KEY);
@@ -78,7 +95,7 @@ $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model 
 // ===== Modelos de texto/análisis (MiMo) vía OpenRouter (clave R) =====
 $isTextModel = (strpos($model, 'xiaomi/') === 0) || $model === 'gemini-3.8-flash';
 if ($isTextModel) {
-    $orKey = getenv('R') ?: getenv('REDIRECT_R') ?: ($_SERVER['R'] ?? '') ?: ($_SERVER['REDIRECT_R'] ?? '') ?: ($_ENV['R'] ?? '');
+    $orKey = agEnvAny(['R']);
     if ($orKey === '') {
         http_response_code(500);
         echo json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']]);

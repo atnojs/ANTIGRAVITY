@@ -41,7 +41,9 @@ class HistoryManager {
 
     async load() {
         const separator = this.apiUrl.includes('?') ? '&' : '?';
-        const url = `${this.apiUrl}${separator}action=list&app=${encodeURIComponent(this.appName)}`;
+        // Sello de tiempo: sin el, un proxy/CDN intermedio puede servir una lista
+        // antigua y las imagenes recien generadas no aparecen al recargar.
+        const url = `${this.apiUrl}${separator}action=list&app=${encodeURIComponent(this.appName)}&_=${Date.now()}`;
         const payload = await this._request(url);
         this.history = Array.isArray(payload.history) ? payload.history : [];
         this._notify();
@@ -215,8 +217,8 @@ if (typeof module !== 'undefined' && module.exports) {
 
     // saveItem({ id, url, prompt, model, ... }) -> save() canonico
     HM.saveItem = function (item) {
-        const history = getLegacy();
-        return history.save({
+        const hm = getLegacy();
+        return hm.save({
             id: item.id,
             type: item.type || 'image',
             model: item.model || 'desconocido',
