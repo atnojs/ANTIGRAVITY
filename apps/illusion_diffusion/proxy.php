@@ -1,10 +1,11 @@
 <?php
 // ============================================================
-// PROXY UNIFICADO — OpenAI Image 2.5 (5 calidades) + Gemini
-// (Google directo, clave A por entorno).
-// Selector: openai-medium / openai-high / openai-xhigh /
-// openai-max-flare / openai-max-sunburst / gemini-flash /
-// gemini-pro / qwen-pro. Otros modelos rechazados (400 "Modelo no soportado").
+// PROXY UNIFICADO — OPENAI 2.5 (5 calidades) + IMAGE 2 (gpt-image-2)
+// + Gemini (gemini-2/3.1 Flash/3 Pro) + Qwen Image 3 Pro.
+// Catálogo canónico (lista blanca exacta): openai-medium / openai-high /
+// openai-max-flare / openai-xhigh / openai-max-sunburst / openai-image-2 /
+// openai-image-2-high / gemini-2 / gemini-flash / gemini-pro / qwen-pro.
+// Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
 // tocar los frontends existentes.
 // Claves: SOLO entorno (getenv/REDIRECT_/$_SERVER/$_ENV).
@@ -24,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Solo POST.']]);
     exit;
@@ -45,6 +46,14 @@ function getKey(string $name): string
     return '';
 }
 
+// Claves configuradas (nunca su valor): diagnóstico action=health.
+function configuredKeys(): array
+{
+    $openai = getKey('OPENAI_API_KEY');
+    if ($openai === '') $openai = getKey('O');
+    return ['openai' => $openai !== '', 'openrouter' => getKey('R') !== ''];
+}
+
 $API_KEY = getKey('A'); // Gemini directo (Google AI)
 $openaiKey = getKey('OPENAI_API_KEY');
 if ($openaiKey === '') $openaiKey = getKey('O');
@@ -53,13 +62,28 @@ if ($openaiKey === '') $openaiKey = getKey('O');
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'high'],
-    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
 ];
+
+// ===== Diagnóstico público en GET: no exige clave ni gasta API =====
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    echo json_encode([
+        'success' => true,
+        'service' => 'illusion_diffusion',
+        'configured' => configuredKeys(),
+        'actions' => ['generate', 'health', 'models'],
+        'models' => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 // ===== Entrada =====
 $requestBody = file_get_contents('php://input');
@@ -76,8 +100,19 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
     exit;
 }
 
+// Diagnóstico en POST: action=health / action=models (sin clave).
+$diagnosticAction = strtolower(trim((string)($req['action'] ?? '')));
+if ($diagnosticAction === 'health' || $diagnosticAction === 'models') {
+    echo json_encode([
+        'success' => true,
+        'configured' => configuredKeys(),
+        'models' => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-medium')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';
@@ -447,13 +482,8 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO del entorno (getenv → REDIRECT_ → $_SERVER → $_ENV)
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }

@@ -11,9 +11,12 @@ const STORAGE_KEY = 'illusion_diffusion_history';
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
-    'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
+    'openai-xhigh': 'XHIGH',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2': 'MEDIUM',
+    'openai-image-2-high': 'HIGH',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO'
@@ -35,7 +38,7 @@ function App() {
     const dragMovedRef = useRef(false);
     const dragStartRef = useRef({ x: 0, y: 0 });
     const [history, setHistory] = useState([]);
-    const [selectedModel, setSelectedModel] = useState('openai-medium');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2');
     const [isGenerating, setIsGenerating] = useState(false);
     const [viewerImage, setViewerImage] = useState(null);
     const [canvasViewerImage, setCanvasViewerImage] = useState(null);
@@ -460,8 +463,8 @@ function App() {
                                     {[
                                         { id: 'openai-medium', name: 'MEDIUM' },
                                         { id: 'openai-high', name: 'HIGH' },
-                                        { id: 'openai-xhigh', name: 'XHIGH' },
                                         { id: 'openai-max-flare', name: 'MAX FLARE' },
+                                        { id: 'openai-xhigh', name: 'XHIGH' },
                                         { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }
                                     ].map(m => (
                                         <button
@@ -481,6 +484,7 @@ function App() {
                                 <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
                                 <div className="flex flex-wrap gap-2 justify-center">
                                     {[
+                                        { id: 'gemini-2', name: 'GEMINI 2' },
                                         { id: 'gemini-flash', name: '3.1 FLASH' },
                                         { id: 'gemini-pro', name: '3 PRO' }
                                     ].map(m => (
@@ -502,6 +506,26 @@ function App() {
                                 <div className="flex flex-wrap gap-2 justify-center">
                                     {[
                                         { id: 'qwen-pro', name: 'QWEN 3 PRO' }
+                                    ].map(m => (
+                                        <button
+                                            type="button"
+                                            key={m.id}
+                                            onClick={() => setSelectedModel(m.id)}
+                                            className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
+                                            aria-pressed={selectedModel === m.id}
+                                            aria-describedby="model-tooltip"
+                                            data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}
+                                        >{m.name}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <span className="model-provider-title">IMAGE 2</span>
+                                <span className="model-quality-hint">De Menor a Mayor Calidad</span>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {[
+                                        { id: 'openai-image-2', name: 'MEDIUM' },
+                                        { id: 'openai-image-2-high', name: 'HIGH' }
                                     ].map(m => (
                                         <button
                                             type="button"
@@ -670,9 +694,12 @@ function App() {
 window.MODEL_TOOLTIP_TEXTS = {
     'openai-medium': 'Fondo transparente, Muy rápido',
     'openai-high': 'Fondo transparente',
-    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2': 'OpenAI Image 2 (gpt-image-2), modelo base, calidad media',
+    'openai-image-2-high': 'OpenAI Image 2 (gpt-image-2), calidad alta',
+    'gemini-2': 'Gemini 2.5 Flash Image, Rápido y económico',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
