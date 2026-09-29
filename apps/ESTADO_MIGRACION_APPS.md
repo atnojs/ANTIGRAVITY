@@ -148,7 +148,7 @@ servido). **⏳ = pendiente.**
 | 13 | ✅ | `prompt_copilot_premium` y `prompt_estudio` | actividad | 2 |
 | 14 | ✅ | `imagenes_ia/generar`, `imagenes_ia/generar_copia`, `imagenes_ia/editar`, `imagenes_ia/copiar_estilo`, `imagenes_ia/combinar_imagenes`, `imagenes_ia/estilo_json`, `imagenes_ia/upscaler` | apps de imagen del proyecto | 0–2 |
 | 15 | ✅ | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
-| 16 | 🟡 | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
+| 16 | ✅ | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
 
 **Filas 14 y 15 verificadas en producción** (health del proxy con el catálogo vigente
 —`gemini-2` incluido— y `history.php` sirviendo desde `history_store/`; se comprueba con
@@ -156,10 +156,10 @@ servido). **⏳ = pendiente.**
 `imagenes_ia/generar_copia`, `imagenes_ia/combinar_imagenes` y `imagenes_ia/upscaler`,
 que vivía solo en IndexedDB/localStorage, ya escribe y lee del servidor.
 
-**Estado de la fila 16** (🟡 = migradas y commiteadas; la verificación en producción va con
-`tools/verificar-fila16.ps1`, porque el deploy de Hostinger tarda minutos):
+**Fila 16: ✅ verificada en producción** con `tools/verificar-fila16.ps1` (19/19 apps con
+el health publicado; `trickvault` no aplica). Resumen de lo hecho:
 
-- 19 de las 20 apps están migradas: fuera `config.php` (todas las que lo tenían) y FLUX
+- 19 de las 20 apps migradas: fuera `config.php` (todas las que lo tenían) y FLUX
   (`aura-edit`), catálogo canónico con `gemini-2` + `image-2`, `action=health` /
   `action=models` donde hay proxy de imagen, `history.php` canónico en `history_store/` y
   `history-manager.js` canónico (sello anti-caché + shim legacy).
@@ -171,14 +171,33 @@ que vivía solo en IndexedDB/localStorage, ya escribe y lee del servidor.
   `editor_local`, que guarda el historial en IndexedDB y no usa `history.php`; se le ha
   restaurado el `lightbox.js` que su `index.html` referenciaba y no existía (404). Falta
   decidir si se migra `editor_local` como app propia.
-- Historial de servidor **conectado de verdad** en: `generar`, `generar_ai_studio`,
-  `generar_imagene_personalizadas`, `fotos_antonio`, `clonador`, `decorar_habitacion`,
-  `estudio_creativo`, `estudio_imagenes`, `hermes_academy`, `transferir_estilo`,
-  `pasatiempos`. Pendiente de conectar (guardan en el navegador): `banco_de_imagenes`,
-  `publicidad_producto`, `aura-edit`, `illusion_diffusion` y `crear_historias` (esta última
-  no tiene historial en el front).
+- Historial de servidor **conectado de verdad** en TODA la fila 16: `generar`,
+  `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `clonador`,
+  `decorar_habitacion`, `estudio_creativo`, `estudio_imagenes`, `hermes_academy`,
+  `transferir_estilo`, `pasatiempos`, `banco_de_imagenes`, `publicidad_producto`,
+  `aura-edit`, `illusion_diffusion` y `crear_historias` (a esta última se le añadió el panel
+  de historial, que no existía). En todas, IndexedDB/localStorage quedan solo como caché
+  local y el servidor es la fuente de verdad.
 - Excepciones documentadas: `pasatiempos` y `rrss` son apps de texto/descarga, así que su
   `models` va vacío a propósito; `video-vault` tampoco maneja modelos de imagen.
+- Los tokens `DALL-E` que quedan en `galletas_infografias/app.js` y
+  `imagenes_ia/copiar_estilo/app_v2.js` son **texto de prompt de producto** (enumeran
+  herramientas de IA), no llamadas a la API: se conservan a propósito.
+- `tools/inventario-apps.php` da **falsos negativos** en la columna `gemini2`: busca el
+  literal `gemini-2.5-flash-image` en el `proxy.php` de cada app, y las que delegan en
+  `canonical-image-model.php` (o usan `gemini-2` como identificador) salen como `NO` aunque
+  estén migradas. No sirve como criterio único sin esa corrección.
+
+**Fila 17 (pendiente de decidir).** Una auditoría de los proxies que quedan fuera de las
+filas 1–16 encontró 6 apps desplegadas con proxy propio sin migrar:
+`prompts_predeterminados` (desplegada, en uso, selector legacy de 8 botones + Firebase),
+`generador_ia`, `generador_ia_flux` (el nombre engaña: no tiene FLUX en el código),
+`asistente_inmoviliario` (texto/visión, está en el portal), `out` (passthrough genérico,
+dudosa) y `protocolo_gemini_web` (la única con `config.php` pendiente). Además hay 2
+módulos accesorios de apps ya migradas (`angulos_de_camara/images`,
+`viaje_tiempo/public`) y `viaje_tiempo` (app de texto con cascade `config.php`). No se ha
+tocado nada de la fila 17 en esta sesión.
+
 
 **Patrón aplicado por app** (§4, ya probado en las apps 1–16): `history.php` canónico
 copiado tal cual (datos en `history_store/`, con migración de un solo paso desde
