@@ -30,12 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => ['message' => 'Método no permitido']]);
-    exit;
-}
-
 /**
  * Helper de claves en cascada (skill maestra):
  * .htaccess raiz → getenv → REDIRECT_ → $_SERVER → $_ENV
@@ -52,7 +46,113 @@ function getSecret(string $name): string {
     return '';
 }
 
+/**
+ * Diagnóstico (no gasta API): pregunta a OpenAI qué modelos de IMAGEN ofrece la
+ * cuenta de verdad, para no adivinar identificadores. Nunca devuelve la clave.
+ */
+function proxyOpenAiImageModels(): array {
+    $key = getSecret('OPENAI_API_KEY') ?: getSecret('O');
+    if ($key === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+        exit;
+    }
+    $cacheDir = __DIR__ . '/qwen_cache';
+    $cacheFile = $cacheDir . '/openai_models.json';
+    $cached = is_file($cacheFile) ? json_decode((string)@file_get_contents($cacheFile), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        return (array)$cached['ids'];
+    }
+    $ch = curl_init('https://api.openai.com/v1/models');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $key],
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = json_decode((string)$raw, true);
+    if ($code >= 400 || !is_array($data)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $code . ').']]);
+        exit;
+    }
+    $ids = [];
+    foreach (($data['data'] ?? []) as $model) {
+        $id = (string)($model['id'] ?? '');
+        if ($id !== '' && preg_match('/image/i', $id) === 1) $ids[] = $id;
+    }
+    sort($ids);
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+    @file_put_contents($cacheFile, json_encode(['at' => time(), 'ids' => $ids], JSON_UNESCAPED_SLASHES));
+    return $ids;
+}
+
+// ── Catálogo canónico (2026-09-25): OpenAI 2.5 (5 calidades) + OpenAI image 2
+// (gpt-image-2) + Gemini + QWEN 3 PRO. (lista cerrada) (400 "Modelo no soportado"). ──
+$modelCatalog = [
+    'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
+    'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
+    'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
+    'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
+    'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'google/gemini-2.5-flash-image'],
+    'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
+    'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
+    'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
+];
+
+// Diagnóstico por GET (no gasta API): qué claves ve el entorno y qué modelos y
+// acciones acepta el proxy. Nunca devuelve claves.
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'antigravity-ai-proxy',
+        'configured' => [
+            'openai'     => (getSecret('OPENAI_API_KEY') ?: getSecret('O')) !== '',
+            'openrouter' => getSecret('R') !== '',
+        ],
+        'actions'    => ['enhancePrompt', 'combineImages', 'health', 'models'],
+        'models'     => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => ['message' => 'Método no permitido']]);
+    exit;
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
+$action = strtolower(trim((string)(is_array($input) ? ($input['action'] ?? '') : '')));
+
+// Salud (no gasta API): nunca devuelve claves, solo si están configuradas.
+if ($action === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => [
+            'openai'     => (getSecret('OPENAI_API_KEY') ?: getSecret('O')) !== '',
+            'openrouter' => getSecret('R') !== '',
+        ],
+        'models'     => array_keys($modelCatalog),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+// Diagnóstico de modelos reales de la cuenta de OpenAI.
+if ($action === 'models') {
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => proxyOpenAiImageModels()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if (!$input || !isset($input['task'])) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Body JSON inválido o falta el campo task']]);
@@ -119,7 +219,7 @@ PROMPT;
 
 // ─── COMBINE IMAGES → OpenAI 2.5 o Gemini ──────────────────
 if ($task === 'combineImages') {
-    $model = strtolower((string)($input['model'] ?? 'openai-medium'));
+    $model = strtolower((string)($input['model'] ?? 'openai-image-2'));
     $prompt = $input['prompt'] ?? '';
     $aspectRatio = $input['aspectRatio'] ?? '1:1';
     $targetPx = $input['targetPx'] ?? 1024;
@@ -131,17 +231,7 @@ if ($task === 'combineImages') {
         exit;
     }
 
-    // ── Catálogo canónico (2026-09-25): OpenAI 2.5 (5 calidades) + Gemini + QWEN 3 PRO. (lista cerrada) ──
-    $modelCatalog = [
-        'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
-        'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
-        'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
-        'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
-        'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-        'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
-        'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
-        'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
-    ];
+    // ── Catálogo canónico (2026-09-25): definido arriba (lista cerrada). ──
     if (!isset($modelCatalog[$model])) {
         http_response_code(400);
         echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
