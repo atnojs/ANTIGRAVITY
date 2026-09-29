@@ -829,7 +829,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
-    <script src="history-manager.js"></script>
+    <script src="history-manager.js?v=2"></script>
 </head>
 
 <body>
@@ -883,23 +883,31 @@
                 }
             }, [crossfade]);
 
-            // ─── Cargar historial desde HistoryManager (servidor + IndexedDB) ───
+            // ─── Cargar historial persistente de servidor (HistoryManager canónico: history_store/) ───
             useEffect(() => {
-              HistoryManager.configure({ dbName: 'transferir_estilo_db' });
+              HistoryManager.configure({ dbName: 'transferir_estilo' });
               HistoryManager.init()
                 .then(() => HistoryManager.loadAll())
                 .then(items => {
                   if (items && items.length > 0) {
-                    const loaded = items.map(i => ({
-                      id: i.id,
-                      url: i.url,
-                      timestamp: i.createdAt || Date.now(),
-                      type: 'local',
-                      config: i.config || {}
-                    }));
-                    setHistory(loaded);
+                    const loaded = items.map(i => {
+                      const cfg = i.config || (i.data && i.data.config) || {};
+                      return {
+                        id: i.id,
+                        url: i.url,
+                        timestamp: i.createdAt || Date.now(),
+                        type: i.type === 'ai' ? 'ai' : 'local',
+                        config: cfg
+                      };
+                    });
+                    // Se mezcla con lo ya cargado en la sesión sin duplicar.
+                    setHistory(prev => {
+                      const known = new Set(prev.map(it => it.id));
+                      return [...prev, ...loaded.filter(it => !known.has(it.id))];
+                    });
                   }
-                });
+                })
+                .catch(e => console.warn('Historial de servidor no disponible:', e));
             }, []);
 
             const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
@@ -977,7 +985,7 @@
                 try {
                     const prompt = `Fusión artística avanzada de dos imágenes. Estilo cinematográfico, transiciones suaves, combinando ${image1.name} y ${image2.name} con un enfoque equilibrado.`;
                     const payload = {
-                        model: 'gemini-3.1-flash-image-preview', prompt, contents: [
+                        model: 'openai-image-2', prompt, contents: [
                             { inlineData: { mimeType: 'image/png', data: image1.url.split(',')[1] } },
                             { inlineData: { mimeType: 'image/png', data: image2.url.split(',')[1] } }
                         ]
@@ -989,8 +997,7 @@
                         const cfg = { blendMode, opacity1: image1.settings.opacity, opacity2: image2.settings.opacity };
                         const item: HistoryItem = { id, url: `data:image/png;base64,${result.image}`, timestamp: Date.now(), type: 'ai', config: cfg };
                         setHistory(prev => [item, ...prev]); setPreviewUrl(item.url);
-                        HistoryManager.saveItem({ id, url: item.url, prompt: 'FusionAI AI', config: cfg, createdAt: item.timestamp });
-                    }
+                        HistoryManager.saveItem({ id, url: item.url, prompt: 'FusionAI AI', type: 'ai', config: cfg, createdAt: item.timestamp });                    }
                 } catch (error) { alert("Error al procesar con IA."); } finally { setIsProcessing(false); }
             };
 
@@ -1000,10 +1007,22 @@
                 const cfg = { blendMode, opacity1: image1.settings.opacity, opacity2: image2.settings.opacity };
                 const item: HistoryItem = { id, url: previewUrl, timestamp: Date.now(), type: 'local', config: cfg };
                 setHistory(prev => [item, ...prev]);
-                HistoryManager.saveItem({ id, url: previewUrl, prompt: 'FusionAI Studio', config: cfg, createdAt: item.timestamp });
+                HistoryManager.saveItem({ id, url: previewUrl, prompt: 'FusionAI Studio', type: 'local', config: cfg, createdAt: item.timestamp });
             };
 
             const loadFromHistory = (item: HistoryItem) => { setImage1(item.config.image1); setImage2(item.config.image2); setBlendMode(item.config.blendMode); setCrossfade(item.config.opacity2 * 100); setActiveTab('edit'); };
+
+            // ─── Borrado y limpieza del historial (servidor history_store/) ───
+            const deleteFromHistory = (id: string) => {
+                if (!confirm('¿Eliminar esta imagen del historial?')) return;
+                setHistory(prev => prev.filter(it => it.id !== id));
+                HistoryManager.deleteItem(id).catch(e => console.warn('No se pudo borrar del historial:', e));
+            };
+            const clearFullHistory = () => {
+                if (!confirm('¿Eliminar TODO el historial? Esta acción no se puede deshacer.')) return;
+                setHistory([]);
+                HistoryManager.clearAll().catch(e => console.warn('No se pudo limpiar el historial:', e));
+            };
             const exportImage = (q: string) => { if (!previewUrl) return; const link = document.createElement('a'); link.download = `fusion-${q}-${Date.now()}.png`; link.href = previewUrl; link.click(); };
             const saveSession = () => { const session = { image1, image2, blendMode, history }; const blob = new Blob([JSON.stringify(session)], { type: 'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `session-${Date.now()}.json`; link.click(); };
             const loadSession = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1095,13 +1114,17 @@
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-4 animate-in slide-in-from-right-10 duration-500">
+                                        {history.length > 0 && (
+                                            <button onClick={clearFullHistory} className="w-full py-2 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all"><Trash2 className="w-3.5 h-3.5" /> Limpiar historial</button>
+                                        )}
                                         {history.length === 0 ? (<div className="py-20 flex flex-col items-center justify-center text-slate-500 gap-4 opacity-50"><History className="w-12 h-12" /><p className="text-sm font-medium">No hay historial aún</p></div>) :
                                             (history.map((item) => (
                                                 <div key={item.id} onClick={() => loadFromHistory(item)} className="group relative h-40 rounded-2xl overflow-hidden border border-white/10 cursor-pointer hover:border-sky-500 transition-all shadow-xl">
                                                     <img src={item.url} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                    <button onClick={(e) => { e.stopPropagation(); deleteFromHistory(item.id); }} aria-label="Eliminar del historial" title="Eliminar del historial" className="absolute top-2 right-2 z-10 p-2 rounded-lg bg-black/60 text-red-400 border border-white/10 hover:bg-red-500/30 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                                                         <div className="flex items-center justify-between"><span className="text-[10px] font-bold text-white bg-sky-500 px-2 py-0.5 rounded-full uppercase tracking-widest">{item.type}</span><span className="text-[10px] text-white/70">{new Date(item.timestamp).toLocaleTimeString()}</span></div>
-                                                        <p className="text-[10px] text-white/60 mt-1">Transparencia: {Math.round(item.config.opacity1 * 100)}/{Math.round(item.config.opacity2 * 100)}</p>
+                                                        <p className="text-[10px] text-white/60 mt-1">Transparencia: {Math.round((item.config?.opacity1 ?? 0) * 100)}/{Math.round((item.config?.opacity2 ?? 0) * 100)}</p>
                                                     </div>
                                                 </div>
                                             )))}
