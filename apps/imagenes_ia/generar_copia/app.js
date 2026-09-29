@@ -230,23 +230,34 @@ const buildStructuredPrompt = (fields, mode) => PROMPT_FIELD_DEFINITIONS
 const PROXY_URL = './proxy.php';
 const HISTORY_URL = './history.php';
 
-// --- SERVER PERSISTENCE (sync híbrido: localStorage caché + servidor fuente) ---
+// --- SERVER PERSISTENCE (servidor = fuente de verdad; localStorage solo caché) ---
+// Las URLs de `history.php` se pasan siempre con `action` explícita: la API
+// canónica responde a ?action=list|save|delete|clear y sin acción devuelve 400.
+const APP_NAME = 'imagenes_ia_generar_copia';
+const historyUrl = (action) => `${HISTORY_URL}?action=${action}&app=${encodeURIComponent(APP_NAME)}`;
+
 const syncToServer = async (image) => {
     try {
-        const res = await fetch(HISTORY_URL, {
+        const res = await fetch(historyUrl('save'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 id: image.id,
-                prompt: image.prompt,
-                style: image.style,
-                aspectRatio: image.aspectRatio,
-                size: image.size,
-                calidad: image.calidad,
-                targetPx: image.targetPx || null,
-                downloadPx: image.downloadPx || null,
-                createdAt: image.createdAt,
-                imageData: image.url
+                app: APP_NAME,
+                type: 'image',
+                model: image.model || window.selectedModel || '',
+                data: {
+                    prompt: image.prompt,
+                    style: image.style,
+                    aspectRatio: image.aspectRatio,
+                    size: image.size,
+                    calidad: image.calidad,
+                    targetPx: image.targetPx || null,
+                    downloadPx: image.downloadPx || null,
+                    model: image.model || window.selectedModel || ''
+                },
+                imageData: image.url,
+                createdAt: image.createdAt
             })
         });
         if (!res.ok) console.warn('Sync server falló:', res.status);
@@ -255,30 +266,43 @@ const syncToServer = async (image) => {
 
 const deleteFromServer = async (id) => {
     try {
-        await fetch(HISTORY_URL, {
-            method: 'DELETE',
+        await fetch(historyUrl('delete'), {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
+            body: JSON.stringify({ app: APP_NAME, id })
         });
     } catch (e) { console.warn('Error eliminando del servidor:', e); }
 };
 
 const clearServerHistory = async () => {
     try {
-        await fetch(HISTORY_URL, {
-            method: 'DELETE',
+        await fetch(historyUrl('clear'), {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clearAll: true })
+            body: JSON.stringify({ app: APP_NAME })
         });
     } catch (e) { console.warn('Error limpiando servidor:', e); }
 };
 
 const loadFromServer = async () => {
     try {
-        const res = await fetch(HISTORY_URL);
+        const res = await fetch(historyUrl('list') + '&_=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) return [];
         const data = await res.json();
-        return data?.items || [];
+        const lista = Array.isArray(data?.history) ? data.history : (Array.isArray(data?.items) ? data.items : []);
+        return lista.map(entrada => ({
+            id: entrada.id,
+            prompt: entrada.data?.prompt || '',
+            style: entrada.data?.style,
+            aspectRatio: entrada.data?.aspectRatio || entrada.aspectRatio,
+            size: entrada.data?.size,
+            calidad: entrada.data?.calidad,
+            targetPx: entrada.data?.targetPx || null,
+            downloadPx: entrada.data?.downloadPx || null,
+            model: entrada.model || entrada.data?.model || '',
+            createdAt: Date.parse(entrada.createdAt) || Date.now(),
+            url: entrada.imageUrl || entrada.data?.url || ''
+        }));
     } catch (e) { console.warn('Error cargando del servidor:', e); return []; }
 };
 
