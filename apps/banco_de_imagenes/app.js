@@ -227,6 +227,78 @@ const HistoryDB = {
     }
 };
 
+// HISTORIAL DE SERVIDOR (history.php + history_store/): fuente de verdad.
+// IndexedDB sigue siendo la caché local que usa la UI.
+const SERVER_HISTORY_APP = 'banco_de_imagenes';
+let serverHistory = null;
+
+function getServerHistory() {
+    if (!serverHistory && typeof window !== 'undefined' && typeof window.HistoryManager !== 'undefined') {
+        serverHistory = new window.HistoryManager(SERVER_HISTORY_APP);
+    }
+    return serverHistory;
+}
+
+// Convierte una entrada del servidor a la forma local (id/src/category/...).
+function historyItemFromServer(item) {
+    const data = item.data || {};
+    const src = item.imageUrl || data.src || data.imageUrl || data.dataUrl || '';
+    return {
+        id: item.id,
+        src: src,
+        category: data.category || 'Sin categoría',
+        business: data.business || 'Sin negocio',
+        parentCategory: data.parentCategory || '',
+        typeId: data.typeId || '',
+        savedAt: item.createdAt || data.savedAt || new Date().toISOString(),
+        fromServer: true
+    };
+}
+
+// Fusión por id: el servidor manda; lo local que no esté en el servidor se conserva.
+function mergeHistoryItems(localItems, serverItems) {
+    const byId = new Map((localItems || []).map(item => [item.id, item]));
+    (serverItems || []).forEach(serverItem => {
+        byId.set(serverItem.id, Object.assign({}, byId.get(serverItem.id) || {}, historyItemFromServer(serverItem)));
+    });
+    return Array.from(byId.values()).sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
+}
+
+async function loadHistoryFromServer() {
+    const hm = getServerHistory();
+    if (!hm) return [];
+    try {
+        return await hm.load();
+    } catch (error) {
+        console.warn('[Servidor] No se pudo cargar el historial; se usa solo la caché local:', error);
+        return [];
+    }
+}
+
+async function saveHistoryItemToServer(localItem, model) {
+    const hm = getServerHistory();
+    if (!hm) return;
+    try {
+        await hm.save({
+            id: localItem.id,
+            type: 'image',
+            model: model,
+            data: {
+                prompt: localItem.business || '',
+                model: model,
+                category: localItem.category,
+                business: localItem.business,
+                parentCategory: localItem.parentCategory,
+                typeId: localItem.typeId
+            },
+            imageData: localItem.src,
+            createdAt: localItem.savedAt
+        });
+    } catch (error) {
+        console.warn('[Servidor] No se pudo guardar en el historial del servidor; queda en la caché local:', error);
+    }
+}
+
 // SPINNER COMPONENT
 const ThinkingOverlay = ({ text = "IA Pensando..." }) => (
     <div className="loading-overlay rounded-lg">
@@ -639,13 +711,28 @@ const App = () => {
     const [selectedModel, setSelectedModel] = useState('openai-image-2');
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
-    // Cargar historial al inicio usando IndexedDB
+    // Cargar historial al inicio: IndexedDB (caché local) + servidor (fuente de
+    // verdad). Se fusiona por id (manda el servidor) y lo local que falte en el
+    // servidor se sube una sola vez.
     useEffect(() => {
         const loadHistory = async () => {
             try {
-                const items = await HistoryDB.getAll();
-                console.log('History loaded from IndexedDB:', items.length, 'items');
-                setHistory(items);
+                const localItems = await HistoryDB.getAll();
+                console.log('History loaded from IndexedDB:', localItems.length, 'items');
+
+                const serverItems = await loadHistoryFromServer();
+                const mergedItems = mergeHistoryItems(localItems, serverItems);
+                setHistory(mergedItems);
+
+                // Subida única de lo que solo existe en la caché local.
+                const serverIds = new Set(serverItems.map(item => item.id));
+                const pendingUploads = (localItems || []).filter(item => !serverIds.has(item.id) && item.src);
+                if (pendingUploads.length > 0) {
+                    console.log('[Servidor] Subiendo entradas locales que faltaban:', pendingUploads.length);
+                }
+                for (const localItem of pendingUploads) {
+                    await saveHistoryItemToServer(localItem, '(local)');
+                }
             } catch (err) {
                 console.error('Failed to load history:', err);
             } finally {
@@ -753,12 +840,15 @@ const App = () => {
         try {
             const newHistory = await HistoryDB.add(itemToSave);
             setHistory(newHistory);
+            // Historial persistente en el servidor (no rompe la UI si falla).
+            await saveHistoryItemToServer(itemToSave, selectedModel);
             showToast('✓ Guardado en historial');
         } catch (err) {
             console.error('Error saving:', err);
             showToast('× Error al guardar');
         }
-    }, [business, businessCategory]);
+    // El modelo activo forma parte de la entrada del historial de servidor.
+    }, [business, businessCategory, selectedModel]);
 
     const deleteImage = (id) => {
         setImages(prev => {
@@ -951,6 +1041,15 @@ const App = () => {
             await HistoryDB.remove(id);
             const items = await HistoryDB.getAll();
             setHistory(items.reverse());
+            // Reflejar el borrado en el servidor (fuente de verdad).
+            const hm = getServerHistory();
+            if (hm) {
+                try {
+                    await hm.delete(id);
+                } catch (serverError) {
+                    console.warn('[Servidor] No se pudo borrar la entrada del historial del servidor:', serverError);
+                }
+            }
         } catch (e) {
             console.error(e);
         }
@@ -960,6 +1059,15 @@ const App = () => {
         if (!confirm('¿Borrar todo el historial?')) return;
         await HistoryDB.clear();
         setHistory([]);
+        // Reflejar el vaciado en el servidor (fuente de verdad).
+        const hm = getServerHistory();
+        if (hm) {
+            try {
+                await hm.clear();
+            } catch (serverError) {
+                console.warn('[Servidor] No se pudo vaciar el historial del servidor:', serverError);
+            }
+        }
         showToast('Historial vaciado');
     };
 
