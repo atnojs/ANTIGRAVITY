@@ -207,13 +207,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// ===== Acciones canonicas: health / models (diagnostico, nunca devuelven claves) =====
+// Uso: POST {"action":"health"} · POST {"action":"models"} · GET ?action=health
+$rawRequestBody = (string)file_get_contents('php://input');
+$canonicalBody = json_decode($rawRequestBody, true);
+$canonicalAction = strtolower(trim((string)((is_array($canonicalBody) ? ($canonicalBody['action'] ?? '') : '') ?: ($_GET['action'] ?? ''))));
+$canonicalConfigured = [
+    'openai' => ag_qwen_key('OPENAI_API_KEY') !== '' || ag_qwen_key('O') !== '',
+    'openrouter' => ag_qwen_key('R') !== '',
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $canonicalAction === '') {
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'service' => 'antigravity-ai-proxy',
+        'configured' => $canonicalConfigured,
+        'actions' => ['generate', 'health', 'models'],
+        'models' => array_keys(ag_image_catalog()),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($canonicalAction === 'health') {
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'configured' => $canonicalConfigured,
+        'actions' => ['generate', 'health', 'models'],
+        'models' => array_keys(ag_image_catalog()),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($canonicalAction === 'models') {
+    // API real de OpenAI: solo se exponen los identificadores con "image".
+    $modelsKey = ag_qwen_key('OPENAI_API_KEY') !== '' ? ag_qwen_key('OPENAI_API_KEY') : ag_qwen_key('O');
+    if ($modelsKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    $modelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+    $modelIds = null;
+    $cached = is_file($modelsCache) ? json_decode((string)@file_get_contents($modelsCache), true) : null;
+    if (is_array($cached) && (time() - (int)($cached['at'] ?? 0)) < 600 && !empty($cached['ids'])) {
+        $modelIds = (array)$cached['ids'];
+    } else {
+        $modelsCh = curl_init('https://api.openai.com/v1/models');
+        curl_setopt_array($modelsCh, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $modelsKey],
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+        ]);
+        $modelsRaw = curl_exec($modelsCh);
+        $modelsCode = (int)curl_getinfo($modelsCh, CURLINFO_HTTP_CODE);
+        curl_close($modelsCh);
+        $modelsData = json_decode((string)$modelsRaw, true);
+        if ($modelsCode >= 400 || !is_array($modelsData)) {
+            http_response_code(502);
+            echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $modelsCode . ').']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+        $modelIds = [];
+        foreach (($modelsData['data'] ?? []) as $model) {
+            $modelId = (string)($model['id'] ?? '');
+            if ($modelId !== '' && preg_match('/image/i', $modelId) === 1) $modelIds[] = $modelId;
+        }
+        sort($modelIds);
+        if (!is_dir(dirname($modelsCache))) @mkdir(dirname($modelsCache), 0755, true);
+        @file_put_contents($modelsCache, json_encode(['at' => time(), 'ids' => $modelIds], JSON_UNESCAPED_SLASHES));
+    }
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => $modelIds], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => ['message' => 'Solo se aceptan peticiones POST']]);
     exit;
 }
-
-$canonicalBody = json_decode((string)file_get_contents('php://input'), true);
 if (is_array($canonicalBody)) {
     // QWEN IMAGE 3 PRO: backend propio con keepalive + caché en la app.
     $reqModel = strtolower(trim((string)($canonicalBody['model'] ?? '')));
