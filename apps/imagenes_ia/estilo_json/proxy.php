@@ -50,7 +50,7 @@ try {
                 'openrouter' => $orOk,
                 'deepseek' => $dsOk,
             ],
-            'actions' => ['analizarEstilo', 'mejorarPrompt', 'aplicarEstilo'],
+            'actions' => ['analizarEstilo', 'mejorarPrompt', 'aplicarEstilo', 'health', 'models'],
         ]);
         exit;
     }
@@ -77,6 +77,12 @@ try {
     }
     // Mejorar Prompt (texto) usa la misma clave canónica 'R' (OpenRouter)
     $dsKey = $orKey;
+    // OpenAI (imágenes: gpt-image-2.5 / gpt-image-2) — clave 'OPENAI_API_KEY' u 'O'
+    $openaiKey = '';
+    foreach (['OPENAI_API_KEY', 'REDIRECT_OPENAI_API_KEY', 'O', 'REDIRECT_O'] as $v) {
+        if (!empty($openaiKey)) break;
+        $openaiKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
+    }
 
     // ── Leer body ──
     $input = file_get_contents('php://input');
@@ -88,6 +94,66 @@ try {
     }
 
     $task = $json['task'] ?? '';
+
+    // ═══════════════════════════════════════════════
+    // ACCIONES DE DIAGNÓSTICO (no gastan imagen): health / models
+    // Uso: POST {"action":"health"} · POST {"action":"models"}
+    // Nunca devuelven claves.
+    // ═══════════════════════════════════════════════
+    $agAction = strtolower(trim((string) ($json['action'] ?? '')));
+    if ($agAction === 'health') {
+        http_response_code(200);
+        echo json_encode([
+            'success'    => true,
+            'configured' => ['openai' => $openaiKey !== '', 'openrouter' => $orKey !== ''],
+            // Catálogo vigente: lo aporta canonical-image-model.php (lista cerrada).
+            'models'     => array_keys(ag_image_catalog()),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+    if ($agAction === 'models') {
+        if ($openaiKey === '') {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => ['message' => 'API Key de OpenAI (OPENAI_API_KEY/O) no configurada en el servidor.']]);
+            exit;
+        }
+        // Consulta real a OpenAI (filtra ids de imagen) con caché de 10 min en la
+        // carpeta de la app. La clave nunca sale en la respuesta.
+        $agModelsCache = __DIR__ . '/qwen_cache/openai_models.json';
+        $agIds = null;
+        $agCached = is_file($agModelsCache) ? json_decode((string) @file_get_contents($agModelsCache), true) : null;
+        if (is_array($agCached) && (time() - (int) ($agCached['at'] ?? 0)) < 600 && !empty($agCached['ids'])) {
+            $agIds = (array) $agCached['ids'];
+        } else {
+            $agModelsCh = curl_init('https://api.openai.com/v1/models');
+            curl_setopt_array($agModelsCh, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $openaiKey],
+                CURLOPT_TIMEOUT        => 30,
+                CURLOPT_CONNECTTIMEOUT => 15,
+            ]);
+            $agModelsRaw = curl_exec($agModelsCh);
+            $agModelsCode = (int) curl_getinfo($agModelsCh, CURLINFO_HTTP_CODE);
+            curl_close($agModelsCh);
+            $agModelsData = json_decode((string) $agModelsRaw, true);
+            if ($agModelsCode >= 400 || !is_array($agModelsData)) {
+                http_response_code(502);
+                echo json_encode(['success' => false, 'error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $agModelsCode . ').']]);
+                exit;
+            }
+            $agIds = [];
+            foreach (($agModelsData['data'] ?? []) as $agModel) {
+                $agId = (string) ($agModel['id'] ?? '');
+                if ($agId !== '' && preg_match('/image/i', $agId) === 1) $agIds[] = $agId;
+            }
+            sort($agIds);
+            if (!is_dir(dirname($agModelsCache))) @mkdir(dirname($agModelsCache), 0755, true);
+            @file_put_contents($agModelsCache, json_encode(['at' => time(), 'ids' => $agIds], JSON_UNESCAPED_SLASHES));
+        }
+        http_response_code(200);
+        echo json_encode(['success' => true, 'imageModels' => $agIds], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
 
     // Helper genérico de POST JSON
     $callApi = function ($url, $body, $headers, $timeout = 60) {
@@ -332,18 +398,16 @@ try {
     // TAREA 3: APLICAR ESTILO (OpenAI GPT Image o Gemini vía OpenRouter)
     // ═══════════════════════════════════════════════
     if ($task === 'aplicarEstilo') {
-        // ── Catálogo canónico (2026-09-13): OpenAI 2.5 (5 calidades) + Gemini. ──
+        // ── Catálogo canónico compartido (canonical-image-model.php): una sola fuente. ──
         $reqModel = strtolower((string)($json['model'] ?? $json['calidad'] ?? 'openai-medium'));
-        $modelCatalog = [
-            'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
-            'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
-            'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
-            'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
-            'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-            'gemini-flash'        => ['backend' => 'gemini', 'model' => 'google/gemini-3.1-flash-image'],
-            'gemini-pro'          => ['backend' => 'gemini', 'model' => 'google/gemini-3-pro-image'],
-            'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
-        ];
+        $modelCatalog = [];
+        foreach (ag_image_catalog() as $agCatalogId => $agCatalogEntry) {
+            $modelCatalog[$agCatalogId] = [
+                'backend' => $agCatalogEntry['provider'],
+                'model'   => $agCatalogEntry['model'],
+                'quality' => $agCatalogEntry['quality'] ?? 'medium',
+            ];
+        }
         if (!isset($modelCatalog[$reqModel])) {
             throw new Exception('Modelo no soportado.', 400);
         }
@@ -352,15 +416,8 @@ try {
         $isGemini = ($selectedModel['backend'] === 'gemini');
         $isQwen   = ($selectedModel['backend'] === 'qwen');
 
-        if ($isOpenAI) {
-            $openaiKey = '';
-            foreach (['OPENAI_API_KEY', 'REDIRECT_OPENAI_API_KEY', 'O', 'REDIRECT_O'] as $v) {
-                if (!empty($openaiKey)) break;
-                $openaiKey = getenv($v) ?: ($_SERVER[$v] ?? '') ?: ($_ENV[$v] ?? '');
-            }
-            if (empty($openaiKey)) {
-                throw new Exception('API Key de OpenAI (OPENAI_API_KEY/O) no configurada.', 401);
-            }
+        if ($isOpenAI && empty($openaiKey)) {
+            throw new Exception('API Key de OpenAI (OPENAI_API_KEY/O) no configurada.', 401);
         }
         if ($isGemini && empty($orKey)) {
             throw new Exception('API Key de OpenRouter (Gemini) no configurada.', 401);
@@ -518,11 +575,8 @@ try {
 
         // ═══ RAMA GEMINI (OpenRouter sync: chat completions con imagen) ═══
         if ($isGemini) {
-            $GEMINI_MODELOS = [
-                'gemini-flash' => 'google/gemini-3.1-flash-image',
-                'gemini-pro'   => 'google/gemini-3-pro-image',
-            ];
-            $geminiModel = $GEMINI_MODELOS[$reqModel] ?? 'google/gemini-3.1-flash-image';
+            // El identificador real lo aporta el catálogo canónico (gemini-2 incluido).
+            $geminiModel = (string) ($selectedModel['model'] ?? 'google/gemini-3.1-flash-image');
 
             $dataUrl = 'data:image/jpeg;base64,' . $subject;
             $userContent = [

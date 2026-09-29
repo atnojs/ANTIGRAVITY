@@ -104,7 +104,7 @@ const state = {
     estiloJson: null,     // objeto JSON del estilo (persistente)
     history: [],
     selectedRes: 1024,
-    selectedModel: 'openai-medium',
+    selectedModel: 'openai-image-2',
     isAnalyzing: false,
     isGenerating: false,
     isEnhancing: false,
@@ -527,10 +527,11 @@ async function addToHistory(item) {
     if (window.HistoryManager) {
         try {
             HistoryManager.configure({ dbName: DB_NAME, historyUrl: './history.php' });
-            HistoryManager.syncToServer({
+            // Sin await: la tarjeta se pinta ya y la subida al servidor sigue en segundo plano.
+            HistoryManager.saveItem({
                 id: item.id, url: item.url, prompt: item.prompt || '',
-                aspectRatio: item.aspectRatio || '1:1', createdAt: item.createdAt
-            });
+                model: item.modelo || '', aspectRatio: item.aspectRatio || '1:1', createdAt: item.createdAt
+            }).catch(e => console.warn('sync servidor:', e));
         } catch (e) { console.warn('sync servidor:', e); }
     }
     renderHistory();
@@ -572,7 +573,7 @@ async function deleteFromHistory(id) {
     state.history = state.history.filter(i => i.id !== id);
     await deleteItemFromStorage(id);
     if (window.HistoryManager) {
-        try { HistoryManager.configure({ dbName: DB_NAME, historyUrl: './history.php' }); HistoryManager.deleteFromServer(id); }
+        try { HistoryManager.configure({ dbName: DB_NAME, historyUrl: './history.php' }); await HistoryManager.deleteItem(id); }
         catch (e) {}
     }
     renderHistory();
@@ -584,7 +585,7 @@ async function handleClearHistory() {
     state.history = [];
     await clearStorage();
     if (window.HistoryManager) {
-        try { HistoryManager.configure({ dbName: DB_NAME, historyUrl: './history.php' }); HistoryManager.clearServerHistory(); }
+        try { HistoryManager.configure({ dbName: DB_NAME, historyUrl: './history.php' }); await HistoryManager.clearAll(); }
         catch (e) {}
     }
     renderHistory();
