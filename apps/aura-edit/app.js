@@ -9,24 +9,30 @@ const API_ENDPOINT = 'proxy.php';
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
-    'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
+    'openai-xhigh': 'XHIGH',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
-    'qwen-pro': 'QWEN 3 PRO'
+    'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2': 'IMAGE 2',
+    'openai-image-2-high': 'IMAGE 2 HIGH'
 };
 
 // Tooltips del selector de modelos (popup hover)
 window.MODEL_TOOLTIP_TEXTS = {
     'openai-medium': 'Fondo transparente, Muy rápido',
     'openai-high': 'Fondo transparente',
-    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
+    'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-2': 'Gemini 2 (gemini-2.5-flash-image), El más ligero y económico del grupo.',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
-    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. Edita tu foto con el modelo base del proyecto.',
+    'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.'
 };
 // Análisis/descripción de fotos: MIMO 2.6 PRO (xiaomi/mimo-v2.6-pro, ruta de texto del proxy)
 
@@ -421,7 +427,7 @@ function App() {
   const [loadingText, setLoadingText] = useState('');
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
-  const [selectedModel, setSelectedModel] = useState('openai-medium');
+  const [selectedModel, setSelectedModel] = useState('openai-image-2');
 
   // Cargar historial de localStorage (OBLIGATORIO)
   useEffect(() => {
@@ -679,6 +685,7 @@ function App() {
                     <div className="flex flex-wrap gap-1.5">
                       <button
                         type="button"
+                        data-model="openai-medium"
                         onClick={() => setSelectedModel('openai-medium')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-medium' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'openai-medium'}
@@ -687,6 +694,7 @@ function App() {
                       >MEDIUM</button>
                       <button
                         type="button"
+                        data-model="openai-high"
                         onClick={() => setSelectedModel('openai-high')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-high' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'openai-high'}
@@ -695,6 +703,7 @@ function App() {
                       >HIGH</button>
                       <button
                         type="button"
+                        data-model="openai-xhigh"
                         onClick={() => setSelectedModel('openai-xhigh')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-xhigh' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'openai-xhigh'}
@@ -703,6 +712,7 @@ function App() {
                       >XHIGH</button>
                       <button
                         type="button"
+                        data-model="openai-max-flare"
                         onClick={() => setSelectedModel('openai-max-flare')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-max-flare' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'openai-max-flare'}
@@ -711,6 +721,7 @@ function App() {
                       >MAX FLARE</button>
                       <button
                         type="button"
+                        data-model="openai-max-sunburst"
                         onClick={() => setSelectedModel('openai-max-sunburst')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-max-sunburst' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'openai-max-sunburst'}
@@ -722,6 +733,16 @@ function App() {
                     <div className="flex flex-wrap gap-1.5">
                       <button
                         type="button"
+                        data-model="gemini-2"
+                        onClick={() => setSelectedModel('gemini-2')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'gemini-2' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'gemini-2'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-2'] || ''}
+                      >GEMINI 2</button>
+                      <button
+                        type="button"
+                        data-model="gemini-flash"
                         onClick={() => setSelectedModel('gemini-flash')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'gemini-flash' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'gemini-flash'}
@@ -730,6 +751,7 @@ function App() {
                       >3.1 FLASH</button>
                       <button
                         type="button"
+                        data-model="gemini-pro"
                         onClick={() => setSelectedModel('gemini-pro')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'gemini-pro' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'gemini-pro'}
@@ -741,12 +763,35 @@ function App() {
                     <div className="flex flex-wrap gap-1.5">
                       <button
                         type="button"
+                        data-model="qwen-pro"
                         onClick={() => setSelectedModel('qwen-pro')}
                         className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'qwen-pro' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
                         aria-pressed={selectedModel === 'qwen-pro'}
                         aria-describedby="model-tooltip"
                         data-tooltip={window.MODEL_TOOLTIP_TEXTS['qwen-pro'] || ''}
                       >QWEN 3 PRO</button>
+                    </div>
+                    <span className="model-provider-title">IMAGE 2</span>
+                    <span className="model-quality-hint block">Modelo base del proyecto (gpt-image-2)</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        data-model="openai-image-2"
+                        onClick={() => setSelectedModel('openai-image-2')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-image-2' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-image-2'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2'] || ''}
+                      >MEDIUM</button>
+                      <button
+                        type="button"
+                        data-model="openai-image-2-high"
+                        onClick={() => setSelectedModel('openai-image-2-high')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-image-2-high' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-image-2-high'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2-high'] || ''}
+                      >HIGH</button>
                     </div>
                   </div>
                 </div>
