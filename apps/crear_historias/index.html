@@ -150,6 +150,19 @@ Instrucción de Escena: ${p}
   </div>
   <span class="model-quality-hint">De Menor a Mayor Calidad</span>
 </div>
+
+<!-- Historial persistente en servidor (history.php → history_store/). Fuera de #root, igual que el selector.
+     El grid se llama #historyGrid para que lightbox.js ya le active el zoom (#historyGrid img). -->
+<div id="story-history-panel" style="position:fixed;left:0.75rem;bottom:0.75rem;z-index:9998;max-width:min(360px,calc(100vw - 1.5rem));display:flex;flex-direction:column;gap:0.4rem;background:rgba(17,24,39,0.88);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.12);border-radius:1rem;padding:0.45rem 0.6rem;">
+  <div style="display:flex;align-items:center;gap:0.4rem;">
+    <button type="button" id="story-history-toggle" class="story-model-toggle" aria-expanded="false" aria-controls="story-history-body">Historial (0)</button>
+    <button type="button" id="story-history-clear" class="story-model-toggle" style="display:none;">Limpiar</button>
+  </div>
+  <div id="story-history-body" hidden style="max-height:min(50vh,380px);overflow-y:auto;width:100%;">
+    <div id="historyGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:0.4rem;"></div>
+    <p id="story-history-empty" style="margin:0.15rem 0 0;font-size:0.62rem;color:#6b7280;">Sin imágenes guardadas todavía.</p>
+  </div>
+</div>
 <script>
 (function () {
   "use strict";
@@ -199,6 +212,116 @@ Instrucción de Escena: ${p}
     "openai-image-2-high": "HIGH"
   };
   window.__storyModel = "openai-image-2";
+
+  // ── Historial persistente en servidor (history.php → history_store/) ──
+  // El SPA compilado (módulo de más arriba) no expone hooks, así que no se toca
+  // el bundle: se envuelve fetch (igual que el reintento de qwen-pro) y, tras
+  // CADA imagen generada correctamente, se guarda en el servidor con
+  // HistoryManager. El servidor sigue siendo la fuente de verdad.
+  var __hm = (typeof HistoryManager !== 'undefined') ? new HistoryManager('crear_historias') : null;
+  var __panel = document.getElementById('story-history-panel');
+  var __grid = document.getElementById('historyGrid');
+  var __toggle = document.getElementById('story-history-toggle');
+  var __clear = document.getElementById('story-history-clear');
+  var __body = document.getElementById('story-history-body');
+  var __empty = document.getElementById('story-history-empty');
+
+  function storyModelLabel(id) {
+    return (typeof MODEL_LABELS !== 'undefined' && MODEL_LABELS[id]) ? MODEL_LABELS[id] : (id || '');
+  }
+
+  function renderStoryHistory() {
+    if (!__grid || !__toggle) return;
+    var items = __hm ? __hm.getAll() : [];
+    __grid.innerHTML = '';
+    items.forEach(function (item) {
+      var prompt = (item.data && item.data.prompt) ? String(item.data.prompt) : '';
+      var cell = document.createElement('div');
+      cell.style.cssText = 'position:relative;border:1px solid rgba(255,255,255,0.12);border-radius:0.6rem;overflow:hidden;background:rgba(3,7,18,0.6);';
+      var img = document.createElement('img');
+      img.src = item.imageUrl || '';
+      img.alt = prompt ? prompt.slice(0, 90) : 'Imagen del historial';
+      img.title = storyModelLabel(item.model) + (prompt ? ' · ' + prompt.slice(0, 120) : '');
+      img.loading = 'lazy';
+      img.style.cssText = 'display:block;width:100%;height:78px;object-fit:cover;';
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'story-model-toggle';
+      del.textContent = '×';
+      del.title = 'Eliminar del historial';
+      del.setAttribute('aria-label', 'Eliminar esta imagen del historial');
+      del.style.cssText = 'position:absolute;top:2px;right:2px;padding:0.05rem 0.35rem;line-height:1.1;background:rgba(3,7,18,0.78);';
+      del.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (__hm) __hm.delete(item.id).catch(function () {});
+      });
+      cell.appendChild(img);
+      cell.appendChild(del);
+      __grid.appendChild(cell);
+    });
+    __toggle.textContent = 'Historial (' + items.length + ')';
+    if (__clear) __clear.style.display = items.length ? '' : 'none';
+    if (__empty) __empty.style.display = items.length ? 'none' : '';
+  }
+
+  function saveStoryHistory(image, mimeType, model, prompt) {
+    if (!__hm || !image) return;
+    var usedModel = model || 'openai-image-2';
+    __hm.save({
+      id: 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      type: 'image',
+      model: usedModel,
+      data: { prompt: prompt || '', model: usedModel },
+      imageData: 'data:' + (mimeType || 'image/png') + ';base64,' + image,
+      createdAt: new Date().toISOString()
+    }).catch(function () {});
+  }
+
+  if (__hm) {
+    __hm.onChange(renderStoryHistory);
+    __hm.load().catch(function () { renderStoryHistory(); });
+  }
+  if (__toggle && __body) {
+    __toggle.addEventListener('click', function () {
+      __body.hidden = !__body.hidden;
+      __toggle.setAttribute('aria-expanded', __body.hidden ? 'false' : 'true');
+    });
+  }
+  if (__clear && __hm) {
+    __clear.addEventListener('click', function () {
+      if (!window.confirm('¿Borrar todo el historial guardado en el servidor?')) return;
+      __hm.clear().catch(function () {});
+    });
+  }
+  renderStoryHistory();
+
+  if (__origFetch) {
+    var __fetchBeforeHistory = window.fetch;
+    window.fetch = function (input, init) {
+      var reqBody = (init && typeof init.body === 'string') ? init.body : '';
+      var promise = __fetchBeforeHistory(input, init);
+      if (reqBody.indexOf('"task":"generateImage"') === -1) return promise;
+      return promise.then(function (res) {
+        try {
+          var url = typeof input === 'string' ? input : ((input && input.url) || '');
+          if (res && res.ok && url.indexOf('proxy.php') !== -1) {
+            res.clone().json().then(function (json) {
+              if (!json || !json.image) return;
+              var model = window.__storyModel || 'openai-image-2';
+              var prompt = '';
+              try {
+                var parsed = JSON.parse(reqBody);
+                model = parsed.model || model;
+                prompt = parsed.prompt || '';
+              } catch (e) { /* cuerpo no JSON: se guarda con lo que ya tenemos */ }
+              saveStoryHistory(json.image, json.mimeType, model, prompt);
+            }).catch(function () {});
+          }
+        } catch (e) { /* el historial nunca debe romper la generación */ }
+        return res;
+      });
+    };
+  }
   var bar = document.getElementById("story-model-selector");
   var style = document.createElement("style");
   style.textContent = ".story-model-toggle{font-size:0.62rem;letter-spacing:0.04em;padding:0.3rem 0.55rem;border-radius:999px;border:1px solid transparent;background:transparent;color:#9ca3af;cursor:pointer;text-transform:uppercase;white-space:nowrap;transition:all .2s ease;}.story-model-toggle:hover{color:#fff;border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);}.story-model-toggle.active{background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;border-color:transparent;box-shadow:0 0 12px rgba(6,182,212,0.5);}";
