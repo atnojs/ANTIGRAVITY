@@ -108,3 +108,4 @@ foreach ($filas as $f) {
 $pendientes = array_filter($filas, fn($f) => $f['fluxProx'] || $f['fluxFront'] || $f['dalle'] || $f['config'] || $f['hist'] === 'LEGACY' || !$f['gemini2']);
 echo "\nTotal apps/sub-apps: " . count($filas) . " | con trabajo pendiente: " . count($pendientes) . "\n";
 echo "FLUXp = identificador real de FLUX (a migrar) · FLUXg = G cuando solo hay la guarda ofuscada anti-FLUX (no es un uso de FLUX).\n";
+echo "DALL = mencion a DALL-E en codigo o en texto de prompt; revisar a mano (no implica uso de la API).\n";
