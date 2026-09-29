@@ -23,12 +23,6 @@ if (!$apiKey || empty($apiKey)) {
     $apiKey = $_ENV['REDIRECT_A'] ?? '';
 }
 
-if (!$apiKey || empty($apiKey)) {
-    http_response_code(500);
-    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
-    exit;
-}
-
 // ===== Clave OpenAI: SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV) =====
 $openaiKey = '';
 foreach ([getenv('OPENAI_API_KEY'), getenv('REDIRECT_OPENAI_API_KEY'), $_SERVER['OPENAI_API_KEY'] ?? '', $_SERVER['REDIRECT_OPENAI_API_KEY'] ?? '', $_ENV['OPENAI_API_KEY'] ?? '', $_ENV['REDIRECT_OPENAI_API_KEY'] ?? ''] as $v) {
@@ -44,6 +38,66 @@ if ($openaiKey === '') {
 $orKey = '';
 foreach ([getenv('R'), getenv('REDIRECT_R'), $_SERVER['R'] ?? '', $_SERVER['REDIRECT_R'] ?? '', $_ENV['R'] ?? '', $_ENV['REDIRECT_R'] ?? ''] as $v) {
     if (!empty($v)) { $orKey = (string)$v; break; }
+}
+
+// ===== Diagnostico: health / models (nunca devuelven claves) =====
+// GET (consulta rapida) y POST {"action":"health"|"models"}.
+// Se resuelve ANTES de los guards de clave y de metodo y DESPUES de resolver
+// las claves: el diagnostico no depende de que esten configuradas y no rompe
+// la generacion normal.
+$agentConfigured = [
+    'openai'     => $openaiKey !== '',
+    'openrouter' => $orKey !== '',
+];
+$agentModels = [
+    'openai-image-2'      => 'gpt-image-2 (medium)',
+    'openai-image-2-high' => 'gpt-image-2 (high)',
+    'openai-medium'       => 'gpt-image-2.5-flare (medium)',
+    'openai-high'         => 'gpt-image-2.5-flare (high)',
+    'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
+    'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
+    'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+    'gemini-2'            => 'gemini-2.5-flash-image',
+    'gemini-flash'        => 'gemini-3.1-flash-image-preview',
+    'gemini-pro'          => 'gemini-3-pro-image-preview',
+    'qwen-pro'            => 'qwen/qwen-image-3-pro',
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'antigravity-ai-proxy',
+        'configured' => $agentConfigured,
+        'actions'    => ['generate', 'models', 'health'],
+        'models'     => $agentModels,
+    ]);
+    exit;
+}
+
+// POST de diagnostico: se atiende antes de exigir la clave de Gemini.
+$agentBody = file_get_contents('php://input');
+$agentReq = json_decode($agentBody ?: '', true);
+$agentAction = is_array($agentReq) ? strtolower((string)($agentReq['action'] ?? '')) : '';
+if ($agentAction === 'health') {
+    echo json_encode(['success' => true, 'configured' => $agentConfigured, 'models' => $agentModels]);
+    exit;
+}
+if ($agentAction === 'models') {
+    echo json_encode(['success' => true, 'models' => $agentModels]);
+    exit;
+}
+
+// La generacion sigue siendo SOLO POST (conservado tal cual).
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => ['message' => 'Solo POST']]);
+    exit;
+}
+
+if (!$apiKey || empty($apiKey)) {
+    http_response_code(500);
+    echo json_encode(['error' => ['message' => 'API key de Gemini no configurada.']]);
+    exit;
 }
 
 function imageAspectLabel(int $width, int $height): string {
@@ -65,12 +119,6 @@ function openAiOutputSize(int $sourceWidth, int $sourceHeight): string {
     while ($width / $height > 3) $height += 16;
     while ($height / $width > 3) $width += 16;
     return $width . 'x' . $height;
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => ['message' => 'Solo POST']]);
-    exit;
 }
 
 $requestBody = file_get_contents('php://input');
@@ -108,11 +156,14 @@ if ($imageB64 === '') {
 
 // ===== Seleccion de modelo (lista blanca exacta, lista cerrada) =====
 $modelCatalog = [
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],

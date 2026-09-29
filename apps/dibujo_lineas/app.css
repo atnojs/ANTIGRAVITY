@@ -233,7 +233,7 @@ h1{
   box-shadow:0 0 12px var(--shadow-light);
 }
 .model-provider-layout{
-  display:flex;justify-content:center;align-items:flex-start;gap:1rem;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:1rem;
   width:100%;
 }
 .model-provider-column{
