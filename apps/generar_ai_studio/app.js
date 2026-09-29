@@ -32,18 +32,21 @@
     { id: '4:5', label: '4:5 Retrato', subLabel: 'Feed estándar, diseño de alta altura', displayRatio: '4:5', icon: 'fa-image' }
   ];
 
-  // ===== Selector de modelo IA (catálogo canónico 2.5, 7 botones) =====
+  // ===== Selector de modelo IA (catálogo canónico, 11 botones) =====
   const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
-    'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
+    'openai-xhigh': 'XHIGH',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2': 'MEDIUM',
+    'openai-image-2-high': 'HIGH',
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO'
   };
-  const MODEL_ORDER = ['openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst', 'gemini-flash', 'gemini-pro', 'qwen-pro'];
+  const MODEL_ORDER = ['openai-medium', 'openai-high', 'openai-max-flare', 'openai-xhigh', 'openai-max-sunburst', 'gemini-2', 'gemini-flash', 'gemini-pro', 'qwen-pro', 'openai-image-2', 'openai-image-2-high'];
 
   function renderModelButtons() {
     document.querySelectorAll('.model-toggle').forEach(btn => {
@@ -176,7 +179,7 @@
       steps: 50,
       cfgScale: 7.5,
       sampler: 'DPM++ 2M SDE Karras',
-      model: 'openai-medium'
+      model: 'openai-image-2'
     },
     images: [],
     isGenerating: false,
@@ -1195,14 +1198,15 @@
             <div class="model-toggle-group">
               <button type="button" class="model-toggle" data-model="openai-medium" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido" aria-pressed="false">MEDIUM</button>
               <button type="button" class="model-toggle" data-model="openai-high" aria-describedby="model-tooltip" data-tooltip="Fondo transparente" aria-pressed="false">HIGH</button>
-              <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
               <button type="button" class="model-toggle" data-model="openai-max-flare" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst" aria-pressed="false">MAX FLARE</button>
+              <button type="button" class="model-toggle" data-model="openai-xhigh" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">XHIGH</button>
               <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
             </div>
           </div>
           <div class="model-provider-column">
             <span class="model-provider-title">GEMINI</span>
             <div class="model-toggle-group">
+              <button type="button" class="model-toggle" data-model="gemini-2" aria-describedby="model-tooltip" data-tooltip="Gemini 2 (gemini-2.5-flash-image) · el más ligero y económico del grupo" aria-pressed="false">GEMINI 2</button>
               <button type="button" class="model-toggle" data-model="gemini-flash" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido." aria-pressed="false">3.1 FLASH</button>
               <button type="button" class="model-toggle" data-model="gemini-pro" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto" aria-pressed="false">3 PRO</button>
             </div>
@@ -1211,6 +1215,13 @@
             <span class="model-provider-title">QWEN</span>
             <div class="model-toggle-group">
               <button type="button" class="model-toggle" data-model="qwen-pro" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible" aria-pressed="false">QWEN 3 PRO</button>
+            </div>
+          </div>
+          <div class="model-provider-column">
+            <span class="model-provider-title">IMAGE 2</span>
+            <div class="model-toggle-group">
+              <button type="button" class="model-toggle" data-model="openai-image-2" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media." aria-pressed="false">MEDIUM</button>
+              <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM." aria-pressed="false">HIGH</button>
             </div>
           </div>
         </div>

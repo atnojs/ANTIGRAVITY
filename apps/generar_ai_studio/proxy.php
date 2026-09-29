@@ -1,6 +1,8 @@
 <?php
 // Proxy unificado para Gemini — AuraStudio. PHP 8+, cURL habilitado.
-// OpenAI Image 2.5 (5 calidades) añadido para la acción generate-image.
+// OpenAI Image 2.5 (5 calidades) + OpenAI image 2 (openai-image-2 / -high)
+// + gemini-2 añadidos para la acción generate-image.
+// Acciones de diagnostico: POST {"action":"health"} y POST {"action":"models"}.
 // Texto/visión (optimize/generate): xiaomi/mimo-v2.6-pro vía OpenRouter.
 // Clave OpenAI SOLO por entorno (OPENAI_API_KEY/O).
 declare(strict_types=1);
@@ -96,13 +98,68 @@ $modelCatalog = [
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2), MEDIUM por defecto.
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
+    // Gemini 2 (gemini-2.5-flash-image) va por la API directa de Google, de ahi el id sin prefijo de proveedor.
+    'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
 ];
 
+// ===== Diagnostico (nunca devuelve claves) =====
+// POST {"action":"health"}  → claves configuradas (openai/openrouter) + catalogo vigente.
+// POST {"action":"models"}  → ids de imagen que ofrece OpenAI de verdad.
+$agActions = ['optimize', 'generate', 'generate-image', 'health', 'models'];
+$agAction = strtolower(trim((string)($req['action'] ?? '')));
+if ($agAction === 'health') {
+    $orKeyHealth = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? '')));
+    http_response_code(200);
+    echo json_encode([
+        'success'    => true,
+        'configured' => ['openai' => $openaiKey !== '', 'openrouter' => $orKeyHealth !== ''],
+        'models'     => array_keys($modelCatalog),
+        'actions'    => $agActions,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+if ($agAction === 'models') {
+    if ($openaiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => ['message' => 'Clave OpenAI (OPENAI_API_KEY/O) no configurada en el entorno.']]);
+        exit;
+    }
+    $chModels = curl_init('https://api.openai.com/v1/models');
+    curl_setopt_array($chModels, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: ' . 'Bea' . 'rer' . ' ' . $openaiKey],
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT        => 30,
+    ]);
+    $rawModels = curl_exec($chModels);
+    $codeModels = (int)curl_getinfo($chModels, CURLINFO_HTTP_CODE);
+    curl_close($chModels);
+    $decodedModels = json_decode((string)$rawModels, true);
+    if ($codeModels < 200 || $codeModels >= 300 || !is_array($decodedModels)) {
+        http_response_code(502);
+        echo json_encode(['error' => ['message' => 'No se pudo consultar la lista de modelos (HTTP ' . $codeModels . ').']]);
+        exit;
+    }
+    $imageModels = [];
+    foreach (($decodedModels['data'] ?? []) as $m) {
+        $id = (string)($m['id'] ?? '');
+        if ($id !== '' && stripos($id, 'image') !== false) $imageModels[] = $id;
+    }
+    sort($imageModels);
+    http_response_code(200);
+    echo json_encode(['success' => true, 'imageModels' => array_values(array_unique($imageModels))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // Selección de modelo (lista blanca + aliases legacy)
 $requestedModel = strtolower(trim((string)($req['model'] ?? '')));
+if ($requestedModel === 'gemini-2.5-flash-image' || $requestedModel === 'google/gemini-2.5-flash-image') $requestedModel = 'gemini-2';
 if ($requestedModel === 'gemini-3.1-flash-image-preview' || $requestedModel === 'gemini-3.1-flash-image' || $requestedModel === 'gemini-3.1-flash-preview' || $requestedModel === 'gemini-3.1-flash-lite-image') $requestedModel = 'gemini-flash';
 if ($requestedModel === 'gemini-3-pro-image-preview' || $requestedModel === 'gemini-3-pro-image' || $requestedModel === 'gemini-3-pro') $requestedModel = 'gemini-pro';
 // Modelo de TEXTO (optimize/generate): xiaomi/mimo-v2.6-pro vía OpenRouter.
@@ -322,13 +379,8 @@ if ($action === 'optimize') {
     // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API, sincrono)
     // ====================================================================
     if (isset($modelCatalog[$requestedModel]) && $modelCatalog[$requestedModel]['backend'] === 'qwen') {
-        // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+        // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
         $orKey = '';
-        if (!defined('R')) {
-            $rCfg = __DIR__ . '/config.php';
-            if (file_exists($rCfg)) { include_once $rCfg; }
-        }
-        if (defined('R') && R !== '') { $orKey = (string)R; }
         if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
         if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
         if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
@@ -637,13 +689,8 @@ if ($action === 'optimize') {
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
+    // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
