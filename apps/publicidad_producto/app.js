@@ -139,14 +139,16 @@ function batchIdToNumber(id) {
 }
 
 // Copia reducida del lote: misma estructura y mismos metadatos, sin los data URL
-// de las imágenes (viajan una sola vez en imageData/imageUrl; la miniatura base
-// se recorta porque una copia completa duplicaría el peso y superaría el máximo
-// de 30 MB de history.php).
+// de las imágenes (viajan una sola vez en imageData/imageUrl). La miniatura base
+// se sustituye por un pixel válido: una copia completa duplicaría el peso y
+// superaría el máximo de 30 MB de history.php.
+const BASE_IMAGE_STUB = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
 function shrinkBatchForServer(item) {
     return {
         id: batchIdToNumber(item.id),
         timestamp: item.timestamp || '',
-        baseImage: typeof item.baseImage === 'string' ? item.baseImage.slice(0, 200000) : '',
+        baseImage: typeof item.baseImage === 'string' && item.baseImage.indexOf('data:') === 0 ? BASE_IMAGE_STUB : (item.baseImage || ''),
         proposals: (item.proposals || []).map(function (proposal) {
             return {
                 label: proposal.label,
@@ -171,7 +173,9 @@ function batchFromServerItem(entry) {
     var data = entry.data || {};
     var proposals = Array.isArray(data.proposals) ? data.proposals : [];
     var serverUrls = {
-        baseImage: data.baseImage || entry.imageUrl || '',
+        // El baseImage guardado en el servidor es un pixel de relleno: para la
+        // miniatura se prefiere la imagen real de history_store/ (imageUrl).
+        baseImage: (data.baseImage && data.baseImage !== BASE_IMAGE_STUB) ? data.baseImage : (entry.imageUrl || ''),
         poster: entry.imageUrl || data.dataUrl || '',
         video: (entry.images && entry.images.video) || ''
     };
