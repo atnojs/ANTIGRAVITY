@@ -1,4 +1,4 @@
 # Galletas de Infografías - Hostinger
-# Las claves API se heredan del .htaccess raíz (F=FLUX, R=OpenRouter)
+# Las claves API se heredan del .htaccess raíz (O/OPENAI_API_KEY, R=OpenRouter)
 RewriteEngine On
 Options -Indexes

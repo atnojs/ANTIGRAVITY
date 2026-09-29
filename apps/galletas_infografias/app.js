@@ -72,6 +72,28 @@
   // Clave secreta para el catálogo (para no contaminar localStorage)
   const CATALOG_CACHE_KEY = 'gi_catalog_cache';
 
+  // Modelo por defecto (modelo base del proyecto: OpenAI Image 2 medium)
+  const DEFAULT_MODEL = 'openai-image-2';
+
+  // Etiquetas legibles de los modelos del selector (data-model -> texto)
+  const MODEL_LABELS = {
+    'openai-medium': 'OPENAI MEDIUM',
+    'openai-high': 'OPENAI HIGH',
+    'openai-max-flare': 'OPENAI MAX FLARE',
+    'openai-xhigh': 'OPENAI XHIGH',
+    'openai-max-sunburst': 'OPENAI MAX SUNBURST',
+    'gemini-2': 'GEMINI 2',
+    'gemini-flash': 'GEMINI 3.1 FLASH',
+    'gemini-pro': 'GEMINI 3 PRO',
+    'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2': 'IMAGE 2 MEDIUM',
+    'openai-image-2-high': 'IMAGE 2 HIGH'
+  };
+
+  function modelLabel(model) {
+    return MODEL_LABELS[model] || String(model || '').toUpperCase();
+  }
+
   // ═══════════════════════════════════════════
   // GESTIÓN DE IMÁGENES EN PREVIEWS (localStorage)
   // ═══════════════════════════════════════════
@@ -722,7 +744,7 @@
 
   function getModel() {
     const active = document.querySelector('#model-selector .model-toggle.active');
-    return active?.dataset.model || 'openai-medium';
+    return active?.dataset.model || DEFAULT_MODEL;
   }
 
   function setModel(model) {
@@ -740,8 +762,8 @@
     setToggle('ar-toggles', '1:1');
     // Res: restaurar a 1024
     setToggle('res-toggles', '1024');
-    // Modelo: restaurar a OpenAI Medium
-    setModel('openai-medium');
+    // Modelo: restaurar a OpenAI Image 2 (medium), modelo por defecto
+    setModel(DEFAULT_MODEL);
   }
 
   function setToggle(groupId, value) {
@@ -1083,7 +1105,7 @@
     loading.classList.remove('hidden');
     loading.style.display = 'flex';
     document.getElementById('loading-text').textContent = 'IA generando lo solicitado...';
-    document.getElementById('secondary-status').textContent = 'Creando infografía con ' + model.toUpperCase() + ' a ' + resolution + 'px...';
+    document.getElementById('secondary-status').textContent = 'Creando infografía con ' + modelLabel(model) + ' a ' + resolution + 'px...';
 
     // Ocultar resultado anterior
     document.getElementById('result-section').classList.add('hidden');

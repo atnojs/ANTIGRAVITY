@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css?v=13" />
+  <link rel="stylesheet" href="app.css?v=14" />
   <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -98,10 +98,10 @@
                 <span class="model-provider-title">OPENAI 2.5</span>
                 <span class="model-quality-hint">De Menor a Mayor Calidad</span>
                 <div class="model-toggle-group">
-            <button type="button" class="model-toggle active" data-model="openai-medium" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-medium" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente, Muy rápido">MEDIUM</button>
             <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Fondo transparente">HIGH</button>
-            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>
             <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Más barato que Sunburst">MAX FLARE</button>
+            <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">XHIGH</button>
             <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara).">MAX SUNBURST</button>
                 </div>
               </div>
@@ -109,6 +109,7 @@
                 <span class="model-provider-title">GEMINI</span>
                 <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
                 <div class="model-toggle-group">
+            <button type="button" class="model-toggle" data-model="gemini-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Gemini 2.5 Flash Image, Rápido y económico">GEMINI 2</button>
             <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto en imágenes, Rápido.">3.1 FLASH</button>
             <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Máxima calidad, Perfecto para texto">3 PRO</button>
                 </div>
@@ -118,6 +119,14 @@
                 <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
                 <div class="model-toggle-group">
             <button type="button" id="model-qwen-pro" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible">QWEN 3 PRO</button>
+                </div>
+              </div>
+              <div class="model-provider-column">
+                <span class="model-provider-title">IMAGE 2</span>
+                <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+                <div class="model-toggle-group">
+            <button type="button" class="model-toggle active" data-model="openai-image-2" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI Image 2 (gpt-image-2), modelo base, calidad media">MEDIUM</button>
+            <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI Image 2 (gpt-image-2), calidad alta">HIGH</button>
                 </div>
               </div>
             </div>
@@ -212,7 +221,7 @@
 
   <script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';o.style.display='none';}})();</script>
   <input type="file" id="preview-image-input" accept="image/*" style="display:none" />
-  <script src="history-manager.js?v=2"></script>
-  <script src="app.js?v=17"></script>
+  <script src="history-manager.js?v=3"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>
