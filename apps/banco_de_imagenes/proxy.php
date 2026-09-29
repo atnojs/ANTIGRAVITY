@@ -11,6 +11,46 @@ header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json; charset=utf-8');
 
+// ===== Diagnóstico: health / models (nunca devuelven claves) =====
+// Catálogo informativo, espejo de ag_image_catalog().
+$agModels = [
+    'openai-image-2'      => 'gpt-image-2 (medium)',
+    'openai-image-2-high' => 'gpt-image-2 (high)',
+    'openai-medium'       => 'gpt-image-2.5-flare (medium)',
+    'openai-high'         => 'gpt-image-2.5-flare (high)',
+    'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
+    'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
+    'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+    'gemini-2'            => 'google/gemini-2.5-flash-image',
+    'gemini-flash'        => 'google/gemini-3.1-flash-image',
+    'gemini-pro'          => 'google/gemini-3-pro-image',
+    'qwen-pro'            => 'qwen/qwen-image-3-pro',
+];
+function agEnvAny(array $names): string {
+    foreach ($names as $name) {
+        foreach ([getenv($name), getenv('REDIRECT_' . $name), $_SERVER[$name] ?? '', $_SERVER['REDIRECT_' . $name] ?? '', $_ENV[$name] ?? '', $_ENV['REDIRECT_' . $name] ?? ''] as $value) {
+            if (is_string($value) && trim($value) !== '') { return trim($value); }
+        }
+    }
+    return '';
+}
+function agConfigured(): array {
+    return [
+        'openai'     => agEnvAny(['OPENAI_API_KEY', 'O']) !== '',
+        'openrouter' => agEnvAny(['R']) !== '',
+    ];
+}
+if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'GET') {
+    echo json_encode([
+        'success'    => true,
+        'service'    => 'antigravity-ai-proxy',
+        'configured' => agConfigured(),
+        'actions'    => ['generate', 'models', 'health', 'mejorar'],
+        'models'     => $agModels,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // Preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -24,59 +64,44 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// ===== Diagnóstico POST: health / models (antes de exigir prompt o cURL; sin claves) =====
+$agRequestBody = file_get_contents('php://input');
+$agRequestData = json_decode($agRequestBody ?: '', true);
+$agAction = is_array($agRequestData) ? strtolower((string)($agRequestData['action'] ?? '')) : '';
+if ($agAction === 'health') {
+    echo json_encode(['success' => true, 'configured' => agConfigured(), 'models' => $agModels], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+if ($agAction === 'models') {
+    echo json_encode(['success' => true, 'models' => $agModels], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 if (!function_exists('curl_init')) {
     http_response_code(500);
     echo json_encode(['error' => 'cURL no habilitado']);
     exit;
 }
 
-// API Key — cascadeo robusto (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
-$apiKey = '';
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('A');
-}
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = getenv('REDIRECT_A');
-}
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['A'] ?? '';
-}
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_SERVER['REDIRECT_A'] ?? '';
-}
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['A'] ?? '';
-}
-if (!$apiKey || empty($apiKey)) {
-    $apiKey = $_ENV['REDIRECT_A'] ?? '';
-}
-if (!$apiKey || empty($apiKey)) {
-    http_response_code(500);
-    echo json_encode(['error' => ['message' => 'API key no configurada.']]);
-    exit;
-}
+// API Key (Gemini directo) — SOLO entorno (.htaccess raiz → env → REDIRECT_ → $_SERVER → $_ENV)
+$apiKey = agEnvAny(['A']);
+// La falta de clave se valida en la rama que realmente la usa (Gemini directo),
+// para que OpenAI image 2 no dependa de tener la clave de Gemini.
 
 // ===== Clave OpenAI: SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV) =====
-$openaiKey = '';
-foreach ([getenv('OPENAI_API_KEY'), getenv('REDIRECT_OPENAI_API_KEY'), $_SERVER['OPENAI_API_KEY'] ?? '', $_SERVER['REDIRECT_OPENAI_API_KEY'] ?? '', $_ENV['OPENAI_API_KEY'] ?? '', $_ENV['REDIRECT_OPENAI_API_KEY'] ?? ''] as $v) {
-    if (!empty($v)) { $openaiKey = (string)$v; break; }
-}
-if ($openaiKey === '') {
-    foreach ([getenv('O'), getenv('REDIRECT_O'), $_SERVER['O'] ?? '', $_SERVER['REDIRECT_O'] ?? '', $_ENV['O'] ?? '', $_ENV['REDIRECT_O'] ?? ''] as $v) {
-        if (!empty($v)) { $openaiKey = (string)$v; break; }
-    }
-}
+$openaiKey = agEnvAny(['OPENAI_API_KEY', 'O']);
 
 // Input validation
-$requestBody = file_get_contents('php://input');
+$requestBody = $agRequestBody;
 if (!$requestBody) {
     http_response_code(400);
     echo json_encode(['error' => 'Body vacío']);
     exit;
 }
 
-$requestData = json_decode($requestBody, true);
-if (json_last_error() !== JSON_ERROR_NONE || !isset($requestData['prompt']) || trim($requestData['prompt']) === '') {
+$requestData = $agRequestData;
+
+if (json_last_error() !== JSON_ERROR_NONE || !isset($requestData['prompt']) || trim((string)$requestData['prompt']) === '') {
     http_response_code(400);
     echo json_encode(['error' => 'Prompt requerido']);
     exit;
@@ -86,11 +111,14 @@ $prompt = $requestData['prompt'];
 
 // ===== Lista blanca exacta de modelos (lista cerrada) =====
 $modelCatalog = [
+    'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
+    'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'gemini-2'            => ['backend' => 'canonical', 'model' => 'google/gemini-2.5-flash-image'],
     'gemini-flash'        => ['backend' => 'gemini', 'model' => 'gemini-3.1-flash-image-preview'],
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
@@ -102,16 +130,8 @@ $modelCatalog = [
 // para mantener el contrato con los frontends existentes.
 // ════════════════════════════════════════════════════════════════════════
 $mimoTextCall = function (array $req, array $genCfg) {
-    // ── Clave R (OpenRouter): config.php → getenv → REDIRECT_ → $_SERVER → $_ENV
-    $orKey = '';
-    if (!defined('R')) {
-        $rCfg = __DIR__ . '/config.php';
-        if (file_exists($rCfg)) { include_once $rCfg; }
-    }
-    if (defined('R') && R !== '') { $orKey = (string)R; }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
-    if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
-    if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
+    // ── Clave R (OpenRouter): SOLO entorno (getenv → REDIRECT_ → $_SERVER → $_ENV)
+    $orKey = agEnvAny(['R']);
     if ($orKey === '') {
         return [500, json_encode(['error' => ['message' => 'Clave OpenRouter (R) no configurada.']])];
     }
@@ -248,13 +268,46 @@ if (($requestData['action'] ?? '') === 'mejorar') {
     ];
     [$httpcode, $response] = $mimoTextCall($mimoReq, $mimoReq['generationConfig']);
 } else {
-    $reqModel = strtolower((string)($requestData['model'] ?? 'openai-medium'));
+    $reqModel = strtolower((string)($requestData['model'] ?? 'openai-image-2'));
     if (!isset($modelCatalog[$reqModel])) {
         http_response_code(400);
         echo json_encode(['error' => 'Modelo no soportado.']);
         exit;
     }
     $selected = $modelCatalog[$reqModel];
+
+    // ====================================================================
+    // BACKEND: contrato canónico (gemini-2 vía OpenRouter). No se duplica
+    // catálogo: delega en canonical-image-model.php y responde con el mismo
+    // contrato del frontend ({image, mimeType}).
+    // ====================================================================
+    if ($selected['backend'] === 'canonical') {
+        $agDir = __DIR__ . '/../dibujo_lineas_copia/canonical-image-model.php';
+        if (!is_file($agDir)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Contrato canónico de modelos no disponible en el servidor.']);
+            exit;
+        }
+        require_once $agDir;
+        $agRequest = $requestData;
+        $agRequest['model'] = $reqModel;
+        try {
+            $agResult = ag_image_generate($agRequest, __DIR__);
+        } catch (Throwable $agError) {
+            $agStatus = (int)$agError->getCode();
+            if ($agStatus < 400 || $agStatus > 599) { $agStatus = 502; }
+            http_response_code($agStatus);
+            echo json_encode(['error' => $agError->getMessage()]);
+            exit;
+        }
+        if (empty($agResult['image'])) {
+            http_response_code(502);
+            echo json_encode(['error' => 'El proveedor no devolvió ninguna imagen.']);
+            exit;
+        }
+        echo json_encode(['image' => $agResult['image'], 'mimeType' => $agResult['mimeType'] ?? 'image/png'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
 
     // ====================================================================
     // BACKEND: OPENAI GPT IMAGE 2.5 (Images API, generación desde texto)
@@ -501,6 +554,11 @@ if (($requestData['action'] ?? '') === 'mejorar') {
     // ====================================================================
     // BACKEND: GEMINI (Google directo, clave A) — conservado tal cual
     // ====================================================================
+    if ($apiKey === '') {
+        http_response_code(500);
+        echo json_encode(['error' => 'Clave Gemini (A) no configurada en el servidor.']);
+        exit;
+    }
     $model = $selected['model'];
     $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
     $payload = json_encode([

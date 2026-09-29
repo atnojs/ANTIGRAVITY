@@ -439,10 +439,13 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     });
 };
 
-// ===== Selector de modelo: lista blanca de 7 modelos (MEDIUM activo) =====
+// ===== Selector de modelo: catálogo canónico (IMAGE 2 MEDIUM activo) =====
 const MODEL_LABELS = {
+    'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
+    'openai-image-2': 'MEDIUM',
+    'openai-image-2-high': 'HIGH',
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
     'openai-xhigh': 'XHIGH',
@@ -458,9 +461,12 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'gemini-2': 'Rápido y económico, Buen texto en imágenes.',
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
-    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
+    'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2': 'OpenAI image 2, calidad media. El modelo base del proyecto.',
+    'openai-image-2-high': 'OpenAI image 2, calidad alta. Más detalle y texto más nítido.'
 };
 
 const ModelSelector = ({ selectedModel, onChange, disabled }) => (
@@ -495,17 +501,6 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     >{MODEL_LABELS['openai-high']}</button>
                     <button
                         type="button"
-                        onClick={() => onChange('openai-xhigh')}
-                        disabled={disabled}
-                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-xhigh'
-                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
-                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
-                        aria-pressed={selectedModel === 'openai-xhigh'}
-                        aria-describedby="model-tooltip"
-                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
-                    >{MODEL_LABELS['openai-xhigh']}</button>
-                    <button
-                        type="button"
                         onClick={() => onChange('openai-max-flare')}
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-max-flare'
@@ -515,6 +510,17 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                         aria-describedby="model-tooltip"
                         data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-max-flare'] || ''}
                     >{MODEL_LABELS['openai-max-flare']}</button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-xhigh')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-xhigh'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-xhigh'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-xhigh'] || ''}
+                    >{MODEL_LABELS['openai-xhigh']}</button>
                     <button
                         type="button"
                         onClick={() => onChange('openai-max-sunburst')}
@@ -530,7 +536,19 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
             </div>
             <div>
                 <span className="model-provider-title block">GEMINI</span>
+                <span className="model-quality-hint block" aria-hidden="true" style={{visibility:'hidden'}}>De Menor a Mayor Calidad</span>
                 <div className="flex flex-wrap gap-1.5 mt-1">
+                    <button
+                        type="button"
+                        onClick={() => onChange('gemini-2')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'gemini-2'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'gemini-2'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['gemini-2'] || ''}
+                    >{MODEL_LABELS['gemini-2']}</button>
                     <button
                         type="button"
                         onClick={() => onChange('gemini-flash')}
@@ -571,6 +589,34 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     >{MODEL_LABELS['qwen-pro']}</button>
                 </div>
             </div>
+            <div>
+                <span className="model-provider-title block">IMAGE 2</span>
+                <span className="model-quality-hint block" aria-hidden="true" style={{visibility:'hidden'}}>De Menor a Mayor Calidad</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-image-2')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-image-2'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-image-2'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2'] || ''}
+                    >{MODEL_LABELS['openai-image-2']}</button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('openai-image-2-high')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-image-2-high'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-image-2-high'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2-high'] || ''}
+                    >{MODEL_LABELS['openai-image-2-high']}</button>
+                </div>
+            </div>
         </div>
     </div>
 );
@@ -590,7 +636,7 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [history, setHistory] = useState([]);
     const [toast, setToast] = useState(null);
-    const [selectedModel, setSelectedModel] = useState('openai-medium');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2');
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
     // Cargar historial al inicio usando IndexedDB
