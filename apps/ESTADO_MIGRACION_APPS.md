@@ -148,7 +148,7 @@ servido). **⏳ = pendiente.**
 | 13 | ✅ | `prompt_copilot_premium` y `prompt_estudio` | actividad | 2 |
 | 14 | ✅ | `imagenes_ia/generar`, `imagenes_ia/generar_copia`, `imagenes_ia/editar`, `imagenes_ia/copiar_estilo`, `imagenes_ia/combinar_imagenes`, `imagenes_ia/estilo_json`, `imagenes_ia/upscaler` | apps de imagen del proyecto | 0–2 |
 | 15 | ✅ | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
-| 16 | ⏳ | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
+| 16 | 🟡 | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
 
 **Filas 14 y 15 verificadas en producción** (health del proxy con el catálogo vigente
 —`gemini-2` incluido— y `history.php` sirviendo desde `history_store/`; se comprueba con
@@ -156,15 +156,31 @@ servido). **⏳ = pendiente.**
 `imagenes_ia/generar_copia`, `imagenes_ia/combinar_imagenes` y `imagenes_ia/upscaler`,
 que vivía solo en IndexedDB/localStorage, ya escribe y lee del servidor.
 
-Detalle de los arreglos extra de la sesión (historial que solo vivía en el navegador, contra
-la regla §1.4): `imagenes_ia/generar_copia`, `imagenes_ia/combinar_imagenes` y
-`imagenes_ia/upscaler` ya usan `history.php` con el contrato canónico
-(`?action=list|save|delete|clear`), manteniendo `localStorage`/IndexedDB solo como caché
-local. Todos verificados ya en producción.
-| 15 | ⏳ | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
-| 16 | ⏳ | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
+**Estado de la fila 16** (🟡 = migradas y commiteadas; la verificación en producción va con
+`tools/verificar-fila16.ps1`, porque el deploy de Hostinger tarda minutos):
 
-**Patrón aplicado por app** (§4, ya probado en las apps 1–8): `history.php` canónico
+- 19 de las 20 apps están migradas: fuera `config.php` (todas las que lo tenían) y FLUX
+  (`aura-edit`), catálogo canónico con `gemini-2` + `image-2`, `action=health` /
+  `action=models` donde hay proxy de imagen, `history.php` canónico en `history_store/` y
+  `history-manager.js` canónico (sello anti-caché + shim legacy).
+- `trickvault` **no necesita migración**: no es app de IA (no tiene `proxy.php` ni
+  `config.php`, no genera imágenes y su estado vive en `localStorage`). Queda documentado
+  para no reauditarlo.
+- `editar_imagen` es un **stub de redirección** a `imagenes_ia/ajustes_imagen/editor_local/`:
+  su JS con selector canónico es código muerto. La app que realmente se sirve es
+  `editor_local`, que guarda el historial en IndexedDB y no usa `history.php`; se le ha
+  restaurado el `lightbox.js` que su `index.html` referenciaba y no existía (404). Falta
+  decidir si se migra `editor_local` como app propia.
+- Historial de servidor **conectado de verdad** en: `generar`, `generar_ai_studio`,
+  `generar_imagene_personalizadas`, `fotos_antonio`, `clonador`, `decorar_habitacion`,
+  `estudio_creativo`, `estudio_imagenes`, `hermes_academy`, `transferir_estilo`,
+  `pasatiempos`. Pendiente de conectar (guardan en el navegador): `banco_de_imagenes`,
+  `publicidad_producto`, `aura-edit`, `illusion_diffusion` y `crear_historias` (esta última
+  no tiene historial en el front).
+- Excepciones documentadas: `pasatiempos` y `rrss` son apps de texto/descarga, así que su
+  `models` va vacío a propósito; `video-vault` tampoco maneja modelos de imagen.
+
+**Patrón aplicado por app** (§4, ya probado en las apps 1–16): `history.php` canónico
 copiado tal cual (datos en `history_store/`, con migración de un solo paso desde
 `history_data/`), `history-manager.js` canónico (sello anti-caché en la lista + shim de la
 API legacy), `gemini-2` como primer botón del grupo GEMINI, columna `IMAGE 2`
@@ -207,6 +223,16 @@ La columna `g2 = NO` indica que a esa app le falta el modelo Gemini 2.
 
 ## 8. Avisos
 
+- **Commits en paralelo (importante).** Varios procesos/agentes trabajando a la vez sobre
+  este repositorio se pisan el índice de Git: un `git add`/`commit` sobre el índice
+  compartido puede arrastrar ficheros que otro tenía en *stage* (pasó con
+  `generar_imagenes`, que hubo que restaurar), y un `git reset` ajeno puede dejar fuera de
+  `main` un commit ya hecho (`illusion_diffusion`, recuperado a mano). Medidas que funcionan:
+  commitear con `git commit -m "..." -- apps/<app>` (pathspec) o con un índice aislado
+  (`tools/commit-aislado.ps1`), y **verificar después** con `git show --name-status` que el
+  commit contiene exactamente los ficheros de esa app y que el SHA sigue en `main`
+  (`git merge-base --is-ancestor <sha> HEAD`). Publicar (push) en cuanto se pueda reduce la
+  ventana de pérdida.
 - El despliegue de Hostinger **no borra** los ficheros retirados del repo (comprobado):
   si hace falta quitar algo del servidor, hay que hacerlo con un script temporal
   autodestructivo y retirarlo del repo después.
