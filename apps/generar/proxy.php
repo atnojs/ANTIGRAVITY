@@ -92,7 +92,6 @@ $mimoTextCall = function (array $req, array $genCfg) {
     // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
     if ($orKey === '') {
@@ -469,7 +468,6 @@ if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] ===
 if (isset($modelCatalog[$requested]) && $modelCatalog[$requested]['backend'] === 'qwen') {
     // ── Clave R (OpenRouter): SOLO entorno → getenv → REDIRECT_ → $_SERVER → $_ENV
     $orKey = '';
-    if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)(getenv('R') ?: getenv('REDIRECT_R') ?: ''); }
     if ($orKey === '') { $orKey = (string)($_SERVER['R'] ?? $_SERVER['REDIRECT_R'] ?? ''); }
     if ($orKey === '') { $orKey = (string)($_ENV['R'] ?? $_ENV['REDIRECT_R'] ?? ''); }
