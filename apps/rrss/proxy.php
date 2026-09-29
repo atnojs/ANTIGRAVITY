@@ -37,6 +37,35 @@ if (!is_array($req)) {
 }
 
 $action = (string)($req['action'] ?? '');
+
+// Diagnóstico del proxy (no gasta API ni descarga nada): qué puede hacer este
+// servidor. Uso: POST {"action":"health"}. Nunca devuelve claves; esta app no
+// usa proveedores de imagen (solo yt-dlp), así que no hay catálogo de modelos.
+if ($action === 'health') {
+    $canExec = function_exists('shell_exec') || function_exists('exec');
+    $dir = __DIR__ . DIRECTORY_SEPARATOR . 'downloads';
+    if (!is_dir($dir)) { @mkdir($dir, 0755, true); }
+    $ytdlp = '';
+    if ($canExec && function_exists('exec')) {
+        $out = [];
+        $code = 1;
+        @exec('yt-dlp --version 2>&1', $out, $code);
+        if ($code === 0) { $ytdlp = trim(implode(' ', $out)); }
+    }
+    http_response_code(200);
+    echo json_encode([
+        'success' => true,
+        'configured' => [
+            'exec' => $canExec,
+            'ytdlp' => $ytdlp !== '',
+            'downloads' => is_dir($dir) && is_writable($dir),
+        ],
+        'ytdlpVersion' => $ytdlp,
+        'actions' => ['analyze', 'download', 'health'],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 $url    = trim((string)($req['url'] ?? ''));
 if ($action === '' || $url === '') {
     http_response_code(400);
