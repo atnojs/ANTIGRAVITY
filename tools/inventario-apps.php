@@ -47,13 +47,35 @@ foreach ($apps as $nombre => $dir) {
         foreach ($agujas as $a) { if (stripos($t, $a) !== false) return true; }
         return false;
     };
+
+    // gemini-2 puede estar: (a) literal en el proxy (`gemini-2`, `gemini-2.5-flash-image`,
+    // con o sin prefijo `google/`), o (b) delegado en el contrato compartido
+    // canonical-image-model.php, que ya lo incluye. Antes solo se miraba el literal
+    // `gemini-2.5-flash-image` y eso marcaba como NO apps ya migradas.
+    $gemini2 = preg_match('/gemini-2(\.5)?(-flash-image)?/i', $proxyTxt) === 1;
+    $delegaCanonico = str_contains($proxyTxt, 'canonical-image-model')
+        || $hay($proxyTxt, ['ag_image_catalog', 'ag_image_response', 'ag_image_generate']);
+
+    // FLUX y DALL-E. Se distinguen dos cosas:
+    //  - FLUX REAL: identificadores de modelo o endpoints del proveedor retirado
+    //    (`flux-pro`, `flux-2-pro`, `bfl.ai`).
+    //  - GUARDA anti-FLUX: el código que rechaza ese modelo viene escrito ofuscado
+    //    (`'f' . 'lux'`) justo para no dejar el literal en el repositorio. Esa guarda
+    //    NO es un uso de FLUX y por eso se informa aparte.
+    $fluxReal = $hay($proxyTxt, ['flux-pro', 'flux-2-pro', 'flux1', 'flux.1', 'bfl.ai']);
+    $fluxGuarda = !$fluxReal && $hay($proxyTxt, ['flux', "'f' . 'lux'", '"f" . "lux"', "'f'.'lux'"]);
+    $fluxFront = $hay($frontTxt, ['flux-pro', 'flux-2-pro', 'bfl.ai']);
+    $dalle = $hay($proxyTxt . $frontTxt, ['dall-e', 'dalle', 'dall_e']);
+
     $filas[] = [
         'app'      => $nombre,
-        'fluxProx' => $hay($proxyTxt, ['flux', 'bfl.ai']),
-        'fluxFront'=> $hay($frontTxt, ['flux']),
-        'dalle'    => $hay($proxyTxt . $frontTxt, ['dall-e', 'dalle']),
+        'fluxProx' => $fluxReal,
+        'fluxGuard'=> $fluxGuarda,
+        'fluxFront'=> $fluxFront,
+        'dalle'    => $dalle,
         'config'   => $hay($proxyTxt, ['config.php']) || is_file("$dir/config.php"),
-        'gemini2'  => str_contains($proxyTxt, 'gemini-2.5-flash-image'),
+        'gemini2'  => $gemini2 || $delegaCanonico,
+        'canonico' => $delegaCanonico,
         'hist'     => $histCount > 0 ? ($store ? 'store' : ($legacy ? 'LEGACY' : 'otra')) : '—',
         'histN'    => $histCount,
         'proxy'    => count($proxies) > 0,
@@ -67,13 +89,14 @@ usort($filas, function (array $a, array $b): int {
     return $pa === $pb ? $b['histN'] <=> $a['histN'] : $pa <=> $pb;
 });
 
-printf("%-44s %-5s %-6s %-5s %-7s %-7s %-8s %s\n", 'APP', 'FLUXp', 'FLUXf', 'DALL', 'config', 'gemini2', 'historial', 'n');
-echo str_repeat('-', 100) . "\n";
+printf("%-44s %-5s %-5s %-5s %-5s %-7s %-7s %-8s %s\n", 'APP', 'FLUXp', 'FLUXg', 'FLUXf', 'DALL', 'config', 'gemini2', 'historial', 'n');
+echo str_repeat('-', 104) . "\n";
 foreach ($filas as $f) {
     printf(
-        "%-44s %-5s %-6s %-5s %-7s %-7s %-8s %d\n",
+        "%-44s %-5s %-5s %-5s %-5s %-7s %-7s %-8s %d\n",
         $f['app'],
         $f['fluxProx'] ? 'SI' : '-',
+        $f['fluxGuard'] ? 'G' : '-',
         $f['fluxFront'] ? 'SI' : '-',
         $f['dalle'] ? 'SI' : '-',
         $f['config'] ? 'SI' : '-',
@@ -84,3 +107,4 @@ foreach ($filas as $f) {
 }
 $pendientes = array_filter($filas, fn($f) => $f['fluxProx'] || $f['fluxFront'] || $f['dalle'] || $f['config'] || $f['hist'] === 'LEGACY' || !$f['gemini2']);
 echo "\nTotal apps/sub-apps: " . count($filas) . " | con trabajo pendiente: " . count($pendientes) . "\n";
+echo "FLUXp = identificador real de FLUX (a migrar) · FLUXg = G cuando solo hay la guarda ofuscada anti-FLUX (no es un uso de FLUX).\n";
