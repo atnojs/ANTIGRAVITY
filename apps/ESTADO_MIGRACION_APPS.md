@@ -141,11 +141,11 @@ servido). **⏳ = pendiente.**
 | 6 | ✅ | `creador_memes` | actividad + `config.php` | 12 |
 | 7 | ✅ | `infografia-referencia` | actividad | 10 |
 | 8 | ✅ | `infografia` | actividad | 8 |
-| 9 | ⏳ | `vestir_modelo` | portal + actividad | 4 |
-| 10 | ⏳ | `imagenes_ia/editar_generar` | actividad | 6 |
-| 11 | ⏳ | `editar_generar` y `editar_generar_1` | actividad + `config.php` | 3 |
-| 12 | ⏳ | `galletas_infografias` | actividad + FLUX en front | 2 |
-| 13 | ⏳ | `prompt_copilot_premium` y `prompt_estudio` | actividad | 2 |
+| 9 | ✅ | `vestir_modelo` | portal + actividad | 4 |
+| 10 | ✅ | `imagenes_ia/editar_generar` (en el repo la ruta real es `editar_generar`) | actividad | 6 |
+| 11 | ✅ | `editar_generar` y `editar_generar_1` | actividad + `config.php` | 3 |
+| 12 | ✅ | `galletas_infografias` | actividad + FLUX en front | 2 |
+| 13 | ✅ | `prompt_copilot_premium` y `prompt_estudio` | actividad | 2 |
 | 14 | ⏳ | `imagenes_ia/generar`, `imagenes_ia/generar_copia`, `imagenes_ia/editar`, `imagenes_ia/copiar_estilo`, `imagenes_ia/combinar_imagenes`, `imagenes_ia/estilo_json`, `imagenes_ia/upscaler` | apps de imagen del proyecto | 0–2 |
 | 15 | ⏳ | `color`, `dibujo_lineas`, `ficha_producto`, `outfit`, `generar_imagenes` | portal | 0–1 |
 | 16 | ⏳ | `aura-edit` (**FLUX en proxy**), `clonador`, `decorar_habitacion`, `editar_imagen`, `generar`, `generar_ai_studio`, `generar_imagene_personalizadas`, `fotos_antonio`, `estudio_creativo`, `estudio_imagenes`, `illusion_diffusion`, `banco_de_imagenes`, `crear_historias`, `pasatiempos`, `publicidad_producto`, `transferir_estilo`, `hermes_academy`, `rrss`, `video-vault`, `trickvault` | resto de apps con proxy propio | 0–1 |
