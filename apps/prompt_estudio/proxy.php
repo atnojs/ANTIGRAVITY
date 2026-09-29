@@ -14,6 +14,10 @@ const MAX_REQUEST_LENGTH = 12000;
 const MAX_CONTEXT_LENGTH = 5000;
 const MAX_CONSTRAINTS_LENGTH = 2500;
 
+// Lista blanca cerrada de modelos de TEXTO que acepta este proxy. La app no
+// genera ni edita imágenes: no hay catálogo de modelos de imagen.
+const TEXT_MODELS = ['xiaomi/mimo-v2.6-pro'];
+
 function respond(int $status, array $payload): never
 {
     http_response_code($status);
@@ -121,6 +125,28 @@ function resolveApiKey(): ?string
     foreach ($candidates as $candidate) {
         if (trim($candidate) !== '') {
             return trim($candidate);
+        }
+    }
+
+    return null;
+}
+
+function resolveOpenAiKey(): ?string
+{
+    foreach (['OPENAI_API_KEY', 'REDIRECT_OPENAI_API_KEY', 'O', 'REDIRECT_O'] as $name) {
+        foreach ([getenv($name), $_SERVER[$name] ?? '', $_ENV[$name] ?? ''] as $candidate) {
+            if (is_string($candidate) && trim($candidate) !== '') {
+                return trim($candidate);
+            }
+        }
+    }
+
+    if (function_exists('apache_getenv')) {
+        foreach (['OPENAI_API_KEY', 'O'] as $name) {
+            $candidate = apache_getenv($name);
+            if (is_string($candidate) && trim($candidate) !== '') {
+                return trim($candidate);
+            }
         }
     }
 
@@ -520,13 +546,27 @@ function extractJsonResult(string $content, string $detectedMode): array
     ];
 }
 
+// ─── MAIN ───
+
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method === 'GET') {
     $configured = resolveApiKey() !== null;
     respond(200, [
         'ok' => true,
+        'success' => true,
         'service' => 'Prompt Studio Premium',
-        'configured' => $configured,
+        // `configured` en formato protocolo (openai/openrouter) + campos planos
+        // equivalentes para no romper a ningún consumidor antiguo.
+        'configured' => [
+            'openai' => resolveOpenAiKey() !== null,
+            'openrouter' => $configured,
+        ],
+        'openai' => resolveOpenAiKey() !== null,
+        'openrouter' => $configured,
+        // App de texto: no maneja modelos de imagen, así que el catálogo va vacío
+        // y los modelos de texto reales se exponen en `textModels`.
+        'models' => [],
+        'textModels' => TEXT_MODELS,
         'message' => $configured ? 'Servicio preparado.' : 'Falta configurar la clave R de OpenRouter en el servidor.',
     ]);
 }
@@ -541,10 +581,23 @@ if (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'XMLHttpRequest') {
 }
 
 $input = readJsonBody();
-$action = enumValue($input['action'] ?? '', ['generate', 'health'], 'generate');
+$action = enumValue($input['action'] ?? '', ['generate', 'health', 'models'], 'generate');
 if ($action === 'health') {
-    $configured = resolveApiKey() !== null;
-    respond(200, ['ok' => true, 'configured' => $configured]);
+    $openAi = resolveOpenAiKey() !== null;
+    $openRouter = resolveApiKey() !== null;
+    respond(200, [
+        'ok' => true,
+        'success' => true,
+        'configured' => ['openai' => $openAi, 'openrouter' => $openRouter],
+        'openai' => $openAi,
+        'openrouter' => $openRouter,
+        'models' => [],
+        'textModels' => TEXT_MODELS,
+    ]);
+}
+if ($action === 'models') {
+    // Diagnóstico: qué modelos acepta este proxy. Nunca devuelve claves.
+    respond(200, ['ok' => true, 'success' => true, 'models' => [], 'textModels' => TEXT_MODELS]);
 }
 
 $userRequest = cleanText($input['userRequest'] ?? '', MAX_REQUEST_LENGTH);
@@ -577,9 +630,9 @@ if ($apiKey === null) {
 
 // Migración 2.5 (ESPEC_MIGRACION §6): todo el texto pasa a Gemini 3.8 Flash vía OpenRouter.
 $modelMap = [
-    'auto' => 'xiaomi/mimo-v2.6-pro',
-    'balanced' => 'xiaomi/mimo-v2.6-pro',
-    'premium' => 'xiaomi/mimo-v2.6-pro',
+    'auto' => TEXT_MODELS[0],
+    'balanced' => TEXT_MODELS[0],
+    'premium' => TEXT_MODELS[0],
 ];
 
 $tokenMap = [

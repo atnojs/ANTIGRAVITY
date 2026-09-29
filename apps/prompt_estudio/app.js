@@ -537,7 +537,12 @@
         return;
       }
       const data = await response.json();
-      if (data.ok && !data.configured) {
+      // `configured` es un objeto {openai, openrouter} desde la migración; se
+      // acepta también el booleano antiguo por si el servidor aún sirve caché.
+      const configured = typeof data.configured === 'object' && data.configured !== null
+        ? Boolean(data.configured.openrouter)
+        : Boolean(data.configured);
+      if (data.ok && !configured) {
         elements.requestError.textContent = data.message || 'Falta configurar la clave R de OpenRouter en el servidor.';
         toast(data.message || 'API no configurada. Revisa .htaccess raiz o la variable R en el servidor.', 'error');
       } else if (!data.ok) {
