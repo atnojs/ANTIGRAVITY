@@ -65,108 +65,121 @@ const EXCEL_FOLDERS = [
     { id: 'xl-retroedu', label: 'Retro y educativo', icon: '📼', color: 'cyan', bgIcon: '🎓' },
     { id: 'xl-juegos', label: 'Juegos y temporadas', icon: '🎮', color: 'pink', bgIcon: '🎲' },
 ];
+
+// ── 4 carpetas extra: cubren los códigos antiguos que no encajan en
+//    ninguna hoja del Excel (color/acabado, planos, texto y dev).
+const EXTRA_FOLDERS = [
+    { id: 'xl-estilos', label: 'Estilos y acabado', icon: '🎞️', color: 'purple', bgIcon: '🌈' },
+    { id: 'xl-planos', label: 'Planos y encuadres', icon: '🎥', color: 'cyan', bgIcon: '🖼️' },
+    { id: 'xl-texto', label: 'Comandos de texto', icon: '💬', color: 'emerald', bgIcon: '📝' },
+    { id: 'xl-dev', label: 'Dev y productividad', icon: '💻', color: 'amber', bgIcon: '⌨️' },
+];
 // Lista canónica: carpetas originales + carpetas del Excel.
-const DEFAULT_FOLDERS = [...BASE_FOLDERS, ...EXCEL_FOLDERS];
+const DEFAULT_FOLDERS = [...BASE_FOLDERS, ...EXCEL_FOLDERS, ...EXTRA_FOLDERS];
 const FAVORITES_FOLDER = { id: 'favorites', label: 'Favoritos', icon: '⭐', color: 'amber', bgIcon: '💛' };
 const FOLDERS_KEY = 'trickvault_folders';
 // Versión del esquema de carpetas: sirve para añadir UNA sola vez las carpetas
 // nuevas a quien ya tuviera su lista guardada en el navegador, sin resucitar las
 // que el usuario haya borrado a mano ni reordenar las suyas.
 const FOLDERS_SCHEMA_KEY = 'trickvault_folders_schema';
-const FOLDERS_SCHEMA_VERSION = 2;
+const FOLDERS_SCHEMA_VERSION = 3;
 
 // Mapa comando de imagen -> carpeta
 const CODE_FOLDER = {
     // Esquemas técnicos
-    '/xray': 'tecnicos', '/explodedview': 'tecnicos', '/cutaway': 'tecnicos', '/crosssection': 'tecnicos',
-    '/teardown': 'tecnicos', '/schematic': 'tecnicos', '/ghostedview': 'tecnicos', '/skeletalview': 'tecnicos',
-    '/layerview': 'tecnicos', '/partsdiagram': 'tecnicos', '/blueprint': 'tecnicos', '/isometric': 'tecnicos',
-    '/orthographic': 'tecnicos', '/patentdrawing': 'tecnicos', '/wireframe': 'tecnicos', '/floorplan': 'tecnicos',
-    '/dimensioned': 'tecnicos', '/anatomy': 'tecnicos',
+    '/xray': 'xl-500', '/explodedview': 'xl-500', '/cutaway': 'xl-500', '/crosssection': 'xl-carteles',
+    '/teardown': 'xl-carteles', '/schematic': 'xl-verdentro', '/ghostedview': 'xl-verdentro', '/skeletalview': 'xl-verdentro',
+    '/layerview': 'xl-verdentro', '/partsdiagram': 'xl-verdentro', '/blueprint': 'xl-verdentro', '/isometric': 'xl-verdentro',
+    '/orthographic': 'xl-verdentro', '/patentdrawing': 'xl-verdentro', '/wireframe': 'xl-verdentro', '/floorplan': 'xl-verdentro',
+    '/dimensioned': 'xl-verdentro', '/anatomy': 'xl-verdentro',
     // Estudiar e infografías
-    '/infographic': 'estudio', '/annotated': 'estudio', '/flowchart': 'estudio', '/timeline': 'estudio',
-    '/flashcard': 'estudio', '/mindmap': 'estudio', '/stickynotes': 'estudio', '/visualizelearning': 'estudio',
-    '/generatehandwritingimage': 'estudio', '/infochart': 'estudio', '/infograph': 'estudio', '/roadmap': 'estudio',
-    '/venndiagram': 'estudio', '/conceptmap': 'estudio', '/pyramidchart': 'estudio', '/cheatsheet': 'estudio',
-    '/cornellnotes': 'estudio', '/sketchnote': 'estudio', '/proscons': 'estudio', '/funnelchart': 'estudio',
-    '/fishbone': 'estudio', '/matrix2x2': 'estudio', '/cyclicalprocess': 'estudio', '/anatomicalposter': 'estudio',
-    '/comicstrip': 'estudio', '/decisiontree': 'estudio',
+    '/infographic': 'xl-verdentro', '/annotated': 'xl-verdentro', '/flowchart': 'xl-verdentro', '/timeline': 'xl-escenaprueba',
+    '/flashcard': 'xl-retroedu', '/mindmap': 'xl-negocioredes', '/stickynotes': 'xl-retroedu', '/visualizelearning': 'xl-retroedu',
+    '/generatehandwritingimage': 'xl-retroedu', '/infochart': 'xl-retroedu', '/infograph': 'xl-retroedu', '/roadmap': 'xl-negocioredes',
+    '/venndiagram': 'xl-retroedu', '/conceptmap': 'xl-retroedu', '/pyramidchart': 'xl-retroedu', '/cheatsheet': 'xl-retroedu',
+    '/cornellnotes': 'xl-retroedu', '/sketchnote': 'xl-retroedu', '/proscons': 'xl-retroedu', '/funnelchart': 'xl-retroedu',
+    '/fishbone': 'xl-retroedu', '/matrix2x2': 'xl-retroedu', '/cyclicalprocess': 'xl-retroedu', '/anatomicalposter': 'xl-retroedu',
+    '/comicstrip': 'xl-retroedu', '/decisiontree': 'xl-retroedu',
     // Estilos visuales
-    '/handwritten': 'visuales', '/napkinsketch': 'visuales', '/whiteboard': 'visuales', '/moodboard': 'visuales',
-    '/pencilsketch': 'visuales', '/notebookpage': 'visuales', '/collage': 'visuales', '/redpen': 'visuales',
-    '/storyboard': 'visuales', '/tornpaper': 'visuales', '/actionfigure': 'visuales', '/claymation': 'visuales',
-    '/papercraft': 'visuales', '/lowpoly': 'visuales', '/pixelart': 'visuales', '/linocut': 'visuales',
-    '/risograph': 'visuales', '/halftone': 'visuales', '/stainedglass': 'visuales', '/chromemetal': 'visuales',
-    '/embroidery': 'visuales', '/minime': 'visuales', '/statue': 'visuales', '/silhouettestudy': 'visuales',
-    '/duotoneportrait': 'visuales', '/stickersheet': 'visuales', '/patterntile': 'visuales',
+    '/handwritten': 'xl-verdentro', '/napkinsketch': 'xl-verdentro', '/whiteboard': 'xl-verdentro', '/moodboard': 'xl-verdentro',
+    '/pencilsketch': 'xl-verdentro', '/notebookpage': 'xl-hechomano', '/collage': 'xl-hechomano', '/redpen': 'xl-hechomano',
+    '/storyboard': 'xl-hechomano', '/tornpaper': 'xl-hechomano', '/actionfigure': 'xl-500', '/claymation': 'xl-carteles',
+    '/papercraft': 'xl-carteles', '/lowpoly': 'xl-hechomano', '/pixelart': 'xl-carteles', '/linocut': 'xl-hechomano',
+    '/risograph': 'xl-hechomano', '/halftone': 'xl-hechomano', '/stainedglass': 'xl-hechomano', '/chromemetal': 'xl-carteles',
+    '/embroidery': 'xl-hechomano', '/minime': 'xl-carteles', '/statue': 'xl-carteles', '/silhouettestudy': 'xl-hechomano',
+    '/duotoneportrait': 'xl-luzcamara', '/stickersheet': 'xl-carteles', '/patterntile': 'xl-hechomano',
     // Cámara y planos
-    '/macro': 'camara', '/shallowdepth': 'camara', '/bokeh': 'camara', '/longexposure': 'camara',
-    '/tiltshift': 'camara', '/35mm': 'camara', '/anamorphic': 'camara', '/lowangle': 'camara',
-    '/overhead': 'camara', '/dutchangle': 'camara', '/extremecloseup': 'camara', '/backview': 'camara',
-    '/droneview': 'camara', '/sideview': 'camara', '/wideangle': 'camara', '/overtheshoulder': 'camara',
+    '/macro': 'xl-hechomano', '/shallowdepth': 'xl-luzcamara', '/bokeh': 'xl-luzcamara', '/longexposure': 'xl-luzcamara',
+    '/tiltshift': 'xl-luzcamara', '/35mm': 'xl-luzcamara', '/anamorphic': 'xl-luzcamara', '/lowangle': 'xl-luzcamara',
+    '/overhead': 'xl-luzcamara', '/dutchangle': 'xl-luzcamara', '/extremecloseup': 'xl-luzcamara', '/backview': 'xl-luzcamara',
+    '/droneview': 'xl-casaviajes', '/sideview': 'xl-planos', '/wideangle': 'xl-planos', '/overtheshoulder': 'xl-planos',
     // Iluminación y ambiente
-    '/cinematic': 'luz', '/goldenhour': 'luz', '/bluehour': 'luz', '/rimlight': 'luz', '/backlight': 'luz',
-    '/softlighting': 'luz', '/dramaticlighting': 'luz', '/volumetriclight': 'luz', '/lowkey': 'luz', '/highkey': 'luz',
-    '/cyberpunk': 'luz', '/futuristic': 'luz', '/fire': 'luz', '/ice': 'luz', '/fireAndIce': 'luz', '/smoke': 'luz',
-    '/storm': 'luz', '/energy': 'luz', '/neon': 'luz',
+    '/cinematic': 'xl-fotoproducto', '/goldenhour': 'xl-fotoproducto', '/bluehour': 'xl-fotoproducto', '/rimlight': 'xl-fotoproducto', '/backlight': 'xl-fotoproducto',
+    '/softlighting': 'xl-luzcamara', '/dramaticlighting': 'xl-luzcamara', '/volumetriclight': 'xl-luzcamara', '/lowkey': 'xl-luzcamara', '/highkey': 'xl-luzcamara',
+    '/cyberpunk': 'xl-otromundo', '/futuristic': 'xl-otromundo', '/fire': 'xl-efectosempaque', '/ice': 'xl-efectosempaque', '/fireAndIce': 'xl-efectosempaque', '/smoke': 'xl-efectosempaque',
+    '/storm': 'xl-luzcamara', '/energy': 'xl-efectosempaque', '/neon': 'xl-luzcamara',
     // Producto y publicidad
-    '/knolling': 'producto', '/productshot': 'producto', '/packaging': 'producto', '/flatlay': 'producto',
-    '/heroshot': 'producto', '/floatingproduct': 'producto', '/ghostmannequin': 'producto', '/splashshot': 'producto',
-    '/devicemockup': 'producto', '/screenmockup': 'producto', '/boxmockup': 'producto', '/labelmockup': 'producto',
-    '/apparelmockup': 'producto', '/embossedlogo': 'producto', '/foilstamp': 'producto', '/shelfshot': 'producto',
-    '/sizecomparison': 'producto', '/colorway': 'producto', '/billboard': 'producto', '/showcase': 'producto',
-    '/premiumshowcase': 'producto', '/metaad': 'producto', '/newspaperad': 'producto', '/billboardmockup': 'producto',
-    '/3Dbillboard': 'producto', '/paperbag': 'producto', '/storefrontbranding': 'producto', '/cupbranding': 'producto',
-    '/luxury': 'producto', '/perfumead': 'producto', '/luxurywatchad': 'producto', '/glassreflection': 'producto',
-    '/surrealad': 'producto', '/ythumbnail': 'producto',
+    '/knolling': 'xl-carteles', '/productshot': 'xl-hechomano', '/packaging': 'xl-hechomano', '/flatlay': 'xl-hechomano',
+    '/heroshot': 'xl-hechomano', '/floatingproduct': 'xl-hechomano', '/ghostmannequin': 'xl-hechomano', '/splashshot': 'xl-hechomano',
+    '/devicemockup': 'xl-fotoproducto', '/screenmockup': 'xl-fotoproducto', '/boxmockup': 'xl-fotoproducto', '/labelmockup': 'xl-fotoproducto',
+    '/apparelmockup': 'xl-fotoproducto', '/embossedlogo': 'xl-fotoproducto', '/foilstamp': 'xl-fotoproducto', '/shelfshot': 'xl-fotoproducto',
+    '/sizecomparison': 'xl-fotoproducto', '/colorway': 'xl-fotoproducto', '/billboard': 'xl-escenaprueba', '/showcase': 'xl-fotoproducto',
+    '/premiumshowcase': 'xl-fotoproducto', '/metaad': 'xl-escenaprueba', '/newspaperad': 'xl-escenaprueba', '/billboardmockup': 'xl-escenaprueba',
+    '/3Dbillboard': 'xl-escenaprueba', '/paperbag': 'xl-negocioredes', '/storefrontbranding': 'xl-negocioredes', '/cupbranding': 'xl-negocioredes',
+    '/luxury': 'xl-estilos', '/perfumead': 'xl-escenaprueba', '/luxurywatchad': 'xl-escenaprueba', '/glassreflection': 'xl-fotoproducto',
+    '/surrealad': 'xl-escenaprueba', '/ythumbnail': 'xl-negocioredes',
     // Retoque y persona
-    '/charactersheet': 'persona', '/turnaround': 'persona', '/expressionsheet': 'persona', '/costumedesign': 'persona',
-    '/environmentalportrait': 'persona', '/magazinecover': 'persona', '/movieposter': 'persona', '/bookcover': 'persona',
-    '/albumcover': 'persona', '/newspaper': 'persona', '/quotecard': 'persona', '/4K': 'persona',
-    '/whiteteeth': 'persona', '/srinkless': 'persona', '/together': 'persona', '/nombrafamoso': 'persona',
-    '/repairhd': 'persona', '/fullcolour': 'persona', '/transferoutfit': 'persona', '/fullbody': 'persona',
-    '/transfer': 'persona', '/profesión': 'persona',
+    '/charactersheet': 'xl-hechomano', '/turnaround': 'xl-hechomano', '/expressionsheet': 'xl-hechomano', '/costumedesign': 'xl-hechomano',
+    '/environmentalportrait': 'xl-luzcamara', '/magazinecover': 'xl-carteles', '/movieposter': 'xl-carteles', '/bookcover': 'xl-escenaprueba',
+    '/albumcover': 'xl-escenaprueba', '/newspaper': 'xl-escenaprueba', '/quotecard': 'xl-escenaprueba', '/4K': 'xl-estilos',
+    '/whiteteeth': 'xl-camararetrato', '/srinkless': 'xl-camararetrato', '/together': 'xl-otromundo', '/nombrafamoso': 'xl-camararetrato',
+    '/repairhd': 'xl-camararetrato', '/fullcolour': 'xl-camararetrato', '/transferoutfit': 'xl-comidamoda', '/fullbody': 'xl-camararetrato',
+    '/transfer': 'xl-otromundo', '/profesión': 'xl-comidamoda',
     // Escenarios y efectos
-    '/nature': 'escenarios', '/jungle': 'escenarios', '/desert': 'escenarios', '/ocean': 'escenarios',
-    '/underwater': 'escenarios', '/space': 'escenarios', '/splash': 'escenarios', '/waterSplashAd': 'escenarios',
-    '/explosion': 'escenarios', '/productexplosion': 'escenarios', '/floating': 'escenarios', '/hologram': 'escenarios',
+    '/nature': 'xl-casaviajes', '/jungle': 'xl-casaviajes', '/desert': 'xl-casaviajes', '/ocean': 'xl-casaviajes',
+    '/underwater': 'xl-casaviajes', '/space': 'xl-otromundo', '/splash': 'xl-efectosempaque', '/waterSplashAd': 'xl-escenaprueba',
+    '/explosion': 'xl-efectosempaque', '/productexplosion': 'xl-efectosempaque', '/floating': 'xl-efectosempaque', '/hologram': 'xl-efectosempaque',
     // 162-248 (carruseles novedad.ai + smarts.ai + reel xabatz, 2026-09)
-    '/8k': 'visuales', '/hdreal': 'visuales', '/ultrarealistic': 'visuales', '/filmgrain': 'visuales', '/vintage': 'visuales', '/retro': 'visuales', '/oldmoney': 'visuales', '/minimalist': 'visuales', '/editorial': 'visuales', '/fashion': 'visuales', '/streetstyle': 'visuales', '/cinematiccolor': 'visuales', '/vintagecolor': 'visuales', '/pastelcolor': 'visuales', '/warmcolor': 'visuales', '/coolcolor': 'visuales', '/moodycolor': 'visuales', '/vibrantcolor': 'visuales', '/negativespace': 'visuales',
-    '/aerialview': 'camara', '/topdown': 'camara', '/highangle': 'camara', '/closeup': 'camara', '/fisheye': 'camara', '/pov': 'camara', '/birdseyeview': 'camara', '/wormseyeview': 'camara', '/motionblur': 'camara', '/freezeaction': 'camara', '/throughobject': 'camara', '/framewithinframe': 'camara', '/foregroundframe': 'camara', '/threequarter': 'camara', '/trackingshot': 'camara', '/pullin': 'camara', '/pullout': 'camara', '/extremepov': 'camara', '/cinematicpov': 'camara', '/leadinglines': 'camara', '/vanishingpoint': 'camara', '/foregrounddepth': 'camara', '/symmetricalshot': 'camara', '/reflectionshot': 'camara', '/epicperspective': 'camara', '/24mmwide': 'camara', '/35mmstreet': 'camara', '/50mmnatural': 'camara', '/85mmportrait': 'camara', '/105mmclose': 'camara', '/macrolook': 'camara', '/deeperperspective': 'camara',
-    '/fog': 'luz', '/mist': 'luz', '/rainynight': 'luz', '/rain': 'luz', '/snow': 'luz', '/sunset': 'luz', '/sunrise': 'luz', '/moonlight': 'luz', '/neonlights': 'luz', '/darkmoody': 'luz', '/godrays': 'luz', '/studio': 'luz', '/silhouette': 'luz',
-    '/forcedperspective': 'escenarios', '/giantperspective': 'escenarios', '/microworld': 'escenarios', '/reflectionhack': 'escenarios', '/groundreflection': 'escenarios', '/parallaxshot': 'escenarios', '/viralshot': 'escenarios', '/dynamicshot': 'escenarios', '/portalshot': 'escenarios', '/cloneeffect': 'escenarios', '/objecttransition': 'escenarios', '/mirrorportal': 'escenarios', '/skyfall': 'escenarios', '/realitybend': 'escenarios', '/doorreveal': 'escenarios', '/scrollstopper': 'escenarios',
-    '/proshot': 'persona', '/newbg': 'persona', '/hairstyles': 'persona', '/sunglassesstryon': 'persona',
-    '/lifestyleshot': 'producto', '/gravitydefying': 'producto', '/timesquaread': 'producto',
+    '/8k': 'xl-estilos', '/hdreal': 'xl-estilos', '/ultrarealistic': 'xl-estilos', '/filmgrain': 'xl-camararetrato', '/vintage': 'xl-estilos', '/retro': 'xl-estilos', '/oldmoney': 'xl-estilos', '/minimalist': 'xl-estilos', '/editorial': 'xl-comidamoda', '/fashion': 'xl-comidamoda', '/streetstyle': 'xl-comidamoda', '/cinematiccolor': 'xl-estilos', '/vintagecolor': 'xl-estilos', '/pastelcolor': 'xl-estilos', '/warmcolor': 'xl-estilos', '/coolcolor': 'xl-estilos', '/moodycolor': 'xl-estilos', '/vibrantcolor': 'xl-estilos', '/negativespace': 'xl-estilos',
+    '/aerialview': 'xl-planos', '/topdown': 'xl-planos', '/highangle': 'xl-planos', '/closeup': 'xl-planos', '/fisheye': 'xl-camararetrato', '/pov': 'xl-planos', '/birdseyeview': 'xl-planos', '/wormseyeview': 'xl-planos', '/motionblur': 'xl-efectosempaque', '/freezeaction': 'xl-planos', '/throughobject': 'xl-planos', '/framewithinframe': 'xl-planos', '/foregroundframe': 'xl-planos', '/threequarter': 'xl-planos', '/trackingshot': 'xl-planos', '/pullin': 'xl-planos', '/pullout': 'xl-planos', '/extremepov': 'xl-planos', '/cinematicpov': 'xl-planos', '/leadinglines': 'xl-planos', '/vanishingpoint': 'xl-planos', '/foregrounddepth': 'xl-planos', '/symmetricalshot': 'xl-planos', '/reflectionshot': 'xl-planos', '/epicperspective': 'xl-planos', '/24mmwide': 'xl-planos', '/35mmstreet': 'xl-planos', '/50mmnatural': 'xl-planos', '/85mmportrait': 'xl-planos', '/105mmclose': 'xl-planos', '/macrolook': 'xl-planos', '/deeperperspective': 'xl-planos',
+    '/fog': 'xl-luzcamara', '/mist': 'xl-luzcamara', '/rainynight': 'xl-luzcamara', '/rain': 'xl-luzcamara', '/snow': 'xl-luzcamara', '/sunset': 'xl-luzcamara', '/sunrise': 'xl-luzcamara', '/moonlight': 'xl-luzcamara', '/neonlights': 'xl-luzcamara', '/darkmoody': 'xl-luzcamara', '/godrays': 'xl-luzcamara', '/studio': 'xl-luzcamara', '/silhouette': 'xl-luzcamara',
+    '/forcedperspective': 'xl-planos', '/giantperspective': 'xl-planos', '/microworld': 'xl-efectosempaque', '/reflectionhack': 'xl-efectosempaque', '/groundreflection': 'xl-efectosempaque', '/parallaxshot': 'xl-planos', '/viralshot': 'xl-planos', '/dynamicshot': 'xl-planos', '/portalshot': 'xl-efectosempaque', '/cloneeffect': 'xl-efectosempaque', '/objecttransition': 'xl-efectosempaque', '/mirrorportal': 'xl-efectosempaque', '/skyfall': 'xl-efectosempaque', '/realitybend': 'xl-efectosempaque', '/doorreveal': 'xl-efectosempaque', '/scrollstopper': 'xl-planos',
+    '/proshot': 'xl-otromundo', '/newbg': 'xl-camararetrato', '/hairstyles': 'xl-comidamoda', '/sunglassesstryon': 'xl-comidamoda',
+    '/lifestyleshot': 'xl-escenaprueba', '/gravitydefying': 'xl-fotoproducto', '/timesquaread': 'xl-escenaprueba',
     // 249-351 (capturas WhatsApp 2026-09-20)
-    '/dollyzoom': 'camara', '/mediumshot': 'camara', '/orbit': 'camara', '/eyelevel': 'camara', '/groundlevel': 'camara', '/timelapse': 'camara', '/panorama': 'camara', '/portraitmode': 'camara', '/pan': 'camara', '/tilt': 'camara', '/zoom': 'camara', '/establishing': 'camara', '/hyperlapse': 'camara', '/slowmo': 'camara',
-    '/lighttrail': 'luz', '/reflection': 'luz', '/nightshot': 'luz', '/startrail': 'luz', '/shadowplay': 'luz',
-    '/cinematicworld': 'escenarios', '/cityscape': 'escenarios', '/travel': 'escenarios', '/festival': 'escenarios', '/forest': 'escenarios', '/medieval': 'escenarios', '/superhero': 'escenarios', '/beach': 'escenarios', '/postapocalyptic': 'escenarios', '/samurai': 'escenarios', '/scifi': 'escenarios', '/mountains': 'escenarios', '/nightcity': 'escenarios', '/fantasy': 'escenarios', '/daytonight': 'escenarios', '/seasonchange': 'escenarios', '/autumn': 'escenarios',
-    '/foodphoto': 'visuales', '/interior': 'visuales', '/blackandwhite': 'visuales', '/abstract': 'visuales', '/workspace': 'visuales', '/anime': 'visuales', '/3drender': 'visuales', '/quotes': 'visuales', '/hdr': 'visuales', '/polaroid': 'visuales', '/noir': 'visuales', '/doubleexposure': 'visuales', '/dreamcore': 'visuales', '/glassart': 'visuales', '/glitch': 'visuales', '/watercolor': 'visuales', '/oilpainting': 'visuales', '/comicbook': 'visuales', '/detective': 'visuales', '/disposablecamera': 'visuales', '/sketch': 'visuales', '/neonoir': 'visuales', '/mercury': 'visuales',
-    '/petphoto': 'persona', '/coupleshot': 'persona', '/babyphoto': 'persona',
-    '/ideas': 'trucos', '/studyplan': 'trucos', '/language': 'trucos', '/website': 'trucos', '/appidea': 'trucos', '/podcast': 'trucos', '/youtube': 'trucos', '/instagram': 'trucos', '/marketing': 'trucos', '/productivity': 'trucos', '/health': 'trucos', '/cooking': 'trucos', '/money': 'trucos', '/books': 'trucos', '/career': 'trucos', '/motivation': 'trucos', '/creative': 'trucos', '/solve': 'trucos', '/anything': 'trucos', '/planner': 'trucos', '/socialpost': 'trucos', '/goals': 'trucos', '/calendar': 'trucos', '/learn': 'trucos', '/fitness': 'trucos', '/summarize': 'trucos', '/recipes': 'trucos', '/translate': 'trucos', '/itinerary': 'trucos', '/code': 'trucos', '/business': 'trucos', '/resume': 'trucos', '/invest': 'trucos', '/email': 'trucos', '/meditate': 'trucos', '/analyze': 'trucos', '/roleplay': 'trucos',     // 352-464 (capturas WhatsApp 2026-09-25)
-    '/35mmfilm': 'visuales', '/holographic': 'visuales', '/architecture': 'escenarios', '/group': 'persona', '/candid': 'visuales', '/illustration': 'visuales', '/cartoon': 'visuales', '/logo': 'producto', '/poster': 'producto', '/banner': 'producto', '/flyer': 'producto', '/wallpaper': 'visuales', '/invitation': 'producto', '/quitaobjeto': 'persona',
-    '/expandeimagen': 'persona', '/cambiahora': 'persona', '/abreojos': 'persona', '/plancharopa': 'persona', '/colorgrade': 'persona', '/mejora8k': 'persona', '/human': 'trucos', '/expert': 'trucos', '/ceo': 'trucos', '/viral': 'trucos', '/seo': 'trucos', '/critic': 'trucos', '/teacher': 'trucos', '/elis': 'trucos',
-    '/brief': 'trucos', '/strategy': 'trucos', '/copywriter': 'trucos', '/research': 'trucos', '/promptengineer': 'trucos', '/simplify': 'trucos', '/detailed': 'trucos', '/stepbystep': 'trucos', '/examples': 'trucos', '/analyst': 'trucos', '/compare': 'trucos', '/decision': 'trucos', '/action': 'trucos', '/prioritize': 'trucos',
-    '/focus': 'trucos', '/time': 'trucos', '/study': 'trucos', '/quiz': 'trucos', '/interview': 'trucos', '/mentor': 'trucos', '/coach': 'trucos', '/consultant': 'trucos', '/editor': 'trucos', '/proofread': 'trucos', '/rewrite': 'trucos', '/professional': 'trucos', '/casual': 'trucos', '/friendly': 'trucos',
-    '/persuasive': 'trucos', '/concise': 'trucos', '/polish': 'trucos', '/tone': 'trucos', '/storyteller': 'trucos', '/hook': 'trucos', '/headline': 'trucos', '/caption': 'trucos', '/linkedin': 'trucos', '/reels': 'trucos', '/script': 'trucos', '/sales': 'trucos', '/offer': 'trucos', '/brand': 'trucos',
-    '/customer': 'trucos', '/audience': 'trucos', '/competitor': 'trucos', '/market': 'trucos', '/startup': 'trucos', '/pricing': 'trucos', '/funnel': 'trucos', '/growth': 'trucos', '/content': 'trucos', '/unpopular': 'trucos', '/devilsadvocate': 'trucos', '/contrarian': 'trucos', '/assumptions': 'trucos', '/risks': 'trucos',
-    '/factcheck': 'trucos', '/verify': 'trucos', '/logic': 'trucos', '/rootcause': 'trucos', '/debug': 'trucos', '/solution': 'trucos', '/alternative': 'trucos', '/optimize': 'trucos', '/automate': 'trucos', '/template': 'trucos', '/checklist': 'trucos', '/framework': 'trucos', '/matrix': 'trucos', '/table': 'trucos',
-    '/json': 'trucos', '/reverse': 'trucos', '/ultimate': 'trucos',
+    '/dollyzoom': 'xl-planos', '/mediumshot': 'xl-planos', '/orbit': 'xl-planos', '/eyelevel': 'xl-planos', '/groundlevel': 'xl-planos', '/timelapse': 'xl-planos', '/panorama': 'xl-planos', '/portraitmode': 'xl-planos', '/pan': 'xl-planos', '/tilt': 'xl-planos', '/zoom': 'xl-planos', '/establishing': 'xl-planos', '/hyperlapse': 'xl-planos', '/slowmo': 'xl-planos',
+    '/lighttrail': 'xl-luzcamara', '/reflection': 'xl-luzcamara', '/nightshot': 'xl-luzcamara', '/startrail': 'xl-luzcamara', '/shadowplay': 'xl-luzcamara',
+    '/cinematicworld': 'xl-casaviajes', '/cityscape': 'xl-casaviajes', '/travel': 'xl-casaviajes', '/festival': 'xl-casaviajes', '/forest': 'xl-casaviajes', '/medieval': 'xl-otromundo', '/superhero': 'xl-otromundo', '/beach': 'xl-casaviajes', '/postapocalyptic': 'xl-otromundo', '/samurai': 'xl-otromundo', '/scifi': 'xl-otromundo', '/mountains': 'xl-casaviajes', '/nightcity': 'xl-casaviajes', '/fantasy': 'xl-otromundo', '/daytonight': 'xl-casaviajes', '/seasonchange': 'xl-casaviajes', '/autumn': 'xl-juegos',
+    '/foodphoto': 'xl-comidamoda', '/interior': 'xl-casaviajes', '/blackandwhite': 'xl-camararetrato', '/abstract': 'xl-ilustracion', '/workspace': 'xl-casaviajes', '/anime': 'xl-ilustracion', '/3drender': 'xl-letras3d', '/quotes': 'xl-carteles', '/hdr': 'xl-estilos', '/polaroid': 'xl-carteles', '/noir': 'xl-estilos', '/doubleexposure': 'xl-camararetrato', '/dreamcore': 'xl-ilustracion', '/glassart': 'xl-ilustracion', '/glitch': 'xl-efectosempaque', '/watercolor': 'xl-pintura', '/oilpainting': 'xl-pintura', '/comicbook': 'xl-ilustracion', '/detective': 'xl-estilos', '/disposablecamera': 'xl-estilos', '/sketch': 'xl-ilustracion', '/neonoir': 'xl-estilos', '/mercury': 'xl-estilos',
+    '/petphoto': 'xl-camararetrato', '/coupleshot': 'xl-camararetrato', '/babyphoto': 'xl-camararetrato',
+    '/ideas': 'xl-texto', '/studyplan': 'xl-texto', '/language': 'xl-texto', '/website': 'xl-texto', '/appidea': 'xl-texto', '/podcast': 'xl-texto', '/youtube': 'xl-texto', '/instagram': 'xl-texto', '/marketing': 'xl-texto', '/productivity': 'xl-texto', '/health': 'xl-texto', '/cooking': 'xl-texto', '/money': 'xl-texto', '/books': 'xl-texto', '/career': 'xl-texto', '/motivation': 'xl-texto', '/creative': 'xl-texto', '/solve': 'xl-texto', '/anything': 'xl-texto', '/planner': 'xl-texto', '/socialpost': 'xl-texto', '/goals': 'xl-texto', '/calendar': 'xl-texto', '/learn': 'xl-texto', '/fitness': 'xl-texto', '/summarize': 'xl-texto', '/recipes': 'xl-texto', '/translate': 'xl-texto', '/itinerary': 'xl-texto', '/code': 'xl-texto', '/business': 'xl-texto', '/resume': 'xl-texto', '/invest': 'xl-texto', '/email': 'xl-texto', '/meditate': 'xl-texto', '/analyze': 'xl-texto', '/roleplay': 'xl-texto',     // 352-464 (capturas WhatsApp 2026-09-25)
+    '/35mmfilm': 'xl-estilos', '/holographic': 'xl-estilos', '/architecture': 'xl-casaviajes', '/group': 'xl-camararetrato', '/candid': 'xl-camararetrato', '/illustration': 'xl-ilustracion', '/cartoon': 'xl-ilustracion', '/logo': 'xl-negocioredes', '/poster': 'xl-carteles', '/banner': 'xl-carteles', '/flyer': 'xl-negocioredes', '/wallpaper': 'xl-carteles', '/invitation': 'xl-carteles', '/quitaobjeto': 'xl-camararetrato',
+    '/expandeimagen': 'xl-camararetrato', '/cambiahora': 'xl-luzcamara', '/abreojos': 'xl-camararetrato', '/plancharopa': 'xl-camararetrato', '/colorgrade': 'xl-estilos', '/mejora8k': 'xl-estilos', '/human': 'xl-texto', '/expert': 'xl-texto', '/ceo': 'xl-texto', '/viral': 'xl-texto', '/seo': 'xl-texto', '/critic': 'xl-texto', '/teacher': 'xl-texto', '/elis': 'xl-texto',
+    '/brief': 'xl-texto', '/strategy': 'xl-texto', '/copywriter': 'xl-texto', '/research': 'xl-texto', '/promptengineer': 'xl-texto', '/simplify': 'xl-texto', '/detailed': 'xl-texto', '/stepbystep': 'xl-retroedu', '/examples': 'xl-texto', '/analyst': 'xl-texto', '/compare': 'xl-texto', '/decision': 'xl-texto', '/action': 'xl-texto', '/prioritize': 'xl-texto',
+    '/focus': 'xl-texto', '/time': 'xl-texto', '/study': 'xl-texto', '/quiz': 'xl-texto', '/interview': 'xl-texto', '/mentor': 'xl-texto', '/coach': 'xl-texto', '/consultant': 'xl-texto', '/editor': 'xl-texto', '/proofread': 'xl-texto', '/rewrite': 'xl-texto', '/professional': 'xl-texto', '/casual': 'xl-texto', '/friendly': 'xl-texto',
+    '/persuasive': 'xl-texto', '/concise': 'xl-texto', '/polish': 'xl-texto', '/tone': 'xl-texto', '/storyteller': 'xl-texto', '/hook': 'xl-texto', '/headline': 'xl-texto', '/caption': 'xl-texto', '/linkedin': 'xl-texto', '/reels': 'xl-texto', '/script': 'xl-texto', '/sales': 'xl-texto', '/offer': 'xl-texto', '/brand': 'xl-texto',
+    '/customer': 'xl-texto', '/audience': 'xl-texto', '/competitor': 'xl-texto', '/market': 'xl-texto', '/startup': 'xl-texto', '/pricing': 'xl-texto', '/funnel': 'xl-negocioredes', '/growth': 'xl-texto', '/content': 'xl-texto', '/unpopular': 'xl-texto', '/devilsadvocate': 'xl-texto', '/contrarian': 'xl-texto', '/assumptions': 'xl-texto', '/risks': 'xl-texto',
+    '/factcheck': 'xl-texto', '/verify': 'xl-texto', '/logic': 'xl-texto', '/rootcause': 'xl-texto', '/debug': 'xl-texto', '/solution': 'xl-texto', '/alternative': 'xl-texto', '/optimize': 'xl-texto', '/automate': 'xl-texto', '/template': 'xl-texto', '/checklist': 'xl-texto', '/framework': 'xl-texto', '/matrix': 'xl-texto', '/table': 'xl-texto',
+    '/json': 'xl-texto', '/reverse': 'xl-texto', '/ultimate': 'xl-texto',
     // 465-592 (capturas WhatsApp 2026-09-26)
-    '/reveal': 'camara', '/bullettime': 'camara', '/dronview': 'camara', '/aerial': 'camara', '/lifestyle': 'persona', '/bw': 'visuales', '/pet': 'persona', '/instantphoto': 'visuales', '/legoify': 'escenarios', '/futureversion': 'escenarios', '/postapocalypse': 'escenarios', '/iceversion': 'escenarios', '/candyversion': 'escenarios', '/miniatureworld': 'escenarios',
-    '/giantmode': 'escenarios', '/tinyhumans': 'escenarios', '/3danimal': 'visuales', '/3dcycle': 'visuales', '/3dcell': 'visuales', '/3dexploded': 'visuales', '/3dinside': 'visuales', '/3dcutaway': 'visuales', '/3dlabeled': 'visuales', '/3dprocess': 'visuales', '/3dplant': 'visuales', '/transferbackground': 'escenarios', '/balanced3Lightportrait': 'persona', '/removepeoplebg': 'persona',
-    '/pourshot': 'producto', '/whiteback': 'producto', '/inhandshot': 'producto', '/scalereference': 'producto', '/bundleshot': 'producto', '/variantgrid': 'producto', '/levitationrig': 'producto', '/liquidmotion': 'producto', '/unboxingsequence': 'producto', '/boxset': 'producto', '/sachetrow': 'producto', '/materialswatch': 'producto', '/refillsystem': 'producto', '/processsteps': 'producto',
-    '/handmadedetail': 'producto', '/sourcemap': 'producto', '/activesmap': 'producto', '/splitproof': 'producto', '/versusgrid': 'producto', '/durabilitytest': 'producto', '/weartimeline': 'producto', '/resultchart': 'producto', '/testimonialframe': 'producto', '/claimproof': 'producto', '/adcreative': 'producto', '/hookframe': 'producto', '/uglyad': 'producto', '/pricecard': 'producto',
-    '/toypackaging': 'producto', '/funkostyle': 'producto', '/minifig': 'producto', '/plushie': 'producto', '/keychain': 'producto', '/gashapon': 'producto', '/bobblehead': 'producto', '/crochetdoll': 'producto', '/dioramabox': 'producto', '/miniatureroom': 'producto', '/isometricroom': 'producto', '/ingredientexplosion': 'producto', '/ingredientbreakdown': 'producto', '/footweartechpack': 'producto',
-    '/timelineboard': 'producto', '/tradingcard': 'producto', '/cerealbox': 'producto', '/vinylsleeve': 'producto', '/arcadecabinet': 'producto', '/museumplaque': 'producto', '/spectable': 'producto', '/sizechart': 'producto', '/dieline': 'producto', '/3dadcreative': 'producto', '/brandworld': 'producto', '/anglepack': 'camara', '/gridboard': 'camara', '/cameramove': 'camara',
-    '/keyframepair': 'camara', '/spinturntable': 'camara', '/shotsetup': 'camara', '/gobopattern': 'luz', '/colorgelset': 'luz', '/reflectionsetup': 'luz', '/lightingdiagram': 'luz', '/handsinuse': 'persona', '/founderframe': 'persona', '/3dmagazinecover': 'visuales', '/3danatomy': 'visuales', '/3dsoftcutaway': 'visuales', '/luxurylifestyle': 'visuales', '/glasssculpture': 'visuales',
-    '/voxelart': 'visuales', '/crossstitch': 'visuales', '/holographiccard': 'visuales', '/yearbook90s': 'visuales', '/tattooflash': 'visuales', '/neonsign': 'visuales', '/wantedposter': 'visuales', '/securitycam': 'visuales', '/layercut': 'visuales', '/texturemacro': 'visuales', '/construction': 'visuales', '/materialcallout': 'visuales', '/microscopeview': 'visuales', '/grainpattern': 'visuales',
-    '/embossdetail': 'visuales', '/morningritual': 'escenarios', '/environmentmatch': 'escenarios', '/seasonset': 'escenarios', '/momentbefore': 'escenarios', '/aftermath': 'escenarios', '/companionobjects': 'escenarios', '/travelset': 'escenarios', '/workdesk': 'escenarios', '/originstory': 'escenarios', '/workshopscene': 'escenarios', '/labels': 'trucos', '/arrows': 'trucos', '/classroom': 'trucos',
-    '/inputs': 'trucos', '/outputs': 'trucos',
-    '/brainstorm': 'trucos', '/story': 'trucos',
+    '/reveal': 'xl-planos', '/bullettime': 'xl-planos', '/dronview': 'xl-planos', '/aerial': 'xl-planos', '/lifestyle': 'xl-camararetrato', '/bw': 'xl-estilos', '/pet': 'xl-camararetrato', '/instantphoto': 'xl-estilos', '/legoify': 'xl-otromundo', '/futureversion': 'xl-otromundo', '/postapocalypse': 'xl-otromundo', '/iceversion': 'xl-otromundo', '/candyversion': 'xl-otromundo', '/miniatureworld': 'xl-efectosempaque',
+    '/giantmode': 'xl-efectosempaque', '/tinyhumans': 'xl-efectosempaque', '/3danimal': 'xl-letras3d', '/3dcycle': 'xl-letras3d', '/3dcell': 'xl-letras3d', '/3dexploded': 'xl-letras3d', '/3dinside': 'xl-letras3d', '/3dcutaway': 'xl-letras3d', '/3dlabeled': 'xl-letras3d', '/3dprocess': 'xl-letras3d', '/3dplant': 'xl-letras3d', '/transferbackground': 'xl-otromundo', '/balanced3Lightportrait': 'xl-luzcamara', '/removepeoplebg': 'xl-camararetrato',
+    '/pourshot': 'xl-fotoproducto', '/whiteback': 'xl-fotoproducto', '/inhandshot': 'xl-fotoproducto', '/scalereference': 'xl-fotoproducto', '/bundleshot': 'xl-fotoproducto', '/variantgrid': 'xl-fotoproducto', '/levitationrig': 'xl-fotoproducto', '/liquidmotion': 'xl-fotoproducto', '/unboxingsequence': 'xl-fotoproducto', '/boxset': 'xl-fotoproducto', '/sachetrow': 'xl-fotoproducto', '/materialswatch': 'xl-fotoproducto', '/refillsystem': 'xl-fotoproducto', '/processsteps': 'xl-escenaprueba',
+    '/handmadedetail': 'xl-escenaprueba', '/sourcemap': 'xl-escenaprueba', '/activesmap': 'xl-escenaprueba', '/splitproof': 'xl-escenaprueba', '/versusgrid': 'xl-escenaprueba', '/durabilitytest': 'xl-escenaprueba', '/weartimeline': 'xl-pintura', '/resultchart': 'xl-pintura', '/testimonialframe': 'xl-pintura', '/claimproof': 'xl-pintura', '/adcreative': 'xl-pintura', '/hookframe': 'xl-pintura', '/uglyad': 'xl-pintura', '/pricecard': 'xl-pintura',
+    '/toypackaging': 'xl-500', '/funkostyle': 'xl-500', '/minifig': 'xl-500', '/plushie': 'xl-500', '/keychain': 'xl-500', '/gashapon': 'xl-500', '/bobblehead': 'xl-500', '/crochetdoll': 'xl-500', '/dioramabox': 'xl-500', '/miniatureroom': 'xl-500', '/isometricroom': 'xl-500', '/ingredientexplosion': 'xl-500', '/ingredientbreakdown': 'xl-500', '/footweartechpack': 'xl-500',
+    '/timelineboard': 'xl-carteles', '/tradingcard': 'xl-carteles', '/cerealbox': 'xl-carteles', '/vinylsleeve': 'xl-carteles', '/arcadecabinet': 'xl-carteles', '/museumplaque': 'xl-carteles', '/spectable': 'xl-verdentro', '/sizechart': 'xl-verdentro', '/dieline': 'xl-verdentro', '/3dadcreative': 'xl-500', '/brandworld': 'xl-hechomano', '/anglepack': 'xl-luzcamara', '/gridboard': 'xl-luzcamara', '/cameramove': 'xl-luzcamara',
+    '/keyframepair': 'xl-luzcamara', '/spinturntable': 'xl-luzcamara', '/shotsetup': 'xl-500', '/gobopattern': 'xl-luzcamara', '/colorgelset': 'xl-luzcamara', '/reflectionsetup': 'xl-luzcamara', '/lightingdiagram': 'xl-luzcamara', '/handsinuse': 'xl-escenaprueba', '/founderframe': 'xl-escenaprueba', '/3dmagazinecover': 'xl-500', '/3danatomy': 'xl-500', '/3dsoftcutaway': 'xl-500', '/luxurylifestyle': 'xl-500', '/glasssculpture': 'xl-carteles',
+    '/voxelart': 'xl-carteles', '/crossstitch': 'xl-carteles', '/holographiccard': 'xl-carteles', '/yearbook90s': 'xl-carteles', '/tattooflash': 'xl-carteles', '/neonsign': 'xl-carteles', '/wantedposter': 'xl-carteles', '/securitycam': 'xl-carteles', '/layercut': 'xl-verdentro', '/texturemacro': 'xl-verdentro', '/construction': 'xl-verdentro', '/materialcallout': 'xl-verdentro', '/microscopeview': 'xl-verdentro', '/grainpattern': 'xl-hechomano',
+    '/embossdetail': 'xl-hechomano', '/morningritual': 'xl-escenaprueba', '/environmentmatch': 'xl-escenaprueba', '/seasonset': 'xl-escenaprueba', '/momentbefore': 'xl-escenaprueba', '/aftermath': 'xl-escenaprueba', '/companionobjects': 'xl-escenaprueba', '/travelset': 'xl-escenaprueba', '/workdesk': 'xl-escenaprueba', '/originstory': 'xl-escenaprueba', '/workshopscene': 'xl-escenaprueba', '/labels': 'xl-verdentro', '/arrows': 'xl-verdentro', '/classroom': 'xl-retroedu',
+    '/inputs': 'xl-verdentro', '/outputs': 'xl-verdentro',
+    '/brainstorm': 'xl-texto', '/story': 'xl-texto',
     // ── Códigos del Excel «500 comandos secretos de ChatGPT» ──
     //    (18 hojas → 18 carpetas nuevas). Solo los que NO existían ya.
     //    Sin duplicar ningún código previo de la app.
+    //
+    // REPARTO 2026-10: los 591 códigos que vivían en las 9 carpetas originales
+    // se han repartido entre estas carpetas nuevas según su comportamiento.
+    // Las 9 carpetas originales quedan vacías (se pueden borrar con el botón ✕).
     // 500 comandos secretos: sin códigos nuevos, todos existían ya.
     // Carteles y materiales: sin códigos nuevos, todos existían ya.
     // Ver por dentro: sin códigos nuevos, todos existían ya.
@@ -1485,17 +1498,17 @@ const EXCEL_COMMANDS = [
     ['/blackfriday', 'anuncio de Black Friday'],
 ];
 const SEED_TRICKS = [
-    { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'terminal', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
-    { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'css', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
-    { id: 's3', title: 'Prompt engineering: Chain of Thought', description: 'Añadir "Pensemos paso a paso" al final de un prompt mejora drásticamente la calidad del razonamiento en modelos de lenguaje.', category: 'ia', tags: ['prompts', 'chatgpt', 'claude'], codeSnippet: 'No: "Resuelve este problema"\nSí: "Resuelve este problema. Pensemos paso a paso."', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 3 },
-    { id: 's4', title: 'Git bisect: encontrar bugs rápido', description: 'git bisect usa búsqueda binaria para encontrar el commit exacto que introdujo un bug. Automatizable con tests.', category: 'dev-web', tags: ['git', 'debugging'], codeSnippet: 'git bisect start\ngit bisect bad HEAD\ngit bisect good v1.0.0\n# Git hace checkout automático en el punto medio\n# Marca: git bisect good | git bisect bad\ngit bisect reset  # al terminar', difficulty: 'intermediate', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 2 },
-    { id: 's5', title: 'Docker prune: limpiar sistema', description: 'Elimina todas las imágenes, contenedores, volúmenes y redes que no estén en uso. Libera GBs de espacio.', category: 'devops', tags: ['docker', 'limpieza'], codeSnippet: 'docker system prune -a --volumes\n# -a: todas las imágenes sin usar\n# --volumes: incluye volúmenes huérfanos', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 },
-    { id: 's6', title: 'Array.from para crear rangos', description: 'Genera arrays de números secuenciales sin necesidad de bucles. Útil para paginación, mapeos y generación de datos.', category: 'javascript', tags: ['javascript', 'arrays', 'oneliner'], codeSnippet: 'const range = (n) => Array.from({ length: n }, (_, i) => i);\n// range(5) → [0, 1, 2, 3, 4]\n\nconst rangeFrom = (s, e) => Array.from({ length: e - s }, (_, i) => s + i);\n// rangeFrom(5, 10) → [5, 6, 7, 8, 9]', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 7 },
-    { id: 's7', title: 'Python f-strings avanzados', description: 'Formatea números, fechas y alinea texto directamente dentro de f-strings con especificadores de formato.', category: 'python', tags: ['python', 'string', 'formato'], codeSnippet: 'n = 1234.5678\nprint(f"{n:,.2f}")      # 1,234.57\nprint(f"{n:>15,.2f}")   # alineado derecha\nprint(f"{42:08b}")       # binario: 00101010\n\nfrom datetime import datetime\nd = datetime.now()\nprint(f"{d:%Y-%m-%d %H:%M}")', difficulty: 'intermediate', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 6 },
-    { id: 's8', title: 'VS Code: Multi-cursor con Alt+Click', description: 'Alt+Click en diferentes líneas crea cursores múltiples para editar en paralelo. Combinado con Ctrl+D selecciona ocurrencias.', category: 'vscode', tags: ['vscode', 'atajos', 'productividad'], codeSnippet: 'Alt+Click       → cursor múltiple en cualquier punto\nCtrl+D          → seleccionar siguiente ocurrencia\nCtrl+Shift+L    → seleccionar TODAS las ocurrencias\nAlt+Shift+↑/↓   → duplicar línea arriba/abajo', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 8 },
-    { id: 's9', title: 'Método Ivy Lee: productividad diaria', description: 'Cada noche escribe las 6 tareas más importantes para mañana, ordenadas por prioridad. Al día siguiente empieza por la #1 y no pases a la siguiente hasta terminar.', category: 'productividad', tags: ['productividad', 'metodo', 'focus'], codeSnippet: '📋 Cada noche:\n1. Escribe 6 tareas para mañana\n2. Priorízalas (1 = más importante)\n\n🌅 Al día siguiente:\n1. Empieza por la tarea #1\n2. No pases a #2 hasta terminar #1\n3. Las no acabadas pasan a mañana', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 10 },
-    { id: 's10', title: 'Regla 5-5-5 para tomar decisiones', description: 'Pregúntate: ¿esto importará en 5 minutos, 5 meses o 5 años? La respuesta te ayuda a calibrar cuánta energía mental merece cada decisión.', category: 'productividad', tags: ['decisiones', 'mentalidad', 'minimalismo'], codeSnippet: '⏱️ ¿Importará en 5 MINUTOS?\n   → Déjalo pasar. No reacciones.\n\n📅 ¿Importará en 5 MESES?\n   → Dedícale atención moderada.\n\n🎯 ¿Importará en 5 AÑOS?\n   → Esto SÍ merece tu mejor energía.', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 9 },
-    { id: 's11', title: 'El truco del patito de goma (Rubber Duck Debugging)', description: 'Cuando estés atascado con un bug, explícaselo en voz alta a un objeto inanimado (como un patito de goma). El mero hecho de verbalizar el problema te hace ver la solución.', category: 'otros', tags: ['debugging', 'pensamiento', 'metodologia'], codeSnippet: '🐤 Pasos del Rubber Duck Debugging:\n1. Coge un patito (o cualquier objeto)\n2. Explícale el problema línea por línea\n3. No asumas nada - explícalo TODO\n4. La solución suele aparecer a mitad de la explicación', difficulty: 'beginner', sourceUrl: 'https://es.wikipedia.org/wiki/M%C3%A9todo_de_depuraci%C3%B3n_del_patito_de_goma', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 11 },
+    { id: 's1', title: 'Buscar historial con Ctrl+R', description: 'Usa Ctrl+R en la terminal para búsqueda inversa interactiva del historial de comandos. Pulsar repetidamente navega hacia atrás.', category: 'xl-dev', tags: ['bash', 'atajos'], codeSnippet: '# Pulsa Ctrl+R y empieza a escribir\n# Para buscar hacia adelante: Ctrl+S (necesita: stty -ixon)', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 5 },
+    { id: 's2', title: 'Glassmorphism en 3 líneas CSS', description: 'El efecto glass se logra con backdrop-filter, fondo semitransparente y borde sutil. Ideal para modales y cards modernas.', category: 'xl-dev', tags: ['css', 'diseño', 'glassmorphism'], codeSnippet: '.glass {\n  background: rgba(255,255,255,0.08);\n  backdrop-filter: blur(16px);\n  border: 1px solid rgba(255,255,255,0.1);\n}', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 4 },
+    { id: 's3', title: 'Prompt engineering: Chain of Thought', description: 'Añadir "Pensemos paso a paso" al final de un prompt mejora drásticamente la calidad del razonamiento en modelos de lenguaje.', category: 'xl-dev', tags: ['prompts', 'chatgpt', 'claude'], codeSnippet: 'No: "Resuelve este problema"\nSí: "Resuelve este problema. Pensemos paso a paso."', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 3 },
+    { id: 's4', title: 'Git bisect: encontrar bugs rápido', description: 'git bisect usa búsqueda binaria para encontrar el commit exacto que introdujo un bug. Automatizable con tests.', category: 'xl-dev', tags: ['git', 'debugging'], codeSnippet: 'git bisect start\ngit bisect bad HEAD\ngit bisect good v1.0.0\n# Git hace checkout automático en el punto medio\n# Marca: git bisect good | git bisect bad\ngit bisect reset  # al terminar', difficulty: 'intermediate', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 2 },
+    { id: 's5', title: 'Docker prune: limpiar sistema', description: 'Elimina todas las imágenes, contenedores, volúmenes y redes que no estén en uso. Libera GBs de espacio.', category: 'xl-dev', tags: ['docker', 'limpieza'], codeSnippet: 'docker system prune -a --volumes\n# -a: todas las imágenes sin usar\n# --volumes: incluye volúmenes huérfanos', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 },
+    { id: 's6', title: 'Array.from para crear rangos', description: 'Genera arrays de números secuenciales sin necesidad de bucles. Útil para paginación, mapeos y generación de datos.', category: 'xl-dev', tags: ['javascript', 'arrays', 'oneliner'], codeSnippet: 'const range = (n) => Array.from({ length: n }, (_, i) => i);\n// range(5) → [0, 1, 2, 3, 4]\n\nconst rangeFrom = (s, e) => Array.from({ length: e - s }, (_, i) => s + i);\n// rangeFrom(5, 10) → [5, 6, 7, 8, 9]', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 7 },
+    { id: 's7', title: 'Python f-strings avanzados', description: 'Formatea números, fechas y alinea texto directamente dentro de f-strings con especificadores de formato.', category: 'xl-dev', tags: ['python', 'string', 'formato'], codeSnippet: 'n = 1234.5678\nprint(f"{n:,.2f}")      # 1,234.57\nprint(f"{n:>15,.2f}")   # alineado derecha\nprint(f"{42:08b}")       # binario: 00101010\n\nfrom datetime import datetime\nd = datetime.now()\nprint(f"{d:%Y-%m-%d %H:%M}")', difficulty: 'intermediate', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 6 },
+    { id: 's8', title: 'VS Code: Multi-cursor con Alt+Click', description: 'Alt+Click en diferentes líneas crea cursores múltiples para editar en paralelo. Combinado con Ctrl+D selecciona ocurrencias.', category: 'xl-dev', tags: ['vscode', 'atajos', 'productividad'], codeSnippet: 'Alt+Click       → cursor múltiple en cualquier punto\nCtrl+D          → seleccionar siguiente ocurrencia\nCtrl+Shift+L    → seleccionar TODAS las ocurrencias\nAlt+Shift+↑/↓   → duplicar línea arriba/abajo', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 8 },
+    { id: 's9', title: 'Método Ivy Lee: productividad diaria', description: 'Cada noche escribe las 6 tareas más importantes para mañana, ordenadas por prioridad. Al día siguiente empieza por la #1 y no pases a la siguiente hasta terminar.', category: 'xl-dev', tags: ['productividad', 'metodo', 'focus'], codeSnippet: '📋 Cada noche:\n1. Escribe 6 tareas para mañana\n2. Priorízalas (1 = más importante)\n\n🌅 Al día siguiente:\n1. Empieza por la tarea #1\n2. No pases a #2 hasta terminar #1\n3. Las no acabadas pasan a mañana', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: true, createdAt: Date.now() - 86400000 * 10 },
+    { id: 's10', title: 'Regla 5-5-5 para tomar decisiones', description: 'Pregúntate: ¿esto importará en 5 minutos, 5 meses o 5 años? La respuesta te ayuda a calibrar cuánta energía mental merece cada decisión.', category: 'xl-dev', tags: ['decisiones', 'mentalidad', 'minimalismo'], codeSnippet: '⏱️ ¿Importará en 5 MINUTOS?\n   → Déjalo pasar. No reacciones.\n\n📅 ¿Importará en 5 MESES?\n   → Dedícale atención moderada.\n\n🎯 ¿Importará en 5 AÑOS?\n   → Esto SÍ merece tu mejor energía.', difficulty: 'beginner', sourceUrl: '', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 9 },
+    { id: 's11', title: 'El truco del patito de goma (Rubber Duck Debugging)', description: 'Cuando estés atascado con un bug, explícaselo en voz alta a un objeto inanimado (como un patito de goma). El mero hecho de verbalizar el problema te hace ver la solución.', category: 'xl-dev', tags: ['debugging', 'pensamiento', 'metodologia'], codeSnippet: '🐤 Pasos del Rubber Duck Debugging:\n1. Coge un patito (o cualquier objeto)\n2. Explícale el problema línea por línea\n3. No asumas nada - explícalo TODO\n4. La solución suele aparecer a mitad de la explicación', difficulty: 'beginner', sourceUrl: 'https://es.wikipedia.org/wiki/M%C3%A9todo_de_depuraci%C3%B3n_del_patito_de_goma', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 11 },
     ...ALL_IMAGE_COMMANDS.flatMap(([command, meaning], index) => {
         const seedId = `ig-dcek-${String(index + 1).padStart(3, '0')}`;
         if (REMOVED_IMAGE_IDS.has(seedId)) return [];
@@ -1530,6 +1543,13 @@ const SEED_TRICKS = [
         updatedAt: Date.UTC(2026, 9, 1),
     })),
 ];
+
+// Carpeta con la que nace cada tarjeta semilla. Las 11 tarjetas escritas a mano
+// la usan para recolocarse solas al recargar la app.
+const SEED_CATEGORY_BY_ID = SEED_TRICKS.reduce((map, trick) => {
+    map[trick.id] = trick.category;
+    return map;
+}, {});
 
 /* ═══════════════════════════════════════════════
    HELPERS
@@ -1569,6 +1589,12 @@ function normalizeTrickCategory(item, folderIds) {
     const mapped = CODE_FOLDER[getImageCommandKey(item)];
     if (mapped && folderIds.includes(mapped)) {
         return item.category === mapped ? item : { ...item, category: mapped };
+    }
+    // Las tarjetas que nacen en el seed y no son comandos (las 11 escritas a
+    // mano) siguen también a su carpeta de origen, igual que los comandos.
+    const seedCat = SEED_CATEGORY_BY_ID[item.id];
+    if (seedCat && folderIds.includes(seedCat)) {
+        return item.category === seedCat ? item : { ...item, category: seedCat };
     }
     const cat = String(item.category || '');
     if (cat && folderIds.includes(cat)) return item;
