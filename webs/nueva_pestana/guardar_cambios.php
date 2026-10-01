@@ -36,15 +36,13 @@ try {
         'columns' => $data['columns'],
         'ultima_actualizacion' => date('Y-m-d H:i:s')
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    
-    $bytes = file_put_contents($ruta_archivo, $contenido);
-    
-    if ($bytes === false) {
-        throw new Exception("Error al escribir en el archivo");
+
+    // Un despliegue de Hostinger puede haber recreado el fichero con otro
+    // propietario o sin permisos de escritura para PHP: se fuerza antes de
+    // intentar escribir.
+    if (file_exists($ruta_archivo)) {
+        @chmod($ruta_archivo, 0666);
     }
-    
-    // Forzar permisos
-    chmod($ruta_archivo, 0666);
 
     // Sistema de Backups Redundantes
     $dir_backups = __DIR__ . '/copias_estado_nueva_pestaña';
@@ -111,13 +109,24 @@ try {
         }
     }
     
+    // El fichero principal se escribe AL FINAL. Si fallara (permisos, disco) el
+    // trabajo ya está en la copia de seguridad y load_state.php la restaura en
+    // la siguiente carga, en lugar de perderse como pasaba antes.
+    $bytes = @file_put_contents($ruta_archivo, $contenido);
+    $principal_escrito = ($bytes !== false);
+    if ($principal_escrito) {
+        @chmod($ruta_archivo, 0666);
+    }
+
     echo json_encode([
         'success' => true,
         'detalles' => [
             'ruta' => $ruta_archivo,
-            'tamano' => $bytes,
-            'backup' => true
-        ]
+            'tamano' => $principal_escrito ? $bytes : 0,
+            'backup' => true,
+            'principal_escrito' => $principal_escrito
+        ],
+        'aviso' => $principal_escrito ? null : 'No se pudo escribir el estado directamente, pero se guardó la copia de seguridad y se restaurará al recargar la página.'
     ]);
     
 } catch (Exception $e) {
@@ -126,8 +135,8 @@ try {
         'error' => $e->getMessage(),
         'detalles_tecnicos' => [
             'error_get_last' => error_get_last(),
-            'permisos_archivo' => file_exists($ruta_archivo) ? substr(sprintf('%o', fileperms($ruta_archivo)), -4) : 'No existe',
-            'espacio_disco' => disk_free_space(__DIR__)
+            'permisos_archivo' => (isset($ruta_archivo) && file_exists($ruta_archivo)) ? substr(sprintf('%o', fileperms($ruta_archivo)), -4) : 'No existe',
+            'espacio_disco' => @disk_free_space(__DIR__)
         ]
     ]));
 }

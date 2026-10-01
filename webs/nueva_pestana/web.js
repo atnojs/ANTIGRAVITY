@@ -156,6 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`Error al guardar: ${result.error || 'Desconocido'}`);
             } else {
                 console.log("Guardado exitoso:", result);
+                if (result.aviso) {
+                    console.warn(result.aviso);
+                    alert(result.aviso);
+                }
             }
         } catch (e) {
             console.error("Error crítico en saveState:", e);
