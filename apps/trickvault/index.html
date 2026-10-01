@@ -3464,14 +3464,15 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
 
     const results = useMemo(() => {
         if (!query.trim()) return [];
-        const q = query.toLowerCase();
+        const q = query.trim().toLowerCase();
         return tricks.filter(t =>
             t.title.toLowerCase().includes(q) ||
+            (t.codeSnippet || '').toLowerCase().includes(q) ||
             t.description.toLowerCase().includes(q) ||
             t.tags.some(tg => tg.toLowerCase().includes(q)) ||
             (getCat(t.category, folders)?.label || '').toLowerCase().includes(q)
-        ).sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
-    }, [tricks, query]);
+        ).sort((a, b) => b.createdAt - a.createdAt);
+    }, [tricks, query, folders]);
 
     return (
         <div>
@@ -3481,7 +3482,7 @@ function GlobalSearch({ tricks, folders, onSelectCategory, onToggleFav, onEdit, 
             <div className="stats-bar">
                 <div className="search-wrap">
                     <span className="search-icon">🔍</span>
-                    <input type="text" placeholder="Buscar en todos los trucos..." value={query} onChange={e => setQuery(e.target.value)} autoFocus aria-label="Buscar en todos los trucos" />
+                    <input type="text" placeholder="Buscar códigos en todas las carpetas..." value={query} onChange={e => setQuery(e.target.value)} aria-label="Buscar códigos en todas las carpetas" />
                 </div>
                 {query && <span className="stat-chip"><span className="count">{results.length}</span> resultados</span>}
             </div>
@@ -3955,7 +3956,6 @@ function App() {
     }, []);
 
     const totalFavs = useMemo(() => tricks.filter(t => t.isFavorite).length, [tricks]);
-    const globalSearchQuery = search; // used across views
 
     return (
         <div className={`app-container ${view === 'categories' ? 'home-mode' : ''}`}>
@@ -3994,6 +3994,21 @@ function App() {
                     <span className="stat-chip">📂 <span className="count">{folders.length + 1}</span> carpetas</span>
                     <span className="stat-chip">⭐ <span className="count">{totalFavs}</span> favoritos</span>
                 </div>
+            )}
+
+            {/* Buscador global visible en la portada. */}
+            {view === 'categories' && (
+                <GlobalSearch
+                    tricks={tricks}
+                    folders={folders}
+                    onSelectCategory={selectCategory}
+                    onToggleFav={toggleFav}
+                    onEdit={openEditForm}
+                    onImageClick={setLightboxSrc}
+                    onCopy={handleCopy}
+                    copiedId={copiedId}
+                    canEdit={editUnlocked}
+                />
             )}
 
             {/* MAIN CONTENT */}
