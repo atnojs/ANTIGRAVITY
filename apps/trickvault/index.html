@@ -1660,13 +1660,10 @@ function removeEmptyLegacyFolders(saved) {
         storedTricks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         if (!Array.isArray(storedTricks)) return saved;
     } catch { return saved; }
-    const folderIds = new Set([...saved, ...DEFAULT_FOLDERS].map(folder => folder.id));
     const occupied = new Set();
     for (const trick of storedTricks) {
         if (!trick || REMOVED_IMAGE_IDS.has(String(trick.id))) continue;
-        const destination = CODE_FOLDER[getImageCommandKey(trick)] || SEED_CATEGORY_BY_ID[trick.id];
-        if (destination && folderIds.has(destination)) occupied.add(destination);
-        else occupied.add(trick.category);
+        occupied.add(trick.category);
     }
     return saved.filter(folder => !legacyIds.has(folder.id) || occupied.has(folder.id));
 }
@@ -1707,6 +1704,8 @@ function readFolderIds() {
     return loadFolders().map(f => f.id);
 }
 function normalizeTrickCategory(item, folderIds) {
+    const cat = String(item.category || '');
+    if (cat && cat !== 'xl-500' && folderIds.includes(cat)) return item;
     const mapped = CODE_FOLDER[getImageCommandKey(item)];
     if (mapped && folderIds.includes(mapped)) {
         return item.category === mapped ? item : { ...item, category: mapped };
@@ -1717,7 +1716,6 @@ function normalizeTrickCategory(item, folderIds) {
     if (seedCat && folderIds.includes(seedCat)) {
         return item.category === seedCat ? item : { ...item, category: seedCat };
     }
-    const cat = String(item.category || '');
     // Conservar también tarjetas personales sin comando reconocido.
     if (cat === 'xl-500') {
         const destination = folderIds.includes('xl-verdentro') ? 'xl-verdentro' : folderIds[0];
@@ -2843,17 +2841,19 @@ function migrateGeneratedCardImages(items) {
     return items.map(item => {
         const release = GENERATED_IMAGE_RELEASES.find(release => release.category === item.category);
         const seedImage = SEED_COMMAND_IMAGES[getImageCommandKey(item)];
-        return release && seedImage?.startsWith(release.prefix) && (!item.imageUrl || pendingReleases.has(release))
+        const canonicalCard = SEED_TRICKS.find(seed => seed.id === item.id && seed.codeSnippet === item.codeSnippet);
+        const legacyExample = !item.imageUrl || item.imageUrl.startsWith('uploads/visual-') || isGeneratedCardImage(item.imageUrl);
+        return canonicalCard && legacyExample && release && seedImage?.startsWith(release.prefix) && (!item.imageUrl || pendingReleases.has(release))
             ? { ...item, imageUrl: seedImage }
             : item;
     });
 }
-function applyRemoteImages(items, remoteImages, cmdToSeedId) {
+function applyRemoteImages(items, remoteImages) {
     return items.map(trick => {
         const imageUrl = trick.imageUrl || '';
-        if (imageUrl.startsWith('data:image/') || isGeneratedCardImage(imageUrl)) return trick;
-        const seedId = cmdToSeedId[trick.codeSnippet];
-        const remoteUrl = (seedId && remoteImages[seedId]) || remoteImages[trick.id];
+        if (imageUrl.startsWith('data:image/') || (isGeneratedCardImage(imageUrl) && SEED_TRICKS.some(seed => seed.id === trick.id && seed.codeSnippet === trick.codeSnippet))) return trick;
+        // Cada variante conserva su identidad, incluso si comparte /comando.
+        const remoteUrl = remoteImages[trick.id];
         return remoteUrl && remoteUrl !== imageUrl ? { ...trick, imageUrl: remoteUrl } : trick;
     });
 }
@@ -3905,19 +3905,10 @@ function App() {
             try {
                 const remoteImages = await loadRemoteImages();
 
-                // Mapa comando -> id de seed actual, para casar imagen por CÓDIGO
-                // (los ids del localStorage pueden estar desfasados tras añadir/quitar códigos).
-                const cmdToSeedId = {};
-                for (const t of SEED_TRICKS) {
-                    if (typeof t.codeSnippet === 'string' && t.codeSnippet.startsWith('/')) {
-                        cmdToSeedId[t.codeSnippet] = t.id;
-                    }
-                }
-
                 if (!cancelled) {
                     // Aplicar solo imágenes sobre el estado actual: los favoritos,
                     // el contenido y la ubicación pueden haber cambiado mientras cargaban.
-                    setTricks(prev => applyRemoteImages(prev, remoteImages, cmdToSeedId));
+                    setTricks(prev => applyRemoteImages(prev, remoteImages));
                 }
             } catch (error) {
                 console.error('[TrickVault] No se pudieron cargar las imágenes de Hostinger:', error);
@@ -4071,6 +4062,8 @@ function App() {
                     canEdit={editUnlocked}
                 />
             )}
+
+            {editUnlocked && <ExportImport tricks={tricks} onImport={handleImport} />}
 
             {/* MODALS */}
             {showForm && (
