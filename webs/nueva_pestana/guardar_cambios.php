@@ -1,6 +1,10 @@
 <?php
-// Habilitar reporte detallado de errores
-ini_set('display_errors', 1);
+// Los errores se registran en el log del servidor, pero NUNCA se imprimen en la
+// respuesta: cualquier aviso de PHP delante del JSON rompe el response.json()
+// del cliente y el guardado parecía fallar aunque hubiera funcionado.
+header('Content-Type: application/json');
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 // Recibir datos
@@ -50,16 +54,42 @@ try {
 
     // 1. Guardar el backup persistente estático (siempre actualizado)
     $ruta_backup_estatico = $dir_backups . '/estado_nueva_pestaña_backup.json';
+
+    // ¿El estado cambió respecto al último guardado? Sólo entonces se crea una
+    // copia nueva con timestamp: así la rotación conserva historial de verdad y
+    // no se agota con guardados que no cambiaban nada.
+    $estado_canonico = json_encode(
+        ['background' => $data['background'], 'columns' => $data['columns']],
+        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+    );
+    $es_nuevo = true;
+    if (file_exists($ruta_backup_estatico)) {
+        $previo = json_decode(file_get_contents($ruta_backup_estatico), true);
+        if (is_array($previo) && isset($previo['columns'])) {
+            $previo_canonico = json_encode(
+                [
+                    'background' => isset($previo['background']) ? $previo['background'] : '',
+                    'columns' => $previo['columns']
+                ],
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            );
+            $es_nuevo = ($previo_canonico !== $estado_canonico);
+        }
+    }
+
     file_put_contents($ruta_backup_estatico, $contenido);
     chmod($ruta_backup_estatico, 0666);
 
-    // 2. Guardar backup histórico con timestamp
-    $timestamp = date('Ymd_His');
-    $ruta_backup_historico = $dir_backups . '/estado_nueva_pestaña_' . $timestamp . '.json';
-    file_put_contents($ruta_backup_historico, $contenido);
-    chmod($ruta_backup_historico, 0666);
+    // 2. Guardar backup histórico con timestamp (sólo si hay cambios reales)
+    if ($es_nuevo) {
+        $timestamp = date('Ymd_His');
+        $ruta_backup_historico = $dir_backups . '/estado_nueva_pestaña_' . $timestamp . '.json';
+        file_put_contents($ruta_backup_historico, $contenido);
+        chmod($ruta_backup_historico, 0666);
+    }
 
-    // 3. Rotación de copias (mantener sólo las últimas 20)
+    // 3. Rotación de copias (mantener las últimas 60)
+    $max_copias = 60;
     $patron = $dir_backups . '/estado_nueva_pestaña_*.json';
     $archivos = glob($patron);
     
@@ -68,14 +98,14 @@ try {
         return basename($archivo) !== 'estado_nueva_pestaña_backup.json';
     });
 
-    if (count($archivos_historicos) > 20) {
+    if (count($archivos_historicos) > $max_copias) {
         // Ordenar por tiempo de modificación (más antiguos primero)
         usort($archivos_historicos, function($a, $b) {
             return filemtime($a) - filemtime($b);
         });
         
         // Eliminar excedentes
-        $a_eliminar = count($archivos_historicos) - 20;
+        $a_eliminar = count($archivos_historicos) - $max_copias;
         for ($i = 0; $i < $a_eliminar; $i++) {
             @unlink($archivos_historicos[$i]);
         }

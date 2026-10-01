@@ -14,7 +14,7 @@
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
   <link rel="icon" href="https://atnojs.es/iconos/favicon1.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="web.css">
+  <link rel="stylesheet" href="web.css?v=2">
 </head>
 
 <body>
@@ -34,6 +34,8 @@
     <div class="edit-mode-controls">
       <button id="add-panel-btn" class="add-item-btn">+ Añadir Nuevo Panel</button>
       <button id="add-item-btn" class="add-item-btn">+ Añadir Nuevo Enlace</button>
+      <button id="copias-btn" class="add-item-btn"><i class="fa-solid fa-clock-rotate-left"></i> Copias de
+        seguridad</button>
     </div>
 
     <div id="panels-container">
@@ -107,7 +109,20 @@
     </div>
   </div>
 
-  <script src="web.js"></script>
-</body>
+  <!-- Modal para ver y restaurar las copias guardadas en el servidor -->
+  <div id="copias-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Copias de seguridad</h3>
+      <p class="copias-hint">Cada guardado deja una copia en el servidor. Elige una fecha para volver a ese estado.</p>
+      <div id="copias-list" class="copias-list">
+        <p class="copias-empty">Cargando copias…</p>
+      </div>
+      <div class="form-buttons">
+        <button id="copias-close-btn" class="btn-cancel">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
+  <script src="web.js?v=2"></script>
+</body>
 </html>

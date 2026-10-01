@@ -41,6 +41,12 @@ _public_html.zip
 
 # JSON de estado generado (no necesarios en el repo)
 **/estado_*.json
+# Estado VIVO de webs/nueva_pestana (el panel del usuario). Nunca versionar: si
+# entra en Git, cada despliegue de Hostinger lo sobrescribe con la copia del
+# repositorio y desaparecen las carpetas y enlaces recien guardados. Las copias
+# de seguridad reales las mantiene guardar_cambios.php en
+# webs/nueva_pestana/copias_estado_nueva_pestaña/ (tampoco versionada).
+webs/nueva_pestana/estado_*.json
 **/firebase_backup.json
 
 # Entornos virtuales de Python y caché

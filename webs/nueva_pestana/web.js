@@ -9,6 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let isEditable = false;
     let currentPassword = '';
     let isDragging = false;
+    // Nº de elementos que había al cargar: sirve para avisar si un guardado va a
+    // dejar el panel completamente vacío (típico síntoma de haber cargado mal).
+    let loadedItemCount = 0;
+
+    // Valor que exige guardar_cambios.php (y validar_password.php) para escribir
+    // en el servidor. Debe coincidir con la comprobación del PHP.
+    const SAVE_PASSWORD = '0';
 
     // ===== DOM ELEMENTS =====
     const panelsContainer = document.getElementById('panels-container');
@@ -43,6 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const panelFormSaveBtn = document.getElementById('panel-form-save-btn');
     const panelFormCancelBtn = document.getElementById('panel-form-cancel-btn');
 
+    // Copies Modal
+    const copiasBtn = document.getElementById('copias-btn');
+    const copiasModal = document.getElementById('copias-modal');
+    const copiasList = document.getElementById('copias-list');
+    const copiasCloseBtn = document.getElementById('copias-close-btn');
+
 
 
     // ===== BACKEND INTERACTION (FIXED) =====
@@ -76,6 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 tools: standaloneTools
             };
 
+            loadedItemCount = panels.length + standaloneTools.length;
+
         } catch (e) {
             console.error("Error al cargar el estado:", e);
             // Fallback seguro
@@ -105,9 +120,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // 2. Añadir Herramientas sueltas
             unifiedTools.push(...(appData.tools || []));
 
+            // Un guardado vacío sobre un panel con contenido suele ser señal de
+            // que el estado no se cargó bien: mejor preguntar antes de perderlo.
+            if (unifiedTools.length === 0 && loadedItemCount > 0) {
+                const seguir = confirm(
+                    'El panel se va a guardar COMPLETAMENTE VACÍO y había ' + loadedItemCount +
+                    ' elementos.\n\n¿Seguro que quieres continuar?'
+                );
+                if (!seguir) return;
+            }
+
             // Construir payload compatible con el backend
             const payload = {
-                password: '0', // La contraseña hardcodeada según tu script PHP
+                password: SAVE_PASSWORD, // La contraseña hardcodeada según tu script PHP
                 background: appData.background || '',
                 columns: [{
                     title: "Panel",
@@ -477,6 +502,122 @@ document.addEventListener('DOMContentLoaded', () => {
 
     panelFormCancelBtn.addEventListener('click', () => panelFormModal.style.display = 'none');
     addPanelBtn.addEventListener('click', openPanelFormForAdd);
+
+    // ===== COPIES / HISTORIAL DEL SERVIDOR =====
+    // Cada guardado deja una copia en copias_estado_nueva_pestaña/ (fuera de Git,
+    // así ningún despliegue la sobrescribe). Aquí se listan y se restauran.
+    function formatearFecha(fecha) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/.exec(fecha || '');
+        if (!m) return fecha || 'Sin fecha';
+        const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        const mes = meses[Number(m[2]) - 1] || m[2];
+        return `${Number(m[3])} de ${mes} de ${m[1]}, ${m[4]}:${m[5]}`;
+    }
+
+    async function cargarCopias() {
+        copiasList.innerHTML = '<p class="copias-empty">Cargando copias…</p>';
+        try {
+            const r = await fetch('load_state.php?copias=1&t=' + Date.now());
+            const data = await r.json();
+
+            if (!data || !data.success || !Array.isArray(data.copias) || data.copias.length === 0) {
+                copiasList.innerHTML = '<p class="copias-empty">Todavía no hay copias guardadas.</p>';
+                return;
+            }
+
+            copiasList.innerHTML = '';
+            data.copias.forEach(copia => {
+                const item = document.createElement('div');
+                item.className = 'copia-item' + (copia.actual ? ' actual' : '');
+
+                const info = document.createElement('div');
+                info.className = 'copia-info';
+
+                const fecha = document.createElement('span');
+                fecha.className = 'copia-fecha';
+                fecha.textContent = formatearFecha(copia.fecha) + (copia.actual ? ' · en uso' : '');
+
+                const detalle = document.createElement('span');
+                detalle.className = 'copia-detalle';
+                const nombres = Array.isArray(copia.nombres) ? copia.nombres.filter(Boolean) : [];
+                detalle.textContent = `${copia.paneles} paneles · ${copia.enlaces} enlaces`
+                    + (nombres.length ? ' — ' + nombres.join(', ') : '');
+
+                info.appendChild(fecha);
+                info.appendChild(detalle);
+
+                const boton = document.createElement('button');
+                boton.className = 'copia-restaurar';
+                boton.textContent = copia.actual ? 'En uso' : 'Restaurar';
+                boton.disabled = Boolean(copia.actual);
+                boton.addEventListener('click', () => restaurarCopia(copia, boton));
+
+                item.appendChild(info);
+                item.appendChild(boton);
+                copiasList.appendChild(item);
+            });
+        } catch (e) {
+            console.error('Error al cargar las copias:', e);
+            copiasList.innerHTML = '<p class="copias-empty">No se pudieron cargar las copias.</p>';
+        }
+    }
+
+    async function restaurarCopia(copia, boton) {
+        const confirmado = confirm(
+            `¿Restaurar la copia del ${formatearFecha(copia.fecha)}?\n\n` +
+            'El panel se sustituirá por esa copia. El estado actual también se guarda ' +
+            'como copia nueva, así que siempre podrás volver atrás.'
+        );
+        if (!confirmado) return;
+
+        const textoOriginal = boton.textContent;
+        boton.disabled = true;
+        boton.textContent = 'Restaurando…';
+
+        try {
+            // La copia es un fichero público dentro de la carpeta de copias.
+            const r = await fetch(encodeURI('copias_estado_nueva_pestaña/' + copia.archivo) + '?t=' + Date.now());
+            const datos = await r.json();
+            if (!datos || !Array.isArray(datos.columns)) {
+                throw new Error('la copia no tiene un formato válido');
+            }
+
+            const response = await fetch('guardar_cambios.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: SAVE_PASSWORD,
+                    background: datos.background || '',
+                    columns: datos.columns
+                })
+            });
+
+            if (!response.ok) throw new Error(`error HTTP ${response.status}`);
+
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'el servidor rechazó la restauración');
+
+            copiasModal.style.display = 'none';
+            await loadState();
+            alert('Copia restaurada correctamente.');
+        } catch (e) {
+            console.error('Error al restaurar la copia:', e);
+            boton.disabled = false;
+            boton.textContent = textoOriginal;
+            alert('No se pudo restaurar la copia: ' + e.message);
+        }
+    }
+
+    // Si el navegador aún tiene cacheado un index.html antiguo (sin el botón) el
+    // resto de la app debe seguir funcionando igual.
+    if (copiasBtn && copiasModal && copiasList && copiasCloseBtn) {
+        copiasBtn.addEventListener('click', () => {
+            copiasModal.style.display = 'flex';
+            cargarCopias();
+        });
+        copiasCloseBtn.addEventListener('click', () => copiasModal.style.display = 'none');
+    }
 
 
     // ===== DELETE LOGIC =====
