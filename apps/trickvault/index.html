@@ -46,7 +46,6 @@ const BASE_FOLDERS = [
 // ── 18 carpetas nuevas: una por cada hoja del Excel «500 comandos secretos de
 //    ChatGPT». Se añaden DESPUÉS de las carpetas originales, que no se tocan.
 const EXCEL_FOLDERS = [
-    { id: 'xl-500', label: '500 comandos secretos', icon: '🗝️', color: 'amber', bgIcon: '🔑' },
     { id: 'xl-carteles', label: 'Carteles y materiales', icon: '🪧', color: 'pink', bgIcon: '📰' },
     { id: 'xl-verdentro', label: 'Ver por dentro', icon: '🔬', color: 'cyan', bgIcon: '🧩' },
     { id: 'xl-hechomano', label: 'Hecho a mano', icon: '✋', color: 'purple', bgIcon: '🧵' },
@@ -87,7 +86,7 @@ const FOLDERS_SCHEMA_VERSION = 3;
 // Mapa comando de imagen -> carpeta
 const CODE_FOLDER = {
     // Esquemas técnicos
-    '/xray': 'xl-500', '/explodedview': 'xl-500', '/cutaway': 'xl-500', '/crosssection': 'xl-carteles',
+    '/xray': 'xl-verdentro', '/explodedview': 'xl-verdentro', '/cutaway': 'xl-verdentro', '/crosssection': 'xl-carteles',
     '/teardown': 'xl-carteles', '/schematic': 'xl-verdentro', '/ghostedview': 'xl-verdentro', '/skeletalview': 'xl-verdentro',
     '/layerview': 'xl-verdentro', '/partsdiagram': 'xl-verdentro', '/blueprint': 'xl-verdentro', '/isometric': 'xl-verdentro',
     '/orthographic': 'xl-verdentro', '/patentdrawing': 'xl-verdentro', '/wireframe': 'xl-verdentro', '/floorplan': 'xl-verdentro',
@@ -103,7 +102,7 @@ const CODE_FOLDER = {
     // Estilos visuales
     '/handwritten': 'xl-verdentro', '/napkinsketch': 'xl-verdentro', '/whiteboard': 'xl-verdentro', '/moodboard': 'xl-verdentro',
     '/pencilsketch': 'xl-verdentro', '/notebookpage': 'xl-hechomano', '/collage': 'xl-hechomano', '/redpen': 'xl-hechomano',
-    '/storyboard': 'xl-hechomano', '/tornpaper': 'xl-hechomano', '/actionfigure': 'xl-500', '/claymation': 'xl-carteles',
+    '/storyboard': 'xl-hechomano', '/tornpaper': 'xl-hechomano', '/actionfigure': 'xl-letras3d', '/claymation': 'xl-carteles',
     '/papercraft': 'xl-carteles', '/lowpoly': 'xl-hechomano', '/pixelart': 'xl-carteles', '/linocut': 'xl-hechomano',
     '/risograph': 'xl-hechomano', '/halftone': 'xl-hechomano', '/stainedglass': 'xl-hechomano', '/chromemetal': 'xl-carteles',
     '/embroidery': 'xl-hechomano', '/minime': 'xl-carteles', '/statue': 'xl-carteles', '/silhouettestudy': 'xl-hechomano',
@@ -166,9 +165,9 @@ const CODE_FOLDER = {
     '/giantmode': 'xl-efectosempaque', '/tinyhumans': 'xl-efectosempaque', '/3danimal': 'xl-letras3d', '/3dcycle': 'xl-letras3d', '/3dcell': 'xl-letras3d', '/3dexploded': 'xl-letras3d', '/3dinside': 'xl-letras3d', '/3dcutaway': 'xl-letras3d', '/3dlabeled': 'xl-letras3d', '/3dprocess': 'xl-letras3d', '/3dplant': 'xl-letras3d', '/transferbackground': 'xl-otromundo', '/balanced3Lightportrait': 'xl-luzcamara', '/removepeoplebg': 'xl-camararetrato',
     '/pourshot': 'xl-fotoproducto', '/whiteback': 'xl-fotoproducto', '/inhandshot': 'xl-fotoproducto', '/scalereference': 'xl-fotoproducto', '/bundleshot': 'xl-fotoproducto', '/variantgrid': 'xl-fotoproducto', '/levitationrig': 'xl-fotoproducto', '/liquidmotion': 'xl-fotoproducto', '/unboxingsequence': 'xl-fotoproducto', '/boxset': 'xl-fotoproducto', '/sachetrow': 'xl-fotoproducto', '/materialswatch': 'xl-fotoproducto', '/refillsystem': 'xl-fotoproducto', '/processsteps': 'xl-escenaprueba',
     '/handmadedetail': 'xl-escenaprueba', '/sourcemap': 'xl-escenaprueba', '/activesmap': 'xl-escenaprueba', '/splitproof': 'xl-escenaprueba', '/versusgrid': 'xl-escenaprueba', '/durabilitytest': 'xl-escenaprueba', '/weartimeline': 'xl-pintura', '/resultchart': 'xl-pintura', '/testimonialframe': 'xl-pintura', '/claimproof': 'xl-pintura', '/adcreative': 'xl-pintura', '/hookframe': 'xl-pintura', '/uglyad': 'xl-pintura', '/pricecard': 'xl-pintura',
-    '/toypackaging': 'xl-500', '/funkostyle': 'xl-500', '/minifig': 'xl-500', '/plushie': 'xl-500', '/keychain': 'xl-500', '/gashapon': 'xl-500', '/bobblehead': 'xl-500', '/crochetdoll': 'xl-500', '/dioramabox': 'xl-500', '/miniatureroom': 'xl-500', '/isometricroom': 'xl-500', '/ingredientexplosion': 'xl-500', '/ingredientbreakdown': 'xl-500', '/footweartechpack': 'xl-500',
-    '/timelineboard': 'xl-carteles', '/tradingcard': 'xl-carteles', '/cerealbox': 'xl-carteles', '/vinylsleeve': 'xl-carteles', '/arcadecabinet': 'xl-carteles', '/museumplaque': 'xl-carteles', '/spectable': 'xl-verdentro', '/sizechart': 'xl-verdentro', '/dieline': 'xl-verdentro', '/3dadcreative': 'xl-500', '/brandworld': 'xl-hechomano', '/anglepack': 'xl-luzcamara', '/gridboard': 'xl-luzcamara', '/cameramove': 'xl-luzcamara',
-    '/keyframepair': 'xl-luzcamara', '/spinturntable': 'xl-luzcamara', '/shotsetup': 'xl-500', '/gobopattern': 'xl-luzcamara', '/colorgelset': 'xl-luzcamara', '/reflectionsetup': 'xl-luzcamara', '/lightingdiagram': 'xl-luzcamara', '/handsinuse': 'xl-escenaprueba', '/founderframe': 'xl-escenaprueba', '/3dmagazinecover': 'xl-500', '/3danatomy': 'xl-500', '/3dsoftcutaway': 'xl-500', '/luxurylifestyle': 'xl-500', '/glasssculpture': 'xl-carteles',
+    '/toypackaging': 'xl-efectosempaque', '/funkostyle': 'xl-letras3d', '/minifig': 'xl-letras3d', '/plushie': 'xl-hechomano', '/keychain': 'xl-letras3d', '/gashapon': 'xl-letras3d', '/bobblehead': 'xl-letras3d', '/crochetdoll': 'xl-hechomano', '/dioramabox': 'xl-letras3d', '/miniatureroom': 'xl-casaviajes', '/isometricroom': 'xl-casaviajes', '/ingredientexplosion': 'xl-comidamoda', '/ingredientbreakdown': 'xl-comidamoda', '/footweartechpack': 'xl-verdentro',
+    '/timelineboard': 'xl-carteles', '/tradingcard': 'xl-carteles', '/cerealbox': 'xl-carteles', '/vinylsleeve': 'xl-carteles', '/arcadecabinet': 'xl-carteles', '/museumplaque': 'xl-carteles', '/spectable': 'xl-verdentro', '/sizechart': 'xl-verdentro', '/dieline': 'xl-verdentro', '/3dadcreative': 'xl-escenaprueba', '/brandworld': 'xl-hechomano', '/anglepack': 'xl-luzcamara', '/gridboard': 'xl-luzcamara', '/cameramove': 'xl-luzcamara',
+    '/keyframepair': 'xl-luzcamara', '/spinturntable': 'xl-luzcamara', '/shotsetup': 'xl-luzcamara', '/gobopattern': 'xl-luzcamara', '/colorgelset': 'xl-luzcamara', '/reflectionsetup': 'xl-luzcamara', '/lightingdiagram': 'xl-luzcamara', '/handsinuse': 'xl-escenaprueba', '/founderframe': 'xl-escenaprueba', '/3dmagazinecover': 'xl-escenaprueba', '/3danatomy': 'xl-verdentro', '/3dsoftcutaway': 'xl-verdentro', '/luxurylifestyle': 'xl-comidamoda', '/glasssculpture': 'xl-carteles',
     '/voxelart': 'xl-carteles', '/crossstitch': 'xl-carteles', '/holographiccard': 'xl-carteles', '/yearbook90s': 'xl-carteles', '/tattooflash': 'xl-carteles', '/neonsign': 'xl-carteles', '/wantedposter': 'xl-carteles', '/securitycam': 'xl-carteles', '/layercut': 'xl-verdentro', '/texturemacro': 'xl-verdentro', '/construction': 'xl-verdentro', '/materialcallout': 'xl-verdentro', '/microscopeview': 'xl-verdentro', '/grainpattern': 'xl-hechomano',
     '/embossdetail': 'xl-hechomano', '/morningritual': 'xl-escenaprueba', '/environmentmatch': 'xl-escenaprueba', '/seasonset': 'xl-escenaprueba', '/momentbefore': 'xl-escenaprueba', '/aftermath': 'xl-escenaprueba', '/companionobjects': 'xl-escenaprueba', '/travelset': 'xl-escenaprueba', '/workdesk': 'xl-escenaprueba', '/originstory': 'xl-escenaprueba', '/workshopscene': 'xl-escenaprueba', '/labels': 'xl-verdentro', '/arrows': 'xl-verdentro', '/classroom': 'xl-retroedu',
     '/inputs': 'xl-verdentro', '/outputs': 'xl-verdentro',
@@ -180,7 +179,7 @@ const CODE_FOLDER = {
     // REPARTO 2026-10: los 591 códigos que vivían en las 9 carpetas originales
     // se han repartido entre estas carpetas nuevas según su comportamiento.
     // Las 9 carpetas originales quedan vacías (se pueden borrar con el botón ✕).
-    // 500 comandos secretos: sin códigos nuevos, todos existían ya.
+    // La antigua carpeta xl-500 se ha repartido por temática y retirado.
     // Carteles y materiales: sin códigos nuevos, todos existían ya.
     // Ver por dentro: sin códigos nuevos, todos existían ya.
     // Hecho a mano: sin códigos nuevos, todos existían ya.
@@ -1651,6 +1650,17 @@ function loadFolders() {
     } catch { /* ignorar */ }
     if (!saved) return DEFAULT_FOLDERS;
 
+    // Retirar la carpeta solo después de asegurar destinos para sus tarjetas.
+    // Mantener el orden, los nombres personalizados y las demás carpetas borradas.
+    if (saved.some(f => f && f.id === 'xl-500')) {
+        saved = saved.filter(f => f && f.id !== 'xl-500');
+        const destinations = new Set(['xl-verdentro', 'xl-letras3d', 'xl-hechomano',
+            'xl-efectosempaque', 'xl-casaviajes', 'xl-comidamoda',
+            'xl-escenaprueba', 'xl-luzcamara']);
+        const known = new Set(saved.map(f => f.id));
+        saved = [...saved, ...DEFAULT_FOLDERS.filter(f => destinations.has(f.id) && !known.has(f.id))];
+    }
+
     let schema = 0;
     try { schema = Number(localStorage.getItem(FOLDERS_SCHEMA_KEY)) || 0; } catch { /* ignorar */ }
     if (schema >= FOLDERS_SCHEMA_VERSION) return saved;
@@ -1674,6 +1684,11 @@ function normalizeTrickCategory(item, folderIds) {
         return item.category === seedCat ? item : { ...item, category: seedCat };
     }
     const cat = String(item.category || '');
+    // Conservar también tarjetas personales sin comando reconocido.
+    if (cat === 'xl-500') {
+        const destination = folderIds.includes('xl-verdentro') ? 'xl-verdentro' : folderIds[0];
+        return { ...item, category: destination || 'trucos' };
+    }
     if (cat && folderIds.includes(cat)) return item;
     return item.category === 'trucos' ? item : { ...item, category: 'trucos' };
 }
