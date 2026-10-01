@@ -18,8 +18,9 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     die(json_encode(['success' => false, 'error' => 'JSON inválido: ' . json_last_error_msg()]));
 }
 
-// Verificar contraseña
-if (!isset($data['password']) || $data['password'] !== '0') {
+// Verificar contraseña (variable de entorno NUEVA_PESTANA_PASSWORD; ver clave_panel.php)
+require __DIR__ . '/clave_panel.php';
+if (!isset($data['password']) || !clave_panel_valida($data['password'])) {
     die(json_encode(['success' => false, 'error' => 'Contraseña incorrecta o faltante']));
 }
 

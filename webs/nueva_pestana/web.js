@@ -13,10 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // dejar el panel completamente vacío (típico síntoma de haber cargado mal).
     let loadedItemCount = 0;
 
-    // Valor que exige guardar_cambios.php (y validar_password.php) para escribir
-    // en el servidor. Debe coincidir con la comprobación del PHP.
-    const SAVE_PASSWORD = '0';
-
     // ===== DOM ELEMENTS =====
     const panelsContainer = document.getElementById('panels-container');
     const tilesGrid = document.getElementById('tiles-grid');
@@ -132,7 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Construir payload compatible con el backend
             const payload = {
-                password: SAVE_PASSWORD, // La contraseña hardcodeada según tu script PHP
+                // La clave la valida el PHP (variable de entorno del .htaccess).
+                password: currentPassword,
                 background: appData.background || '',
                 columns: [{
                     title: "Panel",
@@ -591,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    password: SAVE_PASSWORD,
+                    password: currentPassword,
                     background: datos.background || '',
                     columns: datos.columns
                 })
