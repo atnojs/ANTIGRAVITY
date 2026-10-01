@@ -31,7 +31,8 @@ const IMAGE_PROMPT_HINT = 'Úsalo junto con un sujeto concreto y un encuadre o f
 const IMAGE_PROMPT_COPY_GUIDANCE = 'Úsalo junto con un sujeto concreto y un encuadre o formato.';
 const IMAGE_STYLE_PREFIX_TEXT = "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style.";
 
-const BASE_FOLDERS = [
+// Solo para conservar datos personales de versiones anteriores.
+const LEGACY_FOLDERS = [
     { id: 'visuales',    label: 'Estilos visuales',        icon: '🎨',  color: 'pink',    bgIcon: '🖌️' },
     { id: 'estudio',     label: 'Estudiar e infografías',  icon: '📚',  color: 'cyan',    bgIcon: '🧠' },
     { id: 'camara',      label: 'Cámara y planos',         icon: '🎥',  color: 'purple',  bgIcon: '📷' },
@@ -44,7 +45,7 @@ const BASE_FOLDERS = [
 ];
 
 // ── 18 carpetas nuevas: una por cada hoja del Excel «500 comandos secretos de
-//    ChatGPT». Se añaden DESPUÉS de las carpetas originales, que no se tocan.
+//    ChatGPT».
 const EXCEL_FOLDERS = [
     { id: 'xl-carteles', label: 'Carteles y materiales', icon: '🪧', color: 'pink', bgIcon: '📰' },
     { id: 'xl-verdentro', label: 'Ver por dentro', icon: '🔬', color: 'cyan', bgIcon: '🧩' },
@@ -73,8 +74,8 @@ const EXTRA_FOLDERS = [
     { id: 'xl-texto', label: 'Comandos de texto', icon: '💬', color: 'emerald', bgIcon: '📝' },
     { id: 'xl-dev', label: 'Dev y productividad', icon: '💻', color: 'amber', bgIcon: '⌨️' },
 ];
-// Lista canónica: carpetas originales + carpetas del Excel.
-const DEFAULT_FOLDERS = [...BASE_FOLDERS, ...EXCEL_FOLDERS, ...EXTRA_FOLDERS];
+// Lista canónica: las 21 carpetas que contienen códigos.
+const DEFAULT_FOLDERS = [...EXCEL_FOLDERS, ...EXTRA_FOLDERS];
 const FAVORITES_FOLDER = { id: 'favorites', label: 'Favoritos', icon: '⭐', color: 'amber', bgIcon: '💛' };
 const FOLDERS_KEY = 'trickvault_folders';
 // Versión del esquema de carpetas: sirve para añadir UNA sola vez las carpetas
@@ -1592,7 +1593,7 @@ const SEED_TRICKS = [
             id: seedId,
             title: `${command} — ${meaning}`,
             description: '',
-            category: CODE_FOLDER[command] || 'trucos',
+            category: CODE_FOLDER[command] || 'xl-dev',
             tags: ['comandos de imagen', 'imagen', 'Instagram'],
             codeSnippet: command,
             difficulty: 'beginner',
@@ -1608,7 +1609,7 @@ const SEED_TRICKS = [
         id: `xl-cmd-${String(index + 1).padStart(3, '0')}`,
         title: `${command} — ${meaning}`,
         description: '',
-        category: CODE_FOLDER[command] || 'trucos',
+        category: CODE_FOLDER[command] || 'xl-dev',
         tags: ['comandos de imagen', 'imagen', 'Excel'],
         codeSnippet: command,
         difficulty: 'beginner',
@@ -1652,6 +1653,24 @@ function getCat(id, folders) {
 }
 // Lista de carpetas efectiva: la guardada por el usuario + las carpetas nuevas
 // que aún no conocía (una única vez por versión de esquema).
+function removeEmptyLegacyFolders(saved) {
+    const legacyIds = new Set(LEGACY_FOLDERS.map(folder => folder.id));
+    let storedTricks;
+    try {
+        storedTricks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        if (!Array.isArray(storedTricks)) return saved;
+    } catch { return saved; }
+    const folderIds = new Set([...saved, ...DEFAULT_FOLDERS].map(folder => folder.id));
+    const occupied = new Set();
+    for (const trick of storedTricks) {
+        if (!trick || REMOVED_IMAGE_IDS.has(String(trick.id))) continue;
+        const destination = CODE_FOLDER[getImageCommandKey(trick)] || SEED_CATEGORY_BY_ID[trick.id];
+        if (destination && folderIds.has(destination)) occupied.add(destination);
+        else occupied.add(trick.category);
+    }
+    return saved.filter(folder => !legacyIds.has(folder.id) || occupied.has(folder.id));
+}
+
 function loadFolders() {
     let saved = null;
     try {
@@ -1662,6 +1681,8 @@ function loadFolders() {
         }
     } catch { /* ignorar */ }
     if (!saved) return DEFAULT_FOLDERS;
+    saved = removeEmptyLegacyFolders(saved);
+    if (!saved.length) return DEFAULT_FOLDERS;
 
     // Retirar la carpeta solo después de asegurar destinos para sus tarjetas.
     // Mantener el orden, los nombres personalizados y las demás carpetas borradas.
@@ -1700,10 +1721,11 @@ function normalizeTrickCategory(item, folderIds) {
     // Conservar también tarjetas personales sin comando reconocido.
     if (cat === 'xl-500') {
         const destination = folderIds.includes('xl-verdentro') ? 'xl-verdentro' : folderIds[0];
-        return { ...item, category: destination || 'trucos' };
+        return { ...item, category: destination || 'xl-dev' };
     }
     if (cat && folderIds.includes(cat)) return item;
-    return item.category === 'trucos' ? item : { ...item, category: 'trucos' };
+    const fallback = folderIds.includes('xl-dev') ? 'xl-dev' : folderIds[0];
+    return { ...item, category: fallback || 'xl-dev' };
 }
 function normalizeTrickCategories(items) {
     const folderIds = readFolderIds();
@@ -2994,7 +3016,7 @@ function TrickForm({ trick, folders, onSave, onClose, onDelete }) {
         ...trick,
         tags: Array.isArray(trick.tags) ? trick.tags.join(', ') : (trick.tags || '')
     } : {
-        title: '', description: '', category: 'trucos', tags: '',
+        title: '', description: '', category: folders?.[0]?.id || 'xl-dev', tags: '',
         codeSnippet: '', imageUrl: '', sourceUrl: '', difficulty: 'beginner', isFavorite: false
     });
 
@@ -3719,12 +3741,14 @@ function App() {
 
     const deleteFolder = useCallback((folder) => {
         withEditAccess(() => {
-            if (!confirm(`¿Eliminar la carpeta "${folder.label}"? Sus tarjetas pasarán a "Trucos y atajos".`)) return;
+
             if (folders.length <= 1) {
                 addToast('No puedes eliminar la última carpeta', 'error');
                 return;
             }
-            const target = folder.id === 'trucos' ? (folders.find(f => f.id !== 'trucos')?.id || 'trucos') : 'trucos';
+            const destination = folders.find(f => f.id === 'xl-dev' && f.id !== folder.id) || folders.find(f => f.id !== folder.id);
+            if (!confirm(`¿Eliminar la carpeta "${folder.label}"? Sus tarjetas pasarán a "${destination.label}".`)) return;
+            const target = destination.id;
             setTricks(prev => prev.map(t => t.category === folder.id ? { ...t, category: target } : t));
             setFolders(prev => prev.filter(f => f.id !== folder.id));
             addToast('🗑️ Carpeta eliminada', 'error');
