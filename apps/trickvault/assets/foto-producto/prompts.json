@@ -1,0 +1,194 @@
+{
+  "model": "gpt-image-2",
+  "quality": "medium",
+  "generated_on": "2026-10-01",
+  "method": "OpenAI Image API via bundled imagegen CLI",
+  "cards": [
+    {
+      "code": "/cinematic",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cinematic widescreen still of [OBJETO], anamorphic lens flare, rich atmospheric color grading, cinematic shadows, dramatic film still aesthetic, 8k resolution, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cinematic widescreen still of a polished silver wristwatch on a black stone pedestal, anamorphic lens flare, rich atmospheric color grading, cinematic shadows, dramatic film still aesthetic, 8k resolution, all visible text and labels must be written in Spanish with no English words",
+      "file": "cinematic.jpg"
+    },
+    {
+      "code": "/goldenhour",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Warm golden hour outdoor photography of [OBJETO], low-angle setting sun casting long dramatic golden shadows, warm glowing ambient haze, natural cinematic sunlight, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Warm golden hour outdoor photography of an amber perfume bottle on a stone ledge outdoors, low-angle setting sun casting long dramatic golden shadows, warm glowing ambient haze, natural cinematic sunlight, all visible text and labels must be written in Spanish with no English words",
+      "file": "goldenhour.jpg"
+    },
+    {
+      "code": "/bluehour",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Atmospheric blue hour twilight photography of [OBJETO], deep cool indigo and sapphire evening ambient light, subtle warm artificial accent highlights, moody dusk vibe, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Atmospheric blue hour twilight photography of a portable copper lantern on a terrace, deep cool indigo and sapphire evening ambient light, subtle warm artificial accent highlights, moody dusk vibe, all visible text and labels must be written in Spanish with no English words",
+      "file": "bluehour.jpg"
+    },
+    {
+      "code": "/rimlight",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dramatic dark silhouette studio portrait of [OBJETO], powerful sharp razor-thin rim light tracing the outer contours, deep black background, intense high-contrast mood, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dramatic dark silhouette studio portrait of a matte black headphone set, powerful sharp razor-thin rim light tracing the outer contours, deep black background, intense high-contrast mood, all visible text and labels must be written in Spanish with no English words",
+      "file": "rimlight.jpg"
+    },
+    {
+      "code": "/backlight",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Stunning backlighting silhouette of [OBJETO], intense light source placed directly behind the subject creating glowing edges and soft luminous halo effects, cinematic contrast, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Stunning backlighting silhouette of a translucent amber perfume bottle, intense light source placed directly behind the subject creating glowing edges and soft luminous halo effects, cinematic contrast, all visible text and labels must be written in Spanish with no English words",
+      "file": "backlight.jpg"
+    },
+    {
+      "code": "/devicemockup",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern tech device mockup featuring [OBJETO] displayed in a sleek minimalist desk setting, natural ambient window light, photorealistic high-end tech lifestyle environment, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern tech device mockup featuring a tablet showing a Spanish home decor shopping website displayed in a sleek minimalist desk setting, natural ambient window light, photorealistic high-end tech lifestyle environment, all visible text and labels must be written in Spanish with no English words",
+      "file": "devicemockup.jpg"
+    },
+    {
+      "code": "/screenmockup",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Frontal screen display mockup showing [OBJETO] inside a borderless glass digital interface, sleek UI elements, subtle ambient screen glow, premium digital showcase, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Frontal screen display mockup showing a Spanish ceramic tableware shopping app inside a borderless glass digital interface, sleek UI elements, subtle ambient screen glow, premium digital showcase, all visible text and labels must be written in Spanish with no English words",
+      "file": "screenmockup.jpg"
+    },
+    {
+      "code": "/boxmockup",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic 3D cardboard packaging box mockup for [OBJETO], elegant custom branding, perspective angle, soft realistic ground contact shadows, studio backdrop, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic 3D cardboard packaging box mockup for a natural soap gift box branded Jabón Artesano, elegant custom branding, perspective angle, soft realistic ground contact shadows, studio backdrop, all visible text and labels must be written in Spanish with no English words",
+      "file": "boxmockup.jpg"
+    },
+    {
+      "code": "/labelmockup",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Detailed packaging label mockup applied smoothly onto [OBJETO], premium matte paper texture, gold foil embossed stamp, macro studio lighting, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Detailed packaging label mockup applied smoothly onto an amber honey jar labeled Miel de Flores, premium matte paper texture, gold foil embossed stamp, macro studio lighting, all visible text and labels must be written in Spanish with no English words",
+      "file": "labelmockup.jpg"
+    },
+    {
+      "code": "/apparelmockup",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Premium apparel lifestyle mockup featuring [OBJETO], textured organic cotton fabric, realistic natural garment folds, soft editorial fashion studio lighting, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Premium apparel lifestyle mockup featuring a sage green cotton T-shirt with a small embroidered leaf emblem, textured organic cotton fabric, realistic natural garment folds, soft editorial fashion studio lighting, all visible text and labels must be written in Spanish with no English words",
+      "file": "apparelmockup.jpg"
+    },
+    {
+      "code": "/embossedlogo",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Tactile close-up of [OBJETO] with an elegant deep embossed debossed logo stamped into premium leather or thick textured cotton cardstock, dramatic angled light revealing depth, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Tactile close-up of a brown leather notebook with an embossed leaf emblem with an elegant deep embossed debossed logo stamped into premium leather or thick textured cotton cardstock, dramatic angled light revealing depth, all visible text and labels must be written in Spanish with no English words",
+      "file": "embossedlogo.jpg"
+    },
+    {
+      "code": "/foilstamp",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Macro shot of [OBJETO] with shimmering hot foil stamping, reflective metallic gold and holographic shimmer catching the light, luxurious premium printing craftsmanship, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Macro shot of a dark navy gift box with a gold foil leaf emblem with shimmering hot foil stamping, reflective metallic gold and holographic shimmer catching the light, luxurious premium printing craftsmanship, all visible text and labels must be written in Spanish with no English words",
+      "file": "foilstamp.jpg"
+    },
+    {
+      "code": "/shelfshot",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Retail point-of-sale perspective of [OBJETO] placed on a boutique store shelf among curated premium items, warm interior store lighting, realistic depth of field, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Retail point-of-sale perspective of a ceramic skincare jar labeled Crema Natural placed on a boutique store shelf among curated premium items, warm interior store lighting, realistic depth of field, all visible text and labels must be written in Spanish with no English words",
+      "file": "shelfshot.jpg"
+    },
+    {
+      "code": "/sizecomparison",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean studio visual of [OBJETO] placed directly next to a familiar everyday reference object for accurate scale comparison, neutral background, crisp documentary lighting, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean studio visual of a tiny wireless earbud charging case beside a standard house key placed directly next to a familiar everyday reference object for accurate scale comparison, neutral background, crisp documentary lighting, all visible text and labels must be written in Spanish with no English words",
+      "file": "sizecomparison.jpg"
+    },
+    {
+      "code": "/colorway",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Multi-variant colorway product lineup of [OBJETO], showcasing four distinct curated matte and metallic color finishes standing side by side, clean studio catalog render, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Multi-variant colorway product lineup of a stainless steel reusable water bottle, showcasing four distinct curated matte and metallic color finishes standing side by side, clean studio catalog render, all visible text and labels must be written in Spanish with no English words",
+      "file": "colorway.jpg"
+    },
+    {
+      "code": "/showcase",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ultra-premium commercial studio showcase of [OBJETO], resting on a glossy black mirrored pedestal, subtle golden rim lighting, minimalist elegant dark background, commercial product photography, 8k resolution, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ultra-premium commercial studio showcase of a silver wristwatch, resting on a glossy black mirrored pedestal, subtle golden rim lighting, minimalist elegant dark background, commercial product photography, 8k resolution, all visible text and labels must be written in Spanish with no English words Do not add any visible lettering, logos, advertising headlines or captions. Show the product itself, with blank unbranded surfaces.",
+      "file": "showcase.jpg"
+    },
+    {
+      "code": "/premiumshowcase",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Deluxe high-impact commercial product showcase of [OBJETO], positioned on polished obsidian marble with subtle golden vein lighting and atmospheric light beams, prestigious flagship presentation, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Deluxe high-impact commercial product showcase of an amber perfume bottle, positioned on polished obsidian marble with subtle golden vein lighting and atmospheric light beams, prestigious flagship presentation, all visible text and labels must be written in Spanish with no English words Do not add any visible lettering, logos, advertising headlines or captions. Show the product itself, with blank unbranded surfaces.",
+      "file": "premiumshowcase.jpg"
+    },
+    {
+      "code": "/gravitydefying",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gravity defying shot of [OBJETO], product floating impossibly in mid-air, suspended dynamic composition, surreal anti-gravity effect, clean studio background, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gravity defying shot of a white running shoe, product floating impossibly in mid-air, suspended dynamic composition, surreal anti-gravity effect, clean studio background, all visible text and labels must be written in Spanish with no English words",
+      "file": "gravitydefying.jpg"
+    },
+    {
+      "code": "/pourshot",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-speed pour shot of [OBJETO], liquid stream frozen mid-air, crisp frozen droplets, dynamic splash energy, commercial beverage photography, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-speed pour shot of fresh orange juice pouring into a clear glass, liquid stream frozen mid-air, crisp frozen droplets, dynamic splash energy, commercial beverage photography, all visible text and labels must be written in Spanish with no English words",
+      "file": "pourshot.jpg"
+    },
+    {
+      "code": "/whiteback",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean marketplace product photo of [OBJETO] on pure white background, even shadowless lighting, crisp catalog e-commerce look, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean marketplace product photo of a pair of cream over-ear headphones on pure white background, even shadowless lighting, crisp catalog e-commerce look, all visible text and labels must be written in Spanish with no English words",
+      "file": "whiteback.jpg"
+    },
+    {
+      "code": "/inhandshot",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Product-in-hand shot of [OBJETO], held naturally in a human hand, realistic scale and grip, warm lifestyle commercial photography, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Product-in-hand shot of a small amber skincare bottle labeled Sérum Natural, held naturally in a human hand, realistic scale and grip, warm lifestyle commercial photography, all visible text and labels must be written in Spanish with no English words",
+      "file": "inhandshot.jpg"
+    },
+    {
+      "code": "/scalereference",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Scale reference shot of [OBJETO] next to a familiar everyday object, clear size comparison, neutral background, documentary clarity, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Scale reference shot of a compact wireless speaker beside a standard playing card next to a familiar everyday object, clear size comparison, neutral background, documentary clarity, all visible text and labels must be written in Spanish with no English words",
+      "file": "scalereference.jpg"
+    },
+    {
+      "code": "/bundleshot",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bundle offer shot of [OBJETO], multiple items grouped as a value pack, attractive arrangement, promotional commercial styling, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bundle offer shot of a coordinated skincare set of cleanser, cream and serum, multiple items grouped as a value pack, attractive arrangement, promotional commercial styling, all visible text and labels must be written in Spanish with no English words Do not add any visible lettering, logos, advertising headlines or captions. Show the product itself, with blank unbranded surfaces.",
+      "file": "bundleshot.jpg"
+    },
+    {
+      "code": "/variantgrid",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Variant grid of [OBJETO], all color and size versions arranged in a clean grid, consistent lighting, catalog comparison layout, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Variant grid of a reusable water bottle in three sizes and three colors, all color and size versions arranged in a clean grid, consistent lighting, catalog comparison layout, all visible text and labels must be written in Spanish with no English words",
+      "file": "variantgrid.jpg"
+    },
+    {
+      "code": "/levitationrig",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Behind-the-scenes shot of the [OBJETO] levitation rig, visible stands and wires of the photo setup, studio production realism, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Behind-the-scenes shot of the a white running shoe levitation rig, visible stands and wires of the photo setup, studio production realism, all visible text and labels must be written in Spanish with no English words",
+      "file": "levitationrig.jpg"
+    },
+    {
+      "code": "/liquidmotion",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Liquid motion shot of [OBJETO], flowing moving liquid around a perfectly still package, silky long-exposure flow, premium beverage ad, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Liquid motion shot of a still amber beverage bottle labeled Té Frío, flowing moving liquid around a perfectly still package, silky long-exposure flow, premium beverage ad, all visible text and labels must be written in Spanish with no English words",
+      "file": "liquidmotion.jpg"
+    },
+    {
+      "code": "/unboxingsequence",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Unboxing sequence of [OBJETO], step-by-step package opening frames, tactile cardboard and tissue details, storytelling product film, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Unboxing sequence of a ceramic coffee cup in a gift box, step-by-step package opening frames, tactile cardboard and tissue details, storytelling product film, all visible text and labels must be written in Spanish with no English words",
+      "file": "unboxingsequence.jpg"
+    },
+    {
+      "code": "/boxset",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Complete box set of [OBJETO], full kit with every part displayed, organized premium set arrangement, commercial product photography, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Complete box set of a premium coffee brewing kit containing a dripper, server, filters and measuring spoon, full kit with every part displayed, organized premium set arrangement, commercial product photography, all visible text and labels must be written in Spanish with no English words",
+      "file": "boxset.jpg"
+    },
+    {
+      "code": "/sachetrow",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Row of all [OBJETO] formats perfectly aligned, single-file lineup of sachets and packs, clean repetitive rhythm, catalog precision, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Row of all natural herbal tea sachets and packs formats perfectly aligned, single-file lineup of sachets and packs, clean repetitive rhythm, catalog precision, all visible text and labels must be written in Spanish with no English words",
+      "file": "sachetrow.jpg"
+    },
+    {
+      "code": "/materialswatch",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Material swatch board of [OBJETO], fabric and finish samples side by side, tactile texture close-ups, design studio presentation, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Material swatch board of a furniture upholstery collection with woven linen, velvet and leather swatches, fabric and finish samples side by side, tactile texture close-ups, design studio presentation, all visible text and labels must be written in Spanish with no English words",
+      "file": "materialswatch.jpg"
+    },
+    {
+      "code": "/refillsystem",
+      "card_prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Refill system explainer of [OBJETO], reusable container with refill parts laid out, clear functional storytelling, eco product design, all visible text and labels must be written in Spanish with no English words",
+      "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Refill system explainer of a refillable amber glass hand-soap dispenser with its refill pouch and removable pump, reusable container with refill parts laid out, clear functional storytelling, eco product design, all visible text and labels must be written in Spanish with no English words",
+      "file": "refillsystem.jpg"
+    }
+  ]
+}
