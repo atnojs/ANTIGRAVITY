@@ -1,0 +1,292 @@
+{
+  "model": "gpt-image-2",
+  "quality": "medium",
+  "generated_on": "2026-10-01",
+  "cards": [
+    {
+      "code": "/duotoneportrait",
+      "card_prompt": "Graphic duotone portrait of a person, striking high-contrast two-color palette of vibrant electric cobalt blue and neon orange, modern riso print style, clean flat portrait composition, poster art look",
+      "prompt": "Graphic duotone portrait of a person, striking high-contrast two-color palette of vibrant electric cobalt blue and neon orange, modern riso print style, clean flat portrait composition, poster art look",
+      "file": "duotoneportrait.jpg"
+    },
+    {
+      "code": "/shallowdepth",
+      "card_prompt": "Exquisite shallow depth of field photograph of [OBJETO], razor-sharp focal point on subject with a completely melted creamy background blur, f/1.2 optical bokeh",
+      "prompt": "Exquisite shallow depth of field photograph of a hand-crafted blue ceramic cup on a cafe table, razor-sharp focal point on subject with a completely melted creamy background blur, f/1.2 optical bokeh",
+      "file": "shallowdepth.jpg"
+    },
+    {
+      "code": "/bokeh",
+      "card_prompt": "Glamorous night photography of [OBJETO] with prominent circular and hexagonal glowing bokeh light orbs shimmering softly in the blurred background",
+      "prompt": "Glamorous night photography of a vintage silver camera on an outdoor cafe table at night with prominent circular and hexagonal glowing bokeh light orbs shimmering softly in the blurred background",
+      "file": "bokeh.jpg"
+    },
+    {
+      "code": "/longexposure",
+      "card_prompt": "Dreamy long exposure photography featuring [OBJETO], smooth motion blur light trails streaming dynamically around the stationary crisp subject, fine art photographic technique",
+      "prompt": "Dreamy long exposure photography featuring a stationary vintage red car on a city avenue, smooth motion blur light trails streaming dynamically around the stationary crisp subject, fine art photographic technique",
+      "file": "longexposure.jpg"
+    },
+    {
+      "code": "/tiltshift",
+      "card_prompt": "Miniature tilt-shift photography of [OBJETO], narrow slice of sharp focus with heavy top and bottom blur, playful miniature toy diorama illusion, high-angle perspective",
+      "prompt": "Miniature tilt-shift photography of a busy harbor with boats and colorful waterfront buildings, narrow slice of sharp focus with heavy top and bottom blur, playful miniature toy diorama illusion, high-angle perspective",
+      "file": "tiltshift.jpg"
+    },
+    {
+      "code": "/35mm",
+      "card_prompt": "Authentic 35mm film photograph of [OBJETO], organic analog film grain, rich color saturation, nostalgic Kodak Portra film palette, subtle vintage optical warmth",
+      "prompt": "Authentic 35mm film photograph of an adult woman sitting outside a seaside cafe, organic analog film grain, rich color saturation, nostalgic Kodak Portra film palette, subtle vintage optical warmth",
+      "file": "35mm.jpg"
+    },
+    {
+      "code": "/anamorphic",
+      "card_prompt": "Anamorphic 2.39:1 widescreen cinematic shot of [OBJETO], horizontal blue lens flare streaks, oval bokeh highlights, cinematic Panavision look",
+      "prompt": "Anamorphic 2.39:1 widescreen cinematic shot of an adult explorer standing beside a desert observatory at dusk, horizontal blue lens flare streaks, oval bokeh highlights, cinematic Panavision look",
+      "file": "anamorphic.jpg"
+    },
+    {
+      "code": "/lowangle",
+      "card_prompt": "Intimidating low-angle worm's-eye perspective looking up at [OBJETO], imposing massive presence, wide-angle lens distortion, towering heroic composition",
+      "prompt": "Intimidating low-angle worm's-eye perspective looking up at a towering concrete skyscraper, imposing massive presence, wide-angle lens distortion, towering heroic composition",
+      "file": "lowangle.jpg"
+    },
+    {
+      "code": "/overhead",
+      "card_prompt": "Direct overhead bird's-eye 90-degree top-down photograph of [OBJETO], perfectly symmetrical geometric alignment, flat layout on a solid textured background",
+      "prompt": "Direct overhead bird's-eye 90-degree top-down photograph of a silver camera with its lens and neatly aligned camera accessories, perfectly symmetrical geometric alignment, flat layout on a solid textured background",
+      "file": "overhead.jpg"
+    },
+    {
+      "code": "/dutchangle",
+      "card_prompt": "Dynamic Dutch angle diagonal composition of [OBJETO], tilted horizon creating dramatic visual tension and energy, cinematic action thriller perspective",
+      "prompt": "Dynamic Dutch angle diagonal composition of an adult cyclist on a city street, tilted horizon creating dramatic visual tension and energy, cinematic action thriller perspective",
+      "file": "dutchangle.jpg"
+    },
+    {
+      "code": "/extremecloseup",
+      "card_prompt": "Ultra extreme macro close-up filling the frame with a single intricate detail of [OBJETO], microscopic textures and material craftsmanship, shallow depth of field",
+      "prompt": "Ultra extreme macro close-up filling the frame with a single intricate detail of the engraved brass focusing ring of a vintage camera lens, microscopic textures and material craftsmanship, shallow depth of field",
+      "file": "extremecloseup.jpg"
+    },
+    {
+      "code": "/backview",
+      "card_prompt": "Mysterious rear-angle back view of [OBJETO], subject viewed from behind, face hidden, contemplative cinematic framing, atmospheric background depth",
+      "prompt": "Mysterious rear-angle back view of an adult traveler facing a mountain valley, subject viewed from behind, face hidden, contemplative cinematic framing, atmospheric background depth",
+      "file": "backview.jpg"
+    },
+    {
+      "code": "/softlighting",
+      "card_prompt": "Gentle soft diffused lighting portrait of [OBJETO], silky smooth pastel shadow gradients, high-key gentle illumination, peaceful elegant aesthetic",
+      "prompt": "Gentle soft diffused lighting portrait of an adult woman in a cream linen blouse, silky smooth pastel shadow gradients, high-key gentle illumination, peaceful elegant aesthetic",
+      "file": "softlighting.jpg"
+    },
+    {
+      "code": "/dramaticlighting",
+      "card_prompt": "Chiaroscuro dramatic lighting on [OBJETO], stark contrast between deep pitch-black shadows and intense specular highlights, Renaissance painting lighting influence",
+      "prompt": "Chiaroscuro dramatic lighting on an adult man with a textured face, stark contrast between deep pitch-black shadows and intense specular highlights, Renaissance painting lighting influence",
+      "file": "dramaticlighting.jpg"
+    },
+    {
+      "code": "/volumetriclight",
+      "card_prompt": "Cinematic volumetric light rays beaming through dusty air onto [OBJETO], visible sunbeams and atmospheric fog shafts, epic dramatic mood",
+      "prompt": "Cinematic volumetric light rays beaming through dusty air onto an adult violinist inside an old concert hall, visible sunbeams and atmospheric fog shafts, epic dramatic mood",
+      "file": "volumetriclight.jpg"
+    },
+    {
+      "code": "/lowkey",
+      "card_prompt": "Moody low-key photography of [OBJETO], mostly dark deep shadows with selective soft light illuminating key textures and silhouettes, sophisticated minimalist noir style",
+      "prompt": "Moody low-key photography of a black ceramic vase, mostly dark deep shadows with selective soft light illuminating key textures and silhouettes, sophisticated minimalist noir style",
+      "file": "lowkey.jpg"
+    },
+    {
+      "code": "/highkey",
+      "card_prompt": "Bright and airy high-key commercial photography of [OBJETO], clean pure white environment, minimal subtle shadows, fresh modern aesthetic",
+      "prompt": "Bright and airy high-key commercial photography of a white ceramic teapot, clean pure white environment, minimal subtle shadows, fresh modern aesthetic",
+      "file": "highkey.jpg"
+    },
+    {
+      "code": "/environmentalportrait",
+      "card_prompt": "Authentic environmental portrait of [OBJETO] situated inside its natural workspace and surroundings, atmospheric real-world depth and ambient lighting",
+      "prompt": "Authentic environmental portrait of an adult ceramic artist in a pottery workshop situated inside its natural workspace and surroundings, atmospheric real-world depth and ambient lighting",
+      "file": "environmentalportrait.jpg"
+    },
+    {
+      "code": "/fog",
+      "card_prompt": "Atmospheric scene of [OBJETO] enveloped in thick fog, dense misty atmosphere, soft diffused visibility, mysterious moody ambience, cinematic haze",
+      "prompt": "Atmospheric scene of a lone lighthouse on a rocky coast enveloped in thick fog, dense misty atmosphere, soft diffused visibility, mysterious moody ambience, cinematic haze",
+      "file": "fog.jpg"
+    },
+    {
+      "code": "/mist",
+      "card_prompt": "Soft gentle mist surrounding [OBJETO], light ethereal fog, delicate atmospheric haze, dreamy translucent air, serene morning mood",
+      "prompt": "Soft gentle mist surrounding an elegant perfume bottle, light ethereal fog, delicate atmospheric haze, dreamy translucent air, serene morning mood",
+      "file": "mist.jpg"
+    },
+    {
+      "code": "/rainynight",
+      "card_prompt": "Rainy night scene of [OBJETO], wet streets reflecting neon city lights, glistening raindrops, moody nocturnal atmosphere, cinematic noir lighting",
+      "prompt": "Rainy night scene of a hand-crafted ceramic vase, wet streets reflecting neon city lights, glistening raindrops, moody nocturnal atmosphere, cinematic noir lighting",
+      "file": "rainynight.jpg"
+    },
+    {
+      "code": "/rain",
+      "card_prompt": "Scene of [OBJETO] in the rain, falling raindrops and wet shiny surfaces, water splashes and reflections, dramatic weather atmosphere, cinematic photography",
+      "prompt": "Scene of an adult woman wearing a simple linen jacket in the rain, falling raindrops and wet shiny surfaces, water splashes and reflections, dramatic weather atmosphere, cinematic photography",
+      "file": "rain.jpg"
+    },
+    {
+      "code": "/snow",
+      "card_prompt": "Snowy winter scene of [OBJETO], falling snowflakes and frosted surfaces, cold blue-white atmosphere, soft winter light, serene frozen landscape",
+      "prompt": "Snowy winter scene of a vintage silver camera, falling snowflakes and frosted surfaces, cold blue-white atmosphere, soft winter light, serene frozen landscape",
+      "file": "snow.jpg"
+    },
+    {
+      "code": "/sunset",
+      "card_prompt": "Golden sunset scene of [OBJETO], warm orange and pink sky, dramatic silhouette lighting, long soft shadows, romantic evening atmosphere",
+      "prompt": "Golden sunset scene of a lone lighthouse on a rocky coast, warm orange and pink sky, dramatic silhouette lighting, long soft shadows, romantic evening atmosphere",
+      "file": "sunset.jpg"
+    },
+    {
+      "code": "/sunrise",
+      "card_prompt": "Sunrise scene of [OBJETO], soft pastel morning light, gentle warm glow on the horizon, fresh awakening atmosphere, calm peaceful mood",
+      "prompt": "Sunrise scene of a small stone cottage beside a lake, with a wooden jetty and mountains in the distance, soft pastel morning light, gentle warm glow on the horizon, fresh awakening atmosphere, calm peaceful mood",
+      "file": "sunrise.jpg"
+    },
+    {
+      "code": "/moonlight",
+      "card_prompt": "Moonlit scene of [OBJETO], silver blue lunar illumination, soft shadows and night sky, ethereal nocturnal glow, quiet mysterious atmosphere",
+      "prompt": "Moonlit scene of a hand-crafted ceramic vase, silver blue lunar illumination, soft shadows and night sky, ethereal nocturnal glow, quiet mysterious atmosphere",
+      "file": "moonlight.jpg"
+    },
+    {
+      "code": "/neonlights",
+      "card_prompt": "Neon lit scene of [OBJETO], vibrant colorful neon signs and reflections, cyberpunk glow, saturated pink cyan and purple hues, night city atmosphere",
+      "prompt": "Neon lit scene of an adult woman wearing a simple linen jacket, vibrant colorful neon signs and reflections, cyberpunk glow, saturated pink cyan and purple hues, night city atmosphere",
+      "file": "neonlights.jpg"
+    },
+    {
+      "code": "/darkmoody",
+      "card_prompt": "Dark moody scene of [OBJETO], low key dramatic lighting, deep shadows and subtle highlights, mysterious cinematic atmosphere, noir aesthetic",
+      "prompt": "Dark moody scene of a vintage silver camera, low key dramatic lighting, deep shadows and subtle highlights, mysterious cinematic atmosphere, noir aesthetic",
+      "file": "darkmoody.jpg"
+    },
+    {
+      "code": "/godrays",
+      "card_prompt": "Dramatic god rays shining on [OBJETO], volumetric sunbeams breaking through clouds, heavenly light shafts, atmospheric dust particles glowing, cinematic divine lighting",
+      "prompt": "Dramatic god rays shining on a lone lighthouse on a rocky coast, volumetric sunbeams breaking through clouds, heavenly light shafts, atmospheric dust particles glowing, cinematic divine lighting",
+      "file": "godrays.jpg"
+    },
+    {
+      "code": "/studio",
+      "card_prompt": "Professional studio photography of [OBJETO], three point studio lighting setup, seamless backdrop, softbox illumination, commercial catalog quality, sharp focus",
+      "prompt": "Professional studio photography of an elegant perfume bottle, three point studio lighting setup, seamless backdrop, softbox illumination, commercial catalog quality, sharp focus",
+      "file": "studio.jpg"
+    },
+    {
+      "code": "/silhouette",
+      "card_prompt": "Silhouette shot of [OBJETO], dark figure against bright backlight, dramatic rim lighting, sunset or window glow background, mysterious minimalist aesthetic",
+      "prompt": "Silhouette shot of a hand-crafted ceramic vase, dark figure against bright backlight, dramatic rim lighting, sunset or window glow background, mysterious minimalist aesthetic",
+      "file": "silhouette.jpg"
+    },
+    {
+      "code": "/lighttrail",
+      "card_prompt": "Light trail photography of [OBJETO], long exposure streaks of light painting motion paths, glowing colorful trails, night city atmosphere, cinematic energy",
+      "prompt": "Light trail photography of an adult woman wearing a simple linen jacket, long exposure streaks of light painting motion paths, glowing colorful trails, night city atmosphere, cinematic energy",
+      "file": "lighttrail.jpg"
+    },
+    {
+      "code": "/reflection",
+      "card_prompt": "Reflection shot of [OBJETO] on a mirror-like surface, perfect mirrored composition, water or glass reflection, artistic doubled image, clean symmetry",
+      "prompt": "Reflection shot of a vintage silver camera on a mirror-like surface, perfect mirrored composition, water or glass reflection, artistic doubled image, clean symmetry",
+      "file": "reflection.jpg"
+    },
+    {
+      "code": "/nightshot",
+      "card_prompt": "Low-light night photo of [OBJETO], crisp nocturnal detail, glowing city lights, deep blue sky, professional night photography",
+      "prompt": "Low-light night photo of a lone lighthouse on a rocky coast, crisp nocturnal detail, glowing city lights, deep blue sky, professional night photography",
+      "file": "nightshot.jpg"
+    },
+    {
+      "code": "/startrail",
+      "card_prompt": "Star trail photo of [OBJETO], long exposure circular star paths in night sky, celestial motion, dark landscape silhouette, astrophotography quality",
+      "prompt": "Star trail photo of an elegant perfume bottle, long exposure circular star paths in night sky, celestial motion, dark landscape silhouette, astrophotography quality",
+      "file": "startrail.jpg"
+    },
+    {
+      "code": "/shadowplay",
+      "card_prompt": "Creative shadow play of [OBJETO], dramatic patterned shadows, artistic light and shadow composition, striking contrast, fine art photography",
+      "prompt": "Creative shadow play of a hand-crafted ceramic vase, dramatic patterned shadows, artistic light and shadow composition, striking contrast, fine art photography",
+      "file": "shadowplay.jpg"
+    },
+    {
+      "code": "/cambiahora",
+      "card_prompt": "Cambia esta escena de [HORA ACTUAL] a [AMANECER / HORA DORADA / ATARDECER / NOCHE]. Ajusta el cielo, dirección de la luz, temperatura de color, reflejos, sombras, ventanas y entorno para que todo coincida de forma convincente con la nueva hora.",
+      "prompt": "Cambia esta escena de AMANECER a NOCHE. Ajusta el cielo, dirección de la luz, temperatura de color, reflejos, sombras, ventanas y entorno para que todo coincida de forma convincente con la nueva hora. Mantén la misma casa, lago, embarcadero, montañas y encuadre de la imagen de referencia.",
+      "file": "cambiahora.jpg"
+    },
+    {
+      "code": "/balanced3Lightportrait",
+      "card_prompt": "Balanced three-light portrait of [OBJETO], key fill and rim lights perfectly balanced, studio photography lighting setup, professional headshot",
+      "prompt": "Balanced three-light portrait of an adult woman in a dark blue jacket, key fill and rim lights perfectly balanced, studio photography lighting setup, professional headshot",
+      "file": "balanced3Lightportrait.jpg"
+    },
+    {
+      "code": "/anglepack",
+      "card_prompt": "Six-angle catalog pack of [OBJETO], front side back top bottom and three-quarter views, consistent lighting, complete product coverage",
+      "prompt": "Six-angle catalog pack of a compact silver camera, front side back top bottom and three-quarter views, consistent lighting, complete product coverage Arrange exactly six panels in a 2-column by 3-row grid, labeled FRONT, SIDE, BACK, TOP, BOTTOM, THREE-QUARTER. SIDE must be a true narrow 90-degree profile; BACK must show the rear display; no duplicate viewpoints.",
+      "file": "anglepack.jpg"
+    },
+    {
+      "code": "/gridboard",
+      "card_prompt": "Nine-variant grid board of [OBJETO], same shot repeated in nine variations, systematic comparison grid, contact-sheet layout",
+      "prompt": "Nine-variant grid board of a simple ceramic teapot, same shot repeated in nine variations, systematic comparison grid, contact-sheet layout",
+      "file": "gridboard.jpg"
+    },
+    {
+      "code": "/cameramove",
+      "card_prompt": "Described camera movement around [OBJETO], smooth dolly or crane motion path, cinematic direction arrows, film production storyboard",
+      "prompt": "Described camera movement around a vintage camera on a studio pedestal, smooth dolly or crane motion path, cinematic direction arrows, film production storyboard",
+      "file": "cameramove.jpg"
+    },
+    {
+      "code": "/keyframepair",
+      "card_prompt": "Keyframe pair of [OBJETO], first and last frame of the clip side by side, clear motion start and end, video storyboard planning",
+      "prompt": "Keyframe pair of an adult dancer moving from a standing pose to a graceful turn, first and last frame of the clip side by side, clear motion start and end, video storyboard planning",
+      "file": "keyframepair.jpg"
+    },
+    {
+      "code": "/spinturntable",
+      "card_prompt": "Spin turntable shot of [OBJETO] rotating on a display platter, 360-degree product rotation, crisp motion highlights, premium showcase",
+      "prompt": "Spin turntable shot of a silver watch rotating on a display platter, 360-degree product rotation, crisp motion highlights, premium showcase",
+      "file": "spinturntable.jpg"
+    },
+    {
+      "code": "/gobopattern",
+      "card_prompt": "Gobo light pattern projected over [OBJETO], shaped cut-out light patterns, dramatic shadow play, theatrical studio lighting",
+      "prompt": "Gobo light pattern projected over a lone lighthouse on a rocky coast, shaped cut-out light patterns, dramatic shadow play, theatrical studio lighting",
+      "file": "gobopattern.jpg"
+    },
+    {
+      "code": "/colorgelset",
+      "card_prompt": "Color gel lighting of [OBJETO], vibrant gelled studio lights, saturated reds blues and purples, bold editorial atmosphere",
+      "prompt": "Color gel lighting of an elegant perfume bottle, vibrant gelled studio lights, saturated reds blues and purples, bold editorial atmosphere",
+      "file": "colorgelset.jpg"
+    },
+    {
+      "code": "/reflectionsetup",
+      "card_prompt": "Clean reflection setup of [OBJETO], mirror-like surface reflecting the product below, glossy acrylic floor, sleek commercial studio",
+      "prompt": "Clean reflection setup of an amber perfume bottle, mirror-like surface reflecting the product below, glossy acrylic floor, sleek commercial studio",
+      "file": "reflectionsetup.jpg"
+    },
+    {
+      "code": "/lightingdiagram",
+      "card_prompt": "Top-down lighting diagram of the [OBJETO] studio setup, every light marked with icons and labels, technical photography schematic",
+      "prompt": "Top-down lighting diagram of the a portrait subject seated on a stool studio setup, every light marked with icons and labels, technical photography schematic",
+      "file": "lightingdiagram.jpg"
+    }
+  ],
+  "reference": {
+    "/cambiahora": "/sunrise"
+  }
+}
