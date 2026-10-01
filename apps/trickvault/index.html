@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css?v=20260927-updatedat">
+    <link rel="stylesheet" href="app.css?v=20261001-folder-drag">
 </head>
 <body>
     <div id="root"></div>
@@ -3196,6 +3196,9 @@ function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFold
         return map;
     }, [tricks]);
     const favCount = useMemo(() => tricks.filter(t => t.isFavorite).length, [tricks]);
+    const draggingFolderRef = useRef(null);
+    const suppressClickRef = useRef(false);
+    const [draggingFolderId, setDraggingFolderId] = useState(null);
     const [dragOverFolderId, setDragOverFolderId] = useState(null);
 
     const cardKeyDown = (event, id) => {
@@ -3206,22 +3209,25 @@ function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFold
     };
 
     const handleFolderDragStart = (event, cat) => {
-        if (!canEdit) return;
+        if (event.target.closest('button')) { event.preventDefault(); return; }
+        draggingFolderRef.current = cat.id;
+        suppressClickRef.current = true;
+        setDraggingFolderId(cat.id);
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('folder/id', cat.id);
     };
 
     const handleFolderDragOver = (event, cat) => {
-        if (!canEdit || !event.dataTransfer.types.includes('folder/id')) return;
+        if (!draggingFolderRef.current || draggingFolderRef.current === cat.id) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
         if (dragOverFolderId !== cat.id) setDragOverFolderId(cat.id);
     };
 
     const handleFolderDrop = (event, cat) => {
-        if (!canEdit) return;
+        if (!draggingFolderRef.current) return;
         event.preventDefault();
-        const sourceId = event.dataTransfer.getData('folder/id');
+        const sourceId = event.dataTransfer.getData('folder/id') || draggingFolderRef.current;
         setDragOverFolderId(null);
         if (sourceId && sourceId !== cat.id) onReorderFolders(sourceId, cat.id);
     };
@@ -3231,17 +3237,24 @@ function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFold
             {folders.map(cat => (
                 <div
                     key={cat.id}
-                    className={`category-card ${cat.color}-border ${dragOverFolderId === cat.id ? 'is-drag-over' : ''}`}
-                    onClick={() => onSelectCategory(cat.id)}
+                    className={`category-card ${cat.color}-border is-draggable ${draggingFolderId === cat.id ? 'is-dragging' : ''} ${dragOverFolderId === cat.id ? 'is-drag-over' : ''}`}
+                    onClick={() => { if (!suppressClickRef.current) onSelectCategory(cat.id); }}
                     onKeyDown={(e) => cardKeyDown(e, cat.id)}
                     role="button"
                     tabIndex="0"
                     aria-label={`${cat.label}: ${counts[cat.id] || 0} trucos`}
-                    draggable={canEdit}
+                    draggable={true}
+                    title="Arrastra esta carpeta sobre otra para cambiar su posición"
                     onDragStart={(e) => handleFolderDragStart(e, cat)}
                     onDragOver={(e) => handleFolderDragOver(e, cat)}
                     onDrop={(e) => handleFolderDrop(e, cat)}
-                    onDragEnd={() => setDragOverFolderId(null)}
+                    onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOverFolderId(null); }}
+                    onDragEnd={() => {
+                        draggingFolderRef.current = null;
+                        setDraggingFolderId(null);
+                        setDragOverFolderId(null);
+                        setTimeout(() => { suppressClickRef.current = false; }, 0);
+                    }}
                 >
                     {canEdit && (
                         <button
@@ -3251,6 +3264,7 @@ function CategoryGrid({ tricks, folders, onSelectCategory, canEdit, onDeleteFold
                             title="Eliminar carpeta"
                         >✕</button>
                     )}
+                    <span className="folder-drag-handle" aria-hidden="true">⠿</span>
                     <div className="bg-icon">{cat.bgIcon}</div>
                     <div className={`cat-icon ${cat.color}`}>{cat.icon}</div>
                     <h3>{cat.label}</h3>
@@ -3962,6 +3976,7 @@ function App() {
                             </div>
                         )}
                     </div>
+                    <p className="drag-hint">⠿ Arrastra una carpeta sobre otra para cambiar su posición. El orden se guarda automáticamente.</p>
                     <CategoryGrid
                         tricks={tricks}
                         folders={folders}

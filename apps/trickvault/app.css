@@ -1525,3 +1525,17 @@ h1, h2, h3, h4, .font-montserrat {
     .prompt-guide,
     .prompt-guide::after { animation: none; }
 }
+
+/* Reordenación de carpetas */
+.category-card.is-draggable { cursor: grab; }
+.category-card.is-draggable:active { cursor: grabbing; }
+.category-card.is-dragging { opacity: 0.45; }
+.category-card.is-drag-over {
+    outline: 3px solid var(--accent-cyan, #22d3ee);
+    outline-offset: 3px;
+    background: rgba(34, 211, 238, 0.12);
+}
+.folder-drag-handle {
+    position: absolute; top: 0.6rem; left: 0.7rem;
+    font-size: 1.25rem; opacity: 0.6; pointer-events: none;
+}
