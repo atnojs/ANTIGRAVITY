@@ -2749,12 +2749,13 @@ async function loadRemoteFavorites() {
 async function saveRemoteFavorites(ids) {
     const formData = new FormData();
     formData.append('ids', JSON.stringify(ids));
-    await fetch(`${IMAGE_STORE_URL}?action=fav_save`, {
+    const response = await fetch(`${IMAGE_STORE_URL}?action=fav_save`, {
         method: 'POST',
         cache: 'no-store',
         credentials: 'same-origin',
         body: formData
     });
+    await readServerJson(response);
 }
 
 async function authenticateRemote(password) {
@@ -2847,6 +2848,16 @@ function migrateGeneratedCardImages(items) {
             : item;
     });
 }
+function applyRemoteImages(items, remoteImages, cmdToSeedId) {
+    return items.map(trick => {
+        const imageUrl = trick.imageUrl || '';
+        if (imageUrl.startsWith('data:image/') || isGeneratedCardImage(imageUrl)) return trick;
+        const seedId = cmdToSeedId[trick.codeSnippet];
+        const remoteUrl = (seedId && remoteImages[seedId]) || remoteImages[trick.id];
+        return remoteUrl && remoteUrl !== imageUrl ? { ...trick, imageUrl: remoteUrl } : trick;
+    });
+}
+
 function useLocalStorage(key, initial) {
     const [val, setVal] = useState(() => {
         try {
@@ -3630,7 +3641,6 @@ function App() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [pendingEditAction, setPendingEditAction] = useState(null);
     const [showFolderForm, setShowFolderForm] = useState(false);
-    const initialTricksRef = useRef(tricks);
 
     function addToast(msg, type = 'success') {
         const id = uid();
@@ -3903,22 +3913,11 @@ function App() {
                     }
                 }
 
-                const next = [];
-
-                for (const trick of initialTricksRef.current) {
-                    let imageUrl = trick.imageUrl || '';
-                    if (!(typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) && !isGeneratedCardImage(imageUrl)) {
-                        const cmdSeedId = cmdToSeedId[trick.codeSnippet] || null;
-                        if (cmdSeedId && remoteImages[cmdSeedId]) {
-                            imageUrl = remoteImages[cmdSeedId];
-                        } else if (remoteImages[trick.id]) {
-                            imageUrl = remoteImages[trick.id];
-                        }
-                    }
-                    next.push({ ...trick, imageUrl });
+                if (!cancelled) {
+                    // Aplicar solo imágenes sobre el estado actual: los favoritos,
+                    // el contenido y la ubicación pueden haber cambiado mientras cargaban.
+                    setTricks(prev => applyRemoteImages(prev, remoteImages, cmdToSeedId));
                 }
-
-                if (!cancelled) setTricks(next);
             } catch (error) {
                 console.error('[TrickVault] No se pudieron cargar las imágenes de Hostinger:', error);
             }
@@ -3938,9 +3937,6 @@ function App() {
                 if (cancelled) return;
                 if (remote.exists) {
                     setTricks(prev => prev.map(t => ({ ...t, isFavorite: remote.ids.includes(t.id) })));
-                } else {
-                    const localIds = initialTricksRef.current.filter(t => t.isFavorite).map(t => t.id);
-                    saveRemoteFavorites(localIds).catch(e => console.warn('[TrickVault] No se pudo iniciar favoritos en el servidor:', e));
                 }
             } catch (error) {
                 console.error('[TrickVault] No se pudieron cargar los favoritos de Hostinger:', error);
