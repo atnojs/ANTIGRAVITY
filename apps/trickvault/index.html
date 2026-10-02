@@ -897,7 +897,11 @@ const ALL_IMAGE_COMMANDS = [
 ];
 
 // Códigos eliminados por Antonio (2026-09-18): no se regeneran al recargar.
+// Se añade la variante /glassart duplicada: se fusionó con la óptica (que es la
+// que está en Favoritos y lleva el prompt editado), así que esta desaparece del
+// navegador y no vuelve a entrar.
 const REMOVED_IMAGE_IDS = new Set([
+    'tv-glassart-art',
     'ig-dcek-020', 'ig-dcek-099', 'ig-dcek-100',
     'ig-dcek-113', 'ig-dcek-114', 'ig-dcek-115', 'ig-dcek-116', 'ig-dcek-117',
     'ig-dcek-118', 'ig-dcek-119', 'ig-dcek-120', 'ig-dcek-121', 'ig-dcek-122',
@@ -1001,7 +1005,7 @@ const SEED_COMMAND_IMAGES = {
     '/aerialview': 'uploads/visual-ig-dcek-179.jpg',
     '/albumcover': 'uploads/visual-ig-dcek-094.jpg',
     '/anamorphic': 'assets/luz-camara-personas/anamorphic.jpg',
-    '/anatomicalposter': 'uploads/ig-dcek-173.jpg',
+    '/anatomicalposter': 'assets/infografias/anatomicalposter.jpg',
     '/anatomy': 'uploads/visual-ig-dcek-160.jpg',
     '/anime': 'uploads/visual-ig-dcek-278.jpg',
     '/annotated': 'uploads/visual-ig-dcek-017.jpg',
@@ -1013,7 +1017,7 @@ const SEED_COMMAND_IMAGES = {
     '/beach': 'uploads/visual-ig-dcek-302.jpg',
     '/billboard': 'uploads/visual-ig-dcek-096.jpg',
     '/billboardmockup': 'uploads/visual-ig-dcek-105.jpg',
-    '/birdseyeview': 'uploads/visual-ig-dcek-185.jpg',
+    '/birdseyeview': 'assets/planos/birdseyeview.jpg',
     '/blackandwhite': 'uploads/visual-ig-dcek-269.jpg',
     '/bluehour': 'assets/foto-producto/bluehour.jpg',
     '/blueprint': 'uploads/visual-ig-dcek-011.jpg',
@@ -1021,7 +1025,7 @@ const SEED_COMMAND_IMAGES = {
     '/bookcover': 'uploads/visual-ig-dcek-093.jpg',
     '/boxmockup': 'assets/foto-producto/boxmockup.jpg',
     '/charactersheet': 'uploads/visual-ig-dcek-081.jpg',
-    '/cheatsheet': 'uploads/ig-dcek-165.jpg',
+    '/cheatsheet': 'assets/infografias/cheatsheet.jpg',
     '/chromemetal': 'uploads/visual-ig-dcek-079.jpg',
     '/cinematic': 'assets/foto-producto/cinematic.jpg',
     '/cinematiccolor': 'uploads/visual-ig-dcek-234.jpg',
@@ -1034,19 +1038,19 @@ const SEED_COMMAND_IMAGES = {
     '/collage': 'uploads/visual-ig-dcek-027.jpg',
     '/colorway': 'assets/foto-producto/colorway.jpg',
     '/comicbook': 'uploads/visual-ig-dcek-309.jpg',
-    '/comicstrip': 'uploads/ig-dcek-174.jpg',
-    '/conceptmap': 'uploads/ig-dcek-163.jpg',
+    '/comicstrip': 'assets/infografias/comicstrip.jpg',
+    '/conceptmap': 'assets/infografias/conceptmap.jpg',
     '/coolcolor': 'uploads/visual-ig-dcek-238.jpg',
-    '/cornellnotes': 'uploads/ig-dcek-166.jpg',
+    '/cornellnotes': 'assets/infografias/cornellnotes.jpg',
     '/costumedesign': 'uploads/visual-ig-dcek-084.jpg',
     '/coupleshot': 'uploads/visual-ig-dcek-273.jpg',
     '/crosssection': 'uploads/visual-ig-dcek-004.jpg',
     '/cupbranding': 'uploads/visual-ig-dcek-109.jpg',
     '/cutaway': 'uploads/visual-ig-dcek-003.jpg',
-    '/cyclicalprocess': 'uploads/ig-dcek-172.jpg',
+    '/cyclicalprocess': 'assets/infografias/cyclicalprocess.jpg',
     '/darkmoody': 'assets/luz-camara-personas/darkmoody.jpg',
     '/daytonight': 'uploads/visual-ig-dcek-320.jpg',
-    '/decisiontree': 'uploads/ig-dcek-175.jpg',
+    '/decisiontree': 'assets/infografias/decisiontree.jpg',
     '/deeperperspective': 'uploads/visual-ig-dcek-255.jpg',
     '/detective': 'uploads/visual-ig-dcek-310.jpg',
     '/devicemockup': 'assets/foto-producto/devicemockup.jpg',
@@ -1060,7 +1064,7 @@ const SEED_COMMAND_IMAGES = {
     '/droneview': 'uploads/visual-ig-dcek-151.jpg',
     '/duotoneportrait': 'assets/luz-camara-personas/duotoneportrait.jpg',
     '/dutchangle': 'assets/luz-camara-personas/dutchangle.jpg',
-    '/dynamicshot': 'uploads/visual-ig-dcek-224.jpg',
+    '/dynamicshot': 'assets/planos/dynamicshot.jpg',
     '/editorial': 'assets/comida-moda/editorial.jpg',
     '/embossedlogo': 'assets/foto-producto/embossedlogo.jpg',
     '/embroidery': 'uploads/visual-ig-dcek-080.jpg',
@@ -1070,13 +1074,13 @@ const SEED_COMMAND_IMAGES = {
     '/explodedview': 'uploads/visual-ig-dcek-002.jpg',
     '/expressionsheet': 'uploads/visual-ig-dcek-083.jpg',
     '/extremecloseup': 'assets/luz-camara-personas/extremecloseup.jpg',
-    '/extremepov': 'uploads/visual-ig-dcek-222.jpg',
+    '/extremepov': 'assets/planos/extremepov.jpg',
     '/eyelevel': 'uploads/visual-ig-dcek-283.jpg',
     '/fantasy': 'uploads/visual-ig-dcek-312.jpg',
     '/fashion': 'assets/comida-moda/fashion.jpg',
     '/festival': 'uploads/visual-ig-dcek-276.jpg',
     '/filmgrain': 'uploads/visual-ig-dcek-199.jpg',
-    '/fishbone': 'uploads/ig-dcek-170.jpg',
+    '/fishbone': 'assets/infografias/fishbone.jpg',
     '/fisheye': 'uploads/visual-ig-dcek-183.jpg',
     '/flashcard': 'uploads/visual-ig-dcek-137.jpg',
     '/flatlay': 'uploads/visual-ig-dcek-035.jpg',
@@ -1093,7 +1097,7 @@ const SEED_COMMAND_IMAGES = {
     '/freezeaction': 'uploads/visual-ig-dcek-201.jpg',
     '/fullbody': 'uploads/visual-ig-dcek-149.jpg',
     '/fullcolour': 'uploads/visual-ig-dcek-147.jpg',
-    '/funnelchart': 'uploads/ig-dcek-169.jpg',
+    '/funnelchart': 'assets/infografias/funnelchart.jpg',
     '/generatehandwritingimage': 'uploads/visual-ig-dcek-157.jpg',
     '/ghostedview': 'uploads/visual-ig-dcek-007.jpg',
     '/ghostmannequin': 'uploads/visual-ig-dcek-039.jpg',
@@ -1135,7 +1139,7 @@ const SEED_COMMAND_IMAGES = {
     '/macro': 'uploads/visual-ig-dcek-036.jpg',
     '/macrolook': 'uploads/visual-ig-dcek-254.jpg',
     '/magazinecover': 'uploads/visual-ig-dcek-091.jpg',
-    '/matrix2x2': 'uploads/ig-dcek-171.jpg',
+    '/matrix2x2': 'assets/infografias/matrix2x2.jpg',
     '/medieval': 'uploads/visual-ig-dcek-299.jpg',
     '/mediumshot': 'uploads/visual-ig-dcek-281.jpg',
     '/mercury': 'uploads/visual-ig-dcek-324.jpg',
@@ -1192,11 +1196,11 @@ const SEED_COMMAND_IMAGES = {
     '/premiumshowcase': 'assets/foto-producto/premiumshowcase.jpg',
     '/productshot': 'uploads/visual-ig-dcek-032.jpg',
     '/profesión': 'assets/comida-moda/profesión.jpg',
-    '/proscons': 'uploads/ig-dcek-168.jpg',
+    '/proscons': 'assets/infografias/proscons.jpg',
     '/proshot': 'uploads/visual-ig-dcek-256.jpg',
     '/pullin': 'uploads/visual-ig-dcek-220.jpg',
     '/pullout': 'uploads/visual-ig-dcek-221.jpg',
-    '/pyramidchart': 'uploads/ig-dcek-164.jpg',
+    '/pyramidchart': 'assets/infografias/pyramidchart.jpg',
     '/quotecard': 'uploads/visual-ig-dcek-098.jpg',
     '/quotes': 'uploads/visual-ig-dcek-280.jpg',
     '/rain': 'assets/luz-camara-personas/rain.jpg',
@@ -1227,7 +1231,7 @@ const SEED_COMMAND_IMAGES = {
     '/sizecomparison': 'assets/foto-producto/sizecomparison.jpg',
     '/skeletalview': 'uploads/visual-ig-dcek-008.jpg',
     '/sketch': 'uploads/visual-ig-dcek-313.jpg',
-    '/sketchnote': 'uploads/ig-dcek-167.jpg',
+    '/sketchnote': 'assets/infografias/sketchnote.jpg',
     '/skyfall': 'uploads/visual-ig-dcek-230.jpg',
     '/slowmo': 'uploads/visual-ig-dcek-319.jpg',
     '/snow': 'assets/luz-camara-personas/snow.jpg',
@@ -1265,7 +1269,7 @@ const SEED_COMMAND_IMAGES = {
     '/turnaround': 'uploads/visual-ig-dcek-082.jpg',
     '/ultrarealistic': 'uploads/visual-ig-dcek-178.jpg',
     '/vanishingpoint': 'uploads/visual-ig-dcek-242.jpg',
-    '/venndiagram': 'uploads/ig-dcek-162.jpg',
+    '/venndiagram': 'assets/infografias/venndiagram.jpg',
     '/vibrantcolor': 'uploads/visual-ig-dcek-240.jpg',
     '/vintage': 'uploads/visual-ig-dcek-202.jpg',
     '/vintagecolor': 'uploads/visual-ig-dcek-235.jpg',
@@ -1694,6 +1698,33 @@ const SEED_ID_BY_COMMAND = (() => {
     if (glassartIndex >= 0) map['/glassart'] = `ig-dcek-${String(glassartIndex + 1).padStart(3, '0')}`;
     return map;
 })();
+
+// Ids del servidor cuyo ejemplo quedó sobrescrito por una imagen personal o de
+// prueba (subida desde una tarjeta encima del catálogo) y que por eso NO valen
+// como ejemplo de su comando. De los que se pudo, el original se ha recuperado
+// del respaldo de 20260914 y vive ya en assets/, así que esas tarjetas tiran
+// siempre de su fichero del repositorio y nunca de la imagen ajena.
+const BROKEN_STORE_IMAGES = new Set([
+    'ig-dcek-165', // /cheatsheet    -> el servidor apunta a un fichero que ya no existe
+    'ig-dcek-185', // /birdseyeview  -> recuperada de assets/planos/
+    'ig-dcek-188', // /mist          -> ejemplo nuevo en assets/luz-camara-personas/
+    'ig-dcek-191', // /snow          -> ejemplo nuevo
+    'ig-dcek-192', // /sunset        -> ejemplo nuevo
+    'ig-dcek-193', // /sunrise       -> ejemplo nuevo
+    'ig-dcek-194', // /moonlight     -> ejemplo nuevo
+    'ig-dcek-222', // /extremepov    -> recuperada de assets/planos/
+    'ig-dcek-224', // /dynamicshot   -> recuperada de assets/planos/
+    'ig-dcek-555', // /handsinuse    -> sin original disponible (ver aviso en la app)
+]);
+function isBrokenStoreImage(command) {
+    const id = SEED_ID_BY_COMMAND[command];
+    return !!id && BROKEN_STORE_IMAGES.has(id);
+}
+// Ejemplo propio del repositorio (assets/...) para ese comando, si existe.
+function seedAssetImage(command) {
+    const image = SEED_COMMAND_IMAGES[command];
+    return typeof image === 'string' && image.startsWith('assets/') ? image : '';
+}
 
 /* ═══════════════════════════════════════════════
    HELPERS
@@ -2906,10 +2937,18 @@ function isGeneratedCardImage(imageUrl) {
 function migrateGeneratedCardImages(items) {
     const pendingReleases = new Set(GENERATED_IMAGE_RELEASES.filter(release => localStorage.getItem(release.key) !== release.version));
     return items.map(item => {
+        const command = getImageCommandKey(item);
+        // El ejemplo del servidor de este código está contaminado: se usa el del
+        // repositorio (nunca la imagen ajena), salvo que la tarjeta tenga una
+        // imagen personal propia todavía sin subir.
+        if (isBrokenStoreImage(command) && !String(item.imageUrl || '').startsWith('data:image/')) {
+            const own = seedAssetImage(command);
+            return own && own !== item.imageUrl ? { ...item, imageUrl: own } : item;
+        }
         // El ejemplo nuevo al que pertenece la tarjeta se deduce del CÓDIGO, no
         // del id ni de la carpeta guardada: así también lo reciben las tarjetas
         // con un id de una numeración anterior.
-        const seedImage = SEED_COMMAND_IMAGES[getImageCommandKey(item)];
+        const seedImage = SEED_COMMAND_IMAGES[command];
         const release = GENERATED_IMAGE_RELEASES.find(candidate => seedImage?.startsWith(candidate.prefix));
         const legacyExample = !item.imageUrl || item.imageUrl.startsWith('uploads/visual-') || isGeneratedCardImage(item.imageUrl);
         return release && legacyExample && (!item.imageUrl || pendingReleases.has(release))
@@ -2925,6 +2964,12 @@ function applyRemoteImages(items, remoteImages) {
         // Imagen personal aún sin subir, o ejemplo nuevo ya colocado en este
         // código: se respeta tal cual.
         if (imageUrl.startsWith('data:image/') || (isGeneratedCardImage(imageUrl) && seedImage === imageUrl)) return trick;
+        // El ejemplo del servidor de este código fue sobrescrito por una imagen
+        // ajena: se usa el del repositorio si existe (y si no, no se toca).
+        if (isBrokenStoreImage(command)) {
+            const own = seedAssetImage(command);
+            return own && own !== imageUrl ? { ...trick, imageUrl: own } : trick;
+        }
         // Cada variante conserva su identidad, incluso si comparte /comando.
         const recovered = RESTORED_VARIANTS.find(variant => variant.id === trick.id ||
             (variant.codeSnippet === command && String(variant.customPrompt || '') === String(trick.customPrompt || '')));

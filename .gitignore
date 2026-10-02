@@ -134,6 +134,10 @@ apps/decorar_habitacion/crops/
 *.jpg
 *.png
 
+# Excepción: los ejemplos de las tarjetas de TrickVault SÍ van al repositorio y al
+# despliegue (son la pareja código -> imagen de cada truco).
+!apps/trickvault/assets/**/*.jpg
+
 # Cache en runtime de los proxies (modelos de OpenAI y resultados de Qwen).
 # Se conservan versionados el .gitignore y el .htaccess de cada carpeta (protegen
 # el directorio en la raiz publica de Hostinger); lo que no se versiona son los
