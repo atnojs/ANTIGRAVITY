@@ -1606,33 +1606,13 @@ const RESTORED_VARIANTS = [
         "codeSnippet": "/glassart",
         "difficulty": "beginner",
         "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-        "imageUrl": "uploads/example_ig-dcek-283_0d5ec8a20ba7.webp",
+        "imageUrl": "uploads/example_ig-dcek-297_4441a7147cff.webp",
         "isFavorite": false,
         "createdAt": 1787615999718,
         "customPrompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style.\nA professional-grade studio shot with sharp focus, centered exclusively on a single subject: [OBJETO].\nThis central subject is crafted entirely and intricately from high-quality, pure, and complex clear optical glass. The interior of the glass subject is visible, revealing a detailed and fascinating internal micro-structure; any inscriptions or labels are precisely etched onto the glass surface in a clear, legible font.\nThe central glass subject rests on a contrasting non-glass surface: a smooth, matte, opaque frosted plastic. This plastic surface is smooth to the touch—free of metallic reflections or silky textures—and serves as a clean, diffused background.\nThe lighting is soft and diffused, featuring subtle, complementary gradients of gentle color that create a sharp contrast between the complex, refractive clarity of the central glass subject and the matte, opaque softness of its surroundings. The focus is sharp on the glass subject, with a depth-of-field effect that softens the plastic background. all visible text and engravings must be written in Spanish with no English words (write CAMARA DE CRISTAL instead of crystal camera)",
         "updatedAt": 1790867846530,
-        "imageStorageId": "ig-dcek-283",
-        "legacyFavoriteId": "ig-dcek-283"
-    },
-    {
-        "id": "tv-glassart-art",
-        "title": "/glassart — arte de vidrio transparente",
-        "description": "",
-        "category": "xl-ilustracion",
-        "tags": [
-            "comandos de imagen",
-            "imagen",
-            "Instagram"
-        ],
-        "codeSnippet": "/glassart",
-        "difficulty": "beginner",
-        "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-        "imageUrl": "uploads/example_ig-dcek-297_bdff2e2ff53a.webp",
-        "isFavorite": false,
-        "createdAt": 1787615999704,
-        "updatedAt": 1789862400000,
         "imageStorageId": "ig-dcek-297",
-        "legacyFavoriteId": "ig-dcek-297"
+        "legacyFavoriteIds": ["ig-dcek-283", "ig-dcek-297"]
     }
 ];
 const SEED_TRICKS = [
@@ -1689,6 +1669,31 @@ const SEED_CATEGORY_BY_ID = SEED_TRICKS.reduce((map, trick) => {
     map[trick.id] = trick.category;
     return map;
 }, {});
+
+// Id de catálogo que corresponde hoy a cada CÓDIGO (/xray, /nightcity...).
+// Las imágenes se resuelven con esto y no con el id guardado en la tarjeta,
+// porque ese id puede venir de una numeración anterior: cuando los 14 códigos
+// infográficos (/venndiagram, /conceptmap, /pyramidchart, /cheatsheet,
+// /cornellnotes, /sketchnote, /proscons, /funnelchart, /fishbone, /matrix2x2,
+// /cyclicalprocess, /anatomicalposter, /comicstrip, /decisiontree) entraron en
+// medio de la lista (posiciones 162-175), todos los comandos siguientes
+// cambiaron de número y los ids ya guardados pasaron a apuntar a la imagen de
+// OTRO comando (desfase de 14).
+const SEED_ID_BY_COMMAND = (() => {
+    const map = SEED_TRICKS.reduce((acc, seed) => {
+        const command = typeof seed.codeSnippet === 'string' ? seed.codeSnippet.trim() : '';
+        // Las variantes personales no definen el id de catálogo de su comando.
+        if (command.startsWith('/') && !RESTORED_VARIANTS.some(variant => variant.id === seed.id)) {
+            acc[command] = seed.id;
+        }
+        return acc;
+    }, {});
+    // /glassart no genera tarjeta semilla (tiene variantes personales), pero su
+    // ejemplo de catálogo sigue viviendo en el id de su posición: 297.
+    const glassartIndex = ALL_IMAGE_COMMANDS.findIndex(([command]) => command === '/glassart');
+    if (glassartIndex >= 0) map['/glassart'] = `ig-dcek-${String(glassartIndex + 1).padStart(3, '0')}`;
+    return map;
+})();
 
 /* ═══════════════════════════════════════════════
    HELPERS
@@ -2901,11 +2906,13 @@ function isGeneratedCardImage(imageUrl) {
 function migrateGeneratedCardImages(items) {
     const pendingReleases = new Set(GENERATED_IMAGE_RELEASES.filter(release => localStorage.getItem(release.key) !== release.version));
     return items.map(item => {
-        const release = GENERATED_IMAGE_RELEASES.find(release => release.category === item.category);
+        // El ejemplo nuevo al que pertenece la tarjeta se deduce del CÓDIGO, no
+        // del id ni de la carpeta guardada: así también lo reciben las tarjetas
+        // con un id de una numeración anterior.
         const seedImage = SEED_COMMAND_IMAGES[getImageCommandKey(item)];
-        const canonicalCard = SEED_TRICKS.find(seed => seed.id === item.id && seed.codeSnippet === item.codeSnippet);
+        const release = GENERATED_IMAGE_RELEASES.find(candidate => seedImage?.startsWith(candidate.prefix));
         const legacyExample = !item.imageUrl || item.imageUrl.startsWith('uploads/visual-') || isGeneratedCardImage(item.imageUrl);
-        return canonicalCard && legacyExample && release && seedImage?.startsWith(release.prefix) && (!item.imageUrl || pendingReleases.has(release))
+        return release && legacyExample && (!item.imageUrl || pendingReleases.has(release))
             ? { ...item, imageUrl: seedImage }
             : item;
     });
@@ -2913,12 +2920,26 @@ function migrateGeneratedCardImages(items) {
 function applyRemoteImages(items, remoteImages) {
     return items.map(trick => {
         const imageUrl = trick.imageUrl || '';
-        if (imageUrl.startsWith('data:image/') || (isGeneratedCardImage(imageUrl) && SEED_TRICKS.some(seed => seed.id === trick.id && seed.codeSnippet === trick.codeSnippet))) return trick;
+        const command = getImageCommandKey(trick);
+        const seedImage = SEED_COMMAND_IMAGES[command];
+        // Imagen personal aún sin subir, o ejemplo nuevo ya colocado en este
+        // código: se respeta tal cual.
+        if (imageUrl.startsWith('data:image/') || (isGeneratedCardImage(imageUrl) && seedImage === imageUrl)) return trick;
         // Cada variante conserva su identidad, incluso si comparte /comando.
         const recovered = RESTORED_VARIANTS.find(variant => variant.id === trick.id ||
-            (variant.codeSnippet === trick.codeSnippet && String(variant.customPrompt || '') === String(trick.customPrompt || '')));
-        const reusedId = RESTORED_VARIANTS.some(variant => variant.imageStorageId === trick.id && variant.codeSnippet !== trick.codeSnippet);
-        const remoteUrl = recovered ? remoteImages[recovered.imageStorageId] : (reusedId ? null : remoteImages[trick.id]);
+            (variant.codeSnippet === command && String(variant.customPrompt || '') === String(trick.customPrompt || '')));
+        const reusedId = RESTORED_VARIANTS.some(variant => variant.imageStorageId === trick.id && variant.codeSnippet !== command);
+        // La imagen se busca por CÓDIGO. El id guardado en el navegador puede
+        // venir de una numeración anterior (ver SEED_ID_BY_COMMAND) y entonces
+        // apuntaba a la imagen de otro comando. Las tarjetas personales (id que
+        // no es de catálogo) siguen usando su propia imagen.
+        const canonicalId = SEED_ID_BY_COMMAND[command];
+        const catalogCard = /^(ig-dcek|xl-cmd)-\d{3}$/.test(String(trick.id));
+        const byCode = catalogCard && canonicalId ? remoteImages[canonicalId] : null;
+        // Si el id pertenece a la imagen de una variante personal, no se usa como
+        // respaldo: esa imagen es de la variante, no de esta tarjeta.
+        const byOwnId = reusedId ? null : remoteImages[trick.id];
+        const remoteUrl = recovered ? remoteImages[recovered.imageStorageId] : (byCode || byOwnId || null);
         return remoteUrl && remoteUrl !== imageUrl ? { ...trick, imageUrl: remoteUrl } : trick;
     });
 }
@@ -2936,16 +2957,21 @@ function mergeSeedCards(saved, initial) {
     return [...newItems, ...saved];
 }
 
+function variantFavoriteIds(variant) {
+    const list = Array.isArray(variant?.legacyFavoriteIds) ? variant.legacyFavoriteIds : [];
+    return variant?.legacyFavoriteId ? [variant.legacyFavoriteId, ...list] : list;
+}
+
 function applyRemoteFavorites(items, ids) {
     const favorites = new Set(ids);
     return items.map(item => {
         const recovered = RESTORED_VARIANTS.find(variant => variant.id === item.id ||
             (variant.codeSnippet === item.codeSnippet && String(variant.customPrompt || '') === String(item.customPrompt || '')));
         // Los IDs reutilizados del catálogo no heredan el favorito de otra variante.
-        const oldOwner = RESTORED_VARIANTS.find(variant => variant.legacyFavoriteId === item.id);
+        const oldOwner = RESTORED_VARIANTS.find(variant => variantFavoriteIds(variant).includes(item.id));
         const ownsId = !oldOwner || oldOwner.codeSnippet === item.codeSnippet;
         return { ...item, isFavorite: (ownsId && favorites.has(item.id)) ||
-            !!(recovered && (favorites.has(recovered.legacyFavoriteId) || favorites.has(recovered.id))) };
+            !!(recovered && (variantFavoriteIds(recovered).some(id => favorites.has(id)) || favorites.has(recovered.id))) };
     });
 }
 
