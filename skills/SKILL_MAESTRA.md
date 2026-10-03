@@ -463,8 +463,8 @@ Al clonar el historial en una app nueva o existente:
 
    | Identificador (payload `model`) | Modelo enviado al proveedor | `quality` |
    |---|---|---|
-   | `openai-image-2-low` | `gpt-image-2` | `low` |
-   | `openai-image-2` | `gpt-image-2` | `medium` — **por defecto** |
+   | `openai-image-2-low` | `gpt-image-2` | `low` — **por defecto** |
+   | `openai-image-2` | `gpt-image-2` | `medium` |
    | `openai-image-2-high` | `gpt-image-2` | `high` |
    | `openai-medium` | `gpt-image-2.5-flare` | `medium` |
    | `openai-high` | `gpt-image-2.5-flare` | `high` |
@@ -475,7 +475,7 @@ Al clonar el historial en una app nueva o existente:
    | `gemini-pro` | `google/gemini-3-pro-image` (OpenRouter) | — |
    | `qwen-pro` | `qwen/qwen-image-3-pro` (OpenRouter Images API) | — |
 
-   OpenAI image 2 (`gpt-image-2`) es el modelo base del proyecto; su calidad por defecto es `medium` (orden de menor a mayor dentro del modelo: `low`, `medium`, `high`). Arrancan con `openai-image-2-low` por petición expresa del usuario: `apps/dibujo_lineas_copia` y `apps/editar_generar`. image 2.5 son `gpt-image-2.5-flare` y `gpt-image-2.5-sunburst`.
+   OpenAI image 2 (`gpt-image-2`) es el modelo base del proyecto; su calidad por defecto es `low` (`openai-image-2-low`), por petición expresa del usuario, porque la diferencia de coste frente a `medium` lo justifica (orden de menor a mayor dentro del modelo: `low`, `medium`, `high`). image 2.5 son `gpt-image-2.5-flare` y `gpt-image-2.5-sunburst`.
 
    Esta política está incrustada (sin saltos de lectura) en los 12 punteros de `.claude/skills/*/SKILL.md`. Su fuente única es `skills/POLITICA_modelos-imagen.md`: si cambia el catálogo, edítala ahí y ejecuta `php tools/generar-punteros-skills.php` para regenerar todos los punteros de una vez.
 4. La foto de referencia se edita SIEMPRE por `https://api.openai.com/v1/images/edits` (multipart) en los modelos de OpenAI. No enviar el parámetro `response_format`: la API actual lo rechaza con `400 Unknown parameter`. Si la respuesta trae una URL temporal en vez de `b64_json`, descargarla en el servidor antes de responder.
@@ -550,7 +550,7 @@ La referencia vigente es `apps/dibujo_lineas_copia`: los botones se agrupan por 
 3. Columna `QWEN`: `QWEN 3 PRO` — `qwen-pro` — `qwen/qwen-image-3-pro`.
 4. Columna `IMAGE 2` (de menor a mayor): `LOW` — `openai-image-2-low` — `gpt-image-2` / `low`; `MEDIUM` — `openai-image-2` — `gpt-image-2` / `medium`; `HIGH` — `openai-image-2-high` — `gpt-image-2` / `high`.
 
-Estado inicial: **`openai-image-2` (IMAGE 2 · MEDIUM) seleccionado** en el catálogo y el marcado canónicos. Excepción vigente: `apps/dibujo_lineas_copia` y `apps/editar_generar` arrancan con `openai-image-2-low` (IMAGE 2 · LOW) por petición expresa del usuario. No cambiar ids, etiquetas ni el estado inicial sin petición expresa.
+Estado inicial: **`openai-image-2-low` (IMAGE 2 · LOW) seleccionado**, en todas las apps por petición expresa del usuario (la diferencia de coste frente a `medium` lo justifica). No cambiar ids, etiquetas ni el estado inicial sin petición expresa.
 
 ### Marcado HTML
 
@@ -561,8 +561,8 @@ Ejemplo reducido (una columna por proveedor, con la barra de píldoras dentro):
   <div class="model-provider-column">
     <span class="model-provider-title">IMAGE 2</span>
     <div class="model-toggle-group">
-      <button type="button" class="model-toggle" data-model="openai-image-2-low" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad baja.">LOW</button>
-      <button type="button" class="model-toggle active" data-model="openai-image-2" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media.">MEDIUM</button>
+      <button type="button" class="model-toggle active" data-model="openai-image-2-low" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad baja.">LOW</button>
+      <button type="button" class="model-toggle" data-model="openai-image-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media.">MEDIUM</button>
       <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta.">HIGH</button>
     </div>
   </div>
@@ -663,7 +663,7 @@ className={`aspect-ratio-button ${selectedAR === ar.id ? 'active' : ''}`}
 
 ```js
 // Vanilla
-let selectedModel = 'openai-image-2';
+let selectedModel = 'openai-image-2-low';
 document.querySelectorAll('.model-toggle').forEach((button) => {
   button.addEventListener('click', () => {
     document.querySelectorAll('.model-toggle').forEach((item) => item.classList.remove('active'));
@@ -673,7 +673,7 @@ document.querySelectorAll('.model-toggle').forEach((button) => {
 });
 
 // React
-const [selectedModel, setSelectedModel] = useState('openai-image-2');
+const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
 useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 // Incluir siempre en el payload: model: selectedModel
 ```
@@ -686,6 +686,7 @@ Lista blanca cerrada, como en `apps/dibujo_lineas_copia/proxy.php`. No construir
 
 ```php
 $modelCatalog = [
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'medium'],
@@ -698,7 +699,7 @@ $modelCatalog = [
     'qwen-pro'            => ['backend' => 'qwen',   'model' => 'qwen/qwen-image-3-pro'],
 ];
 
-$reqModel = strtolower(trim((string)($data['model'] ?? 'openai-image-2')));
+$reqModel = strtolower(trim((string)($data['model'] ?? 'openai-image-2-low')));
 if (!isset($modelCatalog[$reqModel])) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);
@@ -707,16 +708,16 @@ if (!isset($modelCatalog[$reqModel])) {
 $selected = $modelCatalog[$reqModel];
 ```
 
-Fallback seguro para valores omitidos: `openai-image-2`. Los modelos de OpenAI se editan por `/v1/images/edits` (multipart, con la imagen de referencia) y no aceptan `response_format`.
+Fallback seguro para valores omitidos: `openai-image-2-low`. Los modelos de OpenAI se editan por `/v1/images/edits` (multipart, con la imagen de referencia) y no aceptan `response_format`.
 
 ### Validación y publicación obligatorias
 
 1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
 2. Probar que las barras de toggles no desbordan el panel y que no existe scroll horizontal ni texto recortado.
-3. Verificar las etiquetas y los identificadores completos de cada columna, en el orden de menor a mayor calidad dentro de cada modelo: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `MAX FLARE` del modelo flare; `XHIGH`, `MAX SUNBURST` del modelo sunburst), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`MEDIUM`, `HIGH`).
+3. Verificar las etiquetas y los identificadores completos de cada columna, en el orden de menor a mayor calidad dentro de cada modelo: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `MAX FLARE` del modelo flare; `XHIGH`, `MAX SUNBURST` del modelo sunburst), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`LOW`, `MEDIUM`, `HIGH`).
 4. Probar estados normal, hover y activo: activo con gradiente `contenedor→cian` y texto `#CCFFFF`.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
-6. Confirmar `openai-image-2` (IMAGE 2 · MEDIUM) como estado inicial y revisar el payload de todos los botones.
+6. Confirmar `openai-image-2-low` (IMAGE 2 · LOW) como estado inicial y revisar el payload de todos los botones.
 7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.
 8. Revisar el diff, crear commit, hacer push a la rama de despliegue y verificar la URL real sin caché antigua.
 

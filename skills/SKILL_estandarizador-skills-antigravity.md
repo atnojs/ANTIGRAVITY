@@ -132,6 +132,6 @@ ${skill_name}/
 
 ## Modelos de imagen del proyecto
 
-**Modelo por defecto: OpenAI image 2** (`gpt-image-2`, calidad `medium`, identificador `openai-image-2`).
+**Modelo por defecto: OpenAI image 2** (`gpt-image-2`, calidad `low`, identificador `openai-image-2-low`).
 
 El catálogo completo (image 2.5 flare/sunburst, Gemini y Qwen), el orden del selector (de izquierda a derecha, de menor a mayor calidad dentro de cada modelo real) y el mapeo en PHP están en `skills/SKILL_MAESTRA.md` y `.claude/skills/crear/SKILL.md`; la referencia viva es `apps/dibujo_lineas_copia`. No cambies el modelo por defecto ni el catálogo sin petición expresa del usuario.
