@@ -23,13 +23,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingStatus = document.getElementById('secondary-status');
 
     // ===== Selector de modelo =====
-    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad media.
-    const DEFAULT_MODEL = 'openai-image-2';
+    // Modelo por defecto de esta app: OpenAI image 2 (gpt-image-2) en calidad baja.
+    // El grupo IMAGE 2 va de menor a mayor: LOW, MEDIUM, HIGH.
+    const DEFAULT_MODEL = 'openai-image-2-low';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
         'gemini-2': 'GEMINI 2',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
+        'openai-image-2-low': 'IMAGE 2 LOW',
         'openai-image-2': 'IMAGE 2',
         'openai-image-2-high': 'IMAGE 2 HIGH',
         'openai-medium': 'MEDIUM',

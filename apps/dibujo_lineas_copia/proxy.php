@@ -3,9 +3,9 @@
 // PROXY PHP — Imagenes Lineales (unificado)
 // Soporta Gemini via OpenRouter (clave R) y GPT Image directo de OpenAI
 // (OPENAI_API_KEY o clave O).
-// Selector de modelo: openai-image-2 / openai-image-2-high / openai-medium /
-// openai-high / openai-xhigh / openai-max-flare / openai-max-sunburst /
-// gemini-flash / gemini-pro / qwen-pro.
+// Selector de modelo: openai-image-2-low / openai-image-2 / openai-image-2-high /
+// openai-medium / openai-high / openai-xhigh / openai-max-flare /
+// openai-max-sunburst / gemini-flash / gemini-pro / qwen-pro.
 // Contrato: recibe {image, mimeType, model?, prompt?}
 //           responde  {image, mimeType}
 // ============================================================
@@ -116,7 +116,9 @@ $modelCatalog = [
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
     // Modelo base del proyecto: OpenAI image-2 (gpt-image-2). Edita la foto subida
-    // por /v1/images/edits, igual que el resto de modelos.
+    // por /v1/images/edits, igual que el resto de modelos. Orden de menor a mayor
+    // calidad dentro del modelo: low, medium, high.
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'gemini-2'            => ['backend' => 'gemini', 'model' => 'google/gemini-2.5-flash-image'],
@@ -216,7 +218,7 @@ $sourceHeight = (int)($imageInfo[1] ?? 0);
 $openaiSize = openAiOutputSize($sourceWidth, $sourceHeight);
 $geminiRatio = geminiAspectRatio($sourceWidth, $sourceHeight);
 
-$reqModel = strtolower((string)($req['model'] ?? 'openai-medium'));
+$reqModel = strtolower((string)($req['model'] ?? 'openai-image-2-low'));
 if (!isset($modelCatalog[$reqModel])) {
     http_response_code(400);
     echo json_encode(['error'=>['message'=>'Modelo no soportado.']]);
@@ -529,4 +531,4 @@ if ($backend === 'qwen') {
 
 // Modelo no reconocido
 http_response_code(400);
-echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-image-2, openai-image-2-high, openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash, gemini-pro o qwen-pro.']]);
+echo json_encode(['error'=>['message'=>'Modelo no soportado. Usa openai-image-2-low, openai-image-2, openai-image-2-high, openai-medium, openai-high, openai-xhigh, openai-max-flare, openai-max-sunburst, gemini-flash, gemini-pro o qwen-pro.']]);
