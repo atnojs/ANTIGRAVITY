@@ -2938,6 +2938,13 @@ function migrateGeneratedCardImages(items) {
     const pendingReleases = new Set(GENERATED_IMAGE_RELEASES.filter(release => localStorage.getItem(release.key) !== release.version));
     return items.map(item => {
         const command = getImageCommandKey(item);
+        // Tarjeta sin imagen cuyo comando ya tiene ejemplo en el repositorio: se
+        // le pone (carpetas que se quedaron sin ejemplos por no haberse subido
+        // nunca al servidor, como Juegos y temporadas o Tú en otro mundo).
+        if (!item.imageUrl) {
+            const own = seedAssetImage(command);
+            if (own) return { ...item, imageUrl: own };
+        }
         // El ejemplo del servidor de este código está contaminado: se usa el del
         // repositorio (nunca la imagen ajena), salvo que la tarjeta tenga una
         // imagen personal propia todavía sin subir.
@@ -2969,6 +2976,12 @@ function applyRemoteImages(items, remoteImages) {
         if (isBrokenStoreImage(command)) {
             const own = seedAssetImage(command);
             return own && own !== imageUrl ? { ...trick, imageUrl: own } : trick;
+        }
+        // Tarjeta sin imagen: si su comando ya tiene ejemplo en el repositorio,
+        // se le pone ahora.
+        if (!imageUrl) {
+            const own = seedAssetImage(command);
+            return own ? { ...trick, imageUrl: own } : trick;
         }
         // Cada variante conserva su identidad, incluso si comparte /comando.
         const recovered = RESTORED_VARIANTS.find(variant => variant.id === trick.id ||
