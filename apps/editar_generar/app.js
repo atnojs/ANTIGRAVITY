@@ -984,44 +984,6 @@ const App = () => {
                                 </div>
                             )}
 
-                            {/* Imagen de referencia del modo Generar (opcional): permite usar
-                                un prompt de texto junto a una imagen. */}
-                            {mode === 'text-to-image' && (
-                                <div className="space-y-4 animate-in">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <span className="btn-canon text-[11px] text-cyan-400">Imagen de Referencia (Opcional)</span>
-                                        {genSource && (
-                                            <button
-                                                type="button"
-                                                onClick={clearSource}
-                                                className="ar-effect px-3 py-1.5 text-xs font-medium rounded-lg flex items-center gap-1.5"
-                                                title="Quitar imagen de referencia"
-                                            >
-                                                <X size={12} /> Quitar
-                                            </button>
-                                        )}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        aria-label={genSource ? 'Cambiar la imagen de referencia' : 'Subir una imagen de referencia'}
-                                        className="w-full relative group cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-cyan-400 focus-visible:border-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 transition-all"
-                                    >
-                                        {genSource ? (
-                                            <img src={genSource} alt="Imagen de referencia cargada" className="w-full h-full object-contain" />
-                                        ) : (
-                                            <span className="text-cyan-400 flex flex-col items-center gap-2">
-                                                <Upload size={24} />
-                                                <span className="btn-canon text-[10px]">Sube Imagen</span>
-                                            </span>
-                                        )}
-                                    </button>
-                                    <span className="model-quality-hint">
-                                        {genSource ? 'Se usará como referencia junto a tu instrucción de texto.' : 'Opcional: sin imagen se genera solo desde el texto.'}
-                                    </span>
-                                </div>
-                            )}
-
                             <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
 
                             <div className="space-y-4">
@@ -1060,6 +1022,44 @@ const App = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Imagen de referencia del modo Generar (opcional): va despues del
+                                texto, que es la instruccion principal del prompt. */}
+                            {mode === 'text-to-image' && (
+                                <div className="space-y-4 animate-in">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="btn-canon text-[11px] text-cyan-400">Imagen de Referencia (Opcional)</span>
+                                        {genSource && (
+                                            <button
+                                                type="button"
+                                                onClick={clearSource}
+                                                className="ar-effect px-3 py-1.5 text-xs font-medium rounded-lg flex items-center gap-1.5"
+                                                title="Quitar imagen de referencia"
+                                            >
+                                                <X size={12} /> Quitar
+                                            </button>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        aria-label={genSource ? 'Cambiar la imagen de referencia' : 'Subir una imagen de referencia'}
+                                        className="w-full relative group cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-cyan-400 focus-visible:border-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 transition-all"
+                                    >
+                                        {genSource ? (
+                                            <img src={genSource} alt="Imagen de referencia cargada" className="w-full h-full object-contain" />
+                                        ) : (
+                                            <span className="text-cyan-400 flex flex-col items-center gap-2">
+                                                <Upload size={24} />
+                                                <span className="btn-canon text-[10px]">Sube Imagen</span>
+                                            </span>
+                                        )}
+                                    </button>
+                                    <span className="model-quality-hint">
+                                        {genSource ? 'Se usará como referencia junto a tu instrucción de texto.' : 'Opcional: sin imagen se genera solo desde el texto.'}
+                                    </span>
+                                </div>
+                            )}
 
                             <div className="space-y-6">
                                 <label className="btn-canon text-[11px] text-cyan-400">Panel de Estilos</label>
