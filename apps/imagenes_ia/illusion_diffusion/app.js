@@ -5,6 +5,7 @@ const { createRoot } = ReactDOM;
 const Icon = ({ size, children }) => React.createElement('svg', {
     width: size || 24, height: size || 24, viewBox: '0 0 24 24',
     fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round',
+    'aria-hidden': 'true', focusable: 'false',
     style: { display: 'inline-block', verticalAlign: 'middle' }
 }, children);
 
@@ -64,6 +65,26 @@ const X = ({ size }) => React.createElement(Icon, { size },
 );
 
 const STORAGE_KEY = 'illusion_diffusion_history';
+const HISTORY_APP = 'illusion_diffusion';
+
+// Instancia canónica del historial (servidor). history-manager.js expone la CLASE:
+// hay que instanciarla, no existen métodos estáticos.
+const historyManager = new HistoryManager(HISTORY_APP);
+
+// El servidor devuelve la imagen como imageUrl y la configuración dentro de data.
+const toHistoryItem = (entry) => {
+    const data = (entry && typeof entry.data === 'object' && entry.data) ? entry.data : {};
+    const created = entry && entry.createdAt ? Date.parse(entry.createdAt) : NaN;
+    return {
+        id: entry && entry.id ? entry.id : `illusion_${Date.now()}`,
+        data: entry.imageUrl || data.dataUrl || data.url || '',
+        createdAt: Number.isFinite(created) ? created : Date.now(),
+        containerOpacity: Number.isFinite(data.containerOpacity) ? data.containerOpacity : 50,
+        contentOpacity: Number.isFinite(data.contentOpacity) ? data.contentOpacity : 50,
+        containerBW: !!data.containerBW,
+        contentBW: !!data.contentBW
+    };
+};
 
 function App() {
     // Estado principal
@@ -89,34 +110,35 @@ function App() {
     const containerInputRef = useRef(null);
     const contentInputRef = useRef(null);
 
-    // Cargar historial desde HistoryManager (servidor + IndexedDB)
+    // Cargar historial desde HistoryManager (servidor) con fallback a localStorage
     useEffect(() => {
-        HistoryManager.configure({ dbName: 'illusion_diffusion_db' });
-        HistoryManager.init()
-            .then(() => HistoryManager.loadAll())
-            .then(items => {
-                if (items && items.length > 0) {
-                    const loaded = items.map(i => ({
-                        id: i.id,
-                        data: i.url,
-                        createdAt: i.createdAt || Date.now(),
-                        containerOpacity: i.containerOpacity || 0.5,
-                        contentOpacity: i.contentOpacity || 0.5,
-                        containerBW: i.containerBW || false,
-                        contentBW: i.contentBW || false
-                    }));
+        let active = true;
+
+        const loadLocalFallback = () => {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && active) setHistory(parsed);
+            } catch (e) { console.warn('Error cargando localStorage:', e); }
+        };
+
+        historyManager.load()
+            .then((entries) => {
+                if (!active) return;
+                const loaded = (entries || []).map(toHistoryItem).filter(item => item.data);
+                if (loaded.length > 0) {
                     setHistory(loaded);
                 } else {
-                    // Fallback a localStorage
-                    try {
-                        const saved = localStorage.getItem(STORAGE_KEY);
-                        if (saved) {
-                            const parsed = JSON.parse(saved);
-                            if (Array.isArray(parsed)) setHistory(parsed);
-                        }
-                    } catch (e) { console.warn('Error cargando localStorage:', e); }
+                    loadLocalFallback();
                 }
+            })
+            .catch((error) => {
+                console.warn('Error cargando el historial del servidor:', error);
+                loadLocalFallback();
             });
+
+        return () => { active = false; };
     }, []);
 
     // Convertir imagen a blanco y negro
@@ -359,13 +381,21 @@ function App() {
                     contentBW: contentBW
                 };
                 setHistory(prev => [newItem, ...prev]);
-                HistoryManager.saveItem({
+                // Fuente de verdad: el servidor (history.php). Un fallo de red no debe
+                // romper la generación local.
+                historyManager.save({
                     id: newItem.id,
-                    url: imageData,
-                    prompt: 'Illusion Diffusion',
-                    containerOpacity, contentOpacity, containerBW, contentBW,
-                    createdAt: newItem.createdAt
-                });
+                    type: 'image',
+                    model: HISTORY_APP,
+                    data: {
+                        containerOpacity,
+                        contentOpacity,
+                        containerBW,
+                        contentBW
+                    },
+                    imageData: imageData,
+                    createdAt: new Date(newItem.createdAt).toISOString()
+                }).catch((err) => console.warn('Error guardando el historial en el servidor:', err));
             } catch (e) {
                 console.error('Error generando imagen:', e);
                 alert('Error al generar la imagen');
@@ -388,14 +418,14 @@ function App() {
     // Eliminar del historial
     const removeFromHistory = (id) => {
         setHistory(prev => prev.filter(item => item.id !== id));
-        HistoryManager.deleteItem(id);
+        historyManager.delete(id).catch((err) => console.warn('Error eliminando del historial:', err));
     };
 
     // Limpiar todo el historial
     const clearHistory = () => {
         if (confirm('¿Eliminar todas las imágenes del historial?')) {
             setHistory([]);
-            HistoryManager.clearAll();
+            historyManager.clear().catch((err) => console.warn('Error limpiando el historial:', err));
         }
     };
 
@@ -423,6 +453,8 @@ function App() {
                                 <img src={containerImage} alt="Contenedor" />
                                 <button
                                     className="remove-btn"
+                                    type="button"
+                                    aria-label="Quitar imagen contenedor"
                                     onClick={(e) => { e.stopPropagation(); setContainerImage(null); }}
                                 >
                                     <X size={16} />
@@ -486,6 +518,8 @@ function App() {
                                 <img src={contentImage} alt="Contenido" />
                                 <button
                                     className="remove-btn"
+                                    type="button"
+                                    aria-label="Quitar imagen de contenido"
                                     onClick={(e) => { e.stopPropagation(); setContentImage(null); setContentPos({ x: 0, y: 0 }); setContentScale(1); }}
                                 >
                                     <X size={16} />
@@ -597,7 +631,7 @@ function App() {
                                     className="history-item"
                                     onClick={() => setViewerImage(item.data)}
                                 >
-                                    <img src={item.data} alt="Generada" />
+                                    <img src={item.data} alt={`Ilusión generada ${new Date(item.createdAt).toLocaleDateString('es-ES')}`} loading="lazy" />
                                     <div className="item-config">
                                         <span>🎭{item.containerOpacity ?? 50}%{item.containerBW ? ' B/N' : ''}</span>
                                         <span>🖼️{item.contentOpacity ?? 50}%{item.contentBW ? ' B/N' : ''}</span>
@@ -605,6 +639,8 @@ function App() {
                                     <div className="item-actions">
                                         <button
                                             className="action-btn download-btn"
+                                            type="button"
+                                            aria-label="Descargar esta imagen del historial"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 downloadImage(item.data, `illusion_${item.id}.png`);
@@ -614,6 +650,8 @@ function App() {
                                         </button>
                                         <button
                                             className="action-btn delete-btn"
+                                            type="button"
+                                            aria-label="Eliminar esta imagen del historial"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 removeFromHistory(item.id);
