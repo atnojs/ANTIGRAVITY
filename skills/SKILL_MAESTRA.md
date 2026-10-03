@@ -718,8 +718,8 @@ Fallback seguro para valores omitidos: `openai-image-2-low`. Los modelos de Open
 4. Probar estados normal, hover y activo: activo con gradiente `contenedor→cian` y texto `#CCFFFF`.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
 6. Confirmar `openai-image-2-low` (IMAGE 2 · LOW) como estado inicial y revisar el payload de todos los botones.
-7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting.
-8. Revisar el diff, crear commit, hacer push a la rama de despliegue y verificar la URL real sin caché antigua.
+7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting. **Ojo: en Hostinger la caché de estáticos (LiteSpeed) se indexa por RUTA e ignora la query string**, así que subir `?v=` no siempre basta: si tras desplegar un cambio de CSS/JS el navegador sigue recibiendo el fichero viejo (compruébalo con `web_fetch` sobre la URL pública, también con un parámetro nuevo), **renombra el fichero** (p. ej. `app.css` → `app.20261003.css`), actualiza la referencia y borra el antiguo. El despliegue por webhook tarda ~2-3 minutos: una URL nueva da 404 hasta que termina.
+8. Revisar el diff, crear commit, hacer push a la rama de despliegue y **verificar la URL real** (no solo el diff): leer el HTML y el CSS/JS publicados para confirmar que sirven el contenido nuevo y que la referencia del `index.html` apunta a un fichero que existe.
 
 ---
 
