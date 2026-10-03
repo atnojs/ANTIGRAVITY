@@ -14,13 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
 
-    // ===== Selector de modelo (11 botones, IMAGE 2 MEDIUM activo por defecto) =====
-    const DEFAULT_MODEL = 'openai-image-2';
+    // ===== Selector de modelo (12 botones, IMAGE 2 LOW activo por defecto) =====
+    const DEFAULT_MODEL = 'openai-image-2-low';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
         'gemini-2': 'GEMINI 2',
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
+        'openai-image-2-low': 'IMAGE 2 LOW',
         'openai-image-2': 'IMAGE 2 MEDIUM',
         'openai-image-2-high': 'IMAGE 2 HIGH',
         'openai-medium': 'MEDIUM',

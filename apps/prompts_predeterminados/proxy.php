@@ -341,7 +341,7 @@ function handleGenerate(array $request): void {
 // ====================================================================
 // CATÁLOGO CANÓNICO (lista blanca cerrada, sin modelos retirados).
 // Gemini: gemini-2 (2.5 Flash Image) primero, luego gemini-flash (3.1)
-// y gemini-pro (3 Pro). OpenAI: gama 2.5 + image 2 (gpt-image-2).
+// y gemini-pro (3 Pro). OpenAI: gama 2.5 + image 2 (gpt-image-2 low/medium/high).
 // Qwen: qwen-pro. Fuente única para health/models y para la ruta Gemini.
 // ====================================================================
 function ag_model_catalog(): array {
@@ -351,6 +351,7 @@ function ag_model_catalog(): array {
         'openai-xhigh'        => 'gpt-image-2.5-sunburst',
         'openai-max-flare'    => 'gpt-image-2.5-flare',
         'openai-max-sunburst' => 'gpt-image-2.5-sunburst',
+        'openai-image-2-low'  => 'gpt-image-2',
         'openai-image-2'      => 'gpt-image-2',
         'openai-image-2-high' => 'gpt-image-2',
         'gemini-2'            => 'google/gemini-2.5-flash-image',

@@ -1,6 +1,6 @@
 <?php
 // Proxy unificado para Gemini — AuraStudio. PHP 8+, cURL habilitado.
-// OpenAI Image 2.5 (5 calidades) + OpenAI image 2 (openai-image-2 / -high)
+// OpenAI Image 2.5 (5 calidades) + OpenAI image 2 (openai-image-2-low / openai-image-2 / -high)
 // + gemini-2 añadidos para la acción generate-image.
 // Acciones de diagnostico: POST {"action":"health"} y POST {"action":"models"}.
 // Texto/visión (optimize/generate): xiaomi/mimo-v2.6-pro vía OpenRouter.
@@ -98,7 +98,9 @@ $modelCatalog = [
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2), MEDIUM por defecto.
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2), LOW por defecto.
+    // Orden de menor a mayor calidad: low, medium, high.
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
     // Gemini 2 (gemini-2.5-flash-image) va por la API directa de Google, de ahi el id sin prefijo de proveedor.

@@ -164,8 +164,8 @@ function handleOpenRouter(array $request): void {
 function handleGenerate(array $request): void {
     $reqModel = strtolower((string)($request['model'] ?? ''));
     // Lista blanca cerrada: lo que no esté en el catálogo canónico cae al modelo
-    // base del proyecto (OpenAI image 2 medium).
-    if ($reqModel === '' || !isset(ag_image_catalog()[$reqModel])) $request['model'] = 'openai-image-2';
+    // por defecto de la app (OpenAI image 2 low / IMAGE 2 LOW).
+    if ($reqModel === '' || !isset(ag_image_catalog()[$reqModel])) $request['model'] = 'openai-image-2-low';
     ag_image_response($request, __DIR__);
 }
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));

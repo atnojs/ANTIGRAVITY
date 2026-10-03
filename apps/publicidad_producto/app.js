@@ -276,7 +276,7 @@ async function saveBatchToServer(batch, model) {
         var entry = {
             id: String(batch.id),
             type: 'image',
-            model: model || 'openai-image-2',
+            model: model || 'openai-image-2-low',
             data: shrinkBatchForServer(batch),
             imageData: imageData,
             createdAt: new Date(batchIdToNumber(batch.id)).toISOString()
@@ -460,7 +460,7 @@ function generateVideoWithVeo(imageDataUrl, prompt, modelName, generateAudio, au
         });
 }
 
-// ===== Selector de modelo: lista blanca canónica (IMAGE 2 MEDIUM activo) =====
+// ===== Selector de modelo: lista blanca canónica (IMAGE 2 LOW activo) =====
 const MODEL_LABELS = {
     'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
@@ -471,6 +471,7 @@ const MODEL_LABELS = {
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'IMAGE 2 MEDIUM',
     'openai-image-2-high': 'IMAGE 2 HIGH'
 };
@@ -487,7 +488,7 @@ function App() {
     const [currentStep, setCurrentStep] = useState('input'); // input | processing | results
     const [videoQualityModal, setVideoQualityModal] = useState(null); // { proposalIdx, assetIdx, currentAsset, prompt, audioPrompt, generateAudio }  
     const [regenerateModal, setRegenerateModal] = useState(null); // { proposalIdx, assetIdx, currentAsset, prompt }
-    const [selectedModel, setSelectedModel] = useState('openai-image-2');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
 
     // Persistencia del historial: IndexedDB (caché local, sin límite de 5MB) +
     // servidor (history.php, fuente de verdad).
@@ -972,7 +973,7 @@ function App() {
                                                 <span className="text-[10px] font-bold text-cyan-300/70 uppercase tracking-widest">IMAGE 2</span>
                                             </div>
                                             <div className="flex flex-wrap gap-1.5">
-                                                {['openai-image-2', 'openai-image-2-high'].map((m) => (
+                                                {['openai-image-2-low', 'openai-image-2', 'openai-image-2-high'].map((m) => (
                                                     <button
                                                         key={m}
                                                         type="button"
@@ -1297,6 +1298,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2-low': 'OpenAI Image 2 (gpt-image-2), calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI Image 2 (gpt-image-2), modelo base, calidad media',
     'openai-image-2-high': 'OpenAI Image 2 (gpt-image-2), calidad alta',
     'gemini-2': 'Gemini 2.5 Flash Image, Rápido y económico',

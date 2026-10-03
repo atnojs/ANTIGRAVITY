@@ -3,7 +3,7 @@
 // PROXY UNIFICADO — catálogo canónico compartido
 // (dibujo_lineas_copia/canonical-image-model.php): OpenAI 2.5 (5 calidades),
 // gemini-2 / gemini-flash / gemini-pro (Google directo, clave A), qwen-pro
-// (OpenRouter, clave R) y OpenAI image 2 medio/alto.
+// (OpenRouter, clave R) y OpenAI image 2 bajo/medio/alto.
 // Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
 // tocar los frontends existentes.
@@ -148,7 +148,7 @@ if ($agentAction === 'models') {
 }
 
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2-low')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';

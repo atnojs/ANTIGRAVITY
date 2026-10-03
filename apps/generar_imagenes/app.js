@@ -212,9 +212,9 @@
     };
 
     /* ==== CONSTANTES BÃSICAS ==== */
-    // Modelo por defecto del proyecto (OpenAI Image 2 medium) y etiquetas legibles
+    // Modelo por defecto del proyecto (OpenAI Image 2 low) y etiquetas legibles
     // de los modelos del selector. Orden canonico: menor -> mayor capacidad.
-    const DEFAULT_MODEL = 'openai-image-2';
+    const DEFAULT_MODEL = 'openai-image-2-low';
     const MODEL_LABELS = {
         'openai-medium': 'MEDIUM',
         'openai-high': 'HIGH',
@@ -225,6 +225,7 @@
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2-low': 'LOW',
         'openai-image-2': 'MEDIUM',
         'openai-image-2-high': 'HIGH'
     };
@@ -232,7 +233,7 @@
         { name: 'OPENAI 2.5', models: ['openai-medium', 'openai-high', 'openai-max-flare', 'openai-xhigh', 'openai-max-sunburst'] },
         { name: 'GEMINI', models: ['gemini-2', 'gemini-flash', 'gemini-pro'] },
         { name: 'QWEN', models: ['qwen-pro'] },
-        { name: 'IMAGE 2', models: ['openai-image-2', 'openai-image-2-high'] }
+        { name: 'IMAGE 2', models: ['openai-image-2-low', 'openai-image-2', 'openai-image-2-high'] }
     ];
     const modelLabel = (model) => MODEL_LABELS[model] || String(model || '').toUpperCase();
 

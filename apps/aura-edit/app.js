@@ -62,10 +62,10 @@ async function saveHistoryItemToServer(localItem, model) {
         await hm.save({
             id: localItem.id,
             type: 'image',
-            model: model || 'openai-image-2',
+            model: model || 'openai-image-2-low',
             data: {
                 prompt: localItem.styleName || '',
-                model: model || 'openai-image-2',
+                model: model || 'openai-image-2-low',
                 styleName: localItem.styleName || '',
                 originalImage: localItem.originalImage || '',
                 createdAt: localItem.createdAt || Date.now()
@@ -108,6 +108,7 @@ const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'IMAGE 2 MEDIUM',
     'openai-image-2-high': 'IMAGE 2 HIGH'
 };
@@ -123,6 +124,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. Edita tu foto con el modelo base del proyecto.',
     'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.'
 };
@@ -519,7 +521,7 @@ function App() {
   const [loadingText, setLoadingText] = useState('');
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
-  const [selectedModel, setSelectedModel] = useState('openai-image-2');
+  const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
 
   // Cargar historial: localStorage (caché local) + servidor (fuente de verdad).
   // Se fusiona por id (manda el servidor) y lo local que falte en el servidor se
@@ -896,6 +898,15 @@ function App() {
                     <span className="model-provider-title">IMAGE 2</span>
                     <span className="model-quality-hint block">Modelo base del proyecto (gpt-image-2)</span>
                     <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        data-model="openai-image-2-low"
+                        onClick={() => setSelectedModel('openai-image-2-low')}
+                        className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === 'openai-image-2-low' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-muted hover:border-cyan-400/50'}`}
+                        aria-pressed={selectedModel === 'openai-image-2-low'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2-low'] || ''}
+                      >LOW</button>
                       <button
                         type="button"
                         data-model="openai-image-2"

@@ -409,8 +409,8 @@ try {
 
   if ($task === 'generateImages') {
     $images = [];
-    // Modelo por defecto del proyecto: IMAGE 2 (openai-image-2, gpt-image-2 medium).
-    if (!isset($json['model']) || trim((string)$json['model']) === '') { $json['model'] = 'openai-image-2'; }
+    // Modelo por defecto del proyecto: IMAGE 2 (openai-image-2-low, gpt-image-2 low).
+    if (!isset($json['model']) || trim((string)$json['model']) === '') { $json['model'] = 'openai-image-2-low'; }
     $useQwen = strtolower((string)($json['model'] ?? '')) === 'qwen-pro';
     foreach (is_array($prompts) ? $prompts : [] as $itemPrompt) {
       $payload = $json;

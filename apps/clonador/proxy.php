@@ -2,9 +2,10 @@
 // ============================================================
 // PROXY UNIFICADO — OpenAI Image 2 (modelo base) + OpenAI Image 2.5
 // (5 calidades) + Gemini (Google directo, clave A por entorno) + Qwen.
-// Selector: openai-image-2 (por defecto) / openai-image-2-high /
-// openai-medium / openai-high / openai-max-flare / openai-xhigh /
-// openai-max-sunburst / gemini-2 / gemini-flash / gemini-pro / qwen-pro.
+// Selector: openai-image-2-low (por defecto) / openai-image-2 /
+// openai-image-2-high / openai-medium / openai-high / openai-max-flare /
+// openai-xhigh / openai-max-sunburst / gemini-2 / gemini-flash / gemini-pro /
+// qwen-pro.
 // Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
 // tocar los frontends existentes.
@@ -51,15 +52,18 @@ $openaiKey = getKey('OPENAI_API_KEY');
 if ($openaiKey === '') $openaiKey = getKey('O');
 $orKey = getKey('R'); // OpenRouter (Qwen / texto-visión)
 
-// ===== Catálogo canónico de modelos (lista blanca exacta, 11 modelos) =====
+// ===== Catálogo canónico de modelos (lista blanca exacta, 12 modelos) =====
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'high'],
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2). Edita la imagen de
-    // referencia por /v1/images/edits, igual que el resto de modelos OpenAI.
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en sus tres
+    // calidades (low/medium/high). Edita la imagen de referencia por
+    // /v1/images/edits, igual que el resto de modelos OpenAI.
+    // Por defecto de esta app: openai-image-2-low.
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'high'],
     'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image'],
@@ -141,7 +145,7 @@ if (strtolower(trim((string)($req['action'] ?? ''))) === 'models') {
 }
 
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2-low')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';

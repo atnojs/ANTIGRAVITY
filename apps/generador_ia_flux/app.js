@@ -23,7 +23,7 @@
 
   var state = {
     mode: "crear",      // "crear" | "editar"
-    selectedModel: "openai-image-2",
+    selectedModel: "openai-image-2-low",
     imagenBase64: "",   // data URL de la imagen a editar
     ultimaImagen: ""    // última imagen generada (para "editar esta")
   };
@@ -39,6 +39,7 @@
     "gemini-flash": "3.1 FLASH",
     "gemini-pro": "3 PRO",
     "qwen-pro": "QWEN 3 PRO",
+    "openai-image-2-low": "LOW",
     "openai-image-2": "IMAGE 2 MEDIUM",
     "openai-image-2-high": "IMAGE 2 HIGH"
   };
@@ -113,8 +114,8 @@
         buttons.forEach(function (other) { other.classList.remove("active"); other.setAttribute("aria-pressed", "false"); });
         button.classList.add("active");
         button.setAttribute("aria-pressed", "true");
-        var next = button.getAttribute("data-model") || "openai-image-2";
-        state.selectedModel = MODEL_LABELS[next] ? next : "openai-image-2";
+        var next = button.getAttribute("data-model") || "openai-image-2-low";
+        state.selectedModel = MODEL_LABELS[next] ? next : "openai-image-2-low";
       });
     });
   }
@@ -279,7 +280,7 @@
             return history.save({
               id: it.id,
               type: "image",
-              model: it.modelo || it.model || "openai-image-2",
+              model: it.modelo || it.model || "openai-image-2-low",
               data: { prompt: it.prompt || (it.data && it.data.prompt) || "", editada: !!it.editada },
               imageData: it.imageData,
               createdAt: it.createdAt

@@ -5,8 +5,8 @@ ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 try {
-  // Modelo OpenAI Image 2 (gpt-image-2) como respaldo del proxy.
-  $defaultOpenAiImageModel = 'openai-image-2';
+  // Modelo OpenAI Image 2 (gpt-image-2) en calidad baja como respaldo del proxy.
+  $defaultOpenAiImageModel = 'openai-image-2-low';
   // Diagnostico del proxy (no gasta API): que claves ve el entorno y que modelos
   // acepta. Uso: POST {"action":"health"}. Nunca devuelve las claves.
   $action = strtolower(trim((string)(json_decode((string)file_get_contents('php://input'), true)['action'] ?? '')));

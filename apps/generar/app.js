@@ -13,8 +13,8 @@ const {
 // --- CONSTANTES (ORIGINAL) ---
 const AspectRatio = { SQUARE: '1:1', PORTRAIT: '3:4', WIDE: '16:9', TALL: '9:16', ULTRAWIDE: '21:9' };
 
-// ===== Selector de modelo (11 botones, catálogo canónico) =====
-const DEFAULT_MODEL = 'openai-image-2';
+// ===== Selector de modelo (12 botones, catálogo canónico) =====
+const DEFAULT_MODEL = 'openai-image-2-low';
 let ACTIVE_MODEL = DEFAULT_MODEL;
 const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
@@ -22,6 +22,7 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-xhigh': 'XHIGH',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'MEDIUM',
     'openai-image-2-high': 'HIGH',
     'gemini-2': 'GEMINI 2',
@@ -698,6 +699,7 @@ const App = () => {
                                         <span className="model-provider-title">IMAGE 2</span>
                                         <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden' }}>De Menor a Mayor Calidad</span>
                                         <div className="model-toggle-group">
+                                            <button type="button" className={`model-toggle ${selectedModel === 'openai-image-2-low' ? 'active' : ''}`} data-model="openai-image-2-low" aria-pressed={selectedModel === 'openai-image-2-low'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2-low'] || ''} onClick={() => handleModelSelect('openai-image-2-low')}>LOW</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'openai-image-2' ? 'active' : ''}`} data-model="openai-image-2" aria-pressed={selectedModel === 'openai-image-2'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2'] || ''} onClick={() => handleModelSelect('openai-image-2')}>MEDIUM</button>
                                             <button type="button" className={`model-toggle ${selectedModel === 'openai-image-2-high' ? 'active' : ''}`} data-model="openai-image-2-high" aria-pressed={selectedModel === 'openai-image-2-high'} aria-describedby="model-tooltip" data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2-high'] || ''} onClick={() => handleModelSelect('openai-image-2-high')}>HIGH</button>
                                         </div>
@@ -804,6 +806,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media.',
     'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.',
     'gemini-2': 'Gemini 2 (gemini-2.5-flash-image) · el más ligero y económico del grupo',

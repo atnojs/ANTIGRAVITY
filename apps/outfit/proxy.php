@@ -443,8 +443,8 @@ function qwenImageRespondOutfit(string $b64): void {
 }
 
 function handleGenerate(array $req): void {
-    // Modelo por defecto del proyecto: IMAGE 2 (openai-image-2, gpt-image-2 medium).
-    if (!isset($req['model']) || trim((string)$req['model']) === '') { $req['model'] = 'openai-image-2'; }
+    // Modelo por defecto de la app: IMAGE 2 LOW (openai-image-2-low, gpt-image-2 low).
+    if (!isset($req['model']) || trim((string)$req['model']) === '') { $req['model'] = 'openai-image-2-low'; }
     // QWEN 3 PRO: ruta propia con keepalive + caché en carpeta de la app.
     if (strtolower((string)($req['model'] ?? '')) === 'qwen-pro') {
         handleQwenProOutfit($req);

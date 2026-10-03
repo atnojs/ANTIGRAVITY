@@ -59,8 +59,8 @@
   function money(n) { return '$' + (Number(n) || 0).toFixed(4); }
   function moneyEur(n) { return '(~' + ((Number(n) || 0) * EUR).toFixed(3) + ' €)'; }
 
-  // ── Selector de modelo (11 botones, IMAGE 2 MEDIUM activo por defecto) ──
-  var DEFAULT_MODEL = 'openai-image-2';
+  // ── Selector de modelo (12 botones, IMAGE 2 LOW activo por defecto) ──
+  var DEFAULT_MODEL = 'openai-image-2-low';
   var selectedModel = DEFAULT_MODEL;
   var MODEL_LABELS = {
     'gemini-2': 'GEMINI 2',
@@ -71,6 +71,7 @@
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'IMAGE 2 MEDIUM',
     'openai-image-2-high': 'IMAGE 2 HIGH',
     'qwen-pro': 'QWEN 3 PRO'

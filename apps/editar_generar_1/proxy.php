@@ -1,10 +1,11 @@
 <?php
 // ============================================================
 // PROXY UNIFICADO — OpenAI Image 2.5 (5 calidades) + OpenAI image 2
-// (openai-image-2 / openai-image-2-high) + Gemini + Qwen.
+// (openai-image-2-low / openai-image-2 / openai-image-2-high) + Gemini + Qwen.
+// Modelo por defecto de la app: openai-image-2-low (IMAGE 2 LOW).
 // Selector: openai-medium / openai-high / openai-xhigh /
-// openai-max-flare / openai-max-sunburst / openai-image-2 /
-// openai-image-2-high / gemini-2 / gemini-flash / gemini-pro /
+// openai-max-flare / openai-max-sunburst / openai-image-2-low /
+// openai-image-2 / openai-image-2-high / gemini-2 / gemini-flash / gemini-pro /
 // qwen-pro. Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
 // tocar los frontends existentes.
@@ -59,6 +60,7 @@ $modelCatalog = [
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',           'quality' => 'high'],
     'gemini-2'            => ['backend' => 'openrouter', 'model' => 'google/gemini-2.5-flash-image'],
@@ -138,7 +140,8 @@ if (strtolower(trim((string)($req['action'] ?? ''))) === 'models') {
 }
 
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
+// Modelo por defecto de la app: IMAGE 2 LOW (openai-image-2-low, gpt-image-2 low).
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2-low')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';

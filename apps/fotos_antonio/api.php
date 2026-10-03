@@ -177,7 +177,7 @@ function handleChatFixed($db)
     $data = json_decode(file_get_contents('php://input'), true);
     $userMsg = $data['message'] ?? '';
     $conversacionId = $data['conversacion_id'] ?? null;
-    $model = (string)($data['model'] ?? 'openai-medium');
+    $model = (string)($data['model'] ?? 'openai-image-2-low');
 
     if (empty($userMsg))
         throw new Exception("Mensaje vacío");
@@ -212,7 +212,7 @@ function handleChatFixed($db)
 /**
  * Consulta al agente - Versión corregida sin envío de imágenes
  */
-function consultarAgenteFixed($userPrompt, $historial, $referencias, $imageModel = 'openai-medium')
+function consultarAgenteFixed($userPrompt, $historial, $referencias, $imageModel = 'openai-image-2-low')
 {
     // modelo de texto: xiaomi/mimo-v2.6-pro vía OpenRouter (clave R; la resuelve el helper)
     global $mimoTextCall;
@@ -297,7 +297,7 @@ function consultarAgenteFixed($userPrompt, $historial, $referencias, $imageModel
 /**
  * Genera imagen usando el proxy - Versión corregida
  */
-function generarImagenFixed($megaprompt, $model = 'openai-medium')
+function generarImagenFixed($megaprompt, $model = 'openai-image-2-low')
 {
     // Usar proxy para generación de imágenes
     $url = "proxy.php";

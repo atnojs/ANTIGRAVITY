@@ -985,7 +985,7 @@
                 try {
                     const prompt = `Fusión artística avanzada de dos imágenes. Estilo cinematográfico, transiciones suaves, combinando ${image1.name} y ${image2.name} con un enfoque equilibrado.`;
                     const payload = {
-                        model: 'openai-image-2', prompt, contents: [
+                        model: 'openai-image-2-low', prompt, contents: [
                             { inlineData: { mimeType: 'image/png', data: image1.url.split(',')[1] } },
                             { inlineData: { mimeType: 'image/png', data: image2.url.split(',')[1] } }
                         ]

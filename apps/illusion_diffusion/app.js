@@ -60,10 +60,10 @@ async function saveHistoryItemToServer(localItem, model) {
         await hm.save({
             id: localItem.id,
             type: 'image',
-            model: model || 'openai-image-2',
+            model: model || 'openai-image-2-low',
             data: {
                 prompt: '',
-                model: model || 'openai-image-2',
+                model: model || 'openai-image-2-low',
                 containerOpacity: localItem.containerOpacity,
                 contentOpacity: localItem.contentOpacity,
                 containerBW: localItem.containerBW,
@@ -108,6 +108,7 @@ const MODEL_LABELS = {
     'openai-max-flare': 'MAX FLARE',
     'openai-xhigh': 'XHIGH',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'MEDIUM',
     'openai-image-2-high': 'HIGH',
     'gemini-2': 'GEMINI 2',
@@ -132,7 +133,7 @@ function App() {
     const dragMovedRef = useRef(false);
     const dragStartRef = useRef({ x: 0, y: 0 });
     const [history, setHistory] = useState([]);
-    const [selectedModel, setSelectedModel] = useState('openai-image-2');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
     const [isGenerating, setIsGenerating] = useState(false);
     const [viewerImage, setViewerImage] = useState(null);
     const [canvasViewerImage, setCanvasViewerImage] = useState(null);
@@ -644,6 +645,7 @@ function App() {
                                 <span className="model-quality-hint">De Menor a Mayor Calidad</span>
                                 <div className="flex flex-wrap gap-2 justify-center">
                                     {[
+                                        { id: 'openai-image-2-low', name: 'LOW' },
                                         { id: 'openai-image-2', name: 'MEDIUM' },
                                         { id: 'openai-image-2-high', name: 'HIGH' }
                                     ].map(m => (
@@ -817,6 +819,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI Image 2 (gpt-image-2), modelo base, calidad media',
     'openai-image-2-high': 'OpenAI Image 2 (gpt-image-2), calidad alta',
     'gemini-2': 'Gemini 2.5 Flash Image, Rápido y económico',

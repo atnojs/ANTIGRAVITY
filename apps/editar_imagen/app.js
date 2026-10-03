@@ -23,12 +23,13 @@ const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'IMAGE 2 MEDIUM',
     'openai-image-2-high': 'IMAGE 2 HIGH'
 };
 
-// Modelo por defecto del proyecto: OpenAI image 2 (gpt-image-2, calidad media).
-const DEFAULT_MODEL = 'openai-image-2';
+// Modelo por defecto del proyecto: OpenAI image 2 (gpt-image-2, calidad baja).
+const DEFAULT_MODEL = 'openai-image-2-low';
 
 let currentModel = DEFAULT_MODEL;
 
@@ -724,7 +725,7 @@ const App = () => {
                                       { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
                                       { provider: 'GEMINI', models: [{ id: 'gemini-2', name: 'GEMINI 2' }, { id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
                                       { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] },
-                                      { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
+                                      { provider: 'IMAGE 2', models: [{ id: 'openai-image-2-low', name: 'LOW' }, { id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
                                     ].map(group => (
                                       <div key={group.provider}>
                                         <span className="model-provider-title block text-center mb-1">{group.provider}</span>
@@ -852,6 +853,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2, calidad media. Edita la imagen conservando su contenido.',
     'openai-image-2-high': 'OpenAI image 2, calidad alta. Más detalle y líneas más limpias.',
 };

@@ -69,7 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     imageFile: null,
     imageWidth: 0,
     imageHeight: 0,
-    selectedModel: 'openai-image-2',
+    // Modelo por defecto de la app: IMAGE 2 LOW (openai-image-2-low, gpt-image-2 low).
+    selectedModel: 'openai-image-2-low',
     aspectRatio: '1:1',
     resolution: 1024,
     isAdapted: false,
@@ -383,6 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       'gemini-flash': '3.1 FLASH',
       'gemini-pro': '3 PRO',
       'qwen-pro': 'QWEN 3 PRO',
+      'openai-image-2-low': 'LOW',
       'openai-image-2': 'IMAGE 2 MEDIUM',
       'openai-image-2-high': 'IMAGE 2 HIGH',
       'google/gemini-3.1-flash-image': '3.1 FLASH',

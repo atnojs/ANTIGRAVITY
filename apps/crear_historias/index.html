@@ -113,7 +113,7 @@ Error generating stack: `+e.message+`
 `,m.forEach((_,T)=>{G+=`- Personaje ${T+1}: ${_.name}
 `})),G+=`
 Instrucción de Escena: ${p}
-`,G+="Estilo: Consistente, alta calidad, renderizado 4K.";const j=await fetch("proxy.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:"generateImage",provider:"gemini",prompt:G,images:B,aspectRatio:Q,modalities:["IMAGE"],model:window.__storyModel||"openai-image-2"})});if(!j.ok){const _=await j.text();throw new Error(`Error del servidor (${j.status}): ${_}`)}const P=await j.json();if(P.error)throw new Error(P.error);if(P.image)return`data:${P.mimeType||"image/png"};base64,${P.image}`;throw new Error("La respuesta del servidor no contenía una imagen válida.")},Tv=()=>{const[p,R]=Mt.useState(!1),[Q,m]=Mt.useState([{id:"1",name:"Personaje 1",imageData:"",mimeType:"",isSelected:!0},{id:"2",name:"Personaje 2",imageData:"",mimeType:"",isSelected:!1},{id:"3",name:"Personaje 3",imageData:"",mimeType:"",isSelected:!1},{id:"4",name:"Personaje 4",imageData:"",mimeType:"",isSelected:!1}]),[B,G]=Mt.useState(It.SixteenNine),[j,P]=Mt.useState(""),[_,T]=Mt.useState([{id:vf(),text:""}]),[K,N]=Mt.useState([]),[el,Hl]=Mt.useState(!1);Mt.useEffect(()=>{(async()=>{const rl=await bv();R(rl)})()},[]);const J=(hl,rl)=>{m(cl=>cl.map(q=>q.id===hl?{...q,...rl}:q))},ul=(hl,rl)=>{T(cl=>cl.map(q=>q.id===hl?{...q,text:rl}:q))},Nl=()=>{_.length<20&&T(hl=>[...hl,{id:vf(),text:""}])},Cl=hl=>{_.length>1&&T(rl=>rl.filter(cl=>cl.id!==hl))},Dt=async()=>{const hl=_.filter(gl=>gl.text.trim()!=="");if(hl.length===0){alert("Por favor añade al menos un prompt.");return}if(Q.filter(gl=>gl.isSelected&&gl.imageData).length===0&&Q.some(gl=>gl.isSelected)){alert("Has seleccionado personajes sin imagen. Por favor sube una imagen o desmárcalos.");return}Hl(!0);const cl=hl.map((gl,$l)=>({id:vf(),promptId:gl.id,promptText:gl.text,imageUrl:null,timestamp:new Date,status:"loading",orderIndex:$l}));N(cl);const q=B===It.Custom?j:B,ql=cl.map(async gl=>{try{const $l=await zv(gl.promptText,Q,q);N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"success",imageUrl:$l}:zl))}catch($l){N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"error",errorMessage:$l.message}:zl))}});await Promise.all(ql),Hl(!1)},Rl=()=>{K.filter(rl=>rl.status==="success"&&rl.imageUrl).forEach(rl=>{const cl=document.createElement("a");cl.href=rl.imageUrl;const q=new Date,ql=String(q.getDate()).padStart(2,"0"),$l=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][q.getMonth()],Kl=q.getFullYear(),zl=String(rl.orderIndex+1).padStart(3,"0");cl.download=`${zl}_${ql}${$l}${Kl}.png`,document.body.appendChild(cl),cl.click(),document.body.removeChild(cl)})};return A.jsxs("div",{className:"flex flex-col md:flex-row h-screen w-screen bg-black overflow-hidden font-sans",children:[A.jsx("div",{className:"w-full md:w-[400px] lg:w-[450px] flex-shrink-0 h-[40vh] md:h-full relative z-20 shadow-2xl",children:A.jsx(gv,{characters:Q,onUpdateCharacter:J,aspectRatio:B,setAspectRatio:G,customRatio:j,setCustomRatio:P,prompts:_,onUpdatePrompt:ul,onAddPrompt:Nl,onRemovePrompt:Cl,onGenerate:Dt,isGenerating:el})}),A.jsx("div",{className:"flex-1 h-[60vh] md:h-full relative z-10",children:A.jsx(Sv,{images:K,onDownloadAll:Rl})})]})},Uo=document.getElementById("root");if(!Uo)throw new Error("Could not find root element to mount to");const Ev=ov.createRoot(Uo);Ev.render(A.jsx(ev.StrictMode,{children:A.jsx(Tv,{})}));</script>
+`,G+="Estilo: Consistente, alta calidad, renderizado 4K.";const j=await fetch("proxy.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({task:"generateImage",provider:"gemini",prompt:G,images:B,aspectRatio:Q,modalities:["IMAGE"],model:window.__storyModel||"openai-image-2-low"})});if(!j.ok){const _=await j.text();throw new Error(`Error del servidor (${j.status}): ${_}`)}const P=await j.json();if(P.error)throw new Error(P.error);if(P.image)return`data:${P.mimeType||"image/png"};base64,${P.image}`;throw new Error("La respuesta del servidor no contenía una imagen válida.")},Tv=()=>{const[p,R]=Mt.useState(!1),[Q,m]=Mt.useState([{id:"1",name:"Personaje 1",imageData:"",mimeType:"",isSelected:!0},{id:"2",name:"Personaje 2",imageData:"",mimeType:"",isSelected:!1},{id:"3",name:"Personaje 3",imageData:"",mimeType:"",isSelected:!1},{id:"4",name:"Personaje 4",imageData:"",mimeType:"",isSelected:!1}]),[B,G]=Mt.useState(It.SixteenNine),[j,P]=Mt.useState(""),[_,T]=Mt.useState([{id:vf(),text:""}]),[K,N]=Mt.useState([]),[el,Hl]=Mt.useState(!1);Mt.useEffect(()=>{(async()=>{const rl=await bv();R(rl)})()},[]);const J=(hl,rl)=>{m(cl=>cl.map(q=>q.id===hl?{...q,...rl}:q))},ul=(hl,rl)=>{T(cl=>cl.map(q=>q.id===hl?{...q,text:rl}:q))},Nl=()=>{_.length<20&&T(hl=>[...hl,{id:vf(),text:""}])},Cl=hl=>{_.length>1&&T(rl=>rl.filter(cl=>cl.id!==hl))},Dt=async()=>{const hl=_.filter(gl=>gl.text.trim()!=="");if(hl.length===0){alert("Por favor añade al menos un prompt.");return}if(Q.filter(gl=>gl.isSelected&&gl.imageData).length===0&&Q.some(gl=>gl.isSelected)){alert("Has seleccionado personajes sin imagen. Por favor sube una imagen o desmárcalos.");return}Hl(!0);const cl=hl.map((gl,$l)=>({id:vf(),promptId:gl.id,promptText:gl.text,imageUrl:null,timestamp:new Date,status:"loading",orderIndex:$l}));N(cl);const q=B===It.Custom?j:B,ql=cl.map(async gl=>{try{const $l=await zv(gl.promptText,Q,q);N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"success",imageUrl:$l}:zl))}catch($l){N(Kl=>Kl.map(zl=>zl.id===gl.id?{...zl,status:"error",errorMessage:$l.message}:zl))}});await Promise.all(ql),Hl(!1)},Rl=()=>{K.filter(rl=>rl.status==="success"&&rl.imageUrl).forEach(rl=>{const cl=document.createElement("a");cl.href=rl.imageUrl;const q=new Date,ql=String(q.getDate()).padStart(2,"0"),$l=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][q.getMonth()],Kl=q.getFullYear(),zl=String(rl.orderIndex+1).padStart(3,"0");cl.download=`${zl}_${ql}${$l}${Kl}.png`,document.body.appendChild(cl),cl.click(),document.body.removeChild(cl)})};return A.jsxs("div",{className:"flex flex-col md:flex-row h-screen w-screen bg-black overflow-hidden font-sans",children:[A.jsx("div",{className:"w-full md:w-[400px] lg:w-[450px] flex-shrink-0 h-[40vh] md:h-full relative z-20 shadow-2xl",children:A.jsx(gv,{characters:Q,onUpdateCharacter:J,aspectRatio:B,setAspectRatio:G,customRatio:j,setCustomRatio:P,prompts:_,onUpdatePrompt:ul,onAddPrompt:Nl,onRemovePrompt:Cl,onGenerate:Dt,isGenerating:el})}),A.jsx("div",{className:"flex-1 h-[60vh] md:h-full relative z-10",children:A.jsx(Sv,{images:K,onDownloadAll:Rl})})]})},Uo=document.getElementById("root");if(!Uo)throw new Error("Could not find root element to mount to");const Ev=ov.createRoot(Uo);Ev.render(A.jsx(ev.StrictMode,{children:A.jsx(Tv,{})}));</script>
 </head>
   <body class="bg-gray-950 text-white h-screen overflow-hidden">
     <div id="root" class="h-full"></div>
@@ -144,7 +144,8 @@ Instrucción de Escena: ${p}
     </div>
     <span style="font-size:0.6rem;letter-spacing:0.1em;color:#6b7280;text-transform:uppercase;">Image 2</span>
     <div style="display:flex;gap:0.25rem;">
-      <button type="button" class="story-model-toggle active" data-model="openai-image-2" aria-describedby="model-tooltip" data-tooltip="OpenAI Image 2 (gpt-image-2), modelo base, calidad media" aria-pressed="true">MEDIUM</button>
+      <button type="button" class="story-model-toggle active" data-model="openai-image-2-low" aria-describedby="model-tooltip" data-tooltip="OpenAI Image 2 (gpt-image-2), calidad baja. La opción más rápida y económica; menos detalle." aria-pressed="true">LOW</button>
+      <button type="button" class="story-model-toggle" data-model="openai-image-2" aria-describedby="model-tooltip" data-tooltip="OpenAI Image 2 (gpt-image-2), modelo base, calidad media" aria-pressed="false">MEDIUM</button>
       <button type="button" class="story-model-toggle" data-model="openai-image-2-high" aria-describedby="model-tooltip" data-tooltip="OpenAI Image 2 (gpt-image-2), calidad alta" aria-pressed="false">HIGH</button>
     </div>
   </div>
@@ -208,10 +209,11 @@ Instrucción de Escena: ${p}
     "gemini-flash": "3.1 FLASH",
     "gemini-pro": "3 PRO",
     "qwen-pro": "QWEN 3 PRO",
+    "openai-image-2-low": "LOW",
     "openai-image-2": "MEDIUM",
     "openai-image-2-high": "HIGH"
   };
-  window.__storyModel = "openai-image-2";
+  window.__storyModel = "openai-image-2-low";
 
   // ── Historial persistente en servidor (history.php → history_store/) ──
   // El SPA compilado (módulo de más arriba) no expone hooks, así que no se toca
@@ -266,7 +268,7 @@ Instrucción de Escena: ${p}
 
   function saveStoryHistory(image, mimeType, model, prompt) {
     if (!__hm || !image) return;
-    var usedModel = model || 'openai-image-2';
+    var usedModel = model || 'openai-image-2-low';
     __hm.save({
       id: 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
       type: 'image',
@@ -307,7 +309,7 @@ Instrucción de Escena: ${p}
           if (res && res.ok && url.indexOf('proxy.php') !== -1) {
             res.clone().json().then(function (json) {
               if (!json || !json.image) return;
-              var model = window.__storyModel || 'openai-image-2';
+              var model = window.__storyModel || 'openai-image-2-low';
               var prompt = '';
               try {
                 var parsed = JSON.parse(reqBody);

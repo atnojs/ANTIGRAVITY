@@ -4,11 +4,11 @@
 // Catálogo canónico de generación de imágenes:
 //   OpenAI GPT Image 2.5: openai-medium / openai-high / openai-xhigh /
 //     openai-max-flare / openai-max-sunburst
-//   OpenAI image 2 (gpt-image-2): openai-image-2 (medium) / openai-image-2-high (high)
+//   OpenAI image 2 (gpt-image-2): openai-image-2-low (low) / openai-image-2 (medium) / openai-image-2-high (high)
 //   Gemini 2 vía OpenRouter: gemini-2 → google/gemini-2.5-flash-image
 //   Gemini 3 vía OpenRouter: gemini-flash (3.1 Flash) / gemini-pro (3 Pro)
 //   Qwen Image 3 Pro vía OpenRouter Image API: qwen-pro
-// Modelo por defecto: openai-image-2.
+// Modelo por defecto: openai-image-2-low.
 //
 // Contrato con el frontend (index.html / app.tsx):
 //   recibe  { model?, prompt?, contents: [ { inlineData: { mimeType, data } }, ... ] }
@@ -62,6 +62,7 @@ function agImageCatalog(): array
         'openai-xhigh'        => ['provider' => 'openai',     'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
         'openai-max-flare'    => ['provider' => 'openai',     'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
         'openai-max-sunburst' => ['provider' => 'openai',     'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+        'openai-image-2-low'  => ['provider' => 'openai',     'model' => 'gpt-image-2',            'quality' => 'low'],
         'openai-image-2'      => ['provider' => 'openai',     'model' => 'gpt-image-2',            'quality' => 'medium'],
         'openai-image-2-high' => ['provider' => 'openai',     'model' => 'gpt-image-2',            'quality' => 'high'],
         'gemini-2'            => ['provider' => 'openrouter', 'model' => 'google/gemini-2.5-flash-image'],
@@ -234,7 +235,7 @@ if (!function_exists('curl_init')) {
 }
 
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2-low')));
 // Alias legacy de ids completos (flujos antiguos conservados).
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';
 if ($requested === 'gemini-3-pro-image-preview' || $requested === 'gemini-3-pro-image' || $requested === 'gemini-3-pro') $requested = 'gemini-pro';

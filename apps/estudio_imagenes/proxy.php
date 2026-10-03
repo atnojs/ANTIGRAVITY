@@ -70,15 +70,16 @@ $MODELOS_IMG = [
 $MODELO_TEXTO = 'xiaomi/mimo-v2.6-pro';
 
 // ===== Lista blanca exacta de modelos (lista cerrada, catálogo canónico) =====
-// OpenAI 2.5 (flare/sunburst), OpenAI image 2 (gpt-image-2, modelo base del
-// proyecto), Gemini vía OpenRouter y Qwen Image 3 Pro. Orden: de menor a mayor
-// capacidad dentro de cada familia real.
+// OpenAI 2.5 (flare/sunburst), OpenAI image 2 (gpt-image-2 low/medium/high,
+// modelo base del proyecto), Gemini vía OpenRouter y Qwen Image 3 Pro. Orden:
+// de menor a mayor capacidad dentro de cada familia real.
 $CATALOGO = [
     'openai-medium'       => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
     'openai-max-flare'    => ['provider' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-xhigh'        => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-sunburst' => ['provider' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2-low'  => ['provider' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'low'],
     'openai-image-2'      => ['provider' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
     'openai-image-2-high' => ['provider' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'gemini-2'            => ['provider' => 'gemini', 'model' => 'google/gemini-2.5-flash-image'],

@@ -59,8 +59,8 @@ let currentImageData = null;
 let currentImageMimeType = null;
 
 // === Selector de modelo IA (patrón canónico: OpenAI / Gemini / Qwen) ===
-let selectedModel = 'openai-image-2';
-const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-2': 'GEMINI 2', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO', 'openai-image-2': 'IMAGE 2 MEDIUM', 'openai-image-2-high': 'IMAGE 2 HIGH' };
+let selectedModel = 'openai-image-2-low';
+const MODEL_LABELS = { 'openai-medium': 'MEDIUM', 'openai-high': 'HIGH', 'openai-xhigh': 'XHIGH', 'openai-max-flare': 'MAX FLARE', 'openai-max-sunburst': 'MAX SUNBURST', 'gemini-2': 'GEMINI 2', 'gemini-flash': '3.1 FLASH', 'gemini-pro': '3 PRO', 'qwen-pro': 'QWEN 3 PRO', 'openai-image-2-low': 'IMAGE 2 LOW', 'openai-image-2': 'IMAGE 2 MEDIUM', 'openai-image-2-high': 'IMAGE 2 HIGH' };
 const modelToggles = document.querySelectorAll('.model-toggle');
 modelToggles.forEach(btn => {
   btn.addEventListener('click', () => {

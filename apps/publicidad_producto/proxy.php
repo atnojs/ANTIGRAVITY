@@ -90,6 +90,7 @@ $modelCatalog = [
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image'],

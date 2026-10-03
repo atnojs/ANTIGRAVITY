@@ -346,6 +346,7 @@ $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'OPTIONS') { http_response_code(204); exit; }
 // Catálogo informativo para diagnóstico: espejo de ag_image_catalog().
 $proxyModels = [
+    'openai-image-2-low'  => 'gpt-image-2 (low)',
     'openai-image-2'      => 'gpt-image-2 (medium)',
     'openai-image-2-high' => 'gpt-image-2 (high)',
     'openai-medium'       => 'gpt-image-2.5-flare (medium)',

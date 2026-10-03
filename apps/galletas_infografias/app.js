@@ -72,8 +72,8 @@
   // Clave secreta para el catálogo (para no contaminar localStorage)
   const CATALOG_CACHE_KEY = 'gi_catalog_cache';
 
-  // Modelo por defecto (modelo base del proyecto: OpenAI Image 2 medium)
-  const DEFAULT_MODEL = 'openai-image-2';
+  // Modelo por defecto (grupo IMAGE 2, de menor a mayor calidad: LOW, MEDIUM, HIGH)
+  const DEFAULT_MODEL = 'openai-image-2-low';
 
   // Etiquetas legibles de los modelos del selector (data-model -> texto)
   const MODEL_LABELS = {
@@ -86,6 +86,7 @@
     'gemini-flash': 'GEMINI 3.1 FLASH',
     'gemini-pro': 'GEMINI 3 PRO',
     'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2-low': 'IMAGE 2 LOW',
     'openai-image-2': 'IMAGE 2 MEDIUM',
     'openai-image-2-high': 'IMAGE 2 HIGH'
   };
@@ -762,7 +763,7 @@
     setToggle('ar-toggles', '1:1');
     // Res: restaurar a 1024
     setToggle('res-toggles', '1024');
-    // Modelo: restaurar a OpenAI Image 2 (medium), modelo por defecto
+    // Modelo: restaurar a OpenAI Image 2 LOW (gpt-image-2 low), modelo por defecto
     setModel(DEFAULT_MODEL);
   }
 

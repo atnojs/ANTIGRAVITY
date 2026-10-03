@@ -59,6 +59,7 @@ const MODEL_LABELS = {
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'MEDIUM',
     'openai-image-2-high': 'HIGH',
     'gemini-2': 'GEMINI 2',
@@ -74,7 +75,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
-    'openai-image-2': 'OpenAI image 2, Calidad media, El más equilibrado (por defecto)',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
+    'openai-image-2': 'OpenAI image 2, Calidad media, El más equilibrado',
     'openai-image-2-high': 'OpenAI image 2, Calidad alta',
     'gemini-2': 'Gemini 2 (2.5 Flash Image), Rápido y barato, Buen texto',
     'gemini-flash': 'Texto en imágenes, Rápido.',
@@ -82,7 +84,8 @@ window.MODEL_TOOLTIP_TEXTS = {
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible'
 };
 
-let currentModel = 'openai-image-2';
+// Modelo por defecto de la app: IMAGE 2 LOW (openai-image-2-low, gpt-image-2 low).
+let currentModel = 'openai-image-2-low';
 
 const getClosestAspectRatio = (width, height) => {
     const ratio = width / height;
@@ -307,12 +310,12 @@ const saveServerHistoryImage = async (item) => {
         await history.save({
             id: item.id,
             type: 'image',
-            model: item.model || currentModel || 'openai-image-2',
+            model: item.model || currentModel || 'openai-image-2-low',
             data: {
                 prompt: item.prompt || '',
                 aspectRatio: item.aspectRatio || '1:1',
                 size: item.size || '1K',
-                model: item.model || currentModel || 'openai-image-2',
+                model: item.model || currentModel || 'openai-image-2-low',
                 style: item.style || {}
             },
             imageData: typeof item.url === 'string' ? item.url : '',
@@ -429,7 +432,7 @@ const generateImage = async (params) => {
             }
         }
     };
-        const result = await callProxy(currentModel || 'openai-image-2', contents, config);
+        const result = await callProxy(currentModel || 'openai-image-2-low', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -446,7 +449,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-        const result = await callProxy(currentModel || 'openai-image-2', contents, config);
+        const result = await callProxy(currentModel || 'openai-image-2-low', contents, config);
     const partsResponse = result?.candidates?.[0]?.content?.parts || [];
     for (const part of partsResponse) {
         if (part.inlineData) return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
@@ -649,7 +652,7 @@ const App = () => {
 
     const [progress, setProgress] = useState(0);
     const [progressStatus, setProgressStatus] = useState('');
-    const [selectedModel, setSelectedModel] = useState('openai-image-2');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
 
     // Sincronizar modelo con variable de módulo (usada por los servicios)
     useEffect(() => { currentModel = selectedModel; }, [selectedModel]);
@@ -946,7 +949,7 @@ const App = () => {
                                 </div>
                             </div>
 
-                            {/* ── Selector de Modelo IA (canónico 11 botones) ── */}
+                            {/* ── Selector de Modelo IA (canónico 12 botones) ── */}
                             <div className="space-y-4">
                                 <label className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest">Modelo IA</label>
                                 <div className="grid grid-cols-2 gap-3" role="group" aria-label="Seleccionar modelo">
@@ -954,7 +957,7 @@ const App = () => {
                                       { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', name: 'MEDIUM' }, { id: 'openai-high', name: 'HIGH' }, { id: 'openai-max-flare', name: 'MAX FLARE' }, { id: 'openai-xhigh', name: 'XHIGH' }, { id: 'openai-max-sunburst', name: 'MAX SUNBURST' }] },
                                       { provider: 'GEMINI', models: [{ id: 'gemini-2', name: 'GEMINI 2' }, { id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
                                       { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] },
-                                      { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
+                                      { provider: 'IMAGE 2', models: [{ id: 'openai-image-2-low', name: 'LOW' }, { id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
                                     ].map(group => (
                                       <div key={group.provider}>
                                         <span className="model-provider-title block text-center mb-1">{group.provider}</span>

@@ -7,6 +7,8 @@
 // (gpt-image-2.5-flare), openai-xhigh (gpt-image-2.5-sunburst),
 // openai-max-flare (gpt-image-2.5-flare/max), openai-max-sunburst
 // (gpt-image-2.5-sunburst/max) + gemini-flash/pro (OpenRouter R).
+// IMAGE 2 (gpt-image-2, catálogo compartido): openai-image-2-low (low),
+// openai-image-2 (medium), openai-image-2-high (high).
 // La llamada OpenAI (generations/edits) la ejecuta
 // ag_image_generate() de canonical-image-model.php.
 // ============================================================

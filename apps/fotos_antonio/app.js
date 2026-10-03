@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentConversationId = null;
 
-    // --- SELECTOR DE MODELO (canónico: OPENAI 2.5 · GEMINI · QWEN · IMAGE 2) ---
-    const DEFAULT_MODEL = 'openai-image-2';
+    // --- SELECTOR DE MODELO (canónico: OPENAI 2.5 · GEMINI · QWEN · IMAGE 2, LOW por defecto) ---
+    const DEFAULT_MODEL = 'openai-image-2-low';
     let selectedModel = DEFAULT_MODEL;
     const MODEL_LABELS = {
         'openai-medium': 'MEDIUM',
@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2-low': 'LOW',
         'openai-image-2': 'MEDIUM',
         'openai-image-2-high': 'HIGH'
     };

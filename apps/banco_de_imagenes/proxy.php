@@ -14,6 +14,7 @@ header('Content-Type: application/json; charset=utf-8');
 // ===== Diagnóstico: health / models (nunca devuelven claves) =====
 // Catálogo informativo, espejo de ag_image_catalog().
 $agModels = [
+    'openai-image-2-low'  => 'gpt-image-2 (low)',
     'openai-image-2'      => 'gpt-image-2 (medium)',
     'openai-image-2-high' => 'gpt-image-2 (high)',
     'openai-medium'       => 'gpt-image-2.5-flare (medium)',
@@ -111,6 +112,7 @@ $prompt = $requestData['prompt'];
 
 // ===== Lista blanca exacta de modelos (lista cerrada) =====
 $modelCatalog = [
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
@@ -268,7 +270,7 @@ if (($requestData['action'] ?? '') === 'mejorar') {
     ];
     [$httpcode, $response] = $mimoTextCall($mimoReq, $mimoReq['generationConfig']);
 } else {
-    $reqModel = strtolower((string)($requestData['model'] ?? 'openai-image-2'));
+    $reqModel = strtolower((string)($requestData['model'] ?? 'openai-image-2-low'));
     if (!isset($modelCatalog[$reqModel])) {
         http_response_code(400);
         echo json_encode(['error' => 'Modelo no soportado.']);

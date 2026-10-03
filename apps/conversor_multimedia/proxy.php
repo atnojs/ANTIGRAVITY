@@ -150,7 +150,8 @@ function imageModelCatalog(): array {
         'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
         'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
         'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-        // Modelo base del proyecto: OpenAI image-2 (gpt-image-2), medium por defecto.
+        // Modelo base del proyecto: OpenAI image-2 (gpt-image-2), low por defecto.
+        'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'low'],
         'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
         'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
         // Gemini de menor a mayor capacidad: gemini-2 es el más ligero del grupo.
@@ -162,7 +163,7 @@ function imageModelCatalog(): array {
 
 function handleImageGenerate(array $request): void {
     $catalog = imageModelCatalog();
-    $reqModel = strtolower((string)($request['model'] ?? 'openai-image-2'));
+    $reqModel = strtolower((string)($request['model'] ?? 'openai-image-2-low'));
     if (!isset($catalog[$reqModel])) {
         respond(400, ['success' => false, 'error' => 'Modelo no soportado.']);
     }

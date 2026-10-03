@@ -33,7 +33,7 @@ function ag_image_catalog(): array
 function ag_image_selected(string $requested): array
 {
     $requested = strtolower(trim($requested));
-    if ($requested === '') $requested = 'openai-medium';
+    if ($requested === '') $requested = 'openai-image-2-low';
     $catalog = ag_image_catalog();
     if (!isset($catalog[$requested])) throw new InvalidArgumentException('Modelo no soportado.', 400);
     return ['id'=>$requested] + $catalog[$requested];

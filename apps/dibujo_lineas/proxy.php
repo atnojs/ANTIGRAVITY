@@ -50,6 +50,7 @@ $agentConfigured = [
     'openrouter' => $orKey !== '',
 ];
 $agentModels = [
+    'openai-image-2-low'  => 'gpt-image-2 (low)',
     'openai-image-2'      => 'gpt-image-2 (medium)',
     'openai-image-2-high' => 'gpt-image-2 (high)',
     'openai-medium'       => 'gpt-image-2.5-flare (medium)',
@@ -155,7 +156,10 @@ if ($imageB64 === '') {
 }
 
 // ===== Seleccion de modelo (lista blanca exacta, lista cerrada) =====
+// IMAGE 2 (gpt-image-2) de menor a mayor calidad: low, medium, high.
+// Por defecto: openai-image-2-low.
 $modelCatalog = [
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
@@ -168,7 +172,7 @@ $modelCatalog = [
     'gemini-pro'          => ['backend' => 'gemini', 'model' => 'gemini-3-pro-image-preview'],
     'qwen-pro'            => ['backend' => 'qwen', 'model' => 'qwen/qwen-image-3-pro'],
 ];
-$reqModel = strtolower((string)($req['model'] ?? 'openai-medium'));
+$reqModel = strtolower((string)($req['model'] ?? 'openai-image-2-low'));
 if (!isset($modelCatalog[$reqModel])) {
     http_response_code(400);
     echo json_encode(['error' => ['message' => 'Modelo no soportado.']]);

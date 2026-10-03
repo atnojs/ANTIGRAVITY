@@ -33,10 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2-low': 'LOW',
         'openai-image-2': 'MEDIUM',
         'openai-image-2-high': 'HIGH'
     };
-    let selectedModel = 'openai-image-2';
+    let selectedModel = 'openai-image-2-low';
 
     function initModelSelector() {
         const buttons = document.querySelectorAll('#generator-modal .model-toggle');

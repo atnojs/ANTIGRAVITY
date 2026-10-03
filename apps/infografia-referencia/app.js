@@ -1,11 +1,13 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const DEFAULT_MODEL = 'openai-image-2';
+  // Modelo por defecto de esta app (grupo IMAGE 2, de menor a mayor: LOW, MEDIUM, HIGH)
+  const DEFAULT_MODEL = 'openai-image-2-low';
   const MODEL_LABELS = {
     'gemini-2':'GEMINI 2',
     'gemini-flash':'3.1 FLASH',
     'gemini-pro':'3 PRO',
+    'openai-image-2-low':'IMAGE 2 LOW',
     'openai-image-2':'IMAGE 2 MEDIUM',
     'openai-image-2-high':'IMAGE 2 HIGH',
     'openai-medium':'MEDIUM',

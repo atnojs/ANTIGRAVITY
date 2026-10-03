@@ -233,7 +233,7 @@ async function callImageModel(b64img, prompt, dimsInfo, model) {
     image: b64img,
     mimeType: "image/jpeg",
     prompt: prompt,
-    model: model || "openai-image-2",
+    model: model || "openai-image-2-low",
   };
   if (dimsInfo && dimsInfo.native && dimsInfo.native.width && dimsInfo.native.height) {
     body.width = dimsInfo.native.width;
@@ -585,7 +585,7 @@ function App() {
     document.body.style.overflow = busy ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [busy]);
-  const [selectedModel, setSelectedModel] = useState('openai-image-2');
+  const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
   const [selectedRes, setSelectedRes] = useState(DEFAULT_RES); // 512 | 1024 | 2048 | 4096
   const [customInstruction, setCustomInstruction] = useState("");
   const [editingUserImage, setEditingUserImage] = useState(false);
@@ -1213,7 +1213,7 @@ function App() {
                 { provider: 'OPENAI 2.5', models: [{ id: 'openai-medium', label: 'MEDIUM' }, { id: 'openai-high', label: 'HIGH' }, { id: 'openai-max-flare', label: 'MAX FLARE' }, { id: 'openai-xhigh', label: 'XHIGH' }, { id: 'openai-max-sunburst', label: 'MAX SUNBURST' }] },
                 { provider: 'GEMINI', models: [{ id: 'gemini-2', label: 'GEMINI 2' }, { id: 'gemini-flash', label: '3.1 FLASH' }, { id: 'gemini-pro', label: '3 PRO' }] },
                 { provider: 'QWEN', models: [{ id: 'qwen-pro', label: 'QWEN 3 PRO' }] },
-                { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', label: 'MEDIUM' }, { id: 'openai-image-2-high', label: 'HIGH' }] },
+                { provider: 'IMAGE 2', models: [{ id: 'openai-image-2-low', label: 'LOW' }, { id: 'openai-image-2', label: 'MEDIUM' }, { id: 'openai-image-2-high', label: 'HIGH' }] },
               ].map((group) => (
                 <div className="model-provider-column" key={group.provider}>
                   <span className="model-provider-title block text-center mb-1">{group.provider}</span>
@@ -1413,6 +1413,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. La más rápida de su gama.',
     'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.'
 };

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let styleImage = null;    // Referencia
 
     const PROXY_URL = 'proxy.php';
-    const DEFAULT_MODEL = 'openai-image-2';
+    const DEFAULT_MODEL = 'openai-image-2-low';
     let selectedModel = DEFAULT_MODEL;
     let lastPrompt = '';
     const MODEL_LABELS = {
@@ -26,11 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2-low': 'IMAGE 2 LOW',
         'openai-image-2': 'IMAGE 2 MEDIUM',
         'openai-image-2-high': 'IMAGE 2 HIGH'
     };
 
-    // --- SELECTOR DE MODELO (11 botones, IMAGE 2 MEDIUM activo por defecto) ---
+    // --- SELECTOR DE MODELO (12 botones, IMAGE 2 LOW activo por defecto) ---
     const modelToggles = document.querySelectorAll('.model-toggle');
     const setSelectedModel = (model) => {
         selectedModel = MODEL_LABELS[model] ? model : DEFAULT_MODEL;

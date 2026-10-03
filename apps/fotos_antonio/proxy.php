@@ -2,7 +2,8 @@
 // ============================================================
 // PROXY UNIFICADO — OpenAI Image 2.5 (5 calidades) + Gemini
 // (Google directo, clave A por entorno).
-// Selector: openai-medium / openai-high / openai-xhigh /
+// Selector: openai-image-2-low (por defecto) / openai-image-2 /
+// openai-image-2-high / openai-medium / openai-high / openai-xhigh /
 // openai-max-flare / openai-max-sunburst / gemini-flash /
 // gemini-pro. Otros modelos rechazados (400 "Modelo no soportado").
 // Respuesta SIEMPRE en formato Gemini (candidates) para no
@@ -187,7 +188,9 @@ $modelCatalog = [
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare',    'quality' => 'max'],
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
-    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2), por defecto.
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en sus tres
+    // calidades (low/medium/high); por defecto de esta app, openai-image-2-low.
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2',            'quality' => 'high'],
     'gemini-2'            => ['backend' => 'gemini', 'model' => 'gemini-2.5-flash-image-preview'],
@@ -293,7 +296,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($req)) {
 }
 
 // ===== Selección de modelo (lista blanca) =====
-$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2')));
+$requested = strtolower(trim((string)($req['model'] ?? 'openai-image-2-low')));
 // Alias legacy de IDs completos de Google (flujos antiguos conservados).
 if ($requested === 'gemini-2.5-flash-image' || $requested === 'gemini-2' || $requested === 'gemini-2.5-flash-image-preview') $requested = 'gemini-2';
 if ($requested === 'gemini-3.1-flash-image-preview' || $requested === 'gemini-3.1-flash-image') $requested = 'gemini-flash';

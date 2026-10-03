@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let textChoice = null; // null, true (con), false (sin), 'custom'
 
     // ─── Estado de los selectores de salida ──────────────────
-    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad media.
-    let selectedModel = 'openai-image-2';
+    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad baja.
+    let selectedModel = 'openai-image-2-low';
     const selectedAR = '9:16';   // formato fijo por defecto
     const selectedRes = 512;     // resolución fija por defecto
 
@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'gemini-flash': '3.1 FLASH',
         'gemini-pro': '3 PRO',
         'qwen-pro': 'QWEN 3 PRO',
+        'openai-image-2-low': 'IMAGE 2 LOW',
         'openai-image-2': 'IMAGE 2 MEDIUM',
         'openai-image-2-high': 'IMAGE 2 HIGH'
     };
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelBtns = document.querySelectorAll('#model-selector .model-toggle');
     modelBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const next = btn.dataset.model || 'openai-image-2';
+            const next = btn.dataset.model || 'openai-image-2-low';
             if (!MODEL_LABELS[next]) return;
             selectedModel = next;
             modelBtns.forEach(b => {

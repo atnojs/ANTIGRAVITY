@@ -770,6 +770,7 @@ if ($method === 'GET') respond(200, [
         'openai-xhigh'        => 'gpt-image-2.5-sunburst (xhigh)',
         'openai-max-flare'    => 'gpt-image-2.5-flare (max)',
         'openai-max-sunburst' => 'gpt-image-2.5-sunburst (max)',
+        'openai-image-2-low'  => 'gpt-image-2 (low)',
         'openai-image-2'      => 'gpt-image-2 (medium)',
         'openai-image-2-high' => 'gpt-image-2 (high)',
         'gemini-2'            => 'google/gemini-2.5-flash-image',

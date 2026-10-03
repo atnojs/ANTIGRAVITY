@@ -45,8 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONFIGURACIÓN - Usando proxy PHP
     // ═══════════════════════════════════════════════════════════════
     const PROXY_URL = 'proxy.php';
-    // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad media.
-    const DEFAULT_MODEL = 'openai-image-2';
+    // Modelo por defecto de esta app: OpenAI image 2 (gpt-image-2) en calidad baja.
+    // El grupo IMAGE 2 va de menor a mayor: LOW, MEDIUM, HIGH.
+    const DEFAULT_MODEL = 'openai-image-2-low';
     let selectedModel = DEFAULT_MODEL;
 
     // ═══════════════════════════════════════════════════════════════
@@ -95,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Overlay universal (SKILL_MAESTRA): mostrar/ocultar con bloqueo de scroll y estado secundario
     const modelLabels = {
         'gemini-2': 'GEMINI 2',
+        'openai-image-2-low': 'IMAGE 2 LOW',
         'openai-image-2': 'IMAGE 2',
         'openai-image-2-high': 'IMAGE 2 HIGH',
         'openai-medium': 'MEDIUM',

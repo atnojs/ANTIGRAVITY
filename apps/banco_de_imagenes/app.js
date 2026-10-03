@@ -511,11 +511,12 @@ const resizeImage = (base64Str, maxWidth = 1024, quality = 0.85) => {
     });
 };
 
-// ===== Selector de modelo: catálogo canónico (IMAGE 2 MEDIUM activo) =====
+// ===== Selector de modelo: catálogo canónico (IMAGE 2 LOW activo) =====
 const MODEL_LABELS = {
     'gemini-2': 'GEMINI 2',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'MEDIUM',
     'openai-image-2-high': 'HIGH',
     'openai-medium': 'MEDIUM',
@@ -537,6 +538,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2-low': 'OpenAI image 2, calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2, calidad media. El modelo base del proyecto.',
     'openai-image-2-high': 'OpenAI image 2, calidad alta. Más detalle y texto más nítido.'
 };
@@ -667,6 +669,17 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                 <div className="flex flex-wrap gap-1.5 mt-1">
                     <button
                         type="button"
+                        onClick={() => onChange('openai-image-2-low')}
+                        disabled={disabled}
+                        className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-image-2-low'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
+                            : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'} disabled:opacity-50`}
+                        aria-pressed={selectedModel === 'openai-image-2-low'}
+                        aria-describedby="model-tooltip"
+                        data-tooltip={window.MODEL_TOOLTIP_TEXTS['openai-image-2-low'] || ''}
+                    >{MODEL_LABELS['openai-image-2-low']}</button>
+                    <button
+                        type="button"
                         onClick={() => onChange('openai-image-2')}
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-image-2'
@@ -708,7 +721,7 @@ const App = () => {
     const [lightboxImage, setLightboxImage] = useState(null);
     const [history, setHistory] = useState([]);
     const [toast, setToast] = useState(null);
-    const [selectedModel, setSelectedModel] = useState('openai-image-2');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
     // Cargar historial al inicio: IndexedDB (caché local) + servidor (fuente de

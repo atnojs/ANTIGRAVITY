@@ -1,8 +1,8 @@
 <?php
 // Proxy for StoryWeaver Character Generator
 // Catálogo canónico (dibujo_lineas_copia/canonical-image-model.php): OPENAI 2.5
-// (openai-medium/high/max-flare/xhigh/max-sunburst), IMAGE 2 (openai-image-2,
-// openai-image-2-high), gemini-2 y qwen-pro. gemini-flash/gemini-pro siguen con
+// (openai-medium/high/max-flare/xhigh/max-sunburst), IMAGE 2 (openai-image-2-low,
+// openai-image-2, openai-image-2-high), gemini-2 y qwen-pro. gemini-flash/gemini-pro siguen con
 // el backend Gemini directo de la app (clave A).
 // OpenAI (generations/edits) y gemini-2 los ejecuta ag_image_response() del
 // bloque canónico. Otros modelos rechazados (400).
@@ -108,7 +108,7 @@ try {
       }
       // OpenAI 2.5 / IMAGE 2 / gemini-2 → contrato canónico ag_image_response.
       if ($requestedModel === '' || strpos($requestedModel, 'openai-') === 0 || $requestedModel === 'gemini-2') {
-          if ($requestedModel === '') $json['model'] = 'openai-image-2';
+          if ($requestedModel === '') $json['model'] = 'openai-image-2-low';
           ag_image_response($json, __DIR__);
       }
       // qwen-pro → OpenRouter Image API con keepalive + caché/lock en carpeta

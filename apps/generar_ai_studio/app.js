@@ -32,13 +32,14 @@
     { id: '4:5', label: '4:5 Retrato', subLabel: 'Feed estándar, diseño de alta altura', displayRatio: '4:5', icon: 'fa-image' }
   ];
 
-  // ===== Selector de modelo IA (catálogo canónico, 11 botones) =====
+  // ===== Selector de modelo IA (catálogo canónico, 12 botones) =====
   const MODEL_LABELS = {
     'openai-medium': 'MEDIUM',
     'openai-high': 'HIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-xhigh': 'XHIGH',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'MEDIUM',
     'openai-image-2-high': 'HIGH',
     'gemini-2': 'GEMINI 2',
@@ -179,7 +180,7 @@
       steps: 50,
       cfgScale: 7.5,
       sampler: 'DPM++ 2M SDE Karras',
-      model: 'openai-image-2'
+      model: 'openai-image-2-low'
     },
     images: [],
     isGenerating: false,
@@ -1220,6 +1221,7 @@
           <div class="model-provider-column">
             <span class="model-provider-title">IMAGE 2</span>
             <div class="model-toggle-group">
+              <button type="button" class="model-toggle" data-model="openai-image-2-low" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle." aria-pressed="false">LOW</button>
               <button type="button" class="model-toggle" data-model="openai-image-2" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media." aria-pressed="false">MEDIUM</button>
               <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM." aria-pressed="false">HIGH</button>
             </div>
