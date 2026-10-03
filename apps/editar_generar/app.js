@@ -404,14 +404,21 @@ const generateImage = async (params) => {
     let basePrompt = (params.prompt || '').trim();
     const styleSuffix = (params.styleSuffix || '').trim();
     const fullStylePrompt = `${basePrompt} ${styleSuffix}`.trim();
+    // 'reference' = la imagen acompaña a la instrucción de texto (modo Generar).
+    // Cualquier otro valor conserva la transformación completa del modo Editar.
+    const asReference = params.sourceRole === 'reference';
 
     let finalPrompt = '';
     if (params.sourceImage) {
         const sizeInfo = `Adjust the aspect ratio to ${params.aspectRatio}.`;
         if (fullStylePrompt) {
-            finalPrompt = `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`;
+            finalPrompt = asReference
+                ? `${sizeInfo} Use the attached image as visual reference (subject, identity, composition, colors and style). Create a new complete, high-quality image that follows this instruction: ${fullStylePrompt}. Fill the ${params.aspectRatio} format perfectly.`
+                : `${sizeInfo} TRANSFORM this entire image into the following style and content: ${fullStylePrompt}. Ensure the output is a complete, high-quality image that fills the ${params.aspectRatio} format perfectly.`;
         } else {
-            finalPrompt = `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`;
+            finalPrompt = asReference
+                ? `${sizeInfo} Improve and complete the attached image keeping its original subject, identity, colors and style. The result must be a complete, natural image that fills the ${params.aspectRatio} format perfectly.`
+                : `${sizeInfo} Fill any empty areas seamlessly maintaining the original style and context of the image. The result must be a complete, natural image.`;
         }
     } else {
         finalPrompt = fullStylePrompt || 'A beautiful high-quality image';
@@ -658,7 +665,7 @@ const Splash = ({ onSelect }) => (
                     <Sparkles size={32} />
                 </div>
                 <h2 className="btn-generar-imagenes">Generar Imágenes</h2>
-                <p className="card-desc">Genera imágenes desde una descripción de texto.</p>
+                <p className="card-desc">Genera desde texto o combinando una imagen de referencia con tu instrucción.</p>
             </button>
         </div>
     </div>
@@ -677,6 +684,9 @@ const App = () => {
     const [selectedRes, setSelectedRes] = useState(1024);
     const [images, setImages] = useState([]);
     const [remixSource, setRemixSource] = useState(null);
+    // Imagen de referencia opcional del modo Generar: permite usar un prompt de
+    // texto junto a una imagen (imagen + instrucción), igual que al editar.
+    const [genSource, setGenSource] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isEnhancing, setIsEnhancing] = useState(false);
     const [editImage, setEditImage] = useState(null);
@@ -714,42 +724,57 @@ const App = () => {
         setPrompt('');
         setEditInstruction('');
         setEnhancedPrompts([]);
+        // Cada modo conserva su propia imagen: al entrar en uno se libera la del otro.
         if (m === 'text-to-image') setRemixSource(null);
+        if (m === 'remix') setGenSource(null);
         setError(null);
     };
 
+    // La imagen subida pertenece al modo activo (base al Editar, referencia al Generar).
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        const setSource = mode === 'remix' ? setRemixSource : setGenSource;
         const reader = new FileReader();
         reader.onload = (f) => {
             const img = new Image();
             img.onload = () => {
                 const detectedAR = getClosestAspectRatio(img.width, img.height);
                 setSelectedAR(detectedAR);
-                setRemixSource(f.target.result);
+                setSource(f.target.result);
                 setEnhancedPrompts([]);
             };
             img.src = f.target.result;
         };
         reader.readAsDataURL(file);
+        // Permite volver a elegir el mismo archivo despues de quitarlo.
+        e.target.value = '';
     };
+
+    const clearSource = (e) => {
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (mode === 'remix') setRemixSource(null); else setGenSource(null);
+        setEnhancedPrompts([]);
+    };
+
+    // Imagen activa del modo: en Editar es la base, en Generar es la referencia opcional.
+    const activeSource = mode === 'remix' ? remixSource : genSource;
 
     const handleEnhance = async () => {
         if (mode === 'remix' && !remixSource) {
             setError("Sube una imagen antes de mejorar el prompt.");
             return;
         }
-        if (mode === 'text-to-image' && !prompt.trim()) {
-            setError("Escribe una descripción antes de mejorar.");
+        if (mode === 'text-to-image' && !prompt.trim() && !genSource) {
+            setError("Escribe una descripción o sube una imagen de referencia antes de mejorar.");
             return;
         }
         setIsEnhancing(true);
         try {
             let enhanced;
-            if (mode === 'remix') {
-                // En modo edición, analizar la imagen cargada con visión
-                const compressedImage = await resizeImage(remixSource, 1024, 0.85);
+            if (activeSource) {
+                // Con imagen (base o referencia): analizarla con visión para proponer variantes.
+                const compressedImage = await resizeImage(activeSource, 1024, 0.85);
                 const base64Data = compressedImage.split(',')[1];
                 const systemInstructions = `Eres un experto en edición de imágenes con IA. Analiza esta imagen y genera 4 variantes de prompts para editarla en español. Cada variante debe describir un cambio específico y útil (mejorar iluminación, cambiar fondo, añadir elementos, mejorar calidad). Respeta el contenido principal de la imagen. Responde SOLO con un JSON válido: [{"type":"Iluminación","text":"..."},{"type":"Fondo","text":"..."},{"type":"Detalles","text":"..."},{"type":"Calidad","text":"..."}]`;
                 const result = await callProxy('', [], {
@@ -784,8 +809,8 @@ const App = () => {
     const handleGenerate = async (finalPrompt = prompt) => {
         const effectivePrompt = (typeof finalPrompt === 'string' ? finalPrompt : prompt).trim();
         
-        if (mode === 'text-to-image' && !effectivePrompt) {
-            setError("Escribe una descripción antes de generar.");
+        if (mode === 'text-to-image' && !effectivePrompt && !genSource) {
+            setError("Escribe una descripción o sube una imagen de referencia antes de generar.");
             return;
         }
         if (mode === 'remix' && !remixSource) {
@@ -800,7 +825,9 @@ const App = () => {
         try {
             const eraSuffix = (selectedEra && selectedEra.promptSuffix || '').trim();
             const styleSuffix = `${eraSuffix} ${(selectedStyle.promptSuffix || '').trim()}`.trim();
-            let finalSourceImage = mode === 'remix' ? (remixSource || undefined) : undefined;
+            // Imagen del modo: base obligatoria al Editar, referencia opcional al Generar.
+            let finalSourceImage = activeSource || undefined;
+            const sourceRole = mode === 'remix' ? 'transform' : 'reference';
 
             if (finalSourceImage) {
                 finalSourceImage = await resizeImage(finalSourceImage, 1024, 0.85);
@@ -814,7 +841,8 @@ const App = () => {
                 styleSuffix,
                 aspectRatio: selectedAR,
                 resolution: selectedRes,
-                sourceImage: finalSourceImage
+                sourceImage: finalSourceImage,
+                sourceRole: sourceRole
             });
 
             setProgress(70);
@@ -826,7 +854,7 @@ const App = () => {
             const newImage = {
                 id: Math.random().toString(36).substring(7),
                 url: imageUrl,
-                prompt: effectivePrompt || 'Edición de imagen',
+                prompt: effectivePrompt || (mode === 'remix' ? 'Edición de imagen' : 'Generación desde imagen de referencia'),
                 style: selectedStyle,
                 era: selectedEra,
                 aspectRatio: selectedAR,
@@ -895,7 +923,9 @@ const App = () => {
         } catch (err) { setError("Error de edición"); } finally { setIsGenerating(false); }
     };
 
-    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim()) || (mode === 'remix' && !remixSource);
+    const isGenerateDisabled = isGenerating || (mode === 'text-to-image' && !prompt.trim() && !genSource) || (mode === 'remix' && !remixSource);
+    // El mejorador necesita texto o imagen: con imagen propone variantes analizándola.
+    const canEnhance = !!prompt.trim() || !!activeSource;
     const resolutionApplies = supportsResolution(selectedModel);
 
     return (
@@ -920,22 +950,79 @@ const App = () => {
                             >
                                 ← Volver
                             </button>
+                            {/* Imagen base del modo Editar (obligatoria). */}
                             {mode === 'remix' && (
-    <div className="space-y-4 animate-in">
-        <label className="btn-canon text-[11px] text-cyan-400">Imagen a Editar</label>
-        <div onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-cyan-400 transition-all">
-            {remixSource ? (
-                <img src={remixSource} className="w-full h-full object-contain" />
-            ) : (
-                <div className="text-cyan-400 flex flex-col items-center gap-2">
-                    <Upload size={24} />
-                    <span className="btn-canon text-[10px]">Sube Imagen</span>
-                </div>
-            )}
-        </div>
-        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
-    </div>
-)}
+                                <div className="space-y-4 animate-in">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="btn-canon text-[11px] text-cyan-400">Imagen a Editar</span>
+                                        {remixSource && (
+                                            <button
+                                                type="button"
+                                                onClick={clearSource}
+                                                className="ar-effect px-3 py-1.5 text-xs font-medium rounded-lg flex items-center gap-1.5"
+                                                title="Quitar imagen"
+                                            >
+                                                <X size={12} /> Quitar
+                                            </button>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        aria-label={remixSource ? 'Cambiar la imagen a editar' : 'Subir la imagen a editar'}
+                                        className="w-full relative group cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-cyan-400 focus-visible:border-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 transition-all"
+                                    >
+                                        {remixSource ? (
+                                            <img src={remixSource} alt="Imagen original que se va a editar" className="w-full h-full object-contain" />
+                                        ) : (
+                                            <span className="text-cyan-400 flex flex-col items-center gap-2">
+                                                <Upload size={24} />
+                                                <span className="btn-canon text-[10px]">Sube Imagen</span>
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Imagen de referencia del modo Generar (opcional): permite usar
+                                un prompt de texto junto a una imagen. */}
+                            {mode === 'text-to-image' && (
+                                <div className="space-y-4 animate-in">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="btn-canon text-[11px] text-cyan-400">Imagen de Referencia (Opcional)</span>
+                                        {genSource && (
+                                            <button
+                                                type="button"
+                                                onClick={clearSource}
+                                                className="ar-effect px-3 py-1.5 text-xs font-medium rounded-lg flex items-center gap-1.5"
+                                                title="Quitar imagen de referencia"
+                                            >
+                                                <X size={12} /> Quitar
+                                            </button>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        aria-label={genSource ? 'Cambiar la imagen de referencia' : 'Subir una imagen de referencia'}
+                                        className="w-full relative group cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-[2.5rem] overflow-hidden aspect-video flex items-center justify-center bg-slate-900/40 hover:border-cyan-400 focus-visible:border-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 transition-all"
+                                    >
+                                        {genSource ? (
+                                            <img src={genSource} alt="Imagen de referencia cargada" className="w-full h-full object-contain" />
+                                        ) : (
+                                            <span className="text-cyan-400 flex flex-col items-center gap-2">
+                                                <Upload size={24} />
+                                                <span className="btn-canon text-[10px]">Sube Imagen</span>
+                                            </span>
+                                        )}
+                                    </button>
+                                    <span className="model-quality-hint">
+                                        {genSource ? 'Se usará como referencia junto a tu instrucción de texto.' : 'Opcional: sin imagen se genera solo desde el texto.'}
+                                    </span>
+                                </div>
+                            )}
+
+                            <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
 
                             <div className="space-y-4">
                                 <label className="btn-canon text-[11px] text-cyan-400">{mode === 'remix' ? 'Especifica los detalles a editar' : 'Describe tu imagen'}</label>
@@ -948,7 +1035,7 @@ const App = () => {
 />
                                     <button
                                         onClick={handleEnhance}
-                                        disabled={isEnhancing || !prompt.trim()}
+                                        disabled={isEnhancing || !canEnhance}
                                         title="mejorar prompt con IA"
                                         className="absolute bottom-4 right-4 p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl hover:bg-cyan-500/30 transition-all z-30"
                                     >

@@ -791,7 +791,7 @@ textarea:focus-visible {
 .model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none}
 .model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none}
 .model-quality-hint{
-  color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;
   text-shadow:0 0 8px var(--glow-soft);
 }
 @media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
