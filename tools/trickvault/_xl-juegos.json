@@ -1,0 +1,198 @@
+[
+ {
+  "id": "ig-dcek-322",
+  "code": "/autumn",
+  "desc": "ambiente de otoño",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Autumn atmosphere scene of [OBJETO], golden falling leaves, warm orange palette, cozy seasonal mood, soft harvest light, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-247",
+  "code": "/gamescreen",
+  "desc": "captura de videojuego",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. In-game screenshot of a third-person open-world video game about [OBJETO], cel-shaded character, minimal HUD, volumetric sunlight, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-248",
+  "code": "/bossfight",
+  "desc": "pelea de jefe final",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Final boss fight arena themed around [OBJETO], colossal boss with glowing weak points, telegraphed attack rings, embers, dramatic backlight, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-249",
+  "code": "/rpgcharacter",
+  "desc": "personaje de rol con stats",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Role-playing game character sheet for [OBJETO], painted portrait beside stat bars, attribute numbers, equipment slots, parchment panels, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-250",
+  "code": "/loadingscreen",
+  "desc": "pantalla de carga con consejo",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Video game loading screen about [OBJETO], large progress bar, rotating gameplay tip text, blurred concept art, console interface, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-251",
+  "code": "/gamemap",
+  "desc": "mapa del mundo del juego",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Overhead video game world map of [OBJETO], hand-painted regions, fog edges, quest markers, ornate border, aged texture, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-252",
+  "code": "/sprite",
+  "desc": "personaje de pixel animado",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Animated pixel-art sprite of [OBJETO] on a checkerboard grid, idle pose, eight-frame walk cycle strip, limited sixteen-color retro palette, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-253",
+  "code": "/tabletopmini",
+  "desc": "miniatura pintada de mesa",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Hand-painted tabletop miniature of [OBJETO] on a textured round base, visible brush highlights and washes, macro lens rim lighting, blurred terrain, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-254",
+  "code": "/dungeonmap",
+  "desc": "mapa de mazmorra",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Top-down dungeon map of [OBJETO], square grid tiles, thick hand-inked stone walls, shaded rooms, secret door, torch-lit corridors, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-255",
+  "code": "/potion",
+  "desc": "frasco de poción mágica",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Magical potion flask containing [OBJETO], swirling luminous liquid, suspended glitter, cork sealed with red wax, dark apothecary candlelight, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-256",
+  "code": "/spellbook",
+  "desc": "libro de hechizos abierto",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Open ancient spellbook revealing a page about [OBJETO], arcane circular sigils, gold-leaf margins, iron clasps, candlelit leather, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-257",
+  "code": "/tarotcard",
+  "desc": "carta de tarot ilustrada",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Illustrated tarot card representing [OBJETO], symmetrical esoteric symbolism, gold leaf accents, ornate art-nouveau border, roman numeral, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-258",
+  "code": "/crest",
+  "desc": "escudo heráldico de tu marca",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Heraldic coat of arms crest for [OBJETO], engraved shield in quarters, rampant emblem, ribbon banner, laurel branches, enamel finish, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-259",
+  "code": "/inventory",
+  "desc": "inventario de ítems del juego",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Video game inventory screen for [OBJETO], grid slots with painted item icons, rarity borders, stack counts, tooltip panel, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-260",
+  "code": "/terrarium",
+  "desc": "dentro de un terrario de vidrio",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] inside a closed glass terrarium, condensation droplets on the panes, tropical ferns, moss substrate, brass rim, soft diffused daylight, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-261",
+  "code": "/bonsai",
+  "desc": "como un bonsái cuidado",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] presented as a carefully cultivated bonsai, gnarled miniature trunk, pruned foliage pads, exposed roots, shallow ceramic pot, soft side light, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-262",
+  "code": "/floral",
+  "desc": "rodeado de un arreglo floral",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] surrounded by a lush floral arrangement, seasonal blooms and trailing greenery, soft pastel harmony, studio softbox lighting, shallow depth of field, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-263",
+  "code": "/pressedflowers",
+  "desc": "flores prensadas en papel",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] beside pressed dried flowers on handmade paper, flattened translucent petals, fern fronds, faded vintage herbarium colors, warm scan light, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-264",
+  "code": "/moss",
+  "desc": "cubierto de musgo",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] covered in dense green moss, clumping velvet texture, tiny sporophytes, scattered dew droplets, forest floor debris, macro lens, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-265",
+  "code": "/herbarium",
+  "desc": "hoja de herbario con nota",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Herbarium sheet documenting [OBJETO], dried mounted leaf, linen tape strips, handwritten collection label, aged cream paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-266",
+  "code": "/christmas",
+  "desc": "versión navideña con luces",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] in a festive Christmas version, warm string lights wrapped around, frosted pine needles, glossy red baubles, cosy golden bokeh glow, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-267",
+  "code": "/halloween",
+  "desc": "versión de Halloween",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] in a Halloween version, carved grinning pumpkins, dry cobwebs, candlelit jack-o-lantern glow, drifting fog, purple and orange chiaroscuro, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-268",
+  "code": "/valentine",
+  "desc": "versión San Valentín",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] in a Valentine version, blush and crimson roses, satin ribbon bow, chocolate browns, scattered heart confetti, soft romantic diffused light, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-269",
+  "code": "/easter",
+  "desc": "versión de Pascua",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] in an Easter version, pastel hand-dyed eggs, woven basket with paper grass, spring tulips, bright airy morning light, candy palette, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-270",
+  "code": "/summer",
+  "desc": "versión de verano con sol",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] in a summer version, hard golden sunlight, lens flare, heat shimmer over water, palm leaf shadows, vivid turquoise and yellow palette, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-271",
+  "code": "/winter",
+  "desc": "nieve y vaho de invierno",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] in a winter version, crisp snow crystals, frost patterns on glass, breath vapour haze, cold blue-grey palette, overcast daylight, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-272",
+  "code": "/newyear",
+  "desc": "fiesta de Año Nuevo",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. [OBJETO] at a New Year party, midnight countdown clock, falling metallic confetti, champagne bubbles, glittering city bokeh, celebratory warmth, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-273",
+  "code": "/blackfriday",
+  "desc": "anuncio de Black Friday",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bold Black Friday retail advertisement for [OBJETO], slashed price tag, starburst graphic burst, black and yellow palette, harsh spotlight, all visible text and labels must be written in Spanish with no English words"
+ }
+]

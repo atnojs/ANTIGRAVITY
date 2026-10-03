@@ -1,0 +1,261 @@
+[
+ {
+  "id": "ig-dcek-143",
+  "code": "/together",
+  "desc": "junta a dos personas en una foto",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Two people together in the same photo, [OBJETO] standing side by side smiling, natural interaction, seamless realistic composite, balanced studio lighting, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-150",
+  "code": "/transfer",
+  "desc": "te transporta a otro escenario",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Scene transfer of [OBJETO], subject transported to a famous landmark location, realistic integration with environment lighting and shadows, cinematic travel photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-256",
+  "code": "/proshot",
+  "desc": "foto de estudio profesional",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Professional studio shot of [OBJETO], polished studio portrait lighting, clean backdrop, magazine quality retouch, flawless commercial photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-299",
+  "code": "/medieval",
+  "desc": "época medieval histórica",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Medieval era scene of [OBJETO], historical castle and armor atmosphere, candlelit stone halls, epic period setting, cinematic historical drama, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-300",
+  "code": "/superhero",
+  "desc": "imagen épica de superhéroe",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Epic superhero image of [OBJETO], heroic comic book pose, dramatic cape and costume, dynamic action composition, cinematic power atmosphere, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-303",
+  "code": "/postapocalyptic",
+  "desc": "mundo en ruinas distópico",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Post-apocalyptic scene of [OBJETO], ruined world atmosphere, abandoned buildings, dramatic desolate lighting, dystopian survival mood, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-304",
+  "code": "/samurai",
+  "desc": "cine de samuráis japonés",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Samurai cinema scene of [OBJETO], Japanese warrior aesthetic, dramatic katana stance, misty temple atmosphere, epic Kurosawa-style cinematography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-305",
+  "code": "/scifi",
+  "desc": "estilo de ciencia ficción",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Science fiction style image of [OBJETO], futuristic technology, advanced spaceship or city, neon lights and holograms, epic sci-fi atmosphere, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-312",
+  "code": "/fantasy",
+  "desc": "mundo de fantasía mágico",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fantasy world scene of [OBJETO], magical imaginative setting, glowing enchantment, epic mythical atmosphere, cinematic fantasy art, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-472",
+  "code": "/legoify",
+  "desc": "recrea la escena como un mundo construido con LEGO",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Recreate [OBJETO] as a detailed LEGO-built world, plastic brick textures, stud details, toy photography, playful miniature diorama, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-473",
+  "code": "/futureversion",
+  "desc": "transforma el mundo actual en una visión cinematográfica del futuro",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Upgrade [OBJETO] into a cinematic vision of the future, futuristic architecture and technology, dramatic sci-fi atmosphere, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-474",
+  "code": "/postapocalypse",
+  "desc": "convierte la escena en un mundo post-apocalíptico cinematográfico",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Turn [OBJETO] into a cinematic post-apocalyptic world, abandoned ruins, overgrown decay, dramatic desolation, movie-grade atmosphere, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-475",
+  "code": "/iceversion",
+  "desc": "congela la escena en un mundo de hielo y nieve",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Freeze [OBJETO] into a world of ice and snow, frozen surfaces, frost textures, cold blue light, sparkling winter wonderland, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-476",
+  "code": "/candyversion",
+  "desc": "reconstruye la escena con dulces y texturas azucaradas",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rebuild [OBJETO] with candy, chocolate and sugary textures, glossy sweet surfaces, playful dessert world, colorful confectionery look, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-489",
+  "code": "/transferbackground",
+  "desc": "transfiere o cambia el fondo de una imagen a otra",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Transfer the background from [REFERENCIA] onto [OBJETO], seamless scene swap, matched lighting and perspective, realistic composite, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-152",
+  "code": "/petportrait",
+  "desc": "retrato solemne de tu mascota",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Solemn oil portrait of [OBJETO] posed like nobility, regal posture, painted landscape backdrop, ornate gilded frame, dramatic side lighting on fur, museum oil painting texture, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-153",
+  "code": "/royalportrait",
+  "desc": "retrato de rey al óleo",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Grand oil painting of [OBJETO] as a crowned monarch, ermine robe, sceptre and heavy jewels, dark palace background, old master brushwork, crackled varnish surface, museum lighting, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-154",
+  "code": "/passportphoto",
+  "desc": "foto carné con fondo blanco",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Official biometric passport photograph of [OBJETO], plain white background, flat frontal lighting, neutral closed-mouth expression, head and shoulders framing, government document format, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-155",
+  "code": "/villain",
+  "desc": "tu versión villano de película",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cinematic movie villain portrait of [OBJETO], dramatic low-key lighting, billowing coat, menacing half-smile, dark smoky background, subtle scar details, blockbuster poster photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-156",
+  "code": "/astronaut",
+  "desc": "astronauta en la Luna",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Astronaut in a bulky white spacesuit representing [OBJETO] standing on the lunar surface, dusty gray regolith, visor reflecting Earth, harsh unfiltered sunlight, bootprints, sharp vacuum clarity, deep black sky, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-157",
+  "code": "/steampunk",
+  "desc": "engranajes y latón victoriano",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Victorian steampunk scene with brass gears, copper pipes and riveted leather, [OBJETO] in goggles and top hat, warm amber light, steam clouds, intricate clockwork machinery background, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-158",
+  "code": "/pirate",
+  "desc": "capitán pirata en su barco",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rugged pirate captain styled as [OBJETO] in a tricorn hat and weathered coat standing on a wooden ship deck, rigging and tattered sails behind, stormy golden sky, salty sea spray, cinematic adventure lighting, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-159",
+  "code": "/wildwest",
+  "desc": "vaquero del lejano oeste",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Frontier cowboy embodying [OBJETO] in a dusty leather hat and duster coat on a wooden saloon porch, desert dust haze, tumbleweed, low warm sunset sun, shallow depth of field, sepia-toned western photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-160",
+  "code": "/ancientrome",
+  "desc": "senador de la antigua Roma",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ancient Roman senator styled as [OBJETO] in a white toga with a purple stripe, marble columned forum background, laurel wreath, warm Mediterranean sunlight, classical statue realism, richly textured stone, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-161",
+  "code": "/egypt",
+  "desc": "faraón en su trono",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ancient Egyptian pharaoh depicted as [OBJETO] seated on a golden throne, striped nemes headdress, kohl-lined eyes, jeweled collar and crook, hieroglyph-covered sandstone walls, torchlight glow, painted tomb color, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-162",
+  "code": "/viking",
+  "desc": "vikingo en la nieve",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Weathered Viking warrior in the likeness of [OBJETO] in a fur cloak and iron helmet standing in falling snow, frost on braided beard, longship and frozen fjord behind, cold blue-gray light, gritty photorealistic texture, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-163",
+  "code": "/fairytale",
+  "desc": "personaje de cuento de hadas",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Storybook fairy tale character of [OBJETO] in an enchanted forest, iridescent dragonfly wings, glowing mushrooms, drifting golden pollen, soft misty sunbeams, painterly childlike illustration, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-164",
+  "code": "/filmnoir",
+  "desc": "detective en blanco y negro",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Black and white film noir detective portrait of [OBJETO], fedora brim shadowing the eyes, trench coat collar up, rainy alley at night, venetian blind shadows, hard chiaroscuro lighting, 1940s mood, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-165",
+  "code": "/80sprom",
+  "desc": "foto del baile de los ochenta",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. 1980s high school prom photograph of [OBJETO], big teased hair and satin formalwear, pastel tulle decorations and balloon arch, direct on-camera flash, grainy Kodak color film, awkward posed stance, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-166",
+  "code": "/thumbnail",
+  "desc": "miniatura de YouTube con cara",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-impact YouTube thumbnail of [OBJETO] with an exaggerated shocked facial expression, saturated colors, thick cutout outline, radial burst behind the head, bold amateur graphic design energy, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-167",
+  "code": "/carouselcover",
+  "desc": "portada de carrusel que frena",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Scroll-stopping social media carousel cover featuring [OBJETO], bold oversized typography blocks, vivid gradient background, minimal layout, punchy graphic design, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-168",
+  "code": "/storyframe",
+  "desc": "historia vertical de Instagram",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Instagram story frame featuring [OBJETO] in the upper area, empty space below for reply stickers, gradient overlay, interface feel, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-169",
+  "code": "/feedgrid",
+  "desc": "nueve posts que arman un muro",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Coordinated Instagram feed grid of nine square posts about [OBJETO] forming a single continuous mosaic wall, consistent preset color grade, seamless image continuity across tiles, clean mobile screen capture, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-170",
+  "code": "/ugc",
+  "desc": "foto de cliente con su celular",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Authentic user-generated content photo of [OBJETO] taken casually on a smartphone by a real customer, natural home lighting, slightly imperfect framing, believable unpolished lifestyle product shot, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-171",
+  "code": "/meme",
+  "desc": "tu idea en formato meme",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Classic internet meme format image of [OBJETO], bold white impact caption strips, exaggerated reaction framing, low-fidelity compression, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-172",
+  "code": "/tweetcard",
+  "desc": "tu frase como tuit en pantalla",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Social post card screenshot with [OBJETO] as the author, rounded avatar, light interface panel, a short paragraph of text, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-173",
+  "code": "/reviewcard",
+  "desc": "reseña de cinco estrellas",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Five-star customer review card screenshot featuring [OBJETO], golden stars, verified purchase badge, short comment text, clean white interface panel, all visible text and labels must be written in Spanish with no English words"
+ }
+]

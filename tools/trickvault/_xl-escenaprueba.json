@@ -1,0 +1,254 @@
+[
+ {
+  "id": "ig-dcek-093",
+  "code": "/bookcover",
+  "desc": "portada de libro con lomo",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Minimalist hardcover book cover design for [OBJETO], debossed title typography, artistic central emblem, premium cloth binding texture, sophisticated aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-094",
+  "code": "/albumcover",
+  "desc": "carátula de disco cuadrada",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Square vinyl album cover artwork featuring [OBJETO], iconic musical album aesthetic, subtle retro cardboard ring wear, evocative moody artistic visual, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-096",
+  "code": "/billboard",
+  "desc": "valla publicitaria en contexto",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Real-world roadside advertising billboard displaying a bold campaign of [OBJETO], clear daytime sky, city context, large-scale commercial advertisement, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-097",
+  "code": "/newspaper",
+  "desc": "página de periódico impreso",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Front page newspaper feature photo of [OBJETO], authentic black-and-white vintage newsprint paper texture, halftone photo reproduction, vintage journalism layout, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-098",
+  "code": "/quotecard",
+  "desc": "cita destacada en tarjeta",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Elegant minimalist social media quote card featuring [OBJETO] alongside clean modern typography, balanced composition, soft pastel gradient backdrop, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-103",
+  "code": "/metaad",
+  "desc": "Imagen lista para anuncios",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern high-converting social media advertising visual for [OBJETO], vibrant gradient studio background, bold commercial composition, clean negative space, advertising photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-104",
+  "code": "/newspaperad",
+  "desc": "Anuncio estilo periódico",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vintage full-page monochrome newspaper advertisement for [OBJETO], retro halftone print texture, distressed paper grain, aged serif typography layout, authentic 1960s editorial advertising print, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-105",
+  "code": "/billboardmockup",
+  "desc": "Campaña en valla urbana",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic outdoor urban street billboard mockup displaying an advertisement for [OBJETO], modern metropolitan city avenue context, dusk natural ambient lighting, photorealistic commercial mockup, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-106",
+  "code": "/3Dbillboard",
+  "desc": "Valla 3D gigante",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant naked-eye anamorphic 3D curved digital billboard in a futuristic city intersection, showing a hyper-realistic [OBJETO] bursting out of the screen illusion, neon night cyberpunk city street below, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-111",
+  "code": "/perfumead",
+  "desc": "Look premium de perfumería",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Haute perfumery commercial advertisement for [OBJETO], crystal flacon reflections, floating delicate flower petals, ethereal backlit mist, Vogue luxury editorial style, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-112",
+  "code": "/luxurywatchad",
+  "desc": "Publicidad de lujo para accesorios",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Prestigious magazine commercial advertisement for [OBJETO], resting on polished dark walnut wood, macro surface details, warm dramatic side lighting, horology catalog look, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-260",
+  "code": "/lifestyleshot",
+  "desc": "producto en escena de campaña",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Lifestyle campaign shot of [OBJETO], product in a natural real-life scene, authentic usage context, warm human atmosphere, professional advertising photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-262",
+  "code": "/timesquaread",
+  "desc": "anuncio gigante en Times Square",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant Times Square billboard advertisement of [OBJETO], massive LED screens in New York City, night neon atmosphere, crowd below, spectacular urban advertising, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-505",
+  "code": "/processsteps",
+  "desc": "el proceso en pasos numerados",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Process steps of [OBJETO], numbered step-by-step making sequence, clean infographic flow, instructional clarity, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-506",
+  "code": "/handmadedetail",
+  "desc": "la marca de la mano encima",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Handmade detail close-up of [OBJETO], visible craft marks and fingerprints, artisanal authenticity, tactile texture focus, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-507",
+  "code": "/sourcemap",
+  "desc": "de dónde viene cada ingrediente",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Source map of [OBJETO], each ingredient traced to its origin, illustrated origin map with routes, clean provenance infographic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-508",
+  "code": "/activesmap",
+  "desc": "cada activo y lo que hace",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Active ingredients map of [OBJETO], each active component shown with its function, clean scientific infographic layout, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-509",
+  "code": "/splitproof",
+  "desc": "antes y después partidos al medio",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Split before/after proof of [OBJETO], divided frame showing the transformation, matched lighting on both halves, credible comparison, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-510",
+  "code": "/versusgrid",
+  "desc": "tu producto contra la alternativa",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Versus grid of [OBJETO] against the competing alternative, side-by-side feature comparison, clear winner framing, comparison chart, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-511",
+  "code": "/durabilitytest",
+  "desc": "lo somete a la prueba",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Durability test of [OBJETO] under stress, water impact and scratch testing, action proof shot, rugged product credibility, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-543",
+  "code": "/3dadcreative",
+  "desc": "lo vuelve anuncio en 3D listo para publicar",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. 3D ad creative of [OBJETO], dimensional advertising render ready to publish, bold volume and depth, premium CGI commercial, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-555",
+  "code": "/handsinuse",
+  "desc": "solo manos usando el producto",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Hands-only shot of [OBJETO] being used, close-up of hands interacting with the product, natural gesture, authentic usage moment, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-556",
+  "code": "/founderframe",
+  "desc": "el fundador con su producto",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Founder portrait with [OBJETO], proud creator holding their product, authentic brand story moment, warm editorial lighting, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-557",
+  "code": "/3dmagazinecover",
+  "desc": "tu producto sale en 3D de la revista",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. 3D magazine cover of [OBJETO] popping out of the magazine, dimensional depth and shadows, playful editorial 3D effect, all visible text on the magazine cover must be written in Spanish with no English words (invent a Spanish magazine title, never use VOGUE)"
+ },
+ {
+  "id": "ig-dcek-577",
+  "code": "/morningritual",
+  "desc": "dentro de la rutina de la mañana",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Morning ritual scene with [OBJETO], cozy sunrise routine, warm kitchen light, authentic lifestyle moment, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-578",
+  "code": "/environmentmatch",
+  "desc": "en el entorno exacto de tu cliente",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Environment match of [OBJETO] inside the exact customer habitat, real-world context styling, authentic lifestyle placement, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-579",
+  "code": "/seasonset",
+  "desc": "la misma escena en cuatro estaciones",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Four-season set of [OBJETO], same scene rendered in spring summer autumn and winter, seasonal light and nature changes, campaign series, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-580",
+  "code": "/momentbefore",
+  "desc": "el instante justo antes de usarlo",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Moment-before shot of [OBJETO], the instant right before use, anticipatory gesture and tension, cinematic storytelling frame, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-581",
+  "code": "/aftermath",
+  "desc": "lo que queda después de usarlo",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Aftermath shot of [OBJETO], what remains after use, crumbs droplets and traces telling the story, atmospheric still life, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-582",
+  "code": "/companionobjects",
+  "desc": "con todo lo que lo acompaña",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Companion objects composition of [OBJETO] with everything that goes with it, curated supporting props, harmonious styling, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-583",
+  "code": "/travelset",
+  "desc": "cómo viaja cuando sale de casa",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Travel set of [OBJETO] packed for a trip, suitcase or bag context, on-the-go lifestyle, adventure-ready commercial styling, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-584",
+  "code": "/workdesk",
+  "desc": "instalado en el escritorio",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Work desk scene of [OBJETO] installed on a real desk, organized workspace context, natural window light, productivity lifestyle, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-585",
+  "code": "/originstory",
+  "desc": "de dónde viene la marca",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Origin story scene of [OBJETO], where the brand comes from, heritage setting and raw materials, nostalgic documentary mood, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-586",
+  "code": "/workshopscene",
+  "desc": "el lugar donde se fabrica",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Workshop scene of [OBJETO] being made, real workshop tools and benches, artisan at work, industrial craft atmosphere, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-001",
+  "code": "/manifestoposter",
+  "desc": "tu manifiesto como cartel",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Typographic manifesto poster built around [OBJETO], tightly set bold headline blocks filling the sheet, strong grid hierarchy, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-002",
+  "code": "/archivewall",
+  "desc": "todo el catálogo en una pared",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gallery wall presenting [OBJETO] as a complete catalog, dozens of small framed pieces hung edge to edge in a dense grid, all visible text and labels must be written in Spanish with no English words"
+ }
+]

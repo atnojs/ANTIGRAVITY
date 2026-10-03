@@ -1,0 +1,331 @@
+[
+ {
+  "id": "ig-dcek-137",
+  "code": "/flashcard",
+  "desc": "tarjetas de estudio sobre el tema",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational study flashcards set about [OBJETO], clean white flashcard grid with bold question titles and concise answer text, colorful category headers, neat organized layout on a soft pastel background, modern educational infographic style, sharp readable typography, 8k resolution, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-139",
+  "code": "/stickynotes",
+  "desc": "panel de post-its sobre el tema",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cork board covered with colorful sticky notes about [OBJETO], handwritten-style short notes and tiny doodle icons, pushpins, warm cozy study workspace aesthetic, overhead flat lay, bright cheerful colors, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-156",
+  "code": "/visualizelearning",
+  "desc": "visualización interactiva de un proceso",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Interactive educational visualization of [OBJETO], clean modern UI with adjustable sliders and real-time diagrams, colorful icons and labels, dark interface with glowing accents, scientific learning tool aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-157",
+  "code": "/generatehandwritingimage",
+  "desc": "apuntes manuscritos",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Handwritten study notes about [OBJETO], neat cursive handwriting on lined notebook paper, clear diagrams and formulas, highlighted key points, authentic student notebook aesthetic, high resolution, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-158",
+  "code": "/infochart",
+  "desc": "infografía con gráficos y datos",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern educational infographic about [OBJETO], clean layout with data charts, bar graphs, comparison tables and icons, professional design, balanced colors, high readability, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-159",
+  "code": "/infograph",
+  "desc": "infografía por capas",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Detailed scientific infographic poster about [OBJETO], layered diagram sections with labels and descriptions, color-coded zones, clean modern design, educational poster style, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-162",
+  "code": "/venndiagram",
+  "desc": "diagrama de Venn comparativo",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean modern Venn diagram explaining [OBJETO], overlapping semi-transparent colored circles showing shared traits and distinct properties, neat typography labels and bullet points, minimalist educational vector style, soft pastel palette, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-163",
+  "code": "/conceptmap",
+  "desc": "mapa conceptual jerárquico",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Hierarchical concept map about [OBJETO], top-down structured tree nodes connected with directional labeled relationship arrows, color-coded categories, crisp educational poster layout, high legibility, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-164",
+  "code": "/pyramidchart",
+  "desc": "pirámide jerárquica o niveles",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational multi-tiered hierarchical pyramid diagram of [OBJETO], colorful horizontal stacked segments with clear labels and brief descriptive callouts, clean flat vector infographic style, 8k clarity, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-165",
+  "code": "/cheatsheet",
+  "desc": "chuleta u hoja de referencia rápida",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Comprehensive one-page quick-reference study cheat sheet about [OBJETO], densely organized grid with syntax boxes, key formulas, bullet points and mini icon badges, modern tech developer reference aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-166",
+  "code": "/cornellnotes",
+  "desc": "sistema de notas Cornell estructurado",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Organized Cornell note-taking layout about [OBJETO], three distinct sections: cue column on left with key questions, main note area with bullet points, summary section at bottom, neat high-contrast study format, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-167",
+  "code": "/sketchnote",
+  "desc": "apuntes visuales con doodles",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Creative visual sketchnote about [OBJETO], hand-drawn doodles, bold whimsical hand-lettered headers, banner ribbons, thought bubbles, lighthearted visual thinking study aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-168",
+  "code": "/proscons",
+  "desc": "comparativa de pros y contras",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean side-by-side comparison infographic for [OBJETO], two contrasting columns with soft green checkmarks for advantages and red icons for drawbacks, modern balanced table UI layout, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-169",
+  "code": "/funnelchart",
+  "desc": "embudo didáctico o filtrado",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational multi-stage funnel chart diagram of [OBJETO], vibrant tapering layers showing sequential filtering stages, clear numeric percentages and descriptive text callouts, clean modern infographic style, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-170",
+  "code": "/fishbone",
+  "desc": "diagrama Ishikawa causa-efecto",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Detailed Ishikawa fishbone cause-and-effect diagram about [OBJETO], central spine pointing to the problem statement, branching thematic category ribs with labeled factors, technical engineering analysis style, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-171",
+  "code": "/matrix2x2",
+  "desc": "matriz de cuatro cuadrantes 2x2",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Four-quadrant 2x2 priority matrix analyzing [OBJETO], clearly labeled X and Y axes, color-coded quadrants with descriptive icons and concise summary cards, clean corporate visual layout, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-172",
+  "code": "/cyclicalprocess",
+  "desc": "diagrama de ciclo continuo",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Continuous circular loop diagram illustrating the life cycle of [OBJETO], curved directional arrows connecting sequential circular nodes, harmonious gradient colors, clean modern infographic vector, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-173",
+  "code": "/anatomicalposter",
+  "desc": "lámina didáctica ilustrada con llamadas",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vintage-meets-modern museum educational poster of [OBJETO], central detailed scientific illustration surrounded by numbered callout circles, technical legend and concise didactic paragraphs, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-174",
+  "code": "/comicstrip",
+  "desc": "tira cómica educativa en viñetas",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Four-panel educational comic strip explaining [OBJETO], expressive clean cartoon characters having an insightful dialogue, speech bubbles with clear didactic explanations, bright colorful panels, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-175",
+  "code": "/decisiontree",
+  "desc": "árbol de decisiones didáctico",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Interactive visual decision tree flowchart for [OBJETO], starting root question branching into Yes/No logic pathways with rounded condition nodes and final outcome cards, clean modern UI style, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-398",
+  "code": "/stepbystep",
+  "desc": "explica paso a paso",
+  "origen": "antigua",
+  "prompt": ""
+ },
+ {
+  "id": "ig-dcek-589",
+  "code": "/classroom",
+  "desc": "estética didáctica de recurso para el aula",
+  "origen": "antigua",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational classroom resource aesthetic of [OBJETO], clean didactic design, teacher-friendly layout, school poster style, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-222",
+  "code": "/16bit",
+  "desc": "juego de 16 bits",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Authentic 16-bit pixel art scene of [OBJETO] as the hero sprite, chunky visible pixels, limited retro console palette, crisp black outlines, side-scrolling adventure game background, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-223",
+  "code": "/retrocomputer",
+  "desc": "pantalla de computadora de los 80",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Curved beige 1980s CRT computer monitor displaying [OBJETO] in green phosphor pixels, thick glass reflection, scanlines, dust, dim office desk, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-224",
+  "code": "/matchbox",
+  "desc": "caja de cerillas antigua",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Small vintage cardboard matchbox of [OBJETO], faded lithographed label, worn striking surface, loose wooden matches, warm tabletop light, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-225",
+  "code": "/tincan",
+  "desc": "lata de metal vintage",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dented vintage lithographed metal tin of [OBJETO], rust patina, embossed lid, chipped enamel print, aged grocery shelf, soft daylight, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-226",
+  "code": "/enamelsign",
+  "desc": "letrero esmaltado de tienda",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Convex enamel shop sign for [OBJETO], glossy porcelain surface, chipped white edges, bold red fired lettering, aged storefront wall, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-227",
+  "code": "/propaganda",
+  "desc": "cartel de propaganda antiguo",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Old propaganda poster about [OBJETO], flat red cream and black blocks, heroic low-angle silhouette, coarse offset grain, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-228",
+  "code": "/typewriter",
+  "desc": "escrito a máquina de escribir",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Page typed on a mechanical typewriter about [OBJETO], uneven inked impressions, ribbon smudges, struck-over characters, cream paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-229",
+  "code": "/catalog70s",
+  "desc": "catálogo de los setenta",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Seventies product catalog spread presenting [OBJETO], faded halftone color photography, mustard and avocado palette, matte offset paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-230",
+  "code": "/pinbadge",
+  "desc": "pin esmaltado coleccionable",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible hard enamel pin badge of [OBJETO], polished gold metal outline, glossy recessed color fills, macro shot on dark fabric, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-231",
+  "code": "/arcadeflyer",
+  "desc": "volante de maquinita de arcade",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vintage arcade flyer advertising a cabinet game about [OBJETO], saturated airbrushed artwork, halftone print grain, folded paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-232",
+  "code": "/drivein",
+  "desc": "cine al aire libre de noche",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Night-time outdoor drive-in cinema screening a film about [OBJETO], huge glowing screen, vintage car silhouettes, misty projector beam, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-233",
+  "code": "/howitworks",
+  "desc": "cómo funciona, por dentro",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cutaway infographic showing how [OBJETO] works inside, cross-section layers, numbered arrows, exposed gears, thin technical line art, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-234",
+  "code": "/anatomychart",
+  "desc": "lámina de anatomía rotulada",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vintage anatomical wall chart of [OBJETO], labeled layers, numbered callout lines, muted red and cream illustration, yellowed linen, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-235",
+  "code": "/venn",
+  "desc": "diagrama de círculos cruzados",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean two-circle Venn diagram of [OBJETO] and its opposite, translucent tinted discs, thin black outlines, generous white space, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-236",
+  "code": "/cycle",
+  "desc": "diagrama de ciclo con flechas",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Circular process diagram about [OBJETO], four arrow-linked stages in a closed loop, flat pastel shapes, clean modern layout, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-237",
+  "code": "/periodictable",
+  "desc": "tabla periódica de tu tema",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Periodic table reimagined around [OBJETO], each tile a themed icon with atomic number, dense grid, muted textbook colors, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-238",
+  "code": "/scientificplate",
+  "desc": "lámina científica antigua",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Antique scientific plate documenting [OBJETO], fine copperplate engraving, stippled shading, numbered figure keys, sepia ink, foxed paper edges, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-239",
+  "code": "/botanical",
+  "desc": "lámina botánica pintada",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Painted botanical plate of [OBJETO] with stem, leaves and bloom, watercolor and gouache over ink, aged cream paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-240",
+  "code": "/illustratedmap",
+  "desc": "mapa ilustrado del lugar",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Illustrated pictorial map of the place around [OBJETO], hand-drawn landmarks, winding paths, compass rose, muted watercolor washes, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-241",
+  "code": "/treasuremap",
+  "desc": "mapa del tesoro envejecido",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Aged treasure map of [OBJETO], burnt torn parchment edges, sepia ink coastlines, dashed route, bold cross, wax seal, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-242",
+  "code": "/encyclopedia",
+  "desc": "página de enciclopedia vieja",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Old encyclopedia page about [OBJETO], dense two-column serif type, small engraved figure, yellowed thumbed paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-243",
+  "code": "/analogy",
+  "desc": "la idea como una analogía visual",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Single conceptual illustration presenting [OBJETO] as a visual analogy, surreal side-by-side metaphor, clean flat shapes, muted earthy palette, generous negative space, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-244",
+  "code": "/quizcard",
+  "desc": "pregunta con cuatro respuestas",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational quiz card asking about [OBJETO], four lettered multiple-choice rows, thick rounded border, friendly flat vector colors, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-245",
+  "code": "/boardgame",
+  "desc": "juego de mesa con su caja",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Family board game about [OBJETO], open cardboard box lid with printed art, folding board, tokens and dice in a tray, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-246",
+  "code": "/cardgame",
+  "desc": "carta de juego de cartas",
+  "origen": "nueva",
+  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible trading card depicting [OBJETO], ornate foil-stamped frame, corner numerals, small ability text box, glossy laminate, all visible text and labels must be written in Spanish with no English words"
+ }
+]
