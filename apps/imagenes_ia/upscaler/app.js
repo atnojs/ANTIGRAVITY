@@ -1,4 +1,4 @@
-﻿const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef } = React;
 
 // =============================================================================
 // CONFIGURACIÃ“N DE MODELOS ESRGAN
@@ -301,7 +301,7 @@ const App = () => {
     const [source, setSource] = useState(null);
     const [sourceInfo, setSourceInfo] = useState(null);
     const [selectedESRGANModel, setSelectedESRGANModel] = useState(MODEL_OPTIONS[3]); // medium-4x por defecto
-    const [selectedModel, setSelectedModel] = useState('openai-image-2'); // Modelo IA (OpenAI image 2 por defecto)
+    const [selectedModel, setSelectedModel] = useState('openai-image-2-low'); // Modelo IA (OpenAI image 2 low por defecto)
     const [isDinA4, setIsDinA4] = useState(false);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('');
@@ -421,6 +421,7 @@ const App = () => {
                     if (proxyData.success && proxyData.imageUrl) {
                         enhancedDataUrl = proxyData.imageUrl;
                         modelLabel = ' + ' + ({
+                            'openai-image-2-low': 'OpenAI image 2 Low',
                             'openai-image-2': 'OpenAI image 2 Medium',
                             'openai-image-2-high': 'OpenAI image 2 High',
                             'openai-medium': 'OpenAI Medium',
@@ -636,7 +637,7 @@ const App = () => {
                       { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-xhigh', 'XHIGH'], ['openai-max-sunburst', 'MAX SUNBURST']] },
                       { provider: 'GEMINI', models: [['gemini-2', 'GEMINI 2'], ['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] },
                       { provider: 'QWEN', models: [['qwen-pro', 'QWEN 3 PRO']] },
-                      { provider: 'IMAGE 2', models: [['openai-image-2', 'MEDIUM'], ['openai-image-2-high', 'HIGH']] }
+                      { provider: 'IMAGE 2', models: [['openai-image-2-low', 'LOW'], ['openai-image-2', 'MEDIUM'], ['openai-image-2-high', 'HIGH']] }
                     ].map(group => (
                       <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
                         <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
@@ -761,6 +762,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2-low': 'OpenAI image 2, calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2, calidad media. Edita la referencia conservando su estilo.',
     'openai-image-2-high': 'OpenAI image 2, calidad alta. Más detalle y texto más nítido.'
 };

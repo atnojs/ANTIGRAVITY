@@ -3,7 +3,7 @@
  * PROXY UNIFICADO — Upscaler Pro (OpenAI GPT Image 2.5 + Gemini)
  * Delega en canonical-image-model.php (ag_image_response) cuando llega 'model':
  * el catálogo vigente (lista cerrada) lo aporta ag_image_catalog(): OpenAI 2.5
- * (medium/high/xhigh/max-flare/max-sunburst), OpenAI image 2 (medium/high),
+ * (medium/high/xhigh/max-flare/max-sunburst), OpenAI image 2 (low/medium/high),
  * Gemini 2 / 3.1 Flash / 3 Pro y Qwen 3 Pro. Cualquier otro id responde 400
  * "Modelo no soportado".
  * El código de imágenes antiguo de más abajo se conserva muerto (no alcanzable).

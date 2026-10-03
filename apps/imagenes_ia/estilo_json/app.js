@@ -96,7 +96,8 @@ const MODEL_LABELS = {
     'openai-max-sunburst': 'MAX SUNBURST',
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
-    'qwen-pro': 'QWEN 3 PRO'
+    'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2-low': 'IMAGE 2 LOW'
 };
 const state = {
     styleImage: null,     // { data(b64 puro), mimeType, preview(dataURL) }
@@ -104,7 +105,7 @@ const state = {
     estiloJson: null,     // objeto JSON del estilo (persistente)
     history: [],
     selectedRes: 1024,
-    selectedModel: 'openai-image-2',
+    selectedModel: 'openai-image-2-low',
     isAnalyzing: false,
     isGenerating: false,
     isEnhancing: false,

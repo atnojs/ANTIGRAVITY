@@ -12,12 +12,13 @@ const MODEL_LABELS = {
     'gemini-flash': '3.1 FLASH',
     'gemini-pro': '3 PRO',
     'qwen-pro': 'QWEN 3 PRO',
+    'openai-image-2-low': 'IMAGE 2 LOW',
     'openai-image-2': 'IMAGE 2 MEDIUM',
     'openai-image-2-high': 'IMAGE 2 HIGH'
 };
 
 // --- SELECTOR DE MODELO IA (barra segmentada canónica) ---
-window.selectedModel = 'openai-image-2';
+window.selectedModel = 'openai-image-2-low';
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.model-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -870,7 +871,7 @@ INSTRUCCIONES ABSOLUTAS (OBLIGATORIO):
         }
 
         const payload = {
-            model: window.selectedModel || 'openai-image-2',
+            model: window.selectedModel || 'openai-image-2-low',
             image: subjectData.data,
             mimeType: subjectData.mimeType,
             prompt: promptInstructions

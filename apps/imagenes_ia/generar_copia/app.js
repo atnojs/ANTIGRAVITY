@@ -319,7 +319,7 @@ const mergeHistory = (localItems, serverItems) => {
 // Llama al proxy de imágenes. Contrato: {prompt, calidad, quality, aspectRatio, targetPx, imagen?}
 // -> {success, imageUrl (data URL), coste, modelo, calidad, width, height}
 const callImageModel = async ({ prompt, calidad, quality, aspectRatio, targetPx, imagen }) => {
-    const body = { prompt, calidad, quality, aspectRatio, targetPx, model: (window.selectedModel || 'openai-image-2') };
+    const body = { prompt, calidad, quality, aspectRatio, targetPx, model: (window.selectedModel || 'openai-image-2-low') };
     if (imagen) body.imagen = imagen;
     const response = await fetch(PROXY_URL, {
         method: 'POST',
@@ -689,7 +689,7 @@ const App = () => {
     const [imageSize, setImageSize] = useState(RESOLUTION_OPTIONS[0]);
     const [selectedQuality, setSelectedQuality] = useState('medium');
     // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad media.
-    const [selectedModel, setSelectedModel] = useState('openai-image-2');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
 
   // Sincronizar modelo con variable global
   useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
@@ -923,7 +923,7 @@ const App = () => {
                                   { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-xhigh', 'XHIGH'], ['openai-max-sunburst', 'MAX SUNBURST']] },
                                   { provider: 'GEMINI', models: [['gemini-2', 'GEMINI 2'], ['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] },
                                   { provider: 'QWEN', models: [['qwen-pro', 'QWEN 3 PRO']] },
-                                  { provider: 'IMAGE 2', models: [['openai-image-2', 'MEDIUM'], ['openai-image-2-high', 'HIGH']] }
+                                  { provider: 'IMAGE 2', models: [['openai-image-2-low', 'LOW'], ['openai-image-2', 'MEDIUM'], ['openai-image-2-high', 'HIGH']] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
                                     <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
@@ -1048,6 +1048,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2-low': 'OpenAI Image 2 (gpt-image-2), calidad baja. La opción más rápida y económica',
     'openai-image-2': 'OpenAI Image 2 (gpt-image-2), modelo base, calidad media',
     'openai-image-2-high': 'OpenAI Image 2 (gpt-image-2), calidad alta',
     'gemini-2': 'Gemini 2.5 Flash Image, Rápido y económico',

@@ -8,7 +8,8 @@
  *                        ruta Google directa con gemini-3.8-flash quedó reenrutada)
  *   2) mejorarPrompt  : DeepSeek (texto) afina las instrucciones extra
  *   3) aplicarEstilo  : imagen del sujeto + JSON de estilo -> nueva imagen
- *                       ┌─ openai-medium/high/xhigh/max-flare/max-sunburst → gpt-image-2.5-flare/sunburst (edits)
+ *                       ├─ openai-medium/high/xhigh/max-flare/max-sunburst → gpt-image-2.5-flare/sunburst (edits)
+ *                       ├─ openai-image-2-low / openai-image-2 / openai-image-2-high → gpt-image-2 (edits)
  *                       └─ gemini-flash / gemini-pro → OpenRouter sync
  *
  * Claves (cascada, fuente real = SetEnv del .htaccess raíz de Hostinger):

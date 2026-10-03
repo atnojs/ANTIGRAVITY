@@ -91,13 +91,14 @@ function proxyOpenAiImageModels(): array {
 }
 
 // ── Catálogo canónico (2026-09-25): OpenAI 2.5 (5 calidades) + OpenAI image 2
-// (gpt-image-2) + Gemini + QWEN 3 PRO. (lista cerrada) (400 "Modelo no soportado"). ──
+// (gpt-image-2 low/medium/high) + Gemini + QWEN 3 PRO. (lista cerrada) (400 "Modelo no soportado"). ──
 $modelCatalog = [
     'openai-medium'       => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'medium'],
     'openai-high'         => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'high'],
     'openai-xhigh'        => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'xhigh'],
     'openai-max-flare'    => ['backend' => 'openai', 'model' => 'gpt-image-2.5-flare', 'quality' => 'max'],
     'openai-max-sunburst' => ['backend' => 'openai', 'model' => 'gpt-image-2.5-sunburst', 'quality' => 'max'],
+    'openai-image-2-low'  => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'low'],
     'openai-image-2'      => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'medium'],
     'openai-image-2-high' => ['backend' => 'openai', 'model' => 'gpt-image-2', 'quality' => 'high'],
     'gemini-2'            => ['backend' => 'gemini', 'model' => 'google/gemini-2.5-flash-image'],
@@ -219,7 +220,7 @@ PROMPT;
 
 // ─── COMBINE IMAGES → OpenAI 2.5 o Gemini ──────────────────
 if ($task === 'combineImages') {
-    $model = strtolower((string)($input['model'] ?? 'openai-image-2'));
+    $model = strtolower((string)($input['model'] ?? 'openai-image-2-low'));
     $prompt = $input['prompt'] ?? '';
     $aspectRatio = $input['aspectRatio'] ?? '1:1';
     $targetPx = $input['targetPx'] ?? 1024;

@@ -48,7 +48,7 @@ $agConfigured = [
 // Lista blanca cerrada (respaldo si el contrato compartido no estuviera cargado).
 $agModels = function_exists('ag_image_catalog') ? array_keys(ag_image_catalog()) : [
     'openai-medium', 'openai-high', 'openai-xhigh', 'openai-max-flare', 'openai-max-sunburst',
-    'openai-image-2', 'openai-image-2-high', 'gemini-2', 'gemini-flash', 'gemini-pro', 'qwen-pro',
+    'openai-image-2-low', 'openai-image-2', 'openai-image-2-high', 'gemini-2', 'gemini-flash', 'gemini-pro', 'qwen-pro',
 ];
 $agActions = ['generate', 'health', 'models'];
 

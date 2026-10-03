@@ -107,7 +107,7 @@
   // ============================================================
   let currentTool = null;
   let isProcessing = false;
-  let selectedModel = 'openai-image-2';
+  let selectedModel = 'openai-image-2-low';
   let selectedAR = '1:1';      // aspect ratio elegido: '1:1','16:9','9:16','4:3','3:4'
   let selectedRes = 1024;      // resolución (lado mayor px): 512, 1024, 2048, 4096
 
@@ -582,7 +582,8 @@
             '<span class="model-provider-title">IMAGE 2</span>' +
             '<span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>' +
             '<div class="model-toggle-group">' +
-              '<button id="ai-quality-openai-image-2" class="ai-quality-btn model-toggle active" data-model="openai-image-2" type="button" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media. Edita la referencia manteniendo su identidad.">MEDIUM</button>' +
+              '<button id="ai-quality-openai-image-2-low" class="ai-quality-btn model-toggle active" data-model="openai-image-2-low" type="button" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.">LOW</button>' +
+              '<button id="ai-quality-openai-image-2" class="ai-quality-btn model-toggle" data-model="openai-image-2" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media. Edita la referencia manteniendo su identidad.">MEDIUM</button>' +
               '<button id="ai-quality-openai-image-2-high" class="ai-quality-btn model-toggle" data-model="openai-image-2-high" type="button" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.">HIGH</button>' +
             '</div>' +
           '</div>' +
@@ -668,7 +669,7 @@
     var qualityBtns = section.querySelectorAll('.ai-quality-btn');
     qualityBtns.forEach(function (qb) {
       qb.onclick = function () {
-        selectedModel = qb.getAttribute('data-model') || 'openai-image-2';
+        selectedModel = qb.getAttribute('data-model') || 'openai-image-2-low';
         window.selectedAIModel = selectedModel;
         qualityBtns.forEach(function (b) {
           b.classList.remove('active');

@@ -4,7 +4,7 @@
 // Catálogo canónico (canonical-image-model.php):
 //   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
 //   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
-//   openai-image-2 → gpt-image-2 (medium), openai-image-2-high → gpt-image-2 (high)
+//   openai-image-2-low (low) / openai-image-2 (medium) / openai-image-2-high (high) → gpt-image-2
 //   gemini-2 → google/gemini-2.5-flash-image
 //   gemini-flash → google/gemini-3.1-flash-image, gemini-pro → google/gemini-3-pro-image
 // (lista cerrada) (400 "Modelo no soportado").
@@ -604,4 +604,4 @@ if ($backend === 'gemini') {
 
 // Modelo no reconocido
 http_response_code(400);
-echo json_encode(['error' => ['message' => 'Modelo no soportado. Usa gemini-flash o gemini-pro.']]);
+echo json_encode(['error' => ['message' => 'Modelo no soportado. Usa openai-image-2-low, openai-image-2, openai-image-2-high, gemini-flash o gemini-pro.']]);

@@ -5,6 +5,7 @@
 // Migrado al contrato canónico (canonical-image-model.php):
 //   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
 //   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
+//   openai-image-2-low / openai-image-2 / openai-image-2-high → gpt-image-2 (low/medium/high)
 //   gemini-flash → google/gemini-3.1-flash-image (OpenRouter)
 //   gemini-pro   → google/gemini-3-pro-image     (OpenRouter)
 // (lista cerrada) (400 "Modelo no soportado").

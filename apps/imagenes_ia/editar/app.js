@@ -337,12 +337,12 @@ const IMAGE_PROXY_URL = './proxy_models.php';
 const callModelImage = async ({ prompt, aspectRatio, sourceImage, targetPx = 1024, resolution = '1K' }) => {
     // QWEN IMAGE 3 PRO vive en proxy.php (keepalive + cache en la app);
     // el resto de modelos sigue por proxy_models.php (canonical-image-model.php).
-    const endpoint = ((window.selectedModel || 'openai-image-2') === 'qwen-pro') ? './proxy.php' : IMAGE_PROXY_URL;
+    const endpoint = ((window.selectedModel || 'openai-image-2-low') === 'qwen-pro') ? './proxy.php' : IMAGE_PROXY_URL;
     const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: window.selectedModel || 'openai-image-2',
+            model: window.selectedModel || 'openai-image-2-low',
             prompt,
             imagen: sourceImage || undefined,
             aspectRatio,
@@ -576,7 +576,7 @@ const App = () => {
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
     const [originalImageAR, setOriginalImageAR] = useState(AspectRatio.SQUARE);
-    const [selectedModel, setSelectedModel] = useState('openai-image-2');
+    const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
 
     useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
 
@@ -852,7 +852,7 @@ const App = () => {
                                   { provider: 'OPENAI 2.5', models: [['openai-medium', 'MEDIUM'], ['openai-high', 'HIGH'], ['openai-max-flare', 'MAX FLARE'], ['openai-xhigh', 'XHIGH'], ['openai-max-sunburst', 'MAX SUNBURST']] },
                                   { provider: 'GEMINI', models: [['gemini-2', 'GEMINI 2'], ['gemini-flash', '3.1 FLASH'], ['gemini-pro', '3 PRO']] },
                                   { provider: 'QWEN', models: [['qwen-pro', 'QWEN 3 PRO']] },
-                                  { provider: 'IMAGE 2', models: [['openai-image-2', 'MEDIUM'], ['openai-image-2-high', 'HIGH']] }
+                                  { provider: 'IMAGE 2', models: [['openai-image-2-low', 'LOW'], ['openai-image-2', 'MEDIUM'], ['openai-image-2-high', 'HIGH']] }
                                 ].map(group => (
                                   <div className="model-provider-column" key={group.provider} style={{ minWidth: 0 }}>
                                     <span className="model-provider-title" style={{ display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>{group.provider}</span>
@@ -974,6 +974,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'gemini-flash': 'Texto en imágenes, Rápido.',
     'gemini-pro': 'Máxima calidad, Perfecto para texto',
     'qwen-pro': 'Texto nítido 10px y 12 idiomas, Layouts densos, El más barato, Seed reproducible',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. Modelo por defecto del proyecto.',
     'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.'
 };

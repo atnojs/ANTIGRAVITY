@@ -4,7 +4,7 @@
  * Delega en canonical-image-model.php (ag_image_response):
  *   openai-medium / openai-high / openai-max-flare → gpt-image-2.5-flare
  *   openai-xhigh / openai-max-sunburst           → gpt-image-2.5-sunburst
- *   openai-image-2 / openai-image-2-high         → gpt-image-2 (medium/high)
+ *   openai-image-2-low / openai-image-2 / openai-image-2-high → gpt-image-2 (low/medium/high)
  *   gemini-2 → google/gemini-2.5-flash-image, gemini-flash → google/gemini-3.1-flash-image,
  *   gemini-pro → google/gemini-3-pro-image, qwen-pro → qwen/qwen-image-3-pro
  * (lista cerrada) (400 "Modelo no soportado").
