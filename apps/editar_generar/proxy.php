@@ -242,12 +242,12 @@ if ($action === 'text' || $action === 'openrouter') {
 // Todas las solicitudes de imagen pasan por el contrato canónico.
 // Esto elimina cualquier ruta heredada de otros modelos y mantiene únicamente el
 // catálogo de canonical-image-model.php: openai-medium, openai-high, openai-xhigh,
-// openai-max-flare, openai-max-sunburst, openai-image-2, openai-image-2-high,
-// gemini-2, gemini-flash, gemini-pro y qwen-pro.
+// openai-max-flare, openai-max-sunburst, openai-image-2-low, openai-image-2,
+// openai-image-2-high, gemini-2, gemini-flash, gemini-pro y qwen-pro.
 // Catálogo OpenAI 2.5 delegado a canonical-image-model.php:
 // gpt-image-2.5-flare (medium/high/max).
 // gpt-image-2.5-sunburst (xhigh/max).
-// gpt-image-2 (medium/high) -> openai-image-2 / openai-image-2-high.
+// gpt-image-2 (low/medium/high) -> openai-image-2-low / openai-image-2 / openai-image-2-high.
 // ====================================================================
 // BACKEND: QWEN IMAGE 3 PRO (OpenRouter Image API)
 // Qwen tarda ~100s/imagen y nginx corta a ~55s: worker con keepalive

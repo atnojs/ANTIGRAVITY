@@ -62,6 +62,7 @@ const MODEL_LABELS = {
     'openai-xhigh': 'XHIGH',
     'openai-max-flare': 'MAX FLARE',
     'openai-max-sunburst': 'MAX SUNBURST',
+    'openai-image-2-low': 'LOW',
     'openai-image-2': 'IMAGE 2',
     'openai-image-2-high': 'IMAGE 2 HIGH',
     'gemini-2': 'GEMINI 2',
@@ -313,6 +314,7 @@ window.MODEL_TOOLTIP_TEXTS = {
     'openai-xhigh': 'Precisión en edición, Consistencia (Rostros y Cara).',
     'openai-max-flare': 'Más barato que Sunburst',
     'openai-max-sunburst': 'Precisión en edición, Consistencia (Rostros y Cara).',
+    'openai-image-2-low': 'OpenAI image 2 (gpt-image-2) en calidad baja. La opción más rápida y económica; menos detalle.',
     'openai-image-2': 'OpenAI image 2 (gpt-image-2) en calidad media. Modelo base, rápido y económico.',
     'openai-image-2-high': 'OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM.',
     'gemini-2': 'Gemini 2.5 Flash Image: edición rápida y económica.',
@@ -441,7 +443,7 @@ const generateImage = async (params) => {
     };
 
     // Pasamos 'finalPrompt' como parámetro explícito
-    const result = await callProxy(window.selectedModel || 'openai-image-2', contents, config, finalPrompt);
+    const result = await callProxy(window.selectedModel || 'openai-image-2-low', contents, config, finalPrompt);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "No se pudo generar la imagen");
     }
@@ -457,7 +459,7 @@ const editImageConversation = async (params) => {
         ]
     }];
     const config = { aspectRatio: params.aspectRatio, resolution: params.resolution || 1024, generationConfig: { imageConfig: { aspectRatio: params.aspectRatio } } };
-    const result = await callProxy(window.selectedModel || 'openai-image-2', contents, config);
+    const result = await callProxy(window.selectedModel || 'openai-image-2-low', contents, config);
     if (!result?.success || !result?.imageUrl) {
         throw new Error(result?.error?.message || "Error en la edición conversacional");
     }
@@ -693,8 +695,9 @@ const App = () => {
     const [editInstruction, setEditInstruction] = useState('');
     const [error, setError] = useState(null);
     const [lightboxImage, setLightboxImage] = useState(null);
-  // Modelo base del proyecto: OpenAI image 2 (gpt-image-2) en calidad medium.
-  const [selectedModel, setSelectedModel] = useState('openai-image-2');
+  // Modelo por defecto de esta app: OpenAI image 2 (gpt-image-2) en calidad baja.
+  // El grupo IMAGE 2 va de menor a mayor: LOW, MEDIUM, HIGH.
+  const [selectedModel, setSelectedModel] = useState('openai-image-2-low');
 
   // Sincronizar modelo con variable global (accesible desde callProxy)
   useEffect(() => { window.selectedModel = selectedModel; }, [selectedModel]);
@@ -1144,7 +1147,7 @@ const App = () => {
                                   [
                                     { provider: 'GEMINI', models: [{ id: 'gemini-2', name: 'GEMINI 2' }, { id: 'gemini-flash', name: '3.1 FLASH' }, { id: 'gemini-pro', name: '3 PRO' }] },
                                     { provider: 'QWEN', models: [{ id: 'qwen-pro', name: 'QWEN 3 PRO' }] },
-                                    { provider: 'IMAGE 2', models: [{ id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
+                                    { provider: 'IMAGE 2', models: [{ id: 'openai-image-2-low', name: 'LOW' }, { id: 'openai-image-2', name: 'MEDIUM' }, { id: 'openai-image-2-high', name: 'HIGH' }] }
                                   ]
                                 ].map((row, rowIndex) => (
                                   <div className="model-provider-row" key={rowIndex}>
