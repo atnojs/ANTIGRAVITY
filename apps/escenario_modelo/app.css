@@ -31,12 +31,16 @@
   --maxw: 1440px;
 }
 
-/* Disposición canónica del selector de modelos por proveedor. */
+/* Disposición canónica del selector de modelos por proveedor.
+   Se permite el salto de línea (wrap) tanto entre columnas como dentro de cada
+   grupo de píldoras: con 4 proveedores y 5 botones en OPENAI 2.5, la fila es más
+   ancha que la columna principal y sin wrap los botones se salían y se pisaban. */
 .model-provider-layout {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 1rem 1.25rem;
   width: 100%;
 }
 .model-provider-column {
@@ -44,18 +48,29 @@
   flex-direction: column;
   align-items: center;
   gap: .35rem;
+  flex: 1 1 220px;
   min-width: 0;
+  max-width: 100%;
 }
 .model-provider-title {
   color: var(--muted, #99CCCC);
   font-size: 1.05rem;
   letter-spacing: .08em;
   text-transform: uppercase;
+  text-align: center;
 }
 @media (max-width: 700px) {
-  .model-provider-layout { gap: .5rem; }
-  .model-toggle-group { gap: .2rem; }
-  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
+  .model-provider-layout { gap: .75rem .5rem; }
+  .model-provider-column { flex: 1 1 160px; }
+  .model-provider-title { font-size: .9rem; }
+  .model-toggle-group { gap: .35rem; }
+  .model-toggle { font-size: .76rem; padding: .5rem .6rem; }
+}
+/* En pantallas estrechas los proveedores se apilan para que cada grupo de
+   píldoras use todo el ancho disponible. */
+@media (max-width: 480px) {
+  .model-provider-layout { flex-direction: column; align-items: stretch; }
+  .model-provider-column { flex: none; width: 100%; }
 }
 
 /* === Reset === */
@@ -354,7 +369,9 @@ h1 {
   color: var(--muted); font-size: .8rem; letter-spacing: 0.08em; text-transform: uppercase;
 }
 .model-toggle-group {
-  display: inline-flex; gap: .5rem; padding: .3rem; border-radius: 999px;
+  display: inline-flex; flex-wrap: wrap; justify-content: center;
+  gap: .5rem; padding: .3rem; border-radius: 999px;
+  max-width: 100%;
   background: var(--card-bg); border: 1px solid var(--border);
   box-shadow: 0 0 12px var(--glow-soft);
 }
@@ -363,6 +380,12 @@ h1 {
   padding: .55rem 1rem; border-radius: 999px; border: 1px solid transparent;
   background: transparent; color: var(--muted); cursor: pointer;
   transition: all .25s ease; text-transform: uppercase; white-space: nowrap;
+  max-width: 100%;
+}
+/* En móvil el pill ya no es una cápsula única: se redondea el envoltorio para
+   que los botones que saltan de línea no queden recortados por el radio. */
+@media (max-width: 700px) {
+  .model-toggle-group { border-radius: 18px; padding: .35rem; }
 }
 .model-toggle:hover {
   color: var(--text); border-color: var(--border-strong);
