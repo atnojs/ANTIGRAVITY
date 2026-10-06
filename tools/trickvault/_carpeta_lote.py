@@ -325,7 +325,7 @@ def aplicar(carpeta):
     return 0
 
 
-def sujetos(carpeta, sujeto, palabra=None, palabra_codes=()):
+def sujetos(carpeta, sujeto, palabra=None, palabra_codes=(), sin_pista=()):
     """Escribe los dos ficheros de una carpeta con EL MISMO sujeto:
     _sujetos_<carpeta>.json (sustituye [OBJETO]) y _ejemplos_<carpeta>.json
     (pista para las tarjetas cuyo prompt no lleva [OBJETO]).
@@ -333,15 +333,21 @@ def sujetos(carpeta, sujeto, palabra=None, palabra_codes=()):
     - `sujeto`: el objeto unico de la carpeta.
     - `palabra` + `palabra_codes`: para los codigos cuyo [OBJETO] es EL TEXTO a
       rotular (lettering, typography), se usa la misma palabra en todos.
+    - `sin_pista`: codigos que son ESCENAS AUTOSUFICIENTES (galaxy, dragon,
+      blackhole...). No llevan [OBJETO] ni pista: su prompt ya lo describe todo y
+      meterles un objeto los estropearia.
     - `_excepciones_<carpeta>.json` (id -> sujeto): tarjetas cuyo prompt exige una
       categoria concreta (un animal, una celula, un plato) y no admiten el objeto.
     """
     f_exc = os.path.join(TOOLS, '_excepciones_%s.json' % carpeta)
     exc = json.load(open(f_exc, encoding='utf-8')) if os.path.exists(f_exc) else {}
     pend = pendientes(carpeta)
-    con, sin, usadas = {}, {}, {'objeto': 0, 'palabra': 0, 'excepcion': 0}
+    con, sin, usadas = {}, {}, {'objeto': 0, 'palabra': 0, 'excepcion': 0, 'escena': 0}
     for t in pend:
         if '[OBJETO]' not in PROMPTS[t['code']]:
+            if t['code'] in sin_pista:
+                usadas['escena'] += 1          # escena autosuficiente: sin pista
+                continue
             sin[t['id']] = 'Example: %s.' % sujeto.rstrip('.')
             continue
         if t['id'] in exc:
@@ -359,6 +365,9 @@ def sujetos(carpeta, sujeto, palabra=None, palabra_codes=()):
         print('excepciones  : %d tarjetas' % usadas['excepcion'])
         for i, s in sorted(exc.items()):
             print('    %-14s %s' % (i, s))
+    if usadas['escena']:
+        print('escenas sin pista (autosuficientes): %d tarjetas (%s)'
+              % (usadas['escena'], ', '.join(sorted(sin_pista))))
     print('pistas de ejemplo: %d tarjetas' % len(sin))
     return 0
 
@@ -405,9 +414,11 @@ if __name__ == '__main__':
         sys.exit(validar())
     elif modo == 'sujetos':
         resto = sys.argv[4:]
-        palabra, codes = None, set()
+        palabra, codes, sinp = None, set(), set()
         if '--palabra' in resto:
             palabra = resto[resto.index('--palabra') + 1]
         if '--codes' in resto:
             codes = set(resto[resto.index('--codes') + 1].split(','))
-        sys.exit(sujetos(carpeta, sys.argv[3], palabra, codes))
+        if '--sin-pista' in resto:
+            sinp = set(resto[resto.index('--sin-pista') + 1].split(','))
+        sys.exit(sujetos(carpeta, sys.argv[3], palabra, codes, sinp))
