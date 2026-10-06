@@ -67,6 +67,9 @@ mismo sujeto, para que el ejemplo no sea un cartel inventado.
 - **Si en el prompt el `[OBJETO]` es el TEXTO a rotular** (lettering, typography:
   "letterforms spelling [OBJETO]"), no se le pone un objeto: se usa **una única
   palabra** para todos esos códigos de la carpeta (`--palabra` en la herramienta).
+- **Si el prompt ya describe una escena completa** (`/galaxy`, `/blackhole`,
+  `/dragon`, `/wizard`…), no lleva `[OBJETO]` **ni pista**: se pasa en
+  `--sin-pista` y se genera tal cual. Meterle un objeto la estropea.
 - **Si el prompt exige una categoría concreta** (un animal, una célula, una
   planta, un ciclo, un plato) y el objeto común no encaja, se le da un sujeto de
   esa categoría y se anota como excepción en `_excepciones_<carpeta>.json`.
