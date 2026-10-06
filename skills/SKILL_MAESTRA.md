@@ -537,40 +537,77 @@ Aplicar este patrón en toda app de generación o edición de imágenes que ofre
 
 ### Estilo (única especificación)
 
-El campo selector de modelo IA es una **barra de toggles pill unificada** (estilo validado por Antonio, 2026-08-09, implementado en `apps/imagenes_ia/editar_copia`):
+El campo selector de modelo IA es una **barra de toggles pill unificada** (estilo validado por Antonio el 2026-08-09; especificación corregida el 2026-10-06 tras medirlo en `apps/angulos_de_camara` y `apps/estilizador_prompt`):
 
-- **Un solo contenedor** de vidrio azulado `var(--card-bg)` con borde cian `var(--border)`, radio de píldora (`999px`), halo exterior suave y `gap:.5rem` entre botones. NO botones individuales separados fuera de la barra.
-- **Botones pill** con `padding:.55rem 1rem`, borde transparente por defecto, texto `var(--muted)`, tipografía Electrolize y `text-transform:uppercase`.
+- **Un solo contenedor por proveedor** de vidrio azulado `var(--card-bg)` con borde cian `var(--border)`, radio de píldora (`999px`), halo exterior suave y `gap:.35rem` entre botones. NO botones individuales separados fuera de la barra.
+- **Botones pill** con `padding:.5rem .85rem`, borde transparente por defecto, texto `var(--muted)`, tipografía Electrolize y `text-transform:uppercase`.
+- **Los botones de un grupo van SIEMPRE en línea**: el grupo nunca se comprime hasta apilarlos en columna, ni esconde botones detrás de un scroll interno (prohibido `overflow-x` en `.model-toggle-group`).
+- **El selector ocupa un MÍNIMO DE DOS LÍNEAS**: `OPENAI 2.5` (5 botones) en la primera y `GEMINI` + `QWEN` + `IMAGE 2` en la segunda, que salta a una tercera solo cuando el ancho disponible no da para los tres. Nunca una sola línea comprimida.
 - **Estados**: el segmento activo se resalta con gradiente `var(--contenedor) → var(--acc)` (cian) y texto `#CCFFFF` con glow; los inactivos, texto `var(--muted)` sobre fondo transparente.
 - **NO usar estados separados por proveedor**: el activo es único (sin clases de proveedor en el HTML).
 
 ### Orden de los modelos (menor → mayor capacidad)
 
-La referencia vigente es `apps/dibujo_lineas_copia`: los botones se agrupan por proveedor en columnas (`.model-provider-layout` → `.model-provider-column`), cada grupo con su título y su barra de píldoras. Regla de orden: **de izquierda a derecha, de menor a mayor calidad DENTRO de cada modelo real** (primero todos los de un modelo, en orden creciente; después los del siguiente). Orden actual:
+La referencia vigente para el **catálogo y su orden** es `apps/dibujo_lineas_copia`: los botones se agrupan por proveedor (`.model-provider-layout` → `.model-provider-column`, con su título, su aviso y su barra de píldoras en **una sola línea de botones**) y esos grupos se reparten en **líneas** dentro de `.model-provider-row`. Para el **CSS** manda el bloque canónico de más abajo (medido en `apps/estilizador_prompt`); `apps/dibujo_lineas_copia` todavía sirve el bloque antiguo. Regla de orden: **de izquierda a derecha, de menor a mayor calidad DENTRO de cada modelo real** (primero todos los de un modelo, en orden creciente; después los del siguiente). Orden actual:
 
-1. Columna `OPENAI 2.5`, agrupada por modelo: primero `gpt-image-2.5-flare` → `MEDIUM` (`openai-medium` / `medium`), `HIGH` (`openai-high` / `high`), `MAX FLARE` (`openai-max-flare` / `max`); después `gpt-image-2.5-sunburst` → `XHIGH` (`openai-xhigh` / `xhigh`), `MAX SUNBURST` (`openai-max-sunburst` / `max`).
-2. Columna `GEMINI` (de menor a mayor): `3.1 FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`; `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image`.
-3. Columna `QWEN`: `QWEN 3 PRO` — `qwen-pro` — `qwen/qwen-image-3-pro`.
-4. Columna `IMAGE 2` (de menor a mayor): `LOW` — `openai-image-2-low` — `gpt-image-2` / `low`; `MEDIUM` — `openai-image-2` — `gpt-image-2` / `medium`; `HIGH` — `openai-image-2-high` — `gpt-image-2` / `high`.
+1. Grupo `OPENAI 2.5`, agrupado por modelo: primero `gpt-image-2.5-flare` → `MEDIUM` (`openai-medium` / `medium`), `HIGH` (`openai-high` / `high`), `MAX FLARE` (`openai-max-flare` / `max`); después `gpt-image-2.5-sunburst` → `XHIGH` (`openai-xhigh` / `xhigh`), `MAX SUNBURST` (`openai-max-sunburst` / `max`).
+2. Grupo `GEMINI` (de menor a mayor): `GEMINI 2` — `gemini-2` — `google/gemini-2.5-flash-image`; `3.1 FLASH` — `gemini-flash` — `google/gemini-3.1-flash-image`; `3 PRO` — `gemini-pro` — `google/gemini-3-pro-image`.
+3. Grupo `QWEN`: `QWEN 3 PRO` — `qwen-pro` — `qwen/qwen-image-3-pro`.
+4. Grupo `IMAGE 2` (de menor a mayor): `LOW` — `openai-image-2-low` — `gpt-image-2` / `low`; `MEDIUM` — `openai-image-2` — `gpt-image-2` / `medium`; `HIGH` — `openai-image-2-high` — `gpt-image-2` / `high`.
 
 Estado inicial: **`openai-image-2-low` (IMAGE 2 · LOW) seleccionado**, en todas las apps por petición expresa del usuario (la diferencia de coste frente a `medium` lo justifica). No cambiar ids, etiquetas ni el estado inicial sin petición expresa.
 
 ### Marcado HTML
 
-Ejemplo reducido (una columna por proveedor, con la barra de píldoras dentro):
+Estructura canónica: `OPENAI 2.5` como primer grupo y **los otros tres dentro de `.model-provider-row`**, que es lo que garantiza el mínimo de dos líneas.
 
 ```html
-<div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
-  <div class="model-provider-column">
-    <span class="model-provider-title">IMAGE 2</span>
-    <div class="model-toggle-group">
-      <button type="button" class="model-toggle active" data-model="openai-image-2-low" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad baja.">LOW</button>
-      <button type="button" class="model-toggle" data-model="openai-image-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media.">MEDIUM</button>
-      <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta.">HIGH</button>
+<div id="model-selector" class="model-selector">
+  <span class="model-selector-label">Modelo IA</span>
+  <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo">
+    <div class="model-provider-column">
+      <span class="model-provider-title">OPENAI 2.5</span>
+      <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+      <div class="model-toggle-group">
+        <button type="button" class="model-toggle" data-model="openai-medium" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-flare · calidad media">MEDIUM</button>
+        <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-flare · calidad alta">HIGH</button>
+        <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-flare · calidad máxima">MAX FLARE</button>
+        <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-sunburst · precisión en edición">XHIGH</button>
+        <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-sunburst · calidad máxima">MAX SUNBURST</button>
+      </div>
+    </div>
+    <div class="model-provider-row">
+      <div class="model-provider-column">
+        <span class="model-provider-title">GEMINI</span>
+        <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+        <div class="model-toggle-group">
+          <button type="button" class="model-toggle" data-model="gemini-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gemini-2.5-flash-image · el más ligero">GEMINI 2</button>
+          <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gemini-3.1-flash-image · texto en imágenes">3.1 FLASH</button>
+          <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gemini-3-pro-image · máxima calidad">3 PRO</button>
+        </div>
+      </div>
+      <div class="model-provider-column">
+        <span class="model-provider-title">QWEN</span>
+        <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+        <div class="model-toggle-group">
+          <button type="button" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="qwen-image-3-pro · texto nítido, el más barato">QWEN 3 PRO</button>
+        </div>
+      </div>
+      <div class="model-provider-column">
+        <span class="model-provider-title">IMAGE 2</span>
+        <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+        <div class="model-toggle-group">
+          <button type="button" class="model-toggle active" data-model="openai-image-2-low" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="gpt-image-2 · calidad baja, la más rápida y económica">LOW</button>
+          <button type="button" class="model-toggle" data-model="openai-image-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2 · calidad media">MEDIUM</button>
+          <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2 · calidad alta">HIGH</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 ```
+
+Los avisos `model-quality-hint` de GEMINI, QWEN e IMAGE 2 van vacíos de contenido visible (`aria-hidden="true"` + `visibility:hidden`) para alinear en vertical los grupos de la misma línea. **No los quites**: sin ellos, el grupo de OPENAI 2.5 queda más alto y descuadra la línea.
 
 No añadir clases de proveedor a los botones: el activo se marca únicamente con `active`.
 
@@ -597,7 +634,7 @@ Verificar que existan estos tokens. Si faltan, añadirlos al `:root` de la app d
 
 ### CSS canónico responsive (toggles pill hoola)
 
-Copiar este bloque completo, idéntico al implementado en `apps/imagenes_ia/editar_copia`:
+Copiar este bloque completo, tal como quedó implementado y medido en `apps/estilizador_prompt` (2026-10-06):
 
 ```css
 .model-selector {
@@ -607,14 +644,43 @@ Copiar este bloque completo, idéntico al implementado en `apps/imagenes_ia/edit
 .model-selector-label {
   color:var(--muted); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
 }
+/* Columna de líneas: OPENAI 2.5 arriba y el resto dentro de .model-provider-row. */
+.model-provider-layout {
+  display:flex; flex-direction:column; align-items:center; gap:.6rem; width:100%;
+}
+/* Fila de grupos: se reparte en el menor número de líneas posible. */
+.model-provider-row {
+  display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start;
+  gap:.55rem 1.4rem; max-width:100%;
+}
+/* Cada grupo: ancho = su contenido. Nunca se comprime hasta apilar los botones. */
+.model-provider-column {
+  display:flex; flex-direction:column; align-items:center; gap:.35rem;
+  flex:0 1 auto; min-width:0; max-width:100%;
+}
+.model-provider-title {
+  color:var(--muted); font-size:1.05rem; letter-spacing:.08em; text-transform:uppercase;
+}
+.model-quality-hint {
+  color:var(--faint); font-size:.85rem; letter-spacing:.1em; text-transform:uppercase;
+  text-shadow:0 0 8px var(--glow-soft);
+}
+/* Los avisos invisibles solo alinean en vertical: no deben reservar ancho (249px
+   de texto forzaban líneas de más). Altura intacta, ancho cero. */
+.model-quality-hint[aria-hidden="true"] {
+  width:0; min-width:0; white-space:nowrap; overflow:hidden;
+}
+/* Capsula del grupo: envuelve (nunca overflow-x/scroll interno). */
 .model-toggle-group {
-  display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
+  display:inline-flex; flex-wrap:wrap; justify-content:center; max-width:100%;
+  gap:.35rem; padding:.25rem; border-radius:999px;
   background:var(--card-bg); border:1px solid var(--border);
   box-shadow:0 0 12px var(--glow-soft);
 }
 .model-toggle {
+  flex:0 0 auto; max-width:100%;
   font-family:var(--font-ui); font-size:.9rem; letter-spacing:0.04em;
-  padding:.55rem 1rem; border-radius:999px; border:1px solid transparent;
+  padding:.5rem .85rem; border-radius:999px; border:1px solid transparent;
   background:transparent; color:var(--muted); cursor:pointer;
   transition:all .25s ease; text-transform:uppercase; white-space:nowrap;
 }
@@ -628,9 +694,31 @@ Copiar este bloque completo, idéntico al implementado en `apps/imagenes_ia/edit
   color:#CCFFFF; text-shadow:0 0 8px var(--glow);
   border-color:var(--border-strong); box-shadow:0 0 18px var(--glow);
 }
+/* Responsive DESPUÉS de las reglas base: con menos especificidad y antes, la base
+   las sobreescribe y la compactación de móvil no se aplica (error ya cometido). */
+@media (max-width: 700px) {
+  .model-provider-layout { gap:.5rem; }
+  .model-provider-row { gap:.45rem .5rem; }
+  .model-toggle-group { gap:.25rem; padding:.25rem; border-radius:16px; }
+  .model-toggle { font-size:.76rem; padding:.5rem .6rem; }
+}
+@media (max-width: 600px) {
+  /* Cada grupo ocupa su propia línea con su ancho de contenido, centrado. */
+  .model-toggle-group { width:auto; }
+}
 ```
 
-**Validación visual (Antonio, 2026-08-09):** los botones pill NO deben tocarse entre sí. Usar `gap:.5rem` dentro del contenedor `inline-flex` y NO usar `border-left` divisor. Barra centrada debajo de todos los campos.
+**Variante para paneles estrechos (~550px o menos, como `apps/angulos_de_camara`):** sin `.model-provider-row` en el HTML, los cuatro grupos son hijos directos y el contenedor los empaqueta en el mínimo de líneas. Solo cambian estas declaraciones:
+
+```css
+.model-provider-layout {
+  flex-flow:row wrap; align-items:flex-start; gap:.55rem 1rem; width:100%;
+}
+```
+
+**Validación visual (Antonio, 2026-08-09):** los botones pill NO deben tocarse entre sí. Usar `gap` dentro del contenedor `inline-flex` y NO usar `border-left` divisor. Barra centrada debajo de todos los campos.
+
+**Corrección medida (2026-10-06):** el bloque anterior (una sola fila sin `flex-wrap`, `gap:.5rem` y `padding:.55rem 1rem`) comprimía las cuatro columnas hasta apilar los botones en vertical o cortarlos, y el grupo más largo (`OPENAI 2.5` = 531px medidos con Electrolize) no cabía. Esta versión está medida en Chrome a 1920/1600/1440/1280/1100/900/800/700/600/480/390/320px.
 
 ### Botones de relación de aspecto (AR)
 
@@ -716,12 +804,16 @@ Fallback seguro para valores omitidos: `openai-image-2-low`. Los modelos de Open
 ### Validación y publicación obligatorias
 
 1. Confirmar que la app de referencia no aparece en el diff cuando solo es el origen visual.
-2. Probar que las barras de toggles no desbordan el panel y que no existe scroll horizontal ni texto recortado.
-3. Verificar las etiquetas y los identificadores completos de cada columna, en el orden de menor a mayor calidad dentro de cada modelo: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `MAX FLARE` del modelo flare; `XHIGH`, `MAX SUNBURST` del modelo sunburst), `GEMINI` (`3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`LOW`, `MEDIUM`, `HIGH`).
+2. Probar que los grupos de toggles **no se comprimen**: cada grupo conserva el ancho de su contenido, los botones de un grupo van en una sola línea (salvo que el panel sea más estrecho que el grupo), el selector ocupa **como mínimo dos líneas**, y no hay scroll horizontal ni texto recortado. Medirlo en Chrome con `capturas-verificacion`, no a ojo.
+3. Verificar las etiquetas y los identificadores completos de cada grupo, en el orden de menor a mayor calidad dentro de cada modelo: `OPENAI 2.5` (`MEDIUM`, `HIGH`, `MAX FLARE` del modelo flare; `XHIGH`, `MAX SUNBURST` del modelo sunburst), `GEMINI` (`GEMINI 2`, `3.1 FLASH`, `3 PRO`), `QWEN` (`QWEN 3 PRO`) e `IMAGE 2` (`LOW`, `MEDIUM`, `HIGH`).
 4. Probar estados normal, hover y activo: activo con gradiente `contenedor→cian` y texto `#CCFFFF`.
 5. Probar los cinco botones AR: icono y texto legibles, selección funcional y foco visible.
 6. Confirmar `openai-image-2-low` (IMAGE 2 · LOW) como estado inicial y revisar el payload de todos los botones.
-7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting. **Ojo: en Hostinger la caché de estáticos (LiteSpeed) se indexa por RUTA e ignora la query string**, así que subir `?v=` no siempre basta: si tras desplegar un cambio de CSS/JS el navegador sigue recibiendo el fichero viejo (compruébalo con `web_fetch` sobre la URL pública, también con un parámetro nuevo), **renombra el fichero** (p. ej. `app.css` → `app.20261003.css`), actualiza la referencia y borra el antiguo. El despliegue por webhook tarda ~2-3 minutos: una URL nueva da 404 hasta que termina.
+7. Cache de estáticos. **En Hostinger la caché (hcdn/LiteSpeed) se indexa por RUTA**, así que subir el `?v=` no siempre basta. Procedimiento:
+   - Sube la versión en `index.html` (`app.css?v=N`), haz push y comprueba la URL pública **con un parámetro nuevo y aleatorio** (`app.css?t=<guid>`). No uses el mismo parámetro que sirve el `index.html`: si lo pides antes de que termine el despliegue, la CDN cachea ahí la versión vieja durante días y dejas a los usuarios con el CSS antiguo (error ya cometido).
+   - Si la ruta pública sigue sirviendo lo viejo, **renombra el fichero** con fecha (`app.css` → `app.20261006.css`), actualiza la referencia y haz push.
+   - **No borres el fichero antiguo**: los navegadores con el `index.html` cacheado siguen pidiéndolo. Se deja publicado y se elimina en una limpieza posterior, cuando ya no quede HTML en caché.
+   - El despliegue por webhook tarda de ~1 a varios minutos: una URL nueva da 404 hasta que termina. No lo declares desplegado hasta que sirva el contenido nuevo.
 8. Revisar el diff, crear commit, hacer push a la rama de despliegue y **verificar la URL real** (no solo el diff): leer el HTML y el CSS/JS publicados para confirmar que sirven el contenido nuevo y que la referencia del `index.html` apunta a un fichero que existe.
 9. Capturar la **URL desplegada** con Chrome headless (`capturas-verificacion`) y adjuntarla en la respuesta junto a la comparativa antes/después y la tabla de medidas.
 
