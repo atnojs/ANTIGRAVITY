@@ -163,11 +163,11 @@ function ag_image_generate(array $request, string $configDir = ''): array
         $headers = ['Authorization: Bearer '.$key, 'Content-Type: application/json'];
         $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($images !== []) {
-            // TODAS las referencias viajan al endpoint de edición (hasta 16 en los
-            // modelos GPT Image): enviar solo la primera descartaba la prenda, el
+            // TODAS las referencias (hasta 8, el tope de este contrato) viajan al
+            // endpoint de edición: enviar solo la primera descartaba la prenda, el
             // estilo u objeto que la app adjunta como segunda imagen.
             $references = [];
-            foreach (array_slice($images, 0, 16) as $position => $image) {
+            foreach ($images as $position => $image) {
                 [$binary, $mime] = ag_image_input($image);
                 $ext = str_contains($mime, 'png') ? 'png' : (str_contains($mime, 'webp') ? 'webp' : 'jpg');
                 $references[] = ['binary'=>$binary, 'mime'=>$mime, 'filename'=>'referencia_'.($position + 1).'.'.$ext];
