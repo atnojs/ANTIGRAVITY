@@ -95,6 +95,30 @@ function ag_image_result(string $b64, string $mime, array $selected, string $pro
     ];
 }
 
+function ag_image_multipart(array $fields, array $files): array
+{
+    // Algunos PHP no exponen curl_mime_* : este constructor arma el
+    // multipart a mano para poder repetir el campo "image[]" tal y como lo
+    // envían los SDK oficiales cuando la edición lleva varias referencias.
+    $boundary = '----agimage' . bin2hex(random_bytes(16));
+    $crlf = "\r\n";
+    $body = '';
+    foreach ($fields as $name => $value) {
+        if (!is_string($value) && !is_int($value) && !is_float($value)) continue;
+        $body .= '--' . $boundary . $crlf
+            . 'Content-Disposition: form-data; name="' . $name . '"' . $crlf . $crlf
+            . (string)$value . $crlf;
+    }
+    foreach ($files as $file) {
+        $body .= '--' . $boundary . $crlf
+            . 'Content-Disposition: form-data; name="image[]"; filename="' . $file['filename'] . '"' . $crlf
+            . 'Content-Type: ' . $file['mime'] . $crlf . $crlf
+            . $file['binary'] . $crlf;
+    }
+    $body .= '--' . $boundary . '--' . $crlf;
+    return [$body, 'multipart/form-data; boundary=' . $boundary];
+}
+
 function ag_image_aspect(string $ratio): string
 {
     return in_array($ratio, ['1:1','2:3','3:2','3:4','4:3','4:5','5:4','9:16','16:9','21:9'], true) ? $ratio : '1:1';
@@ -139,11 +163,26 @@ function ag_image_generate(array $request, string $configDir = ''): array
         $headers = ['Authorization: Bearer '.$key, 'Content-Type: application/json'];
         $postFields = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($images !== []) {
-            [$binary, $mime] = ag_image_input($images[0]); $tmp = tempnam(sys_get_temp_dir(), 'ag_image_');
-            if ($tmp === false || file_put_contents($tmp, $binary) === false) throw new RuntimeException('No se pudo preparar la imagen.', 500);
-            $ext = str_contains($mime, 'png') ? 'png' : (str_contains($mime, 'webp') ? 'webp' : 'jpg'); $fields['image[]'] = new CURLFile($tmp, $mime, 'referencia.'.$ext); $endpoint = 'https://api.openai.com/v1/images/edits';
+            // TODAS las referencias viajan al endpoint de edición (hasta 16 en los
+            // modelos GPT Image): enviar solo la primera descartaba la prenda, el
+            // estilo u objeto que la app adjunta como segunda imagen.
+            $references = [];
+            foreach (array_slice($images, 0, 16) as $position => $image) {
+                [$binary, $mime] = ag_image_input($image);
+                $ext = str_contains($mime, 'png') ? 'png' : (str_contains($mime, 'webp') ? 'webp' : 'jpg');
+                $references[] = ['binary'=>$binary, 'mime'=>$mime, 'filename'=>'referencia_'.($position + 1).'.'.$ext];
+            }
+            $endpoint = 'https://api.openai.com/v1/images/edits';
             $headers = ['Authorization: Bearer '.$key];
-            $postFields = $fields;
+            if (count($references) === 1) {
+                $tmp = tempnam(sys_get_temp_dir(), 'ag_image_');
+                if ($tmp === false || file_put_contents($tmp, $references[0]['binary']) === false) throw new RuntimeException('No se pudo preparar la imagen.', 500);
+                $fields['image[]'] = new CURLFile($tmp, $references[0]['mime'], $references[0]['filename']);
+                $postFields = $fields;
+            } else {
+                [$postFields, $multipartType] = ag_image_multipart($fields, $references);
+                $headers[] = 'Content-Type: ' . $multipartType;
+            }
         }
         $ch = curl_init($endpoint); curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$postFields, CURLOPT_HTTPHEADER=>$headers, CURLOPT_CONNECTTIMEOUT=>20, CURLOPT_TIMEOUT=>180]);
         $raw = curl_exec($ch); $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); $error = curl_error($ch); curl_close($ch); if ($tmp !== null) @unlink($tmp);

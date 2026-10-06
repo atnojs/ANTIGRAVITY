@@ -203,6 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'pub-atmosphere', title: 'Ambiente de Pub', description: 'Escena de copas.', prompt: 'Lifestyle scene in a pub. Cheerful lighting, young atmosphere. Full body.' },
     ];
 
+    // ===== REGLAS DE VESTUARIO (dos referencias) =====
+    // La app envía SIEMPRE dos imágenes y en este orden: image 1 = foto de la
+    // persona, image 2 = foto de la prenda. El prompt tiene que decir qué es cada
+    // una: sin esa instrucción explícita el modelo usa la persona y se inventa la ropa.
+    const GARMENT_RULES = 'Reference images: image 1 is the photograph of the person (the model) and image 2 is the garment (clothing item) to wear. Dress the person from image 1 with the EXACT garment shown in image 2: same colour, fabric, texture, print, pattern, cut, length, neckline, sleeves and details (buttons, zips, seams, logos). Keep the identity, face, hair, skin tone, body shape and pose of the person from image 1. The garment must be worn on the body, correctly fitted, with realistic folds, wrinkles and lighting. Never invent or swap the clothing for a different outfit, and never copy the background of the garment photo.';
+    const DEFAULT_SCENE = 'Fashion photograph of the person from image 1, natural pose, professional lighting, clean background. Full body shot, show the ENTIRE person from head to toe without cropping.';
+    const buildPrompt = (scene, extra) => [scene || DEFAULT_SCENE, GARMENT_RULES, extra || ''].filter(Boolean).join(' ');
+
     const fallbackSurpriseStyles = [
         'Brutalismo digital editorial', 'Fotografía cinética futurista', 'Neo-noir lluvioso con reflejos',
         'Bauhaus experimental de moda', 'Dreamcore analógico con grano', 'Editorial retrofuturista 70s',
@@ -244,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: `surprise-${Date.now()}`,
             title: `Sorpresa: ${picked}`,
             description: 'Estilo sorpresa desde referencias de la red.',
-            prompt: `Editorial fashion photography with ${picked} visual style. Full body, show the ENTIRE person from head to toe.`
+            prompt: buildPrompt(`Editorial fashion photography with ${picked} visual style. Full body, show the ENTIRE person from head to toe.`)
         };
     };
 
@@ -379,12 +387,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const customText = customPromptArea ? customPromptArea.value.trim() : '';
         let toGen = selectedCompositions.map(id => compositions.find(c => c.id === id));
         if (toGen.length === 0) {
-            let p = 'Fashion photograph of a person wearing the garment from the reference image. Maintain the persons identity, pose and face, only change the clothing. Full body shot, show the ENTIRE person from head to toe without cropping. Natural pose, professional lighting, clean background.';
-            if (customText) p = `Fashion photograph: ${customText}. Show the ENTIRE person from head to toe, full body, no cropping.`;
-            toGen.push({ id: 'custom-' + Date.now(), title: customText ? 'Personalizada' : 'Directa', description: customText ? customText.slice(0, 40) + '...' : 'Prompt base', prompt: p });
-        } else if (customText) {
-            toGen = toGen.map(c => ({ ...c, prompt: c.prompt + '. ' + customText }));
+            toGen.push({ id: 'custom-' + Date.now(), title: customText ? 'Personalizada' : 'Directa', description: customText ? customText.slice(0, 40) + '...' : 'Prompt base', prompt: DEFAULT_SCENE });
         }
+        // La regla de la prenda se añade SIEMPRE (también con estilo elegido): antes
+        // el prompt del estilo sustituía al de vestir y la prenda se perdía.
+        toGen = toGen.map(comp => ({ ...comp, prompt: buildPrompt(comp.prompt, customText) }));
         try {
             for (const comp of toGen) {
                 try {
