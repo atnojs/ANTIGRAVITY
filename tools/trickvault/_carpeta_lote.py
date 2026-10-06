@@ -192,14 +192,13 @@ def generar(carpeta, forzar_ids=None):
                 raise SystemExit('FALTA SUJETO para %s (%s)' % (t['id'], t['code']))
             p = p.replace('[OBJETO]', sujetos[t['id']])
         elif t['id'] in ejemplos:
-            # La pista se coloca ANTES de la coletilla final: si va despues, el
-            # modelo le hace poco caso (paso con /ghibli, que ignoro el sujeto).
-            pista = ejemplos[t['id']].rstrip('.')
-            marca = ', all visible text and labels must be written in Spanish'
-            if marca in p:
-                p = p.replace(marca, '. ' + pista + marca, 1)
-            else:
-                p = p.rstrip().rstrip('.') + '. ' + pista + '.'
+            # El sujeto va ANTES del cuerpo, justo despues del preambulo, como
+            # "Subject: ...". Al final ("Example: ...") el modelo lo ignora a
+            # veces: paso con /ghibli, /felt y /sandart.
+            bruto = re.sub(r'^\s*Example:\s*', '', ejemplos[t['id']]).rstrip('.')
+            sentencia = 'Subject: %s.' % bruto
+            pos = p.index(PREFIJO) + len(PREFIJO)
+            p = p[:pos] + ' ' + sentencia + p[pos:]
         assert '[OBJETO]' not in p, 'queda [OBJETO] en ' + t['code']
         assert PREFIJO in p and 'must be written in Spanish' in p, 'prompt incompleto en ' + t['code']
         jobs.append({'id': t['id'], 'code': t['code'], 'prompt': p, 'subject': sujetos.get(t['id'], '')})
