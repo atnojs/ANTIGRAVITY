@@ -150,12 +150,14 @@ Verificación (Chrome headless, servido por HTTP local, con capturas en `evidenc
 
 | Comprobación | Resultado |
 |---|---|
-| Tarjetas 1→2 en el navegador | 11/11 |
+| Tarjetas 1→2 en el navegador (nuevo) | 11/11 |
 | Carpeta `xl-transfer1to2` guardada | SÍ |
 | Ejemplos vaciados a propósito y recargando | 11/11 se rellenan solos |
 | Ficheros de ejemplo que cargan (`naturalWidth > 0`) | 11/11, ninguno falla |
+| **Navegador con datos antiguos** (958 tarjetas, 21 carpetas, esquema 3) | recupera las **11 tarjetas** con su ejemplo y **añade la carpeta**; esquema pasa a 4 |
 | Parseo del JSX con `@babel/parser` | OK |
 | Ids `ig-dcek`/`xl-cmd`/`cap-cmd` respecto a HEAD | idénticos (sin desplazamiento) |
+| URL pública `atnojs.es` tras el push | `index.html` con la carpeta y **11/11 ejemplos responden 200** |
 
 Scripts: `_check_trickvault.js` (datos y enlaces), `_gen_ejemplos.py` (ejemplos) y
 `_verifica_transfer.html` (banco de pruebas en Chrome, no versionado).
