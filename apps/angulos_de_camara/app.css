@@ -884,12 +884,17 @@ header p {
   .toggle-btn { font-size: 0.7rem; padding: 0.35rem 0.55rem; }
 }
 
-/* Disposición canónica del selector de modelos por proveedor. */
+/* Disposición canónica del selector de modelos por proveedor.
+   Los botones de cada modelo van SIEMPRE en línea (una fila por grupo) y la fila
+   de proveedores se reparte en el MENOR número de líneas posible según el ancho
+   real de su contenedor: flex-wrap con base = ancho del contenido (flex 0 1 auto),
+   de modo que el navegador empaqueta los grupos sin encogerlos ni apilarlos. */
 .model-provider-layout {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
-  gap: 1rem;
+  gap: .55rem 1rem;
   width: 100%;
 }
 .model-provider-column {
@@ -897,7 +902,9 @@ header p {
   flex-direction: column;
   align-items: center;
   gap: .35rem;
+  flex: 0 1 auto;   /* ancho = contenido: el grupo no se comprime a una columna */
   min-width: 0;
+  max-width: 100%;
 }
 .model-provider-title {
   color: var(--muted, #99CCCC);
@@ -909,12 +916,12 @@ header p {
 /* Kit tooltip modelos (canónico dibujo_lineas_copia) */
 .model-tooltip{position:fixed;z-index:10000;max-width:300px;padding:.55rem 1.05rem;background:linear-gradient(135deg,var(--contenedor),var(--acc));border:1px solid var(--border-strong);border-radius:999px;color:#CCFFFF;font-family:var(--font-ui);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;text-align:center;text-shadow:0 0 8px var(--glow);box-shadow:0 0 18px var(--glow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease,visibility .18s ease} .model-tooltip.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)} .model-tooltip::after{content:"";position:absolute;left:50%;width:11px;height:11px;background:var(--acc);border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg)} .model-tooltip.tip-below{transform:translateY(-6px) scale(.97)} .model-tooltip.tip-below.visible{transform:translateY(0) scale(1)} .model-tooltip.tip-below::after{top:-7px;border-left:1px solid var(--border-strong);border-top:1px solid var(--border-strong);border-right:none;border-bottom:none} .model-tooltip.tip-above::after{bottom:-7px;border-right:1px solid var(--border-strong);border-bottom:1px solid var(--border-strong);border-left:none;border-top:none} @media (prefers-reduced-motion: reduce){.model-tooltip{transition:none}}
 .model-quality-hint{color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 8px var(--glow-soft)}
+/* Los avisos "De Menor a Mayor Calidad" invisibles (GEMINI/QWEN/IMAGE 2) solo
+   sirven para alinear en vertical los grupos de la misma línea: no deben reservar
+   ancho, porque su texto (249px) es más ancho que varios grupos de botones y
+   forzaba líneas de más en el selector. Altura intacta, ancho cero. */
+.model-quality-hint[aria-hidden="true"]{width:0;min-width:0;white-space:nowrap;overflow:hidden}
 
-@media (max-width: 700px) {
-  .model-provider-layout { gap: .5rem; }
-  .model-toggle-group { gap: .2rem; }
-  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
-}
 /* ===== Selector de Modelo IA (patrón canónico toggles pill hoola, SKILL_MAESTRA) ===== */
 .model-selector {
   display:flex; flex-direction:column; align-items:center; gap:.6rem;
@@ -924,15 +931,17 @@ header p {
   color:var(--muted, #99CCCC); font-size:.8rem; letter-spacing:0.08em; text-transform:uppercase;
 }
 .model-toggle-group {
-  display:inline-flex; gap:.5rem; padding:.3rem; border-radius:999px;
+  display:inline-flex; gap:.35rem; padding:.25rem; border-radius:999px;
   background:var(--card-bg); border:1px solid var(--border, rgba(0,208,208,.7));
   box-shadow:0 0 12px rgba(0,208,208,.4); flex-wrap:wrap; justify-content:center;
+  max-width:100%;
 }
 .model-toggle {
   font-family:'Electrolize', system-ui, sans-serif; font-size:.9rem; letter-spacing:0.04em;
-  padding:.55rem 1rem; border-radius:999px; border:1px solid transparent;
+  padding:.5rem .85rem; border-radius:999px; border:1px solid transparent;
   background:transparent; color:var(--muted, #99CCCC); cursor:pointer;
   transition:all .25s ease; text-transform:uppercase; white-space:nowrap;
+  max-width:100%;
 }
 .model-toggle:hover {
   color:var(--text, #eaffff); border-color:var(--border-strong, #00D0D0);
@@ -944,7 +953,18 @@ header p {
   color:#CCFFFF; text-shadow:0 0 8px rgba(0,208,208,.8);
   border-color:var(--border-strong, #00D0D0); box-shadow:0 0 18px rgba(0,208,208,.8);
 }
-@media (max-width:600px) {
-  .model-toggle-group { width:100%; }
-  .model-toggle { flex:1; text-align:center; padding:.55rem .4rem; font-size:.78rem; }
+/* Con menos de ~610px de ancho el grupo de OPENAI 2.5 (el más largo) ya no cabe
+   entero: se compactan tipografía y separaciones para que cada grupo siga usando
+   el menor número de líneas posible y nunca desborde su cápsula.
+   (Van DESPUÉS de las reglas base: si no, la base las sobreescribe.) */
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .45rem .6rem; }
+  .model-toggle-group { gap: .25rem; padding: .25rem; border-radius: 18px; }
+  .model-toggle { font-size: .76rem; padding: .5rem .6rem; }
+}
+@media (max-width: 600px) {
+  /* En móvil cada grupo ocupa su propia línea (ancho de contenido, centrado);
+     si un grupo no cabe entero, sus botones saltan de línea dentro de la cápsula. */
+  .model-toggle-group { width: auto; }
+  .model-toggle { flex: 0 1 auto; text-align: center; }
 }
