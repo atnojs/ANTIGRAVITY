@@ -73,9 +73,9 @@ const EXTRA_FOLDERS = [
     { id: 'xl-planos', label: 'Planos y encuadres', icon: '🎥', color: 'cyan', bgIcon: '🖼️' },
     { id: 'xl-texto', label: 'Comandos de texto', icon: '💬', color: 'emerald', bgIcon: '📝' },
     { id: 'xl-dev', label: 'Dev y productividad', icon: '💻', color: 'amber', bgIcon: '⌨️' },
-    { id: 'xl-transfer1to2', label: 'Transferir 1 → 2', icon: '🔀', color: 'cyan', bgIcon: '🔁' },
 ];
-// Lista canónica: las 21 carpetas que contienen códigos.
+// Lista canónica de las carpetas que contienen códigos. La carpeta
+// «Transferir 1 → 2» se retiró el 2026-10-06 (ver FOLDERS_REMOVED).
 const DEFAULT_FOLDERS = [...EXCEL_FOLDERS, ...EXTRA_FOLDERS];
 const FAVORITES_FOLDER = { id: 'favorites', label: 'Favoritos', icon: '⭐', color: 'amber', bgIcon: '💛' };
 const FOLDERS_KEY = 'trickvault_folders';
@@ -86,6 +86,11 @@ const FOLDERS_SCHEMA_KEY = 'trickvault_folders_schema';
 // v4 (2026-10-06): añade la carpeta «Transferir 1 → 2» a quien ya tuviera su
 // lista guardada en el navegador (loadFolders añade una sola vez las que falten).
 const FOLDERS_SCHEMA_VERSION = 4;
+// Carpetas retiradas del catálogo (2026-10-06): se quitan de la lista guardada en
+// el navegador aunque su versión de esquema ya esté al día. NO subir
+// FOLDERS_SCHEMA_VERSION para esto: al subirla se volverían a añadir todas las
+// carpetas por defecto, incluidas las que el usuario haya borrado a mano.
+const FOLDERS_REMOVED = ['xl-transfer1to2'];
 
 // Mapa comando de imagen -> carpeta
 const CODE_FOLDER = {
@@ -383,11 +388,6 @@ const CODE_FOLDER = {
     '/imax': 'xl-estilos',
     '/terminal': 'xl-dev',
     '/ascii': 'xl-letras3d',
-    // Transferencias «1 → 2»: la imagen 1 es la referencia y la 2 la que se edita.
-    '/transferoutfit-1to2': 'xl-transfer1to2', '/colorgrade-1to2': 'xl-transfer1to2', '/matchpose-1to2': 'xl-transfer1to2',
-    '/transferlight-1to2': 'xl-transfer1to2', '/transferhair-1to2': 'xl-transfer1to2', '/transfermakeup-1to2': 'xl-transfer1to2',
-    '/transferaccessories-1to2': 'xl-transfer1to2', '/transferscene-1to2': 'xl-transfer1to2', '/transferweather-1to2': 'xl-transfer1to2',
-    '/matchexpression-1to2': 'xl-transfer1to2', '/transferpattern-1to2': 'xl-transfer1to2',
 };
 
 const DIFFICULTIES = [
@@ -1021,7 +1021,13 @@ const REMOVED_IMAGE_IDS = new Set([
     'ig-dcek-118', 'ig-dcek-119', 'ig-dcek-120', 'ig-dcek-121', 'ig-dcek-122',
     'ig-dcek-123', 'ig-dcek-124', 'ig-dcek-125', 'ig-dcek-126', 'ig-dcek-127',
     'ig-dcek-128', 'ig-dcek-129', 'ig-dcek-130', 'ig-dcek-131', 'ig-dcek-132',
-    'ig-dcek-133', 'ig-dcek-134', 'ig-dcek-135', 'ig-dcek-136'
+    'ig-dcek-133', 'ig-dcek-134', 'ig-dcek-135', 'ig-dcek-136',
+    // Carpeta «Transferir 1 → 2» retirada el 2026-10-06: sus 11 tarjetas (ids
+    // propios tr-cmd) se borran también de los navegadores que ya las tuvieran
+    // guardadas y no vuelven a entrar al recargar.
+    'tr-cmd-001', 'tr-cmd-002', 'tr-cmd-003', 'tr-cmd-004', 'tr-cmd-005',
+    'tr-cmd-006', 'tr-cmd-007', 'tr-cmd-008', 'tr-cmd-009', 'tr-cmd-010',
+    'tr-cmd-011'
 ]);
 
 
@@ -2269,44 +2275,6 @@ const CAPTURE_COMMANDS = [
     ['/ascii', 'imagen hecha con caracteres'],
 ];
 
-// ── 11 transferencias «1 → 2» (2026-10-06): la imagen 1 es la REFERENCIA y la
-//    imagen 2 es la que se edita. Probadas una por una contra el modelo antes de
-//    entrar aquí (ver tools/transfer_1to2). OJO: los ids de catálogo
-//    (ig-dcek / xl-cmd / cap-cmd) son POSICIONALES, así que estas tarjetas van con
-//    prefijo propio (tr-cmd) y SIEMPRE al final de SEED_TRICKS: no desplazan
-//    ningún id ya guardado en los navegadores.
-const TRANSFER_COMMANDS = [
-    ['/transferoutfit-1to2', 'pone a tu sujeto la ropa de la imagen 1'],
-    ['/colorgrade-1to2', 'copia el color de la imagen 1'],
-    ['/matchpose-1to2', 'copia la pose de la imagen 1'],
-    ['/transferlight-1to2', 'copia la luz de la imagen 1'],
-    ['/transferhair-1to2', 'copia el peinado de la imagen 1'],
-    ['/transfermakeup-1to2', 'copia el maquillaje de la imagen 1'],
-    ['/transferaccessories-1to2', 'copia los accesorios de la imagen 1'],
-    ['/transferscene-1to2', 'mete a tu sujeto en la escena de la imagen 1'],
-    ['/transferweather-1to2', 'copia el clima de la imagen 1'],
-    ['/matchexpression-1to2', 'copia la expresión de la imagen 1'],
-    ['/transferpattern-1to2', 'copia el estampado de la imagen 1'],
-];
-
-// Ejemplos de las transferencias 1 → 2: TRÍPTICO con la imagen 1 (referencia), la
-// imagen 2 (la que se edita) y el resultado del código, en una sola foto. El
-// sufijo -triptico cambia el nombre del fichero para que ningún navegador sirva
-// la versión antigua (una sola foto) desde su caché.
-Object.assign(SEED_COMMAND_IMAGES, {
-    '/transferoutfit-1to2': 'assets/transfer-1to2/transferoutfit-1to2-triptico-medium.jpg',
-    '/colorgrade-1to2': 'assets/transfer-1to2/colorgrade-1to2-triptico-medium.jpg',
-    '/matchpose-1to2': 'assets/transfer-1to2/matchpose-1to2-triptico-medium.jpg',
-    '/transferlight-1to2': 'assets/transfer-1to2/transferlight-1to2-triptico-medium.jpg',
-    '/transferhair-1to2': 'assets/transfer-1to2/transferhair-1to2-triptico-medium.jpg',
-    '/transfermakeup-1to2': 'assets/transfer-1to2/transfermakeup-1to2-triptico-medium.jpg',
-    '/transferaccessories-1to2': 'assets/transfer-1to2/transferaccessories-1to2-triptico-medium.jpg',
-    '/transferscene-1to2': 'assets/transfer-1to2/transferscene-1to2-triptico-medium.jpg',
-    '/transferweather-1to2': 'assets/transfer-1to2/transferweather-1to2-triptico-medium.jpg',
-    '/matchexpression-1to2': 'assets/transfer-1to2/matchexpression-1to2-triptico-medium.jpg',
-    '/transferpattern-1to2': 'assets/transfer-1to2/transferpattern-1to2-triptico-medium.jpg',
-});
-
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
 const RESTORED_VARIANTS = [
     {
@@ -2405,22 +2373,6 @@ const SEED_TRICKS = [
         description: '',
         category: CODE_FOLDER[command] || 'xl-dev',
         tags: ['comandos de imagen', 'imagen', 'Capturas'],
-        codeSnippet: command,
-        difficulty: 'beginner',
-        sourceUrl: '',
-        imageUrl: SEED_COMMAND_IMAGES[command] || '',
-        isFavorite: false,
-        createdAt: Date.UTC(2026, 9, 6) - index,
-        updatedAt: Date.UTC(2026, 9, 6),
-    })),
-    // Transferencias «1 → 2»: ids propios (tr-cmd) y al final de la lista, así
-    // que no desplazan ningún id de catálogo anterior.
-    ...TRANSFER_COMMANDS.map(([command, meaning], index) => ({
-        id: `tr-cmd-${String(index + 1).padStart(3, '0')}`,
-        title: `${command} — ${meaning}`,
-        description: 'Transferencia 1 → 2: adjunta dos imágenes (la 1 es la referencia y la 2 la que se edita).',
-        category: CODE_FOLDER[command] || 'xl-transfer1to2',
-        tags: ['comandos de imagen', 'imagen', 'Transferir 1 → 2'],
         codeSnippet: command,
         difficulty: 'beginner',
         sourceUrl: '',
@@ -2542,6 +2494,12 @@ function loadFolders() {
     if (!saved) return DEFAULT_FOLDERS;
     saved = removeEmptyLegacyFolders(saved);
     if (!saved.length) return DEFAULT_FOLDERS;
+
+    // Carpetas retiradas del catálogo: fuera también de la lista del navegador.
+    if (saved.some(f => f && FOLDERS_REMOVED.includes(f.id))) {
+        saved = saved.filter(f => f && !FOLDERS_REMOVED.includes(f.id));
+        if (!saved.length) return DEFAULT_FOLDERS;
+    }
 
     // Retirar la carpeta solo después de asegurar destinos para sus tarjetas.
     // Mantener el orden, los nombres personalizados y las demás carpetas borradas.
@@ -3507,22 +3465,6 @@ const PROMPT_TEMPLATES = {
     "/imax": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Large-format cinema look: extremely high resolution, razor-sharp detail across the whole frame, rich contrast and deep blacks, immersive epic scale, giant-screen presentation quality, all visible text and labels must be written in Spanish with no English words",
     "/terminal": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Terminal interface: monospaced green or amber text on a black screen, command lines and cursor, subtle CRT scanlines and phosphor glow, console aesthetic, all visible text and labels must be written in Spanish with no English words",
     "/ascii": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. ASCII art: the subject rendered entirely with monospaced text characters, varying character density to build tone and shading, green-on-black terminal output, all visible text and labels must be written in Spanish with no English words",
-    // ── Transferencias «1 → 2» (2026-10-06). El usuario adjunta DOS imágenes:
-    //    imagen 1 = referencia ([REFERENCIA]) e imagen 2 = objetivo ([OBJETO]).
-    //    Los textos siguen el formato de la casa: preámbulo fijo + instrucción +
-    //    reglas duras de aislamiento + coletilla de español. Probadas contra el
-    //    modelo antes de entrar (tools/transfer_1to2).
-    "/transferoutfit-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Dress the person of image 2 in the exact outfit worn by the person of image 1: same garments, same colours, same fabric pattern and same footwear. HARD RULES: keep the face, body, hair, pose, framing and background of image 2 exactly as they are; change only the clothing. Realistic fabric folds and fit, natural integration, all visible text and labels must be written in Spanish with no English words",
-    "/colorgrade-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Apply to image 2 the global colour grade of image 1: same contrast, saturation, colour balance, tonal palette and tint. HARD RULES: keep the background, the setting, the pose, the clothing and every object of image 2 exactly as they are; do not add or remove any element and keep the same person of image 2, all visible text and labels must be written in Spanish with no English words",
-    "/matchpose-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Change the body pose of the person in image 2 so it matches exactly the pose of the person in image 1: same body angle, same arm and leg position, same head tilt and same weight distribution. HARD RULES: keep the face, hair, clothing and background of image 2 unchanged; change only the pose, all visible text and labels must be written in Spanish with no English words",
-    "/transferlight-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Relight image 2 with the lighting of image 1: same direction, hardness, colour temperature and light colour, including coloured rim light when the reference has it. HARD RULES: keep the background, the clothing, the pose and every object of image 2 exactly as they are; change only the lighting, all visible text and labels must be written in Spanish with no English words",
-    "/transferhair-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Give the person of image 2 the hairstyle of the person in image 1: same cut, length, volume and hair colour (ponytail, bun, loose hair), keeping the same face and identity of image 2. HARD RULES: keep the clothing, pose and background of image 2 unchanged; change only the hair, all visible text and labels must be written in Spanish with no English words",
-    "/transfermakeup-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Apply to the face of image 2 the same makeup look of image 1: lips, eyes, cheeks and finish. HARD RULES: keep the same face and identity, the same hair, clothing, pose and background of image 2; retouch only the makeup, all visible text and labels must be written in Spanish with no English words",
-    "/transferaccessories-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Add to the person of image 2 the accessories worn by the person in image 1: jewellery, eyewear, hat or bag. HARD RULES: keep the same face, hair, clothing, pose and background of image 2; add only those accessories, with realistic fit and reflections, all visible text and labels must be written in Spanish with no English words",
-    "/transferscene-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Place the person of image 2 inside the complete scene of image 1: same location, environment, props and atmosphere, keeping the person of image 2 unchanged. Match perspective, scale, lighting and shadows so the integration is seamless, all visible text and labels must be written in Spanish with no English words",
-    "/transferweather-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Add to image 2 the same weather and atmosphere of image 1: rain, snow, fog, storm, wet surfaces and reflections, on top of the existing scene of image 2. HARD RULES: keep the background, the person, the clothing and the pose of image 2; change only the weather, all visible text and labels must be written in Spanish with no English words",
-    "/matchexpression-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Change the facial expression of the person in image 2 so it matches the expression of the person in image 1: same mouth, eyes and eyebrows, and nothing else. HARD RULES: keep the same face and identity, the hair, clothing, pose and background of image 2 exactly as they are. Do NOT add sunglasses, eyewear, jewellery or any other accessory, and do NOT add lipstick or makeup: keep her bare face and her skin exactly as in image 2 (probado: sin esta regla el modelo copiaba también las gafas y los labios de la imagen 1). Change only the expression, all visible text and labels must be written in Spanish with no English words",
-    "/transferpattern-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Apply the fabric pattern of the garment worn in image 1 to the main garment of image 2: same pattern, same scale and same colours, adapted to the folds of the garment. HARD RULES: keep the same garment type, the same person, pose and background of image 2, all visible text and labels must be written in Spanish with no English words",
 };
 
 const TEXT_COMMAND_TEMPLATES = {
@@ -3835,7 +3777,6 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-verdentro', prefix: 'assets/xl-verdentro/', key: 'trickvault-xl-verdentro-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-planos', prefix: 'assets/planos/', key: 'trickvault-xl-planos-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-juegos', prefix: 'assets/xl-juegos/', key: 'trickvault-xl-juegos-images-version', version: '2026-10-06-gpt-image-2-low' },
-    { category: 'xl-transfer1to2', prefix: 'assets/transfer-1to2/', key: 'trickvault-transfer-1to2-images-version', version: '2026-10-06-medium' },
 ];
 function isGeneratedCardImage(imageUrl) {
     return typeof imageUrl === 'string' && GENERATED_IMAGE_RELEASES.some(release => imageUrl.startsWith(release.prefix));
