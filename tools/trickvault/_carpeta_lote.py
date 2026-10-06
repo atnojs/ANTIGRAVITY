@@ -177,6 +177,7 @@ def generar(carpeta, forzar_ids=None):
         pend, sujetos = plan(carpeta)
         ejemplos = _ejemplos(carpeta)
     out = os.path.join(TOOLS, '%s_gen' % carpeta)
+    jobs_path = os.path.join(TOOLS, '_%s_jobs.json' % carpeta)
     os.makedirs(out, exist_ok=True)
     jobs = []
     for t in pend:
@@ -186,13 +187,40 @@ def generar(carpeta, forzar_ids=None):
                 raise SystemExit('FALTA SUJETO para %s (%s)' % (t['id'], t['code']))
             p = p.replace('[OBJETO]', sujetos[t['id']])
         elif t['id'] in ejemplos:
-            p = p.rstrip().rstrip('.') + '. ' + ejemplos[t['id']]
+            # La pista se coloca ANTES de la coletilla final: si va despues, el
+            # modelo le hace poco caso (paso con /ghibli, que ignoro el sujeto).
+            pista = ejemplos[t['id']].rstrip('.')
+            marca = ', all visible text and labels must be written in Spanish'
+            if marca in p:
+                p = p.replace(marca, '. ' + pista + marca, 1)
+            else:
+                p = p.rstrip().rstrip('.') + '. ' + pista + '.'
         assert '[OBJETO]' not in p, 'queda [OBJETO] en ' + t['code']
         assert PREFIJO in p and 'must be written in Spanish' in p, 'prompt incompleto en ' + t['code']
         jobs.append({'id': t['id'], 'code': t['code'], 'prompt': p, 'subject': sujetos.get(t['id'], '')})
     json.dump(jobs, open(os.path.join(TOOLS, '_%s_jobs.json' % carpeta), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     json.dump([{'id': j['id'], 'code': j['code'], 'desc': '', 'origen': 'lote low', 'prompt': j['prompt']} for j in jobs],
               open(os.path.join(TOOLS, '_%s.json' % carpeta), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+
+    # Guardian: PNG que ya existen pero se generaron con OTRO prompt (tandas
+    # anteriores, otros sujetos u otro modelo). Si no se borran, la carpeta queda
+    # mezclada en silencio.
+    previos = {}
+    if os.path.exists(jobs_path):
+        try:
+            previos = {j['id']: j.get('prompt', '') for j in json.load(open(jobs_path, encoding='utf-8'))}
+        except Exception:
+            previos = {}
+    sospechosos = [j['id'] for j in jobs
+                   if os.path.exists(os.path.join(out, j['id'] + '.png'))
+                   and previos.get(j['id']) not in (None, j['prompt'])]
+    if sospechosos:
+        print('AVISO: %d PNG ya existen pero con otro prompt (tandas anteriores), p.ej. %s'
+              % (len(sospechosos), ', '.join(sospechosos[:5])))
+        print('       Para rehacer la carpeta entera: _carpeta_lote.py %s borrar' % carpeta)
+        if os.environ.get('FORZAR') != '1':
+            print('       (no se genera nada; repite con FORZAR=1 si es lo que quieres)')
+            return 2
 
     faltan = [j for j in jobs if not (os.path.exists(os.path.join(out, j['id'] + '.png')) and os.path.getsize(os.path.join(out, j['id'] + '.png')) > 5000)]
     print('\nModelo %s | %d jobs | ya hechos %d | por hacer %d' % (MODELO, len(jobs), len(jobs) - len(faltan), len(faltan)), flush=True)
@@ -319,6 +347,19 @@ def sujetos(carpeta, sujeto, palabra=None, palabra_codes=()):
     return 0
 
 
+def borrar(carpeta):
+    """Borra los PNG generados de una carpeta (para rehacerla entera)."""
+    out = os.path.join(TOOLS, '%s_gen' % carpeta)
+    if not os.path.isdir(out):
+        print('no existe %s: nada que borrar' % out)
+        return 0
+    fs = [f for f in os.listdir(out) if f.endswith('.png')]
+    for f in fs:
+        os.remove(os.path.join(out, f))
+    print('borrados %d PNG de %s' % (len(fs), out))
+    return 0
+
+
 def validar():
     js = os.path.join(TOOLS, '_val.js')
     open(js, 'w', encoding='utf-8').write(
@@ -342,6 +383,8 @@ if __name__ == '__main__':
         sys.exit(generar(carpeta, forzar_ids=set(sys.argv[3:])))
     elif modo == 'aplicar':
         sys.exit(aplicar(carpeta))
+    elif modo == 'borrar':
+        sys.exit(borrar(carpeta))
     elif modo == 'validar':
         sys.exit(validar())
     elif modo == 'sujetos':
