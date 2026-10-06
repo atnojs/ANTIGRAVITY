@@ -143,8 +143,19 @@ Los 12 códigos ya viven en `apps/trickvault`:
   (`xl-otromundo`) con el 1/2 explícito y las reglas duras.
 - **No se han subido** `/transferstyle-1to2` ni `/matchcamera-1to2`: las pruebas dicen
   que no son aislables.
-- **Ejemplos:** 11 `.jpg` 1024×1024 en `apps/trickvault/assets/transfer-1to2/`,
-  generados con `openai-image-2-low` vía el proxy de Hostinger.
+- **Ejemplos: trípticos, no una sola foto.** Cada tarjeta lleva una imagen
+  `1536×768` con **los tres pasos**: `1 · REFERENCIA` (imagen 1), `2 · TU IMAGEN`
+  (imagen 2) y `RESULTADO`. Una foto suelta no informa de nada en una
+  transferencia 1 → 2.
+  - Los tres paneles salen de las **imágenes reales de las pruebas** (referencias +
+    salida de cada código), porque el proxy de Hostinger (`openai-image-2-low`) **no
+    acepta dos imágenes de entrada** y por tanto no puede generar la transferencia.
+  - Ficheros: `apps/trickvault/assets/transfer-1to2/<codigo>-triptico.jpg`. El sufijo
+    `-triptico` está para que ningún navegador sirva la versión antigua desde su caché,
+    junto con la subida de versión de `GENERATED_IMAGE_RELEASES`.
+  - Los paneles van centrados con margen lateral: la tarjeta recorta con
+    `object-fit: cover`, así que el recorte se come el margen y nunca un panel.
+    Medido en Chrome: caja real `236×118 px`, ancho visible del tríptico **100%**.
 
 Verificación (Chrome headless, servido por HTTP local, con capturas en `evidencias/`):
 
@@ -154,9 +165,11 @@ Verificación (Chrome headless, servido por HTTP local, con capturas en `evidenc
 | Carpeta `xl-transfer1to2` guardada | SÍ |
 | Ejemplos vaciados a propósito y recargando | 11/11 se rellenan solos |
 | Ficheros de ejemplo que cargan (`naturalWidth > 0`) | 11/11, ninguno falla |
+| **Tarjetas guardadas con el ejemplo antiguo** (ruta `.jpg` sin `-triptico`) | **11/11 se reasignan al tríptico** y la clave de versión pasa a `2026-10-06-tripticos` |
+| Recorte de la tarjeta (`object-fit: cover`) | caja `236×118 px` → ancho visible del tríptico **100%**: los 3 paneles intactos |
 | **Navegador con datos antiguos** (958 tarjetas, 21 carpetas, esquema 3) | recupera las **11 tarjetas** con su ejemplo y **añade la carpeta**; esquema pasa a 4 |
 | Parseo del JSX con `@babel/parser` | OK |
-| Ids `ig-dcek`/`xl-cmd`/`cap-cmd` respecto a HEAD | idénticos (sin desplazamiento) |
+| Ids `ig-dcek`/`xl-cmd`/`cap-cmd` respecto a 8f674ed | idénticos (sin desplazamiento) |
 | URL pública `atnojs.es` tras el push | `index.html` con la carpeta y **11/11 ejemplos responden 200** |
 
 Scripts: `_check_trickvault.js` (datos y enlaces), `_gen_ejemplos.py` (ejemplos) y

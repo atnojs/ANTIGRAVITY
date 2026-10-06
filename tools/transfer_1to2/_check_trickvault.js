@@ -4,8 +4,11 @@ const fs = require('fs');
 const parser = require('E:/ANTIGRAVITY/node_modules/@babel/parser');
 
 const ACTUAL = 'E:/ANTIGRAVITY/apps/trickvault/index.html';
-// Versión anterior: se vuelca aparte con git (node no puede capturar la salida de
-// un subproceso en este entorno: EPERM al abrir el pipe).
+// Versión ANTERIOR A ESTE TRABAJO (8f674ed), volcada aparte con git:
+//   git show 8f674ed:apps/trickvault/index.html > _head_index.html
+// Se usa esa referencia y NO HEAD, porque HEAD ya incluye estos cambios y las
+// comprobaciones de "qué se ha añadido" quedarían vacías.
+// (node no puede capturar la salida de un subproceso aquí: EPERM al abrir el pipe.)
 const HEAD = 'E:/ANTIGRAVITY/_pruebas_img/transfer_1to2/_head_index.html';
 
 function scriptBabel(src) {
