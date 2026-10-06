@@ -1841,6 +1841,13 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/square': 'assets/planos/square.jpg',
     '/landscape': 'assets/planos/landscape.jpg',
     '/frontview': 'assets/planos/frontview.jpg',
+    '/gta': 'assets/xl-juegos/gta.jpg',
+    '/pubg': 'assets/xl-juegos/pubg.jpg',
+    '/pvp': 'assets/xl-juegos/pvp.jpg',
+    '/playstation': 'assets/xl-juegos/playstation.jpg',
+    '/32x': 'assets/xl-juegos/32x.jpg',
+    '/zelda': 'assets/xl-juegos/zelda.jpg',
+    '/toybox': 'assets/xl-juegos/toybox.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -3741,6 +3748,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-hechomano', prefix: 'assets/xl-hechomano/', key: 'trickvault-xl-hechomano-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-verdentro', prefix: 'assets/xl-verdentro/', key: 'trickvault-xl-verdentro-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-planos', prefix: 'assets/planos/', key: 'trickvault-xl-planos-images-version', version: '2026-10-06-gpt-image-2-low' },
+    { category: 'xl-juegos', prefix: 'assets/xl-juegos/', key: 'trickvault-xl-juegos-images-version', version: '2026-10-06-gpt-image-2-low' },
 ];
 function isGeneratedCardImage(imageUrl) {
     return typeof imageUrl === 'string' && GENERATED_IMAGE_RELEASES.some(release => imageUrl.startsWith(release.prefix));
