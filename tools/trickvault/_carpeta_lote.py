@@ -132,27 +132,50 @@ def copyable(code, guardado):
     return '%s %s %s' % (code, PREFIJO, guardado)
 
 
+def _sujetos(carpeta):
+    f = os.path.join(TOOLS, '_sujetos_%s.json' % carpeta)
+    return json.load(open(f, encoding='utf-8')) if os.path.exists(f) else {}
+
+
+def _ejemplos(carpeta):
+    """Pista de sujeto SOLO para generar el ejemplo, cuando el prompt de la tarjeta
+    no lleva [OBJETO] (si no, el modelo inventa un cartel en vez de una foto).
+    No cambia el prompt que copia el usuario."""
+    f = os.path.join(TOOLS, '_ejemplos_%s.json' % carpeta)
+    return json.load(open(f, encoding='utf-8')) if os.path.exists(f) else {}
+
+
 def plan(carpeta):
     sub = assets_dir(carpeta)
     pend = pendientes(carpeta)
-    sujetos = {}
-    f = os.path.join(TOOLS, '_sujetos_%s.json' % carpeta)
-    if os.path.exists(f):
-        sujetos = json.load(open(f, encoding='utf-8'))
+    sujetos = _sujetos(carpeta)
+    ejemplos = _ejemplos(carpeta)
     print('CARPETA %s  ->  assets/%s/   | pendientes: %d' % (carpeta, sub, len(pend)))
     con_obj = 0
     for t in pend:
         cuerpo = PROMPTS[t['code']]
         obj = '[OBJETO]' in cuerpo
         con_obj += obj
-        estado = ('sujeto: ' + sujetos[t['id']]) if (obj and t['id'] in sujetos) else ('FALTA SUJETO' if obj else 'sin [OBJETO]')
+        if obj:
+            estado = 'sujeto: ' + sujetos[t['id']] if t['id'] in sujetos else 'FALTA SUJETO'
+        else:
+            estado = 'pista: ' + ejemplos[t['id']] if t['id'] in ejemplos else 'sin pista (el modelo inventa)'
         print('  %-12s %-24s %-14s %s' % (t['id'], t['code'], ('[OBJETO]' if obj else '-'), estado))
-    print('  -> %d necesitan sujeto, %d no' % (con_obj, len(pend) - con_obj))
+    print('  -> %d necesitan sujeto, %d pista de ejemplo' % (con_obj, len(pend) - con_obj))
     return pend, sujetos
 
 
-def generar(carpeta):
-    pend, sujetos = plan(carpeta)
+def generar(carpeta, forzar_ids=None):
+    if forzar_ids:
+        sujetos, ejemplos = _sujetos(carpeta), _ejemplos(carpeta)
+        pend = [t for t in tarjetas_de(carpeta) if t['id'] in forzar_ids and t['code'] in PROMPTS]
+        faltan_ids = set(forzar_ids) - set(t['id'] for t in pend)
+        if faltan_ids:
+            raise SystemExit('ids no encontrados en %s: %s' % (carpeta, sorted(faltan_ids)))
+        print('REHACER %s: %d tarjetas' % (carpeta, len(pend)))
+    else:
+        pend, sujetos = plan(carpeta)
+        ejemplos = _ejemplos(carpeta)
     out = os.path.join(TOOLS, '%s_gen' % carpeta)
     os.makedirs(out, exist_ok=True)
     jobs = []
@@ -162,6 +185,8 @@ def generar(carpeta):
             if t['id'] not in sujetos:
                 raise SystemExit('FALTA SUJETO para %s (%s)' % (t['id'], t['code']))
             p = p.replace('[OBJETO]', sujetos[t['id']])
+        elif t['id'] in ejemplos:
+            p = p.rstrip().rstrip('.') + '. ' + ejemplos[t['id']]
         assert '[OBJETO]' not in p, 'queda [OBJETO] en ' + t['code']
         assert PREFIJO in p and 'must be written in Spanish' in p, 'prompt incompleto en ' + t['code']
         jobs.append({'id': t['id'], 'code': t['code'], 'prompt': p, 'subject': sujetos.get(t['id'], '')})
@@ -230,29 +255,28 @@ def aplicar(carpeta):
         nuevas.append((j['code'], rel))
         print('  %-22s -> %-40s %d KB' % (j['code'], rel, os.path.getsize(ruta) // 1024))
 
-    # 1) registros en el bloque Object.assign
-    ancla_fin = "    '/blackfriday': 'assets/xl-juegos/blackfriday.jpg',\n"
-    assert src.count(ancla_fin) == 1, 'ancla del Object.assign no unica'
-    bloque = ancla_fin
-    for code, rel in nuevas:
-        if ("'%s':" % code) in src:
-            continue
-        bloque += "    '%s': '%s',\n" % (code, rel)
-    if bloque != ancla_fin:
-        src = src.replace(ancla_fin, bloque.rstrip('\n') + '\n')
-        print('  registrados %d codigos en SEED_COMMAND_IMAGES' % len([1 for c, _ in nuevas if ("'%s':" % c) not in src]))
-
-    # 2) release de la carpeta
-    ancla_rel = "];\n  function isGeneratedCardImage"
-    assert src.count(ancla_rel) == 1, 'ancla de GENERATED_IMAGE_RELEASES no unica'
-    if ("category: '%s'" % carpeta) not in src:
-        entrada = "      { category: '%s', prefix: 'assets/%s/', key: 'trickvault-%s-images-version', version: '2026-10-06-gpt-image-2-low' },\n" % (carpeta, sub, carpeta)
-        src = src.replace("  ];\n  function isGeneratedCardImage", "  " + entrada + "];\n  function isGeneratedCardImage")
-        # recolocar la indentacion exacta
-        src = src.replace("  " + entrada, entrada)
-        print('  release anadida para %s (prefix assets/%s/)' % (carpeta, sub))
+    # 1) registros al final del bloque Object.assign(SEED_COMMAND_IMAGES, { ... })
+    oa = src.index('Object.assign(SEED_COMMAND_IMAGES, {')
+    oa_end = src.index('\n});', oa)
+    ya = set(re.findall(r"'(\/[^']+)':", src[oa:oa_end]))
+    nuevos = [(c, r) for c, r in nuevas if c not in ya]
+    if nuevos:
+        lineas = ''.join("    '%s': '%s',\n" % (c, r) for c, r in nuevos)
+        src = src[:oa_end] + '\n' + lineas.rstrip('\n') + src[oa_end:]
+        print('  registrados %d codigos en SEED_COMMAND_IMAGES' % len(nuevos))
     else:
+        print('  SEED_COMMAND_IMAGES: nada nuevo que registrar')
+
+    # 2) release de la carpeta (el array esta a columna 0)
+    ancla_rel = "];\nfunction isGeneratedCardImage"
+    assert src.count(ancla_rel) == 1, 'ancla de GENERATED_IMAGE_RELEASES no unica'
+    bloque = src[src.index('const GENERATED_IMAGE_RELEASES = ['):src.index(ancla_rel)]
+    if ("category: '%s'" % carpeta) in bloque:
         print('  release de %s ya existia' % carpeta)
+    else:
+        entrada = "    { category: '%s', prefix: 'assets/%s/', key: 'trickvault-%s-images-version', version: '2026-10-06-gpt-image-2-low' },\n" % (carpeta, sub, carpeta)
+        src = src.replace(ancla_rel, entrada + ancla_rel)
+        print('  release anadida para %s (prefix assets/%s/)' % (carpeta, sub))
     open(APP, 'w', encoding='utf-8', newline='').write(src)
     return 0
 
@@ -276,6 +300,8 @@ if __name__ == '__main__':
         plan(carpeta)
     elif modo == 'gen':
         sys.exit(generar(carpeta))
+    elif modo == 'rehacer':
+        sys.exit(generar(carpeta, forzar_ids=set(sys.argv[3:])))
     elif modo == 'aplicar':
         sys.exit(aplicar(carpeta))
     elif modo == 'validar':

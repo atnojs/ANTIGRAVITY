@@ -1460,6 +1460,18 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/darkmode': 'assets/xl-dev/darkmode.jpg',
     '/appicons': 'assets/xl-dev/appicons.jpg',
     '/terminal': 'assets/xl-dev/terminal.jpg',
+    '/35mmfilm': 'assets/xl-estilos/35mmfilm.jpg',
+    '/holographic': 'assets/xl-estilos/holographic.jpg',
+    '/colorgrade': 'assets/xl-estilos/colorgrade.jpg',
+    '/mejora8k': 'assets/xl-estilos/mejora8k.jpg',
+    '/bw': 'assets/xl-estilos/bw.jpg',
+    '/instantphoto': 'assets/xl-estilos/instantphoto.jpg',
+    '/sharpen': 'assets/xl-estilos/sharpen.jpg',
+    '/brighten': 'assets/xl-estilos/brighten.jpg',
+    '/sunny': 'assets/xl-estilos/sunny.jpg',
+    '/transparent': 'assets/xl-estilos/transparent.jpg',
+    '/gradientmesh': 'assets/xl-estilos/gradientmesh.jpg',
+    '/imax': 'assets/xl-estilos/imax.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -3346,6 +3358,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-comidamoda', prefix: 'assets/comida-moda/', key: 'trickvault-comida-moda-images-version', version: '2026-09-30-gpt-image-2-complete' },
     { category: 'xl-pintura', prefix: 'assets/pintura-dibujo/', key: 'trickvault-pintura-dibujo-images-version', version: '2026-10-01-gpt-image-2-complete' },
     { category: 'xl-dev', prefix: 'assets/xl-dev/', key: 'trickvault-xl-dev-images-version', version: '2026-10-06-gpt-image-2-low' },
+    { category: 'xl-estilos', prefix: 'assets/xl-estilos/', key: 'trickvault-xl-estilos-images-version', version: '2026-10-06-gpt-image-2-low' },
 ];
 function isGeneratedCardImage(imageUrl) {
     return typeof imageUrl === 'string' && GENERATED_IMAGE_RELEASES.some(release => imageUrl.startsWith(release.prefix));

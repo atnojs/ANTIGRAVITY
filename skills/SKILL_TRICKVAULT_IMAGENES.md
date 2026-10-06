@@ -50,6 +50,23 @@ Corolario: la subida al store es **opcional** y secundaria.
 - Carpetas con `[OBJETO]` en el prompt: necesitan un sujeto concreto por
   tarjeta (`SUJETOS_POR_CARPETA` en `_carpeta_gen.py`). Sin sujeto no se genera.
 
+## Sujeto por carpeta (regla de Antonio)
+
+**Un solo sujeto para toda la carpeta.** Cuando el prompt lleve `[OBJETO]`, se
+sustituye por **el mismo sujeto en todas las tarjetas de esa carpeta**; así lo
+único que cambia de una tarjeta a otra es el código, y se ve de un vistazo qué
+hace cada uno. Vale también para las tarjetas cuyo prompt **no** lleva `[OBJETO]`
+(las de "aplica esto a tu imagen"): se les añade una pista de ejemplo con ese
+mismo sujeto, para que el ejemplo no sea un cartel inventado.
+
+- El sujeto se elige **una vez por carpeta**, pensando en que aguante todos los
+  códigos de esa carpeta (un objeto con material y color suele aguantar más que
+  una persona).
+- Excepción: los códigos que son **fondos o texturas abstractas** (por ejemplo
+  `/gradientmesh`) no llevan sujeto; ahí se pide el fondo.
+- Los sujetos viven en `_sujetos_<carpeta>.json` y las pistas en
+  `_ejemplos_<carpeta>.json` (herramientas de `tools/trickvault/`).
+
 ## Flujo por carpeta
 
 1. **Elegir carpeta y contar**: qué tarjetas de esa carpeta son comandos de
