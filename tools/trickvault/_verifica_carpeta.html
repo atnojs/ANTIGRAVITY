@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>midiendo</title></head>
+<body style="margin:0;background:#000">
+<!--
+  Verificacion de una carpeta de imagenes de TrickVault.
+  Uso: _verifica_carpeta.html?prefix=assets/<carpeta>/
+  Simula un navegador que YA tenia las tarjetas (las vacia a proposito), recarga
+  y comprueba que se rellenan y que los ficheros cargan de verdad.
+  Lanzar con: chrome --headless=new --allow-file-access-from-files --dump-dom ...
+-->
+<iframe id="f" src="../../apps/trickvault/index.html" width="1440" height="700" style="border:0"></iframe>
+<script>
+const PREFIX = new URLSearchParams(location.search).get('prefix') || '';
+const KEY = 'trickvault_data';
+const f = document.getElementById('f');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 15000); }); }
+function datos() { return JSON.parse(f.contentWindow.localStorage.getItem(KEY) || '[]'); }
+(async () => {
+  const out = [];
+  await cargar('../../apps/trickvault/index.html');
+  await sleep(3000);
+  const objetivo = datos().filter(t => String(t.imageUrl || '').indexOf(PREFIX) === 0);
+  const arr = datos();
+  let vaciadas = 0;
+  arr.forEach(t => { if (String(t.imageUrl || '').indexOf(PREFIX) === 0) { t.imageUrl = ''; vaciadas++; } });
+  f.contentWindow.localStorage.setItem(KEY, JSON.stringify(arr));
+  Object.keys(f.contentWindow.localStorage)
+    .filter(k => k.indexOf('trickvault-') === 0 && k.indexOf('images-version') > 0)
+    .forEach(k => f.contentWindow.localStorage.removeItem(k));
+  out.push('1) con imagen antes: ' + objetivo.length + ' | vaciadas: ' + vaciadas);
+  await cargar('../../apps/trickvault/index.html?r=' + Date.now());
+  await sleep(4500);
+  const despues = datos().filter(t => String(t.imageUrl || '').indexOf(PREFIX) === 0);
+  out.push('2) rellenadas tras recargar: ' + despues.length + '/' + objetivo.length);
+  const urls = [...new Set(despues.map(t => t.imageUrl))];
+  const malas = await Promise.all(urls.map(u => new Promise(res => {
+    const im = new Image();
+    im.onload = () => res(im.naturalWidth > 0 ? null : u);
+    im.onerror = () => res(u);
+    im.src = '../../apps/trickvault/' + u;
+  })));
+  out.push('3) ficheros que fallan: ' + (malas.filter(Boolean).length ? malas.filter(Boolean).join(' ') : 'ninguno de ' + urls.length));
+  document.title = out.join('  ||  ');
+})();
+</script>
+</body></html>

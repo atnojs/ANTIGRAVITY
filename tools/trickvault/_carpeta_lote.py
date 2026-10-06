@@ -13,7 +13,7 @@ Los sujetos para [OBJETO] viven en _sujetos_<carpeta>.json  (id -> sujeto).
 
 Uso: _carpeta_lote.py <carpeta> plan|gen|aplicar|validar|todo
 """
-import base64, io, json, os, re, subprocess, sys, threading, time, urllib.request
+import base64, hashlib, io, json, os, re, subprocess, sys, threading, time, urllib.request
 
 sys.stdout.reconfigure(encoding='utf-8')
 APP = r'E:\ANTIGRAVITY\apps\trickvault\index.html'
@@ -132,6 +132,11 @@ def copyable(code, guardado):
     return '%s %s %s' % (code, PREFIJO, guardado)
 
 
+def _huella(texto):
+    """Huella corta del prompt, para saber con que se genero cada PNG."""
+    return hashlib.sha1(texto.encode('utf-8')).hexdigest()[:12]
+
+
 def _sujetos(carpeta):
     f = os.path.join(TOOLS, '_sujetos_%s.json' % carpeta)
     return json.load(open(f, encoding='utf-8')) if os.path.exists(f) else {}
@@ -202,25 +207,35 @@ def generar(carpeta, forzar_ids=None):
     json.dump([{'id': j['id'], 'code': j['code'], 'desc': '', 'origen': 'lote low', 'prompt': j['prompt']} for j in jobs],
               open(os.path.join(TOOLS, '_%s.json' % carpeta), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
-    # Guardian: PNG que ya existen pero se generaron con OTRO prompt (tandas
-    # anteriores, otros sujetos u otro modelo). Si no se borran, la carpeta queda
-    # mezclada en silencio.
-    previos = {}
-    if os.path.exists(jobs_path):
+    # Guardian: PNG que ya existen pero NO se generaron con el prompt actual
+    # (tandas anteriores, otros sujetos u otro modelo). Se apoya en una huella
+    # por imagen guardada en <carpeta>_gen/_manifest.json: asi no depende de que
+    # el fichero de jobs se haya sobrescrito o no.
+    man_path = os.path.join(out, '_manifest.json')
+    manifest = {}
+    if os.path.exists(man_path):
         try:
-            previos = {j['id']: j.get('prompt', '') for j in json.load(open(jobs_path, encoding='utf-8'))}
+            manifest = json.load(open(man_path, encoding='utf-8'))
         except Exception:
-            previos = {}
+            manifest = {}
     sospechosos = [j['id'] for j in jobs
                    if os.path.exists(os.path.join(out, j['id'] + '.png'))
-                   and previos.get(j['id']) not in (None, j['prompt'])]
+                   and manifest.get(j['id']) != _huella(j['prompt'])]
     if sospechosos:
-        print('AVISO: %d PNG ya existen pero con otro prompt (tandas anteriores), p.ej. %s'
-              % (len(sospechosos), ', '.join(sospechosos[:5])))
+        print('AVISO: %d PNG ya existen pero NO corresponden al prompt actual (tandas anteriores):'
+              % len(sospechosos))
+        print('       %s' % ', '.join(sospechosos[:8]))
         print('       Para rehacer la carpeta entera: _carpeta_lote.py %s borrar' % carpeta)
         if os.environ.get('FORZAR') != '1':
             print('       (no se genera nada; repite con FORZAR=1 si es lo que quieres)')
             return 2
+
+    def anotar():
+        m = dict(manifest)
+        for j in jobs:
+            if os.path.exists(os.path.join(out, j['id'] + '.png')):
+                m[j['id']] = _huella(j['prompt'])
+        json.dump(m, open(man_path, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
     faltan = [j for j in jobs if not (os.path.exists(os.path.join(out, j['id'] + '.png')) and os.path.getsize(os.path.join(out, j['id'] + '.png')) > 5000)]
     print('\nModelo %s | %d jobs | ya hechos %d | por hacer %d' % (MODELO, len(jobs), len(jobs) - len(faltan), len(faltan)), flush=True)
@@ -255,6 +270,7 @@ def generar(carpeta, forzar_ids=None):
     with ThreadPoolExecutor(max_workers=int(os.environ.get('WORKERS', '2'))) as pool:
         list(pool.map(worker, faltan))
     print('\nGeneradas %d | fallos %d | %.0fs' % (len(faltan) - len(err), len(err), time.time() - t0))
+    anotar()
     if err:
         print('ERRORES:', err)
     return 1 if err else 0
