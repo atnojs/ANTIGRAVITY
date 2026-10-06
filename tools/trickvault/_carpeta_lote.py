@@ -73,7 +73,9 @@ for m in re.finditer(r"'(\/[^']+)':\s*'([^']+)'", src[_oa:src.index('});', _oa)]
 
 _i = src.index('const PROMPT_TEMPLATES = {')
 _j = src.index('\n};', _i)
-PROMPTS = dict(re.findall(r'\n    "(/[^"]+)": "(.*?)",(?=\n)', src[_i:_j]))
+# OJO: el ultimo parrafo del bloque no lleva salto final; sin el '\n' añadido el
+# lookahead (?=\n) descarta esa ultima entrada (paso con /ascii).
+PROMPTS = dict(re.findall(r'\n    "(/[^"]+)": "(.*?)",(?=\n)', src[_i:_j] + '\n'))
 _k = src.index('const TEXT_COMMAND_TEMPLATES = {')
 TEXTOS = set(re.findall(r"\n    '(/[^']+)':", src[_k:src.index('\n};', _k)]))
 REMOVED = set(re.findall(r"'([^']+)'", src[src.index('const REMOVED_IMAGE_IDS = new Set(['):src.index(']);', src.index('const REMOVED_IMAGE_IDS = new Set(['))]))
