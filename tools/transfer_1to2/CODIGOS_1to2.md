@@ -145,6 +145,7 @@ cd E:\ANTIGRAVITY\tools\transfer_1to2
 ```
 
 - `_run.py refs|A|B|C|D|sheets|all` — genera referencias, fases y resultados.
-- `_sheet.py` — monta las hojas comparativas en `_pruebas_img\transfer_1to2\sheets\`.
-- Hojas versionadas en `hojas/` (`A_semantica.jpg`, `B_familia_1.jpg`, `B_familia_2.jpg`,
-  `D_corregidos.jpg`).
+- `_sheet.py` — monta las hojas comparativas en `_pruebas_img\transfer_1to2\sheets\`
+  (y copia local en `tools\transfer_1to2\hojas\`).
+- Las hojas **no se versionan**: el `.gitignore` del repo ignora `*.jpg`. Las salidas
+  crudas y las hojas viven en `E:\ANTIGRAVITY\_pruebas_img\transfer_1to2\`.
