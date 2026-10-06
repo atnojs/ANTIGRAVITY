@@ -78,7 +78,10 @@ mismo sujeto, para que el ejemplo no sea un cartel inventado.
 - **Ojo con los restos de tandas anteriores**: si `tools/trickvault/<carpeta>_gen/`
   ya tiene PNG, la herramienta los da por hechos y no los regenera. Si vienen de
   otra tanda (otros sujetos, otro modelo), hay que borrarlos para rehacer la
-  carpeta entera; si no, la carpeta queda mezclada.
+  carpeta entera; si no, la carpeta queda mezclada. La herramienta lo detecta con
+  una **huella por imagen** en `<carpeta>_gen/_manifest.json`: si un PNG no
+  corresponde al prompt actual, **avisa y se niega a generar** (código 2). Para
+  rehacer: `_carpeta_lote.py <carpeta> borrar` y volver a lanzar `gen`.
 
 ## Flujo por carpeta
 
