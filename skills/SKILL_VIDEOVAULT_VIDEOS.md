@@ -12,11 +12,14 @@ vídeo. Los vídeos se generan con Google Flow (Veo 3.1 Lite, 16:9) en el PC loc
 y se suben a la app **vía git, uno a uno, según se generan** (así no se pierden
 aunque el navegador o la web se caigan a mitad).
 
-## Estado (2026-09-24)
+## Estado (2026-10-06)
 
-- **23/23 generados y subidos**: t01–t04, l01–l04, tm01–tm04, s01–s06, cm01–cm05.
-- Los 5 de "Movimiento de cámara" (c01–c05) tienen vídeo propio subido por
-  Antonio al servidor: **NO tocar, NO regenerar, NO borrar**.
+- **34/34 generados y subidos**: t01–t04, l01–l04, tm01–tm04, s01–s06, cm01–cm05
+  (tanda del 24/09) + **c06–c11, tm05, l05, cm06–cm08** (los 11 comandos de vídeo
+  nuevos de las capturas del 06/10, añadidos al catálogo en el commit `ca8a4b3`).
+- El catálogo de la app tiene **39 comandos**: los 34 del seed + los 5 de
+  "Movimiento de cámara" (c01–c05), que tienen vídeo propio subido por Antonio al
+  servidor (`video_store.php`): **NO tocar, NO regenerar, NO borrar**.
 - Guion de prompts: `E:/herramientas/google-flow/videovault_catalogo.json`.
 - Registro de subidos (retomable): `E:/herramientas/google-flow/upload_log.json`.
 
@@ -24,8 +27,8 @@ aunque el navegador o la web se caigan a mitad).
 
 - Lote (generar+subir): `E:/herramientas/google-flow/generate_and_upload.py`.
 - CLI Flow: `E:/herramientas/google-flow/flow.py` (leer su SKILL.md antes de tocar).
-- App en el worktree: `E:/e/ANTIGRAVITY_MAIN_WT/apps/video-vault/` (NO en
-  `E:/ANTIGRAVITY/apps/`).
+- App en el repo único: `E:/ANTIGRAVITY/apps/video-vault/` (los worktrees están
+  prohibidos: `generate_and_upload.py` ya apunta a `E:\ANTIGRAVITY`).
 - Vídeos de la app: `apps/video-vault/uploads/videos/<id>.mp4` (en git, con `add -f`
   porque `uploads/` está en `.gitignore`).
 - Mapa id→ruta que carga el frontend: `apps/video-vault/video_seed.json`.
@@ -82,11 +85,26 @@ aunque el navegador o la web se caigan a mitad).
    inicia sesión; para lotes seguir en headless).
 7. La descarga por menú abre también `flow-content.google/video/<uuid>?Signature=...`
    (firma con caducidad): usar la URL al momento, no guardarla.
+8. **Un job puede fallar y se reintenta solo** (2 rondas al final). En la tanda del
+   06/10 `cm06` falló a la primera y salió bien en el reintento: no relanzar el lote
+   a mano por un fallo aislado.
+9. **Hostinger a veces no publica los últimos pushes.** En la tanda del 06/10 el
+   seed desplegado se quedó en 32/34 (faltaban `cm06` y `cm08`) más de 4 minutos.
+   Solución del proyecto: commit vacío y push
+   (`git commit --allow-empty -m "chore: re-disparar despliegue (...)"`), y volver a
+   comprobar; puede hacer falta más de un intento.
 
 ## Verificación
 
-- [ ] `git log --oneline` del worktree: un commit por id, todos en `origin/main`.
-- [ ] `curl -s -o /dev/null -w "%{http_code}" https://www.atnojs.es/apps/video-vault/video_seed.json` → 200.
+- [ ] `git log --oneline` del repo: un commit por id, todos en `origin/main`.
+- [ ] `video_seed.json` en `main` tiene una entrada por id nuevo.
+- [ ] **Comprobar los 39 comandos uno a uno**: para cada id del catálogo, HEAD de su
+      mp4 (los 34 del seed + los 5 del `video_store.php`) → 200; ninguno sin vídeo.
 - [ ] `curl` de algún mp4 (p. ej. `.../uploads/videos/t01.mp4`) → 200.
 - [ ] `video_store.php?action=list` sigue devolviendo c01–c05 intactos.
+- [ ] Si el seed desplegado no incluye los últimos ids, re-disparar el despliegue
+      (pitfall 9) antes de dar la tanda por publicada.
+- [ ] Medir en Chrome sobre la app desplegada (Playwright): sirviendo el seed sin los
+      ids nuevos la tarjeta sale sin vídeo, y con el seed real el `<video>` carga a
+      1280×720. En móvil (390 px): sin desbordes horizontales.
 - [ ] Antonio recarga la app con Ctrl+F5 y ve los vídeos en las tarjetas.
