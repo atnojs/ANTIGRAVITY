@@ -36,6 +36,10 @@ Puerta de entrada ÚNICA para crear o editar cualquier app/web del proyecto. Fij
 
 Úsala para generar opciones creativas con criterio (nombres, hooks, formatos, enfoques) y obtener una recomendación clara.
 
+### capturas-verificacion
+
+Úsala en toda creación, edición o revisión con efecto visual: mide la geometría real en Chrome (anchos, líneas, desbordes, recortes), guarda la comparativa antes/después y **entrega el resultado con capturas de pantalla** en la respuesta. El resultado visual se enseña, no se describe.
+
 ### cirujano-codigo-produccion
 
 Úsala siempre que haya que corregir, mejorar o refactorizar código existente sin destruir lo que ya funciona.

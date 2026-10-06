@@ -32,7 +32,7 @@ Para cualquier creación o modificación:
 3. Definir criterios verificables de finalización y contemplar estados inicial, vacío, carga, éxito, error y reintento cuando correspondan.
 4. Generar resultados completos y utilizables, sin pseudocódigo, botones falsos ni flujos simulados.
 5. Ejecutar comprobaciones proporcionales al riesgo y revisar el diff final.
-6. En apps y webs que deban validarse desde el servidor, el commit y el push a la rama desplegada son obligatorios. Esperar el despliegue y probar la URL real en Chrome recorriendo la interfaz y el flujo principal. La inspección de código no sustituye esta validación.
+6. En apps y webs que deban validarse desde el servidor, el commit y el push a la rama desplegada son obligatorios. Esperar el despliegue y probar la URL real en Chrome recorriendo la interfaz y el flujo principal. La inspección de código no sustituye esta validación. Aplicar `SKILL_CAPTURAS_VERIFICACION.md`: medir la geometría real, guardar la comparativa antes/después y **adjuntar las capturas en la respuesta**.
 7. No afirmar que algo funciona si no se ha ejecutado la verificación correspondiente. Explicar cualquier limitación real de herramientas o acceso.
 
 ## Infraestructura obligatoria de apps y webs

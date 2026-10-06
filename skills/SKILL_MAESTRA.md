@@ -494,6 +494,8 @@ Antes de publicar:
 - Verificar sintaxis de PHP y JavaScript, rutas, imports y consola.
 - Revisar el diff completo y confirmar que no contiene secretos ni archivos ajenos.
 - Comprobar funcionamiento, responsive, accesibilidad, rendimiento básico y SEO cuando sea una página pública.
+- Medir la geometría real en Chrome (`capturas-verificacion`): ancho del contenedor, número de líneas, desbordes, recortes y solapes, en escritorio, tablet y móvil, con la medida **antes** y **después** del cambio.
+- Guardar una imagen comparativa **antes/después** etiquetada en `tools/` (no versionada) y borrar después el banco de pruebas.
 - Probar teclado, foco, formularios, carga, error, reintento, historial, eliminación y recarga.
 - No usar la inspección de código como prueba final de una app/web.
 
@@ -522,6 +524,7 @@ La entrega final debe indicar:
 - Pruebas locales realizadas.
 - Commit y push efectuados, si corresponde.
 - URL y flujos verificados en Chrome desde el servidor.
+- **Capturas adjuntas en la respuesta**: comparativa antes/después en una sola imagen etiquetada, captura de la URL desplegada y tabla de medidas. El resultado visual se enseña, no se describe.
 - Limitaciones o aspectos no comprobables, sin presentar suposiciones como resultados.
 
 El trabajo solo está terminado cuando el resultado es utilizable, está validado y no quedan fallos conocidos dentro del alcance solicitado.
@@ -720,6 +723,7 @@ Fallback seguro para valores omitidos: `openai-image-2-low`. Los modelos de Open
 6. Confirmar `openai-image-2-low` (IMAGE 2 · LOW) como estado inicial y revisar el payload de todos los botones.
 7. Actualizar la versión de `app.css` o `app.js` en `index.html` cuando exista cache busting. **Ojo: en Hostinger la caché de estáticos (LiteSpeed) se indexa por RUTA e ignora la query string**, así que subir `?v=` no siempre basta: si tras desplegar un cambio de CSS/JS el navegador sigue recibiendo el fichero viejo (compruébalo con `web_fetch` sobre la URL pública, también con un parámetro nuevo), **renombra el fichero** (p. ej. `app.css` → `app.20261003.css`), actualiza la referencia y borra el antiguo. El despliegue por webhook tarda ~2-3 minutos: una URL nueva da 404 hasta que termina.
 8. Revisar el diff, crear commit, hacer push a la rama de despliegue y **verificar la URL real** (no solo el diff): leer el HTML y el CSS/JS publicados para confirmar que sirven el contenido nuevo y que la referencia del `index.html` apunta a un fichero que existe.
+9. Capturar la **URL desplegada** con Chrome headless (`capturas-verificacion`) y adjuntarla en la respuesta junto a la comparativa antes/después y la tabla de medidas.
 
 ---
 

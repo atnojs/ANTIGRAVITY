@@ -1,0 +1,97 @@
+<!-- Plantilla de banco de pruebas para MEDIR geometría real en Chrome headless.
+     Copiar a tools/, ajustar CONFIG y ejecutar:
+
+       chrome --headless=new --disable-gpu --no-sandbox --no-first-run --hide-scrollbars \
+         --force-device-scale-factor=1 --user-data-dir=tools\_chrome_prof1 \
+         --allow-file-access-from-files --window-size=2000,1500 \
+         --virtual-time-budget=30000 --dump-dom "file:///.../harness.html"
+
+     El resultado se lee en el <pre id="salida"> del DOM volcado (y en document.title).
+
+     Por qué así:
+     - Las ventanas de Chrome no bajan de 500px: los anchos de móvil se miden en iframes.
+     - --allow-file-access-from-files permite leer iframe.contentDocument (mismo file://).
+     - <pre> fijo: si participa en el layout, estira el body y desplaza la página medida.
+     - backdrop-filter se anula SOLO aquí: con --disable-gpu pinta los paneles en blanco.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>harness de medidas</title>
+<style>
+  body { margin: 0; background: #041014; color: #9cf; font: 11px/1.5 Consolas, monospace; }
+  #salida { position: fixed; inset: 0 0 auto 0; z-index: 99999; margin: 0; padding: 4px;
+            background: #041014e6; white-space: pre-wrap; }
+  .marco { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; }
+  iframe { border: 1px solid #0ff5; background: #001018; height: 900px; }
+</style>
+</head>
+<body>
+<pre id="salida">midiendo...</pre>
+<div class="marco" id="marcos"></div>
+<script>
+  /* ===== CONFIG ===== */
+  const PAGINAS = [
+    { etiqueta: 'DESPUES', url: 'file:///E:/ANTIGRAVITY/apps/<app>/index.html' },
+    { etiqueta: 'ANTES  ', url: 'file:///E:/ANTIGRAVITY/tools/_antes_test.html' }
+  ];
+  const ANCHOS = [1920, 1440, 1280, 1100, 900, 800, 700, 600, 480, 390, 320];
+  const SELECTOR = '.model-provider-layout';        // contenedor a medir
+  const GRUPOS = '.model-provider-column';          // grupos cuyo reparto en líneas importa
+  const BOTONES = '.model-toggle';                  // botones dentro de cada grupo
+  const TITULO = '.model-provider-title';           // etiqueta visible de cada grupo
+  /* =================== */
+
+  const marcos = document.getElementById('marcos');
+  const trabajos = [];
+  for (const pagina of PAGINAS) {
+    for (const w of ANCHOS) {
+      const f = document.createElement('iframe');
+      f.style.width = w + 'px';
+      f.dataset.etiqueta = pagina.etiqueta;
+      f.dataset.ancho = w;
+      f.src = pagina.url;
+      marcos.appendChild(f);
+      trabajos.push(f);
+    }
+  }
+
+  function medir(f) {
+    const doc = f.contentDocument, win = f.contentWindow, r = (n) => Math.round(n);
+    const s = doc.createElement('style');   // solo banco de pruebas
+    s.textContent = '*{backdrop-filter:none !important;-webkit-backdrop-filter:none !important}';
+    doc.head.appendChild(s);
+    const cont = doc.querySelector(SELECTOR);
+    if (!cont) return 'SIN ' + SELECTOR;
+    const anchoCont = r(cont.getBoundingClientRect().width);
+    const lineas = new Set();
+    const detalle = [...doc.querySelectorAll(GRUPOS)].map((g) => {
+      const etiqueta = g.querySelector(TITULO);
+      const nombre = (etiqueta ? etiqueta.textContent : g.textContent).trim().slice(0, 18);
+      const botones = [...g.querySelectorAll(BOTONES)];
+      const tops = [...new Set(botones.map((b) => r(b.getBoundingClientRect().top)))];
+      tops.forEach((t) => lineas.add(t));
+      const ancho = r(g.getBoundingClientRect().width);
+      return `${nombre}=${ancho}${ancho > anchoCont ? '/DESBORDA+' + (ancho - anchoCont) : ''}/sub${tops.length}`;
+    });
+    return `V=${win.innerWidth} CONT=${anchoCont} LINEAS=${lineas.size} :: ` + detalle.join(' | ');
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(async () => {
+      const filas = [];
+      for (const f of trabajos) {
+        try {
+          if (f.contentDocument.fonts && f.contentDocument.fonts.ready) await f.contentDocument.fonts.ready;
+          await new Promise((r) => setTimeout(r, 150));
+          filas.push(`${f.dataset.etiqueta} [${f.dataset.ancho}px] ${medir(f)}`);
+        } catch (e) { filas.push(`${f.dataset.etiqueta} [${f.dataset.ancho}px] ERROR: ${e.message}`); }
+      }
+      document.getElementById('salida').textContent = filas.join('\n');
+      document.title = 'medido';
+    }, 2500);
+  });
+</script>
+</body>
+</html>

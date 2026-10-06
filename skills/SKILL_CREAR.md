@@ -27,6 +27,7 @@ Al activar `crear`, se invocan automáticamente:
 | `analista-visual-pro` | Prompts de imágenes si la app lo requiere |
 | `arquitecto-backend-php-hostinger` | Configurar proxy.php y las claves del `.htaccess` raíz |
 | `history-server` | Historial persistente server-side |
+| `capturas-verificacion` | Medir la geometría real en Chrome y entregar capturas del antes/después |
 | `auditor-lighthouse-accesibilidad` | Control de calidad final |
 
 ---
@@ -147,6 +148,9 @@ El sistema `history-server` proporciona:
 2. Verificar Glassmorphism, estado "PROCESANDO...", spinner, lightbox.
 3. Verificar que no hay errores rojos en consola.
 4. Corregir inmediatamente si algo falla.
+5. Medir la geometría real en Chrome (`capturas-verificacion`): anchos de contenedor, número de líneas, desbordes y recortes, en escritorio, tablet y móvil. Anotar la medida **antes** y **después** del cambio.
+6. Guardar una **imagen comparativa antes/después** etiquetada en `tools/`, y la captura de la URL desplegada cuando el cambio se publique.
+7. Borrar el banco de pruebas y los perfiles temporales al terminar.
 
 ### Paso 5: Auditoría Final (OBLIGATORIO)
 
@@ -178,5 +182,5 @@ Ejecutar `auditor-lighthouse-accesibilidad` completo:
 - `proxy.php` que resuelve las claves solo desde el entorno del servidor.
 - `history.php` + `history-manager.js` para historial server-side.
 - Confirmación de sincronización con GitHub.
-- Captura o confirmación visual: "El estado PROCESANDO funciona correctamente".
+- Capturas adjuntas en la respuesta: la comparativa antes/después en una sola imagen y la captura de la URL desplegada, junto a la tabla de medidas. El resultado visual se **enseña**, no se describe.
 - Reporte de auditoría Lighthouse + Accesibilidad.
