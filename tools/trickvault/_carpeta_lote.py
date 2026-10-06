@@ -281,6 +281,30 @@ def aplicar(carpeta):
     return 0
 
 
+def sujetos(carpeta, sujeto, sin_sujeto=()):
+    """Escribe los dos ficheros de una carpeta con EL MISMO sujeto:
+    _sujetos_<carpeta>.json (sustituye [OBJETO]) y _ejemplos_<carpeta>.json
+    (pista para las tarjetas cuyo prompt no lleva [OBJETO]).
+    Los codigos de `sin_sujeto` (fondos o texturas abstractas) se dejan fuera."""
+    pend = pendientes(carpeta)
+    con, sin = {}, {}
+    for t in pend:
+        if t['code'] in sin_sujeto:
+            continue
+        if '[OBJETO]' in PROMPTS[t['code']]:
+            con[t['id']] = sujeto
+        else:
+            sin[t['id']] = 'Example: %s.' % sujeto.rstrip('.')
+    json.dump(con, open(os.path.join(TOOLS, '_sujetos_%s.json' % carpeta), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    json.dump(sin, open(os.path.join(TOOLS, '_ejemplos_%s.json' % carpeta), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    print('sujeto unico: %s' % sujeto)
+    print('  _sujetos_%s.json  : %d tarjetas con [OBJETO]' % (carpeta, len(con)))
+    print('  _ejemplos_%s.json : %d tarjetas con pista' % (carpeta, len(sin)))
+    if sin_sujeto:
+        print('  sin sujeto (abstractos): %s' % ', '.join(sorted(sin_sujeto)))
+    return 0
+
+
 def validar():
     js = os.path.join(TOOLS, '_val.js')
     open(js, 'w', encoding='utf-8').write(
@@ -306,3 +330,5 @@ if __name__ == '__main__':
         sys.exit(aplicar(carpeta))
     elif modo == 'validar':
         sys.exit(validar())
+    elif modo == 'sujetos':
+        sys.exit(sujetos(carpeta, sys.argv[3], set(sys.argv[4:])))
