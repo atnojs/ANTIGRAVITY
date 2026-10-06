@@ -72,6 +72,9 @@ mismo sujeto, para que el ejemplo no sea un cartel inventado.
   esa categoría y se anota como excepción en `_excepciones_<carpeta>.json`.
 - Los sujetos viven en `_sujetos_<carpeta>.json` y las pistas en
   `_ejemplos_<carpeta>.json` (herramientas de `tools/trickvault/`).
+- **La pista de ejemplo va ANTES de la coletilla final** (`all visible text…`),
+  no después: al final el modelo le hace poco caso y se salta el sujeto (pasó
+  con `/ghibli`, que pintó un paisaje sin el robot).
 - **Ojo con los restos de tandas anteriores**: si `tools/trickvault/<carpeta>_gen/`
   ya tiene PNG, la herramienta los da por hechos y no los regenera. Si vienen de
   otra tanda (otros sujetos, otro modelo), hay que borrarlos para rehacer la
