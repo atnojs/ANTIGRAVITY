@@ -1450,6 +1450,16 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/winter': 'assets/xl-juegos/winter.jpg',
     '/newyear': 'assets/xl-juegos/newyear.jpg',
     '/blackfriday': 'assets/xl-juegos/blackfriday.jpg',
+    // Carpeta «Dev y productividad» (2026-10-06): los 5 ejemplos de los códigos
+    // nuevos de las capturas, generados con OpenAI image 2 low a partir del
+    // prompt de cada tarjeta. Van en assets/ porque las tarjetas que ya están
+    // guardadas solo se rellenan desde el repositorio (seedAssetImage), no desde
+    // el servidor: subirlas al store no bastaba.
+    '/appui': 'assets/xl-dev/appui.jpg',
+    '/glassui': 'assets/xl-dev/glassui.jpg',
+    '/darkmode': 'assets/xl-dev/darkmode.jpg',
+    '/appicons': 'assets/xl-dev/appicons.jpg',
+    '/terminal': 'assets/xl-dev/terminal.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -3335,6 +3345,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-luzcamara', prefix: 'assets/luz-camara-personas/', key: 'trickvault-luz-camara-personas-images-version', version: '2026-10-01-gpt-image-2-complete' },
     { category: 'xl-comidamoda', prefix: 'assets/comida-moda/', key: 'trickvault-comida-moda-images-version', version: '2026-09-30-gpt-image-2-complete' },
     { category: 'xl-pintura', prefix: 'assets/pintura-dibujo/', key: 'trickvault-pintura-dibujo-images-version', version: '2026-10-01-gpt-image-2-complete' },
+    { category: 'xl-dev', prefix: 'assets/xl-dev/', key: 'trickvault-xl-dev-images-version', version: '2026-10-06-gpt-image-2-low' },
 ];
 function isGeneratedCardImage(imageUrl) {
     return typeof imageUrl === 'string' && GENERATED_IMAGE_RELEASES.some(release => imageUrl.startsWith(release.prefix));
