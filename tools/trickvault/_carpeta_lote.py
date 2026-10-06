@@ -281,27 +281,41 @@ def aplicar(carpeta):
     return 0
 
 
-def sujetos(carpeta, sujeto, sin_sujeto=()):
+def sujetos(carpeta, sujeto, palabra=None, palabra_codes=()):
     """Escribe los dos ficheros de una carpeta con EL MISMO sujeto:
     _sujetos_<carpeta>.json (sustituye [OBJETO]) y _ejemplos_<carpeta>.json
     (pista para las tarjetas cuyo prompt no lleva [OBJETO]).
-    Los codigos de `sin_sujeto` (fondos o texturas abstractas) se dejan fuera."""
+
+    - `sujeto`: el objeto unico de la carpeta.
+    - `palabra` + `palabra_codes`: para los codigos cuyo [OBJETO] es EL TEXTO a
+      rotular (lettering, typography), se usa la misma palabra en todos.
+    - `_excepciones_<carpeta>.json` (id -> sujeto): tarjetas cuyo prompt exige una
+      categoria concreta (un animal, una celula, un plato) y no admiten el objeto.
+    """
+    f_exc = os.path.join(TOOLS, '_excepciones_%s.json' % carpeta)
+    exc = json.load(open(f_exc, encoding='utf-8')) if os.path.exists(f_exc) else {}
     pend = pendientes(carpeta)
-    con, sin = {}, {}
+    con, sin, usadas = {}, {}, {'objeto': 0, 'palabra': 0, 'excepcion': 0}
     for t in pend:
-        if t['code'] in sin_sujeto:
-            continue
-        if '[OBJETO]' in PROMPTS[t['code']]:
-            con[t['id']] = sujeto
-        else:
+        if '[OBJETO]' not in PROMPTS[t['code']]:
             sin[t['id']] = 'Example: %s.' % sujeto.rstrip('.')
+            continue
+        if t['id'] in exc:
+            con[t['id']] = exc[t['id']]; usadas['excepcion'] += 1
+        elif palabra and t['code'] in palabra_codes:
+            con[t['id']] = palabra; usadas['palabra'] += 1
+        else:
+            con[t['id']] = sujeto; usadas['objeto'] += 1
     json.dump(con, open(os.path.join(TOOLS, '_sujetos_%s.json' % carpeta), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     json.dump(sin, open(os.path.join(TOOLS, '_ejemplos_%s.json' % carpeta), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    print('sujeto unico: %s' % sujeto)
-    print('  _sujetos_%s.json  : %d tarjetas con [OBJETO]' % (carpeta, len(con)))
-    print('  _ejemplos_%s.json : %d tarjetas con pista' % (carpeta, len(sin)))
-    if sin_sujeto:
-        print('  sin sujeto (abstractos): %s' % ', '.join(sorted(sin_sujeto)))
+    print('objeto unico : %s  -> %d tarjetas' % (sujeto, usadas['objeto']))
+    if palabra:
+        print('palabra unica: %s  -> %d tarjetas (%s)' % (palabra, usadas['palabra'], ', '.join(sorted(palabra_codes))))
+    if exc:
+        print('excepciones  : %d tarjetas' % usadas['excepcion'])
+        for i, s in sorted(exc.items()):
+            print('    %-14s %s' % (i, s))
+    print('pistas de ejemplo: %d tarjetas' % len(sin))
     return 0
 
 
@@ -331,4 +345,10 @@ if __name__ == '__main__':
     elif modo == 'validar':
         sys.exit(validar())
     elif modo == 'sujetos':
-        sys.exit(sujetos(carpeta, sys.argv[3], set(sys.argv[4:])))
+        resto = sys.argv[4:]
+        palabra, codes = None, set()
+        if '--palabra' in resto:
+            palabra = resto[resto.index('--palabra') + 1]
+        if '--codes' in resto:
+            codes = set(resto[resto.index('--codes') + 1].split(','))
+        sys.exit(sujetos(carpeta, sys.argv[3], palabra, codes))
