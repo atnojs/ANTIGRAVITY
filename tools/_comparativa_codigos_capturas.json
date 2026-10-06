@@ -1,0 +1,26 @@
+﻿[
+    {
+        "Bloque":  "IMG-1 Shortcut List",
+        "YaEnBiblioteca":  22,
+        "Alias":  19,
+        "Nuevos":  14,
+        "ListaNuevos":  "/169 /45 /916 /brighten /cleanface /frontview /landscape /samecharacter /sameface /sharpen /square /sunny /transparent /whitesheet",
+        "ListaAlias":  "/3dcgi → /3d  /behind → /backview  /birdeye → /birdseyeview  /blurbackground → /softblur  /colourise → /colorize  /dramaticlight → /dramaticlighting  /enhance → /upscale  /expression → /expressionsheet  /fulllength → /fullbody  /nighttime → /nightshot  /painting → /oilpainting  /photoreal → /hdreal  /removebg → /removepeoplebg  /retro80s → /retro  /softlight → /softlighting  /stars → /astrophotography  /ultrahd → /8k  /watercolour → /watercolor  /whitebackground → /whiteback"
+    },
+    {
+        "Bloque":  "IMG-2 250+ comandos",
+        "YaEnBiblioteca":  112,
+        "Alias":  30,
+        "Nuevos":  94,
+        "ListaNuevos":  "/32x /acrylic /aiworld /alienworld /aluminum /appicons /appui /ascii /batik /blackhole /blackworld /bronze /brutalist /carbonfiber /castle /ceramic /coatofarms /coin /comet /cottage /crayon /crystal /currency /darkmode /diamond /disney /dragon /dreamworks /eclipse /elf /emblem /emoji /expressionism /fantastical /felt /flatdesign /galaxy /ghibli /glassui /glitter /gradientmesh /gta /harbor /imax /incandescent /inkdrawing /knitted /lighthouse /lightning /liquidmetal /mandala /mangacover /mapscroll /marble /mars /meteor /molten /monogram /moonnight /mosaic /mythology /nebula /ninja /origami /oxidized /pearlescent /pixar /planet /playingcard /playstation /porcelain /pubg /pvp /quilting /renaissance /sandart /scroll /shipwreck /spraypaint /storybook /storybook3d /storybookcover /terminal /throne /toybox /tribal /village /volcano /wizard /woodcarving /zelda /zentangle /zine /zombie",
+        "ListaAlias":  "/ad → /metaad  /ancientegypt → /egypt  /arrow → /arrows  /aurora → /auroraborealis  /badge → /pinbadge  /candle → /candlejar  /chalk → /chalkart  /cloudscape → /cloud  /dungeon → /dungeonmap  /funko → /funkostyle  /fur → /furry  /goldluxury → /luxury  /gothic → /gothicaura  /hologramcity → /hologram  /icecarving → /ice  /idcard → /passportphoto  /lego → /legoify  /map → /illustratedmap  /pastel → /pastelchalk  /photographic → /hdreal  /photorealistic → /ultrarealistic  /retro90s → /retro  /scifiroom → /scifi  /spaceship → /space  /stamp → /foilstamp  /surreal → /surrealism  /tattoo → /tattooflash  /treasure → /treasuremap  /vinyl → /vinylsleeve  /wireframeui → /wireframe"
+    },
+    {
+        "Bloque":  "IMG-3 Video 1-55",
+        "YaEnBiblioteca":  29,
+        "Alias":  15,
+        "Nuevos":  11,
+        "ListaNuevos":  "/centered /craneup /diagonal /handheld /rackfocus /ruleofthirds /running /speedramp /spotlight /steadycam /walking",
+        "ListaAlias":  "/dollyin → /pullin  /dollyout → /pullout  /entrance → /doorreveal  /falling → /skyfall  /foreground → /foregroundframe  /freeze → /freezeaction  /neonlight → /neonlights  /nightscene → /nightshot  /slowmotion → /slowmo  /softlight → /softlighting  /symmetry → /symmetricalshot  /tight → /closeup  /tracking → /trackingshot  /volumetric → /volumetriclight  /wide → /wideangle"
+    }
+]
