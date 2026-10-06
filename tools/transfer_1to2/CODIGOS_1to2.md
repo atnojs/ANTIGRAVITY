@@ -127,7 +127,45 @@ All visible text and labels must be written in Spanish with no English words.
 
 ---
 
-## 6. Pendiente (lo que no se ha podido probar)
+## 6. Integración en la app TrickVault (hecha)
+
+Los 12 códigos ya viven en `apps/trickvault`:
+
+- **Carpeta nueva:** `Transferir 1 → 2` (`xl-transfer1to2`). Se añade sola a quien ya
+  tuviera su lista guardada en el navegador (esquema de carpetas v4).
+- **11 tarjetas nuevas** (ids propios `tr-cmd-001…011`, al final de `SEED_TRICKS` para
+  **no desplazar** los ids posicionales `ig-dcek` / `xl-cmd` / `cap-cmd`):
+  `/transferoutfit-1to2`, `/colorgrade-1to2`, `/matchpose-1to2`, `/transferlight-1to2`,
+  `/transferhair-1to2`, `/transfermakeup-1to2`, `/transferaccessories-1to2`,
+  `/transferscene-1to2`, `/transferweather-1to2`, `/matchexpression-1to2`,
+  `/transferpattern-1to2`.
+- **`/transferbackground`** no se duplica: se ha mejorado **en su sitio**
+  (`xl-otromundo`) con el 1/2 explícito y las reglas duras.
+- **No se han subido** `/transferstyle-1to2` ni `/matchcamera-1to2`: las pruebas dicen
+  que no son aislables.
+- **Ejemplos:** 11 `.jpg` 1024×1024 en `apps/trickvault/assets/transfer-1to2/`,
+  generados con `openai-image-2-low` vía el proxy de Hostinger.
+
+Verificación (Chrome headless, servido por HTTP local, con capturas en `evidencias/`):
+
+| Comprobación | Resultado |
+|---|---|
+| Tarjetas 1→2 en el navegador | 11/11 |
+| Carpeta `xl-transfer1to2` guardada | SÍ |
+| Ejemplos vaciados a propósito y recargando | 11/11 se rellenan solos |
+| Ficheros de ejemplo que cargan (`naturalWidth > 0`) | 11/11, ninguno falla |
+| Parseo del JSX con `@babel/parser` | OK |
+| Ids `ig-dcek`/`xl-cmd`/`cap-cmd` respecto a HEAD | idénticos (sin desplazamiento) |
+
+Scripts: `_check_trickvault.js` (datos y enlaces), `_gen_ejemplos.py` (ejemplos) y
+`_verifica_transfer.html` (banco de pruebas en Chrome, no versionado).
+
+Nota: el solape del badge de carpeta sobre el título de la tarjeta es **anterior** a
+este cambio (pasa igual en `/ascii`), no lo introduce esta carpeta.
+
+---
+
+## 7. Pendiente (lo que no se ha podido probar)
 
 - **`gpt-image-2` (modelo por defecto del proyecto):** la clave `OPENAI_API_KEY` del
   `.env` local **da 401 (clave incorrecta/revocada)**, así que la fase C no se pudo
@@ -137,7 +175,7 @@ All visible text and labels must be written in Spanish with no English words.
 
 ---
 
-## 7. Cómo reproducirlo
+## 8. Cómo reproducirlo
 
 ```powershell
 cd E:\ANTIGRAVITY\tools\transfer_1to2
