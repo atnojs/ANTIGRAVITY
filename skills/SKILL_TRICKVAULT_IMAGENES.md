@@ -64,8 +64,18 @@ mismo sujeto, para que el ejemplo no sea un cartel inventado.
   una persona).
 - Excepción: los códigos que son **fondos o texturas abstractas** (por ejemplo
   `/gradientmesh`) no llevan sujeto; ahí se pide el fondo.
+- **Si en el prompt el `[OBJETO]` es el TEXTO a rotular** (lettering, typography:
+  "letterforms spelling [OBJETO]"), no se le pone un objeto: se usa **una única
+  palabra** para todos esos códigos de la carpeta (`--palabra` en la herramienta).
+- **Si el prompt exige una categoría concreta** (un animal, una célula, una
+  planta, un ciclo, un plato) y el objeto común no encaja, se le da un sujeto de
+  esa categoría y se anota como excepción en `_excepciones_<carpeta>.json`.
 - Los sujetos viven en `_sujetos_<carpeta>.json` y las pistas en
   `_ejemplos_<carpeta>.json` (herramientas de `tools/trickvault/`).
+- **Ojo con los restos de tandas anteriores**: si `tools/trickvault/<carpeta>_gen/`
+  ya tiene PNG, la herramienta los da por hechos y no los regenera. Si vienen de
+  otra tanda (otros sujetos, otro modelo), hay que borrarlos para rehacer la
+  carpeta entera; si no, la carpeta queda mezclada.
 
 ## Flujo por carpeta
 
