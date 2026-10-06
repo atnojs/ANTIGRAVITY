@@ -37,6 +37,7 @@ Usa `skills/recursos/capturas-verificacion/plantilla-harness.html` (iframes a an
 ### 3. Trampas comprobadas (evítalas de raíz)
 
 - **Sandbox confinado**: Chrome usa named pipes y en modo confinado termina sin salida ni error. Si no puedes ejecutarlo con permiso suficiente, dilo y no afirmes haber comprobado nada visualmente.
+- **NUNCA mates Chrome filtrando por nombre de proceso.** `Get-Process chrome | Stop-Process -Force` cierra también el Chrome de Antonio y sus accesos directos de escritorio (WhatsApp y Gemini son PWAs de Chrome): se perdió su sesión entera. Lanza siempre el navegador con un `--user-data-dir` propio y, si hay que limpiar, mata **solo el PID que tú arrancaste** (`Start-Process -PassThru` + `Stop-Process -Id`). Si el navegador no devuelve salida porque hay instancias tuyas colgadas, usa un perfil nuevo en lugar de matar procesos ajenos.
 - **Sin `--user-data-dir` propio**, un Chrome ya abierto se traga la petición y no obtienes salida.
 - **`backdrop-filter` con `--disable-gpu`** deja los paneles en blanco. Neutrálizalo **solo** dentro del banco de pruebas (`*{backdrop-filter:none !important}`), nunca en la app.
 - **El bloque de resultados del harness** (un `<pre>` ancho y sin posicionar) estira el `body` y empuja la app fuera de la captura: fíjalo con `position: fixed`.

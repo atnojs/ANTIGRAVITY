@@ -32,4 +32,4 @@ description: "Úsala en toda creación, edición o revisión de app, web o compo
 
 ### Contenido completo de esta skill
 
-El texto íntegro de esta skill vive en **`skills/SKILL_CAPTURAS_VERIFICACION.md`** (relativo a la raíz del proyecto), con sus plantillas en `skills/recursos/capturas-verificacion/`. Léelo y aplícalo tal cual para el resto del procedimiento. Si hay que cambiar algo de esa skill, se cambia SOLO en el árbol canónico `skills/`.
+El texto íntegro de esta skill vive en **`skills/SKILL_CAPTURAS_VERIFICACION.md`** (relativo a la raíz del proyecto). Léelo y aplícalo tal cual para el resto del procedimiento. Si hay que cambiar algo de esa skill, se cambia SOLO en el árbol canónico `skills/`.

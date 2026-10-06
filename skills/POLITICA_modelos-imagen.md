@@ -1,7 +1,14 @@
 <!-- Fuente ÚNICA del bloque de modelos que se inserta literalmente en los punteros
      de .claude/skills/*/SKILL.md. Si cambia algo aquí, ejecuta:
          php tools/generar-punteros-skills.php
-     Así los 12 punteros quedan siempre idénticos y sin saltos de lectura. -->
+     Así los 12 punteros quedan siempre idénticos y sin saltos de lectura.
+
+     Lotes de imágenes de ejemplo de TrickVault: SIEMPRE `openai-image-2-low`,
+     carpeta por carpeta, con el ejemplo en `apps/trickvault/assets/…` (subirlo
+     al store no basta) y commit + push antes de pasar a la siguiente carpeta.
+     Método completo: `skills/SKILL_TRICKVAULT_IMAGENES.md`.
+     (Nota puesta ANTES del primer `##` a propósito: así el bloque inyectado en
+     los 12 punteros no cambia y no hace falta regenerarlos.) -->
 
 ## Modelos de imagen del proyecto (política vigente)
 
