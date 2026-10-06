@@ -1,0 +1,37 @@
+[
+ {
+  "id": "cap-cmd-099",
+  "code": "/appui",
+  "desc": "interfaz de aplicación móvil",
+  "origen": "capturas 2026-10-06",
+  "prompt": "/appui If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mobile application interface: clean app screen design on a phone frame, consistent spacing and typography, soft shadows and rounded cards, light modern UI system, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "cap-cmd-100",
+  "code": "/glassui",
+  "desc": "interfaz con efecto cristal",
+  "origen": "capturas 2026-10-06",
+  "prompt": "/glassui If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Glassmorphism interface: frosted translucent panels with real background blur, thin light borders, layered depth and soft colour glow behind the glass, modern UI design, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "cap-cmd-101",
+  "code": "/darkmode",
+  "desc": "interfaz en modo oscuro",
+  "origen": "capturas 2026-10-06",
+  "prompt": "/darkmode If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mobile application screen in dark mode: a phone app interface on a deep charcoal background, high-contrast light text, elevated rounded cards, accent highlights and comfortable low-light spacing, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "cap-cmd-098",
+  "code": "/appicons",
+  "desc": "juego de iconos de aplicación",
+  "origen": "capturas 2026-10-06",
+  "prompt": "/appicons If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. App icon set: a consistent family of rounded-square icons with simple symbolic shapes, flat modern gradients, unified colour system, pixel-perfect edges, mobile OS grid, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "cap-cmd-107",
+  "code": "/terminal",
+  "desc": "terminal de consola con comandos",
+  "origen": "capturas 2026-10-06",
+  "prompt": "/terminal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Terminal interface: monospaced green or amber text on a black screen, command lines and cursor, subtle CRT scanlines and phosphor glow, console aesthetic, all visible text and labels must be written in Spanish with no English words"
+ }
+]
