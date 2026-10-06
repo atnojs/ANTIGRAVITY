@@ -3,9 +3,10 @@
 Familia de códigos nuevos (no están en ninguna app). Aquí está el diseño completo, la
 sintaxis comprobada y **el resultado de probarlos de verdad generando imágenes**.
 
-- **24 imágenes generadas** con la API (OpenRouter): `google/gemini-3-pro-image` y
-  `google/gemini-3.1-flash-image`.
-- **Coste real: $2,22** (registrado en `_run.log` y `_run_D.log`).
+- **28 imágenes generadas y pagadas** (24 de prueba + 4 de referencia) con la API
+  (OpenRouter): `google/gemini-3-pro-image` y `google/gemini-3.1-flash-image`.
+- **Coste real: $2,42** (fases registradas en `_run.log` y `_run_D.log`; las 4 llamadas
+  fallidas de la fase C no se cobraron).
 - Evidencias: `E:\ANTIGRAVITY\_pruebas_img\transfer_1to2\` (referencias, 24 salidas y
   hojas comparativas en `sheets/`).
 
