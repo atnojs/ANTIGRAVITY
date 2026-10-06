@@ -1,0 +1,4 @@
+# Evita subir datos personales al repositorio (el repo se despliega en la raiz publica).
+*.csv
+registro-*/
+*.log
