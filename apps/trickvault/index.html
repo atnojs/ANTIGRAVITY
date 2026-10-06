@@ -1007,7 +1007,6 @@ const ALL_IMAGE_COMMANDS = [
 // que está en Favoritos y lleva el prompt editado), así que esta desaparece del
 // navegador y no vuelve a entrar.
 const REMOVED_IMAGE_IDS = new Set([
-    'ig-dcek-083',  // catalogo de /expressionsheet: duplicaba la variante personal
     'tv-glassart-art',
     'ig-dcek-020', 'ig-dcek-099', 'ig-dcek-100',
     'ig-dcek-113', 'ig-dcek-114', 'ig-dcek-115', 'ig-dcek-116', 'ig-dcek-117',
@@ -1912,9 +1911,7 @@ const SEED_TRICKS = [
     { id: 's11', title: 'El truco del patito de goma (Rubber Duck Debugging)', description: 'Cuando estés atascado con un bug, explícaselo en voz alta a un objeto inanimado (como un patito de goma). El mero hecho de verbalizar el problema te hace ver la solución.', category: 'xl-dev', tags: ['debugging', 'pensamiento', 'metodologia'], codeSnippet: '🐤 Pasos del Rubber Duck Debugging:\n1. Coge un patito (o cualquier objeto)\n2. Explícale el problema línea por línea\n3. No asumas nada - explícalo TODO\n4. La solución suele aparecer a mitad de la explicación', difficulty: 'beginner', sourceUrl: 'https://es.wikipedia.org/wiki/M%C3%A9todo_de_depuraci%C3%B3n_del_patito_de_goma', imageUrl: '', isFavorite: false, createdAt: Date.now() - 86400000 * 11 },
     ...ALL_IMAGE_COMMANDS.flatMap(([command, meaning], index) => {
         const seedId = `ig-dcek-${String(index + 1).padStart(3, '0')}`;
-        if (REMOVED_IMAGE_IDS.has(seedId) || command === '/glassart' || command === '/expressionsheet') return [];
-        // /expressionsheet: la tarjeta del catalogo se retira porque la variante personal
-        // (id mu7fpvmx114wfqvaw, con prompt editado y su propio ejemplo) ya cubre el codigo.
+        if (REMOVED_IMAGE_IDS.has(seedId) || command === '/glassart') return [];
         return [{
             id: seedId,
             title: `${command} — ${meaning}`,
