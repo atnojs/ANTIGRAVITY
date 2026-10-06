@@ -5,9 +5,10 @@ imagen 2 (la que se edita) y el RESULTADO de aplicar el código.
 
 Por qué así:
 - Un ejemplo de una sola foto no informa de nada en una transferencia 1 → 2.
-- El proxy de Hostinger (openai-image-2-low) NO acepta dos imágenes de entrada,
-  así que no puede generar la transferencia: los tres paneles salen de las
-  imágenes reales de las pruebas (referencias + salida de cada código).
+- El panel de RESULTADO es la salida REAL del código con `openai-image-2`
+  (gpt-image-2, calidad **medium**) vía el proxy de Hostinger, que manda las dos
+  referencias a `/v1/images/edits` (ver `_regen_medium.py`). Las salidas antiguas
+  del modelo de pruebas (gemini) quedan como respaldo si falta la de medium.
 - La tarjeta recorta con `object-fit: cover` y `max-height: 150px`, por eso los
   paneles van centrados y con margen lateral: el recorte se come el margen, nunca
   un panel.
@@ -53,6 +54,15 @@ RESULTADOS = {
 
 ETIQUETAS = ('1 · REFERENCIA', '2 · TU IMAGEN', 'RESULTADO')
 
+# Salidas reales con openai-image-2 (medium) vía el proxy.
+MEDIUM = os.path.join(ROOT, 'medium', 'openai-image-2')
+
+
+def resultado(code):
+    """Resultado medium si existe; si no, la salida antigua de las pruebas."""
+    propio = os.path.join(MEDIUM, f'{code}.png')
+    return propio if os.path.exists(propio) else os.path.join(OUT, RESULTADOS[code])
+
 
 def fuente(size):
     for ruta in (r'E:\ANTIGRAVITY\apps\conversor_multimedia\vendor\electrolize.ttf',
@@ -85,7 +95,7 @@ def montar(codigo, destino):
     fuentes = fuente(24)
     for i, ruta in enumerate((os.path.join(REFS, 'ref1_donante.png'),
                               os.path.join(REFS, 'ref2_receptora.png'),
-                              os.path.join(OUT, RESULTADOS[codigo]))):
+                              resultado(codigo))):
         lienzo.paste(panel(ruta), (x, 0))
         d = ImageDraw.Draw(lienzo, 'RGBA')
         # Banda con la etiqueta, dentro del panel.
@@ -109,16 +119,16 @@ def main():
     faltan = []
     for code in codigos:
         for ruta in (os.path.join(REFS, 'ref1_donante.png'), os.path.join(REFS, 'ref2_receptora.png'),
-                     os.path.join(OUT, RESULTADOS[code])):
+                     resultado(code)):
             if not os.path.exists(ruta):
                 faltan.append(ruta)
     if faltan:
         sys.exit('faltan imágenes de las pruebas:\n  ' + '\n  '.join(faltan))
 
     for i, code in enumerate(codigos, 1):
-        # Sufijo -triptico: el nombre cambia para que ningún navegador sirva la
-        # imagen antigua (mono-panel) desde su caché.
-        destino = os.path.join(ASSETS, f'{code}-triptico.jpg')
+        # El nombre incluye el modelo: al cambiar la versión del ejemplo cambia la
+        # ruta, y así ningún navegador sirve la imagen antigua desde su caché.
+        destino = os.path.join(ASSETS, f'{code}-triptico-medium.jpg')
         montar(code, destino)
         with Image.open(destino) as im:
             print(f'  ({i}/{len(codigos)}) {code:26s} {im.size[0]}x{im.size[1]} '

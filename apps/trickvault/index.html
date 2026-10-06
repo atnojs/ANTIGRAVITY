@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -2294,17 +2294,17 @@ const TRANSFER_COMMANDS = [
 // sufijo -triptico cambia el nombre del fichero para que ningún navegador sirva
 // la versión antigua (una sola foto) desde su caché.
 Object.assign(SEED_COMMAND_IMAGES, {
-    '/transferoutfit-1to2': 'assets/transfer-1to2/transferoutfit-1to2-triptico.jpg',
-    '/colorgrade-1to2': 'assets/transfer-1to2/colorgrade-1to2-triptico.jpg',
-    '/matchpose-1to2': 'assets/transfer-1to2/matchpose-1to2-triptico.jpg',
-    '/transferlight-1to2': 'assets/transfer-1to2/transferlight-1to2-triptico.jpg',
-    '/transferhair-1to2': 'assets/transfer-1to2/transferhair-1to2-triptico.jpg',
-    '/transfermakeup-1to2': 'assets/transfer-1to2/transfermakeup-1to2-triptico.jpg',
-    '/transferaccessories-1to2': 'assets/transfer-1to2/transferaccessories-1to2-triptico.jpg',
-    '/transferscene-1to2': 'assets/transfer-1to2/transferscene-1to2-triptico.jpg',
-    '/transferweather-1to2': 'assets/transfer-1to2/transferweather-1to2-triptico.jpg',
-    '/matchexpression-1to2': 'assets/transfer-1to2/matchexpression-1to2-triptico.jpg',
-    '/transferpattern-1to2': 'assets/transfer-1to2/transferpattern-1to2-triptico.jpg',
+    '/transferoutfit-1to2': 'assets/transfer-1to2/transferoutfit-1to2-triptico-medium.jpg',
+    '/colorgrade-1to2': 'assets/transfer-1to2/colorgrade-1to2-triptico-medium.jpg',
+    '/matchpose-1to2': 'assets/transfer-1to2/matchpose-1to2-triptico-medium.jpg',
+    '/transferlight-1to2': 'assets/transfer-1to2/transferlight-1to2-triptico-medium.jpg',
+    '/transferhair-1to2': 'assets/transfer-1to2/transferhair-1to2-triptico-medium.jpg',
+    '/transfermakeup-1to2': 'assets/transfer-1to2/transfermakeup-1to2-triptico-medium.jpg',
+    '/transferaccessories-1to2': 'assets/transfer-1to2/transferaccessories-1to2-triptico-medium.jpg',
+    '/transferscene-1to2': 'assets/transfer-1to2/transferscene-1to2-triptico-medium.jpg',
+    '/transferweather-1to2': 'assets/transfer-1to2/transferweather-1to2-triptico-medium.jpg',
+    '/matchexpression-1to2': 'assets/transfer-1to2/matchexpression-1to2-triptico-medium.jpg',
+    '/transferpattern-1to2': 'assets/transfer-1to2/transferpattern-1to2-triptico-medium.jpg',
 });
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -3521,7 +3521,7 @@ const PROMPT_TEMPLATES = {
     "/transferaccessories-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Add to the person of image 2 the accessories worn by the person in image 1: jewellery, eyewear, hat or bag. HARD RULES: keep the same face, hair, clothing, pose and background of image 2; add only those accessories, with realistic fit and reflections, all visible text and labels must be written in Spanish with no English words",
     "/transferscene-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Place the person of image 2 inside the complete scene of image 1: same location, environment, props and atmosphere, keeping the person of image 2 unchanged. Match perspective, scale, lighting and shadows so the integration is seamless, all visible text and labels must be written in Spanish with no English words",
     "/transferweather-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Add to image 2 the same weather and atmosphere of image 1: rain, snow, fog, storm, wet surfaces and reflections, on top of the existing scene of image 2. HARD RULES: keep the background, the person, the clothing and the pose of image 2; change only the weather, all visible text and labels must be written in Spanish with no English words",
-    "/matchexpression-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Change the facial expression of the person in image 2 so it matches the expression of the person in image 1: same mouth, eyes and eyebrows. HARD RULES: keep the same face and identity, the hair, clothing, pose and background of image 2; do not add makeup and do not change the skin, all visible text and labels must be written in Spanish with no English words",
+    "/matchexpression-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Change the facial expression of the person in image 2 so it matches the expression of the person in image 1: same mouth, eyes and eyebrows, and nothing else. HARD RULES: keep the same face and identity, the hair, clothing, pose and background of image 2 exactly as they are. Do NOT add sunglasses, eyewear, jewellery or any other accessory, and do NOT add lipstick or makeup: keep her bare face and her skin exactly as in image 2 (probado: sin esta regla el modelo copiaba también las gafas y los labios de la imagen 1). Change only the expression, all visible text and labels must be written in Spanish with no English words",
     "/transferpattern-1to2": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. The user attaches two images: image 1 is the REFERENCE ([REFERENCIA]) and image 2 is the TARGET ([OBJETO]). Apply the fabric pattern of the garment worn in image 1 to the main garment of image 2: same pattern, same scale and same colours, adapted to the folds of the garment. HARD RULES: keep the same garment type, the same person, pose and background of image 2, all visible text and labels must be written in Spanish with no English words",
 };
 
@@ -3835,7 +3835,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-verdentro', prefix: 'assets/xl-verdentro/', key: 'trickvault-xl-verdentro-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-planos', prefix: 'assets/planos/', key: 'trickvault-xl-planos-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-juegos', prefix: 'assets/xl-juegos/', key: 'trickvault-xl-juegos-images-version', version: '2026-10-06-gpt-image-2-low' },
-    { category: 'xl-transfer1to2', prefix: 'assets/transfer-1to2/', key: 'trickvault-transfer-1to2-images-version', version: '2026-10-06-tripticos' },
+    { category: 'xl-transfer1to2', prefix: 'assets/transfer-1to2/', key: 'trickvault-transfer-1to2-images-version', version: '2026-10-06-medium' },
 ];
 function isGeneratedCardImage(imageUrl) {
     return typeof imageUrl === 'string' && GENERATED_IMAGE_RELEASES.some(release => imageUrl.startsWith(release.prefix));
