@@ -10,7 +10,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=8">
+  <!-- CSS Hoola.
+       La caché de estáticos de Hostinger (hcdn/LiteSpeed) se indexa por RUTA e
+       ignora la query string, así que al cambiar el CSS hay que RENOMBRAR el
+       fichero con una fecha nueva (ver SKILL_MAESTRA, caché de estáticos). -->
+  <link rel="stylesheet" href="app.20261006.css">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Saltar a la herramienta</a>
@@ -189,6 +193,7 @@
             <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-describedby="model-tooltip" data-tooltip="Precisión en edición, Consistencia (Rostros y Cara)." aria-pressed="false">MAX SUNBURST</button>
                     </div>
                   </div>
+                  <div class="model-provider-row">
                   <div class="model-provider-column">
                     <span class="model-provider-title">GEMINI</span>
                     <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
@@ -213,6 +218,7 @@
             <button type="button" class="model-toggle" data-model="openai-image-2" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad media. Aplica el estilo a tu fotografía." aria-pressed="false">MEDIUM</button>
             <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-describedby="model-tooltip" data-tooltip="OpenAI image 2 (gpt-image-2) en calidad alta. Más detalle y coste superior a MEDIUM." aria-pressed="false">HIGH</button>
                     </div>
+                  </div>
                   </div>
                 </div>
               </div>

@@ -21,31 +21,40 @@
   --font-ui: 'Electrolize', system-ui, sans-serif;
 }
 
-/* Disposición canónica del selector de modelos por proveedor. */
+/* Disposición canónica del selector de modelos por proveedor.
+   Los botones de cada modelo van SIEMPRE en línea (nunca apilados en columna) y
+   repartidos en un MÍNIMO DE DOS LÍNEAS: OPENAI 2.5 (el grupo más largo, 5
+   botones) ocupa la primera y GEMINI + QWEN + IMAGE 2 la segunda, que a su vez
+   salta de línea solo cuando el ancho disponible no da para los tres. */
 .model-provider-layout {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+}
+.model-provider-row {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
-  gap: 1rem;
-  width: 100%;
+  gap: .55rem 1.4rem;
+  max-width: 100%;
 }
 .model-provider-column {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: .35rem;
+  flex: 0 1 auto;   /* ancho = contenido: el grupo no se comprime a una columna */
   min-width: 0;
+  max-width: 100%;
 }
 .model-provider-title {
   color: var(--muted, #99CCCC);
   font-size: 1.05rem;
   letter-spacing: .08em;
   text-transform: uppercase;
-}
-@media (max-width: 700px) {
-  .model-provider-layout { gap: .5rem; }
-  .model-toggle-group { gap: .2rem; }
-  .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
 }
 
 * { box-sizing: border-box; }
@@ -524,10 +533,20 @@ select {
 
 .model-selector { display: flex; flex-direction: column; align-items: center; gap: .42rem; margin: .65rem 0 0; width: 100%; }
 .model-selector-label { color: var(--muted); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
-.model-toggle-group { display: inline-flex; max-width: 100%; gap: .5rem; padding: .3rem; overflow-x: auto; border: 1px solid var(--border); border-radius: 999px; background: var(--card-bg); box-shadow: 0 0 12px var(--glow-soft); }
-.model-toggle { flex: 0 0 auto; padding: .55rem 1rem; border: 1px solid transparent; border-radius: 999px; color: var(--muted); background: transparent; cursor: pointer; font-size: .9rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; transition: all .25s ease; }
+.model-toggle-group { display: inline-flex; flex-wrap: wrap; justify-content: center; max-width: 100%; gap: .35rem; padding: .25rem; border: 1px solid var(--border); border-radius: 999px; background: var(--card-bg); box-shadow: 0 0 12px var(--glow-soft); }
+.model-toggle { flex: 0 0 auto; max-width: 100%; padding: .5rem .85rem; border: 1px solid transparent; border-radius: 999px; color: var(--muted); background: transparent; cursor: pointer; font-size: .9rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; transition: all .25s ease; }
 .model-toggle:hover { color: var(--text); border-color: var(--border-strong); background: rgba(255, 255, 255, .06); box-shadow: 0 0 12px var(--glow-soft); }
 .model-toggle.active { color: #CCFFFF; border-color: var(--border-strong); background: linear-gradient(135deg, var(--contenedor), var(--acc)); text-shadow: 0 0 8px var(--glow); box-shadow: 0 0 18px var(--glow); }
+/* Con menos de ~610px de ancho el grupo de OPENAI 2.5 (el más largo) ya no cabe
+   entero: se compactan tipografía y separaciones para que cada grupo siga usando
+   el menor número de líneas posible y nunca desborde su cápsula.
+   (Van DESPUÉS de las reglas base: si no, la base las sobreescribe.) */
+@media (max-width: 700px) {
+  .model-provider-layout { gap: .5rem; }
+  .model-provider-row { gap: .45rem .5rem; }
+  .model-toggle-group { gap: .25rem; padding: .25rem; border-radius: 16px; }
+  .model-toggle { font-size: .76rem; padding: .5rem .6rem; }
+}
 
 .message { margin-top: 12px; padding: .7rem .85rem; border-radius: var(--radius-sm); font-size: .78rem; }
 .message-error { border: 1px solid rgba(239, 68, 68, .55); color: #ffd0d0; background: rgba(239, 68, 68, .14); }
@@ -641,8 +660,7 @@ select {
   .image-preview-card img { width: 100%; height: 176px; }
   .control-panel { grid-template-columns: 1fr; }
   .format-group { grid-column: auto; }
-  .model-toggle-group { width: 100%; border-radius: 14px; }
-  .model-toggle { padding-inline: .72rem; font-size: .75rem; }
+  .model-toggle-group { width: auto; }
   .result-actions { flex-direction: column; }
   .result-actions .btn { width: 100%; }
   .json-modal-actions { flex-direction: column; }
@@ -700,3 +718,8 @@ select {
   color:var(--faint);font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;
   text-shadow:0 0 8px var(--glow-soft);
 }
+/* Los avisos "De Menor a Mayor Calidad" invisibles (GEMINI/QWEN/IMAGE 2) solo
+   sirven para alinear en vertical los grupos de la misma línea: no deben reservar
+   ancho, porque su texto (249px) es más ancho que varios grupos y forzaba líneas
+   de más. Altura intacta, ancho cero. */
+.model-quality-hint[aria-hidden="true"]{width:0;min-width:0;white-space:nowrap;overflow:hidden}
