@@ -3903,11 +3903,13 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
         vivos.add(String(trick.id));
         const imagen = prepararImagenPublicada(trick, imagenes);
         const propria = esImagenPropia(trick.imageUrl || '');
-        // Imagen elegida por el usuario: o es tuya sin subir (data:image/...) o
-        // está en el almacén por una subida tuya (uploads/, nunca uploads/example_).
-        const esDelUsuario = propria || ((trick.imageUrl || '').startsWith('uploads/')
-            && !(trick.imageUrl || '').startsWith('uploads/example_'));
         const original = base.get(String(trick.id));
+        // ¿La ha tocado el usuario? La tarjeta lleva updatedAt más nuevo que el
+        // del catálogo. Es lo único que distingue TU imagen de una del montón: el
+        // almacén nombra igual los ejemplos del catálogo y tus subidas
+        // (uploads/example_<id>_<hash>.webp), así que el nombre no sirve.
+        const tocada = !!original && Number(trick.updatedAt || 0) > Number(original.updatedAt || 0);
+        const esDelUsuario = propria || ((trick.imageUrl || '').startsWith('uploads/') && tocada);
         if (!original) {
             nuevas.push({ ...trick, imageUrl: imagen });
             continue;
