@@ -3903,6 +3903,10 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
         vivos.add(String(trick.id));
         const imagen = prepararImagenPublicada(trick, imagenes);
         const propria = esImagenPropia(trick.imageUrl || '');
+        // Imagen elegida por el usuario: o es tuya sin subir (data:image/...) o
+        // está en el almacén por una subida tuya (uploads/, nunca uploads/example_).
+        const esDelUsuario = propria || ((trick.imageUrl || '').startsWith('uploads/')
+            && !(trick.imageUrl || '').startsWith('uploads/example_'));
         const original = base.get(String(trick.id));
         if (!original) {
             nuevas.push({ ...trick, imageUrl: imagen });
@@ -3913,10 +3917,11 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
         // dejaba la tarjeta marcada como «modificada» para siempre.
         const normalizar = v => (v === undefined || v === null || v === '') ? null : v;
         for (const campo of CAMPOS_PUBLICABLES) {
-            // La imagen SOLO se publica cuando es tuya (data:image/...). Las del
-            // catálogo o del almacén se resuelven solas en cada navegador, y
-            // publicarlas congelaría versiones antiguas encima de las nuevas.
-            if (campo === 'imageUrl' && !propria) continue;
+            // La imagen se publica cuando la has elegido tú: tus subidas al
+            // almacén (uploads/...) y las tuyas sin subir (data:image/...). Los
+            // ejemplos del catálogo (assets/... y uploads/example_...) no se
+            // publican: se actualizan solos y publicarlos los congelaría.
+            if (campo === 'imageUrl' && !esDelUsuario) continue;
             const valor = campo === 'imageUrl' ? imagen : (trick[campo] ?? null);
             if (JSON.stringify(normalizar(valor)) !== JSON.stringify(normalizar(original[campo] ?? null))) {
                 dif[campo] = valor;
