@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -218,6 +218,9 @@ const CODE_FOLDER = {
     '/handlettering': 'xl-letras3d', '/letterpress': 'xl-letras3d', '/embroideredpatch': 'xl-letras3d', '/woodcarved': 'xl-letras3d',
     '/icingtext': 'xl-letras3d', '/sandwriting': 'xl-letras3d', '/skywriting': 'xl-letras3d', '/foodtype': 'xl-letras3d',
     '/ransomnote': 'xl-letras3d', '/chrometype': 'xl-letras3d', '/stencil': 'xl-letras3d', '/menushot': 'xl-letras3d',
+    // Relleno tipográfico (captura WhatsApp 2026-10-07): el objeto se construye
+    // SOLO con lettering, como la guitarra de rótulos del rock de la referencia.
+    '/logomosaic': 'xl-letras3d', '/typefill': 'xl-letras3d',
     // Comida y moda
     '/recipecard': 'xl-comidamoda', '/plating': 'xl-comidamoda', '/cheesepull': 'xl-comidamoda', '/steamshot': 'xl-comidamoda',
     '/tablespread': 'xl-comidamoda', '/cookingstep': 'xl-comidamoda', '/bakerywindow': 'xl-comidamoda', '/streetfood': 'xl-comidamoda',
@@ -1870,6 +1873,8 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/luxurylifestyle': 'assets/comida-moda/luxurylifestyle.jpg',
     '/shotsetup': 'assets/luz-camara-personas/shotsetup.jpg',
     '/ascii': 'assets/xl-letras3d/ascii.jpg',
+    '/logomosaic': 'assets/xl-letras3d/logomosaic.jpg',
+    '/typefill': 'assets/xl-letras3d/typefill.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -2273,6 +2278,10 @@ const CAPTURE_COMMANDS = [
     ['/imax', 'formato de cine gigante y nítido'],
     ['/terminal', 'terminal de consola con comandos'],
     ['/ascii', 'imagen hecha con caracteres'],
+    // Relleno tipográfico (captura WhatsApp 2026-10-07): la silueta entera del
+    // sujeto se forma con letras y rótulos, no con superficies fotografiadas.
+    ['/logomosaic', 'objeto formado por logos'],
+    ['/typefill', 'objeto formado por palabras'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -3151,6 +3160,10 @@ const PROMPT_TEMPLATES = {
     "/chrometype": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Retro eighties chrome typography spelling [OBJETO], liquid metal beveled reflections, purple neon gradient horizon, airbrushed glow, synthwave poster aesthetic, all visible text and labels must be written in Spanish with no English words",
     "/stencil": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Urban spray-painted stencil lettering of [OBJETO] on a concrete wall, crisp sharp-edged template silhouette, matte black aerosol overspray speckle, all visible text and labels must be written in Spanish with no English words",
     "/menushot": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Appetizing overhead food photography of [OBJETO] plated and styled for a restaurant menu, glossy sauce highlights, dark rustic tabletop, all visible text and labels must be written in Spanish with no English words",
+    // Relleno tipográfico (captura WhatsApp 2026-10-07): la silueta del sujeto se
+    // construye SOLO con lettering; no se ve ninguna superficie fotografiada.
+    "/logomosaic": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Typographic logo mosaic of [OBJETO], the entire silhouette, volume and interior built exclusively from a dense tightly packed collage of vintage brand logos, wordmarks and retro packaging lettering fragments, bold glossy enamel colours over a deep black background, crisp vector edges, the subject readable only through the arrangement of the lettering, no photographed surface or material texture, flat graphic poster art, 8k resolution, all visible text, wordmarks and labels must be written in Spanish with no English words",
+    "/typefill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built entirely out of words, the whole shape formed by tightly packed lettering in mixed sizes, weights and typefaces, letters clipped exactly to the object outline, bold flat colours over a deep black background, crisp vector poster art, the subject readable only through the arrangement of the type, no photographed surface or material texture, all visible text and words must be written in Spanish with no English words",
     // Comida y moda
     "/recipecard": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rustic handwritten recipe card displaying [OBJETO] in numbered step-by-step cooking stages, small ingredient snapshots, flour-dusted wooden tabletop, soft natural window light, all visible text and labels must be written in Spanish with no English words",
     "/plating": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fine dining restaurant plating of [OBJETO], tweezered micro herbs, glossy sauce dots, matte ceramic plate, soft directional studio light, shallow depth of field macro, all visible text and labels must be written in Spanish with no English words",
