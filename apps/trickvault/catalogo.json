@@ -4,9 +4,6 @@
         "xl-cmd-274": {
             "title": "/sugarskull — sujeto convertido en calavera mexicana"
         },
-        "ig-dcek-033": {
-            "customPrompt": "/actionfigure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics. . all visible text and labels must be written in Spanish with no English words."
-        },
         "ig-dcek-521": {
             "customPrompt": "/funkostyle If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Funko-style vinyl figure of [OBJETO], oversized-head vinyl toy in its display box, collectible figure photography. . all visible text and labels must be written in Spanish with no English words."
         },
@@ -101,5 +98,5 @@
             "cap-cmd-111"
         ]
     },
-    "actualizado": "2026-10-07T17:28:37+00:00"
+    "actualizado": "2026-10-07T17:33:54+00:00"
 }
