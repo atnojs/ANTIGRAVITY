@@ -2,17 +2,10 @@
     "version": 1,
     "tarjetas": {
         "xl-cmd-274": {
-            "title": "/sugarskull — sujeto convertido en calavera mexicana",
-            "customPrompt": ""
+            "title": "/sugarskull — sujeto convertido en calavera mexicana"
         },
-        "cap-cmd-111": {
-            "customPrompt": ""
-        },
-        "cap-cmd-109": {
-            "customPrompt": ""
-        },
-        "cap-cmd-110": {
-            "customPrompt": ""
+        "ig-dcek-033": {
+            "customPrompt": "/actionfigure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics. . all visible text and labels must be written in Spanish with no English words."
         },
         "ig-dcek-521": {
             "customPrompt": "/funkostyle If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Funko-style vinyl figure of [OBJETO], oversized-head vinyl toy in its display box, collectible figure photography. . all visible text and labels must be written in Spanish with no English words."
@@ -31,9 +24,6 @@
         },
         "ig-dcek-528": {
             "customPrompt": "/dioramabox If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Diorama box of [OBJETO], miniature scene inside an open box, layered depth and tiny details, shadowbox art presentation. . all visible text and labels must be written in Spanish with no English words."
-        },
-        "ig-dcek-033": {
-            "customPrompt": "/actionfigure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics. . all visible text and labels must be written in Spanish with no English words."
         }
     },
     "nuevas": [
@@ -60,10 +50,23 @@
     "orden": {
         "xl-letras3d": [
             "xl-cmd-274",
-            "cap-cmd-111",
-            "cap-cmd-109",
-            "cap-cmd-110",
-            "cap-cmd-108",
+            "ig-dcek-033",
+            "ig-dcek-279",
+            "ig-dcek-480",
+            "ig-dcek-481",
+            "ig-dcek-482",
+            "ig-dcek-483",
+            "ig-dcek-484",
+            "ig-dcek-485",
+            "ig-dcek-486",
+            "ig-dcek-487",
+            "ig-dcek-488",
+            "ig-dcek-521",
+            "ig-dcek-522",
+            "ig-dcek-524",
+            "ig-dcek-525",
+            "ig-dcek-526",
+            "ig-dcek-528",
             "xl-cmd-049",
             "xl-cmd-050",
             "xl-cmd-051",
@@ -92,24 +95,11 @@
             "xl-cmd-074",
             "xl-cmd-075",
             "xl-cmd-076",
-            "ig-dcek-480",
-            "ig-dcek-481",
-            "ig-dcek-482",
-            "ig-dcek-483",
-            "ig-dcek-484",
-            "ig-dcek-485",
-            "ig-dcek-486",
-            "ig-dcek-487",
-            "ig-dcek-488",
-            "ig-dcek-521",
-            "ig-dcek-522",
-            "ig-dcek-524",
-            "ig-dcek-525",
-            "ig-dcek-526",
-            "ig-dcek-528",
-            "ig-dcek-265",
-            "ig-dcek-033"
+            "cap-cmd-108",
+            "cap-cmd-109",
+            "cap-cmd-110",
+            "cap-cmd-111"
         ]
     },
-    "actualizado": "2026-10-07T16:40:31+00:00"
+    "actualizado": "2026-10-07T17:28:37+00:00"
 }
