@@ -5107,8 +5107,23 @@ function App() {
                 setEstadoPublicar('ℹ️ ' + (r.mensaje || 'No había nada nuevo'));
                 addToast('No había nada nuevo que publicar');
             } else {
-                setEstadoPublicar(`✅ Publicado en GitHub (commit ${r.commit})`);
+                setEstadoPublicar(`✅ Publicado en GitHub (commit ${r.commit}). Esperando al despliegue…`);
                 addToast(`✅ Publicado (commit ${r.commit})`);
+                // El despliegue de Hostinger tarda unos segundos en traer el
+                // fichero: se comprueba aquí, sin bloquear la respuesta.
+                const marca = r.actualizado;
+                let enElAire = false;
+                for (let intento = 0; intento < 10 && !enElAire; intento++) {
+                    await new Promise(seguir => setTimeout(seguir, 3000));
+                    const capa = await loadPublishedCatalogue();
+                    if (capa && capa.actualizado === marca) {
+                        enElAire = true;
+                        setTricks(prev => normalizeTrickOrder(applyPublishedCatalogue(prev, capa)));
+                    }
+                }
+                setEstadoPublicar(enElAire
+                    ? `✅ Publicado y ya en el aire (commit ${r.commit})`
+                    : `✅ Publicado (commit ${r.commit}). El despliegue lo traerá en breve.`);
             }
         } catch (error) {
             setEstadoPublicar('❌ ' + error.message);
