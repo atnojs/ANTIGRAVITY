@@ -749,7 +749,7 @@ h1, h2, h3, h4, .font-montserrat {
     align-items: center;
     justify-content: center;
     transition: var(--transition-fast);
-    opacity: 0;
+    /* Siempre visible: el icono de copiar no depende del hover */`n    opacity: 1;
 }
 
 .trick-card .code-snippet:hover .copy-btn { opacity: 1; }
@@ -1467,7 +1467,7 @@ h1, h2, h3, h4, .font-montserrat {
 .toast.error   { border-color: rgba(239,68,68,0.4); }
 
 @keyframes slideIn {
-    from { transform: translateX(120%); opacity: 0; }
+    from { transform: translateX(120%); /* Siempre visible: el icono de copiar no depende del hover */`n    opacity: 1; }
     to   { transform: translateX(0);   opacity: 1; }
 }
 
