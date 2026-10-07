@@ -223,10 +223,10 @@ const CODE_FOLDER = {
     // Rellenos de la silueta (captura WhatsApp 2026-10-07): el objeto se construye
     // SOLO con lettering, como la guitarra de rótulos del rock de la referencia.
     '/logomosaic': 'xl-letras3d', '/typefill': 'xl-letras3d', '/patternfill': 'xl-letras3d',
-    // Calavera de azúcar (captura 2026-10-08): el sujeto, decorado con la
-    // ornamentación mexicana de Día de Muertos, se lee DENTRO de la silueta de la
-    // calavera, como el cráneo de la referencia.
-    '/calavery': 'xl-letras3d',
+    // Calavera de azúcar (2026-10-08): código GENÉRICO. El cuerpo del prompt lleva
+    // [OBJETO], así que cada usuario pone su propio objeto (escrito o subiendo su
+    // foto) y el estilo se le aplica a ESE objeto. No lleva sujeto de carpeta.
+    '/sugarskull': 'xl-letras3d',
     // Comida y moda
     '/recipecard': 'xl-comidamoda', '/plating': 'xl-comidamoda', '/cheesepull': 'xl-comidamoda', '/steamshot': 'xl-comidamoda',
     '/tablespread': 'xl-comidamoda', '/cookingstep': 'xl-comidamoda', '/bakerywindow': 'xl-comidamoda', '/streetfood': 'xl-comidamoda',
@@ -1888,7 +1888,9 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/logomosaic': 'assets/xl-letras3d/logomosaic.jpg?v=3',
     '/typefill': 'assets/xl-letras3d/typefill.jpg?v=2',
     '/patternfill': 'assets/xl-letras3d/patternfill.jpg?v=2',
-    '/calavery': 'assets/xl-letras3d/calavery.jpg',
+    // El ejemplo de /sugarskull se rehízo el mismo 2026-10-08 (una tetera en vez de
+    // la cámara), así que también sube su ?v= para saltar la caché del CDN.
+    '/sugarskull': 'assets/xl-letras3d/sugarskull.jpg?v=2',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -2179,10 +2181,10 @@ const EXCEL_COMMANDS = [
     ['/winter', 'nieve y vaho de invierno'],
     ['/newyear', 'fiesta de Año Nuevo'],
     ['/blackfriday', 'anuncio de Black Friday'],
-    // Calavera de azúcar (captura 2026-10-08): el sujeto vive dentro de la
-    // silueta de una calavera mexicana decorada, sobre fondo blanco. Va con los
-    // otros rellenos, en «Letras y 3D».
-    ['/calavery', 'sujeto convertido en calavera mexicana'],
+    // Calavera de azúcar (2026-10-08): el objeto que elija el usuario (escrito o
+    // en su propia imagen) se convierte en una calavera mexicana decorada, sobre
+    // fondo blanco. Va con los otros rellenos, en «Letras y 3D».
+    ['/sugarskull', 'tu objeto convertido en calavera mexicana'],
 ];
 // ── 108 códigos nuevos de las capturas de WhatsApp (2026-10-06): la lista de
 //    atajos de imagen y la de «250+ comandos». Se añaden con id propio
@@ -2562,6 +2564,27 @@ function readFolderIds() {
 const CATEGORY_MOVES = {
     '/patternfill': 'xl-letras3d',
 };
+// Renombrados de código: una tarjeta ya guardada cuyo código cambia de nombre no
+// se renombra sola, así que se apunta aquí para hacerlo UNA vez. /calavery salió
+// unas horas el 2026-10-08 con el sujeto de ejemplo metido en el propio nombre;
+// pasó a /sugarskull, que es el código genérico (el objeto lo pone el usuario).
+const CODE_MOVES = {
+    '/calavery': '/sugarskull',
+};
+function normalizeTrickCode(item) {
+    const actual = getImageCommandKey(item);
+    const nuevo = CODE_MOVES[actual];
+    if (!nuevo) return item;
+    const title = String(item.title || '');
+    return {
+        ...item,
+        codeSnippet: nuevo,
+        title: title.startsWith(actual) ? nuevo + title.slice(actual.length) : title,
+    };
+}
+function normalizeTrickCodes(items) {
+    return items.map(normalizeTrickCode);
+}
 function normalizeTrickCategory(item, folderIds) {
     const cat = String(item.category || '');
     const movida = CATEGORY_MOVES[getImageCommandKey(item)];
@@ -2590,7 +2613,9 @@ function normalizeTrickCategory(item, folderIds) {
 }
 function normalizeTrickCategories(items) {
     const folderIds = readFolderIds();
-    return items.map(item => normalizeTrickCategory(item, folderIds));
+    // Primero el renombrado de código y después la carpeta: la carpeta se deduce
+    // del código nuevo (CODE_FOLDER), así que el orden importa.
+    return normalizeTrickCodes(items).map(item => normalizeTrickCategory(item, folderIds));
 }
 function isLegacyImageCommandDescription(description) {
     return typeof description === 'string' && /^Comando \d+ del carrusel «250 comandos de imagen» de ninodirector\.\s*Úsalo junto con un sujeto concreto y un encuadre o formato\.?$/i.test(description.trim());
@@ -3199,10 +3224,10 @@ const PROMPT_TEMPLATES = {
     "/logomosaic": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built exclusively as a dense mosaic of complete retro brand LOGOS, every single element is a full logo lockup made of a graphic symbol PLUS its lettering: shields, crests, badges, emblems, coats of arms, rosettes, wax seals, rubber stamps, circular medallions, monograms, pennants, ribbons, stars, arrows, sunbursts, mascots, animals, hands, eyes, wings and pictograms, like a vintage logo sheet or sticker bomb of old trademarks, the shape of the subject readable only through the arrangement of those logos, absolutely no plain text-only tiles and no flat caption blocks without a symbol, bold glossy enamel colours over a deep black background, crisp vector edges, no photographed surface or material texture, flat graphic poster art, 8k resolution, all visible wordmarks and labels must be written in Spanish with no English words",
     "/typefill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built entirely out of words, the whole shape formed by tightly packed lettering in mixed sizes, weights and typefaces, letters clipped exactly to the object outline, bold flat colours over a deep black background, crisp vector poster art, the subject readable only through the arrangement of the type, no photographed surface or material texture, all visible text and words must be written in Spanish with no English words",
     "/patternfill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] filled edge to edge with hand-drawn ornamental motifs instead of any real surface: scalloped flower rosettes, daisy petals, teardrops, dots, spirals, swirls, chevrons, arches, lace bands, fan shapes and geometric folk patterns, perfectly symmetrical composition fitted to the outline, flat black ink line art on a clean white background, high contrast vector sticker style like Mexican papel picado and sugar skull ornamentation, crisp closed outlines, no shading, no gradients, no colour, no photographed surface or material texture, all visible text and labels must be written in Spanish with no English words",
-    // Calavera de azúcar (captura 2026-10-08): el sujeto ocupa el cráneo entero y
-    // se lee dentro de la silueta de la calavera, con la ornamentación mexicana de
-    // Día de Muertos de la referencia sobre fondo blanco limpio.
-    "/calavery": "Mexican Day of the Dead sugar skull calavera in which [OBJETO] IS the skull: the whole subject fills the entire cranium, becomes the forehead and the brow, and its own lenses, rings, dials, circles and openings become the two big empty black eye sockets and the black nasal cavity, recognisable only through those skull features while keeping its own unmistakable silhouette, decorated edge to edge with symmetrical festive folk ornamentation: a large marigold rosette on the centre of the forehead, a scalloped petal rosette framing each eye socket, red and pink hearts, teardrops, halved flowers, dots, pearls, swirls, spirals, scrollwork and tiny leaves, vivid enamel folk-art colours in magenta, fuchsia, violet, orange, coral red, saffron yellow, teal and turquoise with fine dark outlines, clear white skull bone as the clean background of the ornamentation, flat centred symmetrical composition, the whole calavera on a pure plain white background, crisp vector edges, no shading, no gradients, no photographed surface or material texture, high contrast flat folk art poster, all visible text and labels must be written in Spanish with no English words",
+    // Calavera de azúcar (2026-10-08): código GENÉRICO. [OBJETO] es el objeto que
+    // elige el usuario: si adjunta una foto se le aplica a esa imagen, y si no,
+    // al objeto que escriba. La referencia es la calavera mexicana de la captura.
+    "/sugarskull": "Mexican Day of the Dead sugar skull calavera in which [OBJETO] IS the skull: the whole object fills the entire cranium, becomes the forehead and the brow, and its own round parts, rings, circles and openings become the two big empty black eye sockets and the black nasal cavity, recognisable only through those skull features while keeping its own unmistakable silhouette, decorated edge to edge with symmetrical festive folk ornamentation: a large marigold rosette on the centre of the forehead, a scalloped petal rosette framing each eye socket, red and pink hearts, teardrops, halved flowers, dots, pearls, swirls, spirals, scrollwork and tiny leaves, vivid enamel folk-art colours in magenta, fuchsia, violet, orange, coral red, saffron yellow, teal and turquoise with fine dark outlines, clear white skull bone as the clean background of the ornamentation, flat centred symmetrical composition, the whole calavera on a pure plain white background, crisp vector edges, no shading, no gradients, no photographed surface or material texture, high contrast flat folk art poster, all visible text and labels must be written in Spanish with no English words",
     // Comida y moda
     "/recipecard": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rustic handwritten recipe card displaying [OBJETO] in numbered step-by-step cooking stages, small ingredient snapshots, flour-dusted wooden tabletop, soft natural window light, all visible text and labels must be written in Spanish with no English words",
     "/plating": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fine dining restaurant plating of [OBJETO], tweezered micro herbs, glossy sauce dots, matte ceramic plate, soft directional studio light, shallow depth of field macro, all visible text and labels must be written in Spanish with no English words",
@@ -3799,9 +3824,14 @@ async function uploadRemoteImage(trickId, imageData) {
    fichero que vive en el repositorio es pequeño, el catálogo puede seguir
    creciendo por debajo y esos cambios se aplican encima en cualquier navegador.
    Las imágenes propias (data:image/...) se envían aparte y el servidor las
-   guarda como assets/publicado/<id>.jpg. */
+   guarda como assets/publicado/<id>.jpg.
 
-const CAMPOS_PUBLICABLES = ['title', 'description', 'category', 'codeSnippet', 'customPrompt', 'imageUrl', 'sortOrder'];
+   OJO con sortOrder: la app reparte números de orden por carpeta y esos números
+   cambian con el tiempo (cada vez que entran tarjetas nuevas), así que NO se
+   comparan. Lo que sí se publica es el ORDEN real: si la secuencia de tarjetas
+   de una carpeta ya no coincide con la del catálogo, va en `orden`. */
+
+const CAMPOS_PUBLICABLES = ['title', 'description', 'category', 'codeSnippet', 'customPrompt', 'imageUrl'];
 
 function esImagenPropia(url) {
     return typeof url === 'string' && url.startsWith('data:image/');
@@ -3938,7 +3968,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-dev', prefix: 'assets/xl-dev/', key: 'trickvault-xl-dev-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-estilos', prefix: 'assets/xl-estilos/', key: 'trickvault-xl-estilos-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-efectosempaque', prefix: 'assets/xl-efectosempaque/', key: 'trickvault-xl-efectosempaque-images-version', version: '2026-10-06-gpt-image-2-low' },
-    { category: 'xl-letras3d', prefix: 'assets/xl-letras3d/', key: 'trickvault-xl-letras3d-images-version', version: '2026-10-08-calavery-camara-reflex' },
+    { category: 'xl-letras3d', prefix: 'assets/xl-letras3d/', key: 'trickvault-xl-letras3d-images-version', version: '2026-10-08-sugarskull-generico' },
     { category: 'xl-ilustracion', prefix: 'assets/xl-ilustracion/', key: 'trickvault-xl-ilustracion-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-casaviajes', prefix: 'assets/xl-casaviajes/', key: 'trickvault-xl-casaviajes-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-camararetrato', prefix: 'assets/xl-camararetrato/', key: 'trickvault-xl-camararetrato-images-version', version: '2026-10-06-gpt-image-2-low' },
