@@ -1,0 +1,115 @@
+{
+    "version": 1,
+    "tarjetas": {
+        "xl-cmd-274": {
+            "title": "/sugarskull — sujeto convertido en calavera mexicana",
+            "customPrompt": ""
+        },
+        "cap-cmd-111": {
+            "customPrompt": ""
+        },
+        "cap-cmd-109": {
+            "customPrompt": ""
+        },
+        "cap-cmd-110": {
+            "customPrompt": ""
+        },
+        "ig-dcek-521": {
+            "customPrompt": "/funkostyle If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Funko-style vinyl figure of [OBJETO], oversized-head vinyl toy in its display box, collectible figure photography. . all visible text and labels must be written in Spanish with no English words."
+        },
+        "ig-dcek-522": {
+            "customPrompt": "/minifig If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Minifig block figure of [OBJETO] with its tiny building set, toy-brick character aesthetic, playful collectible scene. . all visible text and labels must be written in Spanish with no English words."
+        },
+        "ig-dcek-524": {
+            "customPrompt": "/keychain If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Keychain of [OBJETO] hanging from a backpack, small charm in real use, tactile everyday accessory shot. . all visible text and labels must be written in Spanish with no English words."
+        },
+        "ig-dcek-525": {
+            "customPrompt": "/gashapon If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gashapon collectible of [OBJETO], tiny toy inside a capsule with its vending machine, Japanese capsule-toy aesthetic. . all visible text and labels must be written in Spanish with no English words."
+        },
+        "ig-dcek-526": {
+            "customPrompt": "/bobblehead If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bobblehead figure of [OBJETO], oversized wobbly head on a spring base, playful dashboard collectible, glossy finish. . all visible text and labels must be written in Spanish with no English words."
+        },
+        "ig-dcek-528": {
+            "customPrompt": "/dioramabox If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Diorama box of [OBJETO], miniature scene inside an open box, layered depth and tiny details, shadowbox art presentation. . all visible text and labels must be written in Spanish with no English words."
+        },
+        "ig-dcek-033": {
+            "customPrompt": "/actionfigure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics. . all visible text and labels must be written in Spanish with no English words."
+        }
+    },
+    "nuevas": [
+        {
+            "id": "ig-dcek-265",
+            "title": "/3drender — imagen renderizada en 3D",
+            "description": "",
+            "category": "xl-letras3d",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Instagram"
+            ],
+            "codeSnippet": "/3drender",
+            "difficulty": "beginner",
+            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
+            "imageUrl": "uploads/example_ig-dcek-279_68aaebe6b942.webp",
+            "isFavorite": true,
+            "createdAt": 1787615999736,
+            "sortOrder": 31
+        }
+    ],
+    "borradas": [],
+    "orden": {
+        "xl-letras3d": [
+            "xl-cmd-274",
+            "cap-cmd-111",
+            "cap-cmd-109",
+            "cap-cmd-110",
+            "cap-cmd-108",
+            "xl-cmd-049",
+            "xl-cmd-050",
+            "xl-cmd-051",
+            "xl-cmd-052",
+            "xl-cmd-053",
+            "xl-cmd-054",
+            "xl-cmd-055",
+            "xl-cmd-056",
+            "xl-cmd-057",
+            "xl-cmd-058",
+            "xl-cmd-059",
+            "xl-cmd-060",
+            "xl-cmd-061",
+            "xl-cmd-062",
+            "xl-cmd-063",
+            "xl-cmd-064",
+            "xl-cmd-065",
+            "xl-cmd-066",
+            "xl-cmd-067",
+            "xl-cmd-068",
+            "xl-cmd-069",
+            "xl-cmd-070",
+            "xl-cmd-071",
+            "xl-cmd-072",
+            "xl-cmd-073",
+            "xl-cmd-074",
+            "xl-cmd-075",
+            "xl-cmd-076",
+            "ig-dcek-480",
+            "ig-dcek-481",
+            "ig-dcek-482",
+            "ig-dcek-483",
+            "ig-dcek-484",
+            "ig-dcek-485",
+            "ig-dcek-486",
+            "ig-dcek-487",
+            "ig-dcek-488",
+            "ig-dcek-521",
+            "ig-dcek-522",
+            "ig-dcek-524",
+            "ig-dcek-525",
+            "ig-dcek-526",
+            "ig-dcek-528",
+            "ig-dcek-265",
+            "ig-dcek-033"
+        ]
+    },
+    "actualizado": "2026-10-07T16:40:31+00:00"
+}
