@@ -3909,13 +3909,16 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
             continue;
         }
         const dif = {};
+        // '' y null/undefined son lo mismo: si no, publicar un customPrompt ""
+        // dejaba la tarjeta marcada como «modificada» para siempre.
+        const normalizar = v => (v === undefined || v === null || v === '') ? null : v;
         for (const campo of CAMPOS_PUBLICABLES) {
             // La imagen SOLO se publica cuando es tuya (data:image/...). Las del
             // catálogo o del almacén se resuelven solas en cada navegador, y
             // publicarlas congelaría versiones antiguas encima de las nuevas.
             if (campo === 'imageUrl' && !propria) continue;
             const valor = campo === 'imageUrl' ? imagen : (trick[campo] ?? null);
-            if (JSON.stringify(valor) !== JSON.stringify(original[campo] ?? null)) {
+            if (JSON.stringify(normalizar(valor)) !== JSON.stringify(normalizar(original[campo] ?? null))) {
                 dif[campo] = valor;
                 desglose[campo] = (desglose[campo] || 0) + 1;
             }
