@@ -250,13 +250,14 @@ function accion_publicar() {
     $rutaCat = ruta_catalogo();
 
     // 1) ¿Hay algo nuevo respecto a lo que ya está en el repositorio?
+    $previo = null;
     [$codigoCat, $datosCat] = github('GET', "/repos/$repo/contents/$rutaCat");
     if ($codigoCat === 200 && !empty($datosCat['content'])) {
         $previo = json_decode(base64_decode(str_replace(["\n", "\r"], '', $datosCat['content'])), true);
         if (is_array($previo) && !$imagenes) {
             $a = $previo;
             $b = $datos;
-            unset($a['actualizado'], $b['actualizado']);
+            unset($a['actualizado'], $b['actualizado'], $a['carpetas'], $b['carpetas'], $a['ids'], $b['ids']);
             if (json_encode($a) === json_encode($b)) {
                 return salir([
                     'success' => true,
@@ -266,6 +267,34 @@ function accion_publicar() {
             }
         }
     }
+
+    // Si se publica UNA carpeta, se quitan de la capa anterior sus entradas: así
+    // lo publicado refleja esa carpeta tal cual está ahora (y lo demás se
+    // conserva para que publicar una carpeta no borre lo ya publicado de otras).
+    if (is_array($previo)) {
+        foreach ((array) ($datos['ids'] ?? []) as $id) {
+            unset($previo['tarjetas'][(string) $id]);
+        }
+        foreach ((array) ($datos['carpetas'] ?? []) as $cat) {
+            unset($previo['orden'][(string) $cat]);
+        }
+        $porId = [];
+        foreach ((array) ($previo['nuevas'] ?? []) as $nueva) {
+            if (isset($nueva['id'])) $porId[(string) $nueva['id']] = $nueva;
+        }
+        $datos['tarjetas'] = array_merge((array) ($previo['tarjetas'] ?? []), (array) ($datos['tarjetas'] ?? []));
+        $datos['orden'] = array_merge((array) ($previo['orden'] ?? []), (array) ($datos['orden'] ?? []));
+        $datos['borradas'] = array_values(array_unique(array_merge(
+            (array) ($previo['borradas'] ?? []),
+            (array) ($datos['borradas'] ?? [])
+        )));
+        $nuevasFusion = $porId;
+        foreach ((array) ($datos['nuevas'] ?? []) as $nueva) {
+            if (isset($nueva['id'])) $nuevasFusion[(string) $nueva['id']] = $nueva;
+        }
+        $datos['nuevas'] = array_values($nuevasFusion);
+    }
+    unset($datos['ids'], $datos['carpetas']);
 
     $datos['actualizado'] = date('c');
     $json = json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

@@ -311,6 +311,24 @@ h1, h2, h3, h4, .font-montserrat {
 
 .publish-hint { color: var(--muted); font-size: 0.78rem; }
 
+.publish-carpeta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.publish-carpeta select {
+    background: rgba(10, 16, 26, 0.85);
+    color: var(--text);
+    border: 1px solid rgba(148, 197, 255, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.6rem;
+    font-size: 0.8rem;
+    max-width: 62vw;
+}
+
 .publish-panel-actions {
     display: flex;
     flex-wrap: wrap;

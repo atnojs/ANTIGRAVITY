@@ -3884,20 +3884,25 @@ function prepararImagenPublicada(trick, imagenes) {
     return url;
 }
 
-/** Diferencia entre lo que tengo y el catálogo de serie. */
-function buildPublishPayload(tricks, semillas) {
+/** Diferencia entre lo que tengo y el catálogo de serie (opcionalmente, de UNA carpeta). */
+function buildPublishPayload(tricks, semillas, carpeta = '') {
     // La base es el catálogo de serie tal como lo ordena la app. Los números de
     // sortOrder NO se comparan (cambian solos con el tiempo): del orden solo se
     // publica la secuencia, y únicamente si de verdad es distinta.
-    const base = new Map(normalizeTrickOrder(semillas).map(s => [String(s.id), s]));
+    const semillasOrdenadas = normalizeTrickOrder(semillas);
+    const enCarpeta = t => !carpeta || t.category === carpeta;
+    const lista = tricks.filter(enCarpeta);
+    const base = new Map(semillasOrdenadas.filter(enCarpeta).map(s => [String(s.id), s]));
     const tarjetas = {};
     const nuevas = [];
     const imagenes = {};
+    const desglose = {};
     const vivos = new Set();
 
-    for (const trick of tricks) {
+    for (const trick of lista) {
         vivos.add(String(trick.id));
         const imagen = prepararImagenPublicada(trick, imagenes);
+        const propria = esImagenPropia(trick.imageUrl || '');
         const original = base.get(String(trick.id));
         if (!original) {
             nuevas.push({ ...trick, imageUrl: imagen });
@@ -3905,8 +3910,15 @@ function buildPublishPayload(tricks, semillas) {
         }
         const dif = {};
         for (const campo of CAMPOS_PUBLICABLES) {
+            // La imagen SOLO se publica cuando es tuya (data:image/...). Las del
+            // catálogo o del almacén se resuelven solas en cada navegador, y
+            // publicarlas congelaría versiones antiguas encima de las nuevas.
+            if (campo === 'imageUrl' && !propria) continue;
             const valor = campo === 'imageUrl' ? imagen : (trick[campo] ?? null);
-            if (JSON.stringify(valor) !== JSON.stringify(original[campo] ?? null)) dif[campo] = valor;
+            if (JSON.stringify(valor) !== JSON.stringify(original[campo] ?? null)) {
+                dif[campo] = valor;
+                desglose[campo] = (desglose[campo] || 0) + 1;
+            }
         }
         if (Object.keys(dif).length) tarjetas[trick.id] = dif;
     }
@@ -3915,16 +3927,16 @@ function buildPublishPayload(tricks, semillas) {
     const borradas = [...base.keys()].filter(id => !vivos.has(id) && !REMOVED_IMAGE_IDS.has(id));
 
     // Orden por carpeta: solo las carpetas cuya secuencia de tarjetas ha cambiado.
-    const secuencia = lista => {
+    const secuencia = lista2 => {
         const porCategoria = new Map();
-        for (const t of lista) {
+        for (const t of lista2) {
             if (!porCategoria.has(t.category)) porCategoria.set(t.category, []);
             porCategoria.get(t.category).push(String(t.id));
         }
         return porCategoria;
     };
-    const ahora = secuencia(tricks);
-    const antes = secuencia(normalizeTrickOrder(semillas).filter(s => vivos.has(String(s.id))));
+    const ahora = secuencia(lista);
+    const antes = secuencia(semillasOrdenadas.filter(s => vivos.has(String(s.id))));
     const orden = {};
     for (const [categoria, ids] of ahora) {
         const previos = antes.get(categoria) || [];
@@ -3932,7 +3944,18 @@ function buildPublishPayload(tricks, semillas) {
     }
 
     return {
-        catalogo: { version: 1, tarjetas, nuevas, borradas, orden },
+        catalogo: {
+            version: 1,
+            tarjetas,
+            nuevas,
+            borradas,
+            orden,
+            // Si se publica UNA carpeta, se dice cuál y qué tarjetas son suyas:
+            // el servidor borra de la capa anterior esas entradas antes de
+            // mezclar, para que lo publicado refleje fielmente esa carpeta.
+            carpetas: carpeta ? [carpeta] : [],
+            ids: carpeta ? lista.map(t => String(t.id)) : [],
+        },
         imagenes,
         resumen: {
             cambiadas: Object.keys(tarjetas).length,
@@ -3940,6 +3963,7 @@ function buildPublishPayload(tricks, semillas) {
             borradas: borradas.length,
             imagenes: Object.keys(imagenes).length,
             reordenadas: Object.keys(orden).length,
+            desglose,
         },
     };
 }
@@ -4896,6 +4920,8 @@ function App() {
     const [editPassword, setEditPassword] = useState('');
     const [publicando, setPublicando] = useState(false);
     const [estadoPublicar, setEstadoPublicar] = useState('');
+    // '' = todas las carpetas (solo lo cambiado); si no, el id de UNA carpeta.
+    const [carpetaPublicar, setCarpetaPublicar] = useState('');
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [pendingEditAction, setPendingEditAction] = useState(null);
     const [showFolderForm, setShowFolderForm] = useState(false);
@@ -5141,7 +5167,8 @@ function App() {
             addToast('Vuelve a entrar en modo edición para publicar', 'error');
             return;
         }
-        const { catalogo, imagenes, resumen } = buildPublishPayload(tricks, SEED_TRICKS);
+        const { catalogo, imagenes, resumen } = buildPublishPayload(tricks, SEED_TRICKS, carpetaPublicar);
+        const nombreCarpeta = carpetaPublicar ? (getCat(carpetaPublicar, folders)?.label || carpetaPublicar) : '';
         const total = resumen.cambiadas + resumen.nuevas + resumen.borradas;
         if (!total && !resumen.imagenes) {
             addToast('No has cambiado nada respecto al catálogo');
@@ -5157,13 +5184,18 @@ function App() {
             ? '\nSe incluyen: ' + codigos.slice(0, 6).map(c => String(c).trim()).join(', ') +
               (codigos.length > 6 ? ` y ${codigos.length - 6} más` : '') + '\n'
             : '\n';
+        const porCampo = Object.entries(resumen.desglose || {})
+            .sort((a, b) => b[1] - a[1])
+            .map(([campo, n]) => `${campo}: ${n}`)
+            .join(' · ');
         const seguro = window.confirm(
-            'Vas a publicar en GitHub:\n\n' +
+            (nombreCarpeta ? `Vas a publicar SOLO la carpeta «${nombreCarpeta}»:\n\n` : 'Vas a publicar en GitHub:\n\n') +
             `• ${resumen.cambiadas} tarjetas modificadas\n` +
             `• ${resumen.nuevas} tarjetas propias\n` +
             `• ${resumen.borradas} tarjetas borradas\n` +
             `• ${resumen.imagenes} imágenes propias\n` +
             (resumen.reordenadas ? `• ${resumen.reordenadas} carpetas con el orden cambiado\n` : '') +
+            (porCampo ? `\nPor campo → ${porCampo}\n` : '') +
             muestra +
             '\nLo verá todo el mundo y quedará en el historial del repositorio. ¿Publicamos?'
         );
@@ -5173,7 +5205,8 @@ function App() {
         setEstadoPublicar('Publicando…');
         try {
             const r = await publishCatalogue(editPassword, catalogo, imagenes,
-                `publicar: ${resumen.cambiadas} tarjetas, ${resumen.nuevas} nuevas, ${resumen.imagenes} imágenes`);
+                `publicar${nombreCarpeta ? ' ' + nombreCarpeta : ''}: ${resumen.cambiadas} tarjetas, ` +
+                `${resumen.nuevas} nuevas, ${resumen.imagenes} imágenes`);
             if (r.sin_cambios) {
                 setEstadoPublicar('ℹ️ ' + (r.mensaje || 'No había nada nuevo'));
                 addToast('No había nada nuevo que publicar');
@@ -5203,7 +5236,7 @@ function App() {
         } finally {
             setPublicando(false);
         }
-    }, [editPassword, tricks, addToast]);
+    }, [editPassword, tricks, addToast, carpetaPublicar, folders]);
 
     const selectCategory = useCallback((catId) => {
         setCurrentCategory(catId);
@@ -5439,10 +5472,19 @@ function App() {
                     <div className="publish-panel-head">
                         <strong>🚀 Publicar en GitHub</strong>
                         <span className="publish-hint">
-                            Sube al repositorio solo lo que has cambiado respecto al catálogo (tarjetas e imágenes propias).
+                            Sube al repositorio tus cambios (tarjetas e imágenes propias). Puedes limitarlo a una carpeta.
                         </span>
                     </div>
                     <div className="publish-panel-actions">
+                        <label className="publish-carpeta">
+                            <span>Qué publicar:</span>
+                            <select value={carpetaPublicar} onChange={e => setCarpetaPublicar(e.target.value)} disabled={publicando}>
+                                <option value="">Solo lo que he cambiado (todas las carpetas)</option>
+                                {orderedFolderCards.map(cat => (
+                                    <option key={cat.id} value={cat.id}>Solo «{cat.label}»</option>
+                                ))}
+                            </select>
+                        </label>
                         <button type="button" className="btn btn-primary" onClick={publicarCambios} disabled={publicando}>
                             {publicando ? '⏳ Trabajando…' : '🚀 Publicar cambios'}
                         </button>
