@@ -3862,6 +3862,16 @@ function applyPublishedCatalogue(items, capa) {
             conocidos.add(String(nueva.id));
         }
     }
+    // Orden publicado por carpeta: se traduce a sortOrder para que la app lo
+    // respete; el resto de tarjetas de esa carpeta conservan su sitio detrás.
+    const orden = (capa.orden && typeof capa.orden === 'object') ? capa.orden : {};
+    for (const [categoria, ids] of Object.entries(orden)) {
+        if (!Array.isArray(ids)) continue;
+        const posicion = new Map(ids.map((id, i) => [String(id), i]));
+        salida = salida.map(t => (t.category === categoria && posicion.has(String(t.id)))
+            ? { ...t, sortOrder: posicion.get(String(t.id)) }
+            : t);
+    }
     return salida;
 }
 
@@ -3876,9 +3886,9 @@ function prepararImagenPublicada(trick, imagenes) {
 
 /** Diferencia entre lo que tengo y el catálogo de serie. */
 function buildPublishPayload(tricks, semillas) {
-    // La base es el catálogo de serie TAL COMO LO ORDENA LA APP (normalizeTrickOrder
-    // reparte un sortOrder por carpeta a todas las tarjetas). Sin esto, las 961
-    // tarjetas saldrían como «cambiadas» solo por llevar su sortOrder.
+    // La base es el catálogo de serie tal como lo ordena la app. Los números de
+    // sortOrder NO se comparan (cambian solos con el tiempo): del orden solo se
+    // publica la secuencia, y únicamente si de verdad es distinta.
     const base = new Map(normalizeTrickOrder(semillas).map(s => [String(s.id), s]));
     const tarjetas = {};
     const nuevas = [];
@@ -3904,14 +3914,32 @@ function buildPublishPayload(tricks, semillas) {
     // Nunca publicar como borradas las que el propio catálogo descarta.
     const borradas = [...base.keys()].filter(id => !vivos.has(id) && !REMOVED_IMAGE_IDS.has(id));
 
+    // Orden por carpeta: solo las carpetas cuya secuencia de tarjetas ha cambiado.
+    const secuencia = lista => {
+        const porCategoria = new Map();
+        for (const t of lista) {
+            if (!porCategoria.has(t.category)) porCategoria.set(t.category, []);
+            porCategoria.get(t.category).push(String(t.id));
+        }
+        return porCategoria;
+    };
+    const ahora = secuencia(tricks);
+    const antes = secuencia(normalizeTrickOrder(semillas).filter(s => vivos.has(String(s.id))));
+    const orden = {};
+    for (const [categoria, ids] of ahora) {
+        const previos = antes.get(categoria) || [];
+        if (ids.length !== previos.length || ids.some((id, i) => id !== previos[i])) orden[categoria] = ids;
+    }
+
     return {
-        catalogo: { version: 1, tarjetas, nuevas, borradas },
+        catalogo: { version: 1, tarjetas, nuevas, borradas, orden },
         imagenes,
         resumen: {
             cambiadas: Object.keys(tarjetas).length,
             nuevas: nuevas.length,
             borradas: borradas.length,
             imagenes: Object.keys(imagenes).length,
+            reordenadas: Object.keys(orden).length,
         },
     };
 }
@@ -5088,7 +5116,7 @@ function App() {
         });
     }, [tricks, setTricks, withEditAccess]);
 
-    /** Diagnóstico: ¿puede el servidor hacer commit y push? */
+    /** Diagnóstico: ¿puede el servidor publicar en GitHub? */
     const comprobarPublicacion = useCallback(async () => {
         setPublicando(true);
         setEstadoPublicar('Comprobando…');
@@ -5096,8 +5124,9 @@ function App() {
             const r = await estadoPublicacion(editPassword);
             const e = r.estado || {};
             setEstadoPublicar(
-                `git: ${e.git_disponible ? 'sí' : 'NO'} · rama ${e.rama_actual} · token: ${e.token_configurado} · ` +
-                `escritura: ${e.escribible ? 'sí' : 'NO'} · motores: ${e.motores_git}`
+                `GitHub: ${e.token_configurado === 'sí' ? 'token sí' : 'SIN token'} · API: ${e.api_github} · ` +
+                `rama ${e.rama_destino}: ${e.rama_existe} · catálogo en el repo: ${e.catalogo_en_el_repo}` +
+                (e.siguiente_paso ? ' · ' + e.siguiente_paso : '')
             );
         } catch (error) {
             setEstadoPublicar('❌ ' + error.message);
@@ -5118,13 +5147,25 @@ function App() {
             addToast('No has cambiado nada respecto al catálogo');
             return;
         }
+        // Enseñar QUÉ se va a publicar (los primeros códigos) para poder decirlo
+        // con conocimiento de causa antes de aceptar.
+        const codigos = [
+            ...Object.keys(catalogo.tarjetas),
+            ...catalogo.nuevas.map(t => t.codeSnippet || t.title || t.id),
+        ];
+        const muestra = codigos.length
+            ? '\nSe incluyen: ' + codigos.slice(0, 6).map(c => String(c).trim()).join(', ') +
+              (codigos.length > 6 ? ` y ${codigos.length - 6} más` : '') + '\n'
+            : '\n';
         const seguro = window.confirm(
             'Vas a publicar en GitHub:\n\n' +
             `• ${resumen.cambiadas} tarjetas modificadas\n` +
             `• ${resumen.nuevas} tarjetas propias\n` +
             `• ${resumen.borradas} tarjetas borradas\n` +
-            `• ${resumen.imagenes} imágenes propias\n\n` +
-            'Lo verá todo el mundo y quedará en el historial del repositorio. ¿Publicamos?'
+            `• ${resumen.imagenes} imágenes propias\n` +
+            (resumen.reordenadas ? `• ${resumen.reordenadas} carpetas con el orden cambiado\n` : '') +
+            muestra +
+            '\nLo verá todo el mundo y quedará en el historial del repositorio. ¿Publicamos?'
         );
         if (!seguro) return;
 
