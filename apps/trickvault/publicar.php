@@ -210,6 +210,22 @@ function accion_estado() {
         ? ('sí (' . ($datosCat['size'] ?? '?') . ' bytes)')
         : 'todavía no';
 
+    // Prueba REAL de escritura: permissions.push de la API refleja el permiso
+    // del usuario, no el del token, así que la única forma de saber si el token
+    // puede escribir es intentar crear un blob (si sale bien queda huérfano y
+    // GitHub lo recoge; no toca ningún commit).
+    [$codigoBlob, , $errorBlob] = github('POST', "/repos/$repo/git/blobs", [
+        'content' => base64_encode('TrickVault: prueba de escritura'),
+        'encoding' => 'base64',
+    ]);
+    if ($errorBlob) {
+        $salida['puede_escribir'] = 'NO → ' . $errorBlob;
+        $salida['siguiente_paso'] = 'En GitHub, edita el token: Repository access → solo este repositorio, y '
+            . 'Permissions → Repository permissions → Contents: Read and write. Guarda y reintenta.';
+    } else {
+        $salida['puede_escribir'] = 'sí (HTTP ' . $codigoBlob . ')';
+    }
+
     return salir(['success' => true, 'estado' => $salida]);
 }
 
