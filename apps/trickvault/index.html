@@ -3923,8 +3923,12 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
         if (Object.keys(dif).length) tarjetas[trick.id] = dif;
     }
 
-    // Nunca publicar como borradas las que el propio catálogo descarta.
-    const borradas = [...base.keys()].filter(id => !vivos.has(id) && !REMOVED_IMAGE_IDS.has(id));
+    // Nunca publicar como borradas las que el propio catálogo descarta, ni las
+    // que solo se han MOVIDO a otra carpeta (si se publica una carpeta, esas
+    // tarjetas no están en `lista` pero siguen existiendo).
+    const existentes = new Set(tricks.map(t => String(t.id)));
+    const borradas = [...base.keys()].filter(id =>
+        !vivos.has(id) && !existentes.has(id) && !REMOVED_IMAGE_IDS.has(id));
 
     // Orden por carpeta: solo las carpetas cuya secuencia de tarjetas ha cambiado.
     const secuencia = lista2 => {
