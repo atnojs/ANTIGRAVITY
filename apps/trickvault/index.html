@@ -320,6 +320,7 @@ const CODE_FOLDER = {
     '/batik': 'xl-hechomano',
     '/mandala': 'xl-hechomano',
     '/zentangle': 'xl-hechomano',
+    '/patternfill': 'xl-hechomano',
     '/tribal': 'xl-hechomano',
     '/mosaic': 'xl-hechomano',
     '/woodcarving': 'xl-hechomano',
@@ -1880,6 +1881,7 @@ Object.assign(SEED_COMMAND_IMAGES, {
     // rehacer, subir a ?v=3.
     '/logomosaic': 'assets/xl-letras3d/logomosaic.jpg?v=2',
     '/typefill': 'assets/xl-letras3d/typefill.jpg',
+    '/patternfill': 'assets/xl-hechomano/patternfill.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -2287,6 +2289,9 @@ const CAPTURE_COMMANDS = [
     // sujeto se forma con letras y rótulos, no con superficies fotografiadas.
     ['/logomosaic', 'objeto formado por logos'],
     ['/typefill', 'objeto formado por palabras'],
+    // Relleno ornamental (captura 2026-10-07): la silueta se rellena de motivos
+    // decorativos, en blanco y negro vectorial, como una calavera de azúcar.
+    ['/patternfill', 'objeto relleno de motivos decorativos'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -3169,6 +3174,7 @@ const PROMPT_TEMPLATES = {
     // construye SOLO con lettering; no se ve ninguna superficie fotografiada.
     "/logomosaic": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built exclusively as a dense mosaic of complete retro brand LOGOS, every single element is a full logo lockup made of a graphic symbol PLUS its lettering: shields, crests, badges, emblems, coats of arms, rosettes, wax seals, rubber stamps, circular medallions, monograms, pennants, ribbons, stars, arrows, sunbursts, mascots, animals, hands, eyes, wings and pictograms, like a vintage logo sheet or sticker bomb of old trademarks, the shape of the subject readable only through the arrangement of those logos, absolutely no plain text-only tiles and no flat caption blocks without a symbol, bold glossy enamel colours over a deep black background, crisp vector edges, no photographed surface or material texture, flat graphic poster art, 8k resolution, all visible wordmarks and labels must be written in Spanish with no English words",
     "/typefill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built entirely out of words, the whole shape formed by tightly packed lettering in mixed sizes, weights and typefaces, letters clipped exactly to the object outline, bold flat colours over a deep black background, crisp vector poster art, the subject readable only through the arrangement of the type, no photographed surface or material texture, all visible text and words must be written in Spanish with no English words",
+    "/patternfill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] filled edge to edge with hand-drawn ornamental motifs instead of any real surface: scalloped flower rosettes, daisy petals, teardrops, dots, spirals, swirls, chevrons, arches, lace bands, fan shapes and geometric folk patterns, perfectly symmetrical composition fitted to the outline, flat black ink line art on a clean white background, high contrast vector sticker style like Mexican papel picado and sugar skull ornamentation, crisp closed outlines, no shading, no gradients, no colour, no photographed surface or material texture, all visible text and labels must be written in Spanish with no English words",
     // Comida y moda
     "/recipecard": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rustic handwritten recipe card displaying [OBJETO] in numbered step-by-step cooking stages, small ingredient snapshots, flour-dusted wooden tabletop, soft natural window light, all visible text and labels must be written in Spanish with no English words",
     "/plating": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fine dining restaurant plating of [OBJETO], tweezered micro herbs, glossy sauce dots, matte ceramic plate, soft directional studio light, shallow depth of field macro, all visible text and labels must be written in Spanish with no English words",
