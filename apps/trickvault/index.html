@@ -1873,7 +1873,12 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/luxurylifestyle': 'assets/comida-moda/luxurylifestyle.jpg',
     '/shotsetup': 'assets/luz-camara-personas/shotsetup.jpg',
     '/ascii': 'assets/xl-letras3d/ascii.jpg',
-    '/logomosaic': 'assets/xl-letras3d/logomosaic.jpg',
+    // El ejemplo de /logomosaic se rehizo el 2026-10-07 (el prompt pasó de
+    // rótulos a logos con símbolo). El CDN de Hostinger cachea los .jpg 7 días
+    // (Cache-Control: max-age=604800) y el navegador también, así que se cambia
+    // la URL con ?v=2 para que la imagen nueva llegue de verdad. Si se vuelve a
+    // rehacer, subir a ?v=3.
+    '/logomosaic': 'assets/xl-letras3d/logomosaic.jpg?v=2',
     '/typefill': 'assets/xl-letras3d/typefill.jpg',
 });
 
@@ -3162,7 +3167,7 @@ const PROMPT_TEMPLATES = {
     "/menushot": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Appetizing overhead food photography of [OBJETO] plated and styled for a restaurant menu, glossy sauce highlights, dark rustic tabletop, all visible text and labels must be written in Spanish with no English words",
     // Relleno tipográfico (captura WhatsApp 2026-10-07): la silueta del sujeto se
     // construye SOLO con lettering; no se ve ninguna superficie fotografiada.
-    "/logomosaic": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Typographic logo mosaic of [OBJETO], the entire silhouette, volume and interior built exclusively from a dense tightly packed collage of vintage brand logos, wordmarks and retro packaging lettering fragments, bold glossy enamel colours over a deep black background, crisp vector edges, the subject readable only through the arrangement of the lettering, no photographed surface or material texture, flat graphic poster art, 8k resolution, all visible text, wordmarks and labels must be written in Spanish with no English words",
+    "/logomosaic": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built exclusively as a dense mosaic of complete retro brand LOGOS, every single element is a full logo lockup made of a graphic symbol PLUS its lettering: shields, crests, badges, emblems, coats of arms, rosettes, wax seals, rubber stamps, circular medallions, monograms, pennants, ribbons, stars, arrows, sunbursts, mascots, animals, hands, eyes, wings and pictograms, like a vintage logo sheet or sticker bomb of old trademarks, the shape of the subject readable only through the arrangement of those logos, absolutely no plain text-only tiles and no flat caption blocks without a symbol, bold glossy enamel colours over a deep black background, crisp vector edges, no photographed surface or material texture, flat graphic poster art, 8k resolution, all visible wordmarks and labels must be written in Spanish with no English words",
     "/typefill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built entirely out of words, the whole shape formed by tightly packed lettering in mixed sizes, weights and typefaces, letters clipped exactly to the object outline, bold flat colours over a deep black background, crisp vector poster art, the subject readable only through the arrangement of the type, no photographed surface or material texture, all visible text and words must be written in Spanish with no English words",
     // Comida y moda
     "/recipecard": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rustic handwritten recipe card displaying [OBJETO] in numbered step-by-step cooking stages, small ingredient snapshots, flour-dusted wooden tabletop, soft natural window light, all visible text and labels must be written in Spanish with no English words",
@@ -3777,7 +3782,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-dev', prefix: 'assets/xl-dev/', key: 'trickvault-xl-dev-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-estilos', prefix: 'assets/xl-estilos/', key: 'trickvault-xl-estilos-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-efectosempaque', prefix: 'assets/xl-efectosempaque/', key: 'trickvault-xl-efectosempaque-images-version', version: '2026-10-06-gpt-image-2-low' },
-    { category: 'xl-letras3d', prefix: 'assets/xl-letras3d/', key: 'trickvault-xl-letras3d-images-version', version: '2026-10-06-gpt-image-2-low' },
+    { category: 'xl-letras3d', prefix: 'assets/xl-letras3d/', key: 'trickvault-xl-letras3d-images-version', version: '2026-10-07-logomosaic-logos' },
     { category: 'xl-ilustracion', prefix: 'assets/xl-ilustracion/', key: 'trickvault-xl-ilustracion-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-casaviajes', prefix: 'assets/xl-casaviajes/', key: 'trickvault-xl-casaviajes-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-camararetrato', prefix: 'assets/xl-camararetrato/', key: 'trickvault-xl-camararetrato-images-version', version: '2026-10-06-gpt-image-2-low' },
