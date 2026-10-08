@@ -2487,6 +2487,12 @@ function isBrokenStoreImage(command) {
     return !!id && BROKEN_STORE_IMAGES.has(id);
 }
 // Ejemplo propio del repositorio (assets/...) para ese comando, si existe.
+// Cuando nacio cada tarjeta del catalogo (para saber si la has editado tu).
+let _seedUpdated = null;
+function seedUpdatedAt(id) {
+    if (!_seedUpdated) _seedUpdated = new Map(SEED_TRICKS.map(t => [String(t.id), Number(t.updatedAt || 0)]));
+    return _seedUpdated.get(String(id)) || 0;
+}
 function seedAssetImage(command) {
     const image = SEED_COMMAND_IMAGES[command];
     return typeof image === 'string' && image.startsWith('assets/') ? image : '';
@@ -3726,29 +3732,20 @@ function hasSortOrder(trick) { return Number.isFinite(Number(trick.sortOrder)); 
 function compareTricks(a, b) {
     const aOrder = hasSortOrder(a) ? Number(a.sortOrder) : null;
     const bOrder = hasSortOrder(b) ? Number(b.sortOrder) : null;
+    // Las NUEVAS (sin colocar) van primero, de mas nueva a mas antigua; despues
+    // las ya colocadas, en tu orden. Determinista: igual al refrescar y en
+    // cualquier dispositivo.
     if (aOrder !== null && bOrder !== null) return aOrder - bOrder;
-    if (aOrder !== null) return -1;
-    if (bOrder !== null) return 1;
+    if (aOrder !== null) return 1;
+    if (bOrder !== null) return -1;
     return b.createdAt - a.createdAt;
 }
 function normalizeTrickOrder(items) {
-    const usedByCategory = new Map();
-    const nextByCategory = new Map();
-    items.forEach(item => {
-        if (!hasSortOrder(item)) return;
-        if (!usedByCategory.has(item.category)) usedByCategory.set(item.category, new Set());
-        usedByCategory.get(item.category).add(Number(item.sortOrder));
-    });
-    return items.map(item => {
-        if (hasSortOrder(item)) return item;
-        const used = usedByCategory.get(item.category) || new Set();
-        let next = nextByCategory.get(item.category) || 0;
-        while (used.has(next)) next += 1;
-        used.add(next);
-        usedByCategory.set(item.category, used);
-        nextByCategory.set(item.category, next + 1);
-        return { ...item, sortOrder: next };
-    });
+    // Ya NO se reparte sortOrder a todas las tarjetas: el numero solo lo pone
+    // quien coloca la tarjeta (arrastrar, mover de carpeta) o la capa publicada.
+    // Sin numero, el orden va por fecha (mas nueva primero), que no baila entre
+    // recargas ni entre dispositivos.
+    return items;
 }
 
 async function readServerJson(response) {
@@ -3973,7 +3970,7 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
         return porCategoria;
     };
     const ahora = secuencia(lista);
-    const antes = secuencia(semillasOrdenadas.filter(s => vivos.has(String(s.id))));
+    const antes = secuencia(semillasOrdenadas.filter(s => vivos.has(String(s.id))).sort(compareTricks));
     const orden = {};
     for (const [categoria, ids] of ahora) {
         const previos = antes.get(categoria) || [];
@@ -4111,6 +4108,16 @@ function applyRemoteImages(items, remoteImages) {
         // Imagen personal aún sin subir, o ejemplo nuevo ya colocado en este
         // código: se respeta tal cual.
         if (imageUrl.startsWith('data:image/') || (isGeneratedCardImage(imageUrl) && seedImage === imageUrl)) return trick;
+        // El CATALOGO manda sobre el almacen: si el repositorio tiene ejemplo para
+        // este codigo (assets/...) y lo guardado es una imagen del almacen
+        // (uploads/...), se usa la del repositorio. Es lo que evita que la misma
+        // tarjeta se vea distinta en incognito y en la ventana de siempre.
+        // Excepcion: si la has editado tu despues de nacer, tu imagen manda.
+        const delCatalogo = seedAssetImage(command);
+        const tocada = Number(trick.updatedAt || 0) > seedUpdatedAt(trick.id);
+        if (delCatalogo && imageUrl.startsWith('uploads/') && !tocada) {
+            return { ...trick, imageUrl: delCatalogo };
+        }
         // El ejemplo del servidor de este código fue sobrescrito por una imagen
         // ajena: se usa el del repositorio si existe (y si no, no se toca).
         if (isBrokenStoreImage(command)) {
