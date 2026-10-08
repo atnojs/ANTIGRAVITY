@@ -14,6 +14,15 @@
         "cap-cmd-110": {
             "imageUrl": "uploads/example_cap-cmd-110_878221472d72.webp"
         },
+        "xl-cmd-053": {
+            "imageUrl": "uploads/example_xl-cmd-053_94b03133814c.webp"
+        },
+        "xl-cmd-055": {
+            "imageUrl": "uploads/example_xl-cmd-055_68082ef90488.webp"
+        },
+        "xl-cmd-060": {
+            "imageUrl": "uploads/example_xl-cmd-060_fcec8e850633.webp"
+        },
         "ig-dcek-481": {
             "title": "/3dcycle — organiza etapas que se repiten en un ciclo 3D claro",
             "codeSnippet": "/3dcycle"
@@ -101,10 +110,12 @@
             "codeSnippet": "/3danimal",
             "difficulty": "beginner",
             "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "assets/xl-letras3d/3danimal.jpg",
+            "imageUrl": "uploads/example_ig-dcek-480_5e0d81f109b2.webp",
             "isFavorite": false,
             "createdAt": 1787615999521,
-            "sortOrder": 6
+            "sortOrder": 6,
+            "customPrompt": "/3danimal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Create an educational anatomical infographic of a [ANIMAL]—including its scientific name—featuring realistic 3D illustrations and a clear editorial layout.\nCOMPOSITION\nSquare canvas, solid charcoal-gray background, and five balanced sections:\n1.\tTop section: A large illustration of the complete animal in profile, facing left. Faithfully depict its proportions, posture, coloration, and natural texture. Add labels for key external structures using fine lines.\n2.\tMiddle section: The same animal, in the same orientation, showing its muscular anatomy. Depict muscles and tendons in detail, using reddish, pink, and ivory tones. Label the major muscles specific to this species.\n3.\tBottom section: The complete skeleton of the same animal, in profile and in a posture consistent with the other views. Ivory-colored bones, with joints and proportions characteristic of the species. Label the major bones.\n4.\tRight side, middle area: An inset box showing the main internal organs, positioned according to their correct anatomical relationships and individually labeled.\n5.\tRight side, lower area: An inset box showing a cross-section of the thorax, displaying the layers and structures specific to the species, with clear labels.\nCONTENT AND TEXT\nIn the top-left corner, include the title \"[ANIMAL BREED/TYPE]\" in large lettering, with \"[SCIENTIFIC NAME]\" in italics underneath. Add a brief, factual description in Spanish and a small box detailing its taxonomic classification: kingdom, phylum, class, order, family, genus, and species.\nUse these exact headings:\n\"EXTERNAL ANATOMY\"\n\"MUSCULAR ANATOMY\"\n\"SKELETAL ANATOMY\"\n\"INTERNAL ORGANS\"\n\"CROSS-SECTION\"\nAdapt all structures, labels, and data to the chosen animal. Each leader line must terminate exactly at the structure it identifies.\nVISUAL STYLE\nScientific illustration with a 3D-rendered finish, featuring detailed natural textures, soft lighting, and subtle shadows that add volume. Maintain consistent relative scale, orientation, and animal identity across the three main views.\nHigh-contrast white text; titles in a serif typeface and labels in a simple, legible font. Headings set on small brown plaques with subtle gold borders. Side panels featuring rounded corners and fine outlines.\nPrioritize anatomical accuracy, readability, and ample spacing between elements. Arrange labels in open areas using short, neat leader lines. The final result should resemble an educational plate from a zoology atlas. all visible text and labels must be written in Spanish with no English words",
+            "updatedAt": 1791476159108
         },
         {
             "id": "ig-dcek-521",
@@ -222,5 +233,5 @@
             "ig-dcek-033"
         ]
     },
-    "actualizado": "2026-10-08T15:56:26+00:00"
+    "actualizado": "2026-10-08T16:25:15+00:00"
 }
