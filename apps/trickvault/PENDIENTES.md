@@ -112,3 +112,33 @@ el navegador conserva los viejos). **Decidir**: hacer una publicación de limpie
   → GIT → Redistribuir*, y comprobar que *Comprometerse* apunta al último commit.
 - **Caché del CDN**: 7 días para `.jpg` y `.css`. Cada vez que se cambia un
   fichero de esos, hay que **cambiar la URL** (`?v=N`) o no se verá.
+
+---
+
+## 8. Que las imágenes visibles sean SIEMPRE las del repositorio (`assets/`)
+
+Petición: que lo que se vea salga de `apps/trickvault/assets/…` y valorar borrar
+`uploads/`.
+
+**No se puede borrar `uploads/` de golpe.** Medido hoy:
+
+```
+entradas del catálogo que apuntan a uploads/ : 216   (todas uploads/visual-ig-dcek-NNN.jpg)
+entradas del catálogo que apuntan a assets/  : 617
+```
+
+Es decir: **216 tarjetas del catálogo se sirven desde `uploads/`** (se quedarían
+sin imagen si se borra). Y ahí viven además las imágenes que sube el usuario
+(`image_store.php?action=save`) y los favoritos del servidor
+(`fav_save`/`fav_list`).
+
+Pasos, en este orden:
+1. **Precedencia** (arregla ya el caso `/velvet`): capa publicada → `data:` propia
+   → **`assets/` (catálogo)** → `uploads/`. Con esto el catálogo gana al almacén.
+2. **Migrar a `assets/`**: copiar los 216 `uploads/visual-ig-dcek-NNN.jpg` a
+   `assets/<carpeta>/<codigo>.jpg` (la herramienta `_carpeta_lote.py` ya escribe
+   en `assets/` con el registro en `SEED_COMMAND_IMAGES`) y actualizar las
+   entradas. Por lotes y verificando que cada fichero llega (200 + tamaño).
+3. **Subidas del usuario al repositorio** (punto 4): `assets/publicado/<id>.jpg`.
+4. **Solo entonces** se puede dejar de usar `uploads/` y borrarla, después de
+   comprobar que no queda ninguna entrada del catálogo apuntando ahí.
