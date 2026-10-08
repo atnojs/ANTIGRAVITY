@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Imagen → JSON → Prompt Universal</title>
+<meta name="description" content="Sube una imagen, obtén su .json y genera desde ese JSON un prompt universal que aplica el estilo solo al sujeto principal sobre un fondo de contraste sin estilo." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="app.css?v=1" />
+<link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+</head>
+<body>
+<a class="skip-link" href="#paso-1">Ir al contenido principal</a>
+
+<div class="app-shell">
+  <header class="app-header">
+    <p class="eyebrow"><span aria-hidden="true"></span>Del JSON al prompt universal</p>
+    <h1 class="app-title">Imagen → JSON → Prompt Universal</h1>
+    <p class="app-subtitle">
+      Sube una imagen: el modelo de visión devuelve su <strong>.json</strong>. A partir de ese JSON
+      —y <strong>nunca</strong> de la imagen— se redacta un prompt universal que aplica el estilo
+      <strong>solo al sujeto principal</strong>, sobre un fondo de color o textura elegido para hacerlo resaltar.
+    </p>
+    <p class="status-chip" id="service-chip" aria-live="polite">Comprobando servicio…</p>
+  </header>
+
+  <div class="main-layout">
+    <main class="main-col">
+
+      <!-- ============================ PASO 1 ============================ -->
+      <section class="step-card" id="paso-1" aria-labelledby="paso-1-title">
+        <div class="card-heading">
+          <div class="heading-text">
+            <p class="step-kicker">Paso 1</p>
+            <h2 id="paso-1-title"><span class="step-number" aria-hidden="true">1</span>Sube la imagen</h2>
+            <small>El análisis sí mira la imagen. Ese es el único paso que lo hace.</small>
+          </div>
+          <span class="status-chip" id="upload-chip">Sin imagen</span>
+        </div>
+
+        <div class="upload-zone" id="upload-zone" role="button" tabindex="0"
+             aria-label="Subir una imagen: arrástrala aquí o pulsa para elegirla">
+          <span class="upload-symbol" aria-hidden="true">＋</span>
+          <strong>Arrastra una imagen o pulsa para elegirla</strong>
+          <span>PNG, JPG, WEBP o GIF · hasta 20 MB</span>
+        </div>
+        <input type="file" id="image-input" accept="image/*" hidden />
+
+        <div class="image-preview-card hidden" id="image-preview">
+          <img id="image-preview-img" alt="Imagen seleccionada" />
+          <div class="preview-meta">
+            <strong id="preview-name">imagen</strong>
+            <span id="preview-size">—</span>
+          </div>
+          <button type="button" class="remove-image-btn" id="remove-image-btn" aria-label="Quitar la imagen">✕</button>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-action-neon btn-action-main" id="analyze-btn" disabled>
+            <span class="btn-icon" aria-hidden="true">◈</span>Analizar imagen → generar .json
+          </button>
+          <button type="button" class="btn btn-secondary" id="reset-btn">Empezar de nuevo</button>
+        </div>
+      </section>
+
+      <!-- ============================ PASO 2 ============================ -->
+      <section class="step-card locked" id="paso-2" aria-labelledby="paso-2-title" aria-disabled="true">
+        <div class="card-heading">
+          <div class="heading-text">
+            <p class="step-kicker">Paso 2</p>
+            <h2 id="paso-2-title"><span class="step-number" aria-hidden="true">2</span>El .json de la imagen</h2>
+            <small>Puedes corregir cualquier campo: este JSON es la única fuente del prompt.</small>
+          </div>
+          <span class="status-chip" id="json-chip">Pendiente</span>
+        </div>
+
+        <label class="sr-only" for="json-text">JSON del análisis de la imagen</label>
+        <textarea id="json-text" class="code-area" spellcheck="false" disabled
+                  placeholder='Aquí aparecerá el JSON del análisis. Ejemplo de estructura:&#10;{&#10;  "version": "1.0",&#10;  "sujeto_principal": { "que_es": "…" },&#10;  "fondo": { "tipo": "…" },&#10;  "estilo_visual": { "estilo_general": "…" }&#10;}'></textarea>
+
+        <div class="row-tools">
+          <span class="mini-chip" id="json-state">Sin analizar</span>
+          <span class="mini-chip" id="json-size">0 caracteres</span>
+          <span class="mini-chip" id="json-model">—</span>
+        </div>
+
+        <div class="step-actions wrap">
+          <button type="button" class="btn btn-icon-only" id="json-format-btn" title="Formatear el JSON" aria-label="Formatear el JSON" disabled>{ }</button>
+          <button type="button" class="btn btn-secondary" id="json-copy-btn" disabled>Copiar JSON</button>
+          <button type="button" class="btn btn-secondary" id="json-download-btn" disabled>Descargar .json</button>
+          <button type="button" class="btn btn-secondary" id="json-reanalyze-btn" disabled>Volver a analizar</button>
+        </div>
+      </section>
+
+      <!-- ============================ PASO 3 ============================ -->
+      <section class="step-card locked" id="paso-3" aria-labelledby="paso-3-title" aria-disabled="true">
+        <div class="card-heading">
+          <div class="heading-text">
+            <p class="step-kicker">Paso 3</p>
+            <h2 id="paso-3-title"><span class="step-number" aria-hidden="true">3</span>El prompt universal</h2>
+            <small>Redactado solo con el JSON: al redactor no se le envía ninguna imagen.</small>
+          </div>
+          <span class="status-chip" id="prompt-chip">Pendiente</span>
+        </div>
+
+        <div class="control-panel">
+          <fieldset class="control-group">
+            <legend>Idioma del cuerpo</legend>
+            <div class="pill-row" role="group" aria-label="Idioma del cuerpo del prompt">
+              <button type="button" class="pill-toggle active" data-lang="es" aria-pressed="true">Español</button>
+              <button type="button" class="pill-toggle" data-lang="en" aria-pressed="false">English</button>
+            </div>
+          </fieldset>
+          <div class="control-group field-grow">
+            <label for="requested-style">Estilo solicitado (opcional)</label>
+            <input type="text" id="requested-style" maxlength="400" autocomplete="off"
+                   placeholder="p. ej. acuarela japonesa, cyberpunk, óleo impresionista…" />
+          </div>
+          <div class="control-group generate-group">
+            <button type="button" class="btn btn-action-neon btn-action-main" id="prompt-btn" disabled>
+              <span class="btn-icon" aria-hidden="true">✦</span>Generar prompt universal
+            </button>
+          </div>
+        </div>
+
+        <div class="anchors" id="anchors-box">
+          <p class="anchor-line"><span class="mini-chip ok">Empieza con la cabecera obligatoria</span></p>
+          <p class="anchor-line"><span class="mini-chip ok">Termina con el cierre en español</span></p>
+        </div>
+
+        <div class="row-tools">
+          <span class="mini-chip" id="prompt-trace">Sin generar</span>
+          <span class="mini-chip" id="prompt-stale" hidden>⚠ El JSON ha cambiado: vuelve a generar el prompt</span>
+        </div>
+
+        <label class="sr-only" for="prompt-text">Prompt universal generado</label>
+        <textarea id="prompt-text" class="code-area prompt-area" spellcheck="false" readonly disabled
+                  placeholder="Aquí aparecerá el prompt universal, empezando por la cabecera obligatoria y terminando por el cierre en español."></textarea>
+
+        <div class="background-card hidden" id="background-card">
+          <span class="bg-swatch" id="bg-swatch" aria-hidden="true"></span>
+          <div class="bg-text">
+            <strong id="bg-color">—</strong>
+            <span id="bg-texture">—</span>
+            <small id="bg-reason">—</small>
+          </div>
+        </div>
+
+        <div class="step-actions wrap">
+          <button type="button" class="btn btn-secondary" id="prompt-copy-btn" disabled>Copiar prompt</button>
+          <button type="button" class="btn btn-secondary" id="prompt-download-btn" disabled>Descargar .txt</button>
+          <button type="button" class="btn btn-secondary" id="prompt-regen-btn" disabled>Regenerar prompt</button>
+        </div>
+      </section>
+
+      <!-- ============================ PASO 4 ============================ -->
+      <section class="step-card locked" id="paso-4" aria-labelledby="paso-4-title" aria-disabled="true">
+        <div class="card-heading">
+          <div class="heading-text">
+            <p class="step-kicker">Paso 4</p>
+            <h2 id="paso-4-title"><span class="step-number" aria-hidden="true">4</span>Genera la imagen final</h2>
+            <small>El prompt universal viaja junto a tu imagen de referencia para recrearla con el estilo aplicado al sujeto.</small>
+          </div>
+          <span class="status-chip" id="result-chip">Pendiente</span>
+        </div>
+
+        <!-- Selector de modelo (patrón canónico toggles pill hoola) -->
+        <div id="model-selector" class="model-selector">
+          <span class="model-selector-label">Modelo IA</span>
+          <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo de imagen">
+            <div class="model-provider-column">
+              <span class="model-provider-title">OPENAI 2.5</span>
+              <span class="model-quality-hint">De Menor a Mayor Calidad</span>
+              <div class="model-toggle-group">
+                <button type="button" class="model-toggle" data-model="openai-medium" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-flare · calidad media">MEDIUM</button>
+                <button type="button" class="model-toggle" data-model="openai-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-flare · calidad alta">HIGH</button>
+                <button type="button" class="model-toggle" data-model="openai-max-flare" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-flare · calidad máxima">MAX FLARE</button>
+                <button type="button" class="model-toggle" data-model="openai-xhigh" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-sunburst · precisión en edición">XHIGH</button>
+                <button type="button" class="model-toggle" data-model="openai-max-sunburst" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2.5-sunburst · calidad máxima">MAX SUNBURST</button>
+              </div>
+            </div>
+            <div class="model-provider-row">
+              <div class="model-provider-column">
+                <span class="model-provider-title">GEMINI</span>
+                <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+                <div class="model-toggle-group">
+                  <button type="button" class="model-toggle" data-model="gemini-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gemini-2.5-flash-image · el más ligero">GEMINI 2</button>
+                  <button type="button" class="model-toggle" data-model="gemini-flash" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gemini-3.1-flash-image · texto en imágenes">3.1 FLASH</button>
+                  <button type="button" class="model-toggle" data-model="gemini-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gemini-3-pro-image · máxima calidad">3 PRO</button>
+                </div>
+              </div>
+              <div class="model-provider-column">
+                <span class="model-provider-title">QWEN</span>
+                <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+                <div class="model-toggle-group">
+                  <button type="button" class="model-toggle" data-model="qwen-pro" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="qwen-image-3-pro · texto nítido, el más barato">QWEN 3 PRO</button>
+                </div>
+              </div>
+              <div class="model-provider-column">
+                <span class="model-provider-title">IMAGE 2</span>
+                <span class="model-quality-hint" aria-hidden="true" style="visibility:hidden;">De Menor a Mayor Calidad</span>
+                <div class="model-toggle-group">
+                  <button type="button" class="model-toggle active" data-model="openai-image-2-low" aria-pressed="true" aria-describedby="model-tooltip" data-tooltip="gpt-image-2 · calidad baja, la más rápida y económica">LOW</button>
+                  <button type="button" class="model-toggle" data-model="openai-image-2" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2 · calidad media">MEDIUM</button>
+                  <button type="button" class="model-toggle" data-model="openai-image-2-high" aria-pressed="false" aria-describedby="model-tooltip" data-tooltip="gpt-image-2 · calidad alta">HIGH</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-control-bar">
+          <div class="options-stack">
+            <div class="control-panel">
+              <fieldset class="control-group">
+                <legend>Relación de aspecto</legend>
+                <div class="aspect-grid" role="group" aria-label="Relación de aspecto">
+                  <button type="button" class="aspect-ratio-button active" data-ratio="1:1" aria-pressed="true">
+                    <span class="ratio-icon ratio-square" aria-hidden="true"></span><span class="btn-canon">1:1</span>
+                  </button>
+                  <button type="button" class="aspect-ratio-button" data-ratio="3:4" aria-pressed="false">
+                    <span class="ratio-icon ratio-port" aria-hidden="true"></span><span class="btn-canon">3:4</span>
+                  </button>
+                  <button type="button" class="aspect-ratio-button" data-ratio="4:3" aria-pressed="false">
+                    <span class="ratio-icon ratio-land" aria-hidden="true"></span><span class="btn-canon">4:3</span>
+                  </button>
+                  <button type="button" class="aspect-ratio-button" data-ratio="16:9" aria-pressed="false">
+                    <span class="ratio-icon ratio-wide" aria-hidden="true"></span><span class="btn-canon">16:9</span>
+                  </button>
+                  <button type="button" class="aspect-ratio-button" data-ratio="9:16" aria-pressed="false">
+                    <span class="ratio-icon ratio-tall" aria-hidden="true"></span><span class="btn-canon">9:16</span>
+                  </button>
+                </div>
+              </fieldset>
+              <fieldset class="control-group">
+                <legend>Resolución</legend>
+                <div class="resolution-grid" role="group" aria-label="Resolución">
+                  <button type="button" class="resolution-button" data-resolution="512" aria-pressed="false">512</button>
+                  <button type="button" class="resolution-button active" data-resolution="1024" aria-pressed="true">1024</button>
+                  <button type="button" class="resolution-button" data-resolution="2048" aria-pressed="false">2048</button>
+                  <button type="button" class="resolution-button" data-resolution="4096" aria-pressed="false">4096</button>
+                </div>
+                <small class="control-hint">La API de OpenAI exige un mínimo de 1.048.576 px: 512 se entrega como 1024.</small>
+              </fieldset>
+            </div>
+          </div>
+          <div class="generate-column">
+            <button type="button" class="btn btn-action-neon btn-action-main" id="generate-btn" disabled>
+              <span class="btn-icon" aria-hidden="true">▶</span>Generar imagen
+            </button>
+          </div>
+        </div>
+
+        <div class="result-frame" id="result-frame">
+          <div class="result-placeholder" id="result-placeholder">
+            <span aria-hidden="true">▢</span>
+            <strong>Sin imagen todavía</strong>
+          </div>
+          <img id="result-image" class="hidden" alt="Imagen generada con el prompt universal" />
+        </div>
+        <div class="result-footer">
+          <p class="result-meta" id="result-meta">—</p>
+          <div class="step-actions wrap">
+            <button type="button" class="btn btn-secondary" id="result-download-btn" disabled>Descargar imagen</button>
+            <button type="button" class="btn btn-secondary" id="result-zoom-btn" disabled>Ampliar</button>
+          </div>
+        </div>
+
+        <p class="message message-error hidden" id="error-message" role="alert"></p>
+      </section>
+
+    </main>
+
+    <!-- COLUMNA DERECHA: HISTORIAL (patrón canónico) -->
+    <aside class="history-col" id="history-section" aria-label="Historial de imágenes generadas">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <p class="history-status" id="history-status">Tus resultados aparecerán aquí.</p>
+      <button type="button" id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
+    </aside>
+  </div>
+</div>
+
+<!-- ===== LOADING OVERLAY UNIVERSAL ===== -->
+<div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-busy="true">
+  <div class="spinner-triple">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+  </div>
+  <p id="loading-text" class="loading-text">IA generando lo solicitado...</p>
+  <div class="progress-panel">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <p id="secondary-status" class="secondary-status">Procesando solicitud...</p>
+  </div>
+</div>
+
+<!-- ===== LIGHTBOX ===== -->
+<div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+  <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Cerrar">×</button>
+  <img id="lightbox-img" alt="Imagen generada ampliada" />
+</div>
+
+<!-- Tooltip de modelos -->
+<div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
+
+<p class="toast hidden" id="toast" role="status" aria-live="polite"></p>
+
+<script>(function(){var o=document.getElementById('loading-overlay');if(o){o.className='loading-overlay hidden';}})();</script>
+<script src="history-manager.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
