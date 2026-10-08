@@ -138,6 +138,9 @@ const CODE_FOLDER = {
     '/apparelmockup': 'xl-fotoproducto', '/embossedlogo': 'xl-fotoproducto', '/foilstamp': 'xl-fotoproducto', '/shelfshot': 'xl-fotoproducto',
     '/sizecomparison': 'xl-fotoproducto', '/colorway': 'xl-fotoproducto', '/billboard': 'xl-escenaprueba', '/showcase': 'xl-fotoproducto',
     '/premiumshowcase': 'xl-fotoproducto', '/metaad': 'xl-escenaprueba', '/newspaperad': 'xl-escenaprueba', '/billboardmockup': 'xl-escenaprueba',
+    // Captura TikTok 2026-10-08: el código plural /metaads (juego de anuncios, no
+    // una sola pieza) es distinto de /metaad.
+    '/metaads': 'xl-escenaprueba',
     '/3Dbillboard': 'xl-escenaprueba', '/paperbag': 'xl-negocioredes', '/storefrontbranding': 'xl-negocioredes', '/cupbranding': 'xl-negocioredes',
     '/luxury': 'xl-estilos', '/perfumead': 'xl-escenaprueba', '/luxurywatchad': 'xl-escenaprueba', '/glassreflection': 'xl-fotoproducto',
     '/surrealad': 'xl-escenaprueba', '/ythumbnail': 'xl-negocioredes',
@@ -521,6 +524,8 @@ const ADDITIONAL_IMAGE_COMMANDS = [
     ['/showcase', 'Foto premium del producto'],
     ['/premiumshowcase', 'Showcase deluxe de alto impacto'],
     ['/metaad', 'Imagen lista para anuncios'],
+    // Captura TikTok 2026-10-08: el plural /metaads es un juego de piezas, no una.
+    ['/metaads', 'juego de anuncios para Meta'],
     ['/newspaperad', 'Anuncio estilo periódico'],
     ['/billboardmockup', 'Campaña en valla urbana'],
     ['/3Dbillboard', 'Valla 3D gigante'],
@@ -1898,6 +1903,7 @@ Object.assign(SEED_COMMAND_IMAGES, {
     // de una fotografía antigua dañada.
     '/bts': 'assets/luz-camara-personas/bts.jpg',
     '/restore': 'assets/xl-camararetrato/restore.jpg',
+    '/metaads': 'assets/xl-escenaprueba/metaads.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -2760,6 +2766,8 @@ const PROMPT_TEMPLATES = {
     "/showcase": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ultra-premium commercial studio showcase of [OBJETO], resting on a glossy black mirrored pedestal, subtle golden rim lighting, minimalist elegant dark background, commercial product photography, 8k resolution, all visible text and labels must be written in Spanish with no English words",
     "/premiumshowcase": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Deluxe high-impact commercial product showcase of [OBJETO], positioned on polished obsidian marble with subtle golden vein lighting and atmospheric light beams, prestigious flagship presentation, all visible text and labels must be written in Spanish with no English words",
     "/metaad": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern high-converting social media advertising visual for [OBJETO], vibrant gradient studio background, bold commercial composition, clean negative space, advertising photography, all visible text and labels must be written in Spanish with no English words",
+    // Captura TikTok 2026-10-08: juego de piezas para una campaña de Meta, no una sola.
+    "/metaads": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Coordinated set of several Meta advertising creatives for [OBJETO], presented as a campaign board with a square feed ad, a vertical story ad and a carousel strip, consistent brand style across every piece, bold headline blocks and clean negative space, retail advertising design, all visible text and labels must be written in Spanish with no English words",
     "/newspaperad": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vintage full-page monochrome newspaper advertisement for [OBJETO], retro halftone print texture, distressed paper grain, aged serif typography layout, authentic 1960s editorial advertising print, all visible text and labels must be written in Spanish with no English words",
     "/billboardmockup": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic outdoor urban street billboard mockup displaying an advertisement for [OBJETO], modern metropolitan city avenue context, dusk natural ambient lighting, photorealistic commercial mockup, all visible text and labels must be written in Spanish with no English words",
     "/3Dbillboard": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant naked-eye anamorphic 3D curved digital billboard in a futuristic city intersection, showing a hyper-realistic [OBJETO] bursting out of the screen illusion, neon night cyberpunk city street below, all visible text and labels must be written in Spanish with no English words",
@@ -4057,7 +4065,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-negocioredes', prefix: 'assets/xl-negocioredes/', key: 'trickvault-xl-negocioredes-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-retroedu', prefix: 'assets/infografias/', key: 'trickvault-xl-retroedu-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-otromundo', prefix: 'assets/xl-otromundo/', key: 'trickvault-xl-otromundo-images-version', version: '2026-10-06-gpt-image-2-low' },
-    { category: 'xl-escenaprueba', prefix: 'assets/xl-escenaprueba/', key: 'trickvault-xl-escenaprueba-images-version', version: '2026-10-06-gpt-image-2-low' },
+    { category: 'xl-escenaprueba', prefix: 'assets/xl-escenaprueba/', key: 'trickvault-xl-escenaprueba-images-version', version: '2026-10-08-metaads' },
     { category: 'xl-hechomano', prefix: 'assets/xl-hechomano/', key: 'trickvault-xl-hechomano-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-verdentro', prefix: 'assets/xl-verdentro/', key: 'trickvault-xl-verdentro-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-planos', prefix: 'assets/planos/', key: 'trickvault-xl-planos-images-version', version: '2026-10-06-gpt-image-2-low' },

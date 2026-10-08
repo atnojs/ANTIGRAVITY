@@ -31,6 +31,12 @@ ESPERADO = {
         'release_key': 'trickvault-xl-camararetrato-images-version',
         'release_prefix': 'assets/xl-camararetrato/',
     },
+    '/metaads': {
+        'folder': 'xl-escenaprueba',
+        'seed': 'assets/xl-escenaprueba/metaads.jpg',
+        'release_key': 'trickvault-xl-escenaprueba-images-version',
+        'release_prefix': 'assets/xl-escenaprueba/',
+    },
 }
 
 fallos = []

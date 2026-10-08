@@ -45,11 +45,21 @@ TARJETAS = [
                    'fine grain, subtle sepia warmth, museum-quality archival retouch, '
                    'all visible text and labels must be written in Spanish with no English words'),
     },
+    {
+        'code': '/metaads',
+        'sujeto': 'a handcrafted leather backpack',
+        'destino': os.path.join(BASE, 'assets', 'xl-escenaprueba', 'metaads.jpg'),
+        'cuerpo': ('Coordinated set of several Meta advertising creatives for [OBJETO], presented as a '
+                   'campaign board with a square feed ad, a vertical story ad and a carousel strip, '
+                   'consistent brand style across every piece, bold headline blocks and clean negative '
+                   'space, retail advertising design, '
+                   'all visible text and labels must be written in Spanish with no English words'),
+    },
 ]
 
 
 def prompt_de(tarjeta):
-    cuerpo = tarjeta['cuerpo'].replace('[OBJETO]', SUJETO)
+    cuerpo = tarjeta['cuerpo'].replace('[OBJETO]', tarjeta.get('sujeto') or SUJETO)
     return f"{tarjeta['code']} {PREFIJO} {cuerpo}"
 
 
@@ -77,7 +87,13 @@ def guardar_jpg(datos, destino):
 
 def main():
     t0 = time.time()
-    for t in TARJETAS:
+    # Opcional: pasar uno o varios códigos para generar solo esos (p. ej. /metaads).
+    pedidos = [a for a in sys.argv[1:] if a.startswith('/')]
+    tarjetas = [t for t in TARJETAS if not pedidos or t['code'] in pedidos]
+    if not tarjetas:
+        print('NINGUNA TARJETA COINCIDE', flush=True)
+        return 2
+    for t in tarjetas:
         prompt = prompt_de(t)
         print(f"\n== {t['code']} -> {t['destino']}", flush=True)
         print(f"   prompt: {prompt[:160]}…", flush=True)
