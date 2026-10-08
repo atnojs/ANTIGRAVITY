@@ -123,6 +123,9 @@ const CODE_FOLDER = {
     '/tiltshift': 'xl-luzcamara', '/35mm': 'xl-luzcamara', '/anamorphic': 'xl-luzcamara', '/lowangle': 'xl-luzcamara',
     '/overhead': 'xl-luzcamara', '/dutchangle': 'xl-luzcamara', '/extremecloseup': 'xl-luzcamara', '/backview': 'xl-luzcamara',
     '/droneview': 'xl-casaviajes', '/sideview': 'xl-planos', '/wideangle': 'xl-planos', '/overtheshoulder': 'xl-planos',
+    // Captura TikTok 2026-10-08: detrás de las cámaras de un rodaje y restauración
+    // de una fotografía antigua dañada.
+    '/bts': 'xl-luzcamara', '/restore': 'xl-camararetrato',
     // Iluminación y ambiente
     '/cinematic': 'xl-fotoproducto', '/goldenhour': 'xl-fotoproducto', '/bluehour': 'xl-fotoproducto', '/rimlight': 'xl-fotoproducto', '/backlight': 'xl-fotoproducto',
     '/softlighting': 'xl-luzcamara', '/dramaticlighting': 'xl-luzcamara', '/volumetriclight': 'xl-luzcamara', '/lowkey': 'xl-luzcamara', '/highkey': 'xl-luzcamara',
@@ -1891,6 +1894,10 @@ Object.assign(SEED_COMMAND_IMAGES, {
     // El ejemplo de /sugarskull se rehízo el mismo 2026-10-08 (una tetera en vez de
     // la cámara), así que también sube su ?v= para saltar la caché del CDN.
     '/sugarskull': 'assets/xl-letras3d/sugarskull.jpg?v=3',
+    // Captura TikTok 2026-10-08: detrás de las cámaras de un rodaje y restauración
+    // de una fotografía antigua dañada.
+    '/bts': 'assets/luz-camara-personas/bts.jpg',
+    '/restore': 'assets/xl-camararetrato/restore.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -2306,6 +2313,10 @@ const CAPTURE_COMMANDS = [
     // decorativos, en blanco y negro vectorial, como una calavera de azúcar.
     // Vive en «Letras y 3D» con los otros dos rellenos (ver CATEGORY_MOVES).
     ['/patternfill', 'objeto relleno de motivos decorativos'],
+    // Captura TikTok 2026-10-08: detrás de las cámaras de un rodaje y restauración
+    // de una fotografía antigua dañada.
+    ['/bts', 'detrás de las cámaras de un rodaje'],
+    ['/restore', 'restauración de una foto antigua dañada'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -3224,6 +3235,10 @@ const PROMPT_TEMPLATES = {
     "/logomosaic": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built exclusively as a dense mosaic of complete retro brand LOGOS, every single element is a full logo lockup made of a graphic symbol PLUS its lettering: shields, crests, badges, emblems, coats of arms, rosettes, wax seals, rubber stamps, circular medallions, monograms, pennants, ribbons, stars, arrows, sunbursts, mascots, animals, hands, eyes, wings and pictograms, like a vintage logo sheet or sticker bomb of old trademarks, the shape of the subject readable only through the arrangement of those logos, absolutely no plain text-only tiles and no flat caption blocks without a symbol, bold glossy enamel colours over a deep black background, crisp vector edges, no photographed surface or material texture, flat graphic poster art, 8k resolution, all visible wordmarks and labels must be written in Spanish with no English words",
     "/typefill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] built entirely out of words, the whole shape formed by tightly packed lettering in mixed sizes, weights and typefaces, letters clipped exactly to the object outline, bold flat colours over a deep black background, crisp vector poster art, the subject readable only through the arrangement of the type, no photographed surface or material texture, all visible text and words must be written in Spanish with no English words",
     "/patternfill": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Silhouette of [OBJETO] filled edge to edge with hand-drawn ornamental motifs instead of any real surface: scalloped flower rosettes, daisy petals, teardrops, dots, spirals, swirls, chevrons, arches, lace bands, fan shapes and geometric folk patterns, perfectly symmetrical composition fitted to the outline, flat black ink line art on a clean white background, high contrast vector sticker style like Mexican papel picado and sugar skull ornamentation, crisp closed outlines, no shading, no gradients, no colour, no photographed surface or material texture, all visible text and labels must be written in Spanish with no English words",
+    // Captura TikTok 2026-10-08: detrás de las cámaras de un rodaje y restauración
+    // de una fotografía antigua dañada.
+    "/bts": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Behind the scenes of a photo shoot: [OBJETO] in front of the camera, cinema camera on a tripod in the foreground, crew watching the monitor, boom microphone, clapperboard, softbox lights and cables on the floor, candid documentary snapshot, natural set lighting, shallow depth of field, all visible text and labels must be written in Spanish with no English words",
+    "/restore": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Faithful restoration of an old damaged photograph of [OBJETO], repaired cracks, scratches, creases and stains, recovered detail and contrast, balanced colour, fine grain, subtle sepia warmth, museum-quality archival retouch, all visible text and labels must be written in Spanish with no English words",
     // Calavera de azúcar (2026-10-08): código GENÉRICO. [OBJETO] es el objeto que
     // elige el usuario: si adjunta una foto se le aplica a esa imagen, y si no,
     // al objeto que escriba. La referencia es la calavera mexicana de la captura.
@@ -4028,7 +4043,7 @@ async function removeRemoteImage(trickId) {
    ═══════════════════════════════════════════════ */
 const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-fotoproducto', prefix: 'assets/foto-producto/', key: 'trickvault-foto-producto-images-version', version: '2026-10-01-gpt-image-2-complete' },
-    { category: 'xl-luzcamara', prefix: 'assets/luz-camara-personas/', key: 'trickvault-luz-camara-personas-images-version', version: '2026-10-01-gpt-image-2-complete' },
+    { category: 'xl-luzcamara', prefix: 'assets/luz-camara-personas/', key: 'trickvault-luz-camara-personas-images-version', version: '2026-10-08-bts-restore' },
     { category: 'xl-comidamoda', prefix: 'assets/comida-moda/', key: 'trickvault-comida-moda-images-version', version: '2026-09-30-gpt-image-2-complete' },
     { category: 'xl-pintura', prefix: 'assets/pintura-dibujo/', key: 'trickvault-pintura-dibujo-images-version', version: '2026-10-01-gpt-image-2-complete' },
     { category: 'xl-dev', prefix: 'assets/xl-dev/', key: 'trickvault-xl-dev-images-version', version: '2026-10-06-gpt-image-2-low' },
@@ -4037,7 +4052,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-letras3d', prefix: 'assets/xl-letras3d/', key: 'trickvault-xl-letras3d-images-version', version: '2026-10-08-sugarskull-camara' },
     { category: 'xl-ilustracion', prefix: 'assets/xl-ilustracion/', key: 'trickvault-xl-ilustracion-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-casaviajes', prefix: 'assets/xl-casaviajes/', key: 'trickvault-xl-casaviajes-images-version', version: '2026-10-06-gpt-image-2-low' },
-    { category: 'xl-camararetrato', prefix: 'assets/xl-camararetrato/', key: 'trickvault-xl-camararetrato-images-version', version: '2026-10-06-gpt-image-2-low' },
+    { category: 'xl-camararetrato', prefix: 'assets/xl-camararetrato/', key: 'trickvault-xl-camararetrato-images-version', version: '2026-10-08-bts-restore' },
     { category: 'xl-carteles', prefix: 'assets/xl-carteles/', key: 'trickvault-xl-carteles-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-negocioredes', prefix: 'assets/xl-negocioredes/', key: 'trickvault-xl-negocioredes-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-retroedu', prefix: 'assets/infografias/', key: 'trickvault-xl-retroedu-images-version', version: '2026-10-06-gpt-image-2-low' },

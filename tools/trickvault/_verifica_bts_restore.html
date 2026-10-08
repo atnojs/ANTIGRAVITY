@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>verificacion /bts y /restore</title></head>
+<body style="margin:0;background:#000;color:#0f0;font:14px monospace">
+<!--
+  Verificacion de las DOS tarjetas nuevas de TrickVault (captura TikTok 2026-10-08):
+  /bts (xl-luzcamara) y /restore (xl-camararetrato).
+
+    1) navegador NUEVO  -> nacen con su assets/...jpg
+    2) navegador VIEJO  -> no existen en localStorage: al recargar entran con imagen
+    3) tarjeta guardada SIN imagen -> se rellena desde el repositorio
+    4) los ficheros cargan de verdad (naturalWidth > 0)
+
+  Uso: _verifica_bts_restore.html
+-->
+<iframe id="f" src="../../apps/trickvault/index.html" width="1440" height="900" style="border:0"></iframe>
+<pre id="out">ejecutando…</pre>
+<script>
+const NUEVAS = { 'bts': '/bts', 'restore': '/restore' };
+const PREFIJOS = { '/bts': 'assets/luz-camara-personas/', '/restore': 'assets/xl-camararetrato/' };
+const f = document.getElementById('f');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
+function datos() { return JSON.parse(f.contentWindow.localStorage.getItem('trickvault_data') || '[]'); }
+function guardar(arr) { f.contentWindow.localStorage.setItem('trickvault_data', JSON.stringify(arr)); }
+function limpiarReleases() {
+  Object.keys(f.contentWindow.localStorage)
+    .filter(k => k.indexOf('trickvault-') === 0 && k.indexOf('images-version') > 0)
+    .forEach(k => f.contentWindow.localStorage.removeItem(k));
+}
+function cargarImagen(u) {
+  const ruta = u.split('?')[0];
+  return new Promise(res => {
+    const im = new Image();
+    im.onload = () => res(im.naturalWidth > 0 ? 'OK ' + im.naturalWidth + 'px' : 'ANCHO 0');
+    im.onerror = () => res('ERROR');
+    im.src = '../../apps/trickvault/' + ruta;
+  });
+}
+(async () => {
+  const out = [];
+  const mias = arr => arr.filter(t => NUEVAS[t.codeSnippet]);
+  const conImagen = arr => mias(arr).every(t => String(t.imageUrl).indexOf(PREFIJOS[t.codeSnippet]) === 0);
+
+  // 1) navegador nuevo
+  await cargar('../../apps/trickvault/index.html');
+  await sleep(5000);
+  const fresco = mias(datos());
+  out.push('1) navegador nuevo: ' + fresco.length + '/2 tarjetas');
+  fresco.forEach(t => out.push('   ' + t.codeSnippet + ' -> ' + (t.imageUrl || 'SIN IMAGEN')));
+  const nacen = fresco.length === 2 && conImagen(datos());
+
+  // 2) navegador viejo: las tarjetas no existian
+  guardar(datos().filter(t => !NUEVAS[t.codeSnippet]));
+  limpiarReleases();
+  await cargar('../../apps/trickvault/index.html?r=' + Date.now());
+  await sleep(6000);
+  const entran = mias(datos());
+  out.push('2) navegador viejo (sin las tarjetas): vuelven ' + entran.length + '/2');
+  entran.forEach(t => out.push('   ' + t.codeSnippet + ' -> ' + (t.imageUrl || 'SIN IMAGEN')));
+  const vuelven = entran.length === 2 && conImagen(datos());
+
+  // 3) guardadas SIN imagen
+  guardar(datos().map(t => NUEVAS[t.codeSnippet] ? Object.assign({}, t, { imageUrl: '' }) : t));
+  limpiarReleases();
+  await cargar('../../apps/trickvault/index.html?r=' + Date.now());
+  await sleep(6000);
+  const rellenas = mias(datos());
+  out.push('3) guardadas sin imagen: rellenadas ' + rellenas.filter(t => String(t.imageUrl).indexOf(PREFIJOS[t.codeSnippet]) === 0).length + '/2');
+  rellenas.forEach(t => out.push('   ' + t.codeSnippet + ' -> ' + (t.imageUrl || 'SIN IMAGEN')));
+  const seRellenan = rellenas.length === 2 && conImagen(datos());
+
+  // 4) los ficheros cargan de verdad
+  const urls = [...new Set(mias(datos()).map(t => t.imageUrl).filter(Boolean))];
+  const estados = await Promise.all(urls.map(cargarImagen));
+  out.push('4) ficheros: ' + urls.map((u, i) => u.split('/').pop() + ' ' + estados[i]).join(' | '));
+
+  const todo = nacen && vuelven && seRellenan && estados.length === 2 && estados.every(e => e.indexOf('OK') === 0);
+  out.push('RESUMEN: nacen=' + nacen + ' vuelven=' + vuelven + ' rellenan=' + seRellenan +
+           ' ficheros=' + estados.join(',') + ' -> ' + (todo ? 'TODO OK' : 'REVISAR'));
+  document.getElementById('out').textContent = out.join('\n');
+  document.title = out.join('  ||  ');
+})();
+</script>
+</body></html>
