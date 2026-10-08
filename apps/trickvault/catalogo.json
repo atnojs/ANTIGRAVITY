@@ -76,6 +76,66 @@
         "ig-dcek-033": {
             "customPrompt": "/actionfigure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics. . all visible text and labels must be written in Spanish with no English words.",
             "imageUrl": "uploads/example_ig-dcek-033_ff596a168add.webp"
+        },
+        "ig-dcek-372": {
+            "title": "/banner — banner para web o redes sociales",
+            "codeSnippet": "/banner"
+        },
+        "ig-dcek-375": {
+            "title": "/invitation — tarjeta de invitación para eventos",
+            "codeSnippet": "/invitation"
+        },
+        "ig-dcek-535": {
+            "title": "/tradingcard — carta coleccionable con stats",
+            "codeSnippet": "/tradingcard"
+        },
+        "ig-dcek-536": {
+            "title": "/cerealbox — caja de cereal con tu mascota",
+            "codeSnippet": "/cerealbox"
+        },
+        "ig-dcek-537": {
+            "title": "/vinylsleeve — funda de vinilo con el disco físico",
+            "codeSnippet": "/vinylsleeve"
+        },
+        "ig-dcek-538": {
+            "title": "/arcadecabinet — máquina recreativa con tu marca",
+            "codeSnippet": "/arcadecabinet"
+        },
+        "ig-dcek-539": {
+            "title": "/museumplaque — lo expone en museo con su ficha",
+            "codeSnippet": "/museumplaque"
+        },
+        "ig-dcek-562": {
+            "title": "/voxelart — todo hecho con cubos 3D",
+            "codeSnippet": "/voxelart"
+        },
+        "ig-dcek-563": {
+            "title": "/crossstitch — bordado en punto de cruz",
+            "codeSnippet": "/crossstitch"
+        },
+        "ig-dcek-564": {
+            "title": "/holographiccard — tarjeta que refleja arcoíris",
+            "codeSnippet": "/holographiccard"
+        },
+        "ig-dcek-565": {
+            "title": "/yearbook90s — retrato de anuario noventero",
+            "codeSnippet": "/yearbook90s"
+        },
+        "ig-dcek-566": {
+            "title": "/tattooflash — lámina de tatuajes tradicionales",
+            "codeSnippet": "/tattooflash"
+        },
+        "ig-dcek-567": {
+            "title": "/neonsign — tu frase como letrero de neón",
+            "codeSnippet": "/neonsign"
+        },
+        "ig-dcek-568": {
+            "title": "/wantedposter — cartel de se busca envejecido",
+            "codeSnippet": "/wantedposter"
+        },
+        "ig-dcek-569": {
+            "title": "/securitycam — cámara de seguridad con fecha",
+            "codeSnippet": "/securitycam"
         }
     },
     "nuevas": [
@@ -176,6 +236,132 @@
             "sortOrder": 20,
             "customPrompt": "/dioramabox If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Diorama box of [OBJETO], miniature scene inside an open box, layered depth and tiny details, shadowbox art presentation. . all visible text and labels must be written in Spanish with no English words.",
             "updatedAt": 1790872699080
+        },
+        {
+            "title": "/Mercury",
+            "description": "Objeto visto en Mercurio",
+            "category": "xl-carteles",
+            "tags": [],
+            "codeSnippet": "",
+            "imageUrl": "uploads/example_muzrldq0pyjtdj8fe_e7ecf5db34d3.webp",
+            "sourceUrl": "",
+            "difficulty": "beginner",
+            "isFavorite": true,
+            "customPrompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Create an image featuring [OBJETO] as the central focus, applying a polished chrome-metal retro-futurist aesthetic to the subject itself: mirror-like surfaces, smooth volumes, rounded edges, precise details, and steel-blue reflections. Adapt this finish to its natural forms while preserving its identity and recognizable features. Concentrate visual richness and detail on the subject.\n\nPlace it against a uniform, solid-color background that contrasts with its silhouette and reflections. Select a tone that best highlights the subject and use a fine, subtle matte texture to contrast with the chrome's sheen. Keep the background clean, free of objects or elements that might compete for attention.\n\nIlluminate the subject with soft, enveloping studio lighting, featuring controlled highlights and shadows that define its volume. Use a centered composition, a clearly defined silhouette, ample surrounding space, and maximum sharpness on the main subject. Render with a hyper-realistic product finish. all visible text and neon signs must be written in Spanish with no English words",
+            "id": "muzrldq0pyjtdj8fe",
+            "createdAt": 1791477744141,
+            "updatedAt": 1791480876948,
+            "sortOrder": 97
+        },
+        {
+            "id": "ig-dcek-371",
+            "title": "/poster — póster para eventos o promociones",
+            "description": "",
+            "category": "xl-carteles",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Instagram"
+            ],
+            "codeSnippet": "/poster",
+            "difficulty": "beginner",
+            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
+            "imageUrl": "assets/xl-carteles/poster.jpg",
+            "isFavorite": false,
+            "createdAt": 1787615999630,
+            "sortOrder": 4
+        },
+        {
+            "id": "ig-dcek-374",
+            "title": "/wallpaper — fondo de pantalla para móvil o escritorio",
+            "description": "",
+            "category": "xl-carteles",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Instagram"
+            ],
+            "codeSnippet": "/wallpaper",
+            "difficulty": "beginner",
+            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
+            "imageUrl": "assets/xl-carteles/wallpaper.jpg",
+            "isFavorite": false,
+            "createdAt": 1787615999627,
+            "sortOrder": 57
+        },
+        {
+            "id": "ig-dcek-534",
+            "title": "/timelineboard — tu marca entera en un tablero",
+            "description": "",
+            "category": "xl-carteles",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Instagram"
+            ],
+            "codeSnippet": "/timelineboard",
+            "difficulty": "beginner",
+            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
+            "imageUrl": "assets/xl-carteles/timelineboard.jpg",
+            "isFavorite": false,
+            "createdAt": 1787615999467,
+            "sortOrder": 68
+        },
+        {
+            "id": "ig-dcek-561",
+            "title": "/glasssculpture — figura de vidrio translúcida",
+            "description": "",
+            "category": "xl-carteles",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Instagram"
+            ],
+            "codeSnippet": "/glasssculpture",
+            "difficulty": "beginner",
+            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
+            "imageUrl": "assets/xl-carteles/glasssculpture.jpg",
+            "isFavorite": false,
+            "createdAt": 1787615999440,
+            "sortOrder": 83
+        },
+        {
+            "id": "ig-dcek-266",
+            "title": "/quotes — imagen con cita inspiradora",
+            "description": "",
+            "category": "xl-carteles",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Instagram"
+            ],
+            "codeSnippet": "/quotes",
+            "difficulty": "beginner",
+            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
+            "imageUrl": "uploads/example_ig-dcek-281_a6ccc934fe32.webp",
+            "isFavorite": false,
+            "createdAt": 1787615999735,
+            "sortOrder": 37
+        },
+        {
+            "id": "ig-dcek-278",
+            "title": "/polaroid — estética de foto instantánea",
+            "description": "",
+            "category": "xl-carteles",
+            "tags": [
+                "comandos de imagen",
+                "imagen",
+                "Instagram"
+            ],
+            "codeSnippet": "/polaroid",
+            "difficulty": "beginner",
+            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
+            "imageUrl": "uploads/visual-ig-dcek-293.jpg",
+            "isFavorite": true,
+            "createdAt": 1787615999723,
+            "sortOrder": 39,
+            "customPrompt": "",
+            "updatedAt": 1791479045309
         }
     ],
     "borradas": [],
@@ -231,7 +417,54 @@
             "ig-dcek-528",
             "ig-dcek-265",
             "ig-dcek-033"
+        ],
+        "xl-carteles": [
+            "muzrldq0pyjtdj8fe",
+            "cap-cmd-084",
+            "cap-cmd-085",
+            "cap-cmd-089",
+            "cap-cmd-090",
+            "cap-cmd-091",
+            "cap-cmd-092",
+            "cap-cmd-093",
+            "cap-cmd-094",
+            "cap-cmd-095",
+            "cap-cmd-096",
+            "cap-cmd-097",
+            "ig-dcek-371",
+            "ig-dcek-372",
+            "ig-dcek-374",
+            "ig-dcek-375",
+            "ig-dcek-534",
+            "ig-dcek-535",
+            "ig-dcek-536",
+            "ig-dcek-537",
+            "ig-dcek-538",
+            "ig-dcek-539",
+            "ig-dcek-561",
+            "ig-dcek-562",
+            "ig-dcek-563",
+            "ig-dcek-564",
+            "ig-dcek-565",
+            "ig-dcek-566",
+            "ig-dcek-567",
+            "ig-dcek-568",
+            "ig-dcek-569",
+            "ig-dcek-266",
+            "ig-dcek-278",
+            "ig-dcek-004",
+            "ig-dcek-005",
+            "ig-dcek-031",
+            "ig-dcek-071",
+            "ig-dcek-072",
+            "ig-dcek-074",
+            "ig-dcek-079",
+            "ig-dcek-085",
+            "ig-dcek-086",
+            "ig-dcek-091",
+            "ig-dcek-092",
+            "ig-dcek-095"
         ]
     },
-    "actualizado": "2026-10-08T16:25:15+00:00"
+    "actualizado": "2026-10-08T17:35:47+00:00"
 }
