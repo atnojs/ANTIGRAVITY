@@ -4342,7 +4342,10 @@ function TrickForm({ trick, folders, onSave, onClose, onDelete }) {
     const [saving, setSaving] = useState(false);
     const [promptCopied, setPromptCopied] = useState(false);
     const fullPrompt = isEdit && (isImageCommandTrick(trick) || isTextCommandTrick(trick)) ? getTrickCopyText(trick) : '';
-    const [promptDraft, setPromptDraft] = useState(fullPrompt);
+    // El campo Prompt está SIEMPRE en el formulario: en una tarjeta de comando
+    // arranca con el prompt completo (comando + parte fija + cuerpo), y en
+    // cualquier otra (incluido un truco nuevo) con su customPrompt guardado.
+    const [promptDraft, setPromptDraft] = useState(fullPrompt || String(trick?.customPrompt || ''));
     const [form, setForm] = useState(() => trick ? {
         ...trick,
         tags: Array.isArray(trick.tags) ? trick.tags.join(', ') : (trick.tags || '')
@@ -4395,8 +4398,16 @@ function TrickForm({ trick, folders, onSave, onClose, onDelete }) {
             .map(t => t.trim()).filter(Boolean);
         let customPrompt = '';
         if (fullPrompt) {
+            // Tarjeta de comando: el textarea trae el prompt completo (comando +
+            // parte fija + cuerpo). Si no se toca se CONSERVA el prompt guardado
+            // (antes se borraba al guardar); si se vacía, vuelve a la plantilla.
             const draft = promptDraft.trim();
             if (draft && draft !== fullPrompt) customPrompt = draft;
+            else if (draft) customPrompt = String(trick?.customPrompt || '').trim();
+        } else {
+            // Truco nuevo o truco sin comando: lo escrito en el campo Prompt es
+            // su prompt (antes era imposible rellenarlo al crear la tarjeta).
+            customPrompt = promptDraft.trim();
         }
         setSaving(true);
         const saved = await onSave({ ...form, title, description, tags, customPrompt });
@@ -4441,22 +4452,31 @@ function TrickForm({ trick, folders, onSave, onClose, onDelete }) {
                                 </div>
                             );
                         })}
-                        {fullPrompt && (
-                            <div className="prompt-full-preview">
-                                <label htmlFor="field-full-prompt">📋 Prompt completo (el que se copia con el botón de la tarjeta)</label>
-                                <textarea id="field-full-prompt" value={promptDraft} rows={6} onChange={(e) => setPromptDraft(e.target.value)} />
-                                <button
-                                    type="button"
-                                    className="btn btn-glass btn-sm"
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(promptDraft).then(() => {
-                                            setPromptCopied(true);
-                                            setTimeout(() => setPromptCopied(false), 2000);
-                                        }).catch(() => {});
-                                    }}
-                                >{promptCopied ? '✓ Copiado' : '📋 Copiar prompt'}</button>
-                            </div>
-                        )}
+                        <div className="prompt-full-preview">
+                            <label htmlFor="field-full-prompt">{fullPrompt ? '📋 Prompt completo (el que se copia con el botón de la tarjeta)' : '📋 Prompt'}</label>
+                            <textarea
+                                id="field-full-prompt"
+                                value={promptDraft}
+                                rows={6}
+                                placeholder="Escribe el prompt de esta tarjeta. Si usas un comando conocido, empieza por su código (ej: /infographic …)."
+                                onChange={(e) => setPromptDraft(e.target.value)}
+                            />
+                            <p className="field-help">
+                                {fullPrompt
+                                    ? 'Incluye el comando y la parte fija del estilo. Si no lo tocas, la tarjeta conserva su prompt; si lo vacías, vuelve a la plantilla original.'
+                                    : 'Es el texto que copia el botón 📋 de la tarjeta. Si lo dejas vacío, se copiará el Código / Comando.'}
+                            </p>
+                            <button
+                                type="button"
+                                className="btn btn-glass btn-sm"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(promptDraft).then(() => {
+                                        setPromptCopied(true);
+                                        setTimeout(() => setPromptCopied(false), 2000);
+                                    }).catch(() => {});
+                                }}
+                            >{promptCopied ? '✓ Copiado' : '📋 Copiar prompt'}</button>
+                        </div>
                         <div className="image-upload-field">
                             <label htmlFor="field-image">Imagen de ejemplo</label>
                             <input id="field-image" type="file" accept="image/*" onChange={handleImageChange} />
