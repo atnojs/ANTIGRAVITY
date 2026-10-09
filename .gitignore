@@ -114,6 +114,12 @@ webs/limpiador-windows/data/
 .hermes/
 _pruebas_img/
 
+# Raiz de descubrimiento de skills de DeepSeek Harness: .dsh/skills contiene
+# hardlinks a skills/*.md (los crea tools/link-dsh-skills.ps1), de modo que DSH
+# ve las skills canonicas sin duplicar contenido. Es local: no se versiona ni se
+# despliega a la raiz publica de Hostinger.
+.dsh/
+
 # Worktrees de agentes (Codex/DSH): son copias de trabajo, no contenido del repo
 .codex-worktrees/
 
