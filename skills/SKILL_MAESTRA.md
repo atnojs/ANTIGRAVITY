@@ -15,8 +15,9 @@ Entregar resultados completos, funcionales, seguros y visualmente cuidados desde
 4. Crear archivos nuevos completos, coherentes con el proyecto y listos para utilizar; no dejar pseudocódigo, marcadores, botones falsos ni flujos simulados.
 5. Trabajar en español. Todo texto o audio generado por una IA debe incluir la instrucción de producirse en español, salvo petición explícita del usuario.
 6. No exponer claves, tokens, credenciales ni datos privados. Si se detecta una clave expuesta, avisar de que debe revocarse y regenerarse.
-7. No afirmar que algo funciona sin haberlo probado en el entorno que realmente lo ejecutará.
+7. No afirmar que algo funciona sin haberlo probado en el entorno que realmente lo ejecutará. Toda app o web se prueba **en un navegador**, recorriendo el flujo completo del usuario: clics, navegación, formularios, subida, **descarga y generación de ficheros (los `.json` incluidos)**, errores, consola y recarga. Una descarga solo se da por buena cuando **el fichero aparece en disco** y su contenido es válido. Leer el código, revisar el diff o comprobar el HTML servido **no es una prueba**.
 8. Conservar cambios ajenos del usuario. Revisar el diff y limitar cada commit a los archivos del encargo.
+9. Antes de entregar, repasar esta skill y `SKILL_CREAR.md` **punto por punto** y comprobar que se han cumplido todos sus pasos obligatorios (Fases 4 y 5 incluidas, con su checklist de salida). Si algún paso no se ha cumplido, no maquillarlo: decirlo y completarlo antes de entregar.
 
 ## Clasificar el encargo
 
