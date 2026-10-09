@@ -144,10 +144,41 @@ function loadHistoryUnlocked(): array {
 }
 
 function saveHistoryUnlocked(array $history): void {
+    $history = stripEmbeddedImages($history);
     $json = json_encode(array_values($history), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     if ($json === false || file_put_contents(dataFile(), $json, LOCK_EX) === false) {
         respond(500, ['success' => false, 'error' => 'No se pudo guardar el historial.']);
     }
+}
+
+/**
+ * La imagen ya se guarda como fichero y `imageUrl` la sirve. Pero las apps antiguas mandaban
+ * además la imagen entera en base64 dentro de `data.url` (y algunas en `imageData`), y eso
+ * metía megabytes por entrada en history.json: la lista llegaba a pesar decenas de MB y en un
+ * navegador sin caché (incógnito) el panel parecía vacío porque la petición no terminaba.
+ * Aquí se descarta ese base64 duplicado, tanto al leer como al escribir.
+ */
+function stripEmbeddedImages(array $history): array {
+    foreach ($history as $index => $entry) {
+        if (!is_array($entry)) {
+            continue;
+        }
+        unset($history[$index]['imageData']);
+        if (!isset($entry['data']) || !is_array($entry['data'])) {
+            continue;
+        }
+        foreach (['url', 'imageData', 'image', 'imagen', 'dataUrl', 'base64'] as $key) {
+            $value = $history[$index]['data'][$key] ?? '';
+            if (is_string($value) && stripos(ltrim($value), 'data:') === 0) {
+                if ($key === 'url') {
+                    $history[$index]['data'][$key] = '';
+                } else {
+                    unset($history[$index]['data'][$key]);
+                }
+            }
+        }
+    }
+    return array_values($history);
 }
 
 function readJsonBody(): array {
@@ -217,6 +248,7 @@ if ($method === 'GET' && $action === 'list') {
     if ($app !== '') {
         $history = array_values(array_filter($history, static fn(array $entry): bool => ($entry['app'] ?? '') === $app));
     }
+    $history = stripEmbeddedImages($history);
     respond(200, ['success' => true, 'history' => $history, 'count' => count($history)]);
 }
 

@@ -899,7 +899,10 @@
         type: 'image',
         model: state.selectedModel,
         data: {
-          url: dataUrl,
+          // La imagen viaja en `imageData` (el servidor la guarda como fichero y devuelve
+          // `imageUrl`). Mandarla también aquí en base64 engordaba la lista del historial
+          // hasta hacerla impracticable en un navegador sin caché.
+          url: '',
           modelo: state.selectedModel,
           relacionAspecto: state.aspectRatio,
           resolucion: state.resolution,
