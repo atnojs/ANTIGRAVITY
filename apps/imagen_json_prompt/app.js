@@ -440,6 +440,13 @@
       state.targetWidth = image.naturalWidth;
       state.targetHeight = image.naturalHeight;
 
+      // El formato de salida se ajusta solo al de la imagen que se va a modificar.
+      const ratio = closestAspectRatio(state.targetWidth, state.targetHeight);
+      if (ratio && ratio !== state.aspectRatio) {
+        selectAspectRatio(ratio);
+        showToast('Formato ajustado a ' + ratio + ', el de tu imagen.');
+      }
+
       els.targetPreviewImg.src = dataUrl;
       els.targetPreviewName.textContent = state.targetFileName;
       els.targetPreviewSize.textContent = state.targetWidth + ' × ' + state.targetHeight + ' px · ' + formatBytes(file.size);
@@ -516,6 +523,44 @@
     els.bgImagePreview.classList.add('hidden');
     els.bgImagePreviewImg.removeAttribute('src');
     els.generateBtn.disabled = !canGenerate();
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Formato de salida (relación de aspecto)
+   * ------------------------------------------------------------------ */
+
+  /** Marca un formato en el selector; unica fuente de verdad para el clic y el automático. */
+  function selectAspectRatio(ratio) {
+    if (!els.aspectButtons.length || !ratio) return;
+    els.aspectButtons.forEach((button) => {
+      const activo = button.dataset.ratio === ratio;
+      button.classList.toggle('active', activo);
+      button.setAttribute('aria-pressed', activo ? 'true' : 'false');
+    });
+    state.aspectRatio = ratio;
+  }
+
+  /**
+   * Formato del selector más parecido al de la imagen subida. Se compara en escala
+   * logarítmica para no favorecer los formatos anchos (1.5 está más cerca de 4:3
+   * que de 16:9, y 0.67 más cerca de 3:4 que de 9:16).
+   */
+  function closestAspectRatio(ancho, alto) {
+    if (!ancho || !alto || !els.aspectButtons.length) return '';
+    const objetivo = ancho / alto;
+    let mejor = '';
+    let mejorDistancia = Infinity;
+    els.aspectButtons.forEach((button) => {
+      const partes = String(button.dataset.ratio || '').split(':');
+      const valor = Number(partes[0]) / Number(partes[1]);
+      if (!isFinite(valor) || valor <= 0) return;
+      const distancia = Math.abs(Math.log(valor / objetivo));
+      if (distancia < mejorDistancia - 1e-9) {
+        mejorDistancia = distancia;
+        mejor = button.dataset.ratio;
+      }
+    });
+    return mejor;
   }
 
   /* ------------------------------------------------------------------ *
@@ -1075,15 +1120,7 @@
       });
     });
     els.aspectButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        els.aspectButtons.forEach((item) => {
-          item.classList.remove('active');
-          item.setAttribute('aria-pressed', 'false');
-        });
-        button.classList.add('active');
-        button.setAttribute('aria-pressed', 'true');
-        state.aspectRatio = button.dataset.ratio || '1:1';
-      });
+      button.addEventListener('click', () => selectAspectRatio(button.dataset.ratio || '1:1'));
     });
     els.resolutionButtons.forEach((button) => {
       button.addEventListener('click', () => {
