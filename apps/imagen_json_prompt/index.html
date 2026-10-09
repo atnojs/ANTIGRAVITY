@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="app.css?v=20261009-idioma1" />
+<link rel="stylesheet" href="app.css?v=20261009-bloques1" />
 <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -31,7 +31,8 @@
   <div class="main-layout">
     <main class="main-col">
 
-      <!-- ============================ PASO 1 ============================ -->
+      <!-- ======================= PASOS 1 y 2 (bloque) ======================= -->
+      <div class="step-pair">
       <section class="step-card" id="paso-1" aria-labelledby="paso-1-title">
         <div class="card-heading">
           <div class="heading-text">
@@ -95,8 +96,10 @@
           <button type="button" class="btn btn-secondary" id="json-reanalyze-btn" disabled>Volver a analizar</button>
         </div>
       </section>
+      </div>
 
-      <!-- ============================ PASO 3 ============================ -->
+      <!-- ======================= PASOS 3 y 4 (bloque) ======================= -->
+      <div class="step-pair">
       <section class="step-card locked" id="paso-3" aria-labelledby="paso-3-title" aria-disabled="true">
         <div class="card-heading">
           <div class="heading-text">
@@ -185,6 +188,7 @@
           <button type="button" class="btn btn-secondary" id="prompt-regen-btn" disabled>Regenerar prompt</button>
         </div>
       </section>
+      </div>
 
       <!-- ============================ PASO 5 ============================ -->
       <section class="step-card locked" id="paso-5" aria-labelledby="paso-5-title" aria-disabled="true">
@@ -198,6 +202,7 @@
         </div>
 
         <!-- Selector de modelo (patrón canónico toggles pill hoola) -->
+        <div class="paso5-grid">
         <div id="model-selector" class="model-selector">
           <span class="model-selector-label">Modelo IA</span>
           <div class="model-provider-layout" role="group" aria-label="Seleccionar modelo de imagen">
@@ -242,8 +247,7 @@
           </div>
         </div>
 
-        <div class="bottom-control-bar">
-          <div class="options-stack">
+        <div class="paso5-options">
             <div class="control-panel background-panel">
               <fieldset class="control-group">
                 <legend>Fondo de la imagen final</legend>
@@ -304,12 +308,12 @@
                 <small class="control-hint">La API de OpenAI exige un mínimo de 1.048.576 px: 512 se entrega como 1024.</small>
               </fieldset>
             </div>
-          </div>
           <div class="generate-column">
             <button type="button" class="btn btn-action-neon btn-action-main" id="generate-btn" disabled>
               <span class="btn-icon" aria-hidden="true">▶</span>Generar imagen
             </button>
           </div>
+        </div>
         </div>
 
         <div class="result-frame" id="result-frame">
