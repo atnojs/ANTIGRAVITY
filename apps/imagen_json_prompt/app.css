@@ -286,6 +286,13 @@ input[type="text"]::placeholder { color: #7fb3b3; }
 .pill-toggle:hover { color: var(--text); border-color: var(--border-strong); background: rgba(255, 255, 255, .06); box-shadow: 0 0 12px var(--glow-soft); }
 .pill-toggle.active { color: #CCFFFF; border-color: var(--border-strong); background: linear-gradient(135deg, var(--contenedor), var(--acc)); text-shadow: 0 0 8px var(--glow); box-shadow: 0 0 18px var(--glow); }
 
+/* La fila de idioma va SIEMPRE en una sola linea y dentro de su grupo.
+   En escritorio (>1100px) el panel le da 200px: con el ancho natural de cada
+   pildora (92 + 87 + gap) no caben y se apilaban en dos lineas. Se reparten el
+   ancho disponible y nunca sobresalen del contenedor. */
+.pill-row-lang { display: flex; flex-wrap: nowrap; width: 100%; max-width: 100%; box-sizing: border-box; }
+.pill-row-lang .pill-toggle { flex: 1 1 0; min-width: 0; padding: .5rem .5rem; font-size: .75rem; letter-spacing: .02em; text-align: center; }
+
 /* ===== Anclas obligatorias ===== */
 .anchors { margin-top: 14px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 12px; background: rgba(0, 16, 24, .3); }
 .anchor-line { margin: 0 0 .4rem; color: var(--faint); font-size: .66rem; line-height: 1.5; }
