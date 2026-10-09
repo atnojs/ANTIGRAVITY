@@ -337,6 +337,16 @@ input[type="text"]::placeholder { color: #7fb3b3; }
   background: rgba(0, 16, 24, .46); box-shadow: inset 0 0 18px rgba(0, 208, 208, .04);
 }
 .options-stack { min-width: 0; }
+
+/* Fondo opcional de la imagen final (paso 5) */
+.background-panel .control-group { grid-column: 1 / -1; }
+.bg-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .55rem; }
+.bg-row > label { color: var(--muted); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
+.bg-row input[type="color"] {
+  width: 56px; height: 32px; padding: 2px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 9px; background: var(--card-bg);
+}
+.bg-row .image-preview-card { flex: 1 1 100%; }
 .bottom-control-bar .control-panel { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
 .generate-column { display: flex; align-items: center; justify-content: center; padding-left: 14px; border-left: 1px solid rgba(0, 208, 208, .28); }
 .generate-column .btn-action-main { width: 100%; margin: 0; }

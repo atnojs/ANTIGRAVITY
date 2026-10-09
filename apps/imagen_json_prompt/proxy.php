@@ -366,32 +366,37 @@ ENTRADA
 Recibes EXCLUSIVAMENTE un JSON de análisis. No has visto la imagen y no debes imaginarla más allá de lo que el JSON declara. El JSON es tu única fuente de verdad: si un dato no está, omítelo; no lo inventes.
 
 OBJETIVO
-Redactar un prompt "universal" que reconstruya la escena descrita en el JSON aplicando un estilo SOLO al sujeto principal. El fondo NO recibe estilo: se sustituye por un color o una textura simple elegidos para hacer resaltar al sujeto.
+Redactar un prompt "universal" que aplique ÚNICAMENTE EL ESTILO de la imagen de referencia a OTRA imagen que el usuario adjuntará al generar. Esa imagen debe quedar intacta en todo lo que no sea el estilo: su sujeto, su identidad, su pose, su ropa, sus objetos, su encuadre, su composición, su fondo y sus textos no se tocan.
+
+REGLA DE ORO
+El prompt NO reconstruye ni describe la escena, el sujeto, los objetos ni el encuadre de la referencia. De la referencia se toma SOLO el estilo: luz, paleta, color, textura, acabado, medio y atmósfera. Nada del contenido de la referencia se impone.
 
 REGLAS OBLIGATORIAS
-1. El estilo (el de "estilo_visual" del JSON y, si se indica, el ESTILO SOLICITADO POR EL USUARIO) se aplica ÚNICAMENTE al sujeto principal. Nunca al fondo, nunca a los elementos secundarios.
-2. El fondo se describe como una superficie de color plano o de textura simple, elegida por CONTRASTE con el sujeto: contraste de valor (claro contra oscuro), de temperatura (cálido contra frío) o de color complementario. Nunca un patrón que compita con el sujeto ni que lo camufle.
-3. Reconstruye la escena con fidelidad: encuadre, tipo de plano, ángulo, orientación, posición y escala del sujeto, pose o acción, proporciones, rasgos identificativos, materiales, texturas y detalles que deben conservarse.
-4. Conserva EXACTAMENTE el texto visible que declare el JSON, con su posición. Si no hay texto visible, ordena expresamente no añadir ningún texto.
-5. Prohibido: aplicar el estilo al fondo, alterar la identidad o los rasgos del sujeto, difuminar el sujeto, añadir marcas de agua, logotipos, firmas, marcos, bordes o cualquier elemento que el JSON no mencione.
+1. El estilo (el de "estilo_visual" del JSON y, si se indica, el ESTILO SOLICITADO POR EL USUARIO) se aplica a TODA la imagen que se adjunte.
+2. Prohibido describir o imponer el sujeto, los objetos, el atrezzo, el encuadre, el ángulo, la orientación ni la composición de la referencia: nada de eso se traslada.
+3. Ordena expresamente conservar intactos el sujeto y su identidad, la pose, la expresión, la ropa, los objetos, el encuadre, la composición, la perspectiva y el fondo de la imagen que se adjunte.
+4. Conserva el texto visible que ya tenga la imagen que se adjunte tal cual está, en su sitio y sin retocarlo. No añadas ningún texto nuevo.
+5. Prohibido: alterar la identidad o la geometría del sujeto, añadir o quitar elementos, sustituir el fondo (el sistema añade esa instrucción aparte solo si el usuario elige un fondo), marcos, bordes, viñetas, marcas de agua, logotipos ni firmas. No menciones que existe una imagen de referencia.
 6. Escribe el prompt en español.
 7. No incluyas ninguna frase de cabecera ni de cierre: el sistema las añade por su cuenta. Empieza directamente por el primer epígrafe.
 8. CONCISIÓN OBLIGATORIA: cada epígrafe lleva como máximo 2 frases de 20 palabras; no repitas información entre epígrafes ni justifiques nada. La respuesta larga hace que la petición supere el tiempo máximo del servidor y falle.
 
 FORMATO DEL PROMPT
 Usa exactamente estos seis epígrafes, en mayúsculas y en este orden, cada uno con su contenido en una o varias frases:
-RECREACIÓN DE LA ESCENA
-SUJETO PRINCIPAL — ÚNICO DESTINO DEL ESTILO
-FONDO — SIN ESTILO, COLOR/TEXTURA DE CONTRASTE
-SEPARACIÓN FIGURA-FONDO
-TEXTO VISIBLE
-PROHIBICIONES
+ESTILO A APLICAR
+LUZ
+PALETA Y COLOR
+TEXTURA Y ACABADO
+ATMÓSFERA
+LO QUE NO SE TOCA
 
-El epígrafe FONDO debe indicar el color en hexadecimal (#RRGGBB) y la textura concreta. Menciona ese mismo hexadecimal en SEPARACIÓN FIGURA-FONDO y explica en una frase por qué separa al sujeto del fondo.
+El epígrafe LO QUE NO SE TOCA enumera lo que debe permanecer idéntico: sujeto e identidad, pose, expresión, ropa, objetos, encuadre, composición, perspectiva, fondo y textos.
 
 SALIDA
 Devuelve EXCLUSIVAMENTE un objeto JSON válido, sin Markdown y sin comentarios, con esta forma exacta:
 {"fondo_recomendado":{"color_hex":"#RRGGBB","textura":"...","motivo_del_contraste":"..."},"prompt":"<prompt completo con los seis epígrafes>"}
+
+"fondo_recomendado" es solo una SUGERENCIA para el fondo opcional del paso final: propón un color plano en hexadecimal que armonice con el estilo y sobre el que el sujeto resalte. No lo metas como instrucción dentro del prompt.
 SYS_PROMPT_ES;
 
 const PROMPT_SYSTEM_EN = <<<'SYS_PROMPT_EN'
@@ -401,32 +406,37 @@ INPUT
 You receive ONLY a JSON analysis. You have not seen the image and you must not imagine it beyond what the JSON states. The JSON is your single source of truth: if a field is missing, omit it; never invent it.
 
 GOAL
-Write a "universal" prompt that reconstructs the scene described in the JSON while applying a style ONLY to the main subject. The background receives NO style: it is replaced by a simple colour or texture chosen so the subject stands out.
+Write a "universal" prompt that applies ONLY THE STYLE of the reference image to ANOTHER image the user will attach when generating. That image must stay untouched in everything except the style: its subject, identity, pose, clothing, objects, framing, composition, background and text are not to be changed.
+
+GOLDEN RULE
+The prompt does NOT reconstruct or describe the reference scene, subject, objects or framing. From the reference you take ONLY the style: light, palette, colour, texture, finish, medium and atmosphere. No content from the reference is imposed.
 
 MANDATORY RULES
-1. The style (from the JSON "estilo_visual" and, when given, the USER-REQUESTED STYLE) applies ONLY to the main subject. Never to the background, never to secondary elements.
-2. The background is described as a flat colour or a simple texture, chosen by CONTRAST against the subject: value contrast (light against dark), temperature contrast (warm against cool) or complementary colour. Never a pattern that competes with, or camouflages, the subject.
-3. Reconstruct the scene faithfully: framing, shot type, angle, orientation, subject position and scale, pose or action, proportions, identifying traits, materials, textures and details that must be preserved.
-4. Keep EXACTLY the visible text the JSON declares, with its position. If there is no visible text, explicitly forbid adding any text.
-5. Forbidden: applying the style to the background, altering the subject's identity or traits, blurring the subject, adding watermarks, logos, signatures, frames, borders or anything the JSON does not mention.
+1. The style (from the JSON "estilo_visual" and, when given, the USER-REQUESTED STYLE) applies to THE WHOLE attached image.
+2. Never describe or impose the reference's subject, objects, props, framing, angle, orientation or composition: none of that carries over.
+3. Explicitly order that the attached image keeps its subject and identity, pose, expression, clothing, objects, framing, composition, perspective and background intact.
+4. Keep the visible text the attached image already has exactly as it is, in place and unretouched. Add no new text.
+5. Forbidden: altering the subject's identity or geometry, adding or removing elements, replacing the background (the system appends that instruction separately only when the user chooses a background), frames, borders, vignettes, watermarks, logos or signatures. Do not mention that a reference image exists.
 6. Write the prompt body in English.
 7. Do not include any header or closing sentence: the system adds those itself. Start directly with the first heading.
 8. MANDATORY CONCISION: each heading holds at most 2 sentences of 20 words; do not repeat information between headings and do not justify anything. A long answer makes the request exceed the server time limit and fail.
 
 PROMPT FORMAT
 Use exactly these six headings, in capitals and in this order, each with one or more sentences:
-SCENE RECREATION
-MAIN SUBJECT — THE ONLY TARGET OF THE STYLE
-BACKGROUND — NO STYLE, CONTRASTING COLOUR/TEXTURE
-FIGURE-GROUND SEPARATION
-VISIBLE TEXT
-PROHIBITIONS
+STYLE TO APPLY
+LIGHT
+PALETTE AND COLOUR
+TEXTURE AND FINISH
+ATMOSPHERE
+WHAT MUST NOT BE TOUCHED
 
-The BACKGROUND heading must state the colour in hexadecimal (#RRGGBB) and the concrete texture. Repeat that same hexadecimal in FIGURE-GROUND SEPARATION and explain in one sentence why it separates the subject from the background.
+The WHAT MUST NOT BE TOUCHED heading lists what must stay identical: subject and identity, pose, expression, clothing, objects, framing, composition, perspective, background and text.
 
 OUTPUT
 Return ONLY a valid JSON object, with no Markdown and no comments, in exactly this shape:
 {"fondo_recomendado":{"color_hex":"#RRGGBB","textura":"...","motivo_del_contraste":"..."},"prompt":"<full prompt with the six headings>"}
+
+"fondo_recomendado" is only a SUGGESTION for the optional background of the final step: propose a flat hexadecimal colour that harmonises with the style and makes the subject stand out. Do not put it inside the prompt as an instruction.
 SYS_PROMPT_EN;
 
 /** Campos que nunca deben llegar a la acción `prompt`: delatan que se intenta colar la imagen. */
@@ -665,14 +675,50 @@ function handlePrompt(array $request): void
 }
 
 /* ------------------------------------------------------------------ *
- * Generación final: prompt + imagen de referencia → imagen
+ * Generación final: prompt + imagen del usuario (+ fondo opcional) → imagen
  * ------------------------------------------------------------------ */
+
+/**
+ * Instrucción de fondo que el usuario elige en el paso final.
+ * '' = conservar el fondo de su imagen (comportamiento por defecto).
+ */
+function backgroundDirective(array &$request): string
+{
+    $background = $request['background'] ?? null;
+    $mode = is_array($background) ? strtolower(trim((string)($background['mode'] ?? 'keep'))) : 'keep';
+
+    if ($mode === 'color') {
+        $color = strtoupper(trim((string)($background['color'] ?? '')));
+        if (preg_match('/^#[0-9A-F]{6}$/', $color) !== 1) {
+            respond(400, ['success' => false, 'error' => 'El color de fondo debe ser un hexadecimal #RRGGBB.']);
+        }
+        unset($request['images']);
+        return "\n\nFONDO OBLIGATORIO (sustituye a cualquier instrucción anterior sobre el fondo): sustituye el fondo de la imagen adjunta por un color plano " . $color . ", integrado con el sujeto de forma natural: misma dirección e intensidad de luz, sombras de contacto coherentes, bordes limpios sin halo y sin restos del fondo original. No cambies nada más.";
+    }
+
+    if ($mode === 'image') {
+        $images = $request['images'] ?? null;
+        $fondo = (is_array($images) && count($images) === 1) ? $images[0] : null;
+        if (!is_string($fondo) || trim($fondo) === '') {
+            respond(400, ['success' => false, 'error' => 'Falta la imagen de fondo.']);
+        }
+        return "\n\nFONDO OBLIGATORIO (sustituye a cualquier instrucción anterior sobre el fondo): la SEGUNDA imagen adjunta es el nuevo fondo. Úsala tal cual, integrada a la perfección: respeta su perspectiva y su línea de horizonte, iguala su luz y su temperatura de color con las del sujeto, añade sombras de contacto y reflejos coherentes, y ajusta la escala y la posición para que el sujeto encaje de forma natural. No apliques el estilo al fondo, no lo sustituyas por otro y no cambies nada más de la imagen principal.";
+    }
+
+    if ($mode !== 'keep') {
+        respond(400, ['success' => false, 'error' => 'Modo de fondo no permitido.']);
+    }
+    // Sin fondo elegido: la imagen del usuario manda y no se cuela ninguna imagen extra.
+    unset($request['images']);
+    return '';
+}
 
 function handleGenerate(array $request): void
 {
-    if (isset($request['prompt']) && is_string($request['prompt']) && trim($request['prompt']) !== '') {
+    $prompt = isset($request['prompt']) && is_string($request['prompt']) ? trim($request['prompt']) : '';
+    if ($prompt !== '') {
         // Blindaje de las anclas aunque el cliente envíe un prompt manipulado.
-        $request['prompt'] = wrapUniversal($request['prompt']);
+        $request['prompt'] = wrapUniversal($prompt . backgroundDirective($request));
     }
     ag_image_response($request, __DIR__);
 }

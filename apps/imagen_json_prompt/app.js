@@ -57,7 +57,7 @@
     // Paso 4 — prompt universal
     paso4: $('paso-4'),
     promptChip: $('prompt-chip'),
-    pillToggles: Array.from(document.querySelectorAll('.pill-toggle')),
+    pillToggles: Array.from(document.querySelectorAll('.pill-toggle[data-lang]')),
     requestedStyle: $('requested-style'),
     promptBtn: $('prompt-btn'),
     anchorsBox: $('anchors-box'),
@@ -79,6 +79,19 @@
     aspectButtons: Array.from(document.querySelectorAll('.aspect-ratio-button')),
     resolutionButtons: Array.from(document.querySelectorAll('.resolution-button')),
     generateBtn: $('generate-btn'),
+    // Fondo opcional del paso final
+    bgToggles: Array.from(document.querySelectorAll('.pill-toggle[data-bg]')),
+    bgColorRow: $('bg-color-row'),
+    bgColorInput: $('bg-color-input'),
+    bgColorValue: $('bg-color-value'),
+    bgImageRow: $('bg-image-row'),
+    bgImageInput: $('bg-image-input'),
+    bgImageBtn: $('bg-image-btn'),
+    bgImagePreview: $('bg-image-preview'),
+    bgImagePreviewImg: $('bg-image-preview-img'),
+    bgImageName: $('bg-image-name'),
+    bgImageSize: $('bg-image-size'),
+    bgImageRemove: $('bg-image-remove'),
     resultPlaceholder: $('result-placeholder'),
     resultImage: $('result-image'),
     resultMeta: $('result-meta'),
@@ -122,6 +135,10 @@
     selectedModel: 'openai-image-2-low',
     aspectRatio: '1:1',
     resolution: 1024,
+    backgroundMode: 'keep',   // keep | color | image
+    backgroundColor: '#1B2A33',
+    backgroundDataUrl: '',
+    backgroundFileName: '',
     resultDataUrl: '',
     resultMeta: '',
     busy: false,
@@ -452,6 +469,53 @@
   }
 
   /* ------------------------------------------------------------------ *
+   * Fondo opcional de la imagen final
+   * ------------------------------------------------------------------ */
+
+  function setBackgroundMode(mode) {
+    state.backgroundMode = ['keep', 'color', 'image'].indexOf(mode) >= 0 ? mode : 'keep';
+    els.bgColorRow.classList.toggle('hidden', state.backgroundMode !== 'color');
+    els.bgImageRow.classList.toggle('hidden', state.backgroundMode !== 'image');
+    els.generateBtn.disabled = !canGenerate();
+  }
+
+  /** Imagen de fondo: viaja como SEGUNDA referencia y el modelo la integra. */
+  async function handleBackgroundFile(file) {
+    clearError();
+    if (!file) return;
+    if (!file.type || file.type.indexOf('image/') !== 0) {
+      showError('El fondo debe ser una imagen (PNG, JPG, WEBP o GIF).');
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      showError('La imagen de fondo supera 20 MB. Reduce su tamaño y vuelve a intentarlo.');
+      return;
+    }
+    try {
+      const dataUrl = await readAsDataUrl(file);
+      const image = await loadImageElement(dataUrl);
+      state.backgroundDataUrl = dataUrl;
+      state.backgroundFileName = file.name || 'fondo';
+      els.bgImagePreviewImg.src = dataUrl;
+      els.bgImageName.textContent = state.backgroundFileName;
+      els.bgImageSize.textContent = image.naturalWidth + ' × ' + image.naturalHeight + ' px · ' + formatBytes(file.size);
+      els.bgImagePreview.classList.remove('hidden');
+      els.generateBtn.disabled = !canGenerate();
+    } catch (error) {
+      showError(error.message || 'No se pudo preparar la imagen de fondo.');
+    }
+  }
+
+  function clearBackgroundImage() {
+    state.backgroundDataUrl = '';
+    state.backgroundFileName = '';
+    els.bgImageInput.value = '';
+    els.bgImagePreview.classList.add('hidden');
+    els.bgImagePreviewImg.removeAttribute('src');
+    els.generateBtn.disabled = !canGenerate();
+  }
+
+  /* ------------------------------------------------------------------ *
    * Paso 2 — análisis a JSON
    * ------------------------------------------------------------------ */
 
@@ -618,6 +682,13 @@
         els.bgTexture.textContent = background.textura || '';
         els.bgReason.textContent = background.motivo_del_contraste || '';
         els.backgroundCard.classList.remove('hidden');
+        // Sugerencia para el fondo opcional del paso final (el usuario decide).
+        const sugerido = String(background.color_hex).toUpperCase();
+        if (/^#[0-9A-F]{6}$/.test(sugerido)) {
+          state.backgroundColor = sugerido;
+          els.bgColorInput.value = sugerido;
+          els.bgColorValue.textContent = sugerido;
+        }
       }
 
       renderAnchors(state.prompt);
@@ -651,25 +722,32 @@
   }
 
   function canGenerate() {
-    return !!state.prompt && !!state.targetDataUrl && !state.busy;
+    const fondoListo = state.backgroundMode !== 'image' || !!state.backgroundDataUrl;
+    return !!state.prompt && !!state.targetDataUrl && fondoListo && !state.busy;
   }
 
   async function generateImage() {
     if (!canGenerate()) {
-      showError('Necesitas la imagen a la que aplicar el prompt (paso 3) y el prompt universal (paso 4) antes de generar.');
+      const falta = !state.prompt ? 'el prompt universal (paso 4)'
+        : (!state.targetDataUrl ? 'la imagen a la que aplicar el prompt (paso 3)' : 'la imagen de fondo');
+      showError('Antes de generar necesitas ' + falta + '.');
       return;
     }
     clearError();
     setBusy(true, 'Generando la imagen final...', 'Aplicando el prompt universal sobre la imagen del paso 3...');
     try {
-      const data = await postProxy({
+      const payload = {
         action: 'generate',
         prompt: state.prompt,
         image: state.targetDataUrl,
         model: state.selectedModel,
         aspectRatio: state.aspectRatio,
         resolution: state.resolution,
-      });
+        background: { mode: state.backgroundMode, color: state.backgroundColor },
+      };
+      // El fondo elegido viaja como SEGUNDA imagen; el proxy lo integra en el prompt.
+      if (state.backgroundMode === 'image' && state.backgroundDataUrl) payload.images = [state.backgroundDataUrl];
+      const data = await postProxy(payload);
       const dataUrl = data.dataUrl || data.imageUrl || '';
       if (!dataUrl) throw new Error('El proveedor no devolvió ninguna imagen.');
 
@@ -946,6 +1024,30 @@
         state.language = button.dataset.lang || 'es';
       });
     });
+
+    // Fondo del paso final (por defecto: el de la imagen del usuario)
+    els.bgToggles.forEach((button) => {
+      button.addEventListener('click', () => {
+        els.bgToggles.forEach((item) => {
+          item.classList.remove('active');
+          item.setAttribute('aria-pressed', 'false');
+        });
+        button.classList.add('active');
+        button.setAttribute('aria-pressed', 'true');
+        setBackgroundMode(button.dataset.bg || 'keep');
+      });
+    });
+    els.bgImageBtn.addEventListener('click', () => els.bgImageInput.click());
+    els.bgImageInput.addEventListener('change', () => {
+      const file = els.bgImageInput.files ? els.bgImageInput.files[0] : null;
+      if (file) handleBackgroundFile(file);
+    });
+    els.bgImageRemove.addEventListener('click', clearBackgroundImage);
+    els.bgColorInput.addEventListener('input', () => {
+      state.backgroundColor = String(els.bgColorInput.value || '').toUpperCase();
+      els.bgColorValue.textContent = state.backgroundColor || '—';
+    });
+
     els.promptBtn.addEventListener('click', generatePrompt);
     els.promptRegenBtn.addEventListener('click', generatePrompt);
     els.promptCopyBtn.addEventListener('click', () => copyText(els.promptText.value, 'Prompt universal copiado.'));
@@ -1025,6 +1127,18 @@
   function resetAll() {
     clearImage();
     clearTargetImage();
+    clearBackgroundImage();
+    state.backgroundMode = 'keep';
+    state.backgroundColor = '#1B2A33';
+    els.bgColorInput.value = '#1B2A33';
+    els.bgColorValue.textContent = '#1B2A33';
+    els.bgColorRow.classList.add('hidden');
+    els.bgImageRow.classList.add('hidden');
+    els.bgToggles.forEach((item) => {
+      const activo = item.dataset.bg === 'keep';
+      item.classList.toggle('active', activo);
+      item.setAttribute('aria-pressed', activo ? 'true' : 'false');
+    });
     lockStep(els.paso3, true);
     els.paso3.classList.remove('ready');
     clearError();

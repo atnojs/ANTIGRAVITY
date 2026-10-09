@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="app.css?v=1" />
+<link rel="stylesheet" href="app.css?v=20261009-fondo" />
 <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -244,6 +244,34 @@
 
         <div class="bottom-control-bar">
           <div class="options-stack">
+            <div class="control-panel background-panel">
+              <fieldset class="control-group">
+                <legend>Fondo de la imagen final</legend>
+                <div class="pill-row" role="group" aria-label="Fondo de la imagen final">
+                  <button type="button" class="pill-toggle bg-toggle active" data-bg="keep" aria-pressed="true">El de mi imagen</button>
+                  <button type="button" class="pill-toggle bg-toggle" data-bg="color" aria-pressed="false">Color fijo</button>
+                  <button type="button" class="pill-toggle bg-toggle" data-bg="image" aria-pressed="false">Imagen de fondo</button>
+                </div>
+                <div class="bg-row hidden" id="bg-color-row">
+                  <label for="bg-color-input">Color</label>
+                  <input type="color" id="bg-color-input" value="#1B2A33" />
+                  <span class="mini-chip" id="bg-color-value">#1B2A33</span>
+                </div>
+                <div class="bg-row hidden" id="bg-image-row">
+                  <input type="file" id="bg-image-input" accept="image/*" hidden />
+                  <button type="button" class="btn btn-secondary" id="bg-image-btn">Elegir imagen de fondo</button>
+                  <div class="image-preview-card hidden" id="bg-image-preview">
+                    <img id="bg-image-preview-img" alt="Imagen de fondo elegida" />
+                    <div class="preview-meta">
+                      <strong id="bg-image-name">fondo</strong>
+                      <span id="bg-image-size">—</span>
+                    </div>
+                    <button type="button" class="remove-image-btn" id="bg-image-remove" aria-label="Quitar la imagen de fondo">✕</button>
+                  </div>
+                </div>
+                <small class="control-hint">Por defecto se conserva el fondo de tu imagen: el prompt solo cambia el estilo. Si eliges color o imagen, el modelo sustituye el fondo integrándolo con el sujeto.</small>
+              </fieldset>
+            </div>
             <div class="control-panel">
               <fieldset class="control-group">
                 <legend>Relación de aspecto</legend>
@@ -347,6 +375,6 @@
      el arreglo del 504 no llegaba a quien ya había abierto la app. Con una versión
      nueva, la URL cambia y el fichero se vuelve a pedir. Hay que subir esta versión
      en CADA cambio de app.js, no solo cuando se toca el proxy. -->
-<script src="app.js?v=20261009-paso3"></script>
+<script src="app.js?v=20261009-estilo-fondo"></script>
 </body>
 </html>
