@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="app.css?v=20261009-bloques1" />
+<link rel="stylesheet" href="app.css?v=20261009-estilos1" />
 <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -21,9 +21,9 @@
     <p class="eyebrow"><span aria-hidden="true"></span>Del JSON al prompt universal</p>
     <h1 class="app-title">Imagen → JSON → Prompt Universal</h1>
     <p class="app-subtitle">
-      Sube una imagen: el modelo de visión devuelve su <strong>.json</strong>. A partir de ese JSON
-      —y <strong>nunca</strong> de la imagen— se redacta un prompt universal que aplica el estilo
-      <strong>solo al sujeto principal</strong>, sobre un fondo de color o textura elegido para hacerlo resaltar.
+      Sube una imagen de referencia: el modelo de visión devuelve su <strong>.json</strong>. A partir de ese JSON
+      —y <strong>nunca</strong> de la imagen— se redacta un prompt universal que aplica <strong>solo el estilo</strong>
+      de la referencia a la imagen que subas en el paso 3, que se conserva intacta.
     </p>
     <p class="status-chip" id="service-chip" aria-live="polite">Comprobando servicio…</p>
   </header>
@@ -149,19 +149,70 @@
           </fieldset>
           <div class="control-group field-grow">
             <label for="requested-style">Estilo solicitado (opcional)</label>
-            <input type="text" id="requested-style" maxlength="400" autocomplete="off"
-                   placeholder="p. ej. acuarela japonesa, cyberpunk, óleo impresionista…" />
+            <select id="requested-style" aria-describedby="requested-style-hint">
+              <option value="">Ninguno extra: solo el estilo de la referencia</option>
+              <optgroup label="Fotografía">
+                <option value="Fotografía analógica de 35 mm, grano fino, colores cálidos ligeramente desaturados, halo suave en las luces">Analógica 35 mm</option>
+                <option value="Fotografía instantánea Polaroid, marco blanco, contraste suave, colores apagados y ligeramente verdosos">Polaroid</option>
+                <option value="Fotografía en blanco y negro de estudio, luz dura de un solo foco, sombras marcadas, alto contraste">Blanco y negro de estudio</option>
+                <option value="Fotografía editorial de moda, luz suave y difusa, textura de piel natural, fondo limpio y espacio negativo">Retrato editorial de moda</option>
+                <option value="Fotografía de producto publicitaria, geometría exacta, superficie limpia, reflejos y sombras controlados">Bodegón de producto</option>
+                <option value="Macro de naturaleza, profundidad de campo mínima, detalle extremo, fondo muy desenfocado">Macro de naturaleza</option>
+                <option value="Larga exposición nocturna, estelas de luz, cielo estrellado, ciudad iluminada, cámara sobre trípode">Larga exposición nocturna</option>
+                <option value="Fotografía documental de calle, luz natural, momento espontáneo, encuadre casual">Documental de calle</option>
+              </optgroup>
+              <optgroup label="Cine y animación 3D">
+                <option value="Fotograma de cine, luz motivada, contraste alto, grano de película, formato anamórfico, atmósfera volumétrica">Fotograma cinematográfico</option>
+                <option value="Cine negro clásico, blanco y negro, claroscuro duro, sombras de persiana, humo, luz lateral">Cine negro</option>
+                <option value="Western clásico, desierto polvoriento, luz dorada de atardecer, polvo en el aire, tonos tierra">Western</option>
+                <option value="Ciencia ficción retro de los 70 y 80, maquetas y miniaturas, neones, niebla, lente anamórfica">Ciencia ficción retro</option>
+                <option value="Terror atmosférico, penumbra, luz fría y puntual, niebla densa, encuadre inquietante">Terror atmosférico</option>
+                <option value="Animación 3D estilo Pixar, formas redondeadas, materiales suaves, iluminación cálida, gran expresividad">Animación 3D tipo Pixar</option>
+              </optgroup>
+              <optgroup label="Anime, manga y cómic">
+                <option value="Anime moderno, cel shading limpio, líneas nítidas, colores saturados, ojos detallados, fondo pintado">Anime moderno</option>
+                <option value="Animación pintada a mano estilo Ghibli, fondos de acuarela, vegetación frondosa, luz cálida y nostálgica">Estilo Ghibli</option>
+                <option value="Manga en blanco y negro, tramas de semitonos, líneas de velocidad, entintado limpio">Manga blanco y negro</option>
+                <option value="Cómic americano de superhéroes, entintado grueso, colores planos saturados, sombras duras, composición dinámica">Cómic americano</option>
+                <option value="Cartoon de los 90, contornos gruesos, colores planos vivos, formas simples y expresivas">Cartoon de los 90</option>
+                <option value="Pixel art de 16 bits, paleta limitada, tramado, silueta clara, aire de videojuego retro">Pixel art</option>
+              </optgroup>
+              <optgroup label="Pintura y dibujo">
+                <option value="Acuarela suelta, bordes húmedos, transparencias, papel texturizado, reservas de blanco">Acuarela</option>
+                <option value="Óleo impresionista, pincelada visible y empastada, luz vibrante, colores mezclados en la retina">Óleo impresionista</option>
+                <option value="Tinta china sumi-e, masas de tinta amplias, salpicaduras controladas, espacio negativo, papel de arroz">Tinta china (sumi-e)</option>
+                <option value="Dibujo a lápiz de grafito, trazo suelto, sombreado por tramas, papel con textura">Lápiz de grafito</option>
+                <option value="Dibujo a carboncillo, negros profundos, difuminados, gesto rápido, papel rugoso">Carboncillo</option>
+                <option value="Pintura gouache opaca, colores planos y vivos, bordes definidos, acabado mate">Gouache</option>
+                <option value="Pastel seco, colores polvorientos y luminosos, degradados suaves, textura de papel">Pastel</option>
+              </optgroup>
+              <optgroup label="Diseño, épocas y grabado">
+                <option value="Art nouveau, líneas curvas y orgánicas, ornamentos florales, marco decorativo, paleta apagada">Art nouveau</option>
+                <option value="Art déco, geometría simétrica, líneas doradas, elegancia de los años veinte, contraste alto">Art déco</option>
+                <option value="Bauhaus, formas geométricas primarias, paleta rojo amarillo y azul, composición asimétrica, tipografía sans">Bauhaus</option>
+                <option value="Pop art, colores planos saturados, contornos negros gruesos, trama de semitonos, estética de cómic">Pop art</option>
+                <option value="Grabado japonés ukiyo-e, contornos nítidos, colores planos, patrones textiles, composición en diagonal">Ukiyo-e</option>
+                <option value="Collage de papel recortado, capas con sombra sutil, texturas de revista, bordes irregulares">Collage de papel</option>
+              </optgroup>
+              <optgroup label="Futurista y digital">
+                <option value="Cyberpunk, neones cian y magenta, lluvia, reflejos en el asfalto, hologramas, ciudad densa">Cyberpunk</option>
+                <option value="Synthwave de los 80, rejilla en perspectiva, degradados magenta y cian, sol estilizado, cromo">Synthwave</option>
+                <option value="Vaporwave, paleta pastel y rosa, estatuas clásicas, rejilla, estética VHS con ruido">Vaporwave</option>
+                <option value="Steampunk, latón y cobre, engranajes, vapor, cuero, luz cálida de filamento">Steampunk</option>
+              </optgroup>
+              <optgroup label="Volumen y abstracción">
+                <option value="Render isométrico 3D, cámara ortográfica, materiales limpios, fondo plano de color, miniatura de diorama">Isométrico 3D</option>
+                <option value="Arcilla y plastilina, huellas dactilares, materiales mates, luz de estudio suave, stop motion">Claymation</option>
+                <option value="Surrealismo onírico, una única metáfora visual dominante, escala imposible, luz limpia, fondo simple">Surrealismo onírico</option>
+              </optgroup>
+            </select>
+            <small class="control-hint" id="requested-style-hint">40 estilos agrupados por familia. El elegido se suma al estilo de la referencia.</small>
           </div>
           <div class="control-group generate-group">
             <button type="button" class="btn btn-action-neon btn-action-main" id="prompt-btn" disabled>
               <span class="btn-icon" aria-hidden="true">✦</span>Generar prompt universal
             </button>
           </div>
-        </div>
-
-        <div class="anchors" id="anchors-box">
-          <p class="anchor-line"><span class="mini-chip ok">Empieza con la cabecera obligatoria</span></p>
-          <p class="anchor-line"><span class="mini-chip ok">Termina con el cierre en español</span></p>
         </div>
 
         <div class="row-tools">
@@ -383,6 +434,6 @@
      termine. Si la pides y aún sirve el fichero viejo, la CDN cachea ESA respuesta
      durante 7 días y dejas a todo el mundo con el código antiguo. Para sondear el
      despliegue usa un parámetro aleatorio distinto (?t=...), nunca este. -->
-<script src="app.js?v=20261009-ar1"></script>
+<script src="app.js?v=20261009-estilos1"></script>
 </body>
 </html>

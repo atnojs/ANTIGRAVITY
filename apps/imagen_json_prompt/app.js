@@ -12,8 +12,8 @@
   'use strict';
 
   const PROXY = 'proxy.php';
-  const ANCHOR_HEAD = 'If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style.';
-  const ANCHOR_TAIL = 'all visible text and labels must be written in Spanish with no English words.';
+  // Las anclas obligatorias (cabecera y cierre) las añade SIEMPRE el proxy al generar
+  // (wrapUniversal en proxy.php), por eso ya no se muestran ni se comprueban aquí.
   const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
   const VISION_MAX_SIDE = 1408;
 
@@ -60,7 +60,6 @@
     pillToggles: Array.from(document.querySelectorAll('.pill-toggle[data-lang]')),
     requestedStyle: $('requested-style'),
     promptBtn: $('prompt-btn'),
-    anchorsBox: $('anchors-box'),
     promptTrace: $('prompt-trace'),
     promptStale: $('prompt-stale'),
     promptText: $('prompt-text'),
@@ -601,7 +600,6 @@
       lockStep(els.paso3, false);
       els.paso3.classList.add('ready');
       updatePromptAvailability();
-      renderAnchors('');
       els.paso2.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       els.jsonChip.textContent = 'Error';
@@ -667,21 +665,6 @@
    * Paso 4 — prompt universal
    * ------------------------------------------------------------------ */
 
-  function renderAnchors(prompt) {
-    if (!els.anchorsBox) return;
-    const headOk = !!prompt && prompt.indexOf(ANCHOR_HEAD) === 0;
-    const tailOk = !!prompt && prompt.slice(-ANCHOR_TAIL.length) === ANCHOR_TAIL;
-    const verdict = !prompt
-      ? '<span class="mini-chip">Se verificará al generar</span>'
-      : (headOk && tailOk
-        ? '<span class="mini-chip ok">Verificado en el prompt entregado</span>'
-        : '<span class="mini-chip bad">El prompt no respeta las anclas</span>');
-    els.anchorsBox.innerHTML =
-      '<p class="anchor-line"><span class="mini-chip ok">Cabecera obligatoria</span><br><code>' + escapeHtml(ANCHOR_HEAD) + '</code></p>' +
-      '<p class="anchor-line"><span class="mini-chip ok">Cierre obligatorio</span><br><code>' + escapeHtml(ANCHOR_TAIL) + '</code></p>' +
-      '<p class="anchor-line">' + verdict + '</p>';
-  }
-
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, '&amp;')
@@ -739,7 +722,6 @@
         }
       }
 
-      renderAnchors(state.prompt);
       lockStep(els.paso4, false);
       els.paso4.classList.add('ready');
       lockStep(els.paso5, false);
@@ -1215,7 +1197,6 @@
     [els.promptCopyBtn, els.promptDownloadBtn, els.promptRegenBtn].forEach((button) => { button.disabled = true; });
     lockStep(els.paso4, true);
     els.paso4.classList.remove('ready');
-    renderAnchors('');
 
     els.resultImage.classList.add('hidden');
     els.resultImage.removeAttribute('src');
@@ -1238,7 +1219,6 @@
   function init() {
     initControls();
     initModelTooltip();
-    renderAnchors('');
     updateJsonAvailability();
     setBusy(false);
     Promise.allSettled([initHistory(), checkService()]);

@@ -240,7 +240,7 @@ textarea.code-area:hover:not(:disabled) { border-color: var(--border); }
 textarea.code-area:focus { border-color: var(--border-strong); box-shadow: 0 0 14px var(--glow-soft); }
 textarea.code-area:disabled { color: var(--muted); cursor: not-allowed; opacity: .7; }
 textarea.code-area::placeholder { color: #6f9b9b; }
-textarea.prompt-area { min-height: 340px; white-space: pre-wrap; overflow-wrap: anywhere; }
+textarea.prompt-area { min-height: 150px; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 input[type="text"] {
   width: 100%; min-height: 44px; padding: .55rem .7rem;
@@ -250,6 +250,23 @@ input[type="text"] {
 }
 input[type="text"]:focus { border-color: var(--border-strong); box-shadow: 0 0 14px var(--glow-soft); }
 input[type="text"]::placeholder { color: #7fb3b3; }
+
+/* Desplegable de estilos: misma superficie que los campos de texto, con flecha propia. */
+select {
+  width: 100%; min-height: 44px; padding: .55rem 2rem .55rem .7rem;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); background: #103a51; cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+  appearance: none; -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--acc) 50%), linear-gradient(135deg, var(--acc) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+select:hover { border-color: var(--border-strong); }
+select:focus { border-color: var(--border-strong); box-shadow: 0 0 14px var(--glow-soft); }
+select option, select optgroup { color: var(--text); background: #0d2a3a; }
+select optgroup { color: var(--acc); font-style: normal; }
 
 .row-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .7rem; }
 .mini-chip {
@@ -293,12 +310,7 @@ input[type="text"]::placeholder { color: #7fb3b3; }
 .pill-row-lang { display: flex; flex-wrap: nowrap; width: 100%; max-width: 100%; box-sizing: border-box; }
 .pill-row-lang .pill-toggle { flex: 1 1 0; min-width: 0; padding: .5rem .5rem; font-size: .75rem; letter-spacing: .02em; text-align: center; }
 
-/* ===== Anclas obligatorias ===== */
-.anchors { margin-top: 14px; padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: 12px; background: rgba(0, 16, 24, .3); }
-.anchor-line { margin: 0 0 .4rem; color: var(--faint); font-size: .66rem; line-height: 1.5; }
-.anchor-line:last-child { margin-bottom: 0; }
-.anchor-line code { color: #d8ffff; font-family: Consolas, 'Courier New', monospace; font-size: .68rem; }
-.anchor-line.pending code { color: var(--faint); }
+/* ===== Anclas obligatorias (el servidor las añade siempre; ya no se muestran) ===== */
 
 /* ===== Tarjeta del fondo recomendado ===== */
 .background-card {
