@@ -42,8 +42,7 @@ Sistema de diseño completo para crear apps/webs con estilo **Neon Glassmorphism
 - **Gradientes** - Fondos y textos con gradiente
 
 ### Tipografía
-- **Montserrat** - Títulos (600-800 weight)
-- **Poppins** - Texto general (300-600 weight)
+- **Electrolize** - Única familia del proyecto, en toda la interfaz (títulos, texto y controles). Solo trae el peso 400: la jerarquía se consigue con tamaño, `letter-spacing` y mayúsculas.
 
 ---
 

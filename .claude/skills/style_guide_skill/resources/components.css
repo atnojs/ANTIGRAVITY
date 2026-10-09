@@ -346,9 +346,10 @@ textarea::placeholder {
 }
 
 .loading-text {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     font-size: 1.1rem;
-    font-weight: 700;
+    /* Electrolize solo tiene el peso 400: 700 forzaria una negrita sintetica. */
+    font-weight: 400;
     color: white;
     text-transform: uppercase;
     letter-spacing: 0.2em;

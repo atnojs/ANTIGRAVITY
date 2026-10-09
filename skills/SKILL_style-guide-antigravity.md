@@ -1,6 +1,6 @@
 ---
 name: style-guide-antigravity
-description: "Sistema de diseño Neon Glassmorphism completo. Activar al crear o editar apps para aplicar la estética Antigravity: fondos oscuros, acentos neón, efectos cristal, botones 3D y tipografía Montserrat/Poppins."
+description: "Sistema de diseño Neon Glassmorphism completo. Activar al crear o editar apps para aplicar la estética Antigravity: fondos oscuros, acentos neón, efectos cristal, botones 3D y tipografía Electrolize."
 ---
 
 # Style Guide — Neon Glassmorphism
@@ -49,8 +49,8 @@ Todos los archivos están en `.claude/skills/style_guide_skill/resources/`:
 
 ## Tipografía
 
-- **Encabezados**: Montserrat (600-800)
-- **Cuerpo**: Poppins (300-600)
+- **Toda la interfaz: Electrolize** (`--font-ui: 'Electrolize', system-ui, sans-serif`), encabezados, cuerpo y controles incluidos. Se carga desde Google Fonts: `https://fonts.googleapis.com/css2?family=Electrolize&display=swap`
+- Electrolize solo tiene el peso 400: la jerarquía se construye con tamaño, `letter-spacing` y mayúsculas, nunca con pesos sintéticos ni con una segunda familia tipográfica.
 
 ## Uso al crear una app
 

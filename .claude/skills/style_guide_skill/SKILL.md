@@ -1,6 +1,6 @@
 ---
 name: style-guide-antigravity
-description: "Sistema de diseño Neon Glassmorphism completo. Activar al crear o editar apps para aplicar la estética Antigravity: fondos oscuros, acentos neón, efectos cristal, botones 3D y tipografía Montserrat/Poppins."
+description: "Sistema de diseño Neon Glassmorphism completo. Activar al crear o editar apps para aplicar la estética Antigravity: fondos oscuros, acentos neón, efectos cristal, botones 3D y tipografía Electrolize."
 ---
 
 # Style guide Antigravity — puntero

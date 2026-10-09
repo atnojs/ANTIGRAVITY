@@ -4,22 +4,27 @@
 
 .DESCRIPTION
     DeepSeek Harness descubre skills en <raiz_proyecto>/.dsh/skills (un nivel de
-    profundidad). Las skills canonicas viven en skills/*.md con front matter
-    (name + description en kebab-case). Este script crea .dsh/skills y enlaza ahi
-    cada skill valida mediante HARDLINK: mismo contenido, mismo inodo, sin
-    duplicar bytes ni versionar nada (el directorio .dsh/ esta en .gitignore y no
-    se despliega a Hostinger).
+    profundidad). Las skills canonicas viven en skills/*.md.
 
-    Es idempotente: puede ejecutarse tantas veces como haga falta. Nunca escribe
-    ni borra los archivos canonicos de skills/.
+    Este script crea .dsh/skills como un JUNCTION de directorio que apunta a
+    skills/. Un junction es un punto de reanalisis de directorio que en Windows NO
+    requiere privilegios de administrador (a diferencia de los symlinks, que si
+    los exigen). Resultado:
 
-    Nota: los symlinks requieren privilegios de administrador en Windows, por eso
-    se usan hardlinks. Si un editor guarda el archivo canonico con "guardado
-    atomico" (escribir + renombrar), el enlace puede quedar desincronizado: en ese
-    caso, vuelve a ejecutar este script.
+      - DSH ve las 20 skills canonicas del proyecto.
+      - No hay copia ni duplicacion: es la misma carpeta.
+      - No hay desincronizacion posible al editar una skill (no hay copias).
+
+    Es idempotente y migra instalaciones anteriores que usaban hardlinks por
+    archivo: si encuentra ese formato, lo sustituye por el junction. Nunca escribe
+    ni borra el contenido de skills/: al eliminar el junction se usa un borrado NO
+    recursivo del punto de reanalisis, de modo que el destino jamas se sigue.
+
+    .dsh/ esta en .gitignore, asi que nada de esto se versiona ni se despliega a
+    la raiz publica de Hostinger.
 
 .EXAMPLE
-    pwsh -File tools\link-dsh-skills.ps1
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\link-dsh-skills.ps1
 #>
 [CmdletBinding()]
 param(
@@ -36,58 +41,77 @@ if (-not $RepoRoot) {
 }
 
 $skillsDir = Join-Path $RepoRoot 'skills'
-$linkDir = Join-Path $RepoRoot '.dsh\skills'
+$dshDir = Join-Path $RepoRoot '.dsh'
+$linkDir = Join-Path $dshDir 'skills'
 
 if (-not (Test-Path $skillsDir)) {
     throw "No se encuentra el directorio canonico de skills: $skillsDir"
 }
 
-if (-not (Test-Path $linkDir)) {
-    New-Item -ItemType Directory -Force -Path $linkDir | Out-Null
-    Write-Host "Creado $linkDir"
-}
-
-$linked = 0
-$refreshed = 0
-$skipped = 0
+$canonicalCount = @(Get-ChildItem -Path (Join-Path $skillsDir '*.md') -File).Count
+$valid = 0
 $invalid = @()
-
 foreach ($file in Get-ChildItem -Path (Join-Path $skillsDir '*.md') -File) {
     $head = Get-Content -LiteralPath $file.FullName -TotalCount 8 -Encoding UTF8
     $hasName = [bool]($head | Where-Object { $_ -match '^name:\s*\S' })
     $hasDescription = [bool]($head | Where-Object { $_ -match '^description:' })
+    if ($hasName -and $hasDescription) { $valid++ } else { $invalid += $file.Name }
+}
 
-    if (-not ($hasName -and $hasDescription)) {
-        $invalid += $file.Name
-        continue
+if (-not (Test-Path $dshDir)) {
+    New-Item -ItemType Directory -Force -Path $dshDir | Out-Null
+    Write-Host "Creado $dshDir"
+}
+
+$existing = Get-Item -LiteralPath $linkDir -Force -ErrorAction SilentlyContinue
+$action = ''
+
+if ($null -eq $existing) {
+    $action = 'creado'
+}
+elseif ($existing.LinkType -eq 'Junction') {
+    $target = ($existing.Target -join '')
+    if ($target -like "*$skillsDir") {
+        $action = 'ya correcto'
     }
-
-    $linkPath = Join-Path $linkDir $file.Name
-    $item = Get-Item -LiteralPath $linkPath -ErrorAction SilentlyContinue
-
-    if ($null -eq $item) {
-        New-Item -ItemType HardLink -Path $linkPath -Target $file.FullName | Out-Null
-        $linked++
-        continue
+    else {
+        # Borrado NO recursivo: elimina solo el punto de reanalisis, sin seguir el destino.
+        [System.IO.Directory]::Delete($linkDir, $false)
+        $action = 'reapuntado'
     }
+}
+elseif ($existing.LinkType -eq 'SymbolicLink') {
+    [System.IO.Directory]::Delete($linkDir, $false)
+    $action = 'reemplazado (symlink)'
+}
+else {
+    # Formato anterior: carpeta real con un hardlink por skill. Borrarla elimina
+    # solo los enlaces; los archivos de skills/ conservan su otra referencia.
+    Remove-Item -LiteralPath $linkDir -Recurse -Force
+    $action = 'migrado desde hardlinks'
+}
 
-    if ($item.LinkType -eq 'HardLink') {
-        $skipped++
-        continue
-    }
+if ($action -ne 'ya correcto') {
+    New-Item -ItemType Junction -Path $linkDir -Target $skillsDir | Out-Null
+}
 
-    # Existe pero no es un enlace (copia suelta): se reemplaza por el enlace.
-    Remove-Item -LiteralPath $linkPath -Force
-    New-Item -ItemType HardLink -Path $linkPath -Target $file.FullName | Out-Null
-    $refreshed++
+$link = Get-Item -LiteralPath $linkDir -Force
+$visible = @(Get-ChildItem -Path $linkDir -File).Count
+
+# Salvaguarda: el arbol canonico debe seguir intacto.
+$after = @(Get-ChildItem -Path (Join-Path $skillsDir '*.md') -File).Count
+if ($after -ne $canonicalCount) {
+    throw "ALERTA: skills/ tenia $canonicalCount archivos y ahora tiene $after. Revisa el repositorio."
 }
 
 Write-Host ""
-Write-Host "Skills enlazadas : $linked"
-Write-Host "Enlaces ya validos: $skipped"
-Write-Host "Copias reemplazadas: $refreshed"
+Write-Host "Estado del enlace : $action"
+Write-Host "Enlace            : $linkDir"
+Write-Host "Tipo              : $($link.LinkType)"
+Write-Host "Destino           : $($link.Target -join '')"
+Write-Host "Skills con front matter valido : $valid de $canonicalCount archivos .md"
 if ($invalid.Count -gt 0) {
-    Write-Host "Ignoradas (sin front matter name+description): $($invalid -join ', ')"
+    Write-Host "Ignoradas por DSH (no son skills): $($invalid -join ', ')"
 }
-Write-Host ""
-Write-Host "Total de skills visibles para DSH: $((Get-ChildItem -Path $linkDir -File).Count)"
+Write-Host "Archivos visibles por DSH : $visible"
+Write-Host "skills/ intacto : $after de $canonicalCount archivos"

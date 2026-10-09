@@ -68,7 +68,7 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Electrolize', system-ui, sans-serif;
     background: var(--main-bg-gradient);
     background-attachment: fixed;
     color: var(--text);
@@ -81,8 +81,10 @@ body {
 /* ═══════════════════════════════════════════════
    TIPOGRAFÍA
    ═══════════════════════════════════════════════ */
-h1, h2, h3, .font-montserrat {
-    font-family: 'Montserrat', sans-serif;
+/* Electrolize es la única familia del proyecto. `.font-montserrat` se mantiene
+   como alias heredado para no romper las apps que ya usan esa clase. */
+h1, h2, h3, .font-montserrat, .font-electrolize {
+    font-family: 'Electrolize', system-ui, sans-serif;
     letter-spacing: -0.02em;
 }
 
