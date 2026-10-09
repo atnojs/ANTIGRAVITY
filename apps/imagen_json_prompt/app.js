@@ -44,8 +44,18 @@
     jsonCopyBtn: $('json-copy-btn'),
     jsonDownloadBtn: $('json-download-btn'),
     jsonReanalyzeBtn: $('json-reanalyze-btn'),
-    // Paso 3
+    // Paso 3 — imagen a la que se aplica el prompt
     paso3: $('paso-3'),
+    targetChip: $('target-chip'),
+    targetZone: $('target-zone'),
+    targetInput: $('target-input'),
+    targetPreview: $('target-preview'),
+    targetPreviewImg: $('target-preview-img'),
+    targetPreviewName: $('target-preview-name'),
+    targetPreviewSize: $('target-preview-size'),
+    targetRemoveBtn: $('target-remove-btn'),
+    // Paso 4 — prompt universal
+    paso4: $('paso-4'),
     promptChip: $('prompt-chip'),
     pillToggles: Array.from(document.querySelectorAll('.pill-toggle')),
     requestedStyle: $('requested-style'),
@@ -62,8 +72,8 @@
     promptCopyBtn: $('prompt-copy-btn'),
     promptDownloadBtn: $('prompt-download-btn'),
     promptRegenBtn: $('prompt-regen-btn'),
-    // Paso 4
-    paso4: $('paso-4'),
+    // Paso 5 — imagen final
+    paso5: $('paso-5'),
     resultChip: $('result-chip'),
     modelToggles: Array.from(document.querySelectorAll('.model-toggle')),
     aspectButtons: Array.from(document.querySelectorAll('.aspect-ratio-button')),
@@ -95,8 +105,13 @@
   const state = {
     fileName: '',
     fileSize: 0,
-    imageDataUrl: '',   // original, para el generador de imagen (paso 4)
+    imageDataUrl: '',   // referencia original (paso 1): solo análisis y vista previa
     visionDataUrl: '',  // copia optimizada, para el analizador (paso 2)
+    targetDataUrl: '',  // imagen a la que se aplica el prompt (paso 3): es la que edita el modelo
+    targetFileName: '',
+    targetFileSize: 0,
+    targetWidth: 0,
+    targetHeight: 0,
     imageWidth: 0,
     imageHeight: 0,
     jsonText: '',
@@ -384,6 +399,58 @@
     els.analyzeBtn.disabled = true;
   }
 
+  /**
+   * Imagen del paso 3: la que el modelo edita de verdad. El prompt universal se
+   * aplica a ESTA imagen, nunca a la referencia del paso 1.
+   */
+  async function handleTargetFile(file) {
+    clearError();
+    if (!file) return;
+    if (!file.type || file.type.indexOf('image/') !== 0) {
+      showError('El archivo debe ser una imagen (PNG, JPG, WEBP o GIF).');
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      showError('La imagen supera 20 MB. Reduce su tamaño y vuelve a intentarlo.');
+      return;
+    }
+    try {
+      const dataUrl = await readAsDataUrl(file);
+      const image = await loadImageElement(dataUrl);
+      state.targetDataUrl = dataUrl;
+      state.targetFileName = file.name || 'imagen';
+      state.targetFileSize = file.size;
+      state.targetWidth = image.naturalWidth;
+      state.targetHeight = image.naturalHeight;
+
+      els.targetPreviewImg.src = dataUrl;
+      els.targetPreviewName.textContent = state.targetFileName;
+      els.targetPreviewSize.textContent = state.targetWidth + ' × ' + state.targetHeight + ' px · ' + formatBytes(file.size);
+      els.targetPreview.classList.remove('hidden');
+      els.targetZone.classList.add('hidden');
+      els.targetChip.textContent = 'Imagen lista';
+      els.targetChip.className = 'status-chip ok';
+      els.generateBtn.disabled = !canGenerate();
+    } catch (error) {
+      showError(error.message || 'No se pudo preparar la imagen.');
+    }
+  }
+
+  function clearTargetImage() {
+    state.targetDataUrl = '';
+    state.targetFileName = '';
+    state.targetFileSize = 0;
+    state.targetWidth = 0;
+    state.targetHeight = 0;
+    els.targetInput.value = '';
+    els.targetPreview.classList.add('hidden');
+    els.targetPreviewImg.removeAttribute('src');
+    els.targetZone.classList.remove('hidden');
+    els.targetChip.textContent = 'Sin imagen';
+    els.targetChip.className = 'status-chip';
+    els.generateBtn.disabled = !canGenerate();
+  }
+
   /* ------------------------------------------------------------------ *
    * Paso 2 — análisis a JSON
    * ------------------------------------------------------------------ */
@@ -418,6 +485,9 @@
       els.jsonReanalyzeBtn.disabled = false;
       lockStep(els.paso2, false);
       els.paso2.classList.add('ready');
+      // El paso 3 (imagen a editar) ya se puede rellenar: no depende del prompt.
+      lockStep(els.paso3, false);
+      els.paso3.classList.add('ready');
       updatePromptAvailability();
       renderAnchors('');
       els.paso2.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -482,7 +552,7 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * Paso 3 — prompt universal
+   * Paso 4 — prompt universal
    * ------------------------------------------------------------------ */
 
   function renderAnchors(prompt) {
@@ -551,14 +621,14 @@
       }
 
       renderAnchors(state.prompt);
-      lockStep(els.paso3, false);
-      els.paso3.classList.add('ready');
       lockStep(els.paso4, false);
       els.paso4.classList.add('ready');
+      lockStep(els.paso5, false);
+      els.paso5.classList.add('ready');
       els.resultChip.textContent = 'Listo para generar';
       els.resultChip.className = 'status-chip partial';
       els.generateBtn.disabled = !canGenerate();
-      els.paso3.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      els.paso4.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       els.promptChip.textContent = 'Error';
       els.promptChip.className = 'status-chip bad';
@@ -569,7 +639,7 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * Paso 4 — imagen final
+   * Paso 5 — imagen final: prompt + imagen del paso 3 → imagen
    * ------------------------------------------------------------------ */
 
   function canPrompt() {
@@ -581,21 +651,21 @@
   }
 
   function canGenerate() {
-    return !!state.prompt && !!state.imageDataUrl && !state.busy;
+    return !!state.prompt && !!state.targetDataUrl && !state.busy;
   }
 
   async function generateImage() {
     if (!canGenerate()) {
-      showError('Necesitas la imagen original y el prompt universal antes de generar.');
+      showError('Necesitas la imagen a la que aplicar el prompt (paso 3) y el prompt universal (paso 4) antes de generar.');
       return;
     }
     clearError();
-    setBusy(true, 'Generando la imagen final...', 'Aplicando el prompt universal sobre tu imagen...');
+    setBusy(true, 'Generando la imagen final...', 'Aplicando el prompt universal sobre la imagen del paso 3...');
     try {
       const data = await postProxy({
         action: 'generate',
         prompt: state.prompt,
-        image: state.imageDataUrl,
+        image: state.targetDataUrl,
         model: state.selectedModel,
         aspectRatio: state.aspectRatio,
         resolution: state.resolution,
@@ -617,7 +687,7 @@
       els.resultChip.className = 'status-chip ok';
 
       await saveHistory(dataUrl);
-      els.paso4.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      els.paso5.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       els.resultChip.textContent = 'Error';
       els.resultChip.className = 'status-chip bad';
@@ -825,6 +895,36 @@
     els.analyzeBtn.addEventListener('click', analyzeImage);
     els.resetBtn.addEventListener('click', resetAll);
 
+    // Subida del paso 3 (imagen a la que se aplica el prompt)
+    els.targetZone.addEventListener('click', () => els.targetInput.click());
+    els.targetZone.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        els.targetInput.click();
+      }
+    });
+    ['dragenter', 'dragover'].forEach((type) => {
+      els.targetZone.addEventListener(type, (event) => {
+        event.preventDefault();
+        els.targetZone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach((type) => {
+      els.targetZone.addEventListener(type, (event) => {
+        event.preventDefault();
+        els.targetZone.classList.remove('dragover');
+      });
+    });
+    els.targetZone.addEventListener('drop', (event) => {
+      const file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
+      if (file) handleTargetFile(file);
+    });
+    els.targetInput.addEventListener('change', () => {
+      const file = els.targetInput.files ? els.targetInput.files[0] : null;
+      if (file) handleTargetFile(file);
+    });
+    els.targetRemoveBtn.addEventListener('click', clearTargetImage);
+
     // JSON
     els.jsonText.addEventListener('input', () => updateJsonAvailability());
     els.jsonFormatBtn.addEventListener('click', formatJson);
@@ -924,6 +1024,9 @@
 
   function resetAll() {
     clearImage();
+    clearTargetImage();
+    lockStep(els.paso3, true);
+    els.paso3.classList.remove('ready');
     clearError();
     state.jsonText = '';
     state.jsonModel = '';
@@ -950,8 +1053,8 @@
     els.promptStale.hidden = true;
     els.backgroundCard.classList.add('hidden');
     [els.promptCopyBtn, els.promptDownloadBtn, els.promptRegenBtn].forEach((button) => { button.disabled = true; });
-    lockStep(els.paso3, true);
-    els.paso3.classList.remove('ready');
+    lockStep(els.paso4, true);
+    els.paso4.classList.remove('ready');
     renderAnchors('');
 
     els.resultImage.classList.add('hidden');
@@ -962,8 +1065,8 @@
     els.resultZoomBtn.disabled = true;
     els.resultChip.textContent = 'Pendiente';
     els.resultChip.className = 'status-chip';
-    lockStep(els.paso4, true);
-    els.paso4.classList.remove('ready');
+    lockStep(els.paso5, true);
+    els.paso5.classList.remove('ready');
     els.generateBtn.disabled = true;
     els.paso1.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }

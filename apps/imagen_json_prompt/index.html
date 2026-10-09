@@ -36,8 +36,8 @@
         <div class="card-heading">
           <div class="heading-text">
             <p class="step-kicker">Paso 1</p>
-            <h2 id="paso-1-title"><span class="step-number" aria-hidden="true">1</span>Sube la imagen</h2>
-            <small>El análisis sí mira la imagen. Ese es el único paso que lo hace.</small>
+            <h2 id="paso-1-title"><span class="step-number" aria-hidden="true">1</span>Sube la imagen de referencia</h2>
+            <small>De esta imagen sale el estilo: el análisis sí la mira. Es el único paso que lo hace.</small>
           </div>
           <span class="status-chip" id="upload-chip">Sin imagen</span>
         </div>
@@ -101,7 +101,36 @@
         <div class="card-heading">
           <div class="heading-text">
             <p class="step-kicker">Paso 3</p>
-            <h2 id="paso-3-title"><span class="step-number" aria-hidden="true">3</span>El prompt universal</h2>
+            <h2 id="paso-3-title"><span class="step-number" aria-hidden="true">3</span>La imagen a la que aplicar el prompt</h2>
+            <small>Sube aquí la imagen que quieres editar. El prompt del paso 4 se aplica a ESTA imagen, no a la de referencia.</small>
+          </div>
+          <span class="status-chip" id="target-chip">Sin imagen</span>
+        </div>
+
+        <div class="upload-zone" id="target-zone" role="button" tabindex="0"
+             aria-label="Subir la imagen a la que aplicar el prompt: arrástrala aquí o pulsa para elegirla">
+          <span class="upload-symbol" aria-hidden="true">＋</span>
+          <strong>Arrastra la imagen que quieres editar o pulsa para elegirla</strong>
+          <span>PNG, JPG, WEBP o GIF · hasta 20 MB</span>
+        </div>
+        <input type="file" id="target-input" accept="image/*" hidden />
+
+        <div class="image-preview-card hidden" id="target-preview">
+          <img id="target-preview-img" alt="Imagen a la que se aplicará el prompt" />
+          <div class="preview-meta">
+            <strong id="target-preview-name">imagen</strong>
+            <span id="target-preview-size">—</span>
+          </div>
+          <button type="button" class="remove-image-btn" id="target-remove-btn" aria-label="Quitar la imagen a la que se aplicará el prompt">✕</button>
+        </div>
+      </section>
+
+      <!-- ============================ PASO 4 ============================ -->
+      <section class="step-card locked" id="paso-4" aria-labelledby="paso-4-title" aria-disabled="true">
+        <div class="card-heading">
+          <div class="heading-text">
+            <p class="step-kicker">Paso 4</p>
+            <h2 id="paso-4-title"><span class="step-number" aria-hidden="true">4</span>El prompt universal</h2>
             <small>Redactado solo con el JSON: al redactor no se le envía ninguna imagen.</small>
           </div>
           <span class="status-chip" id="prompt-chip">Pendiente</span>
@@ -157,13 +186,13 @@
         </div>
       </section>
 
-      <!-- ============================ PASO 4 ============================ -->
-      <section class="step-card locked" id="paso-4" aria-labelledby="paso-4-title" aria-disabled="true">
+      <!-- ============================ PASO 5 ============================ -->
+      <section class="step-card locked" id="paso-5" aria-labelledby="paso-5-title" aria-disabled="true">
         <div class="card-heading">
           <div class="heading-text">
-            <p class="step-kicker">Paso 4</p>
-            <h2 id="paso-4-title"><span class="step-number" aria-hidden="true">4</span>Genera la imagen final</h2>
-            <small>El prompt universal viaja junto a tu imagen de referencia para recrearla con el estilo aplicado al sujeto.</small>
+            <p class="step-kicker">Paso 5</p>
+            <h2 id="paso-5-title"><span class="step-number" aria-hidden="true">5</span>Genera la imagen final</h2>
+            <small>El prompt se aplica a la imagen del paso 3: el resultado es esa misma imagen con el estilo de la referencia, no una recreación de la referencia.</small>
           </div>
           <span class="status-chip" id="result-chip">Pendiente</span>
         </div>
