@@ -228,6 +228,21 @@
     els.lightboxImg.removeAttribute('src');
   }
 
+  /**
+   * El servidor (nginx) corta a los ~56 s con una página HTML de error, no con JSON.
+   * Distinguimos ese caso para no hablar de "respuesta ilegible" cuando en realidad
+   * lo que ha pasado es que el análisis se ha pasado de tiempo.
+   */
+  function httpErrorText(status, ilegible) {
+    if (status === 502 || status === 503 || status === 504) {
+      return 'El servidor tardó demasiado en analizar la imagen (HTTP ' + status + '). Vuelve a intentarlo; si se repite, usa una imagen más pequeña.';
+    }
+    if (ilegible) {
+      return 'El servidor devolvió una respuesta ilegible (HTTP ' + status + ').';
+    }
+    return 'Error HTTP ' + status;
+  }
+
   function postProxy(payload) {
     return fetch(PROXY, {
       method: 'POST',
@@ -238,11 +253,11 @@
       try {
         data = await response.json();
       } catch (error) {
-        throw new Error('El servidor devolvió una respuesta ilegible (HTTP ' + response.status + ').');
+        throw new Error(httpErrorText(response.status, true));
       }
       if (!response.ok || !data || data.success === false) {
         const detail = data && data.detail ? ' — ' + data.detail : '';
-        const message = (data && data.error) ? data.error : 'Error HTTP ' + response.status;
+        const message = (data && data.error) ? data.error : httpErrorText(response.status, false);
         throw new Error(message + detail);
       }
       return data;

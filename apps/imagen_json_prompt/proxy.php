@@ -150,6 +150,7 @@ REGLAS
 6. "elementos_a_excluir" recoge lo que no debe reproducirse (marcas de agua, logotipos de terceros, firmas, fechas de cámara).
 7. Si un dato no es observable, déjalo como cadena vacía o lista vacía. No inventes nada.
 8. Devuelve EXCLUSIVAMENTE un objeto JSON válido, en español, sin Markdown, sin comentarios y sin texto fuera del JSON.
+9. CONCISIÓN OBLIGATORIA: cada campo de texto, como máximo 12 palabras; cada lista, como máximo 3 elementos; no repitas información entre campos ni justifiques nada. El análisis debe ser completo pero breve: la respuesta larga hace que la petición supere el tiempo máximo del servidor y falle.
 SYS_ANALYSIS;
 
 const ANALYSIS_SCHEMA = <<<'SYS_SCHEMA'
@@ -333,7 +334,9 @@ function handleDescribe(array $request): void
             ],
         ]],
         'temperature' => 0.1,
-        'max_tokens' => 6000,
+        // 6.000 tokens de salida tardaban ~86 s y nginx cortaba con 504 a los ~56 s.
+        // Con la regla de concisión el análisis ronda 1.100-2.000 tokens (~24-40 s).
+        'max_tokens' => 2400,
         'stream' => false,
     ], 170);
 
@@ -373,6 +376,7 @@ REGLAS OBLIGATORIAS
 5. Prohibido: aplicar el estilo al fondo, alterar la identidad o los rasgos del sujeto, difuminar el sujeto, añadir marcas de agua, logotipos, firmas, marcos, bordes o cualquier elemento que el JSON no mencione.
 6. Escribe el prompt en español.
 7. No incluyas ninguna frase de cabecera ni de cierre: el sistema las añade por su cuenta. Empieza directamente por el primer epígrafe.
+8. CONCISIÓN OBLIGATORIA: cada epígrafe lleva como máximo 2 frases de 20 palabras; no repitas información entre epígrafes ni justifiques nada. La respuesta larga hace que la petición supere el tiempo máximo del servidor y falle.
 
 FORMATO DEL PROMPT
 Usa exactamente estos seis epígrafes, en mayúsculas y en este orden, cada uno con su contenido en una o varias frases:
@@ -407,6 +411,7 @@ MANDATORY RULES
 5. Forbidden: applying the style to the background, altering the subject's identity or traits, blurring the subject, adding watermarks, logos, signatures, frames, borders or anything the JSON does not mention.
 6. Write the prompt body in English.
 7. Do not include any header or closing sentence: the system adds those itself. Start directly with the first heading.
+8. MANDATORY CONCISION: each heading holds at most 2 sentences of 20 words; do not repeat information between headings and do not justify anything. A long answer makes the request exceed the server time limit and fail.
 
 PROMPT FORMAT
 Use exactly these six headings, in capitals and in this order, each with one or more sentences:
@@ -606,7 +611,9 @@ function handlePrompt(array $request): void
             ['role' => 'user', 'content' => $userMessage],
         ],
         'temperature' => 0.35,
-        'max_tokens' => 6000,
+        // 6.000 tokens permitían respuestas que pasaban de los ~56 s de nginx (504).
+        // Con la regla de concisión el prompt universal ronda 900-1.600 tokens.
+        'max_tokens' => 3000,
         'stream' => false,
     ];
 
