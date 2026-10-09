@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="app.css?v=20261009-fondo" />
+<link rel="stylesheet" href="app.css?v=20261009-fondo2" />
 <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -374,7 +374,11 @@
 <!-- v=1 quedó cacheado 7 días (Cache-Control: max-age=604800) en navegadores y CDN:
      el arreglo del 504 no llegaba a quien ya había abierto la app. Con una versión
      nueva, la URL cambia y el fichero se vuelve a pedir. Hay que subir esta versión
-     en CADA cambio de app.js, no solo cuando se toca el proxy. -->
-<script src="app.js?v=20261009-estilo-fondo"></script>
+     en CADA cambio de app.js y de app.css.
+     OJO: no pidas esta URL versionada para comprobar el despliegue antes de que
+     termine. Si la pides y aún sirve el fichero viejo, la CDN cachea ESA respuesta
+     durante 7 días y dejas a todo el mundo con el código antiguo. Para sondear el
+     despliegue usa un parámetro aleatorio distinto (?t=...), nunca este. -->
+<script src="app.js?v=20261009-fondo2"></script>
 </body>
 </html>

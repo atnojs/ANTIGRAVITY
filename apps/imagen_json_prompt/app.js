@@ -474,6 +474,7 @@
 
   function setBackgroundMode(mode) {
     state.backgroundMode = ['keep', 'color', 'image'].indexOf(mode) >= 0 ? mode : 'keep';
+    if (!els.bgColorRow) return;
     els.bgColorRow.classList.toggle('hidden', state.backgroundMode !== 'color');
     els.bgImageRow.classList.toggle('hidden', state.backgroundMode !== 'image');
     els.generateBtn.disabled = !canGenerate();
@@ -483,6 +484,7 @@
   async function handleBackgroundFile(file) {
     clearError();
     if (!file) return;
+    if (!els.bgImagePreview) return;
     if (!file.type || file.type.indexOf('image/') !== 0) {
       showError('El fondo debe ser una imagen (PNG, JPG, WEBP o GIF).');
       return;
@@ -509,6 +511,7 @@
   function clearBackgroundImage() {
     state.backgroundDataUrl = '';
     state.backgroundFileName = '';
+    if (!els.bgImageInput) return;
     els.bgImageInput.value = '';
     els.bgImagePreview.classList.add('hidden');
     els.bgImagePreviewImg.removeAttribute('src');
@@ -684,7 +687,7 @@
         els.backgroundCard.classList.remove('hidden');
         // Sugerencia para el fondo opcional del paso final (el usuario decide).
         const sugerido = String(background.color_hex).toUpperCase();
-        if (/^#[0-9A-F]{6}$/.test(sugerido)) {
+        if (/^#[0-9A-F]{6}$/.test(sugerido) && els.bgColorInput) {
           state.backgroundColor = sugerido;
           els.bgColorInput.value = sugerido;
           els.bgColorValue.textContent = sugerido;
@@ -1025,28 +1028,32 @@
       });
     });
 
-    // Fondo del paso final (por defecto: el de la imagen del usuario)
-    els.bgToggles.forEach((button) => {
-      button.addEventListener('click', () => {
-        els.bgToggles.forEach((item) => {
-          item.classList.remove('active');
-          item.setAttribute('aria-pressed', 'false');
+    // Fondo del paso final (por defecto: el de la imagen del usuario).
+    // Con guarda: un HTML antiguo cacheado puede no traer estos controles y el
+    // arranque entero no debe caerse por eso.
+    if (els.bgToggles.length && els.bgImageBtn && els.bgImageInput && els.bgImageRemove && els.bgColorInput) {
+      els.bgToggles.forEach((button) => {
+        button.addEventListener('click', () => {
+          els.bgToggles.forEach((item) => {
+            item.classList.remove('active');
+            item.setAttribute('aria-pressed', 'false');
+          });
+          button.classList.add('active');
+          button.setAttribute('aria-pressed', 'true');
+          setBackgroundMode(button.dataset.bg || 'keep');
         });
-        button.classList.add('active');
-        button.setAttribute('aria-pressed', 'true');
-        setBackgroundMode(button.dataset.bg || 'keep');
       });
-    });
-    els.bgImageBtn.addEventListener('click', () => els.bgImageInput.click());
-    els.bgImageInput.addEventListener('change', () => {
-      const file = els.bgImageInput.files ? els.bgImageInput.files[0] : null;
-      if (file) handleBackgroundFile(file);
-    });
-    els.bgImageRemove.addEventListener('click', clearBackgroundImage);
-    els.bgColorInput.addEventListener('input', () => {
-      state.backgroundColor = String(els.bgColorInput.value || '').toUpperCase();
-      els.bgColorValue.textContent = state.backgroundColor || '—';
-    });
+      els.bgImageBtn.addEventListener('click', () => els.bgImageInput.click());
+      els.bgImageInput.addEventListener('change', () => {
+        const file = els.bgImageInput.files ? els.bgImageInput.files[0] : null;
+        if (file) handleBackgroundFile(file);
+      });
+      els.bgImageRemove.addEventListener('click', clearBackgroundImage);
+      els.bgColorInput.addEventListener('input', () => {
+        state.backgroundColor = String(els.bgColorInput.value || '').toUpperCase();
+        els.bgColorValue.textContent = state.backgroundColor || '—';
+      });
+    }
 
     els.promptBtn.addEventListener('click', generatePrompt);
     els.promptRegenBtn.addEventListener('click', generatePrompt);
@@ -1130,15 +1137,17 @@
     clearBackgroundImage();
     state.backgroundMode = 'keep';
     state.backgroundColor = '#1B2A33';
-    els.bgColorInput.value = '#1B2A33';
-    els.bgColorValue.textContent = '#1B2A33';
-    els.bgColorRow.classList.add('hidden');
-    els.bgImageRow.classList.add('hidden');
-    els.bgToggles.forEach((item) => {
-      const activo = item.dataset.bg === 'keep';
-      item.classList.toggle('active', activo);
-      item.setAttribute('aria-pressed', activo ? 'true' : 'false');
-    });
+    if (els.bgColorInput) {
+      els.bgColorInput.value = '#1B2A33';
+      els.bgColorValue.textContent = '#1B2A33';
+      els.bgColorRow.classList.add('hidden');
+      els.bgImageRow.classList.add('hidden');
+      els.bgToggles.forEach((item) => {
+        const activo = item.dataset.bg === 'keep';
+        item.classList.toggle('active', activo);
+        item.setAttribute('aria-pressed', activo ? 'true' : 'false');
+      });
+    }
     lockStep(els.paso3, true);
     els.paso3.classList.remove('ready');
     clearError();
