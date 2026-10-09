@@ -51,6 +51,7 @@ Todos los archivos están en `.claude/skills/style_guide_skill/resources/`:
 
 - **Toda la interfaz: Electrolize** (`--font-ui: 'Electrolize', system-ui, sans-serif`), encabezados, cuerpo y controles incluidos. Se carga desde Google Fonts: `https://fonts.googleapis.com/css2?family=Electrolize&display=swap`
 - Electrolize solo tiene el peso 400: la jerarquía se construye con tamaño, `letter-spacing` y mayúsculas, nunca con pesos sintéticos ni con una segunda familia tipográfica.
+- **Apps antiguas: NO migrar.** Las apps y webs creadas antes de esta decisión conservan Montserrat/Poppins por decisión expresa del usuario (2026-10-09). Siguen funcionando y cambiarlas es riesgo visual sin beneficio: no tocarlas salvo petición directa. La regla de Electrolize aplica a lo nuevo y a lo que se edite de verdad.
 
 ## Uso al crear una app
 
