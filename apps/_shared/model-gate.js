@@ -7,8 +7,8 @@
  * exige introducir la contraseña antes de poder seleccionarse o usarse.
  *
  * Integración (una sola línea, justo antes de </body>):
- *   apps/<app>/index.html                  → <script src="../_shared/model-gate.js?v=1"></script>
- *   apps/imagenes_ia/<sub>/index.html      → <script src="../../_shared/model-gate.js?v=1"></script>
+ *   apps/<app>/index.html                  → <script src="../_shared/model-gate.js?v=2"></script>
+ *   apps/imagenes_ia/<sub>/index.html      → <script src="../../_shared/model-gate.js?v=2"></script>
  *
  * API pública: window.ModelGate
  *   ModelGate.isLocked(model)     → true si ese modelo está protegido
@@ -24,11 +24,11 @@
     'use strict';
 
     if (window.__AG_MODEL_GATE__) { return; }
-    window.__AG_MODEL_GATE__ = '1.0.0';
+    window.__AG_MODEL_GATE__ = '1.0.1';
 
     /* ─────────────────────── Configuración ─────────────────────── */
 
-    var VERSION = '1.0.0';
+    var VERSION = '1.0.1';
 
     /* Únicos modelos libres (no piden contraseña) */
     var FREE_MODELS = ['openai-image-2-low', 'openai-image-2'];
@@ -252,6 +252,8 @@
     function submitCode(value) {
         if (String(value) === PASS_CODE) {
             rememberUnlock();
+            /* Fuera los candados de todos los selectores de la página. */
+            scan(document);
             errorEl.textContent = '';
             hideModal();
             toast('\u2705 Modelos avanzados desbloqueados');
@@ -307,7 +309,11 @@
         var model = el.getAttribute('data-model');
         if (!model) { return; }
 
-        if (!isLocked(model)) {
+        /* Con la contraseña ya introducida NO se pinta ningún candado: los modelos
+           avanzados se ven como cualquier otro (y vuelven a marcarse con lock()). */
+        var shouldLock = isLocked(model) && !isUnlocked();
+
+        if (!shouldLock) {
             if (el.classList && el.classList.contains('ag-model-locked')) {
                 el.classList.remove('ag-model-locked');
                 el.removeAttribute('data-ag-locked');
@@ -448,11 +454,23 @@
         free: FREE_MODELS.slice(),
         isLocked: isLocked,
         isUnlocked: isUnlocked,
-        lock: function () { forgetUnlock(); if (overlay) { overlay.setAttribute('hidden', ''); } return true; },
+        lock: function () {
+            forgetUnlock();
+            if (overlay) { overlay.setAttribute('hidden', ''); }
+            /* Vuelven los candados a todos los selectores. */
+            scan(document);
+            return true;
+        },
         unlock: function (code) {
-            if (String(code) === PASS_CODE) { rememberUnlock(); return true; }
+            if (String(code) === PASS_CODE) {
+                rememberUnlock();
+                scan(document);
+                return true;
+            }
             return false;
         },
+        /* Repinta los candados según el estado actual (por si la app reescribe su selector). */
+        refresh: function () { scan(document); },
         request: function (model) {
             return new Promise(function (resolve, reject) { ask(model, resolve, reject); });
         }
