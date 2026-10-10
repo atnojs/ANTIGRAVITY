@@ -619,10 +619,21 @@ input[type="range"]::-moz-range-thumb {
 /* Disposición canónica del selector de modelos por proveedor. */
 .model-provider-layout {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: .7rem;
+  width: 100%;
+}
+/* Proveedores en filas (patrón canónico de dibujo_lineas_copia): OPENAI 2.5 en la
+   primera y GEMINI + QWEN + IMAGE 2 en la segunda, que se reparte en más filas
+   sola cuando la pantalla es estrecha. */
+.model-provider-row {
+  display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 1rem;
-  width: 100%;
+  gap: 1.4rem;
+  flex-wrap: wrap;
 }
 .model-provider-column {
   display: flex;
@@ -639,6 +650,7 @@ input[type="range"]::-moz-range-thumb {
 }
 @media (max-width: 700px) {
   .model-provider-layout { gap: .5rem; }
+  .model-provider-row { gap: .5rem; }
   .model-toggle-group { gap: .2rem; }
   .model-toggle { font-size: .76rem; padding: .5rem .65rem; }
 }
