@@ -101,6 +101,9 @@
         'filter:drop-shadow(0 0 3px rgba(0,208,208,.55))}',
         '.ag-model-locked:hover::after{opacity:1}',
 
+        /* Foco visible por teclado en el selector de modelos (WCAG 2.4.7) */
+        '[data-model]:focus-visible{outline:2px solid #26C626;outline-offset:2px}',
+
         /* Modal */
         '#ag-model-gate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;',
         'justify-content:center;padding:1rem;box-sizing:border-box;',
