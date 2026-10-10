@@ -571,6 +571,57 @@
     element.setAttribute('aria-disabled', locked ? 'true' : 'false');
   }
 
+  /**
+   * Analisis en streaming: el proxy manda el JSON por trozos (SSE) para que el gateway
+   * no corte la peticion por inactividad (era la causa de los 504 intermitentes con el
+   * .json sin generar). `onDelta` recibe el texto acumulado en cada trozo, para que el
+   * usuario vea escribirse el JSON en vez de una pantalla parada.
+   */
+  async function describeStreaming(onDelta) {
+    const response = await fetch(PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'describe', image: state.visionDataUrl, stream: true }),
+    });
+    if (!response.ok || !response.body) {
+      throw new Error(httpErrorText(response.status, false));
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let acumulado = '';
+    let final = null;
+    let fallo = null;
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const bloques = buffer.split('\n\n');
+      buffer = bloques.pop();
+      for (const bloque of bloques) {
+        const linea = bloque.split('\n').find((fila) => fila.startsWith('data:'));
+        if (!linea) continue;
+        let evento = null;
+        try {
+          evento = JSON.parse(linea.slice(5).trim());
+        } catch (error) {
+          continue;
+        }
+        if (evento.delta) {
+          acumulado += evento.delta;
+          if (onDelta) onDelta(acumulado);
+        }
+        if (evento.error) fallo = evento.error + (evento.detail ? ' - ' + evento.detail : '');
+        if (evento.done) final = evento;
+      }
+    }
+    if (final) return final;
+    if (fallo) throw new Error(fallo);
+    // Sin 'done' ni error: el servidor corto la respuesta a medias. Si hay texto, se usa.
+    if (acumulado.trim()) return { jsonText: acumulado, model: '' };
+    throw new Error('El servidor no devolvio el analisis.');
+  }
+
   async function analyzeImage() {
     if (!state.visionDataUrl) {
       showError('Sube una imagen antes de analizarla.');
@@ -579,7 +630,19 @@
     clearError();
     setBusy(true, 'Analizando la imagen...', 'Extrayendo el .json estructurado...');
     try {
-      const data = await postProxy({ action: 'describe', image: state.visionDataUrl });
+      let data = null;
+      let recibido = false;
+      try {
+        data = await describeStreaming((parcial) => {
+          recibido = true;
+          els.jsonText.value = parcial;
+        });
+      } catch (error) {
+        // Si falla antes de recibir nada (p. ej. el proxy no acepta streaming), se
+        // reintenta por la via clasica: nunca dejar al usuario sin analisis.
+        if (recibido) throw error;
+        data = await postProxy({ action: 'describe', image: state.visionDataUrl });
+      }
       state.jsonText = data.jsonText || JSON.stringify(data.json, null, 2);
       state.jsonModel = data.model || '';
       els.jsonText.value = state.jsonText;

@@ -310,6 +310,120 @@ function normalizeAnalysis(array $raw): array
     ];
 }
 
+/**
+ * Analisis en streaming de la imagen (misma logica que `describe`, sin el corte).
+ *
+ * Por que existe: el modelo tarda 30-60 s y el gateway de Hostinger devuelve 504 en
+ * cuanto la peticion pasa demasiado tiempo sin trafico, asi que el .json se quedaba
+ * sin generar de forma intermitente. Mandando los tokens segun llegan la conexion
+ * nunca esta inactiva. La salida es SSE: `data: {"delta": "..."}` por cada trozo y un
+ * ultimo `data: {"done": true, "json": ..., "jsonText": ...}` (o `{"error": ...}`).
+ */
+function streamDescribeAnalysis(string $image): void
+{
+    $key = getSecret('R');
+    if ($key === '') {
+        respond(500, ['success' => false, 'error' => 'La clave de OpenRouter no estÃ¡ configurada en el servidor.']);
+    }
+
+    set_time_limit(300);
+    header('Content-Type: text/event-stream; charset=utf-8');
+    header('X-Accel-Buffering: no');
+    while (ob_get_level() > 0) { @ob_end_flush(); }
+    @ob_implicit_flush(true);
+
+    $emit = static function (array $event): void {
+        echo 'data: ' . json_encode($event, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE) . "\n\n";
+        @flush();
+    };
+
+    // Primer byte inmediato: el gateway ya ve la respuesta empezada antes de que el
+    // modelo haya devuelto nada (la prelectura de la imagen tarda unos segundos).
+    echo ": analizando\n\n";
+    @flush();
+
+    $payload = [
+        'model' => TEXT_MODEL,
+        'messages' => [[
+            'role' => 'user',
+            'content' => [
+                ['type' => 'text', 'text' => ANALYSIS_SYSTEM . "\n\nESQUEMA OBLIGATORIO (respetar nombres y estructura):\n" . ANALYSIS_SCHEMA],
+                ['type' => 'image_url', 'image_url' => ['url' => $image]],
+            ],
+        ]],
+        'temperature' => 0.1,
+        'max_tokens' => 2400,
+        'stream' => true,
+        'stream_options' => ['include_usage' => true],
+    ];
+
+    $texto = '';
+    $modelo = '';
+    $usage = null;
+    $fallo = null;
+    $buffer = '';
+
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $key, 'Content-Type: application/json', 'accept: text/event-stream'],
+        CURLOPT_CONNECTTIMEOUT => 20,
+        CURLOPT_TIMEOUT => 300,
+        CURLOPT_WRITEFUNCTION => function ($handle, string $chunk) use (&$buffer, &$texto, &$modelo, &$usage, &$fallo, $emit): int {
+            $buffer .= $chunk;
+            while (($corte = strpos($buffer, "\n")) !== false) {
+                $linea = trim(substr($buffer, 0, $corte));
+                $buffer = substr($buffer, $corte + 1);
+                if ($linea === '' || strncmp($linea, 'data:', 5) !== 0) { continue; }
+                $carga = trim(substr($linea, 5));
+                if ($carga === '' || $carga === '[DONE]') { continue; }
+                $evento = json_decode($carga, true);
+                if (!is_array($evento)) { continue; }
+                if (isset($evento['model'])) { $modelo = (string)$evento['model']; }
+                if (isset($evento['usage']) && is_array($evento['usage'])) { $usage = $evento['usage']; }
+                if (isset($evento['error'])) {
+                    $fallo = is_string($evento['error']) ? $evento['error'] : 'El modelo devolviÃ³ un error.';
+                    continue;
+                }
+                $delta = $evento['choices'][0]['delta']['content'] ?? '';
+                if (is_string($delta) && $delta !== '') {
+                    $texto .= $delta;
+                    $emit(['delta' => $delta]);
+                }
+            }
+            return strlen($chunk);
+        },
+    ]);
+
+    $ejecutado = curl_exec($ch);
+    $errorCurl = curl_error($ch);
+    curl_close($ch);
+
+    if ($ejecutado === false) {
+        $emit(['error' => 'Error conectando con OpenRouter.', 'detail' => $errorCurl]);
+        return;
+    }
+    if ($fallo !== null) {
+        $emit(['error' => 'El modelo de texto no pudo completar la solicitud.', 'detail' => $fallo]);
+        return;
+    }
+    $parsed = jsonFromText($texto);
+    if ($parsed === null) {
+        $emit(['error' => 'El analizador no devolviÃ³ un JSON vÃ¡lido.', 'detail' => mb_substr($texto, 0, 400)]);
+        return;
+    }
+    $analysis = normalizeAnalysis($parsed);
+    $emit([
+        'done' => true,
+        'success' => true,
+        'json' => $analysis,
+        'jsonText' => json_encode($analysis, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        'model' => $modelo !== '' ? $modelo : TEXT_MODEL,
+        'usage' => $usage,
+    ]);
+}
+
 function handleDescribe(array $request): void
 {
     $image = trim((string)($request['image'] ?? ''));
@@ -322,6 +436,13 @@ function handleDescribe(array $request): void
     }
     if (strlen($binary) > MAX_IMAGE_BYTES) {
         respond(413, ['success' => false, 'error' => 'La imagen supera 20 MB.']);
+    }
+
+    // Analisis en streaming (ver streamDescribeAnalysis): el cliente lo pide con
+    // `stream: true` para que el gateway no corte la peticion por inactividad.
+    if (!empty($request['stream'])) {
+        streamDescribeAnalysis($image);
+        return;
     }
 
     $data = openRouter([
