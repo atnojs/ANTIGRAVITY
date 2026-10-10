@@ -7,8 +7,8 @@
  * exige introducir la contraseña antes de poder seleccionarse o usarse.
  *
  * Integración (una sola línea, justo antes de </body>):
- *   apps/<app>/index.html                  → <script src="../_shared/model-gate.js?v=2"></script>
- *   apps/imagenes_ia/<sub>/index.html      → <script src="../../_shared/model-gate.js?v=2"></script>
+ *   apps/<app>/index.html                  → <script src="../_shared/model-gate.js?v=3"></script>
+ *   apps/imagenes_ia/<sub>/index.html      → <script src="../../_shared/model-gate.js?v=3"></script>
  *
  * API pública: window.ModelGate
  *   ModelGate.isLocked(model)     → true si ese modelo está protegido
