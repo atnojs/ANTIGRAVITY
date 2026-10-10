@@ -592,6 +592,7 @@ function App() {
                                             type="button"
                                             key={m.id}
                                             onClick={() => setSelectedModel(m.id)}
+                                            data-model={m.id}
                                             className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
                                             aria-pressed={selectedModel === m.id}
                                             aria-describedby="model-tooltip"
@@ -613,6 +614,7 @@ function App() {
                                             type="button"
                                             key={m.id}
                                             onClick={() => setSelectedModel(m.id)}
+                                            data-model={m.id}
                                             className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
                                             aria-pressed={selectedModel === m.id}
                                             aria-describedby="model-tooltip"
@@ -632,6 +634,7 @@ function App() {
                                             type="button"
                                             key={m.id}
                                             onClick={() => setSelectedModel(m.id)}
+                                            data-model={m.id}
                                             className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
                                             aria-pressed={selectedModel === m.id}
                                             aria-describedby="model-tooltip"
@@ -653,6 +656,7 @@ function App() {
                                             type="button"
                                             key={m.id}
                                             onClick={() => setSelectedModel(m.id)}
+                                            data-model={m.id}
                                             className={`model-toggle px-2.5 py-1.5 rounded-full border text-[10px] font-semibold transition-all ${selectedModel === m.id ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-gray-500/40 text-gray-400 hover:border-cyan-400/50'}`}
                                             aria-pressed={selectedModel === m.id}
                                             aria-describedby="model-tooltip"

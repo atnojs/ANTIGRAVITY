@@ -1225,6 +1225,7 @@ function App() {
                         type="button"
                         className={`model-toggle ${selectedModel === m.id ? 'active' : ''}`}
                         onClick={() => setSelectedModel(m.id)}
+                        data-model={m.id}
                         disabled={busy}
                         aria-pressed={selectedModel === m.id}
                         aria-describedby="model-tooltip"

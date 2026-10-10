@@ -646,7 +646,7 @@ const App = () => {
                           : <span className="model-quality-hint" aria-hidden="true" style={{ visibility: 'hidden', display: 'block', textAlign: 'center', marginBottom: '.35rem' }}>De Menor a Mayor Calidad</span>}
                         <div className="model-toggle-group" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                           {group.models.map(([id, name]) => (
-                            <button type="button" key={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id} aria-describedby="model-tooltip"
+                            <button type="button" key={id} data-model={id} onClick={() => setSelectedModel(id)} aria-pressed={selectedModel === id} aria-describedby="model-tooltip"
                               data-tooltip={window.MODEL_TOOLTIP_TEXTS[id] || ''}
                               className={`model-toggle ${selectedModel === id ? 'active' : ''}`}>{name}</button>
                           ))}

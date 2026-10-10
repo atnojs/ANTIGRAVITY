@@ -1054,6 +1054,7 @@ h2{border-bottom:1px solid #dee2e6;padding-bottom:.5rem;margin-top:2rem;font-siz
                     key={m.id}
                     type="button"
                     onClick={() => changeModel(m.id)}
+                    data-model={m.id}
                     aria-pressed={selectedModel === m.id}
                     aria-describedby="model-tooltip"
                     data-tooltip={window.MODEL_TOOLTIP_TEXTS[m.id] || ''}

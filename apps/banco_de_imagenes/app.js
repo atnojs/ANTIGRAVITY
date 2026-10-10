@@ -554,6 +554,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-medium')}
+                        data-model="openai-medium"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-medium'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -565,6 +566,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-high')}
+                        data-model="openai-high"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-high'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -576,6 +578,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-max-flare')}
+                        data-model="openai-max-flare"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-max-flare'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -587,6 +590,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-xhigh')}
+                        data-model="openai-xhigh"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-xhigh'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -598,6 +602,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-max-sunburst')}
+                        data-model="openai-max-sunburst"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-max-sunburst'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -615,6 +620,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('gemini-2')}
+                        data-model="gemini-2"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'gemini-2'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -626,6 +632,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('gemini-flash')}
+                        data-model="gemini-flash"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'gemini-flash'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -637,6 +644,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('gemini-pro')}
+                        data-model="gemini-pro"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'gemini-pro'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -653,6 +661,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('qwen-pro')}
+                        data-model="qwen-pro"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'qwen-pro'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -670,6 +679,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-image-2-low')}
+                        data-model="openai-image-2-low"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-image-2-low'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -681,6 +691,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-image-2')}
+                        data-model="openai-image-2"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-image-2'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'
@@ -692,6 +703,7 @@ const ModelSelector = ({ selectedModel, onChange, disabled }) => (
                     <button
                         type="button"
                         onClick={() => onChange('openai-image-2-high')}
+                        data-model="openai-image-2-high"
                         disabled={disabled}
                         className={`model-toggle px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border ${selectedModel === 'openai-image-2-high'
                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-300/60 shadow-cyan-500/30'

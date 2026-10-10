@@ -47,6 +47,8 @@ header("X-Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' d
     <div id="model-tooltip" class="model-tooltip" role="tooltip" aria-hidden="true"></div>
     <script type="text/babel" data-type="module" data-presets="react" src="app.js?v=6"></script>
     <script src="history-manager.js?v=6"></script>
+  <!-- Bloqueo de modelos avanzados: IMAGE 2 LOW y MEDIUM libres, el resto pide contraseña -->
+  <script src="../_shared/model-gate.js?v=1"></script>
 </body>
 
 </html>
