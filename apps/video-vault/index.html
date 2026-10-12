@@ -245,6 +245,16 @@ const VIDEO_COMMANDS = [
   { id: 'au08', cat: 'audio', name: '/overlay', title: 'Superposición gráfica', desc: 'Capas de texto y gráficos sobre el vídeo.', prompt: 'Graphic overlay: text and graphic layers composited over the footage, clean modern motion graphics.', example: 'Datos y rótulos apareciendo sobre un plano de ciudad' },
   { id: 'au09', cat: 'audio', name: '/introseequence', title: 'Secuencia de entrada', desc: 'Apertura que presenta el tema con ritmo y gancho.', prompt: 'Intro sequence: opening that presents the topic with pace and a hook, title and motion graphics.', example: 'La cabecera de un programa con su sintonía' },
   { id: 'au10', cat: 'audio', name: '/outroseequence', title: 'Secuencia de cierre', desc: 'Cierre que resume y despide con calma.', prompt: 'Outro sequence: closing that summarises and signs off calmly, final title and credits feel.', example: 'El cierre de un tutorial con el logo y la despedida' },
+
+  // ── Captura 2026-10-11: los 7 comandos de la lista 100 + 50 que faltaban de verdad ──
+  { id: 'x13', cat: 'people', name: '/gymworkout', title: 'Entrenamiento en gimnasio', desc: 'Serie de fuerza con esfuerzo visible, respiración marcada y pesas.', prompt: 'Gym workout: strength training with visible effort and breathing, weights and sweat, determined expression.', example: 'Series de sentadillas con la barra cargada' },
+  { id: 'x14', cat: 'life', name: '/meditation', title: 'Meditación', desc: 'Quietud total, ojos cerrados y respiración pausada.', prompt: 'Meditation: still seated posture with closed eyes and slow calm breathing, peaceful minimal atmosphere.', example: 'Meditar en silencio frente al mar' },
+  { id: 'x15', cat: 'life', name: '/travelvlog', title: 'Vlog de viaje', desc: 'Planos caseros de viaje, con energía de diario personal.', prompt: 'Travel vlog: handheld personal travel footage, casual energetic framing, discovering new places with a selfie-style feel.', example: 'Grabarse llegando a una ciudad nueva con la mochila' },
+  { id: 'x16', cat: 'tech', name: '/screenrecord', title: 'Grabación de pantalla', desc: 'Interfaz de ordenador en uso, con cursor, ventanas y clics.', prompt: 'Screen recording look: desktop interface in use, cursor moving and windows opening, clean digital screen capture with UI detail.', example: 'Editar un vídeo frente a la pantalla del portátil' },
+  { id: 'x17', cat: 'tech', name: '/vrworld', title: 'Mundo VR', desc: 'Realidad virtual con entorno sintético y elementos de malla.', prompt: 'VR world: synthetic virtual environment with wireframe landscapes and floating interface elements, immersive digital space.', example: 'Ponerse las gafas y aparecer en una ciudad de líneas' },
+  { id: 'x18', cat: 'anim', name: '/pixelart', title: 'Pixel art', desc: 'Estética de videojuego retro con píxeles grandes y paleta limitada.', prompt: 'Pixel art: retro video-game look with large visible pixels, limited colour palette and chunky sprite motion.', example: 'Un personaje de 16 bits caminando por una aldea' },
+  { id: 'x19', cat: 'audio', name: '/textoverlay', title: 'Texto sobre el vídeo', desc: 'Texto rotulado encima de la imagen, con animación limpia y legible.', prompt: 'Text overlay: animated captions and titles composited over the footage, clean legible typography, modern motion graphics timing.', example: 'El título de la receta apareciendo sobre el plano' },
+  { id: 'x20', cat: 'fx', name: '/foggy', title: 'Niebla', desc: 'Niebla densa que difumina el fondo y da misterio a la escena.', prompt: 'Foggy atmosphere: dense low fog softening the background and diffusing the light, mysterious mood with reduced visibility.', example: 'Un bosque con niebla espesa entre los troncos' },
 ];
 
 // Mapa comando de vídeo -> carpeta (derivado del catálogo)
@@ -273,6 +283,8 @@ const VIDEO_DIFFICULTY = {
     pr07: 'intermediate', pr08: 'intermediate', pr10: 'intermediate', fx02: 'intermediate', fx08: 'intermediate', fx11: 'intermediate', fx12: 'intermediate', fx15: 'intermediate', fx16: 'intermediate', fx19: 'intermediate', fx24: 'intermediate', fx25: 'intermediate',
     fx26: 'intermediate', fx30: 'intermediate', fx31: 'intermediate', fx32: 'intermediate', au04: 'intermediate', au08: 'intermediate', au09: 'intermediate', au10: 'intermediate',
     ac02: 'advanced', ac05: 'advanced', fx10: 'advanced', fx20: 'advanced',
+    x13: 'beginner', x14: 'beginner', x15: 'beginner', x16: 'beginner', x17: 'intermediate',
+    x18: 'intermediate', x19: 'beginner', x20: 'intermediate',
 };
 
 const DIFFICULTIES = [
