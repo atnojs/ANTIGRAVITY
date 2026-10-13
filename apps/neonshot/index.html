@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NeonShot â€” Capturas con enlace al instante</title>
-  <meta name="description" content="Captura la pantalla o abre una imagen, selecciona la zona que quieras, anÃ³tala con flechas, texto y nÃºmeros, y sÃºbela para obtener un enlace listo para pegar." />
+  <title>NeonShot — Capturas con enlace al instante</title>
+  <meta name="description" content="Captura la pantalla o abre una imagen, selecciona la zona que quieras, anótala con flechas, texto y números, y súbela para obtener un enlace listo para pegar." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,29 +43,29 @@
           </button>
         </div>
 
-        <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Arrastra una imagen aquÃ­ o pulsa para elegir un archivo">
-          <p>Arrastra una imagen aquÃ­ Â· <kbd>Ctrl</kbd>+<kbd>V</kbd> para pegar Â· o pulsa para elegir un archivo</p>
+        <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Arrastra una imagen aquí o pulsa para elegir un archivo">
+          <p>Arrastra una imagen aquí · <kbd>Ctrl</kbd>+<kbd>V</kbd> para pegar · o pulsa para elegir un archivo</p>
         </div>
 
         <p class="field-status" id="capture-status" role="status" aria-live="polite"></p>
-        <p class="hint">El navegador pedirÃ¡ permiso para compartir una pestaÃ±a, ventana o la pantalla completa. La captura ocurre en tu equipo: solo se sube lo que tÃº decidas.</p>
+        <p class="hint">El navegador pedirá permiso para compartir una pestaña, ventana o la pantalla completa. La captura ocurre en tu equipo: solo se sube lo que tú decidas.</p>
       </section>
 
       <!-- 2. Editor -->
       <section class="panel hidden" id="editor-panel" aria-labelledby="editor-title">
         <h2 class="section-title" id="editor-title">2. Selecciona y anota</h2>
 
-        <div class="editor-toolbar" role="toolbar" aria-label="Herramientas de anotaciÃ³n" id="editor-toolbar">
+        <div class="editor-toolbar" role="toolbar" aria-label="Herramientas de anotación" id="editor-toolbar">
           <div class="tool-group" role="group" aria-label="Herramientas de dibujo">
-            <button type="button" class="tool-btn is-active" data-tool="select" aria-pressed="true" title="Seleccionar zona">â–­ SELECCIÃ“N</button>
-            <button type="button" class="tool-btn" data-tool="pencil" aria-pressed="false" title="LÃ¡piz">âœŽ LÃPIZ</button>
-            <button type="button" class="tool-btn" data-tool="line" aria-pressed="false" title="LÃ­nea">â•± LÃNEA</button>
-            <button type="button" class="tool-btn" data-tool="arrow" aria-pressed="false" title="Flecha">âžœ FLECHA</button>
-            <button type="button" class="tool-btn" data-tool="rect" aria-pressed="false" title="RectÃ¡ngulo">â–¢ RECT</button>
-            <button type="button" class="tool-btn" data-tool="ellipse" aria-pressed="false" title="Elipse">â—¯ ELIPSE</button>
-            <button type="button" class="tool-btn" data-tool="highlight" aria-pressed="false" title="Resaltador">â–¬ RESALTAR</button>
-            <button type="button" class="tool-btn" data-tool="blur" aria-pressed="false" title="Pixelar zona">â–¦ PIXELAR</button>
-            <button type="button" class="tool-btn" data-tool="step" aria-pressed="false" title="NÃºmero de paso">â‘  NÃšMERO</button>
+            <button type="button" class="tool-btn is-active" data-tool="select" aria-pressed="true" title="Seleccionar zona">▭ SELECCIÓN</button>
+            <button type="button" class="tool-btn" data-tool="pencil" aria-pressed="false" title="Lápiz">✎ LÁPIZ</button>
+            <button type="button" class="tool-btn" data-tool="line" aria-pressed="false" title="Línea">╱ LÍNEA</button>
+            <button type="button" class="tool-btn" data-tool="arrow" aria-pressed="false" title="Flecha">➜ FLECHA</button>
+            <button type="button" class="tool-btn" data-tool="rect" aria-pressed="false" title="Rectángulo">▢ RECT</button>
+            <button type="button" class="tool-btn" data-tool="ellipse" aria-pressed="false" title="Elipse">◯ ELIPSE</button>
+            <button type="button" class="tool-btn" data-tool="highlight" aria-pressed="false" title="Resaltador">▬ RESALTAR</button>
+            <button type="button" class="tool-btn" data-tool="blur" aria-pressed="false" title="Pixelar zona">▦ PIXELAR</button>
+            <button type="button" class="tool-btn" data-tool="step" aria-pressed="false" title="Número de paso">① NÚMERO</button>
             <button type="button" class="tool-btn" data-tool="text" aria-pressed="false" title="Texto">T TEXTO</button>
           </div>
 
@@ -85,21 +85,21 @@
             <output id="brush-size-value" for="brush-size">4 px</output>
           </div>
 
-          <div class="tool-group" role="group" aria-label="Historial de ediciÃ³n">
-            <button type="button" class="tool-btn" id="btn-undo" title="Deshacer (Ctrl+Z)">â†¶ DESHACER</button>
-            <button type="button" class="tool-btn" id="btn-redo" title="Rehacer (Ctrl+Y)">â†· REHACER</button>
-            <button type="button" class="tool-btn" id="btn-clear-annotations" title="Quitar todas las anotaciones">ðŸ—‘ ANOTACIONES</button>
-            <button type="button" class="tool-btn" id="btn-reset-selection" title="Volver a seleccionar">âŸ² RESELECCIONAR</button>
+          <div class="tool-group" role="group" aria-label="Historial de edición">
+            <button type="button" class="tool-btn" id="btn-undo" title="Deshacer (Ctrl+Z)">↶ DESHACER</button>
+            <button type="button" class="tool-btn" id="btn-redo" title="Rehacer (Ctrl+Y)">↷ REHACER</button>
+            <button type="button" class="tool-btn" id="btn-clear-annotations" title="Quitar todas las anotaciones">🗑 ANOTACIONES</button>
+            <button type="button" class="tool-btn" id="btn-reset-selection" title="Volver a seleccionar">⟲ RESELECCIONAR</button>
           </div>
         </div>
 
         <div class="canvas-wrap" id="canvas-wrap">
-          <canvas id="editor-canvas" aria-label="Lienzo de ediciÃ³n de la captura"></canvas>
-          <span class="size-badge" id="size-badge" role="status" aria-live="polite">Sin selecciÃ³n</span>
-          <input type="text" id="text-input" class="text-input hidden" aria-label="Texto de la anotaciÃ³n" maxlength="120" />
+          <canvas id="editor-canvas" aria-label="Lienzo de edición de la captura"></canvas>
+          <span class="size-badge" id="size-badge" role="status" aria-live="polite">Sin selección</span>
+          <input type="text" id="text-input" class="text-input hidden" aria-label="Texto de la anotación" maxlength="120" />
         </div>
 
-        <p class="hint" id="editor-hint">Arrastra sobre la imagen para marcar la zona que quieres compartir. DespuÃ©s elige una herramienta y dibuja encima.</p>
+        <p class="hint" id="editor-hint">Arrastra sobre la imagen para marcar la zona que quieres compartir. Después elige una herramienta y dibuja encima.</p>
 
         <div class="export-row">
           <div class="tool-group" role="group" aria-label="Formato de salida">
@@ -136,7 +136,7 @@
       </section>
     </main>
 
-    <!-- COLUMNA DERECHA: HISTORIAL (patrÃ³n canÃ³nico) -->
+    <!-- COLUMNA DERECHA: HISTORIAL (patrón canónico) -->
     <aside class="history-col" id="history-section" aria-labelledby="history-title">
       <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
       <div id="history-grid"></div>
@@ -144,7 +144,7 @@
     </aside>
   </div>
 
-  <!-- Overlay de carga (patrÃ³n canÃ³nico) -->
+  <!-- Overlay de carga (patrón canónico) -->
   <div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
     <div class="spinner-triple">
       <div class="ring ring-1"></div>
