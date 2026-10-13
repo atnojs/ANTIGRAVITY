@@ -3,9 +3,10 @@
 <body style="margin:0;background:#000">
 <!--
   Verificacion de la carpeta «Restauracion de fotos antiguas» de TrickVault.
-  1) la carpeta existe y las 9 tarjetas nuevas estan dentro
+  1) la carpeta existe y las 9 tarjetas nuevas estan dentro, con su ejemplo
   2) un navegador que YA las tenia guardadas sin imagen las recupera al recargar
   3) los ficheros .jpg cargan de verdad (naturalWidth > 0)
+  4) el boton de copiar de una tarjeta nueva copia /codigo + prompt completo
   Lanzar con: chrome --headless=new --allow-file-access-from-files --dump-dom ...
 -->
 <iframe id="f" src="../../apps/trickvault/index.html" width="1440" height="900" style="border:0"></iframe>
@@ -61,7 +62,31 @@ const out = [];
       im.src = '../../apps/trickvault/' + u;
     })));
     out.push('7) ficheros que fallan: ' + (malas.filter(Boolean).length ? malas.filter(Boolean).join(' ') : 'ninguno de ' + urls.length));
-    out.push('8) titulos: ' + tras.map(t => t.title).join(' | '));
+
+    // 4) el boton de copiar de una tarjeta nueva
+    const doc = f.contentDocument;
+    const win = f.contentWindow;
+    let copiado = '';
+    try {
+      win.navigator.clipboard.writeText = t => { copiado = String(t); return Promise.resolve(); };
+    } catch (e) { /* clipboard no configurable: se vera en el paso 9 */ }
+    const botones = [...doc.querySelectorAll('button,[role="button"],.folder-card,.cat-card')];
+    const carpeta = botones.find(b => b.textContent.includes('Restauración de fotos antiguas'));
+    if (carpeta) carpeta.click();
+    await sleep(3500);
+    const nuevoDoc = f.contentDocument;
+    const copyBtn = [...nuevoDoc.querySelectorAll('button')].find(b => /copiar/i.test(b.textContent) || /copiar/i.test(b.getAttribute('title') || ''));
+    if (copyBtn) {
+      copyBtn.click();
+      await sleep(1500);
+      out.push('8) copiado: ' + (copiado ? copiado.slice(0, 190) + ' ... [' + copiado.length + ' chars]' : 'NO CAPTURADO'));
+      out.push('9) lleva el codigo delante: ' + (copiado.startsWith('/') ? 'SI' : 'NO')
+               + ' | lleva la parte fija: ' + (copiado.includes('apply only the style') ? 'SI' : 'NO')
+               + ' | pide espanol: ' + (copiado.includes('must be written in Spanish') ? 'SI' : 'NO'));
+    } else {
+      out.push('8) no encontre el boton de copiar en la vista de carpeta');
+    }
+    out.push('10) titulos: ' + tras.map(t => t.title).join(' | '));
   } catch (e) {
     out.push('ERROR: ' + e.message);
   }
