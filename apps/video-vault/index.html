@@ -290,7 +290,9 @@ const DIFFICULTIES = [
 const TAG_COLORS = ['', 'purple', 'emerald', 'pink', 'amber'];
 
 // Códigos eliminados por Antonio: no se regeneran al recargar.
-const REMOVED_VIDEO_IDS = new Set([]);
+// x13-x17: tarjetas duplicadas de comandos que ya existían (gymworkout, meditation,
+// travelvlog, screenrecord, vrworld). Se retiran del catálogo y del almacenamiento local.
+const REMOVED_VIDEO_IDS = new Set(['x13', 'x14', 'x15', 'x16', 'x17']);
 
 const SEED_TRICKS = VIDEO_COMMANDS.map((cmd, index) => {
     const folder = DEFAULT_FOLDERS.find((f) => f.id === cmd.cat);
