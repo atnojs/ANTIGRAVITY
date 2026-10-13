@@ -508,22 +508,25 @@ async function removeRemoteVideo(trickId) {
    HOOK: useLocalStorage
    ═══════════════════════════════════════════════ */
 function useLocalStorage(key, initial) {
+    // Los códigos retirados no deben aparecer NUNCA: ni desde el almacenamiento local
+    // ni desde el seed (si no, reaparecen en la primera carga de cada navegador).
+    const sinRetirados = (items) => items.filter(item => !REMOVED_VIDEO_IDS.has(String(item.id)));
     const [val, setVal] = useState(() => {
         try {
             const saved = localStorage.getItem(key);
-            if (!saved) return normalizeTrickOrder(normalizeTrickCategories(initial));
+            if (!saved) return normalizeTrickOrder(normalizeTrickCategories(sinRetirados(initial)));
             const parsed = JSON.parse(saved);
-            if (!Array.isArray(parsed)) return normalizeTrickOrder(normalizeTrickCategories(initial));
-            const filtered = parsed.filter(item => !REMOVED_VIDEO_IDS.has(String(item.id)));
+            if (!Array.isArray(parsed)) return normalizeTrickOrder(normalizeTrickCategories(sinRetirados(initial)));
+            const filtered = sinRetirados(parsed);
             const migrated = normalizeTrickCategories(filtered);
             if (filtered.length !== parsed.length || migrated.some((item, i) => item.category !== filtered[i].category)) {
                 localStorage.setItem(key, JSON.stringify(migrated));
             }
             const existingIds = new Set(migrated.map(item => item.id));
-            const newSeedItems = initial.filter(item => !existingIds.has(item.id));
+            const newSeedItems = sinRetirados(initial).filter(item => !existingIds.has(item.id));
             const merged = newSeedItems.length ? [...newSeedItems, ...migrated] : migrated;
             return normalizeTrickOrder(merged);
-        } catch { return initial; }
+        } catch { return sinRetirados(initial); }
     });
 
     useEffect(() => {
