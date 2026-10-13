@@ -294,6 +294,16 @@ const TAG_COLORS = ['', 'purple', 'emerald', 'pink', 'amber'];
 // travelvlog, screenrecord, vrworld). Se retiran del catálogo y del almacenamiento local.
 const REMOVED_VIDEO_IDS = new Set(['x13', 'x14', 'x15', 'x16', 'x17']);
 
+// Fecha de alta de los comandos nuevos (los que se añaden después de la tanda
+// original). Sin esto, todas las tarjetas nacían con la fecha del seed
+// (20 sept 2026) y las nuevas no mostraban su fecha real. Añadir aquí cada
+// comando nuevo el día que se crea: id -> 'AAAA-MM-DD'.
+const FECHA_ALTA_COMANDO = {
+    x18: Date.UTC(2026, 9, 11),   // /pixelart   — captura del 11/10/2026
+    x19: Date.UTC(2026, 9, 11),   // /textoverlay
+    x20: Date.UTC(2026, 9, 11),   // /foggy
+};
+
 const SEED_TRICKS = VIDEO_COMMANDS.map((cmd, index) => {
     const folder = DEFAULT_FOLDERS.find((f) => f.id === cmd.cat);
     return {
@@ -307,7 +317,9 @@ const SEED_TRICKS = VIDEO_COMMANDS.map((cmd, index) => {
         sourceUrl: '',
         videoUrl: '',
         isFavorite: false,
-        createdAt: Date.UTC(2026, 8, 20) - index,
+        // Fecha de alta: la del día en que se añadió cada comando (las antiguas
+        // conservan la fecha de la tanda original, ordenada por índice).
+        createdAt: FECHA_ALTA_COMANDO[cmd.id] || (Date.UTC(2026, 8, 20) - index),
     };
 });
 
@@ -354,6 +366,16 @@ function normalizeTrickCategory(item, folderIds) {
 function normalizeTrickCategories(items) {
     const folderIds = readFolderIds();
     return items.map(item => normalizeTrickCategory(item, folderIds));
+}
+
+// Corrige la fecha de alta de los comandos nuevos en datos ya guardados: hasta
+// ahora nacían todos con la fecha del seed (20 sept 2026) y las tarjetas nuevas
+// no mostraban su fecha real. Idempotente: si la fecha ya es la correcta, no
+// toca el objeto.
+function aplicarFechaAlta(item) {
+    const fecha = FECHA_ALTA_COMANDO[item?.id];
+    if (!fecha || item.createdAt === fecha) return item;
+    return { ...item, createdAt: fecha };
 }
 
 function getCommandKey(trick) {
@@ -511,15 +533,17 @@ function useLocalStorage(key, initial) {
     // Los códigos retirados no deben aparecer NUNCA: ni desde el almacenamiento local
     // ni desde el seed (si no, reaparecen en la primera carga de cada navegador).
     const sinRetirados = (items) => items.filter(item => !REMOVED_VIDEO_IDS.has(String(item.id)));
+    const conFechaCorregida = (items) => items.map(aplicarFechaAlta);
     const [val, setVal] = useState(() => {
         try {
             const saved = localStorage.getItem(key);
-            if (!saved) return normalizeTrickOrder(normalizeTrickCategories(sinRetirados(initial)));
+            if (!saved) return normalizeTrickOrder(conFechaCorregida(normalizeTrickCategories(sinRetirados(initial))));
             const parsed = JSON.parse(saved);
-            if (!Array.isArray(parsed)) return normalizeTrickOrder(normalizeTrickCategories(sinRetirados(initial)));
+            if (!Array.isArray(parsed)) return normalizeTrickOrder(conFechaCorregida(normalizeTrickCategories(sinRetirados(initial))));
             const filtered = sinRetirados(parsed);
-            const migrated = normalizeTrickCategories(filtered);
-            if (filtered.length !== parsed.length || migrated.some((item, i) => item.category !== filtered[i].category)) {
+            const migrated = conFechaCorregida(normalizeTrickCategories(filtered));
+            if (filtered.length !== parsed.length
+                || migrated.some((item, i) => item.category !== filtered[i].category || item.createdAt !== filtered[i].createdAt)) {
                 localStorage.setItem(key, JSON.stringify(migrated));
             }
             const existingIds = new Set(migrated.map(item => item.id));
