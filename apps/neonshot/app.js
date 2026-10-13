@@ -110,22 +110,42 @@
     loadFromCanvas(img);
   }
 
-  function loadFromFile(file) {
+  /**
+   * Decodifica un archivo de imagen sin usar blob: (la CSP del sitio solo permite
+   * img-src 'self' data: https:, así que createObjectURL queda bloqueado en producción).
+   */
+  async function decodeImageFile(file) {
+    if (typeof createImageBitmap === 'function') {
+      try {
+        const bitmap = await createImageBitmap(file);
+        loadFromCanvas(bitmap);
+        if (bitmap.close) bitmap.close();
+        return;
+      } catch (err) { /* se intenta el respaldo */ }
+    }
+    await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => { loadFromImageElement(img); resolve(); };
+        img.onerror = () => reject(new Error('No se ha podido decodificar la imagen.'));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error('No se ha podido leer el archivo.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function loadFromFile(file) {
     if (!file || !file.type.startsWith('image/')) {
       setStatus(captureStatus, 'El archivo no es una imagen compatible.', true);
       return;
     }
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      loadFromImageElement(img);
-      URL.revokeObjectURL(url);
-    };
-    img.onerror = () => {
-      setStatus(captureStatus, 'No se ha podido leer la imagen.', true);
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
+    try {
+      await decodeImageFile(file);
+    } catch (err) {
+      setStatus(captureStatus, 'No se ha podido leer la imagen: ' + err.message, true);
+    }
   }
 
   async function captureScreen() {
