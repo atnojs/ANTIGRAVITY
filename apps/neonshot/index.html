@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeonShot — Capturas con enlace al instante</title>
+  <meta name="description" content="Captura la pantalla o abre una imagen, selecciona la zona que quieras, anótala con flechas, texto y números, y súbela para obtener un enlace listo para pegar." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
+  <link rel="stylesheet" href="app.css?v=1" />
+</head>
+<body>
+  <a class="skip-link" href="#editor-panel">Saltar al editor</a>
+
+  <div class="main-layout">
+    <main class="main-col">
+      <header class="app-header">
+        <h1 class="app-title">NeonShot</h1>
+        <p class="app-subtitle">Captura, selecciona, anota y comparte en un enlace. Inspirado en el flujo de Lightshot y adaptado a tu gusto.</p>
+      </header>
+
+      <!-- 1. Origen de la captura -->
+      <section class="panel" id="capture-panel" aria-labelledby="capture-title">
+        <h2 class="section-title" id="capture-title">1. Elige la imagen</h2>
+        <div class="capture-actions">
+          <button type="button" id="btn-capture" class="btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            CAPTURAR PANTALLA
+          </button>
+
+          <button type="button" class="btn-secondary" id="btn-open-file">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            ABRIR IMAGEN
+          </button>
+          <input type="file" id="file-input" accept="image/*" hidden />
+
+          <button type="button" id="btn-paste" class="btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            PEGAR DEL PORTAPAPELES
+          </button>
+        </div>
+
+        <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Arrastra una imagen aquí o pulsa para elegir un archivo">
+          <p>Arrastra una imagen aquí · <kbd>Ctrl</kbd>+<kbd>V</kbd> para pegar · o pulsa para elegir un archivo</p>
+        </div>
+
+        <p class="field-status" id="capture-status" role="status" aria-live="polite"></p>
+        <p class="hint">El navegador pedirá permiso para compartir una pestaña, ventana o la pantalla completa. La captura ocurre en tu equipo: solo se sube lo que tú decidas.</p>
+      </section>
+
+      <!-- 2. Editor -->
+      <section class="panel hidden" id="editor-panel" aria-labelledby="editor-title">
+        <h2 class="section-title" id="editor-title">2. Selecciona y anota</h2>
+
+        <div class="editor-toolbar" role="toolbar" aria-label="Herramientas de anotación" id="editor-toolbar">
+          <div class="tool-group" role="group" aria-label="Herramientas de dibujo">
+            <button type="button" class="tool-btn is-active" data-tool="select" aria-pressed="true" title="Seleccionar zona">▭ SELECCIÓN</button>
+            <button type="button" class="tool-btn" data-tool="pencil" aria-pressed="false" title="Lápiz">✎ LÁPIZ</button>
+            <button type="button" class="tool-btn" data-tool="line" aria-pressed="false" title="Línea">╱ LÍNEA</button>
+            <button type="button" class="tool-btn" data-tool="arrow" aria-pressed="false" title="Flecha">➜ FLECHA</button>
+            <button type="button" class="tool-btn" data-tool="rect" aria-pressed="false" title="Rectángulo">▢ RECT</button>
+            <button type="button" class="tool-btn" data-tool="ellipse" aria-pressed="false" title="Elipse">◯ ELIPSE</button>
+            <button type="button" class="tool-btn" data-tool="highlight" aria-pressed="false" title="Resaltador">▬ RESALTAR</button>
+            <button type="button" class="tool-btn" data-tool="blur" aria-pressed="false" title="Pixelar zona">▦ PIXELAR</button>
+            <button type="button" class="tool-btn" data-tool="step" aria-pressed="false" title="Número de paso">① NÚMERO</button>
+            <button type="button" class="tool-btn" data-tool="text" aria-pressed="false" title="Texto">T TEXTO</button>
+          </div>
+
+          <div class="tool-group" role="group" aria-label="Color y grosor">
+            <span class="tool-label" id="color-label">COLOR</span>
+            <div class="swatches" role="radiogroup" aria-labelledby="color-label">
+              <button type="button" class="swatch is-active" data-color="#00D0D0" style="--sw:#00D0D0" aria-label="Cian" role="radio" aria-checked="true"></button>
+              <button type="button" class="swatch" data-color="#26C626" style="--sw:#26C626" aria-label="Verde" role="radio" aria-checked="false"></button>
+              <button type="button" class="swatch" data-color="#FF4D4D" style="--sw:#FF4D4D" aria-label="Rojo" role="radio" aria-checked="false"></button>
+              <button type="button" class="swatch" data-color="#FFD400" style="--sw:#FFD400" aria-label="Amarillo" role="radio" aria-checked="false"></button>
+              <button type="button" class="swatch" data-color="#FFFFFF" style="--sw:#FFFFFF" aria-label="Blanco" role="radio" aria-checked="false"></button>
+              <button type="button" class="swatch" data-color="#0B1B22" style="--sw:#0B1B22" aria-label="Negro" role="radio" aria-checked="false"></button>
+            </div>
+
+            <label class="tool-label" for="brush-size">GROSOR</label>
+            <input type="range" id="brush-size" min="2" max="24" step="1" value="4" aria-describedby="brush-size-value" />
+            <output id="brush-size-value" for="brush-size">4 px</output>
+          </div>
+
+          <div class="tool-group" role="group" aria-label="Historial de edición">
+            <button type="button" class="tool-btn" id="btn-undo" title="Deshacer (Ctrl+Z)">↶ DESHACER</button>
+            <button type="button" class="tool-btn" id="btn-redo" title="Rehacer (Ctrl+Y)">↷ REHACER</button>
+            <button type="button" class="tool-btn" id="btn-clear-annotations" title="Quitar todas las anotaciones">🗑 ANOTACIONES</button>
+            <button type="button" class="tool-btn" id="btn-reset-selection" title="Volver a seleccionar">⟲ RESELECCIONAR</button>
+          </div>
+        </div>
+
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="editor-canvas" aria-label="Lienzo de edición de la captura"></canvas>
+          <span class="size-badge" id="size-badge" role="status" aria-live="polite">Sin selección</span>
+          <input type="text" id="text-input" class="text-input hidden" aria-label="Texto de la anotación" maxlength="120" />
+        </div>
+
+        <p class="hint" id="editor-hint">Arrastra sobre la imagen para marcar la zona que quieres compartir. Después elige una herramienta y dibuja encima.</p>
+
+        <div class="export-row">
+          <div class="tool-group" role="group" aria-label="Formato de salida">
+            <span class="tool-label" id="format-label">FORMATO</span>
+            <div class="pill-group" role="radiogroup" aria-labelledby="format-label">
+              <button type="button" class="pill is-active" data-format="image/png" role="radio" aria-checked="true">PNG</button>
+              <button type="button" class="pill" data-format="image/jpeg" role="radio" aria-checked="false">JPG</button>
+              <button type="button" class="pill" data-format="image/webp" role="radio" aria-checked="false">WEBP</button>
+            </div>
+            <label class="tool-label" for="quality-range">CALIDAD</label>
+            <input type="range" id="quality-range" min="50" max="100" step="5" value="92" />
+            <output id="quality-value" for="quality-range">92 %</output>
+          </div>
+
+          <div class="tool-group actions" role="group" aria-label="Salida">
+            <button type="button" class="btn-secondary" id="btn-download">DESCARGAR</button>
+            <button type="button" class="btn-primary" id="btn-upload">SUBIR Y COPIAR ENLACE</button>
+          </div>
+        </div>
+
+        <p class="field-status" id="editor-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <!-- 3. Resultado -->
+      <section class="panel hidden" id="result-panel" aria-labelledby="result-title">
+        <h2 class="section-title" id="result-title">3. Enlace listo</h2>
+        <div class="result-row">
+          <label class="sr-only" for="result-url">Enlace de la captura</label>
+          <input type="text" id="result-url" readonly />
+          <button type="button" class="btn-secondary" id="btn-copy">COPIAR</button>
+          <a class="btn-secondary" id="link-open" href="#" target="_blank" rel="noopener noreferrer">ABRIR</a>
+        </div>
+        <p class="hint" id="upload-detail"></p>
+      </section>
+    </main>
+
+    <!-- COLUMNA DERECHA: HISTORIAL (patrón canónico) -->
+    <aside class="history-col" id="history-section" aria-labelledby="history-title">
+      <h2 id="history-title" class="section-title" style="display:none;">Historial</h2>
+      <div id="history-grid"></div>
+      <button id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
+    </aside>
+  </div>
+
+  <!-- Overlay de carga (patrón canónico) -->
+  <div class="loading-overlay hidden" id="loadingOverlay" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner-triple">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+    </div>
+    <div class="progress-panel">
+      <p class="loading-text" id="loadingText">Procesando la captura...</p>
+      <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso"><span></span></div>
+      <p class="loading-sub" id="loadingSub">Preparando la imagen...</p>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="Vista ampliada">
+    <img id="lightbox-img" src="" alt="Captura ampliada" tabindex="0" />
+  </div>
+
+  <script src="history-manager.js"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
