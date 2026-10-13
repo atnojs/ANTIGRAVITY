@@ -40,7 +40,76 @@ error_reporting(E_ALL);
 const MAX_JSON = 4 * 1024 * 1024;      // 4 MB de capa de cambios
 const MAX_IMAGENES = 60;               // imágenes por publicación
 const MAX_BYTES_IMAGEN = 400 * 1024;   // 400 KB por imagen ya decodificada
+const MAX_CARPETAS = 200;              // carpetas en la lista publicada
+const MAX_CARPETAS_BORRADAS = 500;     // bajas de carpeta acumuladas
 const API_GITHUB = 'https://api.github.com';
+
+/* ── Carpetas ───────────────────────────────────────────────────────────────
+ * La app manda en CADA publicación la lista completa de carpetas y el orden de
+ * la rejilla (son datos globales: así el móvil, el incógnito y cualquier otro
+ * navegador ven exactamente lo mismo). Aquí se sanean y se guardan en la misma
+ * capa que las tarjetas. Si una versión antigua de la app no los manda, se
+ * conserva lo que ya hubiera publicado: nunca se borra la lista por omisión. */
+
+/** Texto corto, sin caracteres de control ni saltos (llega del navegador). */
+function texto_corto($valor, $max) {
+    if (!is_string($valor)) return '';
+    $limpio = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $valor);
+    if ($limpio === null) $limpio = '';
+    $limpio = trim(preg_replace('/\s+/u', ' ', $limpio));
+    if (function_exists('mb_substr')) return mb_substr($limpio, 0, $max, 'UTF-8');
+    // Sin mbstring: recorte por caracteres UTF-8 completos (no parte emojis).
+    $recorte = preg_replace('/^(.{0,' . (int) $max . '}).*$/us', '$1', $limpio);
+    return $recorte === null ? substr($limpio, 0, $max) : $recorte;
+}
+
+/** Id de carpeta: solo lo que la app puede generar (xl-dev, f_ab12cd…). */
+function id_carpeta($valor) {
+    if (!is_string($valor)) return '';
+    return substr(preg_replace('/[^A-Za-z0-9._-]/', '', $valor), 0, 64);
+}
+
+/** Lista de carpetas saneada, sin duplicados y acotada. */
+function sanear_carpetas($lista) {
+    if (!is_array($lista)) return [];
+    $salida = [];
+    $vistos = [];
+    foreach ($lista as $carpeta) {
+        if (!is_array($carpeta)) continue;
+        $id = id_carpeta($carpeta['id'] ?? '');
+        $etiqueta = texto_corto($carpeta['label'] ?? '', 80);
+        if ($id === '' || $etiqueta === '' || isset($vistos[$id])) continue;
+        $vistos[$id] = true;
+        $salida[] = [
+            'id' => $id,
+            'label' => $etiqueta,
+            'icon' => texto_corto($carpeta['icon'] ?? '', 8),
+            'color' => texto_corto($carpeta['color'] ?? '', 16),
+            'bgIcon' => texto_corto($carpeta['bgIcon'] ?? '', 8),
+        ];
+        if (count($salida) >= MAX_CARPETAS) break;
+    }
+    return $salida;
+}
+
+/** Orden de la rejilla: solo las carpetas publicadas (más Favoritos), sin repetir. */
+function sanear_orden_carpetas($orden, $carpetas) {
+    $validos = ['favorites' => true];
+    foreach ($carpetas as $carpeta) $validos[$carpeta['id']] = true;
+    $salida = [];
+    foreach ((array) $orden as $id) {
+        if (!is_string($id) || !isset($validos[$id]) || in_array($id, $salida, true)) continue;
+        $salida[] = $id;
+        if (count($salida) > MAX_CARPETAS) break;
+    }
+    // Ninguna carpeta puede quedarse fuera del orden: las que falten, al final.
+    foreach (array_keys($validos) as $id) {
+        if (in_array($id, $salida, true)) continue;
+        $salida[] = $id;
+        if (count($salida) > MAX_CARPETAS) break;
+    }
+    return $salida;
+}
 
 /* ── Utilidades ─────────────────────────────────────────────────────────── */
 function salir($datos, $codigo = 200) {
@@ -255,6 +324,24 @@ function accion_publicar() {
         return salir(['success' => false, 'error' => 'El catálogo no es un JSON válido.'], 400);
     }
 
+    // Carpetas: lista completa + orden de la rejilla + bajas. Van en cualquier
+    // publicación, publique la carpeta que publique.
+    $carpetas = sanear_carpetas($datos['listaCarpetas'] ?? []);
+    $bajas = [];
+    foreach ((array) ($datos['carpetasBorradas'] ?? []) as $idCarpeta) {
+        $idCarpeta = id_carpeta($idCarpeta);
+        if ($idCarpeta === '' || in_array($idCarpeta, $bajas, true)) continue;
+        $bajas[] = $idCarpeta;
+        if (count($bajas) >= MAX_CARPETAS_BORRADAS) break;
+    }
+    if ($carpetas) {
+        $datos['listaCarpetas'] = $carpetas;
+        $datos['ordenCarpetas'] = sanear_orden_carpetas($datos['ordenCarpetas'] ?? [], $carpetas);
+    } else {
+        unset($datos['listaCarpetas'], $datos['ordenCarpetas']);
+    }
+    unset($datos['carpetasBorradas']);
+
     $imagenes = json_decode($_POST['imagenes'] ?? '[]', true);
     if (!is_array($imagenes)) $imagenes = [];
     if (count($imagenes) > MAX_IMAGENES) {
@@ -270,6 +357,18 @@ function accion_publicar() {
     [$codigoCat, $datosCat] = github('GET', "/repos/$repo/contents/$rutaCat");
     if ($codigoCat === 200 && !empty($datosCat['content'])) {
         $previo = json_decode(base64_decode(str_replace(["\n", "\r"], '', $datosCat['content'])), true);
+        if (is_array($previo)) {
+            // Las bajas de carpeta se acumulan: una baja publicada no se olvida.
+            $datos['carpetasBorradas'] = array_values(array_unique(array_merge(
+                array_map('strval', (array) ($previo['carpetasBorradas'] ?? [])),
+                $bajas
+            )));
+            // Sin lista nueva (app antigua): se respeta la que ya estaba publicada.
+            if (!$carpetas) {
+                if (isset($previo['listaCarpetas'])) $datos['listaCarpetas'] = $previo['listaCarpetas'];
+                if (isset($previo['ordenCarpetas'])) $datos['ordenCarpetas'] = $previo['ordenCarpetas'];
+            }
+        }
         if (is_array($previo) && !$imagenes) {
             $a = $previo;
             $b = $datos;
@@ -283,6 +382,10 @@ function accion_publicar() {
             }
         }
     }
+
+    // Primera publicación (todavía no hay capa en el repositorio): las bajas son
+    // las que trae la app.
+    if (!isset($datos['carpetasBorradas'])) $datos['carpetasBorradas'] = $bajas;
 
     // Si se publica UNA carpeta, se quitan de la capa anterior sus entradas: así
     // lo publicado refleja esa carpeta tal cual está ahora (y lo demás se

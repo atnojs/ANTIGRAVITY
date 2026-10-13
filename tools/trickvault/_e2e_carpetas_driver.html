@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>e2e carpetas</title>
+<style>
+  html,body{margin:0;background:#05070a}
+  iframe{display:block;border:0}
+  #out{position:fixed;left:8px;bottom:8px;width:640px;max-height:180px;overflow:auto;margin:0;
+       background:rgba(0,0,0,.88);color:#7CFFB2;font:11px/1.4 monospace;padding:8px;z-index:9;white-space:pre-wrap}
+</style></head>
+<body>
+<!--
+  Prueba de extremo a extremo de «Publicar» con CARPETAS:
+
+   1) deja el navegador como una ventana normal de usuario: 21 carpetas de
+      fabrica (ha borrado «Juegos y temporadas»), una carpeta propia sin
+      publicar y Favoritos arrastrado al primer puesto
+   2) entra en modo edicion con la contrasena
+   3) pulsa «Publicar cambios» (el aviso de confirmacion se acepta solo)
+   4) lee el aviso, el resultado y lo que queda guardado
+-->
+<iframe id="f" src="index.html" width="1400" height="900"></iframe>
+<pre id="out">midiendo...</pre>
+<script>
+const K_FOLDERS = 'trickvault_folders';
+const K_SCHEMA  = 'trickvault_folders_schema';
+const K_ORDER   = 'trickvault_folder_card_order';
+const K_BAJAS   = 'trickvault_folders_borradas';
+const K_DATA    = 'trickvault_data';
+
+// Las 22 carpetas de fabrica tal cual estan en index.html (EXCEL_FOLDERS + EXTRA_FOLDERS).
+const T = [
+  ['xl-carteles','Carteles y materiales','\u{1FAA7}','pink','\u{1F4F0}'],
+  ['xl-verdentro','Ver por dentro','\u{1F52C}','cyan','\u{1F9E9}'],
+  ['xl-hechomano','Hecho a mano','\u{270B}','purple','\u{1F9F5}'],
+  ['xl-fotoproducto','Foto de producto','\u{1F4F8}','emerald','\u{1F381}'],
+  ['xl-luzcamara','Luz, cámara y personas','\u{1F3AC}','amber','\u{1F526}'],
+  ['xl-escenaprueba','Escena, prueba y anuncio','\u{1F9EA}','cyan','\u{1F4E2}'],
+  ['xl-pintura','Pintura y dibujo','\u{1F3A8}','pink','\u{1F58C}'],
+  ['xl-ilustracion','Ilustración y arte','\u{1F5BC}','purple','\u{270F}'],
+  ['xl-letras3d','Letras y 3D','\u{1F524}','emerald','\u{1F9CA}'],
+  ['xl-comidamoda','Comida y moda','\u{1F37D}','amber','\u{1F457}'],
+  ['xl-casaviajes','Casa y viajes','\u{1F3E0}','cyan','\u{2708}'],
+  ['xl-camararetrato','Cámara y retrato','\u{1F933}','pink','\u{1F4F7}'],
+  ['xl-otromundo','Tú en otro mundo','\u{1FA90}','purple','\u{1F680}'],
+  ['xl-negocioredes','Negocio y redes','\u{1F4C8}','emerald','\u{1F4BC}'],
+  ['xl-efectosempaque','Efectos y empaque','\u{2728}','amber','\u{1F4E6}'],
+  ['xl-retroedu','Retro y educativo','\u{1F4FC}','cyan','\u{1F393}'],
+  ['xl-juegos','Juegos y temporadas','\u{1F3AE}','pink','\u{1F3B2}'],
+  ['xl-estilos','Estilos y acabado','\u{1F39E}','purple','\u{1F308}'],
+  ['xl-planos','Planos y encuadres','\u{1F3A5}','cyan','\u{1F5BC}'],
+  ['xl-texto','Comandos de texto','\u{1F4AC}','emerald','\u{1F4DD}'],
+  ['xl-dev','Dev y productividad','\u{1F4BB}','amber','\u{2328}'],
+  ['xl-restauracion','Restauración de fotos antiguas','\u{1F570}','amber','\u{1F5BC}']
+];
+
+const f = document.getElementById('f');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const cargar = u => new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 25000); });
+const boton = (d, texto) => [...d.querySelectorAll('button')].find(b => (b.textContent || '').indexOf(texto) >= 0);
+const estado = d => (d.querySelector('.publish-estado') || {}).textContent || '(sin estado)';
+// Orden real de la rejilla segun el DOM (aria-label de cada tarjeta).
+const rejilla = d => [...d.querySelectorAll('.category-card')].map(c => c.getAttribute('aria-label'));
+const out = [];
+(async () => {
+  try {
+    await cargar('index.html');
+    await sleep(4000);
+
+    // 1) estado de una ventana normal: una carpeta borrada, una propia y orden propio
+    const w = f.contentWindow;
+    const lista = T.filter(x => x[0] !== 'xl-juegos')
+                   .map(x => ({ id: x[0], label: x[1], icon: x[2], color: x[3], bgIcon: x[4] }));
+    lista.push({ id: 'f_local', label: 'Carpeta solo local', icon: '\u{1F4C1}', color: 'cyan', bgIcon: '\u{1F5C2}' });
+    w.localStorage.setItem(K_FOLDERS, JSON.stringify(lista));
+    w.localStorage.setItem(K_SCHEMA, '5');
+    w.localStorage.setItem(K_ORDER, JSON.stringify(['favorites'].concat(lista.map(x => x.id))));
+    w.localStorage.setItem(K_BAJAS, JSON.stringify(['xl-juegos']));
+    w.localStorage.removeItem(K_DATA);
+    out.push('1) estado dejado: ' + lista.length + ' carpetas guardadas, Favoritos primero, baja apuntada: xl-juegos');
+
+    await cargar('index.html?r=' + Date.now());
+    await sleep(5000);
+
+    const d = f.contentDocument;
+    const antes = rejilla(d);
+    out.push('2) rejilla antes de publicar (' + antes.length + ' tarjetas): ' + antes.slice(0, 3).join(' / '));
+
+    // 2) modo edicion
+    const lapiz = d.querySelector('.edit-access-trigger');
+    if (!lapiz) throw new Error('no encuentro el boton de modo edicion');
+    lapiz.click();
+    await sleep(1200);
+    const campo = d.querySelector('.modal input');
+    if (!campo) throw new Error('no aparece el campo de contrasena');
+    const setter = Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype, 'value').set;
+    setter.call(campo, 'secreto');
+    campo.dispatchEvent(new w.Event('input', { bubbles: true }));
+    d.querySelector('.modal form').requestSubmit();
+    await sleep(4000);
+    out.push('3) modo edicion: ' + (d.querySelector('.publish-panel') ? 'panel de publicar visible' : 'SIN panel de publicar'));
+
+    // 3) publicar aceptando el aviso automaticamente
+    let aviso = '';
+    w.confirm = (texto) => { aviso = texto; return true; };
+    const bPublicar = boton(d, 'Publicar cambios');
+    if (!bPublicar) throw new Error('no encuentro el boton de publicar');
+    bPublicar.click();
+    await sleep(14000);
+    out.push('4) aviso de confirmacion ->\n' + (aviso || '(no salio)'));
+    out.push('5) resultado -> ' + estado(d));
+    out.push('6) bajas locales despues de publicar -> ' + w.localStorage.getItem(K_BAJAS));
+    out.push('7) carpetas guardadas despues -> ' + JSON.parse(w.localStorage.getItem(K_FOLDERS) || '[]').length);
+  } catch (e) {
+    out.push('ERROR: ' + e.message);
+  }
+  document.getElementById('out').textContent = out.join('\n');
+  document.title = 'E2E CARPETAS LISTO';
+})();
+</script>
+</body></html>

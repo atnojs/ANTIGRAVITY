@@ -84,6 +84,10 @@ const EXTRA_FOLDERS = [
 const DEFAULT_FOLDERS = [...EXCEL_FOLDERS, ...EXTRA_FOLDERS];
 const FAVORITES_FOLDER = { id: 'favorites', label: 'Favoritos', icon: '⭐', color: 'amber', bgIcon: '💛' };
 const FOLDERS_KEY = 'trickvault_folders';
+// Carpetas borradas a mano en este navegador: se apuntan para publicarlas como
+// «borradas» y que desaparezcan también en los demás navegadores (si no, cada
+// navegador conservaría su copia y las ventanas seguirían viéndose distintas).
+const FOLDERS_BORRADAS_KEY = 'trickvault_folders_borradas';
 // Versión del esquema de carpetas: sirve para añadir UNA sola vez las carpetas
 // nuevas a quien ya tuviera su lista guardada en el navegador, sin resucitar las
 // que el usuario haya borrado a mano ni reordenar las suyas.
@@ -3183,6 +3187,25 @@ function loadFolders() {
 function readFolderIds() {
     return loadFolders().map(f => f.id);
 }
+/** Carpetas borradas en este navegador que todavía no se han publicado. */
+function readDeletedFolders() {
+    try {
+        const raw = JSON.parse(localStorage.getItem(FOLDERS_BORRADAS_KEY) || '[]');
+        return Array.isArray(raw) ? raw.map(String) : [];
+    } catch { return []; }
+}
+function rememberDeletedFolder(id) {
+    const limpio = String(id || '');
+    if (!limpio) return;
+    const lista = readDeletedFolders();
+    if (lista.includes(limpio)) return;
+    try { localStorage.setItem(FOLDERS_BORRADAS_KEY, JSON.stringify([...lista, limpio])); }
+    catch (error) { console.warn('No se pudo apuntar la carpeta borrada', error); }
+}
+/** Tras publicar, el servidor ya guarda esas bajas: aquí se olvidan. */
+function clearDeletedFolders() {
+    try { localStorage.removeItem(FOLDERS_BORRADAS_KEY); } catch { /* ignorar */ }
+}
 // Recategorizaciones puntuales: un comando que CAMBIA de carpeta en el catálogo
 // no se mueve solo en las tarjetas ya guardadas (normalizeTrickCategory respeta
 // la carpeta guardada si sigue existiendo), así que se apunta aquí para moverlo
@@ -4776,6 +4799,56 @@ function applyPublishedCatalogue(items, capa) {
     return salida;
 }
 
+/**
+ * Capa publicada -> lista de carpetas efectiva de ESTE navegador.
+ *
+ * La lista publicada es la buena: así el móvil, el incógnito y cualquier otro
+ * equipo ven las mismas carpetas. Lo que se conserva es lo que solo existe aquí
+ * (una carpeta recién creada y aún sin publicar), para no perder trabajo; en
+ * cuanto se publique, los demás la verán igual.
+ */
+function applyPublishedFolders(locales, capa) {
+    const actuales = Array.isArray(locales) ? locales.filter(f => f && f.id) : [];
+    if (!capa) return actuales;
+    const borradas = new Set((capa.carpetasBorradas || []).map(String));
+    const salida = actuales.filter(f => !borradas.has(String(f.id)));
+    const publicadas = (Array.isArray(capa.listaCarpetas) ? capa.listaCarpetas : [])
+        .filter(f => f && f.id && f.label);
+    if (!publicadas.length) return salida.length ? salida : actuales;
+    const localesPorId = new Map(salida.map(f => [String(f.id), f]));
+    const idsPublicados = new Set(publicadas.map(f => String(f.id)));
+    const fusion = publicadas.map(pub => {
+        const local = localesPorId.get(String(pub.id));
+        // La publicada manda en nombre, icono y color; el resto de campos del
+        // navegador se respetan.
+        return local ? { ...local, ...pub } : { ...pub };
+    });
+    const soloLocales = salida.filter(f => !idsPublicados.has(String(f.id)));
+    const lista = [...fusion, ...soloLocales];
+    return lista.length ? lista : actuales;
+}
+
+/** ¿La lista de carpetas o su orden se han movido respecto a lo publicado? */
+function foldersNeedPublish(lista, orden, borradas, capa) {
+    if (!capa) return true;
+    const publicadas = Array.isArray(capa.listaCarpetas) ? capa.listaCarpetas : [];
+    if (!publicadas.length) return true;
+    const firma = f => [String(f.id), String(f.label || ''), String(f.icon || ''), String(f.color || ''), String(f.bgIcon || '')];
+    if (JSON.stringify(publicadas.map(firma)) !== JSON.stringify((lista || []).map(firma))) return true;
+    const ordenado = Array.isArray(capa.ordenCarpetas) ? capa.ordenCarpetas.map(String) : [];
+    if (JSON.stringify(ordenado) !== JSON.stringify((orden || []).map(String))) return true;
+    return (borradas || []).length > 0;
+}
+
+/** Una tarjeta cuya carpeta ya no existe vuelve a una carpeta válida (no se pierde). */
+function refolderOrphanTricks(items, carpetas) {
+    const ids = (carpetas || []).map(f => String(f.id)).filter(Boolean);
+    if (!ids.length) return items;
+    const validos = new Set(ids);
+    const destino = validos.has('xl-dev') ? 'xl-dev' : ids[0];
+    return items.map(t => validos.has(String(t.category)) ? t : { ...t, category: destino });
+}
+
 function prepararImagenPublicada(trick, imagenes) {
     const url = trick.imageUrl || '';
     if (esImagenPropia(url)) {
@@ -4785,8 +4858,15 @@ function prepararImagenPublicada(trick, imagenes) {
     return url;
 }
 
-/** Diferencia entre lo que tengo y el catálogo de serie (opcionalmente, de UNA carpeta). */
-function buildPublishPayload(tricks, semillas, carpeta = '') {
+/**
+ * Diferencia entre lo que tengo y el catálogo de serie (opcionalmente, de UNA carpeta).
+ *
+ * `listaCarpetas` (sin la carpeta Favoritos) y `ordenCarpetas` (con ella, en el
+ * orden real de la rejilla) son datos GLOBALES: se envían en TODAS las
+ * publicaciones, publique la carpeta que publique, para que cualquier navegador
+ * acabe viendo exactamente las mismas carpetas y en el mismo orden.
+ */
+function buildPublishPayload(tricks, semillas, carpeta = '', listaCarpetas = [], ordenCarpetas = [], carpetasBorradas = []) {
     // La base es el catálogo de serie tal como lo ordena la app. Los números de
     // sortOrder NO se comparan (cambian solos con el tiempo): del orden solo se
     // publica la secuencia, y únicamente si de verdad es distinta.
@@ -4870,6 +4950,10 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
             // mezclar, para que lo publicado refleje fielmente esa carpeta.
             carpetas: carpeta ? [carpeta] : [],
             ids: carpeta ? lista.map(t => String(t.id)) : [],
+            // Carpetas y su orden: globales, van siempre.
+            listaCarpetas,
+            ordenCarpetas,
+            carpetasBorradas,
         },
         imagenes,
         resumen: {
@@ -4878,6 +4962,8 @@ function buildPublishPayload(tricks, semillas, carpeta = '') {
             borradas: borradas.length,
             imagenes: Object.keys(imagenes).length,
             reordenadas: Object.keys(orden).length,
+            carpetas: listaCarpetas.length,
+            carpetasBorradas: carpetasBorradas.length,
             desglose,
         },
     };
@@ -5840,6 +5926,9 @@ function FolderForm({ onSave, onClose }) {
 function App() {
     const [tricks, setTricks] = useLocalStorage(STORAGE_KEY, SEED_TRICKS);
     const [folders, setFolders] = useFolders();
+    // Última capa publicada leída del servidor: permite saber si las carpetas
+    // (o su orden) se han movido respecto a lo que ya está en el aire.
+    const [capaPublicada, setCapaPublicada] = useState(null);
     const [folderCardOrder, setFolderCardOrder] = useState(() => {
         try { return JSON.parse(localStorage.getItem('trickvault_folder_card_order')); }
         catch { return null; }
@@ -5992,6 +6081,9 @@ function App() {
             const target = destination.id;
             setTricks(prev => prev.map(t => t.category === folder.id ? { ...t, category: target } : t));
             setFolders(prev => prev.filter(f => f.id !== folder.id));
+            // Se apunta la baja para que la próxima publicación la lleve al
+            // servidor y desaparezca también en los demás navegadores.
+            rememberDeletedFolder(folder.id);
             addToast('🗑️ Carpeta eliminada', 'error');
         });
     }, [folders, setFolders, setTricks, withEditAccess]);
@@ -6113,10 +6205,20 @@ function App() {
             addToast('Vuelve a entrar en modo edición para publicar', 'error');
             return;
         }
-        const { catalogo, imagenes, resumen } = buildPublishPayload(tricks, SEED_TRICKS, carpetaPublicar);
+        // Carpetas y su orden: datos globales, van en CUALQUIER publicación
+        // (también al publicar una sola carpeta), para que todos los
+        // navegadores acaben viendo lo mismo.
+        const ordenCarpetas = orderedFolderCards.map(f => f.id);
+        const listaCarpetas = orderedFolderCards
+            .filter(f => f.id !== 'favorites')
+            .map(f => ({ id: f.id, label: f.label, icon: f.icon, color: f.color, bgIcon: f.bgIcon }));
+        const carpetasBorradas = readDeletedFolders();
+        const { catalogo, imagenes, resumen } = buildPublishPayload(
+            tricks, SEED_TRICKS, carpetaPublicar, listaCarpetas, ordenCarpetas, carpetasBorradas);
         const nombreCarpeta = carpetaPublicar ? (getCat(carpetaPublicar, folders)?.label || carpetaPublicar) : '';
+        const carpetasCambian = foldersNeedPublish(listaCarpetas, ordenCarpetas, carpetasBorradas, capaPublicada);
         const total = resumen.cambiadas + resumen.nuevas + resumen.borradas;
-        if (!total && !resumen.imagenes) {
+        if (!total && !resumen.imagenes && !carpetasCambian) {
             addToast('No has cambiado nada respecto al catálogo');
             return;
         }
@@ -6140,7 +6242,11 @@ function App() {
             `• ${resumen.nuevas} tarjetas propias\n` +
             `• ${resumen.borradas} tarjetas borradas\n` +
             `• ${resumen.imagenes} imágenes propias\n` +
-            (resumen.reordenadas ? `• ${resumen.reordenadas} carpetas con el orden cambiado\n` : '') +
+            (resumen.reordenadas ? `• ${resumen.reordenadas} carpetas con el orden de tarjetas cambiado\n` : '') +
+            (carpetasCambian
+                ? `• ${resumen.carpetas} carpetas y su orden\n` +
+                  (resumen.carpetasBorradas ? `• ${resumen.carpetasBorradas} carpetas borradas\n` : '')
+                : '') +
             (porCampo ? `\nPor campo → ${porCampo}\n` : '') +
             muestra +
             '\nLo verá todo el mundo y quedará en el historial del repositorio. ¿Publicamos?'
@@ -6152,13 +6258,19 @@ function App() {
         try {
             const r = await publishCatalogue(editPassword, catalogo, imagenes,
                 `publicar${nombreCarpeta ? ' ' + nombreCarpeta : ''}: ${resumen.cambiadas} tarjetas, ` +
-                `${resumen.nuevas} nuevas, ${resumen.imagenes} imágenes`);
+                `${resumen.nuevas} nuevas, ${resumen.imagenes} imágenes` +
+                (carpetasCambian ? `, ${resumen.carpetas} carpetas` : ''));
             if (r.sin_cambios) {
                 setEstadoPublicar('ℹ️ ' + (r.mensaje || 'No había nada nuevo'));
                 addToast('No había nada nuevo que publicar');
             } else {
                 setEstadoPublicar(`✅ Publicado en GitHub (commit ${r.commit}). Esperando al despliegue…`);
                 addToast(`✅ Publicado (commit ${r.commit})`);
+                if (carpetasCambian) {
+                    // El servidor ya tiene esas bajas: aquí se dejan de apuntar.
+                    clearDeletedFolders();
+                    setCapaPublicada(prev => ({ ...(prev || {}), listaCarpetas, ordenCarpetas, carpetasBorradas: [] }));
+                }
                 // El despliegue de Hostinger tarda unos segundos en traer el
                 // fichero: se comprueba aquí, sin bloquear la respuesta.
                 const marca = r.actualizado;
@@ -6168,7 +6280,9 @@ function App() {
                     const capa = await loadPublishedCatalogue();
                     if (capa && capa.actualizado === marca) {
                         enElAire = true;
+                        setCapaPublicada(capa);
                         setTricks(prev => normalizeTrickOrder(applyPublishedCatalogue(prev, capa)));
+                        setFolders(prev => applyPublishedFolders(prev, capa));
                     }
                 }
                 setEstadoPublicar(enElAire
@@ -6257,7 +6371,16 @@ function App() {
             try {
                 const capa = await loadPublishedCatalogue();
                 if (!capa || cancelled) return;
-                setTricks(prev => normalizeTrickOrder(applyPublishedCatalogue(prev, capa)));
+                setCapaPublicada(capa);
+                // Carpetas: manda la capa publicada, para que este navegador (y
+                // cualquier otro) enseñe la misma lista y en el mismo orden.
+                const carpetas = applyPublishedFolders(loadFolders(), capa);
+                setFolders(carpetas);
+                if (Array.isArray(capa.ordenCarpetas) && capa.ordenCarpetas.length) {
+                    setFolderCardOrder(capa.ordenCarpetas);
+                }
+                setTricks(prev => normalizeTrickOrder(refolderOrphanTricks(
+                    applyPublishedCatalogue(prev, capa), carpetas)));
             } catch (error) {
                 console.error('[TrickVault] No se pudo cargar el catálogo publicado:', error);
             }
