@@ -2,11 +2,12 @@
 <html lang="es"><head><meta charset="utf-8"><title>midiendo</title></head>
 <body style="margin:0;background:#000">
 <!--
-  Verificacion de la carpeta «Restauracion de fotos antiguas» de TrickVault.
-  1) la carpeta existe y las 9 tarjetas nuevas estan dentro, con su ejemplo
-  2) un navegador que YA las tenia guardadas sin imagen las recupera al recargar
-  3) los ficheros .jpg cargan de verdad (naturalWidth > 0)
-  4) el boton de copiar de una tarjeta nueva copia /codigo + prompt completo
+  Verificacion de la carpeta «Restauracion de fotos antiguas» (3 tarjetas fundidas).
+  1) la carpeta existe y estan las 3 tarjetas nuevas, con su ejemplo
+  2) un navegador que YA tenia las 9 tarjetas viejas guardadas: se le borran y
+     le entran las 3 nuevas
+  3) los .jpg cargan de verdad (naturalWidth > 0)
+  4) el boton de copiar copia /codigo + prompt completo
   Lanzar con: chrome --headless=new --allow-file-access-from-files --dump-dom ...
 -->
 <iframe id="f" src="../../apps/trickvault/index.html" width="1440" height="900" style="border:0"></iframe>
@@ -15,9 +16,11 @@ const KEY = 'trickvault_data';
 const FOLDERS_KEY = 'trickvault_folders';
 const SCHEMA_KEY = 'trickvault_folders_schema';
 const PREFIX = 'assets/xl-restauracion/';
-const CODIGOS = ['/restaurarfotoantigua', '/preservaridentidadantigua', '/restauracionconservadora',
-                 '/colorizarfotoantigua', '/colorizacionnatural', '/coloresdeepoca',
-                 '/restauracion4k', '/prepararparaimprimir', '/detallenitido'];
+const NUEVAS = ['/restaurarfotoantigua', '/colorizarfotoantigua', '/prepararparaimprimir'];
+const VIEJAS = ['/restaurarfotoantigua', '/preservaridentidadantigua', '/restauracionconservadora',
+                '/colorizarfotoantigua', '/colorizacionnatural', '/coloresdeepoca',
+                '/restauracion4k', '/prepararparaimprimir', '/detallenitido'];
+const IDS_VIEJAS = Array.from({length: 9}, (_, i) => 'cap-cmd-' + String(114 + i).padStart(3, '0'));
 const f = document.getElementById('f');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 15000); }); }
@@ -29,64 +32,68 @@ const out = [];
     await cargar('../../apps/trickvault/index.html?' + Date.now());
     await sleep(4000);
 
-    // 1) carpeta y tarjetas
     const carpetas = JSON.parse(ls().getItem(FOLDERS_KEY) || '[]');
     out.push('1) carpeta xl-restauracion en la lista: ' + (carpetas.some(c => c.id === 'xl-restauracion') ? 'SI' : 'NO')
              + ' (schema=' + ls().getItem(SCHEMA_KEY) + ')');
 
     let arr = datos();
-    const mias = arr.filter(t => CODIGOS.includes(String(t.codeSnippet || '').trim()));
-    out.push('2) tarjetas nuevas presentes: ' + mias.length + '/9');
+    const mias = arr.filter(t => NUEVAS.includes(String(t.codeSnippet || '').trim()));
+    out.push('2) tarjetas de la carpeta: ' + mias.length + '/3  (ids: ' + mias.map(t => t.id).sort().join(' ') + ')');
     out.push('3) categorias: ' + [...new Set(mias.map(t => t.category))].join(','));
-    out.push('4) con imageUrl del repo: ' + mias.filter(t => String(t.imageUrl || '').startsWith(PREFIX)).length + '/9');
-    out.push('5) ids: ' + mias.map(t => t.id).sort().join(' '));
+    out.push('4) con imageUrl del repo: ' + mias.filter(t => String(t.imageUrl || '').startsWith(PREFIX)).length + '/3');
+    out.push('5) no queda ninguna de las 9 viejas: ' + (arr.some(t => IDS_VIEJAS.includes(String(t.id))) ? 'NO' : 'SI'));
 
-    // 2) simular navegador que YA las tenia sin imagen
-    let vaciadas = 0;
-    arr.forEach(t => { if (CODIGOS.includes(String(t.codeSnippet || '').trim())) { t.imageUrl = ''; vaciadas++; } });
-    ls().setItem(KEY, JSON.stringify(arr));
+    // Navegador que YA tenia las 9 viejas guardadas (el de Antonio ahora mismo)
+    const inventadas = VIEJAS.map((code, i) => ({
+      id: IDS_VIEJAS[i], title: code + ' — vieja', description: '', category: 'xl-restauracion',
+      tags: [], codeSnippet: code, difficulty: 'beginner', sourceUrl: '',
+      imageUrl: '', isFavorite: false, createdAt: Date.UTC(2026, 9, 13) - i, updatedAt: Date.UTC(2026, 9, 13),
+    }));
+    ls().setItem(KEY, JSON.stringify([...inventadas, ...arr.filter(t => !IDS_VIEJAS.includes(String(t.id)))]));
     Object.keys(ls()).filter(k => k.indexOf('trickvault-') === 0 && k.indexOf('images-version') > 0)
       .forEach(k => ls().removeItem(k));
     await cargar('../../apps/trickvault/index.html?r=' + Date.now());
     await sleep(5000);
-    const tras = datos().filter(t => CODIGOS.includes(String(t.codeSnippet || '').trim()));
-    const llenas = tras.filter(t => String(t.imageUrl || '').startsWith(PREFIX));
-    out.push('6) vaciadas ' + vaciadas + ' -> rellenadas tras recargar: ' + llenas.length + '/' + vaciadas);
 
-    // 3) los ficheros cargan de verdad
-    const urls = [...new Set(llenas.map(t => t.imageUrl))];
+    const tras = datos();
+    const quedan = tras.filter(t => IDS_VIEJAS.includes(String(t.id)));
+    const nuevas = tras.filter(t => NUEVAS.includes(String(t.codeSnippet || '').trim()));
+    out.push('6) de las 9 viejas quedan: ' + quedan.length + '/9 (deben ser 0)');
+    out.push('7) tras recargar hay: ' + nuevas.length + '/3 y con imagen del repo: '
+             + nuevas.filter(t => String(t.imageUrl || '').startsWith(PREFIX)).length + '/3');
+
+    const urls = [...new Set(nuevas.map(t => t.imageUrl).filter(u => String(u).startsWith(PREFIX)))];
     const malas = await Promise.all(urls.map(u => new Promise(res => {
       const im = new Image();
       im.onload = () => res(im.naturalWidth > 0 ? null : u);
       im.onerror = () => res(u);
       im.src = '../../apps/trickvault/' + u;
     })));
-    out.push('7) ficheros que fallan: ' + (malas.filter(Boolean).length ? malas.filter(Boolean).join(' ') : 'ninguno de ' + urls.length));
+    out.push('8) ficheros que fallan: ' + (malas.filter(Boolean).length ? malas.filter(Boolean).join(' ') : 'ninguno de ' + urls.length));
 
-    // 4) el boton de copiar de una tarjeta nueva
-    const doc = f.contentDocument;
-    const win = f.contentWindow;
+    // Boton de copiar de una tarjeta nueva
+    const doc = f.contentDocument, win = f.contentWindow;
     let copiado = '';
-    try {
-      win.navigator.clipboard.writeText = t => { copiado = String(t); return Promise.resolve(); };
-    } catch (e) { /* clipboard no configurable: se vera en el paso 9 */ }
-    const botones = [...doc.querySelectorAll('button,[role="button"],.folder-card,.cat-card')];
-    const carpeta = botones.find(b => b.textContent.includes('Restauración de fotos antiguas'));
+    try { win.navigator.clipboard.writeText = t => { copiado = String(t); return Promise.resolve(); }; } catch (e) {}
+    const carpeta = [...doc.querySelectorAll('button,[role="button"],.folder-card,.cat-card')]
+      .find(b => b.textContent.includes('Restauración de fotos antiguas'));
     if (carpeta) carpeta.click();
     await sleep(3500);
-    const nuevoDoc = f.contentDocument;
-    const copyBtn = [...nuevoDoc.querySelectorAll('button')].find(b => /copiar/i.test(b.textContent) || /copiar/i.test(b.getAttribute('title') || ''));
+    const copyBtn = [...f.contentDocument.querySelectorAll('button')]
+      .find(b => /copiar/i.test(b.textContent) || /copiar/i.test(b.getAttribute('title') || ''));
     if (copyBtn) {
       copyBtn.click();
       await sleep(1500);
-      out.push('8) copiado: ' + (copiado ? copiado.slice(0, 190) + ' ... [' + copiado.length + ' chars]' : 'NO CAPTURADO'));
-      out.push('9) lleva el codigo delante: ' + (copiado.startsWith('/') ? 'SI' : 'NO')
-               + ' | lleva la parte fija: ' + (copiado.includes('apply only the style') ? 'SI' : 'NO')
-               + ' | pide espanol: ' + (copiado.includes('must be written in Spanish') ? 'SI' : 'NO'));
+      const une = t => t.replace(/\s+/g, ' ');
+      out.push('9) copiado: ' + copiado.slice(0, 130) + ' ... [' + copiado.length + ' chars]');
+      out.push('10) codigo delante: ' + (copiado.startsWith('/') ? 'SI' : 'NO')
+               + ' | parte fija: ' + (copiado.includes('apply only the style') ? 'SI' : 'NO')
+               + ' | pide espanol: ' + (copiado.includes('must be written in Spanish') ? 'SI' : 'NO')
+               + ' | lleva lo de los 3 codigos: ' + (une(copiado).includes('never beautify') && une(copiado).includes('do not reframe') ? 'SI' : 'NO'));
     } else {
-      out.push('8) no encontre el boton de copiar en la vista de carpeta');
+      out.push('9) no encontre el boton de copiar');
     }
-    out.push('10) titulos: ' + tras.map(t => t.title).join(' | '));
+    out.push('11) titulos: ' + nuevas.map(t => t.title).join(' | '));
   } catch (e) {
     out.push('ERROR: ' + e.message);
   }

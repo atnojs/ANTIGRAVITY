@@ -100,8 +100,11 @@ def tarjetas_de(carpeta):
         if CODE_FOLDER.get(code, 'xl-dev') == carpeta:
             salida.append({'id': 'xl-cmd-%03d' % (n + 1), 'code': code})
     for n, (code, _d) in enumerate(cap):
+        cid = 'cap-cmd-%03d' % (n + 1)
+        if cid in REMOVED:
+            continue                      # tarjeta retirada (fusionada en otra)
         if CODE_FOLDER.get(code, 'xl-dev') == carpeta:
-            salida.append({'id': 'cap-cmd-%03d' % (n + 1), 'code': code})
+            salida.append({'id': cid, 'code': code})
     return salida
 
 

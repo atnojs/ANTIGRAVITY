@@ -408,17 +408,11 @@ const CODE_FOLDER = {
     '/imax': 'xl-estilos',
     '/terminal': 'xl-dev',
     '/ascii': 'xl-letras3d',
-    // Reel de Instagram (2026-10-13): los 9 atajos de restauración de fotos
-    // antiguas, todos en su carpeta propia.
+    // Reel de Instagram (2026-10-13): las 3 tarjetas de restauración de fotos
+    // antiguas (los 9 códigos del reel, fundidos de tres en tres).
     '/restaurarfotoantigua': 'xl-restauracion',
-    '/preservaridentidadantigua': 'xl-restauracion',
-    '/restauracionconservadora': 'xl-restauracion',
     '/colorizarfotoantigua': 'xl-restauracion',
-    '/colorizacionnatural': 'xl-restauracion',
-    '/coloresdeepoca': 'xl-restauracion',
-    '/restauracion4k': 'xl-restauracion',
     '/prepararparaimprimir': 'xl-restauracion',
-    '/detallenitido': 'xl-restauracion',
 };
 
 const DIFFICULTIES = [
@@ -1060,7 +1054,13 @@ const REMOVED_IMAGE_IDS = new Set([
     // guardadas y no vuelven a entrar al recargar.
     'tr-cmd-001', 'tr-cmd-002', 'tr-cmd-003', 'tr-cmd-004', 'tr-cmd-005',
     'tr-cmd-006', 'tr-cmd-007', 'tr-cmd-008', 'tr-cmd-009', 'tr-cmd-010',
-    'tr-cmd-011'
+    'tr-cmd-011',
+    // Reel de Instagram (2026-10-13): las 9 tarjetas de restauración nacieron
+    // sueltas y se FUNDIERON en 3 (una por faena: reparar, colorear, imprimir)
+    // el mismo día, para que no haya que elegir entre códigos. Los 9 ids se
+    // apagan aquí y se borran de los navegadores que ya los tuvieran guardados.
+    'cap-cmd-114', 'cap-cmd-115', 'cap-cmd-116', 'cap-cmd-117', 'cap-cmd-118',
+    'cap-cmd-119', 'cap-cmd-120', 'cap-cmd-121', 'cap-cmd-122'
 ]);
 
 
@@ -1921,14 +1921,8 @@ Object.assign(SEED_COMMAND_IMAGES, {
     '/restore': 'assets/xl-camararetrato/restore.jpg',
     '/metaads': 'assets/xl-escenaprueba/metaads.jpg',
     '/restaurarfotoantigua': 'assets/xl-restauracion/restaurarfotoantigua.jpg',
-    '/preservaridentidadantigua': 'assets/xl-restauracion/preservaridentidadantigua.jpg',
-    '/restauracionconservadora': 'assets/xl-restauracion/restauracionconservadora.jpg',
     '/colorizarfotoantigua': 'assets/xl-restauracion/colorizarfotoantigua.jpg',
-    '/colorizacionnatural': 'assets/xl-restauracion/colorizacionnatural.jpg',
-    '/coloresdeepoca': 'assets/xl-restauracion/coloresdeepoca.jpg',
-    '/restauracion4k': 'assets/xl-restauracion/restauracion4k.jpg',
     '/prepararparaimprimir': 'assets/xl-restauracion/prepararparaimprimir.jpg',
-    '/detallenitido': 'assets/xl-restauracion/detallenitido.jpg',
 });
 
 // ── Códigos del Excel «500 comandos secretos de ChatGPT» que NO existían
@@ -2349,17 +2343,24 @@ const CAPTURE_COMMANDS = [
     ['/bts', 'detrás de las cámaras de un rodaje'],
     ['/restore', 'restauración de una foto antigua dañada'],
     // Reel de Instagram (2026-10-13, gabu_lopez): los 9 atajos de restauración de
-    // fotos antiguas. Tres para reparar sin inventar, tres para el color y tres
-    // para dejarla lista de imprimir. Van a su carpeta propia (xl-restauracion).
-    ['/restaurarfotoantigua', 'repara roturas, manchas y hongos de una foto vieja'],
-    ['/preservaridentidadantigua', 'restaura sin cambiarle la cara a nadie'],
-    ['/restauracionconservadora', 'restauración mínima, respeta la onda antigua'],
-    ['/colorizarfotoantigua', 'devuelve el color a una foto en blanco y negro'],
-    ['/colorizacionnatural', 'color suave y creíble, sin chillar'],
-    ['/coloresdeepoca', 'colores fieles a la época de la foto'],
-    ['/restauracion4k', 'restauración nítida en 4K, sin pixelar'],
-    ['/prepararparaimprimir', 'deja la foto lista para imprimir y colgar'],
-    ['/detallenitido', 'recupera el detalle fino sin halos'],
+    // fotos antiguas. Ese mismo día se FUNDIERON en las 3 tarjetas de abajo (una
+    // por faena), así que estos 9 quedan RETIRADOS: se dejan aquí solo para no
+    // renumerar los cap-cmd que ya estén guardados y se apagan con
+    // REMOVED_IMAGE_IDS. No llevan CODE_FOLDER a propósito.
+    ['/restaurarfotoantigua', 'RETIRADO: fundido en la tarjeta /restaurarfotoantigua'],
+    ['/preservaridentidadantigua', 'RETIRADO: fundido en /restaurarfotoantigua'],
+    ['/restauracionconservadora', 'RETIRADO: fundido en /restaurarfotoantigua'],
+    ['/colorizarfotoantigua', 'RETIRADO: fundido en la tarjeta /colorizarfotoantigua'],
+    ['/colorizacionnatural', 'RETIRADO: fundido en /colorizarfotoantigua'],
+    ['/coloresdeepoca', 'RETIRADO: fundido en /colorizarfotoantigua'],
+    ['/restauracion4k', 'RETIRADO: fundido en la tarjeta /prepararparaimprimir'],
+    ['/prepararparaimprimir', 'RETIRADO: fundido en la tarjeta /prepararparaimprimir'],
+    ['/detallenitido', 'RETIRADO: fundido en /prepararparaimprimir'],
+    // Las 3 tarjetas que quedan, una por faena. Cada una lleva dentro lo que
+    // hacían sus tres códigos: el usuario copia UNA tarjeta y no elige nada.
+    ['/restaurarfotoantigua', 'restaura la foto vieja sin inventar ni cambiar caras'],
+    ['/colorizarfotoantigua', 'le devuelve el color con tonos naturales de época'],
+    ['/prepararparaimprimir', 'la deja nítida en 4K y lista para imprimir'],
 ];
 
 // Variantes personales recuperadas de la copia de seguridad de Antonio.
@@ -2454,20 +2455,26 @@ const SEED_TRICKS = [
         updatedAt: Date.UTC(2026, 9, 1),
     })),
     // Entradas de los 108 códigos nuevos de las capturas (2026-10-06).
-    ...CAPTURE_COMMANDS.map(([command, meaning], index) => ({
-        id: `cap-cmd-${String(index + 1).padStart(3, '0')}`,
-        title: `${command} — ${meaning}`,
-        description: '',
-        category: CODE_FOLDER[command] || 'xl-dev',
-        tags: ['comandos de imagen', 'imagen', 'Capturas'],
-        codeSnippet: command,
-        difficulty: 'beginner',
-        sourceUrl: '',
-        imageUrl: SEED_COMMAND_IMAGES[command] || '',
-        isFavorite: false,
-        createdAt: Date.UTC(2026, 9, 6) - index,
-        updatedAt: Date.UTC(2026, 9, 6),
-    })),
+    ...CAPTURE_COMMANDS.flatMap(([command, meaning], index) => {
+        const id = `cap-cmd-${String(index + 1).padStart(3, '0')}`;
+        // Tarjetas retiradas (fusionadas en otras): no vuelven a entrar y su id
+        // se borra también de los navegadores que ya las tuvieran guardadas.
+        if (REMOVED_IMAGE_IDS.has(id)) return [];
+        return [{
+            id,
+            title: `${command} — ${meaning}`,
+            description: '',
+            category: CODE_FOLDER[command] || 'xl-dev',
+            tags: ['comandos de imagen', 'imagen', 'Capturas'],
+            codeSnippet: command,
+            difficulty: 'beginner',
+            sourceUrl: '',
+            imageUrl: SEED_COMMAND_IMAGES[command] || '',
+            isFavorite: false,
+            createdAt: Date.UTC(2026, 9, 6) - index,
+            updatedAt: Date.UTC(2026, 9, 6),
+        }];
+    }),
 ];
 
 // Carpeta con la que nace cada tarjeta semilla. Las 11 tarjetas escritas a mano
@@ -3610,17 +3617,13 @@ const PROMPT_TEMPLATES = {
     "/ascii": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. ASCII art: the subject rendered entirely with monospaced text characters, varying character density to build tone and shading, green-on-black terminal output, all visible text and labels must be written in Spanish with no English words",
 
     // ── Reel de Instagram (2026-10-13, gabu_lopez): restauración de fotos antiguas.
-    //    Las nueve se aplican a la foto que adjunta el usuario, así que ninguna
-    //    lleva [OBJETO] (el sujeto solo se usa para generar el ejemplo).
-    "/restaurarfotoantigua": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Archival restoration of the old damaged photograph: repair every crack, tear, crease, scratch, stain, dust speck and mould spot, rebuild the missing edges and corners, recover the eyes, the hair and the fine facial features that are still readable in the original, keep the original framing, the original pose and the original clothing exactly as they are, honest film grain of the era, gentle sepia or neutral tonality, no invented faces and no invented objects, museum-quality conservation retouch, all visible text and labels must be written in Spanish with no English words",
-    "/preservaridentidadantigua": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Identity-safe restoration of the old photograph: the people must remain exactly who they are, same face, same bone structure, same eyes, same nose, same mouth, same period hairstyle, same expression and same age, clean only the actual damage and never beautify, never modernise, never slim, never smooth the features, no cosmetic retouch, no teeth whitening, no plastic skin, keep the real skin texture and the marks of time on the face, the restored photograph must be instantly recognisable as the same person by their own family, all visible text and labels must be written in Spanish with no English words",
-    "/restauracionconservadora": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Conservative minimal-intervention restoration of the old photograph: repair only the real damage, keep the original contrast, the original tonality, the original paper texture, the visible age marks, the vignetting and the slight softness of the era, do not crop, do not reframe, do not oversharpen, do not convert to modern colour, the result must still look like the very same old photograph, only cleaner and more readable, all visible text and labels must be written in Spanish with no English words",
-    "/colorizarfotoantigua": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colourisation of the black and white or sepia old photograph: believable natural skin tones with subtle undertones, period-correct clothing and fabric colours, realistic hair colour, softly coloured background and props, colour applied with restraint as if the original emulsion had always been in colour, keeping the original grain, the original lighting and the original softness, no neon saturation and no modern colour grading, all visible text and labels must be written in Spanish with no English words",
-    "/colorizacionnatural": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Natural restrained colourisation of the old photograph: muted realistic palette, gentle desaturated tones, soft warm skin, no oversaturation and no strong colour casts, colours that look like an authentic hand-tinted print of the period, subtle colour variation across the frame, original grain, dust and vignetting preserved, all visible text and labels must be written in Spanish with no English words",
-    "/coloresdeepoca": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Era-accurate colourisation of the old photograph: historically researched palette for the decade the image belongs to, correct period textile dyes, correct uniform and workwear colours, correct paint, wallpaper and furniture tones of the time, correct hair and cosmetic fashions of the era, no anachronistic colours and no modern materials, slightly faded and uneven colour as the original print would have aged, all visible text and labels must be written in Spanish with no English words",
-    "/restauracion4k": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-resolution restoration of the old photograph: rebuild the image at 4K detail, resolved micro-texture in the skin, the fabric weave, the hair strands and the background objects, crisp clean edges without halos, no pixelation, no jpeg blocking, no mush and no plastic smoothing, all damage repaired, natural modern sharpness while the original character of the print is respected, all visible text and labels must be written in Spanish with no English words",
-    "/prepararparaimprimir": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Print-ready preparation of the restored photograph: correct print resolution, generous clean white border, full tonal range with deep blacks and clean highlights, no clipping, sharpened for paper output, no pixelation and no visible noise, neutral colour balance for pigment printing, the picture framed and ready to be printed and hung on a wall, all visible text and labels must be written in Spanish with no English words",
-    "/detallenitido": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Crisp detail recovery of the old photograph: recover the fine micro-detail of the eyes, the eyelashes, the eyebrows, the lips, the hair strands, the fabric weave, the buttons, the jewellery and the background objects, clean precise edges, no blur, no halos and no ringing artifacts, natural texture kept instead of plastic smoothing, high-frequency detail enhancement, all visible text and labels must be written in Spanish with no English words",
+    //    Los 9 códigos del reel, fundidos de tres en tres en UNA tarjeta por faena
+    //    (reparar / colorear / imprimir): el usuario copia una tarjeta y no tiene
+    //    que elegir ni combinar códigos. Las tres se aplican a la foto que adjunta
+    //    el usuario, así que ninguna lleva [OBJETO] (el sujeto solo es para el ejemplo).
+    "/restaurarfotoantigua": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Archival restoration of the old damaged photograph: repair every crack, tear, crease, scratch, stain, dust speck and mould spot, rebuild the missing edges and corners, recover the eyes, the hair and the fine facial features that are still readable in the original, keep the original framing, the original pose and the original clothing exactly as they are; the people must remain exactly who they are, same face, same bone structure, same eyes, same nose, same mouth, same period hairstyle, same expression and same age, so clean only the actual damage and never beautify, never modernise, never slim and never smooth the features, no cosmetic retouch, no teeth whitening and no plastic skin, keep the real skin texture and the marks of time on the face; keep the original contrast, the original tonality, the original paper texture, the visible age marks, the vignetting and the slight softness of the era, do not crop, do not reframe, do not oversharpen and do not convert to modern colour, honest film grain, gentle sepia or neutral tonality, no invented faces and no invented objects, museum-quality conservation retouch, the result must still look like the very same old photograph only cleaner and must be instantly recognisable as the same person by their own family, all visible text and labels must be written in Spanish with no English words",
+    "/colorizarfotoantigua": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colourisation of the black and white or sepia old photograph: believable natural skin tones with subtle undertones, realistic hair colour, softly coloured background and props, period-correct clothing and fabric colours researched for the decade the image belongs to, correct period textile dyes, correct uniform and workwear colours, correct paint and furniture tones of the time, muted realistic palette with gentle desaturated tones, colour applied with restraint as if the original emulsion had always been in colour, subtle colour variation across the frame, slightly faded and uneven colour as the original tinted print would have aged, keeping the original grain, the original lighting and the original softness, no oversaturation, no strong colour casts, no neon and no modern colour grading, no anachronistic colours and no modern materials, all visible text and labels must be written in Spanish with no English words",
+    "/prepararparaimprimir": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Print-ready high-resolution restoration of the old photograph: rebuild the image at 4K detail, resolved micro-texture in the skin, the fabric weave, the hair strands and the background objects, recover the fine micro-detail of the eyes, the eyelashes, the eyebrows, the lips, the buttons and the jewellery, crisp clean edges without halos, no blur, no ringing artifacts, no pixelation, no jpeg blocking, no mush and no plastic smoothing, natural texture kept and damage repaired; correct print resolution with a generous clean white border, full tonal range with deep blacks and clean highlights, no clipping, sharpened for paper output, neutral colour balance for pigment printing, the picture framed and ready to be printed and hung on a wall, all visible text and labels must be written in Spanish with no English words",
 };
 
 const TEXT_COMMAND_TEMPLATES = {
@@ -4117,7 +4120,7 @@ const GENERATED_IMAGE_RELEASES = [
     { category: 'xl-verdentro', prefix: 'assets/xl-verdentro/', key: 'trickvault-xl-verdentro-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-planos', prefix: 'assets/planos/', key: 'trickvault-xl-planos-images-version', version: '2026-10-06-gpt-image-2-low' },
     { category: 'xl-juegos', prefix: 'assets/xl-juegos/', key: 'trickvault-xl-juegos-images-version', version: '2026-10-06-gpt-image-2-low' },
-    { category: 'xl-restauracion', prefix: 'assets/xl-restauracion/', key: 'trickvault-xl-restauracion-images-version', version: '2026-10-13-reel-restauracion' },
+    { category: 'xl-restauracion', prefix: 'assets/xl-restauracion/', key: 'trickvault-xl-restauracion-images-version', version: '2026-10-13-reel-fundido-3-tarjetas' },
 ];
 function isGeneratedCardImage(imageUrl) {
     return typeof imageUrl === 'string' && GENERATED_IMAGE_RELEASES.some(release => imageUrl.startsWith(release.prefix));
