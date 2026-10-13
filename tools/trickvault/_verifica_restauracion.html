@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>midiendo</title></head>
+<body style="margin:0;background:#000">
+<!--
+  Verificacion de la carpeta «Restauracion de fotos antiguas» de TrickVault.
+  1) la carpeta existe y las 9 tarjetas nuevas estan dentro
+  2) un navegador que YA las tenia guardadas sin imagen las recupera al recargar
+  3) los ficheros .jpg cargan de verdad (naturalWidth > 0)
+  Lanzar con: chrome --headless=new --allow-file-access-from-files --dump-dom ...
+-->
+<iframe id="f" src="../../apps/trickvault/index.html" width="1440" height="900" style="border:0"></iframe>
+<script>
+const KEY = 'trickvault_data';
+const FOLDERS_KEY = 'trickvault_folders';
+const SCHEMA_KEY = 'trickvault_folders_schema';
+const PREFIX = 'assets/xl-restauracion/';
+const CODIGOS = ['/restaurarfotoantigua', '/preservaridentidadantigua', '/restauracionconservadora',
+                 '/colorizarfotoantigua', '/colorizacionnatural', '/coloresdeepoca',
+                 '/restauracion4k', '/prepararparaimprimir', '/detallenitido'];
+const f = document.getElementById('f');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 15000); }); }
+function datos() { return JSON.parse(f.contentWindow.localStorage.getItem(KEY) || '[]'); }
+function ls() { return f.contentWindow.localStorage; }
+const out = [];
+(async () => {
+  try {
+    await cargar('../../apps/trickvault/index.html?' + Date.now());
+    await sleep(4000);
+
+    // 1) carpeta y tarjetas
+    const carpetas = JSON.parse(ls().getItem(FOLDERS_KEY) || '[]');
+    out.push('1) carpeta xl-restauracion en la lista: ' + (carpetas.some(c => c.id === 'xl-restauracion') ? 'SI' : 'NO')
+             + ' (schema=' + ls().getItem(SCHEMA_KEY) + ')');
+
+    let arr = datos();
+    const mias = arr.filter(t => CODIGOS.includes(String(t.codeSnippet || '').trim()));
+    out.push('2) tarjetas nuevas presentes: ' + mias.length + '/9');
+    out.push('3) categorias: ' + [...new Set(mias.map(t => t.category))].join(','));
+    out.push('4) con imageUrl del repo: ' + mias.filter(t => String(t.imageUrl || '').startsWith(PREFIX)).length + '/9');
+    out.push('5) ids: ' + mias.map(t => t.id).sort().join(' '));
+
+    // 2) simular navegador que YA las tenia sin imagen
+    let vaciadas = 0;
+    arr.forEach(t => { if (CODIGOS.includes(String(t.codeSnippet || '').trim())) { t.imageUrl = ''; vaciadas++; } });
+    ls().setItem(KEY, JSON.stringify(arr));
+    Object.keys(ls()).filter(k => k.indexOf('trickvault-') === 0 && k.indexOf('images-version') > 0)
+      .forEach(k => ls().removeItem(k));
+    await cargar('../../apps/trickvault/index.html?r=' + Date.now());
+    await sleep(5000);
+    const tras = datos().filter(t => CODIGOS.includes(String(t.codeSnippet || '').trim()));
+    const llenas = tras.filter(t => String(t.imageUrl || '').startsWith(PREFIX));
+    out.push('6) vaciadas ' + vaciadas + ' -> rellenadas tras recargar: ' + llenas.length + '/' + vaciadas);
+
+    // 3) los ficheros cargan de verdad
+    const urls = [...new Set(llenas.map(t => t.imageUrl))];
+    const malas = await Promise.all(urls.map(u => new Promise(res => {
+      const im = new Image();
+      im.onload = () => res(im.naturalWidth > 0 ? null : u);
+      im.onerror = () => res(u);
+      im.src = '../../apps/trickvault/' + u;
+    })));
+    out.push('7) ficheros que fallan: ' + (malas.filter(Boolean).length ? malas.filter(Boolean).join(' ') : 'ninguno de ' + urls.length));
+    out.push('8) titulos: ' + tras.map(t => t.title).join(' | '));
+  } catch (e) {
+    out.push('ERROR: ' + e.message);
+  }
+  document.title = out.join('  ||  ');
+})();
+</script>
+</body></html>
