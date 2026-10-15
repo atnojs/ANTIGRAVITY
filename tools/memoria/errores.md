@@ -5,6 +5,32 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+## Errores de criterio (los que más caro salen)
+
+---
+
+### [2026-10-15] `git commit -am` arrastró trabajo ajeno a un commit ya publicado
+
+- **Síntoma:** quise anotar **una línea** en `tools/memoria/bitacora.md` y el commit
+  resultante (`119901a`) salió con **21 ficheros y 1450 inserciones**: `apps/json/` completo
+  (`app.js`, `app.css`, `index.html`), `skills/SKILL_VIDEOVAULT_VIDEOS.md` y una docena de
+  ficheros de datos de `tools/trickvault/`. Todo eso eran cambios pendientes de otra
+  sesión, sin commitear. Al hacer push, **se publicaron** en Hostinger.
+- **Causa:** `git commit -am` equivale a `git add -u`: escenifica **todo lo modificado** del
+  repositorio, no solo lo mío. Y el push posterior los desplegó.
+- **Solución:**
+  1. Nunca `-a`. Commit siempre por ruta explícita:
+     `git add tools/memoria/bitacora.md && git commit -m "..."` (sin `-a`).
+  2. Antes de escribir el mensaje, comprobar `git status --porcelain` y, tras commitear,
+     `git show --stat HEAD` — **antes** de hacer push.
+  3. Para commits de un solo cambio existe `tools/commit-aislado.ps1`.
+  4. **No se revirtió a propósito:** deshacer ese commit habría borrado del disco el trabajo
+     pendiente de la otra sesión. Se dejó publicado y se avisó.
+- **Lección:** el mensaje del commit es lo de menos; el daño es publicar trabajo que no era
+  tuyo ni estaba listo. Un `-a` convierte un cambio de una línea en un despliegue.
+
+---
+
 ### [2026-10-15] `Get-NetTCPConnection` devuelve vacío SIN error → conclusión falsa
 
 - **Síntoma:** informé a Antonio de que "nadie escuchaba en el puerto 20128" y que el

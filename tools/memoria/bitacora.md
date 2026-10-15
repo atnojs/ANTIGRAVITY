@@ -52,5 +52,10 @@ el fichero de secreto; `pwsh` inexistente; `ExecutionPolicy`; y el error del job
 
 - `f65fa58` — `feat(omniroute): arranque oculto v2 + guia de replica`
 - `c7f061f` — `feat(memoria): memoria operativa del proyecto en tools/memoria`
+- `119901a` — `docs(memoria): anota el commit de la propia memoria en la bitacora`
+  ⚠️ **Este commit salió contaminado**: por usar `git commit -am` arrastró y publicó
+  trabajo pendiente de otra sesión (`apps/json/`, `skills/SKILL_VIDEOVAULT_VIDEOS.md`,
+  `tools/trickvault/*`). Ver `errores.md`. Detectado y avisado a Antonio; **no se revirtió**
+  para no borrar ese trabajo del disco.
 
 **Queda abierto:** ver `pendientes.md` (lo importante: apuntar el agente al gateway).
