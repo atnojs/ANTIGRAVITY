@@ -5467,6 +5467,45 @@ function variantFavoriteIds(variant) {
     return variant?.legacyFavoriteId ? [variant.legacyFavoriteId, ...list] : list;
 }
 
+/** Clave de identidad de una tarjeta: su comando + el prompt con el que trabaja. */
+function claveDeTarjeta(trick) {
+    const codigo = getImageCommandKey(trick);
+    const propio = String(trick.customPrompt || '').trim();
+    const plantilla = propio || IMAGE_COMMAND_PROMPTS.get(codigo) || TEXT_COMMAND_PROMPTS.get(codigo) || '';
+    return codigo + '\u0000' + plantilla;
+}
+
+/**
+ * Dos tarjetas con el MISMO código y el MISMO prompt son la misma herramienta: se
+ * queda una. Si el prompt es distinto (p. ej. /expressionsheet: model sheet de cómic
+ * frente a la variante fotorrealista) se conservan las dos, que es la regla del
+ * proyecto.
+ *
+ * Esto es lo que limpiaba las tarjetas repetidas que se veían en «Comandos de texto»
+ * y en Casa y viajes: los ids son posicionales, así que al insertar un comando en
+ * medio del array la tarjeta guardada se queda con su id viejo y la nueva entra con
+ * el suyo; `mergeSeedCards` ya tira las que ocupan un id ajeno, y esto cierra el
+ * resto (ids que ya no existen en la semilla, como pasaba con /glitch).
+ * Se conserva la que tenga trabajo del usuario (favorito o imagen propia).
+ */
+function dedupeCardsByCommand(items) {
+    const vistas = new Map();
+    const salida = [];
+    for (const item of items) {
+        const codigo = getImageCommandKey(item);
+        if (!codigo.startsWith('/')) { salida.push(item); continue; }
+        const clave = claveDeTarjeta(item);
+        const previa = vistas.get(clave);
+        if (!previa) { vistas.set(clave, item); salida.push(item); continue; }
+        const valor = t => (t.isFavorite ? 2 : 0) + (/^data:/.test(String(t.imageUrl || '')) ? 1 : 0);
+        if (valor(item) > valor(previa)) {
+            salida[salida.indexOf(previa)] = item;
+            vistas.set(clave, item);
+        }
+    }
+    return salida;
+}
+
 function applyRemoteFavorites(items, ids) {
     const favorites = new Set(ids);
     return items.map(item => {
@@ -5493,7 +5532,7 @@ function useLocalStorage(key, initial) {
                 localStorage.setItem(key, JSON.stringify(migrated));
             }
             const merged = mergeSeedCards(migrated, initial);
-            return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(migrateGeneratedCardImages(merged)));
+            return normalizeTrickOrder(cleanLegacyImageCommandDescriptions(migrateGeneratedCardImages(dedupeCardsByCommand(merged))));
         } catch { return initial; }
     });
 

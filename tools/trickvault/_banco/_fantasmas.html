@@ -28,6 +28,11 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
       t.codeSnippet = sig.codeSnippet;
       t.title = sig.title;
     }
+    // Caso /glitch: una copia guardada con un id que ya no existe en la semilla, pero
+    // con el mismo codigo y prompt que otra tarjeta (el dedupe por código debe tirarla).
+    const victima = texto[texto.length - 1];
+    const copiaGlitch = { ...victima, id: 'ig-dcek-998' };
+    datos.push(copiaGlitch);
     ls.setItem('trickvault_data', JSON.stringify(datos));
     // recargar: la app debe tirar los fantasmas (su id ya no es suyo) y dejar las buenas
     await cargar('/app/index.html?r=' + Date.now());
@@ -48,6 +53,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
       fantasmas_que_siguen: siguen.map(x => x.id + ' -> ' + x.puesto),
       ids_que_recuperaron_su_codigo: recuperados.length,
       codigos_repetidos: repetidos,
+      copia_glitch_eliminada: !despues.some(t => t.id === 'ig-dcek-998'),
     }, null, 1);
     document.title = 'antes=' + antes + ' despues=' + despues.length + ' texto='
       + despues.filter(t => t.category === 'xl-texto').length + ' fantasmas_vivos=' + siguen.length
