@@ -5,6 +5,19 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## 0. 🔴 ROTAR las 6 claves de Google expuestas — **urgente**
+
+- **Estado:** detectado el 2026-10-15, sin resolver. Detalle completo en `credenciales.md`.
+- **Hecho:** 37 ficheros de `apps/` llevan una clave `AIza…` incrustada; 6 claves distintas;
+  la mayoría se sirven por web con HTTP 200 y el repositorio de GitHub es **público**.
+  Borrar los ficheros NO basta: el historial de git las conserva.
+- **Siguiente paso:** revocar y regenerar las 6 claves en Google Cloud Console (se
+  identifican por el prefijo, tabla en `credenciales.md`) y sustituir su uso por `proxy.php`.
+- **Verificación:** las claves viejas deben devolver error de API deshabilitada; los
+  ficheros de `apps/` no deben contener ninguna cadena `AIza`.
+
+---
+
 ## 1. Apuntar DSH (el agente) al gateway de OmniRoute — *el ahorro grande*
 
 - **Estado:** sin hacer. Hoy el agente habla **directo** con la API del proveedor, así que

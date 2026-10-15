@@ -13,6 +13,9 @@ no esté aquí escrito, no existe para la siguiente sesión (ni para la misma en
 | [entorno.md](entorno.md) | La máquina: rutas, herramientas, versiones y **sus limitaciones** | Siempre al empezar (es corto) |
 | [mapa.md](mapa.md) | Estructura del repo, herramientas que ya existen e índice tarea → skill | Cuando no sepas dónde está algo |
 | [errores.md](errores.md) | Errores ya cometidos: síntoma, causa, solución | **Antes** de tocar algo que suene a problema ya visto |
+| [errores-historicos.md](errores-historicos.md) | 40 fallos resueltos rescatados de Hermes, cron y backups (antes de octubre 2026) | Al diagnosticar algo que huele a viejo conocido |
+| [credenciales.md](credenciales.md) | Dónde vive cada clave, quién la usa y **qué hay expuesto** | Antes de tocar claves o publicar ficheros |
+| [produccion.md](produccion.md) | Qué está publicado y desde cuándo (foto fechada) | Antes de decir "ya está desplegado" |
 | [recetas.md](recetas.md) | Comandos verificados que funcionan en este equipo | Cuando necesites ejecutar algo del sistema |
 | [decisiones.md](decisiones.md) | Decisiones tomadas y **por qué** | Antes de cambiar algo que parece raro a propósito |
 | [pendientes.md](pendientes.md) | Lo que quedó abierto, con el siguiente paso concreto | Al empezar y al terminar |

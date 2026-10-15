@@ -59,3 +59,37 @@ el fichero de secreto; `pwsh` inexistente; `ExecutionPolicy`; y el error del job
   para no borrar ese trabajo del disco.
 
 **Queda abierto:** ver `pendientes.md` (lo importante: apuntar el agente al gateway).
+
+---
+
+## 2026-10-15 (segunda parte) — Ampliación de la memoria: credenciales, producción y hallazgo de seguridad
+
+Antonio pide ampliar la memoria con los pasos **1 (credenciales), 3 (producción) y
+4 (histórico de fallos)**.
+
+**Se hizo**
+
+| Acción | Resultado |
+|---|---|
+| Inventario de credenciales | `credenciales.md`: 9 almacenes, nombres de claves (nunca valores) y a quién afecta cada rotación |
+| Estado de producción | `produccion.md`: barrido de **80 rutas de `apps/`, las 80 con HTTP 200**, con la fecha del `index.html` de cada una |
+| Histórico de fallos | `errores-historicos.md`: **40 entradas** rescatadas de Hermes, cron y backups (trabajo delegado a un subagente) |
+
+**Hallazgo de seguridad (lo más importante del día)**
+
+- **37 ficheros** dentro de `apps/` llevan una clave de Google (`AIza…`) escrita en el
+  código: **6 claves distintas**, casi todas servidas por web con HTTP 200.
+- El repositorio `github.com/atnojs/ANTIGRAVITY` es **público**, así que están expuestas por
+  partida doble, y el historial de git las conserva aunque se borren.
+- Afecta a apps vivas (`generar_imagenes`, `imagenes_ia`, `viaje_tiempo`,
+  `prompts_predeterminados`, `decorar_habitacion`) y a `apps/Copias por si/`, que también se
+  sirve.
+- Se documentó en `credenciales.md` y se marcó como **urgente** en `pendientes.md`.
+  **No se tocó ninguna clave**: la revocación es decisión de Antonio.
+
+**Comprobado que está bien:** `E:\ANTIGRAVITY\keys\` (gitignored, línea 106) y
+`E:\ANTIGRAVITY\.private\` están fuera de git e inaccesibles por web (`403`/`404`).
+
+**Método que funcionó:** delegar el rastreo del histórico a un subagente con un fichero de
+salida propio (`errores-historicos.md`) evitó cargar decenas de documentos en el contexto
+del agente principal y no hubo conflicto de escritura.

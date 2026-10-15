@@ -8,6 +8,9 @@ La memoria operativa vive en `tools/memoria/` (versionada, protegida por `.htacc
 - `entorno.md` — la máquina, rutas, herramientas y sus limitaciones.
 - `mapa.md` — estructura del repo, herramientas existentes e índice tarea → skill.
 - `errores.md` — errores ya cometidos, con causa y solución: consúltalo **antes** de repetir un camino.
+- `errores-historicos.md` — 40 fallos resueltos rescatados de Hermes, cron y backups.
+- `credenciales.md` — dónde vive cada clave, quién la usa y qué está expuesto (solo rutas).
+- `produccion.md` — qué está publicado y desde cuándo (foto fechada).
 - `recetas.md` — comandos verificados que funcionan en este equipo.
 - `decisiones.md` — decisiones tomadas y su porqué: no las reviertas sin motivo.
 - `pendientes.md` — lo abierto, con el siguiente paso concreto.
