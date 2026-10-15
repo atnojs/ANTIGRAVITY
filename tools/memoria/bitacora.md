@@ -51,6 +51,6 @@ el fichero de secreto; `pwsh` inexistente; `ExecutionPolicy`; y el error del job
 **Commits**
 
 - `f65fa58` — `feat(omniroute): arranque oculto v2 + guia de replica`
-- (siguiente) — memoria del proyecto
+- `c7f061f` — `feat(memoria): memoria operativa del proyecto en tools/memoria`
 
 **Queda abierto:** ver `pendientes.md` (lo importante: apuntar el agente al gateway).

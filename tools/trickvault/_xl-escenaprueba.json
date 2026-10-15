@@ -1,254 +1,212 @@
 [
  {
-  "id": "ig-dcek-093",
-  "code": "/bookcover",
-  "desc": "portada de libro con lomo",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Minimalist hardcover book cover design for [OBJETO], debossed title typography, artistic central emblem, premium cloth binding texture, sophisticated aesthetic, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-020",
+  "code": "/product billboard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product billboard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant illuminated 3D billboard advertisement of a handcrafted leather backpack standing over a busy night-time city square, wet asphalt reflections, crowds with umbrellas below, cinematic urban advertising, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-094",
-  "code": "/albumcover",
-  "desc": "carátula de disco cuadrada",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Square vinyl album cover artwork featuring [OBJETO], iconic musical album aesthetic, subtle retro cardboard ring wear, evocative moody artistic visual, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-033",
+  "code": "/product socialad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product socialad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vertical social media advertisement of a handcrafted leather backpack with a bold clean layout, negative space for a headline, bright modern colour blocking, scroll-stopping composition, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-096",
-  "code": "/billboard",
-  "desc": "valla publicitaria en contexto",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Real-world roadside advertising billboard displaying a bold campaign of [OBJETO], clear daytime sky, city context, large-scale commercial advertisement, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-034",
+  "code": "/product timesquare",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product timesquare If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Times Square style takeover advertisement of a handcrafted leather backpack on giant stacked LED screens in New York at night, neon reflections on wet pavement, crowds below, spectacular urban scale, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-097",
-  "code": "/newspaper",
-  "desc": "página de periódico impreso",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Front page newspaper feature photo of [OBJETO], authentic black-and-white vintage newsprint paper texture, halftone photo reproduction, vintage journalism layout, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-035",
+  "code": "/product digitalbillboard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product digitalbillboard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Digital LED billboard advertisement of a handcrafted leather backpack on a modern building facade, crisp screen glow, blue hour city, long exposure light trails, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-098",
-  "code": "/quotecard",
-  "desc": "cita destacada en tarjeta",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Elegant minimalist social media quote card featuring [OBJETO] alongside clean modern typography, balanced composition, soft pastel gradient backdrop, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-036",
+  "code": "/product skyscraper",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product skyscraper If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Building-sized advertisement of a handcrafted leather backpack covering the entire facade of a glass skyscraper, dramatic upward perspective, daylight reflections, epic corporate scale, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-103",
-  "code": "/metaad",
-  "desc": "Imagen lista para anuncios",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern high-converting social media advertising visual for [OBJETO], vibrant gradient studio background, bold commercial composition, clean negative space, advertising photography, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-037",
+  "code": "/product rooftopad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product rooftopad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rooftop advertising installation of a handcrafted leather backpack on top of a city building, skyline behind, golden hour light, helicopter-level perspective, bold and aspirational, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-104",
-  "code": "/newspaperad",
-  "desc": "Anuncio estilo periódico",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vintage full-page monochrome newspaper advertisement for [OBJETO], retro halftone print texture, distressed paper grain, aged serif typography layout, authentic 1960s editorial advertising print, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-038",
+  "code": "/product buildingwrap",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product buildingwrap If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Full building wrap advertisement of a handcrafted leather backpack covering the facade of a city block, pedestrians walking past, realistic print texture and perspective distortion, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-105",
-  "code": "/billboardmockup",
-  "desc": "Campaña en valla urbana",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic outdoor urban street billboard mockup displaying an advertisement for [OBJETO], modern metropolitan city avenue context, dusk natural ambient lighting, photorealistic commercial mockup, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-039",
+  "code": "/product busstopad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product busstopad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Backlit bus stop advertising panel showing a handcrafted leather backpack, rainy evening street, glowing shelter light, blurred traffic behind, realistic urban context, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-106",
-  "code": "/3Dbillboard",
-  "desc": "Valla 3D gigante",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant naked-eye anamorphic 3D curved digital billboard in a futuristic city intersection, showing a hyper-realistic [OBJETO] bursting out of the screen illusion, neon night cyberpunk city street below, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-040",
+  "code": "/product streetposter",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product streetposter If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Wheat-pasted street poster of a handcrafted leather backpack on a weathered brick wall, torn paper edges, graffiti nearby, gritty urban documentary look, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-111",
-  "code": "/perfumead",
-  "desc": "Look premium de perfumería",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Haute perfumery commercial advertisement for [OBJETO], crystal flacon reflections, floating delicate flower petals, ethereal backlit mist, Vogue luxury editorial style, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-041",
+  "code": "/product subwayad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product subwayad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Subway station advertisement of a handcrafted leather backpack along the platform wall, a train passing in motion blur, warm tunnel lighting, commuters in the foreground, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-112",
-  "code": "/luxurywatchad",
-  "desc": "Publicidad de lujo para accesorios",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Prestigious magazine commercial advertisement for [OBJETO], resting on polished dark walnut wood, macro surface details, warm dramatic side lighting, horology catalog look, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-042",
+  "code": "/product posterframe",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product posterframe If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Premium framed poster of a handcrafted leather backpack inside a city advertising panel, aluminium frame, glass reflection, morning light on the pavement, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-260",
-  "code": "/lifestyleshot",
-  "desc": "producto en escena de campaña",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Lifestyle campaign shot of [OBJETO], product in a natural real-life scene, authentic usage context, warm human atmosphere, professional advertising photography, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-043",
+  "code": "/product mallad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product mallad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Shopping mall advertising of a handcrafted leather backpack on a large hanging banner between escalators, glossy floor reflections, bright retail lighting, shoppers below, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-262",
-  "code": "/timesquaread",
-  "desc": "anuncio gigante en Times Square",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant Times Square billboard advertisement of [OBJETO], massive LED screens in New York City, night neon atmosphere, crowd below, spectacular urban advertising, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-044",
+  "code": "/product storefront",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product storefront If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Retail storefront branded with a handcrafted leather backpack, full window graphics and glowing sign, evening street, inviting warm interior light, realistic shop photography, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-505",
-  "code": "/processsteps",
-  "desc": "el proceso en pasos numerados",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Process steps of [OBJETO], numbered step-by-step making sequence, clean infographic flow, instructional clarity, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-045",
+  "code": "/product windowdisplay",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product windowdisplay If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Elegant shop window display of a handcrafted leather backpack behind clean glass, minimal props, spotlights, subtle reflections of the street, luxury retail merchandising, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-506",
-  "code": "/handmadedetail",
-  "desc": "la marca de la mano encima",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Handmade detail close-up of [OBJETO], visible craft marks and fingerprints, artisanal authenticity, tactile texture focus, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-046",
+  "code": "/product highwaybillboard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product highwaybillboard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Highway billboard advertisement of a handcrafted leather backpack beside a wide open road, cars passing, dramatic sky, wide angle perspective, classic outdoor advertising, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-507",
-  "code": "/sourcemap",
-  "desc": "de dónde viene cada ingrediente",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Source map of [OBJETO], each ingredient traced to its origin, illustrated origin map with routes, clean provenance infographic, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-047",
+  "code": "/product airportad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product airportad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Airport terminal advertising of a handcrafted leather backpack on a large backlit wall panel, travellers with luggage in motion blur, cool modern lighting, premium brand context, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-508",
-  "code": "/activesmap",
-  "desc": "cada activo y lo que hace",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Active ingredients map of [OBJETO], each active component shown with its function, clean scientific infographic layout, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-048",
+  "code": "/product stadiumad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product stadiumad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Stadium perimeter advertising of a handcrafted leather backpack during a night match, bright floodlights, crowd bokeh, dynamic sports photography, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-509",
-  "code": "/splitproof",
-  "desc": "antes y después partidos al medio",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Split before/after proof of [OBJETO], divided frame showing the transformation, matched lighting on both halves, credible comparison, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-049",
+  "code": "/product stationad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product stationad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Train station advertising of a handcrafted leather backpack on a platform billboard, departure board glow, commuters waiting, cool morning light, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-510",
-  "code": "/versusgrid",
-  "desc": "tu producto contra la alternativa",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Versus grid of [OBJETO] against the competing alternative, side-by-side feature comparison, clear winner framing, comparison chart, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-050",
+  "code": "/product escalatorad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product escalatorad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Escalator-side advertising of a handcrafted leather backpack in a modern shopping centre, motion blur of people, glass balustrades, clean architectural lines, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-511",
-  "code": "/durabilitytest",
-  "desc": "lo somete a la prueba",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Durability test of [OBJETO] under stress, water impact and scratch testing, action proof shot, rugged product credibility, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-051",
+  "code": "/product taxiad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product taxiad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. City taxi wrapped with a handcrafted leather backpack branding driving through a busy avenue, motion blur, evening lights, dynamic urban advertising, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-543",
-  "code": "/3dadcreative",
-  "desc": "lo vuelve anuncio en 3D listo para publicar",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. 3D ad creative of [OBJETO], dimensional advertising render ready to publish, bold volume and depth, premium CGI commercial, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-052",
+  "code": "/product buswrap",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product buswrap If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. City bus fully wrapped with a handcrafted leather backpack advertising, parked at a stop, sharp daylight, realistic print perspective, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-555",
-  "code": "/handsinuse",
-  "desc": "solo manos usando el producto",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Hands-only shot of [OBJETO] being used, close-up of hands interacting with the product, natural gesture, authentic usage moment, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-053",
+  "code": "/product trainwrap",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product trainwrap If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Metro train fully wrapped with a handcrafted leather backpack advertising passing through a station, motion blur, dramatic perspective, urban energy, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-556",
-  "code": "/founderframe",
-  "desc": "el fundador con su producto",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Founder portrait with [OBJETO], proud creator holding their product, authentic brand story moment, warm editorial lighting, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-054",
+  "code": "/product carbranding",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product carbranding If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Car branded with a handcrafted leather backpack livery parked on a city street at golden hour, glossy paint reflections, close three-quarter view, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-557",
-  "code": "/3dmagazinecover",
-  "desc": "tu producto sale en 3D de la revista",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. 3D magazine cover of [OBJETO] popping out of the magazine, dimensional depth and shadows, playful editorial 3D effect, all visible text on the magazine cover must be written in Spanish with no English words (invent a Spanish magazine title, never use VOGUE)"
+  "id": "reel-cmd-055",
+  "code": "/product truckbillboard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product truckbillboard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Mobile truck billboard carrying a handcrafted leather backpack advertising through a city avenue, dynamic low angle, daylight, realistic logistics context, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-577",
-  "code": "/morningritual",
-  "desc": "dentro de la rutina de la mañana",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Morning ritual scene with [OBJETO], cozy sunrise routine, warm kitchen light, authentic lifestyle moment, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-056",
+  "code": "/product floatingad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product floatingad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Floating advertising drone screen showing a handcrafted leather backpack in the sky above a modern city, surreal scale, clear blue day, futuristic out-of-home advertising, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-578",
-  "code": "/environmentmatch",
-  "desc": "en el entorno exacto de tu cliente",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Environment match of [OBJETO] inside the exact customer habitat, real-world context styling, authentic lifestyle placement, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-057",
+  "code": "/product giantproduct",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product giantproduct If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colossal oversized version of a handcrafted leather backpack standing among city buildings like a monument, tiny people at its base for scale, dramatic wide shot, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-579",
-  "code": "/seasonset",
-  "desc": "la misma escena en cuatro estaciones",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Four-season set of [OBJETO], same scene rendered in spring summer autumn and winter, seasonal light and nature changes, campaign series, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-058",
+  "code": "/product rooftopproduct",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product rooftopproduct If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant a handcrafted leather backpack resting on the roof of a city building between antennas, skyline around, surreal scale, cinematic daylight, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-580",
-  "code": "/momentbefore",
-  "desc": "el instante justo antes de usarlo",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Moment-before shot of [OBJETO], the instant right before use, anticipatory gesture and tension, cinematic storytelling frame, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-104",
+  "code": "/product building",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product building If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Giant a handcrafted leather backpack shaped like a skyscraper in a modern city, windows and structure integrated, tiny people at street level, epic architectural scale, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-581",
-  "code": "/aftermath",
-  "desc": "lo que queda después de usarlo",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Aftermath shot of [OBJETO], what remains after use, crumbs droplets and traces telling the story, atmospheric still life, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-105",
+  "code": "/product tower",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product tower If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Monumental tower made from a handcrafted leather backpack rising above the clouds, dramatic upward perspective, sunrise light, epic scale advertising, all visible text and labels must be written in Spanish with no English words"
  },
  {
-  "id": "ig-dcek-582",
-  "code": "/companionobjects",
-  "desc": "con todo lo que lo acompaña",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Companion objects composition of [OBJETO] with everything that goes with it, curated supporting props, harmonious styling, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-583",
-  "code": "/travelset",
-  "desc": "cómo viaja cuando sale de casa",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Travel set of [OBJETO] packed for a trip, suitcase or bag context, on-the-go lifestyle, adventure-ready commercial styling, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-584",
-  "code": "/workdesk",
-  "desc": "instalado en el escritorio",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Work desk scene of [OBJETO] installed on a real desk, organized workspace context, natural window light, productivity lifestyle, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-585",
-  "code": "/originstory",
-  "desc": "de dónde viene la marca",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Origin story scene of [OBJETO], where the brand comes from, heritage setting and raw materials, nostalgic documentary mood, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "ig-dcek-586",
-  "code": "/workshopscene",
-  "desc": "el lugar donde se fabrica",
-  "origen": "antigua",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Workshop scene of [OBJETO] being made, real workshop tools and benches, artisan at work, industrial craft atmosphere, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "xl-cmd-001",
-  "code": "/manifestoposter",
-  "desc": "tu manifiesto como cartel",
-  "origen": "nueva",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Typographic manifesto poster built around [OBJETO], tightly set bold headline blocks filling the sheet, strong grid hierarchy, all visible text and labels must be written in Spanish with no English words"
- },
- {
-  "id": "xl-cmd-002",
-  "code": "/archivewall",
-  "desc": "todo el catálogo en una pared",
-  "origen": "nueva",
-  "prompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gallery wall presenting [OBJETO] as a complete catalog, dozens of small framed pieces hung edge to edge in a dense grid, all visible text and labels must be written in Spanish with no English words"
+  "id": "reel-cmd-106",
+  "code": "/product statue",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/product statue If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Classical stone statue monument of a handcrafted leather backpack in a public square, pigeons and tourists around, marble texture, museum lighting, all visible text and labels must be written in Spanish with no English words"
  }
 ]

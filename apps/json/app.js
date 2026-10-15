@@ -12,6 +12,10 @@
   'use strict';
 
   const PROXY = 'proxy.php';
+  // Panel «Publicar en GitHub»: el token vive en el servidor (publicar.php), aquí
+  // solo se manda la contraseña y la lista de ficheros que el usuario confirma.
+  const PUBLICAR = 'publicar.php';
+  const CATALOGO_URL = 'catalogo.json';
   // Las anclas obligatorias (cabecera y cierre) las añade SIEMPRE el proxy al generar
   // (wrapUniversal en proxy.php), por eso ya no se muestran ni se comprueban aquí.
   const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
@@ -112,6 +116,24 @@
     lightboxClose: $('lightbox-close'),
     tooltip: $('model-tooltip'),
     toast: $('toast'),
+    // Publicación en GitHub
+    publishToggle: $('publish-toggle'),
+    publishPanel: $('publish-panel'),
+    publishBtn: $('publish-btn'),
+    publishCheck: $('publish-check'),
+    publishClose: $('publish-close'),
+    publishEstado: $('publish-estado'),
+    publishGrupo: $('publish-grupo'),
+    publishLog: $('publish-log'),
+    publishLogList: $('publish-log-list'),
+    publishModalOverlay: $('publish-modal-overlay'),
+    publishModal: $('publish-modal'),
+    publishModalClose: $('publish-modal-close'),
+    publishModalCancel: $('publish-modal-cancel'),
+    publishPasswordForm: $('publish-password-form'),
+    publishPasswordInput: $('publish-password'),
+    publishPasswordSubmit: $('publish-password-submit'),
+    publishModalError: $('publish-modal-error'),
   };
 
   const state = {
@@ -145,6 +167,11 @@
 
   let history = null;
   let toastTimer = null;
+
+  // Publicación en GitHub: la contraseña vive SOLO en memoria (jamás en
+  // localStorage/sessionStorage, que la dejarían escrita en el navegador).
+  let publishPassword = '';
+  let publishOcupado = false;
 
   /* ------------------------------------------------------------------ *
    * Utilidades
@@ -997,6 +1024,465 @@
   }
 
   /* ------------------------------------------------------------------ *
+   * Publicación en GitHub (publicar.php)
+   *
+   * El endpoint (otro fichero del proyecto, no este) guarda el token de GitHub
+   * y hace el commit. Aquí solo se pide la contraseña, se enseña el diagnóstico
+   * del repositorio y se confirma QUÉ se va a publicar antes de mandarlo.
+   * ------------------------------------------------------------------ */
+
+  const GRUPOS_PUBLICACION = {
+    todo: 'Solo lo que he cambiado (todo)',
+    app: 'Solo la app (html, js, css)',
+    servidor: 'Solo el servidor (php)',
+    'todo-completo': 'Todo, aunque no haya cambios',
+  };
+
+  function mostrarEstadoPublicacion(texto, tipo) {
+    if (!els.publishEstado) return;
+    els.publishEstado.textContent = texto;
+    els.publishEstado.classList.remove('ok', 'info', 'bad');
+    if (tipo) els.publishEstado.classList.add(tipo);
+  }
+
+  function mostrarErrorModalPublicacion(texto) {
+    if (!els.publishModalError) return;
+    if (!texto) {
+      els.publishModalError.textContent = '';
+      els.publishModalError.classList.add('hidden');
+      return;
+    }
+    els.publishModalError.textContent = texto;
+    els.publishModalError.classList.remove('hidden');
+  }
+
+  function abrirModalPublicacion() {
+    if (!els.publishModalOverlay) return;
+    mostrarErrorModalPublicacion('');
+    els.publishModalOverlay.classList.remove('hidden');
+    if (els.publishPasswordInput) {
+      els.publishPasswordInput.value = '';
+      els.publishPasswordInput.focus();
+    }
+  }
+
+  function cerrarModalPublicacion() {
+    if (!els.publishModalOverlay) return;
+    els.publishModalOverlay.classList.add('hidden');
+    mostrarErrorModalPublicacion('');
+    if (els.publishPasswordInput) els.publishPasswordInput.value = '';
+  }
+
+  function abrirPanelPublicacion(mensaje) {
+    if (!els.publishPanel) return;
+    els.publishPanel.hidden = false;
+    els.publishPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    mostrarEstadoPublicacion(mensaje ||
+      'Contraseña aceptada. Pulsa «🔎 Comprobar conexión» para ver el estado del repositorio.', 'ok');
+  }
+
+  function setPublishOcupado(ocupado) {
+    publishOcupado = ocupado;
+    if (els.publishBtn) {
+      els.publishBtn.disabled = ocupado;
+      els.publishBtn.textContent = ocupado ? '⏳ Trabajando…' : '🚀 Publicar cambios';
+    }
+    if (els.publishCheck) els.publishCheck.disabled = ocupado;
+    if (els.publishGrupo) els.publishGrupo.disabled = ocupado;
+  }
+
+  /**
+   * Petición al endpoint de publicación, siempre multipart/form-data: el
+   * servidor lee $_POST (no un cuerpo JSON). Lanza Error con el mensaje del
+   * servidor o con el HTTP, y deja el código en error.status (el 403 es
+   * «contraseña incorrecta»).
+   */
+  async function publicarRequest(accion, campos) {
+    const datos = new FormData();
+    datos.append('action', accion);
+    Object.keys(campos || {}).forEach((clave) => {
+      const valor = campos[clave];
+      if (valor === undefined || valor === null) return;
+      datos.append(clave, String(valor));
+    });
+    let response;
+    try {
+      response = await fetch(PUBLICAR, {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        body: datos,
+      });
+    } catch (error) {
+      throw new Error('No se pudo contactar con publicar.php (' + (error.message || 'error de red') + ').');
+    }
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (error) {
+      // Sin el endpoint desplegado el servidor devuelve HTML (404), no JSON.
+      throw new Error('publicar.php no respondió con JSON (HTTP ' + response.status + '). ¿Está subido el fichero?');
+    }
+    if (!response.ok || !data || data.success === false) {
+      const error = new Error((data && data.error) ? data.error : ('Error HTTP ' + response.status));
+      error.status = response.status;
+      throw error;
+    }
+    return data;
+  }
+
+  /** El endpoint puede mandar booleanos o textos ya redactados ('sí', 'NO → …'). */
+  function esSi(valor) {
+    if (valor === true) return true;
+    if (valor === false || valor === null || valor === undefined) return false;
+    const texto = String(valor).trim().toLowerCase();
+    if (!texto) return false;
+    if (texto === 'no' || texto.indexOf('no ') === 0 || texto.indexOf('sin ') === 0) return false;
+    return true;
+  }
+
+  function textoSiNo(valor) {
+    if (valor === true) return 'sí';
+    if (valor === false || valor === null || valor === undefined || valor === '') return 'no';
+    return String(valor).trim();
+  }
+
+  /** api_github llega como texto ('ok (HTTP 200)') o como objeto {ok, status}. */
+  function describirApi(valor) {
+    if (valor === null || valor === undefined || valor === '') return 'sin datos';
+    if (typeof valor === 'object') {
+      const estado = valor.ok === false ? 'error' : 'ok';
+      return valor.status ? estado + ' (HTTP ' + valor.status + ')' : estado;
+    }
+    return String(valor).trim();
+  }
+
+  function rutaDeArchivo(archivo) {
+    if (!archivo) return '';
+    return String(archivo.ruta || archivo.path || '');
+  }
+
+  function enElRepo(archivo) {
+    return !!(archivo && (archivo.en_repo === true || archivo.enRepo === true));
+  }
+
+  /** Lista discreta de ficheros publicables con su tamaño y si ya están en el repo. */
+  function pintarArchivosPublicables(archivos) {
+    if (!els.publishLog || !els.publishLogList) return;
+    const lista = Array.isArray(archivos) ? archivos : [];
+    els.publishLogList.replaceChildren();
+    if (!lista.length) {
+      const vacio = document.createElement('li');
+      vacio.className = 'publish-file-empty';
+      vacio.textContent = 'El servidor no ha detallado ningún fichero.';
+      els.publishLogList.appendChild(vacio);
+      return;
+    }
+    lista.forEach((archivo) => {
+      const item = document.createElement('li');
+      const nombre = document.createElement('span');
+      nombre.className = 'publish-file-path';
+      nombre.textContent = rutaDeArchivo(archivo) || '(sin ruta)';
+
+      const bytes = archivo ? (archivo.bytes !== undefined ? archivo.bytes : archivo.size) : undefined;
+      const tamano = (bytes === undefined || bytes === null || isNaN(Number(bytes)))
+        ? 'tamaño ?'
+        : formatBytes(Number(bytes));
+      const dentro = enElRepo(archivo);
+      const meta = document.createElement('span');
+      meta.className = 'publish-file-meta ' + (dentro ? 'publish-file-si' : 'publish-file-no');
+      meta.textContent = tamano + ' · ' + (dentro ? 'en el repositorio' : 'no está en el repositorio');
+
+      item.appendChild(nombre);
+      item.appendChild(meta);
+      els.publishLogList.appendChild(item);
+    });
+    const resumen = els.publishLog.querySelector('summary');
+    if (resumen) resumen.textContent = 'Ver los ficheros de la app (' + lista.length + ')';
+  }
+
+  function esDeLaApp(ruta) {
+    return ruta.indexOf('apps/json/') === 0 && /\.(html|js|css)$/i.test(ruta);
+  }
+
+  function esDelServidor(ruta) {
+    return /\.php$/i.test(ruta);
+  }
+
+  /** Rutas publicables según el selector #publish-grupo (salen de estado.archivos). */
+  function archivosDelGrupo(estado, grupo) {
+    const lista = (estado && Array.isArray(estado.archivos)) ? estado.archivos : [];
+    if (grupo === 'app') return lista.map(rutaDeArchivo).filter((ruta) => ruta && esDeLaApp(ruta));
+    if (grupo === 'servidor') return lista.map(rutaDeArchivo).filter((ruta) => ruta && esDelServidor(ruta));
+    if (grupo === 'todo-completo') return lista.map(rutaDeArchivo).filter(Boolean);
+    // 'todo' = lo que todavía no está igual en el repositorio.
+    return lista.filter((archivo) => rutaDeArchivo(archivo) && !enElRepo(archivo)).map(rutaDeArchivo);
+  }
+
+  /**
+   * Catálogo del estado de la app: viaja con la publicación para que el
+   * repositorio guarde también QUÉ ajustes había. Sin datos personales y sin
+   * prompts del usuario (solo el catálogo de estilos disponible, que es público).
+   */
+  function construirCatalogo() {
+    const idiomaActivo = els.pillToggles.find((boton) => boton.classList.contains('active'));
+    let totalHistorial = 0;
+    let ultimoHistorial = null;
+    try {
+      const items = (history && typeof history.getAll === 'function') ? (history.getAll() || []) : [];
+      totalHistorial = items.length;
+      const fechas = items
+        .map((item) => (item && item.createdAt ? String(item.createdAt) : ''))
+        .filter(Boolean)
+        .sort();
+      ultimoHistorial = fechas.length ? fechas[fechas.length - 1] : null;
+    } catch (error) {
+      totalHistorial = 0;
+      ultimoHistorial = null;
+    }
+    return {
+      version: 1,
+      app: 'json',
+      ajustes: {
+        modelo: state.selectedModel,
+        relacionAspecto: state.aspectRatio,
+        resolucion: state.resolution,
+        idioma: idiomaActivo ? (idiomaActivo.dataset.lang || state.language) : state.language,
+      },
+      estilos: Array.from(els.requestedStyle.options).map((opcion) => opcion.value).filter((valor) => valor !== ''),
+      historial: { total: totalHistorial, ultimo: ultimoHistorial },
+      actualizado: new Date().toISOString(),
+    };
+  }
+
+  /** Diagnóstico del repositorio: se enseña entero en #publish-estado. */
+  async function comprobarPublicacion() {
+    mostrarEstadoPublicacion('Comprobando…');
+    try {
+      const data = await publicarRequest('estado', publishPassword ? { password: publishPassword } : {});
+      const estado = data.estado || {};
+      const archivos = Array.isArray(estado.archivos) ? estado.archivos : [];
+      const recuentoRepo = (typeof estado.archivos_en_el_repo === 'string' && estado.archivos_en_el_repo.trim())
+        ? estado.archivos_en_el_repo.trim()
+        : (archivos.length
+          ? archivos.filter(enElRepo).length + '/' + archivos.length
+          : (estado.archivos_en_el_repo === undefined || estado.archivos_en_el_repo === null
+            ? '—'
+            : String(estado.archivos_en_el_repo)));
+
+      const resumen = 'GitHub: ' + (esSi(estado.token_configurado) ? 'token sí' : 'SIN token') +
+        ' · API: ' + describirApi(estado.api_github) +
+        ' · rama ' + (estado.rama_destino || 'main') + ': ' + textoSiNo(estado.rama_existe) +
+        ' · ficheros en el repo: ' + recuentoRepo +
+        ' · puede escribir: ' + textoSiNo(estado.puede_escribir) +
+        (estado.siguiente_paso ? ' · ' + estado.siguiente_paso : '');
+      const tipo = (esSi(estado.token_configurado) &&
+        (estado.puede_escribir === undefined || estado.puede_escribir === null || esSi(estado.puede_escribir)))
+        ? 'ok' : 'bad';
+      mostrarEstadoPublicacion(resumen, tipo);
+      pintarArchivosPublicables(archivos);
+      return estado;
+    } catch (error) {
+      mostrarEstadoPublicacion('❌ ' + error.message, 'bad');
+      return null;
+    }
+  }
+
+  /**
+   * Hostinger tarda unos segundos en traer lo publicado. Se sondea catalogo.json
+   * con parámetro aleatorio (NUNCA la URL versionada de app.js/app.css: la CDN la
+   * cachearía 7 días con el fichero viejo) y sin bloquear la interfaz.
+   */
+  async function leerCatalogoPublicado() {
+    let temporizador = null;
+    try {
+      const controlador = typeof AbortController === 'function' ? new AbortController() : null;
+      if (controlador) temporizador = setTimeout(() => controlador.abort(), 8000);
+      const response = await fetch(CATALOGO_URL + '?t=' + Date.now(), {
+        cache: 'no-store',
+        credentials: 'same-origin',
+        signal: controlador ? controlador.signal : undefined,
+      });
+      if (!response.ok) return null;
+      const capa = await response.json();
+      return (capa && typeof capa === 'object') ? capa : null;
+    } catch (error) {
+      return null;
+    } finally {
+      if (temporizador) clearTimeout(temporizador);
+    }
+  }
+
+  async function esperarDespliegue(marca) {
+    if (!marca) return false;
+    for (let intento = 0; intento < 10; intento += 1) {
+      await new Promise((seguir) => setTimeout(seguir, 3000));
+      const capa = await leerCatalogoPublicado();
+      if (capa && capa.actualizado === marca) return true;
+    }
+    return false;
+  }
+
+  /** Publica lo seleccionado, con confirmación previa y sondeo del despliegue. */
+  async function publicarCambios() {
+    if (!publishPassword) {
+      abrirModalPublicacion();
+      return;
+    }
+    if (publishOcupado) return;
+    const grupo = (els.publishGrupo && els.publishGrupo.value) || 'todo';
+    setPublishOcupado(true);
+    mostrarEstadoPublicacion('Preparando la publicación…');
+    try {
+      let rutas = [];
+      try {
+        const estadoData = await publicarRequest('estado', { password: publishPassword });
+        const estado = estadoData.estado || {};
+        rutas = archivosDelGrupo(estado, grupo);
+        if (grupo === 'todo') {
+          // 'comprobar' es quien dice exactamente qué ha cambiado; si no contesta,
+          // se usa la lista del diagnóstico.
+          try {
+            const comprobacion = await publicarRequest('comprobar', { password: publishPassword });
+            if (Array.isArray(comprobacion.cambiados) && comprobacion.cambiados.length) {
+              rutas = comprobacion.cambiados.map(String);
+            }
+          } catch (error) { /* sin 'comprobar' se publica igual */ }
+        }
+        pintarArchivosPublicables(Array.isArray(estado.archivos) ? estado.archivos : []);
+      } catch (error) {
+        if (error.status === 403) throw error;   // contraseña: lo trata el catch de abajo
+        // Sin diagnóstico se publica igual: la última palabra la tiene publicar.php.
+      }
+
+      const catalogo = construirCatalogo();
+      const muestra = rutas.slice(0, 6).join(', ') +
+        (rutas.length > 6 ? ' y ' + (rutas.length - 6) + ' más' : '');
+      const aviso = 'Vas a publicar en GitHub (' + (GRUPOS_PUBLICACION[grupo] || grupo) + '):\n\n' +
+        '• ' + rutas.length + ' fichero' + (rutas.length === 1 ? '' : 's') + '\n' +
+        (muestra ? '• ' + muestra + '\n' : '') +
+        '• el catálogo del estado de la app (catalogo.json)\n\n' +
+        'Lo verá todo el mundo y quedará en el historial del repositorio. ¿Publicamos?';
+      if (!window.confirm(aviso)) {
+        mostrarEstadoPublicacion('Publicación cancelada.', 'info');
+        return;
+      }
+
+      mostrarEstadoPublicacion('Publicando…');
+      const mensaje = 'publicar json: ' + rutas.length + ' fichero' + (rutas.length === 1 ? '' : 's') +
+        (rutas.length ? ' (' + rutas.slice(0, 3).join(', ') + (rutas.length > 3 ? ', …' : '') + ')' : '');
+      const respuesta = await publicarRequest('publicar', {
+        password: publishPassword,
+        catalogo: JSON.stringify(catalogo),
+        archivos: JSON.stringify(rutas),
+        mensaje: mensaje,
+      });
+
+      if (respuesta.sin_cambios) {
+        mostrarEstadoPublicacion('ℹ️ No había nada nuevo que publicar', 'info');
+        showToast('No había nada nuevo que publicar');
+        return;
+      }
+
+      const commit = respuesta.commit || '—';
+      mostrarEstadoPublicacion('✅ Publicado en GitHub (commit ' + commit + '). Esperando al despliegue…', 'ok');
+      showToast('✅ Publicado (commit ' + commit + ')');
+      const enElAire = await esperarDespliegue(respuesta.actualizado);
+      mostrarEstadoPublicacion(enElAire
+        ? '✅ Publicado y ya en el aire (commit ' + commit + ')'
+        : '✅ Publicado (commit ' + commit + '). El despliegue lo traerá en breve.', 'ok');
+    } catch (error) {
+      mostrarEstadoPublicacion('❌ ' + error.message, 'bad');
+      showToast('❌ ' + error.message);
+      console.error('[json] No se pudo publicar:', error);
+      if (error.status === 403) {
+        // La contraseña ya no vale: se olvida y se vuelve a pedir.
+        publishPassword = '';
+        abrirModalPublicacion();
+        mostrarErrorModalPublicacion(error.message);
+      }
+    } finally {
+      setPublishOcupado(false);
+    }
+  }
+
+  /** El formulario del modal se envía con requestSubmit(): se escucha 'submit'. */
+  async function enviarPasswordPublicacion() {
+    if (!els.publishPasswordInput || !els.publishPasswordSubmit) return;
+    const password = els.publishPasswordInput.value;
+    if (!password) {
+      mostrarErrorModalPublicacion('Introduce la contraseña para continuar.');
+      return;
+    }
+    const textoBoton = els.publishPasswordSubmit.textContent;
+    els.publishPasswordSubmit.disabled = true;
+    els.publishPasswordSubmit.textContent = '⏳ Comprobando…';
+    mostrarErrorModalPublicacion('');
+    try {
+      // La contraseña se valida contra el propio endpoint: si es incorrecta
+      // responde 403 y el panel NO se abre (el error se queda en el modal).
+      const data = await publicarRequest('estado', { password: password });
+      publishPassword = password;
+      cerrarModalPublicacion();
+      const estado = data.estado || {};
+      if (Array.isArray(estado.archivos)) pintarArchivosPublicables(estado.archivos);
+      abrirPanelPublicacion();
+    } catch (error) {
+      publishPassword = '';
+      mostrarErrorModalPublicacion(error.message || 'No se pudo validar la contraseña.');
+    } finally {
+      els.publishPasswordSubmit.disabled = false;
+      els.publishPasswordSubmit.textContent = textoBoton;
+    }
+  }
+
+  function initPublicacion() {
+    if (!els.publishToggle || !els.publishPanel) return;
+
+    els.publishToggle.addEventListener('click', () => {
+      if (publishPassword) {
+        const primeraVez = els.publishPanel.hidden;
+        abrirPanelPublicacion();
+        if (primeraVez) comprobarPublicacion();
+      } else {
+        abrirModalPublicacion();
+      }
+    });
+
+    if (els.publishPasswordForm) {
+      els.publishPasswordForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        enviarPasswordPublicacion();
+      });
+    }
+    if (els.publishModalClose) els.publishModalClose.addEventListener('click', cerrarModalPublicacion);
+    if (els.publishModalCancel) els.publishModalCancel.addEventListener('click', cerrarModalPublicacion);
+    if (els.publishModalOverlay) {
+      els.publishModalOverlay.addEventListener('click', (event) => {
+        if (event.target === els.publishModalOverlay) cerrarModalPublicacion();
+      });
+    }
+    if (els.publishPasswordInput) {
+      els.publishPasswordInput.addEventListener('input', () => mostrarErrorModalPublicacion(''));
+    }
+    if (els.publishCheck) els.publishCheck.addEventListener('click', comprobarPublicacion);
+    if (els.publishBtn) els.publishBtn.addEventListener('click', publicarCambios);
+    if (els.publishClose) {
+      els.publishClose.addEventListener('click', () => {
+        els.publishPanel.hidden = true;
+        publishPassword = '';   // cerrar el panel vuelve a pedir la contraseña
+        mostrarEstadoPublicacion('');
+        if (els.publishToggle) els.publishToggle.focus();
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      if (els.publishModalOverlay && !els.publishModalOverlay.classList.contains('hidden')) cerrarModalPublicacion();
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
    * Tooltip de modelos
    * ------------------------------------------------------------------ */
 
@@ -1285,6 +1771,7 @@
   function init() {
     initControls();
     initModelTooltip();
+    initPublicacion();
     updateJsonAvailability();
     setBusy(false);
     Promise.allSettled([initHistory(), checkService()]);

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="app.css?v=20261009-select1" />
+<link rel="stylesheet" href="app.css?v=20261013-publicar1" />
 <link rel="icon" href="https://www.atnojs.es/imagenes/favicon_negro1.ico" type="image/x-icon">
 </head>
 <body>
@@ -27,6 +27,39 @@
     </p>
     <p class="status-chip" id="service-chip" aria-live="polite">Comprobando servicio…</p>
   </header>
+
+  <!-- ======================= PUBLICAR EN GITHUB =======================
+       El panel nace oculto: se abre con la contraseña (que vive solo en memoria,
+       nunca en localStorage). Habla con publicar.php, que es quien tiene el token
+       de GitHub; aquí no se maneja ninguna credencial.
+       OJO: el sondeo del despliegue usa catalogo.json?t=... , nunca la URL
+       versionada de app.js/app.css (la CDN la guardaría 7 días con lo viejo). -->
+  <section class="publish-panel" id="publish-panel" hidden aria-labelledby="publish-panel-title">
+    <div class="publish-panel-head">
+      <strong id="publish-panel-title">🚀 Publicar en GitHub</strong>
+      <span class="publish-hint">Sube al repositorio los ficheros de la app que has cambiado (y tu estado del catálogo).</span>
+    </div>
+    <div class="publish-panel-actions">
+      <label class="publish-carpeta">
+        <span>Qué publicar:</span>
+        <select id="publish-grupo">
+          <option value="todo">Solo lo que he cambiado (todo)</option>
+          <option value="app">Solo la app (html, js, css)</option>
+          <option value="servidor">Solo el servidor (php)</option>
+          <option value="todo-completo">Todo, aunque no haya cambios</option>
+        </select>
+      </label>
+      <button type="button" class="btn btn-primary" id="publish-btn">🚀 Publicar cambios</button>
+      <button type="button" class="btn btn-glass btn-sm" id="publish-check">🔎 Comprobar conexión</button>
+      <button type="button" class="btn btn-glass btn-sm" id="publish-close"
+              aria-label="Cerrar el panel de publicación" title="Cerrar el panel de publicación">✕</button>
+      <span class="publish-estado" id="publish-estado" role="status" aria-live="polite"></span>
+    </div>
+    <details class="publish-log" id="publish-log">
+      <summary>Ver los ficheros de la app</summary>
+      <ul class="publish-log-list" id="publish-log-list"></ul>
+    </details>
+  </section>
 
   <div class="main-layout">
     <main class="main-col">
@@ -395,6 +428,35 @@
       <button type="button" id="history-clear-btn" class="btn-danger-outline" style="display:none;">Limpiar</button>
     </aside>
   </div>
+
+  <footer class="app-footer">
+    <button type="button" class="edit-access-trigger" id="publish-toggle"
+            aria-label="Publicar en GitHub" title="Publicar en GitHub">🚀 Publicar</button>
+    <span class="app-footer-text">Imagen → JSON → Prompt Universal · Hecho con 💎 y Neon Glassmorphism</span>
+  </footer>
+</div>
+
+<!-- ===== MODAL DE CONTRASEÑA DE PUBLICACIÓN ===== -->
+<div class="modal-overlay hidden" id="publish-modal-overlay">
+  <div class="modal" id="publish-modal" role="dialog" aria-modal="true" aria-labelledby="publish-modal-title">
+    <div class="modal-header">
+      <h2 id="publish-modal-title">🔒 Publicar en GitHub</h2>
+      <button type="button" class="modal-close" id="publish-modal-close" aria-label="Cerrar">✕</button>
+    </div>
+    <form id="publish-password-form">
+      <div class="modal-body">
+        <p class="modal-text">Introduce la contraseña para subir al repositorio los cambios de la app. No se guarda en el navegador: solo vive mientras la pestaña esté abierta.</p>
+        <label for="publish-password">Contraseña</label>
+        <input id="publish-password" name="password" type="password" autocomplete="current-password"
+               aria-describedby="publish-modal-error" />
+        <p class="modal-error hidden" id="publish-modal-error" role="alert"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-glass" id="publish-modal-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="publish-password-submit">🔓 Continuar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- ===== LOADING OVERLAY UNIVERSAL ===== -->
@@ -434,7 +496,7 @@
      termine. Si la pides y aún sirve el fichero viejo, la CDN cachea ESA respuesta
      durante 7 días y dejas a todo el mundo con el código antiguo. Para sondear el
      despliegue usa un parámetro aleatorio distinto (?t=...), nunca este. -->
-<script src="app.js?v=20261009-hist1"></script>
+<script src="app.js?v=20261013-publicar1"></script>
   <!-- Bloqueo de modelos avanzados: IMAGE 2 LOW y MEDIUM libres, el resto pide contraseña -->
   <script src="../_shared/model-gate.js?v=3"></script>
 </body>

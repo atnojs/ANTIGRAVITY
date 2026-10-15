@@ -556,6 +556,157 @@ select option:checked { background-color: #174f7a; color: #ccffff; }
   background: rgba(0, 16, 24, .93); box-shadow: 0 0 20px var(--glow-soft); font-size: .78rem;
 }
 
+/* ===== Pie de página y disparador de publicación ===== */
+.app-footer {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: .8rem; margin: 18px 0 6px; padding: 12px 4px 14px;
+  border-top: 1px solid rgba(0, 208, 208, .22);
+  color: var(--faint); font-size: .64rem; letter-spacing: .1em;
+  text-align: center; text-transform: uppercase;
+}
+.app-footer-text { color: var(--faint); }
+/* Botón visible (el banco E2E tiene que poder pulsarlo): pastilla cian neón. */
+.edit-access-trigger {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  min-height: 38px; padding: .5rem 1.15rem;
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  color: var(--acc); background: var(--card-bg);
+  box-shadow: 0 0 14px var(--glow-soft); cursor: pointer;
+  font-size: .7rem; letter-spacing: .08em; text-transform: uppercase;
+  transition: transform .2s, background .2s, border-color .2s, box-shadow .2s, color .2s;
+}
+.edit-access-trigger:hover {
+  transform: translateY(-2px); color: #CCFFFF;
+  background: linear-gradient(135deg, var(--contenedor), rgba(0, 208, 208, .6));
+  box-shadow: 0 0 22px var(--glow);
+}
+
+/* ===== Panel «Publicar en GitHub» ===== */
+.publish-panel {
+  display: flex; flex-direction: column; gap: .7rem;
+  max-width: 1300px; margin: 0 auto 16px; padding: clamp(12px, 2vw, 18px);
+  border: 1px solid var(--border-soft); border-radius: var(--radius);
+  background: rgba(0, 208, 208, .07);
+  box-shadow: 0 0 22px rgba(0, 208, 208, .18), inset 0 0 26px rgba(0, 208, 208, .05);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.publish-panel[hidden] { display: none !important; }
+.publish-panel-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem; }
+.publish-panel-head strong { color: var(--acc); font-size: .95rem; font-weight: 400; letter-spacing: .04em; }
+.publish-hint { color: var(--muted); font-size: .74rem; line-height: 1.45; }
+.publish-panel-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.publish-carpeta {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: .45rem;
+  color: var(--muted); font-size: .76rem;
+}
+.publish-carpeta select {
+  max-width: 62vw; min-height: 38px; padding: .45rem .6rem;
+  border: 1px solid rgba(0, 208, 208, .4); border-radius: var(--radius-sm);
+  color: var(--text); background: rgba(0, 8, 12, .82); font-size: .74rem;
+}
+.publish-carpeta select:focus { border-color: var(--border-strong); box-shadow: 0 0 14px var(--glow-soft); }
+.publish-estado {
+  flex: 1 1 280px; min-width: 0;
+  color: var(--text); font-size: .76rem; line-height: 1.45; word-break: break-word;
+}
+.publish-estado.ok { color: #bdf7bd; }
+.publish-estado.info { color: #ffe49b; }
+.publish-estado.bad { color: #ffb0b0; }
+.publish-log { border-top: 1px dashed rgba(0, 208, 208, .22); padding-top: .55rem; }
+.publish-log summary {
+  color: var(--muted); cursor: pointer; font-size: .7rem;
+  letter-spacing: .07em; text-transform: uppercase;
+}
+.publish-log summary:hover { color: var(--acc); }
+.publish-log-list {
+  display: grid; gap: .3rem; max-height: 240px; margin: .55rem 0 0; padding: 0;
+  overflow-y: auto; list-style: none;
+}
+.publish-log-list li {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem;
+  padding: .35rem .55rem; border: 1px solid rgba(0, 208, 208, .18); border-radius: var(--radius-sm);
+  background: rgba(0, 16, 24, .42); font-size: .7rem;
+}
+.publish-log-list .publish-file-path { color: var(--text-dim); word-break: break-all; }
+.publish-log-list .publish-file-meta { color: var(--muted); font-size: .66rem; white-space: nowrap; }
+.publish-log-list .publish-file-si { color: #bdf7bd; }
+.publish-log-list .publish-file-no { color: #ffe49b; }
+.publish-log-list .publish-file-empty { justify-content: flex-start; color: var(--muted); }
+
+/* Botones que esta app aún no tenía (los usa el panel de publicación) */
+.btn-primary {
+  border: 1px solid var(--border-strong); color: #001018;
+  background: linear-gradient(135deg, var(--acc2), var(--acc));
+  box-shadow: 0 0 16px var(--glow-soft); font-size: .72rem; font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  color: #001018; background: linear-gradient(135deg, #38e038, #22e2e2);
+  box-shadow: 0 0 24px var(--glow);
+}
+.btn-glass {
+  border: 1px solid var(--border-soft); color: var(--text-dim);
+  background: rgba(255, 255, 255, .06); font-size: .72rem;
+}
+.btn-glass:hover:not(:disabled) {
+  border-color: var(--border-strong); color: var(--acc);
+  background: rgba(0, 208, 208, .14); box-shadow: 0 0 16px var(--glow-soft);
+}
+.btn-sm { min-height: 34px; padding: .45rem .8rem; font-size: .66rem; }
+
+/* ===== Modal (contraseña de publicación) ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 45000;
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+  background: rgba(0, 8, 12, .78);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.modal {
+  width: 100%; max-width: 470px; max-height: 90vh; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(6, 47, 67, .98), rgba(0, 16, 24, .99));
+  box-shadow: 0 25px 60px rgba(0, 0, 0, .75), 0 0 40px rgba(0, 208, 208, .18);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  padding: 1.1rem 1.2rem 0;
+}
+.modal-header h2 { margin: 0; color: var(--acc); font-size: 1.05rem; font-weight: 400; letter-spacing: .04em; }
+.modal-close {
+  display: flex; width: 36px; height: 36px; align-items: center; justify-content: center;
+  border: 1px solid var(--border-soft); border-radius: 50%;
+  color: var(--muted); background: rgba(0, 16, 24, .6); cursor: pointer; font-size: 1rem;
+  transition: color .2s, border-color .2s, box-shadow .2s;
+}
+.modal-close:hover { color: #fff; border-color: var(--border-strong); box-shadow: 0 0 14px var(--glow-soft); }
+.modal-body { display: flex; flex-direction: column; gap: .55rem; padding: 1rem 1.2rem 0; }
+.modal-text { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.5; }
+.modal-body label { color: var(--text-dim); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+.modal-body input[type="password"] {
+  width: 100%; min-height: 44px; padding: .55rem .7rem;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); background: rgba(0, 8, 12, .82);
+}
+.modal-body input[type="password"]:focus { border-color: var(--border-strong); box-shadow: 0 0 14px var(--glow-soft); }
+.modal-error {
+  margin: .1rem 0 0; padding: .5rem .65rem;
+  border: 1px solid rgba(239, 68, 68, .55); border-radius: var(--radius-sm);
+  color: #ffd0d0; background: rgba(239, 68, 68, .14); font-size: .74rem;
+}
+.modal-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .55rem; padding: .95rem 1.2rem 1.2rem; }
+
+@media (max-width: 700px) {
+  .publish-panel-actions { align-items: stretch; }
+  .publish-panel-actions .btn { width: 100%; }
+  .publish-carpeta { flex-direction: column; align-items: stretch; gap: .3rem; }
+  .publish-carpeta select { width: 100%; max-width: 100%; }
+  .publish-estado { flex: 1 1 100%; font-size: .72rem; }
+  .edit-access-trigger { width: 100%; }
+  .modal-footer .btn { flex: 1 1 100%; }
+  .publish-log-list li { flex-direction: column; align-items: flex-start; }
+  .publish-log-list .publish-file-meta { white-space: normal; }
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1100px) {
   .control-panel { grid-template-columns: 1fr 1fr; }

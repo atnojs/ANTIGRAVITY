@@ -5,6 +5,44 @@ description: "Use when Antonio pide generar o rellenar vídeos de la app video-v
 
 # VideoVault — generar y subir vídeos de las tarjetas
 
+## ⚠️ Límite de puntos de Flow (2026-10-15)
+
+La cuenta tiene un plan de Google AI que da **50 puntos de Flow al día**, y **cada
+vídeo de Veo 3.1 Lite cuesta 10 puntos → 5 vídeos/día**. Al agotarlos:
+
+- La UI muestra *"Te has quedado sin puntos de Google Flow"* y **elimina el botón de
+  enviar del compositor** (ya no es un botón deshabilitado: no existe en el DOM), así
+  que `flow.py video` falla con `Locator.click: Timeout ... "Iniciar generación"`.
+- **No es un fallo del código ni de la red**: hay que esperar a la reposición diaria
+  o recargar puntos. Comprobar con:
+  `python tools/video-vault/comprobar_cuota_flow.py` (imprime `CUOTA_AGOTADA` / `CUOTA_OK`).
+- Saldo y movimientos: badge **PRO** en `https://flow.google.com/` →
+  *"0 puntos de Google Flow"*, y detalle en `https://one.google.com/ai/activity`
+  (cada generación aparece como `-10`).
+- El lote (`lanzar_lote.ps1`) detecta la cuota agotada y se detiene solo en vez de
+  reintentar en bucle; `vigilar_cuota.py` lo relanza cuando hay puntos.
+
+## Automatización diaria (desde 2026-10-15)
+
+Antonio pidió que los vídeos suban "poco a poco" aprovechando los puntos diarios,
+sin depender de que haya un chat abierto:
+
+- **Tarea programada de Windows** `Antigravity-VideoVault-Diario` (usuario actual,
+  no SYSTEM: necesita el perfil de Chrome de Flow): se dispara a las **09:00, 13:00,
+  17:00 y 21:00**, con `-StartWhenAvailable`.
+  - Revisar: `Get-ScheduledTaskInfo -TaskName 'Antigravity-VideoVault-Diario'`
+  - Lanzar a mano: `Start-ScheduledTask -TaskName 'Antigravity-VideoVault-Diario'`
+- **Runner**: `tools/video-vault/runner_diario.py --max-videos 5 --pausa 90
+  --esperar-max-min 75` (invocado desde `tarea_diaria.ps1`). Genera **hasta 5 vídeos
+  por pasada** (los que dan los 50 puntos diarios), uno a uno con 90 s de pausa, y si
+  no hay puntos espera en bucle hasta 75 min antes de rendirse.
+- **Logs**: `tools/video-vault/_runner_diario.log` (resumen) y `_runner_task.log`
+  (salida completa). El runner termina auditando repo y producción.
+- Las tareas se ejecutan **con la sesión de Windows iniciada** y el PC encendido; si
+  el PC está apagado, `-StartWhenAvailable` la lanza al encender.
+- Recordatorio en la sesión de DSH a las 10:30 (Atlantic/Canary) para revisar el
+  resultado del día.
+
 ## Objetivo
 
 Cada tarjeta de `apps/video-vault` (clon de trickvault para vídeos) debe tener su

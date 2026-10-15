@@ -33,6 +33,7 @@ pre{position:fixed;left:0;bottom:0;width:100%%;max-height:60%%;overflow:auto;bac
 const ESPERADO = %(esperado)s;
 const ALMACEN = %(almacen)s;
 const VARIANTES = [['mu7fpvmx114wfqvaw', '/expressionsheet'], ['tv-glassart-optical', '/glassart']];
+const BASE = new URLSearchParams(location.search).get('base') || '/app';
 const f = document.getElementById('f'), out = document.getElementById('out');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const limpiar = u => String(u || '').split('?')[0];
@@ -42,7 +43,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
   const fallos = [], ok = [], sinEjemplo = [], propias = [];
   let ensuciadas = 0, conAlmacen = 0;
   try {
-    await cargar('/app/index.html?' + Date.now());
+    await cargar(BASE + '/index.html?' + Date.now());
     await sleep(12000);
     const win = f.contentWindow;
     const ls = win.localStorage;
@@ -61,7 +62,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
     Object.keys(ls).filter(k => k.indexOf('trickvault-') === 0 && k.indexOf('images-version') > 0)
       .forEach(k => ls.removeItem(k));
     // 2) recargar (como cuando Antonio abre la app)
-    await cargar('/app/index.html?r=' + Date.now());
+    await cargar(BASE + '/index.html?r=' + Date.now());
     await sleep(14000);
     const despues = JSON.parse(f.contentWindow.localStorage.getItem('trickvault_data') || '[]');
     for (const t of despues) {
@@ -81,7 +82,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
         const im = new Image();
         im.onload = () => res(im.naturalWidth > 0);
         im.onerror = () => res(false);
-        im.src = '/app/' + u;
+        im.src = BASE + '/' + u;
       });
       if (!bien) malas.push(u);
     }

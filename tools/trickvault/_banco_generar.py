@@ -34,6 +34,7 @@ pre{position:fixed;left:0;bottom:0;width:100%%;max-height:60%%;overflow:auto;bac
 const ESPERADO = %(esperado)s;
 // Variantes personales: tienen su propia imagen a proposito, no se comprueban.
 const VARIANTES = [['mu7fpvmx114wfqvaw', '/expressionsheet'], ['tv-glassart-optical', '/glassart']];
+const BASE = new URLSearchParams(location.search).get('base') || '/app';
 const f = document.getElementById('f'), out = document.getElementById('out');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const limpiar = u => String(u || '').split('?')[0];
@@ -42,7 +43,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
 (async () => {
   const fallos = [], ok = [], sinEjemplo = [], propias = [];
   try {
-    await cargar('/app/index.html?' + Date.now());
+    await cargar(BASE + '/index.html?' + Date.now());
     await sleep(12000);
     const win = f.contentWindow;
     const datos = JSON.parse(win.localStorage.getItem('trickvault_data') || '[]');
@@ -65,7 +66,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
         const im = new Image();
         im.onload = () => res(im.naturalWidth > 0);
         im.onerror = () => res(false);
-        im.src = '/app/' + u;
+        im.src = BASE + '/' + u;
       });
       if (!bien) malas.push(u);
     }
