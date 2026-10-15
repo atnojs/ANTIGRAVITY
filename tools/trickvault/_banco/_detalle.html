@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>midiendo</title>
+<style>html,body{margin:0;background:#05070c;color:#cfe}iframe{border:0;width:1200px;height:900px}
+pre{position:fixed;left:0;bottom:0;width:100%;max-height:55%;overflow:auto;background:#000d;color:#9fe;font-size:12px}</style>
+</head><body>
+<iframe id="f" src="/app/index.html"></iframe>
+<pre id="out">midiendo...</pre>
+<script>
+const f = document.getElementById('f'), out = document.getElementById('out');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const norm = u => String(u || '').replace(/^https?:\/\/[^/]+\//, '').split('?')[0];
+const CARPETA = new URLSearchParams(location.search).get('carpeta') || 'xl-carteles';
+function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
+(async () => {
+  const filas = [];
+  try {
+    await cargar('/app/index.html?' + Date.now());
+    await sleep(8000);
+    const win = f.contentWindow, doc = f.contentDocument;
+    const carpetas = JSON.parse(win.localStorage.getItem('trickvault_folders') || '[]');
+    const c = carpetas.find(x => x.id === CARPETA);
+    const b = [...doc.querySelectorAll('button,[role="button"],.folder-card,.cat-card')]
+      .find(x => (x.textContent || '').includes(c.label));
+    b.click();
+    await sleep(4000);
+    const datos = JSON.parse(win.localStorage.getItem('trickvault_data') || '[]');
+    const porId = new Map(datos.map(t => [String(t.id), t]));
+    for (const t of [...doc.querySelectorAll('.trick-card')]) {
+      const code = (t.querySelector('.code-value') || {}).textContent || '';
+      const img = t.querySelector('.trick-image');
+      filas.push(code.trim() + '  |  pinta=' + norm(img && img.getAttribute('src')) +
+                 '  |  guarda=' + norm((porId.get(String(t.dataset.id || '')) || {}).imageUrl) +
+                 '  |  cargada=' + (img ? (img.naturalWidth > 0) : 'sin-img'));
+    }
+  } catch (e) { filas.push('ERROR ' + (e && e.message || e)); }
+  out.textContent = filas.join('\n');
+  document.title = CARPETA + ': ' + filas.length + ' tarjetas';
+})();
+</script>
+</body></html>

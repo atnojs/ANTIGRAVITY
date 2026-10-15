@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>midiendo</title>
+<style>html,body{margin:0;background:#05070c;color:#cfe}iframe{border:0;width:900px;height:400px}
+pre{position:fixed;left:0;bottom:0;width:100%;max-height:70%;overflow:auto;background:#000d;color:#9fe;font-size:11px}</style>
+</head><body>
+<iframe id="f" src="/app/index.html"></iframe>
+<pre id="out">midiendo...</pre>
+<script>
+const f = document.getElementById('f'), out = document.getElementById('out');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
+(async () => {
+  try {
+    await cargar('/app/index.html?' + Date.now());
+    await sleep(12000);
+    const datos = JSON.parse(f.contentWindow.localStorage.getItem('trickvault_data') || '[]');
+    const filas = datos.filter(t => t.category === 'xl-moda' || t.category === 'xl-comidamoda')
+      .map(t => [t.category, t.codeSnippet, t.id].join(' | '));
+    out.textContent = filas.join('\n');
+    document.title = 'moda=' + datos.filter(t => t.category === 'xl-moda').length
+      + ' comida=' + datos.filter(t => t.category === 'xl-comidamoda').length;
+  } catch (e) { out.textContent = 'ERROR ' + (e && e.message || e); document.title = 'ERROR'; }
+})();
+</script>
+</body></html>

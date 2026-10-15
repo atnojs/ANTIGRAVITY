@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>captura</title>
+<style>html,body{margin:0;padding:0;background:#05070c;overflow:hidden}iframe{border:0;display:block}</style>
+</head><body>
+<!-- Captura de una carpeta de TrickVault. Uso: ?base=/prod&carpeta=Favoritos&w=1440&h=1100 -->
+<iframe id="f"></iframe>
+<script>
+const P = new URLSearchParams(location.search);
+const BASE = P.get('base') || '/app';
+const CARPETA = P.get('carpeta') || 'Favoritos';
+const W = parseInt(P.get('w') || '1440', 10), H = parseInt(P.get('h') || '1100', 10);
+const f = document.getElementById('f');
+f.width = W; f.height = H;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sinBlur = doc => { const st = doc.createElement('style');
+  st.textContent = '*{backdrop-filter:none !important;-webkit-backdrop-filter:none !important}'; doc.head.appendChild(st); };
+function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
+(async () => {
+  await cargar(BASE + '/index.html?' + Date.now());
+  await sleep(11000);
+  const doc = f.contentDocument;
+  sinBlur(doc);
+  const b = [...doc.querySelectorAll('button,[role="button"],.folder-card,.cat-card')]
+    .find(x => (x.textContent || '').includes(CARPETA));
+  if (b) b.click(); else document.title = 'NO ENCONTRADA';
+  await sleep(6000);
+  sinBlur(f.contentDocument);
+  await sleep(4000);
+  document.title = 'captura ' + CARPETA;
+})();
+</script>
+</body></html>

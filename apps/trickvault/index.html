@@ -3503,6 +3503,19 @@ function clearDeletedFolders() {
 // «Letras y 3D», con los otros dos rellenos.
 const CATEGORY_MOVES = {
     '/patternfill': 'xl-letras3d',
+    // «Comida y moda» se partió en dos el 2026-10-15: los códigos de ropa, estilismo,
+    // belleza y joyería pasan a «Moda». Sin esto, una tarjeta ya guardada conservaría
+    // la carpeta vieja (normalizeTrickCategory respeta la guardada si sigue existiendo)
+    // y en «Moda» no aparecería ninguna.
+    '/transferoutfit': 'xl-moda', '/profesión': 'xl-moda', '/editorial': 'xl-moda',
+    '/fashion': 'xl-moda', '/streetstyle': 'xl-moda', '/hairstyles': 'xl-moda',
+    '/sunglassesstryon': 'xl-moda', '/lookbook': 'xl-moda', '/editorialfashion': 'xl-moda',
+    '/runway': 'xl-moda', '/outfitgrid': 'xl-moda', '/makeuplook': 'xl-moda',
+    '/swatch': 'xl-moda', '/beautyclose': 'xl-moda', '/nailart': 'xl-moda',
+    '/jewelry': 'xl-moda', '/tryon': 'xl-moda', '/fashionsketch': 'xl-moda',
+    '/fabricdrape': 'xl-moda', '/outfit': 'xl-moda', '/underglasseditorial': 'xl-moda',
+    '/crosswalkprofileeditorial': 'xl-moda', '/fashioncontentsheet': 'xl-moda',
+    '/motionblureditorial': 'xl-moda', '/luxurylifestyle': 'xl-moda',
 };
 // Renombrados de código: una tarjeta ya guardada cuyo código cambia de nombre no
 // se renombra sola, así que se apunta aquí para hacerlo UNA vez. /calavery salió

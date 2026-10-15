@@ -13,6 +13,13 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
   try {
     await cargar('/app/index.html?' + Date.now());
     await sleep(12000);
+    // simular que las tarjetas de moda estaban guardadas en la carpeta vieja
+    const previos = JSON.parse(ls.getItem('trickvault_data') || '[]');
+    for (const t of previos) if (t.category === 'xl-moda') t.category = 'xl-comidamoda';
+    ls.setItem('trickvault_data', JSON.stringify(previos));
+    ls.setItem('trickvault_folders_schema', '5');
+    await cargar('/app/index.html?r=' + Date.now());
+    await sleep(12000);
     const win = f.contentWindow, ls = win.localStorage;
     const carpetas = JSON.parse(ls.getItem('trickvault_folders') || '[]');
     const datos = JSON.parse(ls.getItem('trickvault_data') || '[]');
