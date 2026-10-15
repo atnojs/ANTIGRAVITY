@@ -11,11 +11,12 @@ pre{position:fixed;left:0;bottom:0;width:100%;max-height:70%;overflow:auto;backg
 // fabrica poniéndole a una tarjeta el código de la SIGUIENTE: su id deja de ser el
 // suyo y además duplica a la vecina, que es lo que él ve en «Comandos de texto».
 const f = document.getElementById('f'), out = document.getElementById('out');
+const BASE = new URLSearchParams(location.search).get('base') || '/app';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
 (async () => {
   try {
-    await cargar('/app/index.html?' + Date.now());
+    await cargar(BASE + '/index.html?' + Date.now());
     await sleep(12000);
     const ls = f.contentWindow.localStorage;
     const datos = JSON.parse(ls.getItem('trickvault_data') || '[]');
@@ -35,7 +36,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
     datos.push(copiaGlitch);
     ls.setItem('trickvault_data', JSON.stringify(datos));
     // recargar: la app debe tirar los fantasmas (su id ya no es suyo) y dejar las buenas
-    await cargar('/app/index.html?r=' + Date.now());
+    await cargar(BASE + '/index.html?r=' + Date.now());
     await sleep(13000);
     const despues = JSON.parse(f.contentWindow.localStorage.getItem('trickvault_data') || '[]');
     const porCodigo = {};

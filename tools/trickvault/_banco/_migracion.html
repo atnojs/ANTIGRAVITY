@@ -11,11 +11,12 @@ pre{position:fixed;left:0;bottom:0;width:100%;max-height:70%;overflow:auto;backg
 // la carpeta vieja. Tras recargar deben quedar 25 en Moda y 26 en Comida, con los
 // nombres nuevos.
 const f = document.getElementById('f'), out = document.getElementById('out');
+const BASE = new URLSearchParams(location.search).get('base') || '/app';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
 (async () => {
   try {
-    await cargar('/app/index.html?' + Date.now());
+    await cargar(BASE + '/index.html?' + Date.now());
     await sleep(12000);
     const win = f.contentWindow, ls = win.localStorage;
     const datos = JSON.parse(ls.getItem('trickvault_data') || '[]');
@@ -27,7 +28,7 @@ function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setT
       .map(c => c.id === 'xl-comidamoda' ? { ...c, label: 'Comida y moda', bgIcon: '👗' } : c);
     ls.setItem('trickvault_folders', JSON.stringify(carpetas));
     ls.setItem('trickvault_folders_schema', '5');
-    await cargar('/app/index.html?r=' + Date.now());
+    await cargar(BASE + '/index.html?r=' + Date.now());
     await sleep(13000);
     const w2 = f.contentWindow, ls2 = w2.localStorage;
     const d2 = JSON.parse(ls2.getItem('trickvault_data') || '[]');

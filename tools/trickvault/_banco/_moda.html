@@ -7,11 +7,12 @@ pre{position:fixed;left:0;bottom:0;width:100%;max-height:70%;overflow:auto;backg
 <pre id="out">midiendo...</pre>
 <script>
 const f = document.getElementById('f'), out = document.getElementById('out');
+const BASE = new URLSearchParams(location.search).get('base') || '/app';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
 (async () => {
   try {
-    await cargar('/app/index.html?' + Date.now());
+    await cargar(BASE + '/index.html?' + Date.now());
     await sleep(12000);
     const datos = JSON.parse(f.contentWindow.localStorage.getItem('trickvault_data') || '[]');
     const filas = datos.filter(t => t.category === 'xl-moda' || t.category === 'xl-comidamoda')
