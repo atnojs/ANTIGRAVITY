@@ -3,6 +3,23 @@
 Comandos que **funcionan aquí** (probados). Si uno deja de funcionar, se anota en
 `errores.md` y se actualiza esta lista.
 
+## OCR de imágenes con el motor nativo de Windows (sin instalar nada)
+
+Sirve para cazar texto en otro idioma, rótulos y erratas en cientos de imágenes. No hay
+Tesseract ni pytesseract en el equipo; el motor `Windows.Media.Ocr` sí está (idioma `es-ES`).
+
+```powershell
+# una o muchas imágenes por llamada; imprime "<ruta><TAB><texto>"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\trickvault\_ocr.ps1 img1.jpg img2.jpg
+```
+
+Para lotes grandes: `python tools\trickvault\_ocr_todas.py` (1103 imágenes en ~70 s, lotes de
+120 rutas por proceso; escribe `tools/trickvault/_ocr_resultado.tsv`) y luego
+`python tools\trickvault\_detectar_ingles.py` para marcar las que tienen inglés.
+
+**Trampa:** si el script imprime solo el nombre del fichero en vez de la ruta, no podrás
+agrupar por carpeta; usa la ruta completa (ya corregido en `_ocr.ps1`).
+
 ## Ver si un puerto está abierto (sin CIM)
 
 ```powershell

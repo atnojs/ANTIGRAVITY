@@ -5,6 +5,53 @@ Una entrada por sesión de trabajo relevante.
 
 ---
 
+## 2026-10-15 — TrickVault: cada tarjeta con su imagen, un sujeto por carpeta y ni una palabra en inglés
+
+**Punto de partida.** Antonio: «la imagen no cuadra con la tarjeta», «hay imágenes en las que
+has mezclado a dos sujetos», «dentro de una carpeta todas las imágenes deben utilizar el mismo
+sujeto», «lo de comida y moda es un despropósito», «en la de luz cámara deja a la chica como
+sujeto principal», «hay varias imágenes con texto en inglés» y «en los comandos de texto hay
+tarjetas duplicadas».
+
+**Qué se encontró (medido, no supuesto)**
+
+| Problema | Causa raíz | Alcance |
+|---|---|---|
+| Imágenes de otra tarjeta | El almacén del servidor ganaba al repositorio y sus ficheros van desplazados (+1) | 235 tarjetas |
+| Renombrados | La capa publicada (`catalogo.json`) va por id y se publicó con otra numeración | 26 tarjetas |
+| Sin ejemplo en el repositorio | 100 rutas apuntaban a ficheros que ya no existen | 215 tarjetas |
+| Sujeto mezclado | Tandas anteriores con sujetos distintos en la misma carpeta | 103 imágenes |
+| Dos sujetos en una imagen | El propio prompt los pedía (`/pixelart` rotulaba piezas de cámara; `/splashshot` y `/flatlay` invitaban a botella y bultos) | 3 imágenes |
+| Texto en inglés | Inercia del modelo; no había forma de detectarlo | 10 imágenes |
+| Tarjetas repetidas | `mergeSeedCards` solo miraba el id; el bloque de texto se renumeró | 4-7 fantasmas por navegador viejo |
+
+**Qué se hizo**
+
+- 114 ejemplos **recuperados** del servidor (verificados uno a uno contra su código) y 100
+  **generados** con `openai-image-2-low`. El repositorio tiene ya un ejemplo de cada código.
+- Precedencia de imagen **determinista**: publicada > propia > `data:` > **repositorio** > almacén.
+  (Antes eran dos efectos asíncronos compitiendo: la misma tarjeta podía verse distinta según
+  qué petición llegara antes.)
+- `catalogo.json` **reencajado por código** y sin las imágenes del almacén.
+- **103 imágenes** regeneradas con el sujeto único de su carpeta (xl-pintura 28, xl-juegos 23,
+  xl-verdentro 16, xl-estilos 13, xl-letras3d 11, xl-casaviajes 8, xl-hechomano 3, xl-carteles 2).
+- **68 imágenes** más: las 59 de `xl-luzcamara` con la chica y las 10 con inglés.
+- **Carpeta nueva `xl-moda`** (25) y `xl-comidamoda` → «Comida» (26).
+- **Fantasma del navegador** arreglado en `mergeSeedCards`.
+- Herramientas nuevas: banco de pruebas con el almacén real simulado (`_banco_server.py` +
+  `_run_banco.cmd`), OCR de Windows (`_ocr.ps1`), detector de inglés, tiras de sujeto
+  (`_tira_carpeta.py`, `_zoom.py`, `_verif_carpetas.py`) y hojas de revisión
+  (`_hojas_revision.py`).
+
+**Commits:** `915bd61` (imágenes correctas + precedencia), `7f9e607` (sujeto único por
+carpeta), `0a8403b` y `8524da6` (remates), `276a1fd` (Moda/Comida, luzcamara, inglés),
+`6e7468e` (fantasmas de texto).
+
+**Verificación:** banco en Chrome con el almacén contaminado real: navegador nuevo
+**1101 tarjetas OK / 0 fallos / 0 sin cargar**, y con **1223 tarjetas ya guardadas y
+ensuciadas a propósito**, idéntico. Repetido contra producción. OCR completo sin inglés.
+6 fantasmas fabricados → 0 tras recargar.
+
 ## 2026-10-15 — OmniRoute: arranque oculto, diagnóstico de la ventana y esta memoria
 
 **Punto de partida.** Antonio pregunta por la memoria del agente y por un montaje antiguo:

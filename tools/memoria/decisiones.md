@@ -5,6 +5,25 @@ si el motivo ya no aplica, actualiza esta entrada en el mismo cambio.
 
 ---
 
+### [2026-10-15] Una carpeta = un sujeto; y «Comida y moda» se parte en dos
+
+- **Decisión:** cada carpeta de TrickVault usa **un solo sujeto** en todas sus imágenes
+  (Antonio: «dentro de una carpeta todas las imágenes deben utilizar el mismo sujeto para que
+  de verdad se vea la diferencia»). Excepciones documentadas: códigos de lettering (una
+  palabra), escenas autosuficientes (`/galaxy`, `/dragon`), y códigos que exigen una categoría
+  concreta (un animal, una célula, un plato) o cuyo prompt nombra otra cosa (p. ej.
+  `/footweartechpack` dice «footwear tech pack / sneaker»).
+- **Decisión:** `xl-comidamoda` («Comida y moda») se parte en **`xl-comidamoda` = «Comida»**
+  (26 tarjetas) y **`xl-moda` = «Moda»** (25: ropa, estilismo, belleza, joyería).
+  Las fotos **siguen en `assets/comida-moda/`**: ya funcionan y moverlas obligaría a tocar
+  todas las URLs.
+- **Motivo:** mezclar dos temas en una carpeta impide comparar el mismo sujeto entre códigos,
+  que es para lo que sirve la carpeta.
+- **Contrapartida:** al cambiar el nombre de una carpeta, un navegador que ya tenía la lista
+  guardada conserva el nombre viejo. Se resuelve con `FOLDERS_SCHEMA_VERSION` (5 → 6) y el
+  mapa `FOLDERS_LABELS_ANTIGUOS`, que renombra solo si el nombre guardado es el viejo por
+  defecto (si Antonio le puso otro a mano, se respeta).
+
 ### [2026-10-15] La memoria vive en `tools/memoria/`, no en la raíz
 
 - **Decisión:** toda la memoria operativa va en `tools/memoria/`.

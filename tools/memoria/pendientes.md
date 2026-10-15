@@ -5,6 +5,24 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
+## Carpetas con dos familias de códigos: decidir si se parten
+
+- **Estado:** detectadas y sin tocar. `xl-otromundo` mezcla personajes (astronauta, vampiro,
+  mago: cada código pide el suyo) con la furgoneta camper de los códigos de producto;
+  `xl-juegos` mezcla el aventurero de los códigos de juego con las escenas de temporada (esas
+  ya se unificaron el 2026-10-15: ahora es el aventurero vestido de esa temporada).
+- **Siguiente paso:** preguntar a Antonio si quiere partirlas como se hizo con «Comida y moda»
+  o dejarlas con la excepción documentada en `trickvault-imagenes`.
+- **Verificación:** `tools/trickvault/_tiras_sujetos.py` genera una tira por carpeta; si en una
+  tira se ven dos familias claras, toca decidir.
+
+## `xl-camararetrato` y `xl-casaviajes`: excepciones por código
+
+- **Estado:** tienen excepciones legítimas (bebé, mascota, pareja, familia / castillo, volcán,
+  trono, naufragio) porque **su código pide esa escena**. No es un sujeto mezclado.
+- **Siguiente paso:** si Antonio quiere el sujeto único también ahí, hay que reescribir esos
+  prompts (no basta con regenerar la imagen).
+
 ## 0. 🔴 ROTAR las 6 claves de Google expuestas — **urgente**
 
 - **Estado:** detectado el 2026-10-15, sin resolver. Detalle completo en `credenciales.md`.

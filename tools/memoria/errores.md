@@ -5,6 +5,57 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-15] «Hay tarjetas duplicadas»: no estaban en el catálogo, eran **fantasmas del navegador**
+
+- **Síntoma:** Antonio ve varias tarjetas repetidas en «Comandos de texto». En el catálogo
+  (el fichero) no hay ni un duplicado.
+- **Causa:** el bloque de texto se ha **renumerado** al crecer el catálogo (`ig-dcek-NNN`
+  pasa a `NNN+1`, y antes hubo saltos mayores). `mergeSeedCards` solo comparaba **el id**,
+  así que la tarjeta vieja guardada en el navegador **se quedaba** y además entraba la nueva
+  con el mismo código: dos tarjetas idénticas. Medido con las funciones reales de la app
+  sobre 126 revisiones de git y 4 respaldos: `/story` llegaba a salir **4 veces**
+  (ids 593+592+464+363); lo mismo `/brainstorm`, `/ultimate`, `/detailed`, `/pricing`.
+  Peor aún: el fantasma que ocupa un id vivo **impide entrar** a la tarjeta legítima de ese id.
+- **Solución:** en `mergeSeedCards`, descartar las tarjetas de catálogo cuyo id pertenece hoy
+  a **otro** comando, respetando tarjetas personales, ediciones del usuario y
+  `RESTORED_VARIANTS`. Se arregla solo en la siguiente recarga.
+- **Lo que NO hay que hacer:** `flatMap` + `REMOVED_IMAGE_IDS` (el patrón de las tarjetas
+  retiradas). Los ids fantasma son **hoy** ids vivos de otras tarjetas: apagaría entre 39 y
+  120 tarjetas buenas (medido).
+- **Cómo comprobarlo:** `tools/trickvault/_banco/_fantasmas.html` con el banco
+  (`_run_banco.cmd`): fabrica 6 fantasmas en un navegador real y, tras recargar, deben quedar
+  0 fantasmas y 0 códigos repetidos.
+
+### [2026-10-15] El almacén de imágenes pisaba al catálogo y sus ficheros iban **desplazados**
+
+- **Síntoma:** 235 tarjetas enseñaban la imagen de **otra** tarjeta (un perro en `/cityscape`,
+  un cómic en `/nightcity`, un detective en `/polaroid`, un frasco de perfume en `/minifig`).
+- **Causa:** dos problemas sumados. (1) `uploads/visual-ig-dcek-N.jpg` guarda la imagen de la
+  tarjeta **N+1** (numeración vieja) y el almacén ganaba al repositorio. (2) La **capa
+  publicada** (`catalogo.json`, publicada el 8-oct) va **por id** y también estaba desplazada:
+  renombraba 26 tarjetas con el código de la vecina.
+- **Solución:** la precedencia es determinista y manda el **repositorio**: tu imagen publicada
+  > imagen propia (`ownImage`) > `data:` > `assets/<carpeta>/<codigo>.jpg` > almacén.
+  `catalogo.json` se reencajó **por código** (que no cambia nunca) y se le quitaron las
+  imágenes del almacén.
+- **Cómo comprobarlo:** `tools/trickvault/_banco_generar.py` + `_run_banco.cmd` (navegador
+  nuevo y con 1223 tarjetas ya guardadas y ensuciadas a propósito).
+
+### [2026-10-15] Imágenes con texto en **inglés** pese a pedirlo en el prompt
+
+- **Síntoma:** Antonio: «hay varias imágenes con texto en inglés, asegúrate de que todo el
+  texto sea en español». La coletilla del prompt ya decía «with no English words».
+- **Causa:** el modelo escribe rótulos en inglés por inercia (sobre todo en infografías y
+  anuncios: «WORLD WAR II KEY TURNING POINTS», «MADE FRESH», «CHEAT SHEET»). La instrucción
+  sola no basta y no había forma de **detectarlo**: a ojo son 1100 imágenes.
+- **Solución:** OCR nativo de Windows (`tools/trickvault/_ocr.ps1`) pasado por las **1103**
+  imágenes + detector por proporción de palabras función inglesas
+  (`tools/trickvault/_detectar_ingles.py`). Salieron 10 de verdad; regeneradas y OCR de nuevo:
+  0. La coletilla de los 1104 prompts se refuerza a «…with no English words: every sign,
+  label, headline and button must be in Spanish, never in English».
+- **Cómo comprobarlo:** `python tools\trickvault\_ocr_todas.py` y luego
+  `python tools\trickvault\_detectar_ingles.py` (debe salir ~0).
+
 ## Errores de criterio (los que más caro salen)
 
 ---
