@@ -1,470 +1,245 @@
 {
-    "version": 1,
-    "tarjetas": {
-        "xl-cmd-274": {
-            "title": "/sugarskull — sujeto convertido en calavera mexicana",
-            "imageUrl": "uploads/example_xl-cmd-274_ecfa81948431.webp"
-        },
-        "cap-cmd-111": {
-            "imageUrl": "uploads/example_cap-cmd-111_767c0ac834b1.webp"
-        },
-        "cap-cmd-109": {
-            "imageUrl": "uploads/example_cap-cmd-109_d8775c6af0fd.webp"
-        },
-        "cap-cmd-110": {
-            "imageUrl": "uploads/example_cap-cmd-110_878221472d72.webp"
-        },
-        "xl-cmd-053": {
-            "imageUrl": "uploads/example_xl-cmd-053_94b03133814c.webp"
-        },
-        "xl-cmd-055": {
-            "imageUrl": "uploads/example_xl-cmd-055_68082ef90488.webp"
-        },
-        "xl-cmd-060": {
-            "imageUrl": "uploads/example_xl-cmd-060_fcec8e850633.webp"
-        },
-        "ig-dcek-481": {
-            "title": "/3dcycle — organiza etapas que se repiten en un ciclo 3D claro",
-            "codeSnippet": "/3dcycle"
-        },
-        "ig-dcek-482": {
-            "title": "/3dcell — modelo 3D de una célula o bacteria con sus partes",
-            "codeSnippet": "/3dcell"
-        },
-        "ig-dcek-483": {
-            "title": "/3dexploded — separa las partes de un objeto para ver cómo se conectan",
-            "codeSnippet": "/3dexploded"
-        },
-        "ig-dcek-484": {
-            "title": "/3dinside — revela el interior de un objeto con un corte visible",
-            "codeSnippet": "/3dinside"
-        },
-        "ig-dcek-485": {
-            "title": "/3dcutaway — conserva el exterior y muestra el interior al mismo tiempo",
-            "codeSnippet": "/3dcutaway"
-        },
-        "ig-dcek-486": {
-            "title": "/3dlabeled — modelo 3D con nombres y flechas para estudiar cada parte",
-            "codeSnippet": "/3dlabeled"
-        },
-        "ig-dcek-487": {
-            "title": "/3dprocess — proceso visual en 3D con entradas, transformación y resultado",
-            "codeSnippet": "/3dprocess"
-        },
-        "ig-dcek-488": {
-            "title": "/3dplant — modelo botánico 3D con partes visibles y funciones básicas",
-            "codeSnippet": "/3dplant"
-        },
-        "ig-dcek-522": {
-            "title": "/minifig — figura de bloques con su set",
-            "codeSnippet": "/minifig",
-            "customPrompt": "/minifig If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Minifig block figure of [OBJETO] with its tiny building set, toy-brick character aesthetic, playful collectible scene. . all visible text and labels must be written in Spanish with no English words.",
-            "imageUrl": "uploads/example_ig-dcek-523_1fd7f106f6a6.webp"
-        },
-        "ig-dcek-525": {
-            "title": "/gashapon — cápsula coleccionable y su máquina",
-            "codeSnippet": "/gashapon",
-            "customPrompt": "/gashapon If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gashapon collectible of [OBJETO], tiny toy inside a capsule with its vending machine, Japanese capsule-toy aesthetic. . all visible text and labels must be written in Spanish with no English words.",
-            "imageUrl": "uploads/example_ig-dcek-526_b805335cb5df.webp"
-        },
-        "ig-dcek-526": {
-            "title": "/bobblehead — cabeza que se mueve sobre su base",
-            "codeSnippet": "/bobblehead",
-            "customPrompt": "/bobblehead If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bobblehead figure of [OBJETO], oversized wobbly head on a spring base, playful dashboard collectible, glossy finish. . all visible text and labels must be written in Spanish with no English words.",
-            "imageUrl": "uploads/example_ig-dcek-527_676504684aa8.webp"
-        },
-        "ig-dcek-033": {
-            "customPrompt": "/actionfigure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics. . all visible text and labels must be written in Spanish with no English words.",
-            "imageUrl": "uploads/example_ig-dcek-033_ff596a168add.webp"
-        },
-        "ig-dcek-372": {
-            "title": "/banner — banner para web o redes sociales",
-            "codeSnippet": "/banner"
-        },
-        "ig-dcek-375": {
-            "title": "/invitation — tarjeta de invitación para eventos",
-            "codeSnippet": "/invitation"
-        },
-        "ig-dcek-535": {
-            "title": "/tradingcard — carta coleccionable con stats",
-            "codeSnippet": "/tradingcard"
-        },
-        "ig-dcek-536": {
-            "title": "/cerealbox — caja de cereal con tu mascota",
-            "codeSnippet": "/cerealbox"
-        },
-        "ig-dcek-537": {
-            "title": "/vinylsleeve — funda de vinilo con el disco físico",
-            "codeSnippet": "/vinylsleeve"
-        },
-        "ig-dcek-538": {
-            "title": "/arcadecabinet — máquina recreativa con tu marca",
-            "codeSnippet": "/arcadecabinet"
-        },
-        "ig-dcek-539": {
-            "title": "/museumplaque — lo expone en museo con su ficha",
-            "codeSnippet": "/museumplaque"
-        },
-        "ig-dcek-562": {
-            "title": "/voxelart — todo hecho con cubos 3D",
-            "codeSnippet": "/voxelart"
-        },
-        "ig-dcek-563": {
-            "title": "/crossstitch — bordado en punto de cruz",
-            "codeSnippet": "/crossstitch"
-        },
-        "ig-dcek-564": {
-            "title": "/holographiccard — tarjeta que refleja arcoíris",
-            "codeSnippet": "/holographiccard"
-        },
-        "ig-dcek-565": {
-            "title": "/yearbook90s — retrato de anuario noventero",
-            "codeSnippet": "/yearbook90s"
-        },
-        "ig-dcek-566": {
-            "title": "/tattooflash — lámina de tatuajes tradicionales",
-            "codeSnippet": "/tattooflash"
-        },
-        "ig-dcek-567": {
-            "title": "/neonsign — tu frase como letrero de neón",
-            "codeSnippet": "/neonsign"
-        },
-        "ig-dcek-568": {
-            "title": "/wantedposter — cartel de se busca envejecido",
-            "codeSnippet": "/wantedposter"
-        },
-        "ig-dcek-569": {
-            "title": "/securitycam — cámara de seguridad con fecha",
-            "codeSnippet": "/securitycam"
-        }
+  "version": 1,
+  "tarjetas": {
+    "xl-cmd-274": {
+      "title": "/sugarskull — sujeto convertido en calavera mexicana"
     },
-    "nuevas": [
-        {
-            "id": "ig-dcek-265",
-            "title": "/3drender — imagen renderizada en 3D",
-            "description": "",
-            "category": "xl-letras3d",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/3drender",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "uploads/visual-ig-dcek-280.jpg",
-            "isFavorite": true,
-            "createdAt": 1787615999736,
-            "sortOrder": 49
-        },
-        {
-            "id": "ig-dcek-480",
-            "title": "/3danimal — modelo 3D de un animal con estructuras internas y externas",
-            "description": "",
-            "category": "xl-letras3d",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/3danimal",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "uploads/example_ig-dcek-480_5e0d81f109b2.webp",
-            "isFavorite": false,
-            "createdAt": 1787615999521,
-            "sortOrder": 6,
-            "customPrompt": "/3danimal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Create an educational anatomical infographic of a [ANIMAL]—including its scientific name—featuring realistic 3D illustrations and a clear editorial layout.\nCOMPOSITION\nSquare canvas, solid charcoal-gray background, and five balanced sections:\n1.\tTop section: A large illustration of the complete animal in profile, facing left. Faithfully depict its proportions, posture, coloration, and natural texture. Add labels for key external structures using fine lines.\n2.\tMiddle section: The same animal, in the same orientation, showing its muscular anatomy. Depict muscles and tendons in detail, using reddish, pink, and ivory tones. Label the major muscles specific to this species.\n3.\tBottom section: The complete skeleton of the same animal, in profile and in a posture consistent with the other views. Ivory-colored bones, with joints and proportions characteristic of the species. Label the major bones.\n4.\tRight side, middle area: An inset box showing the main internal organs, positioned according to their correct anatomical relationships and individually labeled.\n5.\tRight side, lower area: An inset box showing a cross-section of the thorax, displaying the layers and structures specific to the species, with clear labels.\nCONTENT AND TEXT\nIn the top-left corner, include the title \"[ANIMAL BREED/TYPE]\" in large lettering, with \"[SCIENTIFIC NAME]\" in italics underneath. Add a brief, factual description in Spanish and a small box detailing its taxonomic classification: kingdom, phylum, class, order, family, genus, and species.\nUse these exact headings:\n\"EXTERNAL ANATOMY\"\n\"MUSCULAR ANATOMY\"\n\"SKELETAL ANATOMY\"\n\"INTERNAL ORGANS\"\n\"CROSS-SECTION\"\nAdapt all structures, labels, and data to the chosen animal. Each leader line must terminate exactly at the structure it identifies.\nVISUAL STYLE\nScientific illustration with a 3D-rendered finish, featuring detailed natural textures, soft lighting, and subtle shadows that add volume. Maintain consistent relative scale, orientation, and animal identity across the three main views.\nHigh-contrast white text; titles in a serif typeface and labels in a simple, legible font. Headings set on small brown plaques with subtle gold borders. Side panels featuring rounded corners and fine outlines.\nPrioritize anatomical accuracy, readability, and ample spacing between elements. Arrange labels in open areas using short, neat leader lines. The final result should resemble an educational plate from a zoology atlas. all visible text and labels must be written in Spanish with no English words",
-            "updatedAt": 1791476159108
-        },
-        {
-            "id": "ig-dcek-521",
-            "title": "/funkostyle — cabezón de vinilo en su caja",
-            "description": "",
-            "category": "xl-letras3d",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/funkostyle",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "uploads/example_ig-dcek-522_b1f5230d4c24.webp",
-            "isFavorite": false,
-            "createdAt": 1787615999480,
-            "sortOrder": 15,
-            "customPrompt": "/funkostyle If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Funko-style vinyl figure of [OBJETO], oversized-head vinyl toy in its display box, collectible figure photography. . all visible text and labels must be written in Spanish with no English words.",
-            "updatedAt": 1790872728769
-        },
-        {
-            "id": "ig-dcek-524",
-            "title": "/keychain — llavero colgando de una mochila",
-            "description": "",
-            "category": "xl-letras3d",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/keychain",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "uploads/example_ig-dcek-525_6c726f88c554.webp",
-            "isFavorite": false,
-            "createdAt": 1787615999477,
-            "sortOrder": 17,
-            "customPrompt": "/keychain If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Keychain of [OBJETO] hanging from a backpack, small charm in real use, tactile everyday accessory shot. . all visible text and labels must be written in Spanish with no English words.",
-            "updatedAt": 1790872771530
-        },
-        {
-            "id": "ig-dcek-528",
-            "title": "/dioramabox — diorama dentro de una caja abierta",
-            "description": "",
-            "category": "xl-letras3d",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/dioramabox",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "uploads/example_ig-dcek-529_de9f329ef657.webp",
-            "isFavorite": false,
-            "createdAt": 1787615999473,
-            "sortOrder": 20,
-            "customPrompt": "/dioramabox If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Diorama box of [OBJETO], miniature scene inside an open box, layered depth and tiny details, shadowbox art presentation. . all visible text and labels must be written in Spanish with no English words.",
-            "updatedAt": 1790872699080
-        },
-        {
-            "title": "/Mercury",
-            "description": "Objeto visto en Mercurio",
-            "category": "xl-carteles",
-            "tags": [],
-            "codeSnippet": "",
-            "imageUrl": "uploads/example_muzrldq0pyjtdj8fe_e7ecf5db34d3.webp",
-            "sourceUrl": "",
-            "difficulty": "beginner",
-            "isFavorite": true,
-            "customPrompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Create an image featuring [OBJETO] as the central focus, applying a polished chrome-metal retro-futurist aesthetic to the subject itself: mirror-like surfaces, smooth volumes, rounded edges, precise details, and steel-blue reflections. Adapt this finish to its natural forms while preserving its identity and recognizable features. Concentrate visual richness and detail on the subject.\n\nPlace it against a uniform, solid-color background that contrasts with its silhouette and reflections. Select a tone that best highlights the subject and use a fine, subtle matte texture to contrast with the chrome's sheen. Keep the background clean, free of objects or elements that might compete for attention.\n\nIlluminate the subject with soft, enveloping studio lighting, featuring controlled highlights and shadows that define its volume. Use a centered composition, a clearly defined silhouette, ample surrounding space, and maximum sharpness on the main subject. Render with a hyper-realistic product finish. all visible text and neon signs must be written in Spanish with no English words",
-            "id": "muzrldq0pyjtdj8fe",
-            "createdAt": 1791477744141,
-            "updatedAt": 1791480876948,
-            "sortOrder": 97
-        },
-        {
-            "id": "ig-dcek-371",
-            "title": "/poster — póster para eventos o promociones",
-            "description": "",
-            "category": "xl-carteles",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/poster",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "assets/xl-carteles/poster.jpg",
-            "isFavorite": false,
-            "createdAt": 1787615999630,
-            "sortOrder": 4
-        },
-        {
-            "id": "ig-dcek-374",
-            "title": "/wallpaper — fondo de pantalla para móvil o escritorio",
-            "description": "",
-            "category": "xl-carteles",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/wallpaper",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "assets/xl-carteles/wallpaper.jpg",
-            "isFavorite": false,
-            "createdAt": 1787615999627,
-            "sortOrder": 57
-        },
-        {
-            "id": "ig-dcek-534",
-            "title": "/timelineboard — tu marca entera en un tablero",
-            "description": "",
-            "category": "xl-carteles",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/timelineboard",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "assets/xl-carteles/timelineboard.jpg",
-            "isFavorite": false,
-            "createdAt": 1787615999467,
-            "sortOrder": 68
-        },
-        {
-            "id": "ig-dcek-561",
-            "title": "/glasssculpture — figura de vidrio translúcida",
-            "description": "",
-            "category": "xl-carteles",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/glasssculpture",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "assets/xl-carteles/glasssculpture.jpg",
-            "isFavorite": false,
-            "createdAt": 1787615999440,
-            "sortOrder": 83
-        },
-        {
-            "id": "ig-dcek-266",
-            "title": "/quotes — imagen con cita inspiradora",
-            "description": "",
-            "category": "xl-carteles",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/quotes",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "uploads/example_ig-dcek-281_a6ccc934fe32.webp",
-            "isFavorite": false,
-            "createdAt": 1787615999735,
-            "sortOrder": 37
-        },
-        {
-            "id": "ig-dcek-278",
-            "title": "/polaroid — estética de foto instantánea",
-            "description": "",
-            "category": "xl-carteles",
-            "tags": [
-                "comandos de imagen",
-                "imagen",
-                "Instagram"
-            ],
-            "codeSnippet": "/polaroid",
-            "difficulty": "beginner",
-            "sourceUrl": "https://www.instagram.com/p/DcekG11IJf-/",
-            "imageUrl": "uploads/visual-ig-dcek-293.jpg",
-            "isFavorite": true,
-            "createdAt": 1787615999723,
-            "sortOrder": 39,
-            "customPrompt": "",
-            "updatedAt": 1791479045309
-        }
+    "cap-cmd-111": {},
+    "cap-cmd-109": {},
+    "cap-cmd-110": {},
+    "xl-cmd-053": {},
+    "xl-cmd-055": {},
+    "xl-cmd-060": {},
+    "ig-dcek-482": {
+      "title": "/3dcycle — organiza etapas que se repiten en un ciclo 3D claro",
+      "codeSnippet": "/3dcycle"
+    },
+    "ig-dcek-483": {
+      "title": "/3dcell — modelo 3D de una célula o bacteria con sus partes",
+      "codeSnippet": "/3dcell"
+    },
+    "ig-dcek-484": {
+      "title": "/3dexploded — separa las partes de un objeto para ver cómo se conectan",
+      "codeSnippet": "/3dexploded"
+    },
+    "ig-dcek-485": {
+      "title": "/3dinside — revela el interior de un objeto con un corte visible",
+      "codeSnippet": "/3dinside"
+    },
+    "ig-dcek-486": {
+      "title": "/3dcutaway — conserva el exterior y muestra el interior al mismo tiempo",
+      "codeSnippet": "/3dcutaway"
+    },
+    "ig-dcek-487": {
+      "title": "/3dlabeled — modelo 3D con nombres y flechas para estudiar cada parte",
+      "codeSnippet": "/3dlabeled"
+    },
+    "ig-dcek-488": {
+      "title": "/3dprocess — proceso visual en 3D con entradas, transformación y resultado",
+      "codeSnippet": "/3dprocess"
+    },
+    "ig-dcek-489": {
+      "title": "/3dplant — modelo botánico 3D con partes visibles y funciones básicas",
+      "codeSnippet": "/3dplant"
+    },
+    "ig-dcek-523": {
+      "title": "/minifig — figura de bloques con su set",
+      "codeSnippet": "/minifig",
+      "customPrompt": "/minifig If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Minifig block figure of [OBJETO] with its tiny building set, toy-brick character aesthetic, playful collectible scene. . all visible text and labels must be written in Spanish with no English words."
+    },
+    "ig-dcek-526": {
+      "title": "/gashapon — cápsula coleccionable y su máquina",
+      "codeSnippet": "/gashapon",
+      "customPrompt": "/gashapon If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gashapon collectible of [OBJETO], tiny toy inside a capsule with its vending machine, Japanese capsule-toy aesthetic. . all visible text and labels must be written in Spanish with no English words."
+    },
+    "ig-dcek-527": {
+      "title": "/bobblehead — cabeza que se mueve sobre su base",
+      "codeSnippet": "/bobblehead",
+      "customPrompt": "/bobblehead If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bobblehead figure of [OBJETO], oversized wobbly head on a spring base, playful dashboard collectible, glossy finish. . all visible text and labels must be written in Spanish with no English words."
+    },
+    "ig-dcek-033": {
+      "customPrompt": "/actionfigure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Collectible action figure toy packaging of [OBJETO], sealed inside a clear plastic blister bubble on a retro printed cardboard backing card with colorful pop art graphics. . all visible text and labels must be written in Spanish with no English words."
+    },
+    "ig-dcek-373": {
+      "title": "/banner — banner para web o redes sociales",
+      "codeSnippet": "/banner"
+    },
+    "ig-dcek-376": {
+      "title": "/invitation — tarjeta de invitación para eventos",
+      "codeSnippet": "/invitation"
+    },
+    "ig-dcek-536": {
+      "title": "/tradingcard — carta coleccionable con stats",
+      "codeSnippet": "/tradingcard"
+    },
+    "ig-dcek-537": {
+      "title": "/cerealbox — caja de cereal con tu mascota",
+      "codeSnippet": "/cerealbox"
+    },
+    "ig-dcek-538": {
+      "title": "/vinylsleeve — funda de vinilo con el disco físico",
+      "codeSnippet": "/vinylsleeve"
+    },
+    "ig-dcek-539": {
+      "title": "/arcadecabinet — máquina recreativa con tu marca",
+      "codeSnippet": "/arcadecabinet"
+    },
+    "ig-dcek-540": {
+      "title": "/museumplaque — lo expone en museo con su ficha",
+      "codeSnippet": "/museumplaque"
+    },
+    "ig-dcek-563": {
+      "title": "/voxelart — todo hecho con cubos 3D",
+      "codeSnippet": "/voxelart"
+    },
+    "ig-dcek-564": {
+      "title": "/crossstitch — bordado en punto de cruz",
+      "codeSnippet": "/crossstitch"
+    },
+    "ig-dcek-565": {
+      "title": "/holographiccard — tarjeta que refleja arcoíris",
+      "codeSnippet": "/holographiccard"
+    },
+    "ig-dcek-566": {
+      "title": "/yearbook90s — retrato de anuario noventero",
+      "codeSnippet": "/yearbook90s"
+    },
+    "ig-dcek-567": {
+      "title": "/tattooflash — lámina de tatuajes tradicionales",
+      "codeSnippet": "/tattooflash"
+    },
+    "ig-dcek-568": {
+      "title": "/neonsign — tu frase como letrero de neón",
+      "codeSnippet": "/neonsign"
+    },
+    "ig-dcek-569": {
+      "title": "/wantedposter — cartel de se busca envejecido",
+      "codeSnippet": "/wantedposter"
+    },
+    "ig-dcek-570": {
+      "title": "/securitycam — cámara de seguridad con fecha",
+      "codeSnippet": "/securitycam"
+    }
+  },
+  "nuevas": [
+    {
+      "title": "/Mercury",
+      "description": "Objeto visto en Mercurio",
+      "category": "xl-carteles",
+      "tags": [],
+      "codeSnippet": "",
+      "imageUrl": "uploads/example_muzrldq0pyjtdj8fe_e7ecf5db34d3.webp",
+      "sourceUrl": "",
+      "difficulty": "beginner",
+      "isFavorite": true,
+      "customPrompt": "If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Create an image featuring [OBJETO] as the central focus, applying a polished chrome-metal retro-futurist aesthetic to the subject itself: mirror-like surfaces, smooth volumes, rounded edges, precise details, and steel-blue reflections. Adapt this finish to its natural forms while preserving its identity and recognizable features. Concentrate visual richness and detail on the subject.\n\nPlace it against a uniform, solid-color background that contrasts with its silhouette and reflections. Select a tone that best highlights the subject and use a fine, subtle matte texture to contrast with the chrome's sheen. Keep the background clean, free of objects or elements that might compete for attention.\n\nIlluminate the subject with soft, enveloping studio lighting, featuring controlled highlights and shadows that define its volume. Use a centered composition, a clearly defined silhouette, ample surrounding space, and maximum sharpness on the main subject. Render with a hyper-realistic product finish. all visible text and neon signs must be written in Spanish with no English words",
+      "id": "muzrldq0pyjtdj8fe",
+      "createdAt": 1791477744141,
+      "updatedAt": 1791480876948,
+      "sortOrder": 97
+    }
+  ],
+  "borradas": [],
+  "orden": {
+    "xl-letras3d": [
+      "xl-cmd-274",
+      "cap-cmd-111",
+      "cap-cmd-109",
+      "cap-cmd-110",
+      "cap-cmd-108",
+      "xl-cmd-049",
+      "xl-cmd-050",
+      "xl-cmd-051",
+      "xl-cmd-052",
+      "xl-cmd-053",
+      "xl-cmd-054",
+      "xl-cmd-055",
+      "xl-cmd-056",
+      "xl-cmd-057",
+      "xl-cmd-058",
+      "xl-cmd-059",
+      "xl-cmd-060",
+      "xl-cmd-061",
+      "xl-cmd-062",
+      "xl-cmd-063",
+      "xl-cmd-064",
+      "xl-cmd-065",
+      "xl-cmd-066",
+      "xl-cmd-067",
+      "xl-cmd-068",
+      "xl-cmd-069",
+      "xl-cmd-070",
+      "xl-cmd-071",
+      "xl-cmd-072",
+      "xl-cmd-073",
+      "xl-cmd-074",
+      "xl-cmd-075",
+      "xl-cmd-076",
+      "ig-dcek-481",
+      "ig-dcek-482",
+      "ig-dcek-483",
+      "ig-dcek-484",
+      "ig-dcek-485",
+      "ig-dcek-486",
+      "ig-dcek-487",
+      "ig-dcek-488",
+      "ig-dcek-489",
+      "ig-dcek-522",
+      "ig-dcek-523",
+      "ig-dcek-525",
+      "ig-dcek-526",
+      "ig-dcek-527",
+      "ig-dcek-529",
+      "ig-dcek-280",
+      "ig-dcek-033"
     ],
-    "borradas": [],
-    "orden": {
-        "xl-letras3d": [
-            "xl-cmd-274",
-            "cap-cmd-111",
-            "cap-cmd-109",
-            "cap-cmd-110",
-            "cap-cmd-108",
-            "xl-cmd-049",
-            "xl-cmd-050",
-            "xl-cmd-051",
-            "xl-cmd-052",
-            "xl-cmd-053",
-            "xl-cmd-054",
-            "xl-cmd-055",
-            "xl-cmd-056",
-            "xl-cmd-057",
-            "xl-cmd-058",
-            "xl-cmd-059",
-            "xl-cmd-060",
-            "xl-cmd-061",
-            "xl-cmd-062",
-            "xl-cmd-063",
-            "xl-cmd-064",
-            "xl-cmd-065",
-            "xl-cmd-066",
-            "xl-cmd-067",
-            "xl-cmd-068",
-            "xl-cmd-069",
-            "xl-cmd-070",
-            "xl-cmd-071",
-            "xl-cmd-072",
-            "xl-cmd-073",
-            "xl-cmd-074",
-            "xl-cmd-075",
-            "xl-cmd-076",
-            "ig-dcek-480",
-            "ig-dcek-481",
-            "ig-dcek-482",
-            "ig-dcek-483",
-            "ig-dcek-484",
-            "ig-dcek-485",
-            "ig-dcek-486",
-            "ig-dcek-487",
-            "ig-dcek-488",
-            "ig-dcek-521",
-            "ig-dcek-522",
-            "ig-dcek-524",
-            "ig-dcek-525",
-            "ig-dcek-526",
-            "ig-dcek-528",
-            "ig-dcek-265",
-            "ig-dcek-033"
-        ],
-        "xl-carteles": [
-            "muzrldq0pyjtdj8fe",
-            "cap-cmd-084",
-            "cap-cmd-085",
-            "cap-cmd-089",
-            "cap-cmd-090",
-            "cap-cmd-091",
-            "cap-cmd-092",
-            "cap-cmd-093",
-            "cap-cmd-094",
-            "cap-cmd-095",
-            "cap-cmd-096",
-            "cap-cmd-097",
-            "ig-dcek-371",
-            "ig-dcek-372",
-            "ig-dcek-374",
-            "ig-dcek-375",
-            "ig-dcek-534",
-            "ig-dcek-535",
-            "ig-dcek-536",
-            "ig-dcek-537",
-            "ig-dcek-538",
-            "ig-dcek-539",
-            "ig-dcek-561",
-            "ig-dcek-562",
-            "ig-dcek-563",
-            "ig-dcek-564",
-            "ig-dcek-565",
-            "ig-dcek-566",
-            "ig-dcek-567",
-            "ig-dcek-568",
-            "ig-dcek-569",
-            "ig-dcek-266",
-            "ig-dcek-278",
-            "ig-dcek-004",
-            "ig-dcek-005",
-            "ig-dcek-031",
-            "ig-dcek-071",
-            "ig-dcek-072",
-            "ig-dcek-074",
-            "ig-dcek-079",
-            "ig-dcek-085",
-            "ig-dcek-086",
-            "ig-dcek-091",
-            "ig-dcek-092",
-            "ig-dcek-095"
-        ]
-    },
-    "actualizado": "2026-10-08T17:35:47+00:00"
+    "xl-carteles": [
+      "muzrldq0pyjtdj8fe",
+      "cap-cmd-084",
+      "cap-cmd-085",
+      "cap-cmd-089",
+      "cap-cmd-090",
+      "cap-cmd-091",
+      "cap-cmd-092",
+      "cap-cmd-093",
+      "cap-cmd-094",
+      "cap-cmd-095",
+      "cap-cmd-096",
+      "cap-cmd-097",
+      "ig-dcek-372",
+      "ig-dcek-373",
+      "ig-dcek-375",
+      "ig-dcek-376",
+      "ig-dcek-535",
+      "ig-dcek-536",
+      "ig-dcek-537",
+      "ig-dcek-538",
+      "ig-dcek-539",
+      "ig-dcek-540",
+      "ig-dcek-562",
+      "ig-dcek-563",
+      "ig-dcek-564",
+      "ig-dcek-565",
+      "ig-dcek-566",
+      "ig-dcek-567",
+      "ig-dcek-568",
+      "ig-dcek-569",
+      "ig-dcek-570",
+      "ig-dcek-281",
+      "ig-dcek-293",
+      "ig-dcek-004",
+      "ig-dcek-005",
+      "ig-dcek-031",
+      "ig-dcek-071",
+      "ig-dcek-072",
+      "ig-dcek-074",
+      "ig-dcek-079",
+      "ig-dcek-085",
+      "ig-dcek-086",
+      "ig-dcek-091",
+      "ig-dcek-092",
+      "ig-dcek-095"
+    ]
+  },
+  "actualizado": "2026-10-08T17:35:47+00:00"
 }
