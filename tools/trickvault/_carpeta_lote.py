@@ -89,6 +89,7 @@ def tarjetas_de(carpeta):
     ad = _lit('ADDITIONAL_IMAGE_COMMANDS')
     ex = _lit('EXCEL_COMMANDS')
     cap = _lit('CAPTURE_COMMANDS')
+    reel = _lit('REEL_COMMANDS')
     allc = list(ig) + [t for t in ad if t[0] not in [c for c, _ in ig]]
     for n, (code, _d) in enumerate(allc):
         cid = 'ig-dcek-%03d' % (n + 1)
@@ -105,6 +106,9 @@ def tarjetas_de(carpeta):
             continue                      # tarjeta retirada (fusionada en otra)
         if CODE_FOLDER.get(code, 'xl-dev') == carpeta:
             salida.append({'id': cid, 'code': code})
+    for n, (code, _d) in enumerate(reel):
+        if CODE_FOLDER.get(code, 'xl-dev') == carpeta:
+            salida.append({'id': 'reel-cmd-%03d' % (n + 1), 'code': code})
     return salida
 
 
