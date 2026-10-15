@@ -1,37 +1,58 @@
 [
  {
-  "id": "ig-dcek-138",
-  "code": "/flashcard",
+  "id": "ig-dcek-165",
+  "code": "/pyramidchart",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/flashcard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational study flashcards set about a vintage typewriter, clean white flashcard grid with bold question titles and concise answer text, colorful category headers, neat organized layout on a soft pastel background, modern educational infographic style, sharp readable typography, 8k resolution, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/pyramidchart If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational multi-tiered hierarchical pyramid diagram of a vintage typewriter, colorful horizontal stacked segments with clear labels and brief descriptive callouts, clean flat vector infographic style, 8k clarity, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-140",
-  "code": "/stickynotes",
+  "id": "ig-dcek-166",
+  "code": "/cheatsheet",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/stickynotes If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cork board covered with colorful sticky notes about a vintage typewriter, handwritten-style short notes and tiny doodle icons, pushpins, warm cozy study workspace aesthetic, overhead flat lay, bright cheerful colors, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/cheatsheet If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Comprehensive one-page quick-reference study cheat sheet about a vintage typewriter, densely organized grid with syntax boxes, key formulas, bullet points and mini icon badges, modern tech developer reference aesthetic, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-157",
-  "code": "/visualizelearning",
+  "id": "ig-dcek-167",
+  "code": "/cornellnotes",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/visualizelearning If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Interactive educational visualization of a vintage typewriter, clean modern UI with adjustable sliders and real-time diagrams, colorful icons and labels, dark interface with glowing accents, scientific learning tool aesthetic, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/cornellnotes If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Organized Cornell note-taking layout about a vintage typewriter, three distinct sections: cue column on left with key questions, main note area with bullet points, summary section at bottom, neat high-contrast study format, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-158",
-  "code": "/generatehandwritingimage",
+  "id": "ig-dcek-170",
+  "code": "/funnelchart",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/generatehandwritingimage If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Handwritten study notes about a vintage typewriter, neat cursive handwriting on lined notebook paper, clear diagrams and formulas, highlighted key points, authentic student notebook aesthetic, high resolution, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/funnelchart If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Educational multi-stage funnel chart diagram of a vintage typewriter, vibrant tapering layers showing sequential filtering stages, clear numeric percentages and descriptive text callouts, clean modern infographic style, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  },
  {
-  "id": "ig-dcek-159",
-  "code": "/infochart",
+  "id": "ig-dcek-171",
+  "code": "/fishbone",
   "desc": "",
   "origen": "lote low",
-  "prompt": "/infochart If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern educational infographic about a vintage typewriter, clean layout with data charts, bar graphs, comparison tables and icons, professional design, balanced colors, high readability, all visible text and labels must be written in Spanish with no English words"
+  "prompt": "/fishbone If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Detailed Ishikawa fishbone cause-and-effect diagram about a vintage typewriter, central spine pointing to the problem statement, branching thematic category ribs with labeled factors, technical engineering analysis style, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-172",
+  "code": "/matrix2x2",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/matrix2x2 If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Four-quadrant 2x2 priority matrix analyzing a vintage typewriter, clearly labeled X and Y axes, color-coded quadrants with descriptive icons and concise summary cards, clean corporate visual layout, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-173",
+  "code": "/cyclicalprocess",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/cyclicalprocess If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Continuous circular loop diagram illustrating the life cycle of a vintage typewriter, curved directional arrows connecting sequential circular nodes, harmonious gradient colors, clean modern infographic vector, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-176",
+  "code": "/decisiontree",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/decisiontree If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Interactive visual decision tree flowchart for a vintage typewriter, starting root question branching into Yes/No logic pathways with rounded condition nodes and final outcome cards, clean modern UI style, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
  }
 ]
