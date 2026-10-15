@@ -1,5 +1,23 @@
 # Instrucciones del proyecto para Claude Code
 
+## Memoria del proyecto (leer al empezar)
+
+La memoria operativa vive en `tools/memoria/` (versionada, protegida por `.htaccess`):
+
+- `MEMORIA.md` — índice y reglas de uso. **Empieza por aquí.**
+- `entorno.md` — la máquina, rutas, herramientas y sus limitaciones.
+- `mapa.md` — estructura del repo, herramientas existentes e índice tarea → skill.
+- `errores.md` — errores ya cometidos, con causa y solución: consúltalo **antes** de repetir un camino.
+- `recetas.md` — comandos verificados que funcionan en este equipo.
+- `decisiones.md` — decisiones tomadas y su porqué: no las reviertas sin motivo.
+- `pendientes.md` — lo abierto, con el siguiente paso concreto.
+- `bitacora.md` — qué se hizo cada día y con qué commit.
+
+**Obligación:** al terminar cualquier tarea que aporte algo replicable, y **siempre** que
+cometas un error y lo resuelvas, añade la entrada correspondiente en esa carpeta antes de
+dar la tarea por terminada (plantilla en `MEMORIA.md`). Nunca escribas valores de claves ni
+contraseñas: solo dónde viven.
+
 El contenido canónico de las skills vive en:
 
 ```text
