@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>midiendo</title>
+<style>html,body{margin:0;background:#05070c;color:#cfe}iframe{border:0;width:900px;height:400px}
+pre{position:fixed;left:0;bottom:0;width:100%;max-height:70%;overflow:auto;background:#000d;color:#9fe;font-size:11px}</style>
+</head><body>
+<iframe id="f" src="/app/index.html"></iframe>
+<pre id="out">midiendo...</pre>
+<script>
+// Simula el navegador de Antonio: tarjetas de TEXTO guardadas cuyo id, hoy, pertenece
+// a OTRO comando (el bloque se renumeró al crecer el catálogo). Cada fantasma se
+// fabrica poniéndole a una tarjeta el código de la SIGUIENTE: su id deja de ser el
+// suyo y además duplica a la vecina, que es lo que él ve en «Comandos de texto».
+const f = document.getElementById('f'), out = document.getElementById('out');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function cargar(u) { return new Promise(res => { f.onload = res; f.src = u; setTimeout(res, 20000); }); }
+(async () => {
+  try {
+    await cargar('/app/index.html?' + Date.now());
+    await sleep(12000);
+    const ls = f.contentWindow.localStorage;
+    const datos = JSON.parse(ls.getItem('trickvault_data') || '[]');
+    const antes = datos.length;
+    const texto = datos.filter(t => t.category === 'xl-texto');
+    const fantasmas = [];
+    for (let k = 0; k < 6 && k + 1 < texto.length; k++) {
+      const t = texto[k], sig = texto[k + 1];
+      fantasmas.push({ id: t.id, puesto: String(sig.codeSnippet || '').trim(), original: String(t.codeSnippet || '').trim() });
+      t.codeSnippet = sig.codeSnippet;
+      t.title = sig.title;
+    }
+    ls.setItem('trickvault_data', JSON.stringify(datos));
+    // recargar: la app debe tirar los fantasmas (su id ya no es suyo) y dejar las buenas
+    await cargar('/app/index.html?r=' + Date.now());
+    await sleep(13000);
+    const despues = JSON.parse(f.contentWindow.localStorage.getItem('trickvault_data') || '[]');
+    const porCodigo = {};
+    for (const t of despues) {
+      const c = String(t.codeSnippet || '').trim();
+      if (c) porCodigo[c] = (porCodigo[c] || 0) + 1;
+    }
+    const repetidos = Object.entries(porCodigo).filter(([c, n]) => n > 1 && c !== '/expressionsheet');
+    const siguen = fantasmas.filter(x => despues.some(t => t.id === x.id && String(t.codeSnippet || '').trim() === x.puesto));
+    const recuperados = fantasmas.filter(x => despues.some(t => t.id === x.id && String(t.codeSnippet || '').trim() === x.original));
+    out.textContent = JSON.stringify({
+      antes, despues: despues.length,
+      texto: despues.filter(t => t.category === 'xl-texto').length,
+      fantasmas_fabricados: fantasmas.length,
+      fantasmas_que_siguen: siguen.map(x => x.id + ' -> ' + x.puesto),
+      ids_que_recuperaron_su_codigo: recuperados.length,
+      codigos_repetidos: repetidos,
+    }, null, 1);
+    document.title = 'antes=' + antes + ' despues=' + despues.length + ' texto='
+      + despues.filter(t => t.category === 'xl-texto').length + ' fantasmas_vivos=' + siguen.length
+      + ' repetidos=' + repetidos.length;
+  } catch (e) { out.textContent = 'ERROR ' + (e && e.message || e); document.title = 'ERROR'; }
+})();
+</script>
+</body></html>
