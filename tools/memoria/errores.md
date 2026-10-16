@@ -25,6 +25,27 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 - **Cómo comprobarlo:** `tools/trickvault/_banco/_carpetas.html` con el banco: debe dar
   `carteles=49`, `moda=25`, `comida=26` y ninguna categoría huérfana.
 
+### [2026-10-16] El despliegue de Hostinger se congela en silencio y **revierte** al último estado bueno
+
+- **Síntoma:** Antonio borró `apps/temp_extract/` a mano en hPanel y **la carpeta reapareció**. En
+  paralelo, `https://atnojs.es/.gitignore` dejó de actualizarse: seguía con el contenido del commit
+  `153cc63` aunque ya iba por `980d832`.
+- **Causa:** el despliegue se quedó **atascado** en el commit de ~17:32 (16:54:30 GMT de
+  `Last-Modified`, clavado durante más de 20 minutos) y, al fallar, **restauró el último estado
+  bueno** — que todavía contenía `apps/temp_extract/`. Por eso volvió: no fue un despiste de
+  Antonio, fue una reversión. Su borrado del `.bak` sí cuajó, porque ese fichero **no existe** en
+  ninguna copia del repo y por tanto no hay nada que restaurar.
+- **Diagnóstico (el que sirve):** comparar el **contenido** de un fichero versionado y público
+  (`.gitignore` es ideal: cambia a menudo y se sirve en la raíz) contra `git show <commit>:<fichero>`
+  para cada commit candidato. El que coincide **exactamente** dice en qué commit está el servidor.
+  Si el `Last-Modified` no se mueve en varios minutos, está congelado, no lento.
+- **Solución:** **commit vacío + push** (`git commit --allow-empty`) para re-disparar el webhook.
+  Funcionó: en ~2 minutos el `.gitignore` del servidor pasó a ser idéntico al de HEAD.
+- **Importante:** al revertir, el servidor devuelve ficheros que ya no están en el repo y **pisa
+  cambios recientes**. Antes de dar por bueno un arreglo «en producción», comprobar que el
+  servidor está de verdad en HEAD — no basta con que el push haya salido.
+- **Cómo comprobarlo:** `git show HEAD:.gitignore` == lo que sirve `https://atnojs.es/.gitignore`.
+
 ### [2026-10-16] Quitar un fichero del repositorio **NO** lo despublica de Hostinger
 
 - **Síntoma:** saqué `apps/temp_extract/` del repo (un `git mv` a `tools/`), esperé ~11 minutos y

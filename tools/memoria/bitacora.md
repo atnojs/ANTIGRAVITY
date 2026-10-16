@@ -457,3 +457,42 @@ fichero de git no arregla una clave: hay que rotarla.**
 **Commits**
 
 - `8192f0b` — `chore: sacar Chronos Booth (apps/temp_extract) de la web; no funcionaba y publicaba fuente y clave`
+
+---
+
+## 2026-10-16 (octava parte) — El despliegue se congeló y revirtió: por eso «reapareció» la carpeta
+
+Antonio avisa de que **borró `apps/temp_extract/` y ha vuelto a aparecer**. No era un despiste suyo.
+
+**Lo que pasaba**
+
+- El despliegue de Hostinger estaba **congelado** en el commit de ~17:32: el `Last-Modified` del
+  `.gitignore` servido llevaba más de 20 minutos clavado en `16:54:30 GMT`.
+- Al fallar, **restauró el último estado bueno**, que todavía incluía `apps/temp_extract/`. De ahí
+  que la carpeta volviera.
+- Su borrado del `app.js.bak` **sí cuajó** (sigue en `404`): ese fichero no existe en ninguna copia
+  del repo, así que no había nada que restaurar.
+
+**Cómo lo identifiqué**
+
+Comparé el **contenido** del `.gitignore` servido con el de cada commit candidato
+(`git show <commit>:.gitignore`): coincidía con `153cc63`/`2715863`/`3f0ff72` (17:17–17:32) y con
+**ninguno** posterior. Con eso supe el commit exacto en el que estaba el servidor. Con
+cache-buster seguía igual, así que **no era la caché del CDN**.
+
+**Solución**
+
+`git commit --allow-empty` + push para re-disparar el webhook (la receta que ya estaba en
+`recetas.md`). En ~2 minutos el `.gitignore` del servidor pasó a ser **idéntico al de HEAD**
+(verificado). Commits: `76e642d`.
+
+**Comprobado además, ya con el servidor al día**
+
+- La **contraseña nueva sigue viva** (`POST auth.php` → `200`) y la vieja de un dígito **no entra**.
+  La reversión no la tocó.
+- `apps/temp_extract/` **sigue publicado** aunque el servidor esté en HEAD: el despliegue
+  **no borra** lo que sale del repo. Queda borrarlo a mano **una vez más** — ahora ya es un fichero
+  sin rastrear en el servidor, así que esta vez se queda.
+
+**A `errores.md`:** el despliegue puede congelarse en silencio y revertir; y una reversión devuelve
+ficheros ya retirados y **pisa cambios recientes**.
