@@ -28,6 +28,7 @@ import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
+import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
 // ---------------------------------------------------------------------
@@ -66,6 +67,7 @@ let versionYtDlp = VERSION_YTDLP_POR_DEFECTO;
 let parando = false;
 let hijoActual = null;          // proceso yt-dlp en curso
 let temporizadorHeartbeat = null;
+let servidorLocal = null;
 let bytesEscritosLog = 0;
 let ultimaPeticion = 0;         // marca de tiempo de la última petición HTTP
 let colaHttp = Promise.resolve(); // serializa las peticiones (>1 s entre ellas)
@@ -236,6 +238,46 @@ async function aplicarCambioDeCarpeta(ruta) {
   }
 }
 
+/* ── Puerto local: "¿estoy abriendo la web desde este PC?" ──────────────── */
+
+/**
+ * La web necesita saber si se esta abriendo desde ESTE PC para no subir el
+ * fichero cuando no hace falta. Comparar IPs no es fiable (proxies, CGNAT,
+ * conexiones que salen por otro sitio), asi que se comprueba de verdad: la
+ * pagina, desde el navegador, pregunta a este puerto local. Si contesta, es que
+ * esta en la misma maquina.
+ *
+ * Chrome permite http://127.0.0.1 desde una pagina https (se considera origen
+ * de confianza), pero exige responder al preflight de Private Network Access.
+ */
+function arrancarServidorLocal() {
+  const servidor = http.createServer((peticion, respuesta) => {
+    const cabeceras = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Allow-Private-Network': 'true',
+      'Cache-Control': 'no-store',
+    };
+    if (peticion.method === 'OPTIONS') {
+      respuesta.writeHead(204, cabeceras);
+      respuesta.end();
+      return;
+    }
+    const cuerpo = JSON.stringify({ pc: true, worker: NOMBRE_WORKER, carpeta: config.downloadDir });
+    respuesta.writeHead(200, Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, cabeceras));
+    respuesta.end(cuerpo);
+  });
+
+  servidor.on('error', (e) => {
+    logAviso(`No se pudo abrir el puerto local ${config.puertoLocal}: ${e.message} (la web dira que estas fuera y subira los ficheros)`);
+  });
+  servidor.listen(config.puertoLocal, '127.0.0.1', () => {
+    logDepurar(`puerto local escuchando en 127.0.0.1:${config.puertoLocal}`);
+  });
+  return servidor;
+}
+
 function cargarConfig() {
   const ruta = process.env.DESCARGAS_WORKER_CONFIG || RUTA_CONFIG_POR_DEFECTO;
 
@@ -280,6 +322,7 @@ function cargarConfig() {
     pollSeconds: Number(datos.poll_seconds) > 0 ? Number(datos.poll_seconds) : 5,
     maxParallel: Number(datos.max_parallel) > 0 ? Number(datos.max_parallel) : 1,
     chunkMb: Number(datos.chunk_mb) > 0 ? Number(datos.chunk_mb) : 4,
+    puertoLocal: Number(datos.puerto_local) > 0 ? Number(datos.puerto_local) : 8125,
     ytdlpVersion: typeof datos.ytdlp_version === 'string' ? datos.ytdlp_version : null,
   };
 
@@ -1194,6 +1237,9 @@ function pararLimpiamente(motivo) {
   consola(`Parando el worker (${motivo})…`);
   logInfo(`Parada solicitada: ${motivo}`);
   if (temporizadorHeartbeat) clearInterval(temporizadorHeartbeat);
+  if (servidorLocal) {
+    try { servidorLocal.close(); } catch (e) { /* da igual al cerrar */ }
+  }
   if (hijoActual && hijoActual.pid) {
     consola('  Matando el proceso de yt-dlp en curso…');
     matarArbol(hijoActual.pid);
@@ -1253,6 +1299,9 @@ async function principal() {
   };
   await latido();
   temporizadorHeartbeat = setInterval(latido, MS_HEARTBEAT);
+
+  // Puerto local: la web lo consulta para saber si se abre desde ESTE PC.
+  servidorLocal = arrancarServidorLocal();
 
   // Bucle de trabajo
   while (!parando) {

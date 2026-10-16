@@ -599,3 +599,14 @@ input:focus-visible,
   .progress-fill { width: 100%; opacity: .6; }
   * { transition-duration: .01ms !important; }
 }
+
+/* Aviso de donde se esta abriendo la app (lo pone app.js) */
+.donde-estoy {
+  margin-left: auto; font-size: .78rem; letter-spacing: .03em;
+  padding: 3px 10px; border-radius: 999px; border: 1px solid currentColor;
+}
+.donde-estoy.en-casa { color: var(--ok); background: rgba(38, 198, 38, .12); }
+.donde-estoy.fuera { color: var(--acc); background: rgba(0, 208, 208, .1); }
+@media (max-width: 480px) {
+  .donde-estoy { margin-left: 0; }
+}

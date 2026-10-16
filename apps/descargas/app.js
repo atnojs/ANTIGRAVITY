@@ -8,6 +8,9 @@
 
 const API  = 'api.php';
 const AUTH = 'auth.php';
+// Puerto local del worker: sirve para saber si esta pagina se abre en el mismo
+// PC que descarga. Comparar IPs no es fiable (proxies, CGNAT...).
+const PUERTO_LOCAL = 8125;
 
 const MODES = {
   video: {
@@ -27,6 +30,8 @@ const state = {
   format: 'mp3',
   playlist: false,
   subirWeb: false,
+  enCasa: false,
+  carpetaPc: '',
   jobs: [],
   busy: false,
 };
@@ -174,6 +179,41 @@ async function doLogout() {
   showLogin();
 }
 
+/**
+ * ¿Estoy abriendo la web desde el PC que descarga?
+ * Se le pregunta al propio worker en su puerto local: si contesta, es que si.
+ * Chrome permite llamar a http://127.0.0.1 desde una pagina https.
+ */
+async function detectarPcLocal() {
+  try {
+    const control = new AbortController();
+    const reloj = setTimeout(() => control.abort(), 1500);
+    const respuesta = await fetch('http://127.0.0.1:' + PUERTO_LOCAL + '/pc', {
+      signal: control.signal,
+      cache: 'no-store',
+    });
+    clearTimeout(reloj);
+    if (!respuesta.ok) return false;
+    const datos = await respuesta.json();
+    if (datos && datos.carpeta) state.carpetaPc = datos.carpeta;
+    return Boolean(datos && datos.pc);
+  } catch (e) {
+    return false;
+  }
+}
+
+function pintarDondeEstoy() {
+  const capa = document.getElementById('donde-estoy');
+  if (!capa) return;
+  if (state.enCasa) {
+    capa.textContent = 'Estás en el PC: los ficheros se quedan en tu carpeta';
+    capa.className = 'donde-estoy en-casa';
+  } else {
+    capa.textContent = 'Desde fuera: los ficheros se suben a la web (48 h)';
+    capa.className = 'donde-estoy fuera';
+  }
+}
+
 /* ── Arranque de la app ─────────────────────────────────────────────── */
 
 async function enterApp() {
@@ -193,6 +233,8 @@ async function enterApp() {
 
   await refreshQueue();
   await refreshHealth();
+  state.enCasa = await detectarPcLocal();
+  pintarDondeEstoy();
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
   listTimer = setInterval(refreshQueue, 4000);
@@ -391,6 +433,7 @@ async function addDownloads() {
         format: state.format,
         playlist: state.playlist,
         subir_web: state.subirWeb,
+        en_casa: state.enCasa === true,
       });
       if (result.ok) sent++;
       else if (result.status === 401) { authLost = true; break; }

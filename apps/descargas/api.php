@@ -997,7 +997,9 @@ if ($action === 'add') {
 
     // En casa el fichero se queda en el PC (como la .bat) salvo que se pida lo
     // contrario; desde fuera se sube siempre, que es la razon de la app.
-    $origen = origenDelTrabajo();
+    // Si la pagina ha comprobado que se abre en el propio PC (hablandole al
+    // worker por su puerto local), eso manda: es una senal directa, no una IP.
+    $origen = !empty($body['en_casa']) ? 'casa' : origenDelTrabajo();
     $subir = $origen === 'fuera' || !empty($body['subir_web']);
 
     $job = [
