@@ -80,6 +80,9 @@ body {
   letter-spacing: .04em;
   text-transform: uppercase;
   margin: 0 0 .5rem;
+  /* El titulo va en CIAN, no en blanco: es lo que hace la app de referencia
+     (apps/dibujo_lineas_copia, `h1 { color: var(--acc) }`) con el triple halo. */
+  color: var(--acc);
   text-shadow: 0 0 10px var(--glow), 0 0 24px var(--glow), 0 0 44px var(--glow-soft);
 }
 

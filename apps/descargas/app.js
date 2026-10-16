@@ -21,9 +21,10 @@ const MODES = {
 };
 
 const state = {
-  mode: 'video',
+  // Por defecto, SOLO AUDIO en MP3: es lo que mas usa Antonio.
+  mode: 'audio',
   quality: 'best',
-  format: 'mp4',
+  format: 'mp3',
   playlist: false,
   subirWeb: false,
   jobs: [],
@@ -608,7 +609,7 @@ function bindUI() {
     if (!document.hidden && !authLost && !$('app-main').hidden) refreshQueue();
   });
   bindSelectors();
-  applyMode('video');
+  applyMode('audio');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
