@@ -36,21 +36,16 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ---
 
-## 0-bis. 🔴 El hash de la contraseña de `apps/json` y `video-vault` está publicado
+## 0-bis. ✅ CERRADO el 2026-10-16 — contraseña de edición rotada
 
-- **Estado:** detectado el 2026-10-16, sin resolver.
-- **Hecho:** `apps/video-vault/auth.php` **está versionado** y lleva
-  `$expectedHash = '<sha256 de 64 hex>'`. `apps/json/auth.php` (sin versionar) lleva
-  `AUTH_PASSWORD_HASH` con **exactamente el mismo hash** → misma contraseña para las dos apps
-  (y el comentario del propio fichero dice que es la que usaba TrickVault). El repositorio
-  `github.com/atnojs/ANTIGRAVITY` es **público**: ese hash lo ve cualquiera. Un sha256 **sin
-  sal** de una contraseña se rompe con diccionario y GPU en poco tiempo.
-- **Siguiente paso:** (1) cambiar la contraseña y **regenerar los dos hashes**; (2) sacar
-  `apps/video-vault/auth.php` del repositorio y añadirlo a `.gitignore` — el historial de git
-  lo conserva igual, así que **la rotación es lo único que cierra el agujero**; (3) confirmar
-  que `apps/json/auth.php` **nunca** entra en git.
-- **Verificación:** `git grep -n -I -E "expectedHash|AUTH_PASSWORD_HASH"` no debe devolver
-  ningún hash real, y las apps deben seguir autenticando con la contraseña nueva.
+El hash de la contraseña de `apps/video-vault/auth.php` estaba **versionado en el repo público**
+y correspondía a una contraseña de **un solo dígito**. Rotada, verificada en producción y
+documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
+
+- **Queda suelto (sin prisa):** `apps/json/auth.php` es **código muerto** (da 404 en producción y
+  esa carpeta no tiene `publicar.php`). Se le puso el hash nuevo por coherencia; se puede borrar.
+- **Recuerda:** el hash viejo sigue en el historial de git, pero ya corresponde a una contraseña
+  que no existe. Nada que hacer.
 
 ---
 

@@ -327,3 +327,49 @@ sin extensión, que re-incluyó 20 PNG de contacto, un `.txt` y dos `*_backup.py
 
 **Queda abierto:** el 0-bis (rotar la contraseña con el hash publicado) y decidir qué es
 `apps/dev/null`.
+
+---
+
+## 2026-10-16 (quinta parte) — Contraseña de edición rotada y verificada
+
+Antonio dice «contraseña»: cerrar el hallazgo 0-bis. Antes de tocar nada resultó ser **peor de lo
+que parecía**.
+
+**El hallazgo, con nombre y apellidos**
+
+- El hash guardado es `sha256` de **un solo dígito**. No hacía falta *buscar* la contraseña:
+  **diez intentos** y se entraba; el hash publicado en el repo solo lo confirmaba.
+- Estaba en `apps/video-vault/auth.php` (**versionado**) y en el historial de git desde
+  `6d7ef50`, `7037dc1` y `577652e`. El repo es público.
+- Y había una **tercera copia invisible**: `apps/trickvault/auth.php` existía **solo en el
+  servidor** — ni en git ni en disco — y es la que usa la app para desbloquear el modo edición
+  (`AUTH_URL` en `index.html:29`) **y** `publicar.php` para cada publicación. Sin ella no se
+  podía rotar desde el repositorio.
+
+**Qué se hizo**
+
+1. `tools/rotar-password.ps1`: genera la contraseña, calcula el sha256 **con PHP** (lo mismo que
+   ejecuta el servidor), escribe el hash en los tres `auth.php`, **lo relee para comprobarlo** y
+   guarda el valor en claro en `.private/` (gitignored, `Deny from all`). UTF-8 **sin BOM**, que
+   un BOM delante de `<?php` se enviaría como salida y rompería las cabeceras.
+2. **`apps/trickvault/auth.php` entra en git**, para que la próxima rotación sea un push.
+3. `.private/` pasa a estar **entero** en `.gitignore` (antes solo se ignoraba `config.json`).
+
+**Verificado (no es «debería funcionar»)**
+
+- Local: hash calculado con PHP = hash escrito; los 3 ficheros sin BOM y con `php -l` limpio; el
+  hash viejo ya no está en ningún fichero del árbol.
+- Producción: sondeo cada 20 s hasta que `POST auth.php` dio **200** en trickvault y video-vault
+  (a los ~2 min del push, `153cc63`).
+- **Navegador real** (Chrome headless vía REA): abrir la app, pulsar «Activar edición», meter la
+  contraseña nueva → la red muestra `POST /apps/trickvault/auth.php → 200`, el DOM final tiene
+  `Publicar en GitHub`, `ExportImport` y «Arrastra cualquier carpeta» (solo existen con
+  `editUnlocked`) y el modal se ha cerrado sin «Contraseña incorrecta». Captura en
+  `tools/evidencias/2026-10-16_trickvault-modo-edicion-desbloqueado.png` (sha256 comprobado).
+
+**Commits**
+
+- `153cc63` — `fix(seguridad): rotar la contrasena de edicion y traer a git el auth.php de trickvault`
+
+**Documentado en:** `credenciales.md` (dónde vive ahora y cómo se rota) y `pendientes.md` 0-bis
+(cerrado).
