@@ -49,6 +49,24 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ---
 
+## 0-quater. App de descargas: candidatos a mejorar (Antonio, 2026-10-16: «se puede mejorar un poco, eso lo hacemos mañana»)
+
+Sin decidir y sin orden. **Ninguno es un fallo**: la app funciona de punta a punta.
+
+1. **Botón de «reintentar» en los trabajos en error.** Hoy, cuando uno falla, hay que volver a pegar
+   el enlace. Es el más claro: el trabajo ya está guardado con su URL, calidad y formato.
+2. **Velocidad y ETA**: en la cola llegan **vacíos**. Comprobar primero si es el analizador de la
+   salida de yt-dlp (que no los captura) o el worker (que no los manda) antes de tocar la interfaz.
+3. **Playlists: sin probar con una lista de verdad.** El worker las implementa, pero no se ha
+   ejecutado ni una. Es lo primero que hay que verificar, no lo primero que hay que programar.
+4. **Sondeo del navegador cada 4 s**: es más tráfico del necesario en hosting compartido (y puede
+   tener que ver con los `fetch failed` que se vieron). Bajarlo a 10-15 s cuando no haya trabajos
+   activos, y a 3-4 s solo mientras los haya.
+5. **`D:\Vídeos\descargas-app\<job_id>\`**: el worker deja ahí los ficheros originales y se van
+   acumulando. Decidir si se limpian al terminar o si se quedan (hoy se quedan).
+
+---
+
 ## 0-ter. App de descargas: el CDN no ha refrescado los estáticos
 
 `apps/descargas/` está publicada y **funcionando de extremo a extremo** (probado: cola → worker →
