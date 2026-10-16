@@ -49,6 +49,24 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ---
 
+## 0-ter. App de descargas: el CDN no ha refrescado los estáticos
+
+`apps/descargas/` está publicada y **funcionando de extremo a extremo** (probado: cola → worker →
+yt-dlp → subida por trozos → descarga desde el navegador). Lo que **no** ha llegado a la URL pública
+es el retoque de contraste de `app.css`/`app.js` (commit `5e8c2da`): el CDN (`Server: hcdn`) sirve
+los estáticos cacheados **por ruta** y **ignora la query string**, así que `?v=2` y `?t=<guid>` no
+sirven de nada. `api.php` sí está al día (marcador: `?action=health` → `version`).
+
+- **Siguiente paso concreto:** renombrar `app.css` → `app.20261016.css` y `app.js` →
+  `app.20261016.js`, actualizar las dos referencias de `index.html`, commit + push, y **no borrar**
+  los ficheros viejos (el HTML cacheado los sigue pidiendo). Detalle en `errores.md`.
+- **Por qué no urge:** es solo el contraste de textos secundarios (la app se usa igual). El día que
+  se toque cualquier estático, hacerlo ya con el nombre nuevo.
+- **Comprobar si ya expiró:** `curl -I https://atnojs.es/apps/descargas/index.html` y mirar
+  `last-modified`: si es posterior al commit, la caché soltó.
+
+---
+
 ## 1. Apuntar DSH (el agente) al gateway de OmniRoute — *el ahorro grande*
 
 - **Estado:** sin hacer. Hoy el agente habla **directo** con la API del proveedor, así que

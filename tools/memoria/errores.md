@@ -5,6 +5,56 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-16] El tope de trozo de la API no coincidía con el que manda el worker (HTTP 413)
+
+- **Síntoma:** en producción, una descarga de 55 MB se bajó **entera** y murió al subirla:
+  `no se pudo subir el trozo 1/4 …: HTTP 413`.
+- **Causa:** dos números que van emparejados y se tocaron por separado. El worker manda trozos de
+  `chunk_mb = 16` MB (lo subí al ver que el servidor admite 2 GB por subida) y `api.php` seguía con
+  `MAX_CHUNK_BYTES = 12` MB. Todo trozo mayor que el tope se rechaza, así que **la descarga se
+  pierde después de haberse bajado completa**: lo caro ya está hecho y se tira.
+- **Solución:** `MAX_CHUNK_BYTES = 24 MB` (holgura sobre los 16 del worker) y el error ahora dice el
+  peso real, el máximo y qué hay que tocar. Si algún día se cambia `chunk_mb`, hay que cambiar los dos.
+- **Cómo comprobarlo:** encolar un audio largo y ver la cola pasar por `subiendo` hasta `done`, y que
+  el fichero se descargue con `HTTP 200` y un tamaño coherente. Reproductor: `ffmpeg -i`.
+
+### [2026-10-16] El 403 de YouTube NO era de la app: bloqueo temporal de la IP
+
+- **Síntoma:** un vídeo falla con `ERROR: unable to download video data: HTTP Error 403: Forbidden`
+  mientras la extracción (títulos, formatos) funciona sin problema. El usuario sabía que **ese mismo
+  vídeo lo había bajado antes con la otra app**.
+- **Causa:** nada de la app. La prueba que lo cierra es un **vídeo de control** que había bajado bien
+  una hora antes: también devolvía 403, igual que los comandos exactos del `.bat` de siempre y que
+  todas las variantes de `player_client` (`tv`, `web_safari`, `web_embedded`, `android_vr`). YouTube
+  bloqueaba temporalmente las descargas desde esa conexión, casi seguro por el **volumen de
+  peticiones seguidas** de la tarde (pruebas del agente incluidas). Pasó solo: minutos después el
+  mismo vídeo se bajó entero.
+- **Solución:** ninguna en el código. Antes de tocar nada, **comparar con un vídeo de control** y con
+  el comando que el usuario ya usaba: si fallan todos, es el servidor, no la app. Se aprovechó para
+  que el worker traduzca los fallos típicos (403, «confirma que no eres un robot», enlace cortado,
+  vídeo no disponible, formato inexistente) en vez de mostrar solo el log crudo, y para aceptar un
+  `cookies.txt` opcional (`cookies_file` en la config) cuando YouTube pide sesión.
+- **Cómo comprobarlo:** `yt-dlp -f 140 <url>` contra un vídeo corto conocido. Si sale 403 en todos
+  los clientes, esperar y repetir.
+- **Aviso:** `--cookies-from-browser chrome` **no funciona** en este equipo: Chrome 155 usa
+  *App-Bound Encryption* y yt-dlp no puede copiar su base de cookies (`Could not copy Chrome cookie
+  database`, issue 7271). Hay que exportar un `cookies.txt` a mano.
+
+### [2026-10-16] La CDN de Hostinger NO refresca los estáticos, y `?t=<guid>` no lo rompe
+
+- **Síntoma:** se sube un cambio de `index.html`/`app.css` y 40 minutos después la URL pública sigue
+  sirviendo el contenido viejo (`app.css?v=1`), mientras que `api.php` sí está al día
+  (`version: 1.0.1` → `1.0.2` se ve enseguida).
+- **Causa:** `Server: hcdn` sirve **estáticos cacheados por RUTA**. Añadir un parámetro aleatorio
+  (`app.css?t=<guid>`) **no** crea una entrada nueva: la CDN ignora la query al indexar, así que
+  devuelve la copia vieja y encima no sirve para comprobar nada. Lo dinámico no se cachea, y de ahí
+  la asimetría.
+- **Solución:** para los estáticos, **renombrar el fichero con fecha** (`app.css` → `app.20261016.css`)
+  y actualizar la referencia; el fichero viejo **no se borra** (hay HTML cacheado que lo pide). Para
+  saber si un despliegue llegó, mirar `last-modified` de la respuesta, no el contenido con `?t=`.
+- **Cómo comprobarlo:** `curl -I` a la ruta y comparar `last-modified` con la fecha del commit.
+  `api.php?action=health` sirve de marcador fiable: lleva `version`, que se sube en cada arreglo.
+
 ### [2026-10-16] El Escritorio real es `D:\Escritorio`: en `%USERPROFILE%\Desktop` no se ve nada
 
 - **Síntoma:** se crea un acceso directo en `$env:USERPROFILE\Desktop` y en el Escritorio de

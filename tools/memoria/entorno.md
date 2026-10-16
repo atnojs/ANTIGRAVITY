@@ -41,6 +41,8 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 | OmniRoute | gateway en `http://localhost:20128` · API `/v1` · guía en `tools/omniroute/GUIA-OMNIROUTE.md` |
 | Secreto del panel de OmniRoute | `C:\Users\atnojs\.omniroute\panel.secret` (valor **no** se escribe aquí) |
 | Descargador de vídeo/audio de Antonio | `D:\Vídeos\ytdownloader\` → `ytdownloader.bat` (ventana «YouTube Downloader»), con `yt-dlp.exe`, `ffmpeg.exe` y `yt-dlp.conf` (salida **`.mp4` h264/AAC**). Acceso directo: `D:\Escritorio\Descargar vídeos y MP3.lnk`. Detalle del arreglo en `errores.md` |
+| App de descargas (desde cualquier sitio) | `https://atnojs.es/apps/descargas/` · código en `apps/descargas/` · cola y ficheros en `apps/descargas/data/` (no versionado). Contraseña: la misma de edición (TrickVault/video-vault/json), en `.private/password-edicion.txt` |
+| Worker de la app de descargas | `tools/descargador/worker.mjs` + `iniciar-worker.bat`. Config **con el token**: `.private/descargas-worker.json` (ojo: **lleva BOM**, hay que quitarlo antes de `JSON.parse`). Log: `%LOCALAPPDATA%\descargas-worker\worker.log` (UTF-8). Arranca solo con Windows por un acceso en la carpeta de Inicio; `schtasks` está **denegado** en este equipo |
 | ⚠️ Escritorio y Descargas | **Redirigidos**: Escritorio = `D:\Escritorio`, Descargas = `D:\Descargas`. `C:\Users\atnojs\Desktop` existe con restos viejos y **no es el Escritorio**. Sacarlos con `[Environment]::GetFolderPath('Desktop')`, nunca a mano |
 
 ## Puertos en uso

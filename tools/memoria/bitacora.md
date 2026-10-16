@@ -534,3 +534,44 @@ de 117,8 KB válido. Detalle y comprobación en `errores.md`.
 **Y un tropiezo que va a `errores.md`:** el **Escritorio real es `D:\Escritorio`**, no
 `C:\Users\atnojs\Desktop` (esa carpeta existe con restos viejos, así que `Test-Path` engaña).
 Se saca con `[Environment]::GetFolderPath('Desktop')`.
+
+## 2026-10-16 (décima parte) — App de descargas: del «no lo encuentro» a bajarlo desde cualquier sitio
+
+Antonio: «así el uso está muy limitado, crea una app para poder usarla desde cualquier sitio».
+Elegida la **opción C**: app en `atnojs.es` con cola en el servidor y **su PC como worker** (la
+descarga tiene que correr donde están yt-dlp y ffmpeg; en Hostinger no puede, y YouTube bloquea las
+IPs de datacenter). Alcance pedido: calidad y formato, playlists, varias a la vez con progreso,
+historial desde cualquier dispositivo y que valga para otras webs.
+
+**Lo construido.** `apps/descargas/` (interfaz Hoola, `api.php` con cola + subida por trozos +
+descarga autenticada, `auth.php` con la contraseña de edición, y los canónicos `proxy.php`,
+`history.php` y `history-manager.js`) y `tools/descargador/` (worker en Node que recoge trabajos,
+baja con yt-dlp y sube los ficheros por trozos de 16 MB). El worker se delega a un subagente, que
+lo prueba contra un mock propio: **fichero ensamblado idéntico por SHA-256**, cancelación, error de
+yt-dlp, Ctrl+C real y config inválida.
+
+**Lo que cazó la prueba de extremo a extremo** (y no se veía leyendo el código): el worker manda la
+acción **dentro del JSON** (`{"action":"next"}`) y `api.php` solo la leía de la query string, así que
+caía en la rama de usuario y devolvía `401 Sesión no iniciada`. Arreglado, y de paso el fichero se
+reescribe limpio: había quedado con **mojibake** al pasar por `Get-Content`/`Set-Content` de
+PowerShell 5.1 (lee UTF-8 como CP-1252 si el fichero no lleva BOM).
+
+**Segundo fallo, ya con el usuario delante:** su vídeo se bajó entero (55 MB) y murió al subirlo con
+**HTTP 413** — el tope de trozo de la API (12 MB) se había quedado por debajo del que manda el worker
+(16 MB). Corregido a 24 MB. Reproceso y **verificado**: `done`, MP3 de 55,3 MB, descargado de
+producción en 2,4 s y validado con `ffmpeg` (1 h 06 min, 44,1 kHz estéreo).
+
+**El 403 que parecía de la app, no lo era.** Antonio dijo que ese vídeo lo había bajado antes con la
+otra app; cierto, pero el bloqueo era **de YouTube contra su conexión en ese momento**: un vídeo de
+control que había funcionado una hora antes también devolvía 403, igual que los comandos exactos de
+su `.bat` y que todas las variantes de `player_client`. Se fue solo. Aun así el worker ahora traduce
+los fallos típicos al castellano y admite un `cookies.txt` opcional.
+
+**Auditoría de accesibilidad con medición real.** Los fondos se midieron **sobre la captura de
+producción** (no estimados): `--faint` daba 3,78:1 y el rojo de error 2,9:1, los dos por debajo del
+4,5:1 de WCAG AA. Ahora `--faint #93AEBF` = 4,61:1 y `--danger-text #ff9a9a` = 5,27:1, y la barra de
+progreso anima `transform` en vez de `width`.
+
+**Queda abierto:** el CDN de Hostinger no ha refrescado `index.html`/`app.css` (sirve estáticos
+cacheados por ruta e **ignora la query**, así que `?t=<guid>` no rompe nada). La app funciona —es un
+retoque de contraste—; el siguiente paso está en `pendientes.md`.
