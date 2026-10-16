@@ -40,7 +40,8 @@ Ficha de la máquina y del entorno del agente. Si algo de aquí cambia, se actua
 | Datos de DSH (este agente) | `C:\Users\atnojs\.dsh` (sesiones, perfiles, credenciales) |
 | OmniRoute | gateway en `http://localhost:20128` · API `/v1` · guía en `tools/omniroute/GUIA-OMNIROUTE.md` |
 | Secreto del panel de OmniRoute | `C:\Users\atnojs\.omniroute\panel.secret` (valor **no** se escribe aquí) |
-| Descargador de vídeo/audio de Antonio | `D:\Vídeos\ytdownloader\` → `ytdownloader.bat` (abre la ventana «YouTube Downloader»), con `yt-dlp.exe`, `ffmpeg.exe` y `yt-dlp.conf`. **No tiene acceso directo** en Escritorio, Inicio ni barra de tareas: por eso «no se encuentra». Detalle del arreglo en `errores.md` |
+| Descargador de vídeo/audio de Antonio | `D:\Vídeos\ytdownloader\` → `ytdownloader.bat` (ventana «YouTube Downloader»), con `yt-dlp.exe`, `ffmpeg.exe` y `yt-dlp.conf` (salida **`.mp4` h264/AAC**). Acceso directo: `D:\Escritorio\Descargar vídeos y MP3.lnk`. Detalle del arreglo en `errores.md` |
+| ⚠️ Escritorio y Descargas | **Redirigidos**: Escritorio = `D:\Escritorio`, Descargas = `D:\Descargas`. `C:\Users\atnojs\Desktop` existe con restos viejos y **no es el Escritorio**. Sacarlos con `[Environment]::GetFolderPath('Desktop')`, nunca a mano |
 
 ## Puertos en uso
 

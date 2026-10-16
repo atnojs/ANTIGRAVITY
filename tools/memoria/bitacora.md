@@ -520,3 +520,17 @@ lanzador no se tocó. Probado de verdad: vídeo por defecto (395+251 fusionado c
 de 117,8 KB válido. Detalle y comprobación en `errores.md`.
 
 **A `entorno.md`:** la ruta del descargador, para que no se pierda otra vez.
+
+**Remate (18:30).** Antonio pide «añade .mp4» y «crea el acceso». Hecho:
+
+- `yt-dlp.conf` gana `--merge-output-format mp4` y `-S vcodec:h264,acodec:aac,ext:mp4:m4a`.
+  Probado y **verificado con `ffmpeg -i`**: `h264 (Main)` + `aac (LC)` dentro de un `.mp4`
+  (formatos `133+140`). Ojo: preferir h264 limita a **1080p** en YouTube (1440p/4K solo
+  existen en VP9/AV1); es el precio de la compatibilidad con Corel/Filmora.
+- Acceso directo creado en el Escritorio: `D:\Escritorio\Descargar vídeos y MP3.lnk`
+  (icono `shell32.dll,137`). **Probado lanzándolo**: abre la ventana «YouTube Downloader»
+  (PID detectado por `MainWindowTitle`) y se cierra limpia con `CloseMainWindow()`.
+
+**Y un tropiezo que va a `errores.md`:** el **Escritorio real es `D:\Escritorio`**, no
+`C:\Users\atnojs\Desktop` (esa carpeta existe con restos viejos, así que `Test-Path` engaña).
+Se saca con `[Environment]::GetFolderPath('Desktop')`.

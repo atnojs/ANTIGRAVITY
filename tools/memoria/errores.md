@@ -5,6 +5,19 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-16] El Escritorio real es `D:\Escritorio`: en `%USERPROFILE%\Desktop` no se ve nada
+
+- **Síntoma:** se crea un acceso directo en `$env:USERPROFILE\Desktop` y en el Escritorio de
+  Antonio **no aparece**.
+- **Causa:** la misma redirección que las Descargas (ver la entrada de `D:\Descargas`): su
+  **Escritorio es `D:\Escritorio`**. Lo traicionero es que `C:\Users\atnojs\Desktop` **sí
+  existe** (con un `Hermes.lnk` viejo dentro), así que `Test-Path` devuelve `True` y la ruta
+  parece buena. No lo es.
+- **Solución:** no componer la ruta a mano; preguntarla:
+  `[Environment]::GetFolderPath('Desktop')` → `D:\Escritorio`.
+- **Cómo comprobarlo:** el `.lnk` aparece al listar `D:\Escritorio` y **no** al listar
+  `C:\Users\atnojs\Desktop`.
+
 ### [2026-10-16] yt-dlp «no me deja bajar de YouTube»: versión vieja **y** falta de motor JS
 
 - **Síntoma:** el descargador de vídeo/audio de Antonio (la ventana «YouTube Downloader», ver
