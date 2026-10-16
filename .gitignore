@@ -176,6 +176,10 @@ skills/diag_mic.py
 # Carpeta temporal de builds locales
 .tmp-build/
 
+# Restos rescatados de sitios raros (p. ej. apps/dev/null). No se publican: son
+# material a la espera de decision, no contenido del repo.
+tools/restos/
+
 # ═══════════════════════════════════════════════════════════════════════════
 # LIMPIEZA 2026-10-16 — material de trabajo que NO debe versionarse.
 # El detalle y el porqué, en tools/memoria/pendientes.md §7.
