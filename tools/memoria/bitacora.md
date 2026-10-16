@@ -272,4 +272,4 @@ ni una línea de `.gitignore`. Espera validación de Antonio.
 
 **Commits**
 
-- `PENDIENTE` — `docs(memoria): inventario de lo no versionado y segundo hallazgo de seguridad`
+- `cb88397` — `docs(memoria): inventario de lo no versionado y segundo hallazgo de seguridad`
