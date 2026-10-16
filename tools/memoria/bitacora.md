@@ -234,3 +234,42 @@ una sola carpeta hay que usar el selector **«Solo «<carpeta>»»**.
 - `542e0c5` — `docs(memoria): el flujo de Antonio para publicar TrickVault desde la app`
 
 **Receta reutilizable:** `recetas.md` → «TrickVault: publicar cambios desde la propia app».
+
+---
+
+## 2026-10-16 (tercera parte) — Inventario de lo que no está versionado
+
+Antonio pide «prepara la lista» de todo lo que el repo tiene sin versionar, porque su panel de
+git le enseña «un montón de carpetas por subir» y no entiende por qué sigue ahí.
+
+**Lo que se midió**
+
+- El panel no miente pero engaña: git **colapsa** los directorios sin versionar. Las **256
+  entradas** de `git status` son en realidad **57.427 ficheros** y unos **5,8 GB**.
+- Los tres bloques grandes son lotes de imágenes de trabajo: `tools/_ig2/` (26.440 ficheros,
+  1,9 GB), `tools/imagen_json_prompt/` (34.339, 941 MB) y las 22 carpetas
+  `tools/trickvault/*_gen/` (959 PNG, 1,6 GB).
+
+**Hallazgo de seguridad (lo importante del día)**
+
+- `apps/video-vault/auth.php` **está versionado** y lleva el sha256 de la contraseña.
+  `apps/json/auth.php`, que **no** está versionado, lleva `AUTH_PASSWORD_HASH` con **el mismo
+  hash** → misma contraseña para las dos apps, y el repositorio es público.
+- Es un sha256 **sin sal**: se rompe con diccionario y GPU. Anotado como **0-bis** en
+  `pendientes.md`; la única solución real es **rotar la contraseña**, porque el historial de git
+  conserva el fichero aunque se saque.
+
+**Hueco de herramientas encontrado**
+
+- La skill `trickvault-imagenes` manda usar `_carpeta_gen.py`, `_carpeta_upload.py`,
+  `_carpeta_contact.py`, `_escribir_sujetos.py`… y **ninguno está versionado**: un clon limpio
+  se queda sin pipeline (solo `_carpeta_lote.py` está en git). Lo mismo con
+  `tools/commit-aislado.ps1`, que esta misma memoria cita como «ya existente en el repo».
+
+**Entregable:** `pendientes.md` §7, con los cuatro grupos (subir / ignorar / nunca versionar /
+decidir), recuentos, tamaños y el siguiente paso. **No se ha tocado nada**: ni un `git add`,
+ni una línea de `.gitignore`. Espera validación de Antonio.
+
+**Commits**
+
+- `PENDIENTE` — `docs(memoria): inventario de lo no versionado y segundo hallazgo de seguridad`
