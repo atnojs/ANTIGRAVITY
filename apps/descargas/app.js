@@ -206,6 +206,10 @@ async function detectarPcLocal() {
 function pintarDondeEstoy() {
   const capa = document.getElementById('donde-estoy');
   if (!capa) return;
+  const d = state.deteccion;
+  capa.title = d
+    ? 'worker=' + d.worker + ' cliente=' + d.cliente + ' coinciden=' + d.coinciden + ' sonda=' + state.enCasaSonda
+    : '';
   if (state.enCasa) {
     capa.textContent = 'Estás en el PC: los ficheros se quedan en tu carpeta';
     capa.className = 'donde-estoy en-casa';
@@ -234,7 +238,8 @@ async function enterApp() {
 
   await refreshQueue();
   await refreshHealth();
-  state.enCasa = (await detectarPcLocal()) || state.enCasaIp;
+  state.enCasaSonda = await detectarPcLocal();
+  state.enCasa = state.enCasaSonda || state.enCasaIp;
   pintarDondeEstoy();
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
@@ -265,7 +270,7 @@ async function refreshHealth() {
       text.textContent = 'PC sin señales desde hace ' + Math.round(seconds / 60) + ' min';
     }
 
-    if (data.deteccion) { state.enCasaIp = data.deteccion.coinciden === true; }
+    if (data.deteccion) { state.enCasaIp = data.deteccion.coinciden === true; state.deteccion = data.deteccion; }
     const free = data.disk && data.disk.free_human ? data.disk.free_human : '';
     const pending = data.counts ? (data.counts.queued || 0) + (data.counts.running || 0) : 0;
     $('disk-text').textContent = (free ? 'Servidor: ' + free + ' libres' : '') +

@@ -270,6 +270,27 @@ function clientIp(): string {
  * su carpeta, como la .bat). Sin datos del worker se asume "fuera", que sube:
  * perder una descarga pedida desde el movil es peor que subir de mas.
  */
+/**
+ * Normaliza una IP para poder comparar dos visitas de la MISMA conexion.
+ *
+ * El mismo abonado puede salir por IPv4 o por IPv6 segun el navegador, y una
+ * IPv4 puede llegar mapeada como `::ffff:1.2.3.4`. Para IPv6 se compara el
+ * prefijo /64, que es lo que asigna el operador a una linea.
+ */
+function normalizaIp(string $ip): string {
+    $ip = strtolower(trim($ip));
+    if ($ip === '') {
+        return '';
+    }
+    if (strpos($ip, '::ffff:') === 0) {
+        $ip = substr($ip, 7);
+    }
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+        $partes = explode(':', $ip);
+        return implode(':', array_slice($partes, 0, 4));
+    }
+    return $ip;
+}
 function origenDelTrabajo(): string {
     $worker = readJsonFile(WORKER_FILE, []);
     $ipWorker = (string)($worker['ip'] ?? '');
@@ -277,7 +298,7 @@ function origenDelTrabajo(): string {
     if ($ipWorker === '' || $ipCliente === '') {
         return 'fuera';
     }
-    return $ipWorker === $ipCliente ? 'casa' : 'fuera';
+    return normalizaIp($ipWorker) === normalizaIp($ipCliente) ? 'casa' : 'fuera';
 }
 
 /* ── Cola ───────────────────────────────────────────────────────────────── */
