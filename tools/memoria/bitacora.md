@@ -412,4 +412,4 @@ no queda la vieja. **No hace commit**: publicar es una decisión.
 
 **Commits**
 
-- `PENDIENTE` — `docs(memoria): inventario verificado de claves de Google y herramienta de rotacion`
+- `314873d` — `docs(memoria): inventario verificado de claves de Google y herramienta de rotacion`
