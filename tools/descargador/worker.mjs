@@ -166,6 +166,76 @@ function abortarConfig(mensaje) {
   process.exit(2);
 }
 
+/* ── Carpeta de descarga: informar y cambiarla ──────────────────────────── */
+
+/** Unidades existentes, para poder elegir un USB desde la web. */
+function listarUnidades() {
+  const unidades = [];
+  for (let c = 65; c <= 90; c++) {
+    const letra = String.fromCharCode(c) + ':\\';
+    try {
+      if (fs.existsSync(letra)) unidades.push(letra);
+    } catch (e) {
+      // Una unidad sin medio (lector vacío) lanza: se ignora.
+    }
+  }
+  return unidades;
+}
+
+/** Guarda la carpeta nueva en el fichero de configuracion, sin tocar lo demas. */
+function guardarCarpetaEnConfig(ruta) {
+  try {
+    const bruto = fs.readFileSync(config.rutaConfig, 'utf8').replace(/^\uFEFF/, '');
+    const datos = JSON.parse(bruto);
+    datos.download_dir = ruta;
+    fs.writeFileSync(config.rutaConfig, JSON.stringify(datos, null, 2) + '\n', 'utf8');
+    logDepurar('carpeta de descarga guardada en la configuración');
+  } catch (e) {
+    logAviso(`No se pudo guardar la carpeta en la configuración: ${e.message}`);
+  }
+}
+
+/**
+ * Aplica el cambio de carpeta que pide el servidor.
+ * El worker es el unico que ve el disco del PC, asi que aqui se valida, se crea
+ * si hace falta y se comprueba que se puede ESCRIBIR DE VERDAD (un USB puede
+ * estar protegido contra escritura, o lleno).
+ */
+async function aplicarCambioDeCarpeta(ruta) {
+  const destino = String(ruta || '').trim();
+  logInfo(`Petición de cambiar la carpeta de descarga a: ${destino}`);
+  consola(`Cambiando la carpeta de descarga a: ${destino}`);
+
+  try {
+    const esWindows = /^[A-Za-z]:[\\/]/.test(destino);
+    const esUNC = destino.startsWith('\\\\');
+    if (!esWindows && !esUNC) {
+      throw new Error('la ruta no es una ruta completa de Windows (por ejemplo D:\\Vídeos o F:\\)');
+    }
+    fs.mkdirSync(destino, { recursive: true });
+
+    const prueba = path.join(destino, '.descargas-worker-prueba');
+    fs.writeFileSync(prueba, 'ok');
+    fs.unlinkSync(prueba);
+
+    config.downloadDir = destino;
+    guardarCarpetaEnConfig(destino);
+    logInfo(`Carpeta de descarga cambiada a ${destino}`);
+    consola(`Carpeta de descarga: ${destino}`);
+
+    await peticion({ action: 'dir_applied', ok: true, ruta: destino }, { etiqueta: 'dir_applied' });
+  } catch (e) {
+    const motivo = e && e.message ? e.message : String(e);
+    logError(`No se pudo cambiar la carpeta a ${destino}: ${motivo}`);
+    consola(`NO se pudo cambiar la carpeta: ${motivo}`);
+    try {
+      await peticion({ action: 'dir_applied', ok: false, error: motivo }, { etiqueta: 'dir_applied' });
+    } catch (e2) {
+      logAviso(`No se pudo informar del fallo de carpeta: ${e2.message}`);
+    }
+  }
+}
+
 function cargarConfig() {
   const ruta = process.env.DESCARGAS_WORKER_CONFIG || RUTA_CONFIG_POR_DEFECTO;
 
@@ -503,7 +573,15 @@ function normalizarJob(job) {
   if (modo === 'audio' && !FORMATOS_AUDIO.has(formato)) formato = 'mp3';
   if (modo === 'video' && !FORMATOS_VIDEO.has(formato)) formato = 'mp4';
 
-  return { id, url, modo, calidad, formato, playlist: job.playlist === true, attempts: Number(job.attempts) || 0 };
+  return {
+    id, url, modo, calidad, formato,
+    playlist: job.playlist === true,
+    attempts: Number(job.attempts) || 0,
+    // El servidor decide si este trabajo hay que subirlo a la web o dejarlo
+    // solo en el PC (en casa y sin casilla marcada, se queda en el PC).
+    subir: job.subir !== false,
+    origen: job.origen === 'casa' ? 'casa' : 'fuera',
+  };
 }
 
 /**
@@ -1026,36 +1104,71 @@ async function procesarJob(jobBruto) {
   contexto.itemCount = ficheros.length;
   consola(`Descarga terminada: ${ficheros.length} fichero(s).`);
 
-  // 3) Subida por trozos + item_done (en orden)
-  for (let i = 0; i < ficheros.length; i++) {
-    const fichero = ficheros[i];
-    const itemIndex = i + 1;
-    const meta = metadatos.get(fichero.nombre.replace(/\.[^.]+$/, '')) || null;
-    const titulo = (meta && meta.titulo) || tituloDesdeRuta(fichero.nombre) || fichero.nombre;
-    let duracion = meta && meta.duracion ? meta.duracion : 0;
-    if (!duracion) {
-      duracion = await duracionConFfmpeg(fichero.ruta);
+  // 3) Subida por trozos + item_done (en orden)… o nada, si va solo al PC.
+  if (job.subir === false) {
+    // El fichero se queda donde yt-dlp lo ha dejado: no se sube ni un byte a
+    // internet. Solo se registra su ruta para que aparezca en la cola y en el
+    // historial y Antonio sepa donde esta.
+    consola(`Descarga terminada: ${ficheros.length} fichero(s). Se quedan en el PC (no se suben).`);
+    logInfo(`Trabajo ${job.id}: subida omitida (origen ${job.origen}). Carpeta: ${dirJob}`);
+
+    for (let i = 0; i < ficheros.length; i++) {
+      const fichero = ficheros[i];
+      const itemIndex = i + 1;
+      const meta = metadatos.get(fichero.nombre.replace(/\.[^.]+$/, '')) || null;
+      const titulo = (meta && meta.titulo) || tituloDesdeRuta(fichero.nombre) || fichero.nombre;
+      let duracion = meta && meta.duracion ? meta.duracion : 0;
+      if (!duracion) {
+        duracion = await duracionConFfmpeg(fichero.ruta);
+      }
+      contexto.titulo = titulo;
+
+      await peticion({
+        action: 'item_local',
+        job_id: job.id,
+        item_index: itemIndex,
+        filename: fichero.nombre,
+        title: titulo,
+        bytes: fichero.bytes,
+        ext: fichero.ext,
+        duration: Number(duracion.toFixed(3)),
+        ruta_local: fichero.ruta,
+      }, { etiqueta: 'item_local' });
+
+      logInfo(`item_local enviado: ${fichero.nombre}`);
+      consola(`  En el PC ${itemIndex}/${ficheros.length}: ${fichero.nombre} (${(fichero.bytes / 1048576).toFixed(2)} MiB)`);
     }
-    contexto.titulo = titulo;
+  } else {
+    for (let i = 0; i < ficheros.length; i++) {
+      const fichero = ficheros[i];
+      const itemIndex = i + 1;
+      const meta = metadatos.get(fichero.nombre.replace(/\.[^.]+$/, '')) || null;
+      const titulo = (meta && meta.titulo) || tituloDesdeRuta(fichero.nombre) || fichero.nombre;
+      let duracion = meta && meta.duracion ? meta.duracion : 0;
+      if (!duracion) {
+        duracion = await duracionConFfmpeg(fichero.ruta);
+      }
+      contexto.titulo = titulo;
 
-    consola(`  Subiendo ${itemIndex}/${ficheros.length}: ${fichero.nombre} (${(fichero.bytes / 1048576).toFixed(2)} MiB)`);
-    logInfo(`Subiendo ${fichero.nombre} (${fichero.bytes} bytes, duración ${duracion}s)`);
+      consola(`  Subiendo ${itemIndex}/${ficheros.length}: ${fichero.nombre} (${(fichero.bytes / 1048576).toFixed(2)} MiB)`);
+      logInfo(`Subiendo ${fichero.nombre} (${fichero.bytes} bytes, duración ${duracion}s)`);
 
-    const totalTrozo = await subirFichero(job, itemIndex, fichero, contexto, alProgreso);
+      const totalTrozo = await subirFichero(job, itemIndex, fichero, contexto, alProgreso);
 
-    await peticion({
-      action: 'item_done',
-      job_id: job.id,
-      item_index: itemIndex,
-      filename: fichero.nombre,
-      title: titulo,
-      bytes: fichero.bytes,
-      ext: fichero.ext,
-      duration: Number(duracion.toFixed(3)),
-    }, { etiqueta: 'item_done' });
+      await peticion({
+        action: 'item_done',
+        job_id: job.id,
+        item_index: itemIndex,
+        filename: fichero.nombre,
+        title: titulo,
+        bytes: fichero.bytes,
+        ext: fichero.ext,
+        duration: Number(duracion.toFixed(3)),
+      }, { etiqueta: 'item_done' });
 
-    logInfo(`item_done enviado: ${fichero.nombre} (${totalTrozo} trozos)`);
-    consola(`  Elemento ${itemIndex} completado (${totalTrozo} trozo(s)).`);
+      logInfo(`item_done enviado: ${fichero.nombre} (${totalTrozo} trozos)`);
+      consola(`  Elemento ${itemIndex} completado (${totalTrozo} trozo(s)).`);
+    }
   }
 
   // 4) finish
@@ -1120,13 +1233,20 @@ async function principal() {
   const latido = async () => {
     if (parando) return;
     try {
-      await peticion({
+      const respuesta = await peticion({
         action: 'heartbeat',
         worker: NOMBRE_WORKER,
         version: VERSION_WORKER,
         ytdlp: versionYtDlp,
+        download_dir: config.downloadDir,
+        unidades: listarUnidades(),
       }, { etiqueta: 'heartbeat' });
       logDepurar('heartbeat enviado');
+      // El servidor puede pedir cambiar la carpeta de descarga (por ejemplo a un
+      // USB). La aplica el worker, que es quien ve el disco del PC.
+      if (respuesta && respuesta.cambiar_dir) {
+        await aplicarCambioDeCarpeta(String(respuesta.cambiar_dir));
+      }
     } catch (e) {
       logAviso(`Heartbeat fallido: ${e.message}`);
     }

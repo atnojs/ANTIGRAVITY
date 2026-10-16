@@ -104,15 +104,42 @@
           <span>Es una lista de reproducción: bajar la lista completa</span>
         </label>
 
+        <label class="check">
+          <input type="checkbox" id="subir-web">
+          <span>Subirlo también a la web (para bajarlo desde el móvil)</span>
+        </label>
+
         <p class="hint" id="format-hint">
           MP4 (h264 + AAC) es lo que mejor abren Corel y Filmora. Si pides 1440p o 2160p,
           YouTube solo los ofrece en VP9/AV1 y el fichero dejará de ser MP4.
+        </p>
+
+        <p class="hint" id="subida-hint">
+          En casa el fichero se queda en tu PC y <strong>no se sube nada</strong>, como con el
+          lanzador de siempre. Se sube solo si pides la descarga desde fuera de casa o si marcas
+          la casilla. Lo que se sube se borra solo a las 48 h.
         </p>
 
         <button type="button" id="add-btn" class="btn-primary">
           <span id="add-btn-text">Descargar</span>
         </button>
         <div id="form-error" class="form-error" role="alert" hidden></div>
+      </section>
+
+      <!-- ── Carpeta en el PC ── -->
+      <section class="panel" aria-labelledby="dir-title">
+        <h2 id="dir-title" class="section-title">Carpeta en el PC</h2>
+        <p class="dir-actual">Se guardan en: <code id="dir-actual">—</code></p>
+        <div class="dir-controls">
+          <label class="sr-only" for="dir-unidad">Unidad</label>
+          <select id="dir-unidad"></select>
+          <label class="sr-only" for="dir-ruta">Ruta de la carpeta</label>
+          <input type="text" id="dir-ruta" placeholder="D:\Vídeos o F:\" spellcheck="false" autocomplete="off">
+          <button type="button" id="dir-btn" class="btn-sm">Cambiar</button>
+        </div>
+        <p class="hint" id="dir-hint">
+          Elige una unidad para bajar directo a un USB. El PC crea la carpeta si no existe.
+        </p>
       </section>
 
       <!-- ── Cola ── -->

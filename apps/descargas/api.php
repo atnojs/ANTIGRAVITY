@@ -38,6 +38,8 @@ const QUEUE_FILE     = 'data/queue.json';
  */
 const QUEUE_LOCK     = 'data/queue.lock';
 const WORKER_FILE    = 'data/worker.json';
+/** Carpeta de descarga del PC: la actual, la pedida y el error si fallo. */
+const DIR_FILE       = 'data/dir.json';
 const CLEANUP_STAMP  = 'data/.cleanup';
 const HISTORY_DIR    = 'history_store';
 const HISTORY_FILE   = 'history_store/history.json';
@@ -55,12 +57,16 @@ const MAX_URL_LEN      = 2048;
  */
 const MAX_CHUNK_BYTES  = 24 * 1024 * 1024;
 const MAX_ITEM_BYTES   = 4 * 1024 * 1024 * 1024;
-const RETENTION_DAYS   = 7;
+/**
+ * Lo que un fichero vive en el servidor antes de borrarse solo. Antonio lo
+ * queria corto: la idea es bajarlo al movil y que no se acumule.
+ */
+const RETENTION_HOURS  = 48;
 const STALE_RUNNING_S  = 900;   // 15 min sin señales => el trabajo se puede reclamar
 const CLEANUP_EVERY_S  = 300;
 
 const APP_NAME     = 'descargas';
-const APP_VERSION  = '1.0.2';
+const APP_VERSION  = '1.1.0';
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -123,6 +129,24 @@ function cleanId(string $value): string {
     return substr(preg_replace('/[^a-zA-Z0-9_-]/', '', $value) ?? '', 0, 64);
 }
 
+/**
+ * Recorta sin depender de mbstring.
+ *
+ * `mbstring` es una extension OPCIONAL: en un hosting compartido puede no
+ * estar. Si falta, `mb_substr` revienta con un fatal y se cae la peticion
+ * entera (paso de verdad en el banco de pruebas local). Sin ella se corta por
+ * bytes y se quita el caracter UTF-8 que haya quedado partido.
+ */
+function recortarUtf8(string $texto, int $max): string {
+    if (function_exists('mb_substr')) {
+        return mb_substr($texto, 0, $max);
+    }
+    $corte = substr($texto, 0, $max);
+    $corte = preg_replace('/[\x80-\xBF]+$/', '', $corte) ?? $corte;
+    $corte = preg_replace('/[\xC0-\xFF]$/', '', $corte) ?? $corte;
+    return $corte;
+}
+
 /** Nombre de fichero seguro: conserva acentos y espacios, prohibe rutas. */
 function safeFilename(string $name): string {
     $name = str_replace(['\\', '/', "\0"], '_', $name);
@@ -132,10 +156,11 @@ function safeFilename(string $name): string {
     if ($name === '') {
         $name = 'descarga';
     }
-    if (mb_strlen($name) > 150) {
+    $longitud = function_exists('mb_strlen') ? mb_strlen($name) : strlen($name);
+    if ($longitud > 150) {
         $extension = pathinfo($name, PATHINFO_EXTENSION);
         $base = pathinfo($name, PATHINFO_FILENAME);
-        $name = mb_substr($base, 0, 130) . ($extension !== '' ? '.' . $extension : '');
+        $name = recortarUtf8($base, 130) . ($extension !== '' ? '.' . $extension : '');
     }
     return $name;
 }
@@ -223,6 +248,38 @@ function requireWorker(): void {
     }
 }
 
+/* ── Origen del trabajo: en casa o fuera ────────────────────────────────── */
+
+/** IP real del cliente (Hostinger sirve detras de proxy). */
+function clientIp(): string {
+    $forwarded = (string)($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '');
+    if ($forwarded !== '') {
+        $primera = trim(explode(',', $forwarded)[0]);
+        if ($primera !== '') {
+            return $primera;
+        }
+    }
+    return (string)($_SERVER['REMOTE_ADDR'] ?? '');
+}
+
+/**
+ * ¿Este trabajo se ha pedido desde la misma conexion que el PC?
+ *
+ * Se compara la IP del navegador con la del ultimo latido del worker: si
+ * coinciden, Antonio esta en casa y NO hace falta subir el fichero (se queda en
+ * su carpeta, como la .bat). Sin datos del worker se asume "fuera", que sube:
+ * perder una descarga pedida desde el movil es peor que subir de mas.
+ */
+function origenDelTrabajo(): string {
+    $worker = readJsonFile(WORKER_FILE, []);
+    $ipWorker = (string)($worker['ip'] ?? '');
+    $ipCliente = clientIp();
+    if ($ipWorker === '' || $ipCliente === '') {
+        return 'fuera';
+    }
+    return $ipWorker === $ipCliente ? 'casa' : 'fuera';
+}
+
 /* ── Cola ───────────────────────────────────────────────────────────────── */
 
 function loadQueue(): array {
@@ -256,11 +313,15 @@ function jobsForClient(array $jobs): array {
     return array_map(static function (array $job): array {
         $job['files'] = array_map(static function (array $item): array {
             return [
-                'id'       => $item['id'] ?? '',
-                'title'    => $item['title'] ?? '',
-                'filename' => $item['filename'] ?? '',
-                'bytes'    => (int)($item['bytes'] ?? 0),
-                'ext'      => $item['ext'] ?? '',
+                'id'         => $item['id'] ?? '',
+                'title'      => $item['title'] ?? '',
+                'filename'   => $item['filename'] ?? '',
+                'bytes'      => (int)($item['bytes'] ?? 0),
+                'ext'        => $item['ext'] ?? '',
+                // Un fichero "local" no esta en el servidor: vive en el PC y no
+                // se puede descargar desde la web.
+                'local'      => !empty($item['local']),
+                'ruta_local' => (string)($item['ruta_local'] ?? ''),
             ];
         }, is_array($job['items'] ?? null) ? $job['items'] : []);
         unset($job['items']);
@@ -316,7 +377,12 @@ function appendHistory(array $job, array $item): void {
             'bytes'    => (int)($item['bytes'] ?? 0),
             'jobId'    => (string)($job['id'] ?? ''),
             'itemId'   => (string)($item['id'] ?? ''),
-            'fileUrl'  => './api.php?action=download&item=' . rawurlencode((string)($item['id'] ?? '')),
+            'local'    => !empty($item['local']),
+            // Sin copia en el servidor no hay enlace de descarga: el fichero
+            // esta en el PC de Antonio y ahi se queda.
+            'fileUrl'  => !empty($item['local'])
+                ? ''
+                : './api.php?action=download&item=' . rawurlencode((string)($item['id'] ?? '')),
         ],
         'createdAt' => nowIso(),
     ];
@@ -364,7 +430,7 @@ function removeJobFiles(string $jobId): void {
     }
 }
 
-/** Borra ficheros y trabajos mas viejos que RETENTION_DAYS (con freno). */
+/** Borra ficheros y trabajos mas viejos que RETENTION_HOURS (con freno). */
 function cleanupExpired(array &$queue): bool {
     $stamp = __DIR__ . '/' . CLEANUP_STAMP;
     $last = is_file($stamp) ? (int)@file_get_contents($stamp) : 0;
@@ -373,7 +439,7 @@ function cleanupExpired(array &$queue): bool {
     }
     @file_put_contents($stamp, (string)time(), LOCK_EX);
 
-    $limit = time() - RETENTION_DAYS * 86400;
+    $limit = time() - RETENTION_HOURS * 3600;
     $kept = [];
     $changed = false;
     foreach ($queue['jobs'] as $job) {
@@ -405,6 +471,18 @@ function humanBytes(int $bytes): string {
         $index++;
     }
     return round($value, $index === 0 ? 0 : 1) . ' ' . $units[$index];
+}
+
+/** Carpeta de descarga del PC, tal y como la cuenta el worker. */
+function dirInfo(): array {
+    $worker = readJsonFile(WORKER_FILE, []);
+    $estado = readJsonFile(DIR_FILE, []);
+    return [
+        'actual'    => (string)($worker['dir'] ?? ''),
+        'unidades'  => is_array($worker['unidades'] ?? null) ? $worker['unidades'] : [],
+        'pendiente' => (string)($estado['pending'] ?? ''),
+        'error'     => (string)($estado['error'] ?? ''),
+    ];
 }
 
 /* ── Arranque ───────────────────────────────────────────────────────────── */
@@ -443,7 +521,7 @@ if ($method === 'GET' && $action === 'download') {
             $real = realpath($path);
             $base = realpath(__DIR__ . '/' . FILES_DIR);
             if ($real === false || $base === false || strncmp($real, $base, strlen($base)) !== 0 || !is_file($real)) {
-                respond(404, ['success' => false, 'error' => 'El fichero ya no esta disponible (caduca a los ' . RETENTION_DAYS . ' dias).']);
+                respond(404, ['success' => false, 'error' => 'El fichero ya no esta disponible (caduca a las ' . RETENTION_HOURS . ' horas).']);
             }
             $filename = (string)($item['filename'] ?? basename($real));
             header('Content-Type: application/octet-stream');
@@ -489,7 +567,8 @@ if ($method === 'GET' && $action === 'health') {
         ],
         'jobs'       => count($jobs),
         'counts'     => $counts,
-        'retention_days' => RETENTION_DAYS,
+        'retention_hours' => RETENTION_HOURS,
+        'dir'        => dirInfo(),
         'worker'     => [
             'last_seen'   => (string)($worker['last_seen'] ?? ''),
             'seconds_ago' => isset($worker['time']) ? max(0, time() - (int)$worker['time']) : null,
@@ -505,7 +584,7 @@ if ($method !== 'POST') {
 
 /* ── Acciones del worker (multipart o JSON) ─────────────────────────────── */
 
-$workerActions = ['next', 'progress', 'upload_chunk', 'item_done', 'finish', 'fail', 'heartbeat'];
+$workerActions = ['next', 'progress', 'upload_chunk', 'item_done', 'item_local', 'finish', 'fail', 'heartbeat', 'dir_applied'];
 if (in_array($action, $workerActions, true)) {
     requireWorker();
     $lock = lockFile(QUEUE_LOCK);
@@ -518,13 +597,53 @@ if (in_array($action, $workerActions, true)) {
     $body = $action === 'upload_chunk' ? $_POST : readJsonBody();
 
     if ($action === 'heartbeat') {
+        $unidades = [];
+        if (is_array($body['unidades'] ?? null)) {
+            foreach (array_slice($body['unidades'], 0, 26) as $u) {
+                $unidades[] = substr((string)$u, 0, 8);
+            }
+        }
         writeJsonFile(WORKER_FILE, [
             'time'      => time(),
             'last_seen' => nowIso(),
             'version'   => substr((string)($body['version'] ?? ''), 0, 32),
             'ytdlp'     => substr((string)($body['ytdlp'] ?? ''), 0, 32),
             'worker'    => substr((string)($body['worker'] ?? ''), 0, 64),
+            // La IP del PC sirve para saber si una peticion viene de casa.
+            'ip'        => clientIp(),
+            'dir'       => substr((string)($body['download_dir'] ?? ''), 0, 260),
+            'unidades'  => $unidades,
         ]);
+        $estadoDir = readJsonFile(DIR_FILE, []);
+        $respuesta = ['success' => true];
+        if (!empty($estadoDir['pending'])) {
+            // El worker aplica el cambio y confirma con `dir_applied`.
+            $respuesta['cambiar_dir'] = (string)$estadoDir['pending'];
+        }
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(200, $respuesta);
+    }
+
+    if ($action === 'dir_applied') {
+        $estadoDir = readJsonFile(DIR_FILE, []);
+        if (!empty($body['ok'])) {
+            $rutaNueva = substr((string)($body['ruta'] ?? ''), 0, 260);
+            $estadoDir['actual'] = $rutaNueva;
+            $estadoDir['error'] = '';
+            // Se refleja tambien en el latido para que la web muestre la carpeta
+            // nueva al instante, sin esperar al siguiente heartbeat.
+            $worker = readJsonFile(WORKER_FILE, []);
+            if (is_array($worker)) {
+                $worker['dir'] = $rutaNueva;
+                writeJsonFile(WORKER_FILE, $worker);
+            }
+        } else {
+            $estadoDir['error'] = substr((string)($body['error'] ?? 'No se pudo cambiar la carpeta.'), 0, 300);
+        }
+        $estadoDir['pending'] = '';
+        $estadoDir['at'] = nowIso();
+        writeJsonFile(DIR_FILE, $estadoDir);
         flock($lock, LOCK_UN);
         fclose($lock);
         respond(200, ['success' => true]);
@@ -573,6 +692,9 @@ if (in_array($action, $workerActions, true)) {
                 'format'    => $job['format'] ?? 'mp4',
                 'playlist'  => (bool)($job['playlist'] ?? false),
                 'attempts'  => (int)($job['attempts'] ?? 0),
+                // Si es false, el worker se queda el fichero en el PC y NO lo sube.
+                'subir'     => (bool)($job['subir'] ?? true),
+                'origen'    => (string)($job['origen'] ?? 'fuera'),
             ],
         ]);
     }
@@ -586,6 +708,35 @@ if (in_array($action, $workerActions, true)) {
     }
     $job = $queue['jobs'][$index];
     $cancelRequested = !empty($job['cancel_requested']);
+
+    /**
+     * Fichero que se queda SOLO en el PC: no hay copia en el servidor, asi que
+     * no se sube nada. Se registra igual para que salga en la cola y en el
+     * historial, con su ruta local, y para que el usuario sepa donde esta.
+     */
+    if ($action === 'item_local') {
+        $item = [
+            'id'         => 'i_' . bin2hex(random_bytes(8)),
+            'title'      => substr((string)($body['title'] ?? pathinfo((string)($body['filename'] ?? ''), PATHINFO_FILENAME)), 0, 200),
+            'filename'   => safeFilename((string)($body['filename'] ?? 'descarga')),
+            'bytes'      => (int)($body['bytes'] ?? 0),
+            'ext'        => substr((string)($body['ext'] ?? ''), 0, 10),
+            'duration'   => (float)($body['duration'] ?? 0),
+            'file'       => '',
+            'local'      => true,
+            'ruta_local' => substr((string)($body['ruta_local'] ?? ''), 0, 260),
+            'created_at' => nowIso(),
+        ];
+        $items = is_array($queue['jobs'][$index]['items'] ?? null) ? $queue['jobs'][$index]['items'] : [];
+        $items[] = $item;
+        $queue['jobs'][$index]['items'] = $items;
+        $queue['jobs'][$index]['updated_at'] = nowIso();
+        writeJsonFile(QUEUE_FILE, $queue);
+        appendHistory($job, $item);
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(200, ['success' => true, 'item_id' => $item['id']]);
+    }
 
     if ($action === 'progress') {
         $queue['jobs'][$index]['percent']    = max(0.0, min(100.0, (float)($body['percent'] ?? 0)));
@@ -816,6 +967,11 @@ if ($action === 'add') {
         respond(429, ['success' => false, 'error' => 'Hay 20 descargas en cola: espera a que terminen.']);
     }
 
+    // En casa el fichero se queda en el PC (como la .bat) salvo que se pida lo
+    // contrario; desde fuera se sube siempre, que es la razon de la app.
+    $origen = origenDelTrabajo();
+    $subir = $origen === 'fuera' || !empty($body['subir_web']);
+
     $job = [
         'id'               => 'j_' . bin2hex(random_bytes(8)),
         'url'              => $url,
@@ -823,6 +979,9 @@ if ($action === 'add') {
         'quality'          => $quality,
         'format'           => $format,
         'playlist'         => !empty($body['playlist']),
+        // De donde se pidio y si hay que subirlo a la web o dejarlo en el PC.
+        'origen'           => $origen,
+        'subir'            => $subir,
         'status'           => 'queued',
         'percent'          => 0.0,
         'speed'            => '',
@@ -863,7 +1022,37 @@ if ($action === 'list') {
         'jobs'        => $jobs,
         'server_time' => nowIso(),
         'disk_free'   => $free === false ? '' : humanBytes((int)$free),
+        'dir'         => dirInfo(),
     ]);
+}
+
+/**
+ * Cambia la carpeta donde el PC guarda las descargas (por ejemplo a un USB).
+ * Aqui solo se deja apuntada la peticion: quien la aplica es el worker, que es
+ * el unico que ve el sistema de ficheros del PC, y confirma con `dir_applied`.
+ */
+if ($action === 'set_dir') {
+    $ruta = trim((string)($body['ruta'] ?? ''));
+    if ($ruta === '' || strlen($ruta) > 240) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'Escribe una carpeta valida.']);
+    }
+    $esRutaWindows = preg_match('#^[A-Za-z]:[\\\\/]#', $ruta) === 1;
+    $esUNC = strpos($ruta, '\\\\') === 0;
+    if (!$esRutaWindows && !$esUNC) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(400, ['success' => false, 'error' => 'La carpeta tiene que ser una ruta completa del PC, por ejemplo D:\\Vídeos o F:\\']);
+    }
+    $estado = readJsonFile(DIR_FILE, []);
+    $estado['pending'] = $ruta;
+    $estado['error'] = '';
+    $estado['at'] = nowIso();
+    writeJsonFile(DIR_FILE, $estado);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'pendiente' => $ruta]);
 }
 
 $jobId = cleanId((string)($body['job_id'] ?? $_GET['job_id'] ?? ''));
@@ -927,6 +1116,7 @@ fclose($lock);
 respond(400, [
     'success' => false,
     'error'   => 'Accion no valida.',
-    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download',
-                       'next', 'progress', 'upload_chunk', 'item_done', 'finish', 'fail', 'heartbeat'],
+    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir',
+                       'next', 'progress', 'upload_chunk', 'item_done', 'item_local', 'finish', 'fail',
+                       'heartbeat', 'dir_applied'],
 ]);
