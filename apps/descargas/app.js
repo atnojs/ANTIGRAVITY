@@ -384,11 +384,15 @@ function renderQueue() {
       // Un fichero que se ha quedado en el PC no se puede descargar desde la
       // web: se muestra como etiqueta con su ruta, no como enlace.
       if (file.local) {
+        const pidiendo = file.subir_pedido === true;
         return `<span class="file-chip local" title="${esc(file.ruta_local || '')}">
           <span>${esc(file.title || file.filename)}</span>
           <em>${humanBytes(file.bytes)}</em>
           <b>EN TU PC</b>
-        </span>`;
+        </span>
+        <button type="button" class="btn-sm" data-act="traer" data-item="${esc(file.id)}"${pidiendo ? ' disabled' : ''}>
+          ${pidiendo ? 'SUBIENDO A LA WEB…' : 'TRAER A LA WEB'}
+        </button>`;
       }
       return `<a class="file-chip" href="${API}?action=download&amp;item=${encodeURIComponent(file.id)}" download>
         <span>${esc(file.title || file.filename)}</span>
@@ -425,14 +429,19 @@ function renderQueue() {
 async function onQueueClick(event) {
   const button = event.target.closest('button[data-act]');
   if (!button) return;
-  const id = button.getAttribute('data-id');
   const act = button.getAttribute('data-act');
+  const id = act === 'traer' ? button.getAttribute('data-item') : button.getAttribute('data-id');
   button.disabled = true;
 
   try {
     if (act === 'cancel') {
       const result = await postJson(API + '?action=cancel', { job_id: id });
       if (!result.ok) showFormError(result.data.error || 'No se pudo cancelar.');
+    } else if (act === 'traer') {
+      // «Traer a la web»: el fichero esta en el PC y se pide una copia en el
+      // servidor para poder bajarlo desde el movil.
+      const resultado = await postJson(API + '?action=subir_item', { item_id: id });
+      if (!resultado.ok) showFormError(resultado.data.error || 'No se pudo pedir la subida.');
     } else if (act === 'delete') {
       if (!confirm('¿Borrar esta descarga y sus ficheros del servidor?')) { button.disabled = false; return; }
       const result = await postJson(API + '?action=delete', { job_id: id });

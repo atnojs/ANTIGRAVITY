@@ -1227,6 +1227,65 @@ async function procesarJob(jobBruto) {
   consola(`Trabajo ${job.id} TERMINADO correctamente (${ficheros.length} fichero/s).`);
 }
 
+/**
+ * «Traer a la web»: sube un fichero que ya esta en el PC porque el usuario lo
+ * ha pedido desde la web. Se sube por trozos y se cierra con item_done + el
+ * item_id, para que el servidor ACTUALICE la ficha en vez de crear otra.
+ */
+async function subirPedido(pedido) {
+  const ruta = String(pedido.ruta_local || '');
+  const etiqueta = `subida pedida ${pedido.item_id}`;
+  logInfo(`Peticion de traer a la web: ${ruta}`);
+
+  if (!ruta || !fs.existsSync(ruta)) {
+    logError(`No encuentro el fichero local: ${ruta}`);
+    await peticion({
+      action: 'subida_fallida',
+      job_id: pedido.job_id,
+      item_id: pedido.item_id,
+      error: 'El fichero ya no esta en el PC: ' + ruta,
+    }, { etiqueta }).catch(() => {});
+    return;
+  }
+
+  const stat = fs.statSync(ruta);
+  const fichero = {
+    ruta,
+    nombre: path.basename(ruta),
+    bytes: stat.size,
+    ext: (path.extname(ruta).replace('.', '') || 'bin').toLowerCase(),
+  };
+  const contexto = { jobId: pedido.job_id, itemCount: 1, itemIndex: 1, titulo: pedido.title || fichero.nombre };
+
+  try {
+    consola(`Subiendo a la web: ${fichero.nombre} (${(fichero.bytes / 1048576).toFixed(2)} MiB)`);
+    // El callback de progreso no puede ser null: subirFichero lo llama siempre.
+    // Debe devolver una promesa: subirFichero encadena .catch() al resultado.
+    const sinProgreso = () => Promise.resolve();
+    const trozos = await subirFichero({ id: pedido.job_id }, pedido.item_index || 1, fichero, contexto, sinProgreso);
+    await peticion({
+      action: 'item_done',
+      job_id: pedido.job_id,
+      item_id: pedido.item_id,
+      item_index: pedido.item_index || 1,
+      filename: fichero.nombre,
+      title: pedido.title || fichero.nombre,
+      bytes: fichero.bytes,
+      ext: fichero.ext,
+      duration: Number(pedido.duration) || 0,
+    }, { etiqueta: 'item_done' });
+    logInfo(`Traido a la web: ${fichero.nombre} (${trozos} trozos)`);
+    consola(`  En la web: ${fichero.nombre}`);
+  } catch (e) {
+    logError(`Fallo al traer a la web ${fichero.nombre}: ${e.message}`);
+    await peticion({
+      action: 'subida_fallida',
+      job_id: pedido.job_id,
+      item_id: pedido.item_id,
+      error: e.message,
+    }, { etiqueta }).catch(() => {});
+  }
+}
 // ---------------------------------------------------------------------
 // Bucle principal
 // ---------------------------------------------------------------------
@@ -1308,6 +1367,15 @@ async function principal() {
     try {
       const respuesta = await peticion({ action: 'next' }, { etiqueta: 'next' });
       const job = respuesta.job;
+
+      // Antes de pedir trabajo nuevo: atender los «traer a la web» pendientes.
+      const pedidos = Array.isArray(respuesta.subidas) ? respuesta.subidas : [];
+      if (pedidos.length) {
+        for (const pedido of pedidos) {
+          await subirPedido(pedido);
+        }
+        continue;
+      }
 
       if (!job) {
         logDepurar('sin trabajo disponible');

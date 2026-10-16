@@ -343,6 +343,7 @@ function jobsForClient(array $jobs): array {
                 // se puede descargar desde la web.
                 'local'      => !empty($item['local']),
                 'ruta_local' => (string)($item['ruta_local'] ?? ''),
+                'subir_pedido' => !empty($item['subir_pedido']),
             ];
         }, is_array($job['items'] ?? null) ? $job['items'] : []);
         unset($job['items']);
@@ -508,6 +509,66 @@ function maskIp(string $ip): string {
         return $partes[0] . '.' . $partes[1] . '.x.x';
     }
     return 'rara';
+}
+
+/**
+ * Elementos que viven solo en el PC y el usuario ha pedido traer a la web.
+ * El worker los sube cuando pregunta por trabajo.
+ */
+function subidasPendientes(array $queue): array {
+    $pendientes = [];
+    foreach ($queue['jobs'] as $job) {
+        foreach ((array)($job['items'] ?? []) as $indice => $item) {
+            if (empty($item['subir_pedido']) || empty($item['local'])) {
+                continue;
+            }
+            $pendientes[] = [
+                'job_id'      => (string)($job['id'] ?? ''),
+                'item_id'     => (string)($item['id'] ?? ''),
+                'item_index'  => (int)$indice + 1,
+                'ruta_local'  => (string)($item['ruta_local'] ?? ''),
+                'filename'    => (string)($item['filename'] ?? ''),
+                'title'       => (string)($item['title'] ?? ''),
+                'ext'         => (string)($item['ext'] ?? ''),
+                'duration'    => (float)($item['duration'] ?? 0),
+            ];
+            if (count($pendientes) >= 3) {
+                return $pendientes;
+            }
+        }
+    }
+    return $pendientes;
+}
+
+/** Al traer un fichero a la web hay que arreglar su ficha del historial. */
+function marcarHistorialEnWeb(string $itemId, int $bytes): void {
+    $file = __DIR__ . '/' . HISTORY_FILE;
+    if (!is_file($file)) {
+        return;
+    }
+    $lock = fopen(__DIR__ . '/' . HISTORY_LOCK, 'c+');
+    if ($lock === false || !flock($lock, LOCK_EX)) {
+        if ($lock !== false) { fclose($lock); }
+        return;
+    }
+    $history = json_decode((string)@file_get_contents($file), true);
+    if (is_array($history)) {
+        $cambiado = false;
+        foreach ($history as $i => $entrada) {
+            if ((string)($entrada['data']['itemId'] ?? '') !== $itemId) {
+                continue;
+            }
+            $history[$i]['data']['local'] = false;
+            $history[$i]['data']['bytes'] = $bytes;
+            $history[$i]['data']['fileUrl'] = './api.php?action=download&item=' . rawurlencode($itemId);
+            $cambiado = true;
+        }
+        if ($cambiado) {
+            @file_put_contents($file, json_encode(array_values($history), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
+        }
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
 }
 
 /** Carpeta de descarga del PC, tal y como la cuenta el worker. */
@@ -718,9 +779,13 @@ if (in_array($action, $workerActions, true)) {
             }
         }
         if ($chosen === null) {
+            // Sin trabajo que dar, pero puede haber «traer a la web» pendientes:
+            // si no se devuelven aqui, el worker no se entera nunca (una cola
+            // vacia es justo el caso normal).
+            $subidas = subidasPendientes($queue);
             flock($lock, LOCK_UN);
             fclose($lock);
-            respond(200, ['success' => true, 'job' => null]);
+            respond(200, ['success' => true, 'job' => null, 'subidas' => $subidas]);
         }
         $queue['jobs'][$chosen]['status'] = 'running';
         $queue['jobs'][$chosen]['claimed_at'] = nowIso();
@@ -745,6 +810,8 @@ if (in_array($action, $workerActions, true)) {
                 'subir'     => (bool)($job['subir'] ?? true),
                 'origen'    => (string)($job['origen'] ?? 'fuera'),
             ],
+            // Elementos que el usuario ha pedido traer a la web desde el PC.
+            'subidas' => subidasPendientes($queue),
         ]);
     }
 
@@ -906,6 +973,78 @@ if (in_array($action, $workerActions, true)) {
             }
         }
         @rmdir($dir);
+
+        // Si viene `item_id`, no es una descarga nueva: es un fichero que ya
+        // estaba en el PC y el usuario ha pedido traer a la web. Se ACTUALIZA su
+        // ficha en vez de crear otra, para no duplicar la entrada del historial.
+        $itemIdExistente = cleanId((string)($body['item_id'] ?? ''));
+        if ($itemIdExistente !== '') {
+            $items = is_array($queue['jobs'][$index]['items'] ?? null) ? $queue['jobs'][$index]['items'] : [];
+            $encontrado = false;
+            foreach ($items as $k => $it) {
+                if ((string)($it['id'] ?? '') !== $itemIdExistente) {
+                    continue;
+                }
+                $items[$k]['file'] = $relative;
+                $items[$k]['bytes'] = $written;
+                $items[$k]['ext'] = substr((string)($body['ext'] ?? $it['ext'] ?? ''), 0, 10);
+                $items[$k]['duration'] = (float)($body['duration'] ?? $it['duration'] ?? 0);
+                $items[$k]['filename'] = $filename;
+                $items[$k]['local'] = false;
+                $items[$k]['subir_pedido'] = false;
+                $encontrado = true;
+                break;
+            }
+            if (!$encontrado) {
+                @unlink(__DIR__ . '/' . $relative);
+                flock($lock, LOCK_UN);
+                fclose($lock);
+                respond(404, ['success' => false, 'error' => 'Ese elemento ya no existe en la cola.']);
+            }
+            $queue['jobs'][$index]['items'] = $items;
+            $queue['jobs'][$index]['updated_at'] = nowIso();
+            writeJsonFile(QUEUE_FILE, $queue);
+            marcarHistorialEnWeb($itemIdExistente, $written);
+            flock($lock, LOCK_UN);
+            fclose($lock);
+            respond(200, ['success' => true, 'item_id' => $itemIdExistente, 'bytes' => $written, 'actualizado' => true]);
+        }
+
+        // Si viene `item_id`, no es una descarga nueva: es un fichero que ya
+        // estaba en el PC y el usuario ha pedido traer a la web. Se ACTUALIZA su
+        // ficha en vez de crear otra, para no duplicar la entrada del historial.
+        $itemIdExistente = cleanId((string)($body['item_id'] ?? ''));
+        if ($itemIdExistente !== '') {
+            $items = is_array($queue['jobs'][$index]['items'] ?? null) ? $queue['jobs'][$index]['items'] : [];
+            $encontrado = false;
+            foreach ($items as $k => $it) {
+                if ((string)($it['id'] ?? '') !== $itemIdExistente) {
+                    continue;
+                }
+                $items[$k]['file'] = $relative;
+                $items[$k]['bytes'] = $written;
+                $items[$k]['ext'] = substr((string)($body['ext'] ?? $it['ext'] ?? ''), 0, 10);
+                $items[$k]['duration'] = (float)($body['duration'] ?? $it['duration'] ?? 0);
+                $items[$k]['filename'] = $filename;
+                $items[$k]['local'] = false;
+                $items[$k]['subir_pedido'] = false;
+                $encontrado = true;
+                break;
+            }
+            if (!$encontrado) {
+                @unlink(__DIR__ . '/' . $relative);
+                flock($lock, LOCK_UN);
+                fclose($lock);
+                respond(404, ['success' => false, 'error' => 'Ese elemento ya no existe en la cola.']);
+            }
+            $queue['jobs'][$index]['items'] = $items;
+            $queue['jobs'][$index]['updated_at'] = nowIso();
+            writeJsonFile(QUEUE_FILE, $queue);
+            marcarHistorialEnWeb($itemIdExistente, $written);
+            flock($lock, LOCK_UN);
+            fclose($lock);
+            respond(200, ['success' => true, 'item_id' => $itemIdExistente, 'bytes' => $written, 'actualizado' => true]);
+        }
 
         $item = [
             'id'         => $itemId,
@@ -1114,6 +1253,41 @@ if ($action === 'set_dir') {
 
 $jobId = cleanId((string)($body['job_id'] ?? $_GET['job_id'] ?? ''));
 
+/**
+ * «Traer a la web»: marca un fichero que esta en el PC para que el worker lo
+ * suba en la siguiente vuelta. Hoy, si se quedo en casa, no habia forma de
+ * bajarlo desde el movil sin volver a pegar el enlace.
+ */
+if ($action === 'subir_item') {
+    $itemId = cleanId((string)($body['item_id'] ?? ''));
+    $hecho = false;
+    foreach ($queue['jobs'] as $j => $trabajo) {
+        foreach ((array)($trabajo['items'] ?? []) as $k => $elemento) {
+            if ((string)($elemento['id'] ?? '') !== $itemId) {
+                continue;
+            }
+            if (empty($elemento['local']) || !empty($elemento['file'])) {
+                flock($lock, LOCK_UN);
+                fclose($lock);
+                respond(409, ['success' => false, 'error' => 'Ese fichero ya esta en la web.']);
+            }
+            $queue['jobs'][$j]['items'][$k]['subir_pedido'] = true;
+            $queue['jobs'][$j]['updated_at'] = nowIso();
+            $hecho = true;
+            break 2;
+        }
+    }
+    if (!$hecho) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        respond(404, ['success' => false, 'error' => 'Fichero no encontrado.']);
+    }
+    writeJsonFile(QUEUE_FILE, $queue);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    respond(200, ['success' => true, 'pedido' => $itemId]);
+}
+
 if ($action === 'status') {
     $index = $jobId !== '' ? findJob($queue, $jobId) : null;
     flock($lock, LOCK_UN);
@@ -1173,7 +1347,7 @@ fclose($lock);
 respond(400, [
     'success' => false,
     'error'   => 'Accion no valida.',
-    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir',
+    'validActions' => ['health', 'add', 'list', 'status', 'cancel', 'delete', 'download', 'set_dir', 'subir_item',
                        'next', 'progress', 'upload_chunk', 'item_done', 'item_local', 'finish', 'fail',
                        'heartbeat', 'dir_applied'],
 ]);
