@@ -1,0 +1,9 @@
+[
+ {
+  "id": "ig-dcek-162",
+  "code": "/roadmap",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/roadmap If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Visual project roadmap for ORIGEN, a specialty coffee roaster, horizontal timeline with three phases, milestone nodes, icons and short labels, clean modern infographic style, soft gradient background, all visible text and labels must be written in Spanish with no English words"
+ }
+]

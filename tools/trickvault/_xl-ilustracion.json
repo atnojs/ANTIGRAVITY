@@ -1,0 +1,23 @@
+[
+ {
+  "id": "ig-dcek-273",
+  "code": "/abstract",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/abstract If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Creative abstract art of a friendly retro robot, bold shapes and colors, expressive composition, modern gallery aesthetic, artistic interpretation, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-310",
+  "code": "/comicbook",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/comicbook If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Comic book style illustration of a friendly retro robot, bold ink outlines, halftone dots, dynamic panel composition, pop art superhero aesthetic, all visible text and speech bubbles must be written in Spanish with no English words (onomatopeyas: write CLIC, ZAS, PUM, CRAC instead of click, zap, boom, krakoom)"
+ },
+ {
+  "id": "ig-dcek-314",
+  "code": "/sketch",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/sketch If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Hand-drawn sketch of a friendly retro robot, loose pencil linework, artistic study strokes, sketchbook paper texture, expressive drawing aesthetic, all visible text and labels must be written in Spanish with no English words"
+ }
+]

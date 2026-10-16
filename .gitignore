@@ -176,3 +176,65 @@ skills/diag_mic.py
 # Carpeta temporal de builds locales
 .tmp-build/
 
+# ═══════════════════════════════════════════════════════════════════════════
+# LIMPIEZA 2026-10-16 — material de trabajo que NO debe versionarse.
+# El detalle y el porqué, en tools/memoria/pendientes.md §7.
+# Regla: se versiona lo que es herramienta o contenido; se ignora el material
+# de trabajo; lo que tenga secretos o datos de terceros, nunca.
+# OJO: esto NO afecta a lo ya versionado; para sacar algo del repo hace falta
+# `git rm --cached`, no basta con añadirlo aquí.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── Lotes de imágenes de trabajo (decenas de miles de ficheros) ────────────
+tools/_ig2/
+tools/imagen_json_prompt/
+tools/imagen_json_prompt_prueba/
+tools/_reel_ig/
+tools/json/_e2e/
+
+# ── TrickVault: material de trabajo ───────────────────────────────────────
+tools/trickvault/*_gen/
+tools/trickvault/_e2e/
+tools/trickvault/_revision/
+tools/trickvault/_banco_export/
+tools/trickvault/_imgs_revisar/
+tools/trickvault/_prueba_api/
+tools/trickvault/prompts_in/
+tools/trickvault/prompts_out/
+tools/trickvault/_*_jobs.json
+tools/trickvault/_*.log
+tools/trickvault/_*.txt
+tools/trickvault/_*.cmd
+tools/trickvault/_prod_hoy*.html
+tools/trickvault/_verifica_*
+tools/trickvault/_dump_*
+tools/trickvault/_auditoria_*.json
+tools/trickvault/_catalogo_estado.json
+tools/trickvault/_cruce_rotas.json
+tools/trickvault/_desajustes.json
+tools/trickvault/_ocr_*.json
+tools/trickvault/_plan_imagenes.json
+tools/trickvault/_rutas_imagenes.json
+tools/trickvault/_sin_objeto.json
+tools/trickvault/_recuperadas.json
+# Guiones de un solo uso (diagnóstico y arreglos puntuales)
+tools/trickvault/_fix_*.py
+tools/trickvault/_ver_*.py
+tools/trickvault/_diag_*.py
+tools/trickvault/_antes_*.py
+tools/trickvault/_ids_*.py
+tools/trickvault/_hojas_*.py
+
+# ── Salidas y registros del lote de video-vault ───────────────────────────
+tools/video-vault/_*.log
+tools/video-vault/_*.txt
+tools/video-vault/_upload_log.json
+
+# ── Secretos y datos de terceros (NUNCA al repo) ──────────────────────────
+# auth.php guarda el hash sha256 de la contraseña de edición. El repositorio
+# es PÚBLICO: ver pendientes.md 0-bis.
+apps/json/auth.php
+tools/veronicaz/*.xlsx
+# Capturas.xlsx vive en la RAÍZ PÚBLICA: si se versiona, queda servido por web.
+/Capturas.xlsx
+

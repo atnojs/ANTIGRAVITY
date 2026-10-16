@@ -1,0 +1,114 @@
+[
+ {
+  "id": "ig-dcek-008",
+  "code": "/skeletalview",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/skeletalview If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bare structural skeletal frame of a mechanical wristwatch, stripped of all skin and outer panels, exposing the raw structural chassis, internal scaffolding and core architecture, high-contrast dramatic studio lighting, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-011",
+  "code": "/blueprint",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/blueprint If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Architectural technical blueprint of a mechanical wristwatch, white and cyan drafting grid lines, accurate orthogonal technical schematics, dimension markings, classic blueprint cyan paper texture background, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-016",
+  "code": "/infographic",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/infographic If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Modern clean infographic presentation explaining a mechanical wristwatch, clean geometric callout boxes, minimal statistical graphs, modern graphic design layout, balanced negative space, high aesthetic clarity, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-017",
+  "code": "/annotated",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/annotated If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Detailed studio product photo of a mechanical wristwatch overlaid with sleek red and white callout lines, technical arrows, circular focal pointers and handwritten engineering notes, editorial catalog review style, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-021",
+  "code": "/handwritten",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/handwritten If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Artistic product study of a mechanical wristwatch with spontaneous handwritten cursive fountain pen annotations and sketch arrows drawn directly on the page, creative inventor diary notebook aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-022",
+  "code": "/napkinsketch",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/napkinsketch If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Spontaneous ballpoint pen rough sketch of a mechanical wristwatch drawn on a textured paper coffee napkin, loose quick concept lines, coffee cup ring stain, authentic brainstorming cafe aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-024",
+  "code": "/moodboard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/moodboard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Creative design aesthetic moodboard centered around a mechanical wristwatch, pinboard collage featuring fabric swatches, color palette chips, cinematic photo cutouts, metallic textures and architectural details, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-025",
+  "code": "/pencilsketch",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/pencilsketch If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fine graphite pencil drawing of a mechanical wristwatch, loose expressive hand-drawn crosshatching, subtle shading gradients, textured white heavyweight sketch paper, artist sketchbook illustration, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-534",
+  "code": "/footweartechpack",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/footweartechpack If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Footwear tech pack of a mechanical wristwatch, annotated sneaker design sheet with callouts, technical line drawing, design spec layout, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-543",
+  "code": "/dieline",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/dieline If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dieline of the a mechanical wristwatch packaging unfolded, flat box template with fold lines and panels, print production technical drawing, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-113",
+  "code": "/revealparts",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/revealparts If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Technical exploded reveal of a mechanical wristwatch with all inner parts separated and floating in place, clean neutral studio background, engineering illustration, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-114",
+  "code": "/ghostshell",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/ghostshell If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ghost shell view of a mechanical wristwatch, semi-transparent frosted outer casing showing the internal mechanism underneath, elegant studio lighting, industrial design render, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-116",
+  "code": "/layerpeel",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/layerpeel If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Peeled layer view of a mechanical wristwatch, successive material layers lifted and separated in order, floating parallel slices, clean studio background, modern technical infographic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-118",
+  "code": "/sidecut",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/sidecut If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean side cut through a mechanical wristwatch, a straight slice exposing the interior chambers and components, sharp studio lighting, technical product illustration, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-119",
+  "code": "/bluecopy",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/bluecopy If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Classic blueprint copy of a mechanical wristwatch, cyan drafting lines on blue paper, orthogonal views with dimension marks, vintage engineering plan, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-120",
+  "code": "/wireframe2",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/wireframe2 If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Wireframe mesh model of a mechanical wristwatch, glowing outline polygons with no fill floating over a dark background, CAD visualisation style, all visible text and labels must be written in Spanish with no English words"
+ }
+]

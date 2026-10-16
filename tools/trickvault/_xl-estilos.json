@@ -1,0 +1,9 @@
+[
+ {
+  "id": "ig-dcek-141",
+  "code": "/4K",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/4K If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ultra high definition 4K remaster of an old wooden fishing boat moored in a small Mediterranean harbour, dramatically enhanced resolution and sharpness, crisp micro details, refined textures, professional photo restoration quality, all visible text and labels must be written in Spanish with no English words"
+ }
+]

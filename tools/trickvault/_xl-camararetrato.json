@@ -1,0 +1,100 @@
+[
+ {
+  "id": "ig-dcek-142",
+  "code": "/whiteteeth",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/whiteteeth If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dental whitening retouch of a young woman with curly dark hair, bright natural white smile, subtle realistic teeth whitening, healthy fresh look, natural lighting, photorealistic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-143",
+  "code": "/srinkless",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/srinkless If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Skin smoothing retouch of a young woman with curly dark hair, subtle wrinkle reduction and youthful glow, natural flawless complexion, soft studio portrait lighting, realistic photorealistic result, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-145",
+  "code": "/nombrafamoso",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/nombrafamoso If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Realistic selfie photo of a person who looks like a famous celebrity taking a friendly selfie with an excited young fan, candid phone camera look, natural indoor lighting, photorealistic, generic famous lookalike, no real celebrity identity, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-147",
+  "code": "/repairhd",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/repairhd If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. HD restoration of old damaged photo of an old damaged sepia family photograph with cracks and a torn corner, repaired scratches and tears, restored sharpness and color, vintage photo brought back to life, high quality restoration, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-148",
+  "code": "/fullcolour",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/fullcolour If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colorized version of black and white photo of an old black and white family photograph, natural realistic skin tones, historically accurate colors, vibrant modern colorization, restored detail, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-150",
+  "code": "/fullbody",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/fullbody If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Full body shot of a young woman with curly dark hair, head to toe framing, natural standing pose, complete outfit visible, clean studio background, professional photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-184",
+  "code": "/fisheye",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/fisheye If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fisheye lens photograph of a young woman with curly dark hair, extreme ultra-wide angle with curved barrel distortion, 180 degree field of view, playful rounded perspective, vivid colors, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-200",
+  "code": "/filmgrain",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/filmgrain If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Analog film photograph of a young woman with curly dark hair with visible film grain texture, vintage 35mm camera aesthetic, subtle color shift and light leaks, nostalgic mood, all visible text, book titles and handwritten notes must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-258",
+  "code": "/newbg",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/newbg If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Photo of a young woman with curly dark hair with completely new background, face and subject perfectly preserved, seamless background replacement, natural integration with new environment lighting, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-270",
+  "code": "/blackandwhite",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/blackandwhite If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Classic black and white photograph of a young woman with curly dark hair, timeless monochrome tones, rich contrast, fine art photography aesthetic, dramatic light and shadow, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-272",
+  "code": "/petphoto",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/petphoto If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Adorable pet portrait of a golden retriever puppy, cute animal expression, soft studio lighting, shallow depth of field, heartwarming professional pet photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-274",
+  "code": "/coupleshot",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/coupleshot If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Romantic couple photo of a young couple in love, two people in love, natural candid interaction, golden light, warm emotional atmosphere, professional portrait, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-275",
+  "code": "/babyphoto",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/babyphoto If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Adorable baby photo of a smiling baby lying on a soft blanket, soft natural light, gentle pastel tones, tiny hands and feet details, heartwarming newborn photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-295",
+  "code": "/doubleexposure",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/doubleexposure If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Double exposure image of a young woman with curly dark hair, two scenes blended in one composition, surreal overlay effect, artistic layered photography, dreamlike fusion, all visible text and labels must be written in Spanish with no English words"
+ }
+]

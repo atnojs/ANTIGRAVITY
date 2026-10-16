@@ -1,0 +1,282 @@
+[
+ {
+  "id": "ig-dcek-302",
+  "code": "/watercolor",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/watercolor If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Soft watercolor painting of a vase of sunflowers on a wooden table, delicate pigment washes, flowing color blends, textured paper, artistic watercolor aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-307",
+  "code": "/oilpainting",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/oilpainting If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Traditional oil painting of a vase of sunflowers on a wooden table, rich brushstrokes, classical composition, textured canvas, museum quality fine art aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-513",
+  "code": "/weartimeline",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/weartimeline If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Wear timeline of a vase of sunflowers on a wooden table, aging stages shown left to right, gradual patina and wear progression, honest durability story, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-514",
+  "code": "/resultchart",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/resultchart If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Result chart beside a vase of sunflowers on a wooden table, outcome shown as a clean data graphic next to the product, measurable proof, marketing infographic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-515",
+  "code": "/testimonialframe",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/testimonialframe If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Testimonial frame of a vase of sunflowers on a wooden table with the customer quote overlaid, real review callout typography, trustworthy social proof layout, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-516",
+  "code": "/claimproof",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/claimproof If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Claim-proof layout of a vase of sunflowers on a wooden table, each product promise paired with its evidence, bold claim and supporting detail, persuasive ad structure, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-517",
+  "code": "/adcreative",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/adcreative If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Ad creative of a vase of sunflowers on a wooden table, ready-to-publish advertising visual, bold hook and product hero, scroll-stopping social media ad design, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-518",
+  "code": "/hookframe",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/hookframe If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Hook frame of a vase of sunflowers on a wooden table, the decisive first frame of the video, intrigue and tension in one shot, scroll-stopping thumbnail, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-519",
+  "code": "/uglyad",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/uglyad If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Deliberately ugly native ad of a vase of sunflowers on a wooden table, raw low-fi aesthetic, authentic UGC feel, anti-design viral marketing look, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-520",
+  "code": "/pricecard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/pricecard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean price card of a vase of sunflowers on a wooden table, the offer presented on a tidy price tag card, clear typography and value, promo graphic design, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-003",
+  "code": "/gouache",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/gouache If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Matte opaque gouache painting of a vase of sunflowers on a wooden table, flat blocks of solid color, chalky powdery pigment film, visible brush edges, no gradients, heavy textured illustration board, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-004",
+  "code": "/inkwash",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/inkwash If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Sumi ink wash study of a vase of sunflowers on a wooden table, diluted grey tonal values from pale mist to deep charcoal, wet bleeding edges on absorbent rice paper, soft brush diffusion, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-005",
+  "code": "/charcoal",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/charcoal If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Expressive charcoal drawing of a vase of sunflowers on a wooden table, dense black strokes, smudged finger marks and blended shadows, rough tooth of laid paper catching white flecks, dramatic chiaroscuro, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-006",
+  "code": "/pastelchalk",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/pastelchalk If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Soft chalk pastel rendering of a vase of sunflowers on a wooden table on toned colored paper, dusty pigment bloom, feathered cross strokes, luminous powdery highlights, visible paper grain through the color, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-007",
+  "code": "/impasto",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/impasto If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Thick impasto oil painting of a vase of sunflowers on a wooden table, palette knife slabs standing in relief, sculptural peaks of wet pigment, raking side light casting hard shadows across the paint surface, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-008",
+  "code": "/fresco",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/fresco If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Aged fresco mural depicting a vase of sunflowers on a wooden table on a cracked plaster wall, mineral earth pigments, faded lime wash surface, chipped edges and hairline cracks, warm ancient chapel light, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-009",
+  "code": "/sumie",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/sumie If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Single-breath Japanese sumi-e brush painting of a vase of sunflowers on a wooden table, one confident sweeping ink stroke, dry bristle trail at the tail, generous empty paper space, red seal stamp corner, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-010",
+  "code": "/markerrender",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/markerrender If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Industrial design marker sketch of a vase of sunflowers on a wooden table, alcohol marker gradient fills, confident black biro contour lines, cool grey shadow blocking, faint construction underlay on drafting paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-011",
+  "code": "/colorpencil",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/colorpencil If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Colored pencil drawing of a vase of sunflowers on a wooden table, layered cross-hatching, waxy pigment build-up, sharpened graphite edges, white paper tooth glowing through the mid-tones, patient tonal layering, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-012",
+  "code": "/scratchboard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/scratchboard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Scratchboard engraving of a vase of sunflowers on a wooden table, crisp white lines scraped out of black inked clay board, dense cross-hatched highlights, high-contrast luminous detail against velvet black, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-013",
+  "code": "/stippling",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/stippling If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Stippled ink drawing of a vase of sunflowers on a wooden table built entirely from tiny dots, variable dot density forming volume and shadow, patient pointillist detail, clean white background, monochrome precision, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-014",
+  "code": "/etching",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/etching If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Antique copperplate etching of a vase of sunflowers on a wooden table, fine burin engraved hatching, cross-hatched shadows, sepia ink on cream laid paper with plate mark, aged book page aesthetic, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-015",
+  "code": "/speedpaint",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/speedpaint If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Loose digital speedpaint sketch of a vase of sunflowers on a wooden table, unfinished gestural brushstrokes, rough thumbnail energy, vibrant blocked color, canvas texture visible, deliberate rawness, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-016",
+  "code": "/flatvector",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/flatvector If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Flat vector illustration of a vase of sunflowers on a wooden table, bold solid color shapes, clean hard edges, no gradients, geometric simplification, minimal editorial poster composition, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-017",
+  "code": "/lineart",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/lineart If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Fine ink line art illustration of a vase of sunflowers on a wooden table, confident single-weight outlines and contour lines only, pure white background, no fill and no shading, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-018",
+  "code": "/comicpanel",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/comicpanel If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Single comic book panel of a vase of sunflowers on a wooden table, bold ink outlines, halftone shading, blank speech balloon, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-019",
+  "code": "/mangapanel",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/mangapanel If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Black and white manga page of a vase of sunflowers on a wooden table, screentone shading, speed lines, dynamic panel gutters, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "xl-cmd-020",
+  "code": "/webtoon",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/webtoon If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Vertical Korean webtoon strip of a vase of sunflowers on a wooden table, stacked scrolling panels with generous gutters, soft digital pastel coloring, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "cap-cmd-081",
+  "code": "/inkdrawing",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/inkdrawing If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Subject: a vase of sunflowers on a wooden table. Ink drawing: fine pen and brush linework, varied stroke weight, hatching and stippling for shadow, occasional ink wash, black on textured paper, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "cap-cmd-082",
+  "code": "/renaissance",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/renaissance If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Subject: a vase of sunflowers on a wooden table. Renaissance oil painting: classical composition, chiaroscuro lighting, warm earth pigments and glazes, subtle craquelure, old-master canvas texture, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "cap-cmd-083",
+  "code": "/expressionism",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/expressionism If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Subject: a vase of sunflowers on a wooden table. Expressionist painting: distorted forms, violent non-naturalistic colour, thick urgent brushwork, raw emotional energy, German expressionism influence, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-210",
+  "code": "/wetpaper",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/wetpaper If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Watercolour painting of sunflowers on a wooden table on wet paper, bleeding edges and soft blooms, visible paper texture, loose brushwork, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-211",
+  "code": "/thickpaint",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/thickpaint If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Thick impasto oil painting of sunflowers on a wooden table, heavy palette knife texture, sculpted brushstrokes, rich pigment, gallery canvas, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-212",
+  "code": "/flatgouache",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/flatgouache If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gouache painting of sunflowers on a wooden table, flat matte colour areas, clean shapes, subtle paper grain, modern illustration feel, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-213",
+  "code": "/grayink",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/grayink If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Grey ink wash study of sunflowers on a wooden table, layered tonal washes, expressive brush edges, white paper, sumi e influence, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-214",
+  "code": "/smudgestick",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/smudgestick If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Charcoal drawing of sunflowers on a wooden table, smudged dark tones and lifted highlights, textured paper, dramatic monochrome sketch, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-215",
+  "code": "/chalktone",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/chalktone If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Soft chalk pastel drawing of sunflowers on a wooden table, powdery blended colour, textured toned paper, gentle light, delicate finish, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-216",
+  "code": "/thickpaste",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/thickpaste If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Textured paste painting of sunflowers on a wooden table, heavy sculpted medium, visible tool marks, raw surface, contemporary art look, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-217",
+  "code": "/crosshatchdraw",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/crosshatchdraw If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Cross hatched pencil drawing of sunflowers on a wooden table, dense fine line shading, graphite sheen, precise draughtsman technique, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "reel-cmd-218",
+  "code": "/roughsketch",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/roughsketch If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Rough quick sketch of sunflowers on a wooden table, fast searching lines, unfinished construction marks, sketchbook page, spontaneous energy, all visible text and labels must be written in Spanish with no English words"
+ }
+]

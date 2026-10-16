@@ -1,0 +1,16 @@
+[
+ {
+  "id": "ig-dcek-035",
+  "code": "/flatlay",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/flatlay If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Aesthetic top-down flatlay photography of a red fox curated on a textured concrete surface with minimal plain paper props only, the subject as the single protagonist, no cameras and no other products, soft diffused morning daylight, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-040",
+  "code": "/splashshot",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/splashshot If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. High-speed commercial splash photography of a red fox, frozen dynamic water and liquid droplets bursting and swirling around the subject, crystal clear liquid caustics, vibrant high-speed lighting, only the subject in frame, no bottles and no products, all visible text and labels must be written in Spanish with no English words"
+ }
+]

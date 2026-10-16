@@ -1,0 +1,58 @@
+[
+ {
+  "id": "ig-dcek-269",
+  "code": "/interior",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/interior If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Stunning interior design photo of a white Mediterranean villa with a pool, elegant furniture and decor, warm ambient lighting, architectural digest quality, stylish home atmosphere, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-271",
+  "code": "/cityscape",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/cityscape If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Urban cityscape view of a white Mediterranean villa with a pool, sweeping skyline panorama, architectural detail, atmospheric city light, professional urban photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-277",
+  "code": "/festival",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/festival If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Festival themed image of a white Mediterranean villa with a pool, colorful celebration atmosphere, lights and decorations, joyful crowd energy, vibrant festive photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-278",
+  "code": "/workspace",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/workspace If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Productive workspace photo of a white Mediterranean villa with a pool, organized desk setup, warm lighting, modern minimalist office aesthetic, cozy productive atmosphere, all visible text, notes and board labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-297",
+  "code": "/forest",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/forest If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Forest environment scene of a white Mediterranean villa with a pool, lush green woodland, filtered sunlight through trees, atmospheric depth, serene natural photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-303",
+  "code": "/beach",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/beach If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Beach environment scene of a white Mediterranean villa with a pool, golden sand and turquoise waves, bright coastal light, relaxing seaside atmosphere, tropical photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-308",
+  "code": "/mountains",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/mountains If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Dramatic mountain landscape of a white Mediterranean villa with a pool, towering peaks, dramatic clouds and light, epic scale, breathtaking nature photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-309",
+  "code": "/nightcity",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/nightcity If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. City at night scene of a white Mediterranean villa with a pool, glowing skyscrapers, neon reflections, bustling night atmosphere, cinematic urban photography, all visible text and labels must be written in Spanish with no English words"
+ }
+]

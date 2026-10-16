@@ -1,0 +1,72 @@
+[
+ {
+  "id": "ig-dcek-004",
+  "code": "/crosssection",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/crosssection If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Clean anatomical cross-section slice through a red fox, visible inner layers, internal core structure and textures, high clarity macro perspective, clean neutral background, scientific catalog style, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-031",
+  "code": "/knolling",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/knolling If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Precise knolling layout of a red fox with all associated accessories and components disassembled and organized in strict 90-degree right angles, top-down flat lay, soft even studio lighting, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-085",
+  "code": "/minime",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/minime If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Adorable miniature chibified designer toy figure version of a red fox, smooth vinyl collectible aesthetic, oversized proportions, studio toy display, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-086",
+  "code": "/statue",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/statue If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Classical neoclassical marble and bronze museum sculpture of a red fox, carved polished stone with delicate chisel details, museum gallery lighting, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-091",
+  "code": "/magazinecover",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/magazinecover If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Glossy high-fashion editorial magazine cover featuring a red fox as the central cover star, elegant typography masthead, headline banners, high-impact photography, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-092",
+  "code": "/movieposter",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/movieposter If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Epic cinematic theatrical movie poster featuring a red fox, dramatic blockbuster composition, billing block credits at the bottom, moody cinematic lighting, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-293",
+  "code": "/polaroid",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/polaroid If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Polaroid instant photo aesthetic of a red fox, white frame border, vintage faded colors, nostalgic snapshot look, authentic instant camera feel, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-535",
+  "code": "/timelineboard",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/timelineboard If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Timeline board of the a red fox brand, entire brand history pinned on one board, milestones and photos, creative planning wall, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-566",
+  "code": "/yearbook90s",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/yearbook90s If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. 90s yearbook portrait of a red fox, retro school photo styling, cheesy studio backdrop, nostalgic analog grain, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "cap-cmd-096",
+  "code": "/monogram",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/monogram If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Subject: a red fox. Monogram: interlocking initials in an elegant custom letterform, thin and thick stroke contrast, optional enclosing frame, embossed or foiled finish, luxury branding, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ }
+]

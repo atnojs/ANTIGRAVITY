@@ -1,0 +1,51 @@
+[
+ {
+  "id": "ig-dcek-056",
+  "code": "/softlighting",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/softlighting If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Gentle soft diffused lighting portrait of a young woman in her late twenties with long dark brown curly hair, olive skin and brown eyes, silky smooth pastel shadow gradients, high-key gentle illumination, peaceful elegant aesthetic, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-060",
+  "code": "/highkey",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/highkey If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Bright and airy high-key commercial photography of a young woman in her late twenties with long dark brown curly hair, olive skin and brown eyes, clean pure white environment, minimal subtle shadows, fresh modern aesthetic, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-064",
+  "code": "/tiltshift",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/tiltshift If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Miniature tilt-shift photography of a young woman in her late twenties with long dark brown curly hair, olive skin and brown eyes, narrow slice of sharp focus with heavy top and bottom blur, playful miniature toy diorama illusion, high-angle perspective, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-067",
+  "code": "/lowangle",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/lowangle If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Intimidating low-angle worm's-eye perspective looking up at a young woman in her late twenties with long dark brown curly hair, olive skin and brown eyes, imposing massive presence, wide-angle lens distortion, towering heroic composition, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "ig-dcek-546",
+  "code": "/anglepack",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/anglepack If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Six-angle catalog pack of a young woman in her late twenties with long dark brown curly hair, olive skin and brown eyes, front side back top bottom and three-quarter views, consistent lighting, complete product coverage, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "cap-cmd-112",
+  "code": "/bts",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/bts If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Behind the scenes of a photo shoot: a young woman in her late twenties with long dark brown curly hair, olive skin and brown eyes in front of the camera, cinema camera on a tripod in the foreground, crew watching the monitor, boom microphone, clapperboard, softbox lights and cables on the floor, candid documentary snapshot, natural set lighting, shallow depth of field, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ },
+ {
+  "id": "reel-cmd-143",
+  "code": "/brightflat",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/brightflat If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Flat bright lighting on a young woman in her late twenties with long dark brown curly hair, olive skin and brown eyes, even illumination with minimal shadows, clean white environment, fresh commercial look, all visible text and labels must be written in Spanish with no English words: every sign, label, headline and button must be in Spanish, never in English"
+ }
+]

@@ -1,0 +1,23 @@
+[
+ {
+  "id": "ig-dcek-221",
+  "code": "/pullin",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/pullin If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Pull-in zoom shot of a red vintage sports car, dolly zoom effect pushing toward the subject, dramatic approach perspective, cinematic tension, dynamic camera movement feel, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-282",
+  "code": "/mediumshot",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/mediumshot If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Medium shot of a red vintage sports car, waist-up framing, balanced composition, natural pose, professional portrait photography, all visible text and labels must be written in Spanish with no English words"
+ },
+ {
+  "id": "ig-dcek-284",
+  "code": "/eyelevel",
+  "desc": "",
+  "origen": "lote low",
+  "prompt": "/eyelevel If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Eye level shot of a red vintage sports car, natural viewpoint at subject eye height, direct engaging perspective, authentic photography feel, all visible text and labels must be written in Spanish with no English words"
+ }
+]
