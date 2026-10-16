@@ -201,29 +201,38 @@ tools/trickvault/_imgs_revisar/
 tools/trickvault/_prueba_api/
 tools/trickvault/prompts_in/
 tools/trickvault/prompts_out/
-tools/trickvault/_*_jobs.json
+# Registros, volcados y HTML de comprobación.
 tools/trickvault/_*.log
 tools/trickvault/_*.txt
 tools/trickvault/_*.cmd
 tools/trickvault/_prod_hoy*.html
 tools/trickvault/_verifica_*
 tools/trickvault/_dump_*
-tools/trickvault/_auditoria_*.json
-tools/trickvault/_catalogo_estado.json
-tools/trickvault/_cruce_rotas.json
-tools/trickvault/_desajustes.json
-tools/trickvault/_ocr_*.json
-tools/trickvault/_plan_imagenes.json
-tools/trickvault/_rutas_imagenes.json
-tools/trickvault/_sin_objeto.json
-tools/trickvault/_recuperadas.json
-# Guiones de un solo uso (diagnóstico y arreglos puntuales)
-tools/trickvault/_fix_*.py
-tools/trickvault/_ver_*.py
-tools/trickvault/_diag_*.py
-tools/trickvault/_antes_*.py
-tools/trickvault/_ids_*.py
-tools/trickvault/_hojas_*.py
+
+# ── Guiones de un solo uso ────────────────────────────────────────────────
+# Todo lo que empieza por «_» es material de usar y tirar: diagnósticos,
+# auditorías, comparativas y arreglos puntuales. Se exceptúan las familias que
+# SÍ son pipeline y van en git (el pipeline de imágenes y los reels).
+# Las reglas «!» funcionan porque la carpeta padre no está excluida, y
+# .gitignore nunca afecta a lo que ya está versionado.
+/tools/_*
+tools/trickvault/_*
+# …y se rescatan solo las familias de pipeline, y solo como .py / .json. Si la
+# negación fuese «_xl-*» a secas, volverían a colarse los PNG de contacto.
+!tools/trickvault/_carpeta_*.py
+!tools/trickvault/_contact_*.py
+!tools/trickvault/_escribir_*.py
+!tools/trickvault/_listar_*.py
+!tools/trickvault/_reels_*.py
+!tools/trickvault/_retroedu_*.py
+!tools/trickvault/_xl-*.json
+!tools/trickvault/_ejemplos_*.json
+!tools/trickvault/_sujetos_*.json
+!tools/trickvault/_excepciones_*.json
+# …pero las copias de seguridad y los manifiestos de lote NO se publican. Van
+# al final a propósito: en gitignore gana el ÚLTIMO patrón que coincide.
+tools/trickvault/*_backup*
+tools/trickvault/_*_jobs.json
 
 # ── Salidas y registros del lote de video-vault ───────────────────────────
 tools/video-vault/_*.log
