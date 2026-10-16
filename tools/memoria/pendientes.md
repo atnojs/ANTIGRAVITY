@@ -113,11 +113,15 @@ Cuando se cierra, se mueve a `bitacora.md` y se borra de aquí.
 
 ## 7. Limpieza de lo no versionado: 256 entradas, 57.427 ficheros, ~5,8 GB
 
-Lista preparada el 2026-10-16, **pendiente de que la valide Antonio**. El panel de git enseña
-«un montón de carpetas» porque git **colapsa** los directorios sin versionar: esas 256 entradas
-son 57.427 ficheros. Nada de esto se sube hoy, y seguirá apareciendo hasta decidir.
-**Regla:** se sube lo que es herramienta o contenido; se ignora el material de trabajo; lo que
-tenga secretos o datos de terceros, no se sube nunca. **Jamás `git add -A`.**
+**HECHO el 2026-10-16** (commits `1cfa411` y `3d97c8d`): `git status` pasó de **256 entradas sin
+versionar + 1 modificado** a **1 sin versionar y 0 modificados**. Queda solo `apps/dev/`, que no
+es basura (ver «e» abajo). Se subieron **80 ficheros (0,34 MB)** de herramientas que faltaban y
+se añadió el bloque de `.gitignore`.
+
+El panel de git enseñaba «un montón de carpetas» porque git **colapsa** los directorios sin
+versionar: esas 256 entradas eran 57.427 ficheros. **Regla:** se sube lo que es herramienta o
+contenido; se ignora el material de trabajo; lo que tenga secretos o datos de terceros, no se
+sube nunca. **Jamás `git add -A`.**
 
 ### a) SUBIR — herramientas y datos que faltan en el repo
 
@@ -142,7 +146,6 @@ tenga secretos o datos de terceros, no se sube nunca. **Jamás `git add -A`.**
 | `tools/imagen_json_prompt_prueba/`, `tools/_reel_ig/` | 19 | 14 |
 | `tools/json/_e2e/` (mock de GitHub) | 2 | 0 |
 | `tools/video-vault/` → `.log` y `.txt` | ~15 | 0 |
-| `apps/dev/null` (50 KB, accidente de `> null`) | 1 | 0 |
 
 Y dentro de `tools/trickvault/`, los sueltos: `_*.log` (26), `_*.txt` (28), `_*.cmd` (12),
 `_*_jobs.json` (**22 manifiestos de lote**), `_prod_hoy*.html`, `_verifica_*`, `_dump_*`, y los
@@ -166,7 +169,22 @@ JSON de **estado derivado** (`_auditoria_*.json`, `_cruce_rotas.json`, `_desajus
 - `tools/veronicaz/` → `conv.mjs`, `ejecutar.py`, `render.mjs` (¿herramienta o encargo puntual?).
 - `tools/trickvault/_reels_*.py` (9) → ¿lote terminado o herramienta viva?
 
-- **Siguiente paso:** Antonio valida a), c) y d); después, `git add` explícito de a) y un bloque
-  nuevo en `.gitignore` para b) + c). Nunca `git add -A`.
-- **Verificación:** `git status --porcelain` debe bajar de 256 entradas a cerca de 0 (quedarían
-  solo las de d) mientras se deciden).
+### e) PENDIENTE DE DECISIÓN — `apps/dev/null` **no es basura**
+
+Me equivoqué al clasificarlo como «accidente de `> null`». Al abrirlo: son **648 líneas de una
+app React de verdad** (generación de imágenes, 8 modelos —`openai-medium`…`max-sunburst`,
+`gemini-flash/pro`, `qwen-pro`—, selectores de proporción, subida, historial y compartir). Es
+contenido **único**: ningún otro fichero del repo tiene ese tamaño ni ese sha256, así que no es
+copia de nada. El nombre `null` sí viene de una redirección mal hecha, pero el contenido es
+trabajo real.
+
+**Por eso NO se ha ignorado y sigue apareciendo**: es lo único que queda en el panel, a
+propósito, para que no se pierda de vista.
+- **Siguiente paso:** decidir qué es y dónde vive (¿app nueva en `apps/<nombre>/`? ¿parte de una
+  que ya existe?). Hasta entonces, **no borrar**.
+- **Verificación:** `(Get-Item 'apps\dev\null').Length` → `50898` bytes; primera línea
+  `import React, { useState, useRef, useEffect } from "react";`.
+
+- **Siguiente paso:** solo queda lo de «d» (decidir esas cuatro cosas) y lo de «e» (rescatar
+  `apps/dev/null`). Lo demás, hecho y publicado.
+- **Verificación:** `git status --porcelain` debe devolver **una sola línea**: `?? apps/dev/`.

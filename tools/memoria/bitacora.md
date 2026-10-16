@@ -273,3 +273,57 @@ ni una línea de `.gitignore`. Espera validación de Antonio.
 **Commits**
 
 - `cb88397` — `docs(memoria): inventario de lo no versionado y segundo hallazgo de seguridad`
+
+---
+
+## 2026-10-16 (cuarta parte) — Limpieza ejecutada: de 256 entradas a 1
+
+Antonio dice «empieza por donde quieras», así que empiezo por la limpieza, que es la que quita el
+ruido del panel y no depende de ninguna decisión suya.
+
+**Resultado**
+
+| | Antes | Después |
+|---|---|---|
+| Entradas sin versionar | 256 | **1** (`apps/dev/`) |
+| Modificados | 1 | **0** |
+| Ficheros ocultos tras esas entradas | 57.427 | — |
+
+**Qué se hizo** (commits `1cfa411` y `3d97c8d`)
+
+- **Subidos 80 ficheros (0,34 MB)**: `tools/commit-aislado.ps1`; el pipeline de imágenes de
+  TrickVault (10 `.py`); los reels (9); las specs `_xl-*.json` (11) + `_ejemplos_xl-fotoproducto.json`
+  + `_retroedu.json`; las herramientas de `tools/video-vault/` (28); `logo_solo_lineas.py`,
+  `quitar_fondo.py`; `tools/evidencias/` (3); `tools/veronicaz/` (3); y el
+  `skills/SKILL_VIDEOVAULT_VIDEOS.md` que tenía 13 líneas sin confirmar.
+- **Bloque nuevo en `.gitignore`** para el material de trabajo, con las familias de pipeline
+  exceptuadas por negación.
+- **Escaneo de secretos previo** sobre los 101 candidatos: **limpio** (ni `AIza…`, ni `sk-…`,
+  ni `ghp_…`, ni tokens en asignaciones).
+
+**Corrección de un error mío de clasificación**
+
+`apps/dev/null` **no** era basura de una redirección mal hecha: son **648 líneas de una app React
+real** (generación de imágenes, 8 modelos, historial, compartir), y es contenido **único** —
+ningún otro fichero del repo tiene ese tamaño ni ese sha256. Así que **no se ha ignorado**: sigue
+apareciendo en el panel a propósito, para que no se pierda de vista. Queda anotado en
+`pendientes.md` §7.e.
+
+**Verificado**
+
+- `https://atnojs.es/tools/memoria/recetas.md` y `https://atnojs.es/tools/video-vault/runner_diario.py`
+  → **403**. Lo subido a `tools/` **no** es accesible por web (era la premisa que había que probar).
+- El pipeline sigue en git: `git ls-files tools/trickvault` → **198** ficheros. `.gitignore` no
+  afecta a lo ya versionado, así que las negaciones no pueden «desversionar» nada.
+
+**Errores cometidos** (detalle en `errores.md`): el `if (git …)` de PowerShell, que evalúa la
+**salida** y no el código de salida y me hizo «arreglar» algo que ya funcionaba; y la negación `!`
+sin extensión, que re-incluyó 20 PNG de contacto, un `.txt` y dos `*_backup.py`.
+
+**Commits**
+
+- `1cfa411` — `chore(limpieza): versionar las herramientas que faltaban e ignorar el material de trabajo`
+- `3d97c8d` — `chore(gitignore): ignorar tambien los guiones de un solo uso y las copias`
+
+**Queda abierto:** el 0-bis (rotar la contraseña con el hash publicado) y decidir qué es
+`apps/dev/null`.

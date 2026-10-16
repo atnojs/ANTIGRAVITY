@@ -25,6 +25,32 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 - **Cómo comprobarlo:** `tools/trickvault/_banco/_carpetas.html` con el banco: debe dar
   `carteles=49`, `moda=25`, `comida=26` y ninguna categoría huérfana.
 
+### [2026-10-16] `if (git check-ignore -q f)` en PowerShell: comprobación falsa
+
+- **Síntoma:** el `.gitignore` parecía no aplicar a `tools/trickvault/_xl-carteles_jobs.json` y me
+  puse a «arreglar» algo que ya estaba bien.
+- **Causa:** en PowerShell, `if (<comando nativo>)` evalúa la **salida** del comando, **no** su
+  código de salida. `git check-ignore -q` no imprime nada, así que el `if` daba `$false` siempre
+  y todo se reportaba como «VISIBLE».
+- **Solución:** mirar `$LASTEXITCODE`:
+  `git check-ignore -q --no-index $f; if ($LASTEXITCODE -eq 0) { 'ignorado' }`. Para depurar de
+  verdad, `git check-ignore -v`, que dice **qué patrón y en qué línea** decide.
+- **Cómo comprobarlo:** `git check-ignore -v --no-index <ruta>` imprime el patrón ganador; si
+  imprime algo, el fichero está ignorado.
+
+### [2026-10-16] Una negación `!` en `.gitignore` re-incluye **todos** los tipos, no solo el que quieres
+
+- **Síntoma:** tras añadir `!tools/trickvault/_xl-*` para rescatar las specs `.json`, volvieron a
+  `git status` 20 PNG de contacto, un `.txt` y dos `*_backup.py` que estaban ignorados.
+- **Causa:** en `.gitignore` **gana el último patrón que coincide**, y una negación no distingue
+  extensión: `!_xl-*` re-incluía `_xl-carteles_contact.png` (pisando el `*.png` global) y
+  `!_reels_*` re-incluía `_reels_verificacion.txt`.
+- **Solución:** negar **con extensión** (`!tools/trickvault/_xl-*.json`, `!_reels_*.py`) y dejar
+  las exclusiones finales **después** de las negaciones
+  (`tools/trickvault/_*_jobs.json`, `tools/trickvault/*_backup*`).
+- **Cómo comprobarlo:** `git status --porcelain` debe quedarse en la única entrada esperada, y
+  `git check-ignore -v` sobre un PNG de contacto debe seguir devolviendo un patrón.
+
 ### [2026-10-16] «La carpeta de descargas» no es `%USERPROFILE%\Downloads`, y el sandbox no deja escribir en `D:\`
 
 - **Síntoma:** `Get-ChildItem "$env:USERPROFILE\Downloads"` no devuelve nada y termina con
