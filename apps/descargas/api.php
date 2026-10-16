@@ -999,7 +999,13 @@ if ($action === 'add') {
     // contrario; desde fuera se sube siempre, que es la razon de la app.
     // Si la pagina ha comprobado que se abre en el propio PC (hablandole al
     // worker por su puerto local), eso manda: es una senal directa, no una IP.
-    $origen = !empty($body['en_casa']) ? 'casa' : origenDelTrabajo();
+    // Dos senales independientes, y basta con que una diga 'casa':
+    //  1) el navegador comprobo que se abre en el propio PC (puerto local).
+    //  2) su IP coincide con la del worker (misma conexion).
+    // El puerto local es mas fiable, pero Chrome 155 exige permiso al usuario
+    // para que una pagina publica hable con 127.0.0.1, asi que la IP sigue
+    // haciendo falta como red de seguridad.
+    $origen = (!empty($body['en_casa']) || origenDelTrabajo() === 'casa') ? 'casa' : 'fuera';
     $subir = $origen === 'fuera' || !empty($body['subir_web']);
 
     $job = [

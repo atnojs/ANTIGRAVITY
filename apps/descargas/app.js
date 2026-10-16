@@ -31,6 +31,7 @@ const state = {
   playlist: false,
   subirWeb: false,
   enCasa: false,
+  enCasaIp: false,
   carpetaPc: '',
   jobs: [],
   busy: false,
@@ -233,7 +234,7 @@ async function enterApp() {
 
   await refreshQueue();
   await refreshHealth();
-  state.enCasa = await detectarPcLocal();
+  state.enCasa = (await detectarPcLocal()) || state.enCasaIp;
   pintarDondeEstoy();
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
@@ -264,6 +265,7 @@ async function refreshHealth() {
       text.textContent = 'PC sin señales desde hace ' + Math.round(seconds / 60) + ' min';
     }
 
+    if (data.deteccion) { state.enCasaIp = data.deteccion.coinciden === true; }
     const free = data.disk && data.disk.free_human ? data.disk.free_human : '';
     const pending = data.counts ? (data.counts.queued || 0) + (data.counts.running || 0) : 0;
     $('disk-text').textContent = (free ? 'Servidor: ' + free + ' libres' : '') +
