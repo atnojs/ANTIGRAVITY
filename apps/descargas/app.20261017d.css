@@ -610,3 +610,6 @@ input:focus-visible,
 @media (max-width: 480px) {
   .donde-estoy { margin-left: 0; }
 }
+button.donde-estoy { font-family: var(--font-ui); cursor: pointer; }
+button.donde-estoy:hover { filter: brightness(1.25); }
+button.donde-estoy:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }

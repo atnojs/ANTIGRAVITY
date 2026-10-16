@@ -203,20 +203,64 @@ async function detectarPcLocal() {
   }
 }
 
+/**
+ * Donde se esta abriendo la app. Se puede fijar a mano porque la deteccion
+ * automatica no siempre puede saberlo:
+ *   - la sonda al puerto local es directa, pero Chrome pide permiso para que
+ *     una pagina publica hable con 127.0.0.1;
+ *   - comparar IPs falla con CGNAT, donde la IP publica cambia entre peticiones
+ *     (es el caso de esta linea).
+ * Lo que elija a mano se guarda en ESTE dispositivo.
+ */
+function leerModoManual() {
+  try {
+    const v = localStorage.getItem('descargas_en_casa');
+    return v === '1' ? true : (v === '0' ? false : null);
+  } catch (e) {
+    return null;
+  }
+}
+
+function guardarModoManual(valor) {
+  try {
+    if (valor === null) localStorage.removeItem('descargas_en_casa');
+    else localStorage.setItem('descargas_en_casa', valor ? '1' : '0');
+  } catch (e) { /* modo privado: se queda solo en memoria */ }
+}
+
+function decidirEnCasa() {
+  const manual = leerModoManual();
+  if (manual !== null) return manual;
+  return state.enCasaSonda === true || state.enCasaIp === true;
+}
+
 function pintarDondeEstoy() {
   const capa = document.getElementById('donde-estoy');
   if (!capa) return;
   const d = state.deteccion;
-  capa.title = d
-    ? 'worker=' + d.worker + ' cliente=' + d.cliente + ' coinciden=' + d.coinciden + ' sonda=' + state.enCasaSonda
-    : '';
+  const manual = leerModoManual();
+  capa.title = (d ? 'worker=' + d.worker + ' cliente=' + d.cliente + ' coinciden=' + d.coinciden : '')
+    + ' sonda=' + state.enCasaSonda
+    + ' manual=' + (manual === null ? 'auto' : manual)
+    + '  ·  pulsa para cambiarlo';
+
   if (state.enCasa) {
-    capa.textContent = 'Estás en el PC: los ficheros se quedan en tu carpeta';
+    capa.textContent = (manual === true ? 'En casa (fijado)' : 'Estás en el PC')
+      + ': se queda en tu carpeta';
     capa.className = 'donde-estoy en-casa';
   } else {
-    capa.textContent = 'Desde fuera: los ficheros se suben a la web (48 h)';
+    capa.textContent = (manual === false ? 'Fuera (fijado)' : 'Desde fuera')
+      + ': se suben a la web (48 h)';
     capa.className = 'donde-estoy fuera';
   }
+}
+
+/** Un toque: cambia entre "en casa" y "fuera" y lo recuerda en este dispositivo. */
+function alternarDondeEstoy() {
+  const actual = decidirEnCasa();
+  guardarModoManual(!actual);
+  state.enCasa = !actual;
+  pintarDondeEstoy();
 }
 
 /* ── Arranque de la app ─────────────────────────────────────────────── */
@@ -239,7 +283,7 @@ async function enterApp() {
   await refreshQueue();
   await refreshHealth();
   state.enCasaSonda = await detectarPcLocal();
-  state.enCasa = state.enCasaSonda || state.enCasaIp;
+  state.enCasa = decidirEnCasa();
   pintarDondeEstoy();
   if (listTimer) clearInterval(listTimer);
   if (healthTimer) clearInterval(healthTimer);
@@ -640,6 +684,7 @@ function bindUI() {
   $('playlist').addEventListener('change', (event) => { state.playlist = event.target.checked; });
   $('subir-web').addEventListener('change', (event) => { state.subirWeb = event.target.checked; });
   $('dir-btn').addEventListener('click', cambiarCarpeta);
+  $('donde-estoy').addEventListener('click', alternarDondeEstoy);
   $('dir-unidad').addEventListener('change', (event) => {
     const unidad = event.target.value;
     if (unidad) {
