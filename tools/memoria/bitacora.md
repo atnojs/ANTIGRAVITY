@@ -183,7 +183,8 @@ en modo `workspace-write`. Se resolvió reintentando esa misma operación con
 
 **Commits**
 
-- `PENDIENTE` — `docs(memoria): descargas de septiembre y receta de organizacion por mes`
+- `886c23c` — `docs(memoria): descargas de septiembre, receta de organizacion por mes y error
+  del sandbox en D:` (commit aislado por rutas explícitas: solo los 3 ficheros de `tools/memoria/`)
 
 **Receta reutilizable:** `recetas.md` → «Organizar las descargas por mes» (para octubre, que
 ya tiene 245 archivos acumulados).
