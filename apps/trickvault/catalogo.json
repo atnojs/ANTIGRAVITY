@@ -129,6 +129,9 @@
         },
         "ig-dcek-003": {
             "customPrompt": "/cutaway If the user attaches an image, you must apply only the style to it, ensuring the original image remains completely unchanged; in other words, you must recreate the user-provided image and apply solely the requested style. Precise cutaway cross-section view of [OBJETO], half outer surface sliced cleanly to expose intricate inner mechanism, detailed gears and interior chambers, studio lighting, technical product illustration, crisp depth and materials. . all visible text and labels must be written in Spanish with no English words."
+        },
+        "ig-dcek-004": {
+            "category": "f_mv73ghs02h22sxpzp"
         }
     },
     "nuevas": [
@@ -242,7 +245,6 @@
             "ig-dcek-567",
             "ig-dcek-568",
             "ig-dcek-569",
-            "ig-dcek-004",
             "ig-dcek-005",
             "ig-dcek-031",
             "ig-dcek-071",
@@ -1313,7 +1315,8 @@
             "cap-cmd-113"
         ],
         "f_mv73ghs02h22sxpzp": [
-            "muzrldq0pyjtdj8fe"
+            "muzrldq0pyjtdj8fe",
+            "ig-dcek-004"
         ]
     },
     "listaCarpetas": [
@@ -1514,5 +1517,5 @@
         "f_mv73ghs02h22sxpzp"
     ],
     "carpetasBorradas": [],
-    "actualizado": "2026-10-16T14:02:27+00:00"
+    "actualizado": "2026-10-16T14:03:24+00:00"
 }
