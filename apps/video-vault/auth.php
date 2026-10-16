@@ -31,7 +31,7 @@ if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
 }
 
 $password = (string)($_POST['password'] ?? '');
-$expectedHash = '5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9';
+$expectedHash = '0c79272e8c147c95bedd7450abfd42cb3377947341694276c5835caeb9f435ee';
 if (!hash_equals($expectedHash, hash('sha256', $password))) {
     usleep(250000);
     respond(403, ['success' => false, 'error' => 'Contraseña incorrecta.']);
