@@ -9,6 +9,10 @@
  *   Worker (cabecera X-Worker-Token):      next, progress, upload_chunk, item_done, finish, fail, heartbeat
  *   Publico (diagnostico):                 health
  *
+ * La accion puede venir en la query string (`?action=list`), en el POST
+ * (`action=list`) o DENTRO DEL JSON (`{"action":"next"}`). Las tres formas se
+ * aceptan: el worker manda la accion en el cuerpo y el navegador en la query.
+ *
  * Los datos viven en `data/` (fuera de git y DENEGADO por web: se sirve solo a
  * traves de este fichero, y solo con sesion).
  */
@@ -45,11 +49,11 @@ const MAX_URL_LEN      = 2048;
 const MAX_CHUNK_BYTES  = 12 * 1024 * 1024;
 const MAX_ITEM_BYTES   = 4 * 1024 * 1024 * 1024;
 const RETENTION_DAYS   = 7;
-const STALE_RUNNING_S  = 900;   // 15 min sin seÃ±ales => el trabajo se puede reclamar
+const STALE_RUNNING_S  = 900;   // 15 min sin señales => el trabajo se puede reclamar
 const CLEANUP_EVERY_S  = 300;
 
-const APP_NAME   = 'descargas';
-const APP_VERSION = '1.0.0';
+const APP_NAME     = 'descargas';
+const APP_VERSION  = '1.0.1';
 
 function respond(int $status, array $payload): never {
     http_response_code($status);
@@ -129,16 +133,45 @@ function safeFilename(string $name): string {
     return $name;
 }
 
+/* ── Cuerpo de la peticion ──────────────────────────────────────────────── */
+
+/** Cuerpo leido UNA sola vez (php://input no siempre es releible). */
+function rawBody(): string {
+    static $raw = null;
+    if ($raw === null) {
+        $raw = (string)file_get_contents('php://input');
+    }
+    return $raw;
+}
+
+/**
+ * JSON de la peticion, o null si no es JSON valido.
+ * Un cuerpo vacio se trata como objeto vacio: hay acciones legitimas que no
+ * mandan nada.
+ */
+function jsonBody(): ?array {
+    static $decoded = false;
+    if ($decoded === false) {
+        $raw = rawBody();
+        if ($raw === '') {
+            $decoded = [];
+        } else {
+            $parsed = json_decode($raw, true);
+            $decoded = is_array($parsed) ? $parsed : null;
+        }
+    }
+    return $decoded;
+}
+
 function readJsonBody(): array {
-    $raw = (string)file_get_contents('php://input');
-    $body = json_decode($raw !== '' ? $raw : '{}', true);
-    if (!is_array($body)) {
+    $body = jsonBody();
+    if ($body === null) {
         respond(400, ['success' => false, 'error' => 'El cuerpo no contiene JSON valido.']);
     }
     return $body;
 }
 
-/* â”€â”€ Sesion del usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Sesion del usuario ─────────────────────────────────────────────────── */
 
 function startSession(): void {
     if (session_status() === PHP_SESSION_ACTIVE) {
@@ -164,7 +197,7 @@ function requireUser(): void {
     }
 }
 
-/* â”€â”€ Token del worker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Token del worker ───────────────────────────────────────────────────── */
 
 function requireWorker(): void {
     $keyFile = __DIR__ . '/worker_key.php';
@@ -183,7 +216,7 @@ function requireWorker(): void {
     }
 }
 
-/* â”€â”€ Cola â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Cola ───────────────────────────────────────────────────────────────── */
 
 function loadQueue(): array {
     $queue = readJsonFile(QUEUE_FILE, ['jobs' => []]);
@@ -228,13 +261,13 @@ function jobsForClient(array $jobs): array {
     }, $jobs);
 }
 
-/* â”€â”€ Historial canonico â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Historial canonico ─────────────────────────────────────────────────── */
 
 /**
- * Anade una entrada al historial canonico SIN pasar por history.php.
+ * Añade una entrada al historial canonico SIN pasar por history.php.
  *
  * Se hace aqui a proposito: el trabajo lo termina el worker, no el navegador,
- * asi que si el historial dependiera del frontend se perderia con la pestana
+ * asi que si el historial dependiera del frontend se perderia con la pestaña
  * cerrada. El formato es identico al de `history.php` (mismo fichero y mismo
  * bloqueo), para que HistoryManager lo lea y lo borre con normalidad.
  */
@@ -296,7 +329,7 @@ function appendHistory(array $job, array $item): void {
     fclose($lock);
 }
 
-/* â”€â”€ Limpieza por caducidad â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Limpieza por caducidad ─────────────────────────────────────────────── */
 
 function removeJobFiles(string $jobId): void {
     foreach ([FILES_DIR . '/' . $jobId, PARTS_DIR . '/' . $jobId] as $relative) {
@@ -367,12 +400,20 @@ function humanBytes(int $bytes): string {
     return round($value, $index === 0 ? 0 : 1) . ' ' . $units[$index];
 }
 
-/* â”€â”€ Arranque â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Arranque ───────────────────────────────────────────────────────────── */
 
 ensureDirs();
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $action = strtolower((string)($_GET['action'] ?? ($_POST['action'] ?? '')));
+
+// La accion tambien puede viajar dentro del JSON: es como la manda el worker.
+if ($action === '') {
+    $json = jsonBody();
+    if (is_array($json) && isset($json['action'])) {
+        $action = strtolower((string)$json['action']);
+    }
+}
 
 if ($method === 'GET' && $action === 'download') {
     requireUser();
@@ -443,10 +484,10 @@ if ($method === 'GET' && $action === 'health') {
         'counts'     => $counts,
         'retention_days' => RETENTION_DAYS,
         'worker'     => [
-            'last_seen'  => (string)($worker['last_seen'] ?? ''),
+            'last_seen'   => (string)($worker['last_seen'] ?? ''),
             'seconds_ago' => isset($worker['time']) ? max(0, time() - (int)$worker['time']) : null,
-            'version'    => (string)($worker['version'] ?? ''),
-            'ytdlp'      => (string)($worker['ytdlp'] ?? ''),
+            'version'     => (string)($worker['version'] ?? ''),
+            'ytdlp'       => (string)($worker['ytdlp'] ?? ''),
         ],
     ]);
 }
@@ -455,7 +496,7 @@ if ($method !== 'POST') {
     respond(405, ['success' => false, 'error' => 'Metodo no permitido.']);
 }
 
-/* â”€â”€ Acciones del worker (multipart o JSON) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Acciones del worker (multipart o JSON) ─────────────────────────────── */
 
 $workerActions = ['next', 'progress', 'upload_chunk', 'item_done', 'finish', 'fail', 'heartbeat'];
 if (in_array($action, $workerActions, true)) {
@@ -471,11 +512,11 @@ if (in_array($action, $workerActions, true)) {
 
     if ($action === 'heartbeat') {
         writeJsonFile(WORKER_FILE, [
-            'time'     => time(),
+            'time'      => time(),
             'last_seen' => nowIso(),
-            'version'  => substr((string)($body['version'] ?? ''), 0, 32),
-            'ytdlp'    => substr((string)($body['ytdlp'] ?? ''), 0, 32),
-            'worker'   => substr((string)($body['worker'] ?? ''), 0, 64),
+            'version'   => substr((string)($body['version'] ?? ''), 0, 32),
+            'ytdlp'     => substr((string)($body['ytdlp'] ?? ''), 0, 32),
+            'worker'    => substr((string)($body['worker'] ?? ''), 0, 64),
         ]);
         flock($lock, LOCK_UN);
         fclose($lock);
@@ -540,14 +581,14 @@ if (in_array($action, $workerActions, true)) {
     $cancelRequested = !empty($job['cancel_requested']);
 
     if ($action === 'progress') {
-        $queue['jobs'][$index]['percent']     = max(0.0, min(100.0, (float)($body['percent'] ?? 0)));
-        $queue['jobs'][$index]['speed']       = substr((string)($body['speed'] ?? ''), 0, 32);
-        $queue['jobs'][$index]['eta']         = substr((string)($body['eta'] ?? ''), 0, 32);
-        $queue['jobs'][$index]['stage']       = substr((string)($body['stage'] ?? ''), 0, 64);
-        $queue['jobs'][$index]['title']       = substr((string)($body['title'] ?? ''), 0, 200);
-        $queue['jobs'][$index]['item_index']  = (int)($body['item_index'] ?? 0);
-        $queue['jobs'][$index]['item_count']  = (int)($body['item_count'] ?? 0);
-        $queue['jobs'][$index]['updated_at']  = nowIso();
+        $queue['jobs'][$index]['percent']    = max(0.0, min(100.0, (float)($body['percent'] ?? 0)));
+        $queue['jobs'][$index]['speed']      = substr((string)($body['speed'] ?? ''), 0, 32);
+        $queue['jobs'][$index]['eta']        = substr((string)($body['eta'] ?? ''), 0, 32);
+        $queue['jobs'][$index]['stage']      = substr((string)($body['stage'] ?? ''), 0, 64);
+        $queue['jobs'][$index]['title']      = substr((string)($body['title'] ?? ''), 0, 200);
+        $queue['jobs'][$index]['item_index'] = (int)($body['item_index'] ?? 0);
+        $queue['jobs'][$index]['item_count'] = (int)($body['item_count'] ?? 0);
+        $queue['jobs'][$index]['updated_at'] = nowIso();
         writeJsonFile(QUEUE_FILE, $queue);
         flock($lock, LOCK_UN);
         fclose($lock);
@@ -572,7 +613,7 @@ if (in_array($action, $workerActions, true)) {
         if ($size <= 0 || $size > MAX_CHUNK_BYTES) {
             flock($lock, LOCK_UN);
             fclose($lock);
-            respond(413, ['success' => false, 'error' => 'Tamano de trozo no valido.']);
+            respond(413, ['success' => false, 'error' => 'Tamaño de trozo no valido.']);
         }
         $dir = __DIR__ . '/' . PARTS_DIR . '/' . $jobId . '/' . $itemIndex;
         if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
@@ -588,7 +629,7 @@ if (in_array($action, $workerActions, true)) {
         }
         // El nombre y el total viajan en cada trozo para poder ensamblar sin estado.
         @file_put_contents($dir . '/_meta.json', json_encode([
-            'filename'    => safeFilename((string)($body['filename'] ?? 'descarga')),
+            'filename'     => safeFilename((string)($body['filename'] ?? 'descarga')),
             'total_chunks' => $totalChunks,
         ], JSON_UNESCAPED_UNICODE), LOCK_EX);
         flock($lock, LOCK_UN);
@@ -711,7 +752,7 @@ if (in_array($action, $workerActions, true)) {
     }
 }
 
-/* â”€â”€ Acciones del usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Acciones del usuario ───────────────────────────────────────────────── */
 
 requireUser();
 $lock = lockFile(QUEUE_LOCK);
@@ -807,10 +848,10 @@ if ($action === 'list') {
     flock($lock, LOCK_UN);
     fclose($lock);
     respond(200, [
-        'success' => true,
-        'jobs'    => $jobs,
+        'success'     => true,
+        'jobs'        => $jobs,
         'server_time' => nowIso(),
-        'disk_free' => $free === false ? '' : humanBytes((int)$free),
+        'disk_free'   => $free === false ? '' : humanBytes((int)$free),
     ]);
 }
 
