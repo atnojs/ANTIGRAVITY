@@ -49,7 +49,23 @@ documentada en `credenciales.md` (con el procedimiento) y en `bitacora.md`.
 
 ---
 
-## 0-quater. App de descargas: candidatos a mejorar (Antonio, 2026-10-16: «se puede mejorar un poco, eso lo hacemos mañana»)
+## 0-quinquies. Descargas: lo que queda (2026-10-17)
+
+1. **Botón «Traer a la web»** en un trabajo ya terminado: si el fichero se quedó en el PC (en casa
+   sin marcar la casilla) y luego lo quiere en el móvil, hoy hay que volver a pegar el enlace. El
+   worker ya guarda `ruta_local` de cada elemento, así que es subir esos trozos a petición.
+2. **Limpiar copias de assets**: `app.css`, `app.20261017.css`, `...b`, `...c`, `...d`, `...e`. Las
+   antiguas están por el HTML cacheado; cuando expire la caché (7 días desde el 17), dejar solo las
+   vigentes y actualizar la referencia.
+3. **Ficheros locales que se acumulan** en `D:\Vídeos\descargas-app\<id>\`: decidir si se borran al
+   terminar la subida o se quedan (hoy se quedan, y con el modo «solo al PC» son el único original).
+4. **Sondeo del navegador cada 4 s** y latido cada 30 s: bajarlos cuando no haya trabajos activos.
+5. **`VERSION_WORKER` en el worker sigue diciendo 1.0** aunque el código vaya por la 1.1: subirla
+   para que el latido identifique la versión de verdad.
+
+---
+
+## 0-quater. App de descargas: candidatos a mejorar (Antonio, 2026-10-16: «se puede mejorar un poco, eso lo hacemos mañana») (Antonio, 2026-10-16: «se puede mejorar un poco, eso lo hacemos mañana»)
 
 Sin decidir y sin orden. **Ninguno es un fallo**: la app funciona de punta a punta.
 

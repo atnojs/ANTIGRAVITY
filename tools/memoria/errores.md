@@ -5,6 +5,97 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-17] El móvil se veía fatal: `align-items: flex-start` sobre un flex que pasa a columna
+
+- **Síntoma:** en el móvil, botones enormes que se salían de la pantalla y scroll horizontal.
+  Antonio: «en el móvil se ve fatal».
+- **Causa:** al pasar `.main-layout` a `flex-direction: column` en el media query de 768 px, la
+  regla base seguía aportando `align-items: flex-start`. En columna, eso significa que los hijos
+  **no se estiran al ancho disponible**: adoptan su ancho de contenido MÁXIMO. Un título largo
+  llevaba la columna a **795 px dentro de una pantalla de 390** → el contenedor entero desbordaba
+  y todo lo de dentro (textarea, botones) se dimensionaba contra esos 795 px.
+- **Medido, no supuesto:** 417 px de desborde a 390 px; `textarea#url` a 195 % del ancho de la
+  pantalla; `button#add-btn` a 195 %; `a.file-chip` a 187 %.
+- **Solución:** `align-items: stretch` + `min-width: 0` en la columna. Resultado: **0 px de
+  desborde en 12 anchos** (320 a 1920).
+- **Cómo comprobarlo:** banco de medidas que carga la app en un iframe del ancho pedido y saca por
+  el DOM los elementos que se salen (`getBoundingClientRect().right > innerWidth`) y los controles
+  desproporcionados; se lee con `chrome --headless --dump-dom`. Leer el CSS no lo habría visto.
+
+### [2026-10-17] La CDN de Hostinger NO refresca los estáticos: `?v=` no sirve, hay que RENOMBRAR
+
+Ampliación con datos de la entrada del 2026-10-16:
+
+- **Prueba que lo cierra:** tras desplegar un cambio, `app.js?v=4` seguía sirviendo el fichero
+  cacheado por RUTA del despliegue anterior (traía una parte del código nuevo y no la otra). La
+  query se ignora al indexar: **subir el `?v=` no rompe nada**.
+- **Síntoma que ve el usuario:** «la elección de carpetas no funciona». El HTML ya traía el panel
+  (la CDN sí refrescó el HTML al cabo de un rato), pero el JS cacheado no tenía la lógica: el panel
+  aparecía y no hacía nada. **Parece un botón roto y es una caché.**
+- **Solución:** ruta nueva de verdad (`app.20261017b.css`, `...c`, `...d`, `...e`…). Los ficheros
+  anteriores se quedan mientras haya HTML cacheado que los pida.
+- **Comprobar:** `curl -o NUL -w "%{http_code}"` al fichero nuevo (404 = no desplegado) y buscar la
+  referencia en el HTML servido con un parámetro aleatorio... que tampoco rompe su caché: sirve
+  para ver qué HTML hay, no para forzar el nuevo.
+- **Efecto secundario a limpiar:** se acumulan copias (`app.css`, `app.20261017.css`,
+  `...b`, `...c`, `...d`, `...e`). Cuando expire la caché (7 días), dejar solo las vigentes.
+
+### [2026-10-17] El despliegue de Hostinger se congeló 10 minutos: commit vacío y a correr
+
+- **Síntoma:** dos ficheros nuevos daban **404** y el HTML servido seguía siendo el anterior 10
+  minutos después del push (otros despliegues de la misma noche tardaron 80-120 s).
+- **Solución:** la receta que ya estaba en `recetas.md` y `errores.md`: `git commit --allow-empty` +
+  push para re-disparar el webhook. A los 120 s estaba todo servido.
+- **Aviso:** mientras el despliegue está congelado, **no** sirve reintentar con `?t=<guid>`: la CDN
+  ignora la query y devuelve su copia, así que la comprobación miente.
+
+### [2026-10-17] «¿Estoy en casa?» no se puede decidir por IP: CGNAT
+
+- **Síntoma:** trabajos lanzados desde el propio PC se marcaban como `origen=fuera` (y por tanto se
+  subían a la web cuando no hacía falta).
+- **Causa:** la IP pública de esta línea **cambia entre peticiones** (visto: `45.14.x.x` y
+  `194.116.x.x` en momentos distintos, y dos direcciones distintas del mismo rango con segundos de
+  diferencia). Es CGNAT del operador. Comparar la IP del navegador con la del último latido del
+  worker no puede ser fiable. Además, el agente (esta herramienta) puede salir por otra ruta, así
+  que tampoco sirve para probarlo desde aquí.
+- **Solución (dos capas):**
+  1. **Sonda directa al worker**: escucha en `127.0.0.1:8125` y la página le pregunta si está en el
+     mismo PC. Es determinista… salvo que **Chrome 155 exige permiso** para que una página pública
+     hable con 127.0.0.1 (Local Network Access); sin permiso, la sonda falla en silencio.
+  2. **Conmutador a un toque** en la barra de estado: «Estás en el PC / Desde fuera», guardado en
+     `localStorage` de ESE dispositivo. Con CGNAT es lo único que no engaña.
+- **Decisión por defecto:** si no hay ajuste manual y las dos señales automáticas fallan, se asume
+  **fuera** (subir). Es preferible a que una descarga pedida desde el móvil se quede en el PC sin
+  forma de bajarla.
+- **Cómo comprobarlo:** `curl http://127.0.0.1:8125/pc` → `{"pc":true,...}` con el worker corriendo;
+  y el `title` del aviso lleva `worker=… cliente=… coinciden=… sonda=… manual=…`.
+
+### [2026-10-17] `mb_strlen` sin proteger: fatal en un PHP sin mbstring
+
+- **Síntoma:** `POST api.php` devolvía **500 con el cuerpo vacío** (`Uncaught Error: Call to
+  undefined function mb_strlen()`), y en la web se veía como una respuesta vacía.
+- **Causa:** `mbstring` es una extensión **opcional**; el PHP de pruebas de este equipo no la tiene.
+  En producción sí está (las subidas funcionaban), pero depender de ella es una bomba de relojería
+  en hosting compartido.
+- **Solución:** `recortarUtf8()` que usa `mb_substr` si existe y, si no, corta por bytes y quita el
+  carácter UTF-8 partido. Y `function_exists('mb_strlen')` para medir.
+- **Cómo comprobarlo:** `php -m | Select-String mbstring`. Si no aparece, la app tiene que seguir
+  funcionando igual.
+
+### [2026-10-17] El error de PowerShell que YA estaba documentado y he vuelto a cometer
+
+- **Síntoma:** todos los acentos del `index.html` convertidos en `reproducciÃ³n`, `Vídeo` → `VÃ­deo`.
+- **Causa:** `(Get-Content -Raw) … | Set-Content -Encoding UTF8` en PowerShell 5.1: lee UTF-8 como
+  CP-1252 (si el fichero no lleva BOM) y lo reescribe como UTF-8. Es **exactamente** la entrada
+  «yt-dlp … mojibake» de este mismo fichero.
+- **Solución:** deshacer es posible: codificar el texto en CP-1252 (recupera los bytes originales) y
+  leerlo como UTF-8. Y de ahora en adelante, esos ficheros se tocan con
+  `[System.IO.File]::ReadAllText/WriteAllText` con `UTF8Encoding($false)`.
+- **Trampa añadida:** `[System.IO.File]` usa el directorio del **proceso**, no el de PowerShell. Con
+  `cd` a otra carpeta y una ruta relativa, el fichero se crea donde no toca (pasó: un `api.php` de 0
+  bytes en la RAÍZ PÚBLICA del repo, a punto de publicarse).
+- **Cómo comprobarlo:** `Select-String -Pattern 'Ã|â€'` sobre el fichero; y comprobar los tres
+  primeros bytes (`3C 3F 70` = `<?p`, sin BOM).
 ### [2026-10-16] El tope de trozo de la API no coincidía con el que manda el worker (HTTP 413)
 
 - **Síntoma:** en producción, una descarga de 55 MB se bajó **entera** y murió al subirla:

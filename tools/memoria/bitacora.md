@@ -575,3 +575,46 @@ progreso anima `transform` en vez de `width`.
 **Queda abierto:** el CDN de Hostinger no ha refrescado `index.html`/`app.css` (sirve estáticos
 cacheados por ruta e **ignora la query**, así que `?t=<guid>` no rompe nada). La app funciona —es un
 retoque de contraste—; el siguiente paso está en `pendientes.md`.
+
+## 2026-10-17 (madrugada) — Descargas: subir solo cuando toca, 48 h, elegir carpeta y el móvil arreglado
+
+Antonio deja cuatro encargos y se va a dormir: «esto lo puedes ir haciendo tú solo y mañana lo
+tienes listo». Repaso de lo hecho, con lo que salió mal incluido.
+
+**1. Subir a la web solo cuando hace falta.** La app funcionaba, pero para un fichero pedido desde
+el propio PC hacía el ridículo: bajaba 55 MB, los subía al servidor y él los volvía a bajar. Ahora,
+en casa y sin marcar la casilla, el fichero **se queda en su carpeta y no se sube ni un byte** (como
+la `.bat`); desde fuera, o marcando la casilla, se sube. Verificado en producción con el mismo vídeo
+en dos trabajos: sin marcar **no llega nada** al servidor (la descarga da 404), marcado llega
+(114,3 KB).
+
+**2. Retención de 48 h** (`RETENTION_DAYS` → `RETENTION_HOURS`), con borrado automático.
+
+**3. Elegir la carpeta de descarga**, con la lista de unidades del PC (C: D: E: F: G: H: I:) para
+poder tirar a un USB. El worker valida, crea la carpeta y **comprueba que se puede escribir** antes
+de confirmar. Probado en producción: pedido a `D:\Vídeos\prueba-carpeta`, aplicado en 10 s, carpeta
+creada en el PC y guardada en la config. Restaurada después a `D:\Vídeos\descargas-app`.
+
+**4. El móvil.** Se midió en Chrome con un banco propio (la app en iframes de 320 a 1920 px):
+**417 px de desborde** a 390 px. La causa: al pasar a columna se quedó `align-items: flex-start`, y
+así los hijos no se estiran: adoptan su ancho máximo, y un título largo los llevaba a 795 px dentro
+de una pantalla de 390. Con `align-items: stretch` + `min-width: 0`: **0 px de desborde en 12
+anchos**.
+
+**Lo que salió mal (y está en `errores.md`):**
+- «La elección de carpetas no funciona» **era la caché**: el HTML ya traía el panel pero el JS
+  cacheado no tenía la lógica. La CDN indexa por ruta e ignora la query, así que `?v=` no rompe
+  nada: hay que **renombrar** los assets. Comprobado con datos.
+- El despliegue se **congeló 10 minutos** (404 en los ficheros nuevos); se arregló re-disparando el
+  webhook con un commit vacío.
+- **Volví a cometer el error del mojibake** con `Set-Content` (ya documentado desde ayer): todos los
+  acentos del `index.html` a `Ã³`. Deshecho, y a partir de ahora esos ficheros se tocan con
+  `[System.IO.File]`.
+- `mb_strlen` sin `function_exists`: 500 con el cuerpo vacío en un PHP sin mbstring. Corregido.
+- La detección de «estoy en casa» **por IP es imposible en esta línea** (CGNAT: la IP pública cambia
+  entre peticiones). Queda una sonda directa al worker en `127.0.0.1:8125` (Chrome pide permiso) y
+  un **conmutador a un toque** guardado por dispositivo, que es lo que no engaña.
+
+**Pendiente para cuando vuelva:** el botón «Traer a la web» para un fichero que ya está en el PC
+(él lo aprobó en la conversación y no ha dado tiempo), y borrar las copias de assets que se han ido
+acumulando cuando expire la caché de 7 días.
