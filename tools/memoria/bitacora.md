@@ -496,3 +496,27 @@ cache-buster seguía igual, así que **no era la caché del CDN**.
 
 **A `errores.md`:** el despliegue puede congelarse en silencio y revertir; y una reversión devuelve
 ficheros ya retirados y **pisa cambios recientes**.
+
+## 2026-10-16 (novena parte) — El descargador de vídeos de Antonio: dónde estaba y por qué YouTube fallaba
+
+Antonio: «tengo un programa para descargar vídeos y audios pero no recuerdo el nombre y no lo
+encuentro»; y después: «actualiza, que el otro no me deja bajar de YouTube».
+
+**Dónde estaba.** `D:\Vídeos\ytdownloader\ytdownloader.bat` — un lanzador propio que abre una
+ventana «YouTube Downloader» (link + carpeta + Vídeo/Solo MP3), con `yt-dlp.exe` y `ffmpeg.exe`
+en la misma carpeta. **No tiene acceso directo** en Escritorio, menú Inicio ni barra de tareas:
+solo existe ahí, entre las descargas. De ahí que no lo encontrara. Lo había usado esa misma tarde
+(último acceso 16/10 a las 18:02).
+
+**Lo que NO era.** `E:\JDownloader` es su **carpeta de descargas** (41 carpetas, vídeos de enero
+de 2026), no el programa: JDownloader está **desinstalado** (sin entrada en el registro, sin
+`.jar` ni `.exe`, sin accesos directos). Solo quedan instaladores en `D:\Duplicados\exe\` y
+`F:\Copias de seguridad\Software\`. `aTubeCatcher` y `4K Video Downloader`: solo carpetas de
+salida, tampoco instalados. VLC sí está instalado, pero no es un descargador.
+
+**El arreglo.** `yt-dlp.exe` `2026.03.17` → `2026.08.19` (con copia `.bak`), más una
+`yt-dlp.conf` portable con `--js-runtimes node` y `--remote-components ejs:github`. El
+lanzador no se tocó. Probado de verdad: vídeo por defecto (395+251 fusionado con ffmpeg) y MP3
+de 117,8 KB válido. Detalle y comprobación en `errores.md`.
+
+**A `entorno.md`:** la ruta del descargador, para que no se pierda otra vez.

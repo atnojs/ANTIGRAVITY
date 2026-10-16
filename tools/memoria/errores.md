@@ -5,6 +5,27 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-16] yt-dlp «no me deja bajar de YouTube»: versión vieja **y** falta de motor JS
+
+- **Síntoma:** el descargador de vídeo/audio de Antonio (la ventana «YouTube Downloader», ver
+  `entorno.md`) fallaba con YouTube; con otras webs sí iba.
+- **Causa:** **dos**, y la segunda no se ve. (1) El `yt-dlp.exe` de `D:\Vídeos\ytdownloader\`
+  era del **2026.03.17**, cinco meses viejo. (2) Al actualizarlo salió el aviso de verdad:
+  `No supported JavaScript runtime could be found. Only deno is enabled by default` →
+  **yt-dlp necesita un runtime JS para YouTube** (resolver los retos `nsig`); sin él faltan
+  formatos y la descarga falla. No era la red, ni la web, ni los permisos.
+- **Solución:** sustituir el exe por la última release
+  (`https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe` → `2026.08.19`) y
+  dejar una **config portable** en `D:\Vídeos\ytdownloader\yt-dlp.conf` con
+  `--js-runtimes node` + `--remote-components ejs:github`. La lee el propio exe, así que vale
+  para el `.bat` **sin tocar el lanzador**. Copia del anterior: `yt-dlp.exe.bak-2026.03.17`.
+- **Cómo comprobarlo:** `yt-dlp.exe --verbose --simulate <url>` debe imprimir
+  `Portable config "…\yt-dlp.conf"` y `JS runtimes: node-24.14.0` (Node está en
+  `C:\Program Files\nodejs\node.exe`) y `JS Challenge Providers: … node …`. Descarga real:
+  formato por defecto → `395+251` fusionados por ffmpeg; y `-x --audio-format mp3` → MP3 válido.
+  Si algún vídeo sigue fallando por «Sign in to confirm you're not a bot», es cookies, no esto
+  (`--cookies-from-browser chrome`).
+
 ### [2026-10-16] La capa publicada también manda la CARPETA, y va por id: sacaba 5 tarjetas de «Carteles»
 
 - **Síntoma:** tras regenerar las 10 tarjetas de `xl-carteles` con el zorro, la carpeta
