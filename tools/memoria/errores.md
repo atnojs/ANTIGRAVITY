@@ -5,6 +5,23 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 
 ---
 
+### [2026-10-16] «La carpeta de descargas» no es `%USERPROFILE%\Downloads`, y el sandbox no deja escribir en `D:\`
+
+- **Síntoma:** `Get-ChildItem "$env:USERPROFILE\Downloads"` no devuelve nada y termina con
+  *exit code 1*. Al crear la carpeta del mes, `New-Item` falla con
+  `Acceso denegado a la ruta de acceso '2026-09_Septiembre'`.
+- **Causa:** son **dos** cosas. (1) En este equipo las descargas están redirigidas a
+  **`D:\Descargas`** y `%USERPROFILE%\Downloads` no existe. (2) El sandbox DSH está en modo
+  `workspace-write` y `D:\` cae **fuera** de `E:\ANTIGRAVITY`, así que toda escritura allí se
+  deniega; no es un problema de permisos NTFS ni un fichero bloqueado.
+- **Solución:** averiguar la ruta real en vez de suponerla
+  (`(New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path`) y
+  reintentar **esa misma operación** con `sandbox_permissions: danger-full-access`, indicando
+  en la justificación qué se va a mover y cuánto.
+- **Cómo comprobarlo:** `Test-Path -LiteralPath 'D:\Descargas'` → `True`. Tras mover, el
+  recuento y el tamaño del destino cuadran con el lote calculado **antes** de mover
+  (el 2026-10-16: `705 objetos, 17.044,09 MB`, 0 fallos).
+
 ### [2026-10-16] Mover una tarjeta de carpeta en el catálogo NO la mueve si el navegador ya la tenía
 
 - **Síntoma:** se partió «Comida y moda» en «Comida» + «Moda» (25 códigos movidos en

@@ -120,3 +120,45 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "E:\ANTIGRAVITY\tools\om
 # log en vivo
 Get-Content E:\hermes-data\logs\omniroute-autostart.log -Tail 30 -Wait
 ```
+
+## Organizar las descargas por mes (carpeta `YYYY-MM_Mes`)
+
+La carpeta de descargas **no** es `%USERPROFILE%\Downloads` (no existe): `shell:Downloads`
+apunta a **`D:\Descargas`**. Convención ya en uso allí: `2026-07_Julio`, `2026-08_Agosto`…
+(verificado el 2026-10-16 con 705 objetos de septiembre).
+
+```powershell
+$p = 'D:\Descargas'
+$mes = '2026-09'; $nombre = '2026-09_Septiembre'      # convencion YYYY-MM_Mes
+$ini = [datetime]::ParseExact("$mes-01", 'yyyy-MM-dd', $null)
+$fin = $ini.AddMonths(1)
+$dest = Join-Path $p $nombre
+
+if (-not (Test-Path -LiteralPath $dest)) { New-Item -ItemType Directory -Path $dest | Out-Null }
+
+Get-ChildItem -LiteralPath $p -Force |
+  Where-Object { $_.LastWriteTime -ge $ini -and $_.LastWriteTime -lt $fin } |
+  Where-Object { -not ($_.PSIsContainer -and ($_.Name -match '^\d{4}-\d{2}_' -or
+                                                $_.Name -eq 'PortableApps' -or
+                                                $_.FullName -eq $dest)) } |
+  ForEach-Object { Move-Item -LiteralPath $_.FullName -Destination $dest }
+
+# verificar: recuento y tamano deben cuadrar con el lote calculado antes de mover
+$d = Get-ChildItem -LiteralPath $dest -Force
+"{0} objetos, {1:N2} MB" -f $d.Count, (($d | Where-Object { -not $_.PSIsContainer } |
+  Measure-Object Length -Sum).Sum / 1MB)
+```
+
+**Las dos exclusiones no son opcionales** (si se mueven, se rompe algo):
+
+- Carpetas de archivo `^\d{4}-\d{2}_`: su `LastWriteTime` es del mes en que **se crearon**,
+  no del contenido. `2026-08_Agosto` tiene fecha 09/09/2026 y dentro están los de agosto.
+- `PortableApps`: fecha 19/09/2026, pero es una instalación portátil de 2024.
+
+**Trampa de entorno:** organizar descargas escribe en `D:\`, fuera de `E:\ANTIGRAVITY`, así
+que el sandbox en modo `workspace-write` lo corta con *Acceso denegado a la ruta de acceso*.
+Hay que reintentar esa operación con `sandbox_permissions: danger-full-access`.
+
+**Antes de mover**, comprobar que el destino no exista y que no haya nombres repetidos en el
+lote (`Group-Object Name | Where-Object Count -gt 1`); al venir de una carpeta plana no
+debería haberlos, pero el destino podría tenerlos de una pasada anterior.

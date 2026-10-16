@@ -140,3 +140,50 @@ Antonio pide ampliar la memoria con los pasos **1 (credenciales), 3 (producción
 **Método que funcionó:** delegar el rastreo del histórico a un subagente con un fichero de
 salida propio (`errores-historicos.md`) evitó cargar decenas de documentos en el contexto
 del agente principal y no hubo conflicto de escritura.
+
+---
+
+## 2026-10-16 — Archivos de septiembre a su carpeta en `D:\Descargas`
+
+Antonio pide «entra en la carpeta de descargas y crea una carpeta con todos los archivos de
+septiembre». **No es una tarea del repo**: se organiza el disco, no se toca código.
+
+**Se hizo**
+
+| Paso | Resultado |
+|---|---|
+| Localizar la carpeta | `%USERPROFILE%\Downloads` **no existe**; `shell:Downloads` = **`D:\Descargas`** |
+| Criterio | `LastWriteTime` en `[2026-09-01, 2026-10-01)` |
+| Lote calculado antes de mover | **705 objetos** (704 archivos + la carpeta `ZjY4…==`), **17.044,09 MB**, 0 nombres repetidos |
+| Destino | `D:\Descargas\2026-09_Septiembre` (convención ya existente: `2026-07_Julio`, `2026-08_Agosto`) |
+| Ejecución | 705/705 movidos, **0 fallos** |
+
+**Exclusiones que había que hacer sí o sí**
+
+- `2026-08_Agosto`: `LastWriteTime` 09/09/2026 (se creó en septiembre), pero dentro está
+  **agosto**. Toda carpeta `^\d{4}-\d{2}_` se excluye.
+- `PortableApps`: `LastWriteTime` 19/09/2026, pero es una instalación portátil de 2024.
+
+**Verificación**
+
+- Destino: 705 objetos, 17.044,09 MB y **0** con fecha fuera de septiembre → cuadra con el
+  lote con el que se entró.
+- Raíz: `959 − 705 = 254` originales + la carpeta nueva + 1 archivo descargado *durante* la
+  tarea (`Podenco Canario_ Elegancia Canaria.png`, 15:24) = **256**. Cuadra.
+- En la raíz **no queda ningún archivo de septiembre**; solo las 2 carpetas excluidas a
+  propósito (`2026-08_Agosto`, `PortableApps`).
+- La subcarpeta movida sigue intacta (sus 2 documentos con sus fechas).
+- Se movió con `Move-Item` dentro del mismo volumen: es un renombrado, no hay copia que
+  pueda corromperse.
+
+**Error de entorno cometido** (detalle en `errores.md`): dar por hecho que la carpeta de
+descargas era `%USERPROFILE%\Downloads`, y chocar con el sandbox al escribir en `D:\` estando
+en modo `workspace-write`. Se resolvió reintentando esa misma operación con
+`sandbox_permissions: danger-full-access`.
+
+**Commits**
+
+- `PENDIENTE` — `docs(memoria): descargas de septiembre y receta de organizacion por mes`
+
+**Receta reutilizable:** `recetas.md` → «Organizar las descargas por mes» (para octubre, que
+ya tiene 245 archivos acumulados).
