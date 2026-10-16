@@ -373,3 +373,43 @@ que parecía**.
 
 **Documentado en:** `credenciales.md` (dónde vive ahora y cómo se rota) y `pendientes.md` 0-bis
 (cerrado).
+
+---
+
+## 2026-10-16 (sexta parte) — Claves de Google: inventario verificado y herramienta de rotación
+
+Antonio pide rotar las claves. **No se han podido rotar desde aquí**, y eso se comprobó en vez de
+suponerse: no hay `gcloud`; el token OAuth de Hermes solo tiene Gmail/Calendar/Docs/Sheets/Drive
+(**sin `cloud-platform`**, y caducó el 2026-07-09); y el service account de `keys/` vive en
+`nano-banana-470719`, otro proyecto distinto. **Crear claves es consola + sesión suya.**
+
+Lo que sí se ha hecho, y cambia bastante el trabajo que le queda:
+
+**El inventario real no era el de la memoria.** Decía «6 claves en 37 ficheros». Son **19 claves
+en 49 ficheros**, y comprobadas una a una contra la API de Google:
+
+| | Cuántas | Qué hacer |
+|---|---|---|
+| **Ya muertas** (`API key not valid`) | **11** | Nada: limpiar el código |
+| **Bloqueada por Google** (`reported as leaked`) | 1 | Nada: Google se adelantó |
+| **Vivas y publicadas** | **5** | Rotar (2 son Firebase: basta restringir) |
+| Viva pero **sin publicar** (solo en un `.md` gitignored, 404) | 1 | Rotar cuando se pueda, sin prisa |
+| Vivas y restringidas por IP (servidor) | 2 de las 5 | Rotar; el daño ya está limitado |
+
+**Hallazgos del barrido**
+
+- **Dos claves de OpenAI y una de Gemini vivas y sin restricción** estaban en
+  `apps/ESTADO_ACTUAL_2026-05-1{7,8}.md`. **No están expuestas** (gitignored + `404`), pero es un
+  documento con secretos en claro dentro del árbol.
+- **Trampa:** `apps/generar_imagenes/1/app.js.bak` devuelve **HTTP 200 y no está en git**. Los
+  ficheros que git ignora **no se borran del servidor**: si algún día estuvieron versionados,
+  siguen publicados. Hay que retirarlos a mano.
+- `apps/json/auth.php` da 404: código muerto.
+
+**Entregable:** `tools/rotar-claves-google.ps1` — inventario con el estado de cada clave
+(`-Listar`), simulacro y sustitución (`-Aplicar`) con relectura de cada fichero para confirmar que
+no queda la vieja. **No hace commit**: publicar es una decisión.
+
+**Commits**
+
+- `PENDIENTE` — `docs(memoria): inventario verificado de claves de Google y herramienta de rotacion`

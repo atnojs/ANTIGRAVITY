@@ -82,38 +82,83 @@ no confunda. Se puede borrar cuando se quiera.
 
 ---
 
-## 🔴 Claves expuestas detectadas el 2026-10-15 (sin resolver)
+## 🔴 Claves de Google: inventario verificado el 2026-10-16
 
-**37 ficheros dentro de `apps/` llevan una clave de Google (`AIza…`) escrita en el código.**
-Son **6 claves distintas**, y casi todas se sirven por web con `HTTP 200`:
+**19 claves distintas incrustadas en el código.** La entrada del 2026-10-15 decía «6 claves en 37
+ficheros»: era un barrido más estrecho. Comprobadas una a una contra la API de Google, el asunto
+es **más pequeño de lo que parecía y a la vez más matizado**.
 
-| Prefijo | Ficheros (muestra) |
-|---|---|
-| `AIzaSyC1QoTQ…` | `apps/Copias por si/((((ajustes_imagen))))/app.js`, `apps/decorar_habitacion/5/app1.js`, `apps/generar_imagenes/{,1/,mascara/,rectangulos/}app*.js` |
-| `AIzaSyAlTZgo…` | `apps/generar_imagenes/app.js`, `apps/imagenes_ia/app.js`, `apps/imagenes_ia/ajustes_imagen/app.js`, `apps/prompts_predeterminados/web.js`, `apps/viaje_tiempo/assets/index-DprkQdw_.js` |
-| `AIzaSyBwlhkj…` | `apps/Copias por si/((((ajustes_imagen))))/app_mejorado_cambios_realizados.js` |
-| `AIzaSyA1uwqu…` | `apps/paginas/nano_banana/api/base.php` y `integrate.php` |
-| `AIzaSyDPb62H…` | `apps/paginas/pagina_corel/puntillizer.html` |
-| `AIzaSyCabuZR…` | `apps/paginas/prompts_predeterminados/1/web.js` |
+### Solo 5 están publicadas de verdad
 
-**Agravante:** el repositorio `github.com/atnojs/ANTIGRAVITY` es **público**
-(`api.github.com/repos/atnojs/ANTIGRAVITY` → `200`), así que las claves están publicadas
-por dos vías: el sitio y GitHub. Y aunque se borren los ficheros, **el historial de git las
-conserva**: por eso rotarlas es obligatorio, no opcional.
+| Clave | Tipo | Proyecto | Ficheros publicados | Qué la arregla |
+|---|---|---|---|---|
+| `AIzaSyAlTZgo…` | **Firebase web apiKey** | `nanobanana-cbb2d` | `generar_imagenes/app.js`, `imagenes_ia/app.js`, `prompts_predeterminados/web.js`, `viaje_tiempo/firebase-applet-config.json` (y hasta 22, varios ya no servidos) | **Restringir** (referrer + APIs) |
+| `AIzaSyDPb62H…` | Google AI (applet) | `1031118683051` | `pagina_corel/puntillizer.html` | Rotar |
+| `AIzaSyAYhoQj…` | Firebase web apiKey | `t-dispatcher-490620-r4` | `temp_extract/firebase-applet-config.json` | Rotar o borrar `temp_extract/` |
+| `AIzaSyC1C-hX…` | Gemini (servidor) | — | `webs/nano_banana/api/base.php` | Rotar; la restricción por IP limita el daño |
+| `AIzaSyAlyFoK…` | Gemini (servidor) | — | `webs/nano_banana/api/integrate.php` | Rotar |
 
-### Qué hacer (en este orden)
+**Matiz que cambia el consejo:** el `apiKey` de Firebase (`firebase-applet-config.json`) **está
+diseñado para ser público** — identifica el proyecto; la seguridad la dan las *Security Rules* y
+las restricciones. Ahí lo que tapa el agujero es **restringir la clave** (referrer
+`https://atnojs.es/*` + limitarla a las APIs que se usan), no solo rotarla.
 
-1. **Revocar y regenerar las 6 claves** en Google Cloud Console → APIs y servicios →
-   Credenciales (se identifican por el prefijo de la tabla).
-2. Sustituir su uso en los frontends por llamadas a **`proxy.php`** (patrón del proyecto:
-   la clave vive en el servidor, nunca en el navegador). Referencia:
-   `skills/SKILL_arquitecto-backend-php-hostinger.md` y `skills/proxy.php`.
-3. Si alguna clave tiene que seguir siendo de navegador, ponerle **restricción por
-   referrer y por API** en Google Cloud (mitiga, no arregla).
-4. Limpiar los ficheros con `git rm` y publicar… **después** de rotar, nunca antes.
+### 12 ya están muertas: no hay nada que rotar
 
-### Lo que SÍ está bien
+Google las rechaza con `API key not valid`: `C1QoTQ` (15 ficheros), `cBEh9ZAg`, `CabuZR`,
+`PPnp9ZeO`, `Yz4BEZyF`, `wdHoSBt6`, `JMQxCD4e`, `HiVW19zY`, `Bwlhkj`, `CeV3D7`, `gUP5k2AR`.
+Y **`A1uwqu` figura como «reported as leaked» y bloqueada**: Google detectó la filtración sola.
+Aquí solo queda **limpiar el código**, no rotar.
+
+### Lo que NO está publicado (comprobado con HTTP, uno a uno)
+
+- `apps/ESTADO_ACTUAL_2026-05-1{7,8}.md` → **404 y gitignored**. Dentro viven la clave Gemini
+  **viva y sin restricción** (`CLOhDJ`) y **una clave de OpenAI `sk-proj-…`**. No están expuestas…
+  pero es un documento con secretos en claro dentro del árbol: **jamás debe entrar en git**.
+- `apps/paginas/_Paginas.zip`, `apps/chronos-booth (1).zip`, `apps/Copias por si/app_estilos/.env`
+  (`403`), `*.bak`, `*.backup_*` → todas fuera de git y sin servir.
+
+### Trampa encontrada (importante)
+
+`apps/generar_imagenes/1/app.js.bak` → **HTTP 200 aunque no está en git**. Los ficheros
+**ignorados por git NO se borran del servidor**: si en su día estuvieron versionados, siguen
+publicados. Hay que retirarlos **a mano** en el servidor.
+
+### Lo que NO se puede hacer desde el agente (comprobado)
+
+- **No hay `gcloud`** instalado.
+- El token OAuth de Hermes (`E:\hermes-data\google_token.json`) tiene permisos de Gmail, Calendar,
+  Docs, Sheets, Drive y YouTube — **ninguno de `cloud-platform`**, y además caducó el
+  2026-07-09.
+- El service account de `keys/` vive en **otro proyecto** (`nano-banana-470719`) que las claves
+  expuestas.
+
+→ **Crear claves nuevas es cosa de la consola de Google Cloud, con sesión de Antonio.**
+
+### Herramienta para el intercambio
+
+`tools/rotar-claves-google.ps1` (nunca hace commit: publicar es una decisión).
+
+```powershell
+# Inventario con el estado de cada clave (no toca nada)
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\rotar-claves-google.ps1 -Listar
+
+# Simulacro de la sustitución
+... -Vieja AIzaSyVIEJA... -Nueva AIzaSyNUEVA...
+
+# Aplicarlo
+... -Vieja AIzaSyVIEJA... -Nueva AIzaSyNUEVA... -Aplicar
+
+# Varias a la vez, desde un JSON {"AIzaVIEJA":"AIzaNUEVA", ...}
+... -MapaJson tools\claves-nuevas.json -Aplicar
+```
+
+Recorre `apps/`, `webs/`, `skills/` y `public_html/` (salta `node_modules`), **relee cada fichero
+después de escribirlo** para confirmar que no queda la vieja y avisa si quedara.
+
+### Qué SÍ está bien
 
 - `E:\ANTIGRAVITY\keys\` y `E:\ANTIGRAVITY\.private\` → fuera de git e inaccesibles por web
   (`https://atnojs.es/keys/.env` → `403`, `/.env` → `403`).
 - Los secretos de Hermes y OmniRoute no están versionados.
+- La contraseña de edición: rotada el 2026-10-16 (ver arriba).
