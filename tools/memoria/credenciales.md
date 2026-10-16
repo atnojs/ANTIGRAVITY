@@ -94,7 +94,7 @@ es **más pequeño de lo que parecía y a la vez más matizado**.
 |---|---|---|---|---|
 | `AIzaSyAlTZgo…` | **Firebase web apiKey** | `nanobanana-cbb2d` | `generar_imagenes/app.js`, `imagenes_ia/app.js`, `prompts_predeterminados/web.js`, `viaje_tiempo/firebase-applet-config.json` (y hasta 22, varios ya no servidos) | **Restringir** (referrer + APIs) |
 | `AIzaSyDPb62H…` | Google AI (applet) | `1031118683051` | `pagina_corel/puntillizer.html` | Rotar |
-| `AIzaSyAYhoQj…` | Firebase web apiKey | `t-dispatcher-490620-r4` | `temp_extract/firebase-applet-config.json` | Rotar o borrar `temp_extract/` |
+| `AIzaSyAYhoQj…` | Firebase web apiKey | `t-dispatcher-490620-r4` | `tools/chronos-booth/firebase-applet-config.json` — **ya no se sirve por web** (16-10-2026) pero **sigue en GitHub** | Rotar |
 | `AIzaSyC1C-hX…` | Gemini (servidor) | — | `webs/nano_banana/api/base.php` | Rotar; la restricción por IP limita el daño |
 | `AIzaSyAlyFoK…` | Gemini (servidor) | — | `webs/nano_banana/api/integrate.php` | Rotar |
 

@@ -25,6 +25,27 @@ agente se listan igual que los de la máquina: sin causa raíz, se repiten.
 - **Cómo comprobarlo:** `tools/trickvault/_banco/_carpetas.html` con el banco: debe dar
   `carteles=49`, `moda=25`, `comida=26` y ninguna categoría huérfana.
 
+### [2026-10-16] Quitar un fichero del repositorio **NO** lo despublica de Hostinger
+
+- **Síntoma:** saqué `apps/temp_extract/` del repo (un `git mv` a `tools/`), esperé ~11 minutos y
+  `https://atnojs.es/apps/temp_extract/` seguía devolviendo **200**, con el `src/App.tsx` y el
+  `firebase-applet-config.json` (clave incluida) todavía legibles. Igual pasaba con
+  `apps/generar_imagenes/1/app.js.bak`: **200 y no está en git**.
+- **Causa:** el despliegue de Hostinger **reescribe** los ficheros del repo, pero **no borra** los
+  que han dejado de estar en él. Comprobado comparando `Last-Modified` de dos ficheros tras el
+  mismo despliegue:
+  - `apps/trickvault/index.html` → `17:41:16` (el despliegue del commit de las 17:39 sí corrió:
+    reescribe también ficheros que no cambiaron en ese commit).
+  - `apps/temp_extract/index.html` → se quedó en `17:35:54` y sigue sirviéndose.
+- **Consecuencia (importante para seguridad):** un fichero con una clave que se saca del repo
+  **sigue publicado** en la web. Y como el historial de git conserva el contenido de todos modos,
+  **sacar un fichero de git no arregla nada por sí solo: hay que rotar la clave.**
+- **Solución:** borrar el fichero o la carpeta **a mano** en el servidor (hPanel → Administrador de
+  archivos, o FTP). No basta con `git rm` ni con `git mv`.
+- **Cómo comprobarlo:** `Last-Modified` con `Invoke-WebRequest` sobre un fichero que SÍ cambió en
+  el último commit; si su fecha es posterior a la del fichero retirado y este sigue dando 200, el
+  despliegue corrió y no borró.
+
 ### [2026-10-16] `if (git check-ignore -q f)` en PowerShell: comprobación falsa
 
 - **Síntoma:** el `.gitignore` parecía no aplicar a `tools/trickvault/_xl-carteles_jobs.json` y me

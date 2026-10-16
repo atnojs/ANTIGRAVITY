@@ -413,3 +413,47 @@ no queda la vieja. **No hace commit**: publicar es una decisión.
 **Commits**
 
 - `314873d` — `docs(memoria): inventario verificado de claves de Google y herramienta de rotacion`
+
+---
+
+## 2026-10-16 (séptima parte) — `apps/temp_extract` no era basura: es «Chronos Booth»
+
+Antonio confirma que no usa `apps/temp_extract` y me dice que lo borre. **Antes de borrar lo
+miré**, y menos mal.
+
+**Lo que era de verdad**
+
+- **«Chronos Booth»**: app exportada de Google AI Studio, *«a time-traveling photo booth that
+  inserts your face into historical scenes using AI»*. React 19 + Vite 6 + Tailwind 4 + Firebase
+  (Auth con Google y Firestore) + `@google/genai`; **909 líneas** en `src/App.tsx`. No es un
+  resto: es una app completa.
+- **Y no funcionaba donde estaba**: `apps/` se sirve como estático, y esto es un proyecto Vite.
+  `index.html` pedía `/src/main.tsx` y el servidor devolvía **TSX en crudo con HTTP 200** — un
+  navegador no ejecuta eso. No hay `dist/`. Comprobado también que publicaba todo el código fuente
+  y `firebase-applet-config.json` con la clave `AIzaSyAYhoQj…`.
+
+**Qué se hizo**
+
+- `git mv apps/temp_extract tools/chronos-booth` → git lo registra como **17 renombrados puros
+  (R100)**, así que el historial se conserva. `tools/` está protegido por `.htaccess`, así que la
+  clave y el código dejan de ser accesibles por web.
+- `tools/chronos-booth/LEEME.md` explica qué es, por qué está ahí y qué haría falta para ponerla
+  viva (`npm run build`, desplegar el `dist/` y pasar la `GEMINI_API_KEY` por `proxy.php`, que
+  ahora mismo se usa en el cliente).
+- **No se ha borrado nada.**
+
+**Hallazgo importante (va a `errores.md`)**
+
+**Quitar un fichero del repositorio NO lo despublica.** Tras 11 minutos, `apps/temp_extract/`
+seguía dando 200. Quedó demostrado comparando `Last-Modified`: `apps/trickvault/index.html` marca
+`17:41:16` (el despliegue del commit de las 17:39 **sí corrió**) mientras
+`apps/temp_extract/index.html` se quedó en `17:35:54` y sigue sirviéndose. Hostinger **reescribe**
+los ficheros del repo pero **no borra** los que salen de él.
+
+→ **Hay que borrar `apps/temp_extract/` a mano en hPanel.** Y es la misma causa del
+`app.js.bak`. Y, sobre todo: como el historial de git conserva el contenido igualmente, **sacar un
+fichero de git no arregla una clave: hay que rotarla.**
+
+**Commits**
+
+- `8192f0b` — `chore: sacar Chronos Booth (apps/temp_extract) de la web; no funcionaba y publicaba fuente y clave`
