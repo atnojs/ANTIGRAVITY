@@ -1,0 +1,1134 @@
+#!/usr/bin/env node
+/* =====================================================================
+ *  WORKER LOCAL DE DESCARGAS · Antigravity
+ *  ---------------------------------------------------------------------
+ *  Qué hace:
+ *    - Pide trabajo al servidor (heartbeat + next) y descarga con yt-dlp.
+ *    - Sube el resultado al servidor por trozos (multipart/form-data).
+ *    - Informa de progreso, item_done, finish o fail.
+ *
+ *  Diseño anti-sandbox (importante):
+ *    NO usamos tuberías (pipes) para leer la salida de yt-dlp. Abrimos un
+ *    fichero y le pasamos su descriptor como stdout/stderr del hijo, de
+ *    modo que yt-dlp escribe el progreso EN UN FICHERO y el worker lo lee
+ *    por posiciones. Así funciona igual en entornos normales y en
+ *    entornos donde crear pipes devuelve EPERM. Si abrir el fichero
+ *    fallara, se usa automáticamente el modo tubería como respaldo.
+ *
+ *  Uso:
+ *      node worker.mjs
+ *      DESCARGAS_WORKER_CONFIG=<ruta.json> node worker.mjs
+ *
+ *  Códigos de salida:
+ *      0 = parada normal (Ctrl+C)      2 = error de configuración
+ * ===================================================================*/
+
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+// ---------------------------------------------------------------------
+// Constantes generales
+// ---------------------------------------------------------------------
+const VERSION_WORKER = '1.0';
+const NOMBRE_WORKER = 'pc-antonio';
+const VERSION_YTDLP_POR_DEFECTO = '2026.08.19';
+
+const DIR_SCRIPT = path.dirname(fileURLToPath(import.meta.url));
+const RUTA_CONFIG_POR_DEFECTO = path.join(DIR_SCRIPT, '..', '..', '.private', 'descargas-worker.json');
+
+const MS_HEARTBEAT = 30_000;          // heartbeat cada 30 s
+const MS_MIN_ENTRE_PETICIONES = 1000; // nunca más de 1 petición por segundo
+const MS_MIN_ENTRE_PROGRESOS = 2000;  // progreso como máximo cada 2 s
+const MS_PROGRESO_CONSOLA = 5000;     // resumen de progreso en consola cada 5 s
+
+const MAX_INTENTOS = 5;                                    // reintentos HTTP
+const BACKOFF_MS = [2000, 4000, 8000, 16000, 32000];       // backoff exponencial
+const TIMEOUT_HTTP_MS = 60_000;                            // petición JSON
+const TIMEOUT_SUBIDA_MS = 180_000;                         // subida de un trozo
+const LOG_MAX_BYTES = 5 * 1024 * 1024;                     // rotación del log (5 MB)
+
+const CALIDADES = new Set(['best', '2160', '1440', '1080', '720', '480', '360']);
+const FORMATOS_VIDEO = new Set(['mp4', 'mkv', 'webm']);
+const FORMATOS_AUDIO = new Set(['mp3', 'm4a']);
+
+const DIR_LOG = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'descargas-worker');
+const RUTA_LOG = path.join(DIR_LOG, 'worker.log');
+
+// ---------------------------------------------------------------------
+// Estado global
+// ---------------------------------------------------------------------
+let config = null;
+let versionYtDlp = VERSION_YTDLP_POR_DEFECTO;
+let parando = false;
+let hijoActual = null;          // proceso yt-dlp en curso
+let temporizadorHeartbeat = null;
+let bytesEscritosLog = 0;
+let ultimaPeticion = 0;         // marca de tiempo de la última petición HTTP
+let colaHttp = Promise.resolve(); // serializa las peticiones (>1 s entre ellas)
+
+// ---------------------------------------------------------------------
+// Utilidades básicas
+// ---------------------------------------------------------------------
+const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// yt-dlp (Python congelado) escribe en su stdout la codificación ANSI de Windows
+// (cp1252) cuando la salida NO es una consola: una "í" sale como 0xED, que no es
+// UTF-8 válido. Decodificamos con UTF-8 estricto y, si falla, con windows-1252.
+const decodificadorUtf8 = new TextDecoder('utf-8', { fatal: true });
+const decodificador1252 = new TextDecoder('windows-1252');
+
+function decodificar(buffer) {
+  if (!buffer || !buffer.length) return '';
+  try {
+    return decodificadorUtf8.decode(buffer);
+  } catch {
+    return decodificador1252.decode(buffer);
+  }
+}
+
+function marcaTiempo(fecha = new Date()) {
+  const p = (n, ancho = 2) => String(n).padStart(ancho, '0');
+  return `${fecha.getFullYear()}-${p(fecha.getMonth() + 1)}-${p(fecha.getDate())} ` +
+         `${p(fecha.getHours())}:${p(fecha.getMinutes())}:${p(fecha.getSeconds())}`;
+}
+
+function hora(fecha = new Date()) {
+  return marcaTiempo(fecha).slice(11);
+}
+
+function recortar(texto, max) {
+  const t = String(texto ?? '');
+  return t.length <= max ? t : t.slice(0, max - 1) + '…';
+}
+
+// ---------------------------------------------------------------------
+// Log a fichero (con rotación a 5 MB) + consola en español
+// ---------------------------------------------------------------------
+function prepararLog() {
+  try {
+    fs.mkdirSync(DIR_LOG, { recursive: true });
+    bytesEscritosLog = fs.existsSync(RUTA_LOG) ? fs.statSync(RUTA_LOG).size : 0;
+    rotarLogSiHaceFalta();
+  } catch (e) {
+    console.error(`[aviso] No se pudo preparar el log en ${RUTA_LOG}: ${e.message}`);
+  }
+}
+
+function rotarLogSiHaceFalta() {
+  try {
+    if (!fs.existsSync(RUTA_LOG)) { bytesEscritosLog = 0; return; }
+    const tam = fs.statSync(RUTA_LOG).size;
+    if (tam <= LOG_MAX_BYTES) { bytesEscritosLog = tam; return; }
+    const antiguo = `${RUTA_LOG}.1`;
+    try { fs.rmSync(antiguo, { force: true }); } catch { /* da igual */ }
+    fs.renameSync(RUTA_LOG, antiguo);
+    bytesEscritosLog = 0;
+  } catch { /* si falla la rotación seguimos escribiendo */ }
+}
+
+function registrar(nivel, mensaje) {
+  const linea = `[${marcaTiempo()}] [${nivel}] ${mensaje}\n`;
+  try {
+    if (bytesEscritosLog + Buffer.byteLength(linea) > LOG_MAX_BYTES) rotarLogSiHaceFalta();
+    fs.appendFileSync(RUTA_LOG, linea, 'utf8');
+    bytesEscritosLog += Buffer.byteLength(linea);
+  } catch { /* el log nunca debe tumbar al worker */ }
+}
+
+const logInfo = (m) => { registrar('INFO', m); };
+const logAviso = (m) => { registrar('AVISO', m); console.warn(`[aviso] ${m}`); };
+const logError = (m) => { registrar('ERROR', m); console.error(`[error] ${m}`); };
+const logDepurar = (m) => { registrar('DEPURA', m); };
+
+// Salida legible en consola (resumen para el usuario)
+function consola(mensaje) {
+  process.stdout.write(`[${hora()}] ${mensaje}\n`);
+}
+
+// ---------------------------------------------------------------------
+// Configuración
+// ---------------------------------------------------------------------
+function abortarConfig(mensaje) {
+  console.error('');
+  console.error('  ╔══════════════════════════════════════════════════════════════╗');
+  console.error('  ║  ERROR DE CONFIGURACIÓN DEL WORKER DE DESCARGAS              ║');
+  console.error('  ╚══════════════════════════════════════════════════════════════╝');
+  console.error('');
+  console.error(`  ${mensaje}`);
+  console.error('');
+  console.error('  Revisa el fichero de configuración o define la variable de entorno');
+  console.error('  DESCARGAS_WORKER_CONFIG apuntando a un JSON válido.');
+  console.error('');
+  process.exit(2);
+}
+
+function cargarConfig() {
+  const ruta = process.env.DESCARGAS_WORKER_CONFIG || RUTA_CONFIG_POR_DEFECTO;
+
+  if (!fs.existsSync(ruta)) {
+    abortarConfig(`No existe el fichero de configuración:\n  ${ruta}`);
+  }
+
+  let bruto;
+  try {
+    bruto = fs.readFileSync(ruta, 'utf8').replace(/^\uFEFF/, '');
+  } catch (e) {
+    abortarConfig(`No se pudo leer el fichero de configuración:\n  ${ruta}\n  Detalle: ${e.message}`);
+  }
+
+  let datos;
+  try {
+    datos = JSON.parse(bruto);
+  } catch (e) {
+    abortarConfig(`El fichero de configuración no es un JSON válido:\n  ${ruta}\n  Detalle: ${e.message}`);
+  }
+
+  const token = typeof datos.token === 'string' ? datos.token.trim() : '';
+  if (!token) {
+    abortarConfig(`El fichero de configuración no tiene "token":\n  ${ruta}\n\n  Sin token el servidor rechazará todas las peticiones.`);
+  }
+  if (!datos.server) {
+    abortarConfig(`El fichero de configuración no tiene "server":\n  ${ruta}`);
+  }
+  if (!datos.ytdlp) {
+    abortarConfig(`El fichero de configuración no tiene "ytdlp" (ruta de yt-dlp.exe):\n  ${ruta}`);
+  }
+  if (!datos.download_dir) {
+    abortarConfig(`El fichero de configuración no tiene "download_dir":\n  ${ruta}`);
+  }
+
+  const cfg = {
+    rutaConfig: ruta,
+    server: String(datos.server).trim(),
+    token,
+    ytdlp: String(datos.ytdlp),
+    ffmpegDir: datos.ffmpeg_dir ? String(datos.ffmpeg_dir) : path.dirname(String(datos.ytdlp)),
+    downloadDir: String(datos.download_dir),
+    pollSeconds: Number(datos.poll_seconds) > 0 ? Number(datos.poll_seconds) : 5,
+    maxParallel: Number(datos.max_parallel) > 0 ? Number(datos.max_parallel) : 1,
+    chunkMb: Number(datos.chunk_mb) > 0 ? Number(datos.chunk_mb) : 4,
+    ytdlpVersion: typeof datos.ytdlp_version === 'string' ? datos.ytdlp_version : null,
+  };
+
+  if (!fs.existsSync(cfg.ytdlp)) {
+    abortarConfig(`No se encuentra el ejecutable de yt-dlp:\n  ${cfg.ytdlp}\n\n  Comprueba la clave "ytdlp" de ${ruta}`);
+  }
+  if (!fs.existsSync(cfg.ffmpegDir)) {
+    abortarConfig(`No se encuentra la carpeta de ffmpeg:\n  ${cfg.ffmpegDir}\n\n  Comprueba la clave "ffmpeg_dir" de ${ruta}`);
+  }
+
+  try {
+    fs.mkdirSync(cfg.downloadDir, { recursive: true });
+  } catch (e) {
+    abortarConfig(`No se pudo crear la carpeta de descargas:\n  ${cfg.downloadDir}\n  Detalle: ${e.message}`);
+  }
+
+  return cfg;
+}
+
+// ---------------------------------------------------------------------
+// Capa HTTP (JSON con reintentos + backoff, serializada a 1 petición/s)
+// ---------------------------------------------------------------------
+function enCola(fn) {
+  const resultado = colaHttp.then(fn);
+  colaHttp = resultado.then(() => undefined, () => undefined);
+  return resultado;
+}
+
+function esperarTurno() {
+  const desde = Date.now() - ultimaPeticion;
+  const espera = MS_MIN_ENTRE_PETICIONES - desde;
+  if (espera > 0) return dormir(espera);
+  return Promise.resolve();
+}
+
+async function leerJson(respuesta) {
+  const texto = await respuesta.text();
+  try {
+    return JSON.parse(texto);
+  } catch {
+    throw new Error(`respuesta no JSON (HTTP ${respuesta.status}): ${recortar(texto, 200)}`);
+  }
+}
+
+/**
+ * Una única petición POST JSON (sin reintentos).
+ */
+async function peticionUnica(cuerpo, timeoutMs) {
+  return enCola(async () => {
+    await esperarTurno();
+    ultimaPeticion = Date.now();
+    const respuesta = await fetch(config.server, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'X-Worker-Token': config.token,
+      },
+      body: JSON.stringify(cuerpo),
+      signal: AbortSignal.timeout(timeoutMs ?? TIMEOUT_HTTP_MS),
+    });
+    const datos = await leerJson(respuesta);
+    if (!respuesta.ok) {
+      throw new Error(`HTTP ${respuesta.status}${datos && datos.error ? ` · ${datos.error}` : ''}`);
+    }
+    if (!datos || datos.success !== true) {
+      throw new Error(`el servidor devolvió success!=true${datos && datos.error ? ` · ${datos.error}` : ''}`);
+    }
+    return datos;
+  });
+}
+
+/**
+ * Petición JSON con reintentos y backoff exponencial (2, 4, 8, 16, 32 s).
+ */
+async function peticion(cuerpo, { etiqueta = cuerpo.action, timeoutMs } = {}) {
+  let ultimoError = null;
+  for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
+    if (parando) throw new Error('worker detenido');
+    try {
+      const datos = await peticionUnica(cuerpo, timeoutMs);
+      if (intento > 1) logInfo(`[${etiqueta}] correcto en el intento ${intento}`);
+      return datos;
+    } catch (e) {
+      ultimoError = e;
+      const espera = BACKOFF_MS[Math.min(intento - 1, BACKOFF_MS.length - 1)];
+      if (intento === MAX_INTENTOS) break;
+      logAviso(`[${etiqueta}] intento ${intento}/${MAX_INTENTOS} fallido: ${e.message}. Reintento en ${espera / 1000} s`);
+      await dormir(espera);
+    }
+  }
+  throw new Error(`[${etiqueta}] agotados los ${MAX_INTENTOS} intentos: ${ultimoError ? ultimoError.message : 'error desconocido'}`);
+}
+
+/**
+ * Subida de un trozo en multipart/form-data. Reintenta sin corromper nada:
+ * cada trozo es independiente y va numerado (chunk_index).
+ */
+async function subirTrozo(job, itemIndex, chunkIndex, totalChunks, nombreFichero, buffer) {
+  let ultimoError = null;
+  for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
+    try {
+      return await enCola(async () => {
+        await esperarTurno();
+        ultimaPeticion = Date.now();
+
+        const formulario = new FormData();
+        formulario.append('action', 'upload_chunk');
+        formulario.append('job_id', String(job.id));
+        formulario.append('item_index', String(itemIndex));
+        formulario.append('chunk_index', String(chunkIndex));
+        formulario.append('total_chunks', String(totalChunks));
+        formulario.append('filename', nombreFichero);
+        formulario.append('chunk', new Blob([buffer]), nombreFichero);
+
+        const respuesta = await fetch(config.server, {
+          method: 'POST',
+          headers: { 'X-Worker-Token': config.token },
+          body: formulario,
+          signal: AbortSignal.timeout(TIMEOUT_SUBIDA_MS),
+        });
+        const datos = await leerJson(respuesta);
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        if (!datos || datos.success !== true) {
+          throw new Error(`success!=true${datos && datos.error ? ` · ${datos.error}` : ''}`);
+        }
+        return datos;
+      });
+    } catch (e) {
+      ultimoError = e;
+      const espera = BACKOFF_MS[Math.min(intento - 1, BACKOFF_MS.length - 1)];
+      if (intento === MAX_INTENTOS) break;
+      logAviso(`[subida ${nombreFichero} trozo ${chunkIndex + 1}/${totalChunks}] intento ${intento}/${MAX_INTENTOS} fallido: ${e.message}. Reintento en ${espera / 1000} s`);
+      await dormir(espera);
+    }
+  }
+  throw new Error(`no se pudo subir el trozo ${chunkIndex + 1}/${totalChunks} de ${nombreFichero}: ${ultimoError ? ultimoError.message : 'error desconocido'}`);
+}
+
+// ---------------------------------------------------------------------
+// Ejecución de procesos externos sin tuberías (descriptor → fichero)
+// ---------------------------------------------------------------------
+function dirTemporal() {
+  const dir = path.join(os.tmpdir(), 'descargas-worker');
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+/**
+ * Ejecuta un proceso capturando su salida (stdout+stderr) en un fichero.
+ * Devuelve { codigo, texto }. Si no se puede abrir el fichero, usa tuberías.
+ */
+function ejecutarCapturando(exe, args, { cwd = undefined, timeoutMs = 20_000 } = {}) {
+  return new Promise((resolve) => {
+    const rutaSalida = path.join(dirTemporal(), `captura-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.log`);
+    let fd = null;
+    let usarFichero = true;
+    try {
+      fd = fs.openSync(rutaSalida, 'a');
+    } catch {
+      usarFichero = false;
+    }
+
+    const opciones = {
+      windowsHide: true,
+      cwd,
+      stdio: usarFichero ? ['ignore', fd, fd] : ['ignore', 'pipe', 'pipe'],
+    };
+
+    let hijo;
+    try {
+      hijo = spawn(exe, args, opciones);
+    } catch (e) {
+      if (fd !== null) { try { fs.closeSync(fd); } catch { /* nada */ } }
+      resolve({ codigo: -1, texto: `no se pudo lanzar ${exe}: ${e.message}` });
+      return;
+    }
+    if (fd !== null) { try { fs.closeSync(fd); } catch { /* nada */ } }
+
+    let acumulado = '';
+    const trozosSalida = [];
+    if (!usarFichero) {
+      hijo.stdout.on('data', (d) => { trozosSalida.push(d); });
+      hijo.stderr.on('data', (d) => { trozosSalida.push(d); });
+    }
+
+    const temporizador = setTimeout(() => {
+      try { hijo.kill(); } catch { /* nada */ }
+    }, timeoutMs);
+
+    const terminar = (codigo) => {
+      clearTimeout(temporizador);
+      if (usarFichero) {
+        try { acumulado = decodificar(fs.readFileSync(rutaSalida)); } catch { /* nada */ }
+        try { fs.rmSync(rutaSalida, { force: true }); } catch { /* nada */ }
+      } else {
+        acumulado = decodificar(Buffer.concat(trozosSalida));
+      }
+      resolve({ codigo, texto: acumulado });
+    };
+
+    hijo.on('error', (e) => {
+      clearTimeout(temporizador);
+      if (usarFichero) { try { fs.rmSync(rutaSalida, { force: true }); } catch { /* nada */ } }
+      resolve({ codigo: -1, texto: `error al ejecutar ${exe}: ${e.message}` });
+    });
+    hijo.on('close', (codigo) => terminar(codigo === null ? -1 : codigo));
+  });
+}
+
+async function detectarVersionYtDlp() {
+  const { codigo, texto } = await ejecutarCapturando(config.ytdlp, ['--version'], { timeoutMs: 20_000 });
+  const version = (texto || '').trim().split(/\r?\n/)[0].trim();
+  if (codigo === 0 && /^[\d.]+$/.test(version)) return version;
+  logAviso(`No se pudo detectar la versión de yt-dlp; se usará ${VERSION_YTDLP_POR_DEFECTO}`);
+  return VERSION_YTDLP_POR_DEFECTO;
+}
+
+/** Duración en segundos de un fichero multimedia (ffmpeg -i). Mejor esfuerzo. */
+async function duracionConFfmpeg(rutaFichero) {
+  const ffmpeg = path.join(config.ffmpegDir, process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+  if (!fs.existsSync(ffmpeg)) return 0;
+  const { texto } = await ejecutarCapturando(ffmpeg, ['-hide_banner', '-i', rutaFichero], { timeoutMs: 20_000 });
+  const m = /Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(texto || '');
+  if (!m) return 0;
+  return Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+}
+
+/** ¿Sigue vivo ese PID? */
+function procesoVivo(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return e && e.code === 'EPERM'; // EPERM = existe pero sin permiso para señalizarlo
+  }
+}
+
+/**
+ * Mata el proceso y TODO su árbol.
+ *
+ * Muy importante en Windows: yt-dlp.exe es un ejecutable empaquetado con
+ * PyInstaller, así que es un proceso RAÍZ que lanza un HIJO (y éste puede lanzar
+ * ffmpeg). Si se mata primero el padre, el hijo queda huérfano y `taskkill /T`
+ * ya no puede localizarlo: la descarga seguiría corriendo en segundo plano.
+ * Por eso se usa taskkill /T /F de forma SÍNCRONA y se espera su resultado
+ * ANTES de recurrir a cualquier otro método.
+ */
+function matarArbol(pid) {
+  if (!pid) return true;
+  let muerto = false;
+
+  if (process.platform === 'win32') {
+    for (let intento = 1; intento <= 3 && !muerto; intento++) {
+      const r = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
+        stdio: 'ignore',
+        windowsHide: true,
+        timeout: 20_000,
+      });
+      const detalle = r.error ? `error ${r.error.code || r.error.message}` : `código ${r.status}`;
+      logDepurar(`taskkill /PID ${pid} /T /F (intento ${intento}): ${detalle}`);
+      muerto = !procesoVivo(pid);
+    }
+  }
+
+  if (!muerto) {
+    // Último recurso: matar el proceso raíz directamente. Puede dejar huérfano
+    // al hijo, así que solo se usa si taskkill no ha funcionado.
+    logAviso(`taskkill no ha podido con el PID ${pid}; se intenta el cierre directo.`);
+    try { if (hijoActual && hijoActual.pid === pid) hijoActual.kill('SIGKILL'); } catch { /* nada */ }
+    muerto = !procesoVivo(pid);
+  }
+
+  if (muerto) logInfo(`Proceso ${pid} y su árbol detenidos.`);
+  else logError(`No se ha podido confirmar la muerte del proceso ${pid}.`);
+  return muerto;
+}
+
+// ---------------------------------------------------------------------
+// Argumentos de yt-dlp
+// ---------------------------------------------------------------------
+function normalizarJob(job) {
+  const id = job && job.id !== undefined && job.id !== null ? String(job.id) : null;
+  if (!id) throw new Error('el trabajo recibido no tiene id');
+  const url = String(job.url || '').trim();
+  if (!/^https?:\/\//i.test(url)) throw new Error(`URL de trabajo no válida: ${recortar(url, 120)}`);
+
+  const modo = job.mode === 'audio' ? 'audio' : 'video';
+  let calidad = String(job.quality || 'best').toLowerCase();
+  if (!CALIDADES.has(calidad)) calidad = 'best';
+  let formato = String(job.format || (modo === 'audio' ? 'mp3' : 'mp4')).toLowerCase();
+  if (modo === 'audio' && !FORMATOS_AUDIO.has(formato)) formato = 'mp3';
+  if (modo === 'video' && !FORMATOS_VIDEO.has(formato)) formato = 'mp4';
+
+  return { id, url, modo, calidad, formato, playlist: job.playlist === true, attempts: Number(job.attempts) || 0 };
+}
+
+function construirArgumentos(job, dirJob) {
+  const args = ['--newline', '--no-warnings', '--progress', '--no-color'];
+
+  // Carpeta de destino y plantilla de nombre
+  args.push('-P', dirJob);
+  args.push('-o', job.playlist
+    ? '%(playlist_index)03d - %(title).150B [%(id)s].%(ext)s'
+    : '%(title).150B [%(id)s].%(ext)s');
+
+  if (job.modo === 'audio') {
+    args.push('-x', '--audio-format', job.formato);
+  } else {
+    const filtro = job.calidad === 'best'
+      ? 'bv*+ba/b'
+      : `bv*[height<=${job.calidad}]+ba/b[height<=${job.calidad}]/b`;
+    args.push('-f', filtro);
+    args.push('--merge-output-format', job.formato);
+    if (job.formato === 'mp4') {
+      // Compatibilidad con editores: H.264 + AAC dentro de MP4
+      args.push('-S', 'vcodec:h264,acodec:aac,ext:mp4:m4a');
+    }
+  }
+
+  args.push('--ffmpeg-location', config.ffmpegDir);
+  args.push('--force-overwrites');        // los reintentos no deben fallar
+  args.push('--write-info-json');         // título y duración fiables (no se sube)
+  args.push(job.playlist ? '--yes-playlist' : '--no-playlist');
+  args.push(job.url);
+  return args;
+}
+
+// ---------------------------------------------------------------------
+// Analizador de la salida de yt-dlp
+// ---------------------------------------------------------------------
+const RE_PROGRESO_ESTANDAR = /^\[download\]\s+(?<pct>\d+(?:[.,]\d+)?)%\s+of\s+(?<total>~?\s*[\d.,]+\s*\S+?)(?:\s+at\s+(?<vel>\S+))?(?:\s+ETA\s+(?<eta>[\d:]+))?/i;
+const RE_PROGRESO_PLANTILLA = /^@@PROG@@\|(?<pct>[^|]*)\|(?<vel>[^|]*)\|(?<eta>[^|]*)\|(?<titulo>[^|]*)\|(?<indice>[^|]*)\|(?<total>[^|]*)\|(?<etapa>[^|]*)$/;
+const RE_DESTINO = /^\[download\]\s+Destination:\s*(.+)$/i;
+const RE_ITEM = /^\[download\]\s+Downloading item\s+(\d+)\s+of\s+(\d+)/i;
+const RE_PLAYLIST = /^\[download\]\s+Downloading playlist:\s*(.+)$/i;
+const RE_MEZCLA = /^\[Merger\]\s+Merging formats into\s+"?(.+?)"?\s*$/i;
+const RE_INFO_FORMATOS = /^\[info\]\s*(.+?):\s*Downloading \d+ format\(s\)/i;
+const RE_POSTPROCESO = /^\[(Merger|ExtractAudio|VideoConvertor|VideoRemuxer|Fixup\w*|Metadata|EmbedThumbnail|SponsorBlock|FFmpeg\w*)\]/;
+
+function tituloDesdeRuta(ruta) {
+  const base = path.basename(String(ruta).trim().replace(/^"|"$/g, ''));
+  let t = base.replace(/\.[A-Za-z0-9]{1,5}$/, '');
+  t = t.replace(/\s*\[[A-Za-z0-9_-]{11}\]\s*$/, '');     // quita " [idDeYouTube]"
+  t = t.replace(/^\d{3}\s*-\s*/, '');                    // quita "001 - " de playlists
+  return t.trim() || base;
+}
+
+function limpiarNumero(valor) {
+  const n = Number(String(valor ?? '').replace('%', '').replace(',', '.').trim());
+  return Number.isFinite(n) ? n : null;
+}
+
+function limpiarTexto(valor) {
+  const t = String(valor ?? '').trim();
+  return (!t || /^(n\/a|unknown|na|-)$/i.test(t)) ? '' : t;
+}
+
+// ---------------------------------------------------------------------
+// Descarga con yt-dlp
+// ---------------------------------------------------------------------
+/**
+ * Ejecuta yt-dlp para un trabajo.
+ * Devuelve { codigo, cancelado, lineas, rutaLogYtDlp }.
+ */
+function ejecutarYtDlp(job, dirJob, { alProgreso }) {
+  return new Promise((resolve) => {
+    const rutaLogYtDlp = path.join(dirJob, '_ytdlp.log');
+    const args = construirArgumentos(job, dirJob);
+
+    logInfo(`yt-dlp ${args.map((a) => (/\s/.test(a) ? `"${a}"` : a)).join(' ')}`);
+
+    let fd = null;
+    let usarFichero = true;
+    try {
+      fd = fs.openSync(rutaLogYtDlp, 'a');
+    } catch (e) {
+      usarFichero = false;
+      logAviso(`No se pudo abrir el fichero de progreso (${e.code || e.message}); se usará el modo tubería.`);
+    }
+
+    const opciones = {
+      cwd: dirJob,
+      windowsHide: true,
+      stdio: usarFichero ? ['ignore', fd, fd] : ['ignore', 'pipe', 'pipe'],
+    };
+
+    const hijo = spawn(config.ytdlp, args, opciones);
+    hijoActual = hijo;
+    if (fd !== null) { try { fs.closeSync(fd); } catch { /* nada */ } }
+
+    // ---- Estado del análisis ----
+    const lineas = [];        // anillo con las últimas 200 líneas
+    let restoBytes = Buffer.alloc(0); // bytes de la última línea aún incompleta
+    let posLectura = 0;       // posición leída del fichero de progreso
+    let fdLectura = null;
+    let intervalo = null;
+    let cancelado = false;
+
+    if (usarFichero) {
+      try { fdLectura = fs.openSync(rutaLogYtDlp, 'r'); } catch { fdLectura = null; }
+    }
+
+    const contexto = {
+      titulo: '',
+      itemIndex: 1,
+      itemCount: 1,
+      etapa: 'preparando',
+      porcentaje: 0,
+      velocidad: '',
+      eta: '',
+      ultimoEnvio: 0,
+      ultimoConsola: 0,
+    };
+
+    function publicar(forzar = false, nuevaEtapa = null) {
+      if (nuevaEtapa) contexto.etapa = nuevaEtapa;
+      const ahora = Date.now();
+      if (!forzar && ahora - contexto.ultimoEnvio < MS_MIN_ENTRE_PROGRESOS) return;
+      contexto.ultimoEnvio = ahora;
+
+      if (ahora - contexto.ultimoConsola >= MS_PROGRESO_CONSOLA || forzar) {
+        contexto.ultimoConsola = ahora;
+        const partes = [`${contexto.porcentaje.toFixed(1)}%`];
+        if (contexto.velocidad) partes.push(contexto.velocidad);
+        if (contexto.eta) partes.push(`ETA ${contexto.eta}`);
+        if (contexto.itemCount > 1) partes.push(`elemento ${contexto.itemIndex}/${contexto.itemCount}`);
+        consola(`  ${contexto.etapa} · ${partes.join(' · ')}${contexto.titulo ? ` · ${recortar(contexto.titulo, 60)}` : ''}`);
+      }
+
+      // No esperamos la respuesta: la descarga sigue mientras se informa.
+      alProgreso({
+        job_id: job.id,
+        percent: Number(contexto.porcentaje.toFixed(1)),
+        speed: contexto.velocidad,
+        eta: contexto.eta,
+        stage: contexto.etapa,
+        title: contexto.titulo,
+        item_index: contexto.itemIndex,
+        item_count: contexto.itemCount,
+      }).then((datos) => {
+        if (datos && datos.cancel === true && !cancelado) {
+          cancelado = true;
+          logAviso('El servidor ha pedido CANCELAR el trabajo; matando yt-dlp.');
+          consola('  El servidor ha pedido cancelar el trabajo. Deteniendo yt-dlp…');
+          const detenido = matarArbol(hijo.pid);
+          logInfo(`Cancelación: proceso yt-dlp ${detenido ? 'detenido con su árbol' : 'NO detenido'}.`);
+        }
+      }).catch((e) => {
+        logAviso(`No se pudo enviar el progreso: ${e.message}`);
+      });
+    }
+
+    function procesarLinea(lineaBruta) {
+      const linea = lineaBruta.replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+$/, '');
+      if (!linea.trim()) return;
+
+      lineas.push(linea);
+      if (lineas.length > 200) lineas.shift();
+      logDepurar(`yt-dlp> ${linea}`);
+
+      // Plantilla de progreso opcional (@@PROG@@...)
+      const mp = RE_PROGRESO_PLANTILLA.exec(linea);
+      if (mp) {
+        const pct = limpiarNumero(mp.groups.pct);
+        if (pct !== null) contexto.porcentaje = Math.min(100, Math.max(0, pct));
+        contexto.velocidad = limpiarTexto(mp.groups.vel);
+        contexto.eta = limpiarTexto(mp.groups.eta);
+        if (limpiarTexto(mp.groups.titulo)) contexto.titulo = limpiarTexto(mp.groups.titulo);
+        const idx = limpiarNumero(mp.groups.indice);
+        const tot = limpiarNumero(mp.groups.total);
+        if (idx !== null && idx > 0) contexto.itemIndex = idx;
+        if (tot !== null && tot > 0) contexto.itemCount = tot;
+        publicar(false, 'descargando');
+        return;
+      }
+
+      const mItem = RE_ITEM.exec(linea);
+      if (mItem) {
+        contexto.itemIndex = Number(mItem[1]) || 1;
+        contexto.itemCount = Number(mItem[2]) || 1;
+        contexto.porcentaje = 0;
+        publicar(true, 'descargando');
+        return;
+      }
+
+      const mPlaylist = RE_PLAYLIST.exec(linea);
+      if (mPlaylist && !contexto.titulo) {
+        contexto.titulo = String(mPlaylist[1]).trim();
+        return;
+      }
+
+      const mDestino = RE_DESTINO.exec(linea);
+      if (mDestino) {
+        const t = tituloDesdeRuta(mDestino[1]);
+        if (t) contexto.titulo = t;
+        publicar(false, 'descargando');
+        return;
+      }
+
+      const mMezcla = RE_MEZCLA.exec(linea);
+      if (mMezcla) {
+        const t = tituloDesdeRuta(mMezcla[1]);
+        if (t) contexto.titulo = t;
+        contexto.velocidad = '';
+        contexto.eta = '';
+        publicar(true, 'procesando');
+        return;
+      }
+
+      if (RE_POSTPROCESO.test(linea)) {
+        contexto.velocidad = '';
+        contexto.eta = '';
+        publicar(true, 'procesando');
+        return;
+      }
+
+      const mProg = RE_PROGRESO_ESTANDAR.exec(linea);
+      if (mProg) {
+        const pct = limpiarNumero(mProg.groups.pct);
+        if (pct !== null) contexto.porcentaje = Math.min(100, Math.max(0, pct));
+        contexto.velocidad = limpiarTexto(mProg.groups.vel);
+        contexto.eta = limpiarTexto(mProg.groups.eta);
+        publicar(false, 'descargando');
+        return;
+      }
+
+      const mInfo = RE_INFO_FORMATOS.exec(linea);
+      if (mInfo && !contexto.titulo) {
+        const posible = String(mInfo[1]).trim();
+        if (!/^[A-Za-z0-9_-]{11}$/.test(posible)) contexto.titulo = posible;
+        return;
+      }
+
+      if (/^\[download\]\s+100%/.test(linea)) {
+        contexto.porcentaje = 100;
+        publicar(true, 'descargando');
+      }
+    }
+
+    /** Trocea por bytes (0x0A) y decodifica cada línea completa: soporta cp1252 y UTF-8. */
+    function procesarBytes(bytes) {
+      if (!bytes || !bytes.length) return;
+      restoBytes = restoBytes.length ? Buffer.concat([restoBytes, bytes]) : Buffer.from(bytes);
+      let idx;
+      while ((idx = restoBytes.indexOf(0x0a)) !== -1) {
+        const linea = decodificar(restoBytes.subarray(0, idx)).replace(/\r$/, '');
+        restoBytes = restoBytes.subarray(idx + 1);
+        procesarLinea(linea);
+      }
+    }
+
+    /** Lee lo nuevo del fichero de progreso (síncrono: no se solapa consigo mismo). */
+    function leerNuevo() {
+      if (fdLectura === null) return;
+      const buffer = Buffer.allocUnsafe(64 * 1024);
+      for (;;) {
+        let leidos = 0;
+        try {
+          leidos = fs.readSync(fdLectura, buffer, 0, buffer.length, posLectura);
+        } catch {
+          return;
+        }
+        if (!leidos) return;
+        posLectura += leidos;
+        procesarBytes(buffer.subarray(0, leidos));
+      }
+    }
+
+    if (usarFichero) {
+      intervalo = setInterval(leerNuevo, 400);
+    } else {
+      hijo.stdout.on('data', (d) => procesarBytes(d));
+      hijo.stderr.on('data', (d) => procesarBytes(d));
+      hijo.stdout.on('error', () => { /* nada */ });
+      hijo.stderr.on('error', () => { /* nada */ });
+    }
+
+    const finalizar = (codigo) => {
+      if (intervalo) clearInterval(intervalo);
+      leerNuevo();                                  // último tramo
+      if (restoBytes.length) {
+        const ultima = decodificar(restoBytes).replace(/\r$/, '');
+        restoBytes = Buffer.alloc(0);
+        procesarLinea(ultima);
+      }
+      if (fdLectura !== null) { try { fs.closeSync(fdLectura); } catch { /* nada */ } }
+      hijoActual = null;
+      resolve({ codigo, cancelado, lineas, rutaLogYtDlp });
+    };
+
+    hijo.on('error', (e) => {
+      lineas.push(`[error-worker] no se pudo ejecutar yt-dlp: ${e.message}`);
+      finalizar(-1);
+    });
+    hijo.on('close', (codigo) => finalizar(codigo === null ? -1 : codigo));
+  });
+}
+
+// ---------------------------------------------------------------------
+// Ficheros resultantes
+// ---------------------------------------------------------------------
+function esFicheroSubible(nombre) {
+  if (nombre.startsWith('_')) return false;                 // _ytdlp.log
+  if (/\.(part|ytdl|temp|tmp|log)$/i.test(nombre)) return false;
+  if (/\.info\.json$/i.test(nombre)) return false;          // metadatos de yt-dlp
+  if (/\.(jpg|jpeg|png|webp)$/i.test(nombre)) return false; // miniaturas
+  return true;
+}
+
+async function listarFicherosSubibles(dirJob) {
+  const entradas = await fsp.readdir(dirJob, { withFileTypes: true });
+  const lista = [];
+  for (const entrada of entradas) {
+    if (!entrada.isFile()) continue;
+    if (!esFicheroSubible(entrada.name)) continue;
+    const ruta = path.join(dirJob, entrada.name);
+    let info;
+    try { info = await fsp.stat(ruta); } catch { continue; }
+    if (!info.size) continue;
+    lista.push({
+      nombre: entrada.name,
+      ruta,
+      bytes: info.size,
+      ext: path.extname(entrada.name).slice(1).toLowerCase(),
+    });
+  }
+  lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { numeric: true }));
+  return lista;
+}
+
+/** Lee los .info.json de yt-dlp para obtener título y duración exactos. */
+async function leerMetadatos(dirJob) {
+  const mapa = new Map();
+  let entradas = [];
+  try { entradas = await fsp.readdir(dirJob); } catch { return mapa; }
+  for (const nombre of entradas) {
+    if (!/\.info\.json$/i.test(nombre)) continue;
+    try {
+      const datos = JSON.parse(await fsp.readFile(path.join(dirJob, nombre), 'utf8'));
+      mapa.set(nombre.replace(/\.info\.json$/i, ''), {
+        titulo: typeof datos.title === 'string' ? datos.title : '',
+        duracion: Number(datos.duration) || 0,
+      });
+    } catch { /* metadatos ilegibles: se ignora */ }
+  }
+  return mapa;
+}
+
+async function leerExacto(mango, buffer, posicion, longitud) {
+  let leidos = 0;
+  while (leidos < longitud) {
+    const r = await mango.read(buffer, leidos, longitud - leidos, posicion + leidos);
+    if (r.bytesRead === 0) break;
+    leidos += r.bytesRead;
+  }
+  return leidos;
+}
+
+// ---------------------------------------------------------------------
+// Subida completa de un fichero
+// ---------------------------------------------------------------------
+async function subirFichero(job, itemIndex, fichero, contexto, alProgreso) {
+  const tamTrozo = Math.max(1, Math.round(config.chunkMb * 1024 * 1024));
+  const totalTrozo = Math.max(1, Math.ceil(fichero.bytes / tamTrozo));
+  const mango = await fsp.open(fichero.ruta, 'r');
+  let ultimoEnvio = 0;
+  try {
+    for (let i = 0; i < totalTrozo; i++) {
+      if (parando) throw new Error('worker detenido durante la subida');
+      const longitud = Math.min(tamTrozo, fichero.bytes - i * tamTrozo);
+      const buffer = Buffer.allocUnsafe(longitud);
+      const leidos = await leerExacto(mango, buffer, i * tamTrozo, longitud);
+      if (leidos !== longitud) throw new Error(`lectura incompleta del trozo ${i + 1} de ${fichero.nombre}`);
+
+      await subirTrozo(job, itemIndex, i, totalTrozo, fichero.nombre, buffer);
+
+      if (i === 0 || i === totalTrozo - 1 || i % 5 === 0) {
+        logInfo(`Subido ${fichero.nombre}: trozo ${i + 1}/${totalTrozo}`);
+      }
+      const ahora = Date.now();
+      if (ahora - ultimoEnvio >= MS_MIN_ENTRE_PROGRESOS) {
+        ultimoEnvio = ahora;
+        const pct = totalTrozo === 1 ? 100 : ((i + 1) / totalTrozo) * 100;
+        alProgreso({
+          job_id: job.id,
+          percent: Number(pct.toFixed(1)),
+          speed: '',
+          eta: '',
+          stage: 'subiendo',
+          title: contexto.titulo,
+          item_index: itemIndex,
+          item_count: contexto.itemCount,
+        }).catch(() => { /* el progreso nunca aborta la subida */ });
+      }
+    }
+  } finally {
+    await mango.close();
+  }
+  return totalTrozo;
+}
+
+/**
+ * Informa al servidor de que un trabajo ha fallado.
+ * Si el worker se está parando (Ctrl+C) NO se envía nada: no es un fallo del
+ * trabajo, y el servidor lo reintentará por su cuenta.
+ */
+async function informarFallo(job, mensaje) {
+  if (parando) {
+    logInfo('Parada en curso: no se envía "fail" (el servidor reintentará el trabajo).');
+    return;
+  }
+  try {
+    await peticion({ action: 'fail', job_id: job && job.id, error: recortar(mensaje, 900) }, { etiqueta: 'fail' });
+  } catch (e) {
+    logError(`No se pudo informar del fallo: ${e.message}`);
+  }
+}
+
+// ---------------------------------------------------------------------
+// Procesamiento de un trabajo completo
+// ---------------------------------------------------------------------
+async function procesarJob(jobBruto) {
+  let job;
+  try {
+    job = normalizarJob(jobBruto);
+  } catch (e) {
+    logError(`Trabajo inválido: ${e.message}`);
+    await informarFallo(jobBruto, `Trabajo inválido: ${e.message}`);
+    return;
+  }
+
+  const dirJob = path.join(config.downloadDir, job.id);
+  await fsp.mkdir(dirJob, { recursive: true });
+
+  consola(`Trabajo ${job.id} recibido: ${job.modo}/${job.calidad}/${job.formato}${job.playlist ? ' (lista)' : ''}${job.attempts ? ` · intento ${job.attempts}` : ''}`);
+  consola(`  ${job.url}`);
+  logInfo(`Trabajo ${job.id}: ${JSON.stringify(job)} · carpeta ${dirJob}`);
+
+  const contexto = { titulo: '', itemCount: 1 };
+  const alProgreso = (cuerpo) => peticion({ action: 'progress', ...cuerpo }, { etiqueta: 'progress' });
+
+  // 1) Descarga
+  const resultado = await ejecutarYtDlp(job, dirJob, { alProgreso });
+  const cola = resultado.lineas.filter((l) => l.trim());
+
+  if (resultado.cancelado) {
+    consola(`Trabajo ${job.id} CANCELADO por el usuario.`);
+    logAviso(`Trabajo ${job.id} cancelado por el usuario.`);
+    await informarFallo(job, 'Cancelado por el usuario');
+    return;
+  }
+
+  if (resultado.codigo !== 0) {
+    const resumen = cola.slice(-5).join(' | ') || `yt-dlp terminó con código ${resultado.codigo}`;
+    logError(`Trabajo ${job.id} falló (código ${resultado.codigo}): ${resumen}`);
+    consola(`Trabajo ${job.id} FALLÓ: ${recortar(resumen, 160)}`);
+    await informarFallo(job, `yt-dlp código ${resultado.codigo}: ${resumen}`);
+    return;
+  }
+
+  // 2) Ficheros obtenidos
+  let ficheros = await listarFicherosSubibles(dirJob);
+  if (!ficheros.length) {
+    const resumen = cola.slice(-5).join(' | ') || 'sin salida de yt-dlp';
+    logError(`Trabajo ${job.id}: yt-dlp terminó bien pero no hay ficheros. ${resumen}`);
+    await informarFallo(job, `No se generó ningún fichero. ${resumen}`);
+    return;
+  }
+
+  const metadatos = await leerMetadatos(dirJob);
+  contexto.itemCount = ficheros.length;
+  consola(`Descarga terminada: ${ficheros.length} fichero(s).`);
+
+  // 3) Subida por trozos + item_done (en orden)
+  for (let i = 0; i < ficheros.length; i++) {
+    const fichero = ficheros[i];
+    const itemIndex = i + 1;
+    const meta = metadatos.get(fichero.nombre.replace(/\.[^.]+$/, '')) || null;
+    const titulo = (meta && meta.titulo) || tituloDesdeRuta(fichero.nombre) || fichero.nombre;
+    let duracion = meta && meta.duracion ? meta.duracion : 0;
+    if (!duracion) {
+      duracion = await duracionConFfmpeg(fichero.ruta);
+    }
+    contexto.titulo = titulo;
+
+    consola(`  Subiendo ${itemIndex}/${ficheros.length}: ${fichero.nombre} (${(fichero.bytes / 1048576).toFixed(2)} MiB)`);
+    logInfo(`Subiendo ${fichero.nombre} (${fichero.bytes} bytes, duración ${duracion}s)`);
+
+    const totalTrozo = await subirFichero(job, itemIndex, fichero, contexto, alProgreso);
+
+    await peticion({
+      action: 'item_done',
+      job_id: job.id,
+      item_index: itemIndex,
+      filename: fichero.nombre,
+      title: titulo,
+      bytes: fichero.bytes,
+      ext: fichero.ext,
+      duration: Number(duracion.toFixed(3)),
+    }, { etiqueta: 'item_done' });
+
+    logInfo(`item_done enviado: ${fichero.nombre} (${totalTrozo} trozos)`);
+    consola(`  Elemento ${itemIndex} completado (${totalTrozo} trozo(s)).`);
+  }
+
+  // 4) finish
+  const logTail = cola.slice(-20).join('\n');
+  await peticion({
+    action: 'finish',
+    job_id: job.id,
+    item_count: ficheros.length,
+    log_tail: recortar(logTail, 4000),
+  }, { etiqueta: 'finish' });
+
+  logInfo(`Trabajo ${job.id} terminado correctamente (${ficheros.length} fichero/s)`);
+  consola(`Trabajo ${job.id} TERMINADO correctamente (${ficheros.length} fichero/s).`);
+}
+
+// ---------------------------------------------------------------------
+// Bucle principal
+// ---------------------------------------------------------------------
+function pararLimpiamente(motivo) {
+  if (parando) return;
+  parando = true;
+  consola('');
+  consola(`Parando el worker (${motivo})…`);
+  logInfo(`Parada solicitada: ${motivo}`);
+  if (temporizadorHeartbeat) clearInterval(temporizadorHeartbeat);
+  if (hijoActual && hijoActual.pid) {
+    consola('  Matando el proceso de yt-dlp en curso…');
+    matarArbol(hijoActual.pid);
+  }
+  setTimeout(() => {
+    logInfo('Worker detenido.');
+    process.exit(0);
+  }, 700);
+}
+
+async function principal() {
+  prepararLog();
+
+  config = cargarConfig();
+  versionYtDlp = config.ytdlpVersion || await detectarVersionYtDlp();
+
+  consola('==============================================================');
+  consola(` Worker local de descargas ${VERSION_WORKER}  ·  ${NOMBRE_WORKER}`);
+  consola('==============================================================');
+  consola(` Servidor    : ${config.server}`);
+  consola(` yt-dlp      : ${config.ytdlp} (${versionYtDlp})`);
+  consola(` ffmpeg      : ${config.ffmpegDir}`);
+  consola(` Descargas   : ${config.downloadDir}`);
+  consola(` Config      : ${config.rutaConfig}`);
+  consola(` Log         : ${RUTA_LOG}`);
+  consola(` Sondeo      : cada ${config.pollSeconds} s · trozos de ${config.chunkMb} MiB`);
+  consola(' Pulsa Ctrl+C para detenerlo.');
+  consola('');
+
+  logInfo(`Arranque del worker ${VERSION_WORKER} (yt-dlp ${versionYtDlp}) · config ${config.rutaConfig}`);
+
+  process.on('SIGINT', () => pararLimpiamente('Ctrl+C'));
+  process.on('SIGBREAK', () => pararLimpiamente('Ctrl+Pausa'));
+  process.on('SIGHUP', () => pararLimpiamente('cierre de consola'));
+
+  // Heartbeat cada 30 s, independiente del bucle de sondeo.
+  const latido = async () => {
+    if (parando) return;
+    try {
+      await peticion({
+        action: 'heartbeat',
+        worker: NOMBRE_WORKER,
+        version: VERSION_WORKER,
+        ytdlp: versionYtDlp,
+      }, { etiqueta: 'heartbeat' });
+      logDepurar('heartbeat enviado');
+    } catch (e) {
+      logAviso(`Heartbeat fallido: ${e.message}`);
+    }
+  };
+  await latido();
+  temporizadorHeartbeat = setInterval(latido, MS_HEARTBEAT);
+
+  // Bucle de trabajo
+  while (!parando) {
+    try {
+      const respuesta = await peticion({ action: 'next' }, { etiqueta: 'next' });
+      const job = respuesta.job;
+
+      if (!job) {
+        logDepurar('sin trabajo disponible');
+        await dormir(config.pollSeconds * 1000);
+        continue;
+      }
+
+      try {
+        await procesarJob(job);
+      } catch (e) {
+        logError(`Error procesando el trabajo ${job && job.id}: ${e.message}`);
+        consola(`ERROR en el trabajo ${job && job.id}: ${recortar(e.message, 200)}`);
+        await informarFallo(job, e.message);
+      }
+    } catch (e) {
+      logError(`Error en el bucle principal: ${e.message}`);
+      await dormir(config.pollSeconds * 1000);
+    }
+  }
+}
+
+principal().catch((e) => {
+  logError(`Error fatal: ${e && e.stack ? e.stack : e}`);
+  console.error('');
+  console.error(`  Error fatal del worker: ${e && e.message ? e.message : e}`);
+  console.error(`  Revisa el log: ${RUTA_LOG}`);
+  console.error('');
+  process.exit(1);
+});
+
+// Red de seguridad: nunca dejar un yt-dlp huérfano.
+// matarArbol es síncrono (taskkill /T /F), así que puede usarse aquí.
+process.on('exit', () => {
+  if (hijoActual && hijoActual.pid) matarArbol(hijoActual.pid);
+});

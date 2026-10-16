@@ -257,6 +257,13 @@ tools/video-vault/_upload_log.json
 apps/descargas/data/*
 !apps/descargas/data/.htaccess
 
+# ── tools/descargador: banco de pruebas del worker ─────────────────────────
+# El mock, sus configs y sus salidas son material de usar y tirar. OJO: aquí NO
+# vale la regla `/tools/_*` (esa solo cubre la raíz de tools/) ni ninguna `_*`
+# genérica, así que sin esta línea un `git add tools/descargador` versionaría el
+# mock y lo publicaría en la raíz web de Hostinger.
+tools/descargador/_prueba/
+
 # ── Secretos y datos de terceros (NUNCA al repo) ──────────────────────────
 # auth.php guarda el hash sha256 de la contraseña de edición. El repositorio
 # es PÚBLICO: ver pendientes.md 0-bis.

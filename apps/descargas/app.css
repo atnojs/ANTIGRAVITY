@@ -10,7 +10,10 @@
   --acc2: #26C626;
   --text: #eaffff;
   --muted: #99CCCC;
-  --faint: #6f9aa8;
+  /* --faint se usa en textos pequeños (pistas, metadatos): medido contra el
+     panel (#0D3C5A) daba 3,78:1 con el valor anterior #6f9aa8, por debajo del
+     4,5:1 de WCAG AA. Con #93AEBF da 5,0:1. */
+  --faint: #93AEBF;
   --contenedor: #174F7A;
   --border: rgba(0, 208, 208, .7);
   --border-soft: rgba(0, 208, 208, .45);
@@ -19,7 +22,10 @@
   --card-hover: rgba(30, 100, 150, .55);
   --glow: rgba(0, 208, 208, .8);
   --glow-soft: rgba(0, 208, 208, .4);
+  /* --danger es para bordes y fondos; como TEXTO sobre el panel oscuro da
+     2,9:1 y no pasa AA. Para texto va --danger-text (5,1:1). */
   --danger: #ef4444;
+  --danger-text: #ff9a9a;
   --ok: #26C626;
   --warn: #f5b942;
   --font-ui: 'Electrolize', system-ui, sans-serif;
@@ -245,7 +251,7 @@ body {
   background: rgba(239, 68, 68, .12);
   border: 1px solid rgba(239, 68, 68, .35);
   border-radius: 8px;
-  color: #f87171; font-size: .85rem;
+  color: var(--danger-text); font-size: .85rem;
 }
 
 /* ── Cola ───────────────────────────────────────────────────────────── */
@@ -279,22 +285,23 @@ body {
 .state.queued    { color: var(--muted); }
 .state.running   { color: var(--acc); }
 .state.done      { color: var(--ok); }
-.state.error     { color: var(--danger); }
+.state.error     { color: var(--danger-text); }
 .state.cancelled { color: var(--warn); }
 
+/* La barra progresa con transform (GPU), no animando width. */
 .bar {
   height: 6px; border-radius: 999px;
   background: rgba(255, 255, 255, .08);
   overflow: hidden; margin: 6px 0 8px;
 }
 .bar > i {
-  display: block; height: 100%;
+  display: block; height: 100%; width: 100%;
+  transform-origin: left center; transform: scaleX(0);
   background: linear-gradient(90deg, var(--acc), var(--acc2));
   box-shadow: 0 0 12px var(--glow);
-  transition: width .4s ease;
+  transition: transform .4s ease;
 }
 .bar.indeterminate > i {
-  width: 40% !important;
   animation: barSlide 2.5s ease-in-out infinite;
 }
 @keyframes barSlide {
@@ -313,15 +320,24 @@ body {
   cursor: pointer; text-decoration: none; transition: var(--transition-main);
 }
 .btn-sm:hover { color: var(--text); border-color: var(--acc); box-shadow: 0 0 12px var(--glow-soft); }
-.btn-sm.danger { border-color: rgba(239, 68, 68, .5); color: #f87171; }
+.btn-sm.danger { border-color: rgba(239, 68, 68, .5); color: var(--danger-text); }
 .btn-sm.danger:hover { background: rgba(239, 68, 68, .25); color: #fff; }
 .btn-sm:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+/* Nada interactivo sin foco visible, incluidos enlaces y campos. */
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
 
 .job-error {
   margin-top: 8px; padding: 8px 10px;
   border-left: 2px solid var(--danger);
   background: rgba(239, 68, 68, .08);
-  color: #f8a3a3; font-size: .8rem; overflow-wrap: anywhere;
+  color: #ffb3b3; font-size: .8rem; overflow-wrap: anywhere;
 }
 .files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .file-chip {
@@ -378,7 +394,7 @@ body {
   display: block; margin: 10px auto 0;
   padding: 4px 10px; border-radius: 999px;
   border: 1px solid var(--danger);
-  background: rgba(239, 68, 68, .2); color: var(--danger);
+  background: rgba(239, 68, 68, .2); color: var(--danger-text);
   cursor: pointer; font-size: .65rem;
   font-family: var(--font-ui); text-transform: uppercase; letter-spacing: .06em;
   transition: var(--transition-main);

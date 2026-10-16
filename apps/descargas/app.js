@@ -90,6 +90,7 @@ function setBusy(busy, label) {
   state.busy = busy;
   const button = $('add-btn');
   button.disabled = busy;
+  button.setAttribute('aria-disabled', busy ? 'true' : 'false');
   $('add-btn-text').textContent = busy ? (label || 'ENVIANDO...') : 'DESCARGAR';
 }
 
@@ -305,7 +306,7 @@ function renderQueue() {
         </div>
         ${status === 'running' || status === 'queued' ? `
           <div class="bar ${indeterminate ? 'indeterminate' : ''}">
-            <i style="width:${indeterminate ? 40 : percent}%"></i>
+            <i style="transform:scaleX(${((indeterminate ? 40 : percent) / 100).toFixed(4)})"></i>
           </div>` : ''}
         <p class="job-meta">${esc(meta.join(' · '))}</p>
         ${job.error ? `<p class="job-error">${esc(job.error)}</p>` : ''}
