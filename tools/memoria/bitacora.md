@@ -231,6 +231,6 @@ una sola carpeta hay que usar el selector **«Solo «<carpeta>»»**.
 
 **Commits**
 
-- `PENDIENTE` — `docs(memoria): el flujo de Antonio para publicar TrickVault`
+- `542e0c5` — `docs(memoria): el flujo de Antonio para publicar TrickVault desde la app`
 
 **Receta reutilizable:** `recetas.md` → «TrickVault: publicar cambios desde la propia app».
